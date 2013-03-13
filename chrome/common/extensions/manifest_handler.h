@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
+class Extension;
 
 class ManifestHandler {
  public:
@@ -25,6 +25,17 @@ class ManifestHandler {
   // be set to a failure message.
   virtual bool Parse(Extension* extension, string16* error) = 0;
 
+  // Validate that files associated with this manifest key exist.
+  // Validation takes place after parsing. May also append a series of
+  // warning messages to |warnings|.
+  //
+  // Otherwise, returns false, and a description of the error is
+  // returned in |error|.
+  // TODO(yoz): Change error to string16. See crbug.com/71980.
+  virtual bool Validate(const Extension* extension,
+                        std::string* error,
+                        std::vector<InstallWarning>* warnings) const;
+
   // If false (the default), only parse the manifest if a registered
   // key is present in the manifest. If true, always attempt to parse
   // the manifest for this extension type, even if no registered keys
@@ -32,6 +43,9 @@ class ManifestHandler {
   // extensions that don't declare our key in the manifest.
   // TODO(yoz): Use Feature availability instead.
   virtual bool AlwaysParseForType(Manifest::Type type) const;
+
+  // Same as AlwaysParseForType, but for Validate instead of Parse.
+  virtual bool AlwaysValidateForType(Manifest::Type type) const;
 
   // The list of keys that, if present, should be parsed before calling our
   // Parse (typically, because our Parse needs to read those keys).
@@ -51,6 +65,11 @@ class ManifestHandler {
   // Call Parse on all registered manifest handlers that should parse
   // this extension.
   static bool ParseExtension(Extension* extension, string16* error);
+
+  // Call Validate on all registered manifest handlers for this extension.
+  static bool ValidateExtension(const Extension* extension,
+                                std::string* error,
+                                std::vector<InstallWarning>* warnings);
 
   // Reset the manifest handler registry to an empty state. Useful for
   // unit tests.

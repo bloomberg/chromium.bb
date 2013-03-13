@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
-#include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/extension.h"
 
 namespace extensions {
 
@@ -24,6 +24,10 @@ class ManifestHandlerRegistry {
   void RegisterManifestHandler(const std::string& key,
                                linked_ptr<ManifestHandler> handler);
   bool ParseExtension(Extension* extension, string16* error);
+  bool ValidateExtension(const Extension* extension,
+                         std::string* error,
+                         std::vector<InstallWarning>* warnings);
+
   void ClearForTesting();
 
  private:
@@ -69,6 +73,27 @@ bool ManifestHandlerRegistry::ParseExtension(Extension* extension,
            handlers_by_priority.begin();
        iter != handlers_by_priority.end(); ++iter) {
     if (!(iter->second)->Parse(extension, error))
+      return false;
+  }
+  return true;
+}
+
+bool ManifestHandlerRegistry::ValidateExtension(
+    const Extension* extension,
+    std::string* error,
+    std::vector<InstallWarning>* warnings) {
+  std::set<ManifestHandler*> handlers;
+  for (ManifestHandlerMap::iterator iter = handlers_.begin();
+       iter != handlers_.end(); ++iter) {
+    ManifestHandler* handler = iter->second.get();
+    if (extension->manifest()->HasPath(iter->first) ||
+        handler->AlwaysValidateForType(extension->GetType())) {
+      handlers.insert(handler);
+    }
+  }
+  for (std::set<ManifestHandler*>::iterator iter = handlers.begin();
+       iter != handlers.end(); ++iter) {
+    if (!(*iter)->Validate(extension, error, warnings))
       return false;
   }
   return true;
@@ -145,7 +170,17 @@ ManifestHandler::ManifestHandler() {
 ManifestHandler::~ManifestHandler() {
 }
 
+bool ManifestHandler::Validate(const Extension* extension,
+                               std::string* error,
+                               std::vector<InstallWarning>* warnings) const {
+  return true;
+}
+
 bool ManifestHandler::AlwaysParseForType(Manifest::Type type) const {
+  return false;
+}
+
+bool ManifestHandler::AlwaysValidateForType(Manifest::Type type) const {
   return false;
 }
 
@@ -168,6 +203,13 @@ void ManifestHandler::ClearRegistryForTesting() {
 // static
 bool ManifestHandler::ParseExtension(Extension* extension, string16* error) {
   return g_registry.Get().ParseExtension(extension, error);
+}
+
+// static
+bool ManifestHandler::ValidateExtension(const Extension* extension,
+                                        std::string* error,
+                                        std::vector<InstallWarning>* warnings) {
+  return g_registry.Get().ValidateExtension(extension, error, warnings);
 }
 
 // static

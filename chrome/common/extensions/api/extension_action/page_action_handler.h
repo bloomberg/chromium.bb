@@ -20,6 +20,9 @@ class PageActionHandler : public ManifestHandler {
   virtual ~PageActionHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Validate(const Extension* extension,
+                        std::string* error,
+                        std::vector<InstallWarning>* warnings) const OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;

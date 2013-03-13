@@ -560,8 +560,8 @@ TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
-  ASSERT_TRUE(extension == NULL);
-  ASSERT_STREQ("Could not load extension icon 'icon.png'.",
+  EXPECT_TRUE(extension == NULL);
+  EXPECT_STREQ("Could not load extension icon 'icon.png'.",
       error.c_str());
 
   // Try to install an extension with a zero-length browser action icon file.
@@ -572,8 +572,8 @@ TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
 
   scoped_refptr<Extension> extension2(extension_file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
-  ASSERT_TRUE(extension2 == NULL);
-  ASSERT_STREQ("Could not load icon 'icon.png' for browser action.",
+  EXPECT_TRUE(extension2 == NULL);
+  EXPECT_STREQ("Could not load icon 'icon.png' for browser action.",
       error.c_str());
 
   // Try to install an extension with a zero-length page action icon file.
@@ -584,8 +584,8 @@ TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
 
   scoped_refptr<Extension> extension3(extension_file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
-  ASSERT_TRUE(extension3 == NULL);
-  ASSERT_STREQ("Could not load icon 'icon.png' for page action.",
+  EXPECT_TRUE(extension3 == NULL);
+  EXPECT_STREQ("Could not load icon 'icon.png' for page action.",
       error.c_str());
 }
 

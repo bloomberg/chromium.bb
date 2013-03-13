@@ -19,20 +19,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/api/icons/icons_handler.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/api/themes/theme_handler.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "extensions/common/install_warning.h"
 #include "grit/generated_resources.h"
@@ -49,31 +43,9 @@ namespace {
 
 const base::FilePath::CharType kTempDirectoryName[] = FILE_PATH_LITERAL("Temp");
 
-bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
-                              const Extension* extension,
-                              int error_message_id,
-                              std::string* error) {
-  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
-       iter != icon_set.map().end();
-       ++iter) {
-    const base::FilePath path =
-        extension->GetResource(iter->second).GetFilePath();
-    if (!extension_file_util::ValidateFilePath(path)) {
-      *error = l10n_util::GetStringFUTF8(error_message_id,
-                                         UTF8ToUTF16(iter->second));
-      return false;
-    }
-  }
-  return true;
-}
-
 }  // namespace
 
 namespace extension_file_util {
-
-// Validates locale info. Doesn't check if messages.json files are valid.
-static bool ValidateLocaleInfo(const Extension& extension,
-                               std::string* error);
 
 // Returns false and sets the error if script file can't be loaded,
 // or if it's not UTF-8 encoded.
@@ -140,8 +112,8 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
 void UninstallExtension(const base::FilePath& extensions_dir,
                         const std::string& id) {
   // We don't care about the return value. If this fails (and it can, due to
-  // plugins that aren't unloaded yet, it will get cleaned up by
-  // ExtensionService::GarbageCollectExtensions).
+  // plugins that aren't unloaded yet), it will get cleaned up by
+  // ExtensionService::GarbageCollectExtensions.
   file_util::Delete(extensions_dir.AppendASCII(id), true);  // recursive.
 }
 
@@ -254,49 +226,33 @@ bool ValidateFilePath(const base::FilePath& path) {
   return true;
 }
 
-bool ValidateExtension(const Extension* extension,
-                       std::string* error,
-                       std::vector<extensions::InstallWarning>* warnings) {
-  // Validate icons exist.
-  for (ExtensionIconSet::IconMap::const_iterator iter =
-           extensions::IconsInfo::GetIcons(extension).map().begin();
-       iter != extensions::IconsInfo::GetIcons(extension).map().end();
+bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
+                              const Extension* extension,
+                              int error_message_id,
+                              std::string* error) {
+  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
+       iter != icon_set.map().end();
        ++iter) {
     const base::FilePath path =
         extension->GetResource(iter->second).GetFilePath();
     if (!ValidateFilePath(path)) {
-      *error =
-          l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_ICON_FAILED,
-                                    UTF8ToUTF16(iter->second));
+      *error = l10n_util::GetStringFUTF8(error_message_id,
+                                         UTF8ToUTF16(iter->second));
       return false;
     }
   }
+  return true;
+}
 
-  // Theme resource validation.
-  if (extension->is_theme()) {
-    DictionaryValue* images_value =
-        extensions::ThemeInfo::GetThemeImages(extension);
-    if (images_value) {
-      for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
-           iter.Advance()) {
-        std::string val;
-        if (iter.value().GetAsString(&val)) {
-          base::FilePath image_path = extension->path().Append(
-              base::FilePath::FromUTF8Unsafe(val));
-          if (!file_util::PathExists(image_path)) {
-            *error =
-                l10n_util::GetStringFUTF8(IDS_EXTENSION_INVALID_IMAGE_PATH,
-                                          image_path.LossyDisplayName());
-            return false;
-          }
-        }
-      }
-    }
+bool ValidateExtension(const Extension* extension,
+                       std::string* error,
+                       std::vector<extensions::InstallWarning>* warnings) {
+  // Ask registered manifest handlers to validate their paths.
+  if (!extensions::ManifestHandler::ValidateExtension(
+          extension, error, warnings))
+    return false;
 
-    // Themes cannot contain other extension types.
-    return true;
-  }
-
+  // TODO(yoz): Move this to content scripts manifest handler.
   // Validate that claimed script resources actually exist,
   // and are UTF-8 encoded.
   ExtensionResource::SymlinkPolicy symlink_policy;
@@ -330,89 +286,6 @@ bool ValidateExtension(const Extension* extension,
         return false;
     }
   }
-
-  // Validate claimed plugin paths.
-  if (extensions::PluginInfo::HasPlugins(extension)) {
-    const extensions::PluginInfo::PluginVector* plugins =
-        extensions::PluginInfo::GetPlugins(extension);
-    CHECK(plugins);
-    for (std::vector<extensions::PluginInfo>::const_iterator plugin =
-             plugins->begin();
-         plugin != plugins->end(); ++plugin) {
-      if (!file_util::PathExists(plugin->path)) {
-        *error = l10n_util::GetStringFUTF8(
-            IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
-            plugin->path.LossyDisplayName());
-      return false;
-      }
-    }
-  }
-
-  const extensions::ActionInfo* action =
-      extensions::ActionInfo::GetPageActionInfo(extension);
-  if (action && !action->default_icon.empty() &&
-      !ValidateExtensionIconSet(action->default_icon, extension,
-          IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED, error)) {
-    return false;
-  }
-
-  action = extensions::ActionInfo::GetBrowserActionInfo(extension);
-  if (action && !action->default_icon.empty() &&
-      !ValidateExtensionIconSet(action->default_icon, extension,
-          IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED, error)) {
-    return false;
-  }
-
-  // Validate that background scripts exist.
-  const std::vector<std::string>& background_scripts =
-      extensions::BackgroundInfo::GetBackgroundScripts(extension);
-  for (size_t i = 0; i < background_scripts.size(); ++i) {
-    if (!file_util::PathExists(
-            extension->GetResource(background_scripts[i]).GetFilePath())) {
-      *error = l10n_util::GetStringFUTF8(
-          IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
-          UTF8ToUTF16(background_scripts[i]));
-      return false;
-    }
-  }
-
-  // Validate background page location, except for hosted apps, which should use
-  // an external URL. Background page for hosted apps are verified when the
-  // extension is created (in Extension::InitFromValue)
-  if (extensions::BackgroundInfo::HasBackgroundPage(extension) &&
-      !extension->is_hosted_app() && background_scripts.empty()) {
-    base::FilePath page_path = ExtensionURLToRelativeFilePath(
-        extensions::BackgroundInfo::GetBackgroundURL(extension));
-    const base::FilePath path = extension->GetResource(page_path).GetFilePath();
-    if (path.empty() || !file_util::PathExists(path)) {
-      *error =
-          l10n_util::GetStringFUTF8(
-              IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED,
-              page_path.LossyDisplayName());
-      return false;
-    }
-  }
-
-  // Validate path to the options page.  Don't check the URL for hosted apps,
-  // because they are expected to refer to an external URL.
-  if (!extensions::ManifestURL::GetOptionsPage(extension).is_empty() &&
-      !extension->is_hosted_app()) {
-    const base::FilePath options_path = ExtensionURLToRelativeFilePath(
-        extensions::ManifestURL::GetOptionsPage(extension));
-    const base::FilePath path =
-        extension->GetResource(options_path).GetFilePath();
-    if (path.empty() || !file_util::PathExists(path)) {
-      *error =
-          l10n_util::GetStringFUTF8(
-              IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED,
-              options_path.LossyDisplayName());
-      return false;
-    }
-  }
-
-  // Validate locale info.
-  if (!ValidateLocaleInfo(*extension, error))
-    return false;
 
   // Check children of extension root to see if any of them start with _ and is
   // not on the reserved list.
@@ -576,67 +449,6 @@ SubstitutionMap* LoadMessageBundleSubstitutionMap(
       std::make_pair(extensions::MessageBundle::kExtensionIdKey, extension_id));
 
   return returnValue;
-}
-
-static bool ValidateLocaleInfo(const Extension& extension,
-                               std::string* error) {
-  // default_locale and _locales have to be both present or both missing.
-  const base::FilePath path = extension.path().Append(
-      Extension::kLocaleFolder);
-  bool path_exists = file_util::PathExists(path);
-  std::string default_locale =
-      extensions::LocaleInfo::GetDefaultLocale(&extension);
-
-  // If both default locale and _locales folder are empty, skip verification.
-  if (default_locale.empty() && !path_exists)
-    return true;
-
-  if (default_locale.empty() && path_exists) {
-    *error = l10n_util::GetStringUTF8(
-        IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED);
-    return false;
-  } else if (!default_locale.empty() && !path_exists) {
-    *error = errors::kLocalesTreeMissing;
-    return false;
-  }
-
-  // Treat all folders under _locales as valid locales.
-  file_util::FileEnumerator locales(path,
-                                    false,
-                                    file_util::FileEnumerator::DIRECTORIES);
-
-  std::set<std::string> all_locales;
-  extension_l10n_util::GetAllLocales(&all_locales);
-  const base::FilePath default_locale_path = path.AppendASCII(default_locale);
-  bool has_default_locale_message_file = false;
-
-  base::FilePath locale_path;
-  while (!(locale_path = locales.Next()).empty()) {
-    if (extension_l10n_util::ShouldSkipValidation(path, locale_path,
-                                                  all_locales))
-      continue;
-
-    base::FilePath messages_path =
-        locale_path.Append(Extension::kMessagesFilename);
-
-    if (!file_util::PathExists(messages_path)) {
-      *error = base::StringPrintf(
-          "%s %s", errors::kLocalesMessagesFileMissing,
-          UTF16ToUTF8(messages_path.LossyDisplayName()).c_str());
-      return false;
-    }
-
-    if (locale_path == default_locale_path)
-      has_default_locale_message_file = true;
-  }
-
-  // Only message file for default locale has to exist.
-  if (!has_default_locale_message_file) {
-    *error = errors::kLocalesNoDefaultMessages;
-    return false;
-  }
-
-  return true;
 }
 
 static bool IsScriptValid(const base::FilePath& path,

@@ -5,15 +5,19 @@
 #include "chrome/common/extensions/background_info.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "extensions/common/error_utils.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::DictionaryValue;
 namespace keys = extension_manifest_keys;
@@ -236,6 +240,43 @@ bool BackgroundManifestHandler::Parse(Extension* extension, string16* error) {
   if (!info->Parse(extension, error))
     return false;
   extension->SetManifestData(kBackground, info.release());
+  return true;
+}
+
+bool BackgroundManifestHandler::Validate(
+    const Extension* extension,
+    std::string* error,
+    std::vector<InstallWarning>* warnings) const {
+  // Validate that background scripts exist.
+  const std::vector<std::string>& background_scripts =
+      extensions::BackgroundInfo::GetBackgroundScripts(extension);
+  for (size_t i = 0; i < background_scripts.size(); ++i) {
+    if (!file_util::PathExists(
+            extension->GetResource(background_scripts[i]).GetFilePath())) {
+      *error = l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
+          UTF8ToUTF16(background_scripts[i]));
+      return false;
+    }
+  }
+
+  // Validate background page location, except for hosted apps, which should use
+  // an external URL. Background page for hosted apps are verified when the
+  // extension is created (in Extension::InitFromValue)
+  if (extensions::BackgroundInfo::HasBackgroundPage(extension) &&
+      !extension->is_hosted_app() && background_scripts.empty()) {
+    base::FilePath page_path =
+        extension_file_util::ExtensionURLToRelativeFilePath(
+            extensions::BackgroundInfo::GetBackgroundURL(extension));
+    const base::FilePath path = extension->GetResource(page_path).GetFilePath();
+    if (path.empty() || !file_util::PathExists(path)) {
+      *error =
+          l10n_util::GetStringFUTF8(
+              IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED,
+              page_path.LossyDisplayName());
+      return false;
+    }
+  }
   return true;
 }
 

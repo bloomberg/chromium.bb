@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/install_warning.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -116,6 +117,40 @@ class ManifestHandlerTest : public testing::Test {
     }
   };
 
+  class TestManifestValidator : public ManifestHandler {
+   public:
+    TestManifestValidator(bool return_value,
+                          bool always_validate,
+                          std::vector<std::string> keys)
+        : return_value_(return_value),
+          always_validate_(always_validate),
+          keys_(keys) {
+    }
+
+    virtual bool Parse(Extension* extension, string16* error) OVERRIDE {
+      return true;
+    }
+
+    virtual bool Validate(const Extension* extension,
+                          std::string* error,
+                          std::vector<InstallWarning>* warnings) const {
+      return return_value_;
+    }
+
+    virtual bool AlwaysValidateForType(Manifest::Type type) const {
+      return always_validate_;
+    }
+
+   private:
+    virtual const std::vector<std::string> Keys() const OVERRIDE {
+      return keys_;
+    }
+
+    bool return_value_;
+    bool always_validate_;
+    std::vector<std::string> keys_;
+  };
+
  protected:
   virtual void TearDown() OVERRIDE {
     ManifestHandler::ClearRegistryForTesting();
@@ -196,6 +231,35 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
       &error);
   EXPECT_FALSE(extension);
   EXPECT_EQ("A", error);
+}
+
+TEST_F(ManifestHandlerTest, Validate) {
+  scoped_refptr<Extension> extension = ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+                   .Set("name", "no name")
+                   .Set("version", "0")
+                   .Set("manifest_version", 2)
+                   .Set("a", 1)
+                   .Set("b", 2))
+      .Build();
+  EXPECT_TRUE(extension);
+
+  std::string error;
+  std::vector<InstallWarning> warnings;
+  // Always validates and fails.
+  (new TestManifestValidator(false, true, SingleKey("c")))->Register();
+  EXPECT_FALSE(ManifestHandler::ValidateExtension(
+      extension, &error, &warnings));
+
+  // This overrides the registered handler for "c".
+  (new TestManifestValidator(false, false, SingleKey("c")))->Register();
+  EXPECT_TRUE(ManifestHandler::ValidateExtension(
+      extension, &error, &warnings));
+
+  // Validates "a" and fails.
+  (new TestManifestValidator(false, true, SingleKey("a")))->Register();
+  EXPECT_FALSE(ManifestHandler::ValidateExtension(
+      extension, &error, &warnings));
 }
 
 }  // namespace extensions

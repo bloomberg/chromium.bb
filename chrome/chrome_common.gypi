@@ -387,6 +387,35 @@
         'common/zip_reader.h',
       ],
       'conditions': [
+        ['enable_extensions==1', {
+          'sources!': [
+            'common/extensions/api/extension_api_stub.cc',
+          ],
+          'dependencies': [
+            '../device/device.gyp:device_usb',
+          ],
+        }, {  # enable_extensions == 0
+          'sources/': [
+            ['exclude', '^common/extensions/api/'],
+            ['include', 'common/extensions/api/extension_api_stub.cc'],
+            ['include', 'common/extensions/api/extension_action/action_info.cc'],
+            ['include', 'common/extensions/api/extension_action/action_info.h'],
+            ['include', 'common/extensions/api/extension_action/browser_action_handler.cc'],
+            ['include', 'common/extensions/api/extension_action/browser_action_handler.h'],
+            ['include', 'common/extensions/api/extension_action/page_action_handler.cc'],
+            ['include', 'common/extensions/api/extension_action/page_action_handler.h'],
+            ['include', 'common/extensions/api/icons/icons_handler.cc'],
+            ['include', 'common/extensions/api/icons/icons_handler.h'],
+            ['include', 'common/extensions/api/i18n/default_locale_handler.cc'],
+            ['include', 'common/extensions/api/i18n/default_locale_handler.h'],
+            ['include', 'common/extensions/api/identity/oauth2_manifest_handler.cc'],
+            ['include', 'common/extensions/api/identity/oauth2_manifest_handler.h'],
+            ['include', 'common/extensions/api/plugins/plugins_handler.cc'],
+            ['include', 'common/extensions/api/plugins/plugins_handler.h'],
+            ['include', 'common/extensions/api/themes/theme_handler.cc'],
+            ['include', 'common/extensions/api/themes/theme_handler.h'],
+          ],
+        }],
         ['OS != "ios"', {
           'dependencies': [
             '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
@@ -481,35 +510,6 @@
           'sources!': [
             'common/child_process_logging_posix.cc',
             'common/chrome_version_info_posix.cc',
-          ],
-        }],
-        ['enable_extensions==1', {
-          'sources!': [
-            'common/extensions/api/extension_api_stub.cc',
-          ],
-          'dependencies': [
-            '../device/device.gyp:device_usb',
-          ],
-        }, {  # enable_extensions == 0
-          'sources/': [
-            ['exclude', '^common/extensions/api/'],
-            ['include', 'common/extensions/api/extension_api_stub.cc'],
-            ['include', 'common/extensions/api/extension_action/action_info.cc'],
-            ['include', 'common/extensions/api/extension_action/action_info.h'],
-            ['include', 'common/extensions/api/extension_action/browser_action_handler.cc'],
-            ['include', 'common/extensions/api/extension_action/browser_action_handler.h'],
-            ['include', 'common/extensions/api/extension_action/page_action_handler.cc'],
-            ['include', 'common/extensions/api/extension_action/page_action_handler.h'],
-            ['include', 'common/extensions/api/icons/icons_handler.cc'],
-            ['include', 'common/extensions/api/icons/icons_handler.h'],
-            ['include', 'common/extensions/api/i18n/default_locale_handler.cc'],
-            ['include', 'common/extensions/api/i18n/default_locale_handler.h'],
-            ['include', 'common/extensions/api/identity/oauth2_manifest_handler.cc'],
-            ['include', 'common/extensions/api/identity/oauth2_manifest_handler.h'],
-            ['include', 'common/extensions/api/plugins/plugins_handler.cc'],
-            ['include', 'common/extensions/api/plugins/plugins_handler.h'],
-            ['include', 'common/extensions/api/themes/theme_handler.cc'],
-            ['include', 'common/extensions/api/themes/theme_handler.h'],
           ],
         }],
         ['remoting==1', {

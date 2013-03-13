@@ -4,11 +4,14 @@
 
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
@@ -165,6 +168,33 @@ bool ThemeHandler::Parse(Extension* extension, string16* error) {
     return false;
 
   extension->SetManifestData(keys::kTheme, theme_info.release());
+  return true;
+}
+
+bool ThemeHandler::Validate(const Extension* extension,
+                            std::string* error,
+                            std::vector<InstallWarning>* warnings) const {
+  // Validate that theme images exist.
+  if (extension->is_theme()) {
+    DictionaryValue* images_value =
+        extensions::ThemeInfo::GetThemeImages(extension);
+    if (images_value) {
+      for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+           iter.Advance()) {
+        std::string val;
+        if (iter.value().GetAsString(&val)) {
+          base::FilePath image_path = extension->path().Append(
+              base::FilePath::FromUTF8Unsafe(val));
+          if (!file_util::PathExists(image_path)) {
+            *error =
+                l10n_util::GetStringFUTF8(IDS_EXTENSION_INVALID_IMAGE_PATH,
+                                          image_path.LossyDisplayName());
+            return false;
+          }
+        }
+      }
+    }
+  }
   return true;
 }
 

@@ -11,8 +11,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -142,6 +144,16 @@ bool IconsHandler::Parse(Extension* extension, string16* error) {
 
   extension->SetManifestData(keys::kIcons, icons_info.release());
   return true;
+}
+
+bool IconsHandler::Validate(const Extension* extension,
+                            std::string* error,
+                            std::vector<InstallWarning>* warnings) const {
+  return extension_file_util::ValidateExtensionIconSet(
+      IconsInfo::GetIcons(extension),
+      extension,
+      IDS_EXTENSION_LOAD_ICON_FAILED,
+      error);
 }
 
 const std::vector<std::string> IconsHandler::Keys() const {
