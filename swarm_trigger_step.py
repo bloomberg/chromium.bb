@@ -110,10 +110,13 @@ class Manifest(object):
 
     self.zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
 
-    response = run_isolated.url_open(self.data_server_has,
-                                     data=self.zip_file_hash)
+    response = run_isolated.url_open(
+        self.data_server_has,
+        data=self.zip_file_hash,
+        content_type='application/octet-stream')
     if response is None:
-      print 'Unable to query server for zip file presence, aborting.'
+      print >> sys.stderr, (
+          'Unable to query server for zip file presence, aborting.')
       return False
 
     if response.read(1) == chr(1):
@@ -126,7 +129,7 @@ class Manifest(object):
     response = run_isolated.url_open(
         url, zip_contents, content_type='application/octet-stream')
     if response is None:
-      print 'Failed to upload the zip file'
+      print >> sys.stderr, 'Failed to upload the zip file: %s' % url
       return False
 
     return True
@@ -205,6 +208,8 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
   result = run_isolated.url_open(
       test_url, manifest_text, content_type='application/json')
   if not result:
+    print >> sys.stderr, 'Failed to send test for %s\n%s' % (
+        test_name, test_url)
     return 1
   try:
     json.load(result)
