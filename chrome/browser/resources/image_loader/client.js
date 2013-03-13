@@ -190,8 +190,13 @@ ImageLoader.Client.Cache.MEMORY_LIMIT = 100 * 1024 * 1024;  // 100 MB.
  * @return {string} Cache key.
  */
 ImageLoader.Client.Cache.createKey = function(url, opt_options) {
-  var array = opt_options || {};
-  array.url = url;
+  opt_options = opt_options || {};
+  var array = { url: url,
+                scale: opt_options.scale,
+                width: opt_options.width,
+                height: opt_options.height,
+                maxWidth: opt_options.maxWidth,
+                maxHeight: opt_options.maxHeight };
   return JSON.stringify(array);
 };
 
@@ -224,6 +229,11 @@ ImageLoader.Client.Cache.prototype.evictCache_ = function(size) {
  */
 ImageLoader.Client.Cache.prototype.saveImage = function(
     key, data, opt_timestamp) {
+
+  // If the image is currently in cache, then remove it.
+  if (this.images_[key])
+    this.removeImage(key);
+
   this.evictCache_(data.length);
   if (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
     this.images_[key] = { lastLoadTimestamp: Date.now(),
@@ -250,7 +260,7 @@ ImageLoader.Client.Cache.prototype.loadImage = function(key, opt_timestamp) {
 
   // Check if the image in cache is up to date. If not, then remove it and
   // return null.
-  if (entry.imageTimestamp === opt_timestamp) {
+  if (entry.timestamp != opt_timestamp) {
     this.removeImage(key);
     return null;
   }
