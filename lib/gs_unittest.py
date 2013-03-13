@@ -277,6 +277,10 @@ Please see http://code.google.com/apis/storage/docs/signup.html for
 details about activating the Google Cloud Storage service and then run the
 "gsutil config" command to configure gsutil to use these credentials."""
 
+  GS_LS_ERROR2 = """\
+GSResponseError: status=400, code=MissingSecurityHeader, reason=Bad Request, \
+detail=Authorization."""
+
   GS_LS_BENIGN = """\
 "GSResponseError: status=400, code=MissingSecurityHeader, reason=Bad Request,
 detail=A nonempty x-goog-project-id header is required for this request."""
@@ -285,10 +289,20 @@ detail=A nonempty x-goog-project-id header is required for this request."""
     self.boto_file = os.path.join(self.tempdir, 'boto_file')
     self.ctx = gs.GSContext(boto_file=self.boto_file)
 
-  def testInitGSLsSkippableError(self):
+  def testGSLsSkippableError(self):
     """Benign GS error."""
     self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_BENIGN)
-    self.ctx._InitBoto()
+    self.assertTrue(self.ctx._TestGSLs())
+
+  def testGSLsAuthorizationError1(self):
+    """GS authorization error 1."""
+    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR)
+    self.assertFalse(self.ctx._TestGSLs())
+
+  def testGSLsError2(self):
+    """GS authorization error 2."""
+    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR2)
+    self.assertFalse(self.ctx._TestGSLs())
 
   def _WriteBotoFile(self, contents, *_args, **_kwargs):
     osutils.WriteFile(self.ctx.boto_file, contents)

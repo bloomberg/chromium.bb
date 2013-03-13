@@ -74,6 +74,9 @@ class GSNoSuchKey(GSContextException):
 class GSContext(object):
   """A class to wrap common google storage operations."""
 
+  # Error messages that indicate an invalid BOTO config.
+  AUTHORIZATION_ERRORS = ('no configured credentials', 'detail=Authorization')
+
   DEFAULT_BOTO_FILE = os.path.expanduser('~/.boto')
   # This is set for ease of testing.
   DEFAULT_GSUTIL_BIN = None
@@ -184,7 +187,7 @@ class GSContext(object):
     result = self._DoCommand(['ls'], retries=0, debug_level=logging.DEBUG,
                              redirect_stderr=True, error_code_ok=True)
     return not (result.returncode == 1 and
-                'no configured credentials' in result.error)
+                any(e in result.error for e in self.AUTHORIZATION_ERRORS))
 
   def _ConfigureBotoConfig(self):
     """Make sure we can access protected bits in GS."""
