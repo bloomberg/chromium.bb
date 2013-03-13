@@ -20,9 +20,10 @@ class UI_EXPORT InputMethodDelegate {
   virtual ~InputMethodDelegate() {}
 
   // Dispatch a key event already processed by the input method.
-  virtual void DispatchKeyEventPostIME(
+  // Returns true if the event was processed.
+  virtual bool DispatchKeyEventPostIME(
       const base::NativeEvent& native_key_event) = 0;
-  virtual void DispatchFabricatedKeyEventPostIME(ui::EventType type,
+  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
                                                  ui::KeyboardCode key_code,
                                                  int flags) = 0;
 };

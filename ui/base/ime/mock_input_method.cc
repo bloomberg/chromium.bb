@@ -24,10 +24,12 @@ TextInputClient* MockInputMethod::GetTextInputClient() const {
   return text_input_client_;
 }
 
-void MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
+bool MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
+  return false;
 }
 
-void MockInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+bool MockInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+  return false;
 }
 
 void MockInputMethod::Init(bool focused) {

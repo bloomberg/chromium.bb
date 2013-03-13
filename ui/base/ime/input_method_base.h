@@ -64,10 +64,12 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
   void OnInputMethodChanged() const;
 
   // Convenience method to call delegate_->DispatchKeyEventPostIME().
-  void DispatchKeyEventPostIME(const base::NativeEvent& native_event) const;
+  // Returns true if the event was processed
+  bool DispatchKeyEventPostIME(const base::NativeEvent& native_event) const;
 
   // Convenience method to call delegate_->DispatchFabricatedKeyEventPostIME().
-  void DispatchFabricatedKeyEventPostIME(EventType type,
+  // Returns true if the event was processed
+  bool DispatchFabricatedKeyEventPostIME(EventType type,
                                          KeyboardCode key_code,
                                          int flags) const;
 

@@ -57,25 +57,27 @@ TextInputClient* FakeInputMethod::GetTextInputClient() const {
   return text_input_client_;
 }
 
-void FakeInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
+bool FakeInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
+  bool handled = false;
 #if defined(OS_WIN)
   if (native_event.message == WM_CHAR) {
     if (text_input_client_) {
       text_input_client_->InsertChar(ui::KeyboardCodeFromNative(native_event),
                                      ui::EventFlagsFromNative(native_event));
+      handled = true;
     }
   } else {
-    delegate_->DispatchKeyEventPostIME(native_event);
+    handled = delegate_->DispatchKeyEventPostIME(native_event);
   }
 #elif defined(USE_X11)
   DCHECK(native_event);
   if (native_event->type == KeyRelease) {
     // On key release, just dispatch it.
-    delegate_->DispatchKeyEventPostIME(native_event);
+    handled = delegate_->DispatchKeyEventPostIME(native_event);
   } else {
     const uint32 state = EventFlagsFromXFlags(native_event->xkey.state);
     // Send a RawKeyDown event first,
-    delegate_->DispatchKeyEventPostIME(native_event);
+    handled = delegate_->DispatchKeyEventPostIME(native_event);
     if (text_input_client_) {
       // then send a Char event via ui::TextInputClient.
       const KeyboardCode key_code = ui::KeyboardCodeFromNative(native_event);
@@ -90,8 +92,13 @@ void FakeInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
   }
 #else
   // TODO(yusukes): Support other platforms. Call InsertChar() when necessary.
-  delegate_->DispatchKeyEventPostIME(native_event);
+  handled = delegate_->DispatchKeyEventPostIME(native_event);
 #endif
+  return handled;
+}
+
+bool FakeInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+  return false;
 }
 
 void FakeInputMethod::Init(bool focused) {}

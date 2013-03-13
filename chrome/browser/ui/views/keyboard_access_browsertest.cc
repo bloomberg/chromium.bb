@@ -8,6 +8,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -112,7 +113,11 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   //
   // If alternate_key_sequence is true, use "Alt" instead of "F10" to
   // open the menu bar, and "Down" instead of "Enter" to open a menu.
-  void TestMenuKeyboardAccess(bool alternate_key_sequence, bool shift);
+  // If focus_omnibox is true then the test on startup sets focus to the
+  // omnibox.
+  void TestMenuKeyboardAccess(bool alternate_key_sequence,
+                              bool shift,
+                              bool focus_omnibox);
 
   int GetFocusedViewID() {
     gfx::NativeWindow window = browser()->window()->GetNativeWindow();
@@ -132,11 +137,18 @@ class KeyboardAccessTest : public InProcessBrowserTest {
     waiter.Wait();
   }
 
+#if defined(OS_WIN)
+  // Opens the system menu on Windows with the Alt Space combination and selects
+  // the New Tab option from the menu.
+  void TestSystemMenuWithKeyboard();
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardAccessTest);
 };
 
 void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
-                                                bool shift) {
+                                                bool shift,
+                                                bool focus_omnibox) {
   // Navigate to a page in the first tab, which makes sure that focus is
   // set to the browser window.
   ui_test_utils::NavigateToURL(browser(), GURL("about:"));
@@ -158,6 +170,9 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
       browser()->window());
   ToolbarView* toolbar_view = browser_view->GetToolbarView();
   SendKeysMenuListener menu_listener(toolbar_view, browser());
+
+  if (focus_omnibox)
+    browser()->window()->GetLocationBar()->FocusLocation(false);
 
 #if defined(OS_CHROMEOS)
   // Chrome OS doesn't have a way to just focus the wrench menu, so we use Alt+F
@@ -198,6 +213,62 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
 }
 
+#if defined(OS_WIN)
+
+// This CBT hook is set for the duration of the TestSystemMenuWithKeyboard test
+LRESULT CALLBACK SystemMenuTestCBTHook(int n_code,
+                                       WPARAM w_param,
+                                       LPARAM l_param) {
+  // Look for the system menu window getting created or becoming visible and
+  // then select the New Tab option from the menu.
+  if (n_code == HCBT_ACTIVATE || n_code == HCBT_CREATEWND) {
+    wchar_t class_name[MAX_PATH] = {0};
+    GetClassName(reinterpret_cast<HWND>(w_param),
+                 class_name,
+                 arraysize(class_name));
+    if (LowerCaseEqualsASCII(class_name, "#32768")) {
+      // Select the New Tab option and then send the enter key to execute it.
+      ::PostMessage(reinterpret_cast<HWND>(w_param), WM_CHAR, 'T', 0);
+      ::PostMessage(reinterpret_cast<HWND>(w_param), WM_KEYDOWN, VK_RETURN, 0);
+      ::PostMessage(reinterpret_cast<HWND>(w_param), WM_KEYUP, VK_RETURN, 0);
+    }
+  }
+  return ::CallNextHookEx(0, n_code, w_param, l_param);
+}
+
+void KeyboardAccessTest::TestSystemMenuWithKeyboard() {
+  // Navigate to a page in the first tab, which makes sure that focus is
+  // set to the browser window.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:"));
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  content::WindowedNotificationObserver new_tab_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::Source<content::WebContentsDelegate>(browser()));
+  // Sending the Alt space keys to the browser will bring up the system menu
+  // which runs a model loop. We set a CBT hook to look for the menu and send
+  // keystrokes to it.
+  HHOOK cbt_hook = ::SetWindowsHookEx(WH_CBT,
+                                      SystemMenuTestCBTHook,
+                                      NULL,
+                                      ::GetCurrentThreadId());
+  ASSERT_TRUE(cbt_hook != NULL);
+
+  bool ret = ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_SPACE, false, false, true, false);
+  EXPECT_TRUE(ret);
+
+  if (ret) {
+    // Wait for the new tab to appear.
+    new_tab_observer.Wait();
+    // Make sure that the new tab index is 1.
+    ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  }
+  ::UnhookWindowsHookEx(cbt_hook);
+}
+#endif
+
 // http://crbug.com/62310.
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
@@ -206,7 +277,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
 #endif
 
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
-  TestMenuKeyboardAccess(false, false);
+  TestMenuKeyboardAccess(false, false, false);
 }
 
 // http://crbug.com/62310.
@@ -217,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestAltMenuKeyboardAccess) {
-  TestMenuKeyboardAccess(true, false);
+  TestMenuKeyboardAccess(true, false, false);
 }
 
 // If this flakes, use http://crbug.com/62311.
@@ -228,8 +299,19 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestAltMenuKeyboardAccess) {
 #endif
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
                        MAYBE_TestShiftAltMenuKeyboardAccess) {
-  TestMenuKeyboardAccess(true, true);
+  TestMenuKeyboardAccess(true, true, false);
 }
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
+                       TestAltMenuKeyboardAccessFocusOmnibox) {
+  TestMenuKeyboardAccess(true, false, true);
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestSystemMenuWithKeyboard) {
+  TestSystemMenuWithKeyboard();
+}
+#endif
 
 // Test that JavaScript cannot intercept reserved keyboard accelerators like
 // ctrl-t to open a new tab or ctrl-f4 to close a tab.

@@ -42,9 +42,9 @@ class UI_EXPORT InputMethodIBus
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void Init(bool focused) OVERRIDE;
-  virtual void DispatchKeyEvent(
+  virtual bool DispatchKeyEvent(
       const base::NativeEvent& native_key_event) OVERRIDE;
-  virtual void DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;

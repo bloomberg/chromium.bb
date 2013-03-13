@@ -77,11 +77,13 @@ class InputMethod {
   // dispatched back to the caller via
   // ui::InputMethodDelegate::DispatchKeyEventPostIME(), once it's processed by
   // the input method. It should only be called by a message dispatcher.
-  virtual void DispatchKeyEvent(const base::NativeEvent& native_key_event) = 0;
+  // Returns true if the event was processed.
+  virtual bool DispatchKeyEvent(const base::NativeEvent& native_key_event) = 0;
 
   // TODO(yusukes): Add DispatchFabricatedKeyEvent to support virtual keyboards.
   // TODO(yusukes): both win and ibus override to do nothing. Is this needed?
-  virtual void DispatchFabricatedKeyEvent(const ui::KeyEvent& event) = 0;
+  // Returns true if the event was processed.
+  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) = 0;
 
   // Called by the focused client whenever its text input type is changed.
   // Before calling this method, the focused client must confirm or clear

@@ -50,33 +50,37 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     target_root_window_ = target->GetRootWindow();
     DCHECK(target_root_window_);
+    bool handled = false;
     if (event->HasNativeEvent())
-      input_method_->DispatchKeyEvent(event->native_event());
+      handled = input_method_->DispatchKeyEvent(event->native_event());
     else
-      input_method_->DispatchFabricatedKeyEvent(*event);
-    event->StopPropagation();
+      handled = input_method_->DispatchFabricatedKeyEvent(*event);
+    if (handled)
+      event->StopPropagation();
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodEventFilter, ui::InputMethodDelegate implementation:
 
-void InputMethodEventFilter::DispatchKeyEventPostIME(
+bool InputMethodEventFilter::DispatchKeyEventPostIME(
     const base::NativeEvent& event) {
 #if defined(OS_WIN)
   DCHECK(event.message != WM_CHAR);
 #endif
   ui::TranslatedKeyEvent aura_event(event, false /* is_char */);
-  target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(&aura_event);
+  return target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(
+      &aura_event);
 }
 
-void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
+bool InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
     ui::EventType type,
     ui::KeyboardCode key_code,
     int flags) {
   ui::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
                                     flags);
-  target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(&aura_event);
+  return target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(
+      &aura_event);
 }
 
 }  // namespace corewm

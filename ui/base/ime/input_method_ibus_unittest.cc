@@ -359,16 +359,18 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   }
 
   // ui::internal::InputMethodDelegate overrides:
-  virtual void DispatchKeyEventPostIME(
+  virtual bool DispatchKeyEventPostIME(
       const base::NativeEvent& native_key_event) OVERRIDE {
     dispatched_native_event_ = native_key_event;
+    return false;
   }
-  virtual void DispatchFabricatedKeyEventPostIME(ui::EventType type,
+  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
                                                  ui::KeyboardCode key_code,
                                                  int flags) OVERRIDE {
     dispatched_fabricated_event_type_ = type;
     dispatched_fabricated_event_key_code_ = key_code;
     dispatched_fabricated_event_flags_ = flags;
+    return false;
   }
 
   // ui::TextInputClient overrides:

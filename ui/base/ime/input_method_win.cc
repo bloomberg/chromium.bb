@@ -53,13 +53,13 @@ void InputMethodWin::OnBlur() {
   InputMethodBase::OnBlur();
 }
 
-void InputMethodWin::DispatchKeyEvent(
+bool InputMethodWin::DispatchKeyEvent(
     const base::NativeEvent& native_key_event) {
   if (native_key_event.message == WM_CHAR) {
     BOOL handled;
     OnChar(native_key_event.message, native_key_event.wParam,
            native_key_event.lParam, &handled);
-    return;  // Don't send WM_CHAR for post event processing.
+    return !!handled;  // Don't send WM_CHAR for post event processing.
   }
   // Handles ctrl-shift key to change text direction and layout alignment.
   if (ui::ImeInput::IsRTLKeyboardLayoutInstalled() && !IsTextInputTypeNone()) {
@@ -84,10 +84,10 @@ void InputMethodWin::DispatchKeyEvent(
     }
   }
 
-  DispatchKeyEventPostIME(native_key_event);
+  return DispatchKeyEventPostIME(native_key_event);
 }
 
-void InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
   // TODO(ananta)
   // Support IMEs and RTL layout in Windows 8 metro Ash. The code below won't
   // work with IMEs.
@@ -96,12 +96,12 @@ void InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
     if (GetTextInputClient()) {
       GetTextInputClient()->InsertChar(event.key_code(),
                                        ui::GetModifiersFromKeyState());
-      return;
+      return true;
     }
   }
-  DispatchFabricatedKeyEventPostIME(event.type(),
-                                    event.key_code(),
-                                    event.flags());
+  return DispatchFabricatedKeyEventPostIME(event.type(),
+                                           event.key_code(),
+                                           event.flags());
 }
 
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
@@ -330,6 +330,9 @@ LRESULT InputMethodWin::OnChar(UINT message,
 
   GetTextInputClient()->InsertChar(static_cast<char16>(wparam),
                                    ui::GetModifiersFromKeyState());
+  // Allow Alt + Space to go through DefWindowProc which brings up the sysmenu.
+  if (message == WM_SYSCHAR && wparam == VK_SPACE)
+    *handled = FALSE;
   return 0;
 }
 

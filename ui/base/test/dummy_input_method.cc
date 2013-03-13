@@ -32,10 +32,12 @@ TextInputClient* DummyInputMethod::GetTextInputClient() const {
   return NULL;
 }
 
-void DummyInputMethod::DispatchKeyEvent(const base::NativeEvent& event) {
+bool DummyInputMethod::DispatchKeyEvent(const base::NativeEvent& event) {
+  return false;
 }
 
-void DummyInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+bool DummyInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+  return false;
 }
 
 void DummyInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {

@@ -78,17 +78,16 @@ void InputMethodBase::OnInputMethodChanged() const {
     client->OnInputMethodChanged();
 }
 
-void InputMethodBase::DispatchKeyEventPostIME(
+bool InputMethodBase::DispatchKeyEventPostIME(
     const base::NativeEvent& native_event) const {
-  if (delegate_)
-    delegate_->DispatchKeyEventPostIME(native_event);
+  return delegate_ ? delegate_->DispatchKeyEventPostIME(native_event) : false;
 }
 
-void InputMethodBase::DispatchFabricatedKeyEventPostIME(EventType type,
+bool InputMethodBase::DispatchFabricatedKeyEventPostIME(EventType type,
                                                         KeyboardCode key_code,
                                                         int flags) const {
-  if (delegate_)
-    delegate_->DispatchFabricatedKeyEventPostIME(type, key_code, flags);
+  return delegate_ ? delegate_->DispatchFabricatedKeyEventPostIME
+      (type, key_code, flags) : false;
 }
 
 }  // namespace ui

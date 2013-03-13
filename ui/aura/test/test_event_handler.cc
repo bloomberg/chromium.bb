@@ -4,6 +4,8 @@
 
 #include "ui/aura/test/test_event_handler.h"
 
+#include "ui/base/events/event.h"
+
 namespace aura {
 namespace test {
 
@@ -27,6 +29,7 @@ void TestEventHandler::Reset() {
 
 void TestEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   num_key_events_++;
+  event->SetHandled();
 }
 
 void TestEventHandler::OnMouseEvent(ui::MouseEvent* event) {

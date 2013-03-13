@@ -42,8 +42,8 @@ class VIEWS_EXPORT InputMethodEventFilter
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
 
   // Overridden from ui::internal::InputMethodDelegate.
-  virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;
-  virtual void DispatchFabricatedKeyEventPostIME(ui::EventType type,
+  virtual bool DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;
+  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
                                                  ui::KeyboardCode key_code,
                                                  int flags) OVERRIDE;
 
