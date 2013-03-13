@@ -113,7 +113,7 @@ void FakeDriveFileSyncClient::GetResourceEntry(
 void FakeDriveFileSyncClient::ListFiles(
     const std::string& directory_resource_id,
     const ResourceListCallback& callback) {
-  NOTREACHED();
+  ListChanges(0, callback);
 }
 
 void FakeDriveFileSyncClient::ListChanges(
