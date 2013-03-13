@@ -222,7 +222,7 @@ void AutofillPopupControllerImpl::MouseHovered(int x, int y) {
 
 void AutofillPopupControllerImpl::MouseClicked(int x, int y) {
   MouseHovered(x, y);
-  RemoveSelectedLine();
+  AcceptSelectedLine();
 }
 
 void AutofillPopupControllerImpl::MouseExitedPopup() {
