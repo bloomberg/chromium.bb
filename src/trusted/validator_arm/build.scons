@@ -301,7 +301,8 @@ validator_tests_exe = gtest_env.ComponentProgram(
 
 validator_small_test_node = gtest_env.CommandTest(
     'validator_small_tests.out',
-    command=[validator_tests_exe])
+    command=[validator_tests_exe],
+    scale_timeout=500)
 
 gtest_env.AddNodeToTestSuite(validator_small_test_node,
     ['small_tests', 'validator_tests'],

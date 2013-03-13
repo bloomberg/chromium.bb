@@ -368,28 +368,60 @@ TEST_F(ValidatorTests, SafeConditionalStores) {
 
     // Currently we only support *unconditional* conditional stores.
     // Meaning the guard is unconditional and the store is if-equal.
-    arm_inst guard_predicate = 0xE0000000, store_predicate = 0x00000000;
-    for (unsigned m = 0; m < NACL_ARRAY_SIZE(guards); m++) {
-      for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
-        ostringstream message;
-        message << guards[m].about
-                << ", "
-                << examples_of_safe_stores[s].about
-                << " (predicate #" << guard_predicate << ")";
-        arm_inst program[] = {
-          guards[m].inst | guard_predicate,
-          examples_of_safe_stores[s].inst | store_predicate,
-        };
-        if (allow_cond) {
-          validation_should_pass2(program,
-                                  2,
-                                  kDefaultBaseAddr,
-                                  message.str());
-        } else {
-          validation_should_fail(program,
-                                 2,
-                                 kDefaultBaseAddr,
-                                 message.str());
+    //   e.g.: tst.al rbase, #mask
+    //         str.eq rval, [rbase]
+    for (Instruction::Condition guard_cond = Instruction::EQ;
+         guard_cond <= Instruction::AL;
+         guard_cond = Instruction::Next(guard_cond)) {
+      for (Instruction::Condition store_cond = Instruction::EQ;
+           store_cond <= Instruction::AL;
+           store_cond = Instruction::Next(store_cond)) {
+        for (size_t guard = 0;
+             guard < NACL_ARRAY_SIZE(guards);
+             guard++) {
+          arm_inst guard_inst = guards[guard].inst;
+          for (int use_same_base = 0; use_same_base <= 1; ++use_same_base) {
+            // Alternate between using the same rbase for tst and str.
+            // TODO(jfb) This is hackish, and should be better handled
+            //           throughout these tests. AnnotatedInstruction is
+            //           probably the right place for this.
+            unsigned base = use_same_base ? 1 : 2;  // Rn is now r1 or r2.
+            guard_inst &= 0xFFF0FFFF;  // Rn is at (19:16).
+            guard_inst |= base << 16;
+            for (size_t store = 0;
+                 store < NACL_ARRAY_SIZE(examples_of_safe_stores);
+                 store++) {
+              arm_inst store_inst = examples_of_safe_stores[store].inst;
+              ostringstream message;
+              message << guards[guard].about << " with condition "
+                      << Instruction::ToString(guard_cond)
+                      << (use_same_base ?
+                          " and same base registers," :
+                          " and different base registers,")
+                      << " followed by "
+                      << examples_of_safe_stores[store].about
+                      << " with condition "
+                      << Instruction::ToString(store_cond);
+              arm_inst program[] = {
+                ValidatorTests::ChangeCond(guard_inst, guard_cond),
+                ValidatorTests::ChangeCond(store_inst, store_cond),
+              };
+              if (allow_cond &&
+                  use_same_base &&
+                  (guard_cond == Instruction::AL) &&
+                  (store_cond == Instruction::EQ)) {
+                validation_should_pass2(program,
+                                        2,
+                                        kDefaultBaseAddr,
+                                        message.str());
+              } else {
+                validation_should_fail(program,
+                                       2,
+                                       kDefaultBaseAddr,
+                                       message.str());
+              }
+            }
+          }
         }
       }
     }
