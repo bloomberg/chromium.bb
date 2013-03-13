@@ -397,8 +397,14 @@ void DriveResourceMetadata::RefreshEntry(
       return;
     }
 
-    // Remove from the old parent and add to the new parent.
+    // Remove from the old parent, update the entry, and add it to the new
+    // parent. The order matters here. FromProto() could remove suffix like
+    // "(2)" from entries with duplicate names. If FromProto() is first
+    // called, RemoveChild() won't work correctly because of the missing
+    // suffix.
     old_parent->RemoveChild(entry);
+    // Note that it's safe to update the directory entry with
+    // DriveEntry::FromProto() as it won't clear children.
     entry->FromProto(entry_proto);
     new_parent->AddEntry(entry);  // Transfers ownership.
   } else {
@@ -441,14 +447,39 @@ void DriveResourceMetadata::RefreshDirectory(
   }
 
   directory->set_changestamp(directory_fetch_info.changestamp());
-  directory->RemoveChildFiles();
-  // Add files from entry_proto_map.
+
+  // First, go through the entry map. We'll handle existing entries and new
+  // entries in the loop. We'll process deleted entries afterwards.
   for (DriveEntryProtoMap::const_iterator it = entry_proto_map.begin();
-      it != entry_proto_map.end(); ++it) {
+       it != entry_proto_map.end(); ++it) {
     const DriveEntryProto& entry_proto = it->second;
-    // Only refresh files.
-    if (!entry_proto.file_info().is_directory())
+    DriveEntry* existing_entry =
+        GetEntryByResourceId(entry_proto.resource_id());
+    if (existing_entry) {
+      DriveDirectory* old_parent =
+          GetDirectory(existing_entry->parent_resource_id());
+      DCHECK(old_parent);
+      // See the comment in RefreshEntry() for why the existing entry is
+      // updated in this way.
+      old_parent->RemoveChild(existing_entry);
+      existing_entry->FromProto(entry_proto);
+      directory->AddEntry(existing_entry);
+    } else {  // New entry.
+      // A new directory will have changestamp of zero, so the directory will
+      // be "fast-fetched". See crbug.com/178348 for details.
       directory->AddEntry(CreateDriveEntryFromProto(entry_proto).release());
+    }
+  }
+
+  // Go through the existing entries and remove deleted entries.
+  scoped_ptr<DriveEntryProtoVector> entries =
+      directory->AsDriveDirectory()->ToProtoVector();
+  for (size_t i = 0; i < entries->size(); ++i) {
+    const DriveEntryProto& entry_proto = entries->at(i);
+    if (entry_proto_map.count(entry_proto.resource_id()) == 0) {
+      DriveEntry* entry = GetEntryByResourceId(entry_proto.resource_id());
+      directory->RemoveEntry(entry);
+    }
   }
 
   base::MessageLoopProxy::current()->PostTask(
