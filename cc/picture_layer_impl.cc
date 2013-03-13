@@ -113,8 +113,10 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
          ++iter) {
       SkColor color;
       float width;
-      if (*iter && iter->IsReadyToDraw()) {
-        if (iter->is_solid_color() || iter->is_transparent()) {
+      if (*iter && iter->drawing_info().IsReadyToDraw()) {
+        ManagedTileState::DrawingInfo::Mode mode = iter->drawing_info().mode();
+        if (mode == ManagedTileState::DrawingInfo::SOLID_COLOR_MODE ||
+            mode == ManagedTileState::DrawingInfo::TRANSPARENT_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
           width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
         } else if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
@@ -157,21 +159,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
 
     gfx::Rect geometry_rect = iter.geometry_rect();
     ResourceProvider::ResourceId resource = 0;
-    if (*iter) {
-      if (iter->is_solid_color()) {
-        scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-        quad->SetNew(sharedQuadState, geometry_rect, iter->solid_color());
-        quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
-
-        if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())
-          seen_tilings.push_back(iter.CurrentTiling());
-        continue;
-      } else if (iter->is_transparent()) {
-        continue;
-      }
-      resource = iter->GetResourceId();
-    } 
-    if (!resource) {
+    if (!*iter || !iter->drawing_info().IsReadyToDraw()) {
       if (DrawCheckerboardForMissingTiles()) {
         // TODO(enne): Figure out how to show debug "invalidated checker" color
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
@@ -190,22 +178,42 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
       continue;
     }
 
-    if (iter->contents_scale() != ideal_contents_scale_)
-      appendQuadsData->hadIncompleteTile = true;
+    const ManagedTileState::DrawingInfo& drawing_info = iter->drawing_info();
+    switch (drawing_info.mode()) {
+      case ManagedTileState::DrawingInfo::TEXTURE_MODE: {
+        if (iter->contents_scale() != ideal_contents_scale_)
+          appendQuadsData->hadIncompleteTile = true;
 
-    gfx::RectF texture_rect = iter.texture_rect();
-    gfx::Rect opaque_rect = iter->opaque_rect();
-    opaque_rect.Intersect(content_rect);
+        gfx::RectF texture_rect = iter.texture_rect();
+        gfx::Rect opaque_rect = iter->opaque_rect();
+        opaque_rect.Intersect(content_rect);
 
-    scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
-    quad->SetNew(sharedQuadState,
-                 geometry_rect,
-                 opaque_rect,
-                 resource,
-                 texture_rect,
-                 iter.texture_size(),
-                 iter->contents_swizzled());
-    quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
+        quad->SetNew(sharedQuadState,
+                     geometry_rect,
+                     opaque_rect,
+                     drawing_info.get_resource_id(),
+                     texture_rect,
+                     iter.texture_size(),
+                     drawing_info.contents_swizzled());
+        quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        break;
+      }
+      case ManagedTileState::DrawingInfo::SOLID_COLOR_MODE: {
+        scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+        quad->SetNew(sharedQuadState,
+                     geometry_rect,
+                     drawing_info.get_solid_color());
+        quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        break;
+      }
+      case ManagedTileState::DrawingInfo::TRANSPARENT_MODE:
+        break;
+      case ManagedTileState::DrawingInfo::PICTURE_PILE_MODE:
+        // TODO: crbug.com/173011 would fill this part in.
+      default:
+        NOTREACHED();
+    }
 
     if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());
@@ -472,12 +480,15 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
        iter;
        ++iter) {
     // Mask resource not ready yet.
-    if (!*iter || !iter->GetResourceId())
+    if (!*iter ||
+        iter->drawing_info().mode() !=
+            ManagedTileState::DrawingInfo::TEXTURE_MODE ||
+        !iter->drawing_info().IsReadyToDraw())
       return 0;
     // Masks only supported if they fit on exactly one tile.
     if (iter.geometry_rect() != content_rect)
       return 0;
-    return iter->GetResourceId();
+    return iter->drawing_info().get_resource_id();
   }
   return 0;
 }
@@ -521,7 +532,7 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
          iter;
          ++iter) {
       // A null tile (i.e. no recording) is considered "ready".
-      if (!*iter || iter->IsReadyToDraw())
+      if (!*iter || iter->drawing_info().IsReadyToDraw())
         missing_region.Subtract(iter.geometry_rect());
     }
   }

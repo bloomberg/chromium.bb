@@ -387,7 +387,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     TilePriority priority;
     DCHECK(!priority.is_live);
     Tile* tile = find->second.get();
-    tile->set_priority(tree, priority);
+    tile->SetPriority(tree, priority);
   }
   last_prioritized_rect_ = prioritized_rect;
 
@@ -436,7 +436,7 @@ void PictureLayerTiling::UpdateTilePriorities(
           distance_to_visible_in_pixels);
       if (store_screen_space_quads_on_tiles)
         priority.set_current_screen_quad(gfx::QuadF(current_screen_rect));
-      tile->set_priority(tree, priority);
+      tile->SetPriority(tree, priority);
     }
   } else {
     for (TilingData::Iterator iter(&tiling_data_, prioritized_rect);
@@ -479,7 +479,7 @@ void PictureLayerTiling::UpdateTilePriorities(
                               gfx::QuadF(current_layer_content_rect),
                               clipped));
       }
-      tile->set_priority(tree, priority);
+      tile->SetPriority(tree, priority);
     }
   }
 
@@ -489,8 +489,8 @@ void PictureLayerTiling::UpdateTilePriorities(
 
 void PictureLayerTiling::DidBecomeActive() {
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    it->second->set_priority(ACTIVE_TREE, it->second->priority(PENDING_TREE));
-    it->second->set_priority(PENDING_TREE, TilePriority());
+    it->second->SetPriority(ACTIVE_TREE, it->second->priority(PENDING_TREE));
+    it->second->SetPriority(PENDING_TREE, TilePriority());
 
     // Tile holds a ref onto a picture pile. If the tile never gets invalidated
     // and recreated, then that picture pile ref could exist indefinitely.  To

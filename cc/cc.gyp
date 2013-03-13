@@ -128,6 +128,8 @@
       'layer_updater.h',
       'managed_memory_policy.cc',
       'managed_memory_policy.h',
+      'managed_tile_state.cc',
+      'managed_tile_state.h',
       'math_util.cc',
       'math_util.h',
       'memory_history.cc',

@@ -66,37 +66,6 @@ enum TileRasterState {
 scoped_ptr<base::Value> TileRasterStateAsValue(
     TileRasterState bin);
 
-// This is state that is specific to a tile that is
-// managed by the TileManager.
-class CC_EXPORT ManagedTileState {
- public:
-  ManagedTileState();
-  ~ManagedTileState();
-  scoped_ptr<base::Value> AsValue() const;
-
-  // Persisted state: valid all the time.
-  bool can_use_gpu_memory;
-  bool can_be_freed;
-  scoped_ptr<ResourcePool::Resource> resource;
-  bool resource_is_being_initialized;
-  bool contents_swizzled;
-  bool need_to_gather_pixel_refs;
-  std::list<skia::LazyPixelRef*> pending_pixel_refs;
-  TileRasterState raster_state;
-
-  // Ephemeral state, valid only during Manage.
-  TileManagerBin bin[NUM_BIN_PRIORITIES];
-  TileManagerBin tree_bin[NUM_TREES];
-  // The bin that the tile would have if the GPU memory manager had a maximally permissive policy,
-  // send to the GPU memory manager to determine policy.
-  TileManagerBin gpu_memmgr_stats_bin;
-  TileResolution resolution;
-  float time_to_needed_in_seconds;
-  float distance_to_visible_in_pixels;
-  PicturePileImpl::Analysis picture_pile_analysis;
-  bool picture_pile_analyzed;
-};
-
 // This class manages tiles, deciding which should get rasterized and which
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are

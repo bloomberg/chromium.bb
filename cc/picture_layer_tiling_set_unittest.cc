@@ -76,9 +76,9 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
       PictureLayerTiling* tiling = set.AddTiling(scale);
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       for (size_t i = 0; i < tiles.size(); ++i) {
-        EXPECT_FALSE(tiles[i]->ManagedStateForTesting().resource);
+        EXPECT_FALSE(tiles[i]->drawing_info().GetResourceForTesting());
 
-        tiles[i]->ManagedStateForTesting().resource =
+        tiles[i]->drawing_info().GetResourceForTesting() =
             make_scoped_ptr(new ResourcePool::Resource(
                 resource_provider.get(),
                 gfx::Size(1, 1),

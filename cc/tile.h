@@ -9,9 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/managed_tile_state.h"
 #include "cc/picture_pile_impl.h"
-#include "cc/resource_provider.h"
-#include "cc/tile_manager.h"
 #include "cc/tile_priority.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -19,6 +18,7 @@
 namespace cc {
 
 class Tile;
+class TileManager;
 
 class CC_EXPORT Tile : public base::RefCounted<Tile> {
  public:
@@ -44,41 +44,18 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
                         priority_[PENDING_TREE]);
   }
 
-  void set_priority(WhichTree tree, const TilePriority& priority) {
-    tile_manager_->WillModifyTilePriority(this, tree, priority);
-    priority_[tree] = priority;
-  }
+  void SetPriority(WhichTree tree, const TilePriority& priority);
 
   scoped_ptr<base::Value> AsValue() const;
 
-  // Returns 0 if not drawable.
-  ResourceProvider::ResourceId GetResourceId() const {
-    if (!managed_state_.resource)
-      return 0;
-    if (managed_state_.resource_is_being_initialized)
-      return 0;
-
-    return managed_state_.resource->id();
+  const ManagedTileState::DrawingInfo& drawing_info() const {
+    return managed_state_.drawing_info;
   }
-
-  bool IsReadyToDraw() const;
-
-  bool is_solid_color() const {
-    return managed_state_.picture_pile_analysis.is_solid_color;
-  }
-
-  bool is_transparent() const {
-    return managed_state_.picture_pile_analysis.is_transparent;
-  }
-
-  SkColor solid_color() const {
-    DCHECK(managed_state_.picture_pile_analysis.is_solid_color);
-    return managed_state_.picture_pile_analysis.solid_color;
+  ManagedTileState::DrawingInfo& drawing_info() {
+    return managed_state_.drawing_info;
   }
 
   const gfx::Rect& opaque_rect() const { return opaque_rect_; }
-
-  bool contents_swizzled() const { return managed_state_.contents_swizzled; }
 
   float contents_scale() const { return contents_scale_; }
   gfx::Rect content_rect() const { return content_rect_; }
@@ -89,8 +66,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
    DCHECK(pile->CanRaster(contents_scale_, content_rect_));
    picture_pile_ = pile;
   }
-
-  ManagedTileState& ManagedStateForTesting() { return managed_state_; }
 
  private:
   // Methods called by by tile manager.

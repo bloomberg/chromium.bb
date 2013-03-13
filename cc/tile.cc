@@ -45,10 +45,9 @@ scoped_ptr<base::Value> Tile::AsValue() const {
   return res.PassAs<base::Value>();
 }
 
-bool Tile::IsReadyToDraw() const {
-  return GetResourceId() != 0 ||
-         is_solid_color() ||
-         is_transparent();
+void Tile::SetPriority(WhichTree tree, const TilePriority& priority) {
+  tile_manager_->WillModifyTilePriority(this, tree, priority);
+  priority_[tree] = priority;
 }
 
 }  // namespace cc
