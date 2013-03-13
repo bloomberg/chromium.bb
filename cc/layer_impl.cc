@@ -333,8 +333,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
-  if (!OpacityIsAnimating())
-    layer->SetOpacity(opacity_);
+  layer->SetOpacity(opacity_);
   layer->SetPosition(position_);
   layer->SetIsContainerForFixedPositionLayers(
       is_container_for_fixed_position_layers_);
@@ -342,8 +341,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetPreserves3d(preserves_3d());
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetSublayerTransform(sublayer_transform_);
-  if (!TransformIsAnimating())
-    layer->SetTransform(transform_);
+  layer->SetTransform(transform_);
 
   layer->SetScrollable(scrollable_);
   layer->SetScrollOffset(scroll_offset_);
@@ -717,6 +715,12 @@ bool LayerImpl::OpacityIsAnimating() const {
   return layer_animation_controller_->IsAnimatingProperty(Animation::Opacity);
 }
 
+bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
+  Animation* opacity_animation =
+      layer_animation_controller_->GetAnimation(Animation::Opacity);
+  return opacity_animation && opacity_animation->is_impl_only();
+}
+
 void LayerImpl::SetPosition(gfx::PointF position) {
   if (position_ == position)
     return;
@@ -753,6 +757,12 @@ void LayerImpl::SetTransform(const gfx::Transform& transform) {
 
 bool LayerImpl::TransformIsAnimating() const {
   return layer_animation_controller_->IsAnimatingProperty(Animation::Transform);
+}
+
+bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
+  Animation* transform_animation =
+      layer_animation_controller_->GetAnimation(Animation::Transform);
+  return transform_animation && transform_animation->is_impl_only();
 }
 
 void LayerImpl::SetContentBounds(gfx::Size content_bounds) {

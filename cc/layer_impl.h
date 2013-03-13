@@ -150,6 +150,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
   bool OpacityIsAnimating() const;
+  bool OpacityIsAnimatingOnImplOnly() const;
 
   void SetPosition(gfx::PointF position);
   gfx::PointF position() const { return position_; }
@@ -327,6 +328,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
+  bool TransformIsAnimatingOnImplOnly() const;
 
   void set_update_rect(const gfx::RectF& update_rect) {
     update_rect_ = update_rect;

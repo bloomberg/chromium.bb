@@ -10,6 +10,7 @@
 #include "cc/layer_tree_host.h"
 #include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -642,6 +643,62 @@ TEST_F(LayerTest, verifyPushPropertiesCausesSurfacePropertyChangedForOpacity)
 
     EXPECT_TRUE(implLayer->LayerSurfacePropertyChanged());
 }
+
+TEST_F(LayerTest, verifyPushPropertiesDoesNotCauseSurfacePropertyChangedDuringImplOnlyTransformAnimation)
+{
+    scoped_refptr<Layer> testLayer = Layer::Create();
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
+
+    scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
+    implLayer->layer_animation_controller()->SetAnimationRegistrar(registrar.get());
+
+    addAnimatedTransformToController(*implLayer->layer_animation_controller(), 1.0, 0, 100);
+
+    gfx::Transform transform;
+    transform.Rotate(45.0);
+    testLayer->SetTransform(transform);
+
+    EXPECT_FALSE(implLayer->LayerSurfacePropertyChanged());
+    testLayer->PushPropertiesTo(implLayer.get());
+    EXPECT_TRUE(implLayer->LayerSurfacePropertyChanged());
+
+    implLayer->ResetAllChangeTrackingForSubtree();
+    addAnimatedTransformToController(*implLayer->layer_animation_controller(), 1.0, 0, 100);
+    implLayer->layer_animation_controller()->GetAnimation(Animation::Transform)->set_is_impl_only(true);
+    transform.Rotate(45.0);
+    testLayer->SetTransform(transform);
+
+    EXPECT_FALSE(implLayer->LayerSurfacePropertyChanged());
+    testLayer->PushPropertiesTo(implLayer.get());
+    EXPECT_FALSE(implLayer->LayerSurfacePropertyChanged());
+}
+
+TEST_F(LayerTest, verifyPushPropertiesDoesNotCauseSurfacePropertyChangedDuringImplOnlyOpacityAnimation)
+{
+    scoped_refptr<Layer> testLayer = Layer::Create();
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
+
+    scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
+    implLayer->layer_animation_controller()->SetAnimationRegistrar(registrar.get());
+
+    addOpacityTransitionToController(*implLayer->layer_animation_controller(), 1.0, 0.3f, 0.7f, false);
+
+    testLayer->SetOpacity(0.5f);
+
+    EXPECT_FALSE(implLayer->LayerSurfacePropertyChanged());
+    testLayer->PushPropertiesTo(implLayer.get());
+    EXPECT_TRUE(implLayer->LayerSurfacePropertyChanged());
+
+    implLayer->ResetAllChangeTrackingForSubtree();
+    addOpacityTransitionToController(*implLayer->layer_animation_controller(), 1.0, 0.3f, 0.7f, false);
+    implLayer->layer_animation_controller()->GetAnimation(Animation::Opacity)->set_is_impl_only(true);
+    testLayer->SetOpacity(0.75f);
+
+    EXPECT_FALSE(implLayer->LayerSurfacePropertyChanged());
+    testLayer->PushPropertiesTo(implLayer.get());
+    EXPECT_FALSE(implLayer->LayerSurfacePropertyChanged());
+}
+
 
 TEST_F(LayerTest, maskAndReplicaHasParent)
 {
