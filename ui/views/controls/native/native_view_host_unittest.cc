@@ -82,7 +82,6 @@ TEST_F(NativeViewHostTest, NativeViewHierarchyChanged) {
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   toplevel->Init(toplevel_params);
-  toplevel->SetContentsView(new View);
 
   // And the child widget.
   NativeViewHierarchyChangedTestView* test_view =

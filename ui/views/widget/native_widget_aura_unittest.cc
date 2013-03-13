@@ -247,7 +247,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   view->SetLayoutManager(new FillLayout);
   view->AddChildView(child);
   scoped_ptr<TestWidget> widget(new TestWidget());
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = root_window();
   params.bounds = gfx::Rect(0, 0, 100, 200);
@@ -283,7 +283,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
 TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
   GestureTrackingView* view = new GestureTrackingView();
   scoped_ptr<TestWidget> widget(new TestWidget());
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = root_window();
   params.bounds = gfx::Rect(0, 0, 100, 200);

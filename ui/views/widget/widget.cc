@@ -452,8 +452,16 @@ void Widget::SetContentsView(View* view) {
   if (view == GetContentsView())
     return;
   root_view_->SetContentsView(view);
-  if (non_client_view_ != view)
+  if (non_client_view_ != view) {
+    // |non_client_view_| can only be non-NULL here if RequiresNonClientView()
+    // was true when the widget was initialized. Creating widgets with non
+    // client views and then setting the contents view can cause subtle
+    // problems on Windows, where the native widget thinks there is still a
+    // |non_client_view_|. If you get this error, either use a different type
+    // when initializing the widget, or don't call SetContentsView().
+    DCHECK(!non_client_view_);
     non_client_view_ = NULL;
+  }
 }
 
 View* Widget::GetContentsView() {

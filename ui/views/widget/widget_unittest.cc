@@ -264,6 +264,15 @@ class WidgetTest : public ViewsTestBase {
     return toplevel;
   }
 
+  Widget* CreateTopLevelFramelessPlatformWidget() {
+    Widget* toplevel = new Widget;
+    Widget::InitParams toplevel_params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    toplevel_params.native_widget = CreatePlatformNativeWidget(toplevel);
+    toplevel->Init(toplevel_params);
+    return toplevel;
+  }
+
   Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view) {
     Widget* child = new Widget;
     Widget::InitParams child_params =
@@ -295,7 +304,6 @@ class WidgetTest : public ViewsTestBase {
     Widget* toplevel = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     toplevel->Init(params);
-    toplevel->SetContentsView(new View);
     return toplevel;
   }
 
@@ -992,12 +1000,10 @@ TEST_F(WidgetObserverTest, DISABLED_VisibilityChange) {
 
 TEST_F(WidgetObserverTest, DestroyBubble) {
   Widget* anchor = CreateTopLevelPlatformWidget();
-  View* view = new View;
-  anchor->SetContentsView(view);
   anchor->Show();
 
   BubbleDelegateView* bubble_delegate =
-      new BubbleDelegateView(view, BubbleBorder::NONE);
+      new BubbleDelegateView(anchor->client_view(), BubbleBorder::NONE);
   Widget* bubble_widget(BubbleDelegateView::CreateBubble(bubble_delegate));
   bubble_widget->Show();
   bubble_widget->CloseNow();
@@ -1093,7 +1099,7 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
 }
 
 TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  Widget* toplevel = CreateTopLevelFramelessPlatformWidget();
   View* container = new View;
   toplevel->SetContentsView(container);
 
@@ -1120,6 +1126,7 @@ TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
   // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|
   // will not receive the event.
   gfx::Point click_location(45, 15);
+
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
       ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
@@ -1146,8 +1153,7 @@ TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
 // aura.
 TEST_F(WidgetTest, KeyboardInputEvent) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
-  View* container = new View;
-  toplevel->SetContentsView(container);
+  View* container = toplevel->client_view();
 
   Textfield* textfield = new Textfield();
   textfield->SetText(ASCIIToUTF16("some text"));
@@ -1173,7 +1179,7 @@ TEST_F(WidgetTest, FocusChangesOnBubble) {
   contents_view->set_focusable(true);
   Widget widget;
   Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
 #if !defined(OS_CHROMEOS)
@@ -1256,7 +1262,7 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterCloseTest) {
   contents_view->set_focusable(true);
   DesktopAuraTestValidPaintWidget widget;
   Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.native_widget = new DesktopNativeWidgetAura(&widget);
@@ -1276,7 +1282,7 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterHideTest) {
   contents_view->set_focusable(true);
   DesktopAuraTestValidPaintWidget widget;
   Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.native_widget = new DesktopNativeWidgetAura(&widget);
