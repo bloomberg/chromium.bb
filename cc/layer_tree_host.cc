@@ -847,7 +847,7 @@ void LayerTreeHost::enableHidingTopControls(bool enable)
         return;
 
     m_proxy->ImplThread()->postTask(
-        base::Bind(&TopControlsManager::enable_hiding_top_controls,
+        base::Bind(&TopControlsManager::EnableHidingTopControls,
                    m_topControlsManagerWeakPtr, enable));
 }
 

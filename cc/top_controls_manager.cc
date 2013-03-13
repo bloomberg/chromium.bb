@@ -58,6 +58,15 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
 TopControlsManager::~TopControlsManager() {
 }
 
+void TopControlsManager::EnableHidingTopControls(bool enable) {
+  enable_hiding_ = enable;
+
+  if (!enable && controls_top_offset_ != 0) {
+    SetupAnimation(SHOWING_CONTROLS);
+    client_->setNeedsRedraw();
+  }
+}
+
 void TopControlsManager::ScrollBegin() {
   ResetAnimations();
   in_scroll_gesture_ = true;
@@ -67,18 +76,22 @@ void TopControlsManager::ScrollBegin() {
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
     const gfx::Vector2dF pending_delta) {
-  if (pending_delta.y() == 0 || !enable_hiding_)
+  float delta_y = pending_delta.y();
+  if (delta_y == 0)
     return pending_delta;
 
-  current_scroll_delta_ += pending_delta.y();
+  if (!enable_hiding_ && delta_y > 0)
+    return pending_delta;
+
+  current_scroll_delta_ += delta_y;
 
   float scroll_total_y = RootScrollLayerTotalScrollY();
 
-  if (in_scroll_gesture_ && pending_delta.y() > 0 && controls_top_offset_ == 0)
+  if (in_scroll_gesture_ && delta_y > 0 && controls_top_offset_ == 0)
     scroll_start_offset_ = scroll_total_y;
   else if (in_scroll_gesture_ &&
-      ((pending_delta.y() > 0 && scroll_total_y < scroll_start_offset_) ||
-       (pending_delta.y() < 0 &&
+      ((delta_y > 0 && scroll_total_y < scroll_start_offset_) ||
+       (delta_y < 0 &&
            scroll_total_y > scroll_start_offset_ + top_controls_height_))) {
     return pending_delta;
   }
@@ -106,7 +119,8 @@ gfx::Vector2dF TopControlsManager::ScrollInternal(
   //     the knowledge of the top controls manager.
   // 2.) Scrolling either direction while the root scroll layer is scrolled to
   //     the very top.
-  if ((scroll_delta_y > 0 && content_top_offset_ > 0) || scroll_total_y <= 0) {
+  if ((scroll_delta_y > 0 && content_top_offset_ > 0) || scroll_total_y <= 0
+      || !enable_hiding_) {
     float content_scroll_delta_y = scroll_delta_y;
     if (content_scroll_delta_y > 0)
       content_scroll_delta_y -= previous_controls_offset - controls_top_offset_;

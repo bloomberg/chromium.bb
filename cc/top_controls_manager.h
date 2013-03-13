@@ -38,18 +38,14 @@ class CC_EXPORT TopControlsManager
       float top_controls_hide_threshold);
   virtual ~TopControlsManager();
 
-  float controls_top_offset() {
-    return enable_hiding_ ? controls_top_offset_ : 0;
-  }
-  float content_top_offset() {
-    return enable_hiding_ ? content_top_offset_ : top_controls_height_;
-  }
+  float controls_top_offset() { return controls_top_offset_; }
+  float content_top_offset() { return content_top_offset_; }
   KeyframedFloatAnimationCurve* animation() {
     return top_controls_animation_.get();
   }
   AnimationDirection animation_direction() { return animation_direction_; }
 
-  void enable_hiding_top_controls(bool enable) { enable_hiding_ = enable; }
+  void EnableHidingTopControls(bool enable);
 
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF pending_delta);
