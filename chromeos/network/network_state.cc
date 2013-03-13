@@ -40,6 +40,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &device_path_);
   } else if (key == flimflam::kGuidProperty) {
     return GetStringValue(key, value, &guid_);
+  } else if (key == shill::kActivateOverNonCellularNetworkProperty) {
+    return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
   }
   return false;
 }
@@ -66,6 +68,9 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   dictionary->SetStringWithoutPathExpansion(flimflam::kDeviceProperty,
                                             device_path());
   dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid());
+  dictionary->SetBooleanWithoutPathExpansion(
+      shill::kActivateOverNonCellularNetworkProperty,
+      activate_over_non_cellular_networks());
 }
 
 bool NetworkState::IsConnectedState() const {

@@ -46,6 +46,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& technology() const { return technology_; }
   const std::string& activation_state() const { return activation_state_; }
   const std::string& roaming() const { return roaming_; }
+  bool activate_over_non_cellular_networks() const {
+    return activate_over_non_cellular_networks_;
+  }
 
   bool IsConnectedState() const;
   bool IsConnectingState() const;
@@ -76,6 +79,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string technology_;
   std::string activation_state_;
   std::string roaming_;
+  bool activate_over_non_cellular_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkState);
 };
