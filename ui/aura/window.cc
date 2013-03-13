@@ -728,8 +728,7 @@ void Window::SetVisible(bool visible) {
   if (delegate_)
     delegate_->OnWindowTargetVisibilityChanged(visible);
 
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowVisibilityChanged(this, visible));
+  NotifyWindowVisibilityChanged(this, visible);
 
   if (root_window)
     root_window->OnWindowVisibilityChanged(this, visible);
@@ -982,6 +981,33 @@ void Window::NotifyWindowHierarchyChangeAtReceiver(
     NOTREACHED();
     break;
   }
+}
+
+void Window::NotifyWindowVisibilityChanged(aura::Window* target,
+                                           bool visible) {
+  NotifyWindowVisibilityChangedDown(target, visible);
+  NotifyWindowVisibilityChangedUp(target, visible);
+}
+
+void Window::NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
+                                                     bool visible) {
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowVisibilityChanged(target, visible));
+}
+
+void Window::NotifyWindowVisibilityChangedDown(aura::Window* target,
+                                               bool visible) {
+  NotifyWindowVisibilityChangedAtReceiver(target, visible);
+  for (Window::Windows::const_iterator it = children_.begin();
+       it != children_.end(); ++it) {
+    (*it)->NotifyWindowVisibilityChangedDown(target, visible);
+  }
+}
+
+void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
+                                             bool visible) {
+  for (Window* window = this; window; window = window->parent())
+    window->NotifyWindowVisibilityChangedAtReceiver(target, visible);
 }
 
 void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,

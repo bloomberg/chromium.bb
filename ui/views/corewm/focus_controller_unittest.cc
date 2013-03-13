@@ -849,10 +849,10 @@ class FocusControllerParentRemovalTest : public FocusControllerRemovalTest {
 // Runs implicit focus change tests for disposition changes to target's parent
 // hierarchy.
 #define IMPLICIT_FOCUS_CHANGE_PARENT_TESTS(TESTNAME) \
-    /* TODO(beng): parent hide and destruction tests are not supported at
-                   present due to workspace manager issues.
-    FOCUS_CONTROLLER_TEST(FocusControllerParentHideTest, TESTNAME) \
+    /* TODO(beng): parent destruction tests are not supported at
+       present due to workspace manager issues. \
     FOCUS_CONTROLLER_TEST(FocusControllerParentDestructionTest, TESTNAME) */ \
+    FOCUS_CONTROLLER_TEST(FocusControllerParentHideTest, TESTNAME) \
     FOCUS_CONTROLLER_TEST(FocusControllerParentRemovalTest, TESTNAME)
 
 // Runs all implicit focus change tests (changes to the target and target's

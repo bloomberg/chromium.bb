@@ -425,6 +425,17 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void NotifyWindowHierarchyChangeAtReceiver(
       const WindowObserver::HierarchyChangeParams& params);
 
+  // Methods implementing visibility change notifications. See WindowObserver
+  // for more details.
+  void NotifyWindowVisibilityChanged(aura::Window* target, bool visible);
+  // Notifies this window's observers.
+  void NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
+                                               bool visible);
+  // Notifies this window and its child hierarchy.
+  void NotifyWindowVisibilityChangedDown(aura::Window* target, bool visible);
+  // Notifies this window and its parent hierarchy.
+  void NotifyWindowVisibilityChangedUp(aura::Window* target, bool visible);
+
   // Invoked from the closure returned by PrepareForLayerBoundsChange() after
   // the bounds of the layer has changed. |old_bounds| is the previous bounds of
   // the layer, and |contained_mouse| is true if the mouse was previously within
