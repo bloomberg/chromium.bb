@@ -495,7 +495,7 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
   // and adjust dynamically.
   int first_item = menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR ? 1 : 0;
   int expected_menu_items = first_item +
-                            (expected_items ? (expected_items + 2) : 1);
+                            (expected_items ? (expected_items + 3) : 2);
   EXPECT_EQ(expected_menu_items, menu->GetItemCount());
   EXPECT_FALSE(menu->IsEnabledAt(first_item));
   if (expected_items) {

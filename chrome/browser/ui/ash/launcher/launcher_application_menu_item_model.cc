@@ -61,5 +61,10 @@ void LauncherApplicationMenuItemModel::Build() {
       SetIcon(GetIndexOfCommandId(i), item->icon());
   }
   RemoveTrailingSeparators();
+
+  // Adding final spacing (if the menu is not empty) to conform the menu to our
+  // style.
+  if (launcher_items_.size())
+    AddSeparator(ui::SPACING_SEPARATOR);
 }
 

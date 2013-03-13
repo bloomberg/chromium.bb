@@ -57,7 +57,8 @@ namespace views {
 namespace {
 
 // The spacing offset for the bubble tip.
-const int kBubbleTipSize = 10;
+const int kBubbleTipSizeLeftRight = 12;
+const int kBubbleTipSizeTopBottom = 11;
 
 // Returns true if the mnemonic of |menu| matches key.
 bool MatchesMnemonic(MenuItemView* menu, char16 key) {
@@ -1752,20 +1753,20 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     // between the display corner and the target area + the tip size.
     if (state_.anchor == MenuItemView::BUBBLE_LEFT) {
       max_width = owner_bounds.x() - state_.monitor_bounds.x() +
-                  kBubbleTipSize;
+                  kBubbleTipSizeLeftRight;
     } else if (state_.anchor == MenuItemView::BUBBLE_RIGHT) {
       max_width = state_.monitor_bounds.right() - owner_bounds.right() +
-                  kBubbleTipSize;
+                  kBubbleTipSizeLeftRight;
     } else if (state_.anchor == MenuItemView::BUBBLE_ABOVE) {
       max_height = owner_bounds.y() - state_.monitor_bounds.y() +
-                   kBubbleTipSize;
+                   kBubbleTipSizeTopBottom;
     } else if (state_.anchor == MenuItemView::BUBBLE_BELOW) {
       max_height = state_.monitor_bounds.bottom() - owner_bounds.bottom() +
-                   kBubbleTipSize;
+                   kBubbleTipSizeTopBottom;
     }
     // The space for the menu to cover should never get empty.
-    DCHECK_GE(max_width, kBubbleTipSize);
-    DCHECK_GE(max_height, kBubbleTipSize);
+    DCHECK_GE(max_width, kBubbleTipSizeLeftRight);
+    DCHECK_GE(max_height, kBubbleTipSizeTopBottom);
     pref.set_width(std::min(pref.width(), max_width));
     pref.set_height(std::min(pref.height(), max_height));
   }
@@ -1777,9 +1778,9 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
   if (state_.anchor == MenuItemView::BUBBLE_ABOVE ||
       state_.anchor == MenuItemView::BUBBLE_BELOW) {
     if (state_.anchor == MenuItemView::BUBBLE_ABOVE)
-      y = owner_bounds.y() - pref.height() + kBubbleTipSize;
+      y = owner_bounds.y() - pref.height() + kBubbleTipSizeTopBottom;
     else
-      y = owner_bounds.bottom() - kBubbleTipSize;
+      y = owner_bounds.bottom() - kBubbleTipSizeTopBottom;
 
     x = owner_bounds.CenterPoint().x() - pref.width() / 2;
     int x_old = x;
@@ -1792,9 +1793,9 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         pref.width() / 2 - x + x_old);
   } else {
     if (state_.anchor == MenuItemView::BUBBLE_RIGHT)
-      x = owner_bounds.right() - kBubbleTipSize;
+      x = owner_bounds.right() - kBubbleTipSizeLeftRight;
     else
-      x = owner_bounds.x() - pref.width() + kBubbleTipSize;
+      x = owner_bounds.x() - pref.width() + kBubbleTipSizeLeftRight;
 
     y = owner_bounds.CenterPoint().y() - pref.height() / 2;
     int y_old = y;
