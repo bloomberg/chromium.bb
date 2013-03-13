@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.18",
+  "version": "4.19",
   "entries": [
     {
       "id": 1,
@@ -915,10 +915,14 @@
     },
     {
       "id": 60,
-      "description": "Multisampling is buggy on Mac with NVIDIA gpu.",
+      "description": "Multisampling is buggy on Mac with NVIDIA gpu prior to 10.8.3.",
       "cr_bugs": [137303],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.8.3"
+        }
       },
       "vendor_id": "0x10de",
       "blacklist": [
@@ -927,10 +931,14 @@
     },
     {
       "id": 61,
-      "description": "Multisampling is buggy on Mac with Intel gpu.",
+      "description": "Multisampling is buggy on Mac with Intel gpu prior to 10.8.3.",
       "cr_bugs": [137303],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.8.3"
+        }
       },
       "vendor_id": "0x8086",
       "blacklist": [
@@ -958,10 +966,14 @@
     },
     {
       "id": 63,
-      "description": "Multisampling is buggy on Mac with AMD gpu.",
+      "description": "Multisampling is buggy on Mac with AMD gpu prior to 10.8.3.",
       "cr_bugs": [162466],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.8.3"
+        }
       },
       "vendor_id": "0x1002",
       "blacklist": [
