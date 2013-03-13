@@ -129,11 +129,6 @@ def _BuildBaselineMaps(decoder):
                         BASELINE_NAME_TO_BASELINES_MAP,
                         BASELINE_TO_NAME_MAP))
 
-  # Before returning, don't forget to install the tester to
-  # use for each baseline class.
-  for baseline in BASELINE_DECODERS:
-    decoder.add_class_def(BaselineName(baseline),'Arm32Decoder')
-
 def _ReinstallBaselineMaps(maps):
   assert len(maps) == 3
   global BASELINE_DECODERS

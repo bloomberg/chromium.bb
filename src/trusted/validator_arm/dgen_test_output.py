@@ -136,7 +136,7 @@ CLASS = '%(DECODER)s_%(rule)s'
 NAMED_CLASS = 'Named%(DECODER)s_%(rule)s'
 INSTANCE = '%(DECODER_class)s_instance_'
 BASE_TESTER='%(baseline)sTester%(base_test_case)s'
-BASE_BASE_TESTER='%(decoder_base)sTester'
+BASE_BASE_TESTER='Arm32DecoderTester'
 DECODER_TESTER='%(baseline)sTester_%(test_case)s'
 
 def _safety_to_check(safety):
@@ -160,7 +160,6 @@ def _install_action(decoder, action, values):
   # spot, it is much easier to change definitions.
   values['baseline'] = action.baseline()
   values['actual'] = action.actual()
-  values['decoder_base'] = decoder.base_class(values['baseline'])
   values['rule'] = action.rule()
   values['pattern'] = action.pattern()
   # Add dummies for row cases, in case not set up. See
@@ -927,7 +926,6 @@ def _decoder_restricted_to_tables(decoder, tables):
   new_decoder = dgen_core.Decoder()
   for tbl in [tbl for tbl in decoder.tables() if tbl.name in tables]:
     new_decoder.add(tbl)
-  new_decoder.set_class_defs(decoder.get_class_defs())
   return new_decoder
 
 def _generate_test_patterns(decoder, values, out):

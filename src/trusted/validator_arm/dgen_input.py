@@ -200,7 +200,7 @@ class Parser(object):
     self._pushed_tokens = []     # Tokens pushed back onto the input stream.
     # Reserved words allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
-    self._reserved = ['class', 'else', 'other', 'mod', 'if', 'not', 'in']
+    self._reserved = ['else', 'other', 'mod', 'if', 'not', 'in']
     # Punctuation allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._punctuation = ['=>', '->', '-', '+', '(', ')', '==', ':=', '"',

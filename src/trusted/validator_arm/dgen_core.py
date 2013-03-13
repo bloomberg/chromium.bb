@@ -2209,7 +2209,6 @@ class Decoder(object):
     self.primary = None
     self._is_sorted = False
     self._tables = []
-    self._class_defs = {}
     self._value_map = {}
 
   def value_keys(self):
@@ -2264,25 +2263,6 @@ class Decoder(object):
         table.remove_table(name)
     self._tables = new_tables
 
-  def get_class_defs(self):
-    return self._class_defs
-
-  def set_class_defs(self, class_defs):
-    self._class_defs = class_defs
-
-  def add_class_def(self, cls, supercls):
-    """Adds that cls's superclass is supercls. Returns true if able to add.
-
-       Arguments are:
-         cls - The class (name) being defined.
-         supercls - The class (name) cls is a subclass of.
-    """
-    if cls in self._class_defs:
-      return self._class_defs[cls] == supercls
-    else:
-      self._class_defs[cls] = supercls
-      return True
-
   def table_filter(self, filter):
     """Returns a copy of the decoder, filtering each table with
       the replacement row defined by function argument filter (of
@@ -2303,7 +2283,6 @@ class Decoder(object):
         raise Exception("table_filter: can't filter out table %s" %
                         self.primary.name)
     decoder._tables = sorted(tables, key=lambda(tbl): tbl.name)
-    decoder._class_defs = self._class_defs.copy()
     decoder._value_map = self._value_map.copy()
     return decoder
 
@@ -2320,16 +2299,6 @@ class Decoder(object):
       if isinstance(action, DecoderAction):
         decoder.define_value(key, action.action_filter(names))
     return decoder
-
-  def base_class(self, cls):
-    """Returns the base-most class of cls (or cls if no base class). """
-    tried = set()
-    while cls in self._class_defs:
-      if cls in tried:
-        raise Exception('Class %s defined circularly' % cls)
-      tried.add(cls)
-      cls = self._class_defs[cls]
-    return cls
 
   def decoders(self):
     """Returns the sorted sequence of DecoderAction's defined in the tables."""
