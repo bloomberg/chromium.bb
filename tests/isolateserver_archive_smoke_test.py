@@ -32,6 +32,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     # before being uploaded.
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
+    self.token = isolateserver_archive.url_open(
+        ISOLATE_SERVER + '/content/get_token?from_smoke_test=1', None).read()
 
   def _archive_given_files(self, files):
     """Given a list of files, call isolateserver_archive.py with them. Then
@@ -49,8 +51,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     self.assertEqual(0, subprocess.call(args))
 
     # Ensure the files are present on the server.
-    contains_hash_url = '%scontent/contains/%s?from_smoke_test=1' % (
-        ISOLATE_SERVER, self.namespace)
+    contains_hash_url = '%scontent/contains/%s?token=%s&from_smoke_test=1' % (
+        ISOLATE_SERVER, self.namespace, self.token)
 
     file_hashes = (isolateserver_archive.sha1_file(
         os.path.join(TEST_DATA_DIR, f)) for f in files)

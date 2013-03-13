@@ -137,26 +137,25 @@ def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
 
 
 class UploadRemote(run_isolated.Remote):
-  def __init__(self, namespace, *args, **kwargs):
-    super(UploadRemote, self).__init__(*args, **kwargs)
+  def __init__(self, namespace, base_url, token):
     self.namespace = str(namespace)
+    self._token = token
+    super(UploadRemote, self).__init__(base_url)
 
   def get_file_handler(self, base_url):
     base_url = str(base_url)
     def upload_file(content, hash_key):
+      # TODO(maruel): Detect failures.
       hash_key = str(hash_key)
       content_url = base_url.rstrip('/') + '/content/'
       if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
-        upload_hash_content_to_blobstore(
-            content_url + 'generate_blobstore_url/' + self.namespace + '/' +
-              hash_key,
-            hash_key,
-            content)
+        url = '%sgenerate_blobstore_url/%s/%s?token=%s' % (
+           content_url, self.namespace, hash_key, self._token)
+        upload_hash_content_to_blobstore(url, hash_key, content)
       else:
-        url_open(
-            content_url + 'store/' + self.namespace + '/' + hash_key,
-            content,
-            content_type='application/octet-stream')
+        url = '%sstore/%s/%s?token=%s' % (
+            content_url, self.namespace, hash_key, self._token)
+        url_open(url, content, content_type='application/octet-stream')
     return upload_file
 
 
@@ -245,11 +244,15 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   logging.info('upload tree(base_url=%s, indir=%s, files=%d)' %
                (base_url, indir, len(infiles)))
 
+  # TODO(maruel): Make this request much earlier asynchronously while the files
+  # are being enumerated.
+  token = url_open(base_url + '/content/get_token').read()
+
   # Create a pool of workers to zip and upload any files missing from
   # the server.
   num_threads = run_test_cases.num_processors()
   zipping_pool = run_isolated.ThreadPool(num_threads, num_threads, 0)
-  remote_uploader = UploadRemote(namespace, base_url)
+  remote_uploader = UploadRemote(namespace, base_url, token)
 
   # Starts the zip and upload process for a given query. The query is assumed
   # to be in the format (relfile, metadata).
@@ -261,8 +264,8 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
                           remote_uploader.add_item)
     uploaded.append(query)
 
-  contains_hash_url = '%s/content/contains/%s' % (
-      base_url.rstrip('/'), namespace)
+  contains_hash_url = '%s/content/contains/%s?token=%s' % (
+      base_url.rstrip('/'), namespace, token)
   process_items(contains_hash_url, infiles, zip_and_upload)
 
   logging.info('Waiting for all files to finish zipping')
