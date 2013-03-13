@@ -38,7 +38,6 @@ namespace nacl_arm_test {
 //       Rn: Rn(3:0),
 //       actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //       baseline: UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       pattern: cccc00000100hhhhllllmmmm1001nnnn,
@@ -78,7 +77,6 @@ bool UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0TesterCase0
 // op(23:20)=0101
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
@@ -120,7 +118,6 @@ bool Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0TesterCase1
 //       Rn: Rn(3:0),
 //       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       pattern: cccc00000110ddddaaaammmm1001nnnn,
@@ -158,7 +155,6 @@ bool MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0TesterCase2
 // op(23:20)=0111
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
@@ -202,7 +198,6 @@ bool Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0TesterCase3
 //       S: S(20),
 //       actual: Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1,
 //       baseline: MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -258,7 +253,6 @@ bool MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0TesterCase4
 //       S: S(20),
 //       actual: Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1,
 //       baseline: MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -311,7 +305,6 @@ bool MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0TesterCase5
 //       S: S(20),
 //       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -368,7 +361,6 @@ bool UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0TesterCase6
 //       S: S(20),
 //       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -425,7 +417,6 @@ bool UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0TesterCase7
 //       S: S(20),
 //       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -482,7 +473,6 @@ bool SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0TesterCase8
 //       S: S(20),
 //       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -541,7 +531,6 @@ bool SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0TesterCase9
 //       Rn: Rn(3:0),
 //       actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //       baseline: UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       pattern: cccc00000100hhhhllllmmmm1001nnnn,
@@ -562,7 +551,6 @@ class UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0Tester_Case0
 // op(23:20)=0101
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
@@ -585,7 +573,6 @@ class Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0Tester_Case1
 //       Rn: Rn(3:0),
 //       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       pattern: cccc00000110ddddaaaammmm1001nnnn,
@@ -604,7 +591,6 @@ class MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0Tester_Case2
 // op(23:20)=0111
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
@@ -629,7 +615,6 @@ class Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0Tester_Case3
 //       S: S(20),
 //       actual: Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1,
 //       baseline: MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -663,7 +648,6 @@ class MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0Tester_Case4
 //       S: S(20),
 //       actual: Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1,
 //       baseline: MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -697,7 +681,6 @@ class MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0Tester_Case5
 //       S: S(20),
 //       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -735,7 +718,6 @@ class UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0Tester_Case6
 //       S: S(20),
 //       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -773,7 +755,6 @@ class UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0Tester_Case7
 //       S: S(20),
 //       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -811,7 +792,6 @@ class SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0Tester_Case8
 //       S: S(20),
 //       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -855,7 +835,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rn: Rn(3:0),
 //       actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //       baseline: UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       pattern: cccc00000100hhhhllllmmmm1001nnnn,
@@ -875,7 +854,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(23:20)=0101
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
@@ -897,7 +875,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(3:0),
 //       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       pattern: cccc00000110ddddaaaammmm1001nnnn,
@@ -915,7 +892,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(23:20)=0111
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
@@ -939,7 +915,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1,
 //       baseline: MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -972,7 +947,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1,
 //       baseline: MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1005,7 +979,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -1042,7 +1015,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -1079,7 +1051,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},
@@ -1116,7 +1087,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0,
-//       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
 //            if setflags
 //            else None},

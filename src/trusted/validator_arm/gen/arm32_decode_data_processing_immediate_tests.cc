@@ -35,7 +35,6 @@ namespace nacl_arm_test {
 //       Rn: Rn(19:16),
 //       actual: Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), imm12(11:0)],
 //       imm12: imm12(11:0),
@@ -84,7 +83,6 @@ bool TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0TesterCase0
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110011nnnn0000iiiiiiiiiiii,
@@ -126,7 +124,6 @@ bool TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0TesterCase1
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110101nnnn0000iiiiiiiiiiii,
@@ -168,7 +165,6 @@ bool CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0TesterCase2
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110111nnnn0000iiiiiiiiiiii,
@@ -213,7 +209,6 @@ bool CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0TesterCase3
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -261,7 +256,6 @@ bool AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0TesterCase4
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -309,7 +303,6 @@ bool EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0TesterCase5
 //       S: S(20),
 //       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -359,7 +352,6 @@ bool SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0TesterCase6
 //       Rd: Rd(15:12),
 //       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //       baseline: ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       pattern: cccc001001001111ddddiiiiiiiiiiii,
@@ -405,7 +397,6 @@ bool ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0TesterCase7
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -453,7 +444,6 @@ bool RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0TesterCase8
 //       S: S(20),
 //       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -503,7 +493,6 @@ bool ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0TesterCase9
 //       Rd: Rd(15:12),
 //       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //       baseline: ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       pattern: cccc001010001111ddddiiiiiiiiiiii,
@@ -549,7 +538,6 @@ bool ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0TesterCase10
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -597,7 +585,6 @@ bool ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0TesterCase11
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -645,7 +632,6 @@ bool SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0TesterCase12
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -693,7 +679,6 @@ bool RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0TesterCase13
 //       S: S(20),
 //       actual: Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -742,7 +727,6 @@ bool ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0TesterCase14
 //       S: S(20),
 //       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //       baseline: MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -798,7 +782,6 @@ bool MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0TesterCase15
 //       clears_bits: (imm32 &&
 //            clears_mask())  ==
 //               clears_mask(),
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -847,7 +830,6 @@ bool BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0TesterCase16
 //       S: S(20),
 //       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //       baseline: MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -902,7 +884,6 @@ bool MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0TesterCase17
 //       Rn: Rn(19:16),
 //       actual: Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), imm12(11:0)],
 //       imm12: imm12(11:0),
@@ -929,7 +910,6 @@ class TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0Tester_Case0
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110011nnnn0000iiiiiiiiiiii,
@@ -949,7 +929,6 @@ class TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0Tester_Case1
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110101nnnn0000iiiiiiiiiiii,
@@ -969,7 +948,6 @@ class CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0Tester_Case2
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110111nnnn0000iiiiiiiiiiii,
@@ -992,7 +970,6 @@ class CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0Tester_Case3
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1021,7 +998,6 @@ class AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0Tester_Case4
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1050,7 +1026,6 @@ class EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0Tester_Case5
 //       S: S(20),
 //       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1078,7 +1053,6 @@ class SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0Tester_Case6
 //       Rd: Rd(15:12),
 //       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //       baseline: ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       pattern: cccc001001001111ddddiiiiiiiiiiii,
@@ -1102,7 +1076,6 @@ class ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0Tester_Case7
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1131,7 +1104,6 @@ class RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0Tester_Case8
 //       S: S(20),
 //       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1159,7 +1131,6 @@ class ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0Tester_Case9
 //       Rd: Rd(15:12),
 //       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //       baseline: ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       pattern: cccc001010001111ddddiiiiiiiiiiii,
@@ -1183,7 +1154,6 @@ class ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0Tester_Case10
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1212,7 +1182,6 @@ class ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0Tester_Case11
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1241,7 +1210,6 @@ class SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0Tester_Case12
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1270,7 +1238,6 @@ class RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0Tester_Case13
 //       S: S(20),
 //       actual: Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1300,7 +1267,6 @@ class ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0Tester_Case14
 //       S: S(20),
 //       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //       baseline: MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1334,7 +1300,6 @@ class MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0Tester_Case15
 //       clears_bits: (imm32 &&
 //            clears_mask())  ==
 //               clears_mask(),
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1364,7 +1329,6 @@ class BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0Tester_Case16
 //       S: S(20),
 //       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //       baseline: MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1401,7 +1365,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rn: Rn(19:16),
 //       actual: Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), imm12(11:0)],
 //       imm12: imm12(11:0),
@@ -1427,7 +1390,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110011nnnn0000iiiiiiiiiiii,
@@ -1446,7 +1408,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110101nnnn0000iiiiiiiiiiii,
@@ -1465,7 +1426,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //       baseline: CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       pattern: cccc00110111nnnn0000iiiiiiiiiiii,
@@ -1487,7 +1447,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1515,7 +1474,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1543,7 +1501,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1570,7 +1527,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //       baseline: ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       pattern: cccc001001001111ddddiiiiiiiiiiii,
@@ -1593,7 +1549,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1621,7 +1576,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1648,7 +1602,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //       baseline: ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       pattern: cccc001010001111ddddiiiiiiiiiiii,
@@ -1671,7 +1624,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1699,7 +1651,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1727,7 +1678,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1755,7 +1705,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1,
 //       baseline: ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1784,7 +1733,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //       baseline: MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1817,7 +1765,6 @@ TEST_F(Arm32DecoderStateTests,
 //       clears_bits: (imm32 &&
 //            clears_mask())  ==
 //               clears_mask(),
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1846,7 +1793,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //       baseline: MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},

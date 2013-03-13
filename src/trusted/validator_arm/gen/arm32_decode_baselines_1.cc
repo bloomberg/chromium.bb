@@ -19,7 +19,6 @@ namespace nacl_arm_dec {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -85,7 +84,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -159,7 +157,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -231,7 +228,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -307,7 +303,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -381,7 +376,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -450,7 +444,6 @@ uses(Instruction inst) const {
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -493,7 +486,6 @@ uses(Instruction inst) const {
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -539,7 +531,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -605,7 +596,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -679,7 +669,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -751,7 +740,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -822,7 +810,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -880,7 +867,6 @@ uses(Instruction inst) const {
 //    Rd: Rd(15:12),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7)],
 //    lsb: lsb(11:7),
@@ -933,7 +919,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -998,7 +983,6 @@ uses(Instruction inst) const {
 //         clears_mask())  ==
 //            clears_mask(),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1073,7 +1057,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1147,7 +1130,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1215,7 +1197,6 @@ uses(Instruction inst) const {
 //
 //   {arch: v5T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28), imm12(19:8), imm4(3:0)],
 //    imm12: imm12(19:8),
@@ -1271,7 +1252,6 @@ uses(Instruction inst) const {
 // BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111101hiiiiiiiiiiiiiiiiiiiiiiii,
 //    rule: BLX_immediate,
@@ -1311,7 +1291,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    arch: v5T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Pc, Lr},
 //    fields: [cond(31:28), Rm(3:0)],
 //    pattern: cccc000100101111111111110011mmmm,
@@ -1361,7 +1340,6 @@ uses(Instruction inst) const {
 //   {Cond: Cond(31:28),
 //    Lr: 14,
 //    Pc: 15,
-//    constraints: ,
 //    defs: {Pc, Lr},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
@@ -1421,7 +1399,6 @@ uses(Instruction inst) const {
 // BXJ_cccc000100101111111111110010mmmm_case_0:
 //
 //   {arch: v5TEJ,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc000100101111111111110010mmmm,
 //    rule: BXJ,
@@ -1458,7 +1435,6 @@ uses(Instruction inst) const {
 //
 //   {Cond: Cond(31:28),
 //    Pc: 15,
-//    constraints: ,
 //    defs: {Pc},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
@@ -1520,7 +1496,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    arch: v4T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Pc},
 //    fields: [cond(31:28), Rm(3:0)],
 //    pattern: cccc000100101111111111110001mmmm,
@@ -1567,7 +1542,6 @@ uses(Instruction inst) const {
 // CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iiiiiiiiiiiiiiiiiii0iiii,
 //    rule: CDP2,
@@ -1602,8 +1576,7 @@ uses(Instruction inst) const {
 
 // CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1110oooonnnnddddccccooo0mmmm,
 //    rule: CDP,
 //    safety: [true => FORBIDDEN],
@@ -1638,7 +1611,6 @@ uses(Instruction inst) const {
 // CLREX_11110101011111111111000000011111_case_0:
 //
 //   {arch: V6K,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110101011111111111000000011111,
 //    rule: CLREX,
@@ -1678,7 +1650,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    arch: v5T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc000101101111dddd11110001mmmm,
@@ -1722,7 +1693,6 @@ uses(Instruction inst) const {
 //   {NZCV: 16,
 //    Rn: Rn(19:16),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1762,7 +1732,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -1815,7 +1784,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    Rs: Rs(11:8),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010111nnnn0000ssss0tt1mmmm,
@@ -1866,7 +1834,6 @@ uses(Instruction inst) const {
 //   {NZCV: 16,
 //    Rn: Rn(19:16),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1906,7 +1873,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -1959,7 +1925,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    Rs: Rs(11:8),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010101nnnn0000ssss0tt1mmmm,
@@ -2008,7 +1973,6 @@ uses(Instruction inst) const {
 // CPS_111100010000iii00000000iii0iiiii_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111100010000iii00000000iii0iiiii,
 //    rule: CPS,
@@ -2048,7 +2012,6 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMDhp,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 4,
@@ -2112,7 +2075,6 @@ uses(Instruction inst) const {
 // DBG_cccc001100100000111100001111iiii_case_0:
 //
 //   {arch: v7,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc001100100000111100001111iiii,
 //    rule: DBG,
@@ -2148,7 +2110,6 @@ uses(Instruction inst) const {
 // DMB_1111010101111111111100000101xxxx_case_0:
 //
 //   {arch: v7,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -2207,7 +2168,6 @@ uses(Instruction inst) const {
 // DSB_1111010101111111111100000100xxxx_case_0:
 //
 //   {arch: v6T2,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -2271,7 +2231,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -2337,7 +2296,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -2411,7 +2369,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -2478,7 +2435,6 @@ uses(Instruction inst) const {
 // ERET_cccc0001011000000000000001101110_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0001011000000000000001101110,
 //    rule: ERET,
@@ -2513,8 +2469,7 @@ uses(Instruction inst) const {
 
 // FICTITIOUS_FIRST_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    rule: FICTITIOUS_FIRST,
 //    safety: [true => FORBIDDEN],
 //    true: true,
@@ -2548,7 +2503,6 @@ uses(Instruction inst) const {
 // HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010100iiiiiiiiiiii0111iiii,
 //    rule: HVC,
@@ -2584,7 +2538,6 @@ uses(Instruction inst) const {
 // ISB_1111010101111111111100000110xxxx_case_0:
 //
 //   {arch: v6T2,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -2622,7 +2575,6 @@ uses(Instruction inst) const {
 // LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw1nnnniiiiiiiiiiiiiiii,
 //    rule: LDC2_immediate,
@@ -2658,7 +2610,6 @@ uses(Instruction inst) const {
 // LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw11111iiiiiiiiiiiiiiii,
 //    rule: LDC2_literal,
@@ -2693,8 +2644,7 @@ uses(Instruction inst) const {
 
 // LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc110pudw1nnnnddddcccciiiiiiii,
 //    rule: LDC_immediate,
 //    safety: [true => FORBIDDEN],
@@ -2728,8 +2678,7 @@ uses(Instruction inst) const {
 
 // LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc110pudw11111ddddcccciiiiiiii,
 //    rule: LDC_literal,
 //    safety: [true => FORBIDDEN],
@@ -2769,7 +2718,6 @@ uses(Instruction inst) const {
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -2860,7 +2808,6 @@ uses(Instruction inst) const {
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -2951,7 +2898,6 @@ uses(Instruction inst) const {
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -3042,7 +2988,6 @@ uses(Instruction inst) const {
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -3127,8 +3072,7 @@ uses(Instruction inst) const {
 
 // LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //    rule: LDM_User_registers,
 //    safety: [true => FORBIDDEN],
@@ -3162,8 +3106,7 @@ uses(Instruction inst) const {
 
 // LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //    rule: LDM_exception_return,
 //    safety: [true => FORBIDDEN],
@@ -3197,8 +3140,7 @@ uses(Instruction inst) const {
 
 // LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
 //    rule: LDRBT_A1,
 //    safety: [true => FORBIDDEN],
@@ -3232,8 +3174,7 @@ uses(Instruction inst) const {
 
 // LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
 //    rule: LDRBT_A2,
 //    safety: [true => FORBIDDEN],
@@ -3277,7 +3218,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3395,7 +3335,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -3463,7 +3402,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3606,7 +3544,6 @@ uses(Instruction inst) const {
 //    arch: v5TE,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2, base
 //         if wback
 //         else None},
@@ -3744,7 +3681,6 @@ uses(Instruction inst) const {
 //    arch: v5TE,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2},
 //    fields: [cond(31:28),
 //      P(24),
@@ -3828,7 +3764,6 @@ uses(Instruction inst) const {
 //    arch: v5TE,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2, base
 //         if wback
 //         else None},
@@ -3982,7 +3917,6 @@ uses(Instruction inst) const {
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -4039,7 +3973,6 @@ uses(Instruction inst) const {
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -4102,7 +4035,6 @@ uses(Instruction inst) const {
 //    arch: v6,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -4164,7 +4096,6 @@ uses(Instruction inst) const {
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4293,7 +4224,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -4385,7 +4315,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4523,7 +4452,6 @@ uses(Instruction inst) const {
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4652,7 +4580,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -4744,7 +4671,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4882,7 +4808,6 @@ uses(Instruction inst) const {
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -5011,7 +4936,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -5103,7 +5027,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -5228,8 +5151,7 @@ uses(Instruction inst) const {
 
 // LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
 //    rule: LDRT_A1,
 //    safety: [true => FORBIDDEN],
@@ -5263,8 +5185,7 @@ uses(Instruction inst) const {
 
 // LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
 //    rule: LDRT_A2,
 //    safety: [true => FORBIDDEN],
@@ -5309,7 +5230,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -5459,7 +5379,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -5527,7 +5446,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -5666,7 +5584,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -5743,7 +5660,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5803,7 +5719,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -5874,7 +5789,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5929,7 +5843,6 @@ uses(Instruction inst) const {
 // MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iii0iiiittttiiiiiii1iiii,
 //    rule: MCR2,
@@ -5965,7 +5878,6 @@ uses(Instruction inst) const {
 // MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111111000100ssssttttiiiiiiiiiiii,
 //    rule: MCRR2,
@@ -6001,7 +5913,6 @@ uses(Instruction inst) const {
 // MCRR_cccc11000100ttttttttccccoooommmm_case_0:
 //
 //   {arch: v5TE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc11000100ttttttttccccoooommmm,
 //    rule: MCRR,
@@ -6036,8 +5947,7 @@ uses(Instruction inst) const {
 
 // MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //    rule: MCR,
 //    safety: [true => FORBIDDEN],
@@ -6080,7 +5990,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -6162,7 +6071,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //    pattern: cccc00000110ddddaaaammmm1001nnnn,
@@ -6219,7 +6127,6 @@ uses(Instruction inst) const {
 //    advsimd: sel in bitset {'x1xxx', 'x0xx1'},
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    esize: 8
 //         if U:opc1:opc2(4:0)=x1xxx
@@ -6290,7 +6197,6 @@ safety(Instruction inst) const {
 //    S: S(20),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -6356,7 +6262,6 @@ uses(Instruction inst) const {
 //    S: S(20),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -6421,7 +6326,6 @@ uses(Instruction inst) const {
 //    Rd: Rd(15:12),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -6496,7 +6400,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -6552,7 +6455,6 @@ uses(Instruction inst) const {
 // MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iii1iiiittttiiiiiii1iiii,
 //    rule: MRC2,
@@ -6587,8 +6489,7 @@ uses(Instruction inst) const {
 
 // MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
 //    rule: MRC,
 //    safety: [true => FORBIDDEN],
@@ -6623,7 +6524,6 @@ uses(Instruction inst) const {
 // MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111111000101ssssttttiiiiiiiiiiii,
 //    rule: MRRC2,
@@ -6659,7 +6559,6 @@ uses(Instruction inst) const {
 // MRRC_cccc11000101ttttttttccccoooommmm_case_0:
 //
 //   {arch: v5TE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc11000101ttttttttccccoooommmm,
 //    rule: MRRC,
@@ -6695,7 +6594,6 @@ uses(Instruction inst) const {
 // MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010r00mmmmdddd001m00000000,
 //    rule: MRS_Banked_register,
@@ -6731,7 +6629,6 @@ uses(Instruction inst) const {
 // MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010r10mmmm1111001m0000nnnn,
 //    rule: MRS_Banked_register,
@@ -6769,7 +6666,6 @@ uses(Instruction inst) const {
 //   {R: R(22),
 //    Rd: Rd(15:12),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), R(22), Rd(15:12)],
 //    pattern: cccc00010r001111dddd000000000000,
@@ -6816,7 +6712,6 @@ uses(Instruction inst) const {
 //   {NZCV: 16,
 //    None: 32,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if write_nzcvq
 //         else None},
@@ -6865,8 +6760,7 @@ uses(Instruction inst) const {
 
 // MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //    rule: MSR_immediate,
 //    safety: [true => FORBIDDEN],
@@ -6905,7 +6799,6 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(3:0),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if write_nzcvq
 //         else None},
@@ -6960,8 +6853,7 @@ uses(Instruction inst) const {
 
 // MSR_register_cccc00010r10mmmm111100000000nnnn_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc00010r10mmmm111100000000nnnn,
 //    rule: MSR_register,
 //    safety: [true => FORBIDDEN],
@@ -7003,7 +6895,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -7074,7 +6965,6 @@ uses(Instruction inst) const {
 //    Rd: Rd(15:12),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -7149,7 +7039,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -7220,7 +7109,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -7282,7 +7170,6 @@ uses(Instruction inst) const {
 // NOP_cccc0011001000001111000000000000_case_0:
 //
 //   {arch: ['v6K', 'v6T2'],
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000000,
 //    rule: NOP,
@@ -7311,8 +7198,7 @@ uses(Instruction inst) const {
 
 // NOT_IMPLEMENTED_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    rule: NOT_IMPLEMENTED,
 //    safety: [true => NOT_IMPLEMENTED],
 //    true: true,
@@ -7351,7 +7237,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -7428,7 +7313,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -7502,7 +7386,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -7574,7 +7457,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rn(19:16),
@@ -7635,7 +7517,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -7700,7 +7581,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -7766,7 +7646,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -7839,7 +7718,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -7909,7 +7787,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Pc,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -7969,7 +7846,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -8032,7 +7908,6 @@ uses(Instruction inst) const {
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -8093,7 +7968,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110001mmmm,
@@ -8144,7 +8018,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11111001mmmm,
@@ -8195,7 +8068,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010000nnnndddd00000101mmmm,
@@ -8246,7 +8118,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110011mmmm,
@@ -8297,7 +8168,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010100nnnndddd00000101mmmm,
@@ -8348,7 +8218,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010110nnnndddd00000101mmmm,
@@ -8399,7 +8268,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110101mmmm,
@@ -8450,7 +8318,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110111mmmm,
@@ -8501,7 +8368,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11111111mmmm,
@@ -8552,7 +8418,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010010nnnndddd00000101mmmm,
@@ -8602,7 +8467,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011011111111dddd11110011mmmm,
@@ -8648,7 +8512,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011010111111dddd11111011mmmm,
@@ -8694,7 +8557,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011011111111dddd11111011mmmm,
@@ -8740,7 +8602,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011010111111dddd11110011mmmm,
@@ -8782,7 +8643,6 @@ uses(Instruction inst) const {
 // RFE_1111100pu0w1nnnn0000101000000000_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111100pu0w1nnnn0000101000000000,
 //    rule: RFE,
@@ -8823,7 +8683,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -8900,7 +8759,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -8960,7 +8818,6 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -9021,7 +8878,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -9087,7 +8943,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -9161,7 +9016,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -9233,7 +9087,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -9299,7 +9152,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -9373,7 +9225,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -9445,7 +9296,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110001mmmm,
@@ -9496,7 +9346,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11111001mmmm,
@@ -9547,7 +9396,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110011mmmm,
@@ -9598,7 +9446,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -9664,7 +9511,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -9738,7 +9584,6 @@ uses(Instruction inst) const {
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -9809,7 +9654,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -9866,7 +9710,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v7VEoptv7A_v7R,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110001dddd1111mmmm0001nnnn,
@@ -9917,7 +9760,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01101000nnnndddd11111011mmmm,
@@ -9963,7 +9805,6 @@ uses(Instruction inst) const {
 // SETEND_1111000100000001000000i000000000_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111000100000001000000i000000000,
 //    rule: SETEND,
@@ -9999,7 +9840,6 @@ uses(Instruction inst) const {
 // SEV_cccc0011001000001111000000000100_case_0:
 //
 //   {arch: v6K,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000100,
 //    rule: SEV,
@@ -10040,7 +9880,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110001mmmm,
@@ -10091,7 +9930,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11111001mmmm,
@@ -10142,7 +9980,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110011mmmm,
@@ -10193,7 +10030,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110101mmmm,
@@ -10244,7 +10080,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110111mmmm,
@@ -10295,7 +10130,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11111111mmmm,
@@ -10341,7 +10175,6 @@ uses(Instruction inst) const {
 // SMC_cccc000101100000000000000111iiii_case_0:
 //
 //   {arch: SE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc000101100000000000000111iiii,
 //    rule: SMC,
@@ -10385,7 +10218,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rd(19:16),
@@ -10450,7 +10282,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000ddddaaaammmm00m1nnnn,
@@ -10513,7 +10344,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi},
 //    fields: [cond(31:28),
 //      RdHi(19:16),
@@ -10587,7 +10417,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdHi, RdLo},
 //    fields: [cond(31:28),
 //      RdHi(19:16),
@@ -10659,7 +10488,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -10757,7 +10585,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rd(19:16),
@@ -10822,7 +10649,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000ddddaaaammmm01m1nnnn,
@@ -10883,7 +10709,6 @@ uses(Instruction inst) const {
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdHi, RdLo},
 //    fields: [cond(31:28),
 //      RdHi(19:16),

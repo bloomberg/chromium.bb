@@ -33,7 +33,6 @@ namespace nacl_arm_test {
 // coproc(11:8)=~101x & op1(25:20)=000100
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MCRR_cccc11000100ttttttttccccoooommmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11000100ttttttttccccoooommmm,
 //       rule: MCRR,
@@ -74,7 +73,6 @@ bool MCRR_cccc11000100ttttttttccccoooommmm_case_0TesterCase0
 // coproc(11:8)=~101x & op1(25:20)=000101
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MRRC_cccc11000101ttttttttccccoooommmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11000101ttttttttccccoooommmm,
 //       rule: MRRC,
@@ -115,7 +113,6 @@ bool MRRC_cccc11000101ttttttttccccoooommmm_case_0TesterCase1
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
@@ -159,7 +156,6 @@ bool MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0TesterCase2
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
 //       rule: MRC,
@@ -203,7 +199,6 @@ bool MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0TesterCase3
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw0nnnnddddcccciiiiiiii,
 //       rule: STC,
@@ -247,7 +242,6 @@ bool STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0TesterCase4
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw1nnnnddddcccciiiiiiii,
 //       rule: LDC_immediate,
@@ -294,7 +288,6 @@ bool LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0TesterCase5
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw11111ddddcccciiiiiiii,
 //       rule: LDC_literal,
@@ -341,7 +334,6 @@ bool LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0TesterCase6
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110oooonnnnddddccccooo0mmmm,
 //       rule: CDP,
@@ -385,7 +377,6 @@ bool CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0TesterCase7
 // op1(25:20)=00000x
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
 //       safety: [true => UNDEFINED],
@@ -422,7 +413,6 @@ bool Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0TesterCase8
 // op1(25:20)=11xxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
 //       rule: SVC,
@@ -465,7 +455,6 @@ bool SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase9
 // coproc(11:8)=~101x & op1(25:20)=000100
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MCRR_cccc11000100ttttttttccccoooommmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11000100ttttttttccccoooommmm,
 //       rule: MCRR,
@@ -484,7 +473,6 @@ class MCRR_cccc11000100ttttttttccccoooommmm_case_0Tester_Case0
 // coproc(11:8)=~101x & op1(25:20)=000101
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MRRC_cccc11000101ttttttttccccoooommmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11000101ttttttttccccoooommmm,
 //       rule: MRRC,
@@ -503,7 +491,6 @@ class MRRC_cccc11000101ttttttttccccoooommmm_case_0Tester_Case1
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
@@ -522,7 +509,6 @@ class MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0Tester_Case2
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
 //       rule: MRC,
@@ -541,7 +527,6 @@ class MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0Tester_Case3
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw0nnnnddddcccciiiiiiii,
 //       rule: STC,
@@ -560,7 +545,6 @@ class STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0Tester_Case4
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw1nnnnddddcccciiiiiiii,
 //       rule: LDC_immediate,
@@ -579,7 +563,6 @@ class LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0Tester_Case5
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw11111ddddcccciiiiiiii,
 //       rule: LDC_literal,
@@ -598,7 +581,6 @@ class LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0Tester_Case6
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110oooonnnnddddccccooo0mmmm,
 //       rule: CDP,
@@ -617,7 +599,6 @@ class CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0Tester_Case7
 // op1(25:20)=00000x
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
 //       safety: [true => UNDEFINED],
@@ -635,7 +616,6 @@ class Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0Tester_Case8
 // op1(25:20)=11xxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
 //       rule: SVC,
@@ -663,7 +643,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // coproc(11:8)=~101x & op1(25:20)=000100
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MCRR_cccc11000100ttttttttccccoooommmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11000100ttttttttccccoooommmm,
 //       rule: MCRR,
@@ -681,7 +660,6 @@ TEST_F(Arm32DecoderStateTests,
 // coproc(11:8)=~101x & op1(25:20)=000101
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MRRC_cccc11000101ttttttttccccoooommmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11000101ttttttttccccoooommmm,
 //       rule: MRRC,
@@ -699,7 +677,6 @@ TEST_F(Arm32DecoderStateTests,
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
@@ -717,7 +694,6 @@ TEST_F(Arm32DecoderStateTests,
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
 //       rule: MRC,
@@ -735,7 +711,6 @@ TEST_F(Arm32DecoderStateTests,
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw0nnnnddddcccciiiiiiii,
 //       rule: STC,
@@ -753,7 +728,6 @@ TEST_F(Arm32DecoderStateTests,
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw1nnnnddddcccciiiiiiii,
 //       rule: LDC_immediate,
@@ -771,7 +745,6 @@ TEST_F(Arm32DecoderStateTests,
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc110pudw11111ddddcccciiiiiiii,
 //       rule: LDC_literal,
@@ -789,7 +762,6 @@ TEST_F(Arm32DecoderStateTests,
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1110oooonnnnddddccccooo0mmmm,
 //       rule: CDP,
@@ -807,7 +779,6 @@ TEST_F(Arm32DecoderStateTests,
 // op1(25:20)=00000x
 //    = {actual: Actual_Unnamed_case_1,
 //       baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
 //       safety: [true => UNDEFINED],
@@ -824,7 +795,6 @@ TEST_F(Arm32DecoderStateTests,
 // op1(25:20)=11xxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
 //       rule: SVC,

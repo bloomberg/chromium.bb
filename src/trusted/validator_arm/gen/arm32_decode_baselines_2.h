@@ -24,7 +24,6 @@ namespace nacl_arm_dec {
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110101ddddaaaammmm00r1nnnn,
@@ -56,7 +55,6 @@ class SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110101ddddaaaammmm11r1nnnn,
@@ -87,7 +85,6 @@ class SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110101dddd1111mmmm00r1nnnn,
@@ -116,7 +113,6 @@ class SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000dddd1111mmmm00m1nnnn,
@@ -146,7 +142,6 @@ class SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(6), N(5), Rn(3:0)],
 //    m_high: M(6)=1,
@@ -179,7 +174,6 @@ class SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -225,7 +219,6 @@ class SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(6), N(5), Rn(3:0)],
 //    m_high: M(6)=1,
@@ -256,7 +249,6 @@ class SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000dddd1111mmmm01m1nnnn,
@@ -279,7 +271,6 @@ class SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0
 // SRS_1111100pu1w0110100000101000iiiii_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111100pu1w0110100000101000iiiii,
 //    rule: SRS,
@@ -306,7 +297,6 @@ class SRS_1111100pu1w0110100000101000iiiii_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), sat_imm(19:16), Rd(15:12), Rn(3:0)],
 //    pattern: cccc01101010iiiidddd11110011nnnn,
@@ -335,7 +325,6 @@ class SSAT16_cccc01101010iiiidddd11110011nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      sat_imm(20:16),
@@ -373,7 +362,6 @@ class SSAT_cccc0110101iiiiiddddiiiiis01nnnn_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110101mmmm,
@@ -401,7 +389,6 @@ class SSAX_cccc01100001nnnndddd11110101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110111mmmm,
@@ -429,7 +416,6 @@ class SSSUB16_cccc01100001nnnndddd11110111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11111111mmmm,
@@ -452,7 +438,6 @@ class SSUB8_cccc01100001nnnndddd11111111mmmm_case_0
 // STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw0nnnniiiiiiiiiiiiiiii,
 //    rule: STC2,
@@ -474,8 +459,7 @@ class STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0
 
 // STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc110pudw0nnnnddddcccciiiiiiii,
 //    rule: STC,
 //    safety: [true => FORBIDDEN],
@@ -502,7 +486,6 @@ class STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -546,7 +529,6 @@ class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -590,7 +572,6 @@ class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -634,7 +615,6 @@ class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -672,8 +652,7 @@ class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0
 
 // STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //    rule: STM_User_registers,
 //    safety: [true => FORBIDDEN],
@@ -694,8 +673,7 @@ class STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0
 
 // STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
 //    rule: STRBT_A1,
 //    safety: [true => FORBIDDEN],
@@ -716,8 +694,7 @@ class STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0
 
 // STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
 //    rule: STRBT_A2,
 //    safety: [true => FORBIDDEN],
@@ -748,7 +725,6 @@ class STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -806,7 +782,6 @@ class STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -872,7 +847,6 @@ class STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -939,7 +913,6 @@ class STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -999,7 +972,6 @@ class STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -1033,7 +1005,6 @@ class STREXB_cccc00011100nnnndddd11111001tttt_case_0
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -1068,7 +1039,6 @@ class STREXD_cccc00011010nnnndddd11111001tttt_case_0
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -1099,7 +1069,6 @@ class STREXH_cccc00011110nnnndddd11111001tttt_case_0
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -1130,7 +1099,6 @@ class STREXH_cccc00011111nnnntttt111110011111_case_0
 //    arch: v6,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -1168,7 +1136,6 @@ class STREX_cccc00011000nnnndddd11111001tttt_case_0
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -1231,7 +1198,6 @@ class STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -1280,8 +1246,7 @@ class STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0
 
 // STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
 //    rule: STRT_A1,
 //    safety: [true => FORBIDDEN],
@@ -1302,8 +1267,7 @@ class STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0
 
 // STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
 //    rule: STRT_A2,
 //    safety: [true => FORBIDDEN],
@@ -1334,7 +1298,6 @@ class STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -1390,7 +1353,6 @@ class STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -1449,7 +1411,6 @@ class STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1487,7 +1448,6 @@ class SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1531,7 +1491,6 @@ class SUB_register_cccc0000010snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1564,8 +1523,7 @@ class SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0
 
 // SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
 //    rule: SVC,
 //    safety: [true => FORBIDDEN],
@@ -1586,8 +1544,7 @@ class SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0
 
 // SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc00010b00nnnntttt00001001tttt,
 //    rule: SWP_SWPB,
 //    safety: [true => DEPRECATED],
@@ -1614,7 +1571,6 @@ class SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101000nnnnddddrr000111mmmm,
@@ -1645,7 +1601,6 @@ class SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101010nnnnddddrr000111mmmm,
@@ -1676,7 +1631,6 @@ class SXTAB_cccc01101010nnnnddddrr000111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101011nnnnddddrr000111mmmm,
@@ -1706,7 +1660,6 @@ class SXTAH_cccc01101011nnnnddddrr000111mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010001111ddddrr000111mmmm,
@@ -1735,7 +1688,6 @@ class SXTB16_cccc011010001111ddddrr000111mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010101111ddddrr000111mmmm,
@@ -1764,7 +1716,6 @@ class SXTB_cccc011010101111ddddrr000111mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010111111ddddrr000111mmmm,
@@ -1791,7 +1742,6 @@ class SXTH_cccc011010111111ddddrr000111mmmm_case_0
 //   {NZCV: 16,
 //    Rn: Rn(19:16),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1820,7 +1770,6 @@ class TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -1857,7 +1806,6 @@ class TEQ_register_cccc00010011nnnn0000iiiiitt0mmmm_case_0
 //    Rn: Rn(19:16),
 //    Rs: Rs(11:8),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010011nnnn0000ssss0tt1mmmm,
@@ -1884,7 +1832,6 @@ class TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0
 //   {NZCV: 16,
 //    Rn: Rn(19:16),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1921,7 +1868,6 @@ class TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -1958,7 +1904,6 @@ class TST_register_cccc00010001nnnn0000iiiiitt0mmmm_case_0
 //    Rn: Rn(19:16),
 //    Rs: Rs(11:8),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010001nnnn0000ssss0tt1mmmm,
@@ -1988,7 +1933,6 @@ class TST_register_shifted_register_cccc00010001nnnn0000ssss0tt1mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110001mmmm,
@@ -2016,7 +1960,6 @@ class UADD16_cccc01100101nnnndddd11110001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11111001mmmm,
@@ -2044,7 +1987,6 @@ class UADD8_cccc01100101nnnndddd11111001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110011mmmm,
@@ -2071,7 +2013,6 @@ class UASX_cccc01100101nnnndddd11110011mmmm_case_0
 //    Rn: Rn(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -2097,8 +2038,7 @@ class UBFX_cccc0111111mmmmmddddlllll101nnnn_case_0
 
 // UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    inst: inst,
 //    pattern: cccc01111111iiiiiiiiiiii1111iiii,
 //    rule: UDF,
@@ -2126,7 +2066,6 @@ class UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0
 //    Rn: Rn(3:0),
 //    arch: v7VEoptv7A_v7R,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110011dddd1111mmmm0001nnnn,
@@ -2154,7 +2093,6 @@ class UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110001mmmm,
@@ -2182,7 +2120,6 @@ class UHADD16_cccc01100111nnnndddd11110001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11111001mmmm,
@@ -2210,7 +2147,6 @@ class UHADD8_cccc01100111nnnndddd11111001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110011mmmm,
@@ -2238,7 +2174,6 @@ class UHASX_cccc01100111nnnndddd11110011mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110101mmmm,
@@ -2266,7 +2201,6 @@ class UHSAX_cccc01100111nnnndddd11110101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110111mmmm,
@@ -2294,7 +2228,6 @@ class UHSUB16_cccc01100111nnnndddd11110111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11111111mmmm,
@@ -2322,7 +2255,6 @@ class UHSUB8_cccc01100111nnnndddd11111111mmmm_case_0
 //    Rm: Rm(11:8),
 //    Rn: Rn(3:0),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi},
 //    fields: [cond(31:28), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //    pattern: cccc00000100hhhhllllmmmm1001nnnn,
@@ -2355,7 +2287,6 @@ class UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -2402,7 +2333,6 @@ class UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -2446,7 +2376,6 @@ class UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110001mmmm,
@@ -2474,7 +2403,6 @@ class UQADD16_cccc01100110nnnndddd11110001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11111001mmmm,
@@ -2502,7 +2430,6 @@ class UQADD8_cccc01100110nnnndddd11111001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110011mmmm,
@@ -2530,7 +2457,6 @@ class UQASX_cccc01100110nnnndddd11110011mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110101mmmm,
@@ -2558,7 +2484,6 @@ class UQSAX_cccc01100110nnnndddd11110101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110111mmmm,
@@ -2586,7 +2511,6 @@ class UQSUB16_cccc01100110nnnndddd11110111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11111111mmmm,
@@ -2614,7 +2538,6 @@ class UQSUB8_cccc01100110nnnndddd11111111mmmm_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), Rn(3:0)],
 //    pattern: cccc01111000dddd1111mmmm0001nnnn,
@@ -2643,7 +2566,6 @@ class USAD8_cccc01111000dddd1111mmmm0001nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //    pattern: cccc01111000ddddaaaammmm0001nnnn,
@@ -2672,7 +2594,6 @@ class USADA8_cccc01111000ddddaaaammmm0001nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), sat_imm(19:16), Rd(15:12), Rn(3:0)],
 //    pattern: cccc01101110iiiidddd11110011nnnn,
@@ -2701,7 +2622,6 @@ class USAT16_cccc01101110iiiidddd11110011nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      sat_imm(20:16),
@@ -2739,7 +2659,6 @@ class USAT_cccc0110111iiiiiddddiiiiis01nnnn_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110101mmmm,
@@ -2767,7 +2686,6 @@ class USAX_cccc01100101nnnndddd11110101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110111mmmm,
@@ -2795,7 +2713,6 @@ class USUB16_cccc01100101nnnndddd11110111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11111111mmmm,
@@ -2823,7 +2740,6 @@ class USUB8_cccc01100101nnnndddd11111111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101100nnnnddddrr000111mmmm,
@@ -2854,7 +2770,6 @@ class UXTAB16_cccc01101100nnnnddddrr000111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101110nnnnddddrr000111mmmm,
@@ -2885,7 +2800,6 @@ class UXTAB_cccc01101110nnnnddddrr000111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101111nnnnddddrr000111mmmm,
@@ -2915,7 +2829,6 @@ class UXTAH_cccc01101111nnnnddddrr000111mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011001111ddddrr000111mmmm,
@@ -2944,7 +2857,6 @@ class UXTB16_cccc011011001111ddddrr000111mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011101111ddddrr000111mmmm,
@@ -2973,7 +2885,6 @@ class UXTB_cccc011011101111ddddrr000111mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011111111ddddrr000111mmmm,
@@ -2998,7 +2909,6 @@ class UXTH_cccc011011111111ddddrr000111mmmm_case_0
 // Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0:
 //
 //   {arch: MPExt,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110100x001xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => FORBIDDEN],
@@ -3019,8 +2929,7 @@ class Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 11110100xx11xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3040,8 +2949,7 @@ class Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 111101010011xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3061,8 +2969,7 @@ class Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx0000xxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3082,8 +2989,7 @@ class Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx001xxxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3103,8 +3009,7 @@ class Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx0111xxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3124,8 +3029,7 @@ class Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx1xxxxxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3145,8 +3049,7 @@ class Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0
 
 // Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 111101011x11xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3166,8 +3069,7 @@ class Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 11110101x001xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3188,7 +3090,6 @@ class Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0
 // Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0:
 //
 //   {arch: MPExt,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110110x001xxxxxxxxxxxxxxx0xxxx,
 //    safety: [true => FORBIDDEN],
@@ -3209,8 +3110,7 @@ class Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0
 
 // Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: 1111011xxx11xxxxxxxxxxxxxxx0xxxx,
 //    safety: [true => UNPREDICTABLE],
 //    true: true,
@@ -3230,8 +3130,7 @@ class Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0
 
 // Unnamed_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
@@ -3250,8 +3149,7 @@ class Unnamed_case_0
 
 // Unnamed_case_1:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    safety: [true => UNDEFINED],
 //    true: true,
 //    uses: {}}
@@ -3270,8 +3168,7 @@ class Unnamed_case_1
 
 // Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
 //    safety: [true => UNDEFINED],
 //    true: true,
@@ -3291,8 +3188,7 @@ class Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0
 
 // Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
 //    safety: [true => UNDEFINED],
 //    true: true,
@@ -3312,8 +3208,7 @@ class Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0
 
 // Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
 //    safety: [true => UNDEFINED],
 //    true: true,
@@ -3340,7 +3235,6 @@ class Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3387,7 +3281,6 @@ class VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3440,7 +3333,6 @@ class VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3487,7 +3379,6 @@ class VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3542,7 +3433,6 @@ class VABD_1111001u0dssnnnndddd0111nqm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -3593,7 +3483,6 @@ class VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3641,7 +3530,6 @@ class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3689,7 +3577,6 @@ class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1
 //    advsimd: false,
 //    arch: VFPv2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: Vd:D
 //         if sz(8)=0
 //         else D:Vd,
@@ -3730,7 +3617,6 @@ class VABS_cccc11101d110000dddd101s11m0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -3783,7 +3669,6 @@ class VACGE_111100110dssnnnndddd1110nqm1mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -3834,7 +3719,6 @@ class VACGT_111100110dssnnnndddd1110nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3881,7 +3765,6 @@ class VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -3933,7 +3816,6 @@ class VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -3986,7 +3868,6 @@ class VADD_floating_point_A1_111100100d0snnnndddd1101nqm0mmmm_case_0
 //    advsimd: false,
 //    arch: VFPv2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: D:Vd
 //         if dp_operation
 //         else Vd:D,
@@ -4036,7 +3917,6 @@ class VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4090,7 +3970,6 @@ class VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [U(24),
@@ -4137,7 +4016,6 @@ class VAND_register_111100100d00nnnndddd0001nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    arch: ASIMD,
 //    cmode: cmode(11:8),
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [i(24),
@@ -4187,7 +4065,6 @@ class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [U(24),
@@ -4238,7 +4115,6 @@ class VBIC_register_111100100d01nnnndddd0001nqm1mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [U(24),
@@ -4289,7 +4165,6 @@ class VBIF_111100110d11nnnndddd0001nqm1mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [U(24),
@@ -4340,7 +4215,6 @@ class VBIT_111100110d10nnnndddd0001nqm1mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [U(24),
@@ -4389,7 +4263,6 @@ class VBSL_111100110d01nnnndddd0001nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4437,7 +4310,6 @@ class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4487,7 +4359,6 @@ class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4542,7 +4413,6 @@ class VCEQ_register_A1_111100110dssnnnndddd1000nqm1mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -4593,7 +4463,6 @@ class VCEQ_register_A2_111100100d0snnnndddd1110nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4641,7 +4510,6 @@ class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4691,7 +4559,6 @@ class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4746,7 +4613,6 @@ class VCGE_register_A1_1111001u0dssnnnndddd0011nqm1mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -4797,7 +4663,6 @@ class VCGE_register_A2_111100110d0snnnndddd1110nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4845,7 +4710,6 @@ class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4895,7 +4759,6 @@ class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -4950,7 +4813,6 @@ class VCGT_register_A1_1111001u0dssnnnndddd0011nqm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -5001,7 +4863,6 @@ class VCGT_register_A2_111100110d1snnnndddd1110nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5049,7 +4910,6 @@ class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5097,7 +4957,6 @@ class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5145,7 +5004,6 @@ class VCLS_111100111d11ss00dddd01000qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5193,7 +5051,6 @@ class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5241,7 +5098,6 @@ class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5289,7 +5145,6 @@ class VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    arch: VFPv2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: Vd:D
 //         if sz(8)=0
 //         else D:Vd,
@@ -5328,7 +5183,6 @@ class VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    arch: VFPv2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: Vd:D
 //         if sz(8)=0
 //         else D:Vd,
@@ -5365,7 +5219,6 @@ class VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5413,7 +5266,6 @@ class VCNT_111100111d11ss00dddd01010qm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    arch: VFPv3HP,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: Vd:D,
 //    defs: {},
 //    fields: [cond(31:28), D(22), op(16), Vd(15:12), T(7), M(5), Vm(3:0)],
@@ -5450,7 +5302,6 @@ class VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -5499,7 +5350,6 @@ class VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    arch: VFPv2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: Vd:D
 //         if to_integer
 //         else D:Vd
@@ -5557,7 +5407,6 @@ class VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111
 //    Vm: Vm(3:0),
 //    arch: VFPv2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: Vd:D
 //         if sz(8)=0
 //         else D:Vd,
@@ -5596,7 +5445,6 @@ class VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -5647,7 +5495,6 @@ class VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mm
 //    Vd: Vd(12),
 //    arch: VFPv3,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: Vd:D
 //         if sz(8)=0
 //         else D:Vd,
@@ -5706,7 +5553,6 @@ class VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1
 //    advsimd: false,
 //    arch: VFPv2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: D:Vd
 //         if dp_operation
 //         else Vd:D,
@@ -5757,7 +5603,6 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
 //    arch: AdvSIMD,
 //    cond: cond(31:28),
 //    cond_AL: 14,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2
@@ -5816,7 +5661,6 @@ class VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 8
@@ -5876,7 +5720,6 @@ class VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [U(24),
@@ -5925,7 +5768,6 @@ class VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    fields: [D(22),
@@ -5974,7 +5816,6 @@ class VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMDv2,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -6027,7 +5868,6 @@ class VFMA_A1_111100100d00nnnndddd1100nqm1mmmm_case_0
 //    advsimd: false,
 //    arch: VFPv4,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: D:Vd
 //         if dp_operation
 //         else Vd:D,
@@ -6080,7 +5920,6 @@ class VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMDv2,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 2,
@@ -6132,7 +5971,6 @@ class VFMS_A1_111100100d10nnnndddd1100nqm1mmmm_case_0
 //    Vn: Vn(19:16),
 //    arch: VFPv4,
 //    cond: cond(31:28),
-//    constraints: ,
 //    d: D:Vd
 //         if dp_operation
 //         else Vd:D,
@@ -6184,7 +6022,6 @@ class VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -6239,7 +6076,6 @@ class VHADD_1111001u0dssnnnndddd0000nqm0mmmm_case_0
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
 //    arch: ASIMD,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,

@@ -29,8 +29,7 @@ def neutral_repr(value):
      merge rows/actions of the table.
      """
   if (isinstance(value, BitExpr) or isinstance(value, SymbolTable) or
-      isinstance(value, Row) or isinstance(value, DecoderAction) or
-      isinstance(value, RuleRestrictions)):
+      isinstance(value, Row) or isinstance(value, DecoderAction) ):
     return value.neutral_repr()
   elif isinstance(value, list):
     return '[' + ',\n    '.join([ neutral_repr(v) for v in value ]) + ']'
@@ -43,8 +42,7 @@ def sub_bit_exprs(value):
 
      Used to find the set of identifier references used by a value.
      """
-  if (isinstance(value, BitExpr) or isinstance(value, SymbolTable) or
-      isinstance(value, RuleRestrictions)):
+  if isinstance(value, BitExpr) or isinstance(value, SymbolTable):
     return value.sub_bit_exprs()
   elif isinstance(value, list):
     exprs = set()
@@ -1705,53 +1703,6 @@ class BitPattern(BitExpr):
         else:
           return "~%s" % self.bitstring()
 
-class RuleRestrictions(object):
-  """A rule restriction defines zero or more (anded) bit patterns, and
-     an optional other (i.e. base class) restriction to be used when testing.
-     """
-
-  def __init__(self, restrictions=[], other=None):
-    self.restrictions = restrictions[:]
-    self.other = other
-
-  def IsEmpty(self):
-    return not self.restrictions and not self.other
-
-  def add(self, restriction):
-    self.restrictions = self.restrictions + [restriction]
-
-  def sub_bit_exprs(self):
-    return sub_bit_exprs(list(self.restrictions))
-
-  def __repr__(self):
-    """ Returns the printable string for the restrictions. """
-    rep = ''
-    if self.restrictions:
-      for r in self.restrictions:
-        rep += '& %s' % r
-      rep += ' '
-    if self.other:
-      rep += ('& other: %s' % self.other)
-    return rep
-
-  def neutral_repr(self):
-    """Returns a normalized neutral representation of the rule restrictions."""
-    rep = ''
-    if self.restrictions:
-      for r in self.restrictions:
-        rep += '& %s' % neutral_repr(r)
-      rep += ' '
-    if self.other:
-      rep += ('& other: %s' % self.other)
-    return rep
-
-  def __hash__(self):
-    return hash(self.neutral_repr())
-
-  def __cmp__(self, other):
-    return (cmp(type(self), type(other)) or
-            cmp(self.neutral_repr(), neutral_repr(other)))
-
 TABLE_FORMAT="""
 Table %s
 %s
@@ -1925,7 +1876,6 @@ class DecoderAction:
       self._st.define('baseline', baseline)
     if actual != None:
       self._st.define('actual', actual)
-    self._st.define('constraints', RuleRestrictions())
 
     # The following field is set by method force_type_checking, and is
     # used to force type checking while parsing a decoder action. This
@@ -2079,10 +2029,6 @@ class DecoderAction:
   def rule(self):
     """Returns the rule associated with the action."""
     return self.find('rule')
-
-  def constraints(self):
-    """Returns the pattern restrictions associated with the action."""
-    return self.find('constraints')
 
   def safety(self):
     """Returns the safety associated with the action."""

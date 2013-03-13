@@ -33,7 +33,6 @@ namespace nacl_arm_test {
 // A(25)=0 & op1(24:20)=0x010
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
 //       rule: STRT_A1,
@@ -74,7 +73,6 @@ bool STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0TesterCase0
 // A(25)=0 & op1(24:20)=0x011
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
 //       rule: LDRT_A1,
@@ -115,7 +113,6 @@ bool LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0TesterCase1
 // A(25)=0 & op1(24:20)=0x110
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
 //       rule: STRBT_A1,
@@ -156,7 +153,6 @@ bool STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0TesterCase2
 // A(25)=0 & op1(24:20)=0x111
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
 //       rule: LDRBT_A1,
@@ -204,7 +200,6 @@ bool LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0TesterCase3
 //       actual: Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -269,7 +264,6 @@ bool STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0TesterCase4
 //       add: U(23)=1,
 //       base: Rn,
 //       baseline: LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -340,7 +334,6 @@ bool LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0TesterCase5
 //       actual: Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1,
 //       base: Pc,
 //       baseline: LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -400,7 +393,6 @@ bool LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0TesterCase6
 //       actual: Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -464,7 +456,6 @@ bool STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0TesterCase7
 //       actual: Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -527,7 +518,6 @@ bool LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0TesterCase8
 //       actual: Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1,
 //       base: Pc,
 //       baseline: LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -580,7 +570,6 @@ bool LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0TesterCase9
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
 //       rule: STRT_A2,
@@ -624,7 +613,6 @@ bool STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0TesterCase10
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
 //       rule: LDRT_A2,
@@ -668,7 +656,6 @@ bool LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0TesterCase11
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
 //       rule: STRBT_A2,
@@ -712,7 +699,6 @@ bool STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0TesterCase12
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
 //       rule: LDRBT_A2,
@@ -764,7 +750,6 @@ bool LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0TesterCase13
 //       actual: Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -838,7 +823,6 @@ bool STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0TesterCase14
 //       actual: Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -914,7 +898,6 @@ bool LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0TesterCase15
 //       actual: Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -987,7 +970,6 @@ bool STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0TesterCase16
 //       actual: Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1057,7 +1039,6 @@ bool LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0TesterCase17
 // A(25)=0 & op1(24:20)=0x010
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
 //       rule: STRT_A1,
@@ -1076,7 +1057,6 @@ class STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0Tester_Case0
 // A(25)=0 & op1(24:20)=0x011
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
 //       rule: LDRT_A1,
@@ -1095,7 +1075,6 @@ class LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0Tester_Case1
 // A(25)=0 & op1(24:20)=0x110
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
 //       rule: STRBT_A1,
@@ -1114,7 +1093,6 @@ class STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0Tester_Case2
 // A(25)=0 & op1(24:20)=0x111
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
 //       rule: LDRBT_A1,
@@ -1140,7 +1118,6 @@ class LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0Tester_Case3
 //       actual: Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1180,7 +1157,6 @@ class STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0Tester_Case4
 //       add: U(23)=1,
 //       base: Rn,
 //       baseline: LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1223,7 +1199,6 @@ class LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0Tester_Case5
 //       actual: Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1,
 //       base: Pc,
 //       baseline: LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -1252,7 +1227,6 @@ class LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0Tester_Case6
 //       actual: Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1291,7 +1265,6 @@ class STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0Tester_Case7
 //       actual: Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1326,7 +1299,6 @@ class LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0Tester_Case8
 //       actual: Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1,
 //       base: Pc,
 //       baseline: LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -1348,7 +1320,6 @@ class LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0Tester_Case9
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
 //       rule: STRT_A2,
@@ -1367,7 +1338,6 @@ class STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0Tester_Case10
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
 //       rule: LDRT_A2,
@@ -1386,7 +1356,6 @@ class LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0Tester_Case11
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
 //       rule: STRBT_A2,
@@ -1405,7 +1374,6 @@ class STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0Tester_Case12
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
 //       rule: LDRBT_A2,
@@ -1432,7 +1400,6 @@ class LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0Tester_Case13
 //       actual: Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1478,7 +1445,6 @@ class STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0Tester_Case14
 //       actual: Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1526,7 +1492,6 @@ class LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0Tester_Case15
 //       actual: Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1571,7 +1536,6 @@ class STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0Tester_Case16
 //       actual: Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1617,7 +1581,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // A(25)=0 & op1(24:20)=0x010
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
 //       rule: STRT_A1,
@@ -1635,7 +1598,6 @@ TEST_F(Arm32DecoderStateTests,
 // A(25)=0 & op1(24:20)=0x011
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
 //       rule: LDRT_A1,
@@ -1653,7 +1615,6 @@ TEST_F(Arm32DecoderStateTests,
 // A(25)=0 & op1(24:20)=0x110
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
 //       rule: STRBT_A1,
@@ -1671,7 +1632,6 @@ TEST_F(Arm32DecoderStateTests,
 // A(25)=0 & op1(24:20)=0x111
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
 //       rule: LDRBT_A1,
@@ -1696,7 +1656,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1735,7 +1694,6 @@ TEST_F(Arm32DecoderStateTests,
 //       add: U(23)=1,
 //       base: Rn,
 //       baseline: LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1777,7 +1735,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1,
 //       base: Pc,
 //       baseline: LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -1805,7 +1762,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1843,7 +1799,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1877,7 +1832,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1,
 //       base: Pc,
 //       baseline: LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -1898,7 +1852,6 @@ TEST_F(Arm32DecoderStateTests,
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
 //       rule: STRT_A2,
@@ -1916,7 +1869,6 @@ TEST_F(Arm32DecoderStateTests,
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
 //       rule: LDRT_A2,
@@ -1934,7 +1886,6 @@ TEST_F(Arm32DecoderStateTests,
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
 //       rule: STRBT_A2,
@@ -1952,7 +1903,6 @@ TEST_F(Arm32DecoderStateTests,
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
 //       rule: LDRBT_A2,
@@ -1978,7 +1928,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -2023,7 +1972,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -2070,7 +2018,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -2114,7 +2061,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},

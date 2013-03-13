@@ -15,49 +15,8 @@ parsed table representations.
 # classes needed to parse valid ARM instructions. For testing, this is
 # a problem. We can't (easily) tell if the intended instruction rules
 # of ARM are being met, since there is not a one-to-one mapping from
-# class decoders to rules.
-#
-# For example, consider the following two rows (from armv7.table):
-#
-# | 0011x      -        = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc
-#                         Rsb_Rule_144_A1_P288
-#                         cccc0000011snnnnddddssss0tt1mmmm
-#                         RegsNotPc
-# | 0100x      -        = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc
-#                         Add_Rule_7_A1_P26
-#                         cccc0000100snnnnddddssss0tt1mmmm
-#                         RegsNotPc
-#
-# Both rows state to return a Binary4RegisterShiftedOp class decoder.
-# The sequence of four symbols correspond to (in order presented):
-#
-#    baseline - The name of the class decoder that should be used for testing.
-#    actual - The name of the class decoder to use in sel_ldr
-#    rule - A unique name identifying the rule from the manual that
-#       defines what the selected class decoder is to decode.
-#    pattern - The sequence of bits defines by the rule (above)
-#    constraints - Any additional constraints assumed by the rule.
-#
-# All but the baseline is optional. The remaining fields provide
-# additional documentation and information for testing (which is used
-# by this file). If the actual is not specified (prefixed by '=>')
-# then it is assumed to have the same value as the baseline.
-#
-# If these two rows had a mergable bit pattern (which they do not),
-# these rows would still not mergable since the actions are
-# different. However, for sel_ldr, they both state to use a
-# Binary4RegisterShiftedOp. The remaining identifiers are added data
-# for testing only.
-#
-# We fix this by defining a notion of "action_filter" where one can
-# choose to keep only those fields that are applicable. For sel_ldr,
-# it's only 'actual'. For testing, it will include other fields,
-# depending on the context.
-#
-# Note: The current ARM instruction table has both new and old
-# actions. Old actions only define the 'InstClass' entry. If the
-# remaining fields are omitted, the corresponding testing for those
-# entries are omitted.
+# class decoders to rules. Hence, we do not (in general) merge decoder
+# classes when generating test files.
 #
 # Note: See dgen_decoder_output.py for more details on how we build a
 # decoder for sel_ldr.
@@ -177,7 +136,7 @@ CLASS = '%(DECODER)s_%(rule)s'
 NAMED_CLASS = 'Named%(DECODER)s_%(rule)s'
 INSTANCE = '%(DECODER_class)s_instance_'
 BASE_TESTER='%(baseline)sTester%(base_test_case)s'
-BASE_BASE_TESTER='%(decoder_base)sTester%(qualifier)s'
+BASE_BASE_TESTER='%(decoder_base)sTester'
 DECODER_TESTER='%(baseline)sTester_%(test_case)s'
 
 def _safety_to_check(safety):
@@ -203,13 +162,6 @@ def _install_action(decoder, action, values):
   values['actual'] = action.actual()
   values['decoder_base'] = decoder.base_class(values['baseline'])
   values['rule'] = action.rule()
-  values['qualifier'] = ''.join([s for s in action.safety()
-                                 if isinstance(s, str)])
-  if action.constraints():
-    values['qualifier'] += (action.constraints().other
-                            if action.constraints().other else '')
-  else:
-    values['qualifier'] =''
   values['pattern'] = action.pattern()
   # Add dummies for row cases, in case not set up. See
   # function _install_row_cases) for more details on these fields.
@@ -753,10 +705,6 @@ ROW_CONSTRAINTS_HEADER="""
 
   // Check that row patterns apply to pattern being checked.'"""
 
-PATTERN_CONSTRAINT_RESTRICTIONS_HEADER="""
-
-  // Check pattern restrictions of row."""
-
 CONSTRAINT_CHECK="""
   // %(comment)s
   if (%(code)s) return false;"""
@@ -918,7 +866,6 @@ def _row_action_has_parse_restrictions(row, action):
      tester for row with the given action.
      """
   return (row.patterns or
-          action.constraints().restrictions or
           _action_pattern_defines_condition(action))
 
 def _action_pattern_defines_condition(action):
@@ -952,13 +899,6 @@ def _generate_constraint_testers(decoder, values, out):
           not_p = p.negate()
           values['comment'] = dgen_output.commented_string(repr(not_p), '  ')
           values['code'] = not_p.to_bool()
-          out.write(CONSTRAINT_CHECK % values)
-      if action.constraints().restrictions:
-        out.write(PATTERN_CONSTRAINT_RESTRICTIONS_HEADER)
-        for c in action.constraints().restrictions:
-          not_c = c.negate()
-          values['comment'] = dgen_output.commented_string(repr(not_c), '  ')
-          values['code'] = not_c.to_bool()
           out.write(CONSTRAINT_CHECK % values)
       if _action_pattern_defines_condition(action):
         # Special case where 'cccc' part of pattern can't be 1111.

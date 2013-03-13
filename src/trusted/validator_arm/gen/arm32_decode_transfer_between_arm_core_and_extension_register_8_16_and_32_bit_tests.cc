@@ -36,7 +36,6 @@ namespace nacl_arm_test {
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
-//       constraints: ,
 //       defs: {Rt
 //            if to_arm_register
 //            else None},
@@ -93,7 +92,6 @@ bool VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onn
 //       Rt: Rt(15:12),
 //       actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //       baseline: VMSR_cccc111011100001tttt101000010000_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rt(15:12)],
 //       pattern: cccc111011100001tttt101000010000,
@@ -144,7 +142,6 @@ bool VMSR_cccc111011100001tttt101000010000_case_0TesterCase1
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //       baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc1(22:21), Rt(15:12), opc2(6:5)],
 //       opc1: opc1(22:21),
@@ -204,7 +201,6 @@ bool VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0Tes
 //       baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //       cond: cond(31:28),
 //       cond_AL: 14,
-//       constraints: ,
 //       defs: {},
 //       fields: [cond(31:28), B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
 //       pattern: cccc11101bq0ddddtttt1011d0e10000,
@@ -264,7 +260,6 @@ bool VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0TesterCase3
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
-//       constraints: ,
 //       defs: {Rt
 //            if to_arm_register
 //            else None},
@@ -322,7 +317,6 @@ bool VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnn
 //       Rt: Rt(15:12),
 //       actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //       baseline: VMRS_cccc111011110001tttt101000010000_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if t  ==
 //               Pc
@@ -374,7 +368,6 @@ bool VMRS_cccc111011110001tttt101000010000_case_0TesterCase5
 //       U: U(23),
 //       actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //       baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [U(23), opc1(22:21), Rt(15:12), opc2(6:5)],
 //       opc1: opc1(22:21),
@@ -431,7 +424,6 @@ bool MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0Tes
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
-//       constraints: ,
 //       defs: {Rt
 //            if to_arm_register
 //            else None},
@@ -460,7 +452,6 @@ class VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000on
 //       Rt: Rt(15:12),
 //       actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //       baseline: VMSR_cccc111011100001tttt101000010000_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rt(15:12)],
 //       pattern: cccc111011100001tttt101000010000,
@@ -483,7 +474,6 @@ class VMSR_cccc111011100001tttt101000010000_case_0Tester_Case1
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //       baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc1(22:21), Rt(15:12), opc2(6:5)],
 //       opc1: opc1(22:21),
@@ -515,7 +505,6 @@ class VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0Te
 //       baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //       cond: cond(31:28),
 //       cond_AL: 14,
-//       constraints: ,
 //       defs: {},
 //       fields: [cond(31:28), B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
 //       pattern: cccc11101bq0ddddtttt1011d0e10000,
@@ -544,7 +533,6 @@ class VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0Tester_Case3
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
-//       constraints: ,
 //       defs: {Rt
 //            if to_arm_register
 //            else None},
@@ -574,7 +562,6 @@ class VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xn
 //       Rt: Rt(15:12),
 //       actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //       baseline: VMRS_cccc111011110001tttt101000010000_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if t  ==
 //               Pc
@@ -598,7 +585,6 @@ class VMRS_cccc111011110001tttt101000010000_case_0Tester_Case5
 //       U: U(23),
 //       actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //       baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [U(23), opc1(22:21), Rt(15:12), opc2(6:5)],
 //       opc1: opc1(22:21),
@@ -634,7 +620,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
-//       constraints: ,
 //       defs: {Rt
 //            if to_arm_register
 //            else None},
@@ -662,7 +647,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //       baseline: VMSR_cccc111011100001tttt101000010000_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rt(15:12)],
 //       pattern: cccc111011100001tttt101000010000,
@@ -684,7 +668,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //       baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc1(22:21), Rt(15:12), opc2(6:5)],
 //       opc1: opc1(22:21),
@@ -715,7 +698,6 @@ TEST_F(Arm32DecoderStateTests,
 //       baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //       cond: cond(31:28),
 //       cond_AL: 14,
-//       constraints: ,
 //       defs: {},
 //       fields: [cond(31:28), B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
 //       pattern: cccc11101bq0ddddtttt1011d0e10000,
@@ -743,7 +725,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
-//       constraints: ,
 //       defs: {Rt
 //            if to_arm_register
 //            else None},
@@ -772,7 +753,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //       baseline: VMRS_cccc111011110001tttt101000010000_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if t  ==
 //               Pc
@@ -795,7 +775,6 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //       baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [U(23), opc1(22:21), Rt(15:12), opc2(6:5)],
 //       opc1: opc1(22:21),

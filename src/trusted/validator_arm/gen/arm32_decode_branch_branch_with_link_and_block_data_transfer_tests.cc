@@ -38,7 +38,6 @@ namespace nacl_arm_test {
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -94,7 +93,6 @@ bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -149,7 +147,6 @@ bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -205,7 +202,6 @@ bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -260,7 +256,6 @@ bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -316,7 +311,6 @@ bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -371,7 +365,6 @@ bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -427,7 +420,6 @@ bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -477,7 +469,6 @@ bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //       rule: STM_User_registers,
@@ -518,7 +509,6 @@ bool STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0TesterCase8
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //       rule: LDM_User_registers,
@@ -562,7 +552,6 @@ bool LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0TesterCase9
 // op(25:20)=0xx1x1 & R(15)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //       rule: LDM_exception_return,
@@ -604,7 +593,6 @@ bool LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0TesterCase10
 //    = {Pc: 15,
 //       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Pc},
 //       fields: [imm24(23:0)],
 //       imm24: imm24(23:0),
@@ -649,7 +637,6 @@ bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
 //       Pc: 15,
 //       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Pc, Lr},
 //       fields: [imm24(23:0)],
 //       imm24: imm24(23:0),
@@ -702,7 +689,6 @@ bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -739,7 +725,6 @@ class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -775,7 +760,6 @@ class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -812,7 +796,6 @@ class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -848,7 +831,6 @@ class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -885,7 +867,6 @@ class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -921,7 +902,6 @@ class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -958,7 +938,6 @@ class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -989,7 +968,6 @@ class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case7
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //       rule: STM_User_registers,
@@ -1008,7 +986,6 @@ class STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case8
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //       rule: LDM_User_registers,
@@ -1027,7 +1004,6 @@ class LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0Tester_Case9
 // op(25:20)=0xx1x1 & R(15)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //       rule: LDM_exception_return,
@@ -1047,7 +1023,6 @@ class LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0Tester_Case10
 //    = {Pc: 15,
 //       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Pc},
 //       fields: [imm24(23:0)],
 //       imm24: imm24(23:0),
@@ -1073,7 +1048,6 @@ class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11
 //       Pc: 15,
 //       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Pc, Lr},
 //       fields: [imm24(23:0)],
 //       imm24: imm24(23:0),
@@ -1111,7 +1085,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -1147,7 +1120,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -1182,7 +1154,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -1218,7 +1189,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -1253,7 +1223,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -1289,7 +1258,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -1324,7 +1292,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
@@ -1360,7 +1327,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
@@ -1390,7 +1356,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //       rule: STM_User_registers,
@@ -1408,7 +1373,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //       rule: LDM_User_registers,
@@ -1426,7 +1390,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(25:20)=0xx1x1 & R(15)=1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //       rule: LDM_exception_return,
@@ -1445,7 +1408,6 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Pc: 15,
 //       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Pc},
 //       fields: [imm24(23:0)],
 //       imm24: imm24(23:0),
@@ -1470,7 +1432,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Pc, Lr},
 //       fields: [imm24(23:0)],
 //       imm24: imm24(23:0),

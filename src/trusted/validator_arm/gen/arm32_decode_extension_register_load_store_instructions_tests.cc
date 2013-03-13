@@ -43,7 +43,6 @@ namespace nacl_arm_test {
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -129,7 +128,6 @@ bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -222,7 +220,6 @@ bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -307,7 +304,6 @@ bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -399,7 +395,6 @@ bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -485,7 +480,6 @@ bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -578,7 +572,6 @@ bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -666,7 +659,6 @@ bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -755,7 +747,6 @@ bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -811,7 +802,6 @@ bool VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -880,7 +870,6 @@ bool VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -969,7 +958,6 @@ bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -1059,7 +1047,6 @@ bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -1115,7 +1102,6 @@ bool VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -1184,7 +1170,6 @@ bool VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -1269,7 +1254,6 @@ bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -1354,7 +1338,6 @@ bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       n: Rn,
@@ -1400,7 +1383,6 @@ bool VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       n: Rn,
@@ -1446,7 +1428,6 @@ bool VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       is_literal_load: Rn  ==
@@ -1491,7 +1472,6 @@ bool VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       is_literal_load: Rn  ==
@@ -1548,7 +1528,6 @@ bool VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -1612,7 +1591,6 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -1683,7 +1661,6 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -1746,7 +1723,6 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -1816,7 +1792,6 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -1880,7 +1855,6 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -1951,7 +1925,6 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -2014,7 +1987,6 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -2078,7 +2050,6 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -2109,7 +2080,6 @@ class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -2153,7 +2123,6 @@ class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -2217,7 +2186,6 @@ class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -2282,7 +2250,6 @@ class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -2313,7 +2280,6 @@ class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -2357,7 +2323,6 @@ class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -2420,7 +2385,6 @@ class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -2483,7 +2447,6 @@ class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       n: Rn,
@@ -2507,7 +2470,6 @@ class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       n: Rn,
@@ -2531,7 +2493,6 @@ class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       is_literal_load: Rn  ==
@@ -2554,7 +2515,6 @@ class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       is_literal_load: Rn  ==
@@ -2593,7 +2553,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -2656,7 +2615,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -2726,7 +2684,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -2788,7 +2745,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -2857,7 +2813,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -2920,7 +2875,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -2990,7 +2944,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -3052,7 +3005,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -3115,7 +3067,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -3145,7 +3096,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -3188,7 +3138,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -3251,7 +3200,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -3315,7 +3263,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -3345,7 +3292,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
@@ -3388,7 +3334,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
 //            if wback
@@ -3450,7 +3395,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
 //            if wback
@@ -3512,7 +3456,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       n: Rn,
@@ -3535,7 +3478,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       n: Rn,
@@ -3558,7 +3500,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       is_literal_load: Rn  ==
@@ -3580,7 +3521,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
 //       is_literal_load: Rn  ==

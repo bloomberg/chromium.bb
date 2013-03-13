@@ -34,7 +34,6 @@ namespace nacl_arm_dec {
 //    actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -58,7 +57,6 @@ namespace nacl_arm_dec {
 //    actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -82,7 +80,6 @@ namespace nacl_arm_dec {
 //    actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -106,7 +103,6 @@ namespace nacl_arm_dec {
 //    actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -130,7 +126,6 @@ namespace nacl_arm_dec {
 //    actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -154,7 +149,6 @@ namespace nacl_arm_dec {
 //    actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -202,7 +196,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -233,7 +226,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: ADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -264,7 +256,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: AND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -295,7 +286,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: BIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -326,7 +316,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -357,7 +346,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -388,7 +376,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: RSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -419,7 +406,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: RSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -450,7 +436,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -481,7 +466,6 @@ class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
 //    baseline: SUB_register_cccc0000010snnnnddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -542,7 +526,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -573,7 +556,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -604,7 +586,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -635,7 +616,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -666,7 +646,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -697,7 +676,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -728,7 +706,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -759,7 +736,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -790,7 +766,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -821,7 +796,6 @@ class Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1
 //    actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //    baseline: SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -874,7 +848,6 @@ class Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case
 //    actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -900,7 +873,6 @@ class Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case
 //    actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -942,7 +914,6 @@ class Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //    baseline: ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -958,7 +929,6 @@ class Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
 //    baseline: ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1000,7 +970,6 @@ class Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1
 //    actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
 //    baseline: ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1029,7 +998,6 @@ class Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1
 //    actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
 //    baseline: LSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1058,7 +1026,6 @@ class Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1
 //    actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
 //    baseline: MOV_register_cccc0001101s0000dddd00000000mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1079,7 +1046,6 @@ class Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1
 //    actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
 //    baseline: MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1108,7 +1074,6 @@ class Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1
 //    actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
 //    baseline: RRX_cccc0001101s0000dddd00000110mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1157,7 +1122,6 @@ class Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1
 //    actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //    baseline: ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1179,7 +1143,6 @@ class Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1
 //    actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //    baseline: LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1201,7 +1164,6 @@ class Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1
 //    actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //    baseline: LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1223,7 +1185,6 @@ class Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1
 //    actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //    baseline: MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1252,7 +1213,6 @@ class Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1
 //    actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //    baseline: ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1292,7 +1252,6 @@ class Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1
 //    arch: v6T2,
 //    baseline: BFC_cccc0111110mmmmmddddlllll0011111_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7)],
 //    lsb: lsb(11:7),
@@ -1337,7 +1296,6 @@ class Actual_BFC_cccc0111110mmmmmddddlllll0011111_case_1
 //    arch: v6T2,
 //    baseline: BFI_cccc0111110mmmmmddddlllll001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -1390,7 +1348,6 @@ class Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1
 //         clears_mask())  ==
 //            clears_mask(),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1433,7 +1390,6 @@ class Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1
 //    arch: v5T,
 //    baseline: BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28), imm12(19:8), imm4(3:0)],
 //    imm12: imm12(19:8),
@@ -1472,7 +1428,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111101hiiiiiiiiiiiiiiiiiiiiiiii,
 //    rule: BLX_immediate,
@@ -1484,7 +1439,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5TEJ,
 //    baseline: BXJ_cccc000100101111111111110010mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc000100101111111111110010mmmm,
 //    rule: BXJ,
@@ -1496,7 +1450,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iiiiiiiiiiiiiiiiiii0iiii,
 //    rule: CDP2,
@@ -1507,7 +1460,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc1110oooonnnnddddccccooo0mmmm,
 //    rule: CDP,
@@ -1519,7 +1471,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: V6K,
 //    baseline: CLREX_11110101011111111111000000011111_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110101011111111111000000011111,
 //    rule: CLREX,
@@ -1531,7 +1482,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6,
 //    baseline: CPS_111100010000iii00000000iii0iiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111100010000iii00000000iii0iiiii,
 //    rule: CPS,
@@ -1543,7 +1493,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v7,
 //    baseline: DBG_cccc001100100000111100001111iiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc001100100000111100001111iiii,
 //    rule: DBG,
@@ -1555,7 +1504,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v7VE,
 //    baseline: ERET_cccc0001011000000000000001101110_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0001011000000000000001101110,
 //    rule: ERET,
@@ -1566,7 +1514,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: FICTITIOUS_FIRST_case_0,
-//    constraints: ,
 //    defs: {},
 //    rule: FICTITIOUS_FIRST,
 //    safety: [true => FORBIDDEN],
@@ -1577,7 +1524,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v7VE,
 //    baseline: HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010100iiiiiiiiiiii0111iiii,
 //    rule: HVC,
@@ -1589,7 +1535,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw1nnnniiiiiiiiiiiiiiii,
 //    rule: LDC2_immediate,
@@ -1601,7 +1546,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw11111iiiiiiiiiiiiiiii,
 //    rule: LDC2_literal,
@@ -1612,7 +1556,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc110pudw1nnnnddddcccciiiiiiii,
 //    rule: LDC_immediate,
@@ -1623,7 +1566,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc110pudw11111ddddcccciiiiiiii,
 //    rule: LDC_literal,
@@ -1634,7 +1576,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //    rule: LDM_User_registers,
@@ -1645,7 +1586,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //    rule: LDM_exception_return,
@@ -1656,7 +1596,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
 //    rule: LDRBT_A1,
@@ -1667,7 +1606,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
 //    rule: LDRBT_A2,
@@ -1678,7 +1616,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
 //    rule: LDRT_A1,
@@ -1689,7 +1626,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
 //    rule: LDRT_A2,
@@ -1701,7 +1637,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iii0iiiittttiiiiiii1iiii,
 //    rule: MCR2,
@@ -1713,7 +1648,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6,
 //    baseline: MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111111000100ssssttttiiiiiiiiiiii,
 //    rule: MCRR2,
@@ -1725,7 +1659,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5TE,
 //    baseline: MCRR_cccc11000100ttttttttccccoooommmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc11000100ttttttttccccoooommmm,
 //    rule: MCRR,
@@ -1736,7 +1669,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //    rule: MCR,
@@ -1748,7 +1680,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iii1iiiittttiiiiiii1iiii,
 //    rule: MRC2,
@@ -1759,7 +1690,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
 //    rule: MRC,
@@ -1771,7 +1701,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6,
 //    baseline: MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111111000101ssssttttiiiiiiiiiiii,
 //    rule: MRRC2,
@@ -1783,7 +1712,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5TE,
 //    baseline: MRRC_cccc11000101ttttttttccccoooommmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc11000101ttttttttccccoooommmm,
 //    rule: MRRC,
@@ -1795,7 +1723,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v7VE,
 //    baseline: MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010r00mmmmdddd001m00000000,
 //    rule: MRS_Banked_register,
@@ -1807,7 +1734,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v7VE,
 //    baseline: MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010r10mmmm1111001m0000nnnn,
 //    rule: MRS_Banked_register,
@@ -1818,7 +1744,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //    rule: MSR_immediate,
@@ -1829,7 +1754,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: MSR_register_cccc00010r10mmmm111100000000nnnn_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010r10mmmm111100000000nnnn,
 //    rule: MSR_register,
@@ -1841,7 +1765,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6,
 //    baseline: RFE_1111100pu0w1nnnn0000101000000000_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111100pu0w1nnnn0000101000000000,
 //    rule: RFE,
@@ -1853,7 +1776,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6,
 //    baseline: SETEND_1111000100000001000000i000000000_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111000100000001000000i000000000,
 //    rule: SETEND,
@@ -1865,7 +1787,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6K,
 //    baseline: SEV_cccc0011001000001111000000000100_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000100,
 //    rule: SEV,
@@ -1877,7 +1798,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: SE,
 //    baseline: SMC_cccc000101100000000000000111iiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc000101100000000000000111iiii,
 //    rule: SMC,
@@ -1889,7 +1809,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6,
 //    baseline: SRS_1111100pu1w0110100000101000iiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111100pu1w0110100000101000iiiii,
 //    rule: SRS,
@@ -1901,7 +1820,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw0nnnniiiiiiiiiiiiiiii,
 //    rule: STC2,
@@ -1912,7 +1830,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc110pudw0nnnnddddcccciiiiiiii,
 //    rule: STC,
@@ -1923,7 +1840,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //    rule: STM_User_registers,
@@ -1934,7 +1850,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
 //    rule: STRBT_A1,
@@ -1945,7 +1860,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
 //    rule: STRBT_A2,
@@ -1956,7 +1870,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
 //    rule: STRT_A1,
@@ -1967,7 +1880,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
 //    rule: STRT_A2,
@@ -1978,7 +1890,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
 //    rule: SVC,
@@ -1989,7 +1900,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: Unnamed_case_0,
-//    constraints: ,
 //    defs: {},
 //    safety: [true => FORBIDDEN],
 //    true: true,
@@ -1999,7 +1909,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: MPExt,
 //    baseline: Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110100x001xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => FORBIDDEN],
@@ -2010,7 +1919,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: MPExt,
 //    baseline: Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110110x001xxxxxxxxxxxxxxx0xxxx,
 //    safety: [true => FORBIDDEN],
@@ -2021,7 +1929,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6K,
 //    baseline: WFE_cccc0011001000001111000000000010_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000010,
 //    rule: WFE,
@@ -2033,7 +1940,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6K,
 //    baseline: WFI_cccc0011001000001111000000000011_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000011,
 //    rule: WFI,
@@ -2044,7 +1950,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //    rule: extra_load_store_instructions_unpriviledged,
@@ -2080,7 +1985,6 @@ class Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1
 //    arch: v5T,
 //    baseline: BLX_register_cccc000100101111111111110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Pc, Lr},
 //    fields: [cond(31:28), Rm(3:0)],
 //    pattern: cccc000100101111111111110011mmmm,
@@ -2117,7 +2021,6 @@ class Actual_BLX_register_cccc000100101111111111110011mmmm_case_1
 //    Pc: 15,
 //    actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {Pc, Lr},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
@@ -2158,7 +2061,6 @@ class Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1
 //    Pc: 15,
 //    actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {Pc},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
@@ -2200,7 +2102,6 @@ class Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1
 //    arch: v4T,
 //    baseline: Bx_cccc000100101111111111110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Pc},
 //    fields: [cond(31:28), Rm(3:0)],
 //    pattern: cccc000100101111111111110001mmmm,
@@ -2240,7 +2141,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v5T,
 //    baseline: CLZ_cccc000101101111dddd11110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc000101101111dddd11110001mmmm,
@@ -2256,7 +2156,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6T2,
 //    baseline: RBIT_cccc011011111111dddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011011111111dddd11110011mmmm,
@@ -2272,7 +2171,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: REV16_cccc011010111111dddd11111011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011010111111dddd11111011mmmm,
@@ -2288,7 +2186,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: REVSH_cccc011011111111dddd11111011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011011111111dddd11111011mmmm,
@@ -2304,7 +2201,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: REV_cccc011010111111dddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011010111111dddd11110011mmmm,
@@ -2320,7 +2216,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: SSAT16_cccc01101010iiiidddd11110011nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), sat_imm(19:16), Rd(15:12), Rn(3:0)],
 //    pattern: cccc01101010iiiidddd11110011nnnn,
@@ -2338,7 +2233,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: SSAT_cccc0110101iiiiiddddiiiiis01nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      sat_imm(20:16),
@@ -2364,7 +2258,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: SXTB16_cccc011010001111ddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010001111ddddrr000111mmmm,
@@ -2382,7 +2275,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: SXTB_cccc011010101111ddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010101111ddddrr000111mmmm,
@@ -2400,7 +2292,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: SXTH_cccc011010111111ddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010111111ddddrr000111mmmm,
@@ -2418,7 +2309,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: USAT16_cccc01101110iiiidddd11110011nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), sat_imm(19:16), Rd(15:12), Rn(3:0)],
 //    pattern: cccc01101110iiiidddd11110011nnnn,
@@ -2436,7 +2326,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: USAT_cccc0110111iiiiiddddiiiiis01nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      sat_imm(20:16),
@@ -2462,7 +2351,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: UXTB16_cccc011011001111ddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011001111ddddrr000111mmmm,
@@ -2480,7 +2368,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: UXTB_cccc011011101111ddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011101111ddddrr000111mmmm,
@@ -2498,7 +2385,6 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    arch: v6,
 //    baseline: UXTH_cccc011011111111ddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011111111ddddrr000111mmmm,
@@ -2532,7 +2418,6 @@ class Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
 //    actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //    baseline: CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -2547,7 +2432,6 @@ class Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
 //    actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //    baseline: CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -2562,7 +2446,6 @@ class Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
 //    actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
 //    baseline: TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -2600,7 +2483,6 @@ class Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1
 //    actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
 //    baseline: CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -2626,7 +2508,6 @@ class Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1
 //    actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
 //    baseline: CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -2652,7 +2533,6 @@ class Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1
 //    actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
 //    baseline: TEQ_register_cccc00010011nnnn0000iiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -2678,7 +2558,6 @@ class Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1
 //    actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
 //    baseline: TST_register_cccc00010001nnnn0000iiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -2728,7 +2607,6 @@ class Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1
 //    actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //    baseline: CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010111nnnn0000ssss0tt1mmmm,
@@ -2747,7 +2625,6 @@ class Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1
 //    actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //    baseline: CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010101nnnn0000ssss0tt1mmmm,
@@ -2766,7 +2643,6 @@ class Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1
 //    actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //    baseline: TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010011nnnn0000ssss0tt1mmmm,
@@ -2785,7 +2661,6 @@ class Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1
 //    actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //    baseline: TST_register_shifted_register_cccc00010001nnnn0000ssss0tt1mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010001nnnn0000ssss0tt1mmmm,
@@ -2826,7 +2701,6 @@ class Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case
 //    actual: Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1,
 //    arch: ASIMDhp,
 //    baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 4,
@@ -2883,7 +2757,6 @@ class Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10ddd
 //   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
 //    arch: v7,
 //    baseline: DMB_1111010101111111111100000101xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -2896,7 +2769,6 @@ class Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10ddd
 //   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
 //    arch: v6T2,
 //    baseline: DSB_1111010101111111111100000100xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -2928,7 +2800,6 @@ class Actual_DMB_1111010101111111111100000101xxxx_case_1
 //   {actual: Actual_ISB_1111010101111111111100000110xxxx_case_1,
 //    arch: v6T2,
 //    baseline: ISB_1111010101111111111100000110xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -2975,7 +2846,6 @@ class Actual_ISB_1111010101111111111100000110xxxx_case_1
 //    base: Rn,
 //    baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -3004,7 +2874,6 @@ class Actual_ISB_1111010101111111111100000110xxxx_case_1
 //    base: Rn,
 //    baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -3033,7 +2902,6 @@ class Actual_ISB_1111010101111111111100000110xxxx_case_1
 //    base: Rn,
 //    baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -3062,7 +2930,6 @@ class Actual_ISB_1111010101111111111100000110xxxx_case_1
 //    base: Rn,
 //    baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -3132,7 +2999,6 @@ class Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1
 //    base: Rn,
 //    baseline: LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3196,7 +3062,6 @@ class Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1
 //    base: Pc,
 //    baseline: LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -3266,7 +3131,6 @@ class Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1
 //    base: Rn,
 //    baseline: LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3358,7 +3222,6 @@ class Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1
 //    base: Rn,
 //    baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2, base
 //         if wback
 //         else None},
@@ -3434,7 +3297,6 @@ class Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1
 //    base: Pc,
 //    baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2},
 //    fields: [cond(31:28),
 //      P(24),
@@ -3521,7 +3383,6 @@ class Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1
 //    base: Rn,
 //    baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2, base
 //         if wback
 //         else None},
@@ -3596,7 +3457,6 @@ class Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1
 //    base: Rn,
 //    baseline: LDREXB_cccc00011101nnnntttt111110011111_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -3614,7 +3474,6 @@ class Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1
 //    base: Rn,
 //    baseline: LDREX_cccc00011001nnnntttt111110011111_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -3632,7 +3491,6 @@ class Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1
 //    base: Rn,
 //    baseline: STREXH_cccc00011111nnnntttt111110011111_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -3677,7 +3535,6 @@ class Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1
 //    base: Rn,
 //    baseline: LDREXD_cccc00011011nnnntttt111110011111_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -3742,7 +3599,6 @@ class Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1
 //    base: Rn,
 //    baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3794,7 +3650,6 @@ class Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1
 //    base: Rn,
 //    baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3846,7 +3701,6 @@ class Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1
 //    base: Rn,
 //    baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3922,7 +3776,6 @@ class Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1
 //    base: Pc,
 //    baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -3957,7 +3810,6 @@ class Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1
 //    base: Pc,
 //    baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -3992,7 +3844,6 @@ class Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1
 //    base: Pc,
 //    baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -4073,7 +3924,6 @@ class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1
 //    base: Rn,
 //    baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4121,7 +3971,6 @@ class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1
 //    base: Rn,
 //    baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4169,7 +4018,6 @@ class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1
 //    base: Rn,
 //    baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4262,7 +4110,6 @@ class Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1
 //    base: Rn,
 //    baseline: LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4333,7 +4180,6 @@ class Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1
 //    base: Pc,
 //    baseline: LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -4403,7 +4249,6 @@ class Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1
 //    base: Rn,
 //    baseline: LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -4477,7 +4322,6 @@ class Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1
 //    actual: Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1,
 //    baseline: LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -4507,7 +4351,6 @@ class Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1
 //    actual: Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1,
 //    baseline: ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -4572,7 +4415,6 @@ class Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1
 //    actual: Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1,
 //    baseline: MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -4628,7 +4470,6 @@ class Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1
 //    arch: v6T2,
 //    baseline: MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //    pattern: cccc00000110ddddaaaammmm1001nnnn,
@@ -4648,7 +4489,6 @@ class Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1
 //    arch: v5TE,
 //    baseline: SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rd(19:16),
@@ -4676,7 +4516,6 @@ class Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1
 //    arch: v5TE,
 //    baseline: SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rd(19:16),
@@ -4724,7 +4563,6 @@ class Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    esize: 8
 //         if U:opc1:opc2(4:0)=x1xxx
@@ -4789,7 +4627,6 @@ class Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_c
 //    arch: v6T2,
 //    baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -4812,7 +4649,6 @@ class Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_c
 //    arch: v6T2,
 //    baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -4859,7 +4695,6 @@ class Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1
 //    actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //    baseline: MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -4883,7 +4718,6 @@ class Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1
 //    actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
 //    baseline: MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -4926,7 +4760,6 @@ class Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1
 //    actual: Actual_MRS_cccc00010r001111dddd000000000000_case_1,
 //    baseline: MRS_cccc00010r001111dddd000000000000_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), R(22), Rd(15:12)],
 //    pattern: cccc00010r001111dddd000000000000,
@@ -4963,7 +4796,6 @@ class Actual_MRS_cccc00010r001111dddd000000000000_case_1
 //    actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //    baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if write_nzcvq
 //         else None},
@@ -5009,7 +4841,6 @@ class Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1
 //    actual: Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1,
 //    baseline: MSR_register_cccc00010010mm00111100000000nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if write_nzcvq
 //         else None},
@@ -5065,7 +4896,6 @@ class Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1
 //    actual: Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1,
 //    baseline: MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5102,7 +4932,6 @@ class Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1
 //   {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //    arch: ['v6K', 'v6T2'],
 //    baseline: NOP_cccc0011001000001111000000000000_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000000,
 //    rule: NOP,
@@ -5112,7 +4941,6 @@ class Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1
 //   {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //    arch: v6K,
 //    baseline: YIELD_cccc0011001000001111000000000001_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000001,
 //    rule: YIELD,
@@ -5140,7 +4968,6 @@ class Actual_NOP_cccc0011001000001111000000000000_case_1
 // Baseline:
 //   {actual: Actual_NOT_IMPLEMENTED_case_1,
 //    baseline: NOT_IMPLEMENTED_case_0,
-//    constraints: ,
 //    defs: {},
 //    rule: NOT_IMPLEMENTED,
 //    safety: [true => NOT_IMPLEMENTED],
@@ -5180,7 +5007,6 @@ class Actual_NOT_IMPLEMENTED_case_1
 //    actual: Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1,
 //    baseline: ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5230,7 +5056,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rn(19:16),
@@ -5256,7 +5081,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: QADD16_cccc01100010nnnndddd11110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110001mmmm,
@@ -5273,7 +5097,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: QADD8_cccc01100010nnnndddd11111001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11111001mmmm,
@@ -5290,7 +5113,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //    arch: v5TE,
 //    baseline: QADD_cccc00010000nnnndddd00000101mmmm_case_0,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010000nnnndddd00000101mmmm,
@@ -5307,7 +5129,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: QASX_cccc01100010nnnndddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110011mmmm,
@@ -5324,7 +5145,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //    arch: v5TE,
 //    baseline: QDADD_cccc00010100nnnndddd00000101mmmm_case_0,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010100nnnndddd00000101mmmm,
@@ -5341,7 +5161,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //    arch: v5TE,
 //    baseline: QDSUB_cccc00010110nnnndddd00000101mmmm_case_0,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010110nnnndddd00000101mmmm,
@@ -5358,7 +5177,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: QSAX_cccc01100010nnnndddd11110101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110101mmmm,
@@ -5375,7 +5193,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: QSUB16_cccc01100010nnnndddd11110111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110111mmmm,
@@ -5392,7 +5209,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: QSUB8_cccc01100010nnnndddd11111111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11111111mmmm,
@@ -5409,7 +5225,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //    arch: v5TE,
 //    baseline: QSUB_cccc00010010nnnndddd00000101mmmm_case_0,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010010nnnndddd00000101mmmm,
@@ -5426,7 +5241,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SADD16_cccc01100001nnnndddd11110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110001mmmm,
@@ -5443,7 +5257,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SADD8_cccc01100001nnnndddd11111001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11111001mmmm,
@@ -5460,7 +5273,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SASX_cccc01100001nnnndddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110011mmmm,
@@ -5477,7 +5289,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SEL_cccc01101000nnnndddd11111011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01101000nnnndddd11111011mmmm,
@@ -5494,7 +5305,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SHADD16_cccc01100011nnnndddd11110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110001mmmm,
@@ -5511,7 +5321,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SHADD8_cccc01100011nnnndddd11111001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11111001mmmm,
@@ -5528,7 +5337,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SHASX_cccc01100011nnnndddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110011mmmm,
@@ -5545,7 +5353,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SHSAX_cccc01100011nnnndddd11110101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110101mmmm,
@@ -5562,7 +5369,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110111mmmm,
@@ -5579,7 +5385,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11111111mmmm,
@@ -5596,7 +5401,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SSAX_cccc01100001nnnndddd11110101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110101mmmm,
@@ -5613,7 +5417,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SSSUB16_cccc01100001nnnndddd11110111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110111mmmm,
@@ -5630,7 +5433,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: SSUB8_cccc01100001nnnndddd11111111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11111111mmmm,
@@ -5647,7 +5449,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UADD16_cccc01100101nnnndddd11110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110001mmmm,
@@ -5664,7 +5465,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UADD8_cccc01100101nnnndddd11111001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11111001mmmm,
@@ -5681,7 +5481,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UASX_cccc01100101nnnndddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110011mmmm,
@@ -5698,7 +5497,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UHADD16_cccc01100111nnnndddd11110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110001mmmm,
@@ -5715,7 +5513,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UHADD8_cccc01100111nnnndddd11111001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11111001mmmm,
@@ -5732,7 +5529,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UHASX_cccc01100111nnnndddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110011mmmm,
@@ -5749,7 +5545,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UHSAX_cccc01100111nnnndddd11110101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110101mmmm,
@@ -5766,7 +5561,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UHSUB16_cccc01100111nnnndddd11110111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11110111mmmm,
@@ -5783,7 +5577,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UHSUB8_cccc01100111nnnndddd11111111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100111nnnndddd11111111mmmm,
@@ -5800,7 +5593,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UQADD16_cccc01100110nnnndddd11110001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110001mmmm,
@@ -5817,7 +5609,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UQADD8_cccc01100110nnnndddd11111001mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11111001mmmm,
@@ -5834,7 +5625,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UQASX_cccc01100110nnnndddd11110011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110011mmmm,
@@ -5851,7 +5641,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UQSAX_cccc01100110nnnndddd11110101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110101mmmm,
@@ -5868,7 +5657,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UQSUB16_cccc01100110nnnndddd11110111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11110111mmmm,
@@ -5885,7 +5673,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: UQSUB8_cccc01100110nnnndddd11111111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100110nnnndddd11111111mmmm,
@@ -5902,7 +5689,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: USAX_cccc01100101nnnndddd11110101mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110101mmmm,
@@ -5919,7 +5705,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: USUB16_cccc01100101nnnndddd11110111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11110111mmmm,
@@ -5936,7 +5721,6 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    arch: v6,
 //    baseline: USUB8_cccc01100101nnnndddd11111111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100101nnnndddd11111111mmmm,
@@ -5976,7 +5760,6 @@ class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //    arch: MPExt,
 //    base: Rn,
 //    baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -6000,7 +5783,6 @@ class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //    arch: v5TE,
 //    base: Rn,
 //    baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -6052,7 +5834,6 @@ class Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
 //    arch: MPExt,
 //    base: Rn,
 //    baseline: PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -6081,7 +5862,6 @@ class Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
 //    arch: v5TE,
 //    base: Rn,
 //    baseline: PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -6129,7 +5909,6 @@ class Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1
 //    arch: v5TE,
 //    base: Pc,
 //    baseline: PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -6174,7 +5953,6 @@ class Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1
 //    arch: v7,
 //    base: Rn,
 //    baseline: PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -6221,7 +5999,6 @@ class Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1
 //    arch: v7,
 //    base: Rn,
 //    baseline: PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -6268,7 +6045,6 @@ class Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1
 //    arch: v6T2,
 //    baseline: SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -6288,7 +6064,6 @@ class Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1
 //    arch: v6T2,
 //    baseline: UBFX_cccc0111111mmmmmddddlllll101nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -6334,7 +6109,6 @@ class Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1
 //    arch: v7VEoptv7A_v7R,
 //    baseline: SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110001dddd1111mmmm0001nnnn,
@@ -6352,7 +6126,6 @@ class Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1
 //    arch: v6,
 //    baseline: SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110101dddd1111mmmm00r1nnnn,
@@ -6370,7 +6143,6 @@ class Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1
 //    arch: v6,
 //    baseline: SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000dddd1111mmmm00m1nnnn,
@@ -6388,7 +6160,6 @@ class Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1
 //    arch: v6,
 //    baseline: SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000dddd1111mmmm01m1nnnn,
@@ -6406,7 +6177,6 @@ class Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1
 //    arch: v7VEoptv7A_v7R,
 //    baseline: UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110011dddd1111mmmm0001nnnn,
@@ -6451,7 +6221,6 @@ class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1
 //    arch: v6,
 //    baseline: SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000ddddaaaammmm00m1nnnn,
@@ -6472,7 +6241,6 @@ class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1
 //    arch: v6,
 //    baseline: SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000ddddaaaammmm01m1nnnn,
@@ -6493,7 +6261,6 @@ class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1
 //    arch: v6,
 //    baseline: SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110101ddddaaaammmm00r1nnnn,
@@ -6514,7 +6281,6 @@ class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1
 //    arch: v6,
 //    baseline: SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110101ddddaaaammmm11r1nnnn,
@@ -6534,7 +6300,6 @@ class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1
 //    arch: v6,
 //    baseline: USADA8_cccc01111000ddddaaaammmm0001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //    pattern: cccc01111000ddddaaaammmm0001nnnn,
@@ -6585,7 +6350,6 @@ class Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1
 //    arch: v5TE,
 //    baseline: SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi},
 //    fields: [cond(31:28),
 //      RdHi(19:16),
@@ -6612,7 +6376,6 @@ class Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1
 //    actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //    baseline: UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi},
 //    fields: [cond(31:28), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //    pattern: cccc00000100hhhhllllmmmm1001nnnn,
@@ -6661,7 +6424,6 @@ class Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_ca
 //    arch: v6,
 //    baseline: SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdHi, RdLo},
 //    fields: [cond(31:28),
 //      RdHi(19:16),
@@ -6687,7 +6449,6 @@ class Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_ca
 //    arch: v6,
 //    baseline: SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdHi, RdLo},
 //    fields: [cond(31:28),
 //      RdHi(19:16),
@@ -6750,7 +6511,6 @@ class Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1
 //    actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //    baseline: SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -6786,7 +6546,6 @@ class Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1
 //    actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //    baseline: UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -6845,7 +6604,6 @@ class Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1
 //    arch: v5TE,
 //    baseline: SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(6), N(5), Rn(3:0)],
 //    m_high: M(6)=1,
@@ -6866,7 +6624,6 @@ class Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1
 //    arch: v5TE,
 //    baseline: SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(6), N(5), Rn(3:0)],
 //    m_high: M(6)=1,
@@ -6885,7 +6642,6 @@ class Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1
 //    arch: v6,
 //    baseline: USAD8_cccc01111000dddd1111mmmm0001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), Rn(3:0)],
 //    pattern: cccc01111000dddd1111mmmm0001nnnn,
@@ -6941,7 +6697,6 @@ class Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1
 //    actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //    baseline: SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -6977,7 +6732,6 @@ class Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1
 //    actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //    baseline: UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -7040,7 +6794,6 @@ class Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1
 //    base: Rn,
 //    baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -7070,7 +6823,6 @@ class Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1
 //    base: Rn,
 //    baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -7100,7 +6852,6 @@ class Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1
 //    base: Rn,
 //    baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -7130,7 +6881,6 @@ class Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1
 //    base: Rn,
 //    baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
@@ -7201,7 +6951,6 @@ class Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1
 //    base: Rn,
 //    baseline: STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -7289,7 +7038,6 @@ class Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1
 //    base: Rn,
 //    baseline: STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -7381,7 +7129,6 @@ class Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1
 //    base: Rn,
 //    baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -7481,7 +7228,6 @@ class Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1
 //    base: Rn,
 //    baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -7559,7 +7305,6 @@ class Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1
 //    base: Rn,
 //    baseline: STREXB_cccc00011100nnnndddd11111001tttt_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -7579,7 +7324,6 @@ class Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1
 //    base: Rn,
 //    baseline: STREXH_cccc00011110nnnndddd11111001tttt_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -7599,7 +7343,6 @@ class Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1
 //    base: Rn,
 //    baseline: STREX_cccc00011000nnnndddd11111001tttt_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -7654,7 +7397,6 @@ class Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1
 //    base: Rn,
 //    baseline: STREXD_cccc00011010nnnndddd11111001tttt_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0)],
 //    imm32: Zeros((32)),
@@ -7718,7 +7460,6 @@ class Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1
 //    base: Rn,
 //    baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -7811,7 +7552,6 @@ class Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1
 //    base: Rn,
 //    baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -7891,7 +7631,6 @@ class Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1
 //    base: Rn,
 //    baseline: STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -7975,7 +7714,6 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //    base: Rn,
 //    baseline: STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {base
 //         if wback
 //         else None},
@@ -8036,7 +7774,6 @@ class Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1
 // Baseline:
 //   {actual: Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1,
 //    baseline: SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010b00nnnntttt00001001tttt,
 //    rule: SWP_SWPB,
@@ -8076,7 +7813,6 @@ class Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
 //    arch: v6,
 //    baseline: SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101000nnnnddddrr000111mmmm,
@@ -8096,7 +7832,6 @@ class Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
 //    arch: v6,
 //    baseline: SXTAB_cccc01101010nnnnddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101010nnnnddddrr000111mmmm,
@@ -8116,7 +7851,6 @@ class Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
 //    arch: v6,
 //    baseline: SXTAH_cccc01101011nnnnddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101011nnnnddddrr000111mmmm,
@@ -8136,7 +7870,6 @@ class Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
 //    arch: v6,
 //    baseline: UXTAB16_cccc01101100nnnnddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101100nnnnddddrr000111mmmm,
@@ -8156,7 +7889,6 @@ class Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
 //    arch: v6,
 //    baseline: UXTAB_cccc01101110nnnnddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101110nnnnddddrr000111mmmm,
@@ -8176,7 +7908,6 @@ class Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
 //    arch: v6,
 //    baseline: UXTAH_cccc01101111nnnnddddrr000111mmmm_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101111nnnnddddrr000111mmmm,
@@ -8216,7 +7947,6 @@ class Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1
 //    actual: Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1,
 //    baseline: TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -8255,7 +7985,6 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 // Baseline:
 //   {actual: Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1,
 //    baseline: UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0,
-//    constraints: ,
 //    defs: {},
 //    inst: inst,
 //    pattern: cccc01111111iiiiiiiiiiii1111iiii,
@@ -8285,7 +8014,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110100xx11xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8295,7 +8023,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111101010011xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8305,7 +8032,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx0000xxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8315,7 +8041,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx001xxxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8325,7 +8050,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx0111xxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8335,7 +8059,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111101010111xxxxxxxxxxxx1xxxxxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8345,7 +8068,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111101011x11xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8355,7 +8077,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110101x001xxxxxxxxxxxxxxxxxxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8365,7 +8086,6 @@ class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
 //    baseline: Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111011xxx11xxxxxxxxxxxxxxx0xxxx,
 //    safety: [true => UNPREDICTABLE],
@@ -8394,7 +8114,6 @@ class Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_case_1,
 //    baseline: Unnamed_case_1,
-//    constraints: ,
 //    defs: {},
 //    safety: [true => UNDEFINED],
 //    true: true,
@@ -8403,7 +8122,6 @@ class Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_case_1,
 //    baseline: Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
 //    safety: [true => UNDEFINED],
@@ -8413,7 +8131,6 @@ class Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_case_1,
 //    baseline: Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
 //    safety: [true => UNDEFINED],
@@ -8423,7 +8140,6 @@ class Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_case_1,
 //    baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
 //    safety: [true => UNDEFINED],
@@ -8460,7 +8176,6 @@ class Actual_Unnamed_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //    baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8494,7 +8209,6 @@ class Actual_Unnamed_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //    baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8528,7 +8242,6 @@ class Actual_Unnamed_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //    baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8562,7 +8275,6 @@ class Actual_Unnamed_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //    baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8621,7 +8333,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8665,7 +8376,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VABD_1111001u0dssnnnndddd0111nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8709,7 +8419,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VCEQ_register_A1_111100110dssnnnndddd1000nqm1mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8753,7 +8462,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VCGE_register_A1_1111001u0dssnnnndddd0011nqm1mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8797,7 +8505,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VCGT_register_A1_1111001u0dssnnnndddd0011nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8841,7 +8548,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VHADD_1111001u0dssnnnndddd0000nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8885,7 +8591,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VHSUB_1111001u0dssnnnndddd0010nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8929,7 +8634,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VMAX_1111001u0dssnnnndddd0110nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -8973,7 +8677,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VMIN_1111001u0dssnnnndddd0110nqm1mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -9017,7 +8720,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VMLA_integer_A1_1111001u0dssnnnndddd1001nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -9061,7 +8763,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VMLS_integer_A1_1111001u0dssnnnndddd1001nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -9105,7 +8806,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VMUL_integer_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -9149,7 +8849,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VRHADD_1111001u0dssnnnndddd0001nqm0mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -9193,7 +8892,6 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VTST_111100100dssnnnndddd1000nqm1mmmm_case_0,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,

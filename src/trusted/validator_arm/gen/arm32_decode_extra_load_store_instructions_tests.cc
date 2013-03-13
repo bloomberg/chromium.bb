@@ -41,7 +41,6 @@ namespace nacl_arm_test {
 //       actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -111,7 +110,6 @@ bool STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0TesterCase0
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -180,7 +178,6 @@ bool LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0TesterCase1
 //       actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -241,7 +238,6 @@ bool STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0TesterCase2
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -304,7 +300,6 @@ bool LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0TesterCase3
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -364,7 +359,6 @@ bool LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0TesterCase4
 //       actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2, base
 //            if wback
 //            else None},
@@ -444,7 +438,6 @@ bool LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0TesterCase5
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -514,7 +507,6 @@ bool LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0TesterCase6
 //       actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //       base: Rn,
 //       baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2, base
 //            if wback
 //            else None},
@@ -577,7 +569,6 @@ bool LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0TesterCase7
 //       actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //       base: Pc,
 //       baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -635,7 +626,6 @@ bool LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0TesterCase8
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -698,7 +688,6 @@ bool LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0TesterCase9
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -761,7 +750,6 @@ bool LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0TesterCase10
 //       actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //       base: Rn,
 //       baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -837,7 +825,6 @@ bool STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0TesterCase11
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -907,7 +894,6 @@ bool LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0TesterCase12
 //       actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //       base: Rn,
 //       baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -971,7 +957,6 @@ bool STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0TesterCase13
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1034,7 +1019,6 @@ bool LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0TesterCase14
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -1101,7 +1085,6 @@ bool LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0TesterCase15
 //       actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1146,7 +1129,6 @@ class STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0Tester_Case0
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1190,7 +1172,6 @@ class LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0Tester_Case1
 //       actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1229,7 +1210,6 @@ class STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0Tester_Case2
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1267,7 +1247,6 @@ class LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0Tester_Case3
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -1302,7 +1281,6 @@ class LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0Tester_Case4
 //       actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2, base
 //            if wback
 //            else None},
@@ -1357,7 +1335,6 @@ class LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0Tester_Case5
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1402,7 +1379,6 @@ class LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0Tester_Case6
 //       actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //       base: Rn,
 //       baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2, base
 //            if wback
 //            else None},
@@ -1440,7 +1416,6 @@ class LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0Tester_Case7
 //       actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //       base: Pc,
 //       baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -1470,7 +1445,6 @@ class LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0Tester_Case8
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1508,7 +1482,6 @@ class LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0Tester_Case9
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -1543,7 +1516,6 @@ class LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0Tester_Case10
 //       actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //       base: Rn,
 //       baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1594,7 +1566,6 @@ class STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0Tester_Case11
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1639,7 +1610,6 @@ class LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0Tester_Case12
 //       actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //       base: Rn,
 //       baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1681,7 +1651,6 @@ class STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0Tester_Case13
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1719,7 +1688,6 @@ class LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0Tester_Case14
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -1762,7 +1730,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1806,7 +1773,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1849,7 +1815,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -1887,7 +1852,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -1924,7 +1888,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -1958,7 +1921,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2, base
 //            if wback
 //            else None},
@@ -2012,7 +1974,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -2056,7 +2017,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //       base: Rn,
 //       baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2, base
 //            if wback
 //            else None},
@@ -2093,7 +2053,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //       base: Pc,
 //       baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2},
 //       fields: [Rt(15:12)],
 //       is_literal_load: true,
@@ -2122,7 +2081,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -2159,7 +2117,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,
@@ -2193,7 +2150,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //       base: Rn,
 //       baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -2243,7 +2199,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -2287,7 +2242,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //       base: Rn,
 //       baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {base
 //            if wback
 //            else None},
@@ -2328,7 +2282,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {Rt, base
 //            if wback
 //            else None},
@@ -2365,7 +2318,6 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
-//       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
 //       is_literal_load: true,

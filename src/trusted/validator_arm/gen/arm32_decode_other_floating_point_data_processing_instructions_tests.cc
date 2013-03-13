@@ -33,7 +33,6 @@ namespace nacl_arm_test {
 // opc2(19:16)=0000 & opc3(7:6)=01
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110000dddd101s01m0mmmm,
 //       rule: VMOV_register,
@@ -74,7 +73,6 @@ bool VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0TesterCase0
 // opc2(19:16)=0000 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VABS_cccc11101d110000dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110000dddd101s11m0mmmm,
 //       rule: VABS,
@@ -115,7 +113,6 @@ bool VABS_cccc11101d110000dddd101s11m0mmmm_case_0TesterCase1
 // opc2(19:16)=0001 & opc3(7:6)=01
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110001dddd101s01m0mmmm,
 //       rule: VNEG,
@@ -156,7 +153,6 @@ bool VNEG_cccc11101d110001dddd101s01m0mmmm_case_0TesterCase2
 // opc2(19:16)=0001 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110001dddd101s11m0mmmm,
 //       rule: VSQRT,
@@ -197,7 +193,6 @@ bool VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0TesterCase3
 // opc2(19:16)=0100 & opc3(7:6)=x1
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110100dddd101se1m0mmmm,
 //       rule: VCMP_VCMPE,
@@ -238,7 +233,6 @@ bool VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0TesterCase4
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110101dddd101se1000000,
 //       rule: VCMP_VCMPE,
@@ -282,7 +276,6 @@ bool VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0TesterCase5
 // opc2(19:16)=0111 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110111dddd101s11m0mmmm,
 //       rule: VCVT_between_double_precision_and_single_precision,
@@ -323,7 +316,6 @@ bool VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s
 // opc2(19:16)=1000 & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc2(18:16)],
 //       opc2: opc2(18:16),
@@ -366,7 +358,6 @@ bool VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111o
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d11001odddd1010t1m0mmmm,
 //       rule: VCVTB_VCVTT,
@@ -410,7 +401,6 @@ bool VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0TesterCase8
 // opc2(19:16)=101x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [sx(7), i(5), imm4(3:0)],
 //       frac_bits: size - imm4:i,
@@ -459,7 +449,6 @@ bool VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1u
 // opc2(19:16)=110x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc2(18:16)],
 //       opc2: opc2(18:16),
@@ -502,7 +491,6 @@ bool VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111o
 // opc2(19:16)=111x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [sx(7), i(5), imm4(3:0)],
 //       frac_bits: size - imm4:i,
@@ -551,7 +539,6 @@ bool VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1u
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d11iiiidddd101s0000iiii,
 //       rule: VMOV_immediate,
@@ -597,7 +584,6 @@ bool VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0TesterCase12
 // opc2(19:16)=0000 & opc3(7:6)=01
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110000dddd101s01m0mmmm,
 //       rule: VMOV_register,
@@ -616,7 +602,6 @@ class VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0Tester_Case0
 // opc2(19:16)=0000 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VABS_cccc11101d110000dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110000dddd101s11m0mmmm,
 //       rule: VABS,
@@ -635,7 +620,6 @@ class VABS_cccc11101d110000dddd101s11m0mmmm_case_0Tester_Case1
 // opc2(19:16)=0001 & opc3(7:6)=01
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110001dddd101s01m0mmmm,
 //       rule: VNEG,
@@ -654,7 +638,6 @@ class VNEG_cccc11101d110001dddd101s01m0mmmm_case_0Tester_Case2
 // opc2(19:16)=0001 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110001dddd101s11m0mmmm,
 //       rule: VSQRT,
@@ -673,7 +656,6 @@ class VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0Tester_Case3
 // opc2(19:16)=0100 & opc3(7:6)=x1
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110100dddd101se1m0mmmm,
 //       rule: VCMP_VCMPE,
@@ -692,7 +674,6 @@ class VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0Tester_Case4
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110101dddd101se1000000,
 //       rule: VCMP_VCMPE,
@@ -711,7 +692,6 @@ class VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0Tester_Case5
 // opc2(19:16)=0111 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110111dddd101s11m0mmmm,
 //       rule: VCVT_between_double_precision_and_single_precision,
@@ -730,7 +710,6 @@ class VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101
 // opc2(19:16)=1000 & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc2(18:16)],
 //       opc2: opc2(18:16),
@@ -751,7 +730,6 @@ class VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d11001odddd1010t1m0mmmm,
 //       rule: VCVTB_VCVTT,
@@ -770,7 +748,6 @@ class VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0Tester_Case8
 // opc2(19:16)=101x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [sx(7), i(5), imm4(3:0)],
 //       frac_bits: size - imm4:i,
@@ -797,7 +774,6 @@ class VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1
 // opc2(19:16)=110x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc2(18:16)],
 //       opc2: opc2(18:16),
@@ -818,7 +794,6 @@ class VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111
 // opc2(19:16)=111x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [sx(7), i(5), imm4(3:0)],
 //       frac_bits: size - imm4:i,
@@ -845,7 +820,6 @@ class VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d11iiiidddd101s0000iiii,
 //       rule: VMOV_immediate,
@@ -873,7 +847,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // opc2(19:16)=0000 & opc3(7:6)=01
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110000dddd101s01m0mmmm,
 //       rule: VMOV_register,
@@ -891,7 +864,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=0000 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VABS_cccc11101d110000dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110000dddd101s11m0mmmm,
 //       rule: VABS,
@@ -909,7 +881,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=0001 & opc3(7:6)=01
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110001dddd101s01m0mmmm,
 //       rule: VNEG,
@@ -927,7 +898,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=0001 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110001dddd101s11m0mmmm,
 //       rule: VSQRT,
@@ -945,7 +915,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=0100 & opc3(7:6)=x1
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110100dddd101se1m0mmmm,
 //       rule: VCMP_VCMPE,
@@ -963,7 +932,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110101dddd101se1000000,
 //       rule: VCMP_VCMPE,
@@ -981,7 +949,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=0111 & opc3(7:6)=11
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d110111dddd101s11m0mmmm,
 //       rule: VCVT_between_double_precision_and_single_precision,
@@ -999,7 +966,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=1000 & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc2(18:16)],
 //       opc2: opc2(18:16),
@@ -1019,7 +985,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d11001odddd1010t1m0mmmm,
 //       rule: VCVTB_VCVTT,
@@ -1037,7 +1002,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=101x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [sx(7), i(5), imm4(3:0)],
 //       frac_bits: size - imm4:i,
@@ -1063,7 +1027,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=110x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [opc2(18:16)],
 //       opc2: opc2(18:16),
@@ -1083,7 +1046,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=111x & opc3(7:6)=x1
 //    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       fields: [sx(7), i(5), imm4(3:0)],
 //       frac_bits: size - imm4:i,
@@ -1109,7 +1071,6 @@ TEST_F(Arm32DecoderStateTests,
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
 //    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc11101d11iiiidddd101s0000iiii,
 //       rule: VMOV_immediate,

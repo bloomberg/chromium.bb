@@ -38,7 +38,6 @@ namespace nacl_arm_test {
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: TST_register_shifted_register_cccc00010001nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010001nnnn0000ssss0tt1mmmm,
@@ -84,7 +83,6 @@ bool TST_register_shifted_register_cccc00010001nnnn0000ssss0tt1mmmm_case_0Tester
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010011nnnn0000ssss0tt1mmmm,
@@ -130,7 +128,6 @@ bool TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0Tester
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010101nnnn0000ssss0tt1mmmm,
@@ -176,7 +173,6 @@ bool CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0Tester
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010111nnnn0000ssss0tt1mmmm,
@@ -225,7 +221,6 @@ bool CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -274,7 +269,6 @@ bool AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -323,7 +317,6 @@ bool EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -372,7 +365,6 @@ bool SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -421,7 +413,6 @@ bool RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -470,7 +461,6 @@ bool ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -519,7 +509,6 @@ bool ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -568,7 +557,6 @@ bool SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -617,7 +605,6 @@ bool RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -665,7 +652,6 @@ bool ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -719,7 +705,6 @@ bool LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0TesterCase13
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -773,7 +758,6 @@ bool LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0TesterCase14
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -827,7 +811,6 @@ bool ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0TesterCase15
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -882,7 +865,6 @@ bool ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0TesterCase16
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -930,7 +912,6 @@ bool BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0Tester
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -984,7 +965,6 @@ bool MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0Tester
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: TST_register_shifted_register_cccc00010001nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010001nnnn0000ssss0tt1mmmm,
@@ -1008,7 +988,6 @@ class TST_register_shifted_register_cccc00010001nnnn0000ssss0tt1mmmm_case_0Teste
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010011nnnn0000ssss0tt1mmmm,
@@ -1032,7 +1011,6 @@ class TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0Teste
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010101nnnn0000ssss0tt1mmmm,
@@ -1056,7 +1034,6 @@ class CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0Teste
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010111nnnn0000ssss0tt1mmmm,
@@ -1083,7 +1060,6 @@ class CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1113,7 +1089,6 @@ class AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1143,7 +1118,6 @@ class EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1173,7 +1147,6 @@ class SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1203,7 +1176,6 @@ class RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1233,7 +1205,6 @@ class ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1263,7 +1234,6 @@ class ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1293,7 +1263,6 @@ class SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1323,7 +1292,6 @@ class RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1352,7 +1320,6 @@ class ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1381,7 +1348,6 @@ class LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0Tester_Case13
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1410,7 +1376,6 @@ class LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0Tester_Case14
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1439,7 +1404,6 @@ class ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0Tester_Case15
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1469,7 +1433,6 @@ class ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0Tester_Case16
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1498,7 +1461,6 @@ class BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0Teste
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1534,7 +1496,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: TST_register_shifted_register_cccc00010001nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010001nnnn0000ssss0tt1mmmm,
@@ -1557,7 +1518,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010011nnnn0000ssss0tt1mmmm,
@@ -1580,7 +1540,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010101nnnn0000ssss0tt1mmmm,
@@ -1603,7 +1562,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rs: Rs(11:8),
 //       actual: Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1,
 //       baseline: CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {NZCV},
 //       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
 //       pattern: cccc00010111nnnn0000ssss0tt1mmmm,
@@ -1629,7 +1587,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1658,7 +1615,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1687,7 +1643,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1716,7 +1671,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1745,7 +1699,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1774,7 +1727,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1803,7 +1755,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1832,7 +1783,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1861,7 +1811,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1889,7 +1838,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1917,7 +1865,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1945,7 +1892,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -1973,7 +1919,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -2002,7 +1947,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_1,
 //       baseline: BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},
@@ -2030,7 +1974,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1,
 //       baseline: MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if setflags
 //            else None},

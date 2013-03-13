@@ -38,7 +38,6 @@ namespace nacl_arm_test {
 //       Vm: Vm(3:0),
 //       actual: Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1,
 //       baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2}
 //            if to_arm_registers
 //            else {},
@@ -96,7 +95,6 @@ bool VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc
 //       Rt2: Rt2(19:16),
 //       actual: Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1,
 //       baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2}
 //            if to_arm_registers
 //            else {},
@@ -158,7 +156,6 @@ bool VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_ccc
 //       Vm: Vm(3:0),
 //       actual: Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1,
 //       baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2}
 //            if to_arm_registers
 //            else {},
@@ -194,7 +191,6 @@ class VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_ccc
 //       Rt2: Rt2(19:16),
 //       actual: Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1,
 //       baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2}
 //            if to_arm_registers
 //            else {},
@@ -238,7 +234,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Vm: Vm(3:0),
 //       actual: Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1,
 //       baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2}
 //            if to_arm_registers
 //            else {},
@@ -273,7 +268,6 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt2: Rt2(19:16),
 //       actual: Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1,
 //       baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
-//       constraints: ,
 //       defs: {Rt, Rt2}
 //            if to_arm_registers
 //            else {},

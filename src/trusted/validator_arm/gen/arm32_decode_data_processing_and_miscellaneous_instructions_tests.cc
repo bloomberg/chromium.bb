@@ -33,7 +33,6 @@ namespace nacl_arm_test {
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged,
@@ -77,7 +76,6 @@ bool extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxx
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged,
@@ -125,7 +123,6 @@ bool extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxx
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //       baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
@@ -175,7 +172,6 @@ bool MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //       baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
@@ -226,7 +222,6 @@ bool MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged,
@@ -245,7 +240,6 @@ class extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xx
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged,
@@ -268,7 +262,6 @@ class extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xx
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //       baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
@@ -296,7 +289,6 @@ class MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0Tester_Case2
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //       baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
@@ -329,7 +321,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged,
@@ -347,7 +338,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged,
@@ -369,7 +359,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //       baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
@@ -396,7 +385,6 @@ TEST_F(Arm32DecoderStateTests,
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //       baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},

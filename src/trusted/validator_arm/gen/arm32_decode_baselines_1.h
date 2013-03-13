@@ -22,7 +22,6 @@ namespace nacl_arm_dec {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -58,7 +57,6 @@ class ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -102,7 +100,6 @@ class ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -141,7 +138,6 @@ class ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -179,7 +175,6 @@ class ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -223,7 +218,6 @@ class ADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -259,7 +253,6 @@ class ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -286,7 +279,6 @@ class ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -316,7 +308,6 @@ class ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -352,7 +343,6 @@ class AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -396,7 +386,6 @@ class AND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -435,7 +424,6 @@ class AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -477,7 +465,6 @@ class ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -506,7 +493,6 @@ class ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0
 //    Rd: Rd(15:12),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7)],
 //    lsb: lsb(11:7),
@@ -538,7 +524,6 @@ class BFC_cccc0111110mmmmmddddlllll0011111_case_0
 //    Rn: Rn(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -576,7 +561,6 @@ class BFI_cccc0111110mmmmmddddlllll001nnnn_case_0
 //         clears_mask())  ==
 //            clears_mask(),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -613,7 +597,6 @@ class BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -657,7 +640,6 @@ class BIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -692,7 +674,6 @@ class BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0
 //
 //   {arch: v5T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28), imm12(19:8), imm4(3:0)],
 //    imm12: imm12(19:8),
@@ -723,7 +704,6 @@ class BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0
 // BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111101hiiiiiiiiiiiiiiiiiiiiiiii,
 //    rule: BLX_immediate,
@@ -750,7 +730,6 @@ class BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_0
 //    Rm: Rm(3:0),
 //    arch: v5T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Pc, Lr},
 //    fields: [cond(31:28), Rm(3:0)],
 //    pattern: cccc000100101111111111110011mmmm,
@@ -777,7 +756,6 @@ class BLX_register_cccc000100101111111111110011mmmm_case_0
 //   {Cond: Cond(31:28),
 //    Lr: 14,
 //    Pc: 15,
-//    constraints: ,
 //    defs: {Pc, Lr},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
@@ -807,7 +785,6 @@ class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0
 // BXJ_cccc000100101111111111110010mmmm_case_0:
 //
 //   {arch: v5TEJ,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc000100101111111111110010mmmm,
 //    rule: BXJ,
@@ -831,7 +808,6 @@ class BXJ_cccc000100101111111111110010mmmm_case_0
 //
 //   {Cond: Cond(31:28),
 //    Pc: 15,
-//    constraints: ,
 //    defs: {Pc},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
@@ -864,7 +840,6 @@ class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0
 //    Rm: Rm(3:0),
 //    arch: v4T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Pc},
 //    fields: [cond(31:28), Rm(3:0)],
 //    pattern: cccc000100101111111111110001mmmm,
@@ -889,7 +864,6 @@ class Bx_cccc000100101111111111110001mmmm_case_0
 // CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iiiiiiiiiiiiiiiiiii0iiii,
 //    rule: CDP2,
@@ -911,8 +885,7 @@ class CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0
 
 // CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1110oooonnnnddddccccooo0mmmm,
 //    rule: CDP,
 //    safety: [true => FORBIDDEN],
@@ -934,7 +907,6 @@ class CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0
 // CLREX_11110101011111111111000000011111_case_0:
 //
 //   {arch: V6K,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11110101011111111111000000011111,
 //    rule: CLREX,
@@ -961,7 +933,6 @@ class CLREX_11110101011111111111000000011111_case_0
 //    Rm: Rm(3:0),
 //    arch: v5T,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc000101101111dddd11110001mmmm,
@@ -986,7 +957,6 @@ class CLZ_cccc000101101111dddd11110001mmmm_case_0
 //   {NZCV: 16,
 //    Rn: Rn(19:16),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1015,7 +985,6 @@ class CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -1052,7 +1021,6 @@ class CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0
 //    Rn: Rn(19:16),
 //    Rs: Rs(11:8),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010111nnnn0000ssss0tt1mmmm,
@@ -1079,7 +1047,6 @@ class CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0
 //   {NZCV: 16,
 //    Rn: Rn(19:16),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1108,7 +1075,6 @@ class CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if S
 //         else None},
@@ -1145,7 +1111,6 @@ class CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0
 //    Rn: Rn(19:16),
 //    Rs: Rs(11:8),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
 //    pattern: cccc00010101nnnn0000ssss0tt1mmmm,
@@ -1170,7 +1135,6 @@ class CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0
 // CPS_111100010000iii00000000iii0iiiii_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111100010000iii00000000iii0iiiii,
 //    rule: CPS,
@@ -1197,7 +1161,6 @@ class CPS_111100010000iii00000000iii0iiiii_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    arch: ASIMDhp,
-//    constraints: ,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 4,
@@ -1231,7 +1194,6 @@ class CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00
 // DBG_cccc001100100000111100001111iiii_case_0:
 //
 //   {arch: v7,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc001100100000111100001111iiii,
 //    rule: DBG,
@@ -1254,7 +1216,6 @@ class DBG_cccc001100100000111100001111iiii_case_0
 // DMB_1111010101111111111100000101xxxx_case_0:
 //
 //   {arch: v7,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -1278,7 +1239,6 @@ class DMB_1111010101111111111100000101xxxx_case_0
 // DSB_1111010101111111111100000100xxxx_case_0:
 //
 //   {arch: v6T2,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -1307,7 +1267,6 @@ class DSB_1111010101111111111100000100xxxx_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1343,7 +1302,6 @@ class EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -1387,7 +1345,6 @@ class EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -1421,7 +1378,6 @@ class EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0
 // ERET_cccc0001011000000000000001101110_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0001011000000000000001101110,
 //    rule: ERET,
@@ -1443,8 +1399,7 @@ class ERET_cccc0001011000000000000001101110_case_0
 
 // FICTITIOUS_FIRST_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    rule: FICTITIOUS_FIRST,
 //    safety: [true => FORBIDDEN],
 //    true: true,
@@ -1465,7 +1420,6 @@ class FICTITIOUS_FIRST_case_0
 // HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010100iiiiiiiiiiii0111iiii,
 //    rule: HVC,
@@ -1488,7 +1442,6 @@ class HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0
 // ISB_1111010101111111111100000110xxxx_case_0:
 //
 //   {arch: v6T2,
-//    constraints: ,
 //    defs: {},
 //    fields: [option(3:0)],
 //    option: option(3:0),
@@ -1512,7 +1465,6 @@ class ISB_1111010101111111111100000110xxxx_case_0
 // LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw1nnnniiiiiiiiiiiiiiii,
 //    rule: LDC2_immediate,
@@ -1535,7 +1487,6 @@ class LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0
 // LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111110pudw11111iiiiiiiiiiiiiiii,
 //    rule: LDC2_literal,
@@ -1557,8 +1508,7 @@ class LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0
 
 // LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc110pudw1nnnnddddcccciiiiiiii,
 //    rule: LDC_immediate,
 //    safety: [true => FORBIDDEN],
@@ -1579,8 +1529,7 @@ class LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0
 
 // LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc110pudw11111ddddcccciiiiiiii,
 //    rule: LDC_literal,
 //    safety: [true => FORBIDDEN],
@@ -1607,7 +1556,6 @@ class LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -1650,7 +1598,6 @@ class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -1693,7 +1640,6 @@ class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -1736,7 +1682,6 @@ class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: Union({Rn
 //         if wback
 //         else None}, registers),
@@ -1773,8 +1718,7 @@ class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0
 
 // LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //    rule: LDM_User_registers,
 //    safety: [true => FORBIDDEN],
@@ -1795,8 +1739,7 @@ class LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0
 
 // LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //    rule: LDM_exception_return,
 //    safety: [true => FORBIDDEN],
@@ -1817,8 +1760,7 @@ class LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0
 
 // LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
 //    rule: LDRBT_A1,
 //    safety: [true => FORBIDDEN],
@@ -1839,8 +1781,7 @@ class LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0
 
 // LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
 //    rule: LDRBT_A2,
 //    safety: [true => FORBIDDEN],
@@ -1871,7 +1812,6 @@ class LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -1924,7 +1864,6 @@ class LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -1964,7 +1903,6 @@ class LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2031,7 +1969,6 @@ class LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0
 //    arch: v5TE,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2, base
 //         if wback
 //         else None},
@@ -2095,7 +2032,6 @@ class LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0
 //    arch: v5TE,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2},
 //    fields: [cond(31:28),
 //      P(24),
@@ -2145,7 +2081,6 @@ class LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0
 //    arch: v5TE,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2, base
 //         if wback
 //         else None},
@@ -2208,7 +2143,6 @@ class LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -2240,7 +2174,6 @@ class LDREXB_cccc00011101nnnntttt111110011111_case_0
 //    arch: v6K,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, Rt2},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -2274,7 +2207,6 @@ class LDREXD_cccc00011011nnnntttt111110011111_case_0
 //    arch: v6,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
 //    imm32: Zeros((32)),
@@ -2311,7 +2243,6 @@ class LDREX_cccc00011001nnnntttt111110011111_case_0
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2372,7 +2303,6 @@ class LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -2423,7 +2353,6 @@ class LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2485,7 +2414,6 @@ class LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2546,7 +2474,6 @@ class LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -2597,7 +2524,6 @@ class LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2659,7 +2585,6 @@ class LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0
 //         else Rn,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2720,7 +2645,6 @@ class LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28),
 //      P(24),
@@ -2771,7 +2695,6 @@ class LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2820,8 +2743,7 @@ class LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0
 
 // LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
 //    rule: LDRT_A1,
 //    safety: [true => FORBIDDEN],
@@ -2842,8 +2764,7 @@ class LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0
 
 // LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
 //    rule: LDRT_A2,
 //    safety: [true => FORBIDDEN],
@@ -2875,7 +2796,6 @@ class LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -2935,7 +2855,6 @@ class LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    base: Pc,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -2975,7 +2894,6 @@ class LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    base: Rn,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt, base
 //         if wback
 //         else None},
@@ -3036,7 +2954,6 @@ class LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -3079,7 +2996,6 @@ class LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -3110,7 +3026,6 @@ class LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -3152,7 +3067,6 @@ class LSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -3178,7 +3092,6 @@ class LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0
 // MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iii0iiiittttiiiiiii1iiii,
 //    rule: MCR2,
@@ -3201,7 +3114,6 @@ class MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0
 // MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111111000100ssssttttiiiiiiiiiiii,
 //    rule: MCRR2,
@@ -3224,7 +3136,6 @@ class MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0
 // MCRR_cccc11000100ttttttttccccoooommmm_case_0:
 //
 //   {arch: v5TE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc11000100ttttttttccccoooommmm,
 //    rule: MCRR,
@@ -3246,8 +3157,7 @@ class MCRR_cccc11000100ttttttttccccoooommmm_case_0
 
 // MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //    rule: MCR,
 //    safety: [true => FORBIDDEN],
@@ -3277,7 +3187,6 @@ class MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -3318,7 +3227,6 @@ class MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //    pattern: cccc00000110ddddaaaammmm1001nnnn,
@@ -3348,7 +3256,6 @@ class MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0
 //    advsimd: sel in bitset {'x1xxx', 'x0xx1'},
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rt},
 //    esize: 8
 //         if U:opc1:opc2(4:0)=x1xxx
@@ -3402,7 +3309,6 @@ class MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0
 //    S: S(20),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -3437,7 +3343,6 @@ class MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0
 //    S: S(20),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -3471,7 +3376,6 @@ class MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0
 //    Rd: Rd(15:12),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -3508,7 +3412,6 @@ class MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -3535,7 +3438,6 @@ class MOV_register_cccc0001101s0000dddd00000000mmmm_case_0
 // MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0:
 //
 //   {arch: v5,
-//    constraints: ,
 //    defs: {},
 //    pattern: 11111110iii1iiiittttiiiiiii1iiii,
 //    rule: MRC2,
@@ -3557,8 +3459,7 @@ class MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0
 
 // MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
 //    rule: MRC,
 //    safety: [true => FORBIDDEN],
@@ -3580,7 +3481,6 @@ class MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0
 // MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 111111000101ssssttttiiiiiiiiiiii,
 //    rule: MRRC2,
@@ -3603,7 +3503,6 @@ class MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0
 // MRRC_cccc11000101ttttttttccccoooommmm_case_0:
 //
 //   {arch: v5TE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc11000101ttttttttccccoooommmm,
 //    rule: MRRC,
@@ -3626,7 +3525,6 @@ class MRRC_cccc11000101ttttttttccccoooommmm_case_0
 // MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010r00mmmmdddd001m00000000,
 //    rule: MRS_Banked_register,
@@ -3649,7 +3547,6 @@ class MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0
 // MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0:
 //
 //   {arch: v7VE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc00010r10mmmm1111001m0000nnnn,
 //    rule: MRS_Banked_register,
@@ -3674,7 +3571,6 @@ class MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0
 //   {R: R(22),
 //    Rd: Rd(15:12),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), R(22), Rd(15:12)],
 //    pattern: cccc00010r001111dddd000000000000,
@@ -3701,7 +3597,6 @@ class MRS_cccc00010r001111dddd000000000000_case_0
 //   {NZCV: 16,
 //    None: 32,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if write_nzcvq
 //         else None},
@@ -3730,8 +3625,7 @@ class MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0
 
 // MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //    rule: MSR_immediate,
 //    safety: [true => FORBIDDEN],
@@ -3757,7 +3651,6 @@ class MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0
 //    Pc: 15,
 //    Rn: Rn(3:0),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {NZCV
 //         if write_nzcvq
 //         else None},
@@ -3786,8 +3679,7 @@ class MSR_register_cccc00010010mm00111100000000nnnn_case_0
 
 // MSR_register_cccc00010r10mmmm111100000000nnnn_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    pattern: cccc00010r10mmmm111100000000nnnn,
 //    rule: MSR_register,
 //    safety: [true => FORBIDDEN],
@@ -3816,7 +3708,6 @@ class MSR_register_cccc00010r10mmmm111100000000nnnn_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -3850,7 +3741,6 @@ class MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0
 //    Rd: Rd(15:12),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -3887,7 +3777,6 @@ class MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -3929,7 +3818,6 @@ class MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -3962,7 +3850,6 @@ class MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0
 // NOP_cccc0011001000001111000000000000_case_0:
 //
 //   {arch: ['v6K', 'v6T2'],
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000000,
 //    rule: NOP,
@@ -3982,8 +3869,7 @@ class NOP_cccc0011001000001111000000000000_case_0
 
 // NOT_IMPLEMENTED_case_0:
 //
-//   {constraints: ,
-//    defs: {},
+//   {defs: {},
 //    rule: NOT_IMPLEMENTED,
 //    safety: [true => NOT_IMPLEMENTED],
 //    true: true,
@@ -4009,7 +3895,6 @@ class NOT_IMPLEMENTED_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -4047,7 +3932,6 @@ class ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -4091,7 +3975,6 @@ class ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -4130,7 +4013,6 @@ class ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rn(19:16),
@@ -4168,7 +4050,6 @@ class PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -4205,7 +4086,6 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -4243,7 +4123,6 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -4284,7 +4163,6 @@ class PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -4322,7 +4200,6 @@ class PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Pc,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -4356,7 +4233,6 @@ class PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
@@ -4392,7 +4268,6 @@ class PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
-//    constraints: ,
 //    defs: {},
 //    fields: [U(23), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
 //    imm5: imm5(11:7),
@@ -4427,7 +4302,6 @@ class PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110001mmmm,
@@ -4455,7 +4329,6 @@ class QADD16_cccc01100010nnnndddd11110001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11111001mmmm,
@@ -4483,7 +4356,6 @@ class QADD8_cccc01100010nnnndddd11111001mmmm_case_0
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010000nnnndddd00000101mmmm,
@@ -4511,7 +4383,6 @@ class QADD_cccc00010000nnnndddd00000101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110011mmmm,
@@ -4539,7 +4410,6 @@ class QASX_cccc01100010nnnndddd11110011mmmm_case_0
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010100nnnndddd00000101mmmm,
@@ -4567,7 +4437,6 @@ class QDADD_cccc00010100nnnndddd00000101mmmm_case_0
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010110nnnndddd00000101mmmm,
@@ -4595,7 +4464,6 @@ class QDSUB_cccc00010110nnnndddd00000101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110101mmmm,
@@ -4623,7 +4491,6 @@ class QSAX_cccc01100010nnnndddd11110101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11110111mmmm,
@@ -4651,7 +4518,6 @@ class QSUB16_cccc01100010nnnndddd11110111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100010nnnndddd11111111mmmm,
@@ -4679,7 +4545,6 @@ class QSUB8_cccc01100010nnnndddd11111111mmmm_case_0
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    arch: v5TE,
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc00010010nnnndddd00000101mmmm,
@@ -4706,7 +4571,6 @@ class QSUB_cccc00010010nnnndddd00000101mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011011111111dddd11110011mmmm,
@@ -4733,7 +4597,6 @@ class RBIT_cccc011011111111dddd11110011mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011010111111dddd11111011mmmm,
@@ -4760,7 +4623,6 @@ class REV16_cccc011010111111dddd11111011mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011011111111dddd11111011mmmm,
@@ -4787,7 +4649,6 @@ class REVSH_cccc011011111111dddd11111011mmmm_case_0
 //    Rm: Rm(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
 //    pattern: cccc011010111111dddd11110011mmmm,
@@ -4810,7 +4671,6 @@ class REV_cccc011010111111dddd11110011mmmm_case_0
 // RFE_1111100pu0w1nnnn0000101000000000_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111100pu0w1nnnn0000101000000000,
 //    rule: RFE,
@@ -4838,7 +4698,6 @@ class RFE_1111100pu0w1nnnn0000101000000000_case_0
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -4881,7 +4740,6 @@ class ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -4912,7 +4770,6 @@ class ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0
 //    Rm: Rm(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -4944,7 +4801,6 @@ class RRX_cccc0001101s0000dddd00000110mmmm_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -4980,7 +4836,6 @@ class RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -5024,7 +4879,6 @@ class RSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5063,7 +4917,6 @@ class RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5099,7 +4952,6 @@ class RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -5143,7 +4995,6 @@ class RSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5182,7 +5033,6 @@ class RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110001mmmm,
@@ -5210,7 +5060,6 @@ class SADD16_cccc01100001nnnndddd11110001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11111001mmmm,
@@ -5238,7 +5087,6 @@ class SADD8_cccc01100001nnnndddd11111001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110011mmmm,
@@ -5266,7 +5114,6 @@ class SASX_cccc01100001nnnndddd11110011mmmm_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5302,7 +5149,6 @@ class SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if S
 //         else None},
@@ -5346,7 +5192,6 @@ class SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0
 //    Rs: Rs(11:8),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd, NZCV
 //         if setflags
 //         else None},
@@ -5384,7 +5229,6 @@ class SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0
 //    Rn: Rn(3:0),
 //    arch: v6T2,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //    lsb: lsb(11:7),
@@ -5417,7 +5261,6 @@ class SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v7VEoptv7A_v7R,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110001dddd1111mmmm0001nnnn,
@@ -5445,7 +5288,6 @@ class SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01101000nnnndddd11111011mmmm,
@@ -5468,7 +5310,6 @@ class SEL_cccc01101000nnnndddd11111011mmmm_case_0
 // SETEND_1111000100000001000000i000000000_case_0:
 //
 //   {arch: v6,
-//    constraints: ,
 //    defs: {},
 //    pattern: 1111000100000001000000i000000000,
 //    rule: SETEND,
@@ -5491,7 +5332,6 @@ class SETEND_1111000100000001000000i000000000_case_0
 // SEV_cccc0011001000001111000000000100_case_0:
 //
 //   {arch: v6K,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc0011001000001111000000000100,
 //    rule: SEV,
@@ -5519,7 +5359,6 @@ class SEV_cccc0011001000001111000000000100_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110001mmmm,
@@ -5547,7 +5386,6 @@ class SHADD16_cccc01100011nnnndddd11110001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11111001mmmm,
@@ -5575,7 +5413,6 @@ class SHADD8_cccc01100011nnnndddd11111001mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110011mmmm,
@@ -5603,7 +5440,6 @@ class SHASX_cccc01100011nnnndddd11110011mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110101mmmm,
@@ -5631,7 +5467,6 @@ class SHSAX_cccc01100011nnnndddd11110101mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11110111mmmm,
@@ -5659,7 +5494,6 @@ class SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0
 //    Rn: Rn(19:16),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100011nnnndddd11111111mmmm,
@@ -5682,7 +5516,6 @@ class SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0
 // SMC_cccc000101100000000000000111iiii_case_0:
 //
 //   {arch: SE,
-//    constraints: ,
 //    defs: {},
 //    pattern: cccc000101100000000000000111iiii,
 //    rule: SMC,
@@ -5713,7 +5546,6 @@ class SMC_cccc000101100000000000000111iiii_case_0
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rd(19:16),
@@ -5751,7 +5583,6 @@ class SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000ddddaaaammmm00m1nnnn,
@@ -5785,7 +5616,6 @@ class SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi},
 //    fields: [cond(31:28),
 //      RdHi(19:16),
@@ -5825,7 +5655,6 @@ class SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdHi, RdLo},
 //    fields: [cond(31:28),
 //      RdHi(19:16),
@@ -5863,7 +5692,6 @@ class SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0
 //    Rn: Rn(3:0),
 //    S: S(20),
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdLo, RdHi, NZCV
 //         if setflags
 //         else None},
@@ -5910,7 +5738,6 @@ class SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v5TE,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28),
 //      Rd(19:16),
@@ -5948,7 +5775,6 @@ class SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {Rd},
 //    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
 //    pattern: cccc01110000ddddaaaammmm01m1nnnn,
@@ -5980,7 +5806,6 @@ class SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0
 //    Rn: Rn(3:0),
 //    arch: v6,
 //    cond: cond(31:28),
-//    constraints: ,
 //    defs: {RdHi, RdLo},
 //    fields: [cond(31:28),
 //      RdHi(19:16),

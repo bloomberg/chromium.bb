@@ -33,7 +33,6 @@ namespace nacl_arm_test {
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: NOP_cccc0011001000001111000000000000_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000000,
 //       rule: NOP,
@@ -78,7 +77,6 @@ bool NOP_cccc0011001000001111000000000000_case_0TesterCase0
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: YIELD_cccc0011001000001111000000000001_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000001,
 //       rule: YIELD,
@@ -123,7 +121,6 @@ bool YIELD_cccc0011001000001111000000000001_case_0TesterCase1
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: WFE_cccc0011001000001111000000000010_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000010,
 //       rule: WFE,
@@ -170,7 +167,6 @@ bool WFE_cccc0011001000001111000000000010_case_0TesterCase2
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: WFI_cccc0011001000001111000000000011_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000011,
 //       rule: WFI,
@@ -217,7 +213,6 @@ bool WFI_cccc0011001000001111000000000011_case_0TesterCase3
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: SEV_cccc0011001000001111000000000100_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000100,
 //       rule: SEV,
@@ -264,7 +259,6 @@ bool SEV_cccc0011001000001111000000000100_case_0TesterCase4
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: DBG_cccc001100100000111100001111iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc001100100000111100001111iiii,
 //       rule: DBG,
@@ -313,7 +307,6 @@ bool DBG_cccc001100100000111100001111iiii_case_0TesterCase5
 //       None: 32,
 //       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if write_nzcvq
 //            else None},
@@ -363,7 +356,6 @@ bool MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0TesterCase6
 //       None: 32,
 //       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if write_nzcvq
 //            else None},
@@ -411,7 +403,6 @@ bool MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0TesterCase7
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -455,7 +446,6 @@ bool MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0TesterCase8
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -499,7 +489,6 @@ bool MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0TesterCase9
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -545,7 +534,6 @@ bool MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0TesterCase10
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: NOP_cccc0011001000001111000000000000_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000000,
 //       rule: NOP,
@@ -562,7 +550,6 @@ class NOP_cccc0011001000001111000000000000_case_0Tester_Case0
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: YIELD_cccc0011001000001111000000000001_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000001,
 //       rule: YIELD,
@@ -579,7 +566,6 @@ class YIELD_cccc0011001000001111000000000001_case_0Tester_Case1
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: WFE_cccc0011001000001111000000000010_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000010,
 //       rule: WFE,
@@ -598,7 +584,6 @@ class WFE_cccc0011001000001111000000000010_case_0Tester_Case2
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: WFI_cccc0011001000001111000000000011_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000011,
 //       rule: WFI,
@@ -617,7 +602,6 @@ class WFI_cccc0011001000001111000000000011_case_0Tester_Case3
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: SEV_cccc0011001000001111000000000100_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000100,
 //       rule: SEV,
@@ -636,7 +620,6 @@ class SEV_cccc0011001000001111000000000100_case_0Tester_Case4
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: DBG_cccc001100100000111100001111iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc001100100000111100001111iiii,
 //       rule: DBG,
@@ -657,7 +640,6 @@ class DBG_cccc001100100000111100001111iiii_case_0Tester_Case5
 //       None: 32,
 //       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if write_nzcvq
 //            else None},
@@ -682,7 +664,6 @@ class MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0Tester_Case6
 //       None: 32,
 //       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if write_nzcvq
 //            else None},
@@ -705,7 +686,6 @@ class MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0Tester_Case7
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -724,7 +704,6 @@ class MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0Tester_Case8
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -743,7 +722,6 @@ class MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0Tester_Case9
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -771,7 +749,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: NOP_cccc0011001000001111000000000000_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000000,
 //       rule: NOP,
@@ -787,7 +764,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: YIELD_cccc0011001000001111000000000001_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000001,
 //       rule: YIELD,
@@ -803,7 +779,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: WFE_cccc0011001000001111000000000010_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000010,
 //       rule: WFE,
@@ -821,7 +796,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: WFI_cccc0011001000001111000000000011_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000011,
 //       rule: WFI,
@@ -839,7 +813,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: SEV_cccc0011001000001111000000000100_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc0011001000001111000000000100,
 //       rule: SEV,
@@ -857,7 +830,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: DBG_cccc001100100000111100001111iiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc001100100000111100001111iiii,
 //       rule: DBG,
@@ -877,7 +849,6 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if write_nzcvq
 //            else None},
@@ -901,7 +872,6 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {NZCV
 //            if write_nzcvq
 //            else None},
@@ -923,7 +893,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -941,7 +910,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
@@ -959,7 +927,6 @@ TEST_F(Arm32DecoderStateTests,
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
-//       constraints: ,
 //       defs: {},
 //       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
