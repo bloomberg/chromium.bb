@@ -210,22 +210,6 @@
     <property name="key.alias" value="chromiumdebugkey"/>
     <property name="key.alias.password" value="chromium"/>
 
-    <!-- properties for signing in release mode -->
-    <condition property="has.keystore">
-        <and>
-            <isset property="key.store" />
-            <length string="${key.store}" when="greater" length="0" />
-            <isset property="key.alias" />
-        </and>
-    </condition>
-    <condition property="has.password">
-        <and>
-            <isset property="has.keystore" />
-            <isset property="key.store.password" />
-            <isset property="key.alias.password" />
-        </and>
-    </condition>
-
     <!-- properties for packaging -->
     <property name="build.packaging.nocrunch" value="true" />
 
@@ -860,28 +844,29 @@
 
     <!-- By default, the SDK tools build only aligns the APK in the -do-debug target. -->
     <!-- Builds debug output package -->
-    <target name="-do-debug"
-        depends="-set-debug-mode, -debug-obfuscation-check, -package, -post-package">
-      <!-- only create apk if *not* a library project -->
-      <do-only-if-not-library elseText="Library project: do not create apk..." >
-        <sequential>
-          <!-- Signs the APK -->
-          <echo level="info">Signing final apk...</echo>
-          <signapk
-            input="${out.packaged.file}"
-            output="${out.unaligned.file}"
-            keystore="${key.store}"
-            storepass="${key.store.password}"
-            alias="${key.alias}"
-            keypass="${key.alias.password}"/>
+    <target name="-do-sign"
+        depends="-package, -post-package">
+      <sequential>
+        <!-- Signs the APK -->
+        <echo level="info">Signing final apk...</echo>
+        <signapk
+          input="${out.packaged.file}"
+          output="${out.unaligned.file}"
+          keystore="${key.store}"
+          storepass="${key.store.password}"
+          alias="${key.alias}"
+          keypass="${key.alias.password}"/>
 
-          <!-- Zip aligns the APK -->
-          <zipalign-helper
-            in.package="${out.unaligned.file}"
-            out.package="${out.final.file}" />
-          <echo level="info">Release Package: ${out.final.file}</echo>
-        </sequential>
-      </do-only-if-not-library>
+        <!-- Zip aligns the APK -->
+        <zipalign-helper
+          in.package="${out.unaligned.file}"
+          out.package="${out.final.file}" />
+        <echo level="info">Release Package: ${out.final.file}</echo>
+      </sequential>
+    </target>
+
+    <target name="-do-debug"
+      depends="-set-debug-mode, -debug-obfuscation-check, -do-sign">
       <record-build-info />
     </target>
 
@@ -890,21 +875,9 @@
                 description="Builds the application and signs it with a debug key.">
     </target>
 
-
     <!-- ******************************************************* -->
     <!-- *************** Release specific targets ************** -->
     <!-- ******************************************************* -->
-
-    <!-- called through target 'release'. Only executed if the keystore and
-         key alias are known but not their password. -->
-    <target name="-release-prompt-for-password" if="has.keystore" unless="has.password">
-    </target>
-
-    <!-- called through target 'release'. Only executed if there's no
-         keystore/key alias set -->
-    <target name="-release-nosign" unless="has.keystore">
-        <record-build-info />
-    </target>
 
     <target name="-release-obfuscation-check">
         <echo level="info">proguard.config is ${proguard.config}</echo>
@@ -958,37 +931,15 @@
         </if>
     </target>
 
-    <target name="-release-sign" if="has.keystore" >
-        <!-- only create apk if *not* a library project -->
-        <do-only-if-not-library elseText="Library project: do not create apk..." >
-            <sequential>
-                <property name="out.unaligned.file" location="${out.absolute.dir}/${ant.project.name}-release-unaligned.apk" />
-
-                <!-- Signs the APK -->
-                <echo level="info">Signing final apk...</echo>
-                <signapk
-                        input="${out.packaged.file}"
-                        output="${out.unaligned.file}"
-                        keystore="${key.store}"
-                        storepass="${key.store.password}"
-                        alias="${key.alias}"
-                        keypass="${key.alias.password}"/>
-
-                <!-- Zip aligns the APK -->
-                <zipalign-helper
-                        in.package="${out.unaligned.file}"
-                        out.package="${out.final.file}" />
-                <echo level="info">Release Package: ${out.final.file}</echo>
-            </sequential>
-        </do-only-if-not-library>
+    <target name="-release-sign" depends="-do-sign" >
         <record-build-info />
     </target>
 
-    <!-- This runs -package-release and -release-nosign first and then runs
+    <!-- This runs -package-release first and then runs
          only if release-sign is true (set in -release-check,
          called by -release-no-sign)-->
     <target name="release"
-                depends="-set-release-mode, -release-obfuscation-check, -package, -post-package, -release-prompt-for-password, -release-nosign, -release-sign, -post-build"
+                depends="-set-release-mode, -release-obfuscation-check, -package, -post-package, -release-sign, -post-build"
                 description="Builds the application in release mode.">
     </target>
 
