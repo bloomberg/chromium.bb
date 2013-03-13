@@ -344,4 +344,44 @@ TEST_F(VideoUtilTest, ComputeLetterboxRegion) {
                                    gfx::Size(40000, 30000)));
 }
 
+TEST_F(VideoUtilTest, LetterboxYUV) {
+  int width = 40;
+  int height = 30;
+  gfx::Size size(width, height);
+  scoped_refptr<VideoFrame> frame(
+      VideoFrame::CreateFrame(VideoFrame::YV12, size, gfx::Rect(size), size,
+                              base::TimeDelta()));
+
+  for (int left_margin = 0; left_margin <= 10; left_margin += 10) {
+    for (int right_margin = 0; right_margin <= 10; right_margin += 10) {
+      for (int top_margin = 0; top_margin <= 10; top_margin += 10) {
+        for (int bottom_margin = 0; bottom_margin <= 10; bottom_margin += 10) {
+          gfx::Rect view_area(left_margin, top_margin,
+                              width - left_margin - right_margin,
+                              height - top_margin - bottom_margin);
+          FillYUV(frame.get(), 0x1, 0x2, 0x3);
+          LetterboxYUV(frame.get(), view_area);
+          for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+              bool inside = x >= view_area.x() &&
+                  x < view_area.x() + view_area.width() &&
+                  y >= view_area.y() &&
+                  y < view_area.y() + view_area.height();
+              EXPECT_EQ(frame->data(VideoFrame::kYPlane)[
+                  y * frame->stride(VideoFrame::kYPlane) + x],
+                        inside ? 0x01 : 0x00);
+              EXPECT_EQ(frame->data(VideoFrame::kUPlane)[
+                  (y / 2) * frame->stride(VideoFrame::kUPlane) + (x / 2)],
+                        inside ? 0x02 : 0x80);
+              EXPECT_EQ(frame->data(VideoFrame::kVPlane)[
+                  (y / 2) * frame->stride(VideoFrame::kVPlane) + (x / 2)],
+                        inside ? 0x03 : 0x80);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 }  // namespace media

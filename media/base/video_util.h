@@ -38,6 +38,13 @@ MEDIA_EXPORT void CopyPlane(size_t plane, const uint8* source, int stride,
 // Fills |frame| containing YUV data to the given color values.
 MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v);
 
+// Creates a border in |frame| such that all pixels outside of
+// |view_area| are black. The size and position of |view_area|
+// must be even to align correctly with the color planes.
+// Only YV12 format video frames are currently supported.
+MEDIA_EXPORT void LetterboxYUV(VideoFrame* frame,
+                               const gfx::Rect& view_area);
+
 // Rotates |src| plane by |rotation| degree with possible flipping vertically
 // and horizontally.
 // |rotation| is limited to {0, 90, 180, 270}.

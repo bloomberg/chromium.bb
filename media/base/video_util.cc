@@ -86,6 +86,63 @@ void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v) {
   }
 }
 
+static void LetterboxPlane(VideoFrame* frame,
+                           int plane,
+                           const gfx::Rect& view_area,
+                           uint8 fill_byte) {
+  uint8* ptr = frame->data(plane);
+  const int rows = frame->rows(plane);
+  const int row_bytes = frame->row_bytes(plane);
+  const int stride = frame->stride(plane);
+
+  CHECK_GE(stride, row_bytes);
+  CHECK_GE(view_area.x(), 0);
+  CHECK_GE(view_area.y(), 0);
+  CHECK_LE(view_area.right(), row_bytes);
+  CHECK_LE(view_area.bottom(), rows);
+
+  int y = 0;
+  for (; y < view_area.y(); y++) {
+    memset(ptr, fill_byte, row_bytes);
+    ptr += stride;
+  }
+  if (view_area.width() < row_bytes) {
+    for (; y < view_area.bottom(); y++) {
+      if (view_area.x() > 0) {
+        memset(ptr, fill_byte, view_area.x());
+      }
+      if (view_area.right() < row_bytes) {
+        memset(ptr + view_area.right(),
+               fill_byte,
+               row_bytes - view_area.right());
+      }
+      ptr += stride;
+    }
+  } else {
+    y += view_area.height();
+    ptr += stride * view_area.height();
+  }
+  for (; y < rows; y++) {
+    memset(ptr, fill_byte, row_bytes);
+    ptr += stride;
+  }
+}
+
+void LetterboxYUV(VideoFrame* frame, const gfx::Rect& view_area) {
+  DCHECK(!(view_area.x() & 1));
+  DCHECK(!(view_area.y() & 1));
+  DCHECK(!(view_area.width() & 1));
+  DCHECK(!(view_area.height() & 1));
+  DCHECK_EQ(frame->format(), VideoFrame::YV12);
+  LetterboxPlane(frame, VideoFrame::kYPlane, view_area, 0x00);
+  gfx::Rect half_view_area(view_area.x() / 2,
+                           view_area.y() / 2,
+                           view_area.width() / 2,
+                           view_area.height() / 2);
+  LetterboxPlane(frame, VideoFrame::kUPlane, half_view_area, 0x80);
+  LetterboxPlane(frame, VideoFrame::kVPlane, half_view_area, 0x80);
+}
+
 void RotatePlaneByPixels(
     const uint8* src,
     uint8* dest,
@@ -213,9 +270,7 @@ void CopyRGBToVideoFrame(const uint8* source,
   const int uv_stride = frame->stride(kU);
 
   if (region_in_frame != gfx::Rect(frame->coded_size())) {
-    // TODO(justinlin): Optimize this by clearing just the margins.
-    // http://crbug.com/178789
-    FillYUV(frame, 0x00, 0x80, 0x80);
+    LetterboxYUV(frame, region_in_frame);
   }
 
   const int y_offset = region_in_frame.x()
