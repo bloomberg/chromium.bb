@@ -1817,11 +1817,20 @@ LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,
 LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
                                         WPARAM w_param,
                                         LPARAM l_param) {
-  const LRESULT result = DefWindowProcWithRedrawLock(message, w_param, l_param);
-  // Invalidate the window to paint over any outdated window regions asap, as
-  // using a RedrawLock for WM_SETCURSOR may show content through this window.
-  if (delegate_->IsUsingCustomFrame() && !ui::win::IsAeroGlassEnabled())
+  LRESULT result = 0;
+  // Use a ScopedRedrawLock to avoid weird non-client painting for windows with
+  // custom frames when glass is not enabled. Otherwise, default handling is
+  // sufficient and does not produce the weird non-client painting artifacts.
+  if (delegate_->IsUsingCustomFrame() && !ui::win::IsAeroGlassEnabled() &&
+      LOWORD(l_param) >= HTLEFT && LOWORD(l_param) <= HTBOTTOMRIGHT) {
+    // Prevent classic theme custom frame artifacts on these WM_SETCUROR calls.
+    result = DefWindowProcWithRedrawLock(message, w_param, l_param);
+    // Invalidate the window to paint over any outdated window regions asap, as
+    // using a RedrawLock for WM_SETCURSOR may show content through this window.
     InvalidateRect(hwnd(), NULL, FALSE);
+  } else {
+    SetMsgHandled(FALSE);
+  }
   return result;
 }
 
