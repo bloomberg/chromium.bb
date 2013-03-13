@@ -28,6 +28,10 @@ class EventGenerator;
 }  // namespace test
 }  // namespace aura
 
+namespace ui {
+class ScopedAnimationDurationScaleMode;
+}  // namespace ui
+
 namespace ash {
 namespace internal {
 class DisplayManager;
@@ -109,6 +113,8 @@ class AshTestBase : public testing::Test {
 #if defined(OS_WIN)
   scoped_ptr<TestMetroViewerProcessHost> metro_viewer_host_;
 #endif
+
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

@@ -31,6 +31,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/border.h"
@@ -79,20 +80,6 @@ const SkColor kFocusedActiveListItemBackgroundColor =
 const int kMaximumAppMenuItemLength = 250;
 
 namespace {
-
-// An object which turns slow animations on during its lifetime.
-class ScopedAnimationSetter {
- public:
-  explicit ScopedAnimationSetter() {
-    ui::LayerAnimator::set_slow_animation_mode(true);
-  }
-  ~ScopedAnimationSetter() {
-    ui::LayerAnimator::set_slow_animation_mode(false);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedAnimationSetter);
-};
 
 // The MenuModelAdapter gets slightly changed to adapt the menu appearance to
 // our requirements.
@@ -1277,9 +1264,11 @@ void LauncherView::ButtonPressed(views::Button* sender,
 
   {
     // Slow down activation animations if shift key is pressed.
-    scoped_ptr<ScopedAnimationSetter> slowing_animations;
-    if (event.IsShiftDown())
-      slowing_animations.reset(new ScopedAnimationSetter());
+    scoped_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
+    if (event.IsShiftDown()) {
+      slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
+            ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+    }
 
   // Collect usage statistics before we decide what to do with the click.
   switch (model_->items()[view_index].type) {

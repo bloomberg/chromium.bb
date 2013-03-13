@@ -13,6 +13,7 @@
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/compositor/test/test_layer_animation_delegate.h"
@@ -1787,7 +1788,8 @@ TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
 // causes the second to be deleted, we should not attempt to animate the second
 // animation.
 TEST(LayerAnimatorTest, ObserverDeletesAnimations) {
-  LayerAnimator::set_disable_animations_for_test(false);
+  ScopedAnimationDurationScaleMode normal_duration_mode(
+      ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   scoped_refptr<LayerAnimator> animator(new TestLayerAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);

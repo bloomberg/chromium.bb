@@ -11,11 +11,18 @@
 #include "ui/compositor/float_animation_curve_adapter.h"
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/interpolated_transform.h"
 
 namespace ui {
 
 namespace {
+
+// The factor by which duration is scaled up or down when
+// ScopedAnimationDurationScaleMode::duration_scale_mode() is SLOW_DURATION or
+// FAST_DURATION.
+const int kSlowDurationScaleFactor = 4;
+const int kFastDurationScaleFactor = 4;
 
 // Pause -----------------------------------------------------------------------
 class Pause : public LayerAnimationElement {
@@ -628,13 +635,19 @@ LayerAnimationElement::ToAnimatableProperty(
 // static
 base::TimeDelta LayerAnimationElement::GetEffectiveDuration(
     const base::TimeDelta& duration) {
-  if (LayerAnimator::disable_animations_for_test())
-    return base::TimeDelta();
-
-  if (LayerAnimator::slow_animation_mode())
-    return duration * LayerAnimator::slow_animation_scale_factor();
-
-  return duration;
+  switch (ScopedAnimationDurationScaleMode::duration_scale_mode()) {
+    case ScopedAnimationDurationScaleMode::NORMAL_DURATION:
+      return duration;
+    case ScopedAnimationDurationScaleMode::FAST_DURATION:
+      return duration / kFastDurationScaleFactor;
+    case ScopedAnimationDurationScaleMode::SLOW_DURATION:
+      return duration * kSlowDurationScaleFactor;
+    case ScopedAnimationDurationScaleMode::ZERO_DURATION:
+      return base::TimeDelta();
+    default:
+      NOTREACHED();
+      return base::TimeDelta();
+  }
 }
 
 // static

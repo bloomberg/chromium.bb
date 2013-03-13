@@ -48,13 +48,6 @@ ui::AnimationContainer* GetAnimationContainer() {
 
 }  // namespace
 
-// static
-bool LayerAnimator::disable_animations_for_test_ = false;
-// static
-bool LayerAnimator::slow_animation_mode_ = false;
-// static
-int LayerAnimator::slow_animation_scale_factor_ = 4;
-
 // LayerAnimator public --------------------------------------------------------
 
 LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)

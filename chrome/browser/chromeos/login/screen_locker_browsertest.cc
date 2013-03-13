@@ -26,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/widget/widget.h"
 
 using testing::_;
@@ -136,12 +137,15 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
         .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library, LoadOncNetworks(_, _, _, _))
         .WillRepeatedly(Return(true));
-    ui::LayerAnimator::set_disable_animations_for_test(true);
+    zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
+        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
+
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
 };

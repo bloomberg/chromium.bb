@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 
@@ -37,7 +38,8 @@ typedef InProcessBrowserTest ImmersiveModeControllerTest;
 // it to other Aura platforms (win_aura, linux_aura).  http://crbug.com/163931
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
-  ui::LayerAnimator::set_disable_animations_for_test(true);
+  ui::ScopedAnimationDurationScaleMode zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   ASSERT_TRUE(ImmersiveModeController::UseImmersiveFullscreen());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
@@ -201,7 +203,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
 
 // Shelf-specific immersive mode tests.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
-  ui::LayerAnimator::set_disable_animations_for_test(true);
+  ui::ScopedAnimationDurationScaleMode zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   ImmersiveModeController* immersive_controller =

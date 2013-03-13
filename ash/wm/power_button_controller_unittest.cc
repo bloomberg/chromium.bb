@@ -17,6 +17,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -388,7 +389,8 @@ TEST_F(PowerButtonControllerTest, CancelLockToShutdown) {
 // Test that we handle the case where lock requests are ignored.
 TEST_F(PowerButtonControllerTest, LockFail) {
   // We require animations to have a duration for this test.
-  ui::LayerAnimator::set_disable_animations_for_test(false);
+  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
   controller_->set_has_legacy_power_button_for_test(false);
   state_controller_->OnLoginStateChanged(user::LOGGED_IN_USER);

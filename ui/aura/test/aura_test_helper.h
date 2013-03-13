@@ -12,6 +12,7 @@ class MessageLoopForUI;
 
 namespace ui {
 class InputMethod;
+class ScopedAnimationDurationScaleMode;
 }
 
 namespace aura {
@@ -59,6 +60,7 @@ class AuraTestHelper {
   scoped_ptr<ui::InputMethod> test_input_method_;
   scoped_ptr<client::FocusClient> focus_client_;
   scoped_ptr<TestScreen> test_screen_;
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };

@@ -27,6 +27,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/image_button.h"
@@ -292,8 +293,11 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
   // When shift-clicking slow down animations for visual debugging.
   // We used to do this via an event filter that looked for the shift key being
   // pressed but this interfered with several normal keyboard shortcuts.
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(true);
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> slow_duration_mode;
+  if (event.IsShiftDown()) {
+    slow_duration_mode.reset(new ui::ScopedAnimationDurationScaleMode(
+        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  }
 
   if (sender == size_button_) {
     // The maximize button may move out from under the cursor.
@@ -310,9 +314,6 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
   } else if (sender == close_button_) {
     frame()->Close();
   }
-
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

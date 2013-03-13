@@ -184,29 +184,6 @@ class COMPOSITOR_EXPORT LayerAnimator
   }
   base::TimeTicks last_step_time() const { return last_step_time_; }
 
-  // When set all animations play slowly for visual debugging.
-  static void set_slow_animation_mode(bool slow) {
-    slow_animation_mode_ = slow;
-  }
-  static bool slow_animation_mode() { return slow_animation_mode_; }
-
-  // When in slow animation mode, animation durations are scaled by this value.
-  static void set_slow_animation_scale_factor(int factor) {
-    slow_animation_scale_factor_ = factor;
-  }
-  static int slow_animation_scale_factor() {
-    return slow_animation_scale_factor_;
-  }
-
-  // When set to true, all animations complete immediately.
-  static void set_disable_animations_for_test(bool disable_animations) {
-    disable_animations_for_test_ = disable_animations;
-  }
-
-  static bool disable_animations_for_test() {
-    return disable_animations_for_test_;
-  }
-
  protected:
   virtual ~LayerAnimator();
 
@@ -358,15 +335,6 @@ class COMPOSITOR_EXPORT LayerAnimator
   // Prevents timer adjustments in case when we start multiple animations
   // with preemption strategies that discard previous animations.
   bool adding_animations_;
-
-  // This causes all animations to complete immediately.
-  static bool disable_animations_for_test_;
-
-  // Slows down all animations for visual debugging.
-  static bool slow_animation_mode_;
-
-  // Amount to slow animations for debugging.
-  static int slow_animation_scale_factor_;
 
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.

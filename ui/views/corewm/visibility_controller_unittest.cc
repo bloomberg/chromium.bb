@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace views {
 namespace corewm {
@@ -21,7 +22,8 @@ typedef aura::test::AuraTestBase VisibilityControllerTest;
 // immediately.
 TEST_F(VisibilityControllerTest, AnimateHideDoesntHideWindowLayer) {
   // We cannot disable animations for this test.
-  ui::LayerAnimator::set_disable_animations_for_test(false);
+  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
   VisibilityController controller;
   aura::client::SetVisibilityClient(root_window(), &controller);

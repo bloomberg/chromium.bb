@@ -27,6 +27,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -95,7 +96,8 @@ void AshTestBase::SetUp() {
   aura::test::SetUsePopupAsRootWindowForTest(true);
 #endif
   // Disable animations during tests.
-  ui::LayerAnimator::set_disable_animations_for_test(true);
+  zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ui::TextInputTestSupport::Initialize();
 
   // Creates Shell and hook with Desktop.

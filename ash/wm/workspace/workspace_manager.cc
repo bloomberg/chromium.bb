@@ -35,6 +35,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
 
@@ -509,7 +510,8 @@ void WorkspaceManager::SetUnminimizingWorkspace(Workspace* workspace) {
 void WorkspaceManager::FadeDesktop(aura::Window* window,
                                    base::TimeDelta duration) {
   if (views::corewm::WindowAnimationsDisabled(NULL) ||
-      ui::LayerAnimator::disable_animations_for_test())
+      ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION)
     return;
 
   base::AutoReset<bool> reseter(&creating_fade_, true);

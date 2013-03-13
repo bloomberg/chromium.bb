@@ -52,6 +52,8 @@
         'layer_owner.cc',
         'layer_owner.h',
         'layer_type.h',
+        'scoped_animation_duration_scale_mode.cc',
+        'scoped_animation_duration_scale_mode.h',
         'scoped_layer_animation_settings.cc',
         'scoped_layer_animation_settings.h',
         # UI tests need TestWebGraphicsContext3D, so we always build it.
