@@ -161,8 +161,6 @@ void PartialMagnificationController::CreateMagnifierWindow() {
                 kMagnifierWidth,
                 kMagnifierHeight));
   zoom_widget_->GetNativeView()->layer()->SetBackgroundZoom(
-      (kMagnifierWidth - (kMagnifierWidth / scale_)) / 2,
-      (kMagnifierHeight - (kMagnifierHeight / scale_)) / 2,
       scale_,
       kZoomInset);
 

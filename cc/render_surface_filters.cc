@@ -424,18 +424,23 @@ SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
         break;
       }
       case WebKit::WebFilterOperation::FilterTypeZoom: {
+#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
         SkPaint paint;
+        int width = state.Source().width();
+        int height = state.Source().height();
         skia::RefPtr<SkImageFilter> zoom_filter = skia::AdoptRef(
             new SkMagnifierImageFilter(
-                SkRect::MakeXYWH(op.zoomRect().x,
-                                 op.zoomRect().y,
-                                 op.zoomRect().width,
-                                 op.zoomRect().height),
-                op.amount()));
+                SkRect::MakeXYWH(
+                    (width - (width / op.amount())) / 2.f,
+                    (height - (height / op.amount())) / 2.f,
+                    width / op.amount(),
+                    height / op.amount()),
+                op.zoomInset()));
         paint.setImageFilter(zoom_filter.get());
         canvas->saveLayer(NULL, &paint);
         canvas->drawBitmap(state.Source(), 0, 0);
         canvas->restore();
+#endif
         break;
       }
       case WebKit::WebFilterOperation::FilterTypeBrightness:

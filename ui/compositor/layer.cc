@@ -58,8 +58,6 @@ Layer::Layer()
       layer_inverted_(false),
       layer_mask_(NULL),
       layer_mask_back_link_(NULL),
-      zoom_x_offset_(0),
-      zoom_y_offset_(0),
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
@@ -85,8 +83,6 @@ Layer::Layer(LayerType type)
       layer_inverted_(false),
       layer_mask_(NULL),
       layer_mask_back_link_(NULL),
-      zoom_x_offset_(0),
-      zoom_y_offset_(0),
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
@@ -309,12 +305,7 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
   }
 }
 
-void Layer::SetBackgroundZoom(float x_offset,
-                              float y_offset,
-                              float zoom,
-                              int inset) {
-  zoom_x_offset_ = x_offset;
-  zoom_y_offset_ = y_offset;
+void Layer::SetBackgroundZoom(float zoom, int inset) {
   zoom_ = zoom;
   zoom_inset_ = inset;
 
@@ -347,11 +338,10 @@ void Layer::SetLayerFilters() {
 void Layer::SetLayerBackgroundFilters() {
   WebKit::WebFilterOperations filters;
   if (zoom_ != 1) {
-    filters.append(WebKit::WebFilterOperation::createZoomFilter(
-        WebKit::WebRect(zoom_x_offset_, zoom_y_offset_,
-                        (GetTargetBounds().width() / zoom_),
-                        (GetTargetBounds().height() / zoom_)),
-        zoom_inset_));
+#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
+    filters.append(WebKit::WebFilterOperation::createZoomFilter(zoom_,
+                                                                zoom_inset_));
+#endif
   }
 
   if (background_blur_radius_) {
