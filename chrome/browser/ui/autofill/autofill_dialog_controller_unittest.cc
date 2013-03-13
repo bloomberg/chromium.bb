@@ -11,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_common_test.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/common/form_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"

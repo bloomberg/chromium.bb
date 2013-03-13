@@ -31,6 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/risk/fingerprint.h"
@@ -934,7 +935,7 @@ void AutofillDialogControllerImpl::EndSignInFlow() {
 
 void AutofillDialogControllerImpl::OnCancel() {
   if (!did_submit_) {
-    metric_logger_.LogRequestAutocompleteUiDuration(
+    metric_logger_.LogDialogUiDuration(
         base::Time::Now() - dialog_shown_timestamp_,
         dialog_type_,
         AutofillMetrics::DIALOG_CANCELED);
@@ -951,7 +952,7 @@ void AutofillDialogControllerImpl::OnCancel() {
 
 void AutofillDialogControllerImpl::OnSubmit() {
   did_submit_ = true;
-  metric_logger_.LogRequestAutocompleteUiDuration(
+  metric_logger_.LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
       dialog_type_,
       AutofillMetrics::DIALOG_ACCEPTED);

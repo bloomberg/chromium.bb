@@ -155,6 +155,20 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
   return (group * num_possible_metrics) + metric;
 }
 
+// Returns the histogram prefix to use for reporting metrics for |dialog_type|.
+std::string GetPrefixForDialogType(autofill::DialogType dialog_type) {
+  switch (dialog_type) {
+    case autofill::DIALOG_TYPE_AUTOCHECKOUT:
+      return "Autocheckout";
+
+    case autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
+      return "RequestAutocomplete";
+  }
+
+  NOTREACHED();
+  return "UnknownDialogType";
+}
+
 // A version of the UMA_HISTOGRAM_ENUMERATION macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramEnumeration(const std::string& name,
@@ -282,20 +296,11 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
                             NUM_INFO_BAR_METRICS);
 }
 
-void AutofillMetrics::LogRequestAutocompleteUiDuration(
+void AutofillMetrics::LogDialogUiDuration(
     const base::TimeDelta& duration,
     autofill::DialogType dialog_type,
     DialogDismissalAction dismissal_action) const {
-  std::string prefix;
-  switch (dialog_type) {
-    case autofill::DIALOG_TYPE_AUTOCHECKOUT:
-      prefix = "Autocheckout";
-      break;
-
-    case autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
-      prefix = "RequestAutocomplete";
-      break;
-  }
+  std::string prefix = GetPrefixForDialogType(dialog_type);
 
   std::string suffix;
   switch (dismissal_action) {

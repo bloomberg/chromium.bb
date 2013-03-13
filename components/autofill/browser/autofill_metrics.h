@@ -183,12 +183,12 @@ class AutofillMetrics {
 
   virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
 
-  // This should be called when the requestAutocomplete dialog, invoked by the
-  // |requester|, is closed.  |duration| should be the time elapsed between the
-  // dialog being shown and it being closed.  |dismissal_action| should indicate
-  // whether the user dismissed the dialog by submitting the form data or by
-  // cancelling.
-  virtual void LogRequestAutocompleteUiDuration(
+  // This should be called when the requestAutocomplete dialog, invoked by a
+  // dialog of type |dialog_type|, is closed.  |duration| should be the time
+  // elapsed between the dialog being shown and it being closed.
+  // |dismissal_action| should indicate whether the user dismissed the dialog by
+  // submitting the form data or by canceling.
+  virtual void LogDialogUiDuration(
       const base::TimeDelta& duration,
       autofill::DialogType dialog_type,
       DialogDismissalAction dismissal_action) const;

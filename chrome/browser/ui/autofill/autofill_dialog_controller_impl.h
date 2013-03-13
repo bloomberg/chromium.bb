@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
-#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_popup_delegate.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_structure.h"
@@ -35,6 +34,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 
+class AutofillMetrics;
 class AutofillPopupControllerImpl;
 class FormGroup;
 class Profile;
@@ -382,7 +382,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   base::Time dialog_shown_timestamp_;
   base::Time autocheckout_started_timestamp_;
 
-  DialogType dialog_type_;
+  // Whether this is an Autocheckout or a requestAutocomplete dialog.
+  const DialogType dialog_type_;
 
   // True if the termination action was a submit.
   bool did_submit_;

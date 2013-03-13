@@ -42,7 +42,7 @@ class MockAutofillMetrics : public AutofillMetrics {
     mutable_this->autocheckout_status_ = status;
   }
 
-  virtual void LogRequestAutocompleteUiDuration(
+  virtual void LogDialogUiDuration(
       const base::TimeDelta& duration,
       DialogType dialog_type,
       DialogDismissalAction dismissal_action) const OVERRIDE {
