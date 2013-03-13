@@ -32,6 +32,8 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -39,7 +41,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -71,10 +72,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#endif
 
 using content::RenderViewHost;
 using content::WebContents;
@@ -547,8 +544,11 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 }
 
 void ExtensionSettingsHandler::PassphraseDialogCallback(bool success) {
-  if (success)
-    HandleRequestExtensionsData(NULL);
+  if (!success)
+    return;
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ManagedUserServiceFactory::GetForProfile(profile)->SetElevated(true);
+  HandleRequestExtensionsData(NULL);
 }
 
 void ExtensionSettingsHandler::ManagedUserSetElevated(const ListValue* args) {
@@ -556,15 +556,15 @@ void ExtensionSettingsHandler::ManagedUserSetElevated(const ListValue* args) {
       Profile::FromWebUI(web_ui()));
   bool elevated;
   CHECK(args->GetBoolean(0, &elevated));
-  if (!service->IsElevated() && elevated) {
-    new ManagedUserPassphraseDialog(
+  if (elevated) {
+    service->RequestAuthorization(
         web_ui()->GetWebContents(),
         base::Bind(&ExtensionSettingsHandler::PassphraseDialogCallback,
                    base::Unretained(this)));
-    return;
+  } else {
+    service->SetElevated(false);
+    HandleRequestExtensionsData(NULL);
   }
-  service->SetElevated(elevated);
-  HandleRequestExtensionsData(NULL);
 }
 
 void ExtensionSettingsHandler::HandleRequestExtensionsData(
@@ -621,7 +621,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       (!is_managed || is_elevated) &&
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results.SetBoolean("profileIsManaged", is_managed);
-  results.SetBoolean("profileIsElevated", service->IsElevated());
+  results.SetBoolean("profileIsElevated", is_elevated);
   results.SetBoolean("developerMode", developer_mode);
 
   // Check to see if we have any wiped out extensions.
