@@ -6,11 +6,8 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_fullscreen.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 
@@ -23,7 +20,7 @@ class PluginInstance;
 }  // namespace webkit
 
 namespace WebKit {
-class WebGraphicsContext3D;
+class WebLayer;
 }
 
 namespace content {
@@ -51,13 +48,11 @@ class RenderWidgetFullscreenPepper :
       CreateContext3D() OVERRIDE;
   virtual void ReparentContext(
       webkit::ppapi::PluginDelegate::PlatformContext3D*) OVERRIDE;
+  virtual void SetLayer(WebKit::WebLayer* layer) OVERRIDE;
 
   // IPC::Listener implementation. This overrides the implementation
   // in RenderWidgetFullscreen.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-
-  WebKit::WebGraphicsContext3D* context() const { return context_; }
-  void SwapBuffers();
 
   // Could be NULL when this widget is closing.
   webkit::ppapi::PluginInstance* plugin() const { return plugin_; }
@@ -65,6 +60,8 @@ class RenderWidgetFullscreenPepper :
   MouseLockDispatcher* mouse_lock_dispatcher() const {
     return mouse_lock_dispatcher_.get();
   }
+
+  bool is_compositing() const { return !!layer_; }
 
  protected:
   RenderWidgetFullscreenPepper(webkit::ppapi::PluginInstance* plugin,
@@ -92,34 +89,17 @@ class RenderWidgetFullscreenPepper :
   virtual WebKit::WebWidget* CreateWebWidget() OVERRIDE;
 
   // RenderWidget overrides.
-  virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
   virtual GURL GetURLForGraphicsContext3D() OVERRIDE;
-  virtual void Composite() OVERRIDE;
-  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
+  virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
 
  private:
-  // Creates the GL context for compositing.
-  void CreateContext();
-
-  // Initialize the GL states and resources for compositing.
-  bool InitContext();
-
-  // Checks (and returns) whether accelerated compositing should be on or off,
-  // and notify the browser.
-  bool CheckCompositing();
-
   // URL that is responsible for this widget, passed to ggl::CreateViewContext.
   GURL active_url_;
 
   // The plugin instance this widget wraps.
   webkit::ppapi::PluginInstance* plugin_;
 
-  // GL context for compositing.
-  WebKit::WebGraphicsContext3D* context_;
-  unsigned int buffer_;
-  unsigned int program_;
-
-  base::WeakPtrFactory<RenderWidgetFullscreenPepper> weak_ptr_factory_;
+  WebKit::WebLayer* layer_;
 
   scoped_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
 

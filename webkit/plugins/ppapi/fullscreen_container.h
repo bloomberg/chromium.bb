@@ -39,6 +39,8 @@ class FullscreenContainer {
 
   virtual void ReparentContext(PluginDelegate::PlatformContext3D*) = 0;
 
+  virtual void SetLayer(WebKit::WebLayer* layer) = 0;
+
  protected:
   virtual ~FullscreenContainer() {}
 };

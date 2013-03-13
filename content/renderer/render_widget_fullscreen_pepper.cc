@@ -12,12 +12,14 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
@@ -332,7 +334,7 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool isAcceleratedCompositingActive() const {
-    return widget_->plugin() && widget_->plugin()->GetBackingTextureId();
+    return widget_->plugin() && widget_->is_compositing();
   }
 
  private:
@@ -341,17 +343,6 @@ class PepperWidget : public WebWidget {
 
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
 };
-
-void DestroyContext(WebKit::WebGraphicsContext3D* context,
-                    GLuint program,
-                    GLuint buffer) {
-  DCHECK(context);
-  if (program)
-    context->deleteProgram(program);
-  if (buffer)
-    context->deleteBuffer(buffer);
-  delete context;
-}
 
 }  // anonymous namespace
 
@@ -375,55 +366,25 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     : RenderWidgetFullscreen(screen_info),
       active_url_(active_url),
       plugin_(plugin),
-      context_(NULL),
-      buffer_(0),
-      program_(0),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      layer_(NULL),
       mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(
           ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
 }
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
-  if (context_)
-    DestroyContext(context_, program_, buffer_);
 }
-
-void RenderWidgetFullscreenPepper::OnViewContextSwapBuffersAborted() {
-  if (!context_)
-    return;
-  // Destroy the context later, in case we got called from InitContext for
-  // example. We still need to reset context_ now so that a new context gets
-  // created when the plugin recreates its own.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DestroyContext, context_, program_, buffer_));
-  context_ = NULL;
-  program_ = 0;
-  buffer_ = 0;
-  RenderWidget::OnViewContextSwapBuffersAborted();
-  CheckCompositing();
-}
-
 
 void RenderWidgetFullscreenPepper::Invalidate() {
   InvalidateRect(gfx::Rect(size_.width(), size_.height()));
 }
 
 void RenderWidgetFullscreenPepper::InvalidateRect(const WebKit::WebRect& rect) {
-  if (CheckCompositing()) {
-    scheduleComposite();
-  } else {
-    didInvalidateRect(rect);
-  }
+  didInvalidateRect(rect);
 }
 
 void RenderWidgetFullscreenPepper::ScrollRect(
     int dx, int dy, const WebKit::WebRect& rect) {
-  if (CheckCompositing()) {
-    scheduleComposite();
-  } else {
-    didScrollRect(dx, dy, rect);
-  }
+  didScrollRect(dx, dy, rect);
 }
 
 void RenderWidgetFullscreenPepper::Destroy() {
@@ -457,6 +418,25 @@ void RenderWidgetFullscreenPepper::ReparentContext(
     context_impl->DestroyParentContextProviderAndBackingTexture();
   else
     context_impl->SetParentAndCreateBackingTextureIfNeeded();
+}
+
+void RenderWidgetFullscreenPepper::SetLayer(WebKit::WebLayer* layer) {
+  layer_ = layer;
+  bool compositing = !!layer_;
+  if (compositing != is_accelerated_compositing_active_) {
+    if (compositing) {
+      initializeLayerTreeView();
+      if (!layerTreeView())
+        return;
+      layer_->setBounds(WebKit::WebSize(size()));
+      layer_->setDrawsContent(true);
+      compositor_->setDeviceScaleFactor(device_scale_factor_);
+      compositor_->setRootLayer(*layer_);
+      didActivateCompositor(-1);
+    } else {
+      didDeactivateCompositor();
+    }
+  }
 }
 
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
@@ -519,13 +499,8 @@ void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
     const gfx::Size& physical_backing_size,
     const gfx::Rect& resizer_rect,
     bool is_fullscreen) {
-  if (context_) {
-    context_->reshape(physical_backing_size.width(),
-                      physical_backing_size.height());
-    context_->viewport(0, 0,
-                       physical_backing_size.width(),
-                       physical_backing_size.height());
-  }
+  if (layer_)
+    layer_->setBounds(WebKit::WebSize(size));
   RenderWidget::OnResize(size, physical_backing_size, resizer_rect,
                          is_fullscreen);
 }
@@ -534,183 +509,15 @@ WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
   return new PepperWidget(this);
 }
 
-bool RenderWidgetFullscreenPepper::SupportsAsynchronousSwapBuffers() {
-  return RenderWidget::SupportsAsynchronousSwapBuffers() && context_ != NULL;
-}
-
 GURL RenderWidgetFullscreenPepper::GetURLForGraphicsContext3D() {
   return active_url_;
 }
 
-// Fullscreen pepper widgets composite themselves into the plugin's backing
-// texture (as opposed to using the cc library to composite as normal
-// content::RenderWidgets do), so to produce a composited frame we just have to
-// draw this texture and swap.
-void RenderWidgetFullscreenPepper::Composite() {
-  if (!plugin_)
-    return;
-
-  DCHECK(context_);
-  unsigned int texture = plugin_->GetBackingTextureId();
-  context_->bindTexture(GL_TEXTURE_2D, texture);
-  context_->drawArrays(GL_TRIANGLES, 0, 3);
-  SwapBuffers();
-}
-
-void RenderWidgetFullscreenPepper::CreateContext() {
-  DCHECK(!context_);
-  WebKit::WebGraphicsContext3D::Attributes attributes;
-  attributes.depth = false;
-  attributes.stencil = false;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.preferDiscreteGPU = true;
-
-  context_ = CreateGraphicsContext3D(attributes);
-  if (!context_)
-    return;
-
-  if (!InitContext()) {
-    DestroyContext(context_, program_, buffer_);
-    context_ = NULL;
-    return;
-  }
-}
-
-namespace {
-
-const char kVertexShader[] =
-    "attribute vec2 in_tex_coord;\n"
-    "varying vec2 tex_coord;\n"
-    "void main() {\n"
-    "  gl_Position = vec4(in_tex_coord.x * 2. - 1.,\n"
-    "                     in_tex_coord.y * 2. - 1.,\n"
-    "                     0.,\n"
-    "                     1.);\n"
-    "  tex_coord = vec2(in_tex_coord.x, in_tex_coord.y);\n"
-    "}\n";
-
-const char kFragmentShader[] =
-    "precision mediump float;\n"
-    "varying vec2 tex_coord;\n"
-    "uniform sampler2D in_texture;\n"
-    "void main() {\n"
-    "  gl_FragColor = texture2D(in_texture, tex_coord);\n"
-    "}\n";
-
-GLuint CreateShaderFromSource(WebKit::WebGraphicsContext3D* context,
-                              GLenum type,
-                              const char* source) {
-    GLuint shader = context->createShader(type);
-    context->shaderSource(shader, source);
-    context->compileShader(shader);
-    int status = GL_FALSE;
-    context->getShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if (!status) {
-        int size = 0;
-        context->getShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
-        std::string log = context->getShaderInfoLog(shader).utf8();
-        DLOG(ERROR) << "Compilation failed: " << log;
-        context->deleteShader(shader);
-        shader = 0;
-    }
-    return shader;
-}
-
-const float kTexCoords[] = {
-    0.f, 0.f,
-    0.f, 2.f,
-    2.f, 0.f,
-};
-
-}  // anonymous namespace
-
-bool RenderWidgetFullscreenPepper::InitContext() {
-  if (!context_->makeContextCurrent())
-    return false;
-  gfx::Size pixel_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(size(), deviceScaleFactor()));
-  context_->reshape(pixel_size.width(), pixel_size.height());
-  context_->viewport(0, 0, pixel_size.width(), pixel_size.height());
-
-  program_ = context_->createProgram();
-
-  GLuint vertex_shader =
-      CreateShaderFromSource(context_, GL_VERTEX_SHADER, kVertexShader);
-  if (!vertex_shader)
-    return false;
-  context_->attachShader(program_, vertex_shader);
-  context_->deleteShader(vertex_shader);
-
-  GLuint fragment_shader =
-      CreateShaderFromSource(context_, GL_FRAGMENT_SHADER, kFragmentShader);
-  if (!fragment_shader)
-    return false;
-  context_->attachShader(program_, fragment_shader);
-  context_->deleteShader(fragment_shader);
-
-  context_->bindAttribLocation(program_, 0, "in_tex_coord");
-  context_->linkProgram(program_);
-  int status = GL_FALSE;
-  context_->getProgramiv(program_, GL_LINK_STATUS, &status);
-  if (!status) {
-    int size = 0;
-    context_->getProgramiv(program_, GL_INFO_LOG_LENGTH, &size);
-    std::string log = context_->getProgramInfoLog(program_).utf8();
-    DLOG(ERROR) << "Link failed: " << log;
-    return false;
-  }
-  context_->useProgram(program_);
-  int texture_location = context_->getUniformLocation(program_, "in_texture");
-  context_->uniform1i(texture_location, 0);
-
-  buffer_ = context_->createBuffer();
-  context_->bindBuffer(GL_ARRAY_BUFFER, buffer_);
-  context_->bufferData(GL_ARRAY_BUFFER,
-                 sizeof(kTexCoords),
-                 kTexCoords,
-                 GL_STATIC_DRAW);
-  context_->vertexAttribPointer(0, 2,
-                                GL_FLOAT, GL_FALSE,
-                                0, static_cast<WGC3Dintptr>(NULL));
-  context_->enableVertexAttribArray(0);
-  return true;
-}
-
-bool RenderWidgetFullscreenPepper::CheckCompositing() {
-  bool compositing = webwidget_ && webwidget_->isAcceleratedCompositingActive();
-  if (compositing) {
-    if (context_ && context_->isContextLost()) {
-      DestroyContext(context_, program_, buffer_);
-      context_ = NULL;
-    }
-    if (!context_)
-      CreateContext();
-    if (!context_)
-      compositing = false;
-  }
-
-  if (compositing != is_accelerated_compositing_active_) {
-    if (compositing) {
-      didActivateCompositor(-1);
-    } else {
-      if (context_) {
-        DestroyContext(context_, program_, buffer_);
-        context_ = NULL;
-      }
-      didDeactivateCompositor();
-    }
-  }
-  return compositing;
-}
-
-void RenderWidgetFullscreenPepper::SwapBuffers() {
-  DCHECK(context_);
-  context_->prepareTexture();
-
-  // The compositor isn't actually active in this path, but pretend it is for
-  // scheduling purposes.
-  didCommitAndDrawCompositorFrame();
+void RenderWidgetFullscreenPepper::SetDeviceScaleFactor(
+    float device_scale_factor) {
+  RenderWidget::SetDeviceScaleFactor(device_scale_factor);
+  if (compositor_)
+    compositor_->setDeviceScaleFactor(device_scale_factor);
 }
 
 }  // namespace content

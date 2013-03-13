@@ -345,6 +345,7 @@ PluginInstance::PluginInstance(
       instance_interface_(instance_interface),
       pp_instance_(0),
       container_(container),
+      layer_bound_to_fullscreen_(false),
       plugin_url_(plugin_url),
       full_frame_(false),
       sent_initial_did_change_view_(false),
@@ -518,9 +519,7 @@ unsigned PluginInstance::GetBackingTextureId() {
 }
 
 void PluginInstance::CommitBackingTexture() {
-  if (fullscreen_container_)
-    fullscreen_container_->Invalidate();
-  else if (texture_layer_)
+  if (texture_layer_)
     texture_layer_->SetNeedsDisplay();
 }
 
@@ -1699,27 +1698,33 @@ void PluginInstance::UpdateLayer() {
   if (!container_)
     return;
 
-  // If we have a fullscreen_container_ (under PPB_FlashFullscreen) then the
-  // plugin is fullscreen (for Flash) or transitioning to fullscreen. In either
-  // case we do not want a layer.
-  bool want_layer = GetBackingTextureId() && !fullscreen_container_;
+  bool want_layer = GetBackingTextureId();
 
-  if (want_layer == !!texture_layer_.get())
+  if (want_layer == !!texture_layer_.get() &&
+      layer_bound_to_fullscreen_ == !!fullscreen_container_)
     return;
 
-  if (!want_layer) {
+  if (texture_layer_) {
     texture_layer_->willModifyTexture();
     texture_layer_->clearClient();
-    container_->setWebLayer(NULL);
+    if (!layer_bound_to_fullscreen_)
+      container_->setWebLayer(NULL);
+    else if (fullscreen_container_)
+      fullscreen_container_->SetLayer(NULL);
     web_layer_.reset();
     texture_layer_ = NULL;
-  } else {
+  }
+  if (want_layer) {
     DCHECK(bound_graphics_3d_.get());
     texture_layer_ = cc::TextureLayer::Create(this);
     web_layer_.reset(new WebKit::WebLayerImpl(texture_layer_));
-    container_->setWebLayer(web_layer_.get());
+    if (fullscreen_container_)
+      fullscreen_container_->SetLayer(web_layer_.get());
+    else
+      container_->setWebLayer(web_layer_.get());
     texture_layer_->SetContentsOpaque(bound_graphics_3d_->IsOpaque());
   }
+  layer_bound_to_fullscreen_ = !!fullscreen_container_;
 }
 
 void PluginInstance::AddPluginObject(PluginObject* plugin_object) {

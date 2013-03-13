@@ -599,6 +599,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   WebKit::WebPluginContainer* container_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_ptr<WebKit::WebLayer> web_layer_;
+  bool layer_bound_to_fullscreen_;
 
   // Plugin URL.
   GURL plugin_url_;
