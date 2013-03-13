@@ -37,7 +37,7 @@ int URLFetcherStringWriter::Finish(const CompletionCallback& callback) {
 
 URLFetcherFileWriter::URLFetcherFileWriter(
     scoped_refptr<base::TaskRunner> file_task_runner)
-    : error_code_(base::PLATFORM_FILE_OK),
+    : error_code_(OK),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_task_runner_(file_task_runner),
       owns_file_(false),
@@ -111,10 +111,11 @@ void URLFetcherFileWriter::ContinueWrite(
     return;
   }
 
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
+  const int net_error = PlatformFileErrorToNetError(error_code);
+  if (net_error != OK) {
+    error_code_ = net_error;
     CloseAndDeleteFile();
-    callback.Run(PlatformFileErrorToNetError(error_code));
+    callback.Run(net_error);
     return;
   }
 
@@ -193,25 +194,26 @@ void URLFetcherFileWriter::DidCreateFileInternal(
     const base::FilePath& file_path,
     base::PlatformFileError error_code,
     base::PassPlatformFile file_handle) {
-  if (base::PLATFORM_FILE_OK == error_code) {
+  const int net_error = PlatformFileErrorToNetError(error_code);
+  if (net_error == OK) {
     file_path_ = file_path;
     file_handle_ = file_handle.ReleaseValue();
     total_bytes_written_ = 0;
     owns_file_ = true;
   } else {
-    error_code_ = error_code;
+    error_code_ = net_error;
   }
-  callback.Run(PlatformFileErrorToNetError(error_code));
+  callback.Run(net_error);
 }
 
-void URLFetcherFileWriter::DidCloseFile(
-    const CompletionCallback& callback,
-    base::PlatformFileError error_code) {
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
+void URLFetcherFileWriter::DidCloseFile(const CompletionCallback& callback,
+                                        base::PlatformFileError error_code) {
+  const int net_error = PlatformFileErrorToNetError(error_code);
+  if (net_error != OK) {
+    error_code_ = net_error;
     CloseAndDeleteFile();
   }
-  callback.Run(PlatformFileErrorToNetError(error_code));
+  callback.Run(net_error);
 }
 
 }  // namespace net

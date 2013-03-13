@@ -160,8 +160,7 @@ const ResponseCookies& URLFetcherImpl::GetCookies() const {
   return core_->GetCookies();
 }
 
-bool URLFetcherImpl::FileErrorOccurred(
-    base::PlatformFileError* out_error_code) const {
+bool URLFetcherImpl::FileErrorOccurred(int* out_error_code) const {
   return core_->FileErrorOccurred(out_error_code);
 }
 

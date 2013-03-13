@@ -103,7 +103,7 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
 
   const base::FilePath& file_path() const { return file_path_; }
   int64 total_bytes_written() { return total_bytes_written_; }
-  base::PlatformFileError error_code() const { return error_code_; }
+  int error_code() const { return error_code_; }
 
  private:
   // Callback which gets the result of a permanent file creation.
@@ -135,9 +135,8 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
   // it has been created.
   void DeleteFile(base::PlatformFileError error_code);
 
-  // The last error encountered on a file operation.  base::PLATFORM_FILE_OK
-  // if no error occurred.
-  base::PlatformFileError error_code_;
+  // The last error encountered on a file operation.  OK if no error occurred.
+  int error_code_;
 
   // Callbacks are created for use with base::FileUtilProxy.
   base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;

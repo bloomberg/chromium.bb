@@ -706,10 +706,10 @@ void ExtensionDownloader::OnCRXFetchComplete(
       extensions_queue_.active_request()->request_ids;
   const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[id];
 
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
+  int error_code = net::OK;
   if (source->FileErrorOccurred(&error_code)) {
     LOG(ERROR) << "Failed to write update CRX with id " << id << ". "
-               << "Error code is "<< error_code;
+               << "Error is "<< net::ErrorToString(error_code);
     RecordCRXWriteHistogram(false, base::FilePath());
     delegate_->OnExtensionDownloadFailed(
         id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);

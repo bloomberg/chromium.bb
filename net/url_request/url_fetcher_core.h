@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
@@ -107,7 +106,7 @@ class URLFetcherCore
   const URLRequestStatus& GetStatus() const;
   int GetResponseCode() const;
   const ResponseCookies& GetCookies() const;
-  bool FileErrorOccurred(base::PlatformFileError* out_error_code) const;
+  bool FileErrorOccurred(int* out_error_code) const;
   // Reports that the received content was malformed (i.e. failed parsing
   // or validation).  This makes the throttling logic that does exponential
   // back-off when servers are having problems treat the current request as

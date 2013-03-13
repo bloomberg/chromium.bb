@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
 #include "net/base/net_export.h"
@@ -271,10 +270,9 @@ class NET_EXPORT URLFetcher {
   virtual const ResponseCookies& GetCookies() const = 0;
 
   // Return true if any file system operation failed.  If so, set |error_code|
-  // to the error code. File system errors are only possible if user called
+  // to the net error code. File system errors are only possible if user called
   // SaveResponseToTemporaryFile().
-  virtual bool FileErrorOccurred(
-      base::PlatformFileError* out_error_code) const = 0;
+  virtual bool FileErrorOccurred(int* out_error_code) const = 0;
 
   // Reports that the received content was malformed.
   virtual void ReceivedContentWasMalformed() = 0;

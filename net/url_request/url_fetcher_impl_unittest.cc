@@ -482,7 +482,7 @@ class URLFetcherMultipleAttemptTest : public URLFetcherTest {
 class URLFetcherFileTest : public URLFetcherTest {
  public:
   URLFetcherFileTest() : take_ownership_of_file_(false),
-                         expected_file_error_(base::PLATFORM_FILE_OK) {}
+                         expected_file_error_(OK) {}
 
   void CreateFetcherForFile(const GURL& url, const base::FilePath& file_path);
   void CreateFetcherForTempFile(const GURL& url);
@@ -499,9 +499,8 @@ class URLFetcherFileTest : public URLFetcherTest {
   // disowning prevents the file from being deleted.
   bool take_ownership_of_file_;
 
-  // Expected file error code for the test.
-  // PLATFORM_FILE_OK when expecting success.
-  base::PlatformFileError expected_file_error_;
+  // Expected file error code for the test.  OK when expecting success.
+  int expected_file_error_;
 };
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
@@ -852,11 +851,11 @@ void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
 }
 
 void URLFetcherFileTest::OnURLFetchComplete(const URLFetcher* source) {
-  if (expected_file_error_ == base::PLATFORM_FILE_OK) {
+  if (expected_file_error_ == OK) {
     EXPECT_TRUE(source->GetStatus().is_success());
     EXPECT_EQ(source->GetResponseCode(), 200);
 
-    base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
+    int error_code = OK;
     EXPECT_FALSE(fetcher_->FileErrorOccurred(&error_code));
 
     EXPECT_TRUE(source->GetResponseAsFilePath(
@@ -864,7 +863,7 @@ void URLFetcherFileTest::OnURLFetchComplete(const URLFetcher* source) {
 
     EXPECT_TRUE(file_util::ContentsEqual(expected_file_, file_path_));
   } else {
-    base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
+    int error_code = OK;
     EXPECT_TRUE(fetcher_->FileErrorOccurred(&error_code));
     EXPECT_EQ(expected_file_error_, error_code);
   }
@@ -1412,7 +1411,7 @@ TEST_F(URLFetcherFileTest, TryToOverwriteDirectory) {
   ASSERT_TRUE(file_util::PathExists(file_path_));
 
   // Get a small file.
-  expected_file_error_ = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  expected_file_error_ = ERR_ACCESS_DENIED;
   expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
   CreateFetcherForFile(
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),

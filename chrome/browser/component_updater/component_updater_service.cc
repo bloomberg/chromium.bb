@@ -33,6 +33,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -786,7 +787,7 @@ void CrxUpdateService::OnParseUpdateManifestFailed(
 void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
                                           CRXContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::PlatformFileError error_code;
+  int error_code = net::OK;
 
   if (source->FileErrorOccurred(&error_code) || !FetchSuccess(*source)) {
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,

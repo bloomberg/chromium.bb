@@ -184,8 +184,7 @@ const ResponseCookies& TestURLFetcher::GetCookies() const {
   return fake_cookies_;
 }
 
-bool TestURLFetcher::FileErrorOccurred(
-    base::PlatformFileError* out_error_code) const {
+bool TestURLFetcher::FileErrorOccurred(int* out_error_code) const {
   NOTIMPLEMENTED();
   return false;
 }

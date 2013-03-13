@@ -307,15 +307,13 @@ const ResponseCookies& URLFetcherCore::GetCookies() const {
   return cookies_;
 }
 
-bool URLFetcherCore::FileErrorOccurred(
-    base::PlatformFileError* out_error_code) const {
-
+bool URLFetcherCore::FileErrorOccurred(int* out_error_code) const {
   // Can't have a file error if no file is being created or written to.
   if (!file_writer_)
     return false;
 
-  base::PlatformFileError error_code = file_writer_->error_code();
-  if (error_code == base::PLATFORM_FILE_OK)
+  int error_code = file_writer_->error_code();
+  if (error_code == OK)
     return false;
 
   *out_error_code = error_code;
