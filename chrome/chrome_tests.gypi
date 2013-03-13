@@ -1444,6 +1444,7 @@
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
+        'browser/ui/toolbar/action_box_button_controller_browsertest.cc',
         'browser/ui/views/app_list/app_list_controller_win_browsertest.cc',
         'browser/ui/views/avatar_menu_button_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',

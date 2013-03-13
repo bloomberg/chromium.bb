@@ -38,7 +38,6 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel {
   void ExecuteCommand(int command_id);
 
  private:
-  friend class ActionBoxMenuModelTest;
   // Gets the index of the first extension. This may be equal to the number of
   // total items in the model if there are no extensions installed.
   int GetFirstExtensionIndex();
