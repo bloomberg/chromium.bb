@@ -2713,7 +2713,8 @@ void HistoryBackend::ExpireHistoryBetween(
     Time begin_time,
     Time end_time) {
   if (db_.get()) {
-    if (begin_time.is_null() && end_time.is_null() && restrict_urls.empty()) {
+    if (begin_time.is_null() && (end_time.is_null() || end_time.is_max()) &&
+        restrict_urls.empty()) {
       // Special case deleting all history so it can be faster and to reduce the
       // possibility of an information leak.
       DeleteAllHistory();
