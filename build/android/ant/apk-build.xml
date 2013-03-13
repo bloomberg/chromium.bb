@@ -74,7 +74,6 @@
     <condition property="proguard.config" value="${PROGUARD_FLAGS}">
       <istrue value="${PROGUARD_ENABLED}"/>
     </condition>
-    <!-- TODO(shashishekhar): Enable emma and code-coverage filters. -->
 
     <!-- Set the output directory for the final apk to the ${apks.dir}. -->
     <property-location name="out.final.file"
@@ -146,29 +145,11 @@
     <property name="java.source" value="1.5" />
     <property name="java.compilerargs" value="" />
 
-    <!-- Renderscript options -->
-    <property name="renderscript.debug.opt.level" value="O0" />
-    <property name="renderscript.release.opt.level" value="O3" />
-
     <!-- manifest merger default value -->
     <property name="manifestmerger.enabled" value="false" />
 
-    <!-- instrumentation options -->
-    <property name="emma.filter" value="" />
-
     <!-- Verbosity -->
     <property name="verbose" value="false" />
-
-    <!-- Output location of the HTML report for the "lint" target.
-         Ideally this would be specified as
-            value="${out.dir}/lint.html"
-         but we can't make a forward reference to the definition for
-         ${out.dir}, and it is not a configurable property (yet).
-     -->
-    <property name="lint.out.html" value="bin/lint.html" />
-
-    <!-- Output location of the XML report for the "lint" target -->
-    <property name="lint.out.xml" value="bin/lint.xml" />
 
     <!-- ******************************************************* -->
     <!-- ********************* Custom Tasks ******************** -->
@@ -181,16 +162,6 @@
 
     <!-- Custom tasks -->
     <taskdef resource="anttasks.properties" classpathref="android.antlibs" />
-
-    <!-- Emma configuration -->
-    <property name="emma.dir" value="${sdk.dir}/tools/lib" />
-    <path id="emma.lib">
-        <pathelement location="${emma.dir}/emma.jar" />
-        <pathelement location="${emma.dir}/emma_ant.jar" />
-    </path>
-    <taskdef resource="emma_ant.properties" classpathref="emma.lib" />
-    <!-- End of emma configuration -->
-
 
     <!-- ******************************************************* -->
     <!-- ******************* Other Properties ****************** -->
@@ -230,21 +201,13 @@
     <!-- tools location -->
     <property name="android.tools.dir" location="${sdk.dir}/tools" />
     <property name="android.platform.tools.dir" location="${sdk.dir}/platform-tools" />
-    <condition property="exe" value=".exe" else=""><os family="windows" /></condition>
-    <condition property="bat" value=".bat" else=""><os family="windows" /></condition>
+    <property name="exe" value="" />
+    <property name="bat" value="" />
     <property name="adb" location="${android.platform.tools.dir}/adb${exe}" />
     <property name="zipalign" location="${android.tools.dir}/zipalign${exe}" />
     <property name="aidl" location="${android.platform.tools.dir}/aidl${exe}" />
     <property name="aapt" location="${android.platform.tools.dir}/aapt${exe}" />
     <property name="dx" location="${android.platform.tools.dir}/dx${bat}" />
-    <property name="renderscript" location="${android.platform.tools.dir}/llvm-rs-cc${exe}"/>
-    <property name="lint" location="${android.tools.dir}/lint${bat}" />
-
-    <!-- Renderscript include Path -->
-    <path id="android.renderscript.include.path">
-        <pathelement location="${android.platform.tools.dir}/renderscript/include" />
-        <pathelement location="${android.platform.tools.dir}/renderscript/clang-include" />
-    </path>
 
     <!-- Intermediate files -->
     <property name="dex.file.name" value="classes.dex" />
@@ -253,14 +216,6 @@
 
     <!-- Build property file -->
     <property name="out.build.prop.file" location="${out.absolute.dir}/build.prop" />
-
-
-    <!-- This is needed by emma as it uses multilevel verbosity instead of simple 'true' or 'false'
-         The property 'verbosity' is not user configurable and depends exclusively on 'verbose'
-         value.-->
-    <condition property="verbosity" value="verbose" else="quiet">
-        <istrue value="${verbose}" />
-    </condition>
 
     <!--
       For debug builds, the Android SDK tools create a key in ~/.android and sign the build with it.
@@ -272,7 +227,6 @@
     <property name="key.store.password" value="chromium"/>
     <property name="key.alias" value="chromiumdebugkey"/>
     <property name="key.alias.password" value="chromium"/>
-
 
     <!-- properties for signing in release mode -->
     <condition property="has.keystore">
@@ -419,7 +373,7 @@
     </macrodef>
 
     <!-- This is macro which zipaligns in.package and outputs it to out.package. Used by targets
-         debug, -debug-with-emma and release.-->
+         debug and release.-->
     <macrodef name="zipalign-helper">
         <attribute name="in.package" />
         <attribute name="out.package" />
@@ -429,26 +383,6 @@
                     input="@{in.package}"
                     output="@{out.package}"
                     verbose="${verbose}" />
-        </sequential>
-    </macrodef>
-
-    <macrodef name="run-tests-helper">
-        <attribute name="emma.enabled" default="false" />
-        <element name="extra-instrument-args" optional="yes" />
-        <sequential>
-            <echo level="info">Running tests ...</echo>
-            <exec executable="${adb}" failonerror="true">
-                <arg line="${adb.device.arg}" />
-                <arg value="shell" />
-                <arg value="am" />
-                <arg value="instrument" />
-                <arg value="-w" />
-                <arg value="-e" />
-                <arg value="coverage" />
-                <arg value="@{emma.enabled}" />
-                <extra-instrument-args />
-                <arg value="${project.app.package}/${test.runner}" />
-            </exec>
         </sequential>
     </macrodef>
 
@@ -661,70 +595,16 @@
                 targetApi="${project.target.apilevel}"
                 verbose="${verbose}" />
 
-        <!-- compile the libraries if any -->
-        <if>
-            <condition>
-                <and>
-                    <isreference refid="project.library.folder.path" />
-                    <not><isset property="dont.do.deps" /></not>
-                </and>
-            </condition>
-            <then>
-                <!-- figure out which target must be used to build the library projects.
-                     If emma is enabled, then use 'instrument' otherwise, use 'debug' -->
-                <condition property="project.libraries.target" value="instrument" else="${build.target}">
-                    <istrue value="${build.is.instrumented}" />
-                </condition>
-
-                <echo level="info">----------</echo>
-                <echo level="info">Building Libraries with '${project.libraries.target}'...</echo>
-
-                <!-- no need to build the deps as we have already
-                     the full list of libraries -->
-                <subant failonerror="true"
-                        buildpathref="project.library.folder.path"
-                        antfile="build.xml">
-                    <target name="nodeps" />
-                    <target name="${project.libraries.target}" />
-                    <property name="emma.coverage.absolute.file" location="${out.absolute.dir}/coverage.em" />
-                </subant>
-            </then>
-        </if>
-
-        <!-- compile the main project if this is a test project -->
-        <if condition="${project.is.test}">
-            <then>
-                <!-- figure out which target must be used to build the tested project.
-                     If emma is enabled, then use 'instrument' otherwise, use 'debug' -->
-                <condition property="tested.project.target" value="instrument" else="debug">
-                    <isset property="emma.enabled" />
-                </condition>
-
-                <echo level="info">----------</echo>
-                <echo level="info">Building tested project at ${tested.project.absolute.dir} with '${tested.project.target}'...</echo>
-                <subant target="${tested.project.target}" failonerror="true">
-                    <fileset dir="${tested.project.absolute.dir}" includes="build.xml" />
-                </subant>
-
-                <!-- get the tested project full classpath to be able to build
-                     the test project -->
-                <testedprojectclasspath
-                        projectLocation="${tested.project.absolute.dir}"
-                        projectClassPathOut="tested.project.classpath"/>
-            </then>
-            <else>
-                <!-- no tested project, make an empty Path object so that javac doesn't
-                     complain -->
-                <path id="tested.project.classpath" />
-            </else>
-        </if>
+        <!-- no tested project, make an empty Path object so that javac doesn't
+             complain -->
+        <path id="tested.project.classpath" />
     </target>
 
     <!-- empty default pre-build target. Create a similar target in
          your build.xml and it'll be called instead of this one. -->
     <target name="-pre-build"/>
 
-    <!-- Code Generation: compile resources (aapt -> R.java), aidl, renderscript -->
+    <!-- Code Generation: compile resources (aapt -> R.java), aidl -->
     <target name="-code-gen">
         <!-- always merge manifest -->
         <mergemanifest
@@ -735,30 +615,7 @@
         </mergemanifest>
 
         <do-only-if-manifest-hasCode
-                elseText="hasCode = false. Skipping aidl/renderscript/R.java">
-            <echo level="info">Handling aidl files...</echo>
-            <aidl executable="${aidl}"
-                    framework="${project.target.framework.aidl}"
-                    libraryBinAidlFolderPathRefid="project.library.bin.aidl.folder.path"
-                    genFolder="${gen.absolute.dir}"
-                    aidlOutFolder="${out.aidl.absolute.dir}">
-                <source path="${source.absolute.dir}"/>
-            </aidl>
-
-            <!-- renderscript generates resources so it must be called before aapt -->
-            <echo level="info">----------</echo>
-            <echo level="info">Handling RenderScript files...</echo>
-            <renderscript executable="${renderscript}"
-                    includePathRefId="android.renderscript.include.path"
-                    genFolder="${gen.absolute.dir}"
-                    resFolder="${out.res.absolute.dir}/raw"
-                    targetApi="${project.minSdkVersion}"
-                    optLevel="${renderscript.opt.level}"
-                    buildType="${build.is.packaging.debug}"
-                    previousBuildType="${build.last.is.packaging.debug}">
-                <source path="${source.absolute.dir}"/>
-            </renderscript>
-
+                elseText="hasCode = false. Skipping aidl/R.java">
             <echo level="info">----------</echo>
             <echo level="info">Handling Resources...</echo>
             <aapt executable="${aapt}"
@@ -813,17 +670,6 @@
         name="-compile"
         depends="-build-setup, -pre-build, -code-gen, -pre-compile">
       <do-only-if-manifest-hasCode elseText="hasCode = false. Skipping..." >
-        <!-- If javac.srcdirs.additional isn't set, set it to an empty path. -->
-        <if>
-          <condition>
-            <not>
-              <isreference refid="javac.srcdirs.additional"/>
-            </not>
-          </condition>
-          <then>
-            <path id="javac.srcdirs.additional"/>
-          </then>
-        </if>
         <javac
             bootclasspathref="project.target.class.path"
             classpathref="javac.custom.classpath"
@@ -844,41 +690,6 @@
           <compilerarg value="-Xlint:unchecked"/>
           <compilerarg line="${java.compilerargs}"/>
         </javac>
-        <!--
-          If the project is instrumented, then instrument the classes
-          TODO(shashishekhar): Add option to override emma filter.
-        -->
-        <if condition="${build.is.instrumented}">
-          <then>
-            <echo level="info">
-              Instrumenting classes from ${out.absolute.dir}/classes...
-            </echo>
-            <!-- build the default filter to remove R, Manifest, BuildConfig -->
-            <getemmafilter
-                appPackage="${project.app.package}"
-                filterOut="emma.default.filter"
-                libraryPackagesRefId="project.library.packages"/>
-            <!--
-              Define where the .em file is output.
-              This may have been setup already if this is a library.
-            -->
-            <property name="emma.coverage.absolute.file"
-                location="${out.absolute.dir}/coverage.em"/>
-            <!-- It only instruments class files, not any external libs -->
-
-            <emma enabled="true">
-              <instr
-                  instrpath="${out.absolute.dir}/classes"
-                  metadatafile="${emma.coverage.absolute.file}"
-                  mode="overwrite"
-                  outdir="${out.absolute.dir}/classes"
-                  verbosity="${verbosity}">
-                <filter excludes="${emma.default.filter}"/>
-                <filter value="${emma.filter}"/>
-              </instr>
-            </emma>
-          </then>
-        </if>
         <!--
           If the project needs a test jar then generate a jar containing
           all compiled classes and referenced jars.
@@ -1025,20 +836,7 @@
         <do-only-if-manifest-hasCode elseText="hasCode = false. Skipping...">
             <!-- only convert to dalvik bytecode is *not* a library -->
             <do-only-if-not-library elseText="Library project: do not convert bytecode..." >
-                <!-- special case for instrumented builds: need to use no-locals and need
-                     to pass in the emma jar. -->
-                <if condition="${build.is.instrumented}">
-                    <then>
-                        <dex-helper nolocals="true">
-                            <external-libs>
-                                <fileset file="${emma.dir}/emma_device.jar" />
-                            </external-libs>
-                        </dex-helper>
-                    </then>
-                    <else>
-                        <dex-helper />
-                    </else>
-                </if>
+                <dex-helper />
             </do-only-if-not-library>
         </do-only-if-manifest-hasCode>
     </target>
@@ -1093,19 +891,7 @@
     <target name="-package" depends="-dex, -package-resources">
         <!-- only package apk if *not* a library project -->
         <do-only-if-not-library elseText="Library project: do not package apk..." >
-            <if condition="${build.is.instrumented}">
-                <then>
-                    <package-helper>
-                        <extra-jars>
-                            <!-- Injected from external file -->
-                            <jarfile path="${emma.dir}/emma_device.jar" />
-                        </extra-jars>
-                    </package-helper>
-                </then>
-                <else>
-                    <package-helper />
-                </else>
-            </if>
+            <package-helper />
         </do-only-if-not-library>
     </target>
 
@@ -1133,30 +919,13 @@
         <!-- record the current build target -->
         <property name="build.target" value="debug" />
 
-        <if>
-            <condition>
-                <and>
-                    <istrue value="${project.is.testapp}" />
-                    <istrue value="${emma.enabled}" />
-                </and>
-            </condition>
-            <then>
-                <property name="build.is.instrumented" value="true" />
-            </then>
-            <else>
-                <property name="build.is.instrumented" value="false" />
-            </else>
-        </if>
+        <property name="build.is.instrumented" value="false" />
 
         <!-- whether the build is a debug build. always set. -->
         <property name="build.is.packaging.debug" value="true" />
 
         <!-- signing mode: debug -->
         <property name="build.is.signing.debug" value="true" />
-
-        <!-- Renderscript optimization level: none -->
-        <property name="renderscript.opt.level" value="${renderscript.debug.opt.level}" />
-
     </target>
 
     <target name="-debug-obfuscation-check">
@@ -1210,26 +979,11 @@
     <!-- called through target 'release'. Only executed if the keystore and
          key alias are known but not their password. -->
     <target name="-release-prompt-for-password" if="has.keystore" unless="has.password">
-        <!-- Gets passwords -->
-        <input
-                message="Please enter keystore password (store:${key.store}):"
-                addproperty="key.store.password" />
-        <input
-                message="Please enter password for alias '${key.alias}':"
-                addproperty="key.alias.password" />
     </target>
 
     <!-- called through target 'release'. Only executed if there's no
          keystore/key alias set -->
     <target name="-release-nosign" unless="has.keystore">
-        <!-- no release builds for library project -->
-        <do-only-if-not-library elseText="" >
-            <sequential>
-                <echo level="info">No key.store and key.alias properties found in build.properties.</echo>
-                <echo level="info">Please sign ${out.packaged.file} manually</echo>
-                <echo level="info">and run zipalign from the Android SDK tools.</echo>
-            </sequential>
-        </do-only-if-not-library>
         <record-build-info />
     </target>
 
@@ -1268,9 +1022,6 @@
 
         <!-- signing mode: release -->
         <property name="build.is.signing.debug" value="false" />
-
-        <!-- Renderscript optimization level: aggressive -->
-        <property name="renderscript.opt.level" value="${renderscript.release.opt.level}" />
 
         <if condition="${build.is.packaging.debug}">
             <then>
@@ -1322,372 +1073,4 @@
                 description="Builds the application in release mode.">
     </target>
 
-    <!-- ******************************************************* -->
-    <!-- ************ Instrumented specific targets ************ -->
-    <!-- ******************************************************* -->
-
-    <!-- These targets are specific for the project under test when it
-         gets compiled by the test projects in a way that will make it
-         support emma code coverage -->
-
-    <target name="-set-instrumented-mode" depends="-set-mode-check">
-        <property name="out.packaged.file" location="${out.absolute.dir}/${ant.project.name}-instrumented-unaligned.apk" />
-        <property name="out.final.file" location="${out.absolute.dir}/${ant.project.name}-instrumented.apk" />
-        <property name="build.is.mode.set" value="true" />
-
-        <!-- whether the build is an instrumented build. -->
-        <property name="build.is.instrumented" value="true" />
-    </target>
-
-    <!-- Builds instrumented output package -->
-    <target name="instrument" depends="-set-instrumented-mode, -do-debug"
-                description="Builds an instrumented packaged.">
-        <!-- only create apk if *not* a library project -->
-        <do-only-if-not-library elseText="Library project: do not create apk..." >
-            <sequential>
-                <zipalign-helper in.package="${out.packaged.file}" out.package="${out.final.file}" />
-                <echo level="info">Instrumented Package: ${out.final.file}</echo>
-            </sequential>
-        </do-only-if-not-library>
-        <record-build-info />
-    </target>
-
-    <!-- ******************************************************* -->
-    <!-- ************ Test project specific targets ************ -->
-    <!-- ******************************************************* -->
-
-    <!-- enable code coverage -->
-    <target name="emma">
-        <property name="emma.enabled" value="true" />
-    </target>
-
-    <!-- fails if the project is not a test project -->
-    <target name="-test-project-check" depends="-setup">
-        <if>
-            <condition>
-                <and>
-                    <isfalse value="${project.is.test}" />
-                    <isfalse value="${project.is.testapp}" />
-                </and>
-            </condition>
-            <then>
-                <fail message="Project is not a test project." />
-            </then>
-        </if>
-    </target>
-
-    <target name="test" depends="-test-project-check"
-                description="Runs tests from the package defined in test.package property">
-        <property name="test.runner" value="android.test.InstrumentationTestRunner" />
-
-        <if condition="${project.is.test}">
-        <then>
-            <property name="tested.project.absolute.dir" location="${tested.project.dir}" />
-
-            <!-- Application package of the tested project extracted from its manifest file -->
-            <xpath input="${tested.project.absolute.dir}/AndroidManifest.xml"
-                    expression="/manifest/@package" output="tested.project.app.package" />
-
-            <if condition="${emma.enabled}">
-                <then>
-                    <getprojectpaths projectPath="${tested.project.absolute.dir}"
-                            binOut="tested.project.out.absolute.dir"
-                            srcOut="tested.project.source.absolute.dir" />
-
-                    <getlibpath projectPath="${tested.project.absolute.dir}"
-                            libraryFolderPathOut="tested.project.lib.source.path"
-                            leaf="@{source.dir}" />
-
-                </then>
-            </if>
-
-        </then>
-        <else>
-            <!-- this is a test app, the tested package is the app's own package -->
-            <property name="tested.project.app.package" value="${project.app.package}" />
-
-            <if condition="${emma.enabled}">
-                <then>
-                    <property name="tested.project.out.absolute.dir" value="${out.absolute.dir}" />
-                    <property name="tested.project.source.absolute.dir" value="${source.absolute.dir}" />
-
-                    <getlibpath
-                            libraryFolderPathOut="tested.project.lib.source.path"
-                            leaf="@{source.dir}" />
-
-                </then>
-            </if>
-
-        </else>
-        </if>
-
-        <property name="emma.dump.file"
-                value="/data/data/${tested.project.app.package}/coverage.ec" />
-
-        <if condition="${emma.enabled}">
-            <then>
-                <echo>Running tests...</echo>
-                <run-tests-helper emma.enabled="true">
-                    <extra-instrument-args>
-                        <arg value="-e" />
-                           <arg value="coverageFile" />
-                           <arg value="${emma.dump.file}" />
-                    </extra-instrument-args>
-                </run-tests-helper>
-
-                <echo level="info">Settting permission to download the coverage file...</echo>
-                <exec executable="${adb}" failonerror="true">
-                    <arg line="${adb.device.arg}" />
-                    <arg value="shell" />
-                    <arg value="run-as" />
-                    <arg value="${tested.project.app.package}" />
-                    <arg value="chmod" />
-                    <arg value="644" />
-                    <arg value="${emma.dump.file}" />
-                </exec>
-                <echo level="info">Downloading coverage file into project directory...</echo>
-                <exec executable="${adb}" failonerror="true">
-                    <arg line="${adb.device.arg}" />
-                    <arg value="pull" />
-                    <arg value="${emma.dump.file}" />
-                    <arg path="${out.absolute.dir}/coverage.ec" />
-                </exec>
-
-                <pathconvert property="tested.project.lib.source.path.value" refid="tested.project.lib.source.path">
-                    <firstmatchmapper>
-                        <regexpmapper from='^([^ ]*)( .*)$$' to='"\1\2"'/>
-                        <identitymapper/>
-                    </firstmatchmapper>
-                </pathconvert>
-
-                <echo level="info">Extracting coverage report...</echo>
-                <emma>
-                    <property name="report.html.out.encoding" value="UTF-8" />
-                    <report sourcepath="${tested.project.source.absolute.dir}:${tested.project.lib.source.path.value}"
-                            verbosity="${verbosity}">
-                        <!-- TODO: report.dir or something like should be introduced if necessary -->
-                        <infileset file="${out.absolute.dir}/coverage.ec" />
-                        <infileset file="${tested.project.out.absolute.dir}/coverage.em" />
-                        <!-- TODO: reports in other, indicated by user formats -->
-                        <html outfile="${out.absolute.dir}/coverage.html" />
-                        <txt outfile="${out.absolute.dir}/coverage.txt" />
-                        <xml outfile="${out.absolute.dir}/coverage.xml" />
-                   </report>
-                </emma>
-                <echo level="info">Cleaning up temporary files...</echo>
-                <delete file="${out.absolute.dir}/coverage.ec" />
-                <delete file="${tested.project.out.absolute.dir}/coverage.em" />
-                <exec executable="${adb}" failonerror="true">
-                    <arg line="${adb.device.arg}" />
-                    <arg value="shell" />
-                    <arg value="run-as" />
-                    <arg value="${tested.project.app.package}" />
-                    <arg value="rm" />
-                    <arg value="${emma.dump.file}" />
-                </exec>
-                <echo level="info">Saving the coverage reports in ${out.absolute.dir}</echo>
-            </then>
-            <else>
-                <run-tests-helper />
-            </else>
-        </if>
-    </target>
-
-    <!-- ******************************************************* -->
-    <!-- **********        Run Lint on the project     ********* -->
-    <!-- ******************************************************* -->
-
-    <target name="lint"
-            description="Runs lint on the project to look for potential bugs" >
-        <lint executable="${lint}"
-              html="${lint.out.html}"
-              xml="${lint.out.xml}"
-              src="${source.absolute.dir}:${gen.absolute.dir}"
-              classpath="${out.classes.absolute.dir}" />
-    </target>
-
-    <!-- ******************************************************* -->
-    <!-- ********** Install/uninstall specific targets ********* -->
-    <!-- ******************************************************* -->
-
-    <target name="install"
-                description="Installs the newly build package. Must be used in conjunction with a build target
-                            (debug/release/instrument). If the application was previously installed, the application
-                            is reinstalled if the signature matches." >
-        <!-- only do install if *not* a library project -->
-        <do-only-if-not-library elseText="Library project: nothing to install!" >
-            <if>
-                <condition>
-                    <isset property="out.final.file" />
-                </condition>
-                <then>
-                    <if>
-                        <condition>
-                            <resourceexists>
-                                <file file="${out.final.file}"/>
-                            </resourceexists>
-                        </condition>
-                        <then>
-                            <echo level="info">Installing ${out.final.file} onto default emulator or device...</echo>
-                            <exec executable="${adb}" failonerror="true">
-                                <arg line="${adb.device.arg}" />
-                                <arg value="install" />
-                                <arg value="-r" />
-                                <arg path="${out.final.file}" />
-                            </exec>
-
-                            <!-- now install the tested project if applicable -->
-                            <!-- can't use project.is.test since the setup target might not have run -->
-                            <if>
-                                <condition>
-                                    <and>
-                                        <isset property="tested.project.dir" />
-                                        <not>
-                                            <isset property="dont.do.deps" />
-                                        </not>
-                                    </and>
-                                </condition>
-                                <then>
-                                    <property name="tested.project.absolute.dir" location="${tested.project.dir}" />
-
-                                    <!-- figure out which tested package to install based on emma.enabled -->
-                                    <condition property="tested.project.install.target" value="installi" else="installd">
-                                        <isset property="emma.enabled" />
-                                    </condition>
-                                    <subant target="${tested.project.install.target}" failonerror="true">
-                                        <fileset dir="${tested.project.absolute.dir}" includes="build.xml" />
-                                    </subant>
-                                </then>
-                            </if>
-                        </then>
-                        <else>
-                            <fail message="File ${out.final.file} does not exist." />
-                        </else>
-                    </if>
-                </then>
-                <else>
-                    <echo>Install file not specified.</echo>
-                    <echo></echo>
-                    <echo>'ant install' now requires the build target to be specified as well.</echo>
-                    <echo></echo>
-                    <echo></echo>
-                    <echo>    ant debug install</echo>
-                    <echo>    ant release install</echo>
-                    <echo>    ant instrument install</echo>
-                    <echo>This will build the given package and install it.</echo>
-                    <echo></echo>
-                    <echo>Alternatively, you can use</echo>
-                    <echo>    ant installd</echo>
-                    <echo>    ant installr</echo>
-                    <echo>    ant installi</echo>
-                    <echo>    ant installt</echo>
-                    <echo>to only install an existing package (this will not rebuild the package.)</echo>
-                    <fail />
-                </else>
-            </if>
-        </do-only-if-not-library>
-    </target>
-
-    <target name="installd" depends="-set-debug-files, install"
-            description="Installs (only) the debug package." />
-    <target name="installr" depends="-set-release-mode, install"
-            description="Installs (only) the release package." />
-    <target name="installi" depends="-set-instrumented-mode, install"
-            description="Installs (only) the instrumented package." />
-    <target name="installt" depends="-test-project-check, installd"
-            description="Installs (only) the test and tested packages." />
-
-
-    <!-- Uninstalls the package from the default emulator/device -->
-    <target name="uninstall" depends="-setup"
-                description="Uninstalls the application from a running emulator or device.">
-        <if>
-            <condition>
-                <isset property="project.app.package" />
-            </condition>
-            <then>
-                <uninstall-helper app.package="${project.app.package}" />
-            </then>
-            <else>
-                <fail message="Could not find application package in manifest. Cannot run 'adb uninstall'." />
-            </else>
-        </if>
-
-        <!-- Now uninstall the tested project, if applicable -->
-        <if>
-            <condition>
-                <and>
-                    <istrue value="${project.is.test}" />
-                    <not>
-                        <isset property="dont.do.deps" />
-                    </not>
-                </and>
-            </condition>
-            <then>
-                <property name="tested.project.absolute.dir" location="${tested.project.dir}" />
-
-                <!-- Application package of the tested project extracted from its manifest file -->
-                <xpath input="${tested.project.absolute.dir}/AndroidManifest.xml"
-                    expression="/manifest/@package" output="tested.project.app.package" />
-                <if>
-                    <condition>
-                        <isset property="tested.project.app.package" />
-                    </condition>
-                    <then>
-                        <uninstall-helper app.package="${tested.project.app.package}" />
-                    </then>
-                    <else>
-                        <fail message="Could not find tested application package in manifest. Cannot run 'adb uninstall'." />
-                    </else>
-                </if>
-            </then>
-        </if>
-
-    </target>
-
-
-    <!-- ******************************************************* -->
-    <!-- ************************* Help ************************ -->
-    <!-- ******************************************************* -->
-
-    <target name="help">
-        <!-- displays starts at col 13
-              |13                                                              80| -->
-        <echo>Android Ant Build. Available targets:</echo>
-        <echo>   help:      Displays this help.</echo>
-        <echo>   clean:     Removes output files created by other targets.</echo>
-        <echo>              The 'all' target can be used to clean dependencies</echo>
-        <echo>              (tested projects and libraries)at the same time</echo>
-        <echo>              using: 'ant all clean'</echo>
-        <echo>   debug:     Builds the application and signs it with a debug key.</echo>
-        <echo>              The 'nodeps' target can be used to only build the</echo>
-        <echo>              current project and ignore the libraries using:</echo>
-        <echo>              'ant nodeps debug'</echo>
-        <echo>   release:   Builds the application. The generated apk file must be</echo>
-        <echo>              signed before it is published.</echo>
-        <echo>              The 'nodeps' target can be used to only build the</echo>
-        <echo>              current project and ignore the libraries using:</echo>
-        <echo>              'ant nodeps release'</echo>
-        <echo>   instrument:Builds an instrumented package and signs it with a</echo>
-        <echo>              debug key.</echo>
-        <echo>   test:      Runs the tests. Project must be a test project and</echo>
-        <echo>              must have been built. Typical usage would be:</echo>
-        <echo>                  ant [emma] debug install test</echo>
-        <echo>   emma:      Transiently enables code coverage for subsequent</echo>
-        <echo>              targets.</echo>
-        <echo>   install:   Installs the newly build package. Must either be used</echo>
-        <echo>              in conjunction with a build target (debug/release/</echo>
-        <echo>              instrument) or with the proper suffix indicating</echo>
-        <echo>              which package to install (see below).</echo>
-        <echo>              If the application was previously installed, the</echo>
-        <echo>              application is reinstalled if the signature matches.</echo>
-        <echo>   installd:  Installs (only) the debug package.</echo>
-        <echo>   installr:  Installs (only) the release package.</echo>
-        <echo>   installi:  Installs (only) the instrumented package.</echo>
-        <echo>   installt:  Installs (only) the test and tested packages (unless</echo>
-        <echo>              nodeps is used as well.</echo>
-        <echo>   uninstall: Uninstalls the application from a running emulator or</echo>
-        <echo>              device. Also uninstall tested package if applicable</echo>
-        <echo>              unless 'nodeps' is used as well.</echo>
-    </target>
 </project>
