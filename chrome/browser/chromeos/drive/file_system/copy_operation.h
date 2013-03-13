@@ -20,6 +20,7 @@ class Value;
 
 namespace google_apis {
 class DriveUploaderInterface;
+class ResourceEntry;
 }
 
 namespace drive {

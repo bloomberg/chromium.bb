@@ -228,8 +228,6 @@
         'browser/chromeos/drive/drive_file_system_proxy.h',
         'browser/chromeos/drive/drive_file_system_util.cc',
         'browser/chromeos/drive/drive_file_ststem_util.h',
-        'browser/chromeos/drive/drive_files.cc',
-        'browser/chromeos/drive/drive_files.h',
         'browser/chromeos/drive/drive_prefetcher.cc',
         'browser/chromeos/drive/drive_prefetcher.h',
         'browser/chromeos/drive/drive_protocol_handler.cc',

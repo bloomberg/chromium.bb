@@ -21,14 +21,9 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace google_apis {
-class ResourceEntry;
-}
-
 namespace drive {
 
 class DriveDirectoryProto;
-class DriveEntry;
 class DriveEntryProto;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
@@ -289,32 +284,9 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   void SerializeToString(std::string* serialized_proto);
   bool ParseFromString(const std::string& serialized_proto);
 
-  // TODO(achuith): Remove all DriveEntry based methods. crbug.com/127856.
-  // Creates DriveEntry from proto.
-  scoped_ptr<DriveEntry> CreateDriveEntryFromProto(
-      const DriveEntryProto& entry_proto);
-
-  // Creates a DriveEntry instance for a file.
-  scoped_ptr<DriveEntry> CreateFileEntry();
-
-  // Creates a DriveEntry instance for a directory.
-  scoped_ptr<DriveEntry> CreateDirectoryEntry();
-
-  // Adds the entry to resource map. Returns false if an entry with the same
-  // resource_id exists.
-  bool AddEntryToResourceMap(DriveEntry* entry);
-
-  // Removes the entry from resource map.
-  void RemoveEntryFromResourceMap(const std::string& resource_id);
-
-  // Returns the DriveEntry* with the corresponding |resource_id|.
-  // TODO(satorux): Remove this in favor of GetEntryInfoByResourceId()
-  // but can be difficult. See crbug.com/137374
-  DriveEntry* GetEntryByResourceId(const std::string& resource_id);
-
  private:
-  // Map of resource id strings to DriveEntry*.
-  typedef std::map<std::string, DriveEntry*> ResourceMap;
+  // Map of resource id strings to DriveEntryProto*.
+  typedef std::map<std::string, DriveEntryProto*> ResourceMap;
 
   // Map from base_name to resource id of child.
   typedef std::map<base::FilePath::StringType, std::string> ChildMap;
@@ -322,12 +294,18 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   // Map from resource id to ChildMap.
   typedef std::map<std::string, ChildMap> ChildMaps;
 
+  // Adds the entry to resource map. Returns false if an entry with the same
+  // resource_id exists.
+  bool AddEntryToResourceMap(DriveEntryProto* entry);
+
+  // Removes the entry from resource map.
+  void RemoveEntryFromResourceMap(const std::string& resource_id);
+
+  // Returns the entry with the corresponding |resource_id|.
+  DriveEntryProto* GetEntryByResourceId(const std::string& resource_id);
+
   // Clears root_ and the resource map.
   void ClearRoot();
-
-  // Creates DriveEntry from serialized string.
-  scoped_ptr<DriveEntry> CreateDriveEntryFromProtoString(
-      const std::string& serialized_proto);
 
   // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
   // asynchronously fetched. This fetches the second DriveEntry only if the
@@ -349,52 +327,53 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Searches for |file_path| synchronously.
-  DriveEntry* FindEntryByPathSync(const base::FilePath& file_path);
+  DriveEntryProto* FindEntryByPathSync(const base::FilePath& file_path);
 
   // Helper function to get a directory given |resource_id|. |resource_id| can
   // not be empty. Returns NULL if it finds no corresponding entry, or the
   // corresponding entry is not a directory.
-  DriveEntry* GetDirectory(const std::string& resource_id);
+  DriveEntryProto* GetDirectory(const std::string& resource_id);
 
   // Returns virtual file path of the entry.
   base::FilePath GetFilePath(const DriveEntryProto& entry);
 
   // Recursively extracts the paths set of all sub-directories.
-  void GetDescendantDirectoryPaths(const DriveEntry& directory,
+  void GetDescendantDirectoryPaths(const DriveEntryProto& directory,
                                    std::set<base::FilePath>* child_directories);
 
   // Adds child file to the directory and takes over the ownership of |entry|
   // object. The method will also do name de-duplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  void AddEntryToDirectory(DriveEntry* directory, DriveEntry* entry);
+  void AddEntryToDirectory(DriveEntryProto* directory, DriveEntryProto* entry);
 
   // Removes the entry from its children list and destroys the entry instance.
-  void RemoveDirectoryChild(DriveEntry* directory, DriveEntry* entry);
+  void RemoveDirectoryChild(DriveEntryProto* directory, DriveEntryProto* entry);
 
   // Find a child's resource_id by its name. Returns the empty string if not
   // found.
-  std::string FindDirectoryChild(DriveEntry* directory,
+  std::string FindDirectoryChild(DriveEntryProto* directory,
                                  const base::FilePath::StringType& file_name);
 
   // Removes the entry from its children without destroying the
   // entry instance.
-  void DetachEntryFromDirectory(DriveEntry* directory, DriveEntry* entry);
+  void DetachEntryFromDirectory(DriveEntryProto* directory,
+                                DriveEntryProto* entry);
 
   // Removes child elements of directory.
-  void RemoveDirectoryChildren(DriveEntry* directory);
-  void RemoveDirectoryChildFiles(DriveEntry* directory);
-  void RemoveDirectoryChildDirectories(DriveEntry* directory);
+  void RemoveDirectoryChildren(DriveEntryProto* directory);
+  void RemoveDirectoryChildFiles(DriveEntryProto* directory);
+  void RemoveDirectoryChildDirectories(DriveEntryProto* directory);
 
   // Converts directory to proto, and vice versa.
   void ProtoToDirectory(const DriveDirectoryProto& proto,
-                        DriveEntry* directory);
-  void DirectoryToProto(DriveEntry* directory,
+                        DriveEntryProto* directory);
+  void DirectoryToProto(DriveEntryProto* directory,
                         DriveDirectoryProto* proto);
 
   // Converts the children as a vector of DriveEntryProto.
   scoped_ptr<DriveEntryProtoVector> DirectoryChildrenToProtoVector(
-      DriveEntry* directory);
+      DriveEntryProto* directory);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -403,7 +382,7 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
 
   ChildMaps child_maps_;
 
-  scoped_ptr<DriveEntry> root_;  // Stored in the serialized proto.
+  scoped_ptr<DriveEntryProto> root_;
 
   base::Time last_serialized_;
   size_t serialized_size_;
