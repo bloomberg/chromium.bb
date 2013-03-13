@@ -198,6 +198,8 @@ void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
+  if (!render_view_host_)
+    return;
   msg->set_routing_id(render_view_host_->GetRoutingID());
   render_view_host_->Send(msg);
 }

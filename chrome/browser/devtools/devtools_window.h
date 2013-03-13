@@ -198,8 +198,12 @@ class DevToolsWindow : private content::NotificationObserver,
   static std::string SideToString(DevToolsDockSide dock_side);
   static DevToolsDockSide SideFromString(const std::string& dock_side);
 
+  content::WebContents* GetInspectedWebContents();
+
+  class InspectedWebContentsObserver;
+  scoped_ptr<InspectedWebContentsObserver> inspected_contents_observer_;
+
   Profile* profile_;
-  content::WebContents* inspected_web_contents_;
   content::WebContents* web_contents_;
   Browser* browser_;
   DevToolsDockSide dock_side_;
