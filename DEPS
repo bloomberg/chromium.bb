@@ -18,7 +18,7 @@ vars = {
   "nacl_tools_revision": "10001",  # native_client/DEPS: tools_rev
   "gtm_revision": "578",
 
-  "libjingle_revision": "294",
+  "libjingle_revision": "295",
   "libphonenumber_revision": "456",
   "libvpx_revision": "187374",
   "lss_revision": "18",
@@ -37,7 +37,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
-  "webrtc_revision": "3595",
+  "webrtc_revision": "3661",
   "jsoncpp_revision": "248",
   "nss_revision": "182578",
   # Three lines of non-changing comments so that
