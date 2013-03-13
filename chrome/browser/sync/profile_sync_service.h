@@ -790,9 +790,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // objects like SyncBackendHost, SyncManager, etc.
   void ResetForTest();
 
-  // Sets a flag for enabling an experiment.
-  void SetExperimentFlag(const std::string& experiment);
-
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
