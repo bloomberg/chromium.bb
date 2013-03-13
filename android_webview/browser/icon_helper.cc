@@ -48,9 +48,10 @@ void IconHelper::DownloadFaviconCallback(
 
 void IconHelper::DidUpdateFaviconURL(int32 page_id,
     const std::vector<content::FaviconURL>& candidates) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (std::vector<content::FaviconURL>::const_iterator i = candidates.begin();
        i != candidates.end(); ++i) {
-    if (i->icon_url.is_empty())
+    if (!i->icon_url.is_valid())
       continue;
 
     switch(i->icon_type) {
@@ -61,10 +62,13 @@ void IconHelper::DidUpdateFaviconURL(int32 page_id,
         web_contents()->DownloadFavicon(i->icon_url, 0, base::Bind(
             &IconHelper::DownloadFaviconCallback, base::Unretained(this)));
         break;
-      // TODO(acleung): Touch Icon doesn't seem to work ATM.
       case content::FaviconURL::TOUCH_ICON:
+        if (listener_)
+          listener_->OnReceivedTouchIconUrl(i->icon_url.spec(), false);
         break;
       case content::FaviconURL::TOUCH_PRECOMPOSED_ICON:
+        if (listener_)
+          listener_->OnReceivedTouchIconUrl(i->icon_url.spec(), true);
         break;
       case content::FaviconURL::INVALID_ICON:
         // Silently ignore it. Only trigger a callback on valid icons.
