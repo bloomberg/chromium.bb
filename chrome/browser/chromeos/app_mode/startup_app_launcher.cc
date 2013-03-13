@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -105,6 +106,13 @@ void StartupAppLauncher::Launch() {
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetInstalledExtension(app_id_);
   CHECK(extension);
+
+  // Set the app_id for the current instance of KioskAppUpdateService.
+  KioskAppUpdateService* update_service =
+      KioskAppUpdateServiceFactory::GetForProfile(profile_);
+  DCHECK(update_service);
+  if (update_service)
+    update_service->set_app_id(app_id_);
 
   // Always open the app in a window.
   chrome::OpenApplication(chrome::AppLaunchParams(profile_,

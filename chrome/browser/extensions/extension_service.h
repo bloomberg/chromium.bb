@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/process_map.h"
+#include "chrome/browser/extensions/update_observer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -682,6 +683,10 @@ class ExtensionService
     install_updates_when_idle_ = value;
   }
 
+  // Adds/Removes update observers.
+  void AddUpdateObserver(extensions::UpdateObserver* observer);
+  void RemoveUpdateObserver(extensions::UpdateObserver* observer);
+
  private:
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
@@ -979,6 +984,8 @@ class ExtensionService
   scoped_ptr<extensions::ExtensionActionStorageManager>
       extension_action_storage_manager_;
 #endif
+
+  ObserverList<extensions::UpdateObserver, true> update_observers_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

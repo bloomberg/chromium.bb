@@ -61,6 +61,7 @@
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/update_observer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2377,6 +2378,10 @@ void ExtensionService::OnExtensionInstalled(
     // Notify extension of available update.
     extensions::RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
         profile_, id, extension->manifest()->value());
+
+    // Notify observers that app update is available.
+    FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
+                      OnAppUpdateAvailable(extension->id()));
     return;
   }
 
@@ -2725,6 +2730,10 @@ void ExtensionService::Observe(int type,
       // Notify extensions that chrome update is available.
       extensions::RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
           profile_);
+
+      // Notify observers that chrome update is available.
+      FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
+                        OnChromeUpdateAvailable());
       break;
     }
 
@@ -3096,4 +3105,13 @@ void ExtensionService::ManageBlacklist(
   }
 
   IdentifyAlertableExtensions();
+}
+
+void ExtensionService::AddUpdateObserver(extensions::UpdateObserver* observer) {
+  update_observers_.AddObserver(observer);
+}
+
+void ExtensionService::RemoveUpdateObserver(
+    extensions::UpdateObserver* observer) {
+  update_observers_.RemoveObserver(observer);
 }

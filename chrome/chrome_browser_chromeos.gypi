@@ -121,6 +121,8 @@
         'browser/chromeos/app_mode/kiosk_app_prefs_local_state.cc',
         'browser/chromeos/app_mode/kiosk_app_prefs_local_state.h',
         'browser/chromeos/app_mode/kiosk_app_prefs_observer.h',
+        'browser/chromeos/app_mode/kiosk_app_update_service.cc',
+        'browser/chromeos/app_mode/kiosk_app_update_service.h',
         'browser/chromeos/app_mode/startup_app_launcher.cc',
         'browser/chromeos/app_mode/startup_app_launcher.h',
         'browser/chromeos/audio/audio_handler.cc',
