@@ -236,10 +236,15 @@ class AutofillDialogViews : public AutofillDialogView,
                      views::Button* proxy_button);
     virtual ~SectionContainer();
 
+    // Sets the visual appearance of the section to active (considered active
+    // when showing the menu or hovered by the mouse cursor).
+    void SetActive(bool active);
+
     // Sets whether mouse events should be forwarded to |proxy_button_|.
     void SetForwardMouseEvents(bool forward);
 
     // views::View implementation.
+    virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
     virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;

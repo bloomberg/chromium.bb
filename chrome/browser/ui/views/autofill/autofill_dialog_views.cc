@@ -342,13 +342,31 @@ void AutofillDialogViews::SectionContainer::SetForwardMouseEvents(
     set_background(NULL);
 }
 
+void AutofillDialogViews::SectionContainer::SetActive(bool active) {
+  if (active == !!background())
+    return;
+
+  set_background(active ?
+      // TODO(estade): use the correct color.
+      views::Background::CreateSolidBackground(SK_ColorLTGRAY):
+      NULL);
+  SchedulePaint();
+}
+
+void AutofillDialogViews::SectionContainer::OnMouseMoved(
+    const ui::MouseEvent& event) {
+  if (!forward_mouse_events_)
+    return;
+
+  SetActive(true);
+}
+
 void AutofillDialogViews::SectionContainer::OnMouseEntered(
     const ui::MouseEvent& event) {
   if (!forward_mouse_events_)
     return;
 
-  // TODO(estade): use the correct color.
-  set_background(views::Background::CreateSolidBackground(SK_ColorLTGRAY));
+  SetActive(true);
   proxy_button_->OnMouseEntered(ProxyEvent(event));
   SchedulePaint();
 }
@@ -358,7 +376,7 @@ void AutofillDialogViews::SectionContainer::OnMouseExited(
   if (!forward_mouse_events_)
     return;
 
-  set_background(NULL);
+  SetActive(false);
   proxy_button_->OnMouseExited(ProxyEvent(event));
   SchedulePaint();
 }
@@ -773,6 +791,7 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
         controller_->MenuModelForSection(group->section));
     menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
 
+    group->container->SetActive(true);
     // Ignore the result since we don't need to handle a deleted menu specially.
     ignore_result(
         menu_runner_->RunMenuAt(sender->GetWidget(),
@@ -780,6 +799,7 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                 group->suggested_button->GetBoundsInScreen(),
                                 views::MenuItemView::TOPRIGHT,
                                 0));
+    group->container->SetActive(false);
   }
 }
 
