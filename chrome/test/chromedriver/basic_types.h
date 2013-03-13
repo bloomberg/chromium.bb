@@ -10,7 +10,7 @@ struct WebPoint {
   WebPoint(int x, int y);
   ~WebPoint();
 
-  void offset(int x_, int y_);
+  void Offset(int x_, int y_);
 
   int x;
   int y;
@@ -31,10 +31,10 @@ struct WebRect {
   WebRect(const WebPoint& origin, const WebSize& size);
   ~WebRect();
 
-  int x();
-  int y();
-  int width();
-  int height();
+  int X() const;
+  int Y() const;
+  int Width() const;
+  int Height() const;
 
   WebPoint origin;
   WebSize size;

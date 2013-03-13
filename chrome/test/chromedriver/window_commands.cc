@@ -19,6 +19,7 @@
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/ui_events.h"
+#include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/web_view.h"
 
 namespace {
@@ -140,19 +141,22 @@ Status ExecuteWindowCommand(
   if (status.IsError())
     return status;
 
-  Status nav_status = web_view->WaitForPendingNavigations(session->frame);
+  Status nav_status =
+      web_view->WaitForPendingNavigations(session->GetCurrentFrameId());
   if (nav_status.IsError())
     return nav_status;
   status = command.Run(session, web_view, params, value);
   // Switch to main frame and retry command if subframe no longer exists.
   if (status.code() == kNoSuchFrame) {
-    session->frame = "";
-    nav_status = web_view->WaitForPendingNavigations(session->frame);
+    session->SwitchToTopFrame();
+    nav_status =
+        web_view->WaitForPendingNavigations(session->GetCurrentFrameId());
     if (nav_status.IsError())
       return nav_status;
     status = command.Run(session, web_view, params, value);
   }
-  nav_status = web_view->WaitForPendingNavigations(session->frame);
+  nav_status =
+      web_view->WaitForPendingNavigations(session->GetCurrentFrameId());
   if (status.IsOk() && nav_status.IsError() &&
       nav_status.code() != kDisconnected)
     return nav_status;
@@ -183,7 +187,7 @@ Status ExecuteExecuteScript(
     return Status(kUnknownError, "'args' must be a list");
 
   return web_view->CallFunction(
-      session->frame, "function(){" + script + "}", *args, value);
+      session->GetCurrentFrameId(), "function(){" + script + "}", *args, value);
 }
 
 Status ExecuteExecuteAsyncScript(
@@ -204,7 +208,7 @@ Status ExecuteExecuteAsyncScript(
   args.AppendInteger(session->script_timeout);
   scoped_ptr<base::Value> tmp;
   Status status = web_view->CallFunction(
-      session->frame, kExecuteAsyncScriptScript, args, &tmp);
+      session->GetCurrentFrameId(), kExecuteAsyncScriptScript, args, &tmp);
   if (status.IsError())
     return status;
 
@@ -224,7 +228,7 @@ Status ExecuteExecuteAsyncScript(
   while (true) {
     scoped_ptr<base::Value> result;
     status = web_view->CallFunction(
-        session->frame, kGetAndClearResult, args_tmp, &result);
+        session->GetCurrentFrameId(), kGetAndClearResult, args_tmp, &result);
     if (status.IsError()) {
       if (status.code() == kNoSuchFrame)
         return Status(kJavaScriptError, "page or frame unload", status);
@@ -260,7 +264,8 @@ Status ExecuteExecuteAsyncScript(
       "var info = document.chromedriverAsyncScriptInfo;"
       "info.id++;"
       "delete info.result;";
-  web_view->EvaluateScript(session->frame, kClearResultForTimeoutScript, &tmp);
+  web_view->EvaluateScript(
+      session->GetCurrentFrameId(), kClearResultForTimeoutScript, &tmp);
 
   return Status(
       kScriptTimeout,
@@ -278,7 +283,7 @@ Status ExecuteSwitchToFrame(
     return Status(kUnknownError, "missing 'id'");
 
   if (id->IsType(base::Value::TYPE_NULL)) {
-    session->frame = "";
+    session->SwitchToTopFrame();
     return Status(kOk);
   }
 
@@ -309,10 +314,33 @@ Status ExecuteSwitchToFrame(
   }
   std::string frame;
   Status status = web_view->GetFrameByFunction(
-      session->frame, script, args, &frame);
+      session->GetCurrentFrameId(), script, args, &frame);
   if (status.IsError())
     return status;
-  session->frame = frame;
+
+  scoped_ptr<base::Value> result;
+  status = web_view->CallFunction(
+      session->GetCurrentFrameId(), script, args, &result);
+  if (status.IsError())
+    return status;
+  const base::DictionaryValue* element;
+  if (!result->GetAsDictionary(&element))
+    return Status(kUnknownError, "fail to locate the sub frame element");
+
+  std::string chrome_driver_id = GenerateId();
+  const char* kSetFrameIdentifier =
+      "function(frame, id) {"
+      "  frame.setAttribute('cd_frame_id_', id);"
+      "}";
+  base::ListValue new_args;
+  new_args.Append(element->DeepCopy());
+  new_args.AppendString(chrome_driver_id);
+  result.reset(NULL);
+  status = web_view->CallFunction(
+      session->GetCurrentFrameId(), kSetFrameIdentifier, new_args, &result);
+  if (status.IsError())
+    return status;
+  session->SwitchToSubFrame(frame, chrome_driver_id);
   return Status(kOk);
 }
 
@@ -329,7 +357,8 @@ Status ExecuteGetTitle(
       "    return document.URL;"
       "}";
   base::ListValue args;
-  return web_view->CallFunction(session->frame, kGetTitleScript, args, value);
+  return web_view->CallFunction(
+      session->GetCurrentFrameId(), kGetTitleScript, args, value);
 }
 
 Status ExecuteGetPageSource(
@@ -342,7 +371,8 @@ Status ExecuteGetPageSource(
       "  return new XMLSerializer().serializeToString(document);"
       "}";
   base::ListValue args;
-  return web_view->CallFunction(session->frame, kGetPageSource, args, value);
+  return web_view->CallFunction(
+      session->GetCurrentFrameId(), kGetPageSource, args, value);
 }
 
 Status ExecuteFindElement(
@@ -370,7 +400,7 @@ Status ExecuteGetCurrentUrl(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   std::string url;
-  Status status = GetUrl(web_view, session->frame, &url);
+  Status status = GetUrl(web_view, session->GetCurrentFrameId(), &url);
   if (status.IsError())
     return status;
   value->reset(new base::StringValue(url));
@@ -426,13 +456,13 @@ Status ExecuteMouseMoveTo(
   }
 
   if (has_offset) {
-    location.offset(x_offset, y_offset);
+    location.Offset(x_offset, y_offset);
   } else {
     WebSize size;
     Status status = GetElementSize(session, web_view, element_id, &size);
     if (status.IsError())
       return status;
-    location.offset(size.width / 2, size.height / 2);
+    location.Offset(size.width / 2, size.height / 2);
   }
 
   std::list<MouseEvent> events;
@@ -522,7 +552,7 @@ Status ExecuteGetActiveElement(
     scoped_ptr<base::Value>* value) {
   base::ListValue args;
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       "function() { return document.activeElement || document.body }",
       args,
       value);
@@ -534,7 +564,7 @@ Status ExecuteGetAppCacheStatus(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   return web_view->EvaluateScript(
-      session->frame,
+      session->GetCurrentFrameId(),
       "applicationCache.status",
       value);
 }
@@ -545,7 +575,7 @@ Status ExecuteIsBrowserOnline(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   return web_view->EvaluateScript(
-      session->frame,
+      session->GetCurrentFrameId(),
       "navigator.onLine",
       value);
 }
@@ -562,7 +592,7 @@ Status ExecuteGetStorageItem(
   base::ListValue args;
   args.Append(new base::StringValue(key));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       base::StringPrintf("function(key) { return %s[key]; }", storage),
       args,
       value);
@@ -581,7 +611,7 @@ Status ExecuteGetStorageKeys(
       "}"
       "keys";
   return web_view->EvaluateScript(
-      session->frame,
+      session->GetCurrentFrameId(),
       base::StringPrintf(script, storage),
       value);
 }
@@ -602,7 +632,7 @@ Status ExecuteSetStorageItem(
   args.Append(new base::StringValue(key));
   args.Append(new base::StringValue(storage_value));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       base::StringPrintf("function(key, value) { %s[key] = value; }", storage),
       args,
       value);
@@ -620,7 +650,7 @@ Status ExecuteRemoveStorageItem(
   base::ListValue args;
   args.Append(new base::StringValue(key));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       base::StringPrintf("function(key) { %s.removeItem(key) }", storage),
       args,
       value);
@@ -633,7 +663,7 @@ Status ExecuteClearStorage(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   return web_view->EvaluateScript(
-      session->frame,
+      session->GetCurrentFrameId(),
       base::StringPrintf("%s.clear()", storage),
       value);
 }
@@ -645,7 +675,7 @@ Status ExecuteGetStorageSize(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   return web_view->EvaluateScript(
-      session->frame,
+      session->GetCurrentFrameId(),
       base::StringPrintf("%s.length", storage),
       value);
 }
@@ -693,7 +723,7 @@ Status ExecuteAddCookie(
   args.Append(cookie->DeepCopy());
   scoped_ptr<base::Value> result;
   return web_view->CallFunction(
-      session->frame, kAddCookieScript, args, &result);
+      session->GetCurrentFrameId(), kAddCookieScript, args, &result);
 }
 
 Status ExecuteDeleteCookie(
@@ -707,7 +737,7 @@ Status ExecuteDeleteCookie(
   base::DictionaryValue params_url;
   scoped_ptr<base::Value> value_url;
   std::string url;
-  Status status = GetUrl(web_view, session->frame, &url);
+  Status status = GetUrl(web_view, session->GetCurrentFrameId(), &url);
   if (status.IsError())
     return status;
   return web_view->DeleteCookie(name, url);
@@ -727,7 +757,7 @@ Status ExecuteDeleteAllCookies(
     base::DictionaryValue params_url;
     scoped_ptr<base::Value> value_url;
     std::string url;
-    status = GetUrl(web_view, session->frame, &url);
+    status = GetUrl(web_view, session->GetCurrentFrameId(), &url);
     if (status.IsError())
       return status;
     for (std::list<Cookie>::const_iterator it = cookies.begin();

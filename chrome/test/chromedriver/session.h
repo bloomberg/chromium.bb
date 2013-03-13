@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_SESSION_H_
 #define CHROME_TEST_CHROMEDRIVER_SESSION_H_
 
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
@@ -21,6 +22,16 @@ class Chrome;
 class Status;
 class WebView;
 
+struct FrameInfo {
+  FrameInfo(const std::string& parent_frame_id,
+            const std::string& frame_id,
+            const std::string& chromedriver_frame_id);
+
+  std::string parent_frame_id;
+  std::string frame_id;
+  std::string chromedriver_frame_id;
+};
+
 struct Session {
   explicit Session(const std::string& id);
   Session(const std::string& id, scoped_ptr<Chrome> chrome);
@@ -28,10 +39,18 @@ struct Session {
 
   Status GetTargetWindow(WebView** web_view);
 
+  void SwitchToTopFrame();
+  void SwitchToSubFrame(const std::string& frame_id,
+                        const std::string& chromedriver_frame_id);
+  std::string GetCurrentFrameId() const;
+
   const std::string id;
   scoped_ptr<Chrome> chrome;
   std::string window;
-  std::string frame;
+  // List of |FrameInfo|s for each frame to the current target frame from the
+  // first frame element in the root document. If target frame is window.top,
+  // this list will be empty.
+  std::list<FrameInfo> frames;
   WebPoint mouse_position;
   int implicit_wait;
   int page_load_timeout;

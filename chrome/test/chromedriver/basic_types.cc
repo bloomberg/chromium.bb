@@ -10,7 +10,7 @@ WebPoint::WebPoint(int x, int y) : x(x), y(y) {}
 
 WebPoint::~WebPoint() {}
 
-void WebPoint::offset(int x_, int y_) {
+void WebPoint::Offset(int x_, int y_) {
   x += x_;
   y += y_;
 }
@@ -31,10 +31,10 @@ WebRect::WebRect(const WebPoint& origin, const WebSize& size)
 
 WebRect::~WebRect() {}
 
-int WebRect::x() { return origin.x; }
+int WebRect::X() const { return origin.x; }
 
-int WebRect::y() { return origin.y; }
+int WebRect::Y() const { return origin.y; }
 
-int WebRect::width() { return size.width; }
+int WebRect::Width() const { return size.width; }
 
-int WebRect::height() { return size.height; }
+int WebRect::Height() const { return size.height; }

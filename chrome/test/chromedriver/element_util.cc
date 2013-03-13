@@ -5,6 +5,8 @@
 #include "chrome/test/chromedriver/element_util.h"
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -32,10 +34,10 @@ bool ParseFromValue(base::Value* value, WebPoint* point) {
   return true;
 }
 
-base::Value* CreateValueFrom(const WebPoint* point) {
+base::Value* CreateValueFrom(const WebPoint& point) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("x", point->x);
-  dict->SetInteger("y", point->y);
+  dict->SetInteger("x", point.x);
+  dict->SetInteger("y", point.y);
   return dict;
 }
 
@@ -52,10 +54,10 @@ bool ParseFromValue(base::Value* value, WebSize* size) {
   return true;
 }
 
-base::Value* CreateValueFrom(const WebSize* size) {
+base::Value* CreateValueFrom(const WebSize& size) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("width", size->width);
-  dict->SetInteger("height", size->height);
+  dict->SetInteger("width", size.width);
+  dict->SetInteger("height", size.height);
   return dict;
 }
 
@@ -76,24 +78,131 @@ bool ParseFromValue(base::Value* value, WebRect* rect) {
   return true;
 }
 
-base::Value* CreateValueFrom(const WebRect* rect) {
+base::Value* CreateValueFrom(const WebRect& rect) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("left", rect->origin.x);
-  dict->SetInteger("top", rect->origin.y);
-  dict->SetInteger("width", rect->size.width);
-  dict->SetInteger("height", rect->size.height);
+  dict->SetInteger("left", rect.X());
+  dict->SetInteger("top", rect.Y());
+  dict->SetInteger("width", rect.Width());
+  dict->SetInteger("height", rect.Height());
   return dict;
 }
 
 Status CallAtomsJs(
-    Session* session,
+    const std::string& frame,
     WebView* web_view,
     const char* const* atom_function,
     const base::ListValue& args,
     scoped_ptr<base::Value>* result) {
   return web_view->CallFunction(
-      session->frame, webdriver::atoms::asString(atom_function),
-      args, result);
+      frame, webdriver::atoms::asString(atom_function), args, result);
+}
+
+Status VerifyElementClickable(
+    const std::string& frame,
+    WebView* web_view,
+    const std::string& element_id,
+    const WebPoint& location) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  args.Append(CreateValueFrom(location));
+  scoped_ptr<base::Value> result;
+  Status status = CallAtomsJs(
+      frame, web_view, webdriver::atoms::IS_ELEMENT_CLICKABLE,
+      args, &result);
+  if (status.IsError())
+    return status;
+  base::DictionaryValue* dict;
+  bool is_clickable;
+  if (!result->GetAsDictionary(&dict) ||
+      !dict->GetBoolean("clickable", &is_clickable))
+    return Status(kUnknownError, "fail to parse value of IS_ELEMENT_CLICKABLE");
+
+  if (!is_clickable) {
+    std::string message;
+    if (!dict->GetString("message", &message))
+      message = "element is not clickable";
+    return Status(kUnknownError, message);
+  }
+  return Status(kOk);
+}
+
+Status ScrollElementRegionIntoViewHelper(
+    const std::string& frame,
+    WebView* web_view,
+    const std::string& element_id,
+    const WebRect& region,
+    bool center,
+    bool verify_clickable,
+    WebPoint* location) {
+  WebPoint tmp_location = *location;
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  args.AppendBoolean(center);
+  args.Append(CreateValueFrom(region));
+  scoped_ptr<base::Value> result;
+  Status status = web_view->CallFunction(
+      frame, webdriver::atoms::asString(webdriver::atoms::GET_LOCATION_IN_VIEW),
+      args, &result);
+  if (status.IsError())
+    return status;
+  if (!ParseFromValue(result.get(), &tmp_location))
+    return Status(kUnknownError, "fail to parse value of GET_LOCATION_IN_VIEW");
+  if (verify_clickable) {
+    WebPoint middle = tmp_location;
+    middle.Offset(region.Width() / 2, region.Height() / 2);
+    status = VerifyElementClickable(frame, web_view, element_id, middle);
+    if (status.IsError())
+      return status;
+  }
+  *location = tmp_location;
+  return Status(kOk);
+}
+
+Status GetElementEffectiveStyle(
+    const std::string& frame,
+    WebView* web_view,
+    const std::string& element_id,
+    const std::string& property,
+    std::string* value) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  args.AppendString(property);
+  scoped_ptr<base::Value> result;
+  Status status = web_view->CallFunction(
+      frame, webdriver::atoms::asString(webdriver::atoms::GET_EFFECTIVE_STYLE),
+      args, &result);
+  if (status.IsError())
+    return status;
+  if (!result->GetAsString(value))
+    return Status(kUnknownError, "fail to parse value of GET_EFFECTIVE_STYLE");
+  return Status(kOk);
+}
+
+Status GetElementBorder(
+    const std::string& frame,
+    WebView* web_view,
+    const std::string& element_id,
+    int* border_left,
+    int* border_top) {
+  std::string border_left_str;
+  Status status = GetElementEffectiveStyle(
+      frame, web_view, element_id, "border-left-width", &border_left_str);
+  if (status.IsError())
+    return status;
+  std::string border_top_str;
+  status = GetElementEffectiveStyle(
+      frame, web_view, element_id, "border-top-width", &border_top_str);
+  if (status.IsError())
+    return status;
+  int border_left_tmp = -1;
+  int border_top_tmp = -1;
+  base::StringToInt(border_left_str, &border_left_tmp);
+  base::StringToInt(border_top_str, &border_top_tmp);
+  if (border_left_tmp == -1 || border_top_tmp == -1)
+    return Status(kUnknownError, "fail to get border width of element");
+  *border_left = border_left_tmp;
+  *border_top = border_top_tmp;
+  return Status(kOk);
 }
 
 }  // namespace
@@ -135,7 +244,7 @@ Status FindElement(
   while (true) {
     scoped_ptr<base::Value> temp;
     Status status = web_view->CallFunction(
-        session->frame, script, arguments, &temp);
+        session->GetCurrentFrameId(), script, arguments, &temp);
     if (status.IsError())
       return status;
 
@@ -180,7 +289,8 @@ Status GetElementAttribute(
   args.Append(CreateElement(element_id));
   args.AppendString(attribute_name);
   return CallAtomsJs(
-      session, web_view, webdriver::atoms::GET_ATTRIBUTE, args, value);
+      session->GetCurrentFrameId(), web_view, webdriver::atoms::GET_ATTRIBUTE,
+      args, value);
 }
 
 Status IsElementAttributeEqualToIgnoreCase(
@@ -207,8 +317,7 @@ Status GetElementClickableLocation(
     Session* session,
     WebView* web_view,
     const std::string& element_id,
-    WebPoint* location,
-    bool* is_clickable) {
+    WebPoint* location) {
   bool is_displayed = false;
   Status status = IsElementDisplayed(
       session, web_view, element_id, true, &is_displayed);
@@ -223,14 +332,11 @@ Status GetElementClickableLocation(
     return status;
 
   status = ScrollElementRegionIntoView(
-      session, web_view, element_id, rect, true, location);
+      session, web_view, element_id, rect,
+      true /* center */, true /* verify_clickable */, location);
   if (status.IsError())
     return status;
-  location->offset(rect.width() / 2, rect.height() / 2);
-  if (is_clickable) {
-    return IsElementClickable(
-        session, web_view, element_id, location, is_clickable);
-  }
+  location->Offset(rect.Width() / 2, rect.Height() / 2);
   return Status(kOk);
 }
 
@@ -243,7 +349,7 @@ Status GetElementRegion(
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = web_view->CallFunction(
-      session->frame, kGetElementRegionScript, args, &result);
+      session->GetCurrentFrameId(), kGetElementRegionScript, args, &result);
   if (status.IsError())
     return status;
   if (!ParseFromValue(result.get(), rect)) {
@@ -262,7 +368,8 @@ Status GetElementTagName(
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = web_view->CallFunction(
-      session->frame, "function(elem) { return elem.tagName.toLowerCase(); }",
+      session->GetCurrentFrameId(),
+      "function(elem) { return elem.tagName.toLowerCase(); }",
       args, &result);
   if (status.IsError())
     return status;
@@ -280,39 +387,12 @@ Status GetElementSize(
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, web_view, webdriver::atoms::GET_SIZE, args, &result);
+      session->GetCurrentFrameId(), web_view, webdriver::atoms::GET_SIZE,
+      args, &result);
   if (status.IsError())
     return status;
   if (!ParseFromValue(result.get(), size))
     return Status(kUnknownError, "fail to parse value of GET_SIZE");
-  return Status(kOk);
-}
-
-Status IsElementClickable(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    WebPoint* location,
-    bool* is_clickable) {
-  base::ListValue args;
-  args.Append(CreateElement(element_id));
-  args.Append(CreateValueFrom(location));
-  scoped_ptr<base::Value> result;
-  Status status = CallAtomsJs(
-      session, web_view, webdriver::atoms::IS_ELEMENT_CLICKABLE, args, &result);
-  if (status.IsError())
-    return status;
-  base::DictionaryValue* dict;
-  if (!result->GetAsDictionary(&dict) ||
-      !dict->GetBoolean("clickable", is_clickable))
-    return Status(kUnknownError, "fail to parse value of IS_ELEMENT_CLICKABLE");
-
-  if (!*is_clickable) {
-    std::string message;
-    if (!dict->GetString("message", &message))
-      message = "element is not clickable";
-    return Status(kOk, message);
-  }
   return Status(kOk);
 }
 
@@ -327,7 +407,8 @@ Status IsElementDisplayed(
   args.AppendBoolean(ignore_opacity);
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, web_view, webdriver::atoms::IS_DISPLAYED, args, &result);
+      session->GetCurrentFrameId(), web_view, webdriver::atoms::IS_DISPLAYED,
+      args, &result);
   if (status.IsError())
     return status;
   if (!result->GetAsBoolean(is_displayed))
@@ -344,7 +425,8 @@ Status IsElementEnabled(
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, web_view, webdriver::atoms::IS_ENABLED, args, &result);
+      session->GetCurrentFrameId(), web_view, webdriver::atoms::IS_ENABLED,
+      args, &result);
   if (status.IsError())
     return status;
   if (!result->GetAsBoolean(is_enabled))
@@ -361,7 +443,8 @@ Status IsOptionElementSelected(
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, web_view, webdriver::atoms::IS_SELECTED, args, &result);
+      session->GetCurrentFrameId(), web_view, webdriver::atoms::IS_SELECTED,
+      args, &result);
   if (status.IsError())
     return status;
   if (!result->GetAsBoolean(is_selected))
@@ -378,7 +461,8 @@ Status IsOptionElementTogglable(
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = web_view->CallFunction(
-      session->frame, kIsOptionElementToggleableScript, args, &result);
+      session->GetCurrentFrameId(), kIsOptionElementToggleableScript,
+      args, &result);
   if (status.IsError())
     return status;
   if (!result->GetAsBoolean(is_togglable))
@@ -397,7 +481,8 @@ Status SetOptionElementSelected(
   args.AppendBoolean(selected);
   scoped_ptr<base::Value> result;
   return CallAtomsJs(
-      session, web_view, webdriver::atoms::CLICK, args, &result);
+      session->GetCurrentFrameId(), web_view, webdriver::atoms::CLICK,
+      args, &result);
 }
 
 Status ToggleOptionElement(
@@ -422,7 +507,8 @@ Status ScrollElementIntoView(
   if (status.IsError())
     return status;
   return ScrollElementRegionIntoView(
-      session, web_view, id, WebRect(WebPoint(0, 0), size), false, location);
+      session, web_view, id, WebRect(WebPoint(0, 0), size),
+      false /* center */, false /* verify_clickable */, location);
 }
 
 Status ScrollElementRegionIntoView(
@@ -431,21 +517,55 @@ Status ScrollElementRegionIntoView(
     const std::string& element_id,
     const WebRect& region,
     bool center,
+    bool verify_clickable,
     WebPoint* location) {
   WebPoint region_offset = region.origin;
-  base::ListValue args;
-  args.Append(CreateElement(element_id));
-  args.AppendBoolean(center);
-  args.Append(CreateValueFrom(&region));
-  scoped_ptr<base::Value> result;
-
-  // TODO(chrisgao): Nested frame. See http://crbug.com/170998.
-  Status status = CallAtomsJs(
-      session, web_view, webdriver::atoms::GET_LOCATION_IN_VIEW, args, &result);
+  WebSize region_size = region.size;
+  Status status = ScrollElementRegionIntoViewHelper(
+      session->GetCurrentFrameId(), web_view, element_id, region,
+      center, verify_clickable, &region_offset);
   if (status.IsError())
     return status;
-  if (!ParseFromValue(result.get(), &region_offset))
-    return Status(kUnknownError, "fail to parse value of GET_LOCATION_IN_VIEW");
+  const char* kFindSubFrameScript =
+      "function(xpath) {"
+      "  return document.evaluate(xpath, document, null,"
+      "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
+      "}";
+  for (std::list<FrameInfo>::reverse_iterator rit = session->frames.rbegin();
+       rit != session->frames.rend(); ++rit) {
+    base::ListValue args;
+    args.AppendString(
+        base::StringPrintf("//*[@cd_frame_id_ = '%s']",
+                           rit->chromedriver_frame_id.c_str()));
+    scoped_ptr<base::Value> result;
+    status = web_view->CallFunction(
+        rit->parent_frame_id, kFindSubFrameScript, args, &result);
+    if (status.IsError())
+      return status;
+    const base::DictionaryValue* element_dict;
+    if (!result->GetAsDictionary(&element_dict))
+      return Status(kUnknownError, "no element reference returned by script");
+    std::string frame_element_id;
+    if (!element_dict->GetString(kElementKey, &frame_element_id))
+      return Status(kUnknownError, "fail to locate a sub frame");
+
+    // Modify |region_offset| by the frame's border.
+    int border_left = -1;
+    int border_top = -1;
+    status = GetElementBorder(
+        rit->parent_frame_id, web_view, frame_element_id,
+        &border_left, &border_top);
+    if (status.IsError())
+      return status;
+    region_offset.Offset(border_left, border_top);
+
+    status = ScrollElementRegionIntoViewHelper(
+        rit->parent_frame_id, web_view, frame_element_id,
+        WebRect(region_offset, region_size),
+        center, verify_clickable, &region_offset);
+    if (status.IsError())
+      return status;
+  }
   *location = region_offset;
   return Status(kOk);
 }

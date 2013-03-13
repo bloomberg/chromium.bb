@@ -167,7 +167,7 @@ Status ExecuteSwitchToWindow(
   if (!web_view)
     return Status(kNoSuchWindow);
   session->window = web_view->GetId();
-  session->frame = "";
+  session->SwitchToTopFrame();
   session->mouse_position = WebPoint(0, 0);
   return Status(kOk);
 }
@@ -281,7 +281,8 @@ Status ExecuteIsLoading(
     return status;
 
   bool is_pending;
-  status = web_view->IsPendingNavigation(session->frame, &is_pending);
+  status = web_view->IsPendingNavigation(
+      session->GetCurrentFrameId(), &is_pending);
   if (status.IsError())
     return status;
   value->reset(new base::FundamentalValue(is_pending));

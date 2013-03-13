@@ -74,7 +74,8 @@ Status SendKeysToElement(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
-  status = web_view->CallFunction(session->frame, kFocusScript, args, &result);
+  status = web_view->CallFunction(
+      session->GetCurrentFrameId(), kFocusScript, args, &result);
   if (status.IsError())
     return status;
   return SendKeysOnWindow(web_view, keys, true);
@@ -124,7 +125,7 @@ Status ExecuteHoverOverElement(
     scoped_ptr<base::Value>* value) {
   WebPoint location;
   Status status = GetElementClickableLocation(
-      session, web_view, element_id, &location, NULL);
+      session, web_view, element_id, &location);
   if (status.IsError())
     return status;
 
@@ -160,13 +161,10 @@ Status ExecuteClickElement(
       return SetOptionElementSelected(session, web_view, element_id, true);
   } else {
     WebPoint location;
-    bool is_clickable;
     status = GetElementClickableLocation(
-        session, web_view, element_id, &location, &is_clickable);
+        session, web_view, element_id, &location);
     if (status.IsError())
       return status;
-    if (!is_clickable)
-      return Status(kUnknownError, status.message());
 
     std::list<MouseEvent> events;
     events.push_back(
@@ -195,7 +193,7 @@ Status ExecuteClearElement(
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::CLEAR),
       args, &result);
 }
@@ -241,7 +239,7 @@ Status ExecuteSubmitElement(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::SUBMIT),
       args,
       value);
@@ -256,7 +254,7 @@ Status ExecuteGetElementText(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::GET_TEXT),
       args,
       value);
@@ -271,7 +269,7 @@ Status ExecuteGetElementValue(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       "function(elem) { return elem['value'] }",
       args,
       value);
@@ -286,7 +284,7 @@ Status ExecuteGetElementTagName(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       "function(elem) { return elem.tagName.toLowerCase() }",
       args,
       value);
@@ -301,7 +299,7 @@ Status ExecuteIsElementSelected(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::IS_SELECTED),
       args,
       value);
@@ -316,7 +314,7 @@ Status ExecuteIsElementEnabled(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::IS_ENABLED),
       args,
       value);
@@ -331,7 +329,7 @@ Status ExecuteIsElementDisplayed(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::IS_DISPLAYED),
       args,
       value);
@@ -346,7 +344,7 @@ Status ExecuteGetElementLocation(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::GET_LOCATION),
       args,
       value);
@@ -361,7 +359,7 @@ Status ExecuteGetElementLocationOnceScrolledIntoView(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::GET_LOCATION_IN_VIEW),
       args,
       value);
@@ -376,7 +374,7 @@ Status ExecuteGetElementSize(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::GET_SIZE),
       args,
       value);
@@ -403,7 +401,7 @@ Status ExecuteGetElementValueOfCSSProperty(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
-      session->frame,
+      session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::GET_EFFECTIVE_STYLE),
       args,
       value);

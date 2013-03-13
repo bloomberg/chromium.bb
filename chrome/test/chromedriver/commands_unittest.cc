@@ -231,7 +231,7 @@ TEST(CommandsTest, SuccessfulFindElement) {
   FindElementWebView web_view(true, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.frame = "frame_id1";
+  session.SwitchToSubFrame("frame_id1", "");
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
@@ -260,7 +260,7 @@ TEST(CommandsTest, SuccessfulFindElements) {
   FindElementWebView web_view(false, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.frame = "frame_id2";
+  session.SwitchToSubFrame("frame_id2", "");
   base::DictionaryValue params;
   params.SetString("using", "name");
   params.SetString("value", "b");
@@ -294,7 +294,7 @@ TEST(CommandsTest, SuccessfulFindChildElement) {
   FindElementWebView web_view(true, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.frame = "frame_id3";
+  session.SwitchToSubFrame("frame_id3", "");
   base::DictionaryValue params;
   params.SetString("using", "tag name");
   params.SetString("value", "div");
@@ -332,7 +332,7 @@ TEST(CommandsTest, SuccessfulFindChildElements) {
   FindElementWebView web_view(false, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.frame = "frame_id4";
+  session.SwitchToSubFrame("frame_id4", "");
   base::DictionaryValue params;
   params.SetString("using", "class name");
   params.SetString("value", "c");
