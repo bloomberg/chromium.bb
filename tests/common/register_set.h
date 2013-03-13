@@ -8,6 +8,7 @@
 #define NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 
@@ -104,6 +105,51 @@
         asm_code \
         : : "r"(regs) : "memory")
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+
+# define REGS_MASK_A0 "and $a0, $a0, $t7\n"
+# define ASM_WITH_REGS(regs, asm_code) \
+    __asm__( \
+        ".p2align 4\n" \
+        "move $a0, %0\n" \
+        "nop\n" \
+        /* We skip setting zero register because it's unsettable. */ \
+        REGS_MASK_A0 "lw $at, 4($a0)\n" \
+        REGS_MASK_A0 "lw $v0, 8($a0)\n" \
+        REGS_MASK_A0 "lw $v1, 12($a0)\n" \
+        REGS_MASK_A0 "lw $a1, 20($a0)\n" \
+        REGS_MASK_A0 "lw $a2, 24($a0)\n" \
+        REGS_MASK_A0 "lw $a3, 28($a0)\n" \
+        REGS_MASK_A0 "lw $t0, 32($a0)\n" \
+        REGS_MASK_A0 "lw $t1, 36($a0)\n" \
+        REGS_MASK_A0 "lw $t2, 40($a0)\n" \
+        REGS_MASK_A0 "lw $t3, 44($a0)\n" \
+        REGS_MASK_A0 "lw $t4, 48($a0)\n" \
+        REGS_MASK_A0 "lw $t5, 52($a0)\n" \
+        /* We skip setting t6 and t7 because those are mask registers. */ \
+        REGS_MASK_A0 "lw $s0, 64($a0)\n" \
+        REGS_MASK_A0 "lw $s1, 68($a0)\n" \
+        REGS_MASK_A0 "lw $s2, 72($a0)\n" \
+        REGS_MASK_A0 "lw $s3, 76($a0)\n" \
+        REGS_MASK_A0 "lw $s4, 80($a0)\n" \
+        REGS_MASK_A0 "lw $s5, 84($a0)\n" \
+        REGS_MASK_A0 "lw $s6, 88($a0)\n" \
+        REGS_MASK_A0 "lw $s7, 92($a0)\n" \
+        /* We skip setting t8 because that register hold TLS index. */ \
+        REGS_MASK_A0 "lw $t9, 100($a0)\n" \
+        /* We skip setting k0 and k1 registers, they are changed by kernel. */ \
+        REGS_MASK_A0 "lw $gp, 112($a0)\n" \
+        REGS_MASK_A0 "lw $sp, 116($a0)\n" \
+        /* Value change of sp requires masking instruction. */ \
+        "and $sp, $sp, $t7\n" \
+        "nop\n" \
+        REGS_MASK_A0 "lw $fp, 120($a0)\n" \
+        REGS_MASK_A0 "lw $ra, 124($a0)\n" \
+        REGS_MASK_A0 "lw $a0, 16($a0)\n" \
+        ".p2align 4\n"  /* Align for whatever comes after. */ \
+        asm_code \
+        : : "r"(regs) : "memory")
+
 #else
 # error Unsupported architecture
 #endif
@@ -117,6 +163,10 @@
 # define JUMP_WITH_REGS(regs, dest) ASM_WITH_REGS(regs, "jmp " #dest)
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 # define JUMP_WITH_REGS(regs, dest) ASM_WITH_REGS(regs, "b " #dest)
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+# define JUMP_WITH_REGS(regs, dest) ASM_WITH_REGS(regs, \
+                                                  "b " #dest "\n" \
+                                                  "nop\n")
 #else
 # error Unsupported architecture
 #endif
@@ -292,6 +342,67 @@ extern const uint8_t kX86FlagBits[5];
         /* Align the stack pointer */ \
         "bic sp, sp, #0xc000000f\n" \
         "b " #callee_func "\n" \
+        ".popsection\n")
+
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+
+# define REGS_SAVER_FUNC_NOPROTO(def_func, callee_func) \
+    void callee_func(struct NaClSignalContext *regs); \
+    __asm__( \
+        ".pushsection .text, \"ax\", %progbits\n" \
+        ".p2align 4\n" \
+        #def_func ":\n" \
+        /* Make space on stack for all registers. */ \
+        "add $sp, $sp, -132\n" \
+        "and $sp, $sp, $t7\n"\
+        "sw $zero, 0($sp)\n" \
+        "sw $at, 4($sp)\n" \
+        "sw $v0, 8($sp)\n" \
+        "sw $v1, 12($sp)\n" \
+        "sw $a0, 16($sp)\n" \
+        "sw $a1, 20($sp)\n" \
+        "sw $a2, 24($sp)\n" \
+        "sw $a3, 28($sp)\n" \
+        "sw $t0, 32($sp)\n" \
+        "sw $t1, 36($sp)\n" \
+        "sw $t2, 40($sp)\n" \
+        "sw $t3, 44($sp)\n" \
+        "sw $t4, 48($sp)\n" \
+        "sw $t5, 52($sp)\n" \
+        "sw $t6, 56($sp)\n" \
+        "sw $t7, 60($sp)\n" \
+        "sw $s0, 64($sp)\n" \
+        "sw $s1, 68($sp)\n" \
+        "sw $s2, 72($sp)\n" \
+        "sw $s3, 76($sp)\n" \
+        "sw $s4, 80($sp)\n" \
+        "sw $s5, 84($sp)\n" \
+        "sw $s6, 88($sp)\n" \
+        "sw $s7, 92($sp)\n" \
+        "sw $t8, 96($sp)\n" \
+        "sw $t9, 100($sp)\n" \
+        /* We skip saving k0 and k1 registers, they are changed by kernel. */ \
+        "sw $gp, 112($sp)\n" \
+        /* Store the value stack_ptr had on entry of this function. */ \
+        "add $t1, $sp, 132\n" \
+        "sw $t1, 116($sp)\n" \
+        "sw $fp, 120($sp)\n" \
+        "sw $ra, 124($sp)\n" \
+        /* Save a correct prog_ctr value. */ \
+        "lui $t1, %hi(" #def_func ")\n" \
+        "addiu $t1, $t1, %lo(" #def_func ")\n" \
+        "sw $t1, 128($sp)\n" \
+        /* Prepare argument for callee_func. */ \
+        "move $a0, $sp\n" \
+        /* Align the stack pointer. */ \
+        "sll $t1, $t7, 3\n" \
+        "and $sp, $sp, $t1\n" \
+        "and $sp, $sp, $t7\n" \
+        /* Make space on stack for convention calling registers. */ \
+        "add $sp, $sp, -16\n" \
+        "and $sp, $sp, $t7\n" \
+        "b " #callee_func "\n" \
+        "nop \n" \
         ".popsection\n")
 
 #else
