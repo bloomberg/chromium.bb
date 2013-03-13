@@ -80,7 +80,7 @@ enum FieldTypeGroupForMetrics {
 int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
                             const int metric,
                             const int num_possible_metrics) {
-  DCHECK(metric < num_possible_metrics);
+  DCHECK_LT(metric, num_possible_metrics);
 
   FieldTypeGroupForMetrics group;
   switch (AutofillType(field_type).group()) {
@@ -160,6 +160,8 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
 void LogUMAHistogramEnumeration(const std::string& name,
                                 int sample,
                                 int boundary_value) {
+  DCHECK_LT(sample, boundary_value);
+
   // Note: This leaks memory, which is expected behavior.
   base::HistogramBase* histogram =
       base::LinearHistogram::FactoryGet(
@@ -195,7 +197,7 @@ void LogTypeQualityMetric(const std::string& base_name,
                           const int num_possible_metrics,
                           const AutofillFieldType field_type,
                           const std::string& experiment_id) {
-  DCHECK(metric < num_possible_metrics);
+  DCHECK_LT(metric, num_possible_metrics);
 
   std::string histogram_name = base_name;
   if (!experiment_id.empty())
@@ -255,7 +257,7 @@ void LogServerExperimentId(const std::string& histogram_name,
   else if (experiment_id == "fp05cc03e1")
     metric = PROBABILITY_PICKER_05_CC_NAME_THRESHOLD_03_EXPERIMENT_1;
 
-  DCHECK(metric < NUM_SERVER_EXPERIMENTS);
+  DCHECK_LT(metric, NUM_SERVER_EXPERIMENTS);
   LogUMAHistogramEnumeration(histogram_name, metric, NUM_SERVER_EXPERIMENTS);
 }
 
@@ -268,13 +270,13 @@ AutofillMetrics::~AutofillMetrics() {
 }
 
 void AutofillMetrics::LogAutocheckoutBubbleMetric(BubbleMetric metric) const {
-  DCHECK(metric < NUM_BUBBLE_METRICS);
+  DCHECK_LT(metric, NUM_BUBBLE_METRICS);
 
   UMA_HISTOGRAM_ENUMERATION("Autocheckout.Bubble", metric, NUM_BUBBLE_METRICS);
 }
 
 void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
-  DCHECK(metric < NUM_INFO_BAR_METRICS);
+  DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
 
   UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar", metric,
                             NUM_INFO_BAR_METRICS);
@@ -330,7 +332,7 @@ void AutofillMetrics::LogAutocheckoutDuration(
 
 void AutofillMetrics::LogDeveloperEngagementMetric(
     DeveloperEngagementMetric metric) const {
-  DCHECK(metric < NUM_DEVELOPER_ENGAGEMENT_METRICS);
+  DCHECK_LT(metric, NUM_DEVELOPER_ENGAGEMENT_METRICS);
 
   UMA_HISTOGRAM_ENUMERATION("Autofill.DeveloperEngagement", metric,
                             NUM_DEVELOPER_ENGAGEMENT_METRICS);
@@ -365,7 +367,7 @@ void AutofillMetrics::LogServerTypePrediction(
 
 void AutofillMetrics::LogQualityMetric(QualityMetric metric,
                                        const std::string& experiment_id) const {
-  DCHECK(metric < NUM_QUALITY_METRICS);
+  DCHECK_LT(metric, NUM_QUALITY_METRICS);
 
   std::string histogram_name = "Autofill.Quality";
   if (!experiment_id.empty())
@@ -375,14 +377,14 @@ void AutofillMetrics::LogQualityMetric(QualityMetric metric,
 }
 
 void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) const {
-  DCHECK(metric < NUM_SERVER_QUERY_METRICS);
+  DCHECK_LT(metric, NUM_SERVER_QUERY_METRICS);
 
   UMA_HISTOGRAM_ENUMERATION("Autofill.ServerQueryResponse", metric,
                             NUM_SERVER_QUERY_METRICS);
 }
 
 void AutofillMetrics::LogUserHappinessMetric(UserHappinessMetric metric) const {
-  DCHECK(metric < NUM_USER_HAPPINESS_METRICS);
+  DCHECK_LT(metric, NUM_USER_HAPPINESS_METRICS);
 
   UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness", metric,
                             NUM_USER_HAPPINESS_METRICS);
