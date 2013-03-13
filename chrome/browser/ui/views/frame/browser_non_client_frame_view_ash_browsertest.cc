@@ -83,6 +83,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(
           widget->non_client_view()->frame_view());
+  ASSERT_FALSE(widget->IsFullscreen());
 
   // Immersive mode starts disabled.
   EXPECT_FALSE(browser_view->immersive_mode_controller()->enabled());
@@ -94,17 +95,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
   browser_view->EnterFullscreen(GURL(), FEB_TYPE_NONE);
   EXPECT_TRUE(browser_view->immersive_mode_controller()->enabled());
 
-  // During the slide-out animation the buttons are visible.
-  EXPECT_TRUE(frame_view->size_button_->visible());
-  EXPECT_TRUE(frame_view->close_button_->visible());
-  EXPECT_TRUE(frame_view->ShouldPaint());
-
-  // Short-circuit the initial slide-out animation. In the steady state the
-  // frame and caption buttons are hidden.
-  browser_view->immersive_mode_controller()->CancelReveal();
-  EXPECT_FALSE(frame_view->size_button_->visible());
-  EXPECT_FALSE(frame_view->close_button_->visible());
-  EXPECT_FALSE(frame_view->ShouldPaint());
+  // TODO(jamescook): When adding back the slide-out animation for immersive
+  // mode, this is a good place to test the button visibility. CancelReveal()
+  // can short-circuit the animation if it has to wait on painting.
 
   // Frame abuts top of window.
   EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));

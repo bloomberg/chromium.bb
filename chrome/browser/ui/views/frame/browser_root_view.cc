@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -130,15 +131,11 @@ void BrowserRootView::SchedulePaintInRect(const gfx::Rect& rect) {
   if (scheduling_immersive_reveal_painting_)
     return;
 
+  // Paint the frame caption area and window controls during immersive reveal.
   if (browser_view_ &&
-      browser_view_->immersive_mode_controller() &&
       browser_view_->immersive_mode_controller()->IsRevealed()) {
-    views::View* reveal =
-        browser_view_->immersive_mode_controller()->reveal_view();
-    if (reveal) {
-      base::AutoReset<bool> reset(&scheduling_immersive_reveal_painting_, true);
-      reveal->SchedulePaintInRect(rect);
-    }
+    base::AutoReset<bool> reset(&scheduling_immersive_reveal_painting_, true);
+    browser_view_->top_container()->SchedulePaintInRect(rect);
   }
 }
 

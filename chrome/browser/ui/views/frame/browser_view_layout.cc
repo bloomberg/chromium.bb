@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -288,6 +289,9 @@ void BrowserViewLayout::Layout(views::View* host) {
         browser_view_->frame()->GetTabStripInsets(false).top));
   }
   top = LayoutToolbar(top);
+  // TODO(jamescook): When immersive mode supports the bookmark bar this should
+  // move below.
+  browser_view_->top_container()->SetBounds(0, 0, browser_view_->width(), top);
   top = LayoutBookmarkAndInfoBars(top);
   // During immersive mode reveal the content stays near the top of the view.
   if (browser_view_->immersive_mode_controller()->IsRevealed()) {
