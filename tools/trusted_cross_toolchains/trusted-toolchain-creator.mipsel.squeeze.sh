@@ -24,6 +24,8 @@ set -o nounset
 set -o errexit
 set -o xtrace
 
+readonly SCRIPT_DIR=$(dirname $0)
+
 readonly MAKE_OPTS="-j8"
 readonly ARCH="mips32"
 
@@ -54,6 +56,8 @@ readonly PATCH_MIPS32=$(readlink -f ../third_party/qemu/qemu-0.12.5.patch_mips)
 
 readonly JAIL_MIPS32=${INSTALL_ROOT}/sysroot
 
+readonly CROSS_TARBALL="chromesdk_linux_mipsel"
+
 # These are simple compiler wrappers to force 32bit builds.
 readonly  CC32=$(readlink -f pnacl/scripts/mygcc32)
 readonly  CXX32=$(readlink -f pnacl/scripts/myg++32)
@@ -76,9 +80,10 @@ SubBanner() {
 
 Usage() {
   echo
-  echo "$0 trusted_sdk"
+  echo "$0 <nacl_sdk|chrome_sdk>"
   echo
-  echo "trusted_sdk - Build everything and package it"
+  echo "nacl_sdk - Build nacl toolchain and package it"
+  echo "chrome_sdk - Build chrome toolchain and package it"
   echo
 }
 
@@ -183,6 +188,7 @@ SanityCheck() {
 ClearInstallDir() {
   Banner "clearing dirs in ${INSTALL_ROOT}"
   rm -rf ${INSTALL_ROOT}/*
+  mkdir -p ${JAIL_MIPS32}
 }
 
 ClearBuildDir() {
@@ -193,7 +199,7 @@ ClearBuildDir() {
 CreateTarBall() {
   local tarball=$1
   Banner "creating tar ball ${tarball}"
-  tar cfz ${tarball}-mips.tgz -C ${INSTALL_ROOT} .
+  tar cfz ${tarball}.tgz -C ${INSTALL_ROOT} .
 }
 
 
@@ -468,52 +474,52 @@ InstallTrustedLinkerScript() {
 readonly REPO_DEBIAN=http://ftp.debian.org/debian
 readonly MIPS32_PACKAGES=${REPO_DEBIAN}/dists/squeeze/main/binary-mipsel/Packages.bz2
 
-readonly TMP_PACKAGELIST_MIPS32=${TMP}/../packagelist_mipsel.tmp
-
-# These are good enough for native client.
-readonly BASE_PACKAGES="\
-  libssl0.9.8 \
-  libssl-dev \
-  libx11-6 \
-  libx11-dev \
-  x11proto-core-dev \
-  libxt6 \
-  libxt-dev \
-  zlib1g \
-  zlib1g-dev \
-  libasound2 \
-  libasound2-dev \
-  libaa1 \
-  libaa1-dev \
-  libxau-dev \
-  libxau6 \
-  libxcb1 \
-  libxcb1-dev \
-  libxcb-render0 \
-  libxcb-render0-dev \
-  libxcb-render-util0 \
-  libxcb-render-util0-dev \
-  libxcb-shm0 \
-  libxcb-shm0-dev \
-  libxdmcp6 \
-  libxdmcp-dev \
-  libxss1 \
-  libxss-dev"
+readonly BASE_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.squeeze.mipsel.base
+readonly EXTRA_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.squeeze.mipsel.extra
+readonly TMP_BASE_PKG_MIPS32=${TMP}/packagelist.generated.squeeze.mipsel.base
+readonly TMP_EXTRA_PKG_MIPS32=${TMP}/packagelist.generated.squeeze.mipsel.extra
 
 GeneratePackageLists() {
-  Banner "generating package lists for mips32"
-  echo -n > ${TMP_PACKAGELIST_MIPS32}
+  local sdk_target=$1
+  local packages=
+  local TMP_PACKAGELIST=
+  Banner "generating ${sdk_target} package lists for mips32"
   DownloadOrCopy ${MIPS32_PACKAGES}
   bzcat ${TMP}/Packages.bz2\
     | egrep '^(Package:|Filename:)' > ${TMP}/Packages_mipsel
-  for pkg in ${BASE_PACKAGES} ; do
+
+  if [ ${sdk_target} == "nacl_sdk" ] ; then
+    echo -n > ${TMP_BASE_PKG_MIPS32}
+    TMP_PACKAGELIST=${TMP_BASE_PKG_MIPS32}
+    packages=$(cat ${BASE_PACKAGELIST_MIPS32})
+  elif [ ${sdk_target} == "chrome_sdk" ] ; then
+    echo -n > ${TMP_EXTRA_PKG_MIPS32}
+    TMP_PACKAGELIST=${TMP_EXTRA_PKG_MIPS32}
+    packages=$(cat ${EXTRA_PACKAGELIST_MIPS32})
+  else
+    Banner "ERROR: Packages for \"${sdk_taget}\" not defined."
+    exit -1
+  fi
+
+  for pkg in ${packages} ; do
     grep  -A 1 "${pkg}\$" ${TMP}/Packages_mipsel\
-      | egrep -o "pool/.*" >> ${TMP_PACKAGELIST_MIPS32}
+      | egrep -o "pool/.*" >> ${TMP_PACKAGELIST}
   done
 }
 
 InstallMissingLibraries() {
-  readonly DEP_FILES_NEEDED_MIPS32=$(cat ${TMP_PACKAGELIST_MIPS32})
+  local sdk_target=$1
+  local DEP_FILES_NEEDED_MIPS32=
+
+  if [ ${sdk_target} == "nacl_sdk" ] ; then
+    DEP_FILES_NEEDED_MIPS32=$(cat ${TMP_BASE_PKG_MIPS32})
+  elif [ ${sdk_target} == "chrome_sdk" ] ; then
+    DEP_FILES_NEEDED_MIPS32=$(cat ${TMP_EXTRA_PKG_MIPS32})
+  else
+    Banner "ERROR: Target \"${sdk_taget}\" not defined."
+    exit -1
+  fi
+
   for file in ${DEP_FILES_NEEDED_MIPS32} ; do
     local package="${TMP}/${file##*/}"
     Banner "installing ${file}"
@@ -552,10 +558,24 @@ FixLibs() {
   rm -f libresolv.so
   ln -s ../../lib/libresolv.so.2  libresolv.so
 
+  rm -f libglib-2.0.so
+  ln -s ../../lib/libglib-2.0.so.0 libglib-2.0.so
+
+  rm -f libudev.so
+  ln -s ../../lib/libudev.so.0 libudev.so
+
+  rm -f libcom_err.so
+  ln -s ../../lib/libcom_err.so.2 libcom_err.so
+
+  rm -f libXdmcp.so
+  ln -s ../../lib/libXdmcp.so.6 libXdmcp.so
+
+  rm -f libstdc++.so*
   ln -s ../../../mipsel-linux-gnu/lib/libstdc++.so.6.0.17 .
   ln -s libstdc++.so.6.0.17 libstdc++.so.6
   ln -s libstdc++.so.6.0.17 libstdc++.so
 
+  rm -f libgcc_s.so*
   ln -s ../../../mipsel-linux-gnu/lib/libgcc_s.so.1 .
   ln -s libgcc_s.so.1 libgcc_s.so
 }
@@ -619,17 +639,21 @@ if [[ $# -eq 0 ]] ; then
   Usage
   exit -1
 
-elif [[ $1 == "trusted_sdk" ]]; then
+elif [[ $1 == "nacl_sdk" || $1 == "chrome_sdk" ]] ; then
   mkdir -p ${TMP}
   SanityCheck
   ClearInstallDir
   ClearBuildDir
   DownloadOrCopyAndInstallToolchain
-  GeneratePackageLists
-  InstallMissingLibraries
-  InstallTrustedLinkerScript
-  BuildAndInstallQemu
-  CreateTarBall $1
+  GeneratePackageLists $1
+  InstallMissingLibraries $1
+  if [[ $1 == "nacl_sdk" ]] ; then
+    InstallTrustedLinkerScript
+    BuildAndInstallQemu
+    CreateTarBall $1
+  else
+    CreateTarBall ${CROSS_TARBALL}
+  fi
 
 else
   Usage
