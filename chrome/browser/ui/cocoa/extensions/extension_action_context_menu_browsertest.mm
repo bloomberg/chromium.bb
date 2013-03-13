@@ -124,7 +124,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BrowserAction) {
   [wc destroyBrowser];
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, RunInspectPopup) {
+IN_PROC_BROWSER_TEST_F(
+    ExtensionActionContextMenuTest, DISABLED_RunInspectPopup) {
   SetupPageAction();
   scoped_nsobject<ExtensionActionContextMenu> menu;
   menu.reset([[ExtensionActionContextMenu alloc] initWithExtension:extension_
