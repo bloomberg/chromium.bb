@@ -28,6 +28,7 @@ class ResourceEntry;
 namespace drive {
 
 class DriveDirectory;
+class DriveDirectoryProto;
 class DriveEntry;
 class DriveEntryProto;
 
@@ -286,7 +287,7 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   virtual void RemoveAll(const base::Closure& callback) OVERRIDE;
 
   // Serializes/Parses to/from string via proto classes.
-  void SerializeToString(std::string* serialized_proto) const;
+  void SerializeToString(std::string* serialized_proto);
   bool ParseFromString(const std::string& serialized_proto);
 
   // TODO(achuith): Remove all DriveEntry based methods. crbug.com/127856.
@@ -313,9 +314,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   DriveEntry* GetEntryByResourceId(const std::string& resource_id);
 
  private:
-  // TODO(hashimoto): Remove DriveDirectory to remove this friend declaration.
-  friend class DriveDirectory;  // For access for child_maps_.
-
   // Map of resource id strings to DriveEntry*.
   typedef std::map<std::string, DriveEntry*> ResourceMap;
 
@@ -324,13 +322,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
 
   // Map from resource id to ChildMap.
   typedef std::map<std::string, ChildMap> ChildMaps;
-
-  // TODO(hashimoto): Remove ChildMap related accessor methods.
-  // Convenient method to access a ChildMap.
-  // This method is not marked const in order to set up a ChildMap when needed.
-  const ChildMap& child_map(const std::string& resource_id) {
-    return child_maps_[resource_id];
-  }
 
   // Clears root_ and the resource map.
   void ClearRoot();
@@ -395,6 +386,16 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   void RemoveDirectoryChildren(DriveDirectory* directory);
   void RemoveDirectoryChildFiles(DriveDirectory* directory);
   void RemoveDirectoryChildDirectories(DriveDirectory* directory);
+
+  // Converts directory to proto, and vice versa.
+  void ProtoToDirectory(const DriveDirectoryProto& proto,
+                        DriveDirectory* directory);
+  void DirectoryToProto(DriveDirectory* directory,
+                        DriveDirectoryProto* proto);
+
+  // Converts the children as a vector of DriveEntryProto.
+  scoped_ptr<DriveEntryProtoVector> DirectoryChildrenToProtoVector(
+      DriveDirectory* directory);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

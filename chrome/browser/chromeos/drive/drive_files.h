@@ -5,24 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILES_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILES_H_
 
-#include <map>
-#include <set>
 #include <string>
-#include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 
 namespace drive {
 
 class DriveDirectory;
-class DriveResourceMetadata;
-
-// Used to read a directory from the file system.
-// If |error| is not DRIVE_FILE_OK, |entries| is set to NULL.
-// |entries| are contents, both files and directories, of the directory.
-typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 // Base class for representing files and directories in Drive virtual file
 // system.
@@ -93,13 +83,6 @@ class DriveDirectory : public DriveEntry {
  public:
   virtual ~DriveDirectory();
 
-  // Converts to/from proto.
-  void FromProto(const DriveDirectoryProto& proto);
-  void ToProto(DriveDirectoryProto* proto) const;
-
-  // Converts the children as a vector of DriveEntryProto.
-  scoped_ptr<DriveEntryProtoVector> ToProtoVector() const;
-
   // Returns the changestamp of this directory. See drive.proto for details.
   int64 changestamp() const;
   void set_changestamp(int64 changestamp);
@@ -108,11 +91,8 @@ class DriveDirectory : public DriveEntry {
   // TODO(satorux): Remove the friend statements. crbug.com/139649
   friend class DriveResourceMetadata;
 
-  explicit DriveDirectory(DriveResourceMetadata* resource_metadata);
+  DriveDirectory();
   virtual DriveDirectory* AsDriveDirectory() OVERRIDE;
-
-  // Weak pointer to DriveResourceMetadata.
-  DriveResourceMetadata* resource_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };
