@@ -633,6 +633,11 @@ size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {
   return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
 }
 
+unsigned RendererWebKitPlatformSupportImpl::audioHardwareOutputChannels() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread->GetAudioHardwareConfig()->GetOutputChannels();
+}
+
 // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
 WebAudioDevice*
 RendererWebKitPlatformSupportImpl::createAudioDevice(

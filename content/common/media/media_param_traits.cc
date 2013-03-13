@@ -42,8 +42,8 @@ bool ParamTraits<AudioParameters>::Read(const Message* m,
       !m->ReadInt(iter, &input_channels))
     return false;
   r->Reset(static_cast<AudioParameters::Format>(format),
-           static_cast<ChannelLayout>(channel_layout), input_channels,
-           sample_rate, bits_per_sample, frames_per_buffer);
+           static_cast<ChannelLayout>(channel_layout), channels,
+           input_channels, sample_rate, bits_per_sample, frames_per_buffer);
   if (!r->IsValid())
     return false;
   return true;

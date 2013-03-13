@@ -38,6 +38,16 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
 
+  static bool GetDefaultOutputDevice(AudioDeviceID* device);
+
+  static bool GetDefaultOutputChannels(int* channels,
+                                       int* channels_per_frame);
+
+  static bool GetDeviceChannels(AudioDeviceID device,
+                                AudioObjectPropertyScope scope,
+                                int* channels,
+                                int* channels_per_frame);
+
  protected:
   virtual ~AudioManagerMac();
 

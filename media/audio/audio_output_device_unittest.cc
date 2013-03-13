@@ -152,7 +152,7 @@ AudioOutputDeviceTest::AudioOutputDeviceTest()
       input_channels_(synchronized_io_ ? 2 : 0) {
   default_audio_parameters_.Reset(
       AudioParameters::AUDIO_PCM_LINEAR,
-      CHANNEL_LAYOUT_STEREO, input_channels_,
+      CHANNEL_LAYOUT_STEREO, 2, input_channels_,
       48000, 16, 1024);
 
   audio_device_ = new AudioOutputDevice(

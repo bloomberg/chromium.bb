@@ -11,6 +11,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/vector_math.h"
 
@@ -20,14 +21,11 @@ namespace media {
 // value for stereo -> mono and mono -> stereo mixes.
 static const float kEqualPowerScale = static_cast<float>(M_SQRT1_2);
 
-static int ValidateLayout(ChannelLayout layout) {
+static void ValidateLayout(ChannelLayout layout) {
   CHECK_NE(layout, CHANNEL_LAYOUT_NONE);
   CHECK_NE(layout, CHANNEL_LAYOUT_MAX);
-
-  // TODO(dalecurtis, crogers): We will eventually handle unsupported layouts by
-  // simply copying the input channels to the output channels, similar to if the
-  // user requests identical input and output layouts today.
   CHECK_NE(layout, CHANNEL_LAYOUT_UNSUPPORTED);
+  CHECK_NE(layout, CHANNEL_LAYOUT_DISCRETE);
 
   // Verify there's at least one channel.  Should always be true here by virtue
   // of not being one of the invalid layouts, but lets double check to be sure.
@@ -52,23 +50,59 @@ static int ValidateLayout(ChannelLayout layout) {
     DCHECK_EQ(layout, CHANNEL_LAYOUT_MONO);
   }
 
-  return channel_count;
+  return;
 }
 
-ChannelMixer::ChannelMixer(ChannelLayout input, ChannelLayout output)
-    : input_layout_(input),
-      output_layout_(output),
-      remapping_(false) {
+ChannelMixer::ChannelMixer(ChannelLayout input_layout,
+                           ChannelLayout output_layout) {
+  Initialize(input_layout,
+             ChannelLayoutToChannelCount(input_layout),
+             output_layout,
+             ChannelLayoutToChannelCount(output_layout));
+}
+
+ChannelMixer::ChannelMixer(
+    const AudioParameters& input, const AudioParameters& output) {
+  Initialize(input.channel_layout(),
+             input.channels(),
+             output.channel_layout(),
+             output.channels());
+}
+
+void ChannelMixer::Initialize(
+    ChannelLayout input_layout, int input_channels,
+    ChannelLayout output_layout, int output_channels) {
+  input_layout_ = input_layout;
+  output_layout_ = output_layout;
+  remapping_ = false;
+
   // Stereo down mix should never be the output layout.
   CHECK_NE(output_layout_, CHANNEL_LAYOUT_STEREO_DOWNMIX);
 
-  int input_channels = ValidateLayout(input_layout_);
-  int output_channels = ValidateLayout(output_layout_);
+  if (input_layout_ != CHANNEL_LAYOUT_DISCRETE)
+    ValidateLayout(input_layout_);
+  if (output_layout_ != CHANNEL_LAYOUT_DISCRETE)
+    ValidateLayout(output_layout_);
 
   // Size out the initial matrix.
   matrix_.reserve(output_channels);
   for (int output_ch = 0; output_ch < output_channels; ++output_ch)
     matrix_.push_back(std::vector<float>(input_channels, 0));
+
+  // First check for discrete case.
+  if (input_layout_ == CHANNEL_LAYOUT_DISCRETE ||
+      output_layout_ == CHANNEL_LAYOUT_DISCRETE) {
+    // If the number of input channels is more than output channels, then
+    // copy as many as we can then drop the remaining input channels.
+    // If the number of input channels is less than output channels, then
+    // copy them all, then zero out the remaining output channels.
+    int passthrough_channels = std::min(input_channels, output_channels);
+    for (int i = 0; i < passthrough_channels; ++i)
+      matrix_[i][i] = 1;
+
+    remapping_ = true;
+    return;
+  }
 
   // Route matching channels and figure out which ones aren't accounted for.
   for (Channels ch = LEFT; ch < CHANNELS_MAX;
@@ -102,7 +136,8 @@ ChannelMixer::ChannelMixer(ChannelLayout input, ChannelLayout output)
     // When down mixing to mono from stereo, we need to be careful of full scale
     // stereo mixes.  Scaling by 1 / sqrt(2) here will likely lead to clipping
     // so we use 1 / 2 instead.
-    float scale = (output == CHANNEL_LAYOUT_MONO && input_channels == 2) ?
+    float scale =
+        (output_layout_ == CHANNEL_LAYOUT_MONO && input_channels == 2) ?
         0.5 : kEqualPowerScale;
     Mix(LEFT, CENTER, scale);
     Mix(RIGHT, CENTER, scale);
@@ -111,7 +146,8 @@ ChannelMixer::ChannelMixer(ChannelLayout input, ChannelLayout output)
   // Mix center into front LR.
   if (IsUnaccounted(CENTER)) {
     // When up mixing from mono, just do a copy to front LR.
-    float scale = (input == CHANNEL_LAYOUT_MONO) ? 1 : kEqualPowerScale;
+    float scale =
+        (input_layout_ == CHANNEL_LAYOUT_MONO) ? 1 : kEqualPowerScale;
     MixWithoutAccounting(CENTER, LEFT, scale);
     Mix(CENTER, RIGHT, scale);
   }
@@ -128,7 +164,7 @@ ChannelMixer::ChannelMixer(ChannelLayout input, ChannelLayout output)
       // Mix back LR into back center.
       Mix(BACK_LEFT, BACK_CENTER, kEqualPowerScale);
       Mix(BACK_RIGHT, BACK_CENTER, kEqualPowerScale);
-    } else if (output > CHANNEL_LAYOUT_MONO) {
+    } else if (output_layout_ > CHANNEL_LAYOUT_MONO) {
       // Mix back LR into front LR.
       Mix(BACK_LEFT, LEFT, kEqualPowerScale);
       Mix(BACK_RIGHT, RIGHT, kEqualPowerScale);
@@ -151,7 +187,7 @@ ChannelMixer::ChannelMixer(ChannelLayout input, ChannelLayout output)
       // Mix side LR into back center.
       Mix(SIDE_LEFT, BACK_CENTER, kEqualPowerScale);
       Mix(SIDE_RIGHT, BACK_CENTER, kEqualPowerScale);
-    } else if (output > CHANNEL_LAYOUT_MONO) {
+    } else if (output_layout_ > CHANNEL_LAYOUT_MONO) {
       // Mix side LR into front LR.
       Mix(SIDE_LEFT, LEFT, kEqualPowerScale);
       Mix(SIDE_RIGHT, RIGHT, kEqualPowerScale);
@@ -172,7 +208,7 @@ ChannelMixer::ChannelMixer(ChannelLayout input, ChannelLayout output)
       // Mix back center into side LR.
       MixWithoutAccounting(BACK_CENTER, SIDE_LEFT, kEqualPowerScale);
       Mix(BACK_CENTER, SIDE_RIGHT, kEqualPowerScale);
-    } else if (output > CHANNEL_LAYOUT_MONO) {
+    } else if (output_layout_ > CHANNEL_LAYOUT_MONO) {
       // Mix back center into front LR.
       // TODO(dalecurtis): Not sure about these values?
       MixWithoutAccounting(BACK_CENTER, LEFT, kEqualPowerScale);

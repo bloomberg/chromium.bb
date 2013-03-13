@@ -4,50 +4,77 @@
 
 #include "media/base/audio_hardware_config.h"
 
+using base::AutoLock;
+using media::AudioParameters;
+
 namespace media {
 
 AudioHardwareConfig::AudioHardwareConfig(
-    int output_buffer_size, int output_sample_rate,
-    int input_sample_rate, ChannelLayout input_channel_layout)
-    : output_buffer_size_(output_buffer_size),
-      output_sample_rate_(output_sample_rate),
-      input_sample_rate_(input_sample_rate),
-      input_channel_layout_(input_channel_layout) {
+    const AudioParameters& input_params,
+    const AudioParameters& output_params)
+    : input_params_(input_params),
+      output_params_(output_params) {
 }
 
 AudioHardwareConfig::~AudioHardwareConfig() {}
 
-int AudioHardwareConfig::GetOutputBufferSize() {
-  base::AutoLock auto_lock(config_lock_);
-  return output_buffer_size_;
+int AudioHardwareConfig::GetOutputBufferSize() const {
+  AutoLock auto_lock(config_lock_);
+  return output_params_.frames_per_buffer();
 }
 
-int AudioHardwareConfig::GetOutputSampleRate() {
-  base::AutoLock auto_lock(config_lock_);
-  return output_sample_rate_;
+int AudioHardwareConfig::GetOutputSampleRate() const {
+  AutoLock auto_lock(config_lock_);
+  return output_params_.sample_rate();
 }
 
-int AudioHardwareConfig::GetInputSampleRate() {
-  base::AutoLock auto_lock(config_lock_);
-  return input_sample_rate_;
+ChannelLayout AudioHardwareConfig::GetOutputChannelLayout() const {
+  AutoLock auto_lock(config_lock_);
+  return output_params_.channel_layout();
 }
 
-ChannelLayout AudioHardwareConfig::GetInputChannelLayout() {
-  base::AutoLock auto_lock(config_lock_);
-  return input_channel_layout_;
+int AudioHardwareConfig::GetOutputChannels() const {
+  AutoLock auto_lock(config_lock_);
+  return output_params_.channels();
+}
+
+int AudioHardwareConfig::GetInputSampleRate() const {
+  AutoLock auto_lock(config_lock_);
+  return input_params_.sample_rate();
+}
+
+ChannelLayout AudioHardwareConfig::GetInputChannelLayout() const {
+  AutoLock auto_lock(config_lock_);
+  return input_params_.channel_layout();
+}
+
+int AudioHardwareConfig::GetInputChannels() const {
+  AutoLock auto_lock(config_lock_);
+  return input_params_.channels();
+}
+
+media::AudioParameters
+AudioHardwareConfig::GetInputConfig() const {
+  AutoLock auto_lock(config_lock_);
+  return input_params_;
+}
+
+media::AudioParameters
+AudioHardwareConfig::GetOutputConfig() const {
+  AutoLock auto_lock(config_lock_);
+  return output_params_;
 }
 
 void AudioHardwareConfig::UpdateInputConfig(
-    int sample_rate, media::ChannelLayout channel_layout) {
-  base::AutoLock auto_lock(config_lock_);
-  input_sample_rate_ = sample_rate;
-  input_channel_layout_ = channel_layout;
+    const AudioParameters& input_params) {
+  AutoLock auto_lock(config_lock_);
+  input_params_ = input_params;
 }
 
-void AudioHardwareConfig::UpdateOutputConfig(int buffer_size, int sample_rate) {
-  base::AutoLock auto_lock(config_lock_);
-  output_buffer_size_ = buffer_size;
-  output_sample_rate_ = sample_rate;
+void AudioHardwareConfig::UpdateOutputConfig(
+    const AudioParameters& output_params) {
+  AutoLock auto_lock(config_lock_);
+  output_params_ = output_params;
 }
 
 }  // namespace media

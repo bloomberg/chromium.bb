@@ -980,18 +980,13 @@ AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
 
 media::AudioHardwareConfig* RenderThreadImpl::GetAudioHardwareConfig() {
   if (!audio_hardware_config_) {
-    int output_buffer_size;
-    int output_sample_rate;
-    int input_sample_rate;
-    media::ChannelLayout input_channel_layout;
-
+    media::AudioParameters input_params;
+    media::AudioParameters output_params;
     Send(new ViewHostMsg_GetAudioHardwareConfig(
-        &output_buffer_size, &output_sample_rate,
-        &input_sample_rate, &input_channel_layout));
+        &input_params, &output_params));
 
     audio_hardware_config_.reset(new media::AudioHardwareConfig(
-        output_buffer_size, output_sample_rate, input_sample_rate,
-        input_channel_layout));
+        input_params, output_params));
     audio_message_filter_->SetAudioHardwareConfig(audio_hardware_config_.get());
   }
 

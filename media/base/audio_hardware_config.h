@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 
@@ -15,32 +16,36 @@ namespace media {
 // Provides thread safe access to the audio hardware configuration.
 class MEDIA_EXPORT AudioHardwareConfig {
  public:
-  AudioHardwareConfig(int output_buffer_size, int output_sample_rate,
-                      int input_sample_rate,
-                      ChannelLayout input_channel_layout);
+  AudioHardwareConfig(const media::AudioParameters& input_params,
+                      const media::AudioParameters& output_params);
   virtual ~AudioHardwareConfig();
 
   // Accessors for the currently cached hardware configuration.  Safe to call
   // from any thread.
-  int GetOutputBufferSize();
-  int GetOutputSampleRate();
-  int GetInputSampleRate();
-  ChannelLayout GetInputChannelLayout();
+  int GetOutputBufferSize() const;
+  int GetOutputSampleRate() const;
+  ChannelLayout GetOutputChannelLayout() const;
+  int GetOutputChannels() const;
+
+  int GetInputSampleRate() const;
+  ChannelLayout GetInputChannelLayout() const;
+  int GetInputChannels() const;
+
+  media::AudioParameters GetInputConfig() const;
+  media::AudioParameters GetOutputConfig() const;
 
   // Allows callers to update the cached values for either input or output.  The
   // values are paired under the assumption that these values will only be set
   // after an input or output device change respectively.  Safe to call from
   // any thread.
-  void UpdateInputConfig(int sample_rate, media::ChannelLayout channel_layout);
-  void UpdateOutputConfig(int buffer_size, int sample_rate);
+  void UpdateInputConfig(const media::AudioParameters& input_params);
+  void UpdateOutputConfig(const media::AudioParameters& output_params);
 
  private:
   // Cached values; access is protected by |config_lock_|.
-  base::Lock config_lock_;
-  int output_buffer_size_;
-  int output_sample_rate_;
-  int input_sample_rate_;
-  ChannelLayout input_channel_layout_;
+  mutable base::Lock config_lock_;
+  media::AudioParameters input_params_;
+  media::AudioParameters output_params_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHardwareConfig);
 };

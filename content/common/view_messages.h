@@ -31,6 +31,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1417,12 +1418,10 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_CreateFullscreenWidget,
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,
                             int /* routing_id */)
 
-// Asks the browser for the default audio hardware buffer-size.
-IPC_SYNC_MESSAGE_CONTROL0_4(ViewHostMsg_GetAudioHardwareConfig,
-                            int /* output_buffer_size */,
-                            int /* output_sample_rate */,
-                            int /* input_sample_rate */,
-                            media::ChannelLayout /* input_channel_layout */)
+// Asks the browser for the default audio hardware configuration.
+IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetAudioHardwareConfig,
+                            media::AudioParameters /* input parameters */,
+                            media::AudioParameters /* output parameters */)
 
 // Asks the browser for CPU usage of the renderer process in percents.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPUUsage,

@@ -6,6 +6,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -24,10 +25,20 @@ static const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 static const int kRenderViewId = 123;
 static const int kAnotherRenderViewId = 456;
 
+using media::AudioParameters;
+
 class AudioRendererMixerManagerTest : public testing::Test {
  public:
   AudioRendererMixerManagerTest()
-      : fake_config_(kBufferSize, kSampleRate, 0, media::CHANNEL_LAYOUT_NONE) {
+      : fake_config_(AudioParameters(), AudioParameters()) {
+    AudioParameters output_params(
+        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        media::CHANNEL_LAYOUT_STEREO,
+        kSampleRate,
+        16,
+        kBufferSize);
+    fake_config_.UpdateOutputConfig(output_params);
+
     manager_.reset(new AudioRendererMixerManager(&fake_config_));
 
     // We don't want to deal with instantiating a real AudioOutputDevice since

@@ -79,6 +79,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual bool isThreadedCompositingEnabled();
   virtual double audioHardwareSampleRate();
   virtual size_t audioHardwareBufferSize();
+  virtual unsigned audioHardwareOutputChannels();
 
   // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
   virtual WebKit::WebAudioDevice* createAudioDevice(

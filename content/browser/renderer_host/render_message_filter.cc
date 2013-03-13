@@ -33,6 +33,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
+#include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -778,22 +779,18 @@ void RenderMessageFilter::OnGetCPUUsage(int* cpu_usage) {
   *cpu_usage = cpu_usage_;
 }
 
-// TODO(xians): refactor the API to return input and output AudioParameters.
 void RenderMessageFilter::OnGetAudioHardwareConfig(
-    int* output_buffer_size, int* output_sample_rate, int* input_sample_rate,
-    media::ChannelLayout* input_channel_layout) {
+    media::AudioParameters* input_params,
+    media::AudioParameters* output_params) {
+  DCHECK(input_params);
+  DCHECK(output_params);
   media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
-  const media::AudioParameters output_parameters =
-      audio_manager->GetDefaultOutputStreamParameters();
-  *output_buffer_size = output_parameters.frames_per_buffer();
-  *output_sample_rate = output_parameters.sample_rate();
+  *output_params = audio_manager->GetDefaultOutputStreamParameters();
 
   // TODO(henrika): add support for all available input devices.
-  const media::AudioParameters input_parameters =
+  *input_params =
       audio_manager->GetInputStreamParameters(
           media::AudioManagerBase::kDefaultDeviceId);
-  *input_sample_rate = input_parameters.sample_rate();
-  *input_channel_layout = input_parameters.channel_layout();
 }
 
 void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {

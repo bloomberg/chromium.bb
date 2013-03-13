@@ -30,8 +30,7 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
              << " to " << output_params.channel_layout() << "; from "
              << input_params.channels() << " channels to "
              << output_params.channels() << " channels.";
-    channel_mixer_.reset(new ChannelMixer(
-        input_params.channel_layout(), output_params.channel_layout()));
+    channel_mixer_.reset(new ChannelMixer(input_params, output_params));
 
     // Pare off data as early as we can for efficiency.
     downmix_early_ = input_params.channels() > output_params.channels();

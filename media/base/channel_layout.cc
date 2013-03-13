@@ -39,6 +39,7 @@ static const int kLayoutToChannels[] = {
     7,   // CHANNEL_LAYOUT_7_0_FRONT
     8,   // CHANNEL_LAYOUT_7_1_WIDE_BACK
     8,   // CHANNEL_LAYOUT_OCTAGONAL
+    0,   // CHANNEL_LAYOUT_DISCRETE
 };
 
 // The channel orderings for each layout as specified by FFmpeg.  Each value
@@ -141,12 +142,40 @@ static const int kChannelOrderings[CHANNEL_LAYOUT_MAX][CHANNELS_MAX] = {
     // CHANNEL_LAYOUT_OCTAGONAL
     {  0  , 1  , 2  , -1  , 5  , 6  , -1    , -1    ,  7 , 3  ,  4 },
 
+    // CHANNEL_LAYOUT_DISCRETE
+    {  -1 , -1 , -1 , -1  , -1 , -1 , -1    , -1    , -1 , -1 , -1 },
+
     // FL | FR | FC | LFE | BL | BR | FLofC | FRofC | BC | SL | SR
 };
 
 int ChannelLayoutToChannelCount(ChannelLayout layout) {
   DCHECK_LT(static_cast<size_t>(layout), arraysize(kLayoutToChannels));
   return kLayoutToChannels[layout];
+}
+
+// Converts a channel count into a channel layout.
+ChannelLayout GuessChannelLayout(int channels) {
+  switch (channels) {
+    case 1:
+      return CHANNEL_LAYOUT_MONO;
+    case 2:
+      return CHANNEL_LAYOUT_STEREO;
+    case 3:
+      return CHANNEL_LAYOUT_SURROUND;
+    case 4:
+      return CHANNEL_LAYOUT_QUAD;
+    case 5:
+      return CHANNEL_LAYOUT_5_0;
+    case 6:
+      return CHANNEL_LAYOUT_5_1;
+    case 7:
+      return CHANNEL_LAYOUT_6_1;
+    case 8:
+      return CHANNEL_LAYOUT_7_1;
+    default:
+      DVLOG(1) << "Unsupported channel count: " << channels;
+  }
+  return CHANNEL_LAYOUT_UNSUPPORTED;
 }
 
 int ChannelOrder(ChannelLayout layout, Channels channel) {

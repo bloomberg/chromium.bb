@@ -4,6 +4,7 @@
 
 #include "media/audio/audio_parameters.h"
 
+#include "base/logging.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -44,16 +45,19 @@ AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
 }
 
 void AudioParameters::Reset(Format format, ChannelLayout channel_layout,
-                            int input_channels,
+                            int channels, int input_channels,
                             int sample_rate, int bits_per_sample,
                             int frames_per_buffer) {
+  if (channel_layout != CHANNEL_LAYOUT_DISCRETE)
+    DCHECK_EQ(channels, ChannelLayoutToChannelCount(channel_layout));
+
   format_ = format;
   channel_layout_ = channel_layout;
+  channels_ = channels;
   input_channels_ = input_channels;
   sample_rate_ = sample_rate;
   bits_per_sample_ = bits_per_sample;
   frames_per_buffer_ = frames_per_buffer;
-  channels_ = ChannelLayoutToChannelCount(channel_layout);
 }
 
 bool AudioParameters::IsValid() const {
@@ -83,6 +87,11 @@ int AudioParameters::GetBytesPerSecond() const {
 
 int AudioParameters::GetBytesPerFrame() const {
   return channels_ * bits_per_sample_ / 8;
+}
+
+void AudioParameters::SetDiscreteChannels(int channels) {
+  channel_layout_ = CHANNEL_LAYOUT_DISCRETE;
+  channels_ = channels;
 }
 
 }  // namespace media

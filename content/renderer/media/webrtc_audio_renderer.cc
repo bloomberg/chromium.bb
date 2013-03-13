@@ -158,8 +158,10 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
     return false;
   }
 
+  int channels = ChannelLayoutToChannelCount(channel_layout);
   source_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      channel_layout, 0, sample_rate, 16, buffer_size);
+                      channel_layout, channels, 0,
+                      sample_rate, 16, buffer_size);
 
   // Set up audio parameters for the sink, i.e., the native audio output stream.
   // We strive to open up using native parameters to achieve best possible
@@ -171,7 +173,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   buffer_size = hardware_config->GetOutputBufferSize();
   sink_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                    channel_layout, 0, sample_rate, 16, buffer_size);
+                    channel_layout, channels, 0, sample_rate, 16, buffer_size);
 
   // Create a FIFO if re-buffering is required to match the source input with
   // the sink request. The source acts as provider here and the sink as

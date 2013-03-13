@@ -18,6 +18,7 @@
 #include "third_party/webrtc/voice_engine/include/voe_file.h"
 #include "third_party/webrtc/voice_engine/include/voe_network.h"
 
+using media::AudioParameters;
 using testing::_;
 using testing::AnyNumber;
 using testing::InvokeWithoutArgs;
@@ -32,14 +33,13 @@ const int kRenderViewId = 1;
 
 scoped_ptr<media::AudioHardwareConfig> CreateRealHardwareConfig(
     media::AudioManager* manager) {
-  const media::AudioParameters output_parameters =
+  const AudioParameters output_parameters =
       manager->GetDefaultOutputStreamParameters();
-  const media::AudioParameters input_parameters =
+  const AudioParameters input_parameters =
       manager->GetInputStreamParameters(
           media::AudioManagerBase::kDefaultDeviceId);
   return make_scoped_ptr(new media::AudioHardwareConfig(
-      output_parameters.frames_per_buffer(), output_parameters.sample_rate(),
-      input_parameters.sample_rate(), input_parameters.channel_layout()));
+      input_parameters, output_parameters));
 }
 
 // Return true if at least one element in the array matches |value|.
@@ -218,8 +218,21 @@ TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
-  media::AudioHardwareConfig audio_config(
-      480, 48000, 48000, media::CHANNEL_LAYOUT_MONO);
+  AudioParameters input_params(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::CHANNEL_LAYOUT_MONO,
+      48000,
+      16,
+      480);
+
+  AudioParameters output_params(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::CHANNEL_LAYOUT_STEREO,
+      48000,
+      16,
+      480);
+
+  media::AudioHardwareConfig audio_config(input_params, output_params);
   SetAudioHardwareConfig(&audio_config);
 
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(

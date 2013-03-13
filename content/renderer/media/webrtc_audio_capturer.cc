@@ -85,9 +85,9 @@ class WebRtcAudioCapturer::ConfiguredBuffer :
 
     // bits_per_sample is always 16 for now.
     int bits_per_sample = 16;
-
-    params_.Reset(format, channel_layout, 0, sample_rate, bits_per_sample,
-                  buffer_size);
+    int channels = ChannelLayoutToChannelCount(channel_layout);
+    params_.Reset(format, channel_layout, channels, 0,
+        sample_rate, bits_per_sample, buffer_size);
     buffer_.reset(new int16[params_.frames_per_buffer() * params_.channels()]);
 
     return true;

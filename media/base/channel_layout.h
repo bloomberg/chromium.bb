@@ -96,6 +96,9 @@ enum ChannelLayout {
   // Front L, Front R, Front C, Side L, Side R, Rear C, Back L, Back R.
   CHANNEL_LAYOUT_OCTAGONAL = 28,
 
+  // Channels are not explicitly mapped to speakers.
+  CHANNEL_LAYOUT_DISCRETE = 29,
+
   // Total number of layouts.
   CHANNEL_LAYOUT_MAX  // Must always be last!
 };
@@ -122,6 +125,10 @@ MEDIA_EXPORT int ChannelOrder(ChannelLayout layout, Channels channel);
 
 // Returns the number of channels in a given ChannelLayout.
 MEDIA_EXPORT int ChannelLayoutToChannelCount(ChannelLayout layout);
+
+// Given the number of channels, return the best layout,
+// or return CHANNEL_LAYOUT_UNSUPPORTED if there is no good match.
+MEDIA_EXPORT ChannelLayout GuessChannelLayout(int channels);
 
 }  // namespace media
 

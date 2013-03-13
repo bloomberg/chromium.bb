@@ -232,7 +232,8 @@ void AudioInputRendererHost::OnCreateStream(
   if (media_stream_manager_->audio_input_device_manager()->
       ShouldUseFakeDevice()) {
     audio_params.Reset(media::AudioParameters::AUDIO_FAKE,
-                       params.channel_layout(), 0, params.sample_rate(),
+                       params.channel_layout(), params.channels(), 0,
+                       params.sample_rate(),
                        params.bits_per_sample(), params.frames_per_buffer());
   }
 

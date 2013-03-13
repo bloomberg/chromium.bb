@@ -25,6 +25,11 @@ TEST(ChannelMixerTest, ConstructAllPossibleLayouts) {
     for (ChannelLayout output_layout = CHANNEL_LAYOUT_MONO;
          output_layout < CHANNEL_LAYOUT_STEREO_DOWNMIX;
          output_layout = static_cast<ChannelLayout>(output_layout + 1)) {
+      // DISCRETE can't be tested here based on the current approach.
+      if (input_layout == CHANNEL_LAYOUT_DISCRETE ||
+          output_layout == CHANNEL_LAYOUT_DISCRETE)
+        continue;
+
       SCOPED_TRACE(base::StringPrintf(
           "Input Layout: %d, Output Layout: %d", input_layout, output_layout));
       ChannelMixer mixer(input_layout, output_layout);

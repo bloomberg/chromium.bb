@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
+#include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
@@ -27,6 +28,7 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/audio_hardware_config.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,6 +42,8 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+using media::AudioParameters;
+using media::ChannelLayout;
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Return;
@@ -262,16 +266,10 @@ void WebRTCAudioDeviceTest::DestroyChannel() {
 }
 
 void WebRTCAudioDeviceTest::OnGetAudioHardwareConfig(
-    int* output_buffer_size, int* output_sample_rate, int* input_sample_rate,
-    media::ChannelLayout* input_channel_layout) {
+    AudioParameters* input_params, AudioParameters* output_params) {
   ASSERT_TRUE(audio_hardware_config_);
-
-  *output_buffer_size = audio_hardware_config_->GetOutputBufferSize();
-  *output_sample_rate = audio_hardware_config_->GetOutputSampleRate();
-
-  // TODO(henrika): add support for all available input devices.
-  *input_sample_rate = audio_hardware_config_->GetInputSampleRate();
-  *input_channel_layout = audio_hardware_config_->GetInputChannelLayout();
+  *input_params = audio_hardware_config_->GetInputConfig();
+  *output_params = audio_hardware_config_->GetOutputConfig();
 }
 
 // IPC::Listener implementation.
