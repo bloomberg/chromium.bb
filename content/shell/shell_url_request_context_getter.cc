@@ -141,7 +141,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     network_session_params.http_auth_handler_factory =
         url_request_context_->http_auth_handler_factory();
     network_session_params.network_delegate =
-        url_request_context_->network_delegate();
+        network_delegate_.get();
     network_session_params.http_server_properties =
         url_request_context_->http_server_properties();
     network_session_params.ignore_certificate_errors =
