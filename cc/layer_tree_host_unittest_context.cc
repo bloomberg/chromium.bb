@@ -949,7 +949,7 @@ class LayerTreeHostContextTestDontUseLostResources :
     io_surface_->SetBounds(gfx::Size(10, 10));
     io_surface_->SetAnchorPoint(gfx::PointF());
     io_surface_->SetIsDrawable(true);
-    io_surface_->setIOSurfaceProperties(1, gfx::Size(10, 10));
+    io_surface_->SetIOSurfaceProperties(1, gfx::Size(10, 10));
     root_->AddChild(io_surface_);
 
     // Enable the hud.

@@ -8,44 +8,36 @@
 
 namespace cc {
 
-scoped_refptr<IOSurfaceLayer> IOSurfaceLayer::Create()
-{
-    return make_scoped_refptr(new IOSurfaceLayer());
+scoped_refptr<IOSurfaceLayer> IOSurfaceLayer::Create() {
+  return make_scoped_refptr(new IOSurfaceLayer());
 }
 
-IOSurfaceLayer::IOSurfaceLayer()
-    : Layer()
-    , m_ioSurfaceId(0)
-{
+IOSurfaceLayer::IOSurfaceLayer() : Layer(), io_surface_id_(0) {}
+
+IOSurfaceLayer::~IOSurfaceLayer() {}
+
+void IOSurfaceLayer::SetIOSurfaceProperties(uint32_t io_surface_id,
+                                            gfx::Size size) {
+  io_surface_id_ = io_surface_id;
+  io_surface_size_ = size;
+  SetNeedsCommit();
 }
 
-IOSurfaceLayer::~IOSurfaceLayer()
-{
+scoped_ptr<LayerImpl> IOSurfaceLayer::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return IOSurfaceLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-void IOSurfaceLayer::setIOSurfaceProperties(uint32_t ioSurfaceId, const gfx::Size& size)
-{
-    m_ioSurfaceId = ioSurfaceId;
-    m_ioSurfaceSize = size;
-    SetNeedsCommit();
+bool IOSurfaceLayer::DrawsContent() const {
+  return io_surface_id_ && Layer::DrawsContent();
 }
 
-scoped_ptr<LayerImpl> IOSurfaceLayer::CreateLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return IOSurfaceLayerImpl::Create(treeImpl, layer_id_).PassAs<LayerImpl>();
-}
+void IOSurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
+  Layer::PushPropertiesTo(layer);
 
-bool IOSurfaceLayer::DrawsContent() const
-{
-    return m_ioSurfaceId && Layer::DrawsContent();
-}
-
-void IOSurfaceLayer::PushPropertiesTo(LayerImpl* layer)
-{
-    Layer::PushPropertiesTo(layer);
-
-    IOSurfaceLayerImpl* ioSurfaceLayer = static_cast<IOSurfaceLayerImpl*>(layer);
-    ioSurfaceLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
+  IOSurfaceLayerImpl* io_surface_layer =
+      static_cast<IOSurfaceLayerImpl*>(layer);
+  io_surface_layer->setIOSurfaceProperties(io_surface_id_, io_surface_size_);
 }
 
 }  // namespace cc

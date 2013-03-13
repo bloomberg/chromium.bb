@@ -786,7 +786,7 @@ void WebPluginImpl::AcceleratedPluginSwappedIOSurface() {
         web_layer_.reset(new WebKit::WebLayerImpl(io_surface_layer_));
         container_->setWebLayer(web_layer_.get());
       }
-      io_surface_layer_->setIOSurfaceProperties(
+      io_surface_layer_->SetIOSurfaceProperties(
           next_io_surface_id_,
           gfx::Size(next_io_surface_width_, next_io_surface_height_));
     } else {

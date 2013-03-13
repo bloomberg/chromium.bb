@@ -11,23 +11,24 @@
 namespace cc {
 
 class CC_EXPORT IOSurfaceLayer : public Layer {
-public:
-    static scoped_refptr<IOSurfaceLayer> Create();
+ public:
+  static scoped_refptr<IOSurfaceLayer> Create();
 
-    void setIOSurfaceProperties(uint32_t ioSurfaceId, const gfx::Size&);
+  void SetIOSurfaceProperties(uint32_t io_surface_id, gfx::Size size);
 
-    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
-    virtual bool DrawsContent() const OVERRIDE;
-    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+  virtual bool DrawsContent() const OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
-protected:
-    IOSurfaceLayer();
+ protected:
+  IOSurfaceLayer();
 
-private:
-    virtual ~IOSurfaceLayer();
+ private:
+  virtual ~IOSurfaceLayer();
 
-    uint32_t m_ioSurfaceId;
-    gfx::Size m_ioSurfaceSize;
+  uint32_t io_surface_id_;
+  gfx::Size io_surface_size_;
 };
 
 }
