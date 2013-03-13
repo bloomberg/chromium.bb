@@ -394,10 +394,6 @@
             '../../plugins/ppapi/ppapi_unittest.h',
             '../../plugins/ppapi/quota_file_io_unittest.cc',
             '../../user_agent/user_agent_unittest.cc',
-            '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
-            '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
-            'image_decoder_unittest.cc',
-            'image_decoder_unittest.h',
             'mock_spellcheck_unittest.cc',
             'plugin_tests.cc',
             'run_all_tests.cc',
@@ -440,17 +436,6 @@
               'dependencies': [
                 'test_shell',
                ],
-              'sources!': [
-                # Disable the image decoder tests because we use CoreGraphics
-                # code on mac and these tests are for the Skia image-decoders.
-                '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
-                '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
-                '../webcore_unit_tests/XBMImageDecoder_unittest.cpp',
-                'image_decoder_unittest.cc',
-                'image_decoder_unittest.h',
-              ],
-              'sources': [
-              ],
             }],
             ['OS=="win"', {
               # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/files/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "content/test/image_decoder_test.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImageDecoder.h"
-#include "webkit/tools/test_shell/image_decoder_unittest.h"
 
 using WebKit::WebImageDecoder;
 
@@ -14,7 +14,7 @@ class ICOImageDecoderTest : public ImageDecoderTest {
   ICOImageDecoderTest() : ImageDecoderTest("ico") { }
 
  protected:
-   virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const OVERRIDE {
+  virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const OVERRIDE {
      return new WebKit::WebImageDecoder(WebKit::WebImageDecoder::TypeICO);
   }
 };
@@ -24,6 +24,8 @@ TEST_F(ICOImageDecoderTest, Decoding) {
 }
 
 TEST_F(ICOImageDecoderTest, ImageNonZeroFrameIndex) {
+  if (data_dir_.empty())
+    return;
   // Test that the decoder decodes multiple sizes of icons which have them.
   // Load an icon that has both favicon-size and larger entries.
   base::FilePath multisize_icon_path(data_dir_.AppendASCII("yahoo.ico"));

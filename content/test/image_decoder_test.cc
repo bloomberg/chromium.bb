@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/tools/test_shell/image_decoder_unittest.h"
+#include "content/test/image_decoder_test.h"
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -108,7 +108,14 @@ void ImageDecoderTest::SetUp() {
   data_dir_ = data_dir.AppendASCII("webkit").
                        AppendASCII("data").
                        AppendASCII(format_ + "_decoder");
-  ASSERT_TRUE(file_util::PathExists(data_dir_)) << data_dir_.value();
+  if (!file_util::PathExists(data_dir_)) {
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    LOG(INFO) << test_info->name() <<
+                 " not running because test data wasn't found.";
+    data_dir_.clear();
+    return;
+  }
 }
 
 std::vector<base::FilePath> ImageDecoderTest::GetImageFiles() const {
@@ -136,7 +143,7 @@ std::vector<base::FilePath> ImageDecoderTest::GetImageFiles() const {
 }
 
 bool ImageDecoderTest::ShouldImageFail(const base::FilePath& path) const {
-  static const base::FilePath::StringType kBadSuffix(FILE_PATH_LITERAL(".bad."));
+  const base::FilePath::StringType kBadSuffix(FILE_PATH_LITERAL(".bad."));
   return (path.value().length() > (kBadSuffix.length() + format_.length()) &&
           !path.value().compare(path.value().length() - format_.length() -
                                     kBadSuffix.length(),
@@ -146,6 +153,8 @@ bool ImageDecoderTest::ShouldImageFail(const base::FilePath& path) const {
 void ImageDecoderTest::TestDecoding(
     ImageDecoderTestFileSelection file_selection,
     const int64 threshold) {
+  if (data_dir_.empty())
+    return;
   const std::vector<base::FilePath> image_files(GetImageFiles());
   for (std::vector<base::FilePath>::const_iterator i = image_files.begin();
        i != image_files.end(); ++i) {
