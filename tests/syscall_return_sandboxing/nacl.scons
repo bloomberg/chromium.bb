@@ -18,6 +18,8 @@ def GetAssemblerFile(env):
     return 'sandboxed_x86_64.S'
   elif env.Bit('build_arm'):
     return 'sandboxed_arm.S'
+  elif env.Bit('build_mips32'):
+    return 'sandboxed_mips.S'
   else:
     raise Exception('unknown architecture')
 

@@ -18,6 +18,11 @@ if env.Bit('pnacl_generate_pexe'):
 if env.Bit('built_elsewhere'):
   Return()
 
+# This test is disabled for MIPS because we do not have a MIPS-enabled nacl-gcc
+# to test PNaCl against.
+if env.Bit('target_mips32'):
+  Return()
+
 env_pnacl_cc = env.Clone()
 env_pnacl_cc.PNaClForceNative()
 # for ppapi headers which include other ppapi headers

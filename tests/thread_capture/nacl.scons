@@ -31,6 +31,9 @@ if trusted_env.Bit('linux') or trusted_env.Bit('mac'):
   elif env.Bit('target_arm'):
     test_injection_files += [
       'arch/arm/thread_capture_test_injection.c']
+  elif env.Bit('target_mips32'):
+     test_injection_files += [
+      'arch/mips/thread_capture_test_injection.c']
   else:
     raise Exception('Unsupported target')
 

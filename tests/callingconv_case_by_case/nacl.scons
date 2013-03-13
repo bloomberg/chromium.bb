@@ -9,6 +9,11 @@ Import('env')
 if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
+# This test is disabled for MIPS because we do not have a MIPS-enabled nacl-gcc
+# to test PNaCl against.
+if env.Bit('target_mips32'):
+  Return()
+
 # Case-by-case calling Convention Test for PNaCl and nacl-gcc compatibility.
 
 # We make 4 modules.

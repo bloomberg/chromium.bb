@@ -42,9 +42,9 @@ run.py options:
                          with NACL_EXE_STDOUT/STDERR env vars)
   --more                 Display sel_ldr usage
 
-  -arch <arch> | -m32 | -m64 | -marm
+  -arch <arch> | -m32 | -m64 | -marm | -mmips32
                          Specify architecture for PNaCl translation
-                         (arch is one of: x86-32, x86-64 or arm)
+                         (arch is one of: x86-32, x86-64, arm or mips32)
 '''
   print info % name
   print '-' * 80
@@ -71,7 +71,11 @@ def SetupEnvironment():
   # QEMU
   env.arm_root = os.path.join(env.nacl_root,
                               'toolchain', 'linux_arm-trusted')
-  env.qemu = os.path.join(env.arm_root, 'run_under_qemu_arm')
+  env.qemu_arm = os.path.join(env.arm_root, 'run_under_qemu_arm')
+
+  env.mips32_root = os.path.join(env.nacl_root,
+                                 'toolchain', 'linux_mips-trusted')
+  env.qemu_mips32 = os.path.join(env.mips32_root, 'run_under_qemu_mips32')
 
   # Path to 'readelf'
   env.readelf = FindReadElf()
@@ -97,7 +101,7 @@ def SetupEnvironment():
   # Don't print anything
   env.quiet = False
 
-  # Arch (x86-32, x86-64, arm)
+  # Arch (x86-32, x86-64, arm, mips32)
   env.arch = None
 
   # Trace in QEMU
@@ -221,7 +225,13 @@ def main(argv):
 def RunSelLdr(args):
   prefix = []
   if GetBuildArch().find('arm') == -1 and env.arch == 'arm':
-    prefix = [ env.qemu, '-cpu', 'cortex-a8']
+    prefix = [ env.qemu_arm, '-cpu', 'cortex-a8']
+    if env.trace:
+      prefix += ['-d', 'in_asm,op,exec,cpu']
+    args = ['-Q'] + args
+
+  if GetBuildArch().find('mips32') == -1 and env.arch == 'mips32':
+    prefix = [env.qemu_mips32]
     if env.trace:
       prefix += ['-d', 'in_asm,op,exec,cpu']
     args = ['-Q'] + args
@@ -431,6 +441,8 @@ def ArgSplit(argv):
       env.arch = 'x86-64'
     elif arg == '-marm':
       env.arch = 'arm'
+    elif arg == '-mmips32':
+      env.arch = 'mips32'
     elif arg == '-arch':
       if i+1 < len(argv):
         env.arch = FixArch(argv[i+1])
@@ -471,6 +483,7 @@ def FixArch(arch):
   x86_32 = 'x86-32 x86_32 x8632 i386 i686 ia32'.split()
   x86_64 = 'amd64 x86_64 x86-64 x8664'.split()
   arm = 'arm armv7'.split()
+  mips32 = 'mips mips32'.split()
 
   if arch in x86_32:
     return 'x86-32'
@@ -480,6 +493,9 @@ def FixArch(arch):
 
   if arch in arm:
     return 'arm'
+
+  if arch in mips32:
+    return 'mips32'
 
   Fatal('Unrecognized arch "%s"!', arch)
 
@@ -492,7 +508,7 @@ def Fatal(msg, *args):
 
 def Usage2():
   # Try to find any sel_ldr that already exists
-  for arch in ['x86-32','x86-64','arm']:
+  for arch in ['x86-32','x86-64','arm','mips32']:
     SetupArch(arch, allow_build = False)
     if env.sel_ldr:
       break
@@ -554,6 +570,8 @@ def ReadELFInfo(f):
     arch = 'x86-64'
   elif 'ARM' in machine_line:
     arch = 'arm'
+  elif 'MIPS' in machine_line:
+    arch = 'mips32'
   else:
     Fatal('%s: Unknown machine type', f)
 

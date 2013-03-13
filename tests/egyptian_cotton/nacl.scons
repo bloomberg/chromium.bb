@@ -74,6 +74,10 @@ if env.Bit('target_arm'):
   # but not enough to take too long.
   high_thread_count_nthreads = 7000
   platform_limits_known = True
+elif env.Bit('target_mips32'):
+  # Based on MIPS Malta 74Kc board.
+  high_thread_count_nthreads = 3500
+  platform_limits_known = True
 elif env.Bit('target_x86'):
   trusted_env = env.get('TRUSTED_ENV')
   if trusted_env:

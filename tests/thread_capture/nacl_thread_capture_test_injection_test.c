@@ -44,6 +44,8 @@ void NaClSignalHandler(int signum, siginfo_t *info, void *other) {
 #  endif
 # elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   faulting_pc = ucp->uc_mcontext.arm_pc;
+# elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  faulting_pc = ucp->uc_mcontext.pc;
 # else
 #  error "how do i get the PC on this cpu architecture?"
 # endif
