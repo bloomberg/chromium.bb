@@ -51,6 +51,7 @@ base::Thread* g_compositor_thread = NULL;
 
 bool g_test_compositor_enabled = false;
 
+ui::ContextFactory* g_implicit_factory = NULL;
 ui::ContextFactory* g_context_factory = NULL;
 
 const int kCompositorLockTimeoutMs = 67;
@@ -73,34 +74,30 @@ class PendingSwap {
   DISALLOW_COPY_AND_ASSIGN(PendingSwap);
 };
 
-class NullContextProvider : public cc::ContextProvider {
- public:
-  virtual bool InitializeOnMainThread() OVERRIDE { return false; }
-  virtual bool BindToCurrentThread() OVERRIDE { return false; }
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE { return NULL; }
-  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
-  virtual void VerifyContexts() OVERRIDE {}
-  virtual bool DestroyedOnMainThread() OVERRIDE { return false; }
-
- protected:
-  virtual ~NullContextProvider() {}
-};
-
-struct MainThreadNullContextProvider {
-  scoped_refptr<NullContextProvider> provider;
-
-  static MainThreadNullContextProvider* GetInstance() {
-    return Singleton<MainThreadNullContextProvider>::get();
+void SetupImplicitFactory() {
+  // We leak the implicit factory so that we don't race with the tear down of
+  // the gl_bindings.
+  DCHECK(!g_context_factory);
+  DCHECK(!g_implicit_factory);
+  if (g_test_compositor_enabled) {
+    g_implicit_factory = new ui::TestContextFactory;
+  } else {
+    DVLOG(1) << "Using DefaultContextFactory";
+    scoped_ptr<ui::DefaultContextFactory> instance(
+        new ui::DefaultContextFactory());
+    if (instance->Initialize())
+      g_implicit_factory = instance.release();
   }
-};
+  g_context_factory = g_implicit_factory;
+}
 
-struct CompositorThreadNullContextProvider {
-  scoped_refptr<NullContextProvider> provider;
-
-  static CompositorThreadNullContextProvider* GetInstance() {
-    return Singleton<CompositorThreadNullContextProvider>::get();
-  }
-};
+void ResetImplicitFactory() {
+  if (!g_implicit_factory || g_context_factory != g_implicit_factory)
+    return;
+  delete g_implicit_factory;
+  g_implicit_factory = NULL;
+  g_context_factory = NULL;
+}
 
 }  // namespace
 
@@ -108,15 +105,8 @@ namespace ui {
 
 // static
 ContextFactory* ContextFactory::GetInstance() {
-  // We leak the shared resources so that we don't race with
-  // the tear down of the gl_bindings.
-  if (!g_context_factory) {
-    DVLOG(1) << "Using DefaultSharedResource";
-    scoped_ptr<DefaultContextFactory> instance(
-        new DefaultContextFactory());
-    if (instance->Initialize())
-      g_context_factory = instance.release();
-  }
+  if (!g_context_factory)
+    SetupImplicitFactory();
   return g_context_factory;
 }
 
@@ -125,39 +115,9 @@ void ContextFactory::SetInstance(ContextFactory* instance) {
   g_context_factory = instance;
 }
 
-DefaultContextFactory::DefaultContextFactory() {
-}
-
-DefaultContextFactory::~DefaultContextFactory() {
-}
-
-bool DefaultContextFactory::Initialize() {
-  // The following line of code exists soley to disable IO restrictions
-  // on this thread long enough to perform the GL bindings.
-  // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  if (!gfx::GLSurface::InitializeOneOff() ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
-    LOG(ERROR) << "Could not load the GL bindings";
-    return false;
-  }
-  return true;
-}
-
-cc::OutputSurface* DefaultContextFactory::CreateOutputSurface(
-    Compositor* compositor) {
-  return new cc::OutputSurface(
-      make_scoped_ptr(CreateContextCommon(compositor, false)));
-}
-
-WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
-  return CreateContextCommon(NULL, true);
-}
-
-class DefaultContextFactory::DefaultContextProvider
-    : public cc::ContextProvider {
+class ContextProviderFromContextFactory : public cc::ContextProvider {
  public:
-  DefaultContextProvider(ContextFactory* factory)
+  explicit ContextProviderFromContextFactory(ContextFactory* factory)
       : factory_(factory),
         destroyed_(false) {}
 
@@ -195,7 +155,7 @@ class DefaultContextFactory::DefaultContextProvider
   }
 
  protected:
-  virtual ~DefaultContextProvider() {}
+  virtual ~ContextProviderFromContextFactory() {}
 
  private:
   ContextFactory* factory_;
@@ -205,11 +165,37 @@ class DefaultContextFactory::DefaultContextProvider
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 };
 
+DefaultContextFactory::DefaultContextFactory() {
+}
+
+DefaultContextFactory::~DefaultContextFactory() {
+}
+
+bool DefaultContextFactory::Initialize() {
+  if (!gfx::GLSurface::InitializeOneOff() ||
+      gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
+    LOG(ERROR) << "Could not load the GL bindings";
+    return false;
+  }
+  return true;
+}
+
+cc::OutputSurface* DefaultContextFactory::CreateOutputSurface(
+    Compositor* compositor) {
+  return new cc::OutputSurface(
+      make_scoped_ptr(CreateContextCommon(compositor, false)));
+}
+
+WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
+  return CreateContextCommon(NULL, true);
+}
+
 scoped_refptr<cc::ContextProvider>
 DefaultContextFactory::OffscreenContextProviderForMainThread() {
   if (!offscreen_contexts_main_thread_ ||
       !offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_main_thread_ = new DefaultContextProvider(this);
+    offscreen_contexts_main_thread_ =
+        new ContextProviderFromContextFactory(this);
   }
   return offscreen_contexts_main_thread_;
 }
@@ -218,7 +204,8 @@ scoped_refptr<cc::ContextProvider>
 DefaultContextFactory::OffscreenContextProviderForCompositorThread() {
   if (!offscreen_contexts_compositor_thread_ ||
       !offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_compositor_thread_ = new DefaultContextProvider(this);
+    offscreen_contexts_compositor_thread_ =
+        new ContextProviderFromContextFactory(this);
   }
   return offscreen_contexts_compositor_thread_;
 }
@@ -240,7 +227,7 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
       webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
           attrs, false) :
       webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
-          attrs, compositor->widget(), share_group_.get());
+          attrs, compositor->widget(), NULL);
   if (!context)
     return NULL;
 
@@ -253,6 +240,40 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
     gl_context->ReleaseCurrent(NULL);
   }
   return context;
+}
+
+TestContextFactory::TestContextFactory() {
+  offscreen_contexts_main_thread_ =
+      new ContextProviderFromContextFactory(this);
+  offscreen_contexts_compositor_thread_ =
+      new ContextProviderFromContextFactory(this);
+}
+
+TestContextFactory::~TestContextFactory() {
+}
+
+cc::OutputSurface* TestContextFactory::CreateOutputSurface(
+    Compositor* compositor) {
+  return new cc::OutputSurface(make_scoped_ptr(CreateOffscreenContext()));
+}
+
+WebKit::WebGraphicsContext3D* TestContextFactory::CreateOffscreenContext() {
+  ui::TestWebGraphicsContext3D* context = new ui::TestWebGraphicsContext3D;
+  context->Initialize();
+  return context;
+}
+
+scoped_refptr<cc::ContextProvider>
+TestContextFactory::OffscreenContextProviderForMainThread() {
+  return offscreen_contexts_main_thread_;
+}
+
+scoped_refptr<cc::ContextProvider>
+TestContextFactory::OffscreenContextProviderForCompositorThread() {
+  return offscreen_contexts_compositor_thread_;
+}
+
+void TestContextFactory::RemoveCompositor(Compositor* compositor) {
 }
 
 Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
@@ -406,8 +427,7 @@ Compositor::~Compositor() {
   // down any contexts that the |host_| may rely upon.
   host_.reset();
 
-  if (!g_test_compositor_enabled)
-    ContextFactory::GetInstance()->RemoveCompositor(this);
+  ContextFactory::GetInstance()->RemoveCompositor(this);
 }
 
 void Compositor::Initialize(bool use_thread) {
@@ -573,16 +593,8 @@ void Compositor::applyScrollAndScale(gfx::Vector2d scrollDelta,
 }
 
 scoped_ptr<cc::OutputSurface> Compositor::createOutputSurface() {
-  if (g_test_compositor_enabled) {
-    scoped_ptr<ui::TestWebGraphicsContext3D> context3d(
-        new ui::TestWebGraphicsContext3D);
-    context3d->Initialize();
-    return make_scoped_ptr(new cc::OutputSurface(
-        context3d.PassAs<WebKit::WebGraphicsContext3D>()));
-  } else {
-    return make_scoped_ptr(
-        ContextFactory::GetInstance()->CreateOutputSurface(this));
-  }
+  return make_scoped_ptr(
+      ContextFactory::GetInstance()->CreateOutputSurface(this));
 }
 
 void Compositor::didRecreateOutputSurface(bool success) {
@@ -621,25 +633,11 @@ void Compositor::scheduleComposite() {
 
 scoped_refptr<cc::ContextProvider>
 Compositor::OffscreenContextProviderForMainThread() {
-  if (g_test_compositor_enabled) {
-    if (!MainThreadNullContextProvider::GetInstance()->provider) {
-      MainThreadNullContextProvider::GetInstance()->provider =
-          new NullContextProvider;
-    }
-    return MainThreadNullContextProvider::GetInstance()->provider;
-  }
   return ContextFactory::GetInstance()->OffscreenContextProviderForMainThread();
 }
 
 scoped_refptr<cc::ContextProvider>
 Compositor::OffscreenContextProviderForCompositorThread() {
-  if (g_test_compositor_enabled) {
-    if (!CompositorThreadNullContextProvider::GetInstance()->provider) {
-      CompositorThreadNullContextProvider::GetInstance()->provider =
-          new NullContextProvider;
-    }
-    return CompositorThreadNullContextProvider::GetInstance()->provider;
-  }
   return ContextFactory::GetInstance()->
       OffscreenContextProviderForCompositorThread();
 }
@@ -689,9 +687,11 @@ COMPOSITOR_EXPORT void SetupTestCompositor() {
   if (base::chromeos::IsRunningOnChromeOS())
     g_test_compositor_enabled = false;
 #endif
+  ResetImplicitFactory();
 }
 
 COMPOSITOR_EXPORT void DisableTestCompositor() {
+  ResetImplicitFactory();
   g_test_compositor_enabled = false;
 }
 

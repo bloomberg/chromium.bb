@@ -43,6 +43,7 @@ namespace ui {
 
 class Compositor;
 class CompositorObserver;
+class ContextProviderFromContextFactory;
 class Layer;
 class PostedSwapQueue;
 
@@ -97,21 +98,42 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
 
   bool Initialize();
 
-  void set_share_group(gfx::GLShareGroup* share_group) {
-    share_group_ = share_group;
-  }
-
  private:
   WebKit::WebGraphicsContext3D* CreateContextCommon(
       Compositor* compositor,
       bool offscreen);
 
-  scoped_refptr<gfx::GLShareGroup> share_group_;
-  class DefaultContextProvider;
-  scoped_refptr<DefaultContextProvider> offscreen_contexts_main_thread_;
-  scoped_refptr<DefaultContextProvider> offscreen_contexts_compositor_thread_;
+  scoped_refptr<ContextProviderFromContextFactory>
+      offscreen_contexts_main_thread_;
+  scoped_refptr<ContextProviderFromContextFactory>
+      offscreen_contexts_compositor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContextFactory);
+};
+
+// The factory that creates test contexts.
+class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
+ public:
+  TestContextFactory();
+  virtual ~TestContextFactory();
+
+  // ContextFactory implementation
+  virtual cc::OutputSurface* CreateOutputSurface(
+      Compositor* compositor) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForMainThread() OVERRIDE;
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForCompositorThread() OVERRIDE;
+  virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
+
+ private:
+  scoped_refptr<ContextProviderFromContextFactory>
+      offscreen_contexts_main_thread_;
+  scoped_refptr<ContextProviderFromContextFactory>
+      offscreen_contexts_compositor_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestContextFactory);
 };
 
 // Texture provide an abstraction over the external texture that can be passed

@@ -50,16 +50,15 @@ namespace {
 
 ImageTransportFactory* g_factory;
 
-class DefaultTransportFactory
-    : public ui::DefaultContextFactory,
-      public ImageTransportFactory {
+// An ImageTransportFactory that disables transport.
+class NoTransportFactory : public ImageTransportFactory {
  public:
-  DefaultTransportFactory() {
-    ui::DefaultContextFactory::Initialize();
+  explicit NoTransportFactory(ui::ContextFactory* context_factory)
+      : context_factory_(context_factory) {
   }
 
   virtual ui::ContextFactory* AsContextFactory() OVERRIDE {
-    return this;
+    return context_factory_.get();
   }
 
   virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle() OVERRIDE {
@@ -103,7 +102,8 @@ class DefaultTransportFactory
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultTransportFactory);
+  scoped_ptr<ui::ContextFactory> context_factory_;
+  DISALLOW_COPY_AND_ASSIGN(NoTransportFactory);
 };
 
 class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
@@ -678,16 +678,36 @@ void CompositorSwapClient::OnLostContext() {
   // Note: previous line destroyed this. Don't access members from now on.
 }
 
-WebKit::WebGraphicsContext3D* CreateTestContext() {
-  ui::TestWebGraphicsContext3D* test_context =
-      new ui::TestWebGraphicsContext3D();
-  test_context->Initialize();
-  return test_context;
-}
-
-class SoftwareTransportFactory : public DefaultTransportFactory {
+class FailingContextProvider : public cc::ContextProvider {
  public:
-  cc::OutputSurface* CreateOutputSurface(ui::Compositor* compositor) {
+  FailingContextProvider() {}
+
+  virtual bool InitializeOnMainThread() OVERRIDE { return false; }
+
+  virtual bool BindToCurrentThread() OVERRIDE {
+    NOTREACHED();
+    return false;
+  }
+
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE { return NULL; }
+  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
+  virtual void VerifyContexts() OVERRIDE {}
+  virtual bool DestroyedOnMainThread() OVERRIDE { return false; }
+
+ protected:
+  virtual ~FailingContextProvider() {}
+  DISALLOW_COPY_AND_ASSIGN(FailingContextProvider);
+};
+
+class SoftwareContextFactory : public ui::ContextFactory {
+ public:
+  SoftwareContextFactory() {}
+  virtual ~SoftwareContextFactory() {}
+  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE {
+    return NULL;
+  }
+  virtual cc::OutputSurface* CreateOutputSurface(
+      ui::Compositor* compositor) OVERRIDE {
 #if defined(OS_WIN)
     scoped_ptr<SoftwareOutputDeviceWin> software_device(
         new SoftwareOutputDeviceWin(compositor));
@@ -703,6 +723,25 @@ class SoftwareTransportFactory : public DefaultTransportFactory {
     return NULL;
 #endif
   }
+  virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE {}
+
+  virtual scoped_refptr<cc::ContextProvider>
+  OffscreenContextProviderForMainThread() OVERRIDE {
+    if (!context_provider_)
+      context_provider_ = new FailingContextProvider();
+    return context_provider_;
+  }
+
+  virtual scoped_refptr<cc::ContextProvider>
+  OffscreenContextProviderForCompositorThread() OVERRIDE {
+    if (!context_provider_)
+      context_provider_ = new FailingContextProvider();
+    return context_provider_;
+  }
+
+ private:
+  scoped_refptr<FailingContextProvider> context_provider_;
+  DISALLOW_COPY_AND_ASSIGN(SoftwareContextFactory);
 };
 
 }  // anonymous namespace
@@ -714,9 +753,9 @@ void ImageTransportFactory::Initialize() {
     ui::SetupTestCompositor();
   }
   if (ui::IsTestCompositorEnabled()) {
-    g_factory = new DefaultTransportFactory;
+    g_factory = new NoTransportFactory(new ui::TestContextFactory);
   } else if (command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
-    g_factory = new SoftwareTransportFactory;
+    g_factory = new NoTransportFactory(new SoftwareContextFactory);
   } else {
     g_factory = new GpuProcessTransportFactory;
   }
