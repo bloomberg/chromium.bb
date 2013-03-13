@@ -131,6 +131,39 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_FALSE(cookie->IsSecure());
 }
 
+TEST(CanonicalCookieTest, EmptyExpiry) {
+  GURL url("http://www7.ipdl.inpit.go.jp/Tokujitu/tjkta.ipdl?N0000=108");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+
+  std::string cookie_line =
+      "ACSTM=20130308043820420042; path=/; domain=ipdl.inpit.go.jp; Expires=";
+  scoped_ptr<CanonicalCookie> cookie(CanonicalCookie::Create(
+      url, cookie_line, creation_time, options));
+  EXPECT_TRUE(cookie.get());
+  EXPECT_FALSE(cookie->IsPersistent());
+  EXPECT_FALSE(cookie->IsExpired(creation_time));
+  EXPECT_EQ(base::Time(), cookie->ExpiryDate());
+
+  // With a stale server time
+  options.set_server_time(creation_time - base::TimeDelta::FromHours(1));
+  cookie.reset(CanonicalCookie::Create(
+      url, cookie_line, creation_time, options));
+  EXPECT_TRUE(cookie.get());
+  EXPECT_FALSE(cookie->IsPersistent());
+  EXPECT_FALSE(cookie->IsExpired(creation_time));
+  EXPECT_EQ(base::Time(), cookie->ExpiryDate());
+
+  // With a future server time
+  options.set_server_time(creation_time + base::TimeDelta::FromHours(1));
+  cookie.reset(CanonicalCookie::Create(
+      url, cookie_line, creation_time, options));
+  EXPECT_TRUE(cookie.get());
+  EXPECT_FALSE(cookie->IsPersistent());
+  EXPECT_FALSE(cookie->IsExpired(creation_time));
+  EXPECT_EQ(base::Time(), cookie->ExpiryDate());
+}
+
 TEST(CanonicalCookieTest, IsEquivalent) {
   GURL url("http://www.example.com/");
   std::string cookie_name = "A";

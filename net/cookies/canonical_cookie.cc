@@ -193,9 +193,11 @@ Time CanonicalCookie::CanonExpiration(const ParsedCookie& pc,
   }
 
   // Try the Expires attribute.
-  if (pc.HasExpires()) {
+  if (pc.HasExpires() && !pc.Expires().empty()) {
     // Adjust for clock skew between server and host.
-    return current + (cookie_util::ParseCookieTime(pc.Expires()) - server_time);
+    base::Time parsed_expiry = cookie_util::ParseCookieTime(pc.Expires());
+    if (!parsed_expiry.is_null())
+      return parsed_expiry + (current - server_time);
   }
 
   // Invalid or no expiration, persistent cookie.
