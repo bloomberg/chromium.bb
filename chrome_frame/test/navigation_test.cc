@@ -749,7 +749,7 @@ void CloseWindow(HWND* window) {
 // IE brings up a file open dialog in this context.
 // We bring up the Save dialog via accessibility and save the file
 // and validate that all is well.
-TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
+TEST_F(FullTabDownloadTest, DISABLED_CF_DownloadFileFromPost) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
