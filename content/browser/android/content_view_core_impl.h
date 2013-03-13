@@ -281,8 +281,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Other private methods and data
   // --------------------------------------------------------------------------
 
-  void InitJNI(JNIEnv* env, jobject obj);
-
   void InitWebContents();
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
@@ -300,9 +298,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void DeleteScaledSnapshotTexture();
 
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
-
-  struct JavaObject;
-  JavaObject* java_object_;
 
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;

@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -13,7 +12,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,14 +44,13 @@ import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
-import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
@@ -93,7 +90,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // interface object - the Java side ref won't create a new GC root.
     // This map stores those refernces. We put into the map on addJavaScriptInterface()
     // and remove from it in removeJavaScriptInterface().
-    private Map<String, Object> mJavaScriptInterfaces = new HashMap<String, Object>();
+    private final Map<String, Object> mJavaScriptInterfaces = new HashMap<String, Object>();
 
     // Additionally, we keep track of all Java bound JS objects that are in use on the
     // current page to ensure that they are not garbage collected until the page is
@@ -101,7 +98,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // via the removeJavaScriptInterface API and transient objects returned from methods
     // on the interface object. Note we use HashSet rather than Set as the native side
     // expects HashSet (no bindings for interfaces).
-    private HashSet<Object> mRetainedJavaScriptObjects = new HashSet<Object>();
+    private final HashSet<Object> mRetainedJavaScriptObjects = new HashSet<Object>();
 
     /**
      * Interface that consumers of {@link ContentViewCore} must implement to allow the proper
@@ -232,7 +229,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Temporary notification to tell onSizeChanged to focus a form element,
     // because the OSK was just brought up.
     private boolean mUnfocusOnNextSizeChanged = false;
-    private Rect mFocusPreOSKViewportRect = new Rect();
+    private final Rect mFocusPreOSKViewportRect = new Rect();
 
     private boolean mNeedUpdateOrientationChanged;
 
@@ -631,6 +628,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * This is only useful for passing over JNI to native code that requires ContentViewCore*.
      * @return native ContentViewCore pointer.
      */
+    @CalledByNative
     public int getNativeContentViewCore() {
         return mNativeContentViewCore;
     }
@@ -1880,6 +1878,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         if (mDeferredHandleFadeInRunnable == null) {
             mDeferredHandleFadeInRunnable = new Runnable() {
+                @Override
                 public void run() {
                     if (mContentViewGestureHandler.isNativeScrolling() ||
                             mContentViewGestureHandler.isNativePinching()) {
@@ -2552,6 +2551,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     public RenderCoordinates getRenderCoordinates() {
         return mRenderCoordinates;
+    }
+
+    @CalledByNative
+    private static Rect createRect(int x, int y, int right, int bottom) {
+        return new Rect(x, y, right, bottom);
     }
 
     private native int nativeInit(boolean hardwareAccelerated, boolean inputEventsDeliveredAtVSync,
