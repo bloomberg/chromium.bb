@@ -26,6 +26,13 @@ from common import chrome_paths
 from common import unittest_util
 
 
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
+                                'build', 'android'))
+from pylib import android_commands
+from pylib import forwarder
+from pylib import valgrind_tools
+
+
 def Skip(func):
   pass
 
@@ -60,9 +67,20 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def GlobalSetUp():
     ChromeDriverTest._http_server = webserver.WebServer(
         chrome_paths.GetTestData())
+    if _ANDROID_PACKAGE:
+      ChromeDriverTest._adb = android_commands.AndroidCommands()
+      ChromeDriverTest._forwarder = forwarder.Forwarder(ChromeDriverTest._adb,
+                                                        'Debug')
+      host_port = ChromeDriverTest._http_server._server.server_port
+      ChromeDriverTest._forwarder.Run(
+          [(host_port, host_port)], valgrind_tools.BaseTool(), '127.0.0.1')
 
   @staticmethod
   def GlobalTearDown():
+    if _ANDROID_PACKAGE:
+      forwarder.Forwarder.KillDevice(ChromeDriverTest._adb,
+                                     valgrind_tools.BaseTool())
+      ChromeDriverTest._forwarder.Close()
     ChromeDriverTest._http_server.Shutdown()
 
   @staticmethod
@@ -476,6 +494,12 @@ if __name__ == '__main__':
 
   global _ANDROID_PACKAGE
   _ANDROID_PACKAGE = options.android_package
+
+  if _ANDROID_PACKAGE and options.filter == '*':
+    with open(os.path.join(_THIS_DIR, 'passed_android_python_tests.txt')) as f:
+      android_filter = [line.strip('\n') for line in f]
+      f.close()
+    options.filter = ':__main__.'.join([''] + android_filter)
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
