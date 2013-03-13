@@ -8036,7 +8036,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Disable incognito windows and deleting history
       </message>
       <message name="IDS_USE_PASSPHRASE_LABEL" desc="A checkbox in the Managed User Settings dialog to set whether to ask for a passphrase to access other profiles.">
-        Use a passphrase to leave managed mode
+        Require a passphrase to modify the settings for this managed user
       </message>
       <message name="IDS_SET_PASSPHRASE_BUTTON" desc="A button in the Managed User Settings dialog to set the passphrase to access other profiles.">
         Set passphrase
@@ -8044,8 +8044,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_SET_PASSPHRASE_TITLE" desc="A title for the Managed User Set Passphrase dialog.">
         Set a passphrase
       </message>
-      <message name="IDS_SET_PASSPHRASE_INSTRUCTIONS" desc="XXX">
-        Set a passphrase to access managed user settings and other profiles.
+      <message name="IDS_SET_PASSPHRASE_INSTRUCTIONS" desc="Text describing the set passphrase dialog.">
+        You'll have to enter the passphrase to change this user's settings later
       </message>
       <message name="IDS_ENTER_PASSPHRASE_LABEL" desc="A label for entering a passphrase to save.">
         Enter a passphrase:
@@ -15335,7 +15335,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Do you want to add this website to the whitelist?
     </message>
     <message name="IDS_MANAGED_MODE_PREVIEW_ACCEPT" desc="Label for the button that adds the website to the manual whitelist.">
-      Add to whitelist.
+      Add to whitelist
     </message>
     <message name="IDS_MANAGED_MODE_ALREADY_ADDED_MESSAGE" desc="Text of the message that indicates that the website was already on one of the whitelists.">
       This website was already on the whitelist so it was not added again.
