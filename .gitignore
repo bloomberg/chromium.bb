@@ -83,7 +83,9 @@ v8.log
 /chrome/setup_unittests.xml
 /chrome/supplement.gypi
 /chrome/test/chromeos/autotest/files/client/deps/chrome_test/test_src/
+/chrome/test/chromeos/autotest/files/client/deps/page_cycler_dep/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/pyauto_dep/test_src/
+/chrome/test/chromeos/autotest/files/client/deps/telemetry_dep/test_src/
 /chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin
 /chrome/test/data/firefox2_profile/searchplugins
 /chrome/test/data/firefox2_searchplugins
