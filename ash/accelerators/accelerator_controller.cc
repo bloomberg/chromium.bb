@@ -468,6 +468,8 @@ bool AcceleratorController::PerformAction(int action,
       Shell::GetInstance()->display_controller()->CycleDisplayMode();
       return true;
     case LOCK_SCREEN:
+      if (key_code == ui::VKEY_L)
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_LOCK_SCREEN_L);
       return HandleLock();
     case OPEN_FILE_DIALOG:
       return HandleFileManager(true /* as_dialog */);

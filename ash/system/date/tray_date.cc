@@ -5,6 +5,7 @@
 #include "ash/system/date/tray_date.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -107,16 +108,21 @@ class DateDefaultView : public views::View,
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    ash::SystemTrayDelegate* tray =
-        ash::Shell::GetInstance()->system_tray_delegate();
-    if (sender == help_)
-      tray->ShowHelp();
-    else if (sender == shutdown_)
-      tray->ShutDown();
-    else if (sender == lock_)
-      tray->RequestLockScreen();
-    else
+    ash::Shell* shell = ash::Shell::GetInstance();
+    ash::ShellDelegate* shell_delegate = shell->delegate();
+    ash::SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
+    if (sender == help_) {
+      shell_delegate->RecordUserMetricsAction(ash::UMA_TRAY_HELP);
+      tray_delegate->ShowHelp();
+    } else if (sender == shutdown_) {
+      shell_delegate->RecordUserMetricsAction(ash::UMA_TRAY_SHUT_DOWN);
+      tray_delegate->ShutDown();
+    } else if (sender == lock_) {
+      shell_delegate->RecordUserMetricsAction(ash::UMA_TRAY_LOCK_SCREEN);
+      tray_delegate->RequestLockScreen();
+    } else {
       NOTREACHED();
+    }
   }
 
   ash::internal::TrayPopupHeaderButton* help_;
