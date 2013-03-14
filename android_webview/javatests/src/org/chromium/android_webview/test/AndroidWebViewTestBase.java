@@ -10,11 +10,13 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import junit.framework.Assert;
 
+import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.JSUtils;
+import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
@@ -205,8 +207,9 @@ public class AndroidWebViewTestBase
     protected AwTestContainerView createAwTestContainerView(
             final AwTestContainerView testContainerView,
             final AwContentsClient awContentsClient) {
-        testContainerView.initialize(new AwContents(testContainerView,
-                testContainerView.getInternalAccessDelegate(),
+        testContainerView.initialize(new AwContents(
+                new AwBrowserContext(new InMemorySharedPreferences()),
+                testContainerView, testContainerView.getInternalAccessDelegate(),
                 awContentsClient, false));
         getActivity().addView(testContainerView);
         testContainerView.requestFocus();

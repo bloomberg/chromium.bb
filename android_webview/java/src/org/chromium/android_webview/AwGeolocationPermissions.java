@@ -24,46 +24,8 @@ public final class AwGeolocationPermissions {
             AwGeolocationPermissions.class.getCanonicalName() + "%";
     private final SharedPreferences mSharedPreferences;
 
-    private static AwGeolocationPermissions sInstance;
-
-    // TODO(kristianm): Rewrite when AwBrowserContext has landed in
-    // CL: https://codereview.chromium.org/12208099/
     public AwGeolocationPermissions(SharedPreferences sharedPreferences) {
         mSharedPreferences = sharedPreferences;
-        setInstance(this);
-    }
-
-    private static void setInstance(AwGeolocationPermissions instance) {
-        synchronized (AwGeolocationPermissions.class) {
-            sInstance = instance;
-        }
-    }
-
-    /**
-     * Get the static instance after it has been created
-     */
-    public static AwGeolocationPermissions getInstance() {
-        synchronized (AwGeolocationPermissions.class) {
-            if (sInstance == null) {
-                throw new IllegalStateException("This should only be called after createInstance.");
-            }
-        }
-        return sInstance;
-    }
-
-    /**
-     * Create the static instance of this class
-     */
-    public static AwGeolocationPermissions createInstance(
-            SharedPreferences sharedPreferences) {
-        synchronized (AwGeolocationPermissions.class) {
-            if (sInstance != null) {
-                throw new IllegalStateException("This should only be called once.");
-            }
-            // sInstance set in the constructor
-            new AwGeolocationPermissions(sharedPreferences);
-            return sInstance;
-        }
     }
 
     /**

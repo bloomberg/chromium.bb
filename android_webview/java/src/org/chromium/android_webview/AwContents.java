@@ -242,13 +242,6 @@ public class AwContents {
         }
     }
 
-    // TODO(joth): Delete this when all callers pass browserContext
-    public AwContents(ViewGroup containerView, InternalAccessDelegate internalAccessAdapter,
-            AwContentsClient contentsClient, boolean isAccessFromFileURLsGrantedByDefault) {
-        this(AwBrowserProcess.getDefaultBrowserContext(), containerView, internalAccessAdapter,
-                contentsClient, isAccessFromFileURLsGrantedByDefault);
-    }
-
     /**
      * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
@@ -1150,11 +1143,6 @@ public class AwContents {
     }
 
     private class AwGeolocationCallback implements GeolocationPermissions.Callback {
-        private final AwGeolocationPermissions mGeolocationPermissions;
-
-        private AwGeolocationCallback(AwGeolocationPermissions geolocationPermissions) {
-            mGeolocationPermissions = geolocationPermissions;
-        }
 
         @Override
         public void invoke(final String origin, final boolean allow, final boolean retain) {
@@ -1163,9 +1151,9 @@ public class AwContents {
                 public void run() {
                     if (retain) {
                         if (allow) {
-                            mGeolocationPermissions.allow(origin);
+                            mBrowserContext.getGeolocationPermissions().allow(origin);
                         } else {
-                            mGeolocationPermissions.deny(origin);
+                            mBrowserContext.getGeolocationPermissions().deny(origin);
                         }
                     }
                     nativeInvokeGeolocationCallback(mNativeAwContents, allow, origin);
@@ -1176,7 +1164,7 @@ public class AwContents {
 
     @CalledByNative
     private void onGeolocationPermissionsShowPrompt(String origin) {
-        AwGeolocationPermissions permissions = AwGeolocationPermissions.getInstance();
+        AwGeolocationPermissions permissions = mBrowserContext.getGeolocationPermissions();
         // Reject if geoloaction is disabled, or the origin has a retained deny
         if (!mSettings.getGeolocationEnabled()) {
             nativeInvokeGeolocationCallback(mNativeAwContents, false, origin);
@@ -1189,7 +1177,7 @@ public class AwContents {
             return;
         }
         mContentsClient.onGeolocationPermissionsShowPrompt(
-                origin, new AwGeolocationCallback(permissions));
+                origin, new AwGeolocationCallback());
     }
 
     @CalledByNative
