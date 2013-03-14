@@ -973,6 +973,9 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   if (!args_->GetList(0, &files_list))
     return false;
 
+  if (files_list->GetSize() == 0)
+    return false;
+
   // Second argument is the list of mime types of each of the files in the list.
   ListValue* mime_types_list = NULL;
   if (!args_->GetList(1, &mime_types_list))
