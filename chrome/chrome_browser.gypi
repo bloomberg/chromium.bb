@@ -2244,7 +2244,7 @@
         '../components/autofill/browser/wallet/wallet_address.h',
         '../components/autofill/browser/wallet/wallet_client.cc',
         '../components/autofill/browser/wallet/wallet_client.h',
-        '../components/autofill/browser/wallet/wallet_client_observer.h',
+        '../components/autofill/browser/wallet/wallet_client_delegate.h',
         '../components/autofill/browser/wallet/wallet_items.cc',
         '../components/autofill/browser/wallet/wallet_items.h',
         '../components/autofill/browser/wallet/wallet_service_url.cc',

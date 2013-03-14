@@ -8,6 +8,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/autofill/browser/autofill_manager_delegate.h"
+
+class AutofillMetrics;
 
 namespace autofill {
 namespace wallet {
@@ -15,11 +18,26 @@ namespace wallet {
 class FullWallet;
 class WalletItems;
 
-// WalletClientObserver is to be implemented any classes making calls with
+// WalletClientDelegate is to be implemented any classes making calls with
 // WalletClient. The appropriate callback method will be called on
-// WalletClientObserver with the response from the Online Wallet backend.
-class WalletClientObserver {
+// WalletClientDelegate with the response from the Online Wallet backend.
+class WalletClientDelegate {
  public:
+  // --------------------------------------
+  // Accessors called when making requests.
+  // --------------------------------------
+
+  // Returns the MetricLogger instance that should be used for logging Online
+  // Wallet metrics.
+  virtual const AutofillMetrics& GetMetricLogger() const = 0;
+
+  // Returns the dialog type that the delegate corresponds to.
+  virtual DialogType GetDialogType() const = 0;
+
+  // --------------------------------------------------------------------------
+  // Callbacks called with responses from the Online Wallet backend.
+  // --------------------------------------------------------------------------
+
   // Called when an AcceptLegalDocuments request finishes successfully.
   virtual void OnDidAcceptLegalDocuments() = 0;
 
@@ -79,7 +97,7 @@ class WalletClientObserver {
   virtual void OnNetworkError(int response_code) = 0;
 
  protected:
-  virtual ~WalletClientObserver() {}
+  virtual ~WalletClientDelegate() {}
 };
 
 }  // namespace wallet

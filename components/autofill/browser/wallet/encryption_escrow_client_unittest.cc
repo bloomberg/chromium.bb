@@ -44,6 +44,8 @@ class MockEncryptionEscrowClientObserver :
                void(const std::string& escrow_handle));
   MOCK_METHOD1(OnDidEscrowInstrumentInformation,
                void(const std::string& escrow_handle));
+  // TODO(isherman): Add test expectations for calls to this method.
+  MOCK_METHOD0(OnDidMakeRequest, void());
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
 };
@@ -105,6 +107,7 @@ class EncryptionEscrowClientTest : public testing::Test {
 };
 
 TEST_F(EncryptionEscrowClientTest, NetworkError) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
   EXPECT_CALL(observer_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
 
   encryption_escrow_client_->EscrowInstrumentInformation(*instrument_,
@@ -115,6 +118,7 @@ TEST_F(EncryptionEscrowClientTest, NetworkError) {
 }
 
 TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationSuccess) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
   EXPECT_CALL(observer_, OnDidEscrowInstrumentInformation("abc")).Times(1);
 
   encryption_escrow_client_->EscrowInstrumentInformation(*instrument_,
@@ -125,6 +129,7 @@ TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationSuccess) {
 }
 
 TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationFailure) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
   EXPECT_CALL(observer_, OnMalformedResponse()).Times(1);
 
   encryption_escrow_client_->EscrowInstrumentInformation(*instrument_,
@@ -135,6 +140,7 @@ TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationFailure) {
 }
 
 TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberSuccess) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
   EXPECT_CALL(observer_, OnDidEscrowCardVerificationNumber("abc")).Times(1);
 
   encryption_escrow_client_->EscrowCardVerificationNumber("123",
@@ -145,6 +151,7 @@ TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberSuccess) {
 }
 
 TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberFailure) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
   EXPECT_CALL(observer_, OnMalformedResponse()).Times(1);
 
   encryption_escrow_client_->EscrowCardVerificationNumber("123",
@@ -155,6 +162,7 @@ TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberFailure) {
 }
 
 TEST_F(EncryptionEscrowClientTest, EncryptOneTimePadSuccess) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
   EXPECT_CALL(observer_,
               OnDidEncryptOneTimePad("encrypted_one_time_pad",
                                      "session_material")).Times(1);
@@ -164,6 +172,7 @@ TEST_F(EncryptionEscrowClientTest, EncryptOneTimePadSuccess) {
 }
 
 TEST_F(EncryptionEscrowClientTest, EncryptOneTimePadFailure) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
   EXPECT_CALL(observer_, OnMalformedResponse()).Times(1);
 
   encryption_escrow_client_->EncryptOneTimePad(MakeOneTimePad());

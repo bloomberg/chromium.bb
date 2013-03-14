@@ -10,9 +10,10 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
-#include "components/autofill/browser/wallet/wallet_client_observer.h"
+#include "components/autofill/browser/wallet/wallet_client_delegate.h"
 #include "components/autofill/browser/wallet/wallet_items.h"
 #include "components/autofill/browser/wallet/wallet_service_url.h"
 #include "crypto/random.h"
@@ -93,6 +94,39 @@ void GetRequiredActionsForSaveToWallet(
   }
 }
 
+// Converts the |required_action| to the corresponding value from the stable UMA
+// metric enumeration.
+AutofillMetrics::WalletRequiredActionMetric RequiredActionToUmaMetric(
+    RequiredAction required_action) {
+  switch (required_action) {
+    case UNKNOWN_TYPE:
+      return AutofillMetrics::UNKNOWN_TYPE;
+    case CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS:
+      return AutofillMetrics::CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS;
+    case SETUP_WALLET:
+      return AutofillMetrics::SETUP_WALLET;
+    case ACCEPT_TOS:
+      return AutofillMetrics::ACCEPT_TOS;
+    case GAIA_AUTH:
+      return AutofillMetrics::GAIA_AUTH;
+    case UPDATE_EXPIRATION_DATE:
+      return AutofillMetrics::UPDATE_EXPIRATION_DATE;
+    case UPGRADE_MIN_ADDRESS:
+      return AutofillMetrics::UPGRADE_MIN_ADDRESS;
+    case INVALID_FORM_FIELD:
+      return AutofillMetrics::INVALID_FORM_FIELD;
+    case VERIFY_CVV:
+      return AutofillMetrics::VERIFY_CVV;
+    case PASSIVE_GAIA_AUTH:
+      return AutofillMetrics::PASSIVE_GAIA_AUTH;
+    case REQUIRE_PHONE_NUMBER:
+      return AutofillMetrics::REQUIRE_PHONE_NUMBER;
+  }
+
+  NOTREACHED();
+  return AutofillMetrics::UNKNOWN_TYPE;
+}
+
 // Keys for JSON communication with the Online Wallet server.
 const char kAcceptedLegalDocumentKey[] = "accepted_legal_document";
 const char kApiKeyKey[] = "api_key";
@@ -126,28 +160,26 @@ WalletClient::FullWalletRequest::FullWalletRequest(
     const GURL& source_url,
     const Cart& cart,
     const std::string& google_transaction_id,
-    autofill::DialogType dialog_type,
     const std::vector<RiskCapability> risk_capabilities)
     : instrument_id(instrument_id),
       address_id(address_id),
       source_url(source_url),
       cart(cart),
       google_transaction_id(google_transaction_id),
-      dialog_type(dialog_type),
       risk_capabilities(risk_capabilities) {}
 
 WalletClient::FullWalletRequest::~FullWalletRequest() {}
 
 WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
-                           WalletClientObserver* observer)
+                           WalletClientDelegate* delegate)
     : context_getter_(context_getter),
-      observer_(observer),
+      delegate_(delegate),
       request_type_(NO_PENDING_REQUEST),
       one_time_pad_(kOneTimePadLength),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           encryption_escrow_client_(context_getter, this)) {
   DCHECK(context_getter_);
-  DCHECK(observer_);
+  DCHECK(delegate_);
 }
 
 WalletClient::~WalletClient() {}
@@ -239,7 +271,7 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
                             full_wallet_request.cart.ToDictionary().release());
   pending_request_body_.SetString(
       kFeatureKey,
-      DialogTypeToFeatureString(full_wallet_request.dialog_type));
+      DialogTypeToFeatureString(delegate_->GetDialogType()));
 
   scoped_ptr<base::ListValue> risk_capabilities_list(new base::ListValue());
   for (std::vector<RiskCapability>::const_iterator it =
@@ -471,6 +503,13 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   DVLOG(1) << "Making request to " << url << " with post_body=" << post_body;
   request_->SetUploadData(kJsonMimeType, post_body);
   request_->Start();
+
+  delegate_->GetMetricLogger().LogWalletErrorMetric(
+      delegate_->GetDialogType(),
+      AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST);
+  delegate_->GetMetricLogger().LogWalletRequiredActionMetric(
+      delegate_->GetDialogType(),
+      AutofillMetrics::WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST);
 }
 
 // TODO(ahutter): Add manual retry logic if it's necessary.
@@ -490,7 +529,7 @@ void WalletClient::OnURLFetchComplete(
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
     case net::HTTP_BAD_REQUEST: {
       request_type_ = NO_PENDING_REQUEST;
-      observer_->OnWalletError();
+      HandleWalletError();
       return;
     }
     // HTTP_OK holds a valid response and HTTP_INTERNAL_SERVER_ERROR holds an
@@ -507,17 +546,17 @@ void WalletClient::OnURLFetchComplete(
         request_type_ = NO_PENDING_REQUEST;
         // TODO(ahutter): Do something with the response. See
         // http://crbug.com/164410.
-        observer_->OnWalletError();
+        HandleWalletError();
         return;
       }
       break;
     }
+
     // Anything else is an error.
-    default: {
+    default:
       request_type_ = NO_PENDING_REQUEST;
-      observer_->OnNetworkError(response_code);
+      HandleNetworkError(response_code);
       return;
-    }
   }
 
   RequestType type = request_type_;
@@ -531,7 +570,7 @@ void WalletClient::OnURLFetchComplete(
 
   switch (type) {
     case ACCEPT_LEGAL_DOCUMENTS:
-      observer_->OnDidAcceptLegalDocuments();
+      delegate_->OnDidAcceptLegalDocuments();
       break;
 
     case AUTHENTICATE_INSTRUMENT: {
@@ -541,7 +580,7 @@ void WalletClient::OnURLFetchComplete(
         TrimWhitespaceASCII(auth_result,
                             TRIM_ALL,
                             &trimmed);
-        observer_->OnDidAuthenticateInstrument(
+        delegate_->OnDidAuthenticateInstrument(
             LowerCaseEqualsASCII(trimmed, "success"));
       } else {
         HandleMalformedResponse();
@@ -550,7 +589,7 @@ void WalletClient::OnURLFetchComplete(
     }
 
     case SEND_STATUS:
-      observer_->OnDidSendAutocheckoutStatus();
+      delegate_->OnDidSendAutocheckoutStatus();
       break;
 
     case GET_FULL_WALLET: {
@@ -558,7 +597,8 @@ void WalletClient::OnURLFetchComplete(
           FullWallet::CreateFullWallet(*response_dict));
       if (full_wallet) {
         full_wallet->set_one_time_pad(one_time_pad_);
-        observer_->OnDidGetFullWallet(full_wallet.Pass());
+        LogRequiredActions(full_wallet->required_actions());
+        delegate_->OnDidGetFullWallet(full_wallet.Pass());
       } else {
         HandleMalformedResponse();
       }
@@ -568,10 +608,12 @@ void WalletClient::OnURLFetchComplete(
     case GET_WALLET_ITEMS: {
       scoped_ptr<WalletItems> wallet_items(
           WalletItems::CreateWalletItems(*response_dict));
-      if (wallet_items)
-        observer_->OnDidGetWalletItems(wallet_items.Pass());
-      else
+      if (wallet_items) {
+        LogRequiredActions(wallet_items->required_actions());
+        delegate_->OnDidGetWalletItems(wallet_items.Pass());
+      } else {
         HandleMalformedResponse();
+      }
       break;
     }
 
@@ -582,7 +624,8 @@ void WalletClient::OnURLFetchComplete(
       if (response_dict->GetString(kShippingAddressIdKey,
                                    &shipping_address_id) ||
           !required_actions.empty()) {
-        observer_->OnDidSaveAddress(shipping_address_id, required_actions);
+        LogRequiredActions(required_actions);
+        delegate_->OnDidSaveAddress(shipping_address_id, required_actions);
       } else {
         HandleMalformedResponse();
       }
@@ -595,7 +638,8 @@ void WalletClient::OnURLFetchComplete(
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
       if (response_dict->GetString(kInstrumentIdKey, &instrument_id) ||
           !required_actions.empty()) {
-        observer_->OnDidSaveInstrument(instrument_id, required_actions);
+        LogRequiredActions(required_actions);
+        delegate_->OnDidSaveInstrument(instrument_id, required_actions);
       } else {
         HandleMalformedResponse();
       }
@@ -612,7 +656,8 @@ void WalletClient::OnURLFetchComplete(
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
       if ((!instrument_id.empty() && !shipping_address_id.empty()) ||
           !required_actions.empty()) {
-        observer_->OnDidSaveInstrumentAndAddress(instrument_id,
+        LogRequiredActions(required_actions);
+        delegate_->OnDidSaveInstrumentAndAddress(instrument_id,
                                                  shipping_address_id,
                                                  required_actions);
       } else {
@@ -627,7 +672,8 @@ void WalletClient::OnURLFetchComplete(
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
       if (response_dict->GetString(kInstrumentIdKey, &instrument_id) ||
           !required_actions.empty()) {
-        observer_->OnDidUpdateInstrument(instrument_id, required_actions);
+        LogRequiredActions(required_actions);
+        delegate_->OnDidUpdateInstrument(instrument_id, required_actions);
       } else {
         HandleMalformedResponse();
       }
@@ -654,7 +700,22 @@ void WalletClient::StartNextPendingRequest() {
 void WalletClient::HandleMalformedResponse() {
   // Called to inform exponential backoff logic of the error.
   request_->ReceivedContentWasMalformed();
-  observer_->OnMalformedResponse();
+  delegate_->OnMalformedResponse();
+
+  delegate_->GetMetricLogger().LogWalletErrorMetric(
+      delegate_->GetDialogType(), AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+}
+
+void WalletClient::HandleNetworkError(int response_code) {
+  delegate_->OnNetworkError(response_code);
+  delegate_->GetMetricLogger().LogWalletErrorMetric(
+      delegate_->GetDialogType(), AutofillMetrics::WALLET_NETWORK_ERROR);
+}
+
+void WalletClient::HandleWalletError() {
+  delegate_->OnWalletError();
+  delegate_->GetMetricLogger().LogWalletErrorMetric(
+      delegate_->GetDialogType(), AutofillMetrics::WALLET_FATAL_ERROR);
 }
 
 void WalletClient::OnDidEncryptOneTimePad(
@@ -697,12 +758,30 @@ void WalletClient::OnDidEscrowCardVerificationNumber(
   MakeWalletRequest(GetAuthenticateInstrumentUrl(), post_body);
 }
 
+void WalletClient::OnDidMakeRequest() {
+  delegate_->GetMetricLogger().LogWalletErrorMetric(
+      delegate_->GetDialogType(),
+      AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST);
+}
+
 void WalletClient::OnNetworkError(int response_code) {
-  observer_->OnNetworkError(response_code);
+  HandleNetworkError(response_code);
 }
 
 void WalletClient::OnMalformedResponse() {
-  observer_->OnMalformedResponse();
+  delegate_->OnMalformedResponse();
+  delegate_->GetMetricLogger().LogWalletErrorMetric(
+      delegate_->GetDialogType(), AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+}
+
+// Logs an UMA metric for each of the |required_actions|.
+void WalletClient::LogRequiredActions(
+    const std::vector<RequiredAction>& required_actions) const {
+  for (size_t i = 0; i < required_actions.size(); ++i) {
+    delegate_->GetMetricLogger().LogWalletRequiredActionMetric(
+        delegate_->GetDialogType(),
+        RequiredActionToUmaMetric(required_actions[i]));
+  }
 }
 
 }  // namespace wallet

@@ -166,6 +166,43 @@ class AutofillMetrics {
     NUM_USER_HAPPINESS_METRICS,
   };
 
+  // For measuring the frequency of errors while communicating with the Wallet
+  // server.
+  enum WalletErrorMetric {
+    // Baseline metric: Issued a request to the Wallet server.
+    WALLET_ERROR_BASELINE_ISSUED_REQUEST = 0,
+    // A fatal error occured while communicating with the Wallet server.
+    WALLET_FATAL_ERROR,
+    // Received a malformed response from the Wallet server.
+    WALLET_MALFORMED_RESPONSE,
+    // A network error occured while communicating with the Wallet server.
+    WALLET_NETWORK_ERROR,
+    NUM_WALLET_ERROR_METRICS
+  };
+
+  // For measuring the frequency of "required actions" returned by the Wallet
+  // server.  This is similar to the autofill::wallet::RequiredAction enum;
+  // but unlike that enum, the values in this one must remain constant over
+  // time, so that the metrics can be consistently interpreted on the
+  // server-side.
+  enum WalletRequiredActionMetric {
+    // Baseline metric: Issued a request to the Wallet server.
+    WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST = 0,
+    // Values from the autofill::wallet::RequiredAction enum:
+    UNKNOWN_TYPE,  // Catch all type.
+    GAIA_AUTH,
+    PASSIVE_GAIA_AUTH,
+    SETUP_WALLET,
+    ACCEPT_TOS,
+    UPDATE_EXPIRATION_DATE,
+    UPGRADE_MIN_ADDRESS,
+    CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS,
+    VERIFY_CVV,
+    INVALID_FORM_FIELD,
+    REQUIRE_PHONE_NUMBER,
+    NUM_WALLET_REQUIRED_ACTIONS
+  };
+
   AutofillMetrics();
   virtual ~AutofillMetrics();
 
@@ -209,6 +246,15 @@ class AutofillMetrics {
       const base::TimeDelta& duration,
       autofill::DialogType dialog_type,
       DialogDismissalAction dismissal_action) const;
+
+  // Logs |metric| to the Wallet errors histogram for |dialog_type|.
+  virtual void LogWalletErrorMetric(autofill::DialogType dialog_type,
+                                    WalletErrorMetric metric) const;
+
+  // Logs |required_action| to the required actions histogram for |dialog_type|.
+  virtual void LogWalletRequiredActionMetric(
+      autofill::DialogType dialog_type,
+      WalletRequiredActionMetric required_action) const;
 
   virtual void LogAutocheckoutDuration(
       const base::TimeDelta& duration,

@@ -324,6 +324,21 @@ void AutofillMetrics::LogDialogUiDuration(
   LogUMAHistogramLongTimes(prefix + ".UiDuration." + suffix, duration);
 }
 
+void AutofillMetrics::LogWalletErrorMetric(autofill::DialogType dialog_type,
+                                           WalletErrorMetric metric) const {
+  std::string name = GetPrefixForDialogType(dialog_type) + ".WalletErrors";
+  LogUMAHistogramEnumeration(name, metric, NUM_WALLET_ERROR_METRICS);
+}
+
+void AutofillMetrics::LogWalletRequiredActionMetric(
+      autofill::DialogType dialog_type,
+      WalletRequiredActionMetric required_action) const {
+  std::string name =
+      GetPrefixForDialogType(dialog_type) + ".WalletRequiredActions";
+  LogUMAHistogramEnumeration(
+      name, required_action, NUM_WALLET_REQUIRED_ACTIONS);
+}
+
 void AutofillMetrics::LogAutocheckoutDuration(
     const base::TimeDelta& duration,
     AutocheckoutCompletionStatus status) const {

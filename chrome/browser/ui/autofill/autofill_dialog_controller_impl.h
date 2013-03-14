@@ -26,7 +26,7 @@
 #include "components/autofill/browser/personal_data_manager_observer.h"
 #include "components/autofill/browser/wallet/required_action.h"
 #include "components/autofill/browser/wallet/wallet_client.h"
-#include "components/autofill/browser/wallet/wallet_client_observer.h"
+#include "components/autofill/browser/wallet/wallet_client_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/ssl_status.h"
@@ -59,7 +59,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                      public AutofillPopupDelegate,
                                      public content::NotificationObserver,
                                      public SuggestionsMenuModelDelegate,
-                                     public wallet::WalletClientObserver,
+                                     public wallet::WalletClientDelegate,
                                      public PersonalDataManagerObserver,
                                      public AccountChooserModelDelegate {
  public:
@@ -156,7 +156,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void SuggestionItemSelected(const SuggestionsMenuModel& model)
       OVERRIDE;
 
-  // wallet::WalletClientObserver implementation.
+  // wallet::WalletClientDelegate implementation.
+  virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE;
+  virtual DialogType GetDialogType() const OVERRIDE;
   virtual void OnDidAcceptLegalDocuments() OVERRIDE;
   virtual void OnDidAuthenticateInstrument(bool success) OVERRIDE;
   virtual void OnDidGetFullWallet(

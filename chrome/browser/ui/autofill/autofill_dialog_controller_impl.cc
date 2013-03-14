@@ -1071,7 +1071,15 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// wallet::WalletClientObserver implementation.
+// wallet::WalletClientDelegate implementation.
+
+const AutofillMetrics& AutofillDialogControllerImpl::GetMetricLogger() const {
+  return metric_logger_;
+}
+
+DialogType AutofillDialogControllerImpl::GetDialogType() const {
+  return dialog_type_;
+}
 
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
 }
@@ -1627,7 +1635,6 @@ void AutofillDialogControllerImpl::GetFullWallet() {
       source_url_,
       wallet::Cart(base::IntToString(kCartMax), kCartCurrency),
       wallet_items_->google_transaction_id(),
-      dialog_type_,
       std::vector<wallet::WalletClient::RiskCapability>()));
 }
 

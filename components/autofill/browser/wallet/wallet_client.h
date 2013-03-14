@@ -33,7 +33,7 @@ namespace wallet {
 class Address;
 class FullWallet;
 class Instrument;
-class WalletClientObserver;
+class WalletClientDelegate;
 class WalletItems;
 
 // WalletClient is responsible for making calls to the Online Wallet backend on
@@ -80,7 +80,6 @@ class WalletClient
                       const GURL& source_url,
                       const Cart& cart,
                       const std::string& google_transaction_id,
-                      autofill::DialogType dialog_type,
                       const std::vector<RiskCapability> risk_capabilities);
     ~FullWalletRequest();
 
@@ -101,9 +100,6 @@ class WalletClient
     // The transaction ID from GetWalletItems.
     std::string google_transaction_id;
 
-    // Which usage of WalletClient this is.
-    autofill::DialogType dialog_type;
-
     // The Risk challenges supported by the user of WalletClient
     std::vector<RiskCapability> risk_capabilities;
 
@@ -114,7 +110,7 @@ class WalletClient
   // |context_getter| is reference counted so it has no lifetime or ownership
   // requirements. |observer| must outlive |this|.
   WalletClient(net::URLRequestContextGetter* context_getter,
-               WalletClientObserver* observer);
+               WalletClientDelegate* delegate);
 
   virtual ~WalletClient();
 
@@ -207,6 +203,8 @@ class WalletClient
 
   // Performs bookkeeping tasks for any invalid requests.
   void HandleMalformedResponse();
+  void HandleNetworkError(int response_code);
+  void HandleWalletError();
 
   // Start the next pending request (if any).
   void StartNextPendingRequest();
@@ -222,8 +220,13 @@ class WalletClient
       const std::string& escrow_handle)  OVERRIDE;
   virtual void OnDidEscrowCardVerificationNumber(
       const std::string& escrow_handle) OVERRIDE;
+  virtual void OnDidMakeRequest() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
   virtual void OnMalformedResponse() OVERRIDE;
+
+  // Logs an UMA metric for each of the |required_actions|.
+  void LogRequiredActions(
+      const std::vector<RequiredAction>& required_actions) const;
 
   // The context for the request. Ensures the gdToken cookie is set as a header
   // in the requests to Online Wallet if it is present.
@@ -231,7 +234,7 @@ class WalletClient
 
   // Observer class that has its various On* methods called based on the results
   // of a request to Online Wallet.
-  WalletClientObserver* const observer_;  // must outlive |this|.
+  WalletClientDelegate* const delegate_;  // must outlive |this|.
 
   // The current request object.
   scoped_ptr<net::URLFetcher> request_;

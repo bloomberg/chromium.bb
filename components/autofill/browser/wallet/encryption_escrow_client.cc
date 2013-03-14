@@ -114,6 +114,8 @@ void EncryptionEscrowClient::MakeRequest(const GURL& url,
   DVLOG(1) << "url=" << url << ", post_body=" << post_body;
   request_->SetUploadData(kApplicationMimeType, post_body);
   request_->Start();
+
+  observer_->OnDidMakeRequest();
 }
 
 // TODO(ahutter): Add manual retry logic if it's necessary.

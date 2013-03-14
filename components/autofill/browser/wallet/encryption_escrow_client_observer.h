@@ -33,6 +33,9 @@ class EncryptionEscrowClientObserver {
   virtual void OnDidEscrowInstrumentInformation(
       const std::string& escrow_handle) = 0;
 
+  // Called when a request is made to the encryption escrow server.
+  virtual void OnDidMakeRequest() = 0;
+
   // Called when a request fails due to a network error or if the response was
   // invalid.
   virtual void OnNetworkError(int response_code) = 0;
