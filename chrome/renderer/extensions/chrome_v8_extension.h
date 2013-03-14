@@ -47,13 +47,6 @@ class ChromeV8Extension : public ObjectBackedNativeHandler {
   const Extension* GetExtensionForRenderView();
 
  protected:
-  template<class T>
-  static T* GetFromArguments(const v8::Arguments& args) {
-    CHECK(!args.Data().IsEmpty());
-    T* result = static_cast<T*>(args.Data().As<v8::External>()->Value());
-    return result;
-  }
-
   Dispatcher* dispatcher_;
 
  private:

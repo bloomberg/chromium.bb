@@ -15,7 +15,7 @@ class TTSCustomBindings : public ChromeV8Extension {
   TTSCustomBindings(Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context);
 
  private:
-  static v8::Handle<v8::Value> GetNextTTSEventId(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetNextTTSEventId(const v8::Arguments& args);
 };
 
 }  // extensions

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/message_bundle.h"
@@ -71,19 +72,23 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   explicit ExtensionImpl(extensions::Dispatcher* dispatcher,
                          v8::Handle<v8::Context> context)
       : extensions::ChromeV8Extension(dispatcher, context) {
-    RouteStaticFunction("CloseChannel", &CloseChannel);
-    RouteStaticFunction("PortAddRef", &PortAddRef);
-    RouteStaticFunction("PortRelease", &PortRelease);
-    RouteStaticFunction("PostMessage", &PostMessage);
-    RouteStaticFunction("BindToGC", &BindToGC);
+    RouteFunction("CloseChannel",
+        base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
+    RouteFunction("PortAddRef",
+        base::Bind(&ExtensionImpl::PortAddRef, base::Unretained(this)));
+    RouteFunction("PortRelease",
+        base::Bind(&ExtensionImpl::PortRelease, base::Unretained(this)));
+    RouteFunction("PostMessage",
+        base::Bind(&ExtensionImpl::PostMessage, base::Unretained(this)));
+    RouteFunction("BindToGC",
+        base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
   }
 
   virtual ~ExtensionImpl() {}
 
   // Sends a message along the given channel.
-  static v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {
-    ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-    content::RenderView* renderview = self->GetRenderView();
+  v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {
+    content::RenderView* renderview = GetRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -101,7 +106,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   }
 
   // Forcefully disconnects a port.
-  static v8::Handle<v8::Value> CloseChannel(const v8::Arguments& args) {
+  v8::Handle<v8::Value> CloseChannel(const v8::Arguments& args) {
     if (args.Length() >= 2 && args[0]->IsInt32() && args[1]->IsBoolean()) {
       int port_id = args[0]->Int32Value();
       if (!HasPortData(port_id)) {
@@ -119,7 +124,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
   // A new port has been created for a context.  This occurs both when script
   // opens a connection, and when a connection is opened to this script.
-  static v8::Handle<v8::Value> PortAddRef(const v8::Arguments& args) {
+  v8::Handle<v8::Value> PortAddRef(const v8::Arguments& args) {
     if (args.Length() >= 1 && args[0]->IsInt32()) {
       int port_id = args[0]->Int32Value();
       ++GetPortData(port_id).ref_count;
@@ -130,7 +135,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   // The frame a port lived in has been destroyed.  When there are no more
   // frames with a reference to a given port, we will disconnect it and notify
   // the other end of the channel.
-  static v8::Handle<v8::Value> PortRelease(const v8::Arguments& args) {
+  v8::Handle<v8::Value> PortRelease(const v8::Arguments& args) {
     if (args.Length() >= 1 && args[0]->IsInt32()) {
       int port_id = args[0]->Int32Value();
       if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
@@ -166,7 +171,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   }
 
   // Binds a callback to be invoked when the given object is garbage collected.
-  static v8::Handle<v8::Value> BindToGC(const v8::Arguments& args) {
+  v8::Handle<v8::Value> BindToGC(const v8::Arguments& args) {
     if (args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction()) {
       GCCallbackArgs* context = new GCCallbackArgs(
           v8::Handle<v8::Object>::Cast(args[0]),

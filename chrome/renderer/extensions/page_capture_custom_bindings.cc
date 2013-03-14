@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/renderer/render_view.h"
@@ -17,11 +18,14 @@ PageCaptureCustomBindings::PageCaptureCustomBindings(
     Dispatcher* dispatcher,
     v8::Handle<v8::Context> context)
     : ChromeV8Extension(dispatcher, context) {
-  RouteStaticFunction("CreateBlob", &CreateBlob);
-  RouteStaticFunction("SendResponseAck", &SendResponseAck);
+  RouteFunction("CreateBlob",
+      base::Bind(&PageCaptureCustomBindings::CreateBlob,
+                 base::Unretained(this)));
+  RouteFunction("SendResponseAck",
+      base::Bind(&PageCaptureCustomBindings::SendResponseAck,
+                 base::Unretained(this)));
 }
 
-// static
 v8::Handle<v8::Value> PageCaptureCustomBindings::CreateBlob(
     const v8::Arguments& args) {
   CHECK(args.Length() == 2);
@@ -33,15 +37,12 @@ v8::Handle<v8::Value> PageCaptureCustomBindings::CreateBlob(
   return blob.toV8Value();
 }
 
-// static
 v8::Handle<v8::Value> PageCaptureCustomBindings::SendResponseAck(
     const v8::Arguments& args) {
   CHECK(args.Length() == 1);
   CHECK(args[0]->IsInt32());
 
-  PageCaptureCustomBindings* self =
-      GetFromArguments<PageCaptureCustomBindings>(args);
-  content::RenderView* render_view = self->GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (render_view) {
     render_view->Send(new ExtensionHostMsg_ResponseAck(
         render_view->GetRoutingID(), args[0]->Int32Value()));

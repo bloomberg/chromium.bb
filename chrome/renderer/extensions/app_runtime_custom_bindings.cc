@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/app_runtime_custom_bindings.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -58,9 +59,9 @@ namespace extensions {
 AppRuntimeCustomBindings::AppRuntimeCustomBindings(
     Dispatcher* dispatcher,
     v8::Handle<v8::Context> context) : ChromeV8Extension(dispatcher, context) {
-  RouteStaticFunction("DeserializeString", &DeserializeString);
-  RouteStaticFunction("SerializeToString", &SerializeToString);
-  RouteStaticFunction("CreateBlob", &CreateBlob);
+  RouteFunction("DeserializeString", base::Bind(&DeserializeString));
+  RouteFunction("SerializeToString", base::Bind(&SerializeToString));
+  RouteFunction("CreateBlob", base::Bind(&CreateBlob));
 }
 
 }  // namespace extensions

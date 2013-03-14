@@ -15,7 +15,7 @@ class I18NCustomBindings : public ChromeV8Extension {
   I18NCustomBindings(Dispatcher* dispatcher, v8::Handle<v8::Context> context);
 
  private:
-  static v8::Handle<v8::Value> GetL10nMessage(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetL10nMessage(const v8::Arguments& args);
 };
 
 }  // extensions

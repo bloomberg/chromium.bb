@@ -65,14 +65,6 @@ void ObjectBackedNativeHandler::RouteFunction(
   object_template_->Set(name.c_str(), function_template);
 }
 
-void ObjectBackedNativeHandler::RouteStaticFunction(
-    const std::string& name,
-    const HandlerFunc& handler_func) {
-  v8::Handle<v8::FunctionTemplate> function_template =
-      v8::FunctionTemplate::New(handler_func, v8::External::New(this));
-  object_template_->Set(name.c_str(), function_template);
-}
-
 void ObjectBackedNativeHandler::Invalidate() {
   if (!is_valid())
     return;

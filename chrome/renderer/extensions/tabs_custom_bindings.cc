@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
@@ -16,16 +17,16 @@ namespace extensions {
 TabsCustomBindings::TabsCustomBindings(Dispatcher* dispatcher,
                                        v8::Handle<v8::Context> context)
     : ChromeV8Extension(dispatcher, context) {
-  RouteStaticFunction("OpenChannelToTab", &OpenChannelToTab);
+  RouteFunction("OpenChannelToTab",
+      base::Bind(&TabsCustomBindings::OpenChannelToTab,
+                 base::Unretained(this)));
 }
 
-// static
 v8::Handle<v8::Value> TabsCustomBindings::OpenChannelToTab(
     const v8::Arguments& args) {
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  TabsCustomBindings* self = GetFromArguments<TabsCustomBindings>(args);
-  content::RenderView* renderview = self->GetRenderView();
+  content::RenderView* renderview = GetRenderView();
   if (!renderview)
     return v8::Undefined();
 

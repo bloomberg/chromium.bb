@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 
+#include "base/bind.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "grit/renderer_resources.h"
@@ -25,7 +26,7 @@ namespace extensions {
 ContextMenusCustomBindings::ContextMenusCustomBindings(
     Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
     : ChromeV8Extension(dispatcher, v8_context) {
-  RouteStaticFunction("GetNextContextMenuId", &GetNextContextMenuId);
+  RouteFunction("GetNextContextMenuId", base::Bind(&GetNextContextMenuId));
 }
 
 }  // extensions

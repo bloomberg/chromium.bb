@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
@@ -15,11 +16,12 @@ namespace extensions {
 WebRequestCustomBindings::WebRequestCustomBindings(
     Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
     : ChromeV8Extension(dispatcher, v8_context) {
-  RouteStaticFunction("GetUniqueSubEventName", &GetUniqueSubEventName);
+  RouteFunction("GetUniqueSubEventName",
+      base::Bind(&WebRequestCustomBindings::GetUniqueSubEventName,
+                 base::Unretained(this)));
 }
 
 // Attach an event name to an object.
-// static
 v8::Handle<v8::Value> WebRequestCustomBindings::GetUniqueSubEventName(
     const v8::Arguments& args) {
   static int next_event_id = 0;

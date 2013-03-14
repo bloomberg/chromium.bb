@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 
@@ -14,10 +15,11 @@ namespace extensions {
 TTSCustomBindings::TTSCustomBindings(
     Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
     : ChromeV8Extension(dispatcher, v8_context) {
-  RouteStaticFunction("GetNextTTSEventId", &GetNextTTSEventId);
+  RouteFunction("GetNextTTSEventId",
+      base::Bind(&TTSCustomBindings::GetNextTTSEventId,
+                 base::Unretained(this)));
 }
 
-// static
 v8::Handle<v8::Value> TTSCustomBindings::GetNextTTSEventId(
     const v8::Arguments& args) {
   // Note: this works because the TTS API only works in the

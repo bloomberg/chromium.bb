@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -30,10 +31,11 @@ ExtensionCustomBindings::ExtensionCustomBindings(
     Dispatcher* dispatcher,
     v8::Handle<v8::Context> context)
     : ChromeV8Extension(dispatcher, context) {
-  RouteStaticFunction("GetExtensionViews", &GetExtensionViews);
+  RouteFunction("GetExtensionViews",
+      base::Bind(&ExtensionCustomBindings::GetExtensionViews,
+                 base::Unretained(this)));
 }
 
-// static
 v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
     const v8::Arguments& args) {
   if (args.Length() != 2)
@@ -71,10 +73,7 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
     return v8::Undefined();
   }
 
-  ExtensionCustomBindings* v8_extension =
-      GetFromArguments<ExtensionCustomBindings>(args);
-  const Extension* extension =
-      v8_extension->GetExtensionForRenderView();
+  const Extension* extension = GetExtensionForRenderView();
   if (!extension)
     return v8::Undefined();
 

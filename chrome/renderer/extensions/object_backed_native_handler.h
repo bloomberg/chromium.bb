@@ -29,7 +29,6 @@ class ObjectBackedNativeHandler : public NativeHandler {
   virtual v8::Handle<v8::Object> NewInstance() OVERRIDE;
 
  protected:
-  typedef v8::Handle<v8::Value> (*HandlerFunc)(const v8::Arguments&);
   typedef base::Callback<v8::Handle<v8::Value>(const v8::Arguments&)>
       HandlerFunction;
 
@@ -38,9 +37,6 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // |name| which will be handled by |handler_function|.
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
-
-  void RouteStaticFunction(const std::string& name,
-                           const HandlerFunc& handler_func);
 
   v8::Handle<v8::Context> v8_context() { return v8_context_.get(); }
 

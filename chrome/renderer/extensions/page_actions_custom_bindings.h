@@ -17,7 +17,7 @@ class PageActionsCustomBindings : public ChromeV8Extension {
                             v8::Handle<v8::Context> v8_context);
 
  private:
-  static v8::Handle<v8::Value> GetCurrentPageActions(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetCurrentPageActions(const v8::Arguments& args);
 };
 
 }  // extensions
