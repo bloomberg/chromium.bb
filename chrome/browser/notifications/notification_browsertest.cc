@@ -48,6 +48,15 @@
 #if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center.h"
 #endif
+
+// Mac implementation of message_center is incomplete. The code builds, but
+// the tests do not pass <http://crbug.com/179904>.
+#if defined(ENABLE_MESSAGE_CENTER) && !defined(OS_MACOSX)
+#define ENABLE_MESSAGE_CENTER_TESTING 1
+#else
+#define ENABLE_MESSAGE_CENTER_TESTING 0
+#endif
+
 namespace {
 
 const char kExpectedIconUrl[] = "files/notifications/no_such_file.png";
@@ -58,7 +67,7 @@ enum InfobarAction {
   DENY,
 };
 
-#if defined(ENABLE_MESSAGE_CENTER)
+#if ENABLE_MESSAGE_CENTER_TESTING
 class MessageCenterChangeObserver
     : public message_center::MessageCenter::Observer {
  public:
@@ -188,7 +197,7 @@ class NotificationsTest : public InProcessBrowserTest {
 
   void CloseBrowserWindow(Browser* browser);
   void CrashTab(Browser* browser, int index);
-#if !defined(ENABLE_MESSAGE_CENTER)
+#if !ENABLE_MESSAGE_CENTER_TESTING
   const std::deque<Balloon*>& GetActiveBalloons();
   void CrashNotification(Balloon* balloon);
   bool CloseNotificationAndWait(const Notification& notification);
@@ -237,12 +246,12 @@ void NotificationsTest::SetUpInProcessBrowserTestFixture() {
 }
 
 int NotificationsTest::GetNotificationCount() {
-#if defined(ENABLE_MESSAGE_CENTER)
+#if ENABLE_MESSAGE_CENTER_TESTING
   return message_center::MessageCenter::Get()->NotificationCount();
 #else
   return BalloonNotificationUIManager::GetInstanceForTesting()->
       balloon_collection()->GetActiveBalloons().size();
-#endif  // defined(ENABLE_MESSAGE_CENTER)
+#endif  // ENABLE_MESSAGE_CENTER_TESTING
 }
 
 void NotificationsTest::CloseBrowserWindow(Browser* browser) {
@@ -257,7 +266,7 @@ void NotificationsTest::CrashTab(Browser* browser, int index) {
   content::CrashTab(browser->tab_strip_model()->GetWebContentsAt(index));
 }
 
-#if !defined(ENABLE_MESSAGE_CENTER)
+#if !ENABLE_MESSAGE_CENTER_TESTING
 
 const std::deque<Balloon*>& NotificationsTest::GetActiveBalloons() {
   return BalloonNotificationUIManager::GetInstanceForTesting()->
@@ -278,7 +287,7 @@ bool NotificationsTest::CloseNotificationAndWait(
   return false;
 }
 
-#endif  // !defined(ENABLE_MESSAGE_CENTER)
+#endif  // !ENABLE_MESSAGE_CENTER_TESTING
 
 void NotificationsTest::SetDefaultPermissionSetting(ContentSetting setting) {
   DesktopNotificationService* service = GetDesktopNotificationService();
@@ -500,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
 
   GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
   ASSERT_EQ(1, GetNotificationCount());
-#if defined(ENABLE_MESSAGE_CENTER)
+#if ENABLE_MESSAGE_CENTER_TESTING
   message_center::NotificationList* notification_list =
       message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =
@@ -527,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
   EXPECT_NE("-1", result);
   ASSERT_EQ(1, GetNotificationCount());
 
-#if defined(ENABLE_MESSAGE_CENTER)
+#if ENABLE_MESSAGE_CENTER_TESTING
   message_center::NotificationList* notification_list =
       message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =
@@ -538,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
 #else
   const std::deque<Balloon*>& balloons = GetActiveBalloons();
   EXPECT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
-#endif  // ENABLE_MESSAGE_CENTER
+#endif  // ENABLE_MESSAGE_CENTER_TESTING
 
   ASSERT_EQ(0, GetNotificationCount());
 }
@@ -689,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
   ASSERT_TRUE(CheckOriginInSetting(settings, test_page_url_.GetOrigin()));
 
   EXPECT_EQ(1, GetNotificationCount());
-#if defined(ENABLE_MESSAGE_CENTER)
+#if ENABLE_MESSAGE_CENTER_TESTING
   message_center::NotificationList* notification_list =
       message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =
@@ -700,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
 #else
   const std::deque<Balloon*>& balloons = GetActiveBalloons();
   ASSERT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
-#endif  // ENABLE_MESSAGE_CENTER
+#endif  // ENABLE_MESSAGE_CENTER_TESTING
   ASSERT_EQ(0, GetNotificationCount());
 }
 
@@ -763,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
 }
 
 // Notifications don't have their own process with the message center.
-#if !defined(ENABLE_MESSAGE_CENTER)
+#if !ENABLE_MESSAGE_CENTER_TESTING
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
   // Test killing a notification doesn't crash Chrome.
   AllowAllOrigins();
@@ -859,8 +868,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
       browser(), false, "no_such_file.png", "Title2", "Body2", "chat");
   EXPECT_NE("-1", result);
 
-#if defined(ENABLE_MESSAGE_CENTER)
-  ASSERT_EQ(1U, GetNotificationCount());
+#if ENABLE_MESSAGE_CENTER_TESTING
+  ASSERT_EQ(1, GetNotificationCount());
   message_center::NotificationList* notification_list =
       message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =

@@ -37,7 +37,7 @@ using extensions::Extension;
 
 // Tests are timing out waiting for extension to crash.
 // http://crbug.com/174705
-#if defined(OS_MAC) || defined(USE_AURA)
+#if defined(OS_MACOSX) || defined(USE_AURA)
 #define MAYBE_ExtensionCrashRecoveryTest DISABLED_ExtensionCrashRecoveryTest
 #else
 #define MAYBE_ExtensionCrashRecoveryTest ExtensionCrashRecoveryTest
@@ -115,7 +115,8 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
 
 };
 
-#if defined(ENABLE_MESSAGE_CENTER)
+// TODO(rsesek): Implement and enable these tests. http://crbug.com/179904
+#if defined(ENABLE_MESSAGE_CENTER) && !defined(OS_MACOSX)
 
 class MessageCenterExtensionCrashRecoveryTest
     : public ExtensionCrashRecoveryTestBase {

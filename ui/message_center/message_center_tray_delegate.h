@@ -5,6 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_DELEGATE_H_
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_DELEGATE_H_
 
+#include "ui/message_center/message_center_export.h"
+
 namespace message_center {
 
 // A MessageCenterTrayDelegate class is responsible for managing the various UI

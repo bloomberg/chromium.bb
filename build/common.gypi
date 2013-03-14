@@ -143,8 +143,8 @@
             'enable_app_list%': 0,
           }],
 
-          # Enable Message Center only on ChromeOS and Windows for now.
-          ['use_ash==1 or OS=="win"', {
+          # Enable Message Center only on ChromeOS, Windows, and Mac for now.
+          ['use_ash==1 or OS=="win" or OS=="mac"', {
             'enable_message_center%': 1,
           }, {
             'enable_message_center%': 0,

@@ -88,6 +88,10 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
   }
 };
 
+// TODO(rsesek): Implement Message Center on Mac and get these tests passing
+// for real. http://crbug.com/179904
+#if !defined(OS_MACOSX)
+
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
   // Make sure comamnd-line switch has an effect.
   EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
@@ -122,3 +126,4 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
   delegate->Release();
 }
 
+#endif  // !defined(OS_MACOSX)
