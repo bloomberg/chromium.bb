@@ -23,8 +23,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
       last_results_base_(0),
       is_key_capture_enabled_(false),
       display_instant_results_(false),
-      omnibox_font_size_(0),
-      last_restricted_id_(0) {
+      omnibox_font_size_(0) {
 }
 
 SearchBox::~SearchBox() {
