@@ -343,10 +343,8 @@ void NotifyAppTerminating() {
 void NotifyAndTerminate(bool fast_path) {
 #if defined(OS_CHROMEOS)
   static bool notified = false;
-  // Don't ask SessionManager to shutdown if
-  // a) a shutdown request has already been sent.
-  // b) shutdown request comes from session manager.
-  if (notified || g_session_manager_requested_shutdown)
+  // Return if a shutdown request has already been sent.
+  if (notified)
     return;
   notified = true;
 #endif
@@ -363,7 +361,9 @@ void NotifyAndTerminate(bool fast_path) {
     if (update_engine_client->GetLastStatus().status ==
         chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
       update_engine_client->RebootAfterUpdate();
-    } else {
+    } else if (!g_session_manager_requested_shutdown) {
+      // Don't ask SessionManager to stop session if the shutdown request comes
+      // from session manager.
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
           ->StopSession();
     }
