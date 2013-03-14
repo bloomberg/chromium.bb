@@ -240,7 +240,7 @@ void AppListController::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void AppListController::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP)
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN)
     ProcessLocatedEvent(event);
 }
 
