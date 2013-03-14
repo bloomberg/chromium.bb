@@ -362,8 +362,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
 
   // Removes child elements of directory.
   void RemoveDirectoryChildren(DriveEntryProto* directory);
-  void RemoveDirectoryChildFiles(DriveEntryProto* directory);
-  void RemoveDirectoryChildDirectories(DriveEntryProto* directory);
 
   // Converts directory to proto, and vice versa.
   void ProtoToDirectory(const DriveDirectoryProto& proto,

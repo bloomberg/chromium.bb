@@ -744,48 +744,21 @@ void DriveResourceMetadata::DetachEntryFromDirectory(
 
 void DriveResourceMetadata::RemoveDirectoryChildren(
     DriveEntryProto* directory) {
-  RemoveDirectoryChildFiles(directory);
-  RemoveDirectoryChildDirectories(directory);
-  DCHECK(child_maps_[directory->resource_id()].empty());
-  child_maps_.erase(directory->resource_id());
-}
-
-void DriveResourceMetadata::RemoveDirectoryChildFiles(
-    DriveEntryProto* directory) {
   DCHECK(directory->file_info().is_directory());
   DriveResourceMetadata::ChildMap* children =
       &child_maps_[directory->resource_id()];
-  for (DriveResourceMetadata::ChildMap::iterator iter = children->begin(),
-           iter_next = iter; iter != children->end(); iter = iter_next) {
-    ++iter_next;
+  for (DriveResourceMetadata::ChildMap::iterator iter = children->begin();
+       iter != children->end(); ++iter) {
     DriveEntryProto* child = GetEntryByResourceId(iter->second);
     DCHECK(child);
-    if (!child->file_info().is_directory()) {
-      RemoveEntryFromResourceMap(iter->second);
-      delete child;
-      children->erase(iter);
-    }
-  }
-}
+    // Remove directories recursively.
+    if (child->file_info().is_directory())
+      RemoveDirectoryChildren(child);
 
-void DriveResourceMetadata::RemoveDirectoryChildDirectories(
-    DriveEntryProto* directory) {
-  DCHECK(directory->file_info().is_directory());
-  DriveResourceMetadata::ChildMap* children =
-      &child_maps_[directory->resource_id()];
-  for (DriveResourceMetadata::ChildMap::iterator iter = children->begin(),
-           iter_next = iter; iter != children->end(); iter = iter_next) {
-    ++iter_next;
-    DriveEntryProto* entry = GetEntryByResourceId(iter->second);
-    DCHECK(entry);
-    if (entry->file_info().is_directory()) {
-      // Remove directories recursively.
-      RemoveDirectoryChildren(entry);
-      RemoveEntryFromResourceMap(iter->second);
-      delete entry;
-      children->erase(iter);
-    }
+    RemoveEntryFromResourceMap(iter->second);
+    delete child;
   }
+  child_maps_.erase(directory->resource_id());
 }
 
 void DriveResourceMetadata::ProtoToDirectory(const DriveDirectoryProto& proto,
