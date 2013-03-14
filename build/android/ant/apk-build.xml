@@ -228,115 +228,6 @@
     <!-- ************************ Macros *********************** -->
     <!-- ******************************************************* -->
 
-    <!-- macro to do a task on if project.is.library is false.
-         elseText attribute is displayed otherwise -->
-    <macrodef name="do-only-if-not-library">
-        <attribute name="elseText" />
-        <element name="task-to-do" implicit="yes" />
-        <sequential>
-        <if condition="${project.is.library}">
-            <else>
-                <task-to-do />
-            </else>
-            <then>
-                <echo level="info">@{elseText}</echo>
-            </then>
-        </if>
-        </sequential>
-    </macrodef>
-
-    <!-- macro to do a task on if manifest.hasCode is true.
-         elseText attribute is displayed otherwise -->
-    <macrodef name="do-only-if-manifest-hasCode">
-        <attribute name="elseText" default=""/>
-        <element name="task-to-do" implicit="yes" />
-        <sequential>
-        <if condition="${manifest.hasCode}">
-            <then>
-                <task-to-do />
-            </then>
-            <else>
-                <if>
-                    <condition>
-                        <length string="@{elseText}" trim="true" when="greater" length="0" />
-                    </condition>
-                    <then>
-                        <echo level="info">@{elseText}</echo>
-                    </then>
-                </if>
-            </else>
-        </if>
-        </sequential>
-    </macrodef>
-
-
-    <!-- Configurable macro, which allows to pass as parameters output directory,
-         output dex filename and external libraries to dex (optional) -->
-    <macrodef name="dex-helper">
-        <element name="external-libs" optional="yes" />
-        <attribute name="nolocals" default="false" />
-        <sequential>
-            <!-- sets the primary input for dex. If a pre-dex task sets it to
-                 something else this has no effect -->
-            <property name="out.dex.input.absolute.dir" value="${out.classes.absolute.dir}" />
-
-            <dex executable="${dx}"
-                    output="${intermediate.dex.file}"
-                    dexedlibs="${out.dexed.absolute.dir}"
-                    nolocals="@{nolocals}"
-                    forceJumbo="${dex.force.jumbo}"
-                    verbose="${verbose}">
-                <path path="${out.dex.input.absolute.dir}"/>
-                <path refid="out.dex.jar.input.ref" />
-                <external-libs />
-            </dex>
-        </sequential>
-    </macrodef>
-
-    <!-- This is macro that enable passing variable list of external jar files to ApkBuilder
-         Example of use:
-         <package-helper>
-             <extra-jars>
-                <jarfolder path="my_jars" />
-                <jarfile path="foo/bar.jar" />
-                <jarfolder path="your_jars" />
-             </extra-jars>
-         </package-helper> -->
-    <macrodef name="package-helper">
-        <element name="extra-jars" optional="yes" />
-        <sequential>
-            <apkbuilder
-                    outfolder="${out.absolute.dir}"
-                    resourcefile="${resource.package.file.name}"
-                    apkfilepath="${out.packaged.file}"
-                    debugpackaging="${build.is.packaging.debug}"
-                    debugsigning="${build.is.signing.debug}"
-                    verbose="${verbose}"
-                    hascode="${manifest.hasCode}"
-                    previousBuildType="${build.last.is.packaging.debug}/${build.last.is.signing.debug}"
-                    buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
-                <dex path="${intermediate.dex.file}"/>
-                <sourcefolder path="${source.absolute.dir}"/>
-                <nativefolder path="${native.libs.absolute.dir}" />
-                <extra-jars/>
-            </apkbuilder>
-        </sequential>
-    </macrodef>
-
-    <!-- This is macro which zipaligns in.package and outputs it to out.package. Used by targets
-         debug and release.-->
-    <macrodef name="zipalign-helper">
-        <attribute name="in.package" />
-        <attribute name="out.package" />
-        <sequential>
-            <zipalign
-                    executable="${zipalign}"
-                    input="@{in.package}"
-                    output="@{out.package}"
-                    verbose="${verbose}" />
-        </sequential>
-    </macrodef>
-
     <macrodef name="record-build-key">
         <attribute name="key" default="false" />
         <attribute name="value" default="false" />
@@ -498,11 +389,9 @@
         <mkdir dir="${jar.libs.absolute.dir}" />
         <mkdir dir="${out.absolute.dir}" />
         <mkdir dir="${out.res.absolute.dir}" />
-        <do-only-if-manifest-hasCode>
-            <mkdir dir="${gen.absolute.dir}" />
-            <mkdir dir="${out.classes.absolute.dir}" />
-            <mkdir dir="${out.dexed.absolute.dir}" />
-        </do-only-if-manifest-hasCode>
+        <mkdir dir="${gen.absolute.dir}" />
+        <mkdir dir="${out.classes.absolute.dir}" />
+        <mkdir dir="${out.dexed.absolute.dir}" />
     </target>
 
     <!-- empty default pre-build target. Create a similar target in
@@ -518,36 +407,32 @@
                 enabled="${manifestmerger.enabled}">
         </mergemanifest>
 
-        <do-only-if-manifest-hasCode
-                elseText="hasCode = false. Skipping aidl/R.java">
-            <echo level="info">----------</echo>
-            <echo level="info">Handling Resources...</echo>
-            <aapt executable="${aapt}"
-                    command="package"
-                    verbose="${verbose}"
-                    manifest="${out.manifest.abs.file}"
-                    androidjar="${project.target.android.jar}"
-                    rfolder="${gen.absolute.dir}"
-                    nonConstantId="${android.library}"
-                    libraryResFolderPathRefid="project.library.res.folder.path"
-                    libraryPackagesRefid="project.library.packages"
-                    libraryRFileRefid="project.library.bin.r.file.path"
-                    ignoreAssets="${aapt.ignore.assets}"
-                    binFolder="${out.absolute.dir}"
-                    proguardFile="${out.absolute.dir}/proguard.txt">
-                <res path="${out.res.absolute.dir}" />
-                <res path="${resource.absolute.dir}" />
-            </aapt>
+        <echo level="info">----------</echo>
+        <echo level="info">Handling Resources...</echo>
+        <aapt executable="${aapt}"
+                command="package"
+                verbose="${verbose}"
+                manifest="${out.manifest.abs.file}"
+                androidjar="${project.target.android.jar}"
+                rfolder="${gen.absolute.dir}"
+                nonConstantId="${android.library}"
+                libraryResFolderPathRefid="project.library.res.folder.path"
+                libraryPackagesRefid="project.library.packages"
+                libraryRFileRefid="project.library.bin.r.file.path"
+                ignoreAssets="${aapt.ignore.assets}"
+                binFolder="${out.absolute.dir}"
+                proguardFile="${out.absolute.dir}/proguard.txt">
+            <res path="${out.res.absolute.dir}" />
+            <res path="${resource.absolute.dir}" />
+        </aapt>
 
-            <echo level="info">----------</echo>
-            <echo level="info">Handling BuildConfig class...</echo>
-            <buildconfig
-                    genFolder="${gen.absolute.dir}"
-                    package="${project.app.package}"
-                    buildType="${build.is.packaging.debug}"
-                    previousBuildType="${build.last.is.packaging.debug}"/>
-
-        </do-only-if-manifest-hasCode>
+        <echo level="info">----------</echo>
+        <echo level="info">Handling BuildConfig class...</echo>
+        <buildconfig
+                genFolder="${gen.absolute.dir}"
+                package="${project.app.package}"
+                buildType="${build.is.packaging.debug}"
+                previousBuildType="${build.last.is.packaging.debug}"/>
     </target>
 
     <!-- empty default pre-compile target. Create a similar target in
@@ -573,42 +458,39 @@
     <target
         name="-compile"
         depends="-build-setup, -pre-build, -code-gen, -pre-compile">
-      <do-only-if-manifest-hasCode elseText="hasCode = false. Skipping..." >
-        <javac
-            bootclasspathref="project.target.class.path"
-            classpathref="javac.custom.classpath"
-            debug="true"
-            destdir="${out.classes.absolute.dir}"
-            encoding="${java.encoding}"
-            extdirs=""
-            fork="${need.javac.fork}"
-            includeantruntime="false"
-            source="${java.source}"
-            target="${java.target}"
-            verbose="${verbose}">
-          <src path="${source.absolute.dir}"/>
-          <src path="${gen.absolute.dir}"/>
-          <src>
-            <path refid="javac.srcdirs.additional"/>
-          </src>
-          <compilerarg value="-Xlint:unchecked"/>
-          <compilerarg line="${java.compilerargs}"/>
-        </javac>
-        <!--
-          If the project needs a test jar then generate a jar containing
-          all compiled classes and referenced jars.
-          project.is.testapp is set by Android's ant build system based on the
-          target's manifest. It is true only for instrumentation apks.
-        -->
-        <if condition="${project.is.testapp}">
-          <then>
-            <property-location name="create.test.jar.file"
-                location="${CHROMIUM_SRC}/build/android/ant/create-test-jar.js"/>
-            <script language="javascript" src="${create.test.jar.file}"/>
-          </then>
-        </if>
-
-      </do-only-if-manifest-hasCode>
+      <javac
+          bootclasspathref="project.target.class.path"
+          classpathref="javac.custom.classpath"
+          debug="true"
+          destdir="${out.classes.absolute.dir}"
+          encoding="${java.encoding}"
+          extdirs=""
+          fork="${need.javac.fork}"
+          includeantruntime="false"
+          source="${java.source}"
+          target="${java.target}"
+          verbose="${verbose}">
+        <src path="${source.absolute.dir}"/>
+        <src path="${gen.absolute.dir}"/>
+        <src>
+          <path refid="javac.srcdirs.additional"/>
+        </src>
+        <compilerarg value="-Xlint:unchecked"/>
+        <compilerarg line="${java.compilerargs}"/>
+      </javac>
+      <!--
+        If the project needs a test jar then generate a jar containing
+        all compiled classes and referenced jars.
+        project.is.testapp is set by Android's ant build system based on the
+        target's manifest. It is true only for instrumentation apks.
+      -->
+      <if condition="${project.is.testapp}">
+        <then>
+          <property-location name="create.test.jar.file"
+              location="${CHROMIUM_SRC}/build/android/ant/create-test-jar.js"/>
+          <script language="javascript" src="${create.test.jar.file}"/>
+        </then>
+      </if>
     </target>
 
     <!-- empty default post-compile target. Create a similar target in
@@ -736,15 +618,24 @@
 
     <!-- Converts this project's .class files into .dex files -->
     <target name="-dex" depends="-compile, -post-compile, -obfuscate">
-        <do-only-if-manifest-hasCode elseText="hasCode = false. Skipping...">
-            <!-- only convert to dalvik bytecode is *not* a library -->
-            <do-only-if-not-library elseText="Library project: do not convert bytecode..." >
-                <dex-helper />
-            </do-only-if-not-library>
-        </do-only-if-manifest-hasCode>
+        <sequential>
+            <!-- sets the primary input for dex. If a pre-dex task sets it to
+                 something else this has no effect -->
+            <property name="out.dex.input.absolute.dir" value="${out.classes.absolute.dir}" />
+
+            <dex executable="${dx}"
+                    output="${intermediate.dex.file}"
+                    dexedlibs="${out.dexed.absolute.dir}"
+                    nolocals="false"
+                    forceJumbo="${dex.force.jumbo}"
+                    verbose="${verbose}">
+                <path path="${out.dex.input.absolute.dir}"/>
+                <path refid="out.dex.jar.input.ref" />
+            </dex>
+        </sequential>
     </target>
 
-<!-- Updates the pre-processed PNG cache -->
+    <!-- Updates the pre-processed PNG cache -->
     <target name="-crunch">
         <exec executable="${aapt}" taskName="crunch">
             <arg value="crunch" />
@@ -762,40 +653,49 @@
          declared in default.properties.
          -->
     <target name="-package-resources" depends="-crunch">
-        <!-- only package resources if *not* a library project -->
-        <do-only-if-not-library elseText="Library project: do not package resources..." >
-            <aapt executable="${aapt}"
-                    command="package"
-                    versioncode="${version.code}"
-                    versionname="${version.name}"
-                    debug="${build.is.packaging.debug}"
-                    manifest="${out.manifest.abs.file}"
-                    assets="${asset.absolute.dir}"
-                    androidjar="${project.target.android.jar}"
-                    apkfolder="${out.absolute.dir}"
-                    nocrunch="${build.packaging.nocrunch}"
-                    resourcefilename="${resource.package.file.name}"
-                    resourcefilter="${aapt.resource.filter}"
-                    libraryResFolderPathRefid="project.library.res.folder.path"
-                    libraryPackagesRefid="project.library.packages"
-                    libraryRFileRefid="project.library.bin.r.file.path"
-                    previousBuildType="${build.last.target}"
-                    buildType="${build.target}"
-                    ignoreAssets="${aapt.ignore.assets}">
-                <res path="${out.res.absolute.dir}" />
-                <res path="${resource.absolute.dir}" />
-                <!-- <nocompress /> forces no compression on any files in assets or res/raw -->
-                <!-- <nocompress extension="xml" /> forces no compression on specific file extensions in assets and res/raw -->
-            </aapt>
-        </do-only-if-not-library>
+        <aapt executable="${aapt}"
+                command="package"
+                versioncode="${version.code}"
+                versionname="${version.name}"
+                debug="${build.is.packaging.debug}"
+                manifest="${out.manifest.abs.file}"
+                assets="${asset.absolute.dir}"
+                androidjar="${project.target.android.jar}"
+                apkfolder="${out.absolute.dir}"
+                nocrunch="${build.packaging.nocrunch}"
+                resourcefilename="${resource.package.file.name}"
+                resourcefilter="${aapt.resource.filter}"
+                libraryResFolderPathRefid="project.library.res.folder.path"
+                libraryPackagesRefid="project.library.packages"
+                libraryRFileRefid="project.library.bin.r.file.path"
+                previousBuildType="${build.last.target}"
+                buildType="${build.target}"
+                ignoreAssets="${aapt.ignore.assets}">
+            <res path="${out.res.absolute.dir}" />
+            <res path="${resource.absolute.dir}" />
+            <!-- <nocompress /> forces no compression on any files in assets or res/raw -->
+            <!-- <nocompress extension="xml" /> forces no compression on specific file extensions in assets and res/raw -->
+        </aapt>
     </target>
 
     <!-- Packages the application. -->
     <target name="-package" depends="-dex, -package-resources">
-        <!-- only package apk if *not* a library project -->
-        <do-only-if-not-library elseText="Library project: do not package apk..." >
-            <package-helper />
-        </do-only-if-not-library>
+        <sequential>
+            <apkbuilder
+                    outfolder="${out.absolute.dir}"
+                    resourcefile="${resource.package.file.name}"
+                    apkfilepath="${out.packaged.file}"
+                    debugpackaging="${build.is.packaging.debug}"
+                    debugsigning="${build.is.signing.debug}"
+                    verbose="${verbose}"
+                    hascode="${manifest.hasCode}"
+                    previousBuildType="${build.last.is.packaging.debug}/${build.last.is.signing.debug}"
+                    buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
+                <dex path="${intermediate.dex.file}"/>
+                <sourcefolder path="${source.absolute.dir}"/>
+                <nativefolder path="${native.libs.absolute.dir}" />
+            </apkbuilder>
+        </sequential>
     </target>
 
     <target name="-post-package" />
@@ -850,17 +750,19 @@
         <!-- Signs the APK -->
         <echo level="info">Signing final apk...</echo>
         <signapk
-          input="${out.packaged.file}"
-          output="${out.unaligned.file}"
-          keystore="${key.store}"
-          storepass="${key.store.password}"
-          alias="${key.alias}"
-          keypass="${key.alias.password}"/>
+                input="${out.packaged.file}"
+                output="${out.unaligned.file}"
+                keystore="${key.store}"
+                storepass="${key.store.password}"
+                alias="${key.alias}"
+                keypass="${key.alias.password}"/>
 
         <!-- Zip aligns the APK -->
-        <zipalign-helper
-          in.package="${out.unaligned.file}"
-          out.package="${out.final.file}" />
+        <zipalign
+                executable="${zipalign}"
+                input="${out.unaligned.file}"
+                output="${out.final.file}"
+                verbose="${verbose}" />
         <echo level="info">Release Package: ${out.final.file}</echo>
       </sequential>
     </target>
