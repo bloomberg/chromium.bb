@@ -99,10 +99,6 @@ void TokenService::Initialize(const char* const source,
   }
 }
 
-// TODO(petewil) We should refactor the token_service so it does not both
-// store tokens and fetch them.  Move the key-value storage out of
-// token_service, and leave the token fetching in token_service.
-
 void TokenService::AddAuthTokenManually(const std::string& service,
                                         const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -404,10 +400,6 @@ void TokenService::LoadTokensIntoMemory(
   }
   LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
       GaiaConstants::kGaiaOAuth2LoginRefreshToken);
-  // TODO(petewil): Remove next line when we refactor key-value
-  // storage out of token_service - http://crbug.com/177125.
-  LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
-      GaiaConstants::kObfuscatedGaiaId);
 
   if (credentials_.lsid.empty() && credentials_.sid.empty()) {
     // Look for GAIA SID and LSID tokens.  If we have both, and the current

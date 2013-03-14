@@ -769,6 +769,7 @@
         'browser/extensions/api/storage/settings_test_util.cc',
         'browser/extensions/api/storage/settings_test_util.h',
         'browser/extensions/shell_window_geometry_cache_unittest.cc',
+        'browser/extensions/token_cache/token_cache_service_unittest.cc',
         'browser/extensions/standard_management_policy_provider_unittest.cc',
         'browser/extensions/updater/extension_updater_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',

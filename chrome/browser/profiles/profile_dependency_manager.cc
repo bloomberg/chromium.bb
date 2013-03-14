@@ -52,6 +52,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/manifest_url_parser.h"
+#include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/extensions/web_accessible_resources_parser.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
@@ -375,6 +376,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_THEMES)
   ThemeServiceFactory::GetInstance();
 #endif
+  TokenCacheServiceFactory::GetInstance();
   TokenServiceFactory::GetInstance();
   UserStyleSheetWatcherFactory::GetInstance();
   WebDataServiceFactory::GetInstance();
