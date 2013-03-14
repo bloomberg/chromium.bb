@@ -163,12 +163,11 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps2) {
 }
 
 TEST_F(CrosSettingsTest, SetEmptyWhitelist) {
-  // Setting the whitelist empty should switch the value of
-  // kAccountsPrefAllowNewUser to true.
+  // An empty whitelist should result in nobody being able to log in.
   base::ListValue whitelist;
   base::FundamentalValue disallow_new(false);
   AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(true));
+                 base::Value::CreateBooleanValue(false));
   SetPref(kAccountsPrefUsers, &whitelist);
   SetPref(kAccountsPrefAllowNewUser, &disallow_new);
   FetchPref(kAccountsPrefAllowNewUser);

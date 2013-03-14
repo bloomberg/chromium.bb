@@ -20,24 +20,20 @@ message UserWhitelistProto {
 message AllowNewUsersProto {
   // Determines whether we allow arbitrary users to log into the device.
   // This interacts with the UserWhitelistProto as follows:
-  // allow_new_users | user_whitelist | user_whitelist_size | anyone can log in
-  //-----------------+----------------+---------------------+------------------
-  //  present, true  | not present    | N/A                 | Yes
-  //-----------------+----------------+---------------------+------------------
-  //  present, true  | present        | >= 0                | Yes
-  //-----------------+----------------+---------------------+------------------
-  //  present, false | not present    | N/A                 | (Broken) Yes
-  //-----------------+----------------+---------------------+------------------
-  //  present, false | present        | 0                   | (Broken) Yes
-  //-----------------+----------------+---------------------+------------------
-  //  present, false | present        | > 0                 | No, W/L enforced
-  //-----------------+----------------+---------------------+------------------
-  //  not present    | not present    | N/A                 | Yes
-  //-----------------+----------------+---------------------+------------------
-  //  not present    | present        | 0                   | Yes
-  //-----------------+----------------+---------------------+------------------
-  //  not present    | present        | > 0                 | No, W/L enforced
-  //-----------------+----------------+---------------------+------------------
+  // allow_new_users | user_whitelist | anyone can log in
+  //-----------------+----------------+------------------
+  //  present, true  | not present    | Yes
+  //-----------------+----------------+------------------
+  //  present, true  | present        | Yes
+  //-----------------+----------------+------------------
+  //  present, false | not present    | (Broken) Yes
+  //-----------------+----------------+------------------
+  //  present, false | present        | No, W/L enforced
+  //-----------------+----------------+------------------
+  //  not present    | not present    | Yes
+  //-----------------+----------------+------------------
+  //  not present    | present        | No, W/L enforced
+  //-----------------+----------------+------------------
   optional bool allow_new_users = 1 [default = true];
 }
 

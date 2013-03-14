@@ -369,18 +369,15 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
   if (policy.has_allow_new_users() &&
       policy.allow_new_users().has_allow_new_users() &&
       policy.allow_new_users().allow_new_users()) {
-    // New users allowed, user_whitelist() ignored.
+    // New users allowed, user whitelist ignored.
     new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
-  } else if (!policy.has_user_whitelist()) {
-    // If we have the allow_new_users bool, and it is true, we honor that above.
-    // In all other cases (don't have it, have it and it is set to false, etc),
-    // We will honor the user_whitelist() if it is there and populated.
-    // Otherwise we default to allowing new users.
-    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
+  } else if (policy.has_user_whitelist()) {
+    // New users not explicitly allowed and user whitelist present, enforce
+    // whitelist and disallow new users.
+    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, false);
   } else {
-    new_values_cache->SetBoolean(
-        kAccountsPrefAllowNewUser,
-        policy.user_whitelist().user_whitelist_size() == 0);
+    // No user whitelist present, allow new users.
+    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
   }
 
   new_values_cache->SetBoolean(
