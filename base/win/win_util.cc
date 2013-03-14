@@ -331,15 +331,12 @@ bool DismissVirtualKeyboard() {
 }  // namespace base
 
 #ifdef _MSC_VER
-//
-// If the ASSERT below fails, please install Visual Studio 2005 Service Pack 1.
-//
-extern char VisualStudio2005ServicePack1Detection[10];
-COMPILE_ASSERT(sizeof(&VisualStudio2005ServicePack1Detection) == sizeof(void*),
-               VS2005SP1Detect);
-//
-// Chrome requires at least Service Pack 1 for Visual Studio 2005.
-//
+
+// There are optimizer bugs in VS2012 pre-Update 1.
+#if _MSC_VER == 1700 && _MSC_FULL_VER < 170051106
+#error Must install Update 1 to Visual Studio 2012.
+#endif
+
 #endif  // _MSC_VER
 
 #ifndef COPY_FILE_COPY_SYMLINK
