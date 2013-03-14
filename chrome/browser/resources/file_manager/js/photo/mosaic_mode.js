@@ -1717,9 +1717,8 @@ Mosaic.Tile.prototype.load = function(onImageLoaded, opt_onThumbnailError) {
   this.thumbnailLoader_.loadDetachedImage(function(success) {
     if (!success) {
       if (opt_onThumbnailError)
-        opt_onThumbnailError();
-    }
-    if (this.wrapper_) {
+        opt_onThumbnailError(this.getItem().getUrl());
+    } else if (this.wrapper_) {
       this.thumbnailLoader_.attachImage(this.wrapper_,
                                         ThumbnailLoader.FillMode.FILL);
     }
