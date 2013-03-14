@@ -362,6 +362,7 @@ class XcodeSettings(object):
       cflags_cc.append('-fvisibility-inlines-hidden')
     if self._Test('GCC_THREADSAFE_STATICS', 'NO', default='YES'):
       cflags_cc.append('-fno-threadsafe-statics')
+    # Note: This flag is a no-op for clang, it only has an effect for gcc.
     if self._Test('GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO', 'NO', default='YES'):
       cflags_cc.append('-Wno-invalid-offsetof')
 

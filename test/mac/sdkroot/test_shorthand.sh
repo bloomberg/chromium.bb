@@ -5,4 +5,4 @@
 
 set -e
 
-test $SDKROOT = /Developer/SDKs/MacOSX10.6.sdk
+test $SDKROOT = $(xcodebuild -version -sdk macosx10.7 Path)
