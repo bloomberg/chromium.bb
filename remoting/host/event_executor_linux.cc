@@ -83,10 +83,15 @@ class EventExecutorLinux : public EventExecutor {
 
     void InitClipboard();
 
-    // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
-    // AutoRepeatModeDefault constants defined by the XChangeKeyboardControl()
-    // API.
-    void SetAutoRepeatForKey(int keycode, int mode);
+    // Queries whether keyboard auto-repeat is globally enabled. This is used
+    // to decide whether to temporarily disable then restore this setting. If
+    // auto-repeat has already been disabled, this class should leave it
+    // untouched.
+    bool IsAutoRepeatEnabled();
+
+    // Enables or disables keyboard auto-repeat globally.
+    void SetAutoRepeatEnabled(bool enabled);
+
     void InjectScrollWheelClicks(int button, int count);
     // Compensates for global button mappings and resets the XTest device
     // mapping.
@@ -116,6 +121,8 @@ class EventExecutorLinux : public EventExecutor {
     int pointer_button_map_[kNumPointerButtons];
 
     scoped_ptr<Clipboard> clipboard_;
+
+    bool saved_auto_repeat_enabled_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -161,7 +168,8 @@ EventExecutorLinux::Core::Core(
       wheel_ticks_x_(0.0f),
       wheel_ticks_y_(0.0f),
       display_(XOpenDisplay(NULL)),
-      root_window_(BadValue) {
+      root_window_(BadValue),
+      saved_auto_repeat_enabled_(false) {
 }
 
 bool EventExecutorLinux::Core::Init() {
@@ -225,21 +233,23 @@ void EventExecutorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
       // Key is already held down, so lift the key up to ensure this repeated
       // press takes effect.
       XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
-    } else {
-      // Key is not currently held down, so disable auto-repeat for this
-      // key to avoid repeated presses in case network congestion delays the
-      // key-released event from the client.
-      SetAutoRepeatForKey(keycode, AutoRepeatModeOff);
+    }
+
+    if (pressed_keys_.empty()) {
+      // Disable auto-repeat, if necessary, to avoid triggering auto-repeat
+      // if network congestion delays the key-up event from the client.
+      saved_auto_repeat_enabled_ = IsAutoRepeatEnabled();
+      if (saved_auto_repeat_enabled_)
+        SetAutoRepeatEnabled(false);
     }
     pressed_keys_.insert(keycode);
   } else {
     pressed_keys_.erase(keycode);
-
-    // Reset the AutoRepeatMode for the key that has been lifted.  In the IT2Me
-    // case, this ensures that key-repeating will continue to work normally
-    // for the local user of the host machine.  "ModeDefault" is used instead
-    // of "ModeOn", since some keys (such as Shift) should not auto-repeat.
-    SetAutoRepeatForKey(keycode, AutoRepeatModeDefault);
+    if (pressed_keys_.empty()) {
+      // Re-enable auto-repeat, if necessary, when all keys are released.
+      if (saved_auto_repeat_enabled_)
+        SetAutoRepeatEnabled(true);
+    }
   }
 
   XTestFakeKeyEvent(display_, keycode, event.pressed(), CurrentTime);
@@ -255,11 +265,19 @@ void EventExecutorLinux::Core::InitClipboard() {
   clipboard_ = Clipboard::Create();
 }
 
-void EventExecutorLinux::Core::SetAutoRepeatForKey(int keycode, int mode) {
+bool EventExecutorLinux::Core::IsAutoRepeatEnabled() {
+  XKeyboardState state;
+  if (!XGetKeyboardControl(display_, &state)) {
+    LOG(ERROR) << "Failed to get keyboard auto-repeat status, assuming ON.";
+    return true;
+  }
+  return state.global_auto_repeat == AutoRepeatModeOn;
+}
+
+void EventExecutorLinux::Core::SetAutoRepeatEnabled(bool mode) {
   XKeyboardControl control;
-  control.key = keycode;
-  control.auto_repeat_mode = mode;
-  XChangeKeyboardControl(display_, KBKey | KBAutoRepeatMode, &control);
+  control.auto_repeat_mode = mode ? AutoRepeatModeOn : AutoRepeatModeOff;
+  XChangeKeyboardControl(display_, KBAutoRepeatMode, &control);
 }
 
 void EventExecutorLinux::Core::InjectScrollWheelClicks(int button, int count) {
@@ -445,7 +463,6 @@ int EventExecutorLinux::Core::HorizontalScrollWheelToX11ButtonNumber(int dx) {
   return (dx > 0 ? pointer_button_map_[5] : pointer_button_map_[6]);
 }
 
-
 int EventExecutorLinux::Core::VerticalScrollWheelToX11ButtonNumber(int dy) {
   // Positive y-values are wheel scroll-up events (button 4), negative y-values
   // are wheel scroll-down events (button 5).
@@ -462,6 +479,7 @@ void EventExecutorLinux::Core::Start(
   }
 
   InitMouseButtonMap();
+
   clipboard_->Start(client_clipboard.Pass());
 }
 
