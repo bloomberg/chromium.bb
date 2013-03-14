@@ -53,10 +53,23 @@ class AwContentsClientCallbackHelper {
         }
     }
 
+    private static class OnReceivedErrorInfo {
+        final int mErrorCode;
+        final String mDescription;
+        final String mFailingUrl;
+
+        OnReceivedErrorInfo(int errorCode, String description, String failingUrl) {
+            mErrorCode = errorCode;
+            mDescription = description;
+            mFailingUrl = failingUrl;
+        }
+    }
+
     private final static int MSG_ON_LOAD_RESOURCE = 1;
     private final static int MSG_ON_PAGE_STARTED = 2;
     private final static int MSG_ON_DOWNLOAD_START = 3;
     private final static int MSG_ON_RECEIVED_LOGIN_REQUEST = 4;
+    private final static int MSG_ON_RECEIVED_ERROR = 5;
 
     private final AwContentsClient mContentsClient;
 
@@ -83,6 +96,12 @@ class AwContentsClientCallbackHelper {
                 case MSG_ON_RECEIVED_LOGIN_REQUEST: {
                     LoginRequestInfo info = (LoginRequestInfo) msg.obj;
                     mContentsClient.onReceivedLoginRequest(info.mRealm, info.mAccount, info.mArgs);
+                    break;
+                }
+                case MSG_ON_RECEIVED_ERROR: {
+                    OnReceivedErrorInfo info = (OnReceivedErrorInfo) msg.obj;
+                    mContentsClient.onReceivedError(info.mErrorCode, info.mDescription,
+                            info.mFailingUrl);
                     break;
                 }
                 default:
@@ -114,5 +133,10 @@ class AwContentsClientCallbackHelper {
     public void postOnReceivedLoginRequest(String realm, String account, String args) {
         LoginRequestInfo info = new LoginRequestInfo(realm, account, args);
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_RECEIVED_LOGIN_REQUEST, info));
+    }
+
+    public void postOnReceivedError(int errorCode, String description, String failingUrl) {
+        OnReceivedErrorInfo info = new OnReceivedErrorInfo(errorCode, description, failingUrl);
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_RECEIVED_ERROR, info));
     }
 }

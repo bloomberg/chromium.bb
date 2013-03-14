@@ -19,7 +19,7 @@ public interface AwContentsIoThreadClient {
     public int getCacheMode();
 
     @CalledByNative
-    public InterceptedRequestData shouldInterceptRequest(String url);
+    public InterceptedRequestData shouldInterceptRequest(String url, boolean isMainFrame);
 
     @CalledByNative
     public boolean shouldBlockContentUrls();

@@ -142,32 +142,44 @@ public class AwContents {
 
         @Override
         public int getCacheMode() {
-            return AwContents.this.mSettings.getCacheMode();
+            return mSettings.getCacheMode();
         }
 
         @Override
-        public InterceptedRequestData shouldInterceptRequest(final String url) {
+        public InterceptedRequestData shouldInterceptRequest(final String url,
+                boolean isMainFrame) {
             InterceptedRequestData interceptedRequestData =
-                AwContents.this.mContentsClient.shouldInterceptRequest(url);
+                mContentsClient.shouldInterceptRequest(url);
+
             if (interceptedRequestData == null) {
                 mContentsClient.getCallbackHelper().postOnLoadResource(url);
+            }
+
+            if (isMainFrame && interceptedRequestData != null &&
+                    interceptedRequestData.getData() == null) {
+                // In this case the intercepted URLRequest job will simulate an empty response
+                // which doesn't trigger the onReceivedError callback. For WebViewClassic
+                // compatibility we synthesize that callback. http://crbug.com/180950
+                mContentsClient.getCallbackHelper().postOnReceivedError(
+                        ErrorCodeConversionHelper.ERROR_UNKNOWN,
+                        null /* filled in by the glue layer */, url);
             }
             return interceptedRequestData;
         }
 
         @Override
         public boolean shouldBlockContentUrls() {
-            return !AwContents.this.mSettings.getAllowContentAccess();
+            return !mSettings.getAllowContentAccess();
         }
 
         @Override
         public boolean shouldBlockFileUrls() {
-            return !AwContents.this.mSettings.getAllowFileAccess();
+            return !mSettings.getAllowFileAccess();
         }
 
         @Override
         public boolean shouldBlockNetworkLoads() {
-            return AwContents.this.mSettings.getBlockNetworkLoads();
+            return mSettings.getBlockNetworkLoads();
         }
 
         @Override
@@ -207,7 +219,7 @@ public class AwContents {
                 // The embedder is also not allowed to intercept POST requests because of
                 // crbug.com/155250.
             } else if (!navigationParams.isPost) {
-                ignoreNavigation = AwContents.this.mContentsClient.shouldIgnoreNavigation(url);
+                ignoreNavigation = mContentsClient.shouldIgnoreNavigation(url);
             }
 
             // The existing contract is that shouldIgnoreNavigation callbacks are delivered before

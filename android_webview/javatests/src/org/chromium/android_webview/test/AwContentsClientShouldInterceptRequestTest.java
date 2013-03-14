@@ -18,6 +18,7 @@ import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.io.ByteArrayInputStream;
@@ -311,6 +312,21 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
         assertEquals(aboutPageUrl, mContentsClient.getOnPageStartedHelper().getUrl());
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullInputStreamCausesErrorForMainFrame() throws Throwable {
+        final OnReceivedErrorHelper onReceivedErrorHelper =
+            mContentsClient.getOnReceivedErrorHelper();
+
+        mShouldInterceptRequestHelper.setReturnValue(
+                new InterceptedRequestData("text/html", "UTF-8", null));
+
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        final int callCount = onReceivedErrorHelper.getCallCount();
+        loadUrlAsync(mAwContents, aboutPageUrl);
+        onReceivedErrorHelper.waitForCallback(callCount);
+        assertEquals(0, mWebServer.getRequestCount("/" + CommonResources.ABOUT_FILENAME));
+    }
 
     @SmallTest
     @Feature({"AndroidWebView"})
