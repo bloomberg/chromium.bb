@@ -147,5 +147,3 @@ class PageCycler(page_benchmark.PageBenchmark):
     util.WaitFor(_IsNavigatedToReport, 60, poll_interval=5)
     timings = tab.EvaluateJavaScript('__get_timings()').split(',')
     results.Add('t', 'ms', [int(t) for t in timings], chart_name='times')
-
-# TODO(tonyg): Add version that runs with extension profile.
