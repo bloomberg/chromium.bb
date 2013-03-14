@@ -75,7 +75,7 @@ class DriveResourceMetadataTest : public testing::Test {
   // drive/dir2/file8
   // drive/dir1/dir3/file9
   // drive/dir1/dir3/file10
-  static void Init(DriveResourceMetadataInterface* resource_metadata);
+  static void Init(DriveResourceMetadata* resource_metadata);
 
   // Creates a DriveEntryProto.
   static DriveEntryProto CreateDriveEntryProto(
@@ -84,11 +84,10 @@ class DriveResourceMetadataTest : public testing::Test {
       const std::string& parent_resource_id);
 
   // Adds a DriveEntryProto to the metadata tree. Returns true on success.
-  static bool AddDriveEntryProto(
-      DriveResourceMetadataInterface* resource_metadata,
-      int sequence_id,
-      bool is_directory,
-      const std::string& parent_resource_id);
+  static bool AddDriveEntryProto(DriveResourceMetadata* resource_metadata,
+                                 int sequence_id,
+                                 bool is_directory,
+                                 const std::string& parent_resource_id);
 
   // Gets the entry info by path synchronously. Returns NULL on failure.
   scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
@@ -119,7 +118,7 @@ class DriveResourceMetadataTest : public testing::Test {
     return entries.Pass();
   }
 
-  scoped_ptr<DriveResourceMetadataInterface> resource_metadata_;
+  scoped_ptr<DriveResourceMetadata> resource_metadata_;
 
  private:
   MessageLoopForUI message_loop_;
@@ -134,8 +133,7 @@ DriveResourceMetadataTest::DriveResourceMetadataTest()
 }
 
 // static
-void DriveResourceMetadataTest::Init(
-    DriveResourceMetadataInterface* resource_metadata) {
+void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
   int sequence_id = 1;
   ASSERT_TRUE(AddDriveEntryProto(
       resource_metadata, sequence_id++, true, kTestRootResourceId));
@@ -200,7 +198,7 @@ DriveEntryProto DriveResourceMetadataTest::CreateDriveEntryProto(
 }
 
 bool DriveResourceMetadataTest::AddDriveEntryProto(
-    DriveResourceMetadataInterface* resource_metadata,
+    DriveResourceMetadata* resource_metadata,
     int sequence_id,
     bool is_directory,
     const std::string& parent_resource_id) {
