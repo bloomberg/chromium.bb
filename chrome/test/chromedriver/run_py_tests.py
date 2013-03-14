@@ -34,6 +34,40 @@ if util.IsLinux():
   from pylib import valgrind_tools
 
 
+_ANDROID_FILTER = {}
+_ANDROID_FILTER['org.chromium.chrome.testshell'] = [
+    'ChromeDriverTest.testStartStop',
+    'ChromeDriverTest.testLoadUrl',
+    'ChromeDriverTest.testGetCurrentWindowHandle',
+    'ChromeDriverTest.testEvaluateScript',
+    'ChromeDriverTest.testEvaluateScriptWithArgs',
+    'ChromeDriverTest.testEvaluateInvalidScript',
+    'ChromeDriverTest.testExecuteAsyncScript',
+    'ChromeDriverTest.testSwitchToFrame',
+    'ChromeDriverTest.testExecuteInRemovedFrame',
+    'ChromeDriverTest.testGetTitle',
+    'ChromeDriverTest.testGetPageSource',
+    'ChromeDriverTest.testFindElement',
+    'ChromeDriverTest.testFindElements',
+    'ChromeDriverTest.testFindChildElement',
+    'ChromeDriverTest.testFindChildElements',
+    'ChromeDriverTest.testHoverOverElement',
+    'ChromeDriverTest.testClickElement',
+    'ChromeDriverTest.testClearElement',
+    'ChromeDriverTest.testSendKeysToElement',
+    'ChromeDriverTest.testGetCurrentUrl',
+    'ChromeDriverTest.testGoBackAndGoForward',
+    'ChromeDriverTest.testRefresh',
+    'ChromeDriverTest.testMouseMoveTo',
+    'ChromeDriverTest.testMouseClick',
+    'ChromeDriverTest.testMouseButtonDownAndUp',
+    'ChromeDriverTest.testMouseDoubleClick']
+_ANDROID_FILTER['com.google.android.apps.chrome'] = (
+    _ANDROID_FILTER['org.chromium.chrome.testshell'] + [
+    'ChromeDriverTest.testCloseWindow',
+    'ChromeDriverTest.testGetWindowHandles',
+    'ChromeDriverTest.testSwitchToWindow'])
+
 def Skip(func):
   pass
 
@@ -515,9 +549,7 @@ if __name__ == '__main__':
   _ANDROID_PACKAGE = options.android_package
 
   if _ANDROID_PACKAGE and options.filter == '*':
-    with open(os.path.join(_THIS_DIR, 'passed_android_python_tests.txt')) as f:
-      android_filter = [line.strip('\n') for line in f]
-      f.close()
+    android_filter = _ANDROID_FILTER[_ANDROID_PACKAGE]
     options.filter = ':__main__.'.join([''] + android_filter)
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
