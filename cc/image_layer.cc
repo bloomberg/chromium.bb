@@ -35,7 +35,7 @@ void ImageLayer::SetBitmap(const SkBitmap& bitmap) {
 
 void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
   // Update the tile data before creating all the layer's tiles.
-  updateTileSizeAndTilingOption();
+  UpdateTileSizeAndTilingOption();
 
   TiledLayer::SetTexturePriorities(priority_calc);
 }
@@ -43,27 +43,27 @@ void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
 void ImageLayer::Update(ResourceUpdateQueue* queue,
                         const OcclusionTracker* occlusion,
                         RenderingStats* stats) {
-  createUpdaterIfNeeded();
+  CreateUpdaterIfNeeded();
   if (needs_display_) {
     updater_->setBitmap(bitmap_);
-    updateTileSizeAndTilingOption();
-    invalidateContentRect(gfx::Rect(content_bounds()));
+    UpdateTileSizeAndTilingOption();
+    InvalidateContentRect(gfx::Rect(content_bounds()));
     needs_display_ = false;
   }
   TiledLayer::Update(queue, occlusion, stats);
 }
 
-void ImageLayer::createUpdaterIfNeeded() {
+void ImageLayer::CreateUpdaterIfNeeded() {
   if (updater_)
     return;
 
   updater_ = ImageLayerUpdater::create();
   GLenum texture_format =
       layer_tree_host()->GetRendererCapabilities().best_texture_format;
-  setTextureFormat(texture_format);
+  SetTextureFormat(texture_format);
 }
 
-LayerUpdater* ImageLayer::updater() const {
+LayerUpdater* ImageLayer::Updater() const {
   return updater_.get();
 }
 

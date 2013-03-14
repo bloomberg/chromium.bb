@@ -84,18 +84,18 @@ public:
 
     static gfx::Size tileSize() { return gfx::Size(100, 100); }
 
-    using cc::TiledLayer::invalidateContentRect;
-    using cc::TiledLayer::needsIdlePaint;
-    using cc::TiledLayer::skipsDraw;
-    using cc::TiledLayer::numPaintedTiles;
-    using cc::TiledLayer::idlePaintRect;
+    using cc::TiledLayer::InvalidateContentRect;
+    using cc::TiledLayer::NeedsIdlePaint;
+    using cc::TiledLayer::SkipsDraw;
+    using cc::TiledLayer::NumPaintedTiles;
+    using cc::TiledLayer::IdlePaintRect;
 
     virtual void SetNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
     const gfx::RectF& lastNeedsDisplayRect() const { return m_lastNeedsDisplayRect; }
 
     virtual void SetTexturePriorities(const cc::PriorityCalculator&) OVERRIDE;
 
-    virtual cc::PrioritizedResourceManager* resourceManager() const OVERRIDE;
+    virtual cc::PrioritizedResourceManager* ResourceManager() const OVERRIDE;
     FakeLayerUpdater* fakeLayerUpdater() { return m_fakeUpdater.get(); }
     gfx::RectF updateRect() { return update_rect_; }
 
@@ -103,8 +103,8 @@ public:
     void updateContentsScale(float idealContentsScale);
 
 protected:
-    virtual cc::LayerUpdater* updater() const OVERRIDE;
-    virtual void createUpdaterIfNeeded() OVERRIDE { }
+    virtual cc::LayerUpdater* Updater() const OVERRIDE;
+    virtual void CreateUpdaterIfNeeded() OVERRIDE { }
     virtual ~FakeTiledLayer();
 
 private:

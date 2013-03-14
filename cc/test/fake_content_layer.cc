@@ -32,7 +32,7 @@ void FakeContentLayer::Update(ResourceUpdateQueue* queue,
 }
 
 bool FakeContentLayer::HaveBackingAt(int i, int j) {
-  const PrioritizedResource* resource = resourceAtForTesting(i, j);
+  const PrioritizedResource* resource = ResourceAtForTesting(i, j);
   return resource && resource->haveBackingTexture();
 }
 

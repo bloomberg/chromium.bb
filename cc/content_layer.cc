@@ -61,7 +61,7 @@ bool ContentLayer::DrawsContent() const
 void ContentLayer::SetTexturePriorities(const PriorityCalculator& priorityCalc)
 {
     // Update the tile data before creating all the layer's tiles.
-    updateTileSizeAndTilingOption();
+    UpdateTileSizeAndTilingOption();
 
     TiledLayer::SetTexturePriorities(priorityCalc);
 }
@@ -71,7 +71,7 @@ void ContentLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracker* oc
     {
         base::AutoReset<bool> ignoreSetNeedsCommit(&ignore_set_needs_commit_, true);
 
-        createUpdaterIfNeeded();
+        CreateUpdaterIfNeeded();
     }
 
     TiledLayer::Update(queue, occlusion, stats);
@@ -80,15 +80,15 @@ void ContentLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracker* oc
 
 bool ContentLayer::NeedMoreUpdates()
 {
-    return needsIdlePaint();
+    return NeedsIdlePaint();
 }
 
-LayerUpdater* ContentLayer::updater() const
+LayerUpdater* ContentLayer::Updater() const
 {
     return m_updater.get();
 }
 
-void ContentLayer::createUpdaterIfNeeded()
+void ContentLayer::CreateUpdaterIfNeeded()
 {
     if (m_updater)
         return;
@@ -102,7 +102,7 @@ void ContentLayer::createUpdaterIfNeeded()
     m_updater->setOpaque(contents_opaque());
 
     unsigned textureFormat = layer_tree_host()->GetRendererCapabilities().best_texture_format;
-    setTextureFormat(textureFormat);
+    SetTextureFormat(textureFormat);
 }
 
 void ContentLayer::SetContentsOpaque(bool opaque)

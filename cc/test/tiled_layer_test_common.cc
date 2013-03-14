@@ -55,7 +55,7 @@ void FakeLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::
     m_prepareCount++;
     m_lastUpdateRect = contentRect;
     if (!m_rectToInvalidate.IsEmpty()) {
-        m_layer->invalidateContentRect(m_rectToInvalidate);
+        m_layer->InvalidateContentRect(m_rectToInvalidate);
         m_rectToInvalidate = gfx::Rect();
         m_layer = NULL;
     }
@@ -87,9 +87,9 @@ FakeTiledLayer::FakeTiledLayer(PrioritizedResourceManager* resourceManager)
     , m_fakeUpdater(make_scoped_refptr(new FakeLayerUpdater))
     , m_resourceManager(resourceManager)
 {
-    setTileSize(tileSize());
-    setTextureFormat(GL_RGBA);
-    setBorderTexelOption(LayerTilingData::NoBorderTexels);
+    SetTileSize(tileSize());
+    SetTextureFormat(GL_RGBA);
+    SetBorderTexelOption(LayerTilingData::NoBorderTexels);
     SetIsDrawable(true); // So that we don't get false positives if any of these tests expect to return false from DrawsContent() for other reasons.
 }
 
@@ -129,7 +129,7 @@ void FakeTiledLayer::SetTexturePriorities(const PriorityCalculator& calculator)
     }
 }
 
-cc::PrioritizedResourceManager* FakeTiledLayer::resourceManager() const
+cc::PrioritizedResourceManager* FakeTiledLayer::ResourceManager() const
 {
     return m_resourceManager;
 }
@@ -144,7 +144,7 @@ void FakeTiledLayer::updateContentsScale(float ideal_contents_scale)
         &draw_properties().content_bounds);
 }
 
-cc::LayerUpdater* FakeTiledLayer::updater() const
+cc::LayerUpdater* FakeTiledLayer::Updater() const
 {
     return m_fakeUpdater.get();
 }

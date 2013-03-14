@@ -18,6 +18,7 @@ class CC_EXPORT ImageLayer : public TiledLayer {
  public:
   static scoped_refptr<ImageLayer> Create();
 
+  // Layer implementation.
   virtual bool DrawsContent() const OVERRIDE;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
@@ -36,14 +37,18 @@ class CC_EXPORT ImageLayer : public TiledLayer {
   ImageLayer();
   virtual ~ImageLayer();
 
-  virtual LayerUpdater* updater() const OVERRIDE;
-  virtual void createUpdaterIfNeeded() OVERRIDE;
+  // TiledLayer Implementation.
+  virtual LayerUpdater* Updater() const OVERRIDE;
+  virtual void CreateUpdaterIfNeeded() OVERRIDE;
+
   float ImageContentsScaleX() const;
   float ImageContentsScaleY() const;
 
   SkBitmap bitmap_;
 
   scoped_refptr<ImageLayerUpdater> updater_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageLayer);
 };
 
 }  // namespace cc

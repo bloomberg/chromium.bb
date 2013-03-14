@@ -50,8 +50,9 @@ protected:
     virtual ~ContentLayer();
 
 private:
-    virtual LayerUpdater* updater() const OVERRIDE;
-    virtual void createUpdaterIfNeeded() OVERRIDE;
+    // TiledLayer implementation.
+    virtual LayerUpdater* Updater() const OVERRIDE;
+    virtual void CreateUpdaterIfNeeded() OVERRIDE;
 
     ContentLayerClient* m_client;
     scoped_refptr<LayerUpdater> m_updater;
