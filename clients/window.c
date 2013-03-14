@@ -1097,10 +1097,12 @@ create_cursors(struct display *display)
 {
 	char *config_file;
 	char *theme = NULL;
+	unsigned int size = 32;
 	unsigned int i, j;
 	struct wl_cursor *cursor;
 	struct config_key shell_keys[] = {
 		{ "cursor-theme", CONFIG_KEY_STRING, &theme },
+		{ "cursor-size", CONFIG_KEY_UNSIGNED_INTEGER, &size },
 	};
 	struct config_section cs[] = {
 		{ "shell", shell_keys, ARRAY_LENGTH(shell_keys), NULL },
@@ -1110,7 +1112,7 @@ create_cursors(struct display *display)
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), NULL);
 	free(config_file);
 
-	display->cursor_theme = wl_cursor_theme_load(theme, 32, display->shm);
+	display->cursor_theme = wl_cursor_theme_load(theme, size, display->shm);
 	display->cursors =
 		malloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
 
