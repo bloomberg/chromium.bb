@@ -37,7 +37,7 @@ def main(argv):
 
   if env.getbool('DO_WRAP'):
     if not env.getbool('HAVE_OUTPUT'):
-      Log.Error("unable to wrap pexe on stdout, use: --do-no-wrap flag")
+      Log.Error("unable to wrap pexe on stdout, use: --do-not-wrap flag")
     else:
       driver_tools.WrapBitcode(env.getone('OUTPUT'))
   # only reached in case of no errors

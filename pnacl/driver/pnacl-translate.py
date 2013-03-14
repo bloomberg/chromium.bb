@@ -188,6 +188,8 @@ TranslatorPatterns = [
   ( '(-mattr=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mcpu=.*)', "env.set('LLC_MCPU', '')\n"
                   "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '(-pnaclabi-verify)', "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '(-pnaclabi-verify-fatal-errors)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   # Allow overriding the -O level.
   ( '-O([0-3])', "env.set('OPT_LEVEL', $0)"),
 
