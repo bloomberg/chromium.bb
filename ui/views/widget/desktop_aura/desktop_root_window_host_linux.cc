@@ -1107,7 +1107,16 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         // Now that we have different window properties, we may need to
         // relayout the window. (The windows code doesn't need this because
         // their window change is synchronous.)
-        native_widget_delegate_->AsWidget()->GetRootView()->Layout();
+        //
+        // TODO(erg): While this does work, there's a quick flash showing the
+        // tabstrip/toolbar/etc. when going into fullscreen mode before hiding
+        // those parts of the UI because we receive the sizing event from the
+        // window manager before we receive the event that changes the
+        // fullscreen state. Unsure what to do about that.
+        Widget* widget = native_widget_delegate_->AsWidget();
+        widget->client_view()->InvalidateLayout();
+        widget->non_client_view()->InvalidateLayout();
+        widget->GetRootView()->Layout();
       }
     }
   }
