@@ -563,6 +563,10 @@ InputMethod* DesktopRootWindowHostWin::GetInputMethod() {
   return GetWidget()->GetInputMethodDirect();
 }
 
+bool DesktopRootWindowHostWin::ShouldHandleSystemCommands() const {
+  return GetWidget()->widget_delegate()->ShouldHandleSystemCommands();
+}
+
 void DesktopRootWindowHostWin::HandleAppDeactivated() {
   native_widget_delegate_->EnableInactiveRendering();
 }

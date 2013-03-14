@@ -1875,7 +1875,7 @@ void HWNDMessageHandler::OnSize(UINT param, const CSize& size) {
 
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,
                                       const CPoint& point) {
-  if (!delegate_->IsWidgetWindow())
+  if (!delegate_->ShouldHandleSystemCommands())
     return;
 
   // Windows uses the 4 lower order bits of |notification_code| for type-

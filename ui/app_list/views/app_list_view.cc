@@ -139,6 +139,10 @@ gfx::Size AppListView::GetPreferredSize() {
   return app_list_main_view_->GetPreferredSize();
 }
 
+bool AppListView::ShouldHandleSystemCommands() const {
+  return true;
+}
+
 views::View* AppListView::GetInitiallyFocusedView() {
   return app_list_main_view_->search_box_view()->search_box();
 }

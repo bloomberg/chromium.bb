@@ -70,6 +70,10 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the window should show a title in the title bar.
   virtual bool ShouldShowWindowTitle() const;
 
+  // Returns true if the window should handle standard system commands, such as
+  // close, minimize, maximize.
+  virtual bool ShouldHandleSystemCommands() const;
+
   // Returns the app icon for the window. On Windows, this is the ICON_BIG used
   // in Alt-Tab list and Win7's taskbar.
   virtual gfx::ImageSkia GetWindowAppIcon();

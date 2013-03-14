@@ -73,6 +73,14 @@ bool WidgetDelegate::ShouldShowWindowTitle() const {
   return true;
 }
 
+bool WidgetDelegate::ShouldHandleSystemCommands() const {
+  const Widget* widget = GetWidget();
+  if (!widget)
+    return false;
+
+  return widget->non_client_view() != NULL;
+}
+
 gfx::ImageSkia WidgetDelegate::GetWindowAppIcon() {
   // Use the window icon as app icon by default.
   return GetWindowIcon();

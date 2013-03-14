@@ -154,6 +154,15 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);
 };
 
+class ScopedKeepAlive {
+ public:
+  ScopedKeepAlive();
+  ~ScopedKeepAlive();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedKeepAlive);
+};
+
 // The AppListController class manages global resources needed for the app
 // list to operate, and controls when the app list is opened and closed.
 // TODO(tapted): Rename this class to AppListServiceWin and move entire file to
@@ -248,6 +257,11 @@ class AppListController : public AppListService {
   // Returns the underlying HWND for the AppList.
   HWND GetAppListHWND() const;
 
+  // Utilities to manage browser process keep alive for the view itself. Note
+  // keep alives are also used when asynchronously loading profiles.
+  void EnsureHaveKeepAliveForView();
+  void FreeAnyKeepAliveForView();
+
   // Weak pointer. The view manages its own lifetime.
   app_list::AppListView* current_view_;
 
@@ -267,9 +281,8 @@ class AppListController : public AppListService {
   // True if the controller can close the app list.
   bool can_close_app_list_;
 
-  // True if the app list is showing. Used to ensure we only ever have 0 or 1
-  // browser process keep-alives active.
-  bool app_list_is_showing_;
+  // Used to keep the browser process alive while the app list is visible.
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
   // True if we are anticipating that the app list will lose focus, and we want
   // to take it back. This is used when switching out of Metro mode, and the
@@ -374,12 +387,19 @@ void AppListControllerDelegateWin::LaunchApp(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 
+ScopedKeepAlive::ScopedKeepAlive() {
+  chrome::StartKeepAlive();
+}
+
+ScopedKeepAlive::~ScopedKeepAlive() {
+  chrome::EndKeepAlive();
+}
+
 AppListController::AppListController()
     : current_view_(NULL),
       view_delegate_(NULL),
       profile_(NULL),
       can_close_app_list_(true),
-      app_list_is_showing_(false),
       regain_first_lost_focus_(false),
       profile_load_sequence_id_(0),
       pending_profile_loads_(0),
@@ -490,7 +510,7 @@ void AppListController::ShowAppList(Profile* profile) {
 
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).
-  if (app_list_is_showing_ && (profile == profile_)) {
+  if (IsAppListVisible() && (profile == profile_)) {
     current_view_->Show();
     current_view_->GetWidget()->Activate();
     return;
@@ -501,13 +521,8 @@ void AppListController::ShowAppList(Profile* profile) {
   DismissAppList();
   PopulateViewFromProfile(profile);
 
-  if (!app_list_is_showing_) {
-    app_list_is_showing_ = true;
-    chrome::StartKeepAlive();
-  }
-
   DCHECK(current_view_);
-  DCHECK(app_list_is_showing_);
+  EnsureHaveKeepAliveForView();
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   UpdateArrowPositionAndAnchorPoint(cursor);
   current_view_->Show();
@@ -533,18 +548,13 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
 #endif
 
   profile_ = profile;
-  gfx::NativeWindow parent = NULL;
-
-#if !defined(USE_AURA)
-  parent = ::GetDesktopWindow();
-#endif
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
   view_delegate_ = new AppListViewDelegate(CreateControllerDelegate(),
                                            profile_);
   current_view_ = new app_list::AppListView(view_delegate_);
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  current_view_->InitAsBubble(parent,
+  current_view_->InitAsBubble(NULL,
                               &pagination_model_,
                               NULL,
                               cursor,
@@ -570,17 +580,18 @@ void AppListController::SaveProfilePathToLocalState(
 }
 
 void AppListController::DismissAppList() {
-  if (current_view_ && app_list_is_showing_ && can_close_app_list_) {
+  if (IsAppListVisible() && can_close_app_list_) {
     current_view_->GetWidget()->Hide();
     timer_.Stop();
-    chrome::EndKeepAlive();
-    app_list_is_showing_ = false;
+    FreeAnyKeepAliveForView();
   }
 }
 
 void AppListController::AppListClosing() {
+  FreeAnyKeepAliveForView();
   current_view_ = NULL;
   view_delegate_ = NULL;
+  profile_ = NULL;
   timer_.Stop();
 }
 
@@ -794,6 +805,16 @@ HWND AppListController::GetAppListHWND() const {
 #endif
 }
 
+void AppListController::EnsureHaveKeepAliveForView() {
+  if (!keep_alive_)
+    keep_alive_.reset(new ScopedKeepAlive());
+}
+
+void AppListController::FreeAnyKeepAliveForView() {
+  if (keep_alive_)
+    keep_alive_.reset(NULL);
+}
+
 // Check that a taskbar shortcut exists if it should, or does not exist if
 // it should not. A taskbar shortcut should exist if the switch
 // kShowAppListShortcut is set. The shortcut will be created or deleted in
@@ -904,7 +925,7 @@ Profile* AppListController::GetCurrentAppListProfile() {
 }
 
 bool AppListController::IsAppListVisible() const {
-  return app_list_is_showing_;
+  return current_view_ && current_view_->GetWidget()->IsVisible();
 }
 
 }  // namespace

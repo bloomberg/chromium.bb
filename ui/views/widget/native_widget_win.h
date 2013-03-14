@@ -178,8 +178,9 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual gfx::Size GetRootViewSize() const OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void PaintLayeredWindow(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual InputMethod* GetInputMethod() OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual bool ShouldHandleSystemCommands() const OVERRIDE;
   virtual void HandleAppDeactivated() OVERRIDE;
   virtual void HandleActivationChanged(bool active) OVERRIDE;
   virtual bool HandleAppCommand(short command) OVERRIDE;

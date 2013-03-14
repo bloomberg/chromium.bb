@@ -570,6 +570,10 @@ gfx::NativeViewAccessible NativeWidgetWin::GetNativeViewAccessible() {
   return GetWidget()->GetRootView()->GetNativeViewAccessible();
 }
 
+bool NativeWidgetWin::ShouldHandleSystemCommands() const {
+  return GetWidget()->widget_delegate()->ShouldHandleSystemCommands();
+}
+
 void NativeWidgetWin::HandleAppDeactivated() {
   if (IsInactiveRenderingDisabled()) {
     delegate_->EnableInactiveRendering();

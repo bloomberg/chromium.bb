@@ -151,6 +151,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void ResetWindowControls() OVERRIDE;
   virtual void PaintLayeredWindow(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual bool ShouldHandleSystemCommands() const OVERRIDE;
   virtual InputMethod* GetInputMethod() OVERRIDE;
   virtual void HandleAppDeactivated() OVERRIDE;
   virtual void HandleActivationChanged(bool active) OVERRIDE;

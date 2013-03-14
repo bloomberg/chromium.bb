@@ -56,6 +56,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // WidgetDelegate overrides:
+  virtual bool ShouldHandleSystemCommands() const OVERRIDE;
+
  private:
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
