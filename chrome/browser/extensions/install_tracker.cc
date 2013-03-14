@@ -24,12 +24,14 @@ void InstallTracker::OnBeginExtensionInstall(
     const std::string& extension_id,
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon,
-    bool is_app) {
+    bool is_app,
+    bool is_platform_app) {
   FOR_EACH_OBSERVER(InstallObserver, observers_,
                     OnBeginExtensionInstall(extension_id,
                                             extension_name,
                                             installing_icon,
-                                            is_app));
+                                            is_app,
+                                            is_platform_app));
 }
 
 void InstallTracker::OnDownloadProgress(const std::string& extension_id,

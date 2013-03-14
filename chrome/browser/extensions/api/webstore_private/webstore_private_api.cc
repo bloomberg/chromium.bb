@@ -485,7 +485,8 @@ void CompleteInstallFunction::OnGetAppLauncherEnabled(
     extensions::InstallTracker* tracker =
         extensions::InstallTrackerFactory::GetForProfile(profile());
     tracker->OnBeginExtensionInstall(
-        id, name, approval_->installing_icon, approval_->manifest->is_app());
+        id, name, approval_->installing_icon, approval_->manifest->is_app(),
+        approval_->manifest->is_platform_app());
   }
 
   // The extension will install through the normal extension install flow, but
