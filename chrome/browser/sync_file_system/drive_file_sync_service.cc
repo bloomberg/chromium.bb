@@ -2230,10 +2230,11 @@ bool DriveFileSyncService::IsDriveNotificationSupported() {
   // For now, disable XMPP notifications for SyncFC on ChromeOS to guarantee
   // that ChromeOS's file manager can register itself to the invalidationID.
 
-  // TODO(tzik): XMPP notification is not working even on non-ChromeOS.
-  // Disable notifications to fallback to polling until the bug is fixed.
-  // http://crbug.com/181179
+#if defined(OS_CHROMEOS)
   return false;
+#else
+  return true;
+#endif
 }
 
 // Register for Google Drive invalidation notifications through XMPP.
