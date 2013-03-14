@@ -16,7 +16,7 @@ scoped_refptr<PictureImageLayer> PictureImageLayer::Create() {
 PictureImageLayer::PictureImageLayer() : PictureLayer(this) {}
 
 PictureImageLayer::~PictureImageLayer() {
-  clearClient();
+  ClearClient();
 }
 
 scoped_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
@@ -28,8 +28,8 @@ bool PictureImageLayer::DrawsContent() const {
   return !bitmap_.isNull() && PictureLayer::DrawsContent();
 }
 
-void PictureImageLayer::setBitmap(const SkBitmap& bitmap) {
-  // setBitmap() currently gets called whenever there is any
+void PictureImageLayer::SetBitmap(const SkBitmap& bitmap) {
+  // SetBitmap() currently gets called whenever there is any
   // style change that affects the layer even if that change doesn't
   // affect the actual contents of the image (e.g. a CSS animation).
   // With this check in place we avoid unecessary texture uploads.

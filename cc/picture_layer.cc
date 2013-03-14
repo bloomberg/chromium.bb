@@ -29,8 +29,8 @@ bool PictureLayer::DrawsContent() const {
   return Layer::DrawsContent() && client_;
 }
 
-scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* treeImpl) {
-  return PictureLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
+scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
+  return PictureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {

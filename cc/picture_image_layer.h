@@ -17,7 +17,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
  public:
   static scoped_refptr<PictureImageLayer> Create();
 
-  void setBitmap(const SkBitmap& image);
+  void SetBitmap(const SkBitmap& image);
 
   // Layer implementation.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(

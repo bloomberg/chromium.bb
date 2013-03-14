@@ -21,15 +21,15 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
  public:
   static scoped_refptr<PictureLayer> Create(ContentLayerClient* client);
 
-  void clearClient() { client_ = 0; }
+  void ClearClient() { client_ = NULL; }
 
   // Implement Layer interface
   virtual bool DrawsContent() const OVERRIDE;
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(
-      LayerTreeImpl* treeImpl) OVERRIDE;
+      LayerTreeImpl* tree_impl) OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void SetNeedsDisplayRect(const gfx::RectF& layerRect) OVERRIDE;
+  virtual void SetNeedsDisplayRect(const gfx::RectF& layer_rect) OVERRIDE;
   virtual void Update(
       ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion,

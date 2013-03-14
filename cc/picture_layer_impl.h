@@ -20,17 +20,16 @@ class QuadSink;
 
 class CC_EXPORT PictureLayerImpl : public LayerImpl,
                                    public PictureLayerTilingClient {
-public:
-  static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* treeImpl, int id)
-  {
-      return make_scoped_ptr(new PictureLayerImpl(treeImpl, id));
+ public:
+  static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
+    return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));
   }
   virtual ~PictureLayerImpl();
 
   // LayerImpl overrides.
   virtual const char* LayerTypeAsString() const OVERRIDE;
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(
-      LayerTreeImpl* treeImpl) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
@@ -70,8 +69,8 @@ public:
 
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
 
-protected:
-  PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
+ protected:
+  PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveTiling(float contents_scale);
   void SyncFromActiveLayer(const PictureLayerImpl* other);

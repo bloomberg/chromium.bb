@@ -111,8 +111,8 @@ void PicturePile::Update(
 }
 
 class FullyContainedPredicate {
-public:
-  FullyContainedPredicate(gfx::Rect rect) : layer_rect_(rect) { }
+ public:
+  FullyContainedPredicate(gfx::Rect rect) : layer_rect_(rect) {}
   bool operator()(const scoped_refptr<Picture>& picture) {
     return layer_rect_.Contains(picture->LayerRect());
   }

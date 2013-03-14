@@ -20,11 +20,11 @@ namespace {
 class TestablePictureLayerImpl : public PictureLayerImpl {
  public:
   static scoped_ptr<TestablePictureLayerImpl> Create(
-      LayerTreeImpl* treeImpl,
+      LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<PicturePileImpl> pile)
   {
-    return make_scoped_ptr(new TestablePictureLayerImpl(treeImpl, id, pile));
+    return make_scoped_ptr(new TestablePictureLayerImpl(tree_impl, id, pile));
   }
 
   PictureLayerTilingSet& tilings() { return *tilings_; }
@@ -32,7 +32,7 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
 
   virtual gfx::Size CalculateTileSize(
       gfx::Size current_tile_size,
-      gfx::Size /* content_bounds */) OVERRIDE {
+      gfx::Size content_bounds) OVERRIDE {
     if (current_tile_size.IsEmpty())
       return gfx::Size(100, 100);
     return current_tile_size;
@@ -43,10 +43,10 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
 
  private:
   TestablePictureLayerImpl(
-      LayerTreeImpl* treeImpl,
+      LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<PicturePileImpl> pile)
-      : PictureLayerImpl(treeImpl, id) {
+      : PictureLayerImpl(tree_impl, id) {
     pile_ = pile;
     SetBounds(pile_->size());
     CreateTilingSet();
@@ -134,7 +134,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
 
 class MockCanvas : public SkCanvas {
  public:
-  explicit MockCanvas(SkDevice* device) : SkCanvas(device) { }
+  explicit MockCanvas(SkDevice* device) : SkCanvas(device) {}
 
   virtual void drawRect(const SkRect& rect, const SkPaint& paint) {
     // Capture calls before SkCanvas quickReject kicks in
@@ -193,11 +193,13 @@ class PictureLayerImplTest : public testing::Test {
   static void VerifyAllTilesExistAndHavePile(
       const PictureLayerTiling* tiling,
       PicturePileImpl* pile) {
-    for (PictureLayerTiling::Iterator iter(tiling,
-                                           tiling->contents_scale(),
-                                           tiling->ContentRect(),
-                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
-         iter; ++iter) {
+    for (PictureLayerTiling::Iterator
+             iter(tiling,
+                  tiling->contents_scale(),
+                  tiling->ContentRect(),
+                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+         iter;
+         ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_EQ(pile, iter->picture_pile());
     }
@@ -338,11 +340,13 @@ TEST_F(PictureLayerImplTest, clonePartialInvalidation) {
     gfx::Rect content_invalidation = gfx::ToEnclosingRect(gfx::ScaleRect(
         layer_invalidation,
         tiling->contents_scale()));
-    for (PictureLayerTiling::Iterator iter(tiling,
-                                           tiling->contents_scale(),
-                                           tiling->ContentRect(),
-                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
-         iter; ++iter) {
+    for (PictureLayerTiling::Iterator
+             iter(tiling,
+                  tiling->contents_scale(),
+                  tiling->ContentRect(),
+                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+         iter;
+         ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
       if (iter.geometry_rect().Intersects(content_invalidation))
@@ -399,11 +403,13 @@ TEST_F(PictureLayerImplTest, noInvalidationBoundsChange) {
     gfx::Rect active_content_bounds = gfx::ToEnclosingRect(gfx::ScaleRect(
         gfx::Rect(active_layer_bounds),
         tiling->contents_scale()));
-    for (PictureLayerTiling::Iterator iter(tiling,
-                                           tiling->contents_scale(),
-                                           tiling->ContentRect(),
-                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
-         iter; ++iter) {
+    for (PictureLayerTiling::Iterator
+             iter(tiling,
+                  tiling->contents_scale(),
+                  tiling->ContentRect(),
+                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+         iter;
+         ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
       if (iter.geometry_rect().right() >= active_content_bounds.width() ||
@@ -449,16 +455,17 @@ TEST_F(PictureLayerImplTest, addTilesFromNewRecording) {
   for (size_t i = 0; i < tilings.num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings.tiling_at(i);
 
-    for (PictureLayerTiling::Iterator iter(tiling,
-                                           tiling->contents_scale(),
-                                           tiling->ContentRect(),
-                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
-         iter; ++iter) {
+    for (PictureLayerTiling::Iterator
+             iter(tiling,
+                  tiling->contents_scale(),
+                  tiling->ContentRect(),
+                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+         iter;
+         ++iter) {
       EXPECT_FALSE(iter.full_tile_geometry_rect().IsEmpty());
       // Ensure there is a recording for this tile.
-      gfx::Rect layer_rect = gfx::ToEnclosingRect(
-          gfx::ScaleRect(
-              iter.full_tile_geometry_rect(), 1.f / tiling->contents_scale()));
+      gfx::Rect layer_rect = gfx::ToEnclosingRect(gfx::ScaleRect(
+          iter.full_tile_geometry_rect(), 1.f / tiling->contents_scale()));
       layer_rect.Intersect(gfx::Rect(layer_bounds));
 
       bool in_pending = pending_pile->recorded_region().Contains(layer_rect);
@@ -695,7 +702,6 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(2u, active_layer_->tilings().num_tilings());
-  
 }
 
 }  // namespace

@@ -6,8 +6,7 @@
 
 namespace cc {
 
-class FakeInfinitePicturePileImpl : public PicturePileImpl
-{
+class FakeInfinitePicturePileImpl : public PicturePileImpl {
  public:
   FakeInfinitePicturePileImpl() {
     gfx::Size size(std::numeric_limits<int>::max(),

@@ -34,7 +34,7 @@ WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
 
 WebContentLayerImpl::~WebContentLayerImpl() {
   if (usingPictureLayer())
-    static_cast<PictureLayer*>(layer_->layer())->clearClient();
+    static_cast<PictureLayer*>(layer_->layer())->ClearClient();
   else
     static_cast<ContentLayer*>(layer_->layer())->clearClient();
 }
