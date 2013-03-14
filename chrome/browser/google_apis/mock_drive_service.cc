@@ -48,10 +48,10 @@ MockDriveService::MockDriveService() {
 
   // Fill in the default values for mock feeds.
   account_metadata_data_ =
-      test_util::LoadJSONFile("gdata/account_metadata.json");
-  feed_data_ = test_util::LoadJSONFile("gdata/basic_feed.json");
+      test_util::LoadJSONFile("chromeos/gdata/account_metadata.json");
+  feed_data_ = test_util::LoadJSONFile("chromeos/gdata/basic_feed.json");
   directory_data_ =
-      test_util::LoadJSONFile("gdata/new_folder_entry.json");
+      test_util::LoadJSONFile("chromeos/gdata/new_folder_entry.json");
 }
 
 MockDriveService::~MockDriveService() {}

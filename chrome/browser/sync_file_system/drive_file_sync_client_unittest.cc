@@ -290,7 +290,7 @@ TEST_F(DriveFileSyncClientTest, GetSyncRoot) {
   // Expect to call GetRootResourceId and RemoveResourceFromDirectory from
   // EnsureSyncRootIsNotInMyDrive.
   EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
-      .WillOnce(Return(kRootResourceId));
+      .WillRepeatedly(Return(kRootResourceId));
   EXPECT_CALL(*mock_drive_service(),
               RemoveResourceFromDirectory(kRootResourceId,
                                           kSyncRootResourceId,
@@ -344,7 +344,6 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
   // Expect to call GetRootResourceId from GetDriveDirectoryForSyncRoot for the
   // first, and from EnsureSyncRootIsNotInMyDrive for the second.
   EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
-      .Times(2)
       .WillRepeatedly(Return(kRootResourceId));
 
   // Expect to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
@@ -409,7 +408,6 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot_Conflict) {
   // Expect to call GetRootResourceId from GetDriveDirectoryForSyncRoot for the
   // first, and from EnsureSyncRootIsNotInMyDrive for the second.
   EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
-      .Times(2)
       .WillRepeatedly(Return(kRootResourceId));
 
   // Expect to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
@@ -650,8 +648,8 @@ TEST_F(DriveFileSyncClientTest, ListFiles) {
       google_apis::ResourceList::ExtractAndParse(*first_result_value);
 
   scoped_ptr<base::Value> following_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/listing_files_in_directory_second_page.json"
-          ).Pass());
+      "chromeos/sync_file_system/listing_files_in_directory_second_page.json")
+                                                 .Pass());
   scoped_ptr<google_apis::ResourceList> following_result =
       google_apis::ResourceList::ExtractAndParse(*following_result_value);
 
@@ -719,8 +717,8 @@ TEST_F(DriveFileSyncClientTest, ListChanges) {
   scoped_ptr<google_apis::ResourceList> first_result =
       google_apis::ResourceList::ExtractAndParse(*first_result_value);
   scoped_ptr<base::Value> following_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/listing_changed_files_in_directory.json"
-          ).Pass());
+      "chromeos/sync_file_system/listing_changed_files_in_directory.json")
+                                                 .Pass());
   scoped_ptr<google_apis::ResourceList> following_result =
       google_apis::ResourceList::ExtractAndParse(*following_result_value);
 
