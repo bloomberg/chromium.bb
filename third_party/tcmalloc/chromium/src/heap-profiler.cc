@@ -157,36 +157,6 @@ static void ProfilerFree(void* p) {
   LowLevelAlloc::Free(p);
 }
 
-//----------------------------------------------------------------------
-// Another allocator for heap profiler's internal mmap address map
-//
-// Large amount of memory is consumed if we use an arena 'heap_profiler_memory'
-// for the internal mmap address map.  It looks like memory fragmentation
-// because of repeated allocation/deallocation in the arena.
-//
-// 'mmap_heap_profiler_memory' is a dedicated arena for the mmap address map.
-// This arena is reserved for every construction of the mmap address map, and
-// disposed after every use.
-//----------------------------------------------------------------------
-
-static LowLevelAlloc::Arena* mmap_heap_profiler_memory = NULL;
-
-static void* MMapProfilerMalloc(size_t bytes) {
-  return LowLevelAlloc::AllocWithArena(bytes, mmap_heap_profiler_memory);
-}
-static void MMapProfilerFree(void* p) {
-  LowLevelAlloc::Free(p);
-}
-
-// This function should be called from a locked scope.
-// It returns false if failed in deleting the arena.
-static bool DeleteMMapProfilerArenaIfExistsLocked() {
-  if (mmap_heap_profiler_memory == NULL) return true;
-  if (!LowLevelAlloc::DeleteArena(mmap_heap_profiler_memory)) return false;
-  mmap_heap_profiler_memory = NULL;
-  return true;
-}
-
 // We use buffers of this size in DoGetHeapProfile.
 // The size is 1 << 20 in the original google-perftools.  Changed it to
 // 5 << 20 since a larger buffer is requried for deeper profiling in Chromium.
@@ -234,25 +204,18 @@ static char* DoGetHeapProfileLocked(char* buf, int buflen) {
   RAW_DCHECK(heap_lock.IsHeld(), "");
   int bytes_written = 0;
   if (is_on) {
-    if (FLAGS_mmap_profile) {
-      if (!DeleteMMapProfilerArenaIfExistsLocked()) {
-        RAW_LOG(FATAL, "Memory leak in HeapProfiler:");
-      }
-      mmap_heap_profiler_memory =
-          LowLevelAlloc::NewArena(0, LowLevelAlloc::DefaultArena());
-      heap_profile->RefreshMMapData(MMapProfilerMalloc, MMapProfilerFree);
-    }
+    HeapProfileTable::Stats const stats = heap_profile->total();
+    (void)stats;   // avoid an unused-variable warning in non-debug mode.
     if (deep_profile) {
       bytes_written = deep_profile->FillOrderedProfile(buf, buflen - 1);
     } else {
       bytes_written = heap_profile->FillOrderedProfile(buf, buflen - 1);
     }
-    if (FLAGS_mmap_profile) {
-      heap_profile->ClearMMapData();
-      if (!DeleteMMapProfilerArenaIfExistsLocked()) {
-        RAW_LOG(FATAL, "Memory leak in HeapProfiler:");
-      }
-    }
+    // FillOrderedProfile should not reduce the set of active mmap-ed regions,
+    // hence MemoryRegionMap will let us remove everything we've added above:
+    RAW_DCHECK(stats.Equivalent(heap_profile->total()), "");
+    // if this fails, we somehow removed by FillOrderedProfile
+    // more than we have added.
   }
   buf[bytes_written] = '\0';
   RAW_DCHECK(bytes_written == strlen(buf), "");
@@ -502,7 +465,8 @@ extern "C" void HeapProfilerStart(const char* prefix) {
   if (FLAGS_mmap_profile) {
     // Ask MemoryRegionMap to record all mmap, mremap, and sbrk
     // call stack traces of at least size kMaxStackDepth:
-    MemoryRegionMap::Init(HeapProfileTable::kMaxStackDepth);
+    MemoryRegionMap::Init(HeapProfileTable::kMaxStackDepth,
+                          /* use_buckets */ true);
   }
 
   if (FLAGS_mmap_log) {
@@ -522,7 +486,7 @@ extern "C" void HeapProfilerStart(const char* prefix) {
       reinterpret_cast<char*>(ProfilerMalloc(kProfileBufferSize));
 
   heap_profile = new(ProfilerMalloc(sizeof(HeapProfileTable)))
-                   HeapProfileTable(ProfilerMalloc, ProfilerFree);
+      HeapProfileTable(ProfilerMalloc, ProfilerFree, FLAGS_mmap_profile);
 
   last_dump_alloc = 0;
   last_dump_free = 0;
@@ -594,9 +558,6 @@ extern "C" void HeapProfilerStop() {
 
   // free profile
   heap_profile->~HeapProfileTable();
-  if (!DeleteMMapProfilerArenaIfExistsLocked()) {
-    RAW_LOG(FATAL, "Memory leak in HeapProfiler:");
-  }
   ProfilerFree(heap_profile);
   heap_profile = NULL;
 

@@ -211,13 +211,6 @@ class DeepHeapProfile {
     int bucket_id_;
   };
 
-  struct MMapListEntry {
-    uint64 first_address;
-    uint64 last_address;
-    MapsRegionType type;
-    DeepBucket* deep_bucket;
-  };
-
   class RegionStats {
    public:
     RegionStats(): virtual_bytes_(0), committed_bytes_(0) {}
@@ -258,10 +251,9 @@ class DeepHeapProfile {
   class GlobalStats {
    public:
     // Snapshots and calculates global stats from /proc/<pid>/maps and pagemap.
-    void SnapshotProcMaps(
+    void SnapshotMaps(
         const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
-        MMapListEntry* mmap_list,
-        int mmap_list_length,
+        DeepHeapProfile* deep_profile,
         TextBuffer* mmap_dump_buffer);
 
     // Snapshots allocations by malloc and mmap.
@@ -271,17 +263,11 @@ class DeepHeapProfile {
     void Unparse(TextBuffer* buffer);
 
   private:
-    static bool ByFirstAddress(const MMapListEntry& a,
-                               const MMapListEntry& b);
-
     // Records both virtual and committed byte counts of malloc and mmap regions
     // as callback functions for AllocationMap::Iterate().
     static void RecordAlloc(const void* pointer,
                             AllocValue* alloc_value,
                             DeepHeapProfile* deep_profile);
-    static void RecordMMap(const void* pointer,
-                           AllocValue* alloc_value,
-                           DeepHeapProfile* deep_profile);
 
     // All RegionStats members in this class contain the bytes of virtual
     // memory and committed memory.
@@ -304,11 +290,6 @@ class DeepHeapProfile {
                             int buffer_size,
                             char raw_buffer[]);
 
-  // Counts mmap allocations in |deep_profile|->num_mmap_allocations_.
-  static void CountMMap(const void* pointer,
-                        AllocValue* alloc_value,
-                        DeepHeapProfile* deep_profile);
-
   MemoryResidenceInfoGetterInterface* memory_residence_info_getter_;
 
   // Process ID of the last dump.  This can change by fork.
@@ -320,9 +301,6 @@ class DeepHeapProfile {
   char* profiler_buffer_;  // Buffer we use many times.
 
   DeepBucketTable deep_table_;
-  MMapListEntry* mmap_list_;
-  int mmap_list_length_;
-  int num_mmap_allocations_;
 #endif  // DEEP_HEAP_PROFILE
 
   HeapProfileTable* heap_profile_;

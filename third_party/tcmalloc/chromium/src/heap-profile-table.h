@@ -38,6 +38,7 @@
 #include "addressmap-inl.h"
 #include "base/basictypes.h"
 #include "base/logging.h"   // for RawFD
+#include "heap-profile-stats.h"
 
 #if defined(TYPE_PROFILING)
 #include <gperftools/type_profiler_map.h>
@@ -62,18 +63,7 @@ class HeapProfileTable {
   // data types ----------------------------
 
   // Profile stats.
-  struct Stats {
-    int32 allocs;      // Number of allocation calls
-    int32 frees;       // Number of free calls
-    int64 alloc_size;  // Total size of all allocated objects so far
-    int64 free_size;   // Total size of all freed objects so far
-
-    // semantic equality
-    bool Equivalent(const Stats& x) const {
-      return allocs - frees == x.allocs - x.frees  &&
-             alloc_size - free_size == x.alloc_size - x.free_size;
-    }
-  };
+  typedef HeapProfileStats Stats;
 
   // Possible marks for MarkCurrentAllocations and MarkUnmarkedAllocations. New
   // allocations are marked with UNMARKED by default.
@@ -107,7 +97,7 @@ class HeapProfileTable {
 
   // interface ---------------------------
 
-  HeapProfileTable(Allocator alloc, DeAllocator dealloc);
+  HeapProfileTable(Allocator alloc, DeAllocator dealloc, bool profile_mmap);
   ~HeapProfileTable();
 
   // Collect the stack trace for the function that asked to do the
@@ -169,7 +159,7 @@ class HeapProfileTable {
   // Iterate over the allocation profile data calling "callback"
   // for every allocation.
   void IterateAllocs(AllocIterator callback) const {
-    alloc_address_map_->Iterate(MapArgsAllocIterator, callback);
+    address_map_->Iterate(MapArgsAllocIterator, callback);
   }
 
   // Callback for iterating through addresses of all allocated objects. Accepts
@@ -214,22 +204,6 @@ class HeapProfileTable {
   // Caller must call ReleaseSnapshot() on result when no longer needed.
   Snapshot* NonLiveSnapshot(Snapshot* base);
 
-  // Refresh the internal mmap information from MemoryRegionMap.  Results of
-  // FillOrderedProfile and IterateOrderedAllocContexts will contain mmap'ed
-  // memory regions as at calling RefreshMMapData.
-  // 'mmap_alloc' is an allocator for an address map.  A function which calls
-  // LowLevelAlloc::AllocWithArena is expected like the constractor.
-  // 'mmap_dealloc' is a corresponding deallocator to 'mmap_alloc'.
-  // They are introduced to avoid expected memory fragmentation and bloat in
-  // an arena.  A dedicated arena for this function allows disposing whole the
-  // arena after ClearMMapData.
-  void RefreshMMapData(Allocator mmap_alloc, DeAllocator mmap_dealloc);
-
-  // Clear the internal mmap information.  Results of FillOrderedProfile and
-  // IterateOrderedAllocContexts won't contain mmap'ed memory regions after
-  // calling ClearMMapData.
-  void ClearMMapData();
-
   // Dump a list of allocations marked as "live" along with their creation
   // stack traces and sizes to a file named |file_name|. Together with
   // MarkCurrentAllocatiosn and MarkUnmarkedAllocations this can be used
@@ -260,12 +234,7 @@ class HeapProfileTable {
 
   // Hash table bucket to hold (de)allocation stats
   // for a given allocation call stack trace.
-  struct Bucket : public Stats {
-    uintptr_t    hash;   // Hash value of the stack trace
-    int          depth;  // Depth of stack trace
-    const void** stack;  // Stack trace
-    Bucket*      next;   // Next entry in hash-table
-  };
+  typedef HeapProfileBucket Bucket;
 
   // Info stored in the address map
   struct AllocValue {
@@ -310,52 +279,75 @@ class HeapProfileTable {
 
   typedef AddressMap<AllocValue> AllocationMap;
 
+  // Arguments that need to be passed DumpBucketIterator callback below.
+  struct BufferArgs {
+    BufferArgs(char* buf_arg, int buflen_arg, int bufsize_arg)
+        : buf(buf_arg),
+          buflen(buflen_arg),
+          bufsize(bufsize_arg) {
+    }
+
+    char* buf;
+    int buflen;
+    int bufsize;
+
+    DISALLOW_COPY_AND_ASSIGN(BufferArgs);
+  };
+
   // Arguments that need to be passed DumpNonLiveIterator callback below.
   struct DumpArgs {
+    DumpArgs(RawFD fd_arg, Stats* profile_stats_arg)
+        : fd(fd_arg),
+          profile_stats(profile_stats_arg) {
+    }
+
     RawFD fd;  // file to write to
     Stats* profile_stats;  // stats to update (may be NULL)
-
-    DumpArgs(RawFD a, Stats* d)
-      : fd(a), profile_stats(d) { }
   };
 
   // Arguments that need to be passed DumpMarkedIterator callback below.
   struct DumpMarkedArgs {
+    DumpMarkedArgs(RawFD fd_arg, AllocationMark mark_arg)
+        : fd(fd_arg),
+          mark(mark_arg) {
+    }
+
     RawFD fd;  // file to write to.
     AllocationMark mark;  // The mark of the allocations to process.
-
-    DumpMarkedArgs(RawFD a, AllocationMark m) : fd(a), mark(m) { }
   };
 
   // Arguments that need to be passed MarkIterator callback below.
   struct MarkArgs {
+    MarkArgs(AllocationMark mark_arg, bool mark_all_arg)
+        : mark(mark_arg),
+          mark_all(mark_all_arg) {
+    }
+
     AllocationMark mark;  // The mark to put on allocations.
     bool mark_all;  // True if all allocations should be marked. Otherwise just
                     // mark unmarked allocations.
-
-    MarkArgs(AllocationMark m, bool a) : mark(m), mark_all(a) { }
   };
 
 #if defined(TYPE_PROFILING)
   struct TypeCount {
-    size_t bytes;
-    unsigned int objects;
-
     TypeCount(size_t bytes_arg, unsigned int objects_arg)
         : bytes(bytes_arg),
           objects(objects_arg) {
     }
+
+    size_t bytes;
+    unsigned int objects;
   };
 #endif  // defined(TYPE_PROFILING)
 
   struct AllocationAddressIteratorArgs {
+    AllocationAddressIteratorArgs(AddressIterator callback_arg, void* data_arg)
+        : callback(callback_arg),
+          data(data_arg) {
+    }
+
     AddressIterator callback;
     void* data;
-
-    AllocationAddressIteratorArgs(AddressIterator iterator, void* d)
-        : callback(iterator),
-          data(d) {
-    }
   };
 
   // helpers ----------------------------
@@ -376,18 +368,9 @@ class HeapProfileTable {
                            const char* extra,
                            Stats* profile_stats);
 
-  // Deallocate a given allocation map.
-  void DeallocateAllocationMap(AllocationMap* allocation);
-
-  // Deallocate a given bucket table.
-  void DeallocateBucketTable(Bucket** table);
-
-  // Get the bucket for the caller stack trace 'key' of depth 'depth' from a
-  // bucket hash map 'table' creating the bucket if needed.  '*bucket_count'
-  // is incremented both when 'bucket_count' is not NULL and when a new
-  // bucket object is created.
-  Bucket* GetBucket(int depth, const void* const key[], Bucket** table,
-                    int* bucket_count);
+  // Get the bucket for the caller stack trace 'key' of depth 'depth'
+  // creating the bucket if needed.
+  Bucket* GetBucket(int depth, const void* const key[]);
 
   // Helper for IterateAllocs to do callback signature conversion
   // from AllocationMap::Iterate to AllocIterator.
@@ -401,6 +384,10 @@ class HeapProfileTable {
     info.ignored = v->ignore();
     callback(ptr, info);
   }
+
+  // Helper to dump a bucket.
+  inline static void DumpBucketIterator(const Bucket* bucket,
+                                        BufferArgs* args);
 
   // Helper for IterateAllocationAddresses.
   inline static void AllocationAddressesIterator(
@@ -422,10 +409,6 @@ class HeapProfileTable {
   inline static void DumpMarkedIterator(const void* ptr, AllocValue* v,
                                         const DumpMarkedArgs& args);
 
-  // Helper for filling size variables in buckets by zero.
-  inline static void ZeroBucketCountsIterator(
-      const void* ptr, AllocValue* v, HeapProfileTable* heap_profile);
-
 #if defined(TYPE_PROFILING)
   inline static void TallyTypesItererator(const void* ptr,
                                           AllocValue* value,
@@ -437,8 +420,7 @@ class HeapProfileTable {
 #endif  // defined(TYPE_PROFILING)
 
   // Helper for IterateOrderedAllocContexts and FillOrderedProfile.
-  // Creates a sorted list of Buckets whose length is num_alloc_buckets_ +
-  // num_avaliable_mmap_buckets_.
+  // Creates a sorted list of Buckets whose length is num_buckets_.
   // The caller is responsible for deallocating the returned list.
   Bucket** MakeSortedBucketList() const;
 
@@ -471,25 +453,19 @@ class HeapProfileTable {
 
   // Overall profile stats; we use only the Stats part,
   // but make it a Bucket to pass to UnparseBucket.
-  // It doesn't contain mmap'ed regions.
   Bucket total_;
+
+  bool profile_mmap_;
 
   // Bucket hash table for malloc.
   // We hand-craft one instead of using one of the pre-written
   // ones because we do not want to use malloc when operating on the table.
   // It is only few lines of code, so no big deal.
-  Bucket** alloc_table_;
-  int num_alloc_buckets_;
-
-  // Bucket hash table for mmap.
-  // This table is filled with the information from MemoryRegionMap by calling
-  // RefreshMMapData.
-  Bucket** mmap_table_;
-  int num_available_mmap_buckets_;
+  Bucket** bucket_table_;
+  int num_buckets_;
 
   // Map of all currently allocated objects and mapped regions we know about.
-  AllocationMap* alloc_address_map_;
-  AllocationMap* mmap_address_map_;
+  AllocationMap* address_map_;
 
   DISALLOW_COPY_AND_ASSIGN(HeapProfileTable);
 };
