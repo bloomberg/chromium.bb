@@ -501,9 +501,8 @@ void View::OnEnabledChanged() {
 
 // Transformations -------------------------------------------------------------
 
-const gfx::Transform& View::GetTransform() const {
-  static const gfx::Transform* no_op = new gfx::Transform;
-  return layer() ? layer()->transform() : *no_op;
+gfx::Transform View::GetTransform() const {
+  return layer() ? layer()->transform() : gfx::Transform();
 }
 
 void View::SetTransform(const gfx::Transform& transform) {

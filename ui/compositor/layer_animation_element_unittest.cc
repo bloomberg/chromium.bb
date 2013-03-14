@@ -27,28 +27,35 @@ TEST(LayerAnimationElementTest, TransformElement) {
   start_transform.Rotate(-30.0);
   target_transform.Rotate(30.0);
   base::TimeTicks start_time;
+  base::TimeTicks effective_start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateTransformElement(target_transform, delta));
+  element->set_animation_group_id(1);
 
   for (int i = 0; i < 2; ++i) {
-    start_time += delta;
+    start_time = effective_start_time + delta;
     element->set_requested_start_time(start_time);
     delegate.SetTransformFromAnimation(start_transform);
     element->Start(&delegate, 1);
     element->Progress(start_time, &delegate);
     CheckApproximatelyEqual(start_transform,
                             delegate.GetTransformForAnimation());
-    element->Progress(start_time + delta/2, &delegate);
-    CheckApproximatelyEqual(middle_transform,
-                            delegate.GetTransformForAnimation());
+    effective_start_time = start_time + delta;
+    element->set_effective_start_time(effective_start_time);
+    element->Progress(effective_start_time, &delegate);
+    EXPECT_FLOAT_EQ(0.0, element->last_progressed_fraction());
+    element->Progress(effective_start_time + delta/2, &delegate);
+    EXPECT_FLOAT_EQ(0.5, element->last_progressed_fraction());
 
     base::TimeDelta element_duration;
-    EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
-    EXPECT_EQ(delta, element_duration);
+    EXPECT_TRUE(element->IsFinished(effective_start_time + delta,
+                                    &element_duration));
+    EXPECT_EQ(2 * delta, element_duration);
 
-    element->Progress(start_time + delta, &delegate);
+    element->Progress(effective_start_time + delta, &delegate);
+    EXPECT_FLOAT_EQ(1.0, element->last_progressed_fraction());
     CheckApproximatelyEqual(target_transform,
                             delegate.GetTransformForAnimation());
   }

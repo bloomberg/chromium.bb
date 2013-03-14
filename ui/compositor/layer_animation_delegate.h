@@ -26,12 +26,13 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual void SetColorFromAnimation(SkColor color) = 0;
   virtual void ScheduleDrawForAnimation() = 0;
   virtual const gfx::Rect& GetBoundsForAnimation() const = 0;
-  virtual const gfx::Transform& GetTransformForAnimation() const = 0;
+  virtual gfx::Transform GetTransformForAnimation() const = 0;
   virtual float GetOpacityForAnimation() const = 0;
   virtual bool GetVisibilityForAnimation() const = 0;
   virtual float GetBrightnessForAnimation() const = 0;
   virtual float GetGrayscaleForAnimation() const = 0;
   virtual SkColor GetColorForAnimation() const = 0;
+  virtual float GetDeviceScaleFactor() const = 0;
   virtual void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) = 0;
   virtual void RemoveThreadedAnimation(int animation_id) = 0;
 

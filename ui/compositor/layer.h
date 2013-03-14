@@ -121,7 +121,7 @@ class COMPOSITOR_EXPORT Layer
 
   // The transform, relative to the parent.
   void SetTransform(const gfx::Transform& transform);
-  const gfx::Transform& transform() const { return transform_; }
+  gfx::Transform transform() const;
 
   // Return the target transform if animator is running, or the current
   // transform otherwise.
@@ -223,6 +223,13 @@ class COMPOSITOR_EXPORT Layer
   static void ConvertPointToLayer(const Layer* source,
                                   const Layer* target,
                                   gfx::Point* point);
+
+  // Converts a ui::Layer's transform to the transform on the corresponding
+  // cc::Layer.
+  static gfx::Transform ConvertTransformToCCTransform(
+      const gfx::Transform& transform,
+      const gfx::Rect& bounds,
+      float device_scale_factor);
 
   // See description in View for details
   void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
@@ -341,18 +348,19 @@ class COMPOSITOR_EXPORT Layer
   virtual void SetColorFromAnimation(SkColor color) OVERRIDE;
   virtual void ScheduleDrawForAnimation() OVERRIDE;
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
-  virtual const gfx::Transform& GetTransformForAnimation() const OVERRIDE;
+  virtual gfx::Transform GetTransformForAnimation() const OVERRIDE;
   virtual float GetOpacityForAnimation() const OVERRIDE;
   virtual bool GetVisibilityForAnimation() const OVERRIDE;
   virtual float GetBrightnessForAnimation() const OVERRIDE;
   virtual float GetGrayscaleForAnimation() const OVERRIDE;
   virtual SkColor GetColorForAnimation() const OVERRIDE;
+  virtual float GetDeviceScaleFactor() const OVERRIDE;
   virtual void AddThreadedAnimation(
       scoped_ptr<cc::Animation> animation) OVERRIDE;
   virtual void RemoveThreadedAnimation(int animation_id) OVERRIDE;
 
   void CreateWebLayer();
-  void RecomputeTransform();
+  void RecomputeCCTransformFromTransform(const gfx::Transform& transform);
   void RecomputeDrawsContentAndUVRect();
 
   // Set all filters which got applied to the layer.
@@ -381,8 +389,6 @@ class COMPOSITOR_EXPORT Layer
 
   // This layer's children, in bottom-to-top stacking order.
   std::vector<Layer*> children_;
-
-  gfx::Transform transform_;
 
   gfx::Rect bounds_;
 

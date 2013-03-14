@@ -582,7 +582,7 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
     if (!SAFE_INVOKE_BOOL(HasAnimation, running_animations_copy[i]))
       continue;
 
-    if (running_animations_copy[i].sequence()->HasCommonProperty(
+    if (running_animations_copy[i].sequence()->HasConflictingProperty(
             sequence->properties())) {
       scoped_ptr<LayerAnimationSequence> removed(
           SAFE_INVOKE_PTR(RemoveAnimation, running_animations_copy[i]));
@@ -604,7 +604,7 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
     if (!sequences[i] || !HasAnimation(sequences[i]))
       continue;
 
-    if (sequences[i]->HasCommonProperty(sequence->properties())) {
+    if (sequences[i]->HasConflictingProperty(sequence->properties())) {
       scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequences[i]));
       if (abort)
         sequences[i]->Abort(delegate());
@@ -722,7 +722,7 @@ void LayerAnimator::ProcessQueue() {
       if (!sequences[i] || !HasAnimation(sequences[i]))
         continue;
 
-      if (!sequences[i]->HasCommonProperty(animated)) {
+      if (!sequences[i]->HasConflictingProperty(animated)) {
         StartSequenceImmediately(sequences[i].get());
         started_sequence = true;
         break;
@@ -750,7 +750,7 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
   // Ensure that no one is animating one of the sequence's properties already.
   for (RunningAnimations::const_iterator iter = running_animations_.begin();
        iter != running_animations_.end(); ++iter) {
-    if ((*iter).sequence()->HasCommonProperty(sequence->properties()))
+    if ((*iter).sequence()->HasConflictingProperty(sequence->properties()))
       return false;
   }
 

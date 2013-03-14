@@ -23,6 +23,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace content {
 
@@ -219,6 +220,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
       web_contents->GetRenderViewHost());
+
+  // This test triggers a large number of animations. Speed them up to ensure
+  // the test completes within its time limit.
+  ui::ScopedAnimationDurationScaleMode fast_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
 
   // Make sure the page has both back/forward history.
   ExecuteSyncJSFunction(view_host, "navigate_next()");

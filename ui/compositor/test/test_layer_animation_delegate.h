@@ -29,12 +29,13 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   virtual void SetColorFromAnimation(SkColor color) OVERRIDE;
   virtual void ScheduleDrawForAnimation() OVERRIDE;
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
-  virtual const gfx::Transform& GetTransformForAnimation() const OVERRIDE;
+  virtual gfx::Transform GetTransformForAnimation() const OVERRIDE;
   virtual float GetOpacityForAnimation() const OVERRIDE;
   virtual bool GetVisibilityForAnimation() const OVERRIDE;
   virtual float GetBrightnessForAnimation() const OVERRIDE;
   virtual float GetGrayscaleForAnimation() const OVERRIDE;
   virtual SkColor GetColorForAnimation() const OVERRIDE;
+  virtual float GetDeviceScaleFactor() const OVERRIDE;
   virtual void AddThreadedAnimation(
       scoped_ptr<cc::Animation> animation) OVERRIDE;
   virtual void RemoveThreadedAnimation(int animation_id) OVERRIDE;

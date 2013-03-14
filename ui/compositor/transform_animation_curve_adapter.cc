@@ -45,8 +45,8 @@ gfx::Transform TransformAnimationCurveAdapter::GetValue(
 
   gfx::DecomposedTransform to_return;
   gfx::BlendDecomposedTransforms(&to_return,
-                                 decomposed_initial_value_,
                                  decomposed_target_value_,
+                                 decomposed_initial_value_,
                                  Tween::CalculateValue(tween_type_, progress));
   return gfx::ComposeTransform(to_return);
 }

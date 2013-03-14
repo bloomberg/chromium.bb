@@ -263,7 +263,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Methods for setting transformations for a view (e.g. rotation, scaling).
 
-  const gfx::Transform& GetTransform() const;
+  gfx::Transform GetTransform() const;
 
   // Clipping parameters. Clipping is done relative to the view bounds.
   void set_clip_insets(gfx::Insets clip_insets) { clip_insets_ = clip_insets; }

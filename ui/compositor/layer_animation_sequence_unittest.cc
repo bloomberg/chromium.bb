@@ -30,7 +30,7 @@ TEST(LayerAnimationSequenceTest, NoElement) {
   EXPECT_TRUE(sequence.IsFinished(start_time));
   EXPECT_TRUE(sequence.properties().size() == 0);
   LayerAnimationElement::AnimatableProperties properties;
-  EXPECT_FALSE(sequence.HasCommonProperty(properties));
+  EXPECT_FALSE(sequence.HasConflictingProperty(properties));
 }
 
 // Check that the sequences progresses the delegate as expected when it contains
@@ -118,7 +118,8 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
   float start_opacity = 0.0f;
   float target_opacity = 1.0f;
   base::TimeTicks start_time;
-  base::TimeTicks effective_start;
+  base::TimeTicks opacity_effective_start;
+  base::TimeTicks transform_effective_start;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   sequence.AddElement(
       LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
@@ -140,7 +141,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
   for (int i = 0; i < 2; ++i) {
     int group_id = 1;
     sequence.set_animation_group_id(group_id);
-    start_time = effective_start + 3 * delta;
+    start_time = opacity_effective_start + 4 * delta;
     sequence.set_start_time(start_time);
     delegate.SetOpacityFromAnimation(start_opacity);
     delegate.SetTransformFromAnimation(start_transform);
@@ -148,16 +149,16 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     sequence.Start(&delegate);
     sequence.Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(0.0, sequence.last_progressed_fraction());
-    effective_start = start_time + delta;
+    opacity_effective_start = start_time + delta;
     sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::Started,
         0,
         group_id,
         cc::Animation::Opacity,
-        (effective_start - base::TimeTicks()).InSecondsF()));
-    sequence.Progress(effective_start + delta/2, &delegate);
+        (opacity_effective_start - base::TimeTicks()).InSecondsF()));
+    sequence.Progress(opacity_effective_start + delta/2, &delegate);
     EXPECT_FLOAT_EQ(0.5, sequence.last_progressed_fraction());
-    sequence.Progress(effective_start + delta, &delegate);
+    sequence.Progress(opacity_effective_start + delta, &delegate);
     EXPECT_FLOAT_EQ(target_opacity, delegate.GetOpacityForAnimation());
 
     // Now at the start of the pause.
@@ -165,7 +166,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     TestLayerAnimationDelegate copy = delegate;
 
     // In the middle of the pause -- nothing should have changed.
-    sequence.Progress(effective_start + delta + delta/2,
+    sequence.Progress(opacity_effective_start + delta + delta/2,
                       &delegate);
     CheckApproximatelyEqual(delegate.GetBoundsForAnimation(),
                             copy.GetBoundsForAnimation());
@@ -174,15 +175,21 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(),
                     copy.GetOpacityForAnimation());
 
-
-    sequence.Progress(effective_start + 2 * delta, &delegate);
+    sequence.Progress(opacity_effective_start + 2 * delta, &delegate);
     CheckApproximatelyEqual(start_transform,
                             delegate.GetTransformForAnimation());
-    sequence.Progress(effective_start + 2 * delta + delta/2, &delegate);
-    CheckApproximatelyEqual(middle_transform,
-                            delegate.GetTransformForAnimation());
-    EXPECT_TRUE(sequence.IsFinished(effective_start + 3 * delta));
-    sequence.Progress(effective_start + 3 * delta, &delegate);
+    EXPECT_FLOAT_EQ(0.0, sequence.last_progressed_fraction());
+    transform_effective_start = opacity_effective_start + 3 * delta;
+    sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
+        cc::AnimationEvent::Started,
+        0,
+        group_id,
+        cc::Animation::Transform,
+        (transform_effective_start - base::TimeTicks()).InSecondsF()));
+    sequence.Progress(transform_effective_start + delta/2, &delegate);
+    EXPECT_FLOAT_EQ(0.5, sequence.last_progressed_fraction());
+    EXPECT_TRUE(sequence.IsFinished(transform_effective_start + delta));
+    sequence.Progress(transform_effective_start + delta, &delegate);
     CheckApproximatelyEqual(target_transform,
                             delegate.GetTransformForAnimation());
   }

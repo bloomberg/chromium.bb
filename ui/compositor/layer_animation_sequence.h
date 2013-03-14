@@ -93,9 +93,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   void set_is_cyclic(bool is_cyclic) { is_cyclic_ = is_cyclic; }
   bool is_cyclic() const { return is_cyclic_; }
 
-  // Returns true if this sequence has at least one element affecting a
+  // Returns true if this sequence has at least one element conflicting with a
   // property in |other|.
-  bool HasCommonProperty(
+  bool HasConflictingProperty(
       const LayerAnimationElement::AnimatableProperties& other) const;
 
   // Returns true if the first element animates on the compositor thread.

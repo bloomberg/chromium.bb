@@ -175,7 +175,7 @@ void LayerAnimationSequence::AddElement(LayerAnimationElement* element) {
   elements_.push_back(make_linked_ptr(element));
 }
 
-bool LayerAnimationSequence::HasCommonProperty(
+bool LayerAnimationSequence::HasConflictingProperty(
     const LayerAnimationElement::AnimatableProperties& other) const {
   LayerAnimationElement::AnimatableProperties intersection;
   std::insert_iterator<LayerAnimationElement::AnimatableProperties> ii(
@@ -183,7 +183,18 @@ bool LayerAnimationSequence::HasCommonProperty(
   std::set_intersection(properties_.begin(), properties_.end(),
                         other.begin(), other.end(),
                         ii);
-  return intersection.size() > 0;
+  if (intersection.size() > 0)
+    return true;
+
+  if (properties_.find(LayerAnimationElement::TRANSFORM) != properties_.end() &&
+      other.find(LayerAnimationElement::BOUNDS) != other.end())
+    return true;
+
+  if (properties_.find(LayerAnimationElement::BOUNDS) != properties_.end() &&
+      other.find(LayerAnimationElement::TRANSFORM) != other.end())
+    return true;
+
+  return false;
 }
 
 bool LayerAnimationSequence::IsFirstElementThreaded() const {

@@ -204,7 +204,7 @@ gfx::Transform Layer::GetTargetTransform() const {
       LayerAnimationElement::TRANSFORM)) {
     return animator_->GetTargetTransform();
   }
-  return transform_;
+  return transform();
 }
 
 void Layer::SetBounds(const gfx::Rect& bounds) {
@@ -408,6 +408,19 @@ void Layer::ConvertPointToLayer(const Layer* source,
     target->ConvertPointFromAncestor(root_layer, point);
 }
 
+// static
+gfx::Transform Layer::ConvertTransformToCCTransform(
+    const gfx::Transform& transform,
+    const gfx::Rect& bounds,
+    float device_scale_factor) {
+  gfx::Transform cc_transform;
+  cc_transform.Scale(device_scale_factor, device_scale_factor);
+  cc_transform.Translate(bounds.x(), bounds.y());
+  cc_transform.PreconcatTransform(transform);
+  cc_transform.Scale(1.0f / device_scale_factor, 1.0f / device_scale_factor);
+  return cc_transform;
+}
+
 void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
   if (fills_bounds_opaquely_ == fills_bounds_opaquely)
     return;
@@ -429,6 +442,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   }
   cc_layer_->RemoveLayerAnimationEventObserver(this);
   new_layer->SetOpacity(cc_layer_->opacity());
+  new_layer->SetTransform(cc_layer_->transform());
 
   cc_layer_= new_layer;
   content_layer_ = NULL;
@@ -467,7 +481,6 @@ void Layer::SetExternalTexture(Texture* texture) {
       SwitchToLayer(new_layer);
       content_layer_ = new_layer;
     }
-    RecomputeTransform();
   }
   RecomputeDrawsContentAndUVRect();
 }
@@ -490,7 +503,6 @@ void Layer::SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
       SwitchToLayer(new_layer);
       content_layer_ = new_layer;
     }
-    RecomputeTransform();
   }
   if (has_frame)
     delegated_renderer_layer_->SetFrameData(frame.Pass());
@@ -557,8 +569,11 @@ void Layer::SuppressPaint() {
 void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
+  if (animator_)
+    animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
+  gfx::Transform transform = this->transform();
   device_scale_factor_ = device_scale_factor;
-  RecomputeTransform();
+  RecomputeCCTransformFromTransform(transform);
   RecomputeDrawsContentAndUVRect();
   SchedulePaint(gfx::Rect(bounds_.size()));
   if (delegate_)
@@ -679,9 +694,10 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   if (delegate_)
     closure = delegate_->PrepareForLayerBoundsChange();
   bool was_move = bounds_.size() == bounds.size();
+  gfx::Transform transform = this->transform();
   bounds_ = bounds;
 
-  RecomputeTransform();
+  RecomputeCCTransformFromTransform(transform);
   RecomputeDrawsContentAndUVRect();
   if (!closure.is_null())
     closure.Run();
@@ -698,9 +714,7 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
 }
 
 void Layer::SetTransformImmediately(const gfx::Transform& transform) {
-  transform_ = transform;
-
-  RecomputeTransform();
+  RecomputeCCTransformFromTransform(transform);
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
@@ -769,7 +783,7 @@ const gfx::Rect& Layer::GetBoundsForAnimation() const {
   return bounds();
 }
 
-const gfx::Transform& Layer::GetTransformForAnimation() const {
+gfx::Transform Layer::GetTransformForAnimation() const {
   return transform();
 }
 
@@ -795,6 +809,10 @@ SkColor Layer::GetColorForAnimation() const {
   // been configured as LAYER_SOLID_COLOR.
   return solid_color_layer_.get() ?
       solid_color_layer_->background_color() : SK_ColorBLACK;
+}
+
+float Layer::GetDeviceScaleFactor() const {
+  return device_scale_factor_;
 }
 
 void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
@@ -865,22 +883,19 @@ void Layer::CreateWebLayer() {
   cc_layer_->AddLayerAnimationEventObserver(this);
 }
 
-void Layer::RecomputeTransform() {
-  gfx::Transform scale_translate;
-  scale_translate.matrix().set3x3(device_scale_factor_, 0, 0,
-                                  0, device_scale_factor_, 0,
-                                  0, 0, 1);
-  // Start with the inverse matrix of above.
+void Layer::RecomputeCCTransformFromTransform(const gfx::Transform& transform) {
+  cc_layer_->SetTransform(ConvertTransformToCCTransform(transform,
+                                                        bounds_,
+                                                        device_scale_factor_));
+}
+
+gfx::Transform Layer::transform() const {
   gfx::Transform transform;
-  transform.matrix().set3x3(1.0f / device_scale_factor_, 0, 0,
-                            0, 1.0f / device_scale_factor_, 0,
-                            0, 0, 1);
-  transform.ConcatTransform(transform_);
-  gfx::Transform translate;
-  translate.Translate(bounds_.x(), bounds_.y());
-  transform.ConcatTransform(translate);
-  transform.ConcatTransform(scale_translate);
-  cc_layer_->SetTransform(transform);
+  transform.Translate(-bounds_.x(), -bounds_.y());
+  transform.Scale(1.0f / device_scale_factor_, 1.0f / device_scale_factor_);
+  transform.PreconcatTransform(cc_layer_->transform());
+  transform.Scale(device_scale_factor_, device_scale_factor_);
+  return transform;
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {
