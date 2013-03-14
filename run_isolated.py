@@ -376,7 +376,7 @@ def url_open_request(make_request, retry_404=False):
     request = make_request(extra)
     try:
       url_response = urllib2.urlopen(request)
-      logging.info('url_open(%s) succeeded', request.get_full_url())
+      logging.debug('url_open(%s) succeeded', request.get_full_url())
       return url_response
     except urllib2.HTTPError as e:
       if e.code < 500 and not (retry_404 and e.code == 404):
