@@ -175,7 +175,11 @@ TEST_F(AvatarMenuModelTest, ShowAvatarMenuInTrial) {
   base::FieldTrialList field_trial_list_(NULL);
   base::FieldTrialList::CreateFieldTrial("ShowProfileSwitcher", "AlwaysShow");
 
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
+#else
   EXPECT_TRUE(AvatarMenuModel::ShouldShowAvatarMenu());
+#endif
 }
 
 TEST_F(AvatarMenuModelTest, DontShowAvatarMenu) {
@@ -206,7 +210,11 @@ TEST_F(AvatarMenuModelTest, ShowAvatarMenu) {
   manager()->CreateTestingProfile("p1", name1, 0);
   manager()->CreateTestingProfile("p2", name2, 0);
 
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
+#else
   EXPECT_TRUE(AvatarMenuModel::ShouldShowAvatarMenu());
+#endif
 }
 
 }  // namespace

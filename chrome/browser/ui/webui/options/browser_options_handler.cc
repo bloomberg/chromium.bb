@@ -121,11 +121,23 @@ using content::UserMetricsAction;
 
 namespace options {
 
+namespace {
+
+bool ShouldShowMultiProfilesUserList() {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS we use different UI for multi-profiles.
+  return false;
+#else
+  return ProfileManager::IsMultipleProfilesEnabled();
+#endif
+}
+
+}  // namespace
+
 BrowserOptionsHandler::BrowserOptionsHandler()
     : page_initialized_(false),
       template_url_service_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif
@@ -469,7 +481,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
 #endif
 
-  if (multiprofile_)
+  if (ShouldShowMultiProfilesUserList())
     values->Set("profilesInfo", GetProfilesInfoList().release());
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -940,7 +952,7 @@ void BrowserOptionsHandler::Observe(
       break;
 #endif
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      if (multiprofile_)
+      if (ShouldShowMultiProfilesUserList())
         SendProfilesInfo();
       break;
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:

@@ -275,9 +275,6 @@ class BrowserOptionsHandler
   // Used to get WeakPtr to self for use on the UI thread.
   base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_;
 
-  // True if the multiprofiles switch is enabled.
-  bool multiprofile_;
-
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 
 #if !defined(OS_CHROMEOS)
