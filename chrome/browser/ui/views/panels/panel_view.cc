@@ -286,6 +286,8 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
                                                 panel->profile()->GetPath()),
       views::HWNDForWidget(window_));
 #endif
+
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
 PanelView::~PanelView() {
@@ -294,12 +296,6 @@ PanelView::~PanelView() {
 void PanelView::ShowPanel() {
   ShowPanelInactive();
   ActivatePanel();
-
-  // Give web contents view a chance to set focus to the appropriate element
-  // when it is created for the first time.
-  content::WebContents* web_contents = panel_->GetWebContents();
-  if (web_contents)
-    web_contents->GetView()->RestoreFocus();
 }
 
 void PanelView::ShowPanelInactive() {
@@ -434,6 +430,8 @@ void PanelView::ClosePanel() {
     panel_->OnWindowClosing();
     return;
   }
+
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 
   panel_->OnNativePanelClosed();
   if (window_)
@@ -917,6 +915,17 @@ void PanelView::OnWidgetBoundsChanged(views::Widget* widget,
                                       const gfx::Rect& new_bounds) {
   if (user_resizing_)
     panel()->collection()->OnPanelResizedByMouse(panel(), new_bounds);
+}
+
+void PanelView::OnNativeFocusChange(gfx::NativeView focused_before,
+                                    gfx::NativeView focused_now) {
+  if (focused_now != window_->GetNativeView())
+    return;
+
+  // Give web contents view a chance to set focus to the appropriate element.
+  content::WebContents* web_contents = panel_->GetWebContents();
+  if (web_contents)
+    web_contents->GetView()->RestoreFocus();
 }
 
 bool PanelView::OnTitlebarMousePressed(const gfx::Point& mouse_location) {
