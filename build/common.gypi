@@ -2764,8 +2764,6 @@
                     ],
                     'conditions': [
                       ['arm_thumb==1', {
-                        # Android toolchain doesn't support -mimplicit-it=thumb
-                        'cflags!': [ '-Wa,-mimplicit-it=thumb' ],
                         'cflags': [ '-mthumb-interwork' ],
                       }],
                       ['armv7==0', {
