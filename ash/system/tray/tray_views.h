@@ -9,7 +9,6 @@
 #include "ash/shelf/shelf_types.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
-#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -82,33 +81,6 @@ class TrayPopupHeaderButton : public views::ToggleImageButton {
   virtual void StateChanged() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPopupHeaderButton);
-};
-
-// A button with a bar image and title text below the bar image. These buttons
-// will be used in audio and brightness control UI, which can be toggled with
-// on/off states.
-class TrayBarButtonWithTitle : public views::CustomButton {
- public:
-  TrayBarButtonWithTitle(views::ButtonListener* listener,
-                                  int title_id,
-                                  int width);
-  virtual ~TrayBarButtonWithTitle();
-
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-
-  void UpdateButton(bool control_on);
-
- private:
-  class TrayBarButton;
-
-  TrayBarButton* image_;
-  views::Label* title_;
-  int width_;
-  int image_height_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayBarButtonWithTitle);
 };
 
 // Sets up a Label properly for the tray (sets color, font etc.).

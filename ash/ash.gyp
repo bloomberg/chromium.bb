@@ -270,6 +270,8 @@
         'system/tray/throbber_view.h',
         'system/tray/tray_background_view.cc',
         'system/tray/tray_background_view.h',
+        'system/tray/tray_bar_button_with_title.cc',
+        'system/tray/tray_bar_button_with_title.h',
         'system/tray/tray_bubble_wrapper.cc',
         'system/tray/tray_bubble_wrapper.h',
         'system/tray/tray_constants.cc',

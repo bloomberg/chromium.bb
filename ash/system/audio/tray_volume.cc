@@ -10,8 +10,8 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_bar_button_with_title.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "ash/volume_control_delegate.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -102,12 +102,12 @@ class VolumeButton : public views::ToggleImageButton {
   DISALLOW_COPY_AND_ASSIGN(VolumeButton);
 };
 
-class MuteButton : public ash::internal::TrayBarButtonWithTitle {
+class MuteButton : public TrayBarButtonWithTitle {
  public:
   explicit MuteButton(views::ButtonListener* listener)
       : TrayBarButtonWithTitle(listener,
-            -1,    // no title under mute button
-            kTrayBarButtonWidth) {
+                               -1,    // no title under mute button
+                               kTrayBarButtonWidth) {
     Update();
   }
   virtual ~MuteButton() {}
@@ -117,6 +117,7 @@ class MuteButton : public ash::internal::TrayBarButtonWithTitle {
     SchedulePaint();
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MuteButton);
 };
 
