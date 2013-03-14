@@ -296,6 +296,14 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
                             NUM_INFO_BAR_METRICS);
 }
 
+void AutofillMetrics::LogDialogInitialUserState(
+    autofill::DialogType dialog_type,
+    DialogInitialUserStateMetric user_type) const {
+  std::string name = GetPrefixForDialogType(dialog_type) + ".InitialUserState";
+  LogUMAHistogramEnumeration(
+      name, user_type, NUM_DIALOG_INITIAL_USER_STATE_METRICS);
+}
+
 void AutofillMetrics::LogDialogSecurityMetric(
     autofill::DialogType dialog_type,
     DialogSecurityMetric metric) const {

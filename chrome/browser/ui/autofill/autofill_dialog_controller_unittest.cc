@@ -145,13 +145,12 @@ class AutofillDialogControllerTest : public testing::Test {
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
 
     base::Callback<void(const FormStructure*)> callback;
-    AutofillMetrics metrics;
     controller_ = new TestAutofillDialogController(
         test_web_contents_.get(),
         form_data,
         GURL(),
         content::SSLStatus(),
-        metrics,
+        metric_logger_,
         DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
         callback);
     controller_->Show();
@@ -180,6 +179,9 @@ class AutofillDialogControllerTest : public testing::Test {
   TestAutofillDialogController* controller_;
 
   scoped_ptr<content::WebContents> test_web_contents_;
+
+  // Must outlive the controller.
+  AutofillMetrics metric_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };

@@ -31,7 +31,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_manager.h"
-#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/risk/fingerprint.h"
@@ -243,6 +242,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       section_showing_popup_(SECTION_BILLING),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       metric_logger_(metric_logger),
+      initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
       dialog_type_(dialog_type),
       did_submit_(false),
       autocheckout_is_running_(false),
@@ -253,6 +253,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
 AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
     popup_controller_->Hide();
+
+  metric_logger_.LogDialogInitialUserState(dialog_type_, initial_user_state_);
 }
 
 // static
@@ -1120,6 +1122,10 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
   view_->ModelChanged();
   view_->UpdateAccountChooser();
   view_->UpdateNotificationArea();
+
+  // On the first successful response, compute the initial user state metric.
+  if (initial_user_state_ == AutofillMetrics::DIALOG_USER_STATE_UNKNOWN)
+    initial_user_state_ = GetInitialUserState();
 }
 
 void AutofillDialogControllerImpl::OnDidSaveAddress(
@@ -1660,6 +1666,36 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     // This may delete us.
     Hide();
   }
+}
+
+AutofillMetrics::DialogInitialUserStateMetric
+    AutofillDialogControllerImpl::GetInitialUserState() const {
+  // Consider a user to be an Autofill user if the user has any credit cards
+  // or addresses saved.  Check that the item count is greater than 1 because
+  // an "empty" menu still has the "add new" menu item.
+  const bool has_autofill_profiles =
+      suggested_cc_.GetItemCount() > 1 ||
+      suggested_billing_.GetItemCount() > 1;
+
+  if (SignedInState() != SIGNED_IN) {
+    // Not signed in.
+    return has_autofill_profiles ?
+        AutofillMetrics::DIALOG_USER_NOT_SIGNED_IN_HAS_AUTOFILL :
+        AutofillMetrics::DIALOG_USER_NOT_SIGNED_IN_NO_AUTOFILL;
+  }
+
+  // Signed in.
+  if (wallet_items_->instruments().empty()) {
+    // No Wallet items.
+    return has_autofill_profiles ?
+        AutofillMetrics::DIALOG_USER_SIGNED_IN_NO_WALLET_HAS_AUTOFILL :
+        AutofillMetrics::DIALOG_USER_SIGNED_IN_NO_WALLET_NO_AUTOFILL;
+  }
+
+  // Has Wallet items.
+  return has_autofill_profiles ?
+      AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_HAS_AUTOFILL :
+      AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_NO_AUTOFILL;
 }
 
 }  // namespace autofill

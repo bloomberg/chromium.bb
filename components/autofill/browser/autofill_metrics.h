@@ -51,6 +51,27 @@ class AutofillMetrics {
     DIALOG_CANCELED,      // The user canceled out of the dialog.
   };
 
+  // The initial state of user that's interacting with a freshly shown
+  // requestAutocomplete or Autocheckout dialog.
+  enum DialogInitialUserStateMetric {
+    // Could not determine the user's state due to failure to communicate with
+    // the Wallet server.
+    DIALOG_USER_STATE_UNKNOWN = 0,
+    // Not signed in, no verified Autofill profiles.
+    DIALOG_USER_NOT_SIGNED_IN_NO_AUTOFILL,
+    // Not signed in, has verified Autofill profiles.
+    DIALOG_USER_NOT_SIGNED_IN_HAS_AUTOFILL,
+    // Signed in, no Wallet items, no verified Autofill profiles.
+    DIALOG_USER_SIGNED_IN_NO_WALLET_NO_AUTOFILL,
+    // Signed in, no Wallet items, has verified Autofill profiles.
+    DIALOG_USER_SIGNED_IN_NO_WALLET_HAS_AUTOFILL,
+    // Signed in, has Wallet items, no verified Autofill profiles.
+    DIALOG_USER_SIGNED_IN_HAS_WALLET_NO_AUTOFILL,
+    // Signed in, has Wallet items, has verified Autofill profiles.
+    DIALOG_USER_SIGNED_IN_HAS_WALLET_HAS_AUTOFILL,
+    NUM_DIALOG_INITIAL_USER_STATE_METRICS
+  };
+
   // For measuring the frequency of security warnings or errors that can come
   // up as part of the requestAutocomplete flow.
   enum DialogSecurityMetric {
@@ -232,6 +253,13 @@ class AutofillMetrics {
   virtual void LogServerQueryMetric(ServerQueryMetric metric) const;
 
   virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
+
+  // This should be called as soon as the user's signed-in status and Wallet
+  // item count is known.  Records that a user starting out in |user_state| is
+  // interacting with a dialog of |dialog_type|.
+  virtual void LogDialogInitialUserState(
+      autofill::DialogType dialog_type,
+      DialogInitialUserStateMetric user_type) const;
 
   // Logs |metric| to the security metrics histogram for |dialog_type|.
   virtual void LogDialogSecurityMetric(autofill::DialogType dialog_type,
