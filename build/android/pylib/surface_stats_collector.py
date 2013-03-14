@@ -28,19 +28,20 @@ class SurfaceStatsCollector(object):
       self.value = value
       self.unit = unit
 
-  def __init__(self, adb, trace_tag):
+  def __init__(self, adb, trace_tag=''):
     self._adb = adb
-    self._trace_tag = trace_tag
     self._collector_thread = None
     self._use_legacy_method = False
     self._surface_before = None
     self._get_data_event = None
     self._data_queue = None
     self._stop_event = None
-    self._print_perf_results = True
     self._results = []
 
   def __enter__(self):
+    self.Start()
+
+  def Start(self):
     assert not self._collector_thread
 
     if self._ClearSurfaceFlingerLatencyData():
@@ -54,8 +55,10 @@ class SurfaceStatsCollector(object):
       self._surface_before = self._GetSurfaceStatsLegacy()
 
   def __exit__(self, *args):
+    self.Stop()
+
+  def Stop(self):
     self._StorePerfResults()
-    self._PrintPerfResults()
     if self._collector_thread:
       self._stop_event.set()
       self._collector_thread.join()
@@ -63,16 +66,6 @@ class SurfaceStatsCollector(object):
 
   def GetResults(self):
     return self._results
-
-  def SuppressPrintingResults(self):
-    self._print_perf_results = False
-
-  def _PrintPerfResults(self):
-    if not self._print_perf_results:
-      return
-    for r in self._results:
-      perf_tests_helper.PrintPerfResult(r.name, r.name + self._trace_tag,
-                                        r.value, r.unit)
 
   def _StorePerfResults(self):
     if self._use_legacy_method:
