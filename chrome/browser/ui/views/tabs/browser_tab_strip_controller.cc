@@ -456,15 +456,10 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   else
     data->capture_state = TabRendererData::CAPTURE_STATE_NONE;
 
-#if !defined(OS_CHROMEOS)
   if (chrome::IsPlayingAudio(contents))
     data->audio_state = TabRendererData::AUDIO_STATE_PLAYING;
   else
     data->audio_state = TabRendererData::AUDIO_STATE_NONE;
-#else
-  // Temporarily disable audio indicator on Chrome OS. See crbug.com/180332.
-  data->audio_state = TabRendererData::AUDIO_STATE_NONE;
-#endif
 }
 
 void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,
