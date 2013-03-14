@@ -30,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -446,7 +447,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
     // to a backup loader.
     if (extended_enabled_ && !overlay_->supports_instant() &&
         !overlay_->IsUsingLocalOverlay() && browser_->GetActiveWebContents()) {
-      CreateOverlay(chrome::search::kLocalOmniboxPopupURL,
+      CreateOverlay(chrome::kChromeSearchLocalOmniboxPopupURL,
                     browser_->GetActiveWebContents());
     }
 
@@ -881,6 +882,20 @@ void InstantController::ReloadOverlayIfStale() {
   }
 }
 
+void InstantController::OverlayLoadCompletedMainFrame() {
+  if (overlay_->supports_instant())
+    return;
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser_->profile());
+  content::WebContents* contents = overlay_->contents();
+  DCHECK(contents);
+  if (instant_service->IsInstantProcess(
+      contents->GetRenderProcessHost()->GetID())) {
+    return;
+  }
+  InstantSupportDetermined(contents, false);
+}
+
 void InstantController::LogDebugEvent(const std::string& info) const {
   DVLOG(1) << info;
 
@@ -1251,7 +1266,7 @@ bool InstantController::EnsureOverlayIsCurrent(bool ignore_blacklist) {
   if (!GetInstantURL(profile, ignore_blacklist, &instant_url)) {
     // If we are in extended mode, fallback to the local overlay.
     if (extended_enabled_)
-      instant_url = chrome::search::kLocalOmniboxPopupURL;
+      instant_url = chrome::kChromeSearchLocalOmniboxPopupURL;
     else
       return false;
   }
@@ -1418,7 +1433,7 @@ bool InstantController::GetInstantURL(Profile* profile,
   instant_url->clear();
 
   if (extended_enabled_ && use_local_overlay_only_) {
-    *instant_url = chrome::search::kLocalOmniboxPopupURL;
+    *instant_url = chrome::kChromeSearchLocalOmniboxPopupURL;
     return true;
   }
 

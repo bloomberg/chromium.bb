@@ -220,9 +220,6 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
 
 const char kInstantExtendedSearchTermsKey[] = "search_terms";
 
-const char kLocalOmniboxPopupURL[] =
-    "chrome://local-omnibox-popup/local-omnibox-popup.html";
-
 bool IsInstantExtendedAPIEnabled() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   return false;
@@ -312,7 +309,7 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
          (url.SchemeIs(chrome::kChromeSearchScheme) ||
           IsInstantURL(url, profile) ||
           (IsInstantExtendedAPIEnabled() &&
-           url == GURL(kLocalOmniboxPopupURL)));
+           url == GURL(chrome::kChromeSearchLocalOmniboxPopupURL)));
 }
 
 void RegisterUserPrefs(PrefRegistrySyncable* registry) {

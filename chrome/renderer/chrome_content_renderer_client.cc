@@ -222,13 +222,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
-  thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking))
     thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
   if (command_line->HasSwitch(switches::kEnableNetBenchmarking))
     thread->RegisterExtension(extensions_v8::NetBenchmarkingExtension::Get());
+  if (command_line->HasSwitch(switches::kInstantProcess))
+    thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
 
   if (command_line->HasSwitch(switches::kPlaybackMode) ||
       command_line->HasSwitch(switches::kRecordMode) ||
@@ -309,7 +310,6 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(render_view);
 #endif
-  new SearchBox(render_view);
   new SpellCheckProvider(render_view, spellcheck_.get());
   new prerender::PrerendererClient(render_view);
 #if defined(FULL_SAFE_BROWSING)
@@ -320,10 +320,13 @@ void ChromeContentRendererClient::RenderViewCreated(
       new PasswordAutofillManager(render_view);
   AutofillAgent* autofill_agent = new AutofillAgent(render_view,
                                                     password_autofill_manager);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePasswordGeneration)) {
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnablePasswordGeneration))
     new PasswordGenerationManager(render_view);
-  }
+  if (command_line->HasSwitch(switches::kInstantProcess))
+    new SearchBox(render_view);
+
   PageClickTracker* page_click_tracker = new PageClickTracker(render_view);
   // Note that the order of insertion of the listeners is important.
   // The password_autocomplete_manager takes the first shot at processing the
@@ -343,10 +346,8 @@ void ChromeContentRendererClient::RenderViewCreated(
 
 #if defined(ENABLE_AUTOMATION)
   // Used only for testing/automation.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDomAutomationController)) {
+  if (command_line->HasSwitch(switches::kDomAutomationController))
     new AutomationRendererHelper(render_view);
-  }
 #endif
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

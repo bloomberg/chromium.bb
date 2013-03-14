@@ -61,6 +61,15 @@ var restrictedIds = [];
 var selectedIndex = -1;
 
 /**
+ * Shortcut for document.getElementById.
+ * @param {string} id of the element.
+ * @return {HTMLElement} with the id.
+ */
+function $(id) {
+  return document.getElementById(id);
+}
+
+/**
  * Displays a suggestion.
  * @param {Object} suggestion The suggestion to render.
  * @param {HTMLElement} box The html element to add the suggestion to.
@@ -257,7 +266,7 @@ function handleKeyPress(e) {
 }
 
 /**
- * chrome.searchBox.onsubmit implementation.
+ * chrome.searchBox.embeddedSearch.onsubmit implementation.
  */
 function onSubmit() {
 }

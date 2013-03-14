@@ -160,7 +160,6 @@ extern const char kChromeUIInstantHost[];
 extern const char kChromeUIIPCHost[];
 extern const char kChromeUIKeyboardHost[];
 extern const char kChromeUIKillHost[];
-extern const char kChromeUILocalOmniboxPopupHost[];
 extern const char kChromeUIManagedUserPassphrasePageHost[];
 extern const char kChromeUIMemoryHost[];
 extern const char kChromeUIMemoryInternalsHost[];
@@ -414,6 +413,10 @@ extern const char kExtensionResourceScheme[];
 // callers for details.  Note that WebUIBindings should never be granted to
 // chrome-search: pages.
 extern const char kChromeSearchScheme[];
+
+// The local omnibox host and pages under chrome-search.
+extern const char kChromeSearchLocalOmniboxPopupHost[];
+extern const char kChromeSearchLocalOmniboxPopupURL[];
 
 #if defined(OS_CHROMEOS)
 extern const char kCrosScheme[];

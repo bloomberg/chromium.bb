@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/instant/search.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -72,7 +73,7 @@ void InstantOverlay::DidNavigate(
 }
 
 bool InstantOverlay::IsUsingLocalOverlay() const {
-  return instant_url_ == chrome::search::kLocalOmniboxPopupURL;
+  return instant_url_ == chrome::kChromeSearchLocalOmniboxPopupURL;
 }
 
 void InstantOverlay::Update(const string16& text,
@@ -163,6 +164,10 @@ content::WebContents* InstantOverlay::OpenURLFromTab(
     return overlay->GetDelegate()->OpenURLFromTab(source, params);
   }
   return NULL;
+}
+
+void InstantOverlay::LoadCompletedMainFrame() {
+  instant_controller()->OverlayLoadCompletedMainFrame();
 }
 
 void InstantOverlay::HandleStalePage() {

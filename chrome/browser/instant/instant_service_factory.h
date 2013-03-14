@@ -29,7 +29,7 @@ class InstantServiceFactory : public ProfileKeyedServiceFactory {
   virtual ~InstantServiceFactory();
 
   // Overridden from ProfileKeyedServiceFactory:
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 

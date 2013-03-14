@@ -31,9 +31,6 @@ namespace search {
 // InstantController sets the correct search terms to be displayed.
 extern const char kInstantExtendedSearchTermsKey[];
 
-// The URL for the local omnibox popup (rendered in a WebContents).
-extern const char kLocalOmniboxPopupURL[];
-
 // Returns whether the Instant Extended API is enabled.
 bool IsInstantExtendedAPIEnabled();
 

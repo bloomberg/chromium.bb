@@ -170,6 +170,9 @@ class InstantController : public InstantPage::Delegate,
   // is deleted and recreated. Else the refresh is skipped.
   void ReloadOverlayIfStale();
 
+  // Called when the |overlay_|'s main frame has finished loading.
+  void OverlayLoadCompletedMainFrame();
+
   // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
   // |debug_events_| doesn't get too large.
   void LogDebugEvent(const std::string& info) const;

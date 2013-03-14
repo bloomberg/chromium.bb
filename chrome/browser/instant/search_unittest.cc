@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -105,25 +106,24 @@ struct SearchTestCase {
 
 TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedDisabled) {
   const SearchTestCase kTestCases[] = {
-    {"chrome-search://foo/bar",         true,  ""},
-    {"http://foo.com/instant",          true,  ""},
-    {"http://foo.com/instant?foo=bar",  true,  ""},
-    {"https://foo.com/instant",         true,  ""},
-    {"https://foo.com/instant#foo=bar", true,  ""},
-    {"HtTpS://fOo.CoM/instant",         true,  ""},
-    {"http://foo.com:80/instant",       true,  ""},
-    {"invalid URL",                     false, "Invalid URL"},
-    {"unknown://scheme/path",           false, "Unknown scheme"},
-    {"ftp://foo.com/instant",           false, "Non-HTTP scheme"},
-    {"http://sub.foo.com/instant",      false, "Non-exact host"},
-    {"http://foo.com:26/instant",       false, "Non-default port"},
-    {"http://foo.com/instant/bar",      false, "Non-exact path"},
-    {"http://foo.com/Instant",          false, "Case sensitive path"},
-    {"http://foo.com/",                 false, "Non-exact path"},
-    {"https://foo.com/",                false, "Non-exact path"},
-    {kLocalOmniboxPopupURL,             false, "Non-extended mode"},
-    {"https://foo.com/url?strk",        false, "Non-extended mode"},
-    {"https://foo.com/alt?strk",        false, "Non-extended mode"},
+    {"chrome-search://foo/bar",                 true,  ""},
+    {"http://foo.com/instant",                  true,  ""},
+    {"http://foo.com/instant?foo=bar",          true,  ""},
+    {"https://foo.com/instant",                 true,  ""},
+    {"https://foo.com/instant#foo=bar",         true,  ""},
+    {"HtTpS://fOo.CoM/instant",                 true,  ""},
+    {"http://foo.com:80/instant",               true,  ""},
+    {"invalid URL",                             false, "Invalid URL"},
+    {"unknown://scheme/path",                   false, "Unknown scheme"},
+    {"ftp://foo.com/instant",                   false, "Non-HTTP scheme"},
+    {"http://sub.foo.com/instant",              false, "Non-exact host"},
+    {"http://foo.com:26/instant",               false, "Non-default port"},
+    {"http://foo.com/instant/bar",              false, "Non-exact path"},
+    {"http://foo.com/Instant",                  false, "Case sensitive path"},
+    {"http://foo.com/",                         false, "Non-exact path"},
+    {"https://foo.com/",                        false, "Non-exact path"},
+    {"https://foo.com/url?strk",                false, "Non-extended mode"},
+    {"https://foo.com/alt?strk",                false, "Non-extended mode"},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -138,7 +138,7 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
   EnableInstantExtendedAPIForTesting();
 
   const SearchTestCase kTestCases[] = {
-    {kLocalOmniboxPopupURL,            true,  ""},
+    {chrome::kChromeSearchLocalOmniboxPopupURL, true,  ""},
     {"https://foo.com/instant?strk",   true,  ""},
     {"https://foo.com/instant#strk",   true,  ""},
     {"https://foo.com/instant?strk=0", true,  ""},
@@ -185,7 +185,7 @@ const SearchTestCase kInstantNTPTestCases[] = {
   {"https://foo.com/instant",          false, "No search terms replacement"},
   {"chrome://blank/",                  false, "Chrome scheme"},
   {"chrome-search//foo",               false, "Chrome-search scheme"},
-  {kLocalOmniboxPopupURL,              false, "Local omnibox popup"},
+  {chrome::kChromeSearchLocalOmniboxPopupURL, false, "Local omnibox popup"},
   {"https://bar.com/instant?strk=1",   false, "Random non-search page"},
 };
 

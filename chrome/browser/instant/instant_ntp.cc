@@ -52,6 +52,9 @@ content::WebContents* InstantNTP::OpenURLFromTab(
   return NULL;
 }
 
+void InstantNTP::LoadCompletedMainFrame() {
+}
+
 bool InstantNTP::ShouldProcessRenderViewCreated() {
   return true;
 }

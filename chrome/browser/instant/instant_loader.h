@@ -54,6 +54,9 @@ class InstantLoader : public content::NotificationObserver,
         content::WebContents* source,
         const content::OpenURLParams& params) = 0;
 
+    // Called when a main frame load is complete.
+    virtual void LoadCompletedMainFrame() = 0;
+
    protected:
     ~Delegate();
   };

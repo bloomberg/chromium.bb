@@ -101,6 +101,7 @@ class InstantOverlay : public InstantPage,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
+  virtual void LoadCompletedMainFrame() OVERRIDE;
 
   // Called when the underlying page becomes stale.
   void HandleStalePage();

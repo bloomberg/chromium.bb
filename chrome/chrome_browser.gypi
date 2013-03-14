@@ -873,6 +873,8 @@
         'browser/instant/instant_tab.h',
         'browser/instant/instant_unload_handler.cc',
         'browser/instant/instant_unload_handler.h',
+        'browser/instant/local_omnibox_popup_source.cc',
+        'browser/instant/local_omnibox_popup_source.h',
         'browser/instant/search.cc',
         'browser/instant/search.h',
         'browser/internal_auth.cc',

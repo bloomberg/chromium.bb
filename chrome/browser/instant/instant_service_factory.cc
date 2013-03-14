@@ -27,7 +27,7 @@ InstantServiceFactory::InstantServiceFactory()
 InstantServiceFactory::~InstantServiceFactory() {
 }
 
-bool InstantServiceFactory::ServiceRedirectedInIncognito() const {
+bool InstantServiceFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }
 

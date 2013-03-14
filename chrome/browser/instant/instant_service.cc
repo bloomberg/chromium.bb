@@ -8,6 +8,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/instant/instant_io_context.h"
 #include "chrome/browser/instant/instant_service_factory.h"
+#include "chrome/browser/instant/local_omnibox_popup_source.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
@@ -68,6 +69,7 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile, new ThumbnailSource(profile));
   content::URLDataSource::Add(profile, new FaviconSource(
       profile, FaviconSource::FAVICON));
+  content::URLDataSource::Add(profile, new LocalOmniboxPopupSource());
 }
 
 InstantService::~InstantService() {

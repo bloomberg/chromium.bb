@@ -48,6 +48,7 @@ class InstantNTP : public InstantPage,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
+  virtual void LoadCompletedMainFrame() OVERRIDE;
 
   // Overridden from InstantPage:
   virtual bool ShouldProcessRenderViewCreated() OVERRIDE;
