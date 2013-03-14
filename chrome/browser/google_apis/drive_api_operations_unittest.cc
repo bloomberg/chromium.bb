@@ -39,16 +39,6 @@ const char kTestChildrenResponse[] =
 const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
 const char kTestUploadNewFilePath[] = "/upload/newfile/path";
 
-void CopyResultsFromFileResourceCallbackAndQuit(
-    GDataErrorCode* error_out,
-    scoped_ptr<FileResource>* file_resource_out,
-    const GDataErrorCode error_in,
-    scoped_ptr<FileResource> file_resource_in) {
-  *error_out = error_in;
-  *file_resource_out = file_resource_in.Pass();
-  MessageLoop::current()->Quit();
-}
-
 void CopyResultFromUploadRangeCallbackAndQuit(
     UploadRangeResponse* response_out,
     scoped_ptr<FileResource>* file_resource_out,
@@ -393,8 +383,9 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
           *url_generator_,
           "root",
           "new directory",
-          base::Bind(&CopyResultsFromFileResourceCallbackAndQuit,
-                     &error, &feed_data));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &feed_data)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -467,8 +458,9 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
           *url_generator_,
           "resource_id",
           "new name",
-          base::Bind(&CopyResultsFromFileResourceCallbackAndQuit,
-                     &error, &file_resource));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &file_resource)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
