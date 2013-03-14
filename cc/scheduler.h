@@ -92,8 +92,8 @@ public:
     void didLoseOutputSurface();
     void didRecreateOutputSurface();
 
-    bool commitPending() const { return m_stateMachine.commitPending(); }
-    bool redrawPending() const { return m_stateMachine.redrawPending(); }
+    bool commitPending() const { return m_stateMachine.CommitPending(); }
+    bool redrawPending() const { return m_stateMachine.RedrawPending(); }
 
     void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval);
 
