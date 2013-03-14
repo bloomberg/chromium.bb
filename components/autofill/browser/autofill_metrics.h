@@ -51,6 +51,19 @@ class AutofillMetrics {
     DIALOG_CANCELED,      // The user canceled out of the dialog.
   };
 
+  // For measuring the frequency of security warnings or errors that can come
+  // up as part of the requestAutocomplete flow.
+  enum DialogSecurityMetric {
+    // Baseline metric: The dialog was shown.
+    SECURITY_METRIC_DIALOG_SHOWN = 0,
+    // Credit card requested over non-secure protocol.
+    SECURITY_METRIC_CREDIT_CARD_OVER_HTTP,
+    // Autocomplete data requested from a frame hosted on an origin not matching
+    // the main frame's origin.
+    SECURITY_METRIC_CROSS_ORIGIN_FRAME,
+    NUM_DIALOG_SECURITY_METRICS
+  };
+
   enum InfoBarMetric {
     INFOBAR_SHOWN = 0,  // We showed an infobar, e.g. prompting to save credit
                         // card info.
@@ -182,6 +195,10 @@ class AutofillMetrics {
   virtual void LogServerQueryMetric(ServerQueryMetric metric) const;
 
   virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
+
+  // Logs |metric| to the security metrics histogram for |dialog_type|.
+  virtual void LogDialogSecurityMetric(autofill::DialogType dialog_type,
+                                       DialogSecurityMetric metric) const;
 
   // This should be called when the requestAutocomplete dialog, invoked by a
   // dialog of type |dialog_type|, is closed.  |duration| should be the time

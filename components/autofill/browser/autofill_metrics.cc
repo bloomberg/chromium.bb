@@ -296,6 +296,13 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
                             NUM_INFO_BAR_METRICS);
 }
 
+void AutofillMetrics::LogDialogSecurityMetric(
+    autofill::DialogType dialog_type,
+    DialogSecurityMetric metric) const {
+  std::string name = GetPrefixForDialogType(dialog_type) + ".Security";
+  LogUMAHistogramEnumeration(name, metric, NUM_DIALOG_SECURITY_METRICS);
+}
+
 void AutofillMetrics::LogDialogUiDuration(
     const base::TimeDelta& duration,
     autofill::DialogType dialog_type,

@@ -270,6 +270,24 @@ void AutofillDialogControllerImpl::Show() {
   const GURL& active_url = entry ? entry->GetURL() : contents_->GetURL();
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 
+  // Log any relevant security exceptions.
+  metric_logger_.LogDialogSecurityMetric(
+      dialog_type_,
+      AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
+
+  if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
+    metric_logger_.LogDialogSecurityMetric(
+        dialog_type_,
+        AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
+  }
+
+  if (!invoked_from_same_origin_) {
+    metric_logger_.LogDialogSecurityMetric(
+        dialog_type_,
+        AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
+  }
+
+  // Determine what field types should be included in the dialog.
   bool has_types = false;
   bool has_sections = false;
   form_structure_.ParseFieldTypesFromAutocompleteAttributes(&has_types,
