@@ -46,8 +46,11 @@ ContextGroup::ContextGroup(
       max_fragment_uniform_vectors_(0u),
       max_varying_vectors_(0u),
       max_vertex_uniform_vectors_(0u),
+      max_color_attachments_(1u),
+      max_draw_buffers_(1u),
       program_cache_(NULL),
-      feature_info_(new FeatureInfo()) {
+      feature_info_(new FeatureInfo()),
+      draw_buffer_(GL_BACK) {
   {
     TransferBufferManager* manager = new TransferBufferManager();
     transfer_buffer_manager_.reset(manager);
@@ -100,9 +103,20 @@ bool ContextGroup::Initialize(
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
 
+  if (feature_info_->feature_flags().ext_draw_buffers) {
+    GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &max_color_attachments_);
+    if (max_color_attachments_ < 1)
+      max_color_attachments_ = 1;
+    GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, &max_draw_buffers_);
+    if (max_draw_buffers_ < 1)
+      max_draw_buffers_ = 1;
+    draw_buffer_ = GL_BACK;
+  }
+
   buffer_manager_.reset(new BufferManager(
       memory_tracker_, feature_info_.get()));
-  framebuffer_manager_.reset(new FramebufferManager());
+  framebuffer_manager_.reset(
+      new FramebufferManager(max_draw_buffers_, max_color_attachments_));
   renderbuffer_manager_.reset(new RenderbufferManager(memory_tracker_,
                                                       max_renderbuffer_size,
                                                       max_samples));

@@ -103,6 +103,14 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return max_vertex_uniform_vectors_;
   }
 
+  uint32 max_color_attachments() const {
+    return max_color_attachments_;
+  }
+
+  uint32 max_draw_buffers() const {
+    return max_draw_buffers_;
+  }
+
   FeatureInfo* feature_info() {
     return feature_info_.get();
   }
@@ -150,6 +158,14 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   // Loses all the context associated with this group.
   void LoseContexts(GLenum reset_status);
 
+  // EXT_draw_buffer related states for backbuffer.
+  GLenum draw_buffer() const {
+    return draw_buffer_;
+  }
+  void set_draw_buffer(GLenum buf) {
+    draw_buffer_ = buf;
+  }
+
  private:
   friend class base::RefCounted<ContextGroup>;
   ~ContextGroup();
@@ -175,6 +191,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   uint32 max_fragment_uniform_vectors_;
   uint32 max_varying_vectors_;
   uint32 max_vertex_uniform_vectors_;
+  uint32 max_color_attachments_;
+  uint32 max_draw_buffers_;
 
   ProgramCache* program_cache_;
 
@@ -196,6 +214,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<FeatureInfo> feature_info_;
 
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
+
+  GLenum draw_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

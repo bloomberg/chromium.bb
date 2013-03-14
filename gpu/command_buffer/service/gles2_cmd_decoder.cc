@@ -925,6 +925,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   void DoTraceEndCHROMIUM(void);
 
+  void DoDrawBuffersEXT(GLsizei count, const GLenum* bufs);
+
   // Creates a Program for the given program.
   Program* CreateProgram(
       GLuint client_id, GLuint service_id) {
@@ -2597,7 +2599,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxTextureImageUnits = group_->max_texture_image_units();
   resources.MaxFragmentUniformVectors =
       group_->max_fragment_uniform_vectors();
-  resources.MaxDrawBuffers = 1;
+  resources.MaxDrawBuffers = group_->max_draw_buffers();
 
 #if (ANGLE_SH_VERSION >= 110)
   GLint range[2];
@@ -2618,6 +2620,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         features().arb_texture_rectangle ? 1 : 0;
     resources.OES_EGL_image_external =
         features().oes_egl_image_external ? 1 : 0;
+    resources.EXT_draw_buffers =
+        features().ext_draw_buffers ? 1 : 0;
   }
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
@@ -4117,6 +4121,18 @@ bool GLES2DecoderImpl::GetHelper(
         params[0] = texture_manager()->MaxSizeForTarget(GL_TEXTURE_CUBE_MAP);
       }
       return true;
+    case GL_MAX_COLOR_ATTACHMENTS_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = group_->max_color_attachments();
+      }
+      return true;
+    case GL_MAX_DRAW_BUFFERS_ARB:
+      *num_written = 1;
+      if (params) {
+        params[0] = group_->max_draw_buffers();
+      }
+      return true;
     case GL_ALPHA_BITS:
       *num_written = 1;
       if (params) {
@@ -4349,6 +4365,23 @@ bool GLES2DecoderImpl::GetHelper(
       }
       return true;
     default:
+      if (pname >= GL_DRAW_BUFFER0_ARB &&
+          pname < GL_DRAW_BUFFER0_ARB + group_->max_draw_buffers()) {
+        *num_written = 1;
+        if (params) {
+          Framebuffer* framebuffer =
+              GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
+          if (framebuffer) {
+            params[0] = framebuffer->GetDrawBuffer(pname);
+          } else {  // backbuffer
+            if (pname == GL_DRAW_BUFFER0_ARB)
+              params[0] = group_->draw_buffer();
+            else
+              params[0] = GL_NONE;
+          }
+        }
+        return true;
+      }
       *num_written = util_.GLGetNumValuesReturned(pname);
       return false;
   }
@@ -10102,6 +10135,48 @@ void GLES2DecoderImpl::DoTraceEndCHROMIUM() {
   }
   TRACE_EVENT_COPY_ASYNC_END0("gpu", gpu_tracer_->CurrentName().c_str(), this);
   gpu_tracer_->End();
+}
+
+void GLES2DecoderImpl::DoDrawBuffersEXT(
+    GLsizei count, const GLenum* bufs) {
+  if (count > static_cast<GLsizei>(group_->max_draw_buffers())) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE,
+        "glDrawBuffersEXT", "greater than GL_MAX_DRAW_BUFFERS_EXT");
+    return;
+  }
+
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
+  if (framebuffer) {
+    for (GLsizei i = 0; i < count; ++i) {
+      if (bufs[i] != static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i) &&
+          bufs[i] != GL_NONE) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION,
+            "glDrawBuffersEXT",
+            "bufs[i] not GL_NONE or GL_COLOR_ATTACHMENTi_EXT");
+        return;
+      }
+    }
+    glDrawBuffersARB(count, bufs);
+    framebuffer->SetDrawBuffers(count, bufs);
+  } else {  // backbuffer
+    if (count > 1 ||
+        (bufs[0] != GL_BACK && bufs[0] != GL_NONE)) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION,
+          "glDrawBuffersEXT",
+          "more than one buffer or bufs not GL_NONE or GL_BACK");
+      return;
+    }
+    GLenum mapped_buf = bufs[0];
+    if (GetBackbufferServiceId() != 0 &&  // emulated backbuffer
+        bufs[0] == GL_BACK) {
+      mapped_buf = GL_COLOR_ATTACHMENT0;
+    }
+    glDrawBuffersARB(count, &mapped_buf);
+    group_->set_draw_buffer(bufs[0]);
+  }
 }
 
 bool GLES2DecoderImpl::ValidateAsyncTransfer(

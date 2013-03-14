@@ -499,6 +499,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
   virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access);
   virtual WGC3Dboolean unmapBufferCHROMIUM(WGC3Denum target);
 
+  virtual void drawBuffersEXT(WGC3Dsizei n, const WGC3Denum* bufs);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

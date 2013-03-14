@@ -1180,5 +1180,11 @@ void GLES2TraceImplementation::WaitSyncPointCHROMIUM(GLuint sync_point) {
   gl_->WaitSyncPointCHROMIUM(sync_point);
 }
 
+void GLES2TraceImplementation::DrawBuffersEXT(
+    GLsizei count, const GLenum* bufs) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DrawBuffersEXT");
+  gl_->DrawBuffersEXT(count, bufs);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_
 

@@ -74,5 +74,7 @@
 
 // TODO(gman): WaitSyncPointCHROMIUM
 
+// TODO(gman): DrawBuffersEXT
+// TODO(gman): DrawBuffersEXTImmediate
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 

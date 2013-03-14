@@ -82,7 +82,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       native_vertex_array_object(false),
       disable_workarounds(false),
       enable_shader_name_hashing(false),
-      enable_samplers(false) {
+      enable_samplers(false),
+      ext_draw_buffers(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds()
@@ -612,6 +613,29 @@ void FeatureInfo::AddFeatures() {
     AddExtensionString("GL_ANGLE_instanced_arrays");
     feature_flags_.angle_instanced_arrays = true;
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
+  }
+
+  if (extensions.Contains("GL_ARB_draw_buffers")) {
+    AddExtensionString("GL_EXT_draw_buffers");
+    feature_flags_.ext_draw_buffers = true;
+
+    GLint max_color_attachments = 0;
+    glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &max_color_attachments);
+    for (GLenum i = GL_COLOR_ATTACHMENT1_EXT;
+         i < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + max_color_attachments);
+         ++i) {
+      validators_.attachment.AddValue(i);
+    }
+
+    validators_.g_l_state.AddValue(GL_MAX_COLOR_ATTACHMENTS_EXT);
+    validators_.g_l_state.AddValue(GL_MAX_DRAW_BUFFERS_ARB);
+    GLint max_draw_buffers = 0;
+    glGetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, &max_draw_buffers);
+    for (GLenum i = GL_DRAW_BUFFER0_ARB;
+         i < static_cast<GLenum>(GL_DRAW_BUFFER0_ARB + max_draw_buffers);
+         ++i) {
+      validators_.g_l_state.AddValue(i);
+    }
   }
 
   if (!disallowed_features_.swap_buffer_complete_callback)

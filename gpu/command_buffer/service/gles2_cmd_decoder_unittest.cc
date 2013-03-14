@@ -8395,6 +8395,61 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
 }
 
+TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateSuccceeds) {
+  const GLsizei count = 1;
+  const GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
+  DrawBuffersEXTImmediate& cmd =
+      *GetImmediateAs<DrawBuffersEXTImmediate>();
+  cmd.Init(count, bufs);
+
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  EXPECT_CALL(*gl_, DrawBuffersARB(count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(bufs)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateFails) {
+  const GLsizei count = 1;
+  const GLenum bufs[] = { GL_COLOR_ATTACHMENT1_EXT };
+  DrawBuffersEXTImmediate& cmd =
+      *GetImmediateAs<DrawBuffersEXTImmediate>();
+  cmd.Init(count, bufs);
+
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(bufs)));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
+  const GLsizei count = 1;
+  const GLenum bufs[] = { GL_BACK };
+  DrawBuffersEXTImmediate& cmd =
+      *GetImmediateAs<DrawBuffersEXTImmediate>();
+  cmd.Init(count, bufs);
+
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(bufs)));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  DoBindFramebuffer(GL_FRAMEBUFFER, 0, 0);  // unbind
+
+  EXPECT_CALL(*gl_, DrawBuffersARB(count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(bufs)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

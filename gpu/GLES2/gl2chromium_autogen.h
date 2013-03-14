@@ -225,6 +225,7 @@
 #define glLoseContextCHROMIUM GLES2_GET_FUN(LoseContextCHROMIUM)
 #define glInsertSyncPointCHROMIUM GLES2_GET_FUN(InsertSyncPointCHROMIUM)
 #define glWaitSyncPointCHROMIUM GLES2_GET_FUN(WaitSyncPointCHROMIUM)
+#define glDrawBuffersEXT GLES2_GET_FUN(DrawBuffersEXT)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_
 

@@ -2152,6 +2152,15 @@ _FUNCTION_INFO = {
     'pepper_interface': 'InstancedArrays',
     'defer_draws': True,
   },
+  'DrawBuffersEXT': {
+    'type': 'PUTn',
+    'decoder_func': 'DoDrawBuffersEXT',
+    'data_type': 'GLenum',
+    'count': 1,
+    'client_test': False,
+    'unit_test': False,
+    'extension': True,
+  },
   'DrawElementsInstancedANGLE': {
     'type': 'Manual',
     'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
@@ -4927,11 +4936,11 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
     cmds::%(name)sImmediate cmd;
-    %(type)s data[2][%(count)d];
+    %(type)s data[%(count_param)d][%(count)d];
   };
 
   Cmds expected;
-  for (int ii = 0; ii < 2; ++ii) {
+  for (int ii = 0; ii < %(count_param)d; ++ii) {
     for (int jj = 0; jj < %(count)d; ++jj) {
       expected.data[ii][jj] = static_cast<%(type)s>(ii * %(count)d + jj);
     }
@@ -4945,14 +4954,18 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     for count, arg in enumerate(func.GetCmdArgs()[0:-2]):
       cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
     gl_arg_strings = []
+    count_param = 0
     for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
       gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+      if arg.name == "count":
+        count_param = int(arg.GetValidClientSideArg(func, count, 0))
     file.Write(code % {
           'name': func.name,
           'type': func.GetInfo('data_type'),
           'count': func.GetInfo('count'),
           'args': ", ".join(gl_arg_strings),
           'cmd_args': ", ".join(cmd_arg_strings),
+          'count_param': count_param,
         })
 
   def WriteImmediateCmdComputeSize(self, func, file):
@@ -5028,26 +5041,29 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
+    args = func.GetCmdArgs()
+    count_param = 0
+    for value, arg in enumerate(args):
+      if arg.name == "count":
+        count_param = int(arg.GetValidClientSideArg(func, value, 0))
     file.Write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
     file.Write("  const int kSomeBaseValueToTestWith = 51;\n")
     file.Write("  static %s data[] = {\n" % func.info.data_type)
-    for v in range(0, func.info.count * 2):
+    for v in range(0, func.info.count * count_param):
       file.Write("    static_cast<%s>(kSomeBaseValueToTestWith + %d),\n" %
                  (func.info.data_type, v))
     file.Write("  };\n")
     file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
                (func.name, func.name))
-    file.Write("  const GLsizei kNumElements = 2;\n")
+    file.Write("  const GLsizei kNumElements = %d;\n" % count_param)
     file.Write("  const size_t kExpectedCmdSize =\n")
     file.Write("      sizeof(cmd) + kNumElements * sizeof(%s) * %d;\n" %
                (func.info.data_type, func.info.count))
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
-    args = func.GetCmdArgs()
     for value, arg in enumerate(args):
       file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value + 1))
     file.Write(",\n      data);\n")
-    args = func.GetCmdArgs()
     file.Write("  EXPECT_EQ(static_cast<uint32>(cmds::%s::kCmdId),\n" %
                func.name)
     file.Write("            cmd.header.command);\n")

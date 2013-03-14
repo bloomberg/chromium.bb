@@ -13,7 +13,12 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using WebKit::WGC3Dboolean;
+using WebKit::WGC3Dchar;
 using WebKit::WGC3Denum;
+using WebKit::WGC3Dint;
+using WebKit::WGC3Dsizei;
+using WebKit::WGC3Dsizeiptr;
+using WebKit::WGC3Duint;
 using WebKit::WebGLId;
 using WebKit::WebGraphicsContext3D;
 
@@ -121,14 +126,14 @@ WebKit::WebString TestWebGraphicsContext3D::getString(WGC3Denum name) {
   return WebKit::WebString::fromUTF8(string.c_str());
 }
 
-WebKit::WGC3Dint TestWebGraphicsContext3D::getUniformLocation(
+WGC3Dint TestWebGraphicsContext3D::getUniformLocation(
     WebGLId program,
-    const WebKit::WGC3Dchar* name) {
+    const WGC3Dchar* name) {
   return 0;
 }
 
-WebKit::WGC3Dsizeiptr TestWebGraphicsContext3D::getVertexAttribOffset(
-    WebKit::WGC3Duint index,
+WGC3Dsizeiptr TestWebGraphicsContext3D::getVertexAttribOffset(
+    WGC3Duint index,
     WGC3Denum pname) {
   return 0;
 }
@@ -172,7 +177,7 @@ WebGLId TestWebGraphicsContext3D::createBuffer() {
   return kBufferId | context_id_ << 16;
 }
 
-void TestWebGraphicsContext3D::deleteBuffer(WebKit::WebGLId id) {
+void TestWebGraphicsContext3D::deleteBuffer(WebGLId id) {
   EXPECT_EQ(kBufferId | context_id_ << 16, id);
 }
 
@@ -180,7 +185,7 @@ WebGLId TestWebGraphicsContext3D::createFramebuffer() {
   return kFramebufferId | context_id_ << 16;
 }
 
-void TestWebGraphicsContext3D::deleteFramebuffer(WebKit::WebGLId id) {
+void TestWebGraphicsContext3D::deleteFramebuffer(WebGLId id) {
   EXPECT_EQ(kFramebufferId | context_id_ << 16, id);
 }
 
@@ -188,7 +193,7 @@ WebGLId TestWebGraphicsContext3D::createProgram() {
   return kProgramId | context_id_ << 16;
 }
 
-void TestWebGraphicsContext3D::deleteProgram(WebKit::WebGLId id) {
+void TestWebGraphicsContext3D::deleteProgram(WebGLId id) {
   EXPECT_EQ(kProgramId | context_id_ << 16, id);
 }
 
@@ -196,7 +201,7 @@ WebGLId TestWebGraphicsContext3D::createRenderbuffer() {
   return kRenderbufferId | context_id_ << 16;
 }
 
-void TestWebGraphicsContext3D::deleteRenderbuffer(WebKit::WebGLId id) {
+void TestWebGraphicsContext3D::deleteRenderbuffer(WebGLId id) {
   EXPECT_EQ(kRenderbufferId | context_id_ << 16, id);
 }
 
@@ -204,7 +209,7 @@ WebGLId TestWebGraphicsContext3D::createShader(WGC3Denum) {
   return kShaderId | context_id_ << 16;
 }
 
-void TestWebGraphicsContext3D::deleteShader(WebKit::WebGLId id) {
+void TestWebGraphicsContext3D::deleteShader(WebGLId id) {
   EXPECT_EQ(kShaderId | context_id_ << 16, id);
 }
 
@@ -271,7 +276,7 @@ void TestWebGraphicsContext3D::bindTexture(
   used_textures_.insert(texture_id);
 }
 
-void TestWebGraphicsContext3D::endQueryEXT(WebKit::WGC3Denum target) {
+void TestWebGraphicsContext3D::endQueryEXT(WGC3Denum target) {
   if (times_end_query_succeeds_ >= 0) {
     if (!times_end_query_succeeds_) {
       loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
@@ -282,9 +287,9 @@ void TestWebGraphicsContext3D::endQueryEXT(WebKit::WGC3Denum target) {
 }
 
 void TestWebGraphicsContext3D::getQueryObjectuivEXT(
-    WebKit::WebGLId query,
-    WebKit::WGC3Denum pname,
-    WebKit::WGC3Duint* params) {
+    WebGLId query,
+    WGC3Denum pname,
+    WGC3Duint* params) {
   // If the context is lost, behave as if result is available.
   if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
     *params = 1;
@@ -308,7 +313,7 @@ void TestWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
   shared_contexts_.clear();
 }
 
-WebKit::WebGLId TestWebGraphicsContext3D::NextTextureId() {
+WebGLId TestWebGraphicsContext3D::NextTextureId() {
   WebGLId texture_id = next_texture_id_++;
   DCHECK(texture_id < (1 << 16));
   texture_id |= context_id_ << 16;

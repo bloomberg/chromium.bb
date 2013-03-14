@@ -1687,5 +1687,7 @@ DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
 DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
                  WGC3Denum, const WGC3Dbyte*)
 
+DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT,
+                 WGC3Dsizei, const WGC3Denum*)
 }  // namespace gpu
 }  // namespace webkit

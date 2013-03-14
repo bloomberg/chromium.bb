@@ -3210,6 +3210,50 @@ error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleDrawBuffersEXT(
+    uint32 immediate_data_size, const gles2::cmds::DrawBuffersEXT& c) {
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32 data_size;
+  if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLenum* bufs = GetSharedMemoryAs<const GLenum*>(
+      c.bufs_shm_id, c.bufs_shm_offset, data_size);
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDrawBuffersEXT", "count < 0");
+    return error::kNoError;
+  }
+  if (bufs == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoDrawBuffersEXT(count, bufs);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDrawBuffersEXTImmediate(
+    uint32 immediate_data_size,
+    const gles2::cmds::DrawBuffersEXTImmediate& c) {
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32 data_size;
+  if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLenum* bufs = GetImmediateDataAs<const GLenum*>(
+      c, data_size, immediate_data_size);
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDrawBuffersEXT", "count < 0");
+    return error::kNoError;
+  }
+  if (bufs == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoDrawBuffersEXT(count, bufs);
+  return error::kNoError;
+}
+
 
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {

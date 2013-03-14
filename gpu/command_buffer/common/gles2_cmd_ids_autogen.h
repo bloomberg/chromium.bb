@@ -251,6 +251,8 @@
   OP(LoseContextCHROMIUM)                                      /* 494 */ \
   OP(InsertSyncPointCHROMIUM)                                  /* 495 */ \
   OP(WaitSyncPointCHROMIUM)                                    /* 496 */ \
+  OP(DrawBuffersEXT)                                           /* 497 */ \
+  OP(DrawBuffersEXTImmediate)                                  /* 498 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

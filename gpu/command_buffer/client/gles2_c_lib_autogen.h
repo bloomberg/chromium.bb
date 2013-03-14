@@ -728,6 +728,9 @@ GLuint GLES2InsertSyncPointCHROMIUM() {
 void GLES2WaitSyncPointCHROMIUM(GLuint sync_point) {
   gles2::GetGLContext()->WaitSyncPointCHROMIUM(sync_point);
 }
+void GLES2DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
+  gles2::GetGLContext()->DrawBuffersEXT(count, bufs);
+}
 
 namespace gles2 {
 
@@ -1069,6 +1072,8 @@ NameToFunc g_gles2_function_table[] = {
       glInsertSyncPointCHROMIUM), },
   { "glWaitSyncPointCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glWaitSyncPointCHROMIUM), },
+  { "glDrawBuffersEXT", reinterpret_cast<GLES2FunctionPointer>(
+      glDrawBuffersEXT), },
   { NULL, NULL, },
 };
 

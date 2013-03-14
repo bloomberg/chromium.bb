@@ -1706,6 +1706,12 @@ void WebGraphicsContext3DCommandBufferImpl::waitAsyncTexImage2DCHROMIUM(
   return gl_->WaitAsyncTexImage2DCHROMIUM(target);
 }
 
+void WebGraphicsContext3DCommandBufferImpl::drawBuffersEXT(
+    WGC3Dsizei n,
+    const WGC3Denum* bufs) {
+  gl_->DrawBuffersEXT(n, bufs);
+}
+
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit::gpu::CreateCommandBufferSkiaGLBinding();
 }

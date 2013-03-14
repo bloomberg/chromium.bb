@@ -1703,5 +1703,21 @@ void GLES2Implementation::WaitSyncPointCHROMIUM(GLuint sync_point) {
   CheckGLError();
 }
 
+void GLES2Implementation::DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDrawBuffersEXT(" << count << ", " << static_cast<const void*>(bufs) << ")");  // NOLINT
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+       GPU_CLIENT_LOG("  " << i << ": " << bufs[0 + i * 1]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawBuffersEXT", "count < 0");
+    return;
+  }
+  helper_->DrawBuffersEXTImmediate(count, bufs);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_
 

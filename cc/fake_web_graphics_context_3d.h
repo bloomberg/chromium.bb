@@ -582,6 +582,9 @@ class CC_EXPORT FakeWebGraphicsContext3D :
 
   virtual void loseContextCHROMIUM(WebKit::WGC3Denum current,
                                    WebKit::WGC3Denum other);
+
+  virtual void drawBuffersEXT(WebKit::WGC3Dsizei m,
+                              const WebKit::WGC3Denum* bufs) {}
 };
 
 }  // namespace cc

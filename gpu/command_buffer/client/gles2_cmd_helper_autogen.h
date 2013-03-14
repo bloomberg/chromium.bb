@@ -2080,5 +2080,25 @@
     }
   }
 
+  void DrawBuffersEXT(
+      GLsizei count, uint32 bufs_shm_id, uint32 bufs_shm_offset) {
+    gles2::cmds::DrawBuffersEXT* c =
+        GetCmdSpace<gles2::cmds::DrawBuffersEXT>();
+    if (c) {
+      c->Init(count, bufs_shm_id, bufs_shm_offset);
+    }
+  }
+
+  void DrawBuffersEXTImmediate(GLsizei count, const GLenum* bufs) {
+    const uint32 size =
+        gles2::cmds::DrawBuffersEXTImmediate::ComputeSize(count);
+    gles2::cmds::DrawBuffersEXTImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::DrawBuffersEXTImmediate>(
+            size);
+    if (c) {
+      c->Init(count, bufs);
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

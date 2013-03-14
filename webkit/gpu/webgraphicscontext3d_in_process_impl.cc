@@ -1731,6 +1731,11 @@ WGC3Dboolean WebGraphicsContext3DInProcessImpl::unmapBufferCHROMIUM(
   return false;
 }
 
+void WebGraphicsContext3DInProcessImpl::drawBuffersEXT(
+    WGC3Dsizei n, const WGC3Denum* bufs) {
+  NOTIMPLEMENTED();
+}
+
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();
 }

@@ -137,7 +137,8 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static uint32 GetChannelsForFormat(int format);
 
   // Returns a bitmask for the channels the given attachment type needs.
-  static uint32 GetChannelsNeededForAttachmentType(int type);
+  static uint32 GetChannelsNeededForAttachmentType(
+      int type, uint32 max_color_attachments);
 
   static bool IsNPOT(uint32 value) {
     return value > 0 && (value & (value - 1)) != 0;

@@ -24,7 +24,8 @@ class FramebufferManagerTest : public testing::Test {
 
  public:
   FramebufferManagerTest()
-      : texture_manager_(
+      : manager_(1, 1),
+        texture_manager_(
           NULL, new FeatureInfo(), kMaxTextureSize, kMaxCubemapSize),
         renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples) {
 
@@ -115,7 +116,7 @@ class FramebufferInfoTest : public testing::Test {
   static const GLint kMaxSamples = 4;
 
   FramebufferInfoTest()
-      : manager_(),
+      : manager_(1, 1),
         texture_manager_(
           NULL, new FeatureInfo(), kMaxTextureSize, kMaxCubemapSize),
         renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples) {

@@ -1798,5 +1798,22 @@ TEST_F(GLES2ImplementationTest, WaitSyncPointCHROMIUM) {
   gl_->WaitSyncPointCHROMIUM(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, DrawBuffersEXT) {
+  struct Cmds {
+    cmds::DrawBuffersEXTImmediate cmd;
+    GLenum data[1][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 1; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      expected.data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(1, &expected.data[0][0]);
+  gl_->DrawBuffersEXT(1, &expected.data[0][0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 
