@@ -54,7 +54,8 @@ _ANDROID_FILTER['org.chromium.chrome.testshell'] = [
     'ChromeDriverTest.testHoverOverElement',
     'ChromeDriverTest.testClickElement',
     'ChromeDriverTest.testClearElement',
-    'ChromeDriverTest.testSendKeysToElement',
+    # chromedriver:259
+    #'ChromeDriverTest.testSendKeysToElement',
     'ChromeDriverTest.testGetCurrentUrl',
     'ChromeDriverTest.testGoBackAndGoForward',
     'ChromeDriverTest.testRefresh',
