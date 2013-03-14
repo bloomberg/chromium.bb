@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -612,6 +613,7 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
     LOG(INFO) << "No metrics policy set will revert to checking "
               << "consent file which is "
               << (new_value ? "on." : "off.");
+    UMA_HISTOGRAM_COUNTS("DeviceSettings.MetricsMigrated", 1);
   }
   VLOG(1) << "Metrics policy is being set to : " << new_value
           << "(use file : " << use_file << ")";
