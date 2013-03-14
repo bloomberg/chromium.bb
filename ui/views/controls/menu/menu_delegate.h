@@ -66,6 +66,13 @@ class VIEWS_EXPORT MenuDelegate {
   // The font for the menu item label.
   virtual const gfx::Font* GetLabelFont(int id) const;
 
+  // Override the text color of a given menu item dependent on the
+  // |command_id| and its |is_hovered| state. Returns true if it chooses to
+  // override the color.
+  virtual bool GetForegroundColor(int command_id,
+                                  bool is_hovered,
+                                  SkColor* override_color) const;
+
   // Override the background color of a given menu item dependent on the
   // |command_id| and its |is_hovered| state. Returns true if it chooses to
   // override the color.

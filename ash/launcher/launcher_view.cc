@@ -59,7 +59,11 @@ const int kMinimumDragDistance = 8;
 const int kButtonSpacing = 4;
 
 // Additional spacing for the left and right side of icons.
-const int kHorizontalIconSpacing = 8;
+const int kHorizontalIconSpacing = 2;
+
+// Inset for items which do not have an icon.
+const int kHorizontalNoIconInsetSpacing =
+    kHorizontalIconSpacing + kDefaultLeadingInset;
 
 // The proportion of the launcher space reserved for non-panel icons. Panels
 // may flow into this space but will be put into the overflow bubble if there
@@ -72,12 +76,15 @@ const int kCommandIdOfMenuName = 0;
 // The background color of the active item in the list.
 const SkColor kActiveListItemBackgroundColor = SkColorSetRGB(203 , 219, 241);
 
-// The background color ot the active & hovered item in the list.
+// The background color of the active & hovered item in the list.
 const SkColor kFocusedActiveListItemBackgroundColor =
     SkColorSetRGB(193, 211, 236);
 
+// The text color of the caption item in a list.
+const SkColor kCaptionItemForegroundColor = SK_ColorBLACK;
+
 // The maximum allowable length of a menu line of an application menu in pixels.
-const int kMaximumAppMenuItemLength = 250;
+const int kMaximumAppMenuItemLength = 350;
 
 namespace {
 
@@ -95,6 +102,9 @@ class LauncherMenuModelAdapter
                                         int icon_size,
                                         int* left_margin,
                                         int* right_margin) const OVERRIDE;
+  virtual bool GetForegroundColor(int command_id,
+                                  bool is_hovered,
+                                  SkColor* override_color) const OVERRIDE;
   virtual bool GetBackgroundColor(int command_id,
                                   bool is_hovered,
                                   SkColor* override_color) const OVERRIDE;
@@ -126,6 +136,17 @@ bool LauncherMenuModelAdapter::IsCommandEnabled(int id) const {
   return id != kCommandIdOfMenuName;
 }
 
+bool LauncherMenuModelAdapter::GetForegroundColor(
+    int command_id,
+    bool is_hovered,
+    SkColor* override_color) const {
+  if (command_id != kCommandIdOfMenuName)
+    return false;
+
+  *override_color = kCaptionItemForegroundColor;
+  return true;
+}
+
 bool LauncherMenuModelAdapter::GetBackgroundColor(
     int command_id,
     bool is_hovered,
@@ -145,7 +166,7 @@ void LauncherMenuModelAdapter::GetHorizontalIconMargins(
     int* right_margin) const {
   *left_margin = kHorizontalIconSpacing;
   *right_margin = (command_id != kCommandIdOfMenuName) ?
-      kHorizontalIconSpacing : -icon_size;
+      kHorizontalIconSpacing : -(icon_size + kHorizontalNoIconInsetSpacing);
 }
 
 int LauncherMenuModelAdapter::GetMaxWidthForMenu(views::MenuItemView* menu) {

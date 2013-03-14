@@ -780,16 +780,15 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
                              bottom_margin - config.check_height) / 2;
   int icon_height = config.check_height;
   int available_height = height() - top_margin - bottom_margin;
-
+  MenuDelegate *delegate = GetDelegate();
   // Render the background. As MenuScrollViewContainer draws the background, we
   // only need the background when we want it to look different, as when we're
   // selected.
   ui::NativeTheme* native_theme = GetNativeTheme();
   SkColor override_color;
-  if (GetDelegate() &&
-      GetDelegate()->GetBackgroundColor(GetCommand(),
-                                        render_selection,
-                                        &override_color)) {
+  if (delegate && delegate->GetBackgroundColor(GetCommand(),
+                                               render_selection,
+                                               &override_color)) {
     canvas->DrawColor(override_color);
   } else if (render_selection) {
     // TODO(erg): The following doesn't actually get the focused menu item
@@ -807,7 +806,7 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
   }
 
   // Render the check.
-  if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
+  if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {
     const gfx::ImageSkia* check = GetMenuCheckImage();
     // Don't use config.check_width here as it's padded
     // to force more padding (AURA).
@@ -816,7 +815,7 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
     canvas->DrawImageInt(*check, check_bounds.x(), check_bounds.y());
   } else if (type_ == RADIO) {
     const gfx::ImageSkia* image =
-        GetRadioButtonImage(GetDelegate()->IsItemChecked(GetCommand()));
+        GetRadioButtonImage(delegate->IsItemChecked(GetCommand()));
     gfx::Rect radio_bounds(icon_x,
                            top_margin +
                            (height() - top_margin - bottom_margin -
@@ -831,6 +830,11 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
   SkColor fg_color = native_theme->GetSystemColor(
       enabled() ? ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor
           : ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
+  SkColor override_foreground_color;
+  if (delegate && delegate->GetForegroundColor(GetCommand(),
+                                               render_selection,
+                                               &override_foreground_color))
+    fg_color = override_foreground_color;
 
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
@@ -839,9 +843,9 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
     label_start += icon_view_->size().width() + config.icon_to_label_padding;
 
   int width = this->width() - label_start - accel_width -
-      (!GetDelegate() ||
-       GetDelegate()->ShouldReserveSpaceForSubmenuIndicator() ?
-          item_right_margin_ : config.arrow_to_edge_padding);
+      (!delegate ||
+       delegate->ShouldReserveSpaceForSubmenuIndicator() ?
+           item_right_margin_ : config.arrow_to_edge_padding);
   gfx::Rect text_bounds(label_start, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   int flags = GetDrawStringFlags();

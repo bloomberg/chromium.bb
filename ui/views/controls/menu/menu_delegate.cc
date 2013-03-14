@@ -27,6 +27,12 @@ bool MenuDelegate::GetBackgroundColor(int command_id,
   return false;
 }
 
+bool MenuDelegate::GetForegroundColor(int command_id,
+                                      bool is_hovered,
+                                      SkColor* override_color) const {
+  return false;
+}
+
 string16 MenuDelegate::GetTooltipText(int id,
                                       const gfx::Point& screen_loc) const {
   return string16();

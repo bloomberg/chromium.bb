@@ -52,7 +52,7 @@ void LauncherApplicationMenuItemModel::Build() {
 
     // Check for a separator requirement in front of this item.
     if (item->HasLeadingSeparator())
-      AddSeparator(ui::NORMAL_SEPARATOR);
+      AddSeparator(ui::SPACING_SEPARATOR);
 
     // The first item is the context menu, the others are the running apps.
     AddItem(i, item->title());
