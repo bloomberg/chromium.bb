@@ -73,7 +73,10 @@ namespace fileSystem {
     // Returns the file entry with the given id.
     [nocompile] static FileEntry getEntryById(DOMString id);
 
-    // Returns the id of the given file entry.
+    // Returns the id of the given file entry. This can be used to retrieve file
+    // entries with getEntryById(). When an app is restarted (ie: it is sent the
+    // onRestarted event) it can regain access to the file entries it had by
+    // remembering their ids and calling getEntryById().
     [nocompile] static DOMString getEntryId(
         [instanceOf=FileEntry] object fileEntry);
   };
