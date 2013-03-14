@@ -444,11 +444,13 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   base::TimeTicks last_process_time_;
 
-  // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|, |renderer_|.
+  // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|, |renderer_|
+  // and |recording_|.
   mutable base::Lock lock_;
 
   bool initialized_;
   bool playing_;
+  bool recording_;
 
   // Local copy of the current Automatic Gain Control state.
   bool agc_is_enabled_;

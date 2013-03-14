@@ -37,6 +37,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       last_process_time_(base::TimeTicks::Now()),
       initialized_(false),
       playing_(false),
+      recording_(false),
       agc_is_enabled_(false) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
 }
@@ -151,6 +152,9 @@ void WebRtcAudioDeviceImpl::CaptureData(const int16* audio_data,
   int output_delay_ms = 0;
   {
     base::AutoLock auto_lock(lock_);
+    if (!recording_)
+      return;
+
     // Store the reported audio delay locally.
     input_delay_ms_ = audio_delay_milliseconds;
     output_delay_ms = output_delay_ms_;
@@ -329,8 +333,9 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
     renderer_ = NULL;
   }
 
-  // Release all resources allocated in Init().
   if (capturer_) {
+    // |capturer_| is stopped by the media stream, so do not need to
+    // call Stop() here.
     capturer_->RemoveCapturerSink(this);
     capturer_ = NULL;
   }
@@ -473,26 +478,21 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
   DCHECK(initialized_);
   DVLOG(1) << "StartRecording()";
   LOG_IF(ERROR, !audio_transport_callback_) << "Audio transport is missing";
-  if (!audio_transport_callback_ || !capturer_) {
+  if (!audio_transport_callback_) {
     return -1;
-  }
-
-  if (capturer_->is_recording()) {
-    // webrtc::VoiceEngine assumes that it is OK to call Start() twice and
-    // that the call is ignored the second time.
-    return 0;
   }
 
   start_capture_time_ = base::Time::Now();
 
-  // Start capturing using the selected device.
-  capturer_->Start();
+  base::AutoLock auto_lock(lock_);
+  recording_ = true;
+
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::StopRecording() {
   DVLOG(1) << "StopRecording()";
-  if (!capturer_ || !capturer_->is_recording()) {
+  if (!recording_) {
     // webrtc::VoiceEngine assumes that it is OK to call Stop()
     // more than once.
     return 0;
@@ -505,16 +505,15 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
     UMA_HISTOGRAM_LONG_TIMES("WebRTC.AudioCaptureTime", capture_time);
   }
 
-  capturer_->Stop();
+  base::AutoLock auto_lock(lock_);
+  recording_ = false;
 
   return 0;
 }
 
 bool WebRtcAudioDeviceImpl::Recording() const {
-  if (capturer_)
-    return capturer_->is_recording();
-
-  return false;
+  base::AutoLock auto_lock(lock_);
+  return recording_;
 }
 
 int32_t WebRtcAudioDeviceImpl::SetAGC(bool enable) {

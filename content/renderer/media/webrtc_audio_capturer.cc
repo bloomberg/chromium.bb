@@ -189,6 +189,7 @@ WebRtcAudioCapturer::WebRtcAudioCapturer()
 WebRtcAudioCapturer::~WebRtcAudioCapturer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sinks_.empty());
+  DCHECK(!running_);
   DVLOG(1) << "WebRtcAudioCapturer::~WebRtcAudioCapturer()";
 }
 
@@ -283,11 +284,6 @@ void WebRtcAudioCapturer::Stop() {
   {
     base::AutoLock auto_lock(lock_);
     if (!running_)
-      return;
-
-    // Ignore the Stop() request if we need to continue running for the
-    // local capturer.
-    if (sinks_.size() > 1)
       return;
 
     source = source_;

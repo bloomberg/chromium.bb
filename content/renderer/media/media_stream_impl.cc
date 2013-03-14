@@ -128,6 +128,11 @@ void MediaStreamImpl::OnLocalMediaStreamStop(
 
   UserMediaRequestInfo* user_media_request = FindUserMediaRequestInfo(label);
   if (user_media_request) {
+    scoped_refptr<WebRtcAudioCapturer> capturer =
+        dependency_factory_->GetWebRtcAudioDevice()->capturer();
+    if (capturer)
+      capturer->Stop();
+
     media_stream_dispatcher_->StopStream(label);
     DeleteUserMediaRequestInfo(user_media_request);
   } else {
