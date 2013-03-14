@@ -49,10 +49,11 @@ void GetValueAndQuit(T* result, base::Closure quit, T actual) {
 template<typename T>
 T GetCallbackResult(base::Callback<void(base::Callback<void(T)>)> callback) {
   T result = false;
-  content::MessageLoopRunner* runner = new content::MessageLoopRunner;
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
   callback.Run(base::Bind(&GetValueAndQuit<T>, &result,
                           base::Bind(&content::MessageLoopRunner::Quit,
-                                     base::Unretained(runner))));
+                                     runner)));
   runner->Run();
   return result;
 }
@@ -196,7 +197,7 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Extensions) {
       CreateExtension("web store", extension_misc::kWebStoreAppId);
   extensions->extension_prefs()->AddGrantedPermissions(
       webstore->id(),
-      new extensions::PermissionSet);
+      make_scoped_refptr(new extensions::PermissionSet));
   extensions->AddExtension(webstore);
   EXPECT_FALSE(
       GetCallbackResult(
@@ -207,7 +208,7 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Extensions) {
   scoped_refptr<extensions::Extension> extension = CreateExtension("foo", "");
   extensions->extension_prefs()->AddGrantedPermissions(
       extension->id(),
-      new extensions::PermissionSet);
+      make_scoped_refptr(new extensions::PermissionSet));
   extensions->AddExtension(extension);
   EXPECT_TRUE(
       GetCallbackResult(
