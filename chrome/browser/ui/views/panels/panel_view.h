@@ -77,6 +77,7 @@ class PanelView : public NativePanel,
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
   virtual void MinimizePanelBySystem() OVERRIDE;
+  virtual bool IsPanelMinimizedBySystem() const OVERRIDE;
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   // Overridden from views::View:

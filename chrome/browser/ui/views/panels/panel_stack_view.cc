@@ -99,33 +99,15 @@ void PanelStackView::SetBounds(const gfx::Rect& bounds) {
 
 void PanelStackView::Minimize() {
   // When the owner stack window is minimized by the system, its live preview
-  // is lost. We need to set it explicitly.
-#if defined(OS_WIN)
-  // Live preview is only available since Windows 7.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
-  HWND native_window = views::HWNDForWidget(window_);
-
-  if (!thumbnailer_.get()) {
-    DCHECK(native_window);
-    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window));
-    ui::HWNDSubclass::AddFilterToTarget(native_window, thumbnailer_.get());
-  }
-
-  std::vector<HWND> native_panel_windows;
-  for (StackedPanelCollection::Panels::const_iterator iter =
-            stacked_collection_->panels().begin();
-        iter != stacked_collection_->panels().end(); ++iter) {
-    Panel* panel = *iter;
-    native_panel_windows.push_back(
-        views::HWNDForWidget(
-            static_cast<PanelView*>(panel->native_panel())->window()));
-  }
-  thumbnailer_->Start(native_panel_windows);
-#endif
+  // is lost. We need to set it explicitly. This has to be done before the
+  // minimization.
+  CaptureThumbnailForLivePreview();
 
   window_->Minimize();
+}
+
+bool PanelStackView::IsMinimized() const {
+  return window_->IsMinimized();
 }
 
 void PanelStackView::DrawSystemAttention(bool draw_attention) {
@@ -230,5 +212,32 @@ void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
 
 #else
   NOTIMPLEMENTED();
+#endif
+}
+
+void PanelStackView::CaptureThumbnailForLivePreview() {
+#if defined(OS_WIN)
+  // Live preview is only available since Windows 7.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  HWND native_window = views::HWNDForWidget(window_);
+
+  if (!thumbnailer_.get()) {
+    DCHECK(native_window);
+    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window));
+    ui::HWNDSubclass::AddFilterToTarget(native_window, thumbnailer_.get());
+  }
+
+  std::vector<HWND> native_panel_windows;
+  for (StackedPanelCollection::Panels::const_iterator iter =
+            stacked_collection_->panels().begin();
+        iter != stacked_collection_->panels().end(); ++iter) {
+    Panel* panel = *iter;
+    native_panel_windows.push_back(
+        views::HWNDForWidget(
+            static_cast<PanelView*>(panel->native_panel())->window()));
+  }
+  thumbnailer_->Start(native_panel_windows);
 #endif
 }

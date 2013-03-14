@@ -302,6 +302,10 @@ void Panel::Minimize() {
     collection_->MinimizePanel(this);
 }
 
+bool Panel::IsMinimizedBySystem() const {
+  return native_panel_->IsPanelMinimizedBySystem();
+}
+
 void Panel::Restore() {
   if (collection_)
     collection_->RestorePanel(this);

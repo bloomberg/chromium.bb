@@ -1099,6 +1099,68 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelNotWithSystemMinimizedDetachedPanel) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 1 detached panel.
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(200, 50, 250, 150));
+  EXPECT_EQ(1, panel_manager->num_panels());
+  EXPECT_EQ(0, panel_manager->num_stacks());
+  EXPECT_EQ(1, panel_manager->detached_collection()->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
+
+  // Minimize the detached panel by system.
+  panel1->OnMinimizeButtonClicked(panel::NO_MODIFIER);
+
+  // Create new panel. Expect that new panel will open as a separate detached
+  // panel, instead of being grouped with the system-minimized detached panel.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(2, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->detached_collection()->num_panels());
+  EXPECT_EQ(0, panel_manager->num_stacks());
+  EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, new_panel->collection()->type());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelNotWithSystemMinimizedStack) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create one stack with 2 panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 90, 200, 150), stack);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
+  EXPECT_EQ(2, panel_manager->num_panels());
+  EXPECT_EQ(0, panel_manager->detached_collection()->num_panels());
+  EXPECT_EQ(1, panel_manager->num_stacks());
+  EXPECT_EQ(2, stack->num_panels());
+  EXPECT_EQ(PanelCollection::STACKED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::STACKED, panel2->collection()->type());
+
+  // Minimize the stack by system.
+  stack->OnMinimizeButtonClicked(panel1, panel::NO_MODIFIER);
+
+  // Create new panel. Expect that new panel will open as a separate detached
+  // panel, instead of appending to the system-minimized stack.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(3, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->detached_collection()->num_panels());
+  EXPECT_EQ(1, panel_manager->num_stacks());
+  EXPECT_EQ(2, stack->num_panels());
+  EXPECT_EQ(PanelCollection::STACKED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::STACKED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, new_panel->collection()->type());
+
+  panel_manager->CloseAll();
+}
+
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 

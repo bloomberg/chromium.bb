@@ -26,6 +26,8 @@ class NativePanelStack {
 
   virtual ~NativePanelStack() {}
 
+  virtual bool IsMinimized() const = 0;
+
  protected:
   friend class StackedPanelCollection;
 

@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/docked_panel_collection.h"
+#include "chrome/browser/ui/panels/native_panel_stack.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
@@ -318,6 +319,10 @@ PanelCollection* PanelManager::GetCollectionForNewPanel(
           panel->extension_id() != new_panel->extension_id())
         continue;
 
+      // Do not add to the stack that is minimized by the system.
+      if (stack->native_stack()->IsMinimized())
+        continue;
+
       if (bounds.height() <= stack->GetMaximiumAvailableBottomSpace()) {
         *positioning_mask = static_cast<PanelCollection::PositioningMask>(
             *positioning_mask | PanelCollection::COLLAPSE_TO_FIT);
@@ -347,6 +352,10 @@ PanelCollection* PanelManager::GetCollectionForNewPanel(
       // profile.
       if (panel->profile() != new_panel->profile() ||
           panel->extension_id() != new_panel->extension_id())
+        continue;
+
+      // Do not stack with the panel that is minimized by the system.
+      if (panel->IsMinimizedBySystem())
         continue;
 
       gfx::Rect work_area =

@@ -244,6 +244,11 @@ void PanelCocoa::MinimizePanelBySystem() {
   NOTIMPLEMENTED();
 }
 
+bool PanelCocoa::IsPanelMinimizedBySystem() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void PanelCocoa::PanelExpansionStateChanging(
     Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
   [controller_ updateWindowLevel:(new_state != Panel::EXPANDED)];

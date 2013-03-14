@@ -32,6 +32,7 @@ class PanelStackView : public NativePanelStack,
   virtual void OnPanelAddedOrRemoved(Panel* panel) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void Minimize() OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
   virtual void DrawSystemAttention(bool draw_attention) OVERRIDE;
 
  private:
@@ -58,6 +59,10 @@ class PanelStackView : public NativePanelStack,
   // stacked together could appear as a single window on the taskbar or
   // launcher.
   void UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel);
+
+  // Capture the thumbnail of the whole stack and provide it to live preview
+  // (available since Windows 7).
+  void CaptureThumbnailForLivePreview();
 
   scoped_ptr<StackedPanelCollection> stacked_collection_;
 
