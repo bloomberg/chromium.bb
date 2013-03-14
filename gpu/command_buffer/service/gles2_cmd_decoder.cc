@@ -3790,6 +3790,7 @@ void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
 
 void GLES2DecoderImpl::OnFboChanged() const {
   if (workarounds().restore_scissor_on_fbo_change)
+    // The driver forgets the correct scissor when modifying the FBO binding.
     glScissor(state_.scissor_x, state_.scissor_y,
               state_.scissor_width, state_.scissor_height);
 }
@@ -4810,6 +4811,7 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
   if (framebuffer == state_.bound_draw_framebuffer) {
     clear_state_dirty_ = true;
   }
+  OnFboChanged();
 }
 
 void GLES2DecoderImpl::DoDisable(GLenum cap) {
@@ -4968,6 +4970,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
   if (framebuffer == state_.bound_draw_framebuffer) {
     clear_state_dirty_ = true;
   }
+  OnFboChanged();
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
