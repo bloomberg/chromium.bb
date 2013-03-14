@@ -227,6 +227,11 @@ class CrxInstaller
   // Runs on the UI thread. Callback from RequirementsChecker.
   void OnRequirementsChecked(std::vector<std::string> requirement_errors);
 
+#if defined(ENABLE_MANAGED_USERS)
+  // Runs on the UI thread. Callback from the managed user passphrase dialog.
+  void OnAuthorizationResult(bool success);
+#endif
+
   // Runs on the UI thread. Confirms with the user (via ExtensionInstallPrompt)
   // that it is OK to install this extension.
   void ConfirmInstall();

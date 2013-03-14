@@ -12,6 +12,9 @@
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
@@ -119,6 +122,16 @@ void ManagedUserService::RequestAuthorization(
   new ManagedUserPassphraseDialog(web_contents, callback);
 }
 
+void ManagedUserService::RequestAuthorization(
+    const PassphraseCheckedCallback& callback) {
+  Browser* browser = chrome::FindBrowserWithProfile(
+      profile_,
+      chrome::GetActiveDesktop());
+  RequestAuthorization(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      callback);
+}
+
 // static
 void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kManagedModeManualHosts,
@@ -177,7 +190,9 @@ std::string ManagedUserService::GetDebugPolicyProviderName() const {
 bool ManagedUserService::UserMayLoad(const extensions::Extension* extension,
                                      string16* error) const {
   string16 tmp_error;
-  if (ExtensionManagementPolicyImpl(&tmp_error))
+  // |extension| can be NULL in unit tests.
+  if (ExtensionManagementPolicyImpl(extension ? extension->id() : "",
+                                    &tmp_error))
     return true;
 
   // If the extension is already loaded, we allow it, otherwise we'd unload
@@ -216,7 +231,8 @@ bool ManagedUserService::UserMayLoad(const extensions::Extension* extension,
 bool ManagedUserService::UserMayModifySettings(
     const extensions::Extension* extension,
     string16* error) const {
-  return ExtensionManagementPolicyImpl(error);
+  // |extension| can be NULL in unit tests.
+  return ExtensionManagementPolicyImpl(extension ? extension->id() : "", error);
 }
 
 void ManagedUserService::Observe(int type,
@@ -244,11 +260,16 @@ void ManagedUserService::Observe(int type,
   }
 }
 
-bool ManagedUserService::ExtensionManagementPolicyImpl(string16* error) const {
+bool ManagedUserService::ExtensionManagementPolicyImpl(
+    const std::string& extension_id,
+    string16* error) const {
   if (!ProfileIsManaged())
     return true;
 
   if (is_elevated_)
+    return true;
+
+  if (elevated_for_extensions_.count(extension_id))
     return true;
 
   if (error)
@@ -355,6 +376,16 @@ void ManagedUserService::SetManualBehaviorForURLs(const std::vector<GURL>& urls,
 
 void ManagedUserService::SetElevated(bool is_elevated) {
   is_elevated_ = is_elevated;
+}
+
+void ManagedUserService::AddElevationForExtension(
+    const std::string& extension_id) {
+  elevated_for_extensions_.insert(extension_id);
+}
+
+void ManagedUserService::RemoveElevationForExtension(
+    const std::string& extension_id) {
+  elevated_for_extensions_.erase(extension_id);
 }
 
 void ManagedUserService::Init() {

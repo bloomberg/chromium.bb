@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MANAGED_MODE_MANAGED_USER_SERVICE_H_
 #define CHROME_BROWSER_MANAGED_MODE_MANAGED_USER_SERVICE_H_
 
+#include <set>
 #include <vector>
 
 #include "base/prefs/public/pref_change_registrar.h"
@@ -83,7 +84,19 @@ class ManagedUserService : public ProfileKeyedService,
   void RequestAuthorization(content::WebContents* web_contents,
                             const PassphraseCheckedCallback& callback);
 
+  // Handles the request to authorize as the custodian of the managed user.
+  // Also determines the active web contents to be passed to the passphrase
+  // dialog.
+  void RequestAuthorization(const PassphraseCheckedCallback& callback);
+
   void SetElevated(bool is_elevated);
+
+  // Add an elevation for a specific extension which allows the managed user to
+  // install/uninstall this specific extension.
+  void AddElevationForExtension(const std::string& extension_id);
+
+  // Remove the elevation for a specific extension.
+  void RemoveElevationForExtension(const std::string& extension_id);
 
   // Initializes this object. This method does nothing if the profile is not
   // managed.
@@ -137,7 +150,8 @@ class ManagedUserService : public ProfileKeyedService,
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.
   // If |error| is not NULL, it will be filled with an error message if the
   // requested extension action (install, modify status, etc.) is not permitted.
-  bool ExtensionManagementPolicyImpl(string16* error) const;
+  bool ExtensionManagementPolicyImpl(const std::string& extension_id,
+                                     string16* error) const;
 
   // Returns a list of all installed and enabled site lists in the current
   // managed profile.
@@ -165,6 +179,10 @@ class ManagedUserService : public ProfileKeyedService,
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
+
+  // Stores the extension ids of the extensions which currently can be modified
+  // by the managed user.
+  std::set<std::string> elevated_for_extensions_;
 
   URLFilterContext url_filter_context_;
 };

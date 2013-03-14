@@ -63,6 +63,15 @@ class ExtensionUninstallDialog
                            Browser* browser,
                            Delegate* delegate);
 
+#if defined(ENABLE_MANAGED_USERS)
+  // Requests authorization from a managed user's custodian if required.
+  bool ShowAuthorizationDialog();
+
+  // If custodian authorization is granted, performs the uninstall, otherwise
+  // cancels uninstall.
+  void OnAuthorizationResult(bool success);
+#endif
+
   Profile* const profile_;
 
   Browser* browser_;

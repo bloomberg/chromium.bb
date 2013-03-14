@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/image_loader.h"
@@ -20,6 +21,11 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
 
 namespace {
 
@@ -70,6 +76,14 @@ void ExtensionUninstallDialog::ConfirmUninstall(
     const extensions::Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
+
+#if defined(ENABLE_MANAGED_USERS)
+  // If the profile belongs to a managed user, a passphrase dialog is shown,
+  // and if the custodian authorizes by entering his passphrase, the uninstall
+  // is continued by calling |ExtensionUninstallAccepted| on the delegate.
+  if (ShowAuthorizationDialog())
+    return;
+#endif
 
   ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_,
@@ -130,3 +144,29 @@ void ExtensionUninstallDialog::Observe(
     delegate_->ExtensionUninstallCanceled();
   }
 }
+
+#if defined(ENABLE_MANAGED_USERS)
+bool ExtensionUninstallDialog::ShowAuthorizationDialog() {
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile_);
+  if (service->ProfileIsManaged()) {
+    service->RequestAuthorization(
+        base::Bind(&ExtensionUninstallDialog::OnAuthorizationResult,
+                   base::Unretained(this)));
+    return true;
+  }
+  return false;
+}
+
+void ExtensionUninstallDialog::OnAuthorizationResult(bool success) {
+  if (success) {
+    ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+        profile_);
+    DCHECK(service);
+    service->AddElevationForExtension(extension_->id());
+    delegate_->ExtensionUninstallAccepted();
+  } else {
+    delegate_->ExtensionUninstallCanceled();
+  }
+}
+#endif

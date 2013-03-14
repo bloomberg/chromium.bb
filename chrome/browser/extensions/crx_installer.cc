@@ -52,6 +52,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 using content::BrowserThread;
 using content::UserMetricsAction;
 
@@ -421,8 +426,34 @@ void CrxInstaller::OnRequirementsChecked(
     has_requirement_errors_ = true;
   }
 
+#if defined(ENABLE_MANAGED_USERS)
+  // Check whether the profile is managed.
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile_);
+  if (service->ProfileIsManaged()) {
+        service->RequestAuthorization(
+        base::Bind(&CrxInstaller::OnAuthorizationResult,
+                   this));
+    return;
+  }
+#endif
   ConfirmInstall();
 }
+
+#if defined(ENABLE_MANAGED_USERS)
+void CrxInstaller::OnAuthorizationResult(bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (success) {
+    ManagedUserService* service =
+        ManagedUserServiceFactory::GetForProfile(profile_);
+    DCHECK(service);
+    service->AddElevationForExtension(extension_->id());
+  }
+  // In case the authorization was not successful, ConfirmInstall will give an
+  // appropriate error to the user.
+  ConfirmInstall();
+}
+#endif
 
 void CrxInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -433,12 +464,22 @@ void CrxInstaller::ConfirmInstall() {
   // update an existing extension or app.
   CheckUpdateFromSettingsPage();
 
+  // For managed users the call UserMayLoad returns false if the profile is not
+  // elevated.
   string16 error;
   if (!ExtensionSystem::Get(profile_)->management_policy()->
       UserMayLoad(extension_, &error)) {
     ReportFailureFromUIThread(CrxInstallerError(error));
     return;
   }
+
+#if defined(ENABLE_MANAGED_USERS)
+  // Reset the elevation of managed users.
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile_);
+  if (service->ProfileIsManaged())
+    service->RemoveElevationForExtension(extension_->id());
+#endif
 
   GURL overlapping_url;
   const Extension* overlapping_extension =
