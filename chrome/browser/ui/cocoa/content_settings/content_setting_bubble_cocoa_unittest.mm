@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/debug/debugger.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +31,12 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
     radio_group.default_item = 0;
     radio_group.radio_items.resize(2);
     set_radio_group(radio_group);
+    MediaMenu micMenu;
+    micMenu.label = "Microphone:";
+    add_media_menu(content::MEDIA_DEVICE_AUDIO_CAPTURE, micMenu);
+    MediaMenu cameraMenu;
+    cameraMenu.label = "Camera:";
+    add_media_menu(content::MEDIA_DEVICE_VIDEO_CAPTURE, cameraMenu);
   }
 };
 
@@ -39,6 +45,13 @@ class ContentSettingBubbleControllerTest
  public:
   ContentSettingBubbleControllerTest();
   virtual ~ContentSettingBubbleControllerTest();
+
+ protected:
+  // Helper function to create the bubble controller.
+  ContentSettingBubbleController* CreateBubbleController(
+      ContentSettingsType settingsType);
+
+  scoped_nsobject<NSWindow> parent_;
 
  private:
   content::TestBrowserThread browser_thread_;
@@ -54,6 +67,29 @@ ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
 ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
 }
 
+ContentSettingBubbleController*
+ContentSettingBubbleControllerTest::CreateBubbleController(
+    ContentSettingsType settingsType) {
+  parent_.reset([[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 800, 600)
+                                            styleMask:NSBorderlessWindowMask
+                                              backing:NSBackingStoreBuffered
+                                                defer:NO]);
+  [parent_ setReleasedWhenClosed:NO];
+  [parent_ orderFront:nil];
+
+  ContentSettingBubbleController* controller = [ContentSettingBubbleController
+      showForModel:new DummyContentSettingBubbleModel(web_contents(),
+                                                      profile(),
+                                                      settingsType)
+      parentWindow:parent_
+        anchoredAt:NSMakePoint(50, 20)];
+
+  EXPECT_TRUE(controller);
+  EXPECT_TRUE([[controller window] isVisible]);
+
+  return controller;
+}
+
 // Check that the bubble doesn't crash or leak for any settings type
 TEST_F(ContentSettingBubbleControllerTest, Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
@@ -61,6 +97,7 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
         i == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
         i == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
         i == CONTENT_SETTINGS_TYPE_MOUSELOCK ||
+        i == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
         i == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
         i == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
         i == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
@@ -70,27 +107,27 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
 
     ContentSettingsType settingsType = static_cast<ContentSettingsType>(i);
 
-    scoped_nsobject<NSWindow> parent([[NSWindow alloc]
-        initWithContentRect:NSMakeRect(0, 0, 800, 600)
-                  styleMask:NSBorderlessWindowMask
-                    backing:NSBackingStoreBuffered
-           defer:NO]);
-    [parent setReleasedWhenClosed:NO];
-    if (base::debug::BeingDebugged())
-      [parent orderFront:nil];
-    else
-      [parent orderBack:nil];
-
-    ContentSettingBubbleController* controller = [ContentSettingBubbleController
-        showForModel:new DummyContentSettingBubbleModel(web_contents(),
-                                                        profile(),
-                                                        settingsType)
-        parentWindow:parent
-          anchoredAt:NSMakePoint(50, 20)];
-    EXPECT_TRUE(controller != nil);
-    EXPECT_TRUE([[controller window] isVisible]);
-    [parent close];
+    ContentSettingBubbleController* controller =
+        CreateBubbleController(settingsType);
+    EXPECT_EQ(0u, [controller mediaMenus]->size());
+    [parent_ close];
   }
+}
+
+// Check that the bubble works for CONTENT_SETTINGS_TYPE_MEDIASTREAM.
+TEST_F(ContentSettingBubbleControllerTest, MediaStreamBubble) {
+  ContentSettingBubbleController* controller =
+      CreateBubbleController(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+  content_setting_bubble::MediaMenuPartsMap* mediaMenus =
+      [controller mediaMenus];
+  EXPECT_EQ(2u, mediaMenus->size());
+  for (content_setting_bubble::MediaMenuPartsMap::const_iterator i =
+       mediaMenus->begin(); i != mediaMenus->end(); ++i) {
+    EXPECT_TRUE((content::MEDIA_DEVICE_AUDIO_CAPTURE == i->second->type) ||
+                (content::MEDIA_DEVICE_VIDEO_CAPTURE == i->second->type));
+    EXPECT_EQ(0, [i->first numberOfItems]);
+  }
+ [parent_ close];
 }
 
 }  // namespace

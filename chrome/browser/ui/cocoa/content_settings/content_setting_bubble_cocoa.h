@@ -9,15 +9,32 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#include "content/public/common/media_stream_request.h"
 
 class ContentSettingBubbleModel;
+class ContentSettingMediaMenuModel;
 @class InfoBubbleView;
 
 namespace content_setting_bubble {
 // For every "show popup" button, remember the index of the popup tab contents
 // it should open when clicked.
 typedef std::map<NSButton*, int> PopupLinks;
-}
+
+// For every media menu button, remember the components assosiated with the
+// menu button.
+struct MediaMenuParts {
+  MediaMenuParts(content::MediaStreamType type, NSTextField* label);
+  ~MediaMenuParts();
+
+  content::MediaStreamType type;
+  NSTextField* label;  // Weak.
+  scoped_ptr<ContentSettingMediaMenuModel> model;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaMenuParts);
+};
+typedef std::map<NSPopUpButton*, MediaMenuParts*> MediaMenuPartsMap;
+}  // namespace content_setting_bubble
 
 // Manages a "content blocked" bubble.
 @interface ContentSettingBubbleController : BaseBubbleController {
@@ -32,10 +49,14 @@ typedef std::map<NSButton*, int> PopupLinks;
   // The container for the bubble contents of the geolocation bubble.
   IBOutlet NSView* contentsContainer_;
 
+  // The container for the bubble contents of the media menus.
+  IBOutlet NSView* mediaMenusContainer_;
+
   IBOutlet NSTextField* blockedResourcesField_;
 
   scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
   content_setting_bubble::PopupLinks popupLinks_;
+  content_setting_bubble::MediaMenuPartsMap mediaMenus_;
 }
 
 // Creates and shows a content blocked bubble. Takes ownership of
@@ -62,5 +83,15 @@ typedef std::map<NSButton*, int> PopupLinks;
 
 // Callback for "Learn More" link.
 - (IBAction)learnMoreLinkClicked:(id)sender;
+
+// Callback for "media menu" button.
+- (IBAction)mediaMenuChanged:(id)sender;
+
+@end
+
+@interface ContentSettingBubbleController (TestingAPI)
+
+// Returns the weak reference to the |mediaMenus_|.
+- (content_setting_bubble::MediaMenuPartsMap*)mediaMenus;
 
 @end
