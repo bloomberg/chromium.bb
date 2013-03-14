@@ -247,9 +247,7 @@ TEST_F(DriveSchedulerTest, DeleteResource) {
 
   scheduler_->DeleteResource(
       "file:2_file_resource_id",
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromEntryActionCallback,
-          &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -282,9 +280,7 @@ TEST_F(DriveSchedulerTest, RenameResource) {
   scheduler_->RenameResource(
       "file:2_file_resource_id",
       "New Name",
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromEntryActionCallback,
-          &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -298,9 +294,7 @@ TEST_F(DriveSchedulerTest, AddResourceToDirectory) {
   scheduler_->AddResourceToDirectory(
       "folder:1_folder_resource_id",
       "file:2_file_resource_id",
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromEntryActionCallback,
-          &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -314,9 +308,7 @@ TEST_F(DriveSchedulerTest, RemoveResourceFromDirectory) {
   scheduler_->RemoveResourceFromDirectory(
       "folder:1_folder_resource_id",
       "file:subdirectory_file_1_id",  // resource ID
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromEntryActionCallback,
-          &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);

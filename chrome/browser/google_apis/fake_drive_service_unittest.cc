@@ -577,11 +577,9 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource(
-      "file:2_file_resource_id",
-      "",  // etag
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+  fake_service_.DeleteResource("file:2_file_resource_id",
+                               "",  // etag
+                               test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -594,11 +592,9 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
       "chromeos/gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource(
-      "file:nonexisting_resource_id",
-      "",  // etag
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+  fake_service_.DeleteResource("file:nonexisting_resource_id",
+                               "",  // etag
+                               test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -610,11 +606,9 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource(
-      "file:2_file_resource_id",
-      "",  // etag
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+  fake_service_.DeleteResource("file:2_file_resource_id",
+                               "",  // etag
+                               test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -799,11 +793,9 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   const std::string kResourceId = "file:2_file_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.RenameResource(
-      kResourceId,
-      "new name",
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+  fake_service_.RenameResource(kResourceId,
+                               "new name",
+                               test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -823,11 +815,9 @@ TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
   const std::string kResourceId = "file:nonexisting_file";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.RenameResource(
-      kResourceId,
-      "new name",
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+  fake_service_.RenameResource(kResourceId,
+                               "new name",
+                               test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -841,11 +831,9 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
   const std::string kResourceId = "file:2_file_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.RenameResource(
-      kResourceId,
-      "new name",
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+  fake_service_.RenameResource(kResourceId,
+                               "new name",
+                               test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -871,8 +859,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -905,8 +892,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -930,8 +916,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -956,8 +941,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -982,8 +966,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -1011,8 +994,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -1038,8 +1020,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -1056,8 +1037,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_OrphanFile) {
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -1075,8 +1055,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
-      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
-                 &error));
+      test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);

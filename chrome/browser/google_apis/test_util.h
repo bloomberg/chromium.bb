@@ -67,10 +67,6 @@ GURL GetBaseUrlForTesting(int port);
 // chrome/test/data.
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
-// Copies the results from EntryActionCallback.
-void CopyResultsFromEntryActionCallback(GDataErrorCode* error_out,
-                                        GDataErrorCode error_in);
-
 // Copies the result from EntryActionCallback and quit the message loop.
 void CopyResultFromEntryActionCallbackAndQuit(GDataErrorCode* error_out,
                                               GDataErrorCode error_in);
