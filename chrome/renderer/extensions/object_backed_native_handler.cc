@@ -39,10 +39,12 @@ v8::Handle<v8::Value> ObjectBackedNativeHandler::Router(
   v8::Handle<v8::Value> handler_function_value =
       data->Get(v8::String::New(kHandlerFunction));
   // See comment in header file for why we do this.
-  if (handler_function_value.IsEmpty()) {
+  if (handler_function_value.IsEmpty() ||
+      handler_function_value->IsUndefined()) {
     return v8::ThrowException(v8::String::New(
         "Extension view no longer exists"));
   }
+  DCHECK(handler_function_value->IsExternal());
   return handle_scope.Close(static_cast<HandlerFunction*>(
       handler_function_value.As<v8::External>()->Value())->Run(args));
 }
