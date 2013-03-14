@@ -67,7 +67,14 @@ message PowerManagementPolicy {
     // time before the device is suspended.
     optional int64 screen_lock_ms = 4;
 
-    // Next ID to use: 5
+    // Delay after which an IdleActionImminent signal will be emitted, in
+    // milliseconds.  If the inactivity timeout is then reset before the
+    // idle action is performed, an IdleActionDeferred signal will be
+    // emitted.  0 disables the signal.  Capped to be less than or equal to
+    // |idle_ms|.
+    optional int64 idle_warning_ms = 5;
+
+    // Next ID to use: 6
   }
 
   // Action to perform when |idle_ms| (see Delays) is reached without any

@@ -256,6 +256,8 @@ const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
 const char kSuspendImminentSignal[] = "SuspendImminent";
 const char kInputEventSignal[] = "InputEvent";
 const char kSuspendStateChangedSignal[] = "SuspendStateChanged";
+const char kIdleActionImminentSignal[] = "IdleActionImminent";
+const char kIdleActionDeferredSignal[] = "IdleActionDeferred";
 // Values
 const int  kBrightnessTransitionGradual = 1;
 const int  kBrightnessTransitionInstant = 2;
