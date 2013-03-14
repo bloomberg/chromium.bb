@@ -66,8 +66,7 @@ def Download():
   if util.RunCommand(cmd):
     print '@@@STEP_FAILURE@@@'
 
-  build_dir = chrome_paths.GetBuildDir([
-      os.path.join('apks', 'ChromiumTestShell.apk')])
+  build_dir = chrome_paths.GetBuildDir(['host_forwarder'])
   print 'Unzipping prebuilts %s to %s' % (zip_path, build_dir)
   f = zipfile.ZipFile(zip_path, 'r')
   f.extractall(build_dir)
