@@ -195,6 +195,9 @@ class CHROMEOS_EXPORT DiskMountManager {
   // finishes.
   typedef base::Callback<void(bool)> UnmountDeviceRecursivelyCallbackType;
 
+  // A callback type for UnmountPath method.
+  typedef base::Callback<void(MountError error_code)> UnmountPathCallback;
+
   // Implement this interface to be notified about disk/mount related events.
   class Observer {
    public:
@@ -237,6 +240,9 @@ class CHROMEOS_EXPORT DiskMountManager {
   virtual void RequestMountInfoRefresh() = 0;
 
   // Mounts a device.
+  // Note that the mount operation may fail. To find out the result, one should
+  // observe DiskMountManager for |Observer::OnMountEvent| event, which will be
+  // raised upon the mount operation completion.
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
                          const std::string& mount_label,
@@ -244,8 +250,13 @@ class CHROMEOS_EXPORT DiskMountManager {
 
   // Unmounts a mounted disk.
   // |UnmountOptions| enum defined in chromeos/dbus/cros_disks_client.h.
+  // When the method is complete, |callback| will be called and observers'
+  // |OnMountEvent| will be raised.
+  //
+  // |callback| may be empty, in which case it gets ignored.
   virtual void UnmountPath(const std::string& mount_path,
-                           UnmountOptions options) = 0;
+                           UnmountOptions options,
+                           const UnmountPathCallback& callback) = 0;
 
   // Formats Device given its mount path. Unmounts the device.
   // Example: mount_path: /media/VOLUME_LABEL

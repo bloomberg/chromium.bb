@@ -331,14 +331,15 @@ TEST_F(DiskMountManagerTest, Format_FormatFailsToStart) {
 // Tests the case where there are two format requests for the same device.
 TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
   // Set up cros disks client mocks.
-  // Only the first format request should be processed (for the other one there
-  // should be an error before device unmount is attempted).
+  // Only the first format request should be processed (the second unmount
+  // request fails because the device is already unmounted at that point).
   // CrosDisksClient will report that the format process for the first request
   // is successfully started.
   EXPECT_CALL(*mock_cros_disks_client_,
               Unmount("/device/mount_path", chromeos::UNMOUNT_OPTIONS_NONE,
                       _, _))
-      .WillOnce(MockUnmountPath(true));
+      .WillOnce(MockUnmountPath(true))
+      .WillOnce(MockUnmountPath(false));
 
   EXPECT_CALL(*mock_cros_disks_client_,
               FormatDevice("/device/source_path", "vfat", _, _))
@@ -348,24 +349,25 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
   // The observer should get two FORMAT_STARTED events, one for each format
   // request, but with different error codes (the formatting will be started
   // only for the first request).
-  // There should alos be one UNMOUNTING event, since the device should get
-  // unmounted for the first request.
+  // There should be only one UNMOUNTING event. The result of the second one
+  // should not be reported as the mount point will go away after the first
+  // request.
   //
   // Note that in this test the format completion signal will not be simulated,
   // so the observer should not get FORMAT_COMPLETED signal.
   {
     InSequence s;
 
-    EXPECT_CALL(observer_, OnFormatEvent(DiskMountManager::FORMAT_STARTED,
-                                         chromeos::FORMAT_ERROR_UNKNOWN,
-                                         "/device/source_path"))
-        .Times(1);
-
     EXPECT_CALL(observer_,
         OnMountEvent(DiskMountManager::UNMOUNTING,
                      chromeos::MOUNT_ERROR_NONE,
                      Field(&DiskMountManager::MountPointInfo::mount_path,
                            "/device/mount_path")))
+        .Times(1);
+
+    EXPECT_CALL(observer_, OnFormatEvent(DiskMountManager::FORMAT_STARTED,
+                                         chromeos::FORMAT_ERROR_UNKNOWN,
+                                         "/device/source_path"))
         .Times(1);
 
     EXPECT_CALL(observer_, OnFormatEvent(DiskMountManager::FORMAT_STARTED,

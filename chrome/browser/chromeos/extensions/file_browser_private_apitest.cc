@@ -245,13 +245,13 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest, FileBrowserMount) {
   // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
-  EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _))
+  EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _,  _))
       .Times(0);
   EXPECT_CALL(*disk_mount_manager_mock_,
               UnmountPath(
                   chromeos::CrosDisksClient::GetArchiveMountPoint().AppendASCII(
                       "archive_mount_path").AsUTF8Unsafe(),
-                  chromeos::UNMOUNT_OPTIONS_NONE)).Times(1);
+                  chromeos::UNMOUNT_OPTIONS_NONE, _)).Times(1);
 
   EXPECT_CALL(*disk_mount_manager_mock_, disks())
       .WillRepeatedly(ReturnRef(volumes_));

@@ -559,7 +559,8 @@ void FileBrowserEventRouter::OnExternalStorageDisabledChanged() {
       LOG(INFO) << "Unmounting " << it->second.mount_path
                 << " because of policy.";
       manager->UnmountPath(it->second.mount_path,
-                           chromeos::UNMOUNT_OPTIONS_NONE);
+                           chromeos::UNMOUNT_OPTIONS_NONE,
+                           DiskMountManager::UnmountPathCallback());
     }
   }
 }
@@ -797,7 +798,9 @@ void FileBrowserEventRouter::OnDiskRemoved(
           disk->system_path_prefix());
     }
     DiskMountManager::GetInstance()->UnmountPath(
-        disk->mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY);
+        disk->mount_path(),
+        chromeos::UNMOUNT_OPTIONS_LAZY,
+        DiskMountManager::UnmountPathCallback());
   }
 }
 

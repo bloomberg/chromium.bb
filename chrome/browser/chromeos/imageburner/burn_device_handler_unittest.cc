@@ -86,7 +86,8 @@ class FakeDiskMountManager : public disks::DiskMountManager {
                          const std::string& mount_label,
                          MountType type) OVERRIDE {}
   virtual void UnmountPath(const std::string& mount_path,
-                           UnmountOptions options) OVERRIDE {}
+                           UnmountOptions options,
+                           const UnmountPathCallback& callback) OVERRIDE {}
   virtual void FormatMountedDevice(const std::string& mount_path) OVERRIDE {}
   virtual void UnmountDeviceRecursively(
       const std::string& device_path,

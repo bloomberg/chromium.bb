@@ -83,14 +83,17 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   // DiskMountManager override.
   virtual void UnmountPath(const std::string& mount_path,
-                           UnmountOptions options) OVERRIDE {
+                           UnmountOptions options,
+                           const UnmountPathCallback& callback) OVERRIDE {
     UnmountChildMounts(mount_path);
     cros_disks_client_->Unmount(mount_path, options,
                                 base::Bind(&DiskMountManagerImpl::OnUnmountPath,
                                            weak_ptr_factory_.GetWeakPtr(),
+                                           callback,
                                            true),
                                 base::Bind(&DiskMountManagerImpl::OnUnmountPath,
                                            weak_ptr_factory_.GetWeakPtr(),
+                                           callback,
                                            false));
   }
 
@@ -111,15 +114,11 @@ class DiskMountManagerImpl : public DiskMountManager {
       return;
     }
 
-    if (formatting_pending_.find(device_path) != formatting_pending_.end()) {
-      LOG(ERROR) << "Formatting is already pending: " << mount_path;
-      OnFormatDevice(device_path, false);
-      return;
-    }
-
-    // Formatting process continues, after unmounting.
-    formatting_pending_.insert(device_path);
-    UnmountPath(disk->second->mount_path(), UNMOUNT_OPTIONS_NONE);
+    UnmountPath(disk->second->mount_path(),
+                UNMOUNT_OPTIONS_NONE,
+                base::Bind(&DiskMountManagerImpl::OnUnmountPathForFormat,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           device_path));
   }
 
   // DiskMountManager override.
@@ -258,7 +257,10 @@ class DiskMountManagerImpl : public DiskMountManager {
          ++it) {
       if (StartsWithASCII(it->second.source_path, mount_path,
                           true /*case sensitive*/)) {
-        UnmountPath(it->second.mount_path, UNMOUNT_OPTIONS_NONE);
+        // TODO(tbarzic): Handle the case where this fails.
+        UnmountPath(it->second.mount_path,
+                    UNMOUNT_OPTIONS_NONE,
+                    UnmountPathCallback());
       }
     }
   }
@@ -270,7 +272,7 @@ class DiskMountManagerImpl : public DiskMountManager {
       const std::string& mount_path) {
     if (success) {
       // Do standard processing for Unmount event.
-      OnUnmountPath(true, mount_path);
+      OnUnmountPath(UnmountPathCallback(), true, mount_path);
       LOG(INFO) << mount_path <<  " unmounted.";
     }
     // This is safe as long as all callbacks are called on the same thread as
@@ -328,10 +330,17 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // Callback for UnmountPath.
-  void OnUnmountPath(bool success, const std::string& mount_path) {
+  void OnUnmountPath(const UnmountPathCallback& callback,
+                     bool success,
+                     const std::string& mount_path) {
     MountPointMap::iterator mount_points_it = mount_points_.find(mount_path);
-    if (mount_points_it == mount_points_.end())
+    if (mount_points_it == mount_points_.end()) {
+      // The path was unmounted, but not as a result of this unmount request,
+      // so return error.
+      if (!callback.is_null())
+        callback.Run(MOUNT_ERROR_INTERNAL);
       return;
+    }
 
     NotifyMountStatusUpdate(
         UNMOUNTING,
@@ -352,15 +361,17 @@ class DiskMountManagerImpl : public DiskMountManager {
         disk_iter->second->clear_mount_path();
     }
 
-    FormatTaskSet::iterator format_iter = formatting_pending_.find(path);
-    // Check if there is a formatting scheduled.
-    if (format_iter != formatting_pending_.end()) {
-      formatting_pending_.erase(format_iter);
-      if (success && disk_iter != disks_.end()) {
-        FormatUnmountedDevice(path);
-      } else {
-        OnFormatDevice(path, false);
-      }
+    if (!callback.is_null())
+      callback.Run(success ? MOUNT_ERROR_NONE : MOUNT_ERROR_INTERNAL);
+  }
+
+  void OnUnmountPathForFormat(const std::string& device_path,
+                              MountError error_code) {
+    if (error_code == MOUNT_ERROR_NONE &&
+        disks_.find(device_path) != disks_.end()) {
+      FormatUnmountedDevice(device_path);
+    } else {
+      OnFormatDevice(device_path, false);
     }
   }
 
@@ -593,14 +604,6 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   typedef std::set<std::string> SystemPathPrefixSet;
   SystemPathPrefixSet system_path_prefixes_;
-
-  // A map from device path (e.g. /sys/devices/pci0000:00/.../sdb/sdb1)) to file
-  // path (e.g. /dev/sdb).
-  // Devices in this map are supposed to be formatted, but are currently waiting
-  // to be unmounted. When device is in this map, the formatting process HAVEN'T
-  // started yet.
-  typedef std::set<std::string> FormatTaskSet;
-  FormatTaskSet formatting_pending_;
 
   base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_;
 

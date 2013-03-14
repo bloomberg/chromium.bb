@@ -1659,8 +1659,14 @@ void RemoveMountFunction::GetSelectedFileInfoResponse(
     SendResponse(false);
     return;
   }
-  DiskMountManager::GetInstance()->UnmountPath(files[0].local_path.value(),
-                                               chromeos::UNMOUNT_OPTIONS_NONE);
+
+  // TODO(tbarzic): Send response when callback is received, it would make more
+  // sense than remembering issued unmount requests in file manager and showing
+  // errors for them when MountCompleted event is received.
+  DiskMountManager::GetInstance()->UnmountPath(
+      files[0].local_path.value(),
+      chromeos::UNMOUNT_OPTIONS_NONE,
+      DiskMountManager::UnmountPathCallback());
   SendResponse(true);
 }
 
