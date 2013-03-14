@@ -8,8 +8,6 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_database_service.h"
-#include "chrome/browser/webdata/web_database_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 
 // static
@@ -43,7 +41,7 @@ WebDataServiceFactory::WebDataServiceFactory()
     : RefcountedProfileKeyedServiceFactory(
           "WebDataService",
           ProfileDependencyManager::GetInstance()) {
-  DependsOn(WebDatabaseServiceFactory::GetInstance());
+  // WebDataServiceFactory has no dependecies.
 }
 
 WebDataServiceFactory::~WebDataServiceFactory() {}
@@ -60,6 +58,17 @@ scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfile(
 }
 
 // static
+scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfileIfExists(
+    Profile* profile, Profile::ServiceAccessType access_type) {
+  // If |access_type| starts being used for anything other than this
+  // DCHECK, we need to start taking it as a parameter to
+  // AutofillWebDataServiceImpl::FromBrowserContext (see above).
+  DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
+  return static_cast<WebDataService*>(
+      GetInstance()->GetServiceForProfile(profile, false).get());
+}
+
+// static
 WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
   return Singleton<WebDataServiceFactory>::get();
 }
@@ -71,9 +80,13 @@ bool WebDataServiceFactory::ServiceRedirectedInIncognito() const {
 scoped_refptr<RefcountedProfileKeyedService>
 WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
   DCHECK(profile);
-  scoped_refptr<WebDataService> wds(new WebDataService(
-      WebDatabaseService::FromBrowserContext(profile)));
-  wds->Init();
+
+  base::FilePath path = profile->GetPath();
+  path = path.Append(chrome::kWebDataFilename);
+
+  scoped_refptr<WebDataService> wds(new WebDataService());
+  if (!wds->Init(profile->GetPath()))
+    NOTREACHED();
   return wds.get();
 }
 

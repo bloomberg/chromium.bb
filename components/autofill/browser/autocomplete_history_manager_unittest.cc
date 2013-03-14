@@ -32,8 +32,7 @@ namespace {
 
 class MockWebDataService : public WebDataService {
  public:
-  MockWebDataService()
-      : WebDataService(NULL) {
+  MockWebDataService() {
     current_mock_web_data_service_ = this;
   }
 

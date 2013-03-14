@@ -30,10 +30,6 @@ class NotificationService;
 // This class manages a SQLite database that stores various web page meta data.
 class WebDatabase {
  public:
-  enum State {
-    COMMIT_NOT_NEEDED,
-    COMMIT_NEEDED
-  };
   // Exposed publicly so the keyword table can access it.
   static const int kCurrentVersionNumber;
 
@@ -44,8 +40,8 @@ class WebDatabase {
   // file is. If this returns an error code, no other method should be called.
   // Requires the |app_locale| to be passed as a parameter as the locale can
   // only safely be queried on the UI thread.
-  sql::InitStatus Init(const base::FilePath& db_name,
-                       const std::string& app_locale);
+  sql::InitStatus Init(
+      const base::FilePath& db_name, const std::string& app_locale);
 
   // Transactions management
   void BeginTransaction();

@@ -5,6 +5,7 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
@@ -13,10 +14,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_database_service_factory.h"
-#include "chrome/browser/webdata/web_database_service_impl.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/value_conversion_util.h"
@@ -55,31 +53,34 @@ static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
 
 }  // namespace
 
-class MockWebDatabaseService : public WebDatabaseServiceImpl {
+// Subclass the TestingProfile so that it can return a WebDataService.
+class TemplateURLServiceTestingProfile : public TestingProfile {
  public:
-  explicit MockWebDatabaseService(const base::FilePath& path)
-      : WebDatabaseServiceImpl(path) {
+  TemplateURLServiceTestingProfile()
+      : TestingProfile(),
+        db_thread_(BrowserThread::DB),
+        io_thread_(BrowserThread::IO) {
   }
 
-  ~MockWebDatabaseService() {
+  void SetUp();
+  void TearDown();
+
+  // Starts the I/O thread. This isn't done automatically because not every test
+  // needs this.
+  void StartIOThread() {
+    io_thread_.StartIOThread();
   }
 
-  static ProfileKeyedService* Build(Profile* profile) {
-    scoped_ptr<MockWebDatabaseService> wdbs(new MockWebDatabaseService(
-        profile->GetPath().Append(chrome::kWebDataFilename)));
-    wdbs->LoadDatabase(WebDatabaseService::InitCallback());
-    return wdbs.release();
-  }
-
-  virtual void UnloadDatabase() OVERRIDE {
-    WebDatabaseServiceImpl::UnloadDatabase();
-    TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
-    WebDatabaseServiceImpl::set_init_complete(true);
-  }
+  static scoped_refptr<RefcountedProfileKeyedService>
+      GetWebDataServiceForTemplateURLServiceTestingProfile(Profile* profile);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebDatabaseService);
+  scoped_refptr<WebDataService> service_;
+  base::ScopedTempDir temp_dir_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread io_thread_;
 };
+
 
 // Trivial subclass of TemplateURLService that records the last invocation of
 // SetKeywordSearchTermsForURL.
@@ -112,10 +113,57 @@ class TestingTemplateURLService : public TemplateURLService {
   DISALLOW_COPY_AND_ASSIGN(TestingTemplateURLService);
 };
 
+void TemplateURLServiceTestingProfile::SetUp() {
+  db_thread_.Start();
+
+  // Make unique temp directory.
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  base::FilePath path = temp_dir_.path().AppendASCII("TestDataService.db");
+  service_ = new WebDataService;
+  ASSERT_TRUE(service_->InitWithPath(path));
+}
+
+void TemplateURLServiceTestingProfile::TearDown() {
+  // Clear the request context so it will get deleted. This should be done
+  // before shutting down the I/O thread to avoid memory leaks.
+  ResetRequestContext();
+
+  // Wait for the delete of the request context to happen.
+  if (io_thread_.IsRunning())
+    TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
+
+  // The I/O thread must be shutdown before the DB thread.
+  io_thread_.Stop();
+
+  // Clean up the test directory.
+  if (service_.get()) {
+    service_->ShutdownOnUIThread();
+    service_ = NULL;
+  }
+  // Note that we must ensure the DB thread is stopped after WDS
+  // shutdown (so it can commit pending transactions) but before
+  // deleting the test profile directory, otherwise we may not be
+  // able to delete it due to an open transaction.
+  // Schedule another task on the DB thread to notify us that it's safe to
+  // carry on with the test.
+  base::WaitableEvent done(false, false);
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+  done.Wait();
+  db_thread_.Stop();
+}
+
+scoped_refptr<RefcountedProfileKeyedService>
+TemplateURLServiceTestingProfile::
+    GetWebDataServiceForTemplateURLServiceTestingProfile(Profile* profile) {
+  TemplateURLServiceTestingProfile* test_profile =
+      reinterpret_cast<TemplateURLServiceTestingProfile*>(profile);
+  return test_profile->service_;
+}
+
 TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
     : ui_thread_(BrowserThread::UI, &message_loop_),
-      db_thread_(BrowserThread::DB),
-      io_thread_(BrowserThread::IO),
       changed_count_(0) {
 }
 
@@ -123,15 +171,12 @@ TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
 }
 
 void TemplateURLServiceTestUtil::SetUp() {
-  ASSERT_TRUE(db_thread_.Start());
-  // Make unique temp directory.
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  profile_.reset(new TemplateURLServiceTestingProfile());
+  WebDataServiceFactory::GetInstance()->SetTestingFactory(
+      profile_.get(), TemplateURLServiceTestingProfile::
+          GetWebDataServiceForTemplateURLServiceTestingProfile);
 
-  profile_.reset(new TestingProfile(temp_dir_.path()));
-  WebDatabaseServiceFactory::GetInstance()->SetTestingFactory(
-      profile_.get(), MockWebDatabaseService::Build);
-  profile_->CreateWebDataService();
-
+  profile_->SetUp();
   TemplateURLService* service = static_cast<TemplateURLService*>(
       TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_.get(), TestingTemplateURLService::Build));
@@ -143,25 +188,10 @@ void TemplateURLServiceTestUtil::SetUp() {
 }
 
 void TemplateURLServiceTestUtil::TearDown() {
-  // Clear the request context so it will get deleted. This should be done
-  // before shutting down the I/O thread to avoid memory leaks.
-  profile_->ResetRequestContext();
-
-  // Wait for the delete of the request context to happen.
-  if (io_thread_.IsRunning())
-    TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
-
-  // The I/O thread must be shutdown before the DB thread.
-  io_thread_.Stop();
-
   if (profile_.get()) {
+    profile_->TearDown();
     profile_.reset();
   }
-  base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-  db_thread_.Stop();
   UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
 
   // Flush the message loop to make application verifiers happy.
@@ -200,8 +230,9 @@ void TemplateURLServiceTestUtil::ChangeModelToLoadState() {
   model()->ChangeToLoadedState();
   // Initialize the web data service so that the database gets updated with
   // any changes made.
-  model()->service_ = WebDataService::FromBrowserContext(profile_.get());
-  BlockTillServiceProcessesRequests();
+
+  model()->service_ = WebDataServiceFactory::GetForProfile(
+      profile_.get(), Profile::EXPLICIT_ACCESS);
 }
 
 void TemplateURLServiceTestUtil::ClearModel() {
@@ -299,7 +330,7 @@ TestingProfile* TemplateURLServiceTestUtil::profile() const {
 }
 
 void TemplateURLServiceTestUtil::StartIOThread() {
-  io_thread_.StartIOThread();
+  profile_->StartIOThread();
 }
 
 void TemplateURLServiceTestUtil::PumpLoop() {

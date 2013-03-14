@@ -110,21 +110,19 @@ class PasswordStoreWinTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     profile_.reset(new TestingProfile());
-    profile_->CreateWebDatabaseService();
-    profile_->CreateWebDataService();
 
     login_db_.reset(new LoginDatabase());
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
-
-    wds_ = WebDataService::FromBrowserContext(profile_.get());
+    wds_ = new WebDataService();
+    ASSERT_TRUE(wds_->Init(temp_dir_.path()));
   }
 
   virtual void TearDown() {
     if (store_.get())
       store_->ShutdownOnUIThread();
+    wds_->ShutdownOnUIThread();
     wds_ = NULL;
-    profile_.reset(NULL);
     base::WaitableEvent done(false, false);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));

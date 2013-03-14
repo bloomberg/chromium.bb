@@ -47,8 +47,6 @@
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
-#include "chrome/browser/webdata/web_database_service_factory.h"
-#include "chrome/browser/webdata/web_database_service_impl.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -422,26 +420,11 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 }
 
-static ProfileKeyedService* BuildWebDatabaseService(Profile* profile) {
-  scoped_ptr<WebDatabaseServiceImpl> web_db_service(
-      new WebDatabaseServiceImpl(
-          profile->GetPath().Append(chrome::kWebDataFilename)));
-  web_db_service->LoadDatabase(WebDatabaseService::InitCallback());
-  return web_db_service.release();
-}
-
-void TestingProfile::CreateWebDatabaseService() {
-  WebDatabaseServiceFactory::GetInstance()->SetTestingFactory(
-      this, BuildWebDatabaseService);
-}
-
 static scoped_refptr<RefcountedProfileKeyedService> BuildWebDataService(
     Profile* profile) {
-
-  WebDataService* web_data_service =
-      new WebDataService(WebDatabaseService::FromBrowserContext(profile));
+  WebDataService* web_data_service = new WebDataService();
   if (web_data_service)
-    web_data_service->Init();
+    web_data_service->Init(profile->GetPath());
   return web_data_service;
 }
 

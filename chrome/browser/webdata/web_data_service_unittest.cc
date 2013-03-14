@@ -21,8 +21,6 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
-#include "chrome/browser/webdata/web_database_service_impl.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/thread_observer_helper.h"
@@ -78,17 +76,11 @@ class WebDataServiceTest : public testing::Test {
     db_thread_.Start();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    wdbs_.reset(new WebDatabaseServiceImpl(
-        temp_dir_.path().Append(chrome::kWebDataFilename)));
-    wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
-    wds_ = new WebDataService(wdbs_.get());
-    wds_->Init();
-
-    WaitForDatabaseThread();
+    wds_ = new WebDataService();
+    wds_->Init(temp_dir_.path());
   }
 
   virtual void TearDown() {
-    wdbs_.reset(NULL);
     wds_->ShutdownOnUIThread();
     wds_ = NULL;
     WaitForDatabaseThread();
@@ -112,7 +104,6 @@ class WebDataServiceTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   base::FilePath profile_dir_;
   scoped_refptr<WebDataService> wds_;
-  scoped_ptr<WebDatabaseService> wdbs_;
   base::ScopedTempDir temp_dir_;
 };
 

@@ -154,10 +154,6 @@ class TestingProfile : public Profile {
   // BlockUntilBookmarkModelLoaded.
   void CreateBookmarkModel(bool delete_file);
 
-  // Creates a WebDatabaseService. If not invoked, the web database service is
-  // NULL.
-  void CreateWebDatabaseService();
-
   // Creates a WebDataService. If not invoked, the web data service is NULL.
   void CreateWebDataService();
 

@@ -68,7 +68,6 @@ class PersonalDataManagerTest : public testing::Test {
     db_thread_.Start();
 
     profile_.reset(new TestingProfile);
-    profile_->CreateWebDatabaseService();
     profile_->CreateWebDataService();
 
     autofill_test::DisableSystemServices(profile_.get());

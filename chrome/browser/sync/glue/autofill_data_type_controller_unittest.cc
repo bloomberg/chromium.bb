@@ -17,7 +17,6 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
-#include "chrome/browser/webdata/web_database_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_service.h"
@@ -41,9 +40,7 @@ using testing::Return;
 // loading.
 class FakeWebDataService : public WebDataService {
  public:
-  FakeWebDataService()
-      : WebDataService(NULL),
-        is_database_loaded_(false) {}
+  FakeWebDataService() : is_database_loaded_(false) {}
 
   // Mark the database as loaded and send out the appropriate
   // notification.

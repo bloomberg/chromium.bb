@@ -95,7 +95,6 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
-#include "chrome/browser/webdata/web_database_service_factory.h"
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
@@ -378,7 +377,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   TokenServiceFactory::GetInstance();
   UserStyleSheetWatcherFactory::GetInstance();
-  WebDatabaseServiceFactory::GetInstance();
   WebDataServiceFactory::GetInstance();
 
   built_factories_ = true;
