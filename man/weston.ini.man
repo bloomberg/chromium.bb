@@ -146,6 +146,12 @@ defines the number of workspaces (unsigned integer). The user can switch
 workspaces by using the
 binding+F1, F2 keys. If this key is not set, fall back to one workspace.
 .TP 7
+.BI "cursor-theme=" theme
+sets the cursor theme (string).
+.TP 7
+.BI "cursor-size=" 24
+sets the cursor size (unsigned integer).
+.TP 7
 .BI "lockscreen-icon=" path
 sets the path to lock screen icon image (string). (tablet shell only)
 .TP 7
