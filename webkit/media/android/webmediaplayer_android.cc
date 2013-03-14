@@ -358,10 +358,24 @@ void WebMediaPlayerAndroid::OnPlayerReleased() {
 }
 
 void WebMediaPlayerAndroid::ReleaseMediaResources() {
-  // Pause the media player first.
-  pause();
-  client_->playbackStateChanged();
-
+  switch (network_state_) {
+    // Pause the media player and inform WebKit if the player is in a good
+    // shape.
+    case WebMediaPlayer::NetworkStateIdle:
+    case WebMediaPlayer::NetworkStateLoading:
+    case WebMediaPlayer::NetworkStateLoaded:
+      pause();
+      client_->playbackStateChanged();
+      break;
+    // If a WebMediaPlayer instance has entered into one of these states,
+    // the internal network state in HTMLMediaElement could be set to empty.
+    // And calling playbackStateChanged() could get this object deleted.
+    case WebMediaPlayer::NetworkStateEmpty:
+    case WebMediaPlayer::NetworkStateFormatError:
+    case WebMediaPlayer::NetworkStateNetworkError:
+    case WebMediaPlayer::NetworkStateDecodeError:
+      break;
+  }
   ReleaseResourcesInternal();
   OnPlayerReleased();
 }
