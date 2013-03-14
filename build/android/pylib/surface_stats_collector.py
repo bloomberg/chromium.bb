@@ -22,6 +22,12 @@ class SurfaceStatsCollector(object):
   Args:
     adb: the adb connection to use.
   """
+  class Result(object):
+    def __init__(self, name, value, unit):
+      self.name = name
+      self.value = value
+      self.unit = unit
+
   def __init__(self, adb, trace_tag):
     self._adb = adb
     self._trace_tag = trace_tag
@@ -31,6 +37,8 @@ class SurfaceStatsCollector(object):
     self._get_data_event = None
     self._data_queue = None
     self._stop_event = None
+    self._print_perf_results = True
+    self._results = []
 
   def __enter__(self):
     assert not self._collector_thread
@@ -46,13 +54,27 @@ class SurfaceStatsCollector(object):
       self._surface_before = self._GetSurfaceStatsLegacy()
 
   def __exit__(self, *args):
+    self._StorePerfResults()
     self._PrintPerfResults()
     if self._collector_thread:
       self._stop_event.set()
       self._collector_thread.join()
       self._collector_thread = None
 
+  def GetResults(self):
+    return self._results
+
+  def SuppressPrintingResults(self):
+    self._print_perf_results = False
+
   def _PrintPerfResults(self):
+    if not self._print_perf_results:
+      return
+    for r in self._results:
+      perf_tests_helper.PrintPerfResult(r.name, r.name + self._trace_tag,
+                                        r.value, r.unit)
+
+  def _StorePerfResults(self):
     if self._use_legacy_method:
       surface_after = self._GetSurfaceStatsLegacy()
       td = surface_after['timestamp'] - self._surface_before['timestamp']
@@ -74,19 +96,14 @@ class SurfaceStatsCollector(object):
           jitter_count = jitter_count + 1
         last_latency = latency
 
-      perf_tests_helper.PrintPerfResult(
-          'surface_latencies', 'surface_latencies' + self._trace_tag,
-          latencies, '')
-      perf_tests_helper.PrintPerfResult(
-          'peak_jitter', 'peak_jitter' + self._trace_tag, [max(latencies)], '')
-      perf_tests_helper.PrintPerfResult(
-          'jitter_percent', 'jitter_percent' + self._trace_tag,
-          [jitter_count * 100.0 / frame_count], 'percent')
-
-    print 'SurfaceMonitorTime: %fsecs' % seconds
-    perf_tests_helper.PrintPerfResult(
-        'avg_surface_fps', 'avg_surface_fps' + self._trace_tag,
-        [int(round(frame_count / seconds))], 'fps')
+      self._results.append(SurfaceStatsCollector.Result(
+          'surface_latencies', latencies, ''))
+      self._results.append(SurfaceStatsCollector.Result(
+          'peak_jitter', [max(latencies)], ''))
+      self._results.append(SurfaceStatsCollector.Result(
+          'jitter_percent', [jitter_count * 100.0 / frame_count], 'percent'))
+    self._results.append(SurfaceStatsCollector.Result(
+          'avg_surface_fps', [int(round(frame_count / seconds))], 'fps'))
 
   def _CollectorThread(self):
     last_timestamp = 0

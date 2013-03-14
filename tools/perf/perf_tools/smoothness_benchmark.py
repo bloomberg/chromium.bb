@@ -164,6 +164,8 @@ class SmoothnessBenchmark(page_benchmark.PageBenchmark):
     return hasattr(page, 'smoothness')
 
   def WillRunAction(self, page, tab, action):
+    if tab.browser.platform.IsRawDisplayFrameRateSupported():
+      tab.browser.platform.StartRawDisplayFrameRateMeasurement()
     self._measurement = smoothness_measurement.SmoothnessMeasurement(tab)
     if action.CanBeBound():
       self._measurement.BindToAction(action)
@@ -171,6 +173,8 @@ class SmoothnessBenchmark(page_benchmark.PageBenchmark):
       self._measurement.Start()
 
   def DidRunAction(self, page, tab, action):
+    if tab.browser.platform.IsRawDisplayFrameRateSupported():
+      tab.browser.platform.StopRawDisplayFrameRateMeasurement()
     if not action.CanBeBound():
       self._measurement.Stop()
 
@@ -200,3 +204,7 @@ class SmoothnessBenchmark(page_benchmark.PageBenchmark):
     if self.options.report_all_results:
       for k, v in rendering_stats_deltas.iteritems():
         results.Add(k, '', v)
+
+    if tab.browser.platform.IsRawDisplayFrameRateSupported():
+      for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
+        results.Add(r.name, r.unit, r.value)
