@@ -197,8 +197,9 @@ static void DeliverFrameFunc(base::Closure quit_closure,
   quit_closure.Run();
 }
 
+// This test is flaky: crbug.com/180190.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
-                       MacFrameSubscriberTest) {
+                       DISABLED_MacFrameSubscriberTest) {
   if (!IOSurfaceSupport::Initialize())
     return;
 
