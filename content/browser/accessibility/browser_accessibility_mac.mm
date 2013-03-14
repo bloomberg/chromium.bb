@@ -58,6 +58,12 @@ void BrowserAccessibilityMac::DetachTree(
   BrowserAccessibility::DetachTree(nodes);
 }
 
+void BrowserAccessibilityMac::SwapChildren(
+    std::vector<BrowserAccessibility*>& children) {
+  [browser_accessibility_cocoa_ childrenChanged];
+  BrowserAccessibility::SwapChildren(children);
+}
+
 BrowserAccessibilityCocoa* BrowserAccessibility::ToBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();

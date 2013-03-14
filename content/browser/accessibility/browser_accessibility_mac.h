@@ -25,6 +25,8 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
 
   // Overrides from BrowserAccessibility.
   virtual void DetachTree(std::vector<BrowserAccessibility*>* nodes) OVERRIDE;
+  virtual void SwapChildren(std::vector<BrowserAccessibility*>& children)
+      OVERRIDE;
 
   // The BrowserAccessibilityCocoa associated with us.
   BrowserAccessibilityCocoa* native_view() const {

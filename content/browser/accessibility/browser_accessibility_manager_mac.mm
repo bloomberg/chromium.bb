@@ -42,6 +42,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         event_id = NSAccessibilitySelectedRowsChangedNotification;
       else
         event_id = NSAccessibilityFocusedUIElementChangedNotification;
+      break;
     case AccessibilityNotificationAlert:
       // Not used on Mac.
       return;

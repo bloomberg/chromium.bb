@@ -89,10 +89,6 @@ bool BrowserAccessibility::IsNative() const {
   return false;
 }
 
-void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
-  children_.push_back(child);
-}
-
 void BrowserAccessibility::SwapChildren(
     std::vector<BrowserAccessibility*>& children) {
   children.swap(children_);

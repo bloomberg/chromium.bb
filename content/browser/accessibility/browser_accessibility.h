@@ -77,10 +77,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Initialize this object's data.
   void InitializeData(const AccessibilityNodeData& src);
 
-  // Add a child of this object.
-  void AddChild(BrowserAccessibility* child);
-
-  void SwapChildren(std::vector<BrowserAccessibility*>& children);
+  virtual void SwapChildren(std::vector<BrowserAccessibility*>& children);
 
   // Update the parent and index in parent if this node has been moved.
   void UpdateParent(BrowserAccessibility* parent, int index_in_parent);
