@@ -40,7 +40,6 @@
       'rule_name': 'isolate',
       'extension': 'isolate',
       'inputs': [
-        '<(RULE_INPUT_PATH)',
         # Disable file tracking by the build driver for now. This means the
         # project must have the proper build-time dependency for their runtime
         # dependency. This improves the runtime of the build driver since it
@@ -56,20 +55,30 @@
       'outputs': [
         '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).isolated',
       ],
-      'action': [
-        'python',
-        '<(DEPTH)/tools/swarm_client/isolate.py',
-        '<(test_isolation_mode)',
-        '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-        '--variable', 'OS', '<(OS)',
-        '--variable', 'chromeos', '<(chromeos)',
-        '--result', '<@(_outputs)',
-        '--isolate', '<(RULE_INPUT_PATH)',
-      ],
       'conditions': [
-        ["test_isolation_outdir!=''", {
+        ["test_isolation_outdir==''", {
           'action': [
-            '--outdir', '<(PRODUCT_DIR)/<(test_isolation_outdir)',
+            'python',
+            '<(DEPTH)/tools/swarm_client/isolate.py',
+            '<(test_isolation_mode)',
+            '--outdir', '<(PRODUCT_DIR)',
+            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+            '--variable', 'OS', '<(OS)',
+            '--variable', 'chromeos', '<(chromeos)',
+            '--result', '<@(_outputs)',
+            '--isolate', '<(RULE_INPUT_PATH)',
+          ],
+        }, {
+          'action': [
+            'python',
+            '<(DEPTH)/tools/swarm_client/isolate.py',
+            '<(test_isolation_mode)',
+            '--outdir', '<(test_isolation_outdir)',
+            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+            '--variable', 'OS', '<(OS)',
+            '--variable', 'chromeos', '<(chromeos)',
+            '--result', '<@(_outputs)',
+            '--isolate', '<(RULE_INPUT_PATH)',
           ],
         }],
       ],
