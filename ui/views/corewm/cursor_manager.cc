@@ -123,8 +123,8 @@ bool CursorManager::IsMouseEventsEnabled() const {
   return current_state_->mouse_events_enabled();
 }
 
-void CursorManager::SetDeviceScaleFactor(float device_scale_factor) {
-  delegate_->SetDeviceScaleFactor(device_scale_factor, this);
+void CursorManager::SetDisplay(const gfx::Display& display) {
+  delegate_->SetDisplay(display, this);
 }
 
 void CursorManager::LockCursor() {

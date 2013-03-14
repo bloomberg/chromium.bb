@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "grit/ash_resources.h"
 #include "grit/ui_resources.h"
@@ -88,24 +89,28 @@ ImageCursors::ImageCursors() {
 ImageCursors::~ImageCursors() {
 }
 
-float ImageCursors::GetDeviceScaleFactor() const {
+gfx::Display ImageCursors::GetDisplay() const {
   if (!cursor_loader_.get()) {
     NOTREACHED();
-    // Returning 1.0f on release build as it's not serious enough to crash
+    // Returning default on release build as it's not serious enough to crash
     // even if this ever happens.
-    return 1.0f;
+    return gfx::Display();
   }
-  return cursor_loader_->device_scale_factor();
+  return cursor_loader_->display();
 }
 
-bool ImageCursors::SetDeviceScaleFactor(float device_scale_factor) {
-  if (!cursor_loader_.get())
+bool ImageCursors::SetDisplay(const gfx::Display& display) {
+  float device_scale_factor = display.device_scale_factor();
+  if (!cursor_loader_.get()) {
     cursor_loader_.reset(ui::CursorLoader::Create());
-  else if (GetDeviceScaleFactor() == device_scale_factor)
+  } else if (cursor_loader_->display().rotation() == display.rotation() &&
+             cursor_loader_->display().device_scale_factor() ==
+             device_scale_factor) {
     return false;
+  }
 
   cursor_loader_->UnloadAll();
-  cursor_loader_->set_device_scale_factor(device_scale_factor);
+  cursor_loader_->set_display(display);
 
   for (size_t i = 0; i < arraysize(kImageCursors); ++i) {
     const HotPoint& hot = device_scale_factor == 1.0f ?

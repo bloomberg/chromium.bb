@@ -9,6 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gfx {
+class Display;
+}
+
 namespace ui {
 class CursorLoader;
 }
@@ -22,14 +26,15 @@ class ASH_EXPORT ImageCursors {
   ImageCursors();
   ~ImageCursors();
 
-  // Returns the device scale factor of cursors. The device scale factor must
-  // be set by SetDeviceScaleFactor at least once before using this.
-  float GetDeviceScaleFactor() const;
+  // Returns the display the cursors are loaded for. The display must
+  // be set by SetDisplay before using this.
+  gfx::Display GetDisplay() const;
 
-  // Sets the device scale factor of the cursors with |device_scale_factor| and
-  // reloads the cursor images if necessary. Returns true if the cursor image
-  // is reloaded.
-  bool SetDeviceScaleFactor(float device_scale_factor);
+  // Sets the display the cursors are loaded for. The device scale factor
+  // determines the size of the image to load, and the rotation of the display
+  // determines if the image and its host point has to be retated.
+  // Returns true if the cursor image is reloaded.
+  bool SetDisplay(const gfx::Display& display);
 
   // Sets the platform cursor based on the native type of |cursor|.
   void SetPlatformCursor(gfx::NativeCursor* cursor);

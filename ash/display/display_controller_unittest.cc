@@ -496,11 +496,11 @@ TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
   EXPECT_EQ(1.0f,
             primary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
   primary_root->MoveCursorTo(gfx::Point(50, 50));
-  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
   EXPECT_EQ(2.0f,
             secondary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
   secondary_root->MoveCursorTo(gfx::Point(50, 50));
-  EXPECT_EQ(2.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
 
   // Switch primary and secondary
   display_controller->SetPrimaryDisplay(secondary_display);
@@ -510,23 +510,23 @@ TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
   EXPECT_EQ(1.0f,
             secondary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
   secondary_root->MoveCursorTo(gfx::Point(50, 50));
-  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
   primary_root->MoveCursorTo(gfx::Point(50, 50));
   EXPECT_EQ(2.0f,
             primary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
-  EXPECT_EQ(2.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
 
   // Deleting 2nd display.
   UpdateDisplay("200x200");
   RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
 
   // Cursor's device scale factor should be updated even without moving cursor.
-  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
 
   primary_root->MoveCursorTo(gfx::Point(50, 50));
   EXPECT_EQ(1.0f,
             primary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
-  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
 }
 
 #if defined(OS_WIN)
@@ -640,7 +640,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   EXPECT_EQ("50,40", event_handler.GetLocationAndReset());
 
   display_manager->SetDisplayRotation(display1.id(),
-                                      internal::DisplayInfo::ROTATE_90);
+                                      gfx::Display::ROTATE_90);
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("200,0 150x200",
@@ -654,7 +654,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 
   display_manager->SetDisplayRotation(display2_id,
-                                      internal::DisplayInfo::ROTATE_270);
+                                      gfx::Display::ROTATE_270);
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("50,120 200x150",
@@ -664,7 +664,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   generator2.MoveMouseTo(50, 40);
   EXPECT_EQ("180,25", event_handler.GetLocationAndReset());
   display_manager->SetDisplayRotation(display1.id(),
-                                      internal::DisplayInfo::ROTATE_180);
+                                      gfx::Display::ROTATE_180);
 
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());

@@ -18,11 +18,11 @@ DesktopNativeCursorManager::DesktopNativeCursorManager(
 DesktopNativeCursorManager::~DesktopNativeCursorManager() {
 }
 
-void DesktopNativeCursorManager::SetDeviceScaleFactor(
-    float device_scale_factor,
+void DesktopNativeCursorManager::SetDisplay(
+    const gfx::Display& display,
     views::corewm::NativeCursorManagerDelegate* delegate) {
   cursor_loader_->UnloadAll();
-  cursor_loader_->set_device_scale_factor(device_scale_factor);
+  cursor_loader_->set_display(display);
   SetCursor(delegate->GetCurrentCursor(), delegate);
 }
 

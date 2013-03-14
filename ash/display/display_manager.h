@@ -84,7 +84,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   void ClearCustomOverscanInsets(int64 display_id);
 
   // Sets the display's rotation.
-  void SetDisplayRotation(int64 display_id, DisplayInfo::Rotation rotation);
+  void SetDisplayRotation(int64 display_id, gfx::Display::Rotation rotation);
 
   // Returns the current overscan insets for the specified |display_id|.
   // Returns an empty insets (0, 0, 0, 0) if no insets are specified for

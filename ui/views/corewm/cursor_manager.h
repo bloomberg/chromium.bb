@@ -14,6 +14,10 @@
 #include "ui/views/corewm/native_cursor_manager_delegate.h"
 #include "ui/views/views_export.h"
 
+namespace gfx {
+class Display;
+}
+
 namespace views {
 namespace corewm {
 
@@ -43,7 +47,7 @@ class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
   virtual void EnableMouseEvents() OVERRIDE;
   virtual void DisableMouseEvents() OVERRIDE;
   virtual bool IsMouseEventsEnabled() const OVERRIDE;
-  virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
+  virtual void SetDisplay(const gfx::Display& display) OVERRIDE;
   virtual void LockCursor() OVERRIDE;
   virtual void UnlockCursor() OVERRIDE;
 

@@ -8,6 +8,10 @@
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gfx {
+class Display;
+}
+
 namespace aura {
 class Window;
 namespace client {
@@ -38,8 +42,8 @@ class AURA_EXPORT CursorClient {
   // Returns true if mouse events are enabled.
   virtual bool IsMouseEventsEnabled() const = 0;
 
-  // Sets the device scale factor of the cursor.
-  virtual void SetDeviceScaleFactor(float device_scale_factor) = 0;
+  // Sets the display for the cursor.
+  virtual void SetDisplay(const gfx::Display& display) = 0;
 
   // Locks the cursor change. The cursor type, cursor visibility, and mouse
   // events enable state never change as long as lock is held by anyone.

@@ -9,12 +9,9 @@
 
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
-
-namespace gfx {
-class Display;
-}
 
 namespace ash {
 namespace internal {
@@ -25,15 +22,6 @@ namespace internal {
 // This class is intentionally made copiable.
 class ASH_EXPORT DisplayInfo {
  public:
-  // Screen Rotation in clock-wise degrees.
-  // TODO(oshima): move his to gfx::Display.
-  enum Rotation {
-    ROTATE_0 = 0,
-    ROTATE_90,
-    ROTATE_180,
-    ROTATE_270,
-  };
-
   // Creates a DisplayInfo from string spec. 100+200-1440x800 creates display
   // whose size is 1440x800 at the location (100, 200) in host coordinates.
   // The format is
@@ -81,8 +69,8 @@ class ASH_EXPORT DisplayInfo {
   // True if the display has overscan.
   bool has_overscan() const { return has_overscan_; }
 
-  void set_rotation(Rotation rotation) { rotation_ = rotation; }
-  Rotation rotation() const { return rotation_; }
+  void set_rotation(gfx::Display::Rotation rotation) { rotation_ = rotation; }
+  gfx::Display::Rotation rotation() const { return rotation_; }
 
   // Gets/Sets the device scale factor of the display.
   float device_scale_factor() const { return device_scale_factor_; }
@@ -146,7 +134,7 @@ class ASH_EXPORT DisplayInfo {
   int64 id_;
   std::string name_;
   bool has_overscan_;
-  Rotation rotation_;
+  gfx::Display::Rotation rotation_;
   float device_scale_factor_;
   gfx::Rect bounds_in_pixel_;
   // The size of the display in use. The size can be different from the size

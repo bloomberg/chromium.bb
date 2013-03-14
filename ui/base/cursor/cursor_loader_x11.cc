@@ -14,6 +14,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 
@@ -156,9 +157,29 @@ void CursorLoaderX11::LoadImageCursor(int id,
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-      GetScaleFactorFromScale(device_scale_factor()));
-  XcursorImage* x_image =
-      SkBitmapToXcursorImage(&image_rep.sk_bitmap(), hot);
+      GetScaleFactorFromScale(display().device_scale_factor()));
+  SkBitmap bitmap = image_rep.sk_bitmap();
+  gfx::Point hotpoint = hot;
+  switch (display().rotation()) {
+    case gfx::Display::ROTATE_0:
+      break;
+    case gfx::Display::ROTATE_90:
+      hotpoint.SetPoint(bitmap.height() - hot.y(), hot.x());
+      bitmap = SkBitmapOperations::Rotate(
+          bitmap, SkBitmapOperations::ROTATION_90_CW);
+      break;
+    case gfx::Display::ROTATE_180:
+      hotpoint.SetPoint(bitmap.width() - hot.x(), bitmap.height() - hot.y());
+      bitmap = SkBitmapOperations::Rotate(
+          bitmap, SkBitmapOperations::ROTATION_180_CW);
+      break;
+    case gfx::Display::ROTATE_270:
+      hotpoint.SetPoint(hot.y(), bitmap.width() - hot.x());
+      bitmap = SkBitmapOperations::Rotate(
+          bitmap, SkBitmapOperations::ROTATION_270_CW);
+      break;
+  }
+  XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotpoint);
   cursors_[id] = CreateReffedCustomXCursor(x_image);
   // |image_rep| is owned by the resource bundle. So we do not need to free it.
 }
@@ -170,7 +191,7 @@ void CursorLoaderX11::LoadAnimatedCursor(int id,
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-      GetScaleFactorFromScale(device_scale_factor()));
+      GetScaleFactorFromScale(display().device_scale_factor()));
   const SkBitmap bitmap = image_rep.sk_bitmap();
   DCHECK_EQ(bitmap.config(), SkBitmap::kARGB_8888_Config);
   int frame_width = bitmap.height();
@@ -227,10 +248,12 @@ void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
     xcursor =  invisible_cursor_.get();
   else if (*cursor == kCursorCustom)
     xcursor = cursor->platform();
-  else if (device_scale_factor() == 1.0f)
+  else if (display().device_scale_factor() == 1.0f &&
+           display().rotation() == gfx::Display::ROTATE_0) {
     xcursor = GetXCursor(CursorShapeFromNative(*cursor));
-  else
+  } else {
     xcursor = ImageCursorFromNative(kCursorPointer);
+  }
 
   cursor->SetPlatformCursor(xcursor);
 }

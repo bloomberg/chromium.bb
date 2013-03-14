@@ -48,11 +48,15 @@ typedef test::AshTestBase AshNativeCursorManagerTest;
 TEST_F(AshNativeCursorManagerTest, LockCursor) {
   CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
+  gfx::Display display(0);
 
   cursor_manager->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
-  cursor_manager->SetDeviceScaleFactor(2.0f);
-  EXPECT_EQ(2.0f, test_api.GetDeviceScaleFactor());
+  display.set_device_scale_factor(2.0f);
+  display.set_rotation(gfx::Display::ROTATE_90);
+  cursor_manager->SetDisplay(display);
+  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(gfx::Display::ROTATE_90, test_api.GetDisplay().rotation());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 
   cursor_manager->LockCursor();
@@ -62,16 +66,19 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   cursor_manager->SetCursor(ui::kCursorPointer);
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
 
-  // Device scale factor does change even while cursor is locked.
-  cursor_manager->SetDeviceScaleFactor(1.0f);
-  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  // Device scale factor and rotation do change even while cursor is locked.
+  display.set_device_scale_factor(1.0f);
+  display.set_rotation(gfx::Display::ROTATE_180);
+  cursor_manager->SetDisplay(display);
+  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(gfx::Display::ROTATE_180, test_api.GetDisplay().rotation());
 
   cursor_manager->UnlockCursor();
   EXPECT_FALSE(cursor_manager->is_cursor_locked());
 
   // Cursor type changes to the one specified while cursor is locked.
   EXPECT_EQ(ui::kCursorPointer, test_api.GetCurrentCursor().native_type());
-  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
@@ -87,14 +94,21 @@ TEST_F(AshNativeCursorManagerTest, SetCursor) {
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
-TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactor) {
+TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
   CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
-  cursor_manager->SetDeviceScaleFactor(2.0f);
-  EXPECT_EQ(2.0f, test_api.GetDeviceScaleFactor());
-  cursor_manager->SetDeviceScaleFactor(1.0f);
-  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  gfx::Display display(0);
+  display.set_device_scale_factor(2.0f);
+  cursor_manager->SetDisplay(display);
+  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(gfx::Display::ROTATE_0, test_api.GetDisplay().rotation());
+
+  display.set_device_scale_factor(1.0f);
+  display.set_rotation(gfx::Display::ROTATE_270);
+  cursor_manager->SetDisplay(display);
+  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(gfx::Display::ROTATE_270, test_api.GetDisplay().rotation());
 }
 
 #if defined(OS_WIN)

@@ -53,7 +53,7 @@ class TestCursorClient : public aura::client::CursorClient {
     return mouse_events_enabled_;
   }
 
-  virtual void SetDeviceScaleFactor(float scale_factor) OVERRIDE {
+  virtual void SetDisplay(const gfx::Display& display) OVERRIDE {
   }
 
   virtual void LockCursor() OVERRIDE {

@@ -154,19 +154,19 @@ bool HandleRotateActiveWindow() {
   return true;
 }
 
-const DisplayInfo::Rotation GetNextRotation(DisplayInfo::Rotation current) {
+const gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
   switch (current) {
-    case DisplayInfo::ROTATE_0:
-      return DisplayInfo::ROTATE_90;
-    case DisplayInfo::ROTATE_90:
-      return DisplayInfo::ROTATE_180;
-    case DisplayInfo::ROTATE_180:
-      return DisplayInfo::ROTATE_270;
-    case DisplayInfo::ROTATE_270:
-      return DisplayInfo::ROTATE_0;
+    case gfx::Display::ROTATE_0:
+      return gfx::Display::ROTATE_90;
+    case gfx::Display::ROTATE_90:
+      return gfx::Display::ROTATE_180;
+    case gfx::Display::ROTATE_180:
+      return gfx::Display::ROTATE_270;
+    case gfx::Display::ROTATE_270:
+      return gfx::Display::ROTATE_0;
   }
   NOTREACHED() << "Unknown rotation:" << current;
-  return DisplayInfo::ROTATE_0;
+  return gfx::Display::ROTATE_0;
 }
 
 // Rotates the screen.

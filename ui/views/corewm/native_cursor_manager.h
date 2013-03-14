@@ -8,6 +8,10 @@
 #include "ui/views/corewm/native_cursor_manager_delegate.h"
 #include "ui/views/views_export.h"
 
+namespace gfx {
+class Display;
+}
+
 namespace views {
 namespace corewm {
 
@@ -20,8 +24,8 @@ class VIEWS_EXPORT NativeCursorManager {
   virtual ~NativeCursorManager() {}
 
   // A request to set the screen DPI. Can cause changes in the current cursor.
-  virtual void SetDeviceScaleFactor(
-      float device_scale_factor,
+  virtual void SetDisplay(
+      const gfx::Display& display,
       views::corewm::NativeCursorManagerDelegate* delegate) = 0;
 
   // A request to set the cursor to |cursor|. At minimum, implementer should

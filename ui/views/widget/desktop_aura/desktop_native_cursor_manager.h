@@ -34,8 +34,8 @@ class VIEWS_EXPORT DesktopNativeCursorManager
 
  private:
   // Overridden from views::corewm::NativeCursorManager:
-  virtual void SetDeviceScaleFactor(
-      float device_scale_factor,
+  virtual void SetDisplay(
+      const gfx::Display& display,
       views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetCursor(
       gfx::NativeCursor cursor,

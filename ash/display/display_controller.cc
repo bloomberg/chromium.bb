@@ -38,13 +38,13 @@
 #include "ui/base/x/x11_util.h"
 #endif  // defined(OS_CHROMEOS)
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::DisplayInfo::Rotation);
+DECLARE_WINDOW_PROPERTY_TYPE(gfx::Display::Rotation);
 
 namespace ash {
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(internal::DisplayInfo::Rotation, kRotationKey,
-                           internal::DisplayInfo::ROTATE_0);
+DEFINE_WINDOW_PROPERTY_KEY(gfx::Display::Rotation, kRotationKey,
+                           gfx::Display::ROTATE_0);
 
 // Primary display stored in global object as it can be
 // accessed after Shell is deleted. A separate display instance is created
@@ -126,17 +126,17 @@ void RotateRootWindow(aura::RootWindow* root_window,
 #endif
   gfx::Transform rotate;
   switch (info.rotation()) {
-    case internal::DisplayInfo::ROTATE_0:
+    case gfx::Display::ROTATE_0:
       break;
-    case internal::DisplayInfo::ROTATE_90:
+    case gfx::Display::ROTATE_90:
       rotate.Translate(display.bounds().height(), 0);
       rotate.Rotate(90);
       break;
-    case internal::DisplayInfo::ROTATE_270:
+    case gfx::Display::ROTATE_270:
       rotate.Translate(0, display.bounds().width());
       rotate.Rotate(270);
       break;
-    case internal::DisplayInfo::ROTATE_180:
+    case gfx::Display::ROTATE_180:
       rotate.Translate(display.bounds().width(), display.bounds().height());
       rotate.Rotate(180);
       break;

@@ -52,10 +52,10 @@ AshNativeCursorManager::AshNativeCursorManager()
 AshNativeCursorManager::~AshNativeCursorManager() {
 }
 
-void AshNativeCursorManager::SetDeviceScaleFactor(
-    float device_scale_factor,
+void AshNativeCursorManager::SetDisplay(
+    const gfx::Display& display,
     views::corewm::NativeCursorManagerDelegate* delegate) {
-  if (image_cursors_->SetDeviceScaleFactor(device_scale_factor))
+  if (image_cursors_->SetDisplay(display))
     SetCursor(delegate->GetCurrentCursor(), delegate);
 }
 
@@ -64,7 +64,8 @@ void AshNativeCursorManager::SetCursor(
     views::corewm::NativeCursorManagerDelegate* delegate) {
   gfx::NativeCursor new_cursor = cursor;
   image_cursors_->SetPlatformCursor(&new_cursor);
-  new_cursor.set_device_scale_factor(image_cursors_->GetDeviceScaleFactor());
+  new_cursor.set_device_scale_factor(
+      image_cursors_->GetDisplay().device_scale_factor());
 
   delegate->CommitCursor(new_cursor);
 

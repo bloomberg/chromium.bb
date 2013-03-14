@@ -64,19 +64,22 @@ int64 Display::GetID(uint16 manufacturer_id,
 
 Display::Display()
     : id_(kInvalidDisplayID),
-      device_scale_factor_(GetForcedDeviceScaleFactor()) {
+      device_scale_factor_(GetForcedDeviceScaleFactor()),
+      rotation_(ROTATE_0) {
 }
 
 Display::Display(int64 id)
     : id_(id),
-      device_scale_factor_(GetForcedDeviceScaleFactor()) {
+      device_scale_factor_(GetForcedDeviceScaleFactor()),
+      rotation_(ROTATE_0) {
 }
 
 Display::Display(int64 id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
-      device_scale_factor_(GetForcedDeviceScaleFactor()) {
+      device_scale_factor_(GetForcedDeviceScaleFactor()),
+      rotation_(ROTATE_0) {
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif

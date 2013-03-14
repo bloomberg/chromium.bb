@@ -8,6 +8,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/image_cursors.h"
+#include "ui/gfx/display.h"
 #include "ui/views/corewm/cursor_manager.h"
 
 namespace ash {
@@ -26,9 +27,9 @@ gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
       cursor_manager_)->GetCurrentCursor();
 }
 
-float CursorManagerTestApi::GetDeviceScaleFactor() const {
+gfx::Display CursorManagerTestApi::GetDisplay() const {
   return ShellTestApi(Shell::GetInstance()).ash_native_cursor_manager()->
-      image_cursors_->GetDeviceScaleFactor();
+      image_cursors_->GetDisplay();
 }
 
 }  // namespace test

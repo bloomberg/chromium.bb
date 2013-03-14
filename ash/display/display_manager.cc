@@ -172,7 +172,7 @@ void DisplayManager::ClearCustomOverscanInsets(int64 display_id) {
 }
 
 void DisplayManager::SetDisplayRotation(int64 display_id,
-                                        DisplayInfo::Rotation rotation) {
+                                        gfx::Display::Rotation rotation) {
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
@@ -606,6 +606,7 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   // by |DisplayController::UpdateDisplayBoundsForLayout|.
   new_display.SetScaleAndBounds(
       display_info.device_scale_factor(), gfx::Rect(bounds_in_pixel.size()));
+  new_display.set_rotation(display_info.rotation());
   return new_display;
 }
 

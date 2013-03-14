@@ -360,14 +360,14 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
     // Grab (0, 0) of the window.
     scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
-    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+    EXPECT_EQ(1.0f, cursor_test_api.GetDisplay().device_scale_factor());
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     event_filter->WarpMouseCursorIfNecessary(root_windows[0],
                                              gfx::Point(399, 200));
-    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
+    EXPECT_EQ(2.0f, cursor_test_api.GetDisplay().device_scale_factor());
     resizer->CompleteDrag(0);
-    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
+    EXPECT_EQ(2.0f, cursor_test_api.GetDisplay().device_scale_factor());
   }
 
   // Move window from the root window with 2.0 device scale factor to the root
@@ -380,14 +380,14 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
     // Grab (0, 0) of the window.
     scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
-    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
+    EXPECT_EQ(2.0f, cursor_test_api.GetDisplay().device_scale_factor());
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, -200, 200), 0);
     event_filter->WarpMouseCursorIfNecessary(root_windows[1],
                                              gfx::Point(400, 200));
-    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+    EXPECT_EQ(1.0f, cursor_test_api.GetDisplay().device_scale_factor());
     resizer->CompleteDrag(0);
-    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+    EXPECT_EQ(1.0f, cursor_test_api.GetDisplay().device_scale_factor());
   }
 }
 

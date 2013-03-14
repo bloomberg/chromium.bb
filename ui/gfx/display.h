@@ -18,6 +18,14 @@ namespace gfx {
 // system, not in backing pixels.
 class UI_EXPORT Display {
  public:
+  // Screen Rotation in clock-wise degrees.
+  enum Rotation {
+    ROTATE_0 = 0,
+    ROTATE_90,
+    ROTATE_180,
+    ROTATE_270,
+  };
+
   // Creates a display with kInvalidDisplayID as default.
   Display();
   explicit Display(int64 id);
@@ -62,6 +70,9 @@ class UI_EXPORT Display {
   // values depend on each platforms.
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
+
+  Rotation rotation() const { return rotation_; }
+  void set_rotation(Rotation rotation) { rotation_ = rotation; }
 
   // Utility functions that just return the size of display and
   // work area.
@@ -108,6 +119,7 @@ class UI_EXPORT Display {
   Rect bounds_;
   Rect work_area_;
   float device_scale_factor_;
+  Rotation rotation_;
 };
 
 }  // namespace gfx

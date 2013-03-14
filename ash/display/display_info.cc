@@ -56,7 +56,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   }
 
   size_t count = Tokenize(main_spec, "/", &parts);
-  Rotation rotation(ROTATE_0);
+  gfx::Display::Rotation rotation(gfx::Display::ROTATE_0);
   bool has_overscan = false;
   if (count) {
     main_spec = parts[0];
@@ -69,13 +69,13 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
             has_overscan = true;
             break;
           case 'r':  // rotate 90 degrees to 'right'.
-            rotation = ROTATE_90;
+            rotation = gfx::Display::ROTATE_90;
             break;
           case 'u':  // 180 degrees, 'u'pside-down.
-            rotation = ROTATE_180;
+            rotation = gfx::Display::ROTATE_180;
             break;
           case 'l':  // rotate 90 degrees to 'left'.
-            rotation = ROTATE_270;
+            rotation = gfx::Display::ROTATE_270;
             break;
         }
       }
@@ -106,7 +106,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
 DisplayInfo::DisplayInfo()
     : id_(gfx::Display::kInvalidDisplayID),
       has_overscan_(false),
-      rotation_(ROTATE_0),
+      rotation_(gfx::Display::ROTATE_0),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       has_custom_overscan_insets_(false),
@@ -119,7 +119,7 @@ DisplayInfo::DisplayInfo(int64 id,
     : id_(id),
       name_(name),
       has_overscan_(has_overscan),
-      rotation_(ROTATE_0),
+      rotation_(gfx::Display::ROTATE_0),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       has_custom_overscan_insets_(false),
@@ -172,7 +172,8 @@ void DisplayInfo::UpdateDisplaySize() {
     overscan_insets_in_dip_.Set(0, 0, 0, 0);
   }
 
-  if (rotation_ == ROTATE_90 || rotation_ == ROTATE_270)
+  if (rotation_ == gfx::Display::ROTATE_90 ||
+      rotation_ == gfx::Display::ROTATE_270)
     size_in_pixel_.SetSize(size_in_pixel_.height(), size_in_pixel_.width());
   gfx::SizeF size_f(size_in_pixel_);
   size_f.Scale(ui_scale_);

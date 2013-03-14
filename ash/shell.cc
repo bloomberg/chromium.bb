@@ -467,8 +467,7 @@ void Shell::Init() {
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
   active_root_window_ = root_window;
 
-  cursor_manager_.SetDeviceScaleFactor(
-      root_window->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
+  cursor_manager_.SetDisplay(DisplayController::GetPrimaryDisplay());
 
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);

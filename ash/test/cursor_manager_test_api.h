@@ -8,6 +8,10 @@
 #include "base/basictypes.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gfx {
+class Display;
+}
+
 namespace views {
 namespace corewm {
 class CursorManager;
@@ -24,7 +28,7 @@ class CursorManagerTestApi {
   ~CursorManagerTestApi();
 
   gfx::NativeCursor GetCurrentCursor() const;
-  float GetDeviceScaleFactor() const;
+  gfx::Display GetDisplay() const;
 
  private:
   views::corewm::CursorManager* cursor_manager_;

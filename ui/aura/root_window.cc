@@ -248,8 +248,11 @@ void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
   host_->MoveCursorTo(ui::ConvertPointToPixel(layer(), location));
   SetLastMouseLocation(this, location_in_dip);
   client::CursorClient* cursor_client = client::GetCursorClient(this);
-  if (cursor_client)
-    cursor_client->SetDeviceScaleFactor(GetDeviceScaleFactor());
+  if (cursor_client) {
+    const gfx::Display& display =
+        gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
+    cursor_client->SetDisplay(display);
+  }
 }
 
 bool RootWindow::ConfineCursorToWindow() {
@@ -557,8 +560,11 @@ void RootWindow::OnDeviceScaleFactorChanged(
   // Update the device scale factor of the cursor client only when the last
   // mouse location is on this root window.
   if (cursor_is_in_bounds) {
-    if (cursor_client)
-      cursor_client->SetDeviceScaleFactor(device_scale_factor);
+    if (cursor_client) {
+      const gfx::Display& display =
+          gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
+      cursor_client->SetDisplay(display);
+    }
   }
   if (cursor_is_in_bounds && cursor_client && cursor_visible)
     cursor_client->ShowCursor();
