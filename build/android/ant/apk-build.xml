@@ -225,41 +225,6 @@
     </condition>
 
     <!-- ******************************************************* -->
-    <!-- ************************ Macros *********************** -->
-    <!-- ******************************************************* -->
-
-    <macrodef name="record-build-key">
-        <attribute name="key" default="false" />
-        <attribute name="value" default="false" />
-        <sequential>
-            <propertyfile file="${out.build.prop.file}" comment="Last build type">
-                <entry key="@{key}" value="@{value}"/>
-            </propertyfile>
-        </sequential>
-    </macrodef>
-
-    <macrodef name="record-build-info">
-        <sequential>
-            <record-build-key key="build.last.target" value="${build.target}" />
-            <record-build-key key="build.last.is.instrumented" value="${build.is.instrumented}" />
-            <record-build-key key="build.last.is.packaging.debug" value="${build.is.packaging.debug}" />
-            <record-build-key key="build.last.is.signing.debug" value="${build.is.signing.debug}" />
-        </sequential>
-    </macrodef>
-
-    <macrodef name="uninstall-helper">
-        <attribute name="app.package" default="false" />
-        <sequential>
-            <echo level="info">Uninstalling @{app.package} from the default emulator or device...</echo>
-            <exec executable="${adb}" failonerror="true">
-                <arg line="${adb.device.arg}" />
-                <arg value="uninstall" />
-                <arg value="@{app.package}" />
-            </exec>
-        </sequential>
-    </macrodef>
-
-    <!-- ******************************************************* -->
     <!-- ******************** Build Targets ******************** -->
     <!-- ******************************************************* -->
 
@@ -326,47 +291,6 @@
 
         <!-- read the previous build mode -->
         <property file="${out.build.prop.file}" />
-        <!-- if empty the props won't be set, meaning it's a new build.
-             To force a build, set the prop to empty values. -->
-        <property name="build.last.target" value="" />
-        <property name="build.last.is.instrumented" value="" />
-        <property name="build.last.is.packaging.debug" value="" />
-        <property name="build.last.is.signing.debug" value="" />
-
-        <!-- If the "debug" build type changed, clear out the compiled code.
-             This is to make sure the new BuildConfig.DEBUG value is picked up
-             as javac can't deal with this type of change in its dependency computation. -->
-        <if>
-            <condition>
-                <and>
-                    <length string="${build.last.is.packaging.debug}" trim="true" when="greater" length="0" />
-                    <not><equals
-                            arg1="${build.is.packaging.debug}"
-                            arg2="${build.last.is.packaging.debug}" /></not>
-                </and>
-            </condition>
-            <then>
-                <echo level="info">Switching between debug and non debug build: Deleting previous compilation output...</echo>
-                <delete dir="${out.classes.absolute.dir}" verbose="${verbose}" />
-            </then>
-            <else>
-                <!-- Else, we may still need to clean the code, for another reason.
-                     special case for instrumented: if the previous build was
-                     instrumented but not this one, clear out the compiled code -->
-                <if>
-                    <condition>
-                        <and>
-                            <istrue value="${build.last.is.instrumented}" />
-                            <isfalse value="${build.is.instrumented}" />
-                        </and>
-                    </condition>
-                    <then>
-                        <echo level="info">Switching from instrumented to non-instrumented build: Deleting previous compilation output...</echo>
-                        <delete dir="${out.classes.absolute.dir}" verbose="${verbose}" />
-                    </then>
-                </if>
-            </else>
-        </if>
 
         <echo level="info">Resolving Build Target for ${ant.project.name}...</echo>
         <!-- load project properties, resolve Android target, library dependencies
@@ -432,7 +356,7 @@
                 genFolder="${gen.absolute.dir}"
                 package="${project.app.package}"
                 buildType="${build.is.packaging.debug}"
-                previousBuildType="${build.last.is.packaging.debug}"/>
+                previousBuildType=""/>
     </target>
 
     <!-- empty default pre-compile target. Create a similar target in
@@ -668,7 +592,7 @@
                 libraryResFolderPathRefid="project.library.res.folder.path"
                 libraryPackagesRefid="project.library.packages"
                 libraryRFileRefid="project.library.bin.r.file.path"
-                previousBuildType="${build.last.target}"
+                previousBuildType=""
                 buildType="${build.target}"
                 ignoreAssets="${aapt.ignore.assets}">
             <res path="${out.res.absolute.dir}" />
@@ -689,7 +613,7 @@
                     debugsigning="${build.is.signing.debug}"
                     verbose="${verbose}"
                     hascode="${manifest.hasCode}"
-                    previousBuildType="${build.last.is.packaging.debug}/${build.last.is.signing.debug}"
+                    previousBuildType="/"
                     buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
                 <dex path="${intermediate.dex.file}"/>
                 <sourcefolder path="${source.absolute.dir}"/>
@@ -769,7 +693,6 @@
 
     <target name="-do-debug"
       depends="-set-debug-mode, -debug-obfuscation-check, -do-sign">
-      <record-build-info />
     </target>
 
     <!-- Builds debug output package -->
@@ -834,7 +757,6 @@
     </target>
 
     <target name="-release-sign" depends="-do-sign" >
-        <record-build-info />
     </target>
 
     <!-- This runs -package-release first and then runs
