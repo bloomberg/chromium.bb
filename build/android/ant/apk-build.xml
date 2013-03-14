@@ -78,17 +78,11 @@
     <!-- Disables automatic signing. -->
     <property name="build.is.signing.debug" value="false"/>
 
-    <!-- ******************************************************* -->
-    <!-- **************** Overridable Properties *************** -->
-    <!-- ******************************************************* -->
-
-    <!-- You can override these values in your build.xml or ant.properties.
-         Overriding any other properties may result in broken build. -->
-
-    <!-- Tells adb which device to target. You can change this from the command line
-         by invoking "ant -Dadb.device.arg=-d" for device "ant -Dadb.device.arg=-e" for
-         the emulator. -->
-    <property name="adb.device.arg" value="" />
+    <!-- SDK tools assume that out.packaged.file is signed and name it "...-unaligned" -->
+    <property name="out.packaged.file"
+      value="${apks.dir}/${ant.project.name}-unsigned.apk" />
+    <property name="out.unaligned.file"
+      value="${apks.dir}/${ant.project.name}-unaligned.apk" />
 
     <!-- fileset exclude patterns (space separated) to prevent
          files inside src/ from being packaged. -->
@@ -113,13 +107,6 @@
          - Match is not case-sensitive.
     -->
     <property name="aapt.ignore.assets" value="" />
-
-    <!-- dex force jumbo options, to be used when dex merging fails with
-         UNEXPECTED TOP-LEVEL EXCEPTION: com.android.dx.util.DexException: Cannot handle conversion to jumbo index!
-           at com.android.dx.merge.InstructionTransformer.jumboCheck(InstructionTransformer.java:103)
-           ...
-    -->
-    <property name="dex.force.jumbo" value="false" />
 
     <!-- compilation options -->
     <property name="java.encoding" value="UTF-8" />
@@ -185,7 +172,6 @@
     <property name="android.platform.tools.dir" location="${sdk.dir}/platform-tools" />
     <property name="exe" value="" />
     <property name="bat" value="" />
-    <property name="adb" location="${android.platform.tools.dir}/adb${exe}" />
     <property name="zipalign" location="${android.tools.dir}/zipalign${exe}" />
     <property name="aidl" location="${android.platform.tools.dir}/aidl${exe}" />
     <property name="aapt" location="${android.platform.tools.dir}/aapt${exe}" />
@@ -213,16 +199,7 @@
     <!-- properties for packaging -->
     <property name="build.packaging.nocrunch" value="true" />
 
-    <!-- whether we need to fork javac.
-         This is only needed on Windows when running Java < 7 -->
-    <condition else="false" property="need.javac.fork">
-        <and>
-            <matches pattern="1\.[56]" string="${java.specification.version}"/>
-            <not>
-                <os family="unix"/>
-            </not>
-        </and>
-    </condition>
+    <property name="need.javac.fork" value="false" />
 
     <!-- ******************************************************* -->
     <!-- ******************** Build Targets ******************** -->
@@ -240,50 +217,13 @@
 
         <!-- sets a few boolean based on project.type
              to make the if task easier -->
-        <condition property="project.is.library" value="true" else="false">
-            <equals arg1="${project.type}" arg2="library" />
-        </condition>
-        <condition property="project.is.test" value="true" else="false">
-            <equals arg1="${project.type}" arg2="test" />
-        </condition>
         <condition property="project.is.testapp" value="true" else="false">
             <equals arg1="${project.type}" arg2="test-app" />
         </condition>
 
-        <!-- If a test project, resolve absolute path to tested project. -->
-        <if condition="${project.is.test}">
-            <then>
-                <property name="tested.project.absolute.dir" location="${tested.project.dir}" />
-            </then>
-        </if>
-
         <!-- get the project manifest package -->
         <xpath input="${manifest.abs.file}"
                 expression="/manifest/@package" output="project.app.package" />
-
-    </target>
-
-    <!-- empty default pre-clean target. Create a similar target in
-         your build.xml and it'll be called instead of this one. -->
-    <target name="-pre-clean"/>
-
-    <!-- clean target -->
-    <target name="clean" depends="-setup, -pre-clean"
-            description="Removes output files created by other targets.">
-        <delete dir="${out.absolute.dir}" verbose="${verbose}" />
-        <delete dir="${gen.absolute.dir}" verbose="${verbose}" />
-
-        <!-- if we know about a tested project or libraries, we clean them too. -->
-        <if condition="${project.is.test}">
-            <then>
-                <property name="tested.project.absolute.dir" location="${tested.project.dir}" />
-                <subant failonerror="true">
-                    <fileset dir="${tested.project.absolute.dir}" includes="build.xml" />
-                    <target name="clean" />
-                </subant>
-            </then>
-        </if>
-
     </target>
 
     <!-- Pre build setup -->
@@ -303,9 +243,8 @@
                 targetApiOut="project.target.apilevel"
                 minSdkVersionOut="project.minSdkVersion" />
 
-        <!-- Value of the hasCode attribute (Application node) extracted from manifest file -->
-        <xpath input="${manifest.abs.file}" expression="/manifest/application/@android:hasCode"
-                    output="manifest.hasCode" default="true"/>
+        <property name="manifest.hasCode" value="true" />
+
 
         <echo level="info">----------</echo>
         <echo level="info">Creating output directories if needed...</echo>
@@ -449,17 +388,6 @@
         This is only active in release builds when proguard.config is defined
         in default.properties.
 
-        To replace Proguard with a different obfuscation engine:
-        Override the following targets in your build.xml, before the call to <setup>
-            -release-obfuscation-check
-                Check whether obfuscation should happen, and put the result in a property.
-            -debug-obfuscation-check
-                Obfuscation should not happen. Set the same property to false.
-            -obfuscate
-                check if the property set in -debug/release-obfuscation-check is set to true.
-                If true:
-                    Perform obfuscation
-                    Set property out.dex.input.absolute.dir to be the output of the obfuscation
     -->
     <!--
       Override obfuscate target to pass javac.custom.classpath to Proguard. SDK tools do not provide
@@ -546,6 +474,7 @@
             <!-- sets the primary input for dex. If a pre-dex task sets it to
                  something else this has no effect -->
             <property name="out.dex.input.absolute.dir" value="${out.classes.absolute.dir}" />
+            <property name="dex.force.jumbo" value="false" />
 
             <dex executable="${dx}"
                     output="${intermediate.dex.file}"
@@ -604,30 +533,26 @@
 
     <!-- Packages the application. -->
     <target name="-package" depends="-dex, -package-resources">
-        <sequential>
-            <apkbuilder
-                    outfolder="${out.absolute.dir}"
-                    resourcefile="${resource.package.file.name}"
-                    apkfilepath="${out.packaged.file}"
-                    debugpackaging="${build.is.packaging.debug}"
-                    debugsigning="${build.is.signing.debug}"
-                    verbose="${verbose}"
-                    hascode="${manifest.hasCode}"
-                    previousBuildType="/"
-                    buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
-                <dex path="${intermediate.dex.file}"/>
-                <sourcefolder path="${source.absolute.dir}"/>
-                <nativefolder path="${native.libs.absolute.dir}" />
-            </apkbuilder>
-        </sequential>
+        <apkbuilder
+                outfolder="${out.absolute.dir}"
+                resourcefile="${resource.package.file.name}"
+                apkfilepath="${out.packaged.file}"
+                debugpackaging="${build.is.packaging.debug}"
+                debugsigning="${build.is.signing.debug}"
+                verbose="${verbose}"
+                hascode="${manifest.hasCode}"
+                previousBuildType="/"
+                buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
+            <dex path="${intermediate.dex.file}"/>
+            <sourcefolder path="${source.absolute.dir}"/>
+            <nativefolder path="${native.libs.absolute.dir}" />
+        </apkbuilder>
     </target>
 
     <target name="-post-package" />
     <target name="-post-build" />
 
     <target name="-set-mode-check">
-        <fail if="build.is.mode.set"
-                message="Cannot run two different modes at the same time. If you are running more than one debug/release/instrument type targets, call them from different Ant calls." />
     </target>
 
     <!-- ******************************************************* -->
@@ -635,10 +560,6 @@
     <!-- ******************************************************* -->
 
     <target name="-set-debug-files" depends="-set-mode-check">
-
-        <property name="out.packaged.file" location="${out.absolute.dir}/${ant.project.name}-debug-unaligned.apk" />
-        <property name="out.final.file" location="${out.absolute.dir}/${ant.project.name}-debug.apk" />
-        <property name="build.is.mode.set" value="true" />
     </target>
 
 
@@ -660,18 +581,10 @@
         <property name="proguard.enabled" value="false"/>
     </target>
 
-    <!-- SDK tools assume that out.packaged.file is signed and name it "...-unaligned" -->
-    <property name="out.packaged.file"
-      value="${apks.dir}/${ant.project.name}-unsigned.apk" />
-    <property name="out.unaligned.file"
-      value="${apks.dir}/${ant.project.name}-unaligned.apk" />
-
-    <!-- By default, the SDK tools build only aligns the APK in the -do-debug target. -->
-    <!-- Builds debug output package -->
+    <!-- Signs and zipaligns the apk. -->
     <target name="-do-sign"
         depends="-package, -post-package">
       <sequential>
-        <!-- Signs the APK -->
         <echo level="info">Signing final apk...</echo>
         <signapk
                 input="${out.packaged.file}"
@@ -681,7 +594,6 @@
                 alias="${key.alias}"
                 keypass="${key.alias.password}"/>
 
-        <!-- Zip aligns the APK -->
         <zipalign
                 executable="${zipalign}"
                 input="${out.unaligned.file}"
@@ -723,10 +635,6 @@
     </target>
 
     <target name="-set-release-mode" depends="-set-mode-check">
-        <property name="out.packaged.file" location="${out.absolute.dir}/${ant.project.name}-release-unsigned.apk" />
-        <property name="out.final.file" location="${out.absolute.dir}/${ant.project.name}-release.apk" />
-        <property name="build.is.mode.set" value="true" />
-
         <!-- record the current build target -->
         <property name="build.target" value="release" />
 
