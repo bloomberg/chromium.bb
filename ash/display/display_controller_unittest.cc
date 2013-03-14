@@ -646,7 +646,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   EXPECT_EQ("200,0 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseTo(50, 40);
-  EXPECT_EQ("40,70", event_handler.GetLocationAndReset());
+  EXPECT_EQ("40,69", event_handler.GetLocationAndReset());
 
   DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
   display_controller->SetLayoutForCurrentDisplays(display_layout);
@@ -662,7 +662,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
 
   aura::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseTo(50, 40);
-  EXPECT_EQ("180,25", event_handler.GetLocationAndReset());
+  EXPECT_EQ("179,25", event_handler.GetLocationAndReset());
   display_manager->SetDisplayRotation(display1.id(),
                                       gfx::Display::ROTATE_180);
 
@@ -673,7 +673,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 
   generator1.MoveMouseTo(50, 40);
-  EXPECT_EQ("70,160", event_handler.GetLocationAndReset());
+  EXPECT_EQ("69,159", event_handler.GetLocationAndReset());
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }

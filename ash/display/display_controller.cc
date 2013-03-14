@@ -125,19 +125,21 @@ void RotateRootWindow(aura::RootWindow* root_window,
   root_window->SetProperty(kRotationKey, info.rotation());
 #endif
   gfx::Transform rotate;
+  // The origin is (0, 0), so the translate width/height must be reduced by 1.
   switch (info.rotation()) {
     case gfx::Display::ROTATE_0:
       break;
     case gfx::Display::ROTATE_90:
-      rotate.Translate(display.bounds().height(), 0);
+      rotate.Translate(display.bounds().height() - 1, 0);
       rotate.Rotate(90);
       break;
     case gfx::Display::ROTATE_270:
-      rotate.Translate(0, display.bounds().width());
+      rotate.Translate(0, display.bounds().width() - 1);
       rotate.Rotate(270);
       break;
     case gfx::Display::ROTATE_180:
-      rotate.Translate(display.bounds().width(), display.bounds().height());
+      rotate.Translate(display.bounds().width() - 1,
+                       display.bounds().height() - 1);
       rotate.Rotate(180);
       break;
   }
