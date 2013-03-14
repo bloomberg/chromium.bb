@@ -474,6 +474,8 @@ Tab::Tab(TabController* controller)
   AddChildView(close_button_);
 
   set_context_menu_controller(this);
+
+  tab_audio_indicator_.reset(new TabAudioIndicator(this));
 }
 
 Tab::~Tab() {
@@ -482,6 +484,7 @@ Tab::~Tab() {
 void Tab::set_animation_container(ui::AnimationContainer* container) {
   animation_container_ = container;
   hover_controller_.SetAnimationContainer(container);
+  tab_audio_indicator_->SetAnimationContainer(container);
 }
 
 bool Tab::IsActive() const {
@@ -520,20 +523,8 @@ void Tab::SetData(const TabRendererData& data) {
     }
   } else if (!data_.CaptureActive() && old.CaptureActive()) {
     StopIconAnimation();
-    if (data_.AudioActive())
-      StartAudioPlayingAnimation();
   } else if (data_.CaptureActive() && !old.CaptureActive()) {
-    // Capture indicator overrides the audio indicator if presently shown.
-    old.audio_state = TabRendererData::AUDIO_STATE_NONE;
-    data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
     StartRecordingAnimation();
-  } else if (!data_.CaptureActive()) {
-    // Start or stop the audio indicator only if not capturing.
-    if (!data_.AudioActive() && old.AudioActive()) {
-      StopIconAnimation();
-    } else if (data_.AudioActive() && !old.AudioActive()) {
-      StartAudioPlayingAnimation();
-    }
   } else {
     if (IsPerformingCrashAnimation())
       StopIconAnimation();
@@ -546,6 +537,8 @@ void Tab::SetData(const TabRendererData& data) {
       tab_animation_.reset(NULL);
     }
   }
+
+  tab_audio_indicator_->SetIsPlayingAudio(data_.AudioActive());
 
   DataChanged(old);
 
@@ -665,6 +658,16 @@ int Tab::GetMiniWidth() {
 // static
 int Tab::GetImmersiveHeight() {
   return kImmersiveTabHeight;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Tab, TabAudioIndicator::Delegate overrides:
+
+void Tab::ScheduleAudioIndicatorPaint() {
+  // No need to schedule a paint if another animation is active. The other
+  // animation will do its own scheduling.
+  if (!icon_animation_)
+    ScheduleIconPaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1429,21 +1432,10 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
                        data().favicon.height(),
                        bounds, true, SkPaint());
 
-        if (data().audio_state == TabRendererData::AUDIO_STATE_PLAYING) {
-          // If audio is playing, we draw on top of the icon the
-          // current equalizer animiation frame.
-          ui::ThemeProvider* tp = GetThemeProvider();
-          gfx::ImageSkia equalizer(*tp->GetImageSkiaNamed(IDR_AUDIO_ANIMATION));
-          int icon_size = equalizer.height();
-          int number_of_frames = equalizer.width() / icon_size;
-          int frame = static_cast<int>(
-              icon_animation_->GetCurrentValue() * number_of_frames);
-          int image_offset = frame * icon_size;
-          DrawIconAtLocation(canvas, equalizer, image_offset,
-                             bounds.x(), bounds.y() + 1,
-                             icon_size, icon_size,
-                             false, SkPaint());
-        }
+        // Draw the audio indicator UI only if no other icon animation is
+        // active.
+        if (!icon_animation_ && tab_audio_indicator_->IsAnimating())
+          tab_audio_indicator_->Paint(canvas, bounds);
       }
     }
   }
@@ -1695,14 +1687,6 @@ void Tab::StartRecordingAnimation() {
   ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
   animation->SetTweenType(ui::Tween::EASE_IN_OUT);
   animation->SetThrobDuration(kRecordingDurationMs);
-  animation->StartThrobbing(-1);
-  icon_animation_.reset(animation);
-}
-
-void Tab::StartAudioPlayingAnimation() {
-  ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
-  animation->SetTweenType(ui::Tween::LINEAR);
-  animation->SetThrobDuration(2000);
   animation->StartThrobbing(-1);
   icon_animation_.reset(animation);
 }

@@ -68,16 +68,11 @@ class TabTest : public views::ViewsTestBase {
   virtual ~TabTest() {}
 
   static bool IconAnimationInvariant(const Tab& tab) {
-    if ((tab.data().audio_state != TabRendererData::AUDIO_STATE_NONE) ||
-        (tab.data().capture_state != TabRendererData::CAPTURE_STATE_NONE))
-      return HasIconAnimation(tab);
-    else
-      return !HasIconAnimation(tab);
-  }
-
- private:
-  static bool HasIconAnimation(const Tab& tab) {
-    return (tab.icon_animation_.get() != NULL);
+    bool capture_invariant =
+        tab.data().CaptureActive() == (tab.icon_animation_.get() != NULL);
+    bool audio_invariant =
+        !tab.data().AudioActive() || tab.tab_audio_indicator_->IsAnimating();
+    return capture_invariant && audio_invariant;
   }
 };
 
@@ -155,7 +150,7 @@ TEST_F(TabTest, ActivityIndicators) {
   data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
   tab.SetData(data);
   EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_PLAYING, tab.data().audio_state);
   EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
 
   data.title = ASCIIToUTF16("test X");
@@ -178,7 +173,7 @@ TEST_F(TabTest, ActivityIndicators) {
   data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
   tab.SetData(data);
   EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_PLAYING, tab.data().audio_state);
   EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
 
   data.title = ASCIIToUTF16("test Y");

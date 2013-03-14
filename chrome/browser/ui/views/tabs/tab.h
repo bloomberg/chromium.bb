@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/tabs/tab_audio_indicator.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/layout.h"
@@ -39,7 +40,8 @@ class ImageButton;
 //  A View that renders a Tab, either in a TabStrip or in a DraggedTabView.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class Tab : public ui::AnimationDelegate,
+class Tab : public TabAudioIndicator::Delegate,
+            public ui::AnimationDelegate,
             public views::ButtonListener,
             public views::ContextMenuController,
             public views::View {
@@ -144,6 +146,9 @@ class Tab : public ui::AnimationDelegate,
 
   typedef std::list<ImageCacheEntry> ImageCache;
 
+  // Overridden from TabAudioIndicator::Delegate:
+  virtual void ScheduleAudioIndicatorPaint() OVERRIDE;
+
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
@@ -237,7 +242,6 @@ class Tab : public ui::AnimationDelegate,
   void StopIconAnimation();
   void StartCrashAnimation();
   void StartRecordingAnimation();
-  void StartAudioPlayingAnimation();
 
   // Returns true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
@@ -307,6 +311,8 @@ class Tab : public ui::AnimationDelegate,
   scoped_ptr<ui::LinearAnimation> icon_animation_;
 
   scoped_refptr<ui::AnimationContainer> animation_container_;
+
+  scoped_ptr<TabAudioIndicator> tab_audio_indicator_;
 
   views::ImageButton* close_button_;
 
