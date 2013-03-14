@@ -522,8 +522,15 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         event = MotionEvent.obtain(
                 downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+
+        // The first scroll event is ignored so submit a second one.
+        event = MotionEvent.obtain(
+                downTime, eventTime + 13, MotionEvent.ACTION_MOVE,
                 FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
+
         assertEquals("We should have started scrolling",
                 ContentViewGestureHandler.GESTURE_SCROLL_BY,
                         mockDelegate.mMostRecentGestureEvent.mType);
@@ -803,4 +810,32 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                         mockDelegate.mMostRecentGestureEvent.mType);
     }
 
+    /**
+     * Verify that the first scroll delta is ignored to avoid a jump when starting to scroll.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testFirstScrollDeltaIgnored() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate,
+                new MockZoomManager(getInstrumentation().getTargetContext(), null));
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+
+        assertEquals("We should not have started scrolling yet",
+                ContentViewGestureHandler.GESTURE_FLING_CANCEL,
+                mockDelegate.mMostRecentGestureEvent.mType);
+    }
 }
