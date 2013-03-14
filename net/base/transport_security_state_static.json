@@ -580,6 +580,7 @@
     { "name": "bugzilla.mozilla.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "members.nearlyfreespeech.net", "mode": "force-https" },
     { "name": "ssl.panoramio.com", "mode": "force-https" },
+    { "name": "kiwiirc.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
