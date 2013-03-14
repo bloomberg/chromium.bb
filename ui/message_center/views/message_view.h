@@ -12,7 +12,6 @@
 
 namespace views {
 class ImageButton;
-class ImageView;
 class ScrollView;
 }
 
@@ -38,9 +37,6 @@ class MessageView : public views::SlideOutView,
 
   // Returns the insets for the shadow it will have for rich notification.
   static gfx::Insets GetShadowInsets();
-
-  // Adjust to any change in notification data or expanded status.
-  virtual void Update(const Notification& notification);
 
   // Overridden from views::View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;

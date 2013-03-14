@@ -9,6 +9,11 @@
 
 #include "ui/message_center/views/message_view.h"
 
+namespace views {
+class ImageView;
+class Label;
+}  // namespace views
+
 namespace message_center {
 
 class NotificationChangeObserver;
@@ -30,11 +35,11 @@ class NotificationView : public MessageView {
   virtual ~NotificationView();
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   // Overridden from MessageView:
-  virtual void Update(const Notification& notification) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
@@ -43,11 +48,15 @@ class NotificationView : public MessageView {
                    NotificationChangeObserver* observer,
                    bool expanded);
 
-  void AddChildViews(const Notification& notification);
-  void AddContentView(const Notification& notification);
-
-  views::View* content_view_;
+  // Weak references to NotificationView descendants owned by their parents.
+  views::View* background_view_;
+  views::View* top_view_;
+  views::Label* title_view_;
+  views::Label* message_view_;
+  std::vector<views::View*> item_views_;
   views::ImageView* icon_view_;
+  views::View* bottom_view_;
+  views::ImageView* image_view_;
   std::vector<views::Button*> action_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);

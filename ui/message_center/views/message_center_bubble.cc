@@ -330,16 +330,19 @@ class MessageListView : public views::View {
 // View that displays the whole message center.
 class MessageCenterView : public views::View {
  public:
-  MessageCenterView(MessageCenterBubble* bubble) : bubble_(bubble) {
+  MessageCenterView(MessageCenterBubble* bubble,
+                    NotificationChangeObserver* observer)
+      : bubble_(bubble),
+        observer_(observer) {
     int between_child = IsRichNotificationEnabled() ? 0 : 1;
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
 
 
     if (IsRichNotificationEnabled())
-      button_view_ = new WebNotificationButtonView2(bubble_);
+      button_view_ = new WebNotificationButtonView2(observer);
     else
-      button_view_ = new WebNotificationButtonView(bubble_);
+      button_view_ = new WebNotificationButtonView(observer);
 
     const int button_height = button_view_->GetPreferredSize().height();
     const int min_height = kMessageBubbleBaseMinHeight - button_height;
@@ -391,18 +394,6 @@ class MessageCenterView : public views::View {
     Layout();
   }
 
-  void UpdateOneNotification(const Notification& notification) {
-    // Update the corresponding message view if there is one and explicitly
-    // update this view's layout as this is not automatic in spite of the
-    // updated view's likely size change because ScrollView's Viewport breaks
-    // the ChildPreferredSizeChange() chain.
-    MessageView* view = message_views_[notification.id()];
-    if (view) {
-      view->Update(notification);
-      Layout();
-    }
-  }
-
   size_t NumMessageViews() const {
     return message_list_view_->child_count();
   }
@@ -426,14 +417,16 @@ class MessageCenterView : public views::View {
 
   void AddNotification(const Notification& notification) {
     // Always expand the first (topmost) notification.
-    bool expand = (notification.is_expanded() || message_views_.empty());
-    MessageView* view = NotificationView::Create(notification, bubble_, expand);
+    bool expanded = (notification.is_expanded() || message_views_.empty());
+    MessageView* view = NotificationView::Create(notification, observer_,
+                                                 expanded);
     view->set_scroller(scroller_);
     message_views_[notification.id()] = view;
     message_list_view_->AddChildView(view);
   }
 
   MessageCenterBubble* bubble_;  // Weak reference.
+  NotificationChangeObserver* observer_;  // Weak reference.
   std::map<std::string,MessageView*> message_views_;
   BoundedScrollView* scroller_;
   MessageListView* message_list_view_;
@@ -466,7 +459,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
 void MessageCenterBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   set_bubble_view(new_bubble_view);
-  contents_view_ = new MessageCenterView(this);
+  contents_view_ = new MessageCenterView(this, message_center());
   bubble_view()->AddChildView(contents_view_);
   // Resize the content of the bubble view to the given bubble size. This is
   // necessary in case of the bubble border forcing a bigger size then the
@@ -494,57 +487,6 @@ void MessageCenterBubble::OnMouseEnteredView() {
 }
 
 void MessageCenterBubble::OnMouseExitedView() {
-}
-
-void MessageCenterBubble::OnRemoveNotification(const std::string& id,
-                                             bool by_user) {
-  message_center()->OnRemoveNotification(id, by_user);
-}
-
-void MessageCenterBubble::OnRemoveAllNotifications(bool by_user) {
-  message_center()->OnRemoveAllNotifications(by_user);
-}
-
-void MessageCenterBubble::OnDisableNotificationsByExtension(
-    const std::string& id) {
-  message_center()->OnDisableNotificationsByExtension(id);
-}
-
-void MessageCenterBubble::OnDisableNotificationsByUrl(const std::string& id) {
-  message_center()->OnDisableNotificationsByUrl(id);
-}
-
-void MessageCenterBubble::OnShowNotificationSettings(const std::string& id) {
-  message_center()->OnShowNotificationSettings(id);
-}
-
-void MessageCenterBubble::OnShowNotificationSettingsDialog(
-    gfx::NativeView context) {
-  message_center()->OnShowNotificationSettingsDialog(context);
-}
-
-void MessageCenterBubble::OnClicked(const std::string& id) {
-  message_center()->OnClicked(id);
-}
-
-void MessageCenterBubble::OnButtonClicked(const std::string& id,
-                                          int button_index) {
-  message_center()->OnButtonClicked(id, button_index);
-}
-
-void MessageCenterBubble::OnExpanded(const std::string& id) {
-  message_center()->OnExpanded(id);
-
-  // Update the view corresponding to this notification.
-  const NotificationList::Notifications& notifications =
-      message_center()->notification_list()->GetNotifications();
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end(); ++iter) {
-    if ((*iter)->id() == id) {
-      contents_view_->UpdateOneNotification(*(*iter));
-      break;
-    }
-  }
 }
 
 size_t MessageCenterBubble::NumMessageViewsForTest() const {

@@ -312,12 +312,6 @@ gfx::Insets MessageView::GetShadowInsets() {
                      kShadowBlur / 2);
 }
 
-void MessageView::Update(const Notification& notification) {
-  notification_id_ = notification.id();
-  display_source_ = notification.display_source();
-  extension_id_ = notification.extension_id();
-}
-
 bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.flags() & ui::EF_RIGHT_MOUSE_BUTTON) {
     ShowMenu(event.location());

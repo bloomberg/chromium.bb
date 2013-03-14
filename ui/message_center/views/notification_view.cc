@@ -25,7 +25,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
 
 namespace {
 
@@ -33,14 +32,16 @@ namespace {
 const int kIconColumnWidth = message_center::kNotificationIconSize;
 const int kIconToTextPadding = 16;
 const int kTextTopPadding = 6;
+const int kTextLeftPadding = kIconColumnWidth + kIconToTextPadding;
 const int kTextBottomPadding = 6;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
-const int kActionButtonHorizontalPadding = 16;
-const int kActionButtonVecticalPadding = 0;
-const int kActionButtonIconTopPadding = 12;
-const int kActionButtonIconToTitlePadding = 16;
-const int kActionButtonTitleTopPadding = 0;
+const int kButtonHeight = 38;
+const int kButtonHorizontalPadding = 16;
+const int kButtonVecticalPadding = 0;
+const int kButtonIconTopPadding = 11;
+const int kButtonIconToTitlePadding = 16;
+const int kButtonTitleTopPadding = 0;
 
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
@@ -52,14 +53,45 @@ const SkColor kMessageColor = SkColorSetRGB(136, 136, 136);
 const SkColor kMessageBackgroundColor = SK_ColorBLACK;
 const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
 
-// Static function to create an empty border to be used as padding.
-views::Border* MakePadding(int top, int left, int bottom, int right) {
-  return views::Border::CreateEmptyBorder(top, left, bottom, right);
+// Static.
+views::Border* MakeBorder(int top,
+                          int bottom,
+                          int left = kTextLeftPadding,
+                          int right = kTextRightPadding,
+                          SkColor color = 0x00000000) {
+  return (color == 0x00000000) ?
+         views::Border::CreateEmptyBorder(top, left, bottom, right) :
+         views::Border::CreateSolidSidedBorder(top, left, bottom, right, color);
 }
 
-// Static function to create an empty border to be used as padding.
-views::Background* MakeBackground(SkColor color) {
-  return views::Background::CreateSolidBackground(color);
+// ContainerViews is a vertical BoxLayout view that propagates its childrens'
+// ChildPreferredSizeChanged() and ChildVisibilityChanged() calls.
+class ContainerView : public views::View {
+ public:
+  ContainerView();
+  virtual ~ContainerView();
+
+ protected:
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void ChildVisibilityChanged(View* child) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContainerView);
+};
+
+ContainerView::ContainerView() {
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+}
+
+ContainerView::~ContainerView() {
+}
+
+void ContainerView::ChildPreferredSizeChanged(View* child) {
+  PreferredSizeChanged();
+}
+
+void ContainerView::ChildVisibilityChanged(View* child) {
+  PreferredSizeChanged();
 }
 
 // ItemViews are responsible for drawing each list notification item's title and
@@ -68,6 +100,8 @@ class ItemView : public views::View {
  public:
   ItemView(const message_center::NotificationItem& item);
   virtual ~ItemView();
+
+  virtual void SetVisible(bool visible) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ItemView);
@@ -78,6 +112,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
                                         0, 0, kItemTitleToMessagePadding));
 
   views::Label* title = new views::Label(item.title);
+  title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetElideBehavior(views::Label::ELIDE_AT_END);
   title->SetEnabledColor(kTitleColor);
@@ -85,6 +120,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   AddChildView(title);
 
   views::Label* message = new views::Label(item.message);
+  message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetElideBehavior(views::Label::ELIDE_AT_END);
   message->SetEnabledColor(kMessageColor);
@@ -98,6 +134,12 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
 ItemView::~ItemView() {
 }
 
+void ItemView::SetVisible(bool visible) {
+  views::View::SetVisible(visible);
+  for (int i = 0; i < child_count(); ++i)
+    child_at(i)->SetVisible(visible);
+}
+
 // ProportionalImageViews center their images to preserve their proportion.
 // Note that for this subclass of views::ImageView GetImageBounds() will return
 // potentially incorrect values (this can't be fixed because GetImageBounds()
@@ -108,6 +150,7 @@ class ProportionalImageView : public views::ImageView {
   virtual ~ProportionalImageView();
 
   // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -121,6 +164,12 @@ ProportionalImageView::ProportionalImageView() {
 }
 
 ProportionalImageView::~ProportionalImageView() {
+}
+
+gfx::Size ProportionalImageView::GetPreferredSize() {
+  gfx::Size size = GetImageSizeForWidth(GetImage().width());
+  return gfx::Size(size.width() + GetInsets().width(),
+                   size.height() + GetInsets().height());
 }
 
 int ProportionalImageView::GetHeightForWidth(int width) {
@@ -150,7 +199,7 @@ void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
 }
 
 gfx::Size ProportionalImageView::GetImageSizeForWidth(int width) {
-  gfx::Size size(GetImage().size());
+  gfx::Size size = visible() ? GetImage().size() : gfx::Size();
   if (width > 0 && !size.IsEmpty()) {
     double proportion = size.height() / (double) size.width();
     size.SetSize(width, std::max(0.5 + width * proportion, 1.0));
@@ -171,6 +220,10 @@ class NotificationButton : public views::CustomButton {
   void SetIcon(const gfx::ImageSkia& icon);
   void SetTitle(const string16& title);
 
+  // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
+
  private:
   views::ImageView* icon_;
   views::Label* title_;
@@ -181,9 +234,9 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
       icon_(NULL),
       title_(NULL) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        kActionButtonHorizontalPadding,
-                                        kActionButtonVecticalPadding,
-                                        kActionButtonIconToTitlePadding));
+                                        kButtonHorizontalPadding,
+                                        kButtonVecticalPadding,
+                                        kButtonIconToTitlePadding));
 }
 
 NotificationButton::~NotificationButton() {
@@ -201,7 +254,7 @@ void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
     icon_->SetImage(image);
     icon_->SetHorizontalAlignment(views::ImageView::LEADING);
     icon_->SetVerticalAlignment(views::ImageView::LEADING);
-    icon_->set_border(MakePadding(kActionButtonIconTopPadding, 0, 0, 0));
+    icon_->set_border(MakeBorder(kButtonIconTopPadding, 0, 0, 0));
     AddChildViewAt(icon_, 0);
   }
 }
@@ -217,9 +270,17 @@ void NotificationButton::SetTitle(const string16& title) {
     title_->SetElideBehavior(views::Label::ELIDE_AT_END);
     title_->SetEnabledColor(kTitleColor);
     title_->SetBackgroundColor(kTitleBackgroundColor);
-    title_->set_border(MakePadding(kActionButtonTitleTopPadding, 0, 0, 0));
+    title_->set_border(MakeBorder(kButtonTitleTopPadding, 0, 0, 0));
     AddChildView(title_);
   }
+}
+
+gfx::Size NotificationButton::GetPreferredSize() {
+  return gfx::Size(std::numeric_limits<int>::max(), kButtonHeight);
+}
+
+int NotificationButton::GetHeightForWidth(int width) {
+  return kButtonHeight;
 }
 
 }  // namespace
@@ -264,208 +325,181 @@ MessageView* NotificationView::Create(const Notification& notification,
 NotificationView::NotificationView(const Notification& notification,
                                    NotificationChangeObserver* observer,
                                    bool expanded)
-    : MessageView(notification, observer, expanded),
-      content_view_(NULL),
-      icon_view_(NULL) {
-  AddChildViews(notification);
+    : MessageView(notification, observer, expanded) {
+  // Create the opaque background that's above the view's shadow.
+  background_view_ = new views::View();
+  background_view_->set_background(
+      views::Background::CreateSolidBackground(kBackgroundColor));
+
+  // Create the top_view_, which collects into a vertical box all content
+  // at the top of the notification (to the right of the icon) except for the
+  // close button.
+  top_view_ = new ContainerView();
+
+  // Create the title view if appropriate.
+  title_view_ = NULL;
+  if (!notification.title().empty()) {
+    title_view_ = new views::Label(notification.title());
+    title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    if (is_expanded())
+      title_view_->SetMultiLine(true);
+    else
+      title_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
+    title_view_->SetFont(title_view_->font().DeriveFont(4));
+    title_view_->SetEnabledColor(kTitleColor);
+    title_view_->SetBackgroundColor(kTitleBackgroundColor);
+    title_view_->set_border(MakeBorder(kTextTopPadding, 3));
+    top_view_->AddChildView(title_view_);
+  }
+
+  // Create the message view if appropriate.
+  message_view_ = NULL;
+  if (!notification.message().empty()) {
+    message_view_ = new views::Label(notification.message());
+    message_view_->SetVisible(!is_expanded() || !notification.items().size());
+    message_view_->set_collapse_when_hidden(true);
+    message_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    if (is_expanded())
+      message_view_->SetMultiLine(true);
+    else
+      message_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
+    message_view_->SetEnabledColor(kMessageColor);
+    message_view_->SetBackgroundColor(kMessageBackgroundColor);
+    message_view_->set_border(MakeBorder(0, 3));
+    top_view_->AddChildView(message_view_);
+  }
+
+  // Create the list item views (up to a maximum).
+  std::vector<NotificationItem> items = notification.items();
+  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
+    ItemView* item_view = new ItemView(items[i]);
+    item_view->SetVisible(is_expanded());
+    item_view->set_border(MakeBorder(0, 4));
+    item_views_.push_back(item_view);
+    top_view_->AddChildView(item_view);
+  }
+
+  // Create the notification icon view.
+  icon_view_ = new ProportionalImageView();
+  icon_view_->SetImage(notification.icon().AsImageSkia());
+
+  // Create the bottom_view_, which collects into a vertical box all content
+  // below the notification icon except for the expand button.
+  bottom_view_ = new ContainerView();
+  bottom_view_->set_background(
+      views::Background::CreateSolidBackground(kBackgroundColor));
+
+  // Create the image view if appropriate.
+  image_view_ = NULL;
+  if (!notification.image().IsEmpty()) {
+    image_view_ = new ProportionalImageView();
+    image_view_->SetVisible(is_expanded());
+    image_view_->SetImage(notification.image().ToImageSkia());
+    bottom_view_->AddChildView(image_view_);
+  }
+
+  // Create action buttons if appropriate.
+  std::vector<ButtonInfo> buttons = notification.buttons();
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    views::View* separator = new views::ImageView();
+    separator->set_border(MakeBorder(1, 0, 0, 0, kButtonSeparatorColor));
+    bottom_view_->AddChildView(separator);
+    NotificationButton* button = new NotificationButton(this);
+    ButtonInfo button_info = buttons[i];
+    button->SetTitle(button_info.title);
+    button->SetIcon(button_info.icon.AsImageSkia());
+    action_buttons_.push_back(button);
+    bottom_view_->AddChildView(button);
+  }
+
+  // Hide the expand button if appropriate.
+  bool expandable = item_views_.size() || image_view_;
+  expand_button()->SetVisible(expandable && !is_expanded());
+
+  // Put together the different content and control views. Layering those allows
+  // for proper layout logit and it also allows the close and expand buttons to
+  // overlap the content as needed to provide large enough click and touch areas
+  // (<http://crbug.com/168822> and <http://crbug.com/168856>).
+  AddChildView(background_view_);
+  AddChildView(top_view_);
+  AddChildView(icon_view_);
+  AddChildView(bottom_view_);
+  AddChildView(close_button());
+  AddChildView(expand_button());
 }
 
 NotificationView::~NotificationView() {
 }
 
+gfx::Size NotificationView::GetPreferredSize() {
+  int top_width = top_view_->GetPreferredSize().width();
+  int bottom_width = bottom_view_->GetPreferredSize().width();
+  int preferred_width = std::max(top_width, bottom_width) + GetInsets().width();
+  return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
+}
+
+int NotificationView::GetHeightForWidth(int width) {
+  gfx::Insets insets = GetInsets();
+  int top_height = top_view_->GetHeightForWidth(width - insets.width());
+  int bottom_height = bottom_view_->GetHeightForWidth(width - insets.width());
+  int icon_size = message_center::kNotificationIconSize;
+  return std::max(top_height, icon_size) + bottom_height + insets.height();
+}
+
 void NotificationView::Layout() {
-  gfx::Rect content_bounds(GetLocalBounds());
-  content_bounds.Inset(GetInsets());
-  content_view_->SetBoundsRect(content_bounds);
+  gfx::Insets insets = GetInsets();
+  int content_width = width() - insets.width();
+  int content_right = width() - insets.right();
+
+  background_view_->SetBounds(insets.left(), insets.top(),
+                              content_width, height() - insets.height());
+
+  int top_height = top_view_->GetHeightForWidth(content_width);
+  top_view_->SetBounds(insets.left(), insets.top(), content_width, top_height);
+
+  int icon_size = message_center::kNotificationIconSize;
+  icon_view_->SetBounds(insets.left(), insets.top(), icon_size, icon_size);
+
+  int bottom_y = insets.top() + std::max(top_height, icon_size);
+  int bottom_height = bottom_view_->GetHeightForWidth(content_width);
+  bottom_view_->SetBounds(insets.left(), bottom_y,
+                          content_width, bottom_height);
 
   gfx::Size close_size(close_button()->GetPreferredSize());
-  close_button()->SetBounds(content_bounds.right() - close_size.width(),
-                            content_bounds.y(),
-                            close_size.width(),
-                            close_size.height());
+  close_button()->SetBounds(content_right - close_size.width(), insets.top(),
+                            close_size.width(), close_size.height());
 
-  gfx::Rect icon_bounds(content_bounds.origin(), icon_view_->size());
   gfx::Size expand_size(expand_button()->GetPreferredSize());
-  expand_button()->SetBounds(content_bounds.right() - expand_size.width(),
-                             icon_bounds.bottom() - expand_size.height(),
-                             expand_size.width(),
-                             expand_size.height());
-}
-
-gfx::Size NotificationView::GetPreferredSize() {
-  gfx::Size size;
-  if (content_view_) {
-    size = content_view_->GetPreferredSize();
-    if (border()) {
-      gfx::Insets insets = border()->GetInsets();
-      size.Enlarge(insets.width(), insets.height());
-    }
-  }
-  return size;
-}
-
-void NotificationView::Update(const Notification& notification) {
-  MessageView::Update(notification);
-  content_view_ = NULL;
-  icon_view_ = NULL;
-  action_buttons_.clear();
-  RemoveAllChildViews(true);
-  AddChildViews(notification);
-  PreferredSizeChanged();
-  SchedulePaint();
+  int expand_y = bottom_y - expand_size.height();
+  expand_button()->SetBounds(content_right - expand_size.width(), expand_y,
+                             expand_size.width(), expand_size.height());
 }
 
 void NotificationView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
+  // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
       observer()->OnButtonClicked(notification_id(), i);
       return;
     }
   }
+
+  // Let the superclass handled anything other than action buttons.
   MessageView::ButtonPressed(sender, event);
-}
 
-void NotificationView::AddChildViews(const Notification& notification) {
-  // Child views are in two layers: The first layer has the notification content
-  // (text, images, action buttons, ...). This is overlaid by a second layer
-  // that has the notification close and expand buttons. This allows the close
-  // and expand buttons to overlap the content as needed to provide large enough
-  // click and touch areas (<http://crbug.com/168822> and
-  // <http://crbug.com/168856>).
-  AddContentView(notification);
-  AddChildView(close_button());
-  if (!is_expanded()) {
-    AddChildView(expand_button());
+  // Show and hide subviews appropriately on expansion.
+  if (sender == expand_button()) {
+    if (message_view_)
+      message_view_->SetVisible(!item_views_.size());
+    for (size_t i = 0; i < item_views_.size(); ++i)
+      item_views_[i]->SetVisible(true);
+    if (image_view_)
+      image_view_->SetVisible(true);
+    expand_button()->SetVisible(false);
+    PreferredSizeChanged();
+    SchedulePaint();
   }
-}
-
-void NotificationView::AddContentView(const Notification& notification) {
-  content_view_ = new views::View();
-  content_view_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
-
-  // The top part of the content view is composed of an icon view on the left
-  // and a certain number of text views on the right (title and message or list
-  // items), followed by a padding view. Laying out the icon view will require
-  // information about the text views, so these are created first and collected
-  // in this vector.
-  std::vector<views::View*> text_views;
-
-  // Title if it exists.
-  if (!notification.title().empty()) {
-    views::Label* title = new views::Label(notification.title());
-    title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (is_expanded())
-      title->SetMultiLine(true);
-    else
-      title->SetElideBehavior(views::Label::ELIDE_AT_END);
-    title->SetFont(title->font().DeriveFont(4));
-    title->SetEnabledColor(kTitleColor);
-    title->SetBackgroundColor(kTitleBackgroundColor);
-    title->set_border(MakePadding(kTextTopPadding, 0, 3, kTextRightPadding));
-    text_views.push_back(title);
-  }
-
-  // List notification items up to a maximum if appropriate.
-  size_t maximum = is_expanded() ? kNotificationMaximumItems : 0ul;
-  size_t items = std::min(notification.items().size(), maximum);
-  for (size_t i = 0; i < items; ++i) {
-    ItemView* item = new ItemView(notification.items()[i]);
-    item->set_border(MakePadding(0, 0, 4, kTextRightPadding));
-    text_views.push_back(item);
-  }
-
-  // Message if appropriate.
-  if (items == 0ul && !notification.message().empty()) {
-    views::Label* message = new views::Label(notification.message());
-    message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (is_expanded())
-      message->SetMultiLine(true);
-    else
-      message->SetElideBehavior(views::Label::ELIDE_AT_END);
-    message->SetEnabledColor(kMessageColor);
-    message->SetBackgroundColor(kMessageBackgroundColor);
-    message->set_border(MakePadding(0, 0, 3, kTextRightPadding));
-    text_views.push_back(message);
-  }
-
-  // Set up the content view with a fixed-width icon column on the left and a
-  // text column on the right that consumes the remaining space. To minimize the
-  // number of columns and simplify column spanning, padding is applied to each
-  // view within columns instead of through padding columns.
-  views::GridLayout* layout = new views::GridLayout(content_view_);
-  content_view_->SetLayoutManager(layout);
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     0, views::GridLayout::FIXED,
-                     kIconColumnWidth + kIconToTextPadding,
-                     kIconColumnWidth + kIconToTextPadding);
-                     // Padding + icon + padding.
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     100, views::GridLayout::USE_PREF, 0, 0);
-                     // Text + padding.
-
-  // Create the first row and its icon view, which spans all the text views
-  // to its right as well as the padding view below them.
-  layout->StartRow(0, 0);
-  icon_view_ = new views::ImageView();
-  icon_view_->SetImageSize(gfx::Size(message_center::kNotificationIconSize,
-                                     message_center::kNotificationIconSize));
-  icon_view_->SetImage(notification.icon().AsImageSkia());
-  icon_view_->SetHorizontalAlignment(views::ImageView::LEADING);
-  icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
-  icon_view_->set_border(MakePadding(0, 0, 0, kIconToTextPadding));
-  layout->AddView(icon_view_, 1, text_views.size() + 1);
-
-  // Add the text views, creating rows for them if necessary.
-  for (size_t i = 0; i < text_views.size(); ++i) {
-    if (i > 0) {
-      layout->StartRow(0, 0);
-      layout->SkipColumns(1);
-    }
-    layout->AddView(text_views[i]);
-  }
-
-  // Add a text padding row if necessary. This adds some space between the last
-  // line of text and anything below it but it also ensures views above it are
-  // top-justified by expanding vertically to take up any extra space.
-  if (text_views.size() == 0) {
-    layout->SkipColumns(1);
-  } else {
-    layout->StartRow(100, 0);
-    layout->SkipColumns(1);
-    views::View* padding = new views::ImageView();
-    padding->set_border(MakePadding(kTextBottomPadding, 1, 0, 0));
-    layout->AddView(padding);
-  }
-
-  // Add an image row if appropriate.
-  if (is_expanded() && !notification.image().IsEmpty()) {
-    layout->StartRow(0, 0);
-    ProportionalImageView* image_view = new ProportionalImageView();
-    image_view->SetImage(notification.image().ToImageSkia());
-    layout->AddView(image_view, 2, 1);
-  }
-
-  // Add action button rows.
-  for (size_t i = 0; i < notification.buttons().size(); ++i) {
-    views::View* separator = new views::View();
-    separator->set_background(MakeBackground(kButtonSeparatorColor));
-    layout->StartRow(0, 0);
-    layout->AddView(separator, 2, 1,
-                    views::GridLayout::FILL, views::GridLayout::FILL, 0, 1);
-    NotificationButton* button = new NotificationButton(this);
-    ButtonInfo button_info = notification.buttons()[i];
-    button->SetTitle(button_info.title);
-    button->SetIcon(button_info.icon.AsImageSkia());
-    action_buttons_.push_back(button);
-    layout->StartRow(0, 0);
-    layout->AddView(button, 2, 1,
-                    views::GridLayout::FILL, views::GridLayout::FILL, 0, 40);
-  }
-
-  AddChildView(content_view_);
 }
 
 }  // namespace message_center

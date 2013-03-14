@@ -14,9 +14,7 @@ namespace message_center {
 class MessageCenterView;
 
 // Bubble for message center.
-class MESSAGE_CENTER_EXPORT MessageCenterBubble
-    : public MessageBubbleBase,
-      public NotificationChangeObserver {
+class MESSAGE_CENTER_EXPORT MessageCenterBubble : public MessageBubbleBase {
  public:
   explicit MessageCenterBubble(MessageCenter* message_center);
 
@@ -30,21 +28,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
   virtual void UpdateBubbleView() OVERRIDE;
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
-
-  // Overridden from NotificationChangeObserver:
-  virtual void OnRemoveNotification(const std::string& id, bool by_user)
-      OVERRIDE;
-  virtual void OnRemoveAllNotifications(bool by_user) OVERRIDE;
-  virtual void OnDisableNotificationsByExtension(const std::string& id)
-      OVERRIDE;
-  virtual void OnDisableNotificationsByUrl(const std::string& id) OVERRIDE;
-  virtual void OnShowNotificationSettings(const std::string& id) OVERRIDE;
-  virtual void OnShowNotificationSettingsDialog(gfx::NativeView context)
-      OVERRIDE;
-  virtual void OnExpanded(const std::string& id) OVERRIDE;
-  virtual void OnClicked(const std::string& id) OVERRIDE;
-  virtual void OnButtonClicked(const std::string& id,
-                               int button_index) OVERRIDE;
 
   size_t NumMessageViewsForTest() const;
 
