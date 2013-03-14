@@ -119,12 +119,19 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
       return false;
   }
 
-  // Abort any prerenders that spawn requests that use invalid HTTP methods.
-  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id) &&
-      !prerender::PrerenderManager::IsValidHttpMethod(method)) {
-    prerender_tracker_->TryCancelOnIOThread(
-        child_id, route_id, prerender::FINAL_STATUS_INVALID_HTTP_METHOD);
-    return false;
+  // Abort any prerenders that spawn requests that use invalid HTTP methods
+  // or invalid schemes.
+  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
+    if (!prerender::PrerenderManager::IsValidHttpMethod(method)) {
+      prerender_tracker_->TryCancelOnIOThread(
+          child_id, route_id, prerender::FINAL_STATUS_INVALID_HTTP_METHOD);
+      return false;
+    }
+    if (!prerender::PrerenderManager::DoesURLHaveValidScheme(url)) {
+      prerender_tracker_->TryCancelOnIOThread(
+          child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
+      return false;
+    }
   }
 
   return true;
@@ -304,6 +311,13 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
   // protocols.
   return false;
 #else
+
+  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
+    prerender_tracker_->TryCancel(
+        child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
+    return false;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
@@ -457,5 +471,15 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
         redirect_url, request);
+  }
+
+  int child_id, route_id;
+  if (!prerender::PrerenderManager::DoesURLHaveValidScheme(redirect_url) &&
+      ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(
+          &child_id, &route_id) &&
+      prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
+    prerender_tracker_->TryCancel(
+        child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
+    request->Cancel();
   }
 }

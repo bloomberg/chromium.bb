@@ -2745,4 +2745,46 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// Checks that non-http/https subresource cancels the prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCancelSubresourceUnsupportedScheme) {
+  GURL image_url = GURL("invalidscheme://www.google.com/test.jpg");
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_image.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_UNSUPPORTED_SCHEME, 1);
+  NavigateToDestURL();
+}
+
+// Checks that non-http/https subresource cancels the prerender on redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCancelSubresourceRedirectUnsupportedScheme) {
+  GURL image_url = test_server()->GetURL(
+      CreateServerRedirect("invalidscheme://www.google.com/test.jpg"));
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_image.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_UNSUPPORTED_SCHEME, 1);
+  NavigateToDestURL();
+}
+
+// Checks that non-http/https main page redirects cancel the prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCancelMainFrameRedirectUnsupportedScheme) {
+  GURL url = test_server()->GetURL(
+      CreateServerRedirect("invalidscheme://www.google.com/test.html"));
+  PrerenderTestURL(url, FINAL_STATUS_UNSUPPORTED_SCHEME, 1);
+  NavigateToDestURL();
+}
+
 }  // namespace prerender

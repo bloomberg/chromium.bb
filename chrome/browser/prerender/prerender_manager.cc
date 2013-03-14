@@ -811,6 +811,11 @@ bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
   return false;
 }
 
+// static
+bool PrerenderManager::DoesURLHaveValidScheme(const GURL& url) {
+  return IsWebURL(url);
+}
+
 DictionaryValue* PrerenderManager::GetAsValue() const {
   DCHECK(CalledOnValidThread());
   DictionaryValue* dict_value = new DictionaryValue();

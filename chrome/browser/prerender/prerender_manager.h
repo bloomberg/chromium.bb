@@ -219,8 +219,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Checks whether |url| has been recently navigated to.
   bool HasRecentlyBeenNavigatedTo(Origin origin, const GURL& url);
 
-  // Returns true if the method given is invalid for prerendering.
+  // Returns true iff the method given is valid for prerendering.
   static bool IsValidHttpMethod(const std::string& method);
+
+  // Returns true iff the scheme of the URL given is valid for prerendering.
+  static bool DoesURLHaveValidScheme(const GURL& url);
 
   // Returns a Value object containing the active pages being prerendered, and
   // a history of pages which were prerendered. The caller is responsible for
