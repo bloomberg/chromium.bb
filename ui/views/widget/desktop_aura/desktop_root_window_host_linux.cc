@@ -11,7 +11,6 @@
 #include "base/message_pump_aurax11.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/focus_manager.h"
@@ -29,6 +28,7 @@
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
+#include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 #include "ui/views/widget/desktop_aura/desktop_layout_manager.h"
@@ -221,7 +221,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
 
   native_widget_delegate_->OnNativeWidgetCreated();
 
-  capture_client_.reset(new aura::client::DefaultCaptureClient(root_window_));
+  capture_client_.reset(new views::DesktopCaptureClient(root_window_));
   aura::client::SetCaptureClient(root_window_, capture_client_.get());
 
   // Ensure that the X11DesktopHandler exists so that it dispatches activation

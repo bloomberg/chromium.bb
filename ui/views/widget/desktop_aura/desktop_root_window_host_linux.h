@@ -22,7 +22,6 @@
 
 namespace aura {
 namespace client {
-class DefaultCaptureClient;
 class FocusClient;
 class ScreenPositionClient;
 }
@@ -30,6 +29,7 @@ class ScreenPositionClient;
 
 namespace views {
 class DesktopActivationClient;
+class DesktopCaptureClient;
 class DesktopDispatcherClient;
 class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
@@ -201,7 +201,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   aura::RootWindow* root_window_;
 
   // aura:: objects that we own.
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  scoped_ptr<DesktopCaptureClient> capture_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<DesktopActivationClient> activation_client_;
   scoped_ptr<views::corewm::CursorManager> cursor_client_;

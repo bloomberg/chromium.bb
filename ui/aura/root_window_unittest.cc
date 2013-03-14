@@ -26,13 +26,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 
-#if defined(OS_WIN)
-// Windows headers define macros for these function names which screw with us.
-#if defined(CreateWindow)
-#undef CreateWindow
-#endif
-#endif
-
 namespace aura {
 namespace {
 
@@ -90,18 +83,6 @@ class ConsumeKeyHandler : public test::TestEventHandler {
  private:
   DISALLOW_COPY_AND_ASSIGN(ConsumeKeyHandler);
 };
-
-Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
-  Window* window = new Window(
-      delegate ? delegate :
-      test::TestWindowDelegate::CreateSelfDestroyingDelegate());
-  window->set_id(id);
-  window->Init(ui::LAYER_TEXTURED);
-  parent->AddChild(window);
-  window->SetBounds(gfx::Rect(0, 0, 100, 100));
-  window->Show();
-  return window;
-}
 
 bool IsFocusedWindow(aura::Window* window) {
   return client::GetFocusClient(window)->GetFocusedWindow() == window;
@@ -376,7 +357,7 @@ TEST_F(RootWindowTest, ScrollEventDispatch) {
   root_window()->SetEventFilter(filter);
 
   test::TestWindowDelegate delegate;
-  scoped_ptr<Window> w1(CreateWindow(1, root_window(), &delegate));
+  scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), &delegate));
   w1->SetBounds(gfx::Rect(20, 20, 40, 40));
 
   // A scroll event on the root-window itself is dispatched.
@@ -666,9 +647,9 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   // Verifies that we can delete a window during each phase of event handling.
   // Deleting the window should not cause a crash, only prevent further
   // processing from occurring.
-  scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
+  scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), NULL));
   DeletingWindowDelegate d11;
-  Window* w11 = CreateWindow(11, w1.get(), &d11);
+  Window* w11 = CreateNormalWindow(11, w1.get(), &d11);
   WindowTracker tracker;
   DeletingEventFilter* w1_filter = new DeletingEventFilter;
   w1->SetEventFilter(w1_filter);
@@ -694,7 +675,7 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
 
   // Pre-handle step deletes w11. This will prevent the delegate and the post-
   // handle steps from applying.
-  w11 = CreateWindow(11, w1.get(), &d11);
+  w11 = CreateNormalWindow(11, w1.get(), &d11);
   w1_filter->Reset(true);
   d11.Reset(w11, false);
   generator.PressLeftButton();
@@ -733,10 +714,10 @@ class DetachesParentOnTapDelegate : public test::TestWindowDelegate {
 // Tests that the gesture recognizer is reset for all child windows when a
 // window hides. No expectations, just checks that the test does not crash.
 TEST_F(RootWindowTest, GestureRecognizerResetsTargetWhenParentHides) {
-  scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
+  scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), NULL));
   DetachesParentOnTapDelegate delegate;
-  scoped_ptr<Window> parent(CreateWindow(22, w1.get(), NULL));
-  Window* child = CreateWindow(11, parent.get(), &delegate);
+  scoped_ptr<Window> parent(CreateNormalWindow(22, w1.get(), NULL));
+  Window* child = CreateNormalWindow(11, parent.get(), &delegate);
   test::EventGenerator generator(root_window(), child);
   generator.GestureTapAt(gfx::Point(40, 40));
 }
@@ -785,12 +766,12 @@ class NestedGestureDelegate : public test::TestWindowDelegate {
 // Tests that gesture end is delivered after nested gesture processing.
 TEST_F(RootWindowTest, GestureEndDeliveredAfterNestedGestures) {
   NestedGestureDelegate d1(NULL, gfx::Point());
-  scoped_ptr<Window> w1(CreateWindow(1, root_window(), &d1));
+  scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), &d1));
   w1->SetBounds(gfx::Rect(0, 0, 100, 100));
 
   test::EventGenerator nested_generator(root_window(), w1.get());
   NestedGestureDelegate d2(&nested_generator, w1->bounds().CenterPoint());
-  scoped_ptr<Window> w2(CreateWindow(1, root_window(), &d2));
+  scoped_ptr<Window> w2(CreateNormalWindow(1, root_window(), &d2));
   w2->SetBounds(gfx::Rect(100, 0, 100, 100));
 
   // Tap on w2 which triggers nested gestures for w1.

@@ -343,6 +343,8 @@
         'widget/default_theme_provider.h',
         'widget/desktop_aura/desktop_activation_client.cc',
         'widget/desktop_aura/desktop_activation_client.h',
+        'widget/desktop_aura/desktop_capture_client.cc',
+        'widget/desktop_aura/desktop_capture_client.h',
         'widget/desktop_aura/desktop_dispatcher_client.cc',
         'widget/desktop_aura/desktop_dispatcher_client.h',
         'widget/desktop_aura/desktop_drag_drop_client_win.cc',
@@ -699,6 +701,7 @@
         'view_model_unittest.cc',
         'view_model_utils_unittest.cc',
         'view_unittest.cc',
+        'widget/desktop_aura/desktop_capture_client_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
@@ -709,6 +712,10 @@
         ['chromeos==0', {
           'sources!': [
             'touchui/touch_selection_controller_impl_unittest.cc',
+          ],
+        }, { # use_aura==0
+          'sources/': [
+            ['exclude', 'widget/desktop_aura'],
           ],
         }],
         ['OS=="win"', {
@@ -741,6 +748,7 @@
           ],
           'sources/': [
             ['exclude', 'corewm'],
+            ['exclude', 'widget/desktop_aura'],
           ],
         }],
       ],

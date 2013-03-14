@@ -5,6 +5,7 @@
 #include "ui/aura/test/aura_test_base.h"
 
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/ime/text_input_test_support.h"
@@ -76,6 +77,19 @@ void AuraTestBase::TearDown() {
 #if defined(USE_X11)
   ui::ResetXCursorCache();
 #endif
+}
+
+Window* AuraTestBase::CreateNormalWindow(int id, Window* parent,
+                                         WindowDelegate* delegate) {
+  Window* window = new Window(
+      delegate ? delegate :
+      test::TestWindowDelegate::CreateSelfDestroyingDelegate());
+  window->set_id(id);
+  window->Init(ui::LAYER_TEXTURED);
+  parent->AddChild(window);
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->Show();
+  return window;
 }
 
 Window* AuraTestBase::CreateTransientChild(int id, Window* parent) {

@@ -277,6 +277,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Exposes RootWindowHost::QueryMouseLocation() for test purposes.
   bool QueryMouseLocationForTest(gfx::Point* point) const;
 
+  // Clears internal mouse state (such as mouse ups should be sent to the same
+  // window that ate mouse downs).
+  void ClearMouseHandlers();
+
  private:
   friend class Window;
   friend class TestScreen;
