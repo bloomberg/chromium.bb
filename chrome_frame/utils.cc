@@ -1499,27 +1499,6 @@ bool CanNavigate(const GURL& url,
   return true;
 }
 
-void PinModule() {
-  static bool s_pinned = false;
-  if (!s_pinned && !IsUnpinnedMode()) {
-    wchar_t system_buffer[MAX_PATH];
-    HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
-    system_buffer[0] = 0;
-    if (GetModuleFileName(this_module, system_buffer,
-                          arraysize(system_buffer)) != 0) {
-      HMODULE unused;
-      if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN, system_buffer,
-                             &unused)) {
-        DPLOG(FATAL) << "Failed to pin module " << system_buffer;
-      } else {
-        s_pinned = true;
-      }
-    } else {
-      DPLOG(FATAL) << "Could not get module path.";
-    }
-  }
-}
-
 void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout) {
   base::Time now = base::Time::Now();
   base::Time wait_until = now + base::TimeDelta::FromMilliseconds(timeout);

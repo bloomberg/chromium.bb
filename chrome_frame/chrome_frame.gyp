@@ -122,6 +122,7 @@
         'chrome_launcher.h',
         'chrome_launcher_unittest.cc',
         'function_stub_unittest.cc',
+        'scoped_initialization_manager_unittest.cc',
         'test/chrome_tab_mocks.h',
         'test/chrome_frame_test_utils.h',
         'test/chrome_frame_test_utils.cc',
@@ -745,6 +746,8 @@
         'infobars/infobar_manager.cc',
         'metrics_service.cc',
         'metrics_service.h',
+        'pin_module.cc',
+        'pin_module.h',
         'policy_settings.cc',
         'policy_settings.h',
         'protocol_sink_wrap.cc',
@@ -897,6 +900,7 @@
         'chrome_frame_reporting.h',
         'chrome_tab.cc',
         'chrome_tab.def',
+        'scoped_initialization_manager.h',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_tab.h',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/npchrome_frame_dll_version.rc',
         # FIXME(slightlyoff): For chrome_tab.tlb. Giant hack until we can
@@ -917,7 +921,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_resources.rc',
           ],
           'dependencies': [
-            '../breakpad/breakpad.gyp:breakpad_handler_dll',
+            '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
             # Installer
             '../chrome/chrome.gyp:installer_util',

@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome_frame/utils.h"
+#include "chrome_frame/pin_module.h"
 
 // Implements behavior common to HostWindowManager and DisplacedWindowManager.
 template<typename T> class SubclassingWindowWithDelegate
@@ -53,7 +53,7 @@ template<typename T> class SubclassingWindowWithDelegate
 
     // Ensure we won't be unloaded while our window proc is attached to the tab
     // window.
-    PinModule();
+    chrome_frame::PinModule();
 
     delegate_.swap(new_delegate);
 

@@ -2,22 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A wrapper around common crash reporting code to manage reporting for Chrome
-// Frame.
-
 #ifndef CHROME_FRAME_CHROME_FRAME_REPORTING_H_
 #define CHROME_FRAME_CHROME_FRAME_REPORTING_H_
 
-#include "chrome_frame/crash_reporting/crash_report.h"
+#include "chrome_frame/scoped_initialization_manager.h"
 
-extern const wchar_t kSystemPrincipalSid[];
+namespace chrome_frame {
 
-// Intialize crash reporting for Chrome Frame. Specific parameters here include
-// using the temp directory for dumps, determining if the install is system
-// wide or user specific, and customized client info.
-bool InitializeCrashReporting();
+// A Traits class for a ScopedInitializationManager that starts/stops crash
+// reporting for npchrome_frame.dll.
+class CrashReportingTraits {
+ public:
+  static void Initialize();
+  static void Shutdown();
+};
 
-// Shut down crash reporting for Chrome Frame.
-bool ShutdownCrashReporting();
+// Manages crash reporting for the Chrome Frame dll. Crash reporting cannot be
+// reliably started or stopped when the loader lock is held, so DllMain cannot
+// be used to start/stop reporting. Rather, instances of this class are used in
+// each entrypoint into the dll.
+typedef ScopedInitializationManager<CrashReportingTraits> ScopedCrashReporting;
+
+}  // namespace chrome_frame
 
 #endif  // CHROME_FRAME_CHROME_FRAME_REPORTING_H_

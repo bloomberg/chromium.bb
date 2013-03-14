@@ -11,6 +11,7 @@
 #include "base/win/scoped_comptr.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/function_stub.h"
+#include "chrome_frame/pin_module.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
 
@@ -225,7 +226,7 @@ HRESULT BuggyBhoTls::PatchInvokeMethod(PROC* invoke) {
       hr = E_UNEXPECTED;
       FunctionStub::Destroy(stub);
     } else {
-      PinModule();  // No backing out now.
+      chrome_frame::PinModule();  // No backing out now.
       ::FlushInstructionCache(::GetCurrentProcess(), invoke, sizeof(PROC));
     }
   }

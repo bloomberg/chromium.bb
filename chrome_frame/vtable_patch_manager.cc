@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome_frame/function_stub.h"
-#include "chrome_frame/utils.h"
+#include "chrome_frame/pin_module.h"
 
 namespace vtable_patch {
 
@@ -144,7 +144,7 @@ HRESULT PatchInterfaceMethods(void* unknown, MethodPatchInfo* patches) {
     } else {
       // Success, save the stub we created.
       it->stub_ = stub;
-      PinModule();
+      chrome_frame::PinModule();
     }
   }
 

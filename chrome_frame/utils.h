@@ -548,10 +548,6 @@ class NavigationConstraints;
 bool CanNavigate(const GURL& url,
                  NavigationConstraints* navigation_constraints);
 
-// Utility function that prevents the current module from ever being unloaded.
-// Call if you make irreversible patches.
-void PinModule();
-
 // Helper function to spin a message loop and dispatch messages while waiting
 // for a handle to be signaled.
 void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout);

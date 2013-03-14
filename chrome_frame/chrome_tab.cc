@@ -11,6 +11,7 @@
 #include <objbase.h>
 
 #include "base/at_exit.h"
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
@@ -40,6 +41,7 @@
 #include "chrome_frame/dll_redirector.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/metrics_service.h"
+#include "chrome_frame/pin_module.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/url_util.h"
@@ -48,16 +50,6 @@
 using base::win::RegKey;
 
 namespace {
-// This function has the side effect of initializing an unprotected
-// vector pointer inside GoogleUrl. If this is called during DLL loading,
-// it has the effect of avoiding an initialization race on that pointer.
-// TODO(siggi): fix GoogleUrl.
-void InitGoogleUrl() {
-  static const char kDummyUrl[] = "http://www.google.com";
-
-  url_util::IsStandard(kDummyUrl,
-                       url_parse::MakeRange(0, arraysize(kDummyUrl)));
-}
 
 const wchar_t kInternetSettings[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings";
@@ -83,7 +75,7 @@ const wchar_t kChromeFrameHelperWindowName[] =
     L"ChromeFrameHelperWindowName";
 
 // {0562BFC3-2550-45b4-BD8E-A310583D3A6F}
-static const GUID kChromeFrameProvider =
+const GUID kChromeFrameProvider =
     { 0x562bfc3, 0x2550, 0x45b4,
         { 0xbd, 0x8e, 0xa3, 0x10, 0x58, 0x3d, 0x3a, 0x6f } };
 
@@ -95,11 +87,22 @@ const wchar_t kChromeFramePrefix[] = L"chromeframe/";
 // See comments in DllGetClassObject.
 LPFNGETCLASSOBJECT g_dll_get_class_object_redir_ptr = NULL;
 
+// This function has the side effect of initializing an unprotected
+// vector pointer inside GoogleUrl. If this is called during DLL loading,
+// it has the effect of avoiding an initialization race on that pointer.
+// TODO(siggi): fix GoogleUrl.
+void InitGoogleUrl() {
+  static const char kDummyUrl[] = "http://www.google.com";
+
+  url_util::IsStandard(kDummyUrl,
+                       url_parse::MakeRange(0, arraysize(kDummyUrl)));
+}
+
 class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
  public:
   typedef CAtlDllModuleT<ChromeTabModule> ParentClass;
 
-  ChromeTabModule() : do_system_registration_(true) {}
+  ChromeTabModule() : do_system_registration_(true), crash_reporting_(NULL) {}
 
   DECLARE_LIBID(LIBID_ChromeTabLib)
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CHROMETAB,
@@ -189,8 +192,42 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
     return hr;
   }
 
+  // The module is "locked" when an object takes a reference on it. The first
+  // time it is locked, take a reference on crash reporting to bind its lifetime
+  // to the module.
+  virtual LONG Lock() throw() {
+    LONG result = ParentClass::Lock();
+    if (result == 1) {
+      DCHECK_EQ(crash_reporting_,
+                static_cast<chrome_frame::ScopedCrashReporting*>(NULL));
+      crash_reporting_ = new chrome_frame::ScopedCrashReporting();
+    }
+    return result;
+  }
+
+  // The module is "unlocked" when an object that had a reference on it is
+  // destroyed. The last time it is unlocked, release the reference on crash
+  // reporting.
+  virtual LONG Unlock() throw() {
+    LONG result = ParentClass::Unlock();
+    if (!result) {
+      DCHECK_NE(crash_reporting_,
+                static_cast<chrome_frame::ScopedCrashReporting*>(NULL));
+      delete crash_reporting_;
+      crash_reporting_ = NULL;
+    }
+    return result;
+  }
+
   // See comments in AddCommonRGSReplacements
   bool do_system_registration_;
+
+ private:
+  // A scoper created when the module is initially locked and destroyed when it
+  // is finally unlocked. This is not a scoped_ptr since that could cause
+  // reporting to shut down at exit, which would lead to problems with the
+  // loader lock.
+  chrome_frame::ScopedCrashReporting* crash_reporting_;
 };
 
 ChromeTabModule _AtlModule;
@@ -548,6 +585,11 @@ HRESULT SetOrDeleteMimeHandlerKey(bool set, HKEY root_key) {
                                     HRESULT_FROM_WIN32(result2);
 }
 
+void OnPinModule() {
+  // Pin crash reporting by leaking a reference.
+  ignore_result(new chrome_frame::ScopedCrashReporting());
+}
+
 // Chrome Frame registration functions.
 //-----------------------------------------------------------------------------
 HRESULT RegisterSecuredMimeHandler(bool enable, bool is_system) {
@@ -829,7 +871,6 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
 
     g_exit_manager = new base::AtExitManager();
     CommandLine::Init(0, NULL);
-    InitializeCrashReporting();
     logging::InitLogging(
         NULL,
         logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
@@ -862,6 +903,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     // can only get called once. For Chrome Frame, that is here.
     g_field_trial_list = new base::FieldTrialList(
         new metrics::SHA1EntropyProvider(MetricsService::GetClientID()));
+
+    // Set a callback so that crash reporting can be pinned when the module is
+    // pinned.
+    chrome_frame::SetPinModuleCallback(&OnPinModule);
   } else if (reason == DLL_PROCESS_DETACH) {
     delete g_field_trial_list;
     g_field_trial_list = NULL;
@@ -874,8 +919,6 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
 
     delete g_exit_manager;
     g_exit_manager = NULL;
-
-    ShutdownCrashReporting();
   }
   return _AtlModule.DllMain(reason, reserved);
 }
@@ -887,6 +930,8 @@ STDAPI DllCanUnloadNow() {
 
 // Returns a class factory to create an object of the requested type
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
+  chrome_frame::ScopedCrashReporting crash_reporting;
+
   // If we found another module present when we were loaded, then delegate to
   // that:
   if (g_dll_get_class_object_redir_ptr) {
@@ -904,6 +949,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer() {
+  chrome_frame::ScopedCrashReporting crash_reporting;
   uint16 flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL |
                   BHO_CLSID | BHO_REGISTRATION;
 
@@ -917,12 +963,14 @@ STDAPI DllRegisterServer() {
 
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer() {
+  chrome_frame::ScopedCrashReporting crash_reporting;
   HRESULT hr = CustomRegistration(ALL, false, true);
   return hr;
 }
 
 // DllRegisterUserServer - Adds entries to the HKCU hive in the registry.
 STDAPI DllRegisterUserServer() {
+  chrome_frame::ScopedCrashReporting crash_reporting;
   UINT flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL |
                 BHO_CLSID | BHO_REGISTRATION;
 
@@ -936,6 +984,7 @@ STDAPI DllRegisterUserServer() {
 
 // DllUnregisterUserServer - Removes entries from the HKCU hive in the registry.
 STDAPI DllUnregisterUserServer() {
+  chrome_frame::ScopedCrashReporting crash_reporting;
   HRESULT hr = CustomRegistration(ALL, FALSE, false);
   return hr;
 }
