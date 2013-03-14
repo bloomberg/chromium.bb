@@ -131,6 +131,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("getProperties")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetState) {
+  EXPECT_TRUE(RunNetworkingSubtest("getState")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, SetProperties) {
+  EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        OnNetworksChangedEventConnect) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEventConnect"))

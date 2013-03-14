@@ -748,9 +748,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     Network* network = crosnet->FindNetworkByPath(network_id);
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshDisableNewNetworkStatusArea) &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
+            ash::switches::kAshDisableNewNetworkStatusArea)) {
       // If the new network handlers are enabled, this should always trigger
       // displaying the network settings UI.
       if (network)

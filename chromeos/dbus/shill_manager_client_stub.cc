@@ -158,8 +158,46 @@ void ShillManagerClientStub::ConfigureService(
     const ErrorCallback& error_callback) {
   if (callback.is_null())
     return;
+
+  // For the purposes of this stub, we're going to assume that the GUID property
+  // is set to the service path because we don't want to re-implement Shill's
+  // property matching magic here.
+  ShillServiceClient::TestInterface* service_client =
+      DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+
+  std::string guid;
+  std::string type;
+  if (!properties.GetString(flimflam::kGuidProperty, &guid) ||
+      !properties.GetString(flimflam::kTypeProperty, &type)) {
+    // If the properties aren't filled out completely, then just return an empty
+    // object path.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
+    return;
+  }
+
+  // Add the service to the service client stub if not already there.
+  service_client->AddService(guid, guid, type, flimflam::kStateIdle, true);
+
+  // Merge the new properties with existing properties, if any.
+  scoped_ptr<base::DictionaryValue> merged_properties;
+  const base::DictionaryValue* existing_properties =
+      service_client->GetServiceProperties(guid);
+  if (existing_properties) {
+      merged_properties.reset(existing_properties->DeepCopy());
+  } else {
+    merged_properties.reset(new base::DictionaryValue);
+  }
+  merged_properties->MergeDictionary(&properties);
+
+  // Now set all the properties.
+  for (base::DictionaryValue::Iterator iter(*merged_properties);
+       !iter.IsAtEnd(); iter.Advance()) {
+    service_client->SetServiceProperty(guid, iter.key(), iter.value());
+  }
+
   MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
+      FROM_HERE, base::Bind(callback, dbus::ObjectPath(guid)));
 }
 
 void ShillManagerClientStub::GetService(

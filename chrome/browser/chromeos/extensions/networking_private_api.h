@@ -30,12 +30,48 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Callbacks if talking to ManagedNetworkConfigurationHandler.
   void GetPropertiesSuccess(const std::string& service_path,
                             const base::DictionaryValue& result);
   void GetPropertiesFailed(const std::string& error_name,
                            scoped_ptr<base::DictionaryValue> error_data);
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetPropertiesFunction);
+};
+
+// Implements the chrome.networkingPrivate.getState method.
+class NetworkingPrivateGetStateFunction : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateGetStateFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getState",
+                             NETWORKINGPRIVATE_GETSTATE);
+
+ protected:
+  virtual ~NetworkingPrivateGetStateFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetStateFunction);
+};
+
+// Implements the chrome.networkingPrivate.setProperties method.
+class NetworkingPrivateSetPropertiesFunction : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateSetPropertiesFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.setProperties",
+                             NETWORKINGPRIVATE_SETPROPERTIES);
+
+ protected:
+  virtual ~NetworkingPrivateSetPropertiesFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void ErrorCallback(const std::string& error_name,
+                     const scoped_ptr<base::DictionaryValue> error_data);
+  void ResultCallback();
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateSetPropertiesFunction);
 };
 
 // Implements the chrome.networkingPrivate.getVisibleNetworks method.
@@ -44,7 +80,7 @@ class NetworkingPrivateGetVisibleNetworksFunction
  public:
   NetworkingPrivateGetVisibleNetworksFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getVisibleNetworks",
-                              NETWORKINGPRIVATE_GETVISIBLENETWORKS);
+                             NETWORKINGPRIVATE_GETVISIBLENETWORKS);
 
  protected:
   virtual ~NetworkingPrivateGetVisibleNetworksFunction();

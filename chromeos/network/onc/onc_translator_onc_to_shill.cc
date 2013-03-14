@@ -219,7 +219,7 @@ void LocalTranslator::TranslateWithTableAndSet(
   // occurs, we should check here. Otherwise the failure will only show up much
   // later in Shill.
   LOG(ERROR) << "Value '" << onc_value
-             << " cannot be translated to Shill property "
+             << "' cannot be translated to Shill property "
              << shill_property_name;
 }
 

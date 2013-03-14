@@ -63,6 +63,74 @@ void NetworkingPrivateGetPropertiesFunction::GetPropertiesFailed(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetStateFunction
+
+NetworkingPrivateGetStateFunction::
+  ~NetworkingPrivateGetStateFunction() {
+}
+
+bool NetworkingPrivateGetStateFunction::RunImpl() {
+  scoped_ptr<api::GetState::Params> params =
+      api::GetState::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  // The |network_guid| parameter is storing the service path.
+  std::string service_path = params->network_guid;
+
+  const NetworkState* state =
+      NetworkStateHandler::Get()->GetNetworkState(service_path);
+  if (!state) {
+    error_ = "Error.InvalidParameter";
+    SendResponse(false);
+  }
+
+  scoped_ptr<base::DictionaryValue> result_dict(new base::DictionaryValue);
+  state->GetProperties(result_dict.get());
+  scoped_ptr<base::DictionaryValue> onc_network_part =
+      onc::TranslateShillServiceToONCPart(*result_dict,
+                                          &onc::kNetworkWithStateSignature);
+  SetResult(onc_network_part.release());
+  SendResponse(true);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateSetPropertiesFunction
+
+NetworkingPrivateSetPropertiesFunction::
+~NetworkingPrivateSetPropertiesFunction() {
+}
+
+bool NetworkingPrivateSetPropertiesFunction::RunImpl() {
+  scoped_ptr<api::SetProperties::Params> params =
+      api::SetProperties::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  scoped_ptr<base::DictionaryValue> properties_dict(
+      params->properties.ToValue());
+
+  ManagedNetworkConfigurationHandler::Get()->SetProperties(
+      params->network_guid,
+      *properties_dict,
+      base::Bind(&NetworkingPrivateSetPropertiesFunction::ResultCallback,
+                 this),
+      base::Bind(&NetworkingPrivateSetPropertiesFunction::ErrorCallback,
+                 this));
+  return true;
+}
+
+void NetworkingPrivateSetPropertiesFunction::ErrorCallback(
+    const std::string& error_name,
+    const scoped_ptr<base::DictionaryValue> error_data) {
+  error_ = error_name;
+  SendResponse(false);
+}
+
+void NetworkingPrivateSetPropertiesFunction::ResultCallback() {
+  SendResponse(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateGetVisibleNetworksFunction
 
 NetworkingPrivateGetVisibleNetworksFunction::
@@ -300,3 +368,4 @@ void NetworkingPrivateVerifyAndEncryptDataFunction::ErrorCallback(
   error_ = error_name;
   SendResponse(false);
 }
+

@@ -170,6 +170,39 @@ var availableTests = [
                  }, result);
       }));
   },
+  function setProperties() {
+    var done = chrome.test.callbackAdded();
+    chrome.networkingPrivate.getProperties(
+      "stub_wifi2",
+      function(result) {
+        result.WiFi.Security = "WEP-PSK";
+        chrome.networkingPrivate.setProperties("stub_wifi2", result,
+          function() {
+            chrome.networkingPrivate.getProperties(
+              "stub_wifi2",
+              function(result) {
+                assertEq("WEP-PSK", result.WiFi.Security);
+                done();
+              });
+          });
+      });
+  },
+  function getState() {
+    chrome.networkingPrivate.getState(
+      "stub_wifi2",
+      callbackPass(function(result) {
+        assertEq({
+          "ConnectionState": "NotConnected",
+          "GUID": "",
+          "Name": "wifi2_PSK",
+          "Type": "WiFi",
+          "WiFi": {
+            "Security": "WPA-PSK",
+            "SignalStrength": 80
+          }
+        }, result);
+      }));
+  },
   function onNetworksChangedEventConnect() {
     var network = "stub_wifi2";
     var done = chrome.test.callbackAdded();

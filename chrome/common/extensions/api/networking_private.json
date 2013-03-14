@@ -45,7 +45,7 @@
     "functions": [
       {
         "name": "getProperties",
-        "description": "Gets the properties of the network with id networkGuid.",
+        "description": "Gets all the properties of the network with id networkGuid.  Includes all properties of the network (read-only and read/write values).",
         "parameters": [
           {
             "name": "networkGuid",
@@ -66,8 +66,51 @@
         ]
       },
       {
+        "name": "getState",
+        "description": "Gets the cached read-only properties of the network with id networkGuid.  This is meant to be a higher performance function than getProperties, which requires a round trip to query the networking subsystem.  It only returns a subset of the properties returned by getProperties.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to set properties on."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "properties",
+                "$ref": "NetworkProperties",
+                "description": "Results of the query for network properties."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setProperties",
+        "description": "Sets the properties of the network with id networkGuid.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to set properties on."
+          },
+          {
+            "name": "properties",
+            "$ref": "NetworkProperties",
+            "description": "The properties to set on the network."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "getVisibleNetworks",
-        "description": "Gets the list of visible networks.",
+        "description": "Gets the list of visible networks, and returns a list of cached, read-only network properties for each.",
         "parameters": [
           {
             "name": "type",
