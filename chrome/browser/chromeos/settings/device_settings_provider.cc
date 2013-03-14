@@ -64,6 +64,7 @@ const char* kKnownSettings[] = {
   kStartUpUrls,
   kStatsReportingPref,
   kSystemTimezonePolicy,
+  kStartUpFlags,
 };
 
 // Legacy policy file location. Used to detect migration from pre v12 ChromeOS.
@@ -275,12 +276,14 @@ void DeviceSettingsProvider::SetInPolicy() {
     em::UserWhitelistProto* whitelist_proto =
         device_settings_.mutable_user_whitelist();
     whitelist_proto->clear_user_whitelist();
-    base::ListValue& users = static_cast<base::ListValue&>(*value);
-    for (base::ListValue::const_iterator i = users.begin();
-         i != users.end(); ++i) {
-      std::string email;
-      if ((*i)->GetAsString(&email))
-        whitelist_proto->add_user_whitelist(email.c_str());
+    const base::ListValue* users;
+    if (value->GetAsList(&users)) {
+      for (base::ListValue::const_iterator i = users->begin();
+           i != users->end(); ++i) {
+        std::string email;
+        if ((*i)->GetAsString(&email))
+          whitelist_proto->add_user_whitelist(email);
+      }
     }
   } else if (prop == kAccountsPrefEphemeralUsersEnabled) {
     em::EphemeralUsersEnabledProto* ephemeral_users_enabled =
@@ -301,6 +304,19 @@ void DeviceSettingsProvider::SetInPolicy() {
           allow_redeem_offers_value);
     } else {
       NOTREACHED();
+    }
+  } else if (prop == kStartUpFlags) {
+    em::StartUpFlagsProto* flags_proto =
+        device_settings_.mutable_start_up_flags();
+    flags_proto->Clear();
+    const base::ListValue* flags;
+    if (value->GetAsList(&flags)) {
+      for (base::ListValue::const_iterator i = flags->begin();
+           i != flags->end(); ++i) {
+        std::string flag;
+        if ((*i)->GetAsString(&flag))
+          flags_proto->add_flags(flag);
+      }
     }
   } else {
     // The remaining settings don't support Set(), since they are not
@@ -407,6 +423,17 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
     }
   }
   new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts, account_list);
+
+  if (policy.has_start_up_flags()) {
+    base::ListValue* list = new base::ListValue();
+    const em::StartUpFlagsProto& flags_proto = policy.start_up_flags();
+    const RepeatedPtrField<std::string>& flags = flags_proto.flags();
+    for (RepeatedPtrField<std::string>::const_iterator it = flags.begin();
+         it != flags.end(); ++it) {
+      list->Append(new base::StringValue(*it));
+    }
+    new_values_cache->SetValue(kStartUpFlags, list);
+  }
 }
 
 void DeviceSettingsProvider::DecodeKioskPolicies(
