@@ -553,6 +553,7 @@
         'browser/chromeos/drive/drive_system_service_unittest.cc',
         'browser/chromeos/drive/drive_test_util.cc',
         'browser/chromeos/drive/drive_test_util.h',
+        'browser/chromeos/drive/drive_url_request_job_unittest.cc',
         'browser/chromeos/drive/drive_webapps_registry_unittest.cc',
         'browser/chromeos/drive/event_logger_unittest.cc',
         'browser/chromeos/drive/fake_drive_file_system.cc',
