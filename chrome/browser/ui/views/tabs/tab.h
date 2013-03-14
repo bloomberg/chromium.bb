@@ -98,11 +98,6 @@ class Tab : public ui::AnimationDelegate,
     background_offset_ = offset;
   }
 
-  // Recomputes the dominant color of the favicon, used in immersive mode.
-  // TODO(jamescook): Remove this if UX agrees that we don't want colors in the
-  // immersive mode light bar. crbug.com/166929
-  void UpdateIconDominantColor();
-
   views::GlowHoverController* hover_controller() {
     return &hover_controller_;
   }
@@ -348,12 +343,6 @@ class Tab : public ui::AnimationDelegate,
 
   // The current color of the close button.
   SkColor close_button_color_;
-
-  // The dominant color of the favicon. Used in immersive mode. White until the
-  // color is known so that tab has something visible to draw during page load.
-  // TODO(jamescook): Remove this if UX agrees that we don't want colors in the
-  // immersive mode light bar. crbug.com/166929
-  SkColor icon_dominant_color_;
 
   static gfx::Font* font_;
   static int font_height_;

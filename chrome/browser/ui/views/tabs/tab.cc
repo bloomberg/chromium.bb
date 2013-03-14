@@ -448,8 +448,7 @@ Tab::Tab(TabController* controller)
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)),
       showing_icon_(false),
       showing_close_button_(false),
-      close_button_color_(0),
-      icon_dominant_color_(SK_ColorWHITE) {
+      close_button_color_(0) {
   InitTabResources();
 
   // So we get don't get enter/exit on children and don't prematurely stop the
@@ -548,13 +547,6 @@ void Tab::SetData(const TabRendererData& data) {
     }
   }
 
-  // If the favicon changed, re-compute its dominant color.
-  if (controller() &&
-      controller()->IsImmersiveStyle() &&
-      !data_.favicon.isNull() &&
-      !data_.favicon.BackedBySameObjectAs(old.favicon))
-    UpdateIconDominantColor();
-
   DataChanged(old);
 
   Layout();
@@ -626,11 +618,6 @@ void Tab::StopMiniTabTitleAnimation() {
     return;
   tab_animation_->Stop();
   tab_animation_.reset(NULL);
-}
-
-void Tab::UpdateIconDominantColor() {
-  icon_dominant_color_ =
-      color_utils::CalculateKMeanColorOfBitmap(*data_.favicon.bitmap());
 }
 
 // static

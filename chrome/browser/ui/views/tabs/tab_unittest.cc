@@ -67,10 +67,6 @@ class TabTest : public views::ViewsTestBase {
   TabTest() {}
   virtual ~TabTest() {}
 
-  static SkColor GetIconDominantColor(const Tab& tab) {
-    return tab.icon_dominant_color_;
-  }
-
   static bool IconAnimationInvariant(const Tab& tab) {
     if ((tab.data().audio_state != TabRendererData::AUDIO_STATE_NONE) ||
         (tab.data().capture_state != TabRendererData::CAPTURE_STATE_NONE))
@@ -113,53 +109,6 @@ TEST_F(TabTest, HitTestTopPixel) {
   // But clicks in the area above the slanted sides should still miss.
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(0, 0)));
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(tab.width() - 1, 0)));
-}
-
-TEST_F(TabTest, IconDominantColor) {
-  FakeTabController controller;
-  Tab tab(&controller);
-
-  // Dominant color defaults to white.
-  EXPECT_EQ(SK_ColorWHITE, GetIconDominantColor(tab));
-
-  // Make a red favicon.
-  SkBitmap red_bitmap;
-  red_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  red_bitmap.allocPixels();
-  red_bitmap.eraseColor(SK_ColorRED);
-
-  // Update the tab's renderer data with the red icon.
-  TabRendererData red_data;
-  red_data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(red_bitmap);
-  tab.SetData(red_data);
-
-  // Since we're not using immersive style yet, the color is not updated.
-  EXPECT_EQ(SK_ColorWHITE, GetIconDominantColor(tab));
-
-  // Switch to immersive style and make an arbitrary change to the data.
-  controller.set_immersive_style(true);
-  red_data.mini = true;
-  tab.SetData(red_data);
-
-  // Color is not updated because the new data has the same image as before.
-  EXPECT_EQ(SK_ColorWHITE, GetIconDominantColor(tab));
-
-  // Forcing an update makes it red.
-  tab.UpdateIconDominantColor();
-  EXPECT_EQ(SK_ColorRED, GetIconDominantColor(tab));
-
-  // Change the favicon to a green icon.
-  SkBitmap green_bitmap;
-  green_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  green_bitmap.allocPixels();
-  green_bitmap.eraseColor(SK_ColorGREEN);
-  TabRendererData green_data;
-  green_data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(green_bitmap);
-  tab.SetData(green_data);
-
-  // Icon updates automatically since we're in immersive mode and the image
-  // changed.
-  EXPECT_EQ(SK_ColorGREEN, GetIconDominantColor(tab));
 }
 
 TEST_F(TabTest, ActivityIndicators) {
