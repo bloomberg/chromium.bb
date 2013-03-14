@@ -194,6 +194,7 @@ bool ProfileImageView::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 
+}  // namespace
 
 // ProfileItemView ------------------------------------------------------------
 
@@ -384,8 +385,6 @@ bool ProfileItemView::IsHighlighted() {
          edit_link_->HasFocus();
 }
 
-}  // namespace
-
 
 // AvatarMenuBubbleView -------------------------------------------------------
 
@@ -406,6 +405,7 @@ void AvatarMenuBubbleView::ShowBubble(
   avatar_bubble_ = new AvatarMenuBubbleView(
       anchor_view, arrow_location, anchor_rect, browser);
   views::BubbleDelegateView::CreateBubble(avatar_bubble_);
+  avatar_bubble_->SetBackgroundColors();
   avatar_bubble_->SetAlignment(border_alignment);
   avatar_bubble_->Show();
 }
@@ -518,7 +518,7 @@ bool AvatarMenuBubbleView::AcceleratorPressed(
 void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   for (size_t i = 0; i < item_views_.size(); ++i) {
-    ProfileItemView* item_view = static_cast<ProfileItemView*>(item_views_[i]);
+    ProfileItemView* item_view = item_views_[i];
     if (sender == item_view) {
       // Clicking on the active profile shouldn't do anything.
       if (!item_view->item().active) {
@@ -537,7 +537,7 @@ void AvatarMenuBubbleView::LinkClicked(views::Link* source, int event_flags) {
   }
 
   for (size_t i = 0; i < item_views_.size(); ++i) {
-    ProfileItemView* item_view = static_cast<ProfileItemView*>(item_views_[i]);
+    ProfileItemView* item_view = item_views_[i];
     if (source == item_view->edit_link()) {
       avatar_menu_model_->EditProfile(i);
       return;
@@ -595,4 +595,10 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
   Layout();
   if (GetBubbleFrameView())
     SizeToContents();
+}
+
+void AvatarMenuBubbleView::SetBackgroundColors() {
+  for (size_t i = 0; i < item_views_.size(); ++i) {
+    item_views_[i]->OnHighlightStateChanged();
+  }
 }
