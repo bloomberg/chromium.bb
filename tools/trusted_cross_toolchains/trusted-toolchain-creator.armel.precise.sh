@@ -177,6 +177,9 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libpixman-1-dev \
   libpng12-0 \
   libpng12-dev \
+  libpulse0 \
+  libpulse-dev \
+  libpulse-mainloop-glib0 \
   libselinux1 \
   libspeechd2 \
   libspeechd-dev \
