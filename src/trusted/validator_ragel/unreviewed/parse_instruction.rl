@@ -389,7 +389,7 @@
 }%%
 
 %%{
-  machine operand_actions_common;
+  machine operand_format_actions;
 
   action operands_count_is_0 { SET_OPERANDS_COUNT(0); }
   action operands_count_is_1 { SET_OPERANDS_COUNT(1); }
@@ -398,6 +398,8 @@
   action operands_count_is_4 { SET_OPERANDS_COUNT(4); }
   action operands_count_is_5 { SET_OPERANDS_COUNT(5); }
 
+  # TODO(shcherbina): rename TYPE to FORMAT here (to avoid confusion with
+  # gen_dfa's "type").
   action operand0_16bit      { SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
   action operand0_8bit       { SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
   action operand0_32bit      { SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
@@ -463,6 +465,13 @@
   action operand3_ymm        { SET_OPERAND_TYPE(3, OPERAND_TYPE_YMM); }
 
   action operand4_2bit       { SET_OPERAND_TYPE(4, OPERAND_TYPE_2_BIT); }
+}%%
+
+%%{
+  machine operand_source_actions_common;
+  # 'Source' actions are actions that extract operand 'name' from
+  # instruction encoding. Some 'source' actions assign operand fixed 'name'
+  # (so, technically, they extract zero bits from instruction encoding).
 
   action operand0_ds_rbx           { SET_OPERAND_NAME(0, REG_DS_RBX); }
   action operand0_ds_rsi           { SET_OPERAND_NAME(0, REG_DS_RSI); }
@@ -532,9 +541,9 @@
 }%%
 
 %%{
-  machine operand_actions_ia32;
+  machine operand_source_actions_ia32;
 
-  include operand_actions_common;
+  include operand_source_actions_common;
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
@@ -587,9 +596,9 @@
 }%%
 
 %%{
-  machine operand_actions_amd64;
+  machine operand_source_actions_amd64;
 
-  include operand_actions_common;
+  include operand_source_actions_common;
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);

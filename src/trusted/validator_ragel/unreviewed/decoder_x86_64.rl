@@ -77,7 +77,9 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include operand_actions_amd64
+  include operand_format_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include operand_source_actions_amd64
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include immediate_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
