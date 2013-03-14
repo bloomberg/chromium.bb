@@ -23,6 +23,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.NUM_SECTIONS;;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC_BILLING;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_SHIPPING;
+
 import org.chromium.chrome.R;
 
 /**
@@ -34,10 +38,8 @@ import org.chromium.chrome.R;
 public class AutofillDialogContentView extends FrameLayout {
     private static final int ANIMATION_DURATION_MS = 1000;
     // TODO(yusufo): Remove all placeholders here and also in related layout xml files.
-    private final List<AddressItem> mDefaultShippingItems =
-            new ArrayList<AddressItem>();
-    private final List<CreditCardItem> mDefaultBillingItems =
-            new ArrayList<CreditCardItem>();
+    private final AutofillDialogMenuItem[][] mDefaultMenuItems =
+            new AutofillDialogMenuItem[NUM_SECTIONS][];
     static final int LAYOUT_FETCHING = 0;
     static final int LAYOUT_STEADY = 1;
     static final int LAYOUT_EDITING_SHIPPING = 2;
@@ -52,10 +54,8 @@ public class AutofillDialogContentView extends FrameLayout {
             mSteadyLayout.setVisibility(GONE);
         }
     };
-    private Spinner mCreditCardSpinner;
-    private CreditCardAdapter mCreditCardAdapter;
-    private Spinner mAddressSpinner;
-    private AddressAdapter mAddressAdapter;
+    private Spinner[] mSpinners = new Spinner[NUM_SECTIONS];
+    private AutofillDialogMenuAdapter[] mAdapters = new AutofillDialogMenuAdapter[NUM_SECTIONS];
     private View mSteadyLayout;
     private View mEditShippingLayout;
     private View mEditBillingLayout;
@@ -63,14 +63,21 @@ public class AutofillDialogContentView extends FrameLayout {
 
     public AutofillDialogContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mDefaultShippingItems.add(new AddressItem(
-                getResources().getString(R.string.autofill_new_shipping), ""));
-        mDefaultShippingItems.add(new AddressItem(
-                getResources().getString(R.string.autofill_edit_shipping), ""));
-        mDefaultBillingItems.add(new CreditCardItem(0,
-                getResources().getString(R.string.autofill_new_billing), ""));
-        mDefaultBillingItems.add(new CreditCardItem(0,
-                getResources().getString(R.string.autofill_edit_billing), ""));
+        AutofillDialogMenuItem[] billingItems = {
+                new AutofillDialogMenuItem(0,
+                        getResources().getString(R.string.autofill_new_billing), ""),
+                new AutofillDialogMenuItem(0,
+                        getResources().getString(R.string.autofill_edit_billing), "")
+        };
+        AutofillDialogMenuItem[] shippingItems = {
+                new AutofillDialogMenuItem(0,
+                        getResources().getString(R.string.autofill_new_shipping), ""),
+                new AutofillDialogMenuItem(0,
+                        getResources().getString(R.string.autofill_edit_shipping), "")
+        };
+
+        mDefaultMenuItems[SECTION_CC_BILLING] = billingItems;
+        mDefaultMenuItems[SECTION_SHIPPING] = shippingItems;
         mTopViewGroup = new ArrayList<View>();
         mMidViewGroup = new ArrayList<View>();
         mBottomViewGroup = new ArrayList<View>();
@@ -97,41 +104,42 @@ public class AutofillDialogContentView extends FrameLayout {
         mEditBillingLayout = findViewById(R.id.editing_layout_billing);
         mEditShippingLayout = findViewById(R.id.editing_layout_shipping);
 
-        mCreditCardSpinner = (Spinner) findViewById(R.id.cc_spinner);
-        List<CreditCardItem> cards = new ArrayList<CreditCardItem>();
-        mCreditCardAdapter = new CreditCardAdapter(getContext(), cards);
-        mCreditCardSpinner.setAdapter(mCreditCardAdapter);
-
-        List<AddressItem> addresses = new ArrayList<AddressItem>();
-        mAddressSpinner = (Spinner) findViewById(R.id.address_spinner);
-        mAddressAdapter = new AddressAdapter(getContext(), addresses);
-        mAddressSpinner.setAdapter(mAddressAdapter);
+        for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
+            int id = AutofillDialogUtils.getSpinnerIDForSection(i);
+            mSpinners[i] = (Spinner) findViewById(id);
+            AutofillDialogMenuAdapter adapter = new AutofillDialogMenuAdapter(getContext(),
+                    new ArrayList<AutofillDialogMenuItem>());
+            mAdapters[i] = adapter;
+            if (id == AutofillDialogUtils.INVALID_ID) continue;
+            mSpinners[i].setAdapter(adapter);
+        }
 
         setViewGroups();
         createAndAddPlaceHolders();
         changeLayoutTo(LAYOUT_FETCHING);
     }
 
-    // TODO(yusufo): The AddressItem and CreditCardItem object will be created in the content view
-    // using data fetched from natuve side, but ANdroid side will be the the only platform using
-    // them. Remove this method or replace it with one that uses the fetched data.
+    // TODO(yusufo): Remove this method once glue implements fetching data.
     private void createAndAddPlaceHolders() {
-        mCreditCardAdapter.add(new CreditCardItem(R.drawable.visa,
-                "XXXX-XXXX-XXXX-1000", "Additional info required"));
-        mCreditCardAdapter.add(new CreditCardItem(R.drawable.master_card,
-                "XXXX-XXXX-XXXX-1000", ""));
-        mCreditCardAdapter.addAll(mDefaultBillingItems);
-        mAddressAdapter.add(new AddressItem("Place Holder", "1600 Amphitheatre Pkwy"));
-        mAddressAdapter.addAll(mDefaultShippingItems);
+        AutofillDialogMenuItem[] ccItems = new AutofillDialogMenuItem[1];
+        ccItems[0] = new AutofillDialogMenuItem(
+                0, "XXXX-XXXX-XXXX-1000", "Additional info required");
+        AutofillDialogMenuItem[] addressItems = new AutofillDialogMenuItem[1];
+        addressItems[0] = new AutofillDialogMenuItem(
+                0, "Place Holder", "1600 Amphitheatre Pkwy");
+        updateMenuItemsForSection(SECTION_CC_BILLING, ccItems);
+        updateMenuItemsForSection(SECTION_SHIPPING, addressItems);
     }
 
     @Override
     protected void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        mCreditCardSpinner.setDropDownWidth(mCreditCardSpinner.getMeasuredWidth());
-        mCreditCardSpinner.setDropDownVerticalOffset(-mCreditCardSpinner.getMeasuredHeight());
-        mAddressSpinner.setDropDownWidth(mAddressSpinner.getMeasuredWidth());
-        mAddressSpinner.setDropDownVerticalOffset(-mAddressSpinner.getMeasuredHeight());
+        Spinner ccSpinner = mSpinners[SECTION_CC_BILLING];
+        Spinner addressSpinner = mSpinners[SECTION_SHIPPING];
+        ccSpinner.setDropDownWidth(ccSpinner.getMeasuredWidth());
+        ccSpinner.setDropDownVerticalOffset(-ccSpinner.getMeasuredHeight());
+        addressSpinner.setDropDownWidth(addressSpinner.getMeasuredWidth());
+        addressSpinner.setDropDownVerticalOffset(-addressSpinner.getMeasuredHeight());
     }
 
     /**
@@ -139,8 +147,8 @@ public class AutofillDialogContentView extends FrameLayout {
      * @param listener The listener object to attach to the dropdowns.
      */
     public void setOnItemSelectedListener(OnItemSelectedListener listener) {
-        mCreditCardSpinner.setOnItemSelectedListener(listener);
-        mAddressSpinner.setOnItemSelectedListener(listener);
+        mSpinners[SECTION_CC_BILLING].setOnItemSelectedListener(listener);
+        mSpinners[SECTION_SHIPPING].setOnItemSelectedListener(listener);
     }
 
     /**
@@ -150,7 +158,8 @@ public class AutofillDialogContentView extends FrameLayout {
      */
     public boolean selectionShouldChangeLayout(AdapterView<?> spinner, int position) {
         int numConstantItems = spinner.getId() == R.id.cc_spinner ?
-                mDefaultBillingItems.size() : mDefaultShippingItems.size();
+                mDefaultMenuItems[SECTION_CC_BILLING].length :
+                mDefaultMenuItems[SECTION_SHIPPING].length;
         return position >= spinner.getCount() - numConstantItems;
     }
 
@@ -161,6 +170,17 @@ public class AutofillDialogContentView extends FrameLayout {
     // current value.
     public int getCurrentLayout() {
         return mCurrentLayout;
+    }
+
+    /**
+     * Updates a dropdown with the given items and adds default items to the end.
+     * @param items The {@link AutofillDialogMenuItem} array to update the dropdown with.
+     */
+    public void updateMenuItemsForSection(int section, AutofillDialogMenuItem[] items) {
+        AutofillDialogMenuAdapter adapter = mAdapters[section];
+        adapter.clear();
+        adapter.addAll(items);
+        if (mDefaultMenuItems[section] != null) adapter.addAll(mDefaultMenuItems[section]);
     }
 
     /**
@@ -199,7 +219,7 @@ public class AutofillDialogContentView extends FrameLayout {
 
     private void addAppearAnimationForEditLayout(int mode, View layout) {
         View centerView = mode == LAYOUT_EDITING_BILLING ?
-                mCreditCardSpinner : mAddressSpinner;
+                mSpinners[SECTION_CC_BILLING] : mSpinners[SECTION_SHIPPING];
         float yOffset = centerView.getY() - (float) centerView.getHeight() / 2;
 
         TranslateAnimation toLocationAnimation = new TranslateAnimation(0, 0, yOffset, 0);
@@ -249,20 +269,10 @@ public class AutofillDialogContentView extends FrameLayout {
         }
     }
 
-    private static class AddressItem {
-        private final String mName;
-        private final String mAddress;
+    private static class AutofillDialogMenuAdapter extends ArrayAdapter<AutofillDialogMenuItem> {
 
-        public AddressItem(String name, String address) {
-            mName = name;
-            mAddress = address;
-        }
-    }
-
-    private static class AddressAdapter extends ArrayAdapter<AddressItem> {
-
-        public AddressAdapter(Context context, List<AddressItem> objects) {
-            super(context, R.layout.autofill_address_spinner_dropdown, objects);
+        public AutofillDialogMenuAdapter(Context context, List<AutofillDialogMenuItem> objects) {
+            super(context, R.layout.autofill_menu_item, objects);
         }
 
         @Override
@@ -278,57 +288,16 @@ public class AutofillDialogContentView extends FrameLayout {
         private View initView(int position, View convertView) {
             if (convertView == null) {
                 convertView = View.inflate(getContext(),
-                        R.layout.autofill_address_spinner_dropdown, null);
+                        R.layout.autofill_menu_item, null);
             }
-            AddressItem item = getItem(position);
-            TextView nameView = (TextView)convertView.findViewById(R.id.name);
-            TextView addressView = (TextView)convertView.findViewById(R.id.address);
-            if (nameView != null) nameView.setText(item.mName);
-            if (addressView != null) addressView.setText(item.mAddress);
-            return convertView;
-        }
-    }
-
-    private static class CreditCardItem {
-        private final int mCardIconID;
-        private final String mLastDigits;
-        private final String mInfo;
-
-        public CreditCardItem(int icon, String lastDigits, String info) {
-            mCardIconID = icon;
-            mLastDigits = lastDigits;
-            mInfo = info;
-        }
-    }
-
-    private static class CreditCardAdapter extends ArrayAdapter<CreditCardItem> {
-
-        public CreditCardAdapter(Context context, List<CreditCardItem> objects) {
-            super(context, R.layout.autofill_cc_spinner_dropdown, objects);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            return initView(position, convertView);
-        }
-
-        @Override
-        public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            return initView(position, convertView);
-        }
-
-        private View initView(int position, View convertView) {
-            if (convertView == null) {
-                convertView = View.inflate(getContext(),
-                        R.layout.autofill_cc_spinner_dropdown, null);
-            }
-            CreditCardItem item = getItem(position);
-            ImageView icon = (ImageView)convertView.findViewById(R.id.cc_icon);
-            TextView lastDigitsView = (TextView)convertView.findViewById(R.id.cc_number);
-            TextView infoView = (TextView)convertView.findViewById(R.id.cc_info);
-            if (icon != null) icon.setImageResource(item.mCardIconID);
-            if (lastDigitsView != null) lastDigitsView.setText(item.mLastDigits);
-            if (infoView != null) infoView.setText(item.mInfo);
+            AutofillDialogMenuItem item = getItem(position);
+            ImageView icon = (ImageView) convertView.findViewById(R.id.cc_icon);
+            TextView line1 = (TextView) convertView.findViewById(R.id.adapter_item_line_1);
+            TextView line2 = (TextView) convertView.findViewById(R.id.adapter_item_line_2);
+            // TODO(yusufo): Fix card icon when it gets added to menuItem.
+            if (icon != null) icon.setImageResource(R.drawable.visa);
+            if (line1 != null) line1.setText(item.mLine1);
+            if (line2 != null) line2.setText(item.mLine2);
             return convertView;
         }
     }

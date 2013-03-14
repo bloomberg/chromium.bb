@@ -14,15 +14,15 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"/>
     <TextView
-        android:id="@+id/cc_number"
+        android:id="@+id/adapter_item_line_1"
         android:layout_toRightOf="@id/cc_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="14sp"/>
     <TextView
-        android:id="@+id/cc_info"
-        android:layout_below="@id/cc_number"
+        android:id="@+id/adapter_item_line_2"
+        android:layout_below="@+id/adapter_item_line_1"
         android:layout_toRightOf="@id/cc_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

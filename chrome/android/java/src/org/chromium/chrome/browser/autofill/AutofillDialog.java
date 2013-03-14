@@ -12,10 +12,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 
 import android.content.DialogInterface.OnClickListener;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ScrollView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.EditText;
+import android.widget.ScrollView;
 
 import org.chromium.chrome.R;
 
@@ -28,6 +30,10 @@ public class AutofillDialog extends AlertDialog
         implements OnClickListener, OnItemSelectedListener {
     private AutofillDialogContentView mContentView;
     private AutofillDialogTitleView mTitleView;
+    private AutofillDialogField[][] mAutofillSectionFieldData =
+            new AutofillDialogField[AutofillDialogConstants.NUM_SECTIONS][];
+    private AutofillDialogMenuItem[][] mAutofillSectionMenuData =
+            new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
     private boolean mWillDismiss = false;
 
     protected AutofillDialog(Context context) {
@@ -111,5 +117,102 @@ public class AutofillDialog extends AlertDialog
             return;
         }
         // TODO(yusufo): Add code to update accounts after title is created.
+    }
+
+    /**
+     * Update given section with the data provided. This fills out the related {@link EditText}
+     * fields in the layout corresponding to the section.
+     * @param section The section to update with the given data.
+     * @param visible Whether the section should be visible.
+     * @param dialogInputs The array that contains the data for each field in the section.
+     * @param menuItems The array that contains the dropdown items to be shown for the section.
+     */
+    public void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
+            AutofillDialogMenuItem[] menuItems) {
+        EditText currentField;
+        String inputValue;
+        for (int i = 0; i < dialogInputs.length; i++) {
+            currentField = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
+                    section, dialogInputs[i].mFieldType));
+            if (currentField == null) continue;
+            currentField.setHint(dialogInputs[i].mPlaceholder);
+            inputValue = dialogInputs[i].getValue();
+            if (TextUtils.isEmpty(inputValue)) currentField.setText("");
+            else currentField.setText(inputValue);
+        }
+        mAutofillSectionFieldData[section] = dialogInputs;
+        mContentView.updateMenuItemsForSection(section, menuItems);
+        mAutofillSectionMenuData[section] = menuItems;
+    }
+
+    /**
+     * Clears the field values for the given section.
+     * @param section The section to clear the field values for.
+     */
+    public void clearAutofillSectionFieldValues(int section) {
+        AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
+        if (fieldData == null) return;
+
+        for (int i = 0; i < fieldData.length; i++) fieldData[i].setValue("");
+    }
+
+    /**
+     * Return the array that holds all the data about the fields in the given section.
+     * @param section The section to return the data for.
+     * @return An array containing the data for each field in the given section.
+     */
+    public AutofillDialogField[] getSection(int section) {
+        AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
+        if (fieldData == null) return null;
+
+        EditText currentField;
+        String currentValue;
+        for (int i = 0; i < fieldData.length; i++) {
+            currentField = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
+                    section, fieldData[i].mFieldType));
+            currentValue = currentField.getText().toString();
+            if (TextUtils.isEmpty(currentValue)) continue;
+            fieldData[i].setValue(currentValue);
+        }
+        return fieldData;
+    }
+
+     /**
+      * @return The currently entered or previously saved CVC value in the dialog.
+      */
+    public String getCvc() {
+        EditText cvcEdit = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
+                AutofillDialogConstants.SECTION_CC,
+                        AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE));
+        return cvcEdit.getText().toString();
+    }
+
+    /**
+     * @return Whether the billing address should be used as shipping address.
+     */
+    public boolean shouldUseBillingForShipping() {
+        return false;
+    }
+
+    /**
+     * @return Whether the details entered should be saved to the currently active
+     *         Wallet account.
+     */
+    public boolean shouldSaveDetailsInWallet() {
+        return false;
+    }
+
+    /**
+     * @return Whether the details entered should be saved locally on the device.
+     */
+    public boolean shouldSaveDetailsLocally() {
+        return false;
+    }
+
+    /**
+     * Updates the progress for the final transaction with the given value.
+     * @param value The current progress percentage value.
+     */
+    public void updateProgressBar(double value) {
     }
 }

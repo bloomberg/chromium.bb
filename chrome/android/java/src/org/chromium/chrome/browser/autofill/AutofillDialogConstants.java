@@ -19,6 +19,7 @@ public class AutofillDialogConstants {
     // The wallet-backed dialog uses a combined CC and billing section.
     public static final int SECTION_CC_BILLING = 3;
     public static final int SECTION_SHIPPING = 4;
+    public static final int NUM_SECTIONS = 5;
 
 
     // Filed Type ID constants. This list should be kept in sync with enum AutofillFieldType

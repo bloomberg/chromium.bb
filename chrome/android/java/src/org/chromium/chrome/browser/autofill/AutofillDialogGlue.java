@@ -15,12 +15,13 @@ import org.chromium.ui.gfx.NativeWindow;
 public class AutofillDialogGlue {
     @SuppressWarnings("unused")
     private final int mNativeDialogPopup;
+    private AutofillDialog mAutofillDialog;
 
     public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, NativeWindow nativeWindow) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
 
-        AutofillDialog dialog = new AutofillDialog(nativeWindow.getContext());
-        dialog.show();
+        mAutofillDialog = new AutofillDialog(nativeWindow.getContext());
+        mAutofillDialog.show();
     }
 
     @CalledByNative
@@ -38,37 +39,32 @@ public class AutofillDialogGlue {
     @CalledByNative
     private void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
             AutofillDialogMenuItem[] menuItems) {
-        // TODO(yusufo): start using this call.
+        mAutofillDialog.updateSection(section, visible, dialogInputs, menuItems);
     }
 
     @CalledByNative
     private AutofillDialogField[] getSection(int section) {
-        // TODO(yusufo): start responding to this call.
-        return new AutofillDialogField[0];
+        return mAutofillDialog.getSection(section);
     }
 
     @CalledByNative
     private String getCvc() {
-        // TODO(yusufo): start responding to this call.
-        return "";
+        return mAutofillDialog.getCvc();
     }
 
     @CalledByNative
     private boolean shouldUseBillingForShipping() {
-        // TODO(yusufo): start responding to this call.
-        return false;
+        return mAutofillDialog.shouldUseBillingForShipping();
     }
 
     @CalledByNative
     private boolean shouldSaveDetailsInWallet() {
-        // TODO(yusufo): start responding to this call.
-        return false;
+        return mAutofillDialog.shouldSaveDetailsInWallet();
     }
 
     @CalledByNative
     private boolean shouldSaveDetailsLocally() {
-        // TODO(yusufo): start responding to this call.
-        return false;
+        return mAutofillDialog.shouldSaveDetailsLocally();
     }
 
     /**
@@ -76,7 +72,7 @@ public class AutofillDialogGlue {
      */
     @CalledByNative
     private void updateProgressBar(double value) {
-        // TODO(yusufo): start using this call.
+        mAutofillDialog.updateProgressBar(value);
     }
 
     // Helper methods for AutofillDialogField and AutofillDialogItem ------------------------------
@@ -108,7 +104,7 @@ public class AutofillDialogGlue {
 
     @CalledByNative
     private static String getFieldValue(AutofillDialogField field) {
-        return field.mValue;
+        return field.getValue();
     }
 
     @CalledByNative

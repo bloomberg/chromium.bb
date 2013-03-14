@@ -18,28 +18,35 @@
         android:layout_columnSpan="4"/>
     <EditText
         android:layout_height="@dimen/autofill_edit_height"
-        android:id="@+id/street_address_1"
+        android:id="@+id/shipping_street_address_1"
         android:layout_margin="@dimen/autofill_edit_margin"
         android:textSize="@dimen/autofill_edit_text_size"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
     <EditText
         android:layout_height="@dimen/autofill_edit_height"
-        android:id="@+id/street_address_2"
+        android:id="@+id/shipping_street_address_2"
         android:layout_margin="@dimen/autofill_edit_margin"
         android:textSize="@dimen/autofill_edit_text_size"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
     <EditText
         android:layout_height="@dimen/autofill_edit_height"
-        android:id="@+id/city"
+        android:id="@+id/shipping_city"
         android:layout_margin="@dimen/autofill_edit_margin"
         android:textSize="@dimen/autofill_edit_text_size"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
     <EditText
         android:layout_height="@dimen/autofill_edit_height"
-        android:id="@+id/zip_code"
+        android:id="@+id/shipping_zip_code"
+        android:layout_margin="@dimen/autofill_edit_margin"
+        android:textSize="@dimen/autofill_edit_text_size"
+        android:layout_gravity="fill_horizontal"
+        android:layout_columnSpan="4"/>
+    <EditText
+        android:layout_height="@dimen/autofill_edit_height"
+        android:id="@+id/shipping_phone_number"
         android:layout_margin="@dimen/autofill_edit_margin"
         android:textSize="@dimen/autofill_edit_text_size"
         android:layout_gravity="fill_horizontal"

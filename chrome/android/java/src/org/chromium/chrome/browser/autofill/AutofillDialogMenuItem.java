@@ -8,17 +8,17 @@ package org.chromium.chrome.browser.autofill;
  * A container to store the information for each Autofill Dialog menu item.
  */
 public class AutofillDialogMenuItem {
-    public final int mUniqueId;
+    public final int mIndex;
     public final String mLine1;
     public final String mLine2;
 
     /**
-     * @param uniqueId ID of the menu item.
+     * @param index of the menu item.
      * @param line1 First line of the menu item.
      * @param line2 Second line of the menu item.
      */
-    public AutofillDialogMenuItem(int uniqueId, String line1, String line2) {
-        mUniqueId = uniqueId;
+    public AutofillDialogMenuItem(int index, String line1, String line2) {
+        mIndex = index;
         mLine1 = line1;
         mLine2 = line2;
     }

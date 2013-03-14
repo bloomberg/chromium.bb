@@ -11,7 +11,7 @@ public class AutofillDialogField {
     public final int mNativePointer;
     public final int mFieldType;
     public final String mPlaceholder;
-    public final String mValue;
+    private String mValue;
 
     /**
      * @param nativePointer The pointer to the corresponding native object.
@@ -23,6 +23,21 @@ public class AutofillDialogField {
         mNativePointer = nativePointer;
         mFieldType = fieldType;
         mPlaceholder = placeholder;
+        mValue = value;
+    }
+
+    /**
+     * @return The current value of the field string.
+     */
+    public String getValue() {
+        return mValue;
+    }
+
+    /**
+     * Set the value to be shown for this field.
+     * @param value The string for the value.
+     */
+    public void setValue(String value) {
         mValue = value;
     }
 }
