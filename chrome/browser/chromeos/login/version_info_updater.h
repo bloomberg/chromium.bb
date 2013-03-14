@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#include "chrome/browser/policy/cloud_policy_store.h"
+#include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace chromeos {

@@ -26,8 +26,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/policy/user_cloud_policy_manager.h"
-#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -76,8 +74,8 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 

@@ -19,7 +19,7 @@
 #include "policy/policy_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/policy/configuration_policy_handler_chromeos.h"
+#include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace policy {

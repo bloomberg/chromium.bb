@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 

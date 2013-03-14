@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "chrome/browser/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 
 class GoogleServiceAuthError;
 

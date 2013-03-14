@@ -98,8 +98,8 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/user_cloud_policy_manager.h"
-#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #endif
 #else
 #include "chrome/browser/policy/policy_service_stub.h"

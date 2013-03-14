@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/policy/app_pack_updater.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;

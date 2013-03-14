@@ -47,8 +47,8 @@
 #include "third_party/icu/public/i18n/unicode/regex.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/user_policy_signin_service.h"
-#include "chrome/browser/policy/user_policy_signin_service_factory.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #endif
 
 using namespace signin_internals_util;

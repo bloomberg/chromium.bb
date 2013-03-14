@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/base_test_server.h"

@@ -101,7 +101,7 @@
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/user_policy_signin_service_factory.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #endif
 
 #if defined(OS_CHROMEOS)

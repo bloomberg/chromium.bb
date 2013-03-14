@@ -16,15 +16,14 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud_policy_client.h"
-#include "chrome/browser/policy/cloud_policy_constants.h"
-#include "chrome/browser/policy/cloud_policy_core.h"
-#include "chrome/browser/policy/cloud_policy_refresh_scheduler.h"
-#include "chrome/browser/policy/cloud_policy_store.h"
-#include "chrome/browser/policy/cloud_policy_validator.h"
+#include "chrome/browser/policy/cloud/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "chrome/browser/policy/cloud/cloud_policy_core.h"
+#include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
+#include "chrome/browser/policy/cloud/cloud_policy_store.h"
+#include "chrome/browser/policy/cloud/cloud_policy_validator.h"
+#include "chrome/browser/policy/cloud/message_util.h"
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
-#include "chrome/browser/policy/device_local_account_policy_service.h"
-#include "chrome/browser/policy/message_util.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
@@ -44,12 +43,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/policy/device_local_account_policy_service.h"
-#include "chrome/browser/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #else
-#include "chrome/browser/policy/user_cloud_policy_manager.h"
-#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #endif
 
 namespace em = enterprise_management;

@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
 

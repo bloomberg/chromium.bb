@@ -38,11 +38,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/policy/app_pack_updater.h"
+#include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
+#else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 

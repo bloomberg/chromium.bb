@@ -13,7 +13,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
-#include "chrome/browser/policy/message_util.h"
+#include "chrome/browser/policy/cloud/message_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/web_contents.h"
