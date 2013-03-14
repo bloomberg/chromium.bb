@@ -15,6 +15,17 @@ class StatInfo(object):
     self.version = version
     self.child_versions = child_versions
 
+  def __eq__(self, other):
+    return (self.version == other.version and
+            self.child_versions == other.child_versions)
+
+  def __ne__(self, other):
+    return not (self == other)
+
+  def __str__(self):
+    return '{version: %s, child_versions: %s}' % (self.version,
+                                                  self.child_versions)
+
 def _ToUnicode(data):
   try:
     return unicode(data, 'utf-8')
