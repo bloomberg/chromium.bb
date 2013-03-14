@@ -51,7 +51,8 @@
       message = @"Chrome Remote Desktop Host uninstall authorization denied.";
     } else {
       [NSException raise:@"AuthorizationCopyRights Failure"
-          format:@"Error during AuthorizationCopyRights status=%ld", status];
+                  format:@"Error during AuthorizationCopyRights status=%d",
+                             static_cast<int>(status)];
     }
     if (message != NULL) {
       NSLog(@"Uninstall %s: %@", success ? "succeeded" : "failed", message);
@@ -93,7 +94,7 @@ int main(int argc, char* argv[])
       OSStatus status = [uninstaller remotingUninstall];
 
       NSLog(@"Chrome Remote Desktop Host uninstall complete.");
-      NSLog(@"Status = %ld", status);
+      NSLog(@"Status = %d", static_cast<int>(status));
       return status != errAuthorizationSuccess;
     }
   } else {
