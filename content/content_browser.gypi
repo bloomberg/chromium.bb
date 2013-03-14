@@ -877,6 +877,8 @@
     'browser/streams/stream_read_observer.h',
     'browser/streams/stream_registry.cc',
     'browser/streams/stream_registry.h',
+    'browser/streams/stream_url_request_job.cc',
+    'browser/streams/stream_url_request_job.h',
     'browser/streams/stream_write_observer.h',
     'browser/storage_partition_impl.cc',
     'browser/storage_partition_impl.h',

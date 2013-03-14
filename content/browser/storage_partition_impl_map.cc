@@ -19,6 +19,10 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/streams/stream.h"
+#include "content/browser/streams/stream_context.h"
+#include "content/browser/streams/stream_registry.h"
+#include "content/browser/streams/stream_url_request_job.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,8 +48,10 @@ namespace {
 class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   BlobProtocolHandler(ChromeBlobStorageContext* blob_storage_context,
+                      StreamContext* stream_context,
                       fileapi::FileSystemContext* file_system_context)
       : blob_storage_context_(blob_storage_context),
+        stream_context_(stream_context),
         file_system_context_(file_system_context) {}
 
   virtual ~BlobProtocolHandler() {}
@@ -57,6 +63,7 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
     if (!webkit_blob_protocol_handler_impl_) {
       webkit_blob_protocol_handler_impl_.reset(
           new WebKitBlobProtocolHandlerImpl(blob_storage_context_->controller(),
+                                            stream_context_,
                                             file_system_context_));
     }
     return webkit_blob_protocol_handler_impl_->MaybeCreateJob(request,
@@ -71,13 +78,27 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
    public:
     WebKitBlobProtocolHandlerImpl(
         webkit_blob::BlobStorageController* blob_storage_controller,
+        StreamContext* stream_context,
         fileapi::FileSystemContext* file_system_context)
         : webkit_blob::BlobProtocolHandler(
               blob_storage_controller, file_system_context,
               BrowserThread::GetMessageLoopProxyForThread(
-                  BrowserThread::FILE)) {}
+                  BrowserThread::FILE)),
+          stream_context_(stream_context) {}
 
     virtual ~WebKitBlobProtocolHandlerImpl() {}
+
+    virtual net::URLRequestJob* MaybeCreateJob(
+        net::URLRequest* request,
+        net::NetworkDelegate* network_delegate) const {
+      scoped_refptr<Stream> stream =
+          stream_context_->registry()->GetStream(request->url());
+      if (stream)
+        return new StreamURLRequestJob(request, network_delegate, stream);
+
+      return webkit_blob::BlobProtocolHandler::MaybeCreateJob(
+          request, network_delegate);
+    }
 
    private:
     // webkit_blob::BlobProtocolHandler implementation.
@@ -90,10 +111,12 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       return info->requested_blob_data();
     }
 
+    const scoped_refptr<StreamContext> stream_context_;
     DISALLOW_COPY_AND_ASSIGN(WebKitBlobProtocolHandlerImpl);
   };
 
   const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  const scoped_refptr<StreamContext> stream_context_;
   const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   mutable scoped_ptr<WebKitBlobProtocolHandlerImpl>
@@ -386,10 +409,12 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
 
   ChromeBlobStorageContext* blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context_);
+  StreamContext* stream_context = StreamContext::GetFor(browser_context_);
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[chrome::kBlobScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
           new BlobProtocolHandler(blob_storage_context,
+                                  stream_context,
                                   partition->GetFileSystemContext()));
   protocol_handlers[chrome::kFileSystemScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(

@@ -109,7 +109,8 @@ void Stream::OnSpaceAvailable() {
 }
 
 void Stream::OnDataAvailable() {
-  read_observer_->OnDataAvailable(this);
+  if (read_observer_)
+    read_observer_->OnDataAvailable(this);
 }
 
 }  // namespace content

@@ -335,6 +335,7 @@
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/storage_partition_impl_map_unittest.cc',
         'browser/streams/stream_unittest.cc',
+        'browser/streams/stream_url_request_job_unittest.cc',
         'browser/system_message_window_win_unittest.cc',
         'browser/tracing/trace_subscriber_stdio_unittest.cc',
         'browser/web_contents/navigation_controller_impl_unittest.cc',

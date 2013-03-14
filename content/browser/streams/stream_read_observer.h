@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_STREAMS_STREAM_READ_OBSERVER_H_
 #define CONTENT_BROWSER_STREAMS_STREAM_READ_OBSERVER_H_
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 class Stream;
 
-class StreamReadObserver {
+class CONTENT_EXPORT StreamReadObserver {
  public:
   // Sent when there is data available to be read from the stream.
   virtual void OnDataAvailable(Stream* stream) = 0;
