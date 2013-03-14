@@ -432,7 +432,7 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 
 void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   if (texture_layer_.get())
-    texture_layer_->willModifyTexture();
+    texture_layer_->WillModifyTexture();
   // TODO(piman): delegated_renderer_layer_ cleanup.
 
   cc_layer_->RemoveAllChildren();
@@ -472,7 +472,7 @@ void Layer::SetExternalTexture(Texture* texture) {
     if (has_texture) {
       scoped_refptr<cc::TextureLayer> new_layer =
           cc::TextureLayer::Create(this);
-      new_layer->setFlipped(texture_->flipped());
+      new_layer->SetFlipped(texture_->flipped());
       SwitchToLayer(new_layer);
       texture_layer_ = new_layer;
     } else {
@@ -913,7 +913,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     gfx::PointF uv_bottom_right(
         static_cast<float>(size.width())/texture_size.width(),
         static_cast<float>(size.height())/texture_size.height());
-    texture_layer_->setUV(uv_top_left, uv_bottom_right);
+    texture_layer_->SetUV(uv_top_left, uv_bottom_right);
   } else if (delegated_renderer_layer_.get()) {
     delegated_renderer_layer_->SetDisplaySize(
         ConvertSizeToPixel(this, delegated_frame_size_in_dip_));

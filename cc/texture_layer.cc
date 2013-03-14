@@ -12,201 +12,193 @@
 
 namespace cc {
 
-static void runCallbackOnMainThread(const TextureMailbox::ReleaseCallback& callback, unsigned syncPoint)
-{
-    callback.Run(syncPoint);
+static void RunCallbackOnMainThread(
+    const TextureMailbox::ReleaseCallback& callback,
+    unsigned sync_point) {
+  callback.Run(sync_point);
 }
 
-static void postCallbackToMainThread(Thread *mainThread, const TextureMailbox::ReleaseCallback& callback, unsigned syncPoint)
-{
-    mainThread->postTask(base::Bind(&runCallbackOnMainThread, callback, syncPoint));
+static void PostCallbackToMainThread(
+    Thread* main_thread,
+    const TextureMailbox::ReleaseCallback& callback,
+    unsigned sync_point) {
+  main_thread->postTask(
+      base::Bind(&RunCallbackOnMainThread, callback, sync_point));
 }
 
-scoped_refptr<TextureLayer> TextureLayer::Create(TextureLayerClient* client)
-{
-    return scoped_refptr<TextureLayer>(new TextureLayer(client, false));
+scoped_refptr<TextureLayer> TextureLayer::Create(TextureLayerClient* client) {
+  return scoped_refptr<TextureLayer>(new TextureLayer(client, false));
 }
 
-scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox()
-{
-    return scoped_refptr<TextureLayer>(new TextureLayer(0, true));
+scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox() {
+  return scoped_refptr<TextureLayer>(new TextureLayer(NULL, true));
 }
 
-TextureLayer::TextureLayer(TextureLayerClient* client, bool usesMailbox)
-    : Layer()
-    , m_client(client)
-    , m_usesMailbox(usesMailbox)
-    , m_flipped(true)
-    , m_uvTopLeft(0.f, 0.f)
-    , m_uvBottomRight(1.f, 1.f)
-    , m_premultipliedAlpha(true)
-    , m_rateLimitContext(false)
-    , m_contextLost(false)
-    , m_textureId(0)
-    , m_contentCommitted(false)
-    , m_ownMailbox(false)
-{
-  m_vertexOpacity[0] = 1.0f;
-  m_vertexOpacity[1] = 1.0f;
-  m_vertexOpacity[2] = 1.0f;
-  m_vertexOpacity[3] = 1.0f;
+TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
+    : Layer(),
+      client_(client),
+      uses_mailbox_(uses_mailbox),
+      flipped_(true),
+      uv_top_left_(0.f, 0.f),
+      uv_bottom_right_(1.f, 1.f),
+      premultiplied_alpha_(true),
+      rate_limit_context_(false),
+      context_lost_(false),
+      texture_id_(0),
+      content_committed_(false),
+      own_mailbox_(false) {
+  vertex_opacity_[0] = 1.0f;
+  vertex_opacity_[1] = 1.0f;
+  vertex_opacity_[2] = 1.0f;
+  vertex_opacity_[3] = 1.0f;
 }
 
-TextureLayer::~TextureLayer()
-{
-    if (layer_tree_host()) {
-        if (m_textureId)
-            layer_tree_host()->AcquireLayerTextures();
-        if (m_rateLimitContext && m_client)
-            layer_tree_host()->StopRateLimiter(m_client->context());
-    }
-    if (m_ownMailbox)
-        m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
+TextureLayer::~TextureLayer() {
+  if (layer_tree_host()) {
+    if (texture_id_)
+      layer_tree_host()->AcquireLayerTextures();
+    if (rate_limit_context_ && client_)
+      layer_tree_host()->StopRateLimiter(client_->context());
+  }
+  if (own_mailbox_)
+    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
 }
 
-scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return TextureLayerImpl::Create(treeImpl, id(), m_usesMailbox).PassAs<LayerImpl>();
+scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
+  return TextureLayerImpl::Create(tree_impl, id(), uses_mailbox_).
+      PassAs<LayerImpl>();
 }
 
-void TextureLayer::setFlipped(bool flipped)
-{
-    m_flipped = flipped;
-    SetNeedsCommit();
+void TextureLayer::SetFlipped(bool flipped) {
+  flipped_ = flipped;
+  SetNeedsCommit();
 }
 
-void TextureLayer::setUV(gfx::PointF topLeft, gfx::PointF bottomRight)
-{
-    m_uvTopLeft = topLeft;
-    m_uvBottomRight = bottomRight;
-    SetNeedsCommit();
+void TextureLayer::SetUV(gfx::PointF top_left, gfx::PointF bottom_right) {
+  uv_top_left_ = top_left;
+  uv_bottom_right_ = bottom_right;
+  SetNeedsCommit();
 }
 
-void TextureLayer::setVertexOpacity(float bottomLeft,
-                                    float topLeft,
-                                    float topRight,
-                                    float bottomRight) {
+void TextureLayer::SetVertexOpacity(float bottom_left,
+                                    float top_left,
+                                    float top_right,
+                                    float bottom_right) {
   // Indexing according to the quad vertex generation:
   // 1--2
   // |  |
   // 0--3
-  m_vertexOpacity[0] = bottomLeft;
-  m_vertexOpacity[1] = topLeft;
-  m_vertexOpacity[2] = topRight;
-  m_vertexOpacity[3] = bottomRight;
+  vertex_opacity_[0] = bottom_left;
+  vertex_opacity_[1] = top_left;
+  vertex_opacity_[2] = top_right;
+  vertex_opacity_[3] = bottom_right;
   SetNeedsCommit();
 }
 
-void TextureLayer::setPremultipliedAlpha(bool premultipliedAlpha)
-{
-    m_premultipliedAlpha = premultipliedAlpha;
-    SetNeedsCommit();
+void TextureLayer::SetPremultipliedAlpha(bool premultiplied_alpha) {
+  premultiplied_alpha_ = premultiplied_alpha;
+  SetNeedsCommit();
 }
 
-void TextureLayer::setRateLimitContext(bool rateLimit)
-{
-    if (!rateLimit && m_rateLimitContext && m_client && layer_tree_host())
-        layer_tree_host()->StopRateLimiter(m_client->context());
+void TextureLayer::SetRateLimitContext(bool rate_limit) {
+  if (!rate_limit && rate_limit_context_ && client_ && layer_tree_host())
+    layer_tree_host()->StopRateLimiter(client_->context());
 
-    m_rateLimitContext = rateLimit;
+  rate_limit_context_ = rate_limit;
 }
 
-void TextureLayer::setTextureId(unsigned id)
-{
-    DCHECK(!m_usesMailbox);
-    if (m_textureId == id)
-        return;
-    if (m_textureId && layer_tree_host())
-        layer_tree_host()->AcquireLayerTextures();
-    m_textureId = id;
-    SetNeedsCommit();
+void TextureLayer::SetTextureId(unsigned id) {
+  DCHECK(!uses_mailbox_);
+  if (texture_id_ == id)
+    return;
+  if (texture_id_ && layer_tree_host())
+    layer_tree_host()->AcquireLayerTextures();
+  texture_id_ = id;
+  SetNeedsCommit();
 }
 
-void TextureLayer::setTextureMailbox(const TextureMailbox& mailbox)
-{
-    DCHECK(m_usesMailbox);
-    DCHECK(mailbox.IsEmpty() || !mailbox.Equals(m_textureMailbox));
-    // If we never commited the mailbox, we need to release it here
-    if (m_ownMailbox)
-        m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
-    m_textureMailbox = mailbox;
-    m_ownMailbox = true;
+void TextureLayer::SetTextureMailbox(const TextureMailbox& mailbox) {
+  DCHECK(uses_mailbox_);
+  DCHECK(mailbox.IsEmpty() || !mailbox.Equals(texture_mailbox_));
+  // If we never commited the mailbox, we need to release it here
+  if (own_mailbox_)
+    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
+  texture_mailbox_ = mailbox;
+  own_mailbox_ = true;
 
-    SetNeedsCommit();
+  SetNeedsCommit();
 }
 
-void TextureLayer::willModifyTexture()
-{
-    if (layer_tree_host() && (DrawsContent() || m_contentCommitted)) {
-        layer_tree_host()->AcquireLayerTextures();
-        m_contentCommitted = false;
-    }
+void TextureLayer::WillModifyTexture() {
+  if (layer_tree_host() && (DrawsContent() || content_committed_)) {
+    layer_tree_host()->AcquireLayerTextures();
+    content_committed_ = false;
+  }
 }
 
-void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirtyRect)
-{
-    Layer::SetNeedsDisplayRect(dirtyRect);
+void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
+  Layer::SetNeedsDisplayRect(dirty_rect);
 
-    if (m_rateLimitContext && m_client && layer_tree_host() && DrawsContent())
-        layer_tree_host()->StartRateLimiter(m_client->context());
+  if (rate_limit_context_ && client_ && layer_tree_host() && DrawsContent())
+    layer_tree_host()->StartRateLimiter(client_->context());
 }
 
-void TextureLayer::SetLayerTreeHost(LayerTreeHost* host)
-{
-    if (m_textureId && layer_tree_host() && host != layer_tree_host())
-        layer_tree_host()->AcquireLayerTextures();
-    Layer::SetLayerTreeHost(host);
+void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
+  if (texture_id_ && layer_tree_host() && host != layer_tree_host())
+    layer_tree_host()->AcquireLayerTextures();
+  Layer::SetLayerTreeHost(host);
 }
 
-bool TextureLayer::DrawsContent() const
-{
-    return (m_client || m_textureId || !m_textureMailbox.IsEmpty()) && !m_contextLost && Layer::DrawsContent();
+bool TextureLayer::DrawsContent() const {
+  return (client_ || texture_id_ || !texture_mailbox_.IsEmpty()) &&
+         !context_lost_ && Layer::DrawsContent();
 }
 
-void TextureLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracker*, RenderingStats*)
-{
-    if (m_client) {
-        m_textureId = m_client->prepareTexture(*queue);
-        m_contextLost = m_client->context()->getGraphicsResetStatusARB() != GL_NO_ERROR;
-    }
+void TextureLayer::Update(ResourceUpdateQueue* queue,
+                          const OcclusionTracker* occlusion,
+                          RenderingStats* stats) {
+  if (client_) {
+    texture_id_ = client_->prepareTexture(*queue);
+    context_lost_ =
+        client_->context()->getGraphicsResetStatusARB() != GL_NO_ERROR;
+  }
 
-    needs_display_ = false;
+  needs_display_ = false;
 }
 
-void TextureLayer::PushPropertiesTo(LayerImpl* layer)
-{
-    Layer::PushPropertiesTo(layer);
+void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
+  Layer::PushPropertiesTo(layer);
 
-    TextureLayerImpl* textureLayer = static_cast<TextureLayerImpl*>(layer);
-    textureLayer->setFlipped(m_flipped);
-    textureLayer->setUVTopLeft(m_uvTopLeft);
-    textureLayer->setUVBottomRight(m_uvBottomRight);
-    textureLayer->setVertexOpacity(m_vertexOpacity);
-    textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
-    if (m_usesMailbox && m_ownMailbox) {
-        Thread* mainThread = layer_tree_host()->proxy()->MainThread();
-        TextureMailbox::ReleaseCallback callback;
-        if (!m_textureMailbox.IsEmpty())
-          callback = base::Bind(&postCallbackToMainThread, mainThread, m_textureMailbox.callback());
-        textureLayer->setTextureMailbox(TextureMailbox(m_textureMailbox.name(), callback, m_textureMailbox.sync_point()));
-        m_ownMailbox = false;
-    } else {
-        textureLayer->setTextureId(m_textureId);
-    }
-    m_contentCommitted = DrawsContent();
+  TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
+  texture_layer->setFlipped(flipped_);
+  texture_layer->setUVTopLeft(uv_top_left_);
+  texture_layer->setUVBottomRight(uv_bottom_right_);
+  texture_layer->setVertexOpacity(vertex_opacity_);
+  texture_layer->setPremultipliedAlpha(premultiplied_alpha_);
+  if (uses_mailbox_ && own_mailbox_) {
+    Thread* main_thread = layer_tree_host()->proxy()->MainThread();
+    TextureMailbox::ReleaseCallback callback;
+    if (!texture_mailbox_.IsEmpty())
+      callback = base::Bind(
+          &PostCallbackToMainThread, main_thread, texture_mailbox_.callback());
+    texture_layer->setTextureMailbox(TextureMailbox(
+        texture_mailbox_.name(), callback, texture_mailbox_.sync_point()));
+    own_mailbox_ = false;
+  } else {
+    texture_layer->setTextureId(texture_id_);
+  }
+  content_committed_ = DrawsContent();
 }
 
-bool TextureLayer::BlocksPendingCommit() const
-{
-    // Double-buffered texture layers need to be blocked until they can be made
-    // triple-buffered.  Single-buffered layers already prevent draws, so
-    // can block too for simplicity.
-    return DrawsContent();
+bool TextureLayer::BlocksPendingCommit() const {
+  // Double-buffered texture layers need to be blocked until they can be made
+  // triple-buffered.  Single-buffered layers already prevent draws, so
+  // can block too for simplicity.
+  return DrawsContent();
 }
 
-bool TextureLayer::CanClipSelf() const
-{
-    return true;
+bool TextureLayer::CanClipSelf() const {
+  return true;
 }
 
 }  // namespace cc

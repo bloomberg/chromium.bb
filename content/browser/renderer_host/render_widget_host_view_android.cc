@@ -544,7 +544,7 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
         texture_id_in_layer_, current_mailbox_.name);
   } else {
     texture_id_in_layer_ = factory->CreateTexture();
-    texture_layer_->setTextureId(texture_id_in_layer_);
+    texture_layer_->SetTextureId(texture_id_in_layer_);
   }
 
   ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
@@ -576,7 +576,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceSuspend() {
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
   // This tells us we should free the frontbuffer.
   if (texture_id_in_layer_) {
-    texture_layer_->setTextureId(0);
+    texture_layer_->SetTextureId(0);
     ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
         texture_id_in_layer_);
     texture_id_in_layer_ = 0;

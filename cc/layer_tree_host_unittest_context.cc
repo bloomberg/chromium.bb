@@ -915,7 +915,7 @@ class LayerTreeHostContextTestDontUseLostResources :
     scoped_refptr<TextureLayer> texture_ = TextureLayer::Create(NULL);
     texture_->SetBounds(gfx::Size(10, 10));
     texture_->SetAnchorPoint(gfx::PointF());
-    texture_->setTextureId(TestWebGraphicsContext3D::kExternalTextureId);
+    texture_->SetTextureId(TestWebGraphicsContext3D::kExternalTextureId);
     texture_->SetIsDrawable(true);
     root_->AddChild(texture_);
 

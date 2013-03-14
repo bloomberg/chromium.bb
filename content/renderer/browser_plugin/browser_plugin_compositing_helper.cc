@@ -218,7 +218,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
                           gpu_route_id,
                           gpu_host_id);
   }
-  texture_layer_->setTextureMailbox(cc::TextureMailbox(mailbox_name,
+  texture_layer_->SetTextureMailbox(cc::TextureMailbox(mailbox_name,
                                                        callback));
   texture_layer_->SetNeedsDisplay();
   last_mailbox_valid_ = current_mailbox_valid;
