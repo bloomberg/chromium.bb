@@ -12,11 +12,11 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/basic_desktop_environment.h"
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
+#include "remoting/host/me2me_desktop_environment.h"
 #include "remoting/host/win/session_desktop_environment.h"
 
 namespace remoting {
@@ -45,8 +45,7 @@ int DesktopProcessMain() {
           base::Bind(&DesktopProcess::InjectSas,
                      desktop_process.AsWeakPtr())));
 #else  // !defined(OS_WIN)
-  desktop_environment_factory.reset(
-      new BasicDesktopEnvironmentFactory(true));
+  desktop_environment_factory.reset(new Me2MeDesktopEnvironmentFactory());
 #endif  // !defined(OS_WIN)
 
   if (!desktop_process.Start(desktop_environment_factory.Pass()))

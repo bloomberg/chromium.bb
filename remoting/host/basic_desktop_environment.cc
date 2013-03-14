@@ -7,15 +7,10 @@
 #include "base/logging.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/desktop_resizer.h"
 #include "remoting/host/event_executor.h"
-#include "remoting/host/resizing_host_observer.h"
+#include "remoting/host/session_controller.h"
 
 namespace remoting {
-
-BasicDesktopEnvironment::BasicDesktopEnvironment(bool use_x_damage)
-    : use_x_damage_(use_x_damage) {
-}
 
 BasicDesktopEnvironment::~BasicDesktopEnvironment() {
   DCHECK(CalledOnValidThread());
@@ -40,9 +35,7 @@ scoped_ptr<SessionController>
 BasicDesktopEnvironment::CreateSessionController() {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<SessionController> session_controller(
-      new ResizingHostObserver(DesktopResizer::Create()));
-  return session_controller.Pass();
+  return scoped_ptr<SessionController>();
 }
 
 scoped_ptr<media::ScreenCapturer> BasicDesktopEnvironment::CreateVideoCapturer(
@@ -50,16 +43,15 @@ scoped_ptr<media::ScreenCapturer> BasicDesktopEnvironment::CreateVideoCapturer(
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
   DCHECK(CalledOnValidThread());
 
-#if defined(OS_LINUX)
-  return media::ScreenCapturer::CreateWithXDamage(use_x_damage_);
-#else  // !defined(OS_LINUX)
+  // The basic desktop environment does not use X DAMAGE, since it is
+  // broken on many systems - see http://crbug.com/73423.
   return media::ScreenCapturer::Create();
-#endif  // !defined(OS_LINUX)
 }
 
-BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(
-    bool use_x_damage)
-    : use_x_damage_(use_x_damage) {
+BasicDesktopEnvironment::BasicDesktopEnvironment() {
+}
+
+BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory() {
 }
 
 BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() {
@@ -68,8 +60,7 @@ BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() {
 scoped_ptr<DesktopEnvironment> BasicDesktopEnvironmentFactory::Create(
     const std::string& client_jid,
     const base::Closure& disconnect_callback) {
-  return scoped_ptr<DesktopEnvironment>(
-      new BasicDesktopEnvironment(use_x_damage_));
+  return scoped_ptr<DesktopEnvironment>(new BasicDesktopEnvironment());
 }
 
 bool BasicDesktopEnvironmentFactory::SupportsAudioCapture() const {

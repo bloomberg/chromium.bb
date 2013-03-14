@@ -105,9 +105,11 @@ void ClientSession::NotifyClientResolution(
     VLOG(1) << "Received ClientResolution (dips_width="
             << resolution.dips_width() << ", dips_height="
             << resolution.dips_height() << ")";
-    session_controller_->OnClientResolutionChanged(
-        SkIPoint::Make(kDefaultDPI, kDefaultDPI),
-        SkISize::Make(resolution.dips_width(), resolution.dips_height()));
+    if (session_controller_) {
+      session_controller_->OnClientResolutionChanged(
+          SkIPoint::Make(kDefaultDPI, kDefaultDPI),
+          SkISize::Make(resolution.dips_width(), resolution.dips_height()));
+    }
   }
 }
 

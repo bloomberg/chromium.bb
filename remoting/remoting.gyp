@@ -400,6 +400,8 @@
             'host/local_input_monitor_win.cc',
             'host/log_to_server.cc',
             'host/log_to_server.h',
+            'host/me2me_desktop_environment.cc',
+            'host/me2me_desktop_environment.h',
             'host/mouse_clamping_filter.cc',
             'host/mouse_clamping_filter.h',
             'host/mouse_move_observer.h',

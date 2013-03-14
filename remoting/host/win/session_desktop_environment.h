@@ -9,15 +9,14 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "remoting/host/basic_desktop_environment.h"
+#include "remoting/host/me2me_desktop_environment.h"
 
 namespace remoting {
 
 // Used to create audio/video capturers and event executor that are compatible
 // with Windows sessions.
-class SessionDesktopEnvironment : public BasicDesktopEnvironment {
+class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
  public:
-  explicit SessionDesktopEnvironment(const base::Closure& inject_sas);
   virtual ~SessionDesktopEnvironment();
 
   // DesktopEnvironment implementation.
@@ -26,6 +25,9 @@ class SessionDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
 
  private:
+  friend class SessionDesktopEnvironmentFactory;
+  explicit SessionDesktopEnvironment(const base::Closure& inject_sas);
+
   // Used to ask the daemon to inject Secure Attention Sequence.
   base::Closure inject_sas_;
 
@@ -33,7 +35,7 @@ class SessionDesktopEnvironment : public BasicDesktopEnvironment {
 };
 
 // Used to create |SessionDesktopEnvironment| instances.
-class SessionDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
+class SessionDesktopEnvironmentFactory : public Me2MeDesktopEnvironmentFactory {
  public:
   explicit SessionDesktopEnvironmentFactory(const base::Closure& inject_sas);
   virtual ~SessionDesktopEnvironmentFactory();
