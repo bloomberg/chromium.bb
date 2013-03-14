@@ -586,17 +586,11 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   gfx::Display new_display(display_info.id());
   gfx::Rect bounds_in_pixel(display_info.size_in_pixel());
 
+  // Simply set the origin to (0,0).  The primary display's origin is
+  // always (0,0) and the secondary display's bounds will be updated
+  // by |DisplayController::UpdateDisplayBoundsForLayout|.
   new_display.SetScaleAndBounds(
-      display_info.device_scale_factor(), bounds_in_pixel);
-
-  // If the display is primary, then simply set the origin to (0,0).
-  // The secondary display's bounds will be updated by
-  // |DisplayController::UpdateDisplayBoundsForLayout|, so no need
-  // to change there.
-  if (DisplayController::HasPrimaryDisplay()  &&
-      display_info.id() == DisplayController::GetPrimaryDisplay().id()) {
-    new_display.set_bounds(gfx::Rect(new_display.bounds().size()));
-  }
+      display_info.device_scale_factor(), gfx::Rect(bounds_in_pixel.size()));
   return new_display;
 }
 

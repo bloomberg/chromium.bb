@@ -19,14 +19,14 @@ TEST(DisplayTest, WorkArea) {
   EXPECT_EQ("3,4 90x80", display.work_area().ToString());
 
   display.SetScaleAndBounds(1.0f, gfx::Rect(10, 20, 50, 50));
-  EXPECT_EQ("0,0 50x50", display.bounds().ToString());
-  EXPECT_EQ("3,4 40x30", display.work_area().ToString());
+  EXPECT_EQ("10,20 50x50", display.bounds().ToString());
+  EXPECT_EQ("13,24 40x30", display.work_area().ToString());
 
   display.SetSize(gfx::Size(200, 200));
-  EXPECT_EQ("3,4 190x180", display.work_area().ToString());
+  EXPECT_EQ("13,24 190x180", display.work_area().ToString());
 
   display.UpdateWorkAreaFromInsets(gfx::Insets(3, 4, 5, 6));
-  EXPECT_EQ("4,3 190x192", display.work_area().ToString());
+  EXPECT_EQ("14,23 190x192", display.work_area().ToString());
 }
 
 TEST(DisplayTest, Scale) {

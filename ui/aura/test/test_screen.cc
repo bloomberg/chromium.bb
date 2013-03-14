@@ -17,7 +17,9 @@ namespace aura {
 
 // static
 TestScreen* TestScreen::Create() {
-  return new TestScreen(gfx::Rect(1, 1, 800, 600));
+  // Use (0,0) because the desktop aura tests are executed in
+  // native environment where the display's origin is (0,0).
+  return new TestScreen(gfx::Rect(0, 0, 800, 600));
 }
 
 // static

@@ -1193,7 +1193,7 @@ WebDropData* WebContentsViewAura::GetDropData() const {
 }
 
 gfx::Rect WebContentsViewAura::GetViewBounds() const {
-  return window_->GetBoundsInRootWindow();
+  return window_->GetBoundsInScreen();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/size_conversions.h"
 
@@ -104,8 +105,11 @@ void Display::SetScaleAndBounds(
     device_scale_factor_ = device_scale_factor;
   }
   device_scale_factor_ = std::max(1.0f, device_scale_factor_);
-  bounds_ = gfx::Rect(gfx::ToFlooredSize(
-      gfx::ScaleSize(bounds_in_pixel.size(), 1.0f / device_scale_factor_)));
+  bounds_ = gfx::Rect(
+      gfx::ToFlooredPoint(gfx::ScalePoint(bounds_in_pixel.origin(),
+                                          1.0f / device_scale_factor_)),
+      gfx::ToFlooredSize(gfx::ScaleSize(bounds_in_pixel.size(),
+                                        1.0f / device_scale_factor_)));
   UpdateWorkAreaFromInsets(insets);
 }
 
