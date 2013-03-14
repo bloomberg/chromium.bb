@@ -695,9 +695,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
 #if defined(OS_ANDROID)
   WebKit::WebRuntimeFeatures::enableMediaStream(
-      command_line.HasSwitch(switches::kEnableWebRTC));
+      !command_line.HasSwitch(switches::kDisableWebRTC));
   WebKit::WebRuntimeFeatures::enablePeerConnection(
-      command_line.HasSwitch(switches::kEnableWebRTC));
+      !command_line.HasSwitch(switches::kDisableWebRTC));
 #else
   WebKit::WebRuntimeFeatures::enableMediaStream(true);
   WebKit::WebRuntimeFeatures::enablePeerConnection(true);
@@ -1190,8 +1190,8 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     WebKit::WebMediaStreamCenterClient* client) {
 #if defined(OS_ANDROID)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebRTC))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebRTC))
     return NULL;
 #endif
 

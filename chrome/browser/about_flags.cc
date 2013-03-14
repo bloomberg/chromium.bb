@@ -412,12 +412,12 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
-    "enable-webrtc",
-    IDS_FLAGS_ENABLE_WEBRTC_NAME,
-    IDS_FLAGS_ENABLE_WEBRTC_DESCRIPTION,
+    "disable-webrtc",
+    IDS_FLAGS_DISABLE_WEBRTC_NAME,
+    IDS_FLAGS_DISABLE_WEBRTC_DESCRIPTION,
     kOsAndroid,
 #if defined(OS_ANDROID)
-    SINGLE_VALUE_TYPE(switches::kEnableWebRTC)
+    SINGLE_VALUE_TYPE(switches::kDisableWebRTC)
 #else
     SINGLE_VALUE_TYPE("")
 #endif
