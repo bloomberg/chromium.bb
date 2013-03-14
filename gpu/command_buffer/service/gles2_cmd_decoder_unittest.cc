@@ -1372,7 +1372,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatSucceeds) {
   typedef GetShaderPrecisionFormat::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   result->success = 0;
-  // NOTE: GL might not be called. There is no Desktop OpenGL equivalent.
   const GLint range[2] = { 62, 62 };
   const GLint precision = 16;
   EXPECT_CALL(*gl_,GetShaderPrecisionFormat(_, _, _, _))
