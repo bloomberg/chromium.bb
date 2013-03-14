@@ -16,15 +16,15 @@ _DELETIONS_ONLY_FILES = (
 def _CheckDeletionsOnlyFiles(input_api, output_api):
   """Check that a certain listed files only have deletions.
   """
-  errors = []
+  warnings = []
   for f in input_api.AffectedFiles():
     if f.LocalPath() in _DELETIONS_ONLY_FILES:
       if f.ChangedContents():
-        errors.append(f.LocalPath())
+        warnings.append(f.LocalPath())
   results = []
-  if errors:
-    results.append(output_api.PresubmitError(
-        'Following files should only contain deletions.', errors))
+  if warnings:
+    results.append(output_api.PresubmitPromptWarning(
+        'Following files should only contain deletions.', warnings))
   return results
 
 
