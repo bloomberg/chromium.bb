@@ -40,12 +40,12 @@ WebView.prototype.maybeSetupPermissionEvent_ = function() {
     var evt = new Event('permissionrequest', {bubbles: true, cancelable: true});
     var detail = e.detail ? JSON.parse(e.detail) : {};
     forEach(EXPOSED_PERMISSION_EVENT_ATTRIBS, function(i, attribName) {
-      if (detail[attribName] !== 'undefined')
+      if (detail[attribName] !== undefined)
         evt[attribName] = detail[attribName];
     });
     var requestId = detail.requestId;
 
-    if (detail.requestId !== 'undefined' &&
+    if (detail.requestId !== undefined &&
         PERMISSION_TYPES.indexOf(detail.permission) >= 0) {
       // TODO(lazyboy): Also fill in evt.details (see webview specs).
       // http://crbug.com/141197.
