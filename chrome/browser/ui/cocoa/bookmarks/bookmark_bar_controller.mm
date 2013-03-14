@@ -1212,6 +1212,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   NSCell* cell = [self cellForCustomButtonWithText:text
                                              image:image];
   appsPageShortcutButton_.reset([self customBookmarkButtonForCell:cell]);
+  [[appsPageShortcutButton_ draggableButton] setActsOnMouseDown:NO];
   [appsPageShortcutButton_ setAction:@selector(openAppsPage:)];
   NSString* tooltip =
       l10n_util::GetNSString(IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP);
