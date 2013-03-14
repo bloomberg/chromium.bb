@@ -65,6 +65,84 @@ static int GetBufferSizeForSampleRate(int sample_rate) {
   return buffer_size;
 }
 
+// Reference counted container of WebRtcAudioCapturerSink delegates.
+class WebRtcAudioCapturer::SinkOwner
+    : public base::RefCounted<WebRtcAudioCapturer::SinkOwner>,
+      public WebRtcAudioCapturerSink {
+ public:
+  explicit SinkOwner(WebRtcAudioCapturerSink* sink);
+
+  virtual void CaptureData(const int16* audio_data,
+                           int number_of_channels,
+                           int number_of_frames,
+                           int audio_delay_milliseconds,
+                           double volume) OVERRIDE;
+  virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
+  virtual void OnCaptureDeviceStopped() OVERRIDE;
+
+  bool IsEqual(const WebRtcAudioCapturerSink* other) const;
+  void Reset();
+
+  // Wrapper which allows to use std::find_if() when adding and removing
+  // sinks to/from the list.
+  struct WrapsSink {
+    WrapsSink(WebRtcAudioCapturerSink* sink) : sink_(sink) {}
+    bool operator()(
+        const scoped_refptr<WebRtcAudioCapturer::SinkOwner>& owner) {
+      return owner->IsEqual(sink_);
+    }
+    WebRtcAudioCapturerSink* sink_;
+  };
+
+ private:
+  ~SinkOwner() {}
+
+  friend class base::RefCounted<WebRtcAudioCapturer::SinkOwner>;
+  WebRtcAudioCapturerSink* delegate_;
+  mutable base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(SinkOwner);
+};
+
+WebRtcAudioCapturer::SinkOwner::SinkOwner(
+    WebRtcAudioCapturerSink* sink)
+    : delegate_(sink) {
+}
+
+void WebRtcAudioCapturer::SinkOwner::CaptureData(
+    const int16* audio_data, int number_of_channels, int number_of_frames,
+    int audio_delay_milliseconds, double volume) {
+  base::AutoLock lock(lock_);
+  if (delegate_) {
+    delegate_->CaptureData(audio_data, number_of_channels, number_of_frames,
+                           audio_delay_milliseconds, volume);
+  }
+}
+
+void WebRtcAudioCapturer::SinkOwner::SetCaptureFormat(
+    const media::AudioParameters& params) {
+  base::AutoLock lock(lock_);
+  if (delegate_)
+    delegate_->SetCaptureFormat(params);
+}
+
+void WebRtcAudioCapturer::SinkOwner::OnCaptureDeviceStopped() {
+  base::AutoLock lock(lock_);
+  if (delegate_)
+    delegate_->OnCaptureDeviceStopped();
+}
+
+bool WebRtcAudioCapturer::SinkOwner::IsEqual(
+    const WebRtcAudioCapturerSink* other) const {
+  base::AutoLock lock(lock_);
+  return (other == delegate_);
+}
+
+void WebRtcAudioCapturer::SinkOwner::Reset() {
+  base::AutoLock lock(lock_);
+  delegate_ = NULL;
+}
+
 // This is a temporary audio buffer with parameters used to send data to
 // callbacks.
 class WebRtcAudioCapturer::ConfiguredBuffer :
@@ -196,19 +274,30 @@ void WebRtcAudioCapturer::AddCapturerSink(WebRtcAudioCapturerSink* sink) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioCapturer::AddCapturerSink()";
   base::AutoLock auto_lock(lock_);
-  DCHECK(std::find(sinks_.begin(), sinks_.end(), sink) == sinks_.end());
-  sinks_.push_back(sink);
+  // Verify that |sink| is not already added to the list.
+  DCHECK(std::find_if(
+      sinks_.begin(), sinks_.end(), SinkOwner::WrapsSink(sink)) ==
+      sinks_.end());
+  // Create (and add to the list) a new SinkOwner which owns the |sink|
+  // and delagates all calls to the WebRtcAudioCapturerSink interface.
+  sinks_.push_back(new WebRtcAudioCapturer::SinkOwner(sink));
 }
 
 void WebRtcAudioCapturer::RemoveCapturerSink(WebRtcAudioCapturerSink* sink) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioCapturer::RemoveCapturerSink()";
+
   base::AutoLock auto_lock(lock_);
-  for (SinkList::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-    if (sink == *it) {
-      sinks_.erase(it);
-      break;
-    }
+
+  // Get iterator to the first element for which WrapsSink(sink) returns true.
+  SinkList::iterator it = std::find_if(sinks_.begin(), sinks_.end(),
+                                       SinkOwner::WrapsSink(sink));
+  if (it != sinks_.end()) {
+    // Clear the delegate to ensure that no more capture callbacks will
+    // be sent to this sink. Also avoids a possible crash which can happen
+    // if this method is called while capturing is active.
+    (*it)->Reset();
+    sinks_.erase(it);
   }
 }
 
@@ -375,17 +464,15 @@ void WebRtcAudioCapturer::OnDeviceStopped() {
       FROM_HERE, base::Bind(&WebRtcAudioCapturer::DoOnDeviceStopped, this));
 }
 
+// TODO(henrika): this implementation should be removed as soon as we add
+// suppport for proper handling of LocalMediaStream::stop().
 void WebRtcAudioCapturer::DoOnDeviceStopped() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioCapturer::DoOnDeviceStopped()";
-  {
-    base::AutoLock auto_lock(lock_);
-    running_ = false;
-  }
-
   SinkList sinks;
   {
     base::AutoLock auto_lock(lock_);
+    running_ = false;
     sinks = sinks_;
   }
 

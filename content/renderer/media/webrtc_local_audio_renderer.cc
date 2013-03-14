@@ -96,10 +96,6 @@ void WebRtcLocalAudioRenderer::OnCaptureDeviceStopped() {
     if (loopback_fifo_)
       loopback_fifo_->Clear();
   }
-
-  // The capture device has stopped and we should therefore stop all activity
-  // as well to save resources.
-  Stop();
 }
 
 // webrtc::ObserverInterface implementation

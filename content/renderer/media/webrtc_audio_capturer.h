@@ -119,7 +119,8 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   virtual ~WebRtcAudioCapturer();
 
  private:
-  typedef std::list<WebRtcAudioCapturerSink*> SinkList;
+  class SinkOwner;
+  typedef std::list<scoped_refptr<SinkOwner> > SinkList;
 
   WebRtcAudioCapturer();
 
