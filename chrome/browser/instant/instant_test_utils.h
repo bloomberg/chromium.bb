@@ -63,6 +63,10 @@ class InstantTestBase {
   void SetupInstant(Browser* browser);
   void Init(const GURL& instant_url);
 
+  void set_browser(Browser* browser) {
+    browser_ = browser;
+  }
+
   InstantController* instant() {
     return browser_->instant_controller()->instant();
   }

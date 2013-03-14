@@ -71,6 +71,8 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        MANUAL_OmniboxFocusLoadsInstant) {
+  set_browser(browser());
+
   // Explicitly unfocus the omnibox.
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
