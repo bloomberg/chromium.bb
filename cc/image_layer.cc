@@ -71,10 +71,10 @@ void ImageLayer::CalculateContentsScale(float ideal_contents_scale,
                                         bool animating_transform_to_screen,
                                         float* contents_scale_x,
                                         float* contents_scale_y,
-                                        gfx::Size* contentBounds) {
+                                        gfx::Size* content_bounds) {
   *contents_scale_x = ImageContentsScaleX();
   *contents_scale_y = ImageContentsScaleY();
-  *contentBounds = gfx::Size(bitmap_.width(), bitmap_.height());
+  *content_bounds = gfx::Size(bitmap_.width(), bitmap_.height());
 }
 
 bool ImageLayer::DrawsContent() const {

@@ -29,7 +29,7 @@ class CC_EXPORT ImageLayer : public TiledLayer {
                                       bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* contentBounds) OVERRIDE;
+                                      gfx::Size* content_bounds) OVERRIDE;
 
   void SetBitmap(const SkBitmap& image);
 
