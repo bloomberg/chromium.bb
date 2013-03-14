@@ -892,8 +892,10 @@ ui::MenuModel* ChromeLauncherControllerPerApp::CreateContextMenu(
 }
 
 ash::LauncherMenuModel* ChromeLauncherControllerPerApp::CreateApplicationMenu(
-    const ash::LauncherItem& item) {
-  return new LauncherApplicationMenuItemModel(GetApplicationList(item));
+    const ash::LauncherItem& item,
+    int event_flags) {
+  return new LauncherApplicationMenuItemModel(GetApplicationList(item,
+                                                                 event_flags));
 }
 
 ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
@@ -1048,9 +1050,10 @@ void ChromeLauncherControllerPerApp::ExtensionEnableFlowAborted(
 }
 
 ChromeLauncherAppMenuItems ChromeLauncherControllerPerApp::GetApplicationList(
-    const ash::LauncherItem& item) {
+    const ash::LauncherItem& item,
+    int event_flags) {
   if (item.type == ash::TYPE_BROWSER_SHORTCUT)
-    return GetBrowserApplicationList();
+    return GetBrowserApplicationList(event_flags);
 
   // Make sure that there is a controller associated with the id and that the
   // extension itself is a valid application and not a panel.
@@ -1451,7 +1454,8 @@ ChromeLauncherControllerPerApp::GetV1ApplicationsFromController(
 }
 
 ChromeLauncherAppMenuItems
-ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
+ChromeLauncherControllerPerApp::GetBrowserApplicationList(
+    int event_flags) {
   ChromeLauncherAppMenuItems items;
   bool found_tabbed_browser = false;
   // Add the application name to the menu.
@@ -1475,8 +1479,7 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (tab_strip->active_index() == -1)
       continue;
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshEnableFullBrowserListInLauncher)) {
+    if (!(event_flags & ui::EF_SHIFT_DOWN)) {
       WebContents* web_contents =
           tab_strip->GetWebContentsAt(tab_strip->active_index());
       gfx::Image app_icon = GetAppListIcon(web_contents);
@@ -1486,9 +1489,6 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
           browser,
           items.size() == 1));
     } else {
-      // TODO(skuhne): If we go with this experiment - remove the unused
-      // ChromeLauncherAppMenuItemBrowser class - we might also want to add a
-      // unit test that all browser tabs are enumerated and browsers separated.
       for (int index = 0; index  < tab_strip->count(); ++index) {
         content::WebContents* web_contents =
             tab_strip->GetWebContentsAt(index);

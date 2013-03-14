@@ -34,7 +34,8 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
       const ash::LauncherItem& item,
       aura::RootWindow* root) OVERRIDE;
   virtual ash::LauncherMenuModel* CreateApplicationMenu(
-      const ash::LauncherItem&) OVERRIDE;
+      const ash::LauncherItem&,
+      int event_flags) OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
 

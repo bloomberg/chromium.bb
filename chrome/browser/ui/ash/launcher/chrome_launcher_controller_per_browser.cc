@@ -873,7 +873,8 @@ ui::MenuModel* ChromeLauncherControllerPerBrowser::CreateContextMenu(
 
 ash::LauncherMenuModel*
 ChromeLauncherControllerPerBrowser::CreateApplicationMenu(
-    const ash::LauncherItem& item) {
+    const ash::LauncherItem& item,
+    int event_flags) {
   // Not used by this launcher type.
   return NULL;
 }

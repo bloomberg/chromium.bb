@@ -68,11 +68,6 @@ const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 
-// Enable the experiment to show all browser tabs in the browser menu of the
-// launcher.
-const char kAshEnableFullBrowserListInLauncher[] =
-    "ash-enable-full-browser-list-in-launcher";
-
 #if defined(OS_LINUX)
 // Enable memory monitoring.
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";

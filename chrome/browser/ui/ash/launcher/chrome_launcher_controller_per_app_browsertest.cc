@@ -96,10 +96,13 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
   }
 
-  size_t NumberOfDetectedLauncherBrowsers() {
+  size_t NumberOfDetectedLauncherBrowsers(bool show_all_tabs) {
     ChromeLauncherControllerPerApp* controller =
         static_cast<ChromeLauncherControllerPerApp*>(launcher_->delegate());
-    return controller->GetBrowserApplicationList().size();
+    int items = controller->GetBrowserApplicationList(
+        show_all_tabs ? ui::EF_SHIFT_DOWN : 0).size();
+    // If we have at least one item, we have also a title which we remove here.
+    return items ? (items - 1) : 0;
   }
 
   const Extension* LoadAndLaunchExtension(
@@ -858,7 +861,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
     WindowedAppDoesNotAddToBrowser) {
   // Get the number of items in the browser menu.
-  size_t items = NumberOfDetectedLauncherBrowsers();
+  size_t items = NumberOfDetectedLauncherBrowsers(false);
   size_t running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(0u, items);
   EXPECT_EQ(0u, running_browser);
@@ -866,14 +869,36 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   LoadAndLaunchExtension("app1", extension_misc::LAUNCH_WINDOW, NEW_WINDOW);
 
   // No new browser should get detected, even though one more is running.
-  EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers());
+  EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
   LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
 
   // A new browser should get detected and one more should be running.
-  EXPECT_GE(NumberOfDetectedLauncherBrowsers(), 1u);
+  EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 }
 
+// Checks the functionality to enumerate all browsers vs. all tabs.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
+    EnumerateALlBrowsersAndTabs) {
+  // Create at least one browser.
+  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
+  size_t browsers = NumberOfDetectedLauncherBrowsers(false);
+  size_t tabs = NumberOfDetectedLauncherBrowsers(true);
+
+  // Create a second browser.
+  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
+
+  EXPECT_EQ(++browsers, NumberOfDetectedLauncherBrowsers(false));
+  EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
+
+  // Create only a tab.
+  LoadAndLaunchExtension("app1",
+                         extension_misc::LAUNCH_TAB,
+                         NEW_FOREGROUND_TAB);
+
+  EXPECT_EQ(browsers, NumberOfDetectedLauncherBrowsers(false));
+  EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
+}
 

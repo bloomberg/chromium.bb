@@ -1268,13 +1268,14 @@ void LauncherView::ButtonPressed(views::Button* sender,
   }
 
   if (model_->items()[view_index].type != TYPE_APP_LIST)
-    ShowListMenuForView(model_->items()[view_index], sender);
+    ShowListMenuForView(model_->items()[view_index], sender, event.flags());
 }
 
 bool LauncherView::ShowListMenuForView(const LauncherItem& item,
-                                       views::View* source) {
+                                       views::View* source,
+                                       int event_flags) {
   scoped_ptr<ash::LauncherMenuModel> menu_model;
-  menu_model.reset(delegate_->CreateApplicationMenu(item));
+  menu_model.reset(delegate_->CreateApplicationMenu(item, event_flags));
 
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 2 spacing separators.

@@ -469,7 +469,7 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
                        size_t expected_items,
                        string16 title[],
                        bool is_browser) {
-  ChromeLauncherAppMenuItems items = controller->GetApplicationList(item);
+  ChromeLauncherAppMenuItems items = controller->GetApplicationList(item, 0);
   // A new behavior has been added: Only show menus if there is at least one
   // item available.
   if (expected_items < 1 && is_browser) {
@@ -489,7 +489,7 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
   }
 
   scoped_ptr<ash::LauncherMenuModel> menu(
-      controller->CreateApplicationMenu(item));
+      controller->CreateApplicationMenu(item, 0));
   // The first element in the menu is a spacing separator. On some systems
   // (e.g. Windows) such things do not exist. As such we check the existence
   // and adjust dynamically.
@@ -657,7 +657,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
   // item is per definition already the active tab).
   {
     scoped_ptr<ash::LauncherMenuModel> menu(
-        launcher_controller.CreateApplicationMenu(item_gmail));
+        launcher_controller.CreateApplicationMenu(item_gmail, 0));
     // The first element in the menu is a spacing separator. On some systems
     // (e.g. Windows) such things do not exist. As such we check the existence
     // and adjust dynamically.
@@ -670,7 +670,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
   // Execute the first item.
   {
     scoped_ptr<ash::LauncherMenuModel> menu(
-        launcher_controller.CreateApplicationMenu(item_gmail));
+        launcher_controller.CreateApplicationMenu(item_gmail, 0));
     int first_item =
         (menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR) ? 1 : 0;
     menu->ActivatedAt(first_item + 2);
@@ -709,7 +709,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuDeletionExecution) {
   // Activate the proper tab through the menu item.
   {
     ChromeLauncherAppMenuItems items =
-        launcher_controller.GetApplicationList(item_gmail);
+        launcher_controller.GetApplicationList(item_gmail, 0);
     items[1]->Execute(0);
     EXPECT_EQ(tabs, browser()->tab_strip_model()->count());
   }
@@ -717,7 +717,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuDeletionExecution) {
   // Delete one tab through the menu item.
   {
     ChromeLauncherAppMenuItems items =
-        launcher_controller.GetApplicationList(item_gmail);
+        launcher_controller.GetApplicationList(item_gmail, 0);
     items[1]->Execute(ui::EF_SHIFT_DOWN);
     EXPECT_EQ(--tabs, browser()->tab_strip_model()->count());
   }

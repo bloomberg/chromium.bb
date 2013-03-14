@@ -255,7 +255,8 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE;
   virtual ash::LauncherMenuModel* CreateApplicationMenu(
-      const ash::LauncherItem& item) OVERRIDE;
+      const ash::LauncherItem& item,
+      int event_flags) OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
 
@@ -290,7 +291,10 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
                            const gfx::ImageSkia& image) OVERRIDE;
 
   // Get the list of all running incarnations of this item.
-  ChromeLauncherAppMenuItems GetApplicationList(const ash::LauncherItem& item);
+  // |event_flags| specifies the flags which were set by the event which
+  // triggered this menu generation. It can be used to generate different lists.
+  ChromeLauncherAppMenuItems GetApplicationList(const ash::LauncherItem& item,
+                                                int event_flags);
 
   // Get the list of all tabs which belong to a certain application type.
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
@@ -395,9 +399,11 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
       LauncherItemController* controller);
 
   // Returns the list of all browsers runing.
+  // |event_flags| specifies the flags which were set by the event which
+  // triggered this menu generation. It can be used to generate different lists.
   // TODO(skuhne): Move to wherever the BrowserLauncherItemController
   // functionality moves to.
-  ChromeLauncherAppMenuItems GetBrowserApplicationList();
+  ChromeLauncherAppMenuItems GetBrowserApplicationList(int event_flags);
 
   // Returns true when the given |browser| is listed in the browser application
   // list.

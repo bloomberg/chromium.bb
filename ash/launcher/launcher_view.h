@@ -207,8 +207,10 @@ class ASH_EXPORT LauncherView : public views::View,
   // when the menu was shown and false if there were no possible items to
   // choose from. |source| specifies the view which is responsible for showing
   // the menu, and the bubble will point towards it.
+  // The |event_flags| are the flags of the event which triggered this menu.
   bool ShowListMenuForView(const LauncherItem& item,
-                           views::View* source);
+                           views::View* source,
+                           int event_flags);
 
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,

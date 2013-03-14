@@ -6604,12 +6604,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ASH_DISABLE_PER_APP_LAUNCHER_DESCRIPTION" desc="Description for the option to enable/disable the per application sorting launcher functionality.">
         Disable the per application sorting mode of the launcher.
       </message>
-      <message name="IDS_FLAGS_ASH_ENABLE_FULL_BROWSER_LIST_IN_LAUNCHER_NAME" desc="Name for the option to enable/disable the full browser list experiment in the launcher.">
-        Show all tabs in browser context menu.
-      </message>
-      <message name="IDS_FLAGS_ASH_ENABLE_FULL_BROWSER_LIST_IN_LAUNCHER_DESCRIPTION" desc="Description for the option to enable/disable the full browser list experiment in the launcher.">
-        Enable full browser / tab list for the browser item in the launcher.
-      </message>
       <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag to disable gesture requiment for media playback">
         Disable gesture requirement for media playback.
       </message>

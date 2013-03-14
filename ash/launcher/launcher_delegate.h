@@ -73,8 +73,10 @@ class ASH_EXPORT LauncherDelegate {
   //    Note: This is useful for hover menus which also show context help.
   //  - A list containing the title and the active list of items.
   // The caller takes ownership of the returned model.
+  // |event_flags| specifies the flags of the event which triggered this menu.
   virtual LauncherMenuModel* CreateApplicationMenu(
-      const LauncherItem& item) = 0;
+      const LauncherItem& item,
+      int event_flags) = 0;
 
   // Returns the id of the item associated with the specified window, or 0 if
   // there isn't one.

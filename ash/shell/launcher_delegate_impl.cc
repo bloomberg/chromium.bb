@@ -52,7 +52,8 @@ ui::MenuModel* LauncherDelegateImpl::CreateContextMenu(
 }
 
 ash::LauncherMenuModel* LauncherDelegateImpl::CreateApplicationMenu(
-    const ash::LauncherItem& item) {
+    const ash::LauncherItem& item,
+    int event_flags) {
   return NULL;
 }
 
