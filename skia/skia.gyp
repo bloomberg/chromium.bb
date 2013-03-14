@@ -134,6 +134,8 @@
         '../third_party/skia/include/utils/SkNWayCanvas.h',
         '../third_party/skia/src/utils/SkNWayCanvas.cpp',
         '../third_party/skia/src/utils/SkPictureUtils.cpp',
+        '../third_party/skia/src/utils/SkRTConf.cpp',
+        '../third_party/skia/include/utils/SkRTConf.h',
         '../third_party/skia/include/pdf/SkPDFDevice.h',
         '../third_party/skia/include/pdf/SkPDFDocument.h',
 
