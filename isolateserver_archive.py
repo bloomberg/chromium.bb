@@ -104,25 +104,29 @@ def url_open(url, *args, **kwargs):
   return result
 
 
-def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
+def upload_hash_content_to_blobstore(
+    generate_upload_url, data, hash_key, content):
   """Uploads the given hash contents directly to the blobsotre via a generated
   url.
 
   Arguments:
     generate_upload_url: The url to get the new upload url from.
-    hash_contents: The contents to upload.
+    data: extra POST data.
+    hash_key: sha1 of the uncompressed version of content.
+    content: The contents to upload. Must fit in memory for now.
   """
   logging.debug('Generating url to directly upload file to blobstore')
   assert isinstance(hash_key, str), hash_key
   assert isinstance(content, str), (hash_key, content)
-  upload_url = url_open(generate_upload_url).read()
+  upload_url = url_open(generate_upload_url, data).read()
 
   if not upload_url:
     logging.error('Unable to generate upload url')
     return
 
+  # TODO(maruel): Support large files.
   content_type, body = encode_multipart_formdata(
-      [], [('hash_contents', hash_key, content)])
+      [], [('hash_contents', hash_key, content)] + data)
   return url_open(upload_url, body, content_type=content_type)
 
 
@@ -139,9 +143,10 @@ class UploadRemote(run_isolated.Remote):
       hash_key = str(hash_key)
       content_url = base_url.rstrip('/') + '/content/'
       if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
-        url = '%sgenerate_blobstore_url/%s/%s?token=%s' % (
-           content_url, self.namespace, hash_key, self._token)
-        upload_hash_content_to_blobstore(url, hash_key, content)
+        url = '%sgenerate_blobstore_url/%s/%s' % (
+            content_url, self.namespace, hash_key)
+        data = [('token', self._token)]
+        upload_hash_content_to_blobstore(url, data, hash_key, content)
       else:
         url = '%sstore/%s/%s?token=%s' % (
             content_url, self.namespace, hash_key, self._token)
