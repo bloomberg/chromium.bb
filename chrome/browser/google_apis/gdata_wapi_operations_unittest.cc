@@ -17,6 +17,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/operation_registry.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
@@ -35,17 +36,6 @@ namespace {
 const char kTestGDataAuthToken[] = "testtoken";
 const char kTestUserAgent[] = "test-user-agent";
 const char kTestETag[] = "test_etag";
-
-// Copies the result from ResumeUploadCallback and quit the message loop.
-void CopyResultFromUploadRangeCallbackAndQuit(
-    UploadRangeResponse* out_response,
-    scoped_ptr<ResourceEntry>* out_new_entry,
-    const UploadRangeResponse& response,
-    scoped_ptr<ResourceEntry> new_entry) {
-  *out_response = response;
-  *out_new_entry = new_entry.Pass();
-  MessageLoop::current()->Quit();
-}
 
 class GDataWapiOperationsTest : public testing::Test {
  public:
@@ -883,9 +873,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                 &response,
-                 &new_entry),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&response, &new_entry)),
       UPLOAD_NEW_FILE,
       base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
       upload_url,
@@ -987,9 +977,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         new GetUploadStatusOperation(
             &operation_registry_,
             request_context_getter_.get(),
-            base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                       &response,
-                       &new_entry),
+            CreateComposedCallback(
+                base::Bind(&test_util::RunAndQuit),
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
             UPLOAD_NEW_FILE,
             base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
             upload_url,
@@ -1037,9 +1027,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
         &operation_registry_,
         request_context_getter_.get(),
-        base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                   &response,
-                   &new_entry),
+        CreateComposedCallback(
+            base::Bind(&test_util::RunAndQuit),
+            test_util::CreateCopyResultCallback(&response, &new_entry)),
         UPLOAD_NEW_FILE,
         base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
         upload_url,
@@ -1089,9 +1079,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         new GetUploadStatusOperation(
             &operation_registry_,
             request_context_getter_.get(),
-            base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                       &response,
-                       &new_entry),
+            CreateComposedCallback(
+                base::Bind(&test_util::RunAndQuit),
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
             UPLOAD_NEW_FILE,
             base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
             upload_url,
@@ -1181,9 +1171,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                 &response,
-                 &new_entry),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&response, &new_entry)),
       UPLOAD_NEW_FILE,
       base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
       upload_url,
@@ -1272,9 +1262,9 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                 &response,
-                 &new_entry),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&response, &new_entry)),
       UPLOAD_EXISTING_FILE,
       base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
       upload_url,
@@ -1365,9 +1355,9 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                 &response,
-                 &new_entry),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&response, &new_entry)),
       UPLOAD_EXISTING_FILE,
       base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
       upload_url,
