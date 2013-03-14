@@ -192,7 +192,9 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
   // disabled for the two platforms.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  if (!IsRenderedInInstantProcess(contents, profile))
+  if (!IsRenderedInInstantProcess(contents, profile) &&
+      (contents->GetController().GetLastCommittedEntry() == entry ||
+       !ShouldAssignURLToInstantRenderer(entry->GetURL(), profile)))
     return string16();
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
   // Check to see if search terms have already been extracted.
