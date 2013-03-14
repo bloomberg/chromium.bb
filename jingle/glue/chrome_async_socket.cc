@@ -5,8 +5,8 @@
 #include "jingle/glue/chrome_async_socket.h"
 
 #include <algorithm>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -18,10 +18,10 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
-#include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/ssl/ssl_config_service.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 
 namespace jingle_glue {

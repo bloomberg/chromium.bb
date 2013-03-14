@@ -12,8 +12,8 @@
 #include "jingle/glue/task_pump.h"
 #include "jingle/glue/xmpp_client_socket_factory.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
-#include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
 #include "talk/xmpp/xmppclientsettings.h"
 

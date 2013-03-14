@@ -18,8 +18,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
-#include "net/base/ssl_config_service.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
 
 namespace net {

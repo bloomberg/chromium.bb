@@ -43,6 +43,7 @@ include_rules = [
   "+net/ftp",
   "+net/http",
   "+net/proxy",
+  "+net/ssl",
   "+net/socket",
   "+net/socket_stream",
   "+net/test",

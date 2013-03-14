@@ -16,7 +16,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
-#include "net/base/ssl_config_service_defaults.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
@@ -28,6 +27,7 @@
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/socket_test_util.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

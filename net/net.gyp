@@ -120,11 +120,6 @@
         'base/cert_verify_proc_win.h',
         'base/cert_verify_result.cc',
         'base/cert_verify_result.h',
-        'base/client_cert_store.h',
-        'base/client_cert_store_impl.h',
-        'base/client_cert_store_impl_mac.cc',
-        'base/client_cert_store_impl_nss.cc',
-        'base/client_cert_store_impl_win.cc',
         'base/completion_callback.h',
         'base/connection_type_histograms.cc',
         'base/connection_type_histograms.h',
@@ -135,8 +130,6 @@
         'base/crypto_module_openssl.cc',
         'base/data_url.cc',
         'base/data_url.h',
-        'base/default_server_bound_cert_store.cc',
-        'base/default_server_bound_cert_store.h',
         'base/directory_lister.cc',
         'base/directory_lister.h',
         'base/dns_reloader.cc',
@@ -264,27 +257,10 @@
         'base/sdch_filter.h',
         'base/sdch_manager.cc',
         'base/sdch_manager.h',
-        'base/server_bound_cert_service.cc',
-        'base/server_bound_cert_service.h',
-        'base/server_bound_cert_store.cc',
-        'base/server_bound_cert_store.h',
         'base/single_request_cert_verifier.cc',
         'base/single_request_cert_verifier.h',
         'base/single_request_host_resolver.cc',
         'base/single_request_host_resolver.h',
-        'base/ssl_cert_request_info.cc',
-        'base/ssl_cert_request_info.h',
-        'base/ssl_cipher_suite_names.cc',
-        'base/ssl_cipher_suite_names.h',
-        'base/ssl_client_auth_cache.cc',
-        'base/ssl_client_auth_cache.h',
-        'base/ssl_client_cert_type.h',
-        'base/ssl_config_service.cc',
-        'base/ssl_config_service.h',
-        'base/ssl_config_service_defaults.cc',
-        'base/ssl_config_service_defaults.h',
-        'base/ssl_info.cc',
-        'base/ssl_info.h',
         'base/static_cookie_policy.cc',
         'base/static_cookie_policy.h',
         'base/stream_listen_socket.cc',
@@ -301,9 +277,6 @@
         'base/test_root_certs_openssl.cc',
         'base/test_root_certs_android.cc',
         'base/test_root_certs_win.cc',
-        'base/transport_security_state.cc',
-        'base/transport_security_state.h',
-        'base/transport_security_state_static.h',
         'base/unix_domain_socket_posix.cc',
         'base/unix_domain_socket_posix.h',
         'base/upload_bytes_element_reader.cc',
@@ -608,6 +581,9 @@
         'http/partial_data.h',
         'http/proxy_client_socket.h',
         'http/proxy_client_socket.cc',
+        'http/transport_security_state.cc',
+        'http/transport_security_state.h',
+        'http/transport_security_state_static.h',
         'http/url_security_manager.cc',
         'http/url_security_manager.h',
         'http/url_security_manager_posix.cc',
@@ -872,6 +848,30 @@
         'spdy/spdy_stream.h',
         'spdy/spdy_websocket_stream.cc',
         'spdy/spdy_websocket_stream.h',
+        'ssl/client_cert_store.h',
+        'ssl/client_cert_store_impl.h',
+        'ssl/client_cert_store_impl_mac.cc',
+        'ssl/client_cert_store_impl_nss.cc',
+        'ssl/client_cert_store_impl_win.cc',
+        'ssl/default_server_bound_cert_store.cc',
+        'ssl/default_server_bound_cert_store.h',
+        'ssl/server_bound_cert_service.cc',
+        'ssl/server_bound_cert_service.h',
+        'ssl/server_bound_cert_store.cc',
+        'ssl/server_bound_cert_store.h',
+        'ssl/ssl_cert_request_info.cc',
+        'ssl/ssl_cert_request_info.h',
+        'ssl/ssl_cipher_suite_names.cc',
+        'ssl/ssl_cipher_suite_names.h',
+        'ssl/ssl_client_auth_cache.cc',
+        'ssl/ssl_client_auth_cache.h',
+        'ssl/ssl_client_cert_type.h',
+        'ssl/ssl_config_service.cc',
+        'ssl/ssl_config_service.h',
+        'ssl/ssl_config_service_defaults.cc',
+        'ssl/ssl_config_service_defaults.h',
+        'ssl/ssl_info.cc',
+        'ssl/ssl_info.h',
         'third_party/mozilla_security_manager/nsKeygenHandler.cpp',
         'third_party/mozilla_security_manager/nsKeygenHandler.h',
         'third_party/mozilla_security_manager/nsNSSCertificateDB.cpp',
@@ -1080,7 +1080,6 @@
               'base/cert_database_nss.cc',
               'base/cert_verify_proc_nss.cc',
               'base/cert_verify_proc_nss.h',
-              'base/client_cert_store_impl_nss.cc',
               'base/crypto_module_nss.cc',
               'base/keygen_handler_nss.cc',
               'base/nss_cert_database.cc',
@@ -1099,6 +1098,7 @@
               'socket/ssl_client_socket_nss.h',
               'socket/ssl_server_socket_nss.cc',
               'socket/ssl_server_socket_nss.h',
+              'ssl/client_cert_store_impl_nss.cc',
               'quic/crypto/p256_key_exchange_nss.cc',
               'third_party/mozilla_security_manager/nsKeygenHandler.cpp',
               'third_party/mozilla_security_manager/nsKeygenHandler.h',
@@ -1196,7 +1196,7 @@
             'sources!': [
               'base/cert_verify_proc_nss.cc',
               'base/cert_verify_proc_nss.h',
-              'base/client_cert_store_impl_nss.cc',
+              'ssl/client_cert_store_impl_nss.cc',
             ],
         }],
         [ 'enable_websockets != 1', {
@@ -1211,12 +1211,12 @@
         }],
         [ 'OS == "win"', {
             'sources!': [
-              'base/client_cert_store_impl_nss.cc',
               'http/http_auth_handler_ntlm_portable.cc',
               'socket/tcp_client_socket_libevent.cc',
               'socket/tcp_client_socket_libevent.h',
               'socket/tcp_server_socket_libevent.cc',
               'socket/tcp_server_socket_libevent.h',
+              'ssl/client_cert_store_impl_nss.cc',
               'udp/udp_socket_libevent.cc',
               'udp/udp_socket_libevent.h',
             ],
@@ -1241,7 +1241,7 @@
         ],
         [ 'OS == "mac"', {
             'sources!': [
-              'base/client_cert_store_impl_nss.cc',
+              'ssl/client_cert_store_impl_nss.cc',
             ],
             'dependencies': [
               '../third_party/nss/nss.gyp:nspr',
@@ -1365,10 +1365,8 @@
         'base/backoff_entry_unittest.cc',
         'base/big_endian_unittest.cc',
         'base/cert_verify_proc_unittest.cc',
-        'base/client_cert_store_impl_unittest.cc',
         'base/crl_set_unittest.cc',
         'base/data_url_unittest.cc',
-        'base/default_server_bound_cert_store_unittest.cc',
         'base/directory_lister_unittest.cc',
         'base/dns_util_unittest.cc',
         'base/escape_unittest.cc',
@@ -1401,17 +1399,12 @@
         'base/registry_controlled_domains/registry_controlled_domain_unittest.cc',
         'base/run_all_unittests.cc',
         'base/sdch_filter_unittest.cc',
-        'base/server_bound_cert_service_unittest.cc',
         'base/single_request_host_resolver_unittest.cc',
-        'base/ssl_cipher_suite_names_unittest.cc',
-        'base/ssl_client_auth_cache_unittest.cc',
-        'base/ssl_config_service_unittest.cc',
         'base/static_cookie_policy_unittest.cc',
         'base/tcp_listen_socket_unittest.cc',
         'base/tcp_listen_socket_unittest.h',
         'base/test_certificate_data.h',
         'base/test_completion_callback_unittest.cc',
-        'base/transport_security_state_unittest.cc',
         'base/unix_domain_socket_posix_unittest.cc',
         'base/upload_bytes_element_reader_unittest.cc',
         'base/upload_data_stream_unittest.cc',
@@ -1511,6 +1504,7 @@
         'http/mock_http_cache.h',
         'http/mock_sspi_library_win.cc',
         'http/mock_sspi_library_win.h',
+        'http/transport_security_state_unittest.cc',
         'http/url_security_manager_unittest.cc',
         'proxy/dhcp_proxy_script_adapter_fetcher_win_unittest.cc',
         'proxy/dhcp_proxy_script_fetcher_factory_unittest.cc',
@@ -1646,6 +1640,12 @@
         'spdy/spdy_websocket_test_util_spdy2.h',
         'spdy/spdy_websocket_test_util_spdy3.cc',
         'spdy/spdy_websocket_test_util_spdy3.h',
+        'ssl/client_cert_store_impl_unittest.cc',
+        'ssl/default_server_bound_cert_store_unittest.cc',
+        'ssl/server_bound_cert_service_unittest.cc',
+        'ssl/ssl_cipher_suite_names_unittest.cc',
+        'ssl/ssl_client_auth_cache_unittest.cc',
+        'ssl/ssl_config_service_unittest.cc',
         'test/python_utils_unittest.cc',
         'tools/dump_cache/url_to_filename_encoder.cc',
         'tools/dump_cache/url_to_filename_encoder.h',
@@ -1689,7 +1689,7 @@
             # No res_ninit() et al on Android, so this doesn't make a lot of
             # sense.
             'dns/dns_config_service_posix_unittest.cc',
-            'base/client_cert_store_impl_unittest.cc',
+            'ssl/client_cert_store_impl_unittest.cc',
           ],
           'dependencies': [
             'net_javatests',
@@ -1738,9 +1738,9 @@
             # TODO(bulach): Add equivalent tests when the underlying
             #               functionality is ported to OpenSSL.
             'sources!': [
-              'base/client_cert_store_impl_unittest.cc',
               'base/nss_cert_database_unittest.cc',
               'base/x509_util_nss_unittest.cc',
+              'ssl/client_cert_store_impl_unittest.cc',
             ],
           }, {  # else !use_openssl: remove the unneeded files
             'sources!': [
@@ -1829,7 +1829,6 @@
             'sources!': [
               # TODO(droger): The following tests are disabled because the
               # implementation is missing or incomplete.
-              'base/client_cert_store_impl_unittest.cc',
               # KeygenHandler::GenKeyAndSignChallenge() is not ported to iOS.
               'base/keygen_handler_unittest.cc',
               # Need to read input data files.
@@ -1840,6 +1839,7 @@
               # Need TestServer.
               'proxy/proxy_script_fetcher_impl_unittest.cc',
               'socket/ssl_client_socket_unittest.cc',
+              'ssl/client_cert_store_impl_unittest.cc',
               'url_request/url_fetcher_impl_unittest.cc',
               'url_request/url_request_context_builder_unittest.cc',
               # Needs GetAppOutput().
@@ -1855,7 +1855,7 @@
                 'sources!': [
                   # These sources can't be built with coverage due to a
                   # toolchain bug: http://openradar.appspot.com/radar?id=1499403
-                  'base/transport_security_state_unittest.cc',
+                  'http/transport_security_state_unittest.cc',
 
                   # These tests crash when run with coverage turned on due to an
                   # issue with llvm_gcda_increment_indirect_counter:

@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "jingle/glue/resolving_client_socket_factory.h"
-#include "net/base/ssl_config_service.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 class ClientSocketFactory;

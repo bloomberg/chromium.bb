@@ -9,9 +9,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "net/base/net_errors.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/ssl_cert_request_info.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_proxy_client_socket_pool.h"
 #include "net/socket/client_socket_factory.h"
@@ -19,6 +18,7 @@
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/ssl/ssl_cert_request_info.h"
 
 namespace net {
 

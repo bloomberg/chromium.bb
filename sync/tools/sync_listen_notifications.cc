@@ -19,15 +19,15 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/transport_security_state.h"
+#include "net/http/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_handler.h"
+#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/invalidator_factory.h"
 #include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_factory.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 
 #if defined(OS_MACOSX)

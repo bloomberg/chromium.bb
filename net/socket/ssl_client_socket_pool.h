@@ -11,13 +11,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "net/base/host_resolver.h"
-#include "net/base/ssl_config_service.h"
 #include "net/http/http_response_info.h"
 #include "net/proxy/proxy_server.h"
-#include "net/socket/ssl_client_socket.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool_histograms.h"
-#include "net/socket/client_socket_pool.h"
+#include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 

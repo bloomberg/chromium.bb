@@ -19,11 +19,11 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
-#include "net/base/ssl_config_service.h"
-#include "net/base/transport_security_state.h"
+#include "net/ftp/ftp_auth_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
-#include "net/ftp/ftp_auth_cache.h"
+#include "net/http/transport_security_state.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
 
 namespace net {

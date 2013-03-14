@@ -27,17 +27,17 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
-#include "net/base/ssl_cert_request_info.h"
-#include "net/base/ssl_config_service.h"
 #include "net/base/upload_data_stream.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_transaction_delegate.h"
 #include "net/http/http_transaction.h"
+#include "net/http/http_transaction_delegate.h"
 #include "net/http/http_util.h"
 #include "net/http/partial_data.h"
+#include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_config_service.h"
 
 using base::Time;
 using base::TimeDelta;

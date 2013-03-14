@@ -23,7 +23,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "net/android/network_library.h"
-#include "net/base/ssl_info.h"
+#include "net/ssl/ssl_info.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "net/base/net_export.h"
-#include "net/base/ssl_client_cert_type.h"
+#include "net/ssl/ssl_client_cert_type.h"
 
 namespace net {
 

@@ -17,10 +17,10 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
-#include "net/base/ssl_config_service.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/stream_socket.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 class ClientSocketFactory;

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/captive_portal/captive_portal_login_detector.h"
-#include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -23,7 +23,7 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
-#include "net/base/ssl_info.h"
+#include "net/ssl/ssl_info.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(captive_portal::CaptivePortalTabHelper);
 

@@ -4,6 +4,7 @@ include_rules = [
   "+net/ftp",
   "+net/http",
   "+net/proxy",
+  "+net/ssl",
   "+net/test",
   "+net/url_request",
 

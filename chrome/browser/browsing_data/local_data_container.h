@@ -21,7 +21,7 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
-#include "net/base/server_bound_cert_store.h"
+#include "net/ssl/server_bound_cert_store.h"
 
 class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;

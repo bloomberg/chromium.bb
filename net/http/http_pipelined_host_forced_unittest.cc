@@ -5,10 +5,10 @@
 #include "net/http/http_pipelined_host_forced.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/ssl_config_service.h"
 #include "net/http/http_pipelined_host_test_util.h"
 #include "net/proxy/proxy_info.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/ssl/ssl_config_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

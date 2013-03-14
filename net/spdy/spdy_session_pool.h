@@ -5,8 +5,8 @@
 #ifndef NET_SPDY_SPDY_SESSION_POOL_H_
 #define NET_SPDY_SPDY_SESSION_POOL_H_
 
-#include <map>
 #include <list>
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -18,10 +18,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/ssl_config_service.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/next_proto.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 

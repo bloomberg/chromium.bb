@@ -21,10 +21,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/client_cert_store.h"
-#include "net/base/client_cert_store_impl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/ssl/client_cert_store.h"
+#include "net/ssl/client_cert_store_impl.h"
 #include "webkit/appcache/appcache_interceptor.h"
 
 using base::TimeDelta;

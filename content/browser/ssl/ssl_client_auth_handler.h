@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/ssl_cert_request_info.h"
+#include "net/ssl/ssl_cert_request_info.h"
 
 namespace net {
 class HttpNetworkSession;

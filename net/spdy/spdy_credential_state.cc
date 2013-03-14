@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "net/base/server_bound_cert_service.h"
+#include "net/ssl/server_bound_cert_service.h"
 
 namespace net {
 

@@ -18,7 +18,6 @@
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/ssl_config_service_defaults.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
@@ -27,6 +26,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 
 void usage(const char* program_name) {
   printf("usage: %s --url=<url>  [--n=<clients>] [--stats] [--use_cache]\n",

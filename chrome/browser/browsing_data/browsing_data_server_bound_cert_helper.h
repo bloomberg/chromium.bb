@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "net/base/server_bound_cert_store.h"
+#include "net/ssl/server_bound_cert_store.h"
 
 class Profile;
 

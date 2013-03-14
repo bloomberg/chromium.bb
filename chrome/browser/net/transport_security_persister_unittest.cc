@@ -13,7 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/base/transport_security_state.h"
+#include "net/http/transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::TransportSecurityState;
@@ -213,7 +213,7 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
 
 TEST_F(TransportSecurityPersisterTest, ForcePreloads) {
   // The static state for docs.google.com, defined in
-  // net/base/transport_security_state_static.h, has pins and mode strict.
+  // net/http/transport_security_state_static.h, has pins and mode strict.
   // This new policy overrides that with no pins and a weaker mode. We apply
   // this new policy with |DeserializeFromCommandLine| and expect that the
   // new policy is in effect, overriding the static policy.

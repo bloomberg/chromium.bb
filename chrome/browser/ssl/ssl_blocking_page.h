@@ -11,9 +11,9 @@
 #include "base/callback.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "net/base/ssl_info.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/ssl/ssl_info.h"
 
 namespace base {
 class DictionaryValue;

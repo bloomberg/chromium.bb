@@ -4,8 +4,8 @@
 
 #include "content/browser/ssl/ssl_policy.h"
 
-#include "base/bind.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
@@ -20,7 +20,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/ssl_info.h"
+#include "net/ssl/ssl_info.h"
 #include "webkit/glue/resource_type.h"
 
 

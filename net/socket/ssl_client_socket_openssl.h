@@ -12,9 +12,9 @@
 #include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
-#include "net/base/ssl_config_service.h"
-#include "net/socket/ssl_client_socket.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_config_service.h"
 
 // Avoid including misc OpenSSL headers, i.e.:
 // <openssl/bio.h>

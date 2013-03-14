@@ -17,9 +17,9 @@
 #include "net/android/keystore_openssl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/openssl_client_key_store.h"
-#include "net/base/ssl_cert_request_info.h"
-#include "net/base/ssl_client_cert_type.h"
 #include "net/base/x509_certificate.h"
+#include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_client_cert_type.h"
 
 namespace chrome {
 

@@ -41,8 +41,8 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/load_flags.h"
-#include "net/base/ssl_config_service.h"
 #include "net/http/http_response_headers.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
 
 #if defined(ENABLE_MANAGED_USERS)

@@ -6,11 +6,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
-#include "net/base/ssl_config_service.h"
 #include "net/http/http_pipelined_host.h"
 #include "net/http/http_pipelined_host_capability.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_info.h"
+#include "net/ssl/ssl_config_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

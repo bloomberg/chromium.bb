@@ -7,9 +7,9 @@
 
 #include "net/socket/ssl_client_socket_openssl.h"
 
-#include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/opensslv.h>
+#include <openssl/ssl.h>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -21,11 +21,11 @@
 #include "net/base/net_errors.h"
 #include "net/base/openssl_client_key_store.h"
 #include "net/base/single_request_cert_verifier.h"
-#include "net/base/ssl_cert_request_info.h"
-#include "net/base/ssl_connection_status_flags.h"
-#include "net/base/ssl_info.h"
 #include "net/base/x509_certificate_net_log_param.h"
 #include "net/socket/ssl_error_params.h"
+#include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_info.h"
 
 namespace net {
 

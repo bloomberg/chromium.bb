@@ -17,13 +17,13 @@
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
 #include "net/base/load_timing_info.h"
-#include "net/base/ssl_cert_request_info.h"
-#include "net/base/ssl_info.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket.h"
+#include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Socket events are easier to debug if you log individual reads and writes.

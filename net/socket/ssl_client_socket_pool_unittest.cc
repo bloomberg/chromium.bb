@@ -15,7 +15,6 @@
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
-#include "net/base/ssl_config_service_defaults.h"
 #include "net/base/test_certificate_data.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -30,6 +29,7 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace net::test_spdy2;

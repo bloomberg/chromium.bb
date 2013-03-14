@@ -20,8 +20,6 @@
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
-#include "net/base/ssl_client_cert_type.h"
-#include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
@@ -31,6 +29,8 @@
 #include "net/spdy/spdy_io_buffer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/ssl/ssl_client_cert_type.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 

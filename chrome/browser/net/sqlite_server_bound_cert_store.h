@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/default_server_bound_cert_store.h"
+#include "net/ssl/default_server_bound_cert_store.h"
 
 class ClearOnExitPolicy;
 

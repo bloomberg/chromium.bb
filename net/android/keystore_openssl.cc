@@ -27,7 +27,7 @@
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
 #include "net/android/keystore.h"
-#include "net/base/ssl_client_cert_type.h"
+#include "net/ssl/ssl_client_cert_type.h"
 
 // IMPORTANT NOTE: The following code will currently only work when used
 // to implement client certificate support with OpenSSL. That's because

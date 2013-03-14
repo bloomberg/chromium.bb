@@ -18,13 +18,13 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/base/request_priority.h"
-#include "net/base/server_bound_cert_service.h"
-#include "net/base/ssl_client_cert_type.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
+#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/ssl_client_cert_type.h"
 
 namespace net {
 

@@ -4,8 +4,8 @@
 
 #include "net/http/http_pipelined_host_test_util.h"
 
-#include "net/base/ssl_config_service.h"
 #include "net/proxy/proxy_info.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 

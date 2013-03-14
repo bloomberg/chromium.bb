@@ -14,13 +14,13 @@
 #include "base/time.h"
 #include "net/base/net_log.h"
 #include "net/base/request_priority.h"
-#include "net/base/ssl_config_service.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 

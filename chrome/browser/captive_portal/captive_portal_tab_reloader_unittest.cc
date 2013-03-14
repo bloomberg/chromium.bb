@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/ssl_info.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

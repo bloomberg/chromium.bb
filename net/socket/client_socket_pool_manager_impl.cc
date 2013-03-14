@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "net/base/ssl_config_service.h"
-#include "net/http/http_proxy_client_socket_pool.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_proxy_client_socket_pool.h"
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 

@@ -16,7 +16,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log_unittest.h"
-#include "net/base/ssl_cert_request_info.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/disk_cache/disk_cache.h"
@@ -30,6 +29,7 @@
 #include "net/http/http_transaction_unittest.h"
 #include "net/http/http_util.h"
 #include "net/http/mock_http_cache.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

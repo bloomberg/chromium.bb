@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/string_piece.h"
 #include "net/base/net_export.h"
-#include "net/base/ssl_client_cert_type.h"
+#include "net/ssl/ssl_client_cert_type.h"
 
 // Avoid including <openssl/evp.h> here.
 typedef struct evp_pkey_st EVP_PKEY;

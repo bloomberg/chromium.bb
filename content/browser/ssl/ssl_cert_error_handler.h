@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/ssl/ssl_error_handler.h"
-#include "net/base/ssl_info.h"
+#include "net/ssl/ssl_info.h"
 
 namespace content {
 

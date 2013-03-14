@@ -11,8 +11,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "net/base/ssl_cert_request_info.h"
 #include "net/base/x509_certificate.h"
+#include "net/ssl/ssl_cert_request_info.h"
 
 using content::BrowserThread;
 

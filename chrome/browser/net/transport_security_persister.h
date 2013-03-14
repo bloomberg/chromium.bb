@@ -38,7 +38,7 @@
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/transport_security_state.h"
+#include "net/http/transport_security_state.h"
 
 // Reads and updates on-disk TransportSecurity state.
 // Must be created, used and destroyed only on the IO thread.

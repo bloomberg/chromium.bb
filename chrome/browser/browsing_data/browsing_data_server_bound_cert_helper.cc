@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/server_bound_cert_service.h"
+#include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 

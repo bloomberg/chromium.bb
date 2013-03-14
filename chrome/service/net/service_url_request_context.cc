@@ -16,7 +16,6 @@
 #include "chrome/service/service_process.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_resolver.h"
-#include "net/base/ssl_config_service_defaults.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -25,6 +24,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_throttler_manager.h"
 

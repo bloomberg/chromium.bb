@@ -39,9 +39,9 @@
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/base/ssl_cipher_suite_names.h"
-#include "net/base/ssl_connection_status_flags.h"
 #include "net/base/x509_certificate.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

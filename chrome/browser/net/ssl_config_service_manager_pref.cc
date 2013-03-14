@@ -18,8 +18,8 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/ssl_cipher_suite_names.h"
-#include "net/base/ssl_config_service.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
+#include "net/ssl/ssl_config_service.h"
 
 using content::BrowserThread;
 

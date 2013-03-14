@@ -9,7 +9,6 @@
 #include "crypto/signature_creator.h"
 #include "net/base/asn1_util.h"
 #include "net/base/capturing_net_log.h"
-#include "net/base/default_server_bound_cert_store.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/upload_data_stream.h"
@@ -19,6 +18,7 @@
 #include "net/http/http_response_info.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
+#include "net/ssl/default_server_bound_cert_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace net::test_spdy2;

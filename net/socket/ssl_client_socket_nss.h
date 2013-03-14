@@ -24,10 +24,10 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/base/nss_memio.h"
-#include "net/base/server_bound_cert_service.h"
-#include "net/base/ssl_config_service.h"
 #include "net/base/x509_certificate.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace base {
 class SequencedTaskRunner;

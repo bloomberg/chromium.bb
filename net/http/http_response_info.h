@@ -10,8 +10,8 @@
 #include "base/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
-#include "net/base/ssl_info.h"
 #include "net/http/http_vary_data.h"
+#include "net/ssl/ssl_info.h"
 
 class Pickle;
 

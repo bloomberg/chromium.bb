@@ -26,7 +26,7 @@
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "net/base/server_bound_cert_store.h"
+#include "net/ssl/server_bound_cert_store.h"
 #include "ui/base/models/tree_node_model.h"
 
 class BrowsingDataCookieHelper;

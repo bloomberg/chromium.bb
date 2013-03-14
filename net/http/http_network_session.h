@@ -11,11 +11,11 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_export.h"
-#include "net/base/ssl_client_auth_cache.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/ssl/ssl_client_auth_cache.h"
 
 namespace base {
 class Value;

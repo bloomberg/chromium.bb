@@ -9,11 +9,11 @@
 #include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_log.h"
-#include "net/base/ssl_config_service.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
