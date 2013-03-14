@@ -272,6 +272,11 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
     web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
     return;
   }
+  std::vector<AccessibilityTreeFormatter::Filter> filters;
+  filters.push_back(AccessibilityTreeFormatter::Filter(
+      ASCIIToUTF16("*"),
+      AccessibilityTreeFormatter::Filter::ALLOW));
+  formatter->SetFilters(filters);
   formatter->FormatAccessibilityTree(&accessibility_contents_utf16);
 
   result->Set("tree",
