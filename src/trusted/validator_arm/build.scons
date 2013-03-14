@@ -337,7 +337,7 @@ for tbl in GEN_TABLES:
   decoder_tests_exe = gtest_env.ComponentProgram(
       'arm32_decode_' + tbl + '_tests',
       decoder_tests_obj,
-      EXTRA_LIBS=['decoder_test_tools', 'arm_validator_core'])
+      EXTRA_LIBS=['decoder_test_tools', 'arm_validator_core', 'platform'])
 
   decoder_test_node = gtest_env.CommandTest(
       'arm32_decode_' + tbl + 'tests.out',
