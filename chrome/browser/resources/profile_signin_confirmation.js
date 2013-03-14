@@ -32,6 +32,9 @@ cr.define('profile_signin_confirmation', function() {
       // Right-align the buttons when only "OK" and "Cancel" are showing.
       $('button-row').style['text-align'] = 'end';
     }
+
+    if (args.hideTitle)
+      $('dialog-title').hidden = true;
   }
 
   return {

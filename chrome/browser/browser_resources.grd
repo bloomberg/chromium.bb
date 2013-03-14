@@ -327,6 +327,7 @@
       <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_JS" file="resources\managed_user_passphrase_dialog.js" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_HTML" file="resources\profile_signin_confirmation.html" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_JS" file="resources\profile_signin_confirmation.js" type="BINDATA" />
+      <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_CSS" file="resources\profile_signin_confirmation.css" type="BINDATA" />
     </includes>
   </release>
 </grit>

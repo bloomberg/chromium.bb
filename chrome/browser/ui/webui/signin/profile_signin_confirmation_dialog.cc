@@ -254,7 +254,11 @@ void ProfileSigninConfirmationDialog::GetWebUIMessageHandlers(
 
 void ProfileSigninConfirmationDialog::GetDialogSize(gfx::Size* size) const {
   const int kMinimumDialogWidth = 480;
-  const int kMinimumDialogHeight = 260;
+#if defined(OS_WIN)
+  const int kMinimumDialogHeight = 180;
+#else
+  const int kMinimumDialogHeight = 210;
+#endif
   const int kProfileCreationMessageHeight = prompt_for_new_profile_ ? 50 : 0;
   size->SetSize(kMinimumDialogWidth,
                 kMinimumDialogHeight + kProfileCreationMessageHeight);
@@ -265,6 +269,9 @@ std::string ProfileSigninConfirmationDialog::GetDialogArgs() const {
   DictionaryValue dict;
   dict.SetString("username", username_);
   dict.SetBoolean("promptForNewProfile", prompt_for_new_profile_);
+#ifdef OS_WIN
+  dict.SetBoolean("hideTitle", true);
+#endif
   base::JSONWriter::Write(&dict, &data);
   return data;
 }
