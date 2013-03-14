@@ -99,7 +99,7 @@ void TabModalConfirmDialogGtk::CancelTabModalDialog() {
 }
 
 void TabModalConfirmDialogGtk::CloseDialog() {
-  window_->CloseWebContentsModalDialog();
+  gtk_widget_destroy(window_->widget());
 }
 
 void TabModalConfirmDialogGtk::OnAccept(GtkWidget* widget) {

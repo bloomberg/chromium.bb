@@ -35,9 +35,6 @@ class ConstrainedWindowGtkDelegate {
 
   virtual bool GetBackgroundColor(GdkColor* color);
 
-  // Returns true if hosting ConstrainedWindowGtk should apply default padding.
-  virtual bool ShouldHaveBorderPadding() const;
-
  protected:
   virtual ~ConstrainedWindowGtkDelegate();
 };
@@ -54,24 +51,17 @@ class ConstrainedWindowGtk {
   virtual ~ConstrainedWindowGtk();
 
   void ShowWebContentsModalDialog();
-  void CloseWebContentsModalDialog();
   void FocusWebContentsModalDialog();
   void PulseWebContentsModalDialog();
   NativeWebContentsModalDialog GetNativeDialog();
 
-  // Called when the result of GetBackgroundColor may have changed.
-  void BackgroundColorChanged();
-
-  // Returns the WebContents that constrains this Constrained Window.
-  content::WebContents* owner() const { return web_contents_; }
-
   // Returns the toplevel widget that displays this "window".
   GtkWidget* widget() { return border_; }
 
+ private:
   // Returns the View that we collaborate with to position ourselves.
   TabContentsViewType* ContainingView();
 
- private:
   // Signal callbacks.
   CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, gboolean, OnKeyPress,
                        GdkEventKey*);
@@ -90,8 +80,6 @@ class ConstrainedWindowGtk {
 
   // Stores if |ShowWebContentsModalDialog()| has been called.
   bool visible_;
-
-  base::WeakPtrFactory<ConstrainedWindowGtk> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowGtk);
 };

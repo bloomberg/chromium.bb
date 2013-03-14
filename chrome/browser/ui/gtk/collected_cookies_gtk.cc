@@ -455,7 +455,7 @@ void CollectedCookiesGtk::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
-  window_->CloseWebContentsModalDialog();
+  gtk_widget_destroy(window_->widget());
 }
 
 void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
@@ -463,7 +463,7 @@ void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
     CollectedCookiesInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents_));
   }
-  window_->CloseWebContentsModalDialog();
+  gtk_widget_destroy(window_->widget());
 }
 
 void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,

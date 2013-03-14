@@ -26,7 +26,7 @@ class NativeWebContentsModalDialogManagerGtk
   }
 
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    GetConstrainedWindowGtk(dialog)->CloseWebContentsModalDialog();
+    gtk_widget_destroy(GetGtkWidget(dialog));
   }
 
   virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
@@ -38,6 +38,10 @@ class NativeWebContentsModalDialogManagerGtk
   }
 
  private:
+  GtkWidget* GetGtkWidget(NativeWebContentsModalDialog dialog) {
+    return GTK_WIDGET(dialog);
+  }
+
   ConstrainedWindowGtk* GetConstrainedWindowGtk(
       NativeWebContentsModalDialog dialog) {
     gpointer constrained_window_gtk =

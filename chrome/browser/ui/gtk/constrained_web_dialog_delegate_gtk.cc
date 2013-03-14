@@ -32,7 +32,7 @@ class ConstrainedWebDialogDelegateGtk
 
   // WebDialogWebContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
-    window_->CloseWebContentsModalDialog();
+    gtk_widget_destroy(window_->widget());
   }
 
   void set_window(ConstrainedWindowGtk* window) { window_ = window; }

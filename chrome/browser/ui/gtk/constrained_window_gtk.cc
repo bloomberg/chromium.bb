@@ -28,17 +28,12 @@ bool ConstrainedWindowGtkDelegate::GetBackgroundColor(GdkColor* color) {
   return false;
 }
 
-bool ConstrainedWindowGtkDelegate::ShouldHaveBorderPadding() const {
-  return true;
-}
-
 ConstrainedWindowGtk::ConstrainedWindowGtk(
     content::WebContents* web_contents,
     ConstrainedWindowGtkDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      visible_(false),
-      weak_factory_(this) {
+      visible_(false) {
   DCHECK(web_contents);
   DCHECK(delegate);
   GtkWidget* dialog = delegate->GetWidgetRoot();
@@ -51,11 +46,9 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  if (delegate->ShouldHaveBorderPadding()) {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-        ui::kContentAreaBorder, ui::kContentAreaBorder,
-        ui::kContentAreaBorder, ui::kContentAreaBorder);
-  }
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+      ui::kContentAreaBorder, ui::kContentAreaBorder,
+      ui::kContentAreaBorder, ui::kContentAreaBorder);
 
   if (gtk_widget_get_parent(dialog))
     gtk_widget_reparent(dialog, alignment);
@@ -65,7 +58,12 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_container_add(GTK_CONTAINER(frame), alignment);
   gtk_container_add(GTK_CONTAINER(border_), frame);
 
-  BackgroundColorChanged();
+  GdkColor background;
+  if (delegate_->GetBackgroundColor(&background)) {
+    gtk_widget_modify_base(border_, GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_fg(border_, GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &background);
+  }
 
   gtk_widget_add_events(widget(), GDK_KEY_PRESS_MASK);
   g_signal_connect(widget(), "key-press-event", G_CALLBACK(OnKeyPressThunk),
@@ -98,10 +96,6 @@ void ConstrainedWindowGtk::ShowWebContentsModalDialog() {
   visible_ = true;
 }
 
-void ConstrainedWindowGtk::CloseWebContentsModalDialog() {
-  gtk_widget_destroy(border_);
-}
-
 void ConstrainedWindowGtk::FocusWebContentsModalDialog() {
   GtkWidget* focus_widget = delegate_->GetFocusWidget();
   if (!focus_widget)
@@ -122,15 +116,6 @@ NativeWebContentsModalDialog ConstrainedWindowGtk::GetNativeDialog() {
   return widget();
 }
 
-void ConstrainedWindowGtk::BackgroundColorChanged() {
-  GdkColor background;
-  if (delegate_->GetBackgroundColor(&background)) {
-    gtk_widget_modify_base(border_, GTK_STATE_NORMAL, &background);
-    gtk_widget_modify_fg(border_, GTK_STATE_NORMAL, &background);
-    gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &background);
-  }
-}
-
 ConstrainedWindowGtk::TabContentsViewType*
 ConstrainedWindowGtk::ContainingView() {
   return ChromeWebContentsViewDelegateGtk::GetFor(web_contents_);
@@ -139,7 +124,7 @@ ConstrainedWindowGtk::ContainingView() {
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
                                           GdkEventKey* key) {
   if (key->keyval == GDK_Escape) {
-    CloseWebContentsModalDialog();
+    gtk_widget_destroy(border_);
     return TRUE;
   }
 

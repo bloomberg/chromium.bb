@@ -202,7 +202,7 @@ void SSLClientCertificateSelector::Show() {
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
   DCHECK(window_);
-  window_->CloseWebContentsModalDialog();
+  gtk_widget_destroy(window_->widget());
 }
 
 GtkWidget* SSLClientCertificateSelector::GetFocusWidget() {
@@ -328,7 +328,7 @@ void SSLClientCertificateSelector::Unlocked() {
   net::X509Certificate* cert = GetSelectedCert();
   CertificateSelected(cert);
   DCHECK(window_);
-  window_->CloseWebContentsModalDialog();
+  gtk_widget_destroy(window_->widget());
 }
 
 void SSLClientCertificateSelector::OnComboBoxChanged(GtkWidget* combo_box) {
@@ -352,7 +352,7 @@ void SSLClientCertificateSelector::OnViewClicked(GtkWidget* button) {
 void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
   CertificateSelected(NULL);
   DCHECK(window_);
-  window_->CloseWebContentsModalDialog();
+  gtk_widget_destroy(window_->widget());
 }
 
 void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
