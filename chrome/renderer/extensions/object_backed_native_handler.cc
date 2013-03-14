@@ -11,13 +11,19 @@
 
 namespace extensions {
 
-namespace {
+// Data to pass to ObjectBackedNativeHandler::Router.
+struct ObjectBackedNativeHandler::RouterData {
+  RouterData(ObjectBackedNativeHandler* self, HandlerFunction function)
+    : self(self), function(function) {}
 
-// Keys for the router data objects.
-const char* kIsValid = "is_valid";
-const char* kHandlerFunction = "handler_function";
+  ~RouterData() {}
 
-}  // namespace
+  // The owner of the routed data.
+  ObjectBackedNativeHandler* const self;
+
+  // The function to route calls to.
+  HandlerFunction function;
+};
 
 ObjectBackedNativeHandler::ObjectBackedNativeHandler(
     v8::Handle<v8::Context> context)
@@ -36,37 +42,29 @@ v8::Handle<v8::Object> ObjectBackedNativeHandler::NewInstance() {
 // static
 v8::Handle<v8::Value> ObjectBackedNativeHandler::Router(
     const v8::Arguments& args) {
-  v8::Handle<v8::Object> data = args.Data().As<v8::Object>();
-  // See comment in header file for why we do this.
-  if (!data->Get(v8::String::New(kIsValid))->BooleanValue()) {
-    return v8::ThrowException(v8::String::New(
-        "Extension view no longer exists"));
-  }
-  v8::Handle<v8::Value> handler_function =
-      data->Get(v8::String::New(kHandlerFunction));
-  CHECK(!handler_function.IsEmpty());
-  return static_cast<HandlerFunction*>(
-      handler_function.As<v8::External>()->Value())->Run(args);
+  RouterData* router_data = static_cast<RouterData*>(
+      args.Data().As<v8::External>()->Value());
+  // Router can be called during context destruction. Stop.
+  if (!router_data->self->is_valid())
+    return v8::Handle<v8::Value>();
+  return router_data->function.Run(args);
 }
 
 void ObjectBackedNativeHandler::RouteFunction(
     const std::string& name,
     const HandlerFunction& handler_function) {
-  v8::HandleScope handle_scope;
-  v8::Persistent<v8::Object> data = v8::Persistent<v8::Object>::New(
-      v8_context_->GetIsolate(), v8::Object::New());
-  data->Set(v8::String::New(kIsValid), v8::Boolean::New(true));
-  data->Set(v8::String::New(kHandlerFunction),
-            v8::External::New(new HandlerFunction(handler_function)));
+  linked_ptr<RouterData> data(new RouterData(this, handler_function));
+  // TODO(koz): Investigate using v8's MakeWeak() function instead of holding
+  // on to these pointers here.
   router_data_.push_back(data);
   v8::Handle<v8::FunctionTemplate> function_template =
-      v8::FunctionTemplate::New(Router, data);
+      v8::FunctionTemplate::New(Router, v8::External::New(data.get()));
   object_template_->Set(name.c_str(), function_template);
 }
 
 void ObjectBackedNativeHandler::RouteStaticFunction(
     const std::string& name,
-    const HandlerFunc& handler_func) {
+    const HandlerFunc handler_func) {
   v8::Handle<v8::FunctionTemplate> function_template =
       v8::FunctionTemplate::New(handler_func, v8::External::New(this));
   object_template_->Set(name.c_str(), function_template);
@@ -75,18 +73,6 @@ void ObjectBackedNativeHandler::RouteStaticFunction(
 void ObjectBackedNativeHandler::Invalidate() {
   if (!is_valid())
     return;
-  for (RouterData::iterator it = router_data_.begin();
-       it != router_data_.end(); ++it) {
-    v8::Persistent<v8::Object> data = *it;
-    data->Set(v8::String::New(kIsValid), v8::Boolean::New(false));
-    v8::Handle<v8::Value> handler_function =
-        data->Get(v8::String::New(kHandlerFunction));
-    CHECK(!handler_function.IsEmpty());
-    delete static_cast<HandlerFunction*>(
-        handler_function.As<v8::External>()->Value());
-    data->Delete(v8::String::New(kHandlerFunction));
-    data.Dispose(v8_context_->GetIsolate());
-  }
   object_template_.reset();
   v8_context_.reset();
   NativeHandler::Invalidate();
