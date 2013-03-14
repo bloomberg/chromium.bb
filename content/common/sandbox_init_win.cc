@@ -18,12 +18,8 @@ bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   sandbox::BrokerServices* broker_services = sandbox_info->broker_services;
-  if (broker_services && (process_type.empty() ||
-                          process_type == switches::kNaClBrokerProcess ||
-                          process_type == switches::kServiceProcess)) {
-    if (!InitBrokerServices(broker_services))
-      return false;
-  }
+  if (broker_services && !InitBrokerServices(broker_services))
+    return false;
 
   if (process_type.empty() || process_type == switches::kNaClBrokerProcess) {
     // IMPORTANT: This piece of code needs to run as early as possible in the

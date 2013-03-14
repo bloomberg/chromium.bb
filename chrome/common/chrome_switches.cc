@@ -1194,6 +1194,9 @@ const char kScriptBubble[]                  = "script-bubble";
 // from the omnibox.
 const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
 
+// Causes the process to run as a service process.
+const char kServiceProcess[]                = "service";
+
 // Sets a token in the token service, for testing.
 const char kSetToken[]                      = "set-token";
 

@@ -600,9 +600,6 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
-// Causes the process to run as a service process.
-const char kServiceProcess[]                = "service";
-
 // Renders a border around composited Render Layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[]    = "show-composited-layer-borders";

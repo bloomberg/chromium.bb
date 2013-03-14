@@ -184,8 +184,6 @@ extern const char kRendererCmdPrefix[];
 CONTENT_EXPORT extern const char kRendererProcess[];
 extern const char kRendererProcessLimit[];
 extern const char kRendererStartupDialog[];
-// TODO(jam): this doesn't belong in content.
-CONTENT_EXPORT extern const char kServiceProcess[];
 extern const char kShowCompositedLayerBorders[];
 extern const char kShowCompositedLayerTree[];
 extern const char kShowFPSCounter[];

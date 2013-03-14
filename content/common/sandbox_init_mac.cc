@@ -62,15 +62,14 @@ bool GetSandboxTypeFromCommandLine(int* sandbox_type,
   } else if (process_type == switches::kGpuProcess) {
     *sandbox_type = SANDBOX_TYPE_GPU;
   } else if ((process_type == switches::kPluginProcess) ||
-             (process_type == switches::kServiceProcess) ||
              (process_type == switches::kPpapiBrokerProcess)) {
     return false;
   } else if (process_type == switches::kPpapiPluginProcess) {
     *sandbox_type = SANDBOX_TYPE_PPAPI;
   } else {
-    // Failsafe: If you hit an unreached here, is your new process type in need
-    // of sandboxing?
-    NOTREACHED() << "Unknown process type " << process_type;
+    // This is a process which we don't know about, i.e. an embedder-defined
+    // process. If the embedder wants it sandboxed, they have a chance to return
+    // the sandbox profile in ContentClient::GetSandboxProfileForSandboxType.
     return false;
   }
   return true;
