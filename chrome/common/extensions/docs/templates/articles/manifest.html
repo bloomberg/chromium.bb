@@ -42,6 +42,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="content_scripts.html">content_scripts</a>": [...],
   "<a href="../extensions/contentSecurityPolicy.html">content_security_policy</a>": "<em>policyString</em>",
   "<a href="fileBrowserHandler.html">file_browser_handlers</a>": [...],
+  "<a href="#file_handlers">file_handlers</a>": {...},
   "<a href="#homepage_url">homepage_url</a>": "http://<em>path/to/homepage</em>",
   "<a href="#incognito">incognito</a>": "spanning" <em>or</em> "split",
   "<a href="#key">key</a>": "<em>publicKey</em>",
@@ -74,7 +75,7 @@ see the <a href="#overview">Field summary</a>.
 <h3 id="app">app</h3>
 
 <p>
-Used by <a href="http://developer.chrome.com/trunk/apps/app_lifecycle.html#eventpage">packaged apps</a>
+Used by <a href="../apps/app_lifecycle.html#eventpage">packaged apps</a>
 to specify the app's background scripts.
 Also used by <a href="https://developers.google.com/chrome/apps/docs/developers_guide#live">hosted apps</a>
 to specify the URLs that the app uses.
@@ -105,6 +106,40 @@ the browser's extension management UI
 and the <a href="https://chrome.google.com/webstore">Chrome Web Store</a>.
 You can specify locale-specific strings for this field;
 see <a href="i18n.html">Internationalization</a> for details.
+</p>
+
+<h3 id="file_handlers">file_handlers</h3>
+
+<p>
+Used by <a href="../apps/app_lifecycle.html#eventpage">packaged apps</a>
+to specify what types of files the app can handle. An app can have multiple <code>file_handlers</code>, with each one having an identifier, a list of MIME types that can be handled, and
+a title. Here's an example of specifying file handlers:
+</p>
+
+<pre>
+"file_handlers": {
+  "text": {
+    "types": [
+      "text/*"
+    ],
+    "title": "Text editor"
+  },
+  "image": {
+    "types": [
+      "image/png",
+      "image/jpeg"
+    ],
+    "title": "Image editor"
+  }
+}
+</pre>
+
+<p>
+To handle files, apps also need to declare the $ref:fileSystem
+permission. Apps can then be passed files in the $ref:app.runtime.onLaunched
+event - either from the system
+file manager (currently supported on ChromeOS only) or by providing
+a path on the <a href="../apps/first_app.html#open">command line</a>.
 </p>
 
 <h3 id="homepage_url">homepage_url</h3>
@@ -218,7 +253,7 @@ it is loaded during development.
 use this value. Instead, write your
 code so that the key value doesn't matter
 by using <a href="overview.html#relative-urls">relative paths</a>
-and $ref:extension.getURL.
+and $ref:runtime.getURL.
 </p>
 
 <p>
@@ -490,7 +525,7 @@ etc.) as follows:
 <p>
 These resources would then be available in a webpage via the URL
 <code>chrome-extension://[PACKAGE ID]/[PATH]</code>, which can be generated with
-the $ref:extension.getURL method. Whitelisted resources are served with appropriate
+the $ref:runtime.getURL method. Whitelisted resources are served with appropriate
 <a href="http://www.w3.org/TR/cors/">CORS</a> headers, so they're available via
 mechanisms like XHR.
 </p>
