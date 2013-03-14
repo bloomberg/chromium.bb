@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+
 namespace media {
 // Helper class representing a range of buffered data. All buffers in a
 // SourceBufferRange are ordered sequentially in presentation order with no
@@ -306,8 +306,7 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       memory_limit_(kDefaultAudioMemoryLimit),
       config_change_pending_(false) {
   DCHECK(audio_config.IsValidConfig());
-  audio_configs_.push_back(new AudioDecoderConfig());
-  audio_configs_.back()->CopyFrom(audio_config);
+  audio_configs_.push_back(audio_config);
 }
 
 SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
@@ -336,8 +335,6 @@ SourceBufferStream::~SourceBufferStream() {
     delete ranges_.front();
     ranges_.pop_front();
   }
-
-  STLDeleteElements(&audio_configs_);
 }
 
 void SourceBufferStream::OnNewMediaSegment(
@@ -1042,7 +1039,7 @@ bool SourceBufferStream::IsEndSelected() const {
 const AudioDecoderConfig& SourceBufferStream::GetCurrentAudioDecoderConfig() {
   if (config_change_pending_)
     CompleteConfigChange();
-  return *audio_configs_[current_config_index_];
+  return audio_configs_[current_config_index_];
 }
 
 const VideoDecoderConfig& SourceBufferStream::GetCurrentVideoDecoderConfig() {
@@ -1062,34 +1059,34 @@ bool SourceBufferStream::UpdateAudioConfig(const AudioDecoderConfig& config) {
   DCHECK(video_configs_.empty());
   DVLOG(3) << "UpdateAudioConfig.";
 
-  if (audio_configs_[0]->codec() != config.codec()) {
+  if (audio_configs_[0].codec() != config.codec()) {
     MEDIA_LOG(log_cb_) << "Audio codec changes not allowed.";
     return false;
   }
 
-  if (audio_configs_[0]->samples_per_second() != config.samples_per_second()) {
+  if (audio_configs_[0].samples_per_second() != config.samples_per_second()) {
     MEDIA_LOG(log_cb_) << "Audio sample rate changes not allowed.";
     return false;
   }
 
-  if (audio_configs_[0]->channel_layout() != config.channel_layout()) {
+  if (audio_configs_[0].channel_layout() != config.channel_layout()) {
     MEDIA_LOG(log_cb_) << "Audio channel layout changes not allowed.";
     return false;
   }
 
-  if (audio_configs_[0]->bits_per_channel() != config.bits_per_channel()) {
+  if (audio_configs_[0].bits_per_channel() != config.bits_per_channel()) {
     MEDIA_LOG(log_cb_) << "Audio bits per channel changes not allowed.";
     return false;
   }
 
-  if (audio_configs_[0]->is_encrypted() != config.is_encrypted()) {
+  if (audio_configs_[0].is_encrypted() != config.is_encrypted()) {
     MEDIA_LOG(log_cb_) << "Audio encryption changes not allowed.";
     return false;
   }
 
   // Check to see if the new config matches an existing one.
   for (size_t i = 0; i < audio_configs_.size(); ++i) {
-    if (config.Matches(*audio_configs_[i])) {
+    if (config.Matches(audio_configs_[i])) {
       append_config_index_ = i;
       return true;
     }
@@ -1099,8 +1096,7 @@ bool SourceBufferStream::UpdateAudioConfig(const AudioDecoderConfig& config) {
   append_config_index_ = audio_configs_.size();
   DVLOG(2) << "New audio config - index: " << append_config_index_;
   audio_configs_.resize(audio_configs_.size() + 1);
-  audio_configs_[append_config_index_] = new AudioDecoderConfig();
-  audio_configs_[append_config_index_]->CopyFrom(config);
+  audio_configs_[append_config_index_] = config;
   return true;
 }
 

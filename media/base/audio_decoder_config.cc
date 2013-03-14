@@ -39,7 +39,6 @@ AudioDecoderConfig::AudioDecoderConfig()
       channel_layout_(CHANNEL_LAYOUT_UNSUPPORTED),
       samples_per_second_(0),
       bytes_per_frame_(0),
-      extra_data_size_(0),
       is_encrypted_(false) {
 }
 
@@ -83,17 +82,9 @@ void AudioDecoderConfig::Initialize(AudioCodec codec,
   codec_ = codec;
   channel_layout_ = channel_layout;
   samples_per_second_ = samples_per_second;
-  extra_data_size_ = extra_data_size;
   sample_format_ = sample_format;
   bits_per_channel_ = SampleFormatToBitsPerChannel(sample_format);
-
-  if (extra_data_size_ > 0) {
-    extra_data_.reset(new uint8[extra_data_size_]);
-    memcpy(extra_data_.get(), extra_data, extra_data_size_);
-  } else {
-    extra_data_.reset();
-  }
-
+  extra_data_.assign(extra_data, extra_data + extra_data_size);
   is_encrypted_ = is_encrypted;
 
   int channels = ChannelLayoutToChannelCount(channel_layout_);
@@ -122,17 +113,6 @@ bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
                                     extra_data_size())) &&
           (is_encrypted() == config.is_encrypted()) &&
           (sample_format() == config.sample_format()));
-}
-
-void AudioDecoderConfig::CopyFrom(const AudioDecoderConfig& audio_config) {
-  Initialize(audio_config.codec(),
-             audio_config.sample_format(),
-             audio_config.channel_layout(),
-             audio_config.samples_per_second(),
-             audio_config.extra_data(),
-             audio_config.extra_data_size(),
-             audio_config.is_encrypted(),
-             false);
 }
 
 }  // namespace media

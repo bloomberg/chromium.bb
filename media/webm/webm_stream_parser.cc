@@ -364,7 +364,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
 
     FireNeedKey(tracks_parser.audio_encryption_key_id());
   } else {
-    audio_config.CopyFrom(config_helper.audio_config());
+    audio_config = config_helper.audio_config();
   }
 
   bool is_video_encrypted = !tracks_parser.video_encryption_key_id().empty();

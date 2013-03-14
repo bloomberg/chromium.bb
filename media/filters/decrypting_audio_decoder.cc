@@ -174,19 +174,19 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
 
   const AudioDecoderConfig& input_config =
       demuxer_stream_->audio_decoder_config();
-  scoped_ptr<AudioDecoderConfig> scoped_config(new AudioDecoderConfig());
-  scoped_config->Initialize(input_config.codec(),
-                            kSampleFormatS16,
-                            input_config.channel_layout(),
-                            input_config.samples_per_second(),
-                            input_config.extra_data(),
-                            input_config.extra_data_size(),
-                            input_config.is_encrypted(),
-                            false);
+  AudioDecoderConfig config;
+  config.Initialize(input_config.codec(),
+                    kSampleFormatS16,
+                    input_config.channel_layout(),
+                    input_config.samples_per_second(),
+                    input_config.extra_data(),
+                    input_config.extra_data_size(),
+                    input_config.is_encrypted(),
+                    false);
 
   state_ = kPendingDecoderInit;
   decryptor_->InitializeAudioDecoder(
-      scoped_config.Pass(),
+      config,
       BindToCurrentLoop(base::Bind(
           &DecryptingAudioDecoder::FinishInitialization, this)));
 }
@@ -265,20 +265,20 @@ void DecryptingAudioDecoder::DecryptAndDecodeBuffer(
 
   const AudioDecoderConfig& input_config =
       demuxer_stream_->audio_decoder_config();
-  scoped_ptr<AudioDecoderConfig> scoped_config(new AudioDecoderConfig());
-  scoped_config->Initialize(input_config.codec(),
-                            kSampleFormatS16,
-                            input_config.channel_layout(),
-                            input_config.samples_per_second(),
-                            input_config.extra_data(),
-                            input_config.extra_data_size(),
-                            input_config.is_encrypted(),
-                            false);
+  AudioDecoderConfig config;
+  config.Initialize(input_config.codec(),
+                    kSampleFormatS16,
+                    input_config.channel_layout(),
+                    input_config.samples_per_second(),
+                    input_config.extra_data(),
+                    input_config.extra_data_size(),
+                    input_config.is_encrypted(),
+                    false);
 
     state_ = kPendingConfigChange;
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
     decryptor_->InitializeAudioDecoder(
-        scoped_config.Pass(), BindToCurrentLoop(base::Bind(
+        config, BindToCurrentLoop(base::Bind(
             &DecryptingAudioDecoder::FinishConfigChange, this)));
     return;
   }

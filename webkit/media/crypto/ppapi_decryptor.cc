@@ -141,21 +141,20 @@ void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
 }
 
 void PpapiDecryptor::InitializeAudioDecoder(
-      scoped_ptr<media::AudioDecoderConfig> config,
+      const media::AudioDecoderConfig& config,
       const DecoderInitCB& init_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::InitializeAudioDecoder, weak_this_,
-        base::Passed(&config), init_cb));
+        &PpapiDecryptor::InitializeAudioDecoder, weak_this_, config, init_cb));
     return;
   }
 
   DVLOG(2) << "InitializeAudioDecoder()";
-  DCHECK(config->is_encrypted());
-  DCHECK(config->IsValidConfig());
+  DCHECK(config.is_encrypted());
+  DCHECK(config.IsValidConfig());
 
   audio_decoder_init_cb_ = init_cb;
-  if (!plugin_cdm_delegate_->InitializeAudioDecoder(*config, base::Bind(
+  if (!plugin_cdm_delegate_->InitializeAudioDecoder(config, base::Bind(
       &PpapiDecryptor::OnDecoderInitialized, weak_this_, kAudio))) {
     base::ResetAndReturn(&audio_decoder_init_cb_).Run(false);
     return;

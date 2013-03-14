@@ -209,10 +209,7 @@ class MockDecryptor : public Decryptor {
                              const scoped_refptr<DecoderBuffer>& encrypted,
                              const DecryptCB& decrypt_cb));
   MOCK_METHOD1(CancelDecrypt, void(StreamType stream_type));
-  // TODO(xhwang): The following method is a workaround of the issue that
-  // move-only parameters are not supported in mocked methods. Remove when the
-  // issue is fixed: http://code.google.com/p/googletest/issues/detail?id=395
-  MOCK_METHOD2(InitializeAudioDecoderMock,
+  MOCK_METHOD2(InitializeAudioDecoder,
                void(const AudioDecoderConfig& config,
                     const DecoderInitCB& init_cb));
   MOCK_METHOD2(InitializeVideoDecoder,
@@ -226,9 +223,6 @@ class MockDecryptor : public Decryptor {
                     const VideoDecodeCB& video_decode_cb));
   MOCK_METHOD1(ResetDecoder, void(StreamType stream_type));
   MOCK_METHOD1(DeinitializeDecoder, void(StreamType stream_type));
-
-  virtual void InitializeAudioDecoder(scoped_ptr<AudioDecoderConfig> config,
-                                      const DecoderInitCB& init_cb) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDecryptor);

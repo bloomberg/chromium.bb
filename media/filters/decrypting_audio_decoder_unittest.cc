@@ -102,7 +102,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   }
 
   void Initialize() {
-    EXPECT_CALL(*decryptor_, InitializeAudioDecoderMock(_, _))
+    EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
         .Times(AtMost(1))
         .WillOnce(RunCallback<1>(true));
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
@@ -263,7 +263,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
 
 // Ensure decoder handles unsupported audio configs without crashing.
 TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
-  EXPECT_CALL(*decryptor_, InitializeAudioDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
@@ -366,7 +366,7 @@ TEST_F(DecryptingAudioDecoderTest, DemuxerRead_ConfigChange) {
   EXPECT_CALL(*demuxer_, audio_decoder_config())
       .WillRepeatedly(ReturnRef(new_config));
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio));
-  EXPECT_CALL(*decryptor_, InitializeAudioDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .WillOnce(RunCallback<1>(true));
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
@@ -388,7 +388,7 @@ TEST_F(DecryptingAudioDecoderTest, DemuxerRead_ConfigChangeFailed) {
   Initialize();
 
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio));
-  EXPECT_CALL(*decryptor_, InitializeAudioDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
@@ -495,7 +495,7 @@ TEST_F(DecryptingAudioDecoderTest, Reset_DuringDemuxerRead_ConfigChange) {
   EXPECT_CALL(*demuxer_, audio_decoder_config())
       .WillRepeatedly(ReturnRef(new_config));
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio));
-  EXPECT_CALL(*decryptor_, InitializeAudioDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .WillOnce(RunCallback<1>(true));
   EXPECT_CALL(*this, FrameReady(AudioDecoder::kAborted, IsNull()));
 
@@ -519,7 +519,7 @@ TEST_F(DecryptingAudioDecoderTest, Reset_DuringDemuxerRead_ConfigChangeFailed) {
   // Even during pending reset, the decoder still needs to be initialized with
   // the new config.
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio));
-  EXPECT_CALL(*decryptor_, InitializeAudioDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
   EXPECT_CALL(*this, FrameReady(AudioDecoder::kDecodeError, IsNull()));
 
@@ -537,7 +537,7 @@ TEST_F(DecryptingAudioDecoderTest, Reset_DuringPendingConfigChange) {
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
                                scoped_refptr<DecoderBuffer>()));
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio));
-  EXPECT_CALL(*decryptor_, InitializeAudioDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .WillOnce(SaveArg<1>(&pending_init_cb_));
 
   decoder_->Read(base::Bind(&DecryptingAudioDecoderTest::FrameReady,

@@ -139,7 +139,7 @@ class MEDIA_EXPORT Decryptor {
 
   // Initializes a decoder with the given |config|, executing the |init_cb|
   // upon completion.
-  virtual void InitializeAudioDecoder(scoped_ptr<AudioDecoderConfig> config,
+  virtual void InitializeAudioDecoder(const AudioDecoderConfig& config,
                                       const DecoderInitCB& init_cb) = 0;
   virtual void InitializeVideoDecoder(const VideoDecoderConfig& config,
                                       const DecoderInitCB& init_cb) = 0;
