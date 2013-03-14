@@ -149,14 +149,15 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
   internal::DisplayInfo info = GetDisplayManager()->GetDisplayInfo(display);
 #if defined(OS_CHROMEOS)
   // Native window property (Atom in X11) that specifies the display's
-  // rotation and scale factor.  They are read and used by
-  // touchpad/mouse driver directly on X (contact adlr@ for more
-  // details on touchpad/mouse driver side). The value of the rotation
-  // is one of 0 (normal), 1 (90 degrees clockwise), 2 (180 degree) or
-  // 3 (270 degrees clockwise).  The value of the scale factor is in
-  // percent (100, 140, 200 etc).
+  // rotation, scale factor and if it's internal display.  They are
+  // read and used by touchpad/mouse driver directly on X (contact
+  // adlr@ for more details on touchpad/mouse driver side). The value
+  // of the rotation is one of 0 (normal), 1 (90 degrees clockwise), 2
+  // (180 degree) or 3 (270 degrees clockwise).  The value of the
+  // scale factor is in percent (100, 140, 200 etc).
   const char kRotationProp[] = "_CHROME_DISPLAY_ROTATION";
   const char kScaleFactorProp[] = "_CHROME_DISPLAY_SCALE_FACTOR";
+  const char kInternalProp[] = "_CHROME_DISPLAY_INTERNAL";
   const char kCARDINAL[] = "CARDINAL";
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -170,7 +171,9 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
     if (rotation < 0 || rotation > 3)
       rotation = 0;
   }
+  int internal = display.IsInternal() ? 1 : 0;
   gfx::AcceleratedWidget xwindow = root->GetAcceleratedWidget();
+  ui::SetIntProperty(xwindow, kInternalProp, kCARDINAL, internal);
   ui::SetIntProperty(xwindow, kRotationProp, kCARDINAL, rotation);
   ui::SetIntProperty(xwindow,
                      kScaleFactorProp,
