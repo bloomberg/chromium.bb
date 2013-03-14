@@ -512,6 +512,19 @@ void GpuDataManagerImpl::AddLogMessage(
   log_messages_.Append(dict);
 }
 
+void GpuDataManagerImpl::ProcessCrashed(base::TerminationStatus exit_code) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&GpuDataManagerImpl::ProcessCrashed,
+                                       base::Unretained(this),
+                                       exit_code));
+    return;
+  }
+  observer_list_->Notify(&GpuDataManagerObserver::OnGpuProcessCrashed,
+                         exit_code);
+}
+
 base::ListValue* GpuDataManagerImpl::GetLogMessages() const {
   base::ListValue* value;
   {

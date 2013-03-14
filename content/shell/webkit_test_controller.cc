@@ -13,6 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -177,6 +178,7 @@ WebKitTestController::WebKitTestController()
   registrar_.Add(this,
                  NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
+  GpuDataManager::GetInstance()->AddObserver(this);
   ResetAfterLayoutTest();
 }
 
@@ -184,6 +186,7 @@ WebKitTestController::~WebKitTestController() {
   DCHECK(CalledOnValidThread());
   CHECK(instance_ == this);
   CHECK(!is_running_test_);
+  GpuDataManager::GetInstance()->RemoveObserver(this);
   DiscardMainWindow();
   instance_ = NULL;
 }
@@ -391,6 +394,13 @@ void WebKitTestController::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void WebKitTestController::OnGpuProcessCrashed(
+    base::TerminationStatus exit_code) {
+  DCHECK(CalledOnValidThread());
+  printer_->AddErrorMessage("#CRASHED - gpu");
+  DiscardMainWindow();
 }
 
 void WebKitTestController::TimeoutHandler() {

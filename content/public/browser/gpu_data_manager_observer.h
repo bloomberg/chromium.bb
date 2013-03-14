@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_OBSERVER_H_
 
+#include "base/process_util.h"
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "content/public/common/three_d_api_types.h"
@@ -30,6 +31,9 @@ class GpuDataManagerObserver {
                               int render_process_id,
                               int render_view_id,
                               ThreeDAPIType requester) {}
+
+  // Called for any observer when the GPU process crashed.
+  virtual void OnGpuProcessCrashed(base::TerminationStatus exit_code) {}
 
  protected:
   virtual ~GpuDataManagerObserver() {}

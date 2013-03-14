@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -116,6 +117,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void AddLogMessage(int level,
                      const std::string& header,
                      const std::string& message);
+
+  void ProcessCrashed(base::TerminationStatus exit_code);
 
   // Returns a new copy of the ListValue.  Caller is responsible to release
   // the returned value.

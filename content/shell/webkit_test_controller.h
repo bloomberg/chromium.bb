@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
@@ -73,7 +74,8 @@ class WebKitTestResultPrinter {
 
 class WebKitTestController : public base::NonThreadSafe,
                              public WebContentsObserver,
-                             public NotificationObserver {
+                             public NotificationObserver,
+                             public GpuDataManagerObserver {
  public:
   static WebKitTestController* Get();
 
@@ -113,6 +115,9 @@ class WebKitTestController : public base::NonThreadSafe,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  // GpuDataManagerObserver implementation.
+  virtual void OnGpuProcessCrashed(base::TerminationStatus exit_code) OVERRIDE;
 
  private:
   static WebKitTestController* instance_;
