@@ -40,31 +40,18 @@ class ObjectBackedNativeHandler : public NativeHandler {
                      const HandlerFunction& handler_function);
 
   void RouteStaticFunction(const std::string& name,
-                           const HandlerFunc& handler_func);
+                           const HandlerFunc handler_func);
 
   v8::Handle<v8::Context> v8_context() { return v8_context_.get(); }
 
   virtual void Invalidate() OVERRIDE;
 
  private:
-  // Callback for RouteFunction which routes the V8 call to the correct
-  // base::Bound callback.
+
   static v8::Handle<v8::Value> Router(const v8::Arguments& args);
 
-  // When RouteFunction is called we create a v8::Object to hold the data we
-  // need when handling it in Router() - this is the base::Bound function to
-  // route to, plus an is_valid flag.
-  //
-  // We need is_valid because it's possible for v8 to outlive these objects.
-  // The lifetime of an ObjectBackedNativeHandler is the lifetime of webkit's
-  // involvement with it. A scenario when v8 will outlive us is if a frame
-  // holds onto the contentWindow of an iframe after it's removed.
-  //
-  // So, we use v8::Objects here to hold that data, effectively refcounting
-  // the data. When |this| is destroyed we set is_valid to false to indicate
-  // that the routed function shouldn't be called.
-  typedef std::vector<v8::Persistent<v8::Object> > RouterData;
-  RouterData router_data_;
+  struct RouterData;
+  std::vector<linked_ptr<RouterData> > router_data_;
 
   // TODO(kalman): Just pass around a ChromeV8Context. It already has a
   // persistent handle to this context.
