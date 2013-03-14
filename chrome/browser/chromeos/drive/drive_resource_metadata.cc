@@ -461,6 +461,19 @@ void DriveResourceMetadata::RefreshDirectory(
   for (DriveEntryProtoMap::const_iterator it = entry_proto_map.begin();
        it != entry_proto_map.end(); ++it) {
     const DriveEntryProto& entry_proto = it->second;
+    // Skip if the parent resource ID does not match. This is needed to
+    // handle entries with multiple parents. For such entries, the first
+    // parent is picked and other parents are ignored, hence some entries may
+    // have a parent resource ID which does not match the target directory's.
+    //
+    // TODO(satorux): Move the filtering logic to somewhere more appropriate.
+    // crbug.com/193525.
+    if (entry_proto.parent_resource_id() !=
+        directory_fetch_info.resource_id()) {
+      DVLOG(1) << "Wrong-parent entry rejected: " << entry_proto.resource_id();
+      continue;
+    }
+
     DriveEntryProto* existing_entry =
         GetEntryByResourceId(entry_proto.resource_id());
     if (existing_entry) {

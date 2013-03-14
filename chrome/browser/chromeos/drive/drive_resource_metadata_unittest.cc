@@ -996,6 +996,45 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   ASSERT_EQ(3U, entries->size());
 }
 
+TEST_F(DriveResourceMetadataTest, RefreshDirectory_WrongParentResourceId) {
+  base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/dir1"));
+  const int64 kNewChangestamp = kTestChangestamp + 1;
+
+  // Get the directory dir1.
+  scoped_ptr<DriveEntryProto> dir1_proto;
+  dir1_proto = GetEntryInfoByPathSync(kDirectoryPath);
+  ASSERT_TRUE(dir1_proto.get());
+
+  // Create a map and add a new file to it.
+  DriveEntryProtoMap entry_map;
+  DriveEntryProto new_file;
+  new_file.set_title("new_file");
+  new_file.set_resource_id("new_file_id");
+  // Set a random parent resource ID. This entry should not be added because
+  // the parent resource ID does not match dir1_proto->resource_id().
+  new_file.set_parent_resource_id("some-random-resource-id");
+  entry_map["new_file_id"] = new_file;
+
+  // Update the directory with the map.
+  base::FilePath file_path;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata_->RefreshDirectory(
+      DirectoryFetchInfo(dir1_proto->resource_id(), kNewChangestamp),
+      entry_map,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(kDirectoryPath, file_path);
+
+  // Read the directory. Confirm that the new file is not added.
+  scoped_ptr<DriveEntryProtoVector> entries;
+  entries = ReadDirectoryByPathSync(kDirectoryPath);
+  ASSERT_TRUE(entries.get());
+  ASSERT_TRUE(entries->empty());
+}
+
 TEST_F(DriveResourceMetadataTest, AddEntry) {
   int sequence_id = 100;
   DriveEntryProto file_entry_proto = CreateDriveEntryProto(
