@@ -494,7 +494,7 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     options.suggestions = SUGGEST_NONE;
   }
 
-  string16 failed_url_string(ASCIIToUTF16(failed_url.spec()));
+  string16 failed_url_string(UTF8ToUTF16(failed_url.spec()));
   // URLs are always LTR.
   if (rtl)
     base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
