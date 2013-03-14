@@ -79,6 +79,17 @@ const char kCryptohomeAsyncTpmAttestationCreateCertRequest[] =
     "AsyncTpmAttestationCreateCertRequest";
 const char kCryptohomeAsyncTpmAttestationFinishCertRequest[] =
     "AsyncTpmAttestationFinishCertRequest";
+const char kCryptohomeTpmAttestationDoesKeyExist[] =
+    "TpmAttestationDoesKeyExist";
+const char kCryptohomeTpmAttestationGetCertificate[] =
+    "TpmAttestationGetCertificate";
+const char kCryptohomeTpmAttestationGetPublicKey[] =
+    "TpmAttestationGetPublicKey";
+const char kCryptohomeTpmAttestationRegisterKey[] = "TpmAttestationRegisterKey";
+const char kCryptohomeTpmAttestationSignEnterpriseChallenge[] =
+    "TpmAttestationSignEnterpriseChallenge";
+const char kCryptohomeTpmAttestationSignSimpleChallenge[] =
+    "TpmAttestationSignSimpleChallenge";
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
 const char kSignalAsyncCallStatusWithData[] = "AsyncCallStatusWithData";
