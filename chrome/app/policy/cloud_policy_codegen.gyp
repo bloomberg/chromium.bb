@@ -23,8 +23,6 @@
     # for policies of the same type, so that less classes have to be generated
     # and compiled.
     'cloud_policy_proto_path': '<(policy_out_dir)/policy/cloud_policy.proto',
-    'proto_path_substr': 'chrome/browser/policy/proto',
-    'proto_rel_path': '<(DEPTH)/<(proto_path_substr)',
   },
   'targets': [
     {
@@ -67,14 +65,14 @@
       },
     },
     {
-      'target_name': 'cloud_policy_proto_compile',
+      'target_name': 'cloud_policy_proto_generated_compile',
       'type': 'static_library',
       'sources': [
         '<(cloud_policy_proto_path)',
       ],
       'variables': {
         'proto_in_dir': '<(policy_out_dir)/policy',
-        'proto_out_dir': '<(proto_path_substr)',
+        'proto_out_dir': 'policy/proto',
       },
       'dependencies': [
         'cloud_policy_code_generate',
@@ -85,37 +83,18 @@
     },
     {
       # This target builds the "full" protobuf, used for tests only.
-      'target_name': 'chrome_settings_proto_compile',
+      'target_name': 'chrome_settings_proto_generated_compile',
       'type': 'static_library',
       'sources': [
         '<(chrome_settings_proto_path)',
       ],
       'variables': {
         'proto_in_dir': '<(policy_out_dir)/policy',
-        'proto_out_dir': '<(proto_path_substr)',
+        'proto_out_dir': 'policy/proto',
       },
       'dependencies': [
         'cloud_policy_code_generate',
-        'cloud_policy_proto_compile',
-      ],
-      'includes': [ '../../../build/protoc.gypi' ],
-    },
-    {
-      'target_name': 'policy_proto_compile',
-      'type': 'static_library',
-      'sources': [
-        '<(proto_rel_path)/chrome_device_policy.proto',
-        '<(proto_rel_path)/chrome_extension_policy.proto',
-        '<(proto_rel_path)/device_management_backend.proto',
-        '<(proto_rel_path)/device_management_local.proto',
-        '<(proto_rel_path)/install_attributes.proto',
-      ],
-      'variables': {
-        'proto_in_dir': '<(proto_rel_path)',
-        'proto_out_dir': '<(proto_path_substr)',
-      },
-      'dependencies': [
-        'cloud_policy_code_generate',
+        'cloud_policy_proto_generated_compile',
       ],
       'includes': [ '../../../build/protoc.gypi' ],
     },
@@ -139,8 +118,7 @@
       ],
       'dependencies': [
         'cloud_policy_code_generate',
-        'cloud_policy_proto_compile',
-        'policy_proto_compile',
+        'cloud_policy_proto_generated_compile',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
@@ -157,7 +135,7 @@
       },
       'dependencies': [
         'policy',
-        'chrome_settings_proto_compile',
+        'chrome_settings_proto_generated_compile',
       ],
     },
   ],

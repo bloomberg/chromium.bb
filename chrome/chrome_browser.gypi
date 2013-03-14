@@ -2387,6 +2387,7 @@
           ],
           'dependencies': [
             'app/policy/cloud_policy_codegen.gyp:policy',
+            'cloud_policy_proto',
           ],
         }, {  # configuration_policy==0
           'sources/': [
@@ -3046,6 +3047,21 @@
       'variables': {
         'proto_in_dir': 'browser/sync_file_system',
         'proto_out_dir': 'chrome/browser/sync_file_system',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for cloud policy protocol buffers.
+      'target_name': 'cloud_policy_proto',
+      'type': 'static_library',
+      'sources': [
+        'browser/policy/cloud/proto/chrome_extension_policy.proto',
+        'browser/policy/cloud/proto/device_management_backend.proto',
+        'browser/policy/cloud/proto/device_management_local.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'browser/policy/cloud/proto',
+        'proto_out_dir': 'chrome/browser/policy/cloud/proto',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

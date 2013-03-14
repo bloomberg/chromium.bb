@@ -9,13 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/browser/policy/cloud/proto/device_management_local.pb.h"
 #include "crypto/rsa_private_key.h"
 
 namespace enterprise_management {
-class ChromeDeviceSettingsProto;
+class CloudPolicySettings;
 class ExternalPolicyData;
 }  // namespace enterprise_management
 
@@ -105,7 +105,7 @@ template<typename PayloadProto>
 class TypedPolicyBuilder : public PolicyBuilder {
  public:
   TypedPolicyBuilder();
-  virtual ~TypedPolicyBuilder();
+  virtual ~TypedPolicyBuilder() {}
 
   // Returns a reference to the payload protobuf being built.
   PayloadProto& payload() {
@@ -118,7 +118,12 @@ class TypedPolicyBuilder : public PolicyBuilder {
   }
 
   // PolicyBuilder:
-  virtual void Build() OVERRIDE;
+  virtual void Build() OVERRIDE {
+    if (payload_.get())
+      CHECK(payload_->SerializeToString(policy_data().mutable_policy_value()));
+
+    PolicyBuilder::Build();
+  }
 
  private:
   scoped_ptr<PayloadProto> payload_;
@@ -128,8 +133,6 @@ class TypedPolicyBuilder : public PolicyBuilder {
 
 typedef TypedPolicyBuilder<enterprise_management::CloudPolicySettings>
     UserPolicyBuilder;
-typedef TypedPolicyBuilder<enterprise_management::ChromeDeviceSettingsProto>
-    DevicePolicyBuilder;
 typedef TypedPolicyBuilder<enterprise_management::ExternalPolicyData>
     ComponentPolicyBuilder;
 

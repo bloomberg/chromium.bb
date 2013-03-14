@@ -178,7 +178,20 @@ bool LocalPolicyTestServer::SetPythonPath() const {
                      .AppendASCII("chrome")
                      .AppendASCII("browser")
                      .AppendASCII("policy")
+                     .AppendASCII("cloud")
                      .AppendASCII("proto"));
+  AppendToPythonPath(pyproto_dir
+                     .AppendASCII("policy")
+                     .AppendASCII("proto"));
+#if defined(OS_CHROMEOS)
+  AppendToPythonPath(pyproto_dir
+                     .AppendASCII("chrome")
+                     .AppendASCII("browser")
+                     .AppendASCII("chromeos")
+                     .AppendASCII("policy")
+                     .AppendASCII("proto"));
+#endif
+
   return true;
 }
 

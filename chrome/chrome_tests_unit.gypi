@@ -90,6 +90,8 @@
         'browser/chromeos/login/mock_user_image_manager.h',
         'browser/chromeos/login/mock_user_manager.cc',
         'browser/chromeos/login/mock_user_manager.h',
+        'browser/chromeos/policy/device_policy_builder.cc',
+        'browser/chromeos/policy/device_policy_builder.h',
         'browser/chromeos/settings/device_settings_test_helper.cc',
         'browser/chromeos/settings/device_settings_test_helper.h',
         'browser/chromeos/settings/mock_owner_key_util.cc',

@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
+#include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/policy_types.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "policy/policy_constants.h"
+#include "policy/proto/cloud_policy.pb.h"
 
 namespace em = enterprise_management;
 

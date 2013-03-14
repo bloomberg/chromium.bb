@@ -9,10 +9,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/policy/cloud/proto/chrome_extension_policy.pb.h"
+#include "policy/proto/cloud_policy.pb.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -25,9 +28,6 @@ class MessageLite;
 }
 
 namespace enterprise_management {
-class ChromeDeviceSettingsProto;
-class CloudPolicySettings;
-class ExternalPolicyData;
 class PolicyData;
 class PolicyFetchResponse;
 }
@@ -166,11 +166,9 @@ class CloudPolicyValidatorBase {
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
       google::protobuf::MessageLite* payload);
 
-  // Performs validation, called on a background thread.
-  static void PerformValidation(
-      scoped_ptr<CloudPolicyValidatorBase> self,
-      scoped_refptr<base::MessageLoopProxy> message_loop,
-      const base::Closure& completion_callback);
+  // Posts an asynchronous calls to PerformValidation, which will eventually
+  // report its result via |completion_callback|.
+  void PostValidationTask(const base::Closure& completion_callback);
 
  private:
   // Internal flags indicating what to check.
@@ -185,6 +183,12 @@ class CloudPolicyValidatorBase {
     VALIDATE_SIGNATURE   = 1 << 7,
     VALIDATE_INITIAL_KEY = 1 << 8,
   };
+
+  // Performs validation, called on a background thread.
+  static void PerformValidation(
+      scoped_ptr<CloudPolicyValidatorBase> self,
+      scoped_refptr<base::MessageLoopProxy> message_loop,
+      const base::Closure& completion_callback);
 
   // Reports completion to the |completion_callback_|.
   static void ReportCompletion(scoped_ptr<CloudPolicyValidatorBase> self,
@@ -238,11 +242,15 @@ class CloudPolicyValidator : public CloudPolicyValidatorBase {
   typedef base::Callback<void(CloudPolicyValidator<PayloadProto>*)>
       CompletionCallback;
 
-  virtual ~CloudPolicyValidator();
+  virtual ~CloudPolicyValidator() {}
 
   // Creates a new validator.
   static CloudPolicyValidator<PayloadProto>* Create(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response);
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
+    return new CloudPolicyValidator(
+        policy_response.Pass(),
+        scoped_ptr<PayloadProto>(new PayloadProto()));
+  }
 
   scoped_ptr<PayloadProto>& payload() {
     return payload_;
@@ -252,20 +260,22 @@ class CloudPolicyValidator : public CloudPolicyValidatorBase {
   // done. From this point on, the validator manages its own lifetime - this
   // allows callers to provide a WeakPtr in the callback without leaking the
   // validator.
-  void StartValidation(const CompletionCallback& completion_callback);
+  void StartValidation(const CompletionCallback& completion_callback) {
+    PostValidationTask(base::Bind(completion_callback, this));
+  }
 
  private:
   CloudPolicyValidator(
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
-      scoped_ptr<PayloadProto> payload);
+      scoped_ptr<PayloadProto> payload)
+      : CloudPolicyValidatorBase(policy_response.Pass(), payload.get()),
+        payload_(payload.Pass()) {}
 
   scoped_ptr<PayloadProto> payload_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyValidator);
 };
 
-typedef CloudPolicyValidator<enterprise_management::ChromeDeviceSettingsProto>
-    DeviceCloudPolicyValidator;
 typedef CloudPolicyValidator<enterprise_management::CloudPolicySettings>
     UserCloudPolicyValidator;
 typedef CloudPolicyValidator<enterprise_management::ExternalPolicyData>

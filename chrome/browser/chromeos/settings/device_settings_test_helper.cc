@@ -7,9 +7,9 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {

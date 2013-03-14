@@ -6,14 +6,14 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/cloud/proto/device_management_local.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "policy/policy_constants.h"
+#include "policy/proto/cloud_policy.pb.h"
 
 namespace em = enterprise_management;
 

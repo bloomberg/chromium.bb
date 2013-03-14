@@ -80,8 +80,13 @@ import testserver_base
 
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
-import chrome_device_policy_pb2 as dp
 import chrome_extension_policy_pb2 as ep
+
+# Device policy is only available on Chrome OS builds.
+try:
+  import chrome_device_policy_pb2 as dp
+except ImportError:
+  dp = None
 
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
@@ -522,7 +527,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if payload is None:
           self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
-      elif msg.policy_type == 'google/chromeos/device':
+      elif dp is not None and msg.policy_type == 'google/chromeos/device':
         settings = dp.ChromeDeviceSettingsProto()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:

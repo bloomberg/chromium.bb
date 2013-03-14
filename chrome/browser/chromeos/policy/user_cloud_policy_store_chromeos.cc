@@ -15,12 +15,12 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/policy/user_policy_disk_cache.h"
 #include "chrome/browser/chromeos/policy/user_policy_token_loader.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/browser/policy/cloud/proto/device_management_local.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "policy/proto/cloud_policy.pb.h"
 
 namespace em = enterprise_management;
 

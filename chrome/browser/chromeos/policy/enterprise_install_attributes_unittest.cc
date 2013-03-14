@@ -8,7 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/policy/proto/install_attributes.pb.h"
+#include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

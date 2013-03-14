@@ -431,8 +431,8 @@ CPP_HEAD = '''
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "policy/policy_constants.h"
+#include "policy/proto/cloud_policy.pb.h"
 
 using google::protobuf::RepeatedPtrField;
 

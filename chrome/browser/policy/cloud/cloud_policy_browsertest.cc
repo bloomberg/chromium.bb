@@ -18,8 +18,6 @@
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/browser/policy/proto/chrome_settings.pb.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/policy/test_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,6 +31,8 @@
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "policy/policy_constants.h"
+#include "policy/proto/chrome_settings.pb.h"
+#include "policy/proto/cloud_policy.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

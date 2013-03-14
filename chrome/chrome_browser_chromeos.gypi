@@ -36,6 +36,7 @@
         'common_net',
         'contacts_proto',
         'debugger',
+        'device_policy_proto',
         'drive_proto',
         'feedback_proto',
         'in_memory_url_index_cache_proto',
@@ -577,6 +578,8 @@
         'browser/chromeos/policy/device_cloud_policy_manager_chromeos.h',
         'browser/chromeos/policy/device_cloud_policy_store_chromeos.cc',
         'browser/chromeos/policy/device_cloud_policy_store_chromeos.h',
+        'browser/chromeos/policy/device_cloud_policy_validator.cc',
+        'browser/chromeos/policy/device_cloud_policy_validator.h',
         'browser/chromeos/policy/device_local_account_policy_provider.cc',
         'browser/chromeos/policy/device_local_account_policy_provider.h',
         'browser/chromeos/policy/device_local_account_policy_service.cc',
@@ -852,6 +855,20 @@
       'variables': {
         'proto_in_dir': 'browser/chromeos/drive',
         'proto_out_dir': 'chrome/browser/chromeos/drive',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for device settings protocol buffers.
+      'target_name': 'device_policy_proto',
+      'type': 'static_library',
+      'sources': [
+        'browser/chromeos/policy/proto/chrome_device_policy.proto',
+        'browser/chromeos/policy/proto/install_attributes.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'browser/chromeos/policy/proto',
+        'proto_out_dir': 'chrome/browser/chromeos/policy/proto',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

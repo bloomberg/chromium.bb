@@ -6,12 +6,11 @@
 
 #include <vector>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/policy/proto/chrome_extension_policy.pb.h"
+#include "chrome/browser/policy/cloud/proto/chrome_extension_policy.pb.h"
 #include "crypto/signature_creator.h"
+#include "policy/proto/cloud_policy.pb.h"
 
 namespace em = enterprise_management;
 
@@ -181,10 +180,6 @@ void PolicyBuilder::SignData(const std::string& data,
       signature_bytes.size());
 }
 
-template<typename PayloadProto>
-TypedPolicyBuilder<PayloadProto>::TypedPolicyBuilder()
-    : payload_(new PayloadProto()) {}
-
 template<>
 TypedPolicyBuilder<em::CloudPolicySettings>::TypedPolicyBuilder()
     : payload_(new em::CloudPolicySettings()) {
@@ -192,25 +187,14 @@ TypedPolicyBuilder<em::CloudPolicySettings>::TypedPolicyBuilder()
 }
 
 template<>
-TypedPolicyBuilder<em::ChromeDeviceSettingsProto>::TypedPolicyBuilder()
-    : payload_(new em::ChromeDeviceSettingsProto()) {
-  policy_data().set_policy_type(dm_protocol::kChromeDevicePolicyType);
+TypedPolicyBuilder<em::ExternalPolicyData>::TypedPolicyBuilder()
+    : payload_(new em::ExternalPolicyData()) {
+  policy_data().set_policy_type(dm_protocol::kChromeExtensionPolicyType);
 }
 
-template<typename PayloadProto>
-TypedPolicyBuilder<PayloadProto>::~TypedPolicyBuilder() {}
-
-template<typename PayloadProto>
-void TypedPolicyBuilder<PayloadProto>::Build() {
-  if (payload_.get())
-    CHECK(payload_->SerializeToString(policy_data().mutable_policy_value()));
-
-  PolicyBuilder::Build();
-}
 
 // Have the instantiations compiled into the module.
 template class TypedPolicyBuilder<em::CloudPolicySettings>;
-template class TypedPolicyBuilder<em::ChromeDeviceSettingsProto>;
 template class TypedPolicyBuilder<em::ExternalPolicyData>;
 
 }  // namespace policy

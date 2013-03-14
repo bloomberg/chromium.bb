@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_store_base.h"
 
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
+#include "policy/proto/cloud_policy.pb.h"
 
 namespace policy {
 

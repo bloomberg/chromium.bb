@@ -1002,7 +1002,6 @@
           'target_name': 'crash_service',
           'type': 'executable',
           'dependencies': [
-            'app/policy/cloud_policy_codegen.gyp:policy',
             'installer_util',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',

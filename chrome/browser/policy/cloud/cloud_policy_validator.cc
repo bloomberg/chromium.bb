@@ -4,15 +4,11 @@
 
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 
-#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/policy/proto/chrome_extension_policy.pb.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/signature_verifier.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -128,6 +124,16 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       timestamp_option_(TIMESTAMP_REQUIRED),
       dm_token_option_(DM_TOKEN_REQUIRED),
       allow_key_rotation_(false) {}
+
+void CloudPolicyValidatorBase::PostValidationTask(
+    const base::Closure& completion_callback) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CloudPolicyValidatorBase::PerformValidation,
+                 base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
+                 MessageLoop::current()->message_loop_proxy(),
+                 completion_callback));
+}
 
 // static
 void CloudPolicyValidatorBase::PerformValidation(
@@ -364,36 +370,6 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
   return verifier.VerifyFinal();
 }
 
-template<typename PayloadProto>
-CloudPolicyValidator<PayloadProto>::~CloudPolicyValidator() {}
-
-template<typename PayloadProto>
-CloudPolicyValidator<PayloadProto>* CloudPolicyValidator<PayloadProto>::Create(
-    scoped_ptr<em::PolicyFetchResponse> policy_response) {
-  return new CloudPolicyValidator(
-      policy_response.Pass(),
-      scoped_ptr<PayloadProto>(new PayloadProto()));
-}
-
-template<typename PayloadProto>
-CloudPolicyValidator<PayloadProto>::CloudPolicyValidator(
-    scoped_ptr<em::PolicyFetchResponse> policy_response,
-    scoped_ptr<PayloadProto> payload)
-    : CloudPolicyValidatorBase(policy_response.Pass(), payload.get()),
-      payload_(payload.Pass()) {}
-
-template<typename PayloadProto>
-void CloudPolicyValidator<PayloadProto>::StartValidation(
-    const CompletionCallback& completion_callback) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CloudPolicyValidatorBase::PerformValidation,
-                 base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
-                 MessageLoop::current()->message_loop_proxy(),
-                 base::Bind(completion_callback, this)));
-}
-
-template class CloudPolicyValidator<em::ChromeDeviceSettingsProto>;
 template class CloudPolicyValidator<em::CloudPolicySettings>;
 template class CloudPolicyValidator<em::ExternalPolicyData>;
 
