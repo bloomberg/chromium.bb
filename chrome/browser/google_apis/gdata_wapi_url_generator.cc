@@ -51,16 +51,12 @@ const char kInitiateUploadNewFileURLFormat[] =
 const char kInitiateUploadExistingFileURLPrefix[] =
     "/feeds/upload/create-session/default/private/full/";
 
-#ifndef NDEBUG
-// Use smaller 'page' size while debugging to ensure we hit feed reload
-// almost always. Be careful not to use something too small on account that
-// have many items because server side 503 error might kick in.
+// Maximum number of resource entries to include in a feed.
+// Be careful not to use something too small because it might overload the
+// server. Be careful not to use something too large because it makes the
+// "fetched N items" UI less responsive.
 const int kMaxDocumentsPerFeed = 500;
 const int kMaxDocumentsPerSearchFeed = 50;
-#else
-const int kMaxDocumentsPerFeed = 500;
-const int kMaxDocumentsPerSearchFeed = 50;
-#endif
 
 // URL requesting documents list that shared to the authenticated user only
 const char kGetResourceListURLForSharedWithMe[] =
