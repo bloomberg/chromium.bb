@@ -12,119 +12,153 @@
 namespace cc {
 
 // static
-scoped_ptr<DebugRectHistory> DebugRectHistory::create() {
+scoped_ptr<DebugRectHistory> DebugRectHistory::Create() {
   return make_scoped_ptr(new DebugRectHistory());
 }
 
-DebugRectHistory::DebugRectHistory()
-{
+DebugRectHistory::DebugRectHistory() {}
+
+DebugRectHistory::~DebugRectHistory() {}
+
+void DebugRectHistory::SaveDebugRectsForCurrentFrame(
+    LayerImpl* root_layer,
+    const std::vector<LayerImpl*>& render_surface_layer_list,
+    const std::vector<gfx::Rect>& occluding_screen_space_rects,
+    const std::vector<gfx::Rect>& non_occluding_screen_space_rects,
+    const LayerTreeDebugState& debug_state) {
+  // For now, clear all rects from previous frames. In the future we may want to
+  // store all debug rects for a history of many frames.
+  debug_rects_.clear();
+
+  if (debug_state.showPaintRects)
+    SavePaintRects(root_layer);
+
+  if (debug_state.showPropertyChangedRects)
+    SavePropertyChangedRects(render_surface_layer_list);
+
+  if (debug_state.showSurfaceDamageRects)
+    SaveSurfaceDamageRects(render_surface_layer_list);
+
+  if (debug_state.showScreenSpaceRects)
+    SaveScreenSpaceRects(render_surface_layer_list);
+
+  if (debug_state.showOccludingRects)
+    SaveOccludingRects(occluding_screen_space_rects);
+
+  if (debug_state.showNonOccludingRects)
+    SaveNonOccludingRects(non_occluding_screen_space_rects);
 }
 
-DebugRectHistory::~DebugRectHistory()
-{
+void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
+  // We would like to visualize where any layer's paint rect (update rect) has
+  // changed, regardless of whether this layer is skipped for actual drawing or
+  // not. Therefore we traverse recursively over all layers, not just the render
+  // surface list.
+
+  if (!layer->update_rect().IsEmpty() && layer->DrawsContent()) {
+    float width_scale = layer->content_bounds().width() /
+                        static_cast<float>(layer->bounds().width());
+    float height_scale = layer->content_bounds().height() /
+                         static_cast<float>(layer->bounds().height());
+    gfx::RectF update_content_rect =
+        gfx::ScaleRect(layer->update_rect(), width_scale, height_scale);
+    debug_rects_.push_back(
+        DebugRect(PAINT_RECT_TYPE,
+                  MathUtil::mapClippedRect(layer->screen_space_transform(),
+                                           update_content_rect)));
+  }
+
+  for (unsigned i = 0; i < layer->children().size(); ++i)
+    SavePaintRects(layer->children()[i]);
 }
 
-void DebugRectHistory::saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<gfx::Rect>& occludingScreenSpaceRects, const std::vector<gfx::Rect>& nonOccludingScreenSpaceRects, const LayerTreeDebugState& debugState)
-{
-    // For now, clear all rects from previous frames. In the future we may want to store
-    // all debug rects for a history of many frames.
-    m_debugRects.clear();
+void DebugRectHistory::SavePropertyChangedRects(
+    const std::vector<LayerImpl*>& render_surface_layer_list) {
+  for (int surface_index = render_surface_layer_list.size() - 1;
+       surface_index >= 0;
+       --surface_index) {
+    LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
+    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    DCHECK(render_surface);
 
-    if (debugState.showPaintRects)
-        savePaintRects(rootLayer);
+    const std::vector<LayerImpl*>& layer_list = render_surface->layer_list();
+    for (unsigned layer_index = 0;
+         layer_index < layer_list.size();
+         ++layer_index) {
+      LayerImpl* layer = layer_list[layer_index];
 
-    if (debugState.showPropertyChangedRects)
-        savePropertyChangedRects(renderSurfaceLayerList);
+      if (LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerImpl>(
+              layer, render_surface_layer->id()))
+        continue;
 
-    if (debugState.showSurfaceDamageRects)
-        saveSurfaceDamageRects(renderSurfaceLayerList);
+      if (layer->LayerIsAlwaysDamaged())
+        continue;
 
-    if (debugState.showScreenSpaceRects)
-        saveScreenSpaceRects(renderSurfaceLayerList);
-
-    if (debugState.showOccludingRects)
-        saveOccludingRects(occludingScreenSpaceRects);
-
-    if (debugState.showNonOccludingRects)
-        saveNonOccludingRects(nonOccludingScreenSpaceRects);
-}
-
-
-void DebugRectHistory::savePaintRects(LayerImpl* layer)
-{
-    // We would like to visualize where any layer's paint rect (update rect) has changed,
-    // regardless of whether this layer is skipped for actual drawing or not. Therefore
-    // we traverse recursively over all layers, not just the render surface list.
-
-    if (!layer->update_rect().IsEmpty() && layer->DrawsContent()) {
-        float widthScale = layer->content_bounds().width() / static_cast<float>(layer->bounds().width());
-        float heightScale = layer->content_bounds().height() / static_cast<float>(layer->bounds().height());
-        gfx::RectF updateContentRect = gfx::ScaleRect(layer->update_rect(), widthScale, heightScale);
-        m_debugRects.push_back(DebugRect(PaintRectType, MathUtil::mapClippedRect(layer->screen_space_transform(), updateContentRect)));
+      if (layer->LayerPropertyChanged() ||
+          layer->LayerSurfacePropertyChanged()) {
+        debug_rects_.push_back(
+            DebugRect(PROPERTY_CHANGED_RECT_TYPE,
+                      MathUtil::mapClippedRect(
+                          layer->screen_space_transform(),
+                          gfx::RectF(gfx::PointF(), layer->content_bounds()))));
+      }
     }
-
-    for (unsigned i = 0; i < layer->children().size(); ++i)
-        savePaintRects(layer->children()[i]);
+  }
 }
 
-void DebugRectHistory::savePropertyChangedRects(const std::vector<LayerImpl*>& renderSurfaceLayerList)
-{
-    for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
-        LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->render_surface();
-        DCHECK(renderSurface);
+void DebugRectHistory::SaveSurfaceDamageRects(
+    const std::vector<LayerImpl*>& render_surface_layer_list) {
+  for (int surface_index = render_surface_layer_list.size() - 1;
+       surface_index >= 0;
+       --surface_index) {
+    LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
+    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    DCHECK(render_surface);
 
-        const std::vector<LayerImpl*>& layerList = renderSurface->layer_list();
-        for (unsigned layerIndex = 0; layerIndex < layerList.size(); ++layerIndex) {
-            LayerImpl* layer = layerList[layerIndex];
+    debug_rects_.push_back(DebugRect(
+        SURFACE_DAMAGE_RECT_TYPE,
+        MathUtil::mapClippedRect(
+            render_surface->screen_space_transform(),
+            render_surface->damage_tracker()->current_damage_rect())));
+  }
+}
 
-            if (LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerImpl>(layer, renderSurfaceLayer->id()))
-                continue;
+void DebugRectHistory::SaveScreenSpaceRects(
+    const std::vector<LayerImpl*>& render_surface_layer_list) {
+  for (int surface_index = render_surface_layer_list.size() - 1;
+       surface_index >= 0;
+       --surface_index) {
+    LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
+    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    DCHECK(render_surface);
 
-            if (layer->LayerIsAlwaysDamaged())
-                continue;
+    debug_rects_.push_back(DebugRect(
+        SCREEN_SPACE_RECT_TYPE,
+        MathUtil::mapClippedRect(render_surface->screen_space_transform(),
+                                 render_surface->content_rect())));
 
-            if (layer->LayerPropertyChanged() || layer->LayerSurfacePropertyChanged())
-                m_debugRects.push_back(DebugRect(PropertyChangedRectType, MathUtil::mapClippedRect(layer->screen_space_transform(), gfx::RectF(gfx::PointF(), layer->content_bounds()))));
-        }
+    if (render_surface_layer->replica_layer()) {
+      debug_rects_.push_back(
+          DebugRect(REPLICA_SCREEN_SPACE_RECT_TYPE,
+                    MathUtil::mapClippedRect(
+                        render_surface->replica_screen_space_transform(),
+                        render_surface->content_rect())));
     }
+  }
 }
 
-void DebugRectHistory::saveSurfaceDamageRects(const std::vector<LayerImpl* >& renderSurfaceLayerList)
-{
-    for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
-        LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->render_surface();
-        DCHECK(renderSurface);
-
-        m_debugRects.push_back(DebugRect(SurfaceDamageRectType, MathUtil::mapClippedRect(renderSurface->screen_space_transform(), renderSurface->damage_tracker()->current_damage_rect())));
-    }
+void DebugRectHistory::SaveOccludingRects(
+    const std::vector<gfx::Rect>& occluding_rects) {
+  for (size_t i = 0; i < occluding_rects.size(); ++i)
+    debug_rects_.push_back(DebugRect(OCCLUDING_RECT_TYPE, occluding_rects[i]));
 }
 
-void DebugRectHistory::saveScreenSpaceRects(const std::vector<LayerImpl* >& renderSurfaceLayerList)
-{
-    for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
-        LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->render_surface();
-        DCHECK(renderSurface);
-
-        m_debugRects.push_back(DebugRect(ScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->screen_space_transform(), renderSurface->content_rect())));
-
-        if (renderSurfaceLayer->replica_layer())
-            m_debugRects.push_back(DebugRect(ReplicaScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->replica_screen_space_transform(), renderSurface->content_rect())));
-    }
-}
-
-void DebugRectHistory::saveOccludingRects(const std::vector<gfx::Rect>& occludingRects)
-{
-    for (size_t i = 0; i < occludingRects.size(); ++i)
-        m_debugRects.push_back(DebugRect(OccludingRectType, occludingRects[i]));
-}
-
-void DebugRectHistory::saveNonOccludingRects(const std::vector<gfx::Rect>& nonOccludingRects)
-{
-    for (size_t i = 0; i < nonOccludingRects.size(); ++i)
-        m_debugRects.push_back(DebugRect(NonOccludingRectType, nonOccludingRects[i]));
+void DebugRectHistory::SaveNonOccludingRects(
+    const std::vector<gfx::Rect>& non_occluding_rects) {
+  for (size_t i = 0; i < non_occluding_rects.size(); ++i) {
+    debug_rects_.push_back(
+        DebugRect(NONOCCLUDING_RECT_TYPE, non_occluding_rects[i]));
+  }
 }
 
 }  // namespace cc

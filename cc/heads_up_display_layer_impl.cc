@@ -479,57 +479,57 @@ SkRect HeadsUpDisplayLayerImpl::drawPaintTimeDisplay(SkCanvas* canvas, const Pai
 
 void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory) const
 {
-    const std::vector<DebugRect>& debugRects = debugRectHistory->debugRects();
+    const std::vector<DebugRect>& debug_rects = debugRectHistory->debug_rects();
     float rectScale = 1 / layer_tree_impl()->device_scale_factor();
     SkPaint paint = createPaint();
 
     canvas->save();
     canvas->scale(rectScale, rectScale);
 
-    for (size_t i = 0; i < debugRects.size(); ++i) {
+    for (size_t i = 0; i < debug_rects.size(); ++i) {
         SkColor strokeColor = 0;
         SkColor fillColor = 0;
         float strokeWidth = 0;
 
-        switch (debugRects[i].type) {
-        case PaintRectType:
+        switch (debug_rects[i].type) {
+        case PAINT_RECT_TYPE:
             strokeColor = DebugColors::PaintRectBorderColor();
             fillColor = DebugColors::PaintRectFillColor();
             strokeWidth = DebugColors::PaintRectBorderWidth(layer_tree_impl());
             break;
-        case PropertyChangedRectType:
+        case PROPERTY_CHANGED_RECT_TYPE:
             strokeColor = DebugColors::PropertyChangedRectBorderColor();
             fillColor = DebugColors::PropertyChangedRectFillColor();
             strokeWidth = DebugColors::PropertyChangedRectBorderWidth(layer_tree_impl());
             break;
-        case SurfaceDamageRectType:
+        case SURFACE_DAMAGE_RECT_TYPE:
             strokeColor = DebugColors::SurfaceDamageRectBorderColor();
             fillColor = DebugColors::SurfaceDamageRectFillColor();
             strokeWidth = DebugColors::SurfaceDamageRectBorderWidth(layer_tree_impl());
             break;
-        case ReplicaScreenSpaceRectType:
+        case REPLICA_SCREEN_SPACE_RECT_TYPE:
             strokeColor = DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor();
             fillColor = DebugColors::ScreenSpaceSurfaceReplicaRectFillColor();
             strokeWidth = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(layer_tree_impl());
             break;
-        case ScreenSpaceRectType:
+        case SCREEN_SPACE_RECT_TYPE:
             strokeColor = DebugColors::ScreenSpaceLayerRectBorderColor();
             fillColor = DebugColors::ScreenSpaceLayerRectFillColor();
             strokeWidth = DebugColors::ScreenSpaceLayerRectBorderWidth(layer_tree_impl());
             break;
-        case OccludingRectType:
+        case OCCLUDING_RECT_TYPE:
             strokeColor = DebugColors::OccludingRectBorderColor();
             fillColor = DebugColors::OccludingRectFillColor();
             strokeWidth = DebugColors::OccludingRectBorderWidth(layer_tree_impl());
             break;
-        case NonOccludingRectType:
+        case NONOCCLUDING_RECT_TYPE:
             strokeColor = DebugColors::NonOccludingRectBorderColor();
             fillColor = DebugColors::NonOccludingRectFillColor();
             strokeWidth = DebugColors::NonOccludingRectBorderWidth(layer_tree_impl());
             break;
         }
 
-        const gfx::RectF& rect = debugRects[i].rect;
+        const gfx::RectF& rect = debug_rects[i].rect;
         SkRect skRect = SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
         paint.setColor(fillColor);
         paint.setStyle(SkPaint::kFill_Style);

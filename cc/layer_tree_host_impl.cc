@@ -165,7 +165,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings,
       fps_counter_(FrameRateCounter::create(proxy_->HasImplThread())),
       paint_time_counter_(PaintTimeCounter::create()),
       memory_history_(MemoryHistory::Create()),
-      debug_rect_history_(DebugRectHistory::create()),
+      debug_rect_history_(DebugRectHistory::Create()),
       num_impl_thread_scrolls_(0),
       num_main_thread_scrolls_(0),
       cumulative_num_layers_drawn_(0),
@@ -946,7 +946,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   }
 
   if (debug_state_.showHudRects()) {
-    debug_rect_history_->saveDebugRectsForCurrentFrame(
+    debug_rect_history_->SaveDebugRectsForCurrentFrame(
         active_tree_->root_layer(),
         *frame->render_surface_layer_list,
         frame->occluding_screen_space_rects,
