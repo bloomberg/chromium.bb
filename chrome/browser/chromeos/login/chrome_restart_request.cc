@@ -112,6 +112,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kTouchOptimizedUI,
       ::switches::kUIEnablePartialSwap,
       ::switches::kUIEnableThreadedCompositing,
+      ::switches::kUIMaxFramesPending,
       ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)
       ::switches::kUseCras,
