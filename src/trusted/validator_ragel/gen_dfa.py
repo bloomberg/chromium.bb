@@ -86,7 +86,7 @@ class Operand(object):
         def_format.OperandType.XMM_REGISTER_IN_REG,
         def_format.OperandType.XMM_REGISTER_OR_MEMORY]
 
-  def GetFormat(self):
+  def GetFormat(self, bitness):
     """Get human-readable string for operand type and size.
 
     This string is used as a suffix in action names like 'operand0_8bit'. Values
@@ -96,9 +96,12 @@ class Operand(object):
     Actually, there is one format ('memory') that is never returned because it
     is handled at a higher level.
 
-    TODO(shcherbina): it is possible that format will also be needed by
-    validator64 in order to identify zero-extending instruction, but I'm not
-    sure how it will be done.
+    This format will also be needed by validator64 in order to identify
+    zero-extending instruction.
+
+    Args:
+      bitness: 32 or 64. It is only needed when operand size is 'r' (register
+               size (32 bit in 32-bit mode, 64 bit in 64-bit mode)).
 
     Returns:
       String like '8bit', '32bit', 'xmm', 'mmx', etc.
@@ -140,8 +143,7 @@ class Operand(object):
       return '128bit'
 
     if self.size == 'r':
-      # TODO(shcherbina): explicitly set to 32bit or 64bit depending on bitness.
-      return 'regsize'
+      return {32: '32bit', 64: '64bit'}[bitness]
 
     if self.size == 'p':
       return 'farptr'
@@ -636,7 +638,7 @@ class InstructionPrinter(object):
     for operand in instruction.operands:
       if self._NeedOperandInfo(operand):
         self._out.write('@operand%d_%s\n' %
-                        (operand.index, operand.GetFormat()))
+                        (operand.index, operand.GetFormat(self._bitness)))
 
     # TODO(shcherbina): print operand sources and extract implicit operands.
 
@@ -672,7 +674,7 @@ class InstructionPrinter(object):
             def_format.OperandType.AX,
             def_format.OperandType.CX,
             def_format.OperandType.DX] and
-        operand.GetFormat() in ['8bit', '16bit', '32bit', '64bit', 'regsize'])
+        operand.GetFormat(self._bitness) in ['8bit', '16bit', '32bit', '64bit'])
 
   def _PrintOperandSource(self, operand, source):
     """Print action specifying operand source."""
@@ -744,7 +746,7 @@ class InstructionPrinter(object):
 
     operand = instruction.FindOperand(def_format.OperandType.IMMEDIATE)
     if operand is not None:
-      format = operand.GetFormat()
+      format = operand.GetFormat(self._bitness)
       if format == '2bit':
         imm2 = operand  # handled below
       elif format == '8bit':
@@ -761,7 +763,7 @@ class InstructionPrinter(object):
 
     operand = instruction.FindOperand(def_format.OperandType.SECOND_IMMEDIATE)
     if operand is not None:
-      format = operand.GetFormat()
+      format = operand.GetFormat(self._bitness)
       if format == '8bit':
         self._out.write('imm8n2\n')
       elif format == '16bit':
@@ -796,7 +798,7 @@ class InstructionPrinter(object):
       if not self._NeedOperandInfo(operand):
         continue
       num_operands += 1
-      if (operand.GetFormat() == '32bit' and
+      if (operand.GetFormat(self._bitness) == '32bit' and
           Attribute('nacl-amd64-zero-extends') in instruction.attributes):
         zero_extends = True
 
@@ -849,7 +851,7 @@ class InstructionPrinter(object):
     # Relative jump/call target encoded in the instruction.
     operand = instruction.FindOperand(def_format.OperandType.RELATIVE_TARGET)
     if operand is not None:
-      format = operand.GetFormat()
+      format = operand.GetFormat(self._bitness)
       if format == '8bit':
         self._out.write('rel8\n')
       elif format == '16bit':

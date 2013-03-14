@@ -531,7 +531,7 @@ class TestInstructionPrinter(unittest.TestCase):
         @instruction_mov
         @operands_count_is_2
         @lock_extends_cr_operand1
-        @operand0_regsize
+        @operand0_32bit
         @operand1_creg
         @CPUFeature_ALTMOVCR8
         """.split())

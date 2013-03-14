@@ -536,10 +536,6 @@
 
   include operand_actions_common;
 
-  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
-  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
-  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_TYPE_32_BIT); }
-
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
     SET_MODRM_BASE(NO_REG);
@@ -594,10 +590,6 @@
   machine operand_actions_amd64;
 
   include operand_actions_common;
-
-  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
-  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
-  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_TYPE_64_BIT); }
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
