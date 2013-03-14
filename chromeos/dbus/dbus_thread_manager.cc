@@ -22,12 +22,13 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/dbus/gsm_sms_client.h"
+#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_config_client.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
@@ -128,6 +129,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         SessionManagerClient::Create(client_type_, system_bus_.get()));
     sms_client_.reset(
         SMSClient::Create(client_type_, system_bus_.get()));
+    system_clock_client_.reset(
+        SystemClockClient::Create(client_type_, system_bus_.get()));
     update_engine_client_.reset(
         UpdateEngineClient::Create(client_type_, system_bus_.get()));
 
@@ -306,6 +309,10 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return sms_client_.get();
   }
 
+  virtual SystemClockClient* GetSystemClockClient() OVERRIDE {
+    return system_clock_client_.get();
+  }
+
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE {
     return update_engine_client_.get();
   }
@@ -384,6 +391,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<IntrospectableClient> introspectable_client_;
   scoped_ptr<ModemMessagingClient> modem_messaging_client_;
   scoped_ptr<PermissionBrokerClient> permission_broker_client_;
+  scoped_ptr<SystemClockClient> system_clock_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SMSClient> sms_client_;

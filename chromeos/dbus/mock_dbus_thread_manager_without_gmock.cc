@@ -177,6 +177,11 @@ SMSClient* MockDBusThreadManagerWithoutGMock::GetSMSClient() {
   return NULL;
 }
 
+SystemClockClient* MockDBusThreadManagerWithoutGMock::GetSystemClockClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 UpdateEngineClient* MockDBusThreadManagerWithoutGMock::GetUpdateEngineClient() {
   NOTIMPLEMENTED();
   return NULL;

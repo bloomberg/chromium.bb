@@ -55,6 +55,7 @@ class ShillIPConfigClient;
 class ShillManagerClient;
 class ShillProfileClient;
 class ShillServiceClient;
+class SystemClockClient;
 class UpdateEngineClient;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
@@ -149,6 +150,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual ShillProfileClient* GetShillProfileClient() = 0;
   virtual ShillServiceClient* GetShillServiceClient() = 0;
   virtual SMSClient* GetSMSClient() = 0;
+  virtual SystemClockClient* GetSystemClockClient() = 0;
   virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
 
   // Removes the ibus engine services for |object_path|.

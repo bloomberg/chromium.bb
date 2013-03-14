@@ -107,6 +107,7 @@ public:
   void NotifyCapsLockChanged(bool enabled, bool search_mapped_to_caps_lock);
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();
+  void NotifySystemClockTimeUpdated();
   void NotifyRefreshDrive(DriveOperationStatusList& list);
   void NotifyRefreshIME(bool show_message);
   void NotifyShowLoginButtonChanged(bool show_login_button);

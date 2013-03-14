@@ -188,6 +188,11 @@ void TrayDate::OnDateFormatChanged() {
     time_tray_->UpdateTimeFormat();
 }
 
+void TrayDate::OnSystemClockTimeUpdated() {
+  if (time_tray_)
+    time_tray_->UpdateTimeFormat();
+}
+
 void TrayDate::Refresh() {
   if (time_tray_)
     time_tray_->UpdateText();

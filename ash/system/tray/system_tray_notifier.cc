@@ -228,6 +228,12 @@ void SystemTrayNotifier::NotifyDateFormatChanged() {
                     OnDateFormatChanged());
 }
 
+void SystemTrayNotifier::NotifySystemClockTimeUpdated() {
+  FOR_EACH_OBSERVER(ClockObserver,
+                    clock_observers_,
+                    OnSystemClockTimeUpdated());
+}
+
 void SystemTrayNotifier::NotifyRefreshDrive(DriveOperationStatusList& list) {
   FOR_EACH_OBSERVER(DriveObserver,
                     drive_observers_,

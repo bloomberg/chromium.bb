@@ -12,6 +12,7 @@ class ClockObserver {
   virtual ~ClockObserver() {}
 
   virtual void OnDateFormatChanged() = 0;
+  virtual void OnSystemClockTimeUpdated() = 0;
 
   // Force a refresh (e.g. after the system is resumed).
   virtual void Refresh() = 0;

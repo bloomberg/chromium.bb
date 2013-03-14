@@ -43,6 +43,7 @@ class TrayDate : public SystemTrayItem,
 
   // Overridden from ClockObserver.
   virtual void OnDateFormatChanged() OVERRIDE;
+  virtual void OnSystemClockTimeUpdated() OVERRIDE;
   virtual void Refresh() OVERRIDE;
 
   void SetupLabelForTimeTray(views::Label* label);

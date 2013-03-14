@@ -82,6 +82,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/system_clock_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -197,6 +198,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
+                           public chromeos::SystemClockClient::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
                            public ash::NetworkTrayDelegate,
@@ -265,6 +267,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     input_method::GetInputMethodManager()->AddObserver(this);
 
     system::TimezoneSettings::GetInstance()->AddObserver(this);
+    DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
 
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
@@ -313,6 +316,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       audiohandler->RemoveVolumeObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+    DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(this);
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     if (crosnet)
       crosnet->RemoveNetworkManagerObserver(this);
@@ -1305,6 +1309,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from system::TimezoneSettings::Observer.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE {
     GetSystemTrayNotifier()->NotifyRefreshClock();
+  }
+
+  // Overridden from SystemClockClient::Observer.
+  virtual void SystemClockUpdated() OVERRIDE {
+    GetSystemTrayNotifier()->NotifySystemClockTimeUpdated();
   }
 
   // Overridden from BluetoothAdapter::Observer.
