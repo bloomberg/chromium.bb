@@ -84,6 +84,11 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, void* reserved) {
     Init(scoped_ptr<CommandExecutor>(new CommandExecutorImpl()));
   }
   if (reason == DLL_PROCESS_DETACH) {
+    // If |reserved| is not null, the process is terminating and
+    // ChromeDriver's threads have already been signaled to exit.
+    // Just leak and let the OS clean it up.
+    if (reserved)
+      return TRUE;
     Shutdown();
     delete g_at_exit;
   }

@@ -38,6 +38,13 @@ def Skip(func):
   pass
 
 
+def SkipIf(condition):
+  def _Decorate(func):
+    if not condition:
+      return func
+  return _Decorate
+
+
 class ChromeDriverBaseTest(unittest.TestCase):
   """Base class for testing chromedriver functionalities."""
 
@@ -116,6 +123,8 @@ class ChromeDriverTest(ChromeDriverBaseTest):
       time.sleep(0.01)
     return None
 
+  # https://code.google.com/p/chromedriver/issues/detail?id=214
+  @SkipIf(util.IsWindows())
   def testCloseWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
@@ -468,8 +477,8 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     """Checks that chromedriver can take the extensions."""
     crx_1 = os.path.join(_TEST_DATA_DIR, 'ext_test_1.crx')
     crx_2 = os.path.join(_TEST_DATA_DIR, 'ext_test_2.crx')
-    crx_1_encoded = base64.b64encode(open(crx_1).read())
-    crx_2_encoded = base64.b64encode(open(crx_2).read())
+    crx_1_encoded = base64.b64encode(open(crx_1, 'rb').read())
+    crx_2_encoded = base64.b64encode(open(crx_2, 'rb').read())
     extensions = [crx_1_encoded, crx_2_encoded]
     self.CreateDriver(chrome_extensions=extensions)
 

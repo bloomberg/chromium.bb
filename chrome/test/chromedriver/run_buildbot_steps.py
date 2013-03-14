@@ -80,9 +80,8 @@ def MaybeRelease(revision):
     version_line = filter(lambda x: 'kChromeDriverVersion' in x, f.readlines())
   version = version_line[0].split('"')[1]
 
-  # This assumes the bitness of python is the same as the built ChromeDriver.
   bitness = '32'
-  if sys.maxint > 2**32:
+  if util.IsLinux():
     bitness = '64'
   zip_name = 'chromedriver2_%s%s_%s.zip' % (
       util.GetPlatformName(), bitness, version)
