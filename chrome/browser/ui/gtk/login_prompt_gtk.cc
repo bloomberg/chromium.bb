@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/login/login_model.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -115,14 +116,19 @@ class LoginHandlerGtk : public LoginHandler,
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
-    dialog_ = new ConstrainedWindowGtk(requesting_contents, this);
+    dialog_ = CreateWebContentsModalDialogGtk(requesting_contents, this);
+
+    WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+        WebContentsModalDialogManager::FromWebContents(requesting_contents);
+    web_contents_modal_dialog_manager->ShowDialog(dialog_);
+
     NotifyAuthNeeded();
   }
 
   virtual void CloseDialog() OVERRIDE {
-    // The hosting ConstrainedWindowGtk may have been freed.
+    // The hosting dialog may have been freed.
     if (dialog_)
-      gtk_widget_destroy(dialog_->widget());
+      gtk_widget_destroy(dialog_);
   }
 
   // Overridden from ConstrainedWindowGtkDelegate:
@@ -166,7 +172,7 @@ class LoginHandlerGtk : public LoginHandler,
   GtkWidget* password_entry_;
   GtkWidget* ok_;
 
-  ConstrainedWindowGtk* dialog_;
+  GtkWidget* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerGtk);
 };

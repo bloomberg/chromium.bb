@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -70,8 +71,12 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnAcceptThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  window_ = new ConstrainedWindowGtk(web_contents, this);
+  window_ = CreateWebContentsModalDialogGtk(web_contents, this);
   delegate_->set_close_delegate(this);
+
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_contents_modal_dialog_manager->ShowDialog(window_);
 }
 
 GtkWidget* TabModalConfirmDialogGtk::GetWidgetRoot() {
@@ -99,7 +104,7 @@ void TabModalConfirmDialogGtk::CancelTabModalDialog() {
 }
 
 void TabModalConfirmDialogGtk::CloseDialog() {
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 void TabModalConfirmDialogGtk::OnAccept(GtkWidget* widget) {

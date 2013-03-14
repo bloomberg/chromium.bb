@@ -65,22 +65,18 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &background);
   }
 
-  gtk_widget_add_events(widget(), GDK_KEY_PRESS_MASK);
-  g_signal_connect(widget(), "key-press-event", G_CALLBACK(OnKeyPressThunk),
+  gtk_widget_add_events(border_, GDK_KEY_PRESS_MASK);
+  g_signal_connect(border_, "key-press-event", G_CALLBACK(OnKeyPressThunk),
                    this);
-  g_signal_connect(widget(), "hierarchy-changed",
+  g_signal_connect(border_, "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
-  g_signal_connect(widget(), "destroy", G_CALLBACK(OnDestroyThunk),
+  g_signal_connect(border_, "destroy", G_CALLBACK(OnDestroyThunk),
                    this);
 
   // TODO(wittman): Getting/setting data on the widget is a hack to facilitate
   // looking up the ConstrainedWindowGtk from the GtkWindow during refactoring.
   // Remove once ConstrainedWindowGtk is gone.
-  g_object_set_data(G_OBJECT(widget()), "ConstrainedWindowGtk", this);
-
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->ShowDialog(widget());
+  g_object_set_data(G_OBJECT(border_), "ConstrainedWindowGtk", this);
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
@@ -91,7 +87,7 @@ void ConstrainedWindowGtk::ShowWebContentsModalDialog() {
 
   // We collaborate with WebContentsView and stick ourselves in the
   // WebContentsView's floating container.
-  ContainingView()->AttachConstrainedWindow(this);
+  ContainingView()->AttachWebContentsModalDialog(border_);
 
   visible_ = true;
 }
@@ -143,7 +139,7 @@ void ConstrainedWindowGtk::OnHierarchyChanged(GtkWidget* sender,
 
 void ConstrainedWindowGtk::OnDestroy(GtkWidget* sender) {
   if (visible_)
-    ContainingView()->RemoveConstrainedWindow(this);
+    ContainingView()->RemoveWebContentsModalDialog(border_);
   delegate_->DeleteDelegate();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
@@ -153,4 +149,12 @@ void ConstrainedWindowGtk::OnDestroy(GtkWidget* sender) {
   border_ = NULL;
 
   delete this;
+}
+
+GtkWidget* CreateWebContentsModalDialogGtk(
+    content::WebContents* web_contents,
+    ConstrainedWindowGtkDelegate* delegate) {
+  ConstrainedWindowGtk* window =
+      new ConstrainedWindowGtk(web_contents, delegate);
+  return window->widget();
 }

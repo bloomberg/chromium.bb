@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_source.h"
@@ -189,7 +190,11 @@ void CollectedCookiesGtk::Init() {
   blocked_cookies_tree_adapter_->Init();
   EnableControls();
   ShowCookieInfo(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook_)));
-  window_ = new ConstrainedWindowGtk(web_contents_, this);
+  window_ = CreateWebContentsModalDialogGtk(web_contents_, this);
+
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->ShowDialog(window_);
 }
 
 GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
@@ -455,7 +460,7 @@ void CollectedCookiesGtk::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
@@ -463,7 +468,7 @@ void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
     CollectedCookiesInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents_));
   }
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,

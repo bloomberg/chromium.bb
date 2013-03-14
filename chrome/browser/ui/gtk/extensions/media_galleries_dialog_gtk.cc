@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,8 +29,14 @@ MediaGalleriesDialogGtk::MediaGalleriesDialogGtk(
   InitWidgets();
 
   // May be NULL during tests.
-  if (controller->web_contents())
-    window_ = new ConstrainedWindowGtk(controller->web_contents(), this);
+  if (controller->web_contents()) {
+    window_ = CreateWebContentsModalDialogGtk(controller->web_contents(), this);
+
+    WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+        WebContentsModalDialogManager::FromWebContents(
+            controller->web_contents());
+    web_contents_modal_dialog_manager->ShowDialog(window_);
+  }
 }
 
 MediaGalleriesDialogGtk::~MediaGalleriesDialogGtk() {
@@ -166,11 +173,11 @@ void MediaGalleriesDialogGtk::OnAddFolder(GtkWidget* widget) {
 
 void MediaGalleriesDialogGtk::OnConfirm(GtkWidget* widget) {
   accepted_ = true;
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 void MediaGalleriesDialogGtk::OnCancel(GtkWidget* widget) {
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 // MediaGalleriesDialogController ----------------------------------------------

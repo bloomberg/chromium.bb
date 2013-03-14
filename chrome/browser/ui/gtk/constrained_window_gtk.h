@@ -84,4 +84,8 @@ class ConstrainedWindowGtk {
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowGtk);
 };
 
+GtkWidget* CreateWebContentsModalDialogGtk(
+    content::WebContents* web_contents,
+    ConstrainedWindowGtkDelegate* delegate);
+
 #endif  // CHROME_BROWSER_UI_GTK_CONSTRAINED_WINDOW_GTK_H_

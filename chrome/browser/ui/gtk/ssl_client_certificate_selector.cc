@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -93,7 +94,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   GtkWidget* select_button_;
 
   WebContents* web_contents_;
-  ConstrainedWindowGtk* window_;
+  GtkWidget* window_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };
@@ -197,12 +198,16 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Show() {
   DCHECK(!window_);
-  window_ = new ConstrainedWindowGtk(web_contents_, this);
+  window_ = CreateWebContentsModalDialogGtk(web_contents_, this);
+
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->ShowDialog(window_);
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
   DCHECK(window_);
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 GtkWidget* SSLClientCertificateSelector::GetFocusWidget() {
@@ -328,7 +333,7 @@ void SSLClientCertificateSelector::Unlocked() {
   net::X509Certificate* cert = GetSelectedCert();
   CertificateSelected(cert);
   DCHECK(window_);
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 void SSLClientCertificateSelector::OnComboBoxChanged(GtkWidget* combo_box) {
@@ -352,7 +357,7 @@ void SSLClientCertificateSelector::OnViewClicked(GtkWidget* button) {
 void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
   CertificateSelected(NULL);
   DCHECK(window_);
-  gtk_widget_destroy(window_->widget());
+  gtk_widget_destroy(window_);
 }
 
 void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {

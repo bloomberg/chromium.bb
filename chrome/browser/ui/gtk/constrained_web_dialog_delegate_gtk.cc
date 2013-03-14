@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -32,14 +33,14 @@ class ConstrainedWebDialogDelegateGtk
 
   // WebDialogWebContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
-    gtk_widget_destroy(window_->widget());
+    gtk_widget_destroy(window_);
   }
 
-  void set_window(ConstrainedWindowGtk* window) { window_ = window; }
-  ConstrainedWindowGtk* window() const { return window_; }
+  void set_window(GtkWidget* window) { window_ = window; }
+  GtkWidget* window() const { return window_; }
 
  private:
-  ConstrainedWindowGtk* window_;
+  GtkWidget* window_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateGtk);
 };
@@ -72,7 +73,7 @@ class ConstrainedWebDialogDelegateViewGtk
     return impl_->ReleaseWebContentsOnDialogClose();
   }
   virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
-    return impl_->window()->GetNativeDialog();
+    return impl_->window();
   }
   virtual WebContents* GetWebContents() OVERRIDE {
     return impl_->GetWebContents();
@@ -95,11 +96,11 @@ class ConstrainedWebDialogDelegateViewGtk
     return true;
   }
 
-  void SetWindow(ConstrainedWindowGtk* window) {
+  void SetWindow(GtkWidget* window) {
     impl_->set_window(window);
   }
 
-  ConstrainedWindowGtk* GetWindow() {
+  GtkWidget* GetWindow() {
     return impl_->window();
   }
 
@@ -134,8 +135,13 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
   ConstrainedWebDialogDelegateViewGtk* constrained_delegate =
       new ConstrainedWebDialogDelegateViewGtk(
           browser_context, delegate, tab_delegate);
-  ConstrainedWindowGtk* window =
-      new ConstrainedWindowGtk(web_contents, constrained_delegate);
+  GtkWidget* window =
+      CreateWebContentsModalDialogGtk(web_contents, constrained_delegate);
   constrained_delegate->SetWindow(window);
+
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_contents_modal_dialog_manager->ShowDialog(window);
+
   return constrained_delegate;
 }

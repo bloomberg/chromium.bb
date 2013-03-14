@@ -11,7 +11,6 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class ConstrainedWindowGtk;
 class RenderViewContextMenuGtk;
 class WebDragBookmarkHandlerGtk;
 
@@ -20,7 +19,7 @@ class WebContents;
 }
 
 // A chrome/ specific class that extends WebContentsViewGtk with features like
-// constrained windows, which live in chrome/.
+// web contents modal dialogs, which live in chrome/.
 class ChromeWebContentsViewDelegateGtk
     : public content::WebContentsViewDelegate {
  public:
@@ -33,10 +32,10 @@ class ChromeWebContentsViewDelegateGtk
   GtkWidget* expanded_container() { return expanded_container_; }
   ui::FocusStoreGtk* focus_store() { return focus_store_; }
 
-  // Unlike Windows, ConstrainedWindows need to collaborate with the
+  // Unlike Windows, web contents modal dialogs need to collaborate with the
   // WebContentsViewGtk to position the dialogs.
-  void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
-  void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
+  void AttachWebContentsModalDialog(GtkWidget* web_contents_modal_dialog);
+  void RemoveWebContentsModalDialog(GtkWidget* web_contents_modal_dialog);
 
   // Overridden from WebContentsViewDelegate:
   virtual void ShowContextMenu(
@@ -52,7 +51,7 @@ class ChromeWebContentsViewDelegateGtk
                                           gboolean* return_value) OVERRIDE;
 
  private:
-  // Sets the location of the constrained windows.
+  // Sets the location of the web contents modal dialogs.
   CHROMEGTK_CALLBACK_1(ChromeWebContentsViewDelegateGtk, void,
                        OnSetFloatingPosition,
                        GtkAllocation*);
@@ -60,9 +59,9 @@ class ChromeWebContentsViewDelegateGtk
   // Contains |expanded_| as its GtkBin member.
   ui::OwnedWidgetGtk floating_;
 
-  // The UI for the constrained dialog currently displayed. This is owned by
-  // WebContents, not the view.
-  ConstrainedWindowGtk* constrained_window_;
+  // The UI for the web contents modal dialog currently displayed. This is owned
+  // by WebContents, not the view.
+  GtkWidget* web_contents_modal_dialog_;
 
   // The context menu is reset every time we show it, but we keep a pointer to
   // between uses so that it won't go out of scope before we're done with it.

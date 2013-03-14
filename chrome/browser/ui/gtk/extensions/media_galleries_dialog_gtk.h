@@ -60,7 +60,7 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog,
   void UpdateConfirmButtonState();
 
   MediaGalleriesDialogController* controller_;
-  ConstrainedWindowGtk* window_;
+  GtkWidget* window_;
 
   // The root widget for the dialog.
   ui::OwnedWidgetGtk contents_;

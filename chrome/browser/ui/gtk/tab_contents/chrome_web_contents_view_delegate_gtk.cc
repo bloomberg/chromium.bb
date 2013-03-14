@@ -48,7 +48,7 @@ ChromeWebContentsViewDelegateGtk* ChromeWebContentsViewDelegateGtk::GetFor(
 ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
     content::WebContents* web_contents)
     : floating_(gtk_floating_container_new()),
-      constrained_window_(NULL),
+      web_contents_modal_dialog_(NULL),
       web_contents_(web_contents),
       expanded_container_(NULL),
       focus_store_(NULL) {
@@ -65,20 +65,20 @@ ChromeWebContentsViewDelegateGtk::~ChromeWebContentsViewDelegateGtk() {
   floating_.Destroy();
 }
 
-void ChromeWebContentsViewDelegateGtk::AttachConstrainedWindow(
-    ConstrainedWindowGtk* constrained_window) {
-  DCHECK(constrained_window_ == NULL);
+void ChromeWebContentsViewDelegateGtk::AttachWebContentsModalDialog(
+    GtkWidget* web_contents_modal_dialog) {
+  DCHECK(web_contents_modal_dialog_ == NULL);
 
-  constrained_window_ = constrained_window;
+  web_contents_modal_dialog_ = web_contents_modal_dialog;
   gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(floating_.get()),
-                                      constrained_window->widget());
+                                      web_contents_modal_dialog);
 }
 
-void ChromeWebContentsViewDelegateGtk::RemoveConstrainedWindow(
-    ConstrainedWindowGtk* constrained_window) {
-  DCHECK(constrained_window == constrained_window_);
+void ChromeWebContentsViewDelegateGtk::RemoveWebContentsModalDialog(
+    GtkWidget* web_contents_modal_dialog) {
+  DCHECK(web_contents_modal_dialog == web_contents_modal_dialog_);
 
-  constrained_window_ = NULL;
+  web_contents_modal_dialog_ = NULL;
 }
 
 void ChromeWebContentsViewDelegateGtk::Initialize(
@@ -98,7 +98,7 @@ gfx::NativeView ChromeWebContentsViewDelegateGtk::GetNativeView() const {
 }
 
 void ChromeWebContentsViewDelegateGtk::Focus() {
-  if (!constrained_window_) {
+  if (!web_contents_modal_dialog_) {
     GtkWidget* widget = web_contents_->GetView()->GetContentNativeView();
     if (widget)
       gtk_widget_grab_focus(widget);
@@ -109,9 +109,9 @@ gboolean ChromeWebContentsViewDelegateGtk::OnNativeViewFocusEvent(
     GtkWidget* widget,
     GtkDirectionType type,
     gboolean* return_value) {
-  // If we are showing a constrained window, don't allow the native view to take
-  // focus.
-  if (constrained_window_) {
+  // If we are showing a web contents modal dialog, don't allow the native view
+  // to take focus.
+  if (web_contents_modal_dialog_) {
     // If we return false, it will revert to the default handler, which will
     // take focus. We don't want that. But if we return true, the event will
     // stop being propagated, leaving focus wherever it is currently. That is
@@ -171,11 +171,11 @@ content::WebDragDestDelegate*
 
 void ChromeWebContentsViewDelegateGtk::OnSetFloatingPosition(
     GtkWidget* floating_container, GtkAllocation* allocation) {
-  if (!constrained_window_)
+  if (!web_contents_modal_dialog_)
     return;
 
-  // Place each ConstrainedWindowGtk in the center of the view.
-  GtkWidget* widget = constrained_window_->widget();
+  // Place each web contents modal dialog in the center of the view.
+  GtkWidget* widget = web_contents_modal_dialog_;
   DCHECK(gtk_widget_get_parent(widget) == floating_.get());
 
   GtkRequisition requisition;
