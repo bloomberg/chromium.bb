@@ -23,7 +23,7 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'nativeclient-archive2/toolchain'
-REVISION = 8004
+REVISION = 10991
 
 
 def main(args):
