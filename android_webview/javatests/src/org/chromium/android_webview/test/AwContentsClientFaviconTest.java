@@ -94,6 +94,12 @@ public class AwContentsClientFaviconTest extends AndroidWebViewTestBase {
         mAwContents = testContainerView.getAwContents();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        if (mWebServer != null) mWebServer.shutdown();
+        super.tearDown();
+    }
+
     @SmallTest
     public void testReceiveBasicFavicon() throws Throwable {
         init(new TestAwContentsClientFavicon());
