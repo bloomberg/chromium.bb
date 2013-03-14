@@ -374,6 +374,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
+  webrtc_audio_device->capturer()->Start();
 
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
@@ -410,6 +411,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
       ch, webrtc::kRecordingPerChannel));
   EXPECT_EQ(0, base->StopSend(ch));
 
+  webrtc_audio_device->capturer()->Stop();
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());
 }
@@ -535,6 +537,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
+  webrtc_audio_device->capturer()->Start();
 
   ScopedWebRTCPtr<webrtc::VoEAudioProcessing> audio_processing(engine.get());
   ASSERT_TRUE(audio_processing.valid());
@@ -570,6 +573,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
                                 base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
+  webrtc_audio_device->capturer()->Stop();
   renderer->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->StopPlayout(ch));
