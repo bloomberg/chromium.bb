@@ -323,15 +323,23 @@ def _PostParseCheck(options, _args):
   if options.local_pkg_path and not os.path.isfile(options.local_pkg_path):
     cros_build_lib.Die('%s is not a file.', options.local_pkg_path)
 
-  if options.strict and not options.gyp_defines:
+  if not options.gyp_defines:
     gyp_env = os.getenv('GYP_DEFINES', None)
     if gyp_env is not None:
       options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
-      logging.info('GYP_DEFINES taken from environment: %s',
+      logging.debug('GYP_DEFINES taken from environment: %s',
                    options.gyp_defines)
-    else:
-      cros_build_lib.Die('When --strict is set, the GYP_DEFINES environment '
+
+  if options.strict and not options.gyp_defines:
+    cros_build_lib.Die('When --strict is set, the GYP_DEFINES environment '
                          'variable must be set.')
+
+  if (options.gyp_defines and
+      options.gyp_defines.get('component') == 'shared_library'):
+    cros_build_lib.Warning(
+        "Detected 'component=shared_library' in GYP_DEFINES. "
+        "deploy_chrome currently doesn't work well with component build. "
+        "See crosbug.com/196317.  Use at your own risk!")
 
 
 def _FetchChromePackage(cache_dir, tempdir, gs_path):
