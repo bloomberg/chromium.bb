@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "ui/base/events/event_handler.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 class BrowserView;
@@ -24,14 +23,13 @@ class View;
 // the top-of-window views are hidden until the mouse hits the top of the
 // screen. The tab strip is optionally painted with miniature "tab indicator"
 // rectangles.
-class ImmersiveModeController : public ui::EventHandler,
-                                public ui::ImplicitAnimationObserver {
+class ImmersiveModeController : public ui::EventHandler {
  public:
-  explicit ImmersiveModeController(BrowserView* browser_view);
+  ImmersiveModeController();
   virtual ~ImmersiveModeController();
 
   // Must initialize after browser view has a Widget and native window.
-  void Init();
+  void Init(BrowserView* browser_view);
 
   // Returns true if immersive mode should be used for fullscreen based on
   // command line flags.
@@ -44,11 +42,13 @@ class ImmersiveModeController : public ui::EventHandler,
   // See member comment below.
   bool hide_tab_indicators() const { return hide_tab_indicators_; }
 
-  // True when the controller is hiding the top views due to immersive mode.
-  bool ShouldHideTopViews() const { return enabled_ && !revealed_; }
+  // True when the top views are hidden due to immersive mode.
+  bool ShouldHideTopViews() const {
+    return enabled_ && reveal_state_ == CLOSED;
+  }
 
-  // True when the controller is temporarily showing the top views.
-  bool IsRevealed() const { return enabled_ && revealed_; }
+  // True when the top views are fully or partially visible.
+  bool IsRevealed() const { return enabled_ && reveal_state_ != CLOSED; }
 
   // If the controller is temporarily revealing the top views ensures that
   // the reveal view's layer is on top and hence visible over web contents.
@@ -71,9 +71,6 @@ class ImmersiveModeController : public ui::EventHandler,
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
-  // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
-
   // Testing interface.
   void SetHideTabIndicatorsForTest(bool hide);
   void StartRevealForTest();
@@ -85,9 +82,11 @@ class ImmersiveModeController : public ui::EventHandler,
     ANIMATE_SLOW,
     ANIMATE_FAST,
   };
-  enum Layout {
-    LAYOUT_NO,
-    LAYOUT_YES,
+  enum RevealState {
+    CLOSED,          // Top container only showing tabstrip, y = 0.
+    SLIDING_OPEN,    // All views showing, y animating from -height to 0.
+    REVEALED,        // All views showing, y = 0.
+    SLIDING_CLOSED,  // All views showing, y animating from 0 to -height.
   };
 
   // Enables or disables observers for mouse move and window restore.
@@ -98,25 +97,23 @@ class ImmersiveModeController : public ui::EventHandler,
   // is not ANIMATE_NO, slides in the view, otherwise shows it immediately.
   void StartReveal(Animate animate);
 
-  // Slide in the reveal view.
-  void AnimateShowRevealView();
-
-  // Called when the mouse exits the reveal view area, may end the reveal.
-  void OnRevealViewLostMouse();
-
-  // Hides the top-of-window views. Optionally animates. Optionally updates
-  // the |browser_view_| layout when the reveal finishes.
-  void EndReveal(Animate animate, Layout layout);
-
   // Updates layout for |browser_view_| including window caption controls and
   // tab strip style |immersive_style|.
   void LayoutBrowserView(bool immersive_style);
 
-  // Slide out the reveal view. Deletes the view when complete.
-  void AnimateHideRevealView(int duration_ms);
+  // Slides open the reveal view at the top of the screen.
+  void AnimateSlideOpen();
+  void OnSlideOpenAnimationCompleted();
 
-  // Cleans up the reveal view when the hide animation completes.
-  void OnHideAnimationCompleted();
+  // Called when the mouse exits the reveal view area, may end the reveal.
+  void OnRevealViewLostMouse();
+
+  // Hides the top-of-window views. Optionally animates.
+  void EndReveal(Animate animate);
+
+  // Slide out the reveal view.
+  void AnimateSlideClosed(int duration_ms);
+  void OnSlideClosedAnimationCompleted();
 
   // Browser view holding the views to be shown and hidden. Not owned.
   BrowserView* browser_view_;
@@ -124,17 +121,12 @@ class ImmersiveModeController : public ui::EventHandler,
   // True when in immersive mode.
   bool enabled_;
 
-  // True when the top-of-window views are being shown in a temporary reveal.
-  // Represents the target state, not the current animation state, so may be
-  // false while the view is still animating out.
-  bool revealed_;
+  // State machine for the revealed/closed animations.
+  RevealState reveal_state_;
 
   // If true, reveal will not be canceled when the mouse moves outside the
   // top view.
   bool reveal_locked_;
-
-  // True if browser view needs Layout() after the hide animation completes.
-  Layout layout_after_hide_animation_;
 
   // True if the miniature "tab indicators" should be hidden in the main browser
   // view when immersive mode is enabled.
@@ -154,6 +146,13 @@ class ImmersiveModeController : public ui::EventHandler,
   class WindowObserver;
   scoped_ptr<WindowObserver> window_observer_;
 #endif
+
+  // Animation observers. They must be separate because animations can be
+  // aborted and have their observers triggered at any time and the state
+  // machine needs to know which animation completed.
+  class AnimationObserver;
+  scoped_ptr<AnimationObserver> slide_open_observer_;
+  scoped_ptr<AnimationObserver> slide_closed_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);
 };

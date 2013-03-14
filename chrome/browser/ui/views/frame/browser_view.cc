@@ -441,7 +441,7 @@ BrowserView::BrowserView(Browser* browser)
 #endif
       force_location_bar_focus_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          immersive_mode_controller_(new ImmersiveModeController(this))),
+          immersive_mode_controller_(new ImmersiveModeController)),
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
   browser_->tab_strip_model()->AddObserver(this);
@@ -2013,7 +2013,7 @@ void BrowserView::Init() {
                                        browser_->profile());
 
   // Initialize after |this| has a Widget and native window.
-  immersive_mode_controller_->Init();
+  immersive_mode_controller_->Init(this);
 
   // Start a hung plugin window detector for this browser object (as long as
   // hang detection is not disabled).

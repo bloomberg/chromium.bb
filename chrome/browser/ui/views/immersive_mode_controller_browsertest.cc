@@ -177,6 +177,22 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   // Releasing focus ends the reveal again.
   browser_view->GetFocusManager()->ClearFocus();
   EXPECT_FALSE(controller->IsRevealed());
+
+  // Reveal and lock causes a reveal.
+  controller->RevealAndLock(true);
+  EXPECT_TRUE(controller->IsRevealed());
+
+  // The views stay revealed even if the mouse is lost or focus is lost.
+  controller->OnRevealViewLostMouseForTest();
+  EXPECT_TRUE(controller->IsRevealed());
+  browser_view->SetFocusToLocationBar(false);
+  EXPECT_TRUE(controller->IsRevealed());
+  browser_view->GetFocusManager()->ClearFocus();
+  EXPECT_TRUE(controller->IsRevealed());
+
+  // Ending the lock ends the reveal.
+  controller->RevealAndLock(false);
+  EXPECT_FALSE(controller->IsRevealed());
 #endif  // defined(OS_WIN)
 
   // Window restore tracking is only implemented in the Aura port.

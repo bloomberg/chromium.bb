@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/view.h"
@@ -89,30 +90,66 @@ class ImmersiveModeController::WindowObserver : public aura::WindowObserver {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ImmersiveModeController::ImmersiveModeController(BrowserView* browser_view)
-    : browser_view_(browser_view),
+class ImmersiveModeController::AnimationObserver
+    : public ui::ImplicitAnimationObserver {
+ public:
+  enum AnimationType {
+    SLIDE_OPEN,
+    SLIDE_CLOSED,
+  };
+
+  AnimationObserver(ImmersiveModeController* controller, AnimationType type)
+      : controller_(controller), animation_type_(type) {}
+  virtual ~AnimationObserver() {}
+
+  // ui::ImplicitAnimationObserver overrides:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    if (animation_type_ == SLIDE_OPEN)
+      controller_->OnSlideOpenAnimationCompleted();
+    else if (animation_type_ == SLIDE_CLOSED)
+      controller_->OnSlideClosedAnimationCompleted();
+    else
+      NOTREACHED();
+  }
+
+ private:
+  ImmersiveModeController* controller_;
+  AnimationType animation_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+ImmersiveModeController::ImmersiveModeController()
+    : browser_view_(NULL),
       enabled_(false),
-      revealed_(false),
+      reveal_state_(CLOSED),
       reveal_locked_(false),
-      layout_after_hide_animation_(LAYOUT_NO),
       hide_tab_indicators_(false),
       reveal_hovered_(false),
       native_window_(NULL) {
 }
 
 ImmersiveModeController::~ImmersiveModeController() {
-  // Reset our changes to the top_container.
-  EndReveal(ANIMATE_NO, LAYOUT_NO);
-  // Clean up our window observers.
+  // The browser view is being destroyed so there's no need to update its
+  // layout or layers, even if the top views are revealed. But the window
+  // observers still need to be removed.
   EnableWindowObservers(false);
 }
 
-void ImmersiveModeController::Init() {
+void ImmersiveModeController::Init(BrowserView* browser_view) {
+  browser_view_ = browser_view;
   // Browser view is detached from its widget during destruction. Cache the
   // window pointer so |this| can stop observing during destruction.
   native_window_ = browser_view_->GetNativeWindow();
   DCHECK(native_window_);
   EnableWindowObservers(true);
+
+  slide_open_observer_.reset(
+      new AnimationObserver(this, AnimationObserver::SLIDE_OPEN));
+  slide_closed_observer_.reset(
+      new AnimationObserver(this, AnimationObserver::SLIDE_CLOSED));
 
 #if defined(USE_ASH)
   // Optionally allow the tab indicators to be hidden.
@@ -133,24 +170,33 @@ bool ImmersiveModeController::UseImmersiveFullscreen() {
 }
 
 void ImmersiveModeController::SetEnabled(bool enabled) {
+  DCHECK(browser_view_) << "Must initialize before enabling";
   if (enabled_ == enabled)
     return;
   enabled_ = enabled;
 
-  // TODO(jamescook): Slide out the reveal view on enable by slamming it to
-  // open then triggering an end-reveal animation. This may require waiting for
-  // the view to paint before animating.
-  if (!enabled_) {
-    EndReveal(ANIMATE_NO, LAYOUT_NO);
+  TopContainerView* top_container = browser_view_->top_container();
+  if (enabled_) {
+    // Slide closed the reveal view on enable by slamming it to revealed then
+    // triggering an end-reveal animation.
+    reveal_state_ = REVEALED;
+    top_container->SetPaintToLayer(true);
+    top_container->SetFillsBoundsOpaquely(true);
+    // Layout updates at the end of the slide closed.
+    EndReveal(ANIMATE_SLOW);
+  } else {
     // Stop cursor-at-top tracking.
     top_timer_.Stop();
+    // Snap immediately to the closed state.
+    reveal_state_ = CLOSED;
+    top_container->SetFillsBoundsOpaquely(false);
+    top_container->SetPaintToLayer(false);
+    browser_view_->GetWidget()->non_client_view()->frame_view()->
+        ResetWindowControls();
+    browser_view_->tabstrip()->SetImmersiveStyle(false);
+    // Don't need explicit layout because we're inside a fullscreen transition
+    // and it blocks layout calls.
   }
-
-  browser_view_->GetWidget()->non_client_view()->frame_view()->
-      ResetWindowControls();
-  browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
-  // Don't need explicit layout because we're inside a fullscreen transition
-  // and it blocks layout calls.
 
 #if defined(USE_ASH)
   // This causes a no-op call to SetEnabled() since enabled_ is already set.
@@ -165,7 +211,7 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
 
 void ImmersiveModeController::MaybeStackViewAtTop() {
 #if defined(USE_AURA)
-  if (enabled_ && revealed_) {
+  if (enabled_ && reveal_state_ != CLOSED) {
     ui::Layer* reveal_layer = browser_view_->top_container()->layer();
     if (reveal_layer)
       reveal_layer->parent()->StackAtTop(reveal_layer);
@@ -174,22 +220,28 @@ void ImmersiveModeController::MaybeStackViewAtTop() {
 }
 
 void ImmersiveModeController::MaybeStartReveal() {
-  if (enabled_ && !revealed_)
+  if (enabled_ && reveal_state_ != REVEALED)
     StartReveal(ANIMATE_FAST);
 }
 
 void ImmersiveModeController::CancelReveal() {
-  EndReveal(ANIMATE_NO, LAYOUT_YES);
+  EndReveal(ANIMATE_NO);
 }
 
 void ImmersiveModeController::RevealAndLock(bool reveal) {
   if (!enabled_)
     return;
   reveal_locked_ = reveal;
-  if (reveal_locked_ && !revealed_)
+  if (reveal_locked_ && reveal_state_ != REVEALED)
     StartReveal(ANIMATE_FAST);
-  else if (!reveal_locked_ && revealed_)
-    EndReveal(ANIMATE_FAST, LAYOUT_YES);
+  else if (!reveal_locked_ && reveal_state_ != CLOSED)
+    EndReveal(ANIMATE_FAST);
+}
+
+void ImmersiveModeController::OnRevealViewLostFocus() {
+  // Stop the reveal if the mouse is outside the reveal view.
+  if (!reveal_locked_ && !reveal_hovered_)
+    EndReveal(ANIMATE_FAST);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +265,7 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
     top_timer_.Stop();
   }
 
-  if (revealed_) {
+  if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
     // Look for the mouse leaving the bottom edge of the revealed view.
     int bottom_edge = browser_view_->top_container()->bounds().bottom();
     if (event->location().y() > bottom_edge) {
@@ -225,11 +277,6 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   // Pass along event for further handling.
-}
-
-// ui::ImplicitAnimationObserver overrides:
-void ImmersiveModeController::OnImplicitAnimationsCompleted() {
-  OnHideAnimationCompleted();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -274,66 +321,26 @@ void ImmersiveModeController::EnableWindowObservers(bool enable) {
 }
 
 void ImmersiveModeController::StartReveal(Animate animate) {
-  if (revealed_)
-    return;
-  revealed_ = true;
+  DCHECK_NE(ANIMATE_SLOW, animate);
+  if (reveal_state_ == CLOSED) {
+    reveal_state_ = SLIDING_OPEN;
+    // Turn on layer painting so we can smoothly animate.
+    TopContainerView* top_container = browser_view_->top_container();
+    top_container->SetPaintToLayer(true);
+    top_container->SetFillsBoundsOpaquely(true);
 
-  // Turn on layer painting so we can smoothly animate.
-  TopContainerView* top_container = browser_view_->top_container();
-  top_container->SetPaintToLayer(true);
-  top_container->SetFillsBoundsOpaquely(true);
+    // Ensure window caption buttons are updated and the view bounds are
+    // computed at normal (non-immersive-style) size.
+    LayoutBrowserView(false);
 
-  // Ensure window caption buttons are updated and the view bounds are computed
-  // at normal (non-immersive-style) size.
-  LayoutBrowserView(false);
-
-  // Slide in the reveal view.
-  if (animate != ANIMATE_NO)
-    AnimateShowRevealView();  // Show is always fast.
-}
-
-void ImmersiveModeController::AnimateShowRevealView() {
-  views::View* reveal_view = browser_view_->top_container();
-  DCHECK(reveal_view->layer());
-  gfx::Transform transform;
-  transform.Translate(0, -reveal_view->height());
-  reveal_view->SetTransform(transform);
-
-  ui::ScopedLayerAnimationSettings settings(
-      reveal_view->layer()->GetAnimator());
-  settings.SetTweenType(ui::Tween::EASE_OUT);
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kRevealFastAnimationDurationMs));
-  reveal_view->SetTransform(gfx::Transform());
-}
-
-void ImmersiveModeController::OnRevealViewLostMouse() {
-  // Stop the reveal if the top view's children don't have focus.
-  views::View* focused = browser_view_->GetFocusManager()->GetFocusedView();
-  if (!reveal_locked_ &&
-      !browser_view_->top_container()->Contains(focused))
-    EndReveal(ANIMATE_FAST, LAYOUT_YES);
-}
-
-void ImmersiveModeController::OnRevealViewLostFocus() {
-  // Stop the reveal if the mouse is outside the reveal view.
-  if (!reveal_locked_ && !reveal_hovered_)
-    EndReveal(ANIMATE_FAST, LAYOUT_YES);
-}
-
-void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
-  if (!revealed_)
-    return;
-  revealed_ = false;
-  layout_after_hide_animation_ = layout;
-
-  // Animations restack the top container view when complete.
-  if (animate == ANIMATE_FAST)
-    AnimateHideRevealView(kRevealFastAnimationDurationMs);
-  else if (animate == ANIMATE_SLOW)
-    AnimateHideRevealView(kRevealSlowAnimationDurationMs);
-  else
-    OnHideAnimationCompleted();
+    // Slide in the reveal view.
+    if (animate != ANIMATE_NO)
+      AnimateSlideOpen();  // Show is always fast.
+  } else if (reveal_state_ == SLIDING_CLOSED) {
+    reveal_state_ = SLIDING_OPEN;
+    // Reverse the animation.
+    AnimateSlideOpen();
+  }
 }
 
 void ImmersiveModeController::LayoutBrowserView(bool immersive_style) {
@@ -344,32 +351,72 @@ void ImmersiveModeController::LayoutBrowserView(bool immersive_style) {
   browser_view_->Layout();
 }
 
-void ImmersiveModeController::AnimateHideRevealView(int duration_ms) {
+void ImmersiveModeController::AnimateSlideOpen() {
   ui::Layer* layer = browser_view_->top_container()->layer();
-  // Stop any show animation in progress, but don't skip to the end. This
-  // avoids a visual "pop" when starting a hide in the middle of a show.
+  // Stop any slide closed animation in progress.
   layer->GetAnimator()->AbortAllAnimations();
-  // Detach the layer from its delegate to stop updating it. This prevents
-  // graphical glitches due to hover events causing repaints during the hide.
-  layer->set_delegate(NULL);
+
+  gfx::Transform transform;
+  transform.Translate(0, -layer->bounds().height());
+  layer->SetTransform(transform);
+
+  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+  settings.AddObserver(slide_open_observer_.get());
+  settings.SetTweenType(ui::Tween::EASE_OUT);
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kRevealFastAnimationDurationMs));
+  layer->SetTransform(gfx::Transform());
+}
+
+void ImmersiveModeController::OnSlideOpenAnimationCompleted() {
+  if (reveal_state_ == SLIDING_OPEN)
+    reveal_state_ = REVEALED;
+}
+
+void ImmersiveModeController::OnRevealViewLostMouse() {
+  // Stop the reveal if the top view's children don't have focus.
+  views::View* focused = browser_view_->GetFocusManager()->GetFocusedView();
+  if (!reveal_locked_ &&
+      !browser_view_->top_container()->Contains(focused))
+    EndReveal(ANIMATE_FAST);
+}
+
+void ImmersiveModeController::EndReveal(Animate animate) {
+  if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
+    reveal_state_ = SLIDING_CLOSED;
+    if (animate == ANIMATE_FAST)
+      AnimateSlideClosed(kRevealFastAnimationDurationMs);
+    else if (animate == ANIMATE_SLOW)
+      AnimateSlideClosed(kRevealSlowAnimationDurationMs);
+    else
+      OnSlideClosedAnimationCompleted();
+  }
+}
+
+void ImmersiveModeController::AnimateSlideClosed(int duration_ms) {
+  // Stop any slide open animation in progress, but don't skip to the end. This
+  // avoids a visual "pop" when starting a hide in the middle of a show.
+  ui::Layer* layer = browser_view_->top_container()->layer();
+  layer->GetAnimator()->AbortAllAnimations();
 
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.SetTweenType(ui::Tween::EASE_OUT);
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(duration_ms));
-  settings.AddObserver(this);  // Resets |reveal_view_| on completion.
+  settings.AddObserver(slide_closed_observer_.get());
   gfx::Transform transform;
   transform.Translate(0, -layer->bounds().height());
   layer->SetTransform(transform);
 }
 
-void ImmersiveModeController::OnHideAnimationCompleted() {
-  if (layout_after_hide_animation_ == LAYOUT_YES) {
+void ImmersiveModeController::OnSlideClosedAnimationCompleted() {
+  if (reveal_state_ == SLIDING_CLOSED) {
+    reveal_state_ = CLOSED;
+    TopContainerView* top_container = browser_view_->top_container();
+    // Layer isn't needed after animation completes.
+    top_container->SetFillsBoundsOpaquely(false);
+    top_container->SetPaintToLayer(false);
+    // Update tabstrip for closed state.
     LayoutBrowserView(true);
-    layout_after_hide_animation_ = LAYOUT_NO;
   }
-
-  TopContainerView* top_container = browser_view_->top_container();
-  top_container->SetFillsBoundsOpaquely(false);
-  top_container->SetPaintToLayer(false);
 }
