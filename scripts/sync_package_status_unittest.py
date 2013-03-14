@@ -504,7 +504,7 @@ class SyncerTest(cros_test_lib.MoxOutputTestCase):
     # Verify
     result = sps.Syncer._GenSSLinkToIssue(mocked_syncer, issue_id)
     self.mox.VerifyAll()
-    self.assertEquals('=hyperlink("crosbug.com/123";"123")', result)
+    self.assertEquals('=hyperlink("crbug.com/123";"123")', result)
 
   def testClearRowIssue(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)

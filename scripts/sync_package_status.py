@@ -17,12 +17,12 @@ from chromite.scripts import upload_package_status as ups
 
 # pylint: disable=W0201,R0904
 
-PROJECT_NAME = 'chromium-os'
+TRACKER_PROJECT_NAME = 'chromium'
 
 PKGS_WS_NAME = 'Packages'
 
-CROS_ORG = 'chromium.org'
-CHROMIUMOS_SITE = 'http://www.%s/%s' % (CROS_ORG, PROJECT_NAME)
+CR_ORG = 'chromium.org'
+CHROMIUMOS_SITE = 'http://www.%s/chromium-os' % CR_ORG
 PKG_UPGRADE_PAGE = '%s/gentoo-package-upgrade-process' % CHROMIUMOS_SITE
 DOCS_SITE = 'https://docs.google.com/a'
 
@@ -37,7 +37,7 @@ oper = operation.Operation('sync_package_status')
 
 
 def _GetPkgSpreadsheetURL(ss_key):
-  return '%s/%s/spreadsheet/ccc?key=%s' % (DOCS_SITE, CROS_ORG, ss_key)
+  return '%s/%s/spreadsheet/ccc?key=%s' % (DOCS_SITE, CR_ORG, ss_key)
 
 
 class SyncError(RuntimeError):
@@ -47,12 +47,12 @@ class SyncError(RuntimeError):
 class Syncer(object):
   """Class to manage synchronizing between spreadsheet and Tracker."""
 
-  # Map spreadsheet team names to Tracker team values.
-  VALID_TEAMS = {'build': 'BuildRelease',
-                 'kernel': 'Kernel',
+  # Map spreadsheet team names to Tracker team labels.
+  VALID_TEAMS = {'build': 'Build',
+                 'kernel': 'Cr-OS-Kernel',
                  'security': 'Security',
-                 'system': 'Systems',
-                 'ui': 'UI',
+                 'system': 'Cr-OS-Systems',
+                 'ui': 'Cr-UI',
                  }
   UPGRADE_STATES = set([utable.UpgradeTable.STATE_NEEDS_UPGRADE,
                         utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED,
@@ -220,11 +220,11 @@ class Syncer(object):
                  'team value is specified.' % pkg)
       raise SyncError()
 
-    team_label = self.VALID_TEAMS[team]
-    labels = ['Type-Task',
-              'Area-LinuxUserSpace',
+    labels = ['Type-Bug',
+              'OS-Chrome',
+              'Cr-OS-Packages',
               'Pri-2',
-              'Team-%s' % team_label,
+              self.VALID_TEAMS[team],
               ]
 
     owner = self._ReduceOwnerName(row[COL_OWNER])
@@ -341,7 +341,7 @@ class Syncer(object):
 
   def _GenSSLinkToIssue(self, issue_id):
     """Create the spreadsheet hyperlink format for |issue_id|"""
-    return '=hyperlink("crosbug.com/%d";"%d")' % (issue_id, issue_id)
+    return '=hyperlink("crbug.com/%d";"%d")' % (issue_id, issue_id)
 
   def _ClearRowIssue(self, rowIx, row):
     """Clear the Tracker cell for row at |rowIx|"""
@@ -510,7 +510,7 @@ def main(argv):
   scomm = gdata_lib.SpreadsheetComm()
   scomm.Connect(creds, ss_key, PKGS_WS_NAME, source='Sync Package Status')
   tcomm = gdata_lib.TrackerComm()
-  tcomm.Connect(creds, PROJECT_NAME, source='Sync Package Status')
+  tcomm.Connect(creds, TRACKER_PROJECT_NAME, source='Sync Package Status')
 
   oper.Notice('Syncing between Tracker and spreadsheet %s' % ss_key)
   syncer = Syncer(tcomm, scomm,
