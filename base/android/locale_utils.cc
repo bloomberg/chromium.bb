@@ -44,8 +44,6 @@ std::string GetLocaleComponent(const std::string& locale,
 
 ScopedJavaLocalRef<jobject> NewJavaLocale(
     JNIEnv* env,
-    ScopedJavaLocalRef<jclass> locale_class,
-    jmethodID constructor_id,
     const std::string& locale) {
   // TODO(wangxianzhu): Use new Locale API once Android supports scripts.
   std::string language = GetLocaleComponent(
@@ -54,12 +52,10 @@ ScopedJavaLocalRef<jobject> NewJavaLocale(
       locale, uloc_getCountry, ULOC_COUNTRY_CAPACITY);
   std::string variant = GetLocaleComponent(
       locale, uloc_getVariant, ULOC_FULLNAME_CAPACITY);
-  return ScopedJavaLocalRef<jobject>(
-      env, env->NewObject(
-          locale_class.obj(), constructor_id,
+  return Java_LocaleUtils_getJavaLocale(env,
           ConvertUTF8ToJavaString(env, language).obj(),
           ConvertUTF8ToJavaString(env, country).obj(),
-          ConvertUTF8ToJavaString(env, variant).obj()));
+          ConvertUTF8ToJavaString(env, variant).obj());
 }
 
 }  // namespace
@@ -67,23 +63,15 @@ ScopedJavaLocalRef<jobject> NewJavaLocale(
 string16 GetDisplayNameForLocale(const std::string& locale,
                                  const std::string& display_locale) {
   JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> java_locale =
+      NewJavaLocale(env, locale);
+  ScopedJavaLocalRef<jobject> java_display_locale =
+      NewJavaLocale(env, display_locale);
 
-  ScopedJavaLocalRef<jclass> locale_class = GetClass(env, "java/util/Locale");
-  jmethodID constructor_id = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, locale_class.obj(), "<init>",
-      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
-  ScopedJavaLocalRef<jobject> java_locale = NewJavaLocale(
-      env, locale_class, constructor_id, locale);
-  ScopedJavaLocalRef<jobject> java_display_locale = NewJavaLocale(
-      env, locale_class, constructor_id, display_locale);
-
-  jmethodID method_id = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, locale_class.obj(), "getDisplayName",
-      "(Ljava/util/Locale;)Ljava/lang/String;");
   ScopedJavaLocalRef<jstring> java_result(
-      env,
-      static_cast<jstring>(env->CallObjectMethod(java_locale.obj(), method_id,
-                                                 java_display_locale.obj())));
+      Java_LocaleUtils_getDisplayNameForLocale(env,
+                                              java_locale.obj(),
+                                              java_display_locale.obj()));
   return ConvertJavaStringToUTF16(java_result);
 }
 

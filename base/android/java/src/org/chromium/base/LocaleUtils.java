@@ -35,4 +35,14 @@ public class LocaleUtils {
         }
         return country.isEmpty() ? language : language + "-" + country;
     }
+
+    @CalledByNative
+    private static Locale getJavaLocale(String language, String country, String variant) {
+        return new Locale(language, country, variant);
+    }
+
+    @CalledByNative
+    private static String getDisplayNameForLocale(Locale locale, Locale displayLocale) {
+        return locale.getDisplayName(displayLocale);
+    }
 }
