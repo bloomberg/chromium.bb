@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.http.SslError;
 import android.os.Message;
@@ -146,6 +147,14 @@ class NullContentsClient extends AwContentsClient {
 
     @Override
     public void onRequestFocus() {
+    }
+
+    @Override
+    public void onReceivedTouchIconUrl(String url, boolean precomposed) {
+    }
+
+    @Override
+    public void onReceivedIcon(Bitmap bitmap) {
     }
 
     @Override

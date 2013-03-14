@@ -272,11 +272,9 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     protected abstract void onCloseWindow();
 
-    // TODO(acleung): Make abstract when landed in Android
-    public void onReceivedTouchIconUrl(String url, boolean precomposed) { }
+    public abstract void onReceivedTouchIconUrl(String url, boolean precomposed);
 
-    // TODO(acleung): Make abstract when landed in Android
-    public void onReceivedIcon(Bitmap bitmap) { }
+    public abstract void onReceivedIcon(Bitmap bitmap);
 
     protected abstract void onRequestFocus();
 
