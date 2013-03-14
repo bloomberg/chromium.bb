@@ -91,8 +91,12 @@ function on_asan_mac_host {
     return 1
   fi
   HOST="$(hostname -s)"
-  # Chrome Mac ASan Builder.
+  # Old (10.6) Chrome Mac ASan Builder. Kept here till we fully migrate to 10.8
   if [[ "${HOST}" == "vm633-m1" ]]; then
+    return 0
+  fi
+  # 10.8 Chrome Mac ASan Builder.
+  if [[ "${HOST}" == "vm672-m1" ]]; then
     return 0
   fi
   # Chrome Mac ASan LKGR.
