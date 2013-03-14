@@ -38,6 +38,9 @@ class MenuHostRootView : public internal::RootView {
   // Returns the MenuController for this MenuHostRootView.
   MenuController* GetMenuController();
 
+  // Returns true if event targets EmptyMenu.
+  bool DoesEventTargetEmptyMenuItem(const ui::MouseEvent& event);
+
   // The SubmenuView we contain.
   SubmenuView* submenu_;
 

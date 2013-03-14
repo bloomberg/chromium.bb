@@ -462,9 +462,17 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   possible_drag_ = false;
   DCHECK(blocking_run_);
   MenuPart part = GetMenuPart(source, event.location());
-  if (event.IsRightMouseButton() && (part.type == MenuPart::MENU_ITEM &&
-                                     part.menu)) {
-    if (ShowContextMenu(part.menu, source, event))
+  if (event.IsRightMouseButton() && part.type == MenuPart::MENU_ITEM) {
+    MenuItemView* menu = part.menu;
+    // |menu| is NULL means this event is from an empty menu or a separator.
+    // If it is from an empty menu, use parent context menu instead of that.
+    if (menu == NULL &&
+        part.submenu->child_count() == 1 &&
+        part.submenu->child_at(0)->id()
+           == views::MenuItemView::kEmptyMenuItemViewID)
+      menu = part.parent;
+
+    if (menu != NULL && ShowContextMenu(menu, source, event))
       return;
   }
 

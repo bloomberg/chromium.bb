@@ -85,6 +85,8 @@ class TestingPageNavigator : public PageNavigator {
 // b
 // c
 // d
+// F2
+// e
 // OTHER
 //   oa
 //   OF
@@ -146,7 +148,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     bb_view_pref_ = bb_view_->GetPreferredSize();
     bb_view_pref_.set_width(1000);
-    views::TextButton* button = GetBookmarkButton(4);
+    views::TextButton* button = GetBookmarkButton(6);
     while (button->visible()) {
       bb_view_pref_.set_width(bb_view_pref_.width() - 25);
       bb_view_->SetBounds(0, 0, bb_view_pref_.width(), bb_view_pref_.height());
@@ -212,6 +214,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->AddURL(bb_node, 2, ASCIIToUTF16("b"), GURL(test_base + "b"));
     model_->AddURL(bb_node, 3, ASCIIToUTF16("c"), GURL(test_base + "c"));
     model_->AddURL(bb_node, 4, ASCIIToUTF16("d"), GURL(test_base + "d"));
+    model_->AddFolder(bb_node, 5, ASCIIToUTF16("F2"));
+    model_->AddURL(bb_node, 6, ASCIIToUTF16("d"), GURL(test_base + "d"));
+
     model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("oa"),
                    GURL(test_base + "oa"));
     const BookmarkNode* of = model_->AddFolder(model_->other_node(), 1,
@@ -596,7 +601,7 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     ASSERT_TRUE(navigator_.url_ ==
-                model_->bookmark_bar_node()->GetChild(4)->url());
+                model_->bookmark_bar_node()->GetChild(6)->url());
     Done();
   }
 
@@ -1696,3 +1701,77 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
 VIEW_TEST(BookmarkBarViewTest20, ContextMenuExitTest)
 
 #endif // !defined(OS_WIN)
+
+// Tests context menu by way of opening a context menu for a empty folder menu.
+// The opened context menu should behave as it is from the folder button.
+class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
+ public:
+  BookmarkBarViewTest21()
+      : ALLOW_THIS_IN_INITIALIZER_LIST(
+          observer_(CreateEventTask(this, &BookmarkBarViewTest21::Step3))) {
+  }
+
+ protected:
+  // Move the mouse to the empty folder on the bookmark bar and press the
+  // left mouse button.
+  virtual void DoTestOnMessageLoop() {
+    views::TextButton* button = GetBookmarkButton(5);
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest21::Step2));
+  }
+
+ private:
+  // Confirm that a menu for empty folder shows and right click the menu.
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+
+    views::SubmenuView* submenu = menu->GetSubmenu();
+    ASSERT_TRUE(submenu->IsShowing());
+    ASSERT_EQ(1, submenu->child_count());
+
+    views::View* view = submenu->child_at(0);
+    ASSERT_TRUE(view != NULL);
+    EXPECT_EQ(views::MenuItemView::kEmptyMenuItemViewID, view->id());
+
+    // Right click on the first child to get its context menu.
+    ui_test_utils::MoveMouseToCenterAndPress(view, ui_controls::RIGHT,
+        ui_controls::DOWN | ui_controls::UP, base::Closure());
+    // Step3 will be invoked by ContextMenuNotificationObserver.
+  }
+
+  // Confirm that context menu shows and click REMOVE menu.
+  void Step3() {
+    // Make sure the context menu is showing.
+    views::MenuItemView* menu = bb_view_->GetContextMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu());
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    views::MenuItemView* delete_menu =
+        menu->GetMenuItemByID(IDC_BOOKMARK_BAR_REMOVE);
+    ASSERT_TRUE(delete_menu);
+
+    // Click on the delete menu item.
+    ui_test_utils::MoveMouseToCenterAndPress(delete_menu,
+        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest21::Step4));
+  }
+
+  // Confirm that the empty folder gets removed and menu doesn't show.
+  void Step4() {
+    views::TextButton* button = GetBookmarkButton(5);
+    ASSERT_TRUE(button);
+    EXPECT_EQ(ASCIIToUTF16("d"), button->text());
+    EXPECT_TRUE(bb_view_->GetContextMenu() == NULL);
+    EXPECT_TRUE(bb_view_->GetMenu() == NULL);
+
+    Done();
+  }
+
+  ContextMenuNotificationObserver observer_;
+};
+
+VIEW_TEST(BookmarkBarViewTest21, ContextMenusForEmptyFolder)
