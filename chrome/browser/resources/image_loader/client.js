@@ -152,7 +152,9 @@ ImageLoader.Client.prototype.load = function(
  * @param {number} taskId Task id returned by ImageLoader.Client.load().
  */
 ImageLoader.Client.prototype.cancel = function(taskId) {
-  this.port_.postMessage({ taskId: taskId, cancel: true });
+  chrome.extension.sendMessage(
+      ImageLoader.EXTENSION_ID,
+      { taskId: taskId, cancel: true });
 };
 
 /**
