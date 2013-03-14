@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_H_
 
+#include <climits>
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_arm/model.h"
@@ -14,6 +16,14 @@
 /*
  * Models the "instruction classes" that the decoder produces.
  */
+namespace nacl_arm_val {
+class AddressSet;
+class SfiValidator;
+class DecodedInstruction;
+class ProblemSink;
+class InstructionPairMatchData;
+}
+
 namespace nacl_arm_dec {
 
 // Used to describe whether an instruction is safe, and if not, what the issue
@@ -59,6 +69,95 @@ enum SafetyLevel {
 // Returns the safety level associated with i (or UNINITIALIZED if no such
 // safety level exists).
 SafetyLevel Int2SafetyLevel(uint32_t i);
+
+// Defines the set of validation violations that are found by the
+// NaCl validator. Used to speed up generation of diagnostics, by only
+// checking for corresponding found violations.
+enum Violation {
+  // Reports that safety != MAY_BE_SAFE
+  SAFETY_VIOLATION,
+  // Reports that the load/store uses an unsafe base address.  A base address is
+  // safe if it
+  //     1. Has specific bits masked off by its immediate predecessor, or
+  //     2. Is predicated on those bits being clear, as tested by its immediate
+  //        predecessor, or
+  //     3. Is in a register defined as always containing a safe address.
+  // Note: Predication checks (in 2) may be disabled on some architectures.
+  LOADSTORE_VIOLATION,
+  // Reports that the load/store uses a safe base address, but violates the
+  // condition that the instruction pair can't cross a bundle boundary.
+  LOADSTORE_CROSSES_BUNDLE_VIOLATION,
+  // Reports that the indirect branch uses an unsafe destination address.  A
+  // destination address is safe if it has specific bits masked off by its
+  // immediate predecessor.
+  BRANCH_MASK_VIOLATION,
+  // Reports that the indirect branch uses a safe destination address, but
+  // violates the condition that the instruction pair can't cross a bundle
+  // boundary.
+  BRANCH_MASK_CROSSES_BUNDLE_VIOLATION,
+  // Reports that the instruction updates a data-address register, but isn't
+  // immediately followed by a mask.
+  DATA_REGISTER_UPDATE_VIOLATION,
+  // Reports that the instruction safely updates a data-address register, but
+  // violates the condition that the instruction pair can't cross a bundle
+  // boundary.
+  //
+  // This isn't strictly needed for security. The second instruction (i.e. the
+  // mask), can be run without running the first instruction. Further, if
+  // the first instruction is run, we can still guarantee that the second will
+  // also. However, for simplicity, the current validator assumes that all
+  // instruction pairs must be atomic.
+  DATA_REGISTER_UPDATE_CROSSES_BUNDLE_VIOLATION,
+  // Reports that the call instruction isn't the last instruction in
+  // the bundle.
+  //
+  // This is not a security check per se. Rather, it is a check to prevent
+  // imbalancing the CPU's return stack, thereby decreasing performance.
+  CALL_POSITION_VIOLATION,
+  // Reports that the instruction sets a read-only register.
+  READ_ONLY_VIOLATION,
+  // Reports if the instruction reads the thread local pointer.
+  READ_THREAD_LOCAL_POINTER_VIOLATION,
+  // Reports if the program counter was updated without using one of the
+  // approved branch instruction.
+  PC_WRITES_VIOLATION,
+  // A branch that branches into the middle of a multiple instruction
+  // pseudo-operation.
+  BRANCH_SPLITS_PATTERN_VIOLATION,
+  // A branch to instruction outside the code segment.
+  BRANCH_OUT_OF_RANGE_VIOLATION,
+  // Any other type of violation. Must appear last in the enumeration.
+  // Value is used in testing to guarantee that the corresponding
+  // bitset ViolationSet can hold all validation violations.
+  OTHER_VIOLATION
+};
+
+// Defines the bitset of found validation violations.
+typedef uint32_t ViolationSet;
+
+// Defines the notion of a empty violation set.
+static const ViolationSet kNoViolations = 0x0;
+
+// Converts a validation violation to a ViolationSet containing
+// the corresponding validation violation.
+inline ViolationSet ViolationBit(
+    Violation violation) {
+  NACL_COMPILE_TIME_ASSERT(static_cast<size_t>(nacl_arm_dec::OTHER_VIOLATION) <
+                           sizeof(nacl_arm_dec::ViolationSet) * CHAR_BIT);
+  return static_cast<ViolationSet>(0x1) << violation;
+}
+
+// Returns a validation violation set that contains the given violation
+// if the given validation violation set contains the given violation.
+inline ViolationSet
+ContainsViolation(ViolationSet vset, Violation violation) {
+  return vset & ViolationBit(violation);
+}
+
+// Returns the union of the two validation violation sets.
+inline ViolationSet ViolationUnion(ViolationSet vset1, ViolationSet vset2) {
+  return vset1 | vset2;
+}
 
 // A class decoder is designed to decode a set of instructions that
 // have the same semantics, in terms of what the validator needs. This
@@ -106,7 +205,7 @@ class ClassDecoder {
   //  - explicit destination (general purpose) register(s),
   //  - changes to condition APSR flags NZCV.
   //  - indexed-addressing writeback,
-  //  - changes to r15 by branches,
+  //  - changes to the program counter by branches,
   //  - implicit register results, like branch-with-link.
   //
   // Note: This virtual only tracks effects to ARM general purpose flags, and
@@ -225,20 +324,57 @@ class ClassDecoder {
   //     sets_Z_if_bits_clear
   virtual Instruction dynamic_code_replacement_sentinel(Instruction i) const;
 
+  // Checks the given pair of instructions, and returns found validation
+  // violations. Called with the class decoder associated with the second
+  // instruction. For violations that only look at a single instruction,
+  // they are assumed to apply to the second instruction in the pair.
+  //
+  // As a side effect, if the instructions are found not to include any
+  // violations, but affect state of the validation, the corresponding
+  // updates of the validation state is done.
+  //
+  //   first: The first instruction in the instruction pair to be validated.
+  //   second: The second instruction in the instruction pair to be validated.
+  //   sfi: The validator being used.
+  //   branches: gets filled in with the address of every direct branch.
+  //   critical: gets filled in with every address that isn't safe to jump to,
+  //       because it would split an otherwise-safe pseudo-op, or jumps into
+  //       the middle of a constant pool.
+  //   next_inst_addr: The address of the next instruction to be validated.
+  //       Set by the caller to the address of the instruction immediately
+  //       following the second instruction. If additional instruction should
+  //       be skipped (as with contant pool heads), this value should be updated
+  //       to point to the next instruction to be processed.
+  //
+  // Returns the validation violations found.
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
+
+  // Generates diagnostic messages for validation violations found
+  // for the instruction pair. Called with the class decoder associated
+  // with the second instruction. Assumes it is only called if virtual
+  // get_violations returned a non-empty set.
+  //
+  //   violations: The set of validation violations detected by get_violations.
+  //   first: The first instruction in the instruction pair to be validated.
+  //   second: The second instruction in the instruction pair to be validated.
+  //   sfi: The validator being used.
+  //   out: The problem reporter to use to report diagnostics.
+  virtual void generate_diagnostics(
+      ViolationSet violations,
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::ProblemSink* out) const;
+
  protected:
   ClassDecoder() {}
   virtual ~ClassDecoder() {}
-
-  // A common idiom in derived classes: def() is often implemented in terms
-  // of this function: the base register must be added to the def set when
-  // there's small immediate writeback.
-  //
-  // Note that there are other types of writeback into base than small
-  // immediate writeback.
-  Register base_small_writeback_register(Instruction i) const {
-    return base_address_register_writeback_small_immediate(i)
-        ? base_address_register(i) : Register::None();
-  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ClassDecoder);

@@ -123,6 +123,13 @@ void TestDynamicCodeReplacement(
       "Code replacement expected different validation result for " << msg;
 }
 
+// Verify that there is enough room in ViolationSet to include all
+// elements in enum Violation.
+TEST_F(ValidatorTests, ViolationsFitInViolationSet) {
+  EXPECT_LT(static_cast<size_t>(nacl_arm_dec::OTHER_VIOLATION),
+            sizeof(nacl_arm_dec::ViolationSet) * CHAR_BIT);
+}
+
 TEST_F(ValidatorTests, NopBundle) {
   vector<arm_inst> code(_validator->InstructionsPerBundle(), kNop);
   validation_should_pass(&code[0], code.size(), kDefaultBaseAddr,

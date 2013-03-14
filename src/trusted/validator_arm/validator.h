@@ -44,9 +44,9 @@ class Bundle {
   uint32_t begin_addr() const { return virtual_base_; }
   uint32_t end_addr() const { return virtual_base_ + size_; }
 
-  bool operator!=(const Bundle& other) const {
+  bool operator==(const Bundle& other) const {
     // Note that all Bundles are currently assumed to be the same size.
-    return virtual_base_ != other.virtual_base_;
+    return virtual_base_ == other.virtual_base_;
   }
 
  private:
@@ -92,7 +92,24 @@ class SfiValidator {
   // ProblemSink.
   //
   // Returns true iff no problems were found.
-  bool validate(const std::vector<CodeSegment>& segments, ProblemSink* out);
+  bool validate(const std::vector<CodeSegment>& segments, ProblemSink* out) {
+    return find_violations(segments, out) == nacl_arm_dec::kNoViolations;
+  }
+
+  // Alternate validator entry point. Validates the provided
+  // CodeSegments, which must be in sorted order, reporting any
+  // problems through the ProblemSink.
+  //
+  // Returns the violation set of found violations. Note: if problem
+  // sink short ciruits the validation of all code (via method
+  // should_continue), this set may not contain all types of
+  // violations found. All that this method guarantees is if the code
+  // has validation violations, the returned set will be non-empty.
+  //
+  // Note: This version of validating is useful for testing, when one
+  // might want to know why the code did not validate.
+  nacl_arm_dec::ViolationSet find_violations(
+      const std::vector<CodeSegment>& segments, ProblemSink* out);
 
   // Entry point for validation of dynamic code replacement. Allows
   // micromodifications of dynamically generated code in form of
@@ -136,7 +153,9 @@ class SfiValidator {
 
   // Checks whether the given Register always holds a valid data region address.
   // This implies that the register is safe to use in unguarded stores.
-  bool is_data_address_register(nacl_arm_dec::Register) const;
+  bool is_data_address_register(nacl_arm_dec::Register r) const {
+    return data_address_registers_.Contains(r);
+  }
 
   // Number of A32 instructions per bundle.
   uint32_t InstructionsPerBundle() const {
@@ -172,18 +191,25 @@ class SfiValidator {
   }
 
   // Returns the Bundle containing a given address.
-  const Bundle bundle_for_address(uint32_t) const;
+  inline const Bundle bundle_for_address(uint32_t) const;
+
+  // Returns true if both addresses are in the same bundle.
+  inline bool in_same_bundle(const DecodedInstruction& first,
+                             const DecodedInstruction& second) const;
 
   // Copy the given validator state.
   SfiValidator& operator=(const SfiValidator& v);
+
+  // Returns true if address is the first address of a bundle.
+  bool is_bundle_head(uint32_t address) const {
+    return (address & (bytes_per_bundle_ - 1)) == 0;
+  };
 
  private:
   // The SfiValidator constructor could have been given invalid values.
   // Returns true the values were bad, and send the details to the ProblemSink.
   // This method should be called from every public validation method.
   bool ConstructionFailed(ProblemSink* out);
-
-  bool is_bundle_head(uint32_t address) const;
 
   // Validates a straight-line execution of the code, applying patterns.  This
   // is the first validation pass, which fills out the AddressSets for
@@ -192,39 +218,26 @@ class SfiValidator {
   //   critical - gets filled in with every address that isn't safe to jump to,
   //       because it would split an otherwise-safe pseudo-op.
   //
-  // Returns true iff no problems were found.
-  bool validate_fallthrough(const CodeSegment& segment, ProblemSink* out,
+  // Returns the violation set of found violations. Note: if problem
+  // sink short ciruits the validation of all code (via method
+  // should_continue), this set may not contain all types of
+  // violations found. All that this method guarantees is if the code
+  // has validation violations, the returned set will be non-empty.
+  nacl_arm_dec::ViolationSet validate_fallthrough(
+      const CodeSegment& segment, ProblemSink* out,
       AddressSet* branches, AddressSet* critical);
 
-  // Factor of validate_fallthrough, above.  Checks a single instruction using
-  // the instruction patterns defined in the .cc file, with two possible
-  // results:
-  //   1. No patterns matched, or all were safe: nothing happens.
-  //   2. Patterns matched and were unsafe: problems get sent to 'out'.
-  bool apply_patterns(const DecodedInstruction& inst, ProblemSink* out);
-
-  // Factor of validate_fallthrough, above.  Checks a pair of instructions using
-  // the instruction patterns defined in the .cc file, with three possible
-  // results:
-  //   1. No patterns matched: nothing happens.
-  //   2. Patterns matched and were safe: the addresses are filled into
-  //      'critical' for use by the second pass.
-  //   3. Patterns matched and were unsafe: problems get sent to 'out'.
-  //
-  // Note: Can be used to parse both one and two instruction patterns. This
-  // allows precondition checks to be shared. See comments in the implementation
-  // of this (in validator.cc) to see specifics on how to implement both single
-  // instruction and two instruction pattern testers.
-  bool apply_patterns(const DecodedInstruction& first,
-                      const DecodedInstruction& second, AddressSet* critical,
-                      ProblemSink* out);
-
-  // Validates all branches found by a previous pass, checking destinations.
-  // Returns true iff no problems were found.
-  bool validate_branches(const std::vector<CodeSegment>& segments,
+  // Validates all branches found by a previous pass, checking
+  // destinations.  Returns the violation set of found branch
+  // violations. Note: if problem sink short ciruits the validation of
+  // all code (via method should_continue), this set may not contain
+  // all types of violations found. All that this method guarantees is
+  // if the code has validation violations, the returned set will be
+  // non-empty.
+  nacl_arm_dec::ViolationSet validate_branches(
+      const std::vector<CodeSegment>& segments,
       const AddressSet& branches, const AddressSet& critical,
       ProblemSink* out);
-
 
   NaClCPUFeaturesArm cpu_features_;
   uint32_t bytes_per_bundle_;
@@ -253,7 +266,15 @@ class SfiValidator {
 class DecodedInstruction {
  public:
   DecodedInstruction(uint32_t vaddr, nacl_arm_dec::Instruction inst,
-      const nacl_arm_dec::ClassDecoder& decoder);
+                     const nacl_arm_dec::ClassDecoder& decoder)
+      // We eagerly compute both safety and defs here, because it turns out to
+      // be faster by 10% than doing either lazily and memoizing the result.
+      : vaddr_(vaddr),
+        inst_(inst),
+        decoder_(&decoder),
+        safety_(decoder.safety(inst_)),
+        defs_(decoder.defs(inst_))
+  {}
 
   uint32_t addr() const { return vaddr_; }
 
@@ -517,6 +538,20 @@ typedef enum {
   kPairCrossesBundle
 } ValidatorInstructionPairProblem;
 
+// Looks at the conditions associated with a pair of instructions
+// associated with a validator pattern, and determines what problems
+// the conditions may have played in not allowing the instruction
+// pair to be atomic.
+// Parameters:
+//    first: The first instruction in the pair wrt the direction being
+//        tested (not the order the instructions appear).
+//    second: The second instruction in the pair wrt to the direction
+//        being tested. Hence, we check if the conditions of the first
+//        instruction implies the conditions of the second.
+ValidatorInstructionPairProblem GetPairConditionProblem(
+    const DecodedInstruction& first,
+    const DecodedInstruction& second);
+
 // Defines the maximum number of data elements assocated with validator
 // problem user data.
 static const size_t kValidatorProblemUserDataSize = 6;
@@ -642,6 +677,16 @@ class ProblemSink {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ProblemSink);
 };
+
+const Bundle SfiValidator::bundle_for_address(uint32_t address) const {
+  uint32_t base = address & ~(bytes_per_bundle_ - 1);
+  return Bundle(base, bytes_per_bundle_);
+}
+
+bool SfiValidator::in_same_bundle(const DecodedInstruction& first,
+                                  const DecodedInstruction& second) const {
+  return bundle_for_address(first.addr()) == bundle_for_address(second.addr());
+}
 
 }  // namespace nacl_arm_val
 

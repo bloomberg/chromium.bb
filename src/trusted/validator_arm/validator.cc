@@ -166,58 +166,6 @@ void ProblemSink::ReportProblemRegisterListInstructionPair(
                         kReportProblemRegisterListInstructionPair, user_data);
 }
 
-/*********************************************************
- * Implementations of patterns used in the first pass.
- *
- * N.B.  IF YOU ADD A PATTERN HERE, REGISTER IT BELOW.
- * See the list in apply_patterns.
- *********************************************************/
-
-// A possible result from a validator pattern.
-enum PatternMatch {
-  // The pattern does not apply to the instructions it was given.
-  NO_MATCH,
-  // The pattern matches and is safe.
-  PATTERN_SAFE,
-  // The pattern matches, and has detected a problem.
-  PATTERN_UNSAFE
-};
-
-// Models data collected when matching a pair of instructions to a validator
-// pattern.
-class InstructionPairMatchData {
- public:
-  explicit InstructionPairMatchData(ProblemSink* out)
-      : out_(out),
-        match_(PATTERN_UNSAFE),
-        problem_(kValidatorProblemSize),
-        pair_problem_(kNoSpecificPairProblem),
-        first_is_basis_(false),
-        is_single_instruction_pattern_(false)
-  {}
-
-  // Defines the problem sink to report problems to.
-  ProblemSink* out_;
-
-  // Defines how successful the validator was on matching the given pattern.
-  PatternMatch match_;
-
-  // Defines the validator problem that the pattern is trying to check.
-  ValidatorProblem problem_;
-
-  // Defines any validator problems due to conditions that cross instruction
-  // boundaries.
-  ValidatorInstructionPairProblem pair_problem_;
-
-  // If set, assume the problem is in the first instruction (rather than the
-  // second).
-  bool first_is_basis_;
-
-  // If true, the pattern is for one instruction (defined by first_is_basis)
-  // instead of two.
-  bool is_single_instruction_pattern_;
-};
-
 // Looks at the conditions associated with a pair of instructions
 // associated with a validator pattern, and determines what problems
 // the conditions may have played in not allowing the instruction
@@ -228,7 +176,7 @@ class InstructionPairMatchData {
 //    second: The second instruction in the pair wrt to the direction
 //        being tested. Hence, we check if the conditions of the first
 //        instruction implies the conditions of the second.
-static ValidatorInstructionPairProblem GetPairConditionProblem(
+ValidatorInstructionPairProblem GetPairConditionProblem(
     const DecodedInstruction& first,
     const DecodedInstruction& second) {
   UNREFERENCED_PARAMETER(second);
@@ -236,257 +184,6 @@ static ValidatorInstructionPairProblem GetPairConditionProblem(
     return kFirstSetsConditionFlags;
   } else {
     return kConditionsOnPairNotSafe;
-  }
-}
-
-// Ensures that all loads/stores use a safe base address.  A base address is
-// safe if it
-//     1. Has specific bits masked off by its immediate predecessor, or
-//     2. Is predicated on those bits being clear, as tested by its immediate
-//        predecessor, or
-//     3. Is in a register defined as always containing a safe address.
-//
-// This pattern concerns itself with case #1, early-exiting if it finds #2.
-static void check_loadstore_mask(
-    const SfiValidator& sfi,
-    const DecodedInstruction& first,
-    const DecodedInstruction& second,
-    InstructionPairMatchData* match_data) {
-  match_data->problem_ = kProblemUnsafeLoadStore;
-  if (second.base_address_register().
-      Equals(Register::None()) /* not a load/store */
-      || sfi.is_data_address_register(second.base_address_register())) {
-    match_data->match_ = NO_MATCH;
-    return;
-  }
-
-  if (second.is_literal_load()) {
-    // PC + immediate addressing is always safe.
-    match_data->match_ = PATTERN_SAFE;
-    match_data->is_single_instruction_pattern_ = true;
-    return;
-  }
-
-  // The following checks if this represents a thread address pointer access,
-  // which means the instruction must be one of the following forms:
-  //    ldr Rn, [r9]     ; load use thread pointer.
-  //    ldr Rn, [r9, #4] ; load IRT thread pointer.
-  if (second.is_load_thread_address_pointer()) {
-    match_data->match_ = PATTERN_SAFE;
-    match_data->is_single_instruction_pattern_ = true;
-    return;
-  }
-
-  if (first.defines(second.base_address_register())
-      && first.clears_bits(sfi.data_address_mask())
-      && first.always_dominates(second)) {
-    match_data->match_ = PATTERN_SAFE;
-    return;
-  }
-
-  if (sfi.conditional_memory_access_allowed_for_sfi() &&
-      first.sets_Z_if_bits_clear(second.base_address_register(),
-                                 sfi.data_address_mask())
-      && second.is_eq_conditional_on(first)) {
-    match_data->match_ = PATTERN_SAFE;
-    return;
-  }
-
-  // If reached, there is a problem!
-  // Try to best categorize the problem and report.
-  if (first.defines(second.base_address_register())) {
-    if (first.clears_bits(sfi.data_address_mask())) {
-      match_data->out_->ReportProblemRegisterInstructionPair(
-          second.addr(),
-          kProblemUnsafeLoadStore,
-          GetPairConditionProblem(first, second),
-          second.base_address_register(),
-          first, second);
-    } else {
-      match_data->out_->ReportProblemRegister(
-          second.addr(),
-          kProblemUnsafeLoadStore,
-          second.base_address_register());
-    }
-  } else if (first.sets_Z_if_bits_clear(second.base_address_register(),
-                                        sfi.data_address_mask())) {
-    match_data->out_->ReportProblemRegisterInstructionPair(
-        second.addr(),
-        kProblemUnsafeLoadStore,
-        sfi.conditional_memory_access_allowed_for_sfi() ?
-        kEqConditionalOn : kTstMemDisallowed,
-        second.base_address_register(), first, second);
-  } else if (second.base_address_register().Equals(Register::Pc())) {
-    match_data->out_->ReportProblem(second.addr(), kProblemIllegalPcLoadStore);
-  } else {
-    match_data->out_->ReportProblemRegister(second.addr(),
-                                            kProblemUnsafeLoadStore,
-                                            second.base_address_register());
-  }
-  return;
-}
-
-// Ensures that all indirect branches use a safe destination address.  A
-// destination address is safe if it has specific bits masked off by its
-// immediate predecessor.
-static void check_branch_mask(
-    const SfiValidator& sfi,
-    const DecodedInstruction& first,
-    const DecodedInstruction& second,
-    InstructionPairMatchData* match_data) {
-  match_data->problem_ = kProblemUnsafeBranch;
-  if (second.branch_target_register().Equals(Register::None())) {
-    match_data->match_ = NO_MATCH;
-    return;
-  }
-
-  if (first.defines(second.branch_target_register())
-      && first.clears_bits(sfi.code_address_mask())
-      && first.always_dominates(second)) {
-    match_data->match_ = PATTERN_SAFE;
-    return;
-  }
-
-  // If reached, there is a problem!
-  // Try to better diagnose the problem being reported.
-  if (first.defines(second.branch_target_register())) {
-    if (first.clears_bits(sfi.code_address_mask())) {
-      match_data->out_->ReportProblemRegisterInstructionPair(
-          second.addr(),
-          kProblemUnsafeBranch,
-          GetPairConditionProblem(first, second),
-          second.branch_target_register(), first, second);
-    } else {
-      match_data->out_->ReportProblemRegister(
-          second.addr(), kProblemUnsafeBranch, second.branch_target_register());
-    }
-  } else {
-    match_data->out_->ReportProblemRegister(second.addr(), kProblemUnsafeBranch,
-                                            second.branch_target_register());
-  }
-  return;
-}
-
-// Verifies that any instructions that update a data-address register are
-// immediately followed by a mask.
-static void check_data_register_update(
-    const SfiValidator& sfi,
-    const DecodedInstruction& first,
-    const DecodedInstruction& second,
-    InstructionPairMatchData* match_data) {
-  match_data->problem_ = kProblemUnsafeDataWrite;
-  match_data->first_is_basis_ = true;
-  if (!first.defines_any(sfi.data_address_registers())) {
-    match_data->match_ = NO_MATCH;
-    return;
-  }
-
-  // A single safe data register update doesn't affect control flow.
-  if (first.clears_bits(sfi.data_address_mask())) {
-    match_data->match_ = NO_MATCH;
-    return;
-  }
-
-  // Small immediate base register writeback to data address registers
-  // (e.g. SP) doesn't need to be an instruction pair.
-  if (first.base_address_register_writeback_small_immediate() &&
-      sfi.data_address_registers().Contains(first.base_address_register())) {
-    match_data->match_ = NO_MATCH;
-    return;
-  }
-
-  // Data address register modification followed by bit clear.
-  RegisterList data_addr_defs(first.defs().
-                              Intersect(sfi.data_address_registers()));
-  if (second.defines_all(data_addr_defs)
-      && second.clears_bits(sfi.data_address_mask())
-      && second.always_postdominates(first)) {
-    match_data->match_ = PATTERN_SAFE;
-    return;
-  }
-
-  // If reached, there is a problem!
-  // Try to better diagnose the problem being reported.
-  if (second.defines_all(data_addr_defs) &&
-      second.clears_bits(sfi.data_address_mask())) {
-    match_data->out_->ReportProblemRegisterListInstructionPair(
-        first.addr(),
-        kProblemUnsafeDataWrite,
-        GetPairConditionProblem(first, second),
-        data_addr_defs, first, second);
-  } else {
-    match_data->out_->ReportProblemRegisterList(first.addr(),
-                                                kProblemUnsafeDataWrite,
-                                                data_addr_defs);
-  }
-  return;
-}
-
-// Checks the location of linking branches -- to be useful, they must be in
-// the last bundle slot.
-//
-// This is not a security check per se, more of a guard against Stupid Compiler
-// Tricks.
-static PatternMatch check_call_position(const SfiValidator& sfi,
-                                        const DecodedInstruction& inst,
-                                        ProblemSink* out) {
-  // Identify linking branches through their definitions:
-  if (inst.defines_all(RegisterList(Register::Pc()).Add(Register::Lr()))) {
-    uint32_t last_slot = sfi.bundle_for_address(inst.addr()).end_addr() - 4;
-    if (inst.addr() != last_slot) {
-      out->ReportProblem(inst.addr(), kProblemMisalignedCall);
-      return PATTERN_UNSAFE;
-    }
-  }
-  return NO_MATCH;
-}
-
-// Checks for instructions that alter any read-only register.
-static PatternMatch check_read_only(const SfiValidator& sfi,
-                                    const DecodedInstruction& inst,
-                                    ProblemSink* out) {
-  if (inst.defines_any(sfi.read_only_registers())) {
-    out->ReportProblemRegisterList(
-        inst.addr(), kProblemReadOnlyRegister,
-        inst.defs().Intersect(sfi.read_only_registers()));
-    return PATTERN_UNSAFE;
-  }
-  return NO_MATCH;
-}
-
-// Checks for instructions that may read the thread local pointer.
-static PatternMatch check_dont_read_thread_local_pointer(
-    const SfiValidator& sfi, const DecodedInstruction& inst, ProblemSink* out) {
-  UNREFERENCED_PARAMETER(sfi);
-  if (inst.uses(Register::Tp()) &&
-      !inst.is_load_thread_address_pointer()) {
-    out->ReportProblemRegister(inst.addr(),
-                               kProblemIllegalUseOfThreadPointer,
-                               Register::Tp());
-    return PATTERN_UNSAFE;
-  }
-  return NO_MATCH;
-}
-
-// Checks writes to r15 from instructions that aren't branches.
-static PatternMatch check_pc_writes(const SfiValidator& sfi,
-                                    const DecodedInstruction& inst,
-                                    ProblemSink* out) {
-  if (inst.is_relative_branch()
-      || !inst.branch_target_register().Equals(Register::None())) {
-    // It's a branch.
-    return NO_MATCH;
-  }
-
-  if (!inst.defines(nacl_arm_dec::Register::Pc()))
-    return NO_MATCH;
-
-  if (inst.clears_bits(sfi.code_address_mask())) {
-    return PATTERN_SAFE;
-  } else {
-    out->ReportProblemRegister(inst.addr(), kProblemUnsafeBranch,
-                               Register::Pc());
-    return PATTERN_UNSAFE;
   }
 }
 
@@ -582,30 +279,35 @@ SfiValidator& SfiValidator::operator=(const SfiValidator& v) {
   return *this;
 }
 
-bool SfiValidator::validate(const vector<CodeSegment>& segments,
-                            ProblemSink* out) {
+nacl_arm_dec::ViolationSet SfiValidator::
+find_violations(const vector<CodeSegment>& segments,
+                ProblemSink* out) {
   if (ConstructionFailed(out))
-    return false;
+    return nacl_arm_dec::ViolationBit(nacl_arm_dec::OTHER_VIOLATION);
 
   uint32_t base = segments[0].begin_addr();
   uint32_t size = segments.back().end_addr() - base;
   AddressSet branches(base, size);
   AddressSet critical(base, size);
 
-  bool complete_success = true;
+  nacl_arm_dec::ViolationSet found_violations = nacl_arm_dec::kNoViolations;
 
   for (vector<CodeSegment>::const_iterator it = segments.begin();
       it != segments.end(); ++it) {
-    complete_success &= validate_fallthrough(*it, out, &branches, &critical);
+    found_violations =
+        nacl_arm_dec::ViolationUnion(
+            found_violations,
+            validate_fallthrough(*it, out, &branches, &critical));
 
     if (!out->should_continue()) {
-      return false;
+      return found_violations;
     }
   }
 
-  complete_success &= validate_branches(segments, branches, critical, out);
-
-  return complete_success;
+  return
+      nacl_arm_dec::ViolationUnion(
+          found_violations,
+          validate_branches(segments, branches, critical, out));
 }
 
 bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
@@ -695,13 +397,13 @@ bool SfiValidator::CopyCode(const CodeSegment& source_code,
   // we don't have to check instruction boundary invariant.
   for (uintptr_t va = source_code.begin_addr();
        va != source_code.end_addr();
-       va += nacl_arm_dec::kArm32InstSize / 8) {
+       va += nacl_arm_dec::kArm32InstSize / CHAR_BIT) {
     intptr_t offset = va - source_code.begin_addr();
     // TODO(olonho): this const cast is a bit ugly, but we
     // need to write to dest segment.
     copy_func(const_cast<uint8_t*>(dest_code.base()) + offset,
               const_cast<uint8_t*>(source_code.base()) + offset,
-              nacl_arm_dec::kArm32InstSize / 8);
+              nacl_arm_dec::kArm32InstSize / CHAR_BIT);
   }
 
   return true;
@@ -715,11 +417,12 @@ bool SfiValidator::ConstructionFailed(ProblemSink* out) {
   return construction_failed_;
 }
 
-bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
-                                        ProblemSink* out,
-                                        AddressSet* branches,
-                                        AddressSet* critical) {
-  bool complete_success = true;
+nacl_arm_dec::ViolationSet SfiValidator::validate_fallthrough(
+    const CodeSegment& segment,
+    ProblemSink* out,
+    AddressSet* branches,
+    AddressSet* critical) {
+  nacl_arm_dec::ViolationSet found_violations = nacl_arm_dec::kNoViolations;
 
   // Initialize the previous instruction so it always fails validation.
   DecodedInstruction pred(
@@ -727,54 +430,49 @@ bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
       Instruction(nacl_arm_dec::kFailValidation),
       decode_state_.fictitious_decoder());
 
-  for (uint32_t va = segment.begin_addr(); va < segment.end_addr(); va += 4) {
-    DecodedInstruction inst(va, segment[va],
-                            decode_state_.decode(segment[va]));
-
-    if (inst.safety() != nacl_arm_dec::MAY_BE_SAFE) {
-      out->ReportProblemSafety(va, inst.safety());
-      if (!out->should_continue()) {
-        return false;
-      }
-      complete_success = false;
+  // Validate each instruction.
+  uint32_t va = segment.begin_addr();
+  while (va < segment.end_addr()) {
+    const ClassDecoder& decoder = decode_state_.decode(segment[va]);
+    DecodedInstruction inst(va, segment[va], decoder);
+    // Note: get_violations is expecting the address of the next instruction
+    // to be validated as its last argument. This address can be updated by
+    // by that routine (as with constant pool heads). Hence, rather than
+    // updating va at the end of the loop, we update it here and pass it
+    // through to get_violations.
+    va += 4;
+    nacl_arm_dec::ViolationSet violations =
+        decoder.get_violations(pred, inst, *this, branches, critical, &va);
+    if (violations) {
+      found_violations =
+          nacl_arm_dec::ViolationUnion(found_violations, violations);
+      // TODO(kschimpf): Refactor so that ProblemSink out can be NULL (when
+      // run in sel_ldr), and don't bother to generate diagnostics in such
+      // cases. Note: This has to be done throughout this file, not just here.
+      decoder.generate_diagnostics(violations, pred, inst, *this, out);
+      if (!out->should_continue()) return found_violations;
     }
-
-    complete_success &= apply_patterns(inst, out);
-    if (!out->should_continue()) return false;
-
-    complete_success &= apply_patterns(pred, inst, critical, out);
-    if (!out->should_continue()) return false;
-
-    if (inst.is_relative_branch()) {
-      branches->add(inst.addr());
-    }
-
-    if (inst.is_literal_pool_head()
-        && is_bundle_head(inst.addr())) {
-      // Add each instruction in this bundle to the critical set.
-      // Skip over the literal pool head (which is also the bundle head):
-      // indirect branches to it are legal, direct branches should therefore
-      // also be legal.
-      uint32_t last_data_addr = bundle_for_address(va).end_addr();
-      for (va += 4; va < last_data_addr; va += 4) {
-        critical->add(va);
-      }
-
-      // Decrement the virtual address by one instruction, so the for
-      // loop can bump it back forward.  This is slightly dirty.
-      va -= 4;
-    }
-
     pred.Copy(inst);
   }
 
   // Validate the last instruction, paired with a nop.
   const Instruction nop(nacl_arm_dec::kNop);
-  DecodedInstruction one_past_end(segment.end_addr(), nop,
-                                  decode_state_.decode(nop));
-  complete_success &= apply_patterns(pred, one_past_end, critical, out);
+  const ClassDecoder& nop_decoder = decode_state_.decode(nop);
+  DecodedInstruction one_past_end(va, nop, nop_decoder);
+  // Note: Like above, we update va to point to the instruction after the nop,
+  // so that it meets the requirements of get_violations.
+  va += 4;
+  nacl_arm_dec::ViolationSet violations =
+      nop_decoder.get_violations(pred, one_past_end, *this,
+                                 branches, critical, &va);
+  if (violations) {
+    found_violations =
+        nacl_arm_dec::ViolationUnion(found_violations, violations);
+    nop_decoder.generate_diagnostics(violations, pred, one_past_end,
+                                     *this, out);
+  }
 
-  return complete_success;
+  return found_violations;
 }
 
 static bool address_contained(uint32_t va, const vector<CodeSegment>& segs) {
@@ -785,11 +483,12 @@ static bool address_contained(uint32_t va, const vector<CodeSegment>& segs) {
   return false;
 }
 
-bool SfiValidator::validate_branches(const vector<CodeSegment>& segments,
-                                     const AddressSet& branches,
-                                     const AddressSet& critical,
-                                     ProblemSink* out) {
-  bool complete_success = true;
+nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
+    const vector<CodeSegment>& segments,
+    const AddressSet& branches,
+    const AddressSet& critical,
+    ProblemSink* out) {
+  nacl_arm_dec::ViolationSet found_violations = nacl_arm_dec::kNoViolations;
 
   vector<CodeSegment>::const_iterator seg_it = segments.begin();
 
@@ -811,163 +510,32 @@ bool SfiValidator::validate_branches(const vector<CodeSegment>& segments,
     uint32_t target_va = inst.branch_target();
     if (address_contained(target_va, segments)) {
       if (critical.contains(target_va)) {
+        found_violations =
+            nacl_arm_dec::ViolationUnion(
+                found_violations,
+                nacl_arm_dec::ViolationBit(
+                    nacl_arm_dec::BRANCH_SPLITS_PATTERN_VIOLATION));
         out->ReportProblemAddress(va, kProblemBranchSplitsPattern, target_va);
         if (!out->should_continue()) {
-          return false;
+          return found_violations;
         }
-        complete_success = false;
       }
     } else if ((target_va & code_address_mask()) == 0) {
       // Allow bundle-aligned, in-range direct jump.
     } else {
+      found_violations =
+          nacl_arm_dec::ViolationUnion(
+              found_violations,
+              nacl_arm_dec::ViolationBit(
+                  nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION));
       out->ReportProblemAddress(va, kProblemBranchInvalidDest, target_va);
       if (!out->should_continue()) {
-        return false;
+        return found_violations;
       }
-      complete_success = false;
     }
   }
 
-  return complete_success;
+  return found_violations;
 }
-
-// TODO(jfb) Combine this with each instruction's safety(), exposed as a new API
-//           function. It'll make testing easier, e.g. TP use in the huge tests.
-bool SfiValidator::apply_patterns(const DecodedInstruction& inst,
-    ProblemSink* out) {
-  // Single-instruction patterns. Should return PATTERN_SAFE if the
-  // pattern succeeds.
-  typedef PatternMatch (*OneInstPattern)(const SfiValidator&,
-                                         const DecodedInstruction&,
-                                         ProblemSink*);
-  static const OneInstPattern one_inst_patterns[] = {
-    &check_read_only,
-    &check_dont_read_thread_local_pointer,
-    &check_pc_writes,
-    &check_call_position,
-  };
-
-  bool complete_success = true;
-
-  for (uint32_t i = 0; i < NACL_ARRAY_SIZE(one_inst_patterns); i++) {
-    PatternMatch r = one_inst_patterns[i](*this, inst, out);
-    switch (r) {
-      case PATTERN_SAFE:
-      case NO_MATCH:
-        break;
-
-      case PATTERN_UNSAFE:
-        complete_success = false;
-        break;
-    }
-  }
-
-  return complete_success;
-}
-
-bool SfiValidator::apply_patterns(
-    const DecodedInstruction& first, const DecodedInstruction& second,
-    AddressSet* critical, ProblemSink* out) {
-  // Type for two-instruction pattern functions.
-  //
-  // Note: These functions can recognize single instruction patterns,
-  // as well as two instruction patterns. In addition, single instruction
-  // patterns should be applied to the "second" instruction. The main reason for
-  // allowing both pattern lengths is so that precondition tests can
-  // be shared, and hence more efficient.
-  // Arguments are:
-  //    sfi - The validator that made the request.
-  //    first - The first instruction in the instruction pair.
-  //    second - The second instruction in the instruction pair.
-  //    match_data - The data collected about the pattern being applied.
-  //
-  // Also note that we call the first instruction in the code segment
-  // with the special instruction NACL_INSTR_ARM_FAIL_VALIDATION (
-  // in native_client/src/include/arm_sandbox.h). In this context, the
-  // NACL_INSTR_ARM_FAIL_VALIDATION is argument 'first' while the first
-  // instruction in the code segment is argument 'second'. The
-  // check rules should always handle this case.
-  typedef void (*TwoInstPattern)(
-      const SfiValidator& sfi,
-      const DecodedInstruction& first,
-      const DecodedInstruction& second,
-      InstructionPairMatchData* match_data);
-
-  // The list of patterns -- defined in static functions up top.
-  static const TwoInstPattern two_inst_patterns[] = {
-    &check_loadstore_mask,
-    &check_branch_mask,
-    &check_data_register_update,
-  };
-
-  bool complete_success = true;
-
-  for (uint32_t i = 0; i < NACL_ARRAY_SIZE(two_inst_patterns); i++) {
-    InstructionPairMatchData match_data(out);
-    two_inst_patterns[i](*this, first, second, &match_data);
-    switch (match_data.match_) {
-      case NO_MATCH: break;
-
-      case PATTERN_UNSAFE:
-        // Pattern is in charge of reporting specific issue.
-        complete_success = false;
-        break;
-
-      case PATTERN_SAFE:
-        if (match_data.is_single_instruction_pattern_) break;
-        if (bundle_for_address(first.addr())
-            != bundle_for_address(second.addr())) {
-          complete_success = false;
-          if (match_data.problem_ == kValidatorProblemSize) {
-            // Specific test pattern did not specify what problem was
-            // being worked on. Generate a generic error message.
-            out->ReportProblemInstructionPair(
-                (match_data.first_is_basis_ ? first.addr() : second.addr()),
-                kProblemPatternCrossesBundle,
-                kNoSpecificPairProblem,
-                first, second);
-          } else {
-            // Specific test pattern specified what problem was
-            // being worked on. Generate message to communiate
-            // this.
-            out->ReportProblemInstructionPair(
-                (match_data.first_is_basis_ ? first.addr() : second.addr()),
-                match_data.problem_,
-                kPairCrossesBundle,
-                first, second);
-          }
-        } else {
-          critical->add(second.addr());
-        }
-        break;
-    }
-  }
-  return complete_success;
-}
-
-bool SfiValidator::is_data_address_register(Register r) const {
-  return data_address_registers_.Contains(r);
-}
-
-const Bundle SfiValidator::bundle_for_address(uint32_t address) const {
-  uint32_t base = address & ~(bytes_per_bundle_ - 1);
-  return Bundle(base, bytes_per_bundle_);
-}
-
-bool SfiValidator::is_bundle_head(uint32_t address) const {
-  return (address & (bytes_per_bundle_ - 1)) == 0;
-}
-
-// We eagerly compute both safety and defs here, because it turns out to be
-// faster by 10% than doing either lazily and memoizing the result.
-DecodedInstruction::DecodedInstruction(uint32_t vaddr,
-                                       Instruction inst,
-                                       const ClassDecoder& decoder)
-    : vaddr_(vaddr),
-      inst_(inst),
-      decoder_(&decoder),
-      safety_(decoder.safety(inst_)),
-      defs_(decoder.defs(inst_))
-{}
 
 }  // namespace nacl_arm_val
