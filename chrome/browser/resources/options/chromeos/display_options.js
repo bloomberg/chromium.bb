@@ -523,27 +523,34 @@ cr.define('options', function() {
      * @private
      */
     updateSelectedDisplayDescription_: function() {
+      if (this.mirroring_) {
+        $('display-configuration-arrow').hidden = true;
+        $('display-options-set-primary').hidden = true;
+        $('display-options-toggle-mirroring').hidden = false;
+        $('selected-display-data-container').hidden = false;
+        var display = this.displays_[0];
+        $('selected-display-name').textContent = '';
+        $('selected-display-resolution').textContent =
+            display.width + 'x' + display.height;
+        return;
+      }
+
       if (this.focusedIndex_ == null ||
           this.displays_[this.focusedIndex_] == null) {
         $('selected-display-data-container').hidden = true;
         $('display-configuration-arrow').hidden = true;
         $('display-options-set-primary').hidden = true;
-        $('display-options-toggle-mirroring').hidden = !this.mirroring_;
+        $('display-options-toggle-mirroring').hidden = true;
         return;
       }
 
       $('selected-display-data-container').hidden = false;
       var display = this.displays_[this.focusedIndex_];
       var nameElement = $('selected-display-name');
-      while (nameElement.childNodes.length > 0)
-        nameElement.removeChild(nameElement.firstChild);
-      nameElement.appendChild(document.createTextNode(display.name));
+      nameElement.textContent = display.name;
 
-      var resolutionData = display.width + 'x' + display.height;
       var resolutionElement = $('selected-display-resolution');
-      while (resolutionElement.childNodes.length > 0)
-        resolutionElement.removeChild(resolutionElement.firstChild);
-      resolutionElement.appendChild(document.createTextNode(resolutionData));
+      resolutionElement.textContent = display.width + 'x' + display.height;
 
       $('start-calibrating-overscan-control').hidden = display.isInternal;
 
