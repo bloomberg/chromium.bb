@@ -701,6 +701,25 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   EXPECT_EQ(ASCIIToUTF16("www.example.com/"), omnibox()->GetText());
 }
 
+// Tests that a previous navigation suggestion is not discarded if it's not
+// stale.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       NavigationSuggestionIsNotDiscarded) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Tell the page to send a URL suggestion.
+  EXPECT_TRUE(ExecuteScript("suggestion = 'http://www.example.com';"
+                            "behavior = 0;"));
+  SetOmniboxTextAndWaitForOverlayToShow("exa");
+  EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
+  SetOmniboxText("exam");
+  EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
+
+  // TODO(jered): Remove this after fixing OnBlur().
+  omnibox()->RevertAll();
+}
+
 // TODO(dhollowa): Fix flakes.  http://crbug.com/179930.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
   content::WindowedNotificationObserver observer(

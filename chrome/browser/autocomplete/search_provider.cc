@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
@@ -258,10 +259,23 @@ void SearchProvider::Start(const AutocompleteInput& input,
       keyword_provider->keyword() : string16());
   if (!minimal_changes ||
       !providers_.equal(default_provider_keyword, keyword_provider_keyword)) {
-    if (done_)
+    // If Instant has not come back with a suggestion, adjust the previous
+    // suggestion if possible. If |instant_finalized| is true, we are looking
+    // for synchronous matches only, so the suggestion is cleared.
+    if (instant_finalized_)
       default_provider_suggestion_ = InstantSuggestion();
     else
+      AdjustDefaultProviderSuggestion(input_.text(), input.text());
+
+    // Cancel any in-flight suggest requests.
+    if (!done_) {
+      // The Stop(false) call below clears |default_provider_suggestion_|, but
+      // in this instance we do not want to clear cached results, so we
+      // restore it.
+      base::AutoReset<InstantSuggestion> reset(&default_provider_suggestion_,
+                                               InstantSuggestion());
       Stop(false);
+    }
   }
 
   providers_.set(default_provider_keyword, keyword_provider_keyword);
@@ -623,6 +637,47 @@ void SearchProvider::RemoveStaleNavigationResults(NavigationResults* list,
     const string16 fill(AutocompleteInput::FormattedStringWithEquivalentMeaning(
         i->url(), StringForURLDisplay(i->url(), true, false)));
     i = URLPrefix::BestURLPrefix(fill, input) ? (i + 1) : list->erase(i);
+  }
+}
+
+void SearchProvider::AdjustDefaultProviderSuggestion(
+    const string16& previous_input,
+    const string16& current_input) {
+  if (default_provider_suggestion_.type == INSTANT_SUGGESTION_URL) {
+    // Build a list of NavigationResults with only one NavigationResult in it,
+    // initialized with the URL in the navigation suggestion. This allows the
+    // use of RemoveStaleNavigationResults(), which has non-trivial logic to
+    // determine staleness.
+    NavigationResults list;
+    // Description and relevance do not matter in the check for staleness.
+    NavigationResult result(GURL(default_provider_suggestion_.text),
+                                 string16(),
+                                 100);
+    list.push_back(result);
+    RemoveStaleNavigationResults(&list, current_input);
+    // If navigation suggestion is stale, clear |default_provider_suggestion_|.
+    if (list.empty())
+      default_provider_suggestion_ = InstantSuggestion();
+  } else {
+    DCHECK(default_provider_suggestion_.type == INSTANT_SUGGESTION_SEARCH);
+    // InstantSuggestion of type SEARCH contain only the suggested text, and not
+    // the full text of the query. This looks at the current and previous input
+    // to determine if the user is typing forward, and if the new input is
+    // contained in |default_provider_suggestion_|. If so, the suggestion is
+    // adjusted and can be kept. Otherwise, it is reset.
+    if (!previous_input.empty() &&
+        StartsWith(current_input, previous_input, false)) {
+      // User is typing forward; verify if new input is part of the suggestion.
+      const string16 new_text = string16(current_input, previous_input.size());
+      if (StartsWith(default_provider_suggestion_.text, new_text, false)) {
+        // New input is a prefix to the previous suggestion, adjust the
+        // suggestion to strip the prefix.
+        default_provider_suggestion_.text.erase(0, new_text.size());
+        return;
+      }
+    }
+    // If we are here, the search suggestion is stale; reset it.
+    default_provider_suggestion_ = InstantSuggestion();
   }
 }
 

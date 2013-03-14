@@ -236,6 +236,12 @@ class SearchProvider : public AutocompleteProvider,
   void RemoveStaleNavigationResults(NavigationResults* list,
                                     const string16& input);
 
+  // If |default_provider_suggestion_| (which was suggested for
+  // |previous_input|) is still applicable given the |current_input|, adjusts it
+  // so it can be reused. Otherwise, clears it.
+  void AdjustDefaultProviderSuggestion(const string16& previous_input,
+                                       const string16& current_input);
+
   // Apply calculated relevance scores to the current results.
   void ApplyCalculatedRelevance();
   void ApplyCalculatedSuggestRelevance(SuggestResults* list, bool is_keyword);

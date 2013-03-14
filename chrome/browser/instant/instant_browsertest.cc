@@ -389,6 +389,17 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsEmpty) {
   EXPECT_EQ(ASCIIToUTF16("query suggest"), omnibox()->GetText());
 }
 
+// Tests that a previous search suggestion is not discarded if it's not stale.
+IN_PROC_BROWSER_TEST_F(InstantTest, SearchSuggestionIsNotDiscarded) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantSupport();
+
+  SetOmniboxTextAndWaitForOverlayToShow("query");
+  EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
+  SetOmniboxText("query sugg");
+  EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
+}
+
 // Test that Instant doesn't process URLs.
 IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
