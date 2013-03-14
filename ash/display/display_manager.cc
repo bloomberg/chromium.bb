@@ -4,6 +4,7 @@
 
 #include "ash/display/display_manager.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -82,6 +83,8 @@ DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey,
 
 DisplayManager::DisplayManager()
     : first_display_id_(gfx::Display::kInvalidDisplayID),
+      mirrored_display_id_(gfx::Display::kInvalidDisplayID),
+      num_connected_displays_(0),
       force_bounds_changed_(false),
       change_display_upon_host_resize_(false) {
 #if defined(OS_CHROMEOS)
@@ -204,17 +207,29 @@ void DisplayManager::OnNativeDisplaysChanged(
     return;
   }
   first_display_id_ = updated_displays[0].id();
-
+  std::set<int> y_coords;
   bool internal_display_connected = false;
+  num_connected_displays_ = updated_displays.size();
+  mirrored_display_id_ = gfx::Display::kInvalidDisplayID;
+  DisplayInfoList new_display_info_list;
   for (DisplayInfoList::const_iterator iter = updated_displays.begin();
-       iter != updated_displays.end() && !internal_display_connected;
+       iter != updated_displays.end();
        ++iter) {
-    internal_display_connected = IsInternalDisplayId(iter->id());
-    if (internal_display_connected)
-      internal_display_info_.reset(new DisplayInfo(*iter));
+    if (!internal_display_connected) {
+      internal_display_connected = IsInternalDisplayId(iter->id());
+      if (internal_display_connected)
+        internal_display_info_.reset(new DisplayInfo(*iter));
+    }
+    // Mirrored monitors have the same y coordinates.
+    int y = iter->bounds_in_pixel().y();
+    if (y_coords.find(y) != y_coords.end()) {
+      InsertAndUpdateDisplayInfo(*iter);
+      mirrored_display_id_ = iter->id();
+    } else {
+      y_coords.insert(y);
+      new_display_info_list.push_back(*iter);
+    }
   }
-  DisplayInfoList new_display_info_list = updated_displays;
-
   if (HasInternalDisplay() && !internal_display_connected) {
     if (!internal_display_info_.get()) {
       // TODO(oshima): Get has_custom value.
@@ -225,8 +240,9 @@ void DisplayManager::OnNativeDisplaysChanged(
       internal_display_info_->SetBounds(gfx::Rect(0, 0, 800, 600));
     }
     new_display_info_list.push_back(*internal_display_info_.get());
+    // An internal display is always considered *connected*.
+    num_connected_displays_++;
   }
-
   UpdateDisplays(new_display_info_list);
 }
 
@@ -416,17 +432,15 @@ const DisplayInfo& DisplayManager::GetDisplayInfo(
   return iter->second;
 }
 
-std::string DisplayManager::GetDisplayNameFor(
-    const gfx::Display& display) {
-  if (!display.is_valid())
+std::string DisplayManager::GetDisplayNameForId(int64 id) {
+  if (id == gfx::Display::kInvalidDisplayID)
     return l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
-  std::map<int64, DisplayInfo>::const_iterator iter =
-      display_info_.find(display.id());
+  std::map<int64, DisplayInfo>::const_iterator iter = display_info_.find(id);
   if (iter != display_info_.end() && !iter->second.name().empty())
     return iter->second.name();
 
-  return base::StringPrintf("Display %d", static_cast<int>(display.id()));
+  return base::StringPrintf("Display %d", static_cast<int>(id));
 }
 
 void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
@@ -457,6 +471,7 @@ void DisplayManager::Init() {
   if (displays_.empty())
     AddDisplayFromSpec(std::string() /* default */);
   first_display_id_ = displays_[0].id();
+  num_connected_displays_ = displays_.size();
 }
 
 void DisplayManager::CycleDisplayImpl() {
@@ -473,7 +488,7 @@ void DisplayManager::CycleDisplayImpl() {
     new_display_info_list.push_back(DisplayInfo::CreateFromSpec(
         StringPrintf("%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
   }
-  OnNativeDisplaysChanged(new_display_info_list);
+  UpdateDisplays(new_display_info_list);
 }
 
 void DisplayManager::ScaleDisplayImpl() {
@@ -486,7 +501,7 @@ void DisplayManager::ScaleDisplayImpl() {
         display_info.device_scale_factor() == 1.0f ? 2.0f : 1.0f);
     new_display_info_list.push_back(display_info);
   }
-  OnNativeDisplaysChanged(new_display_info_list);
+  UpdateDisplays(new_display_info_list);
 }
 
 gfx::Display& DisplayManager::FindDisplayForRootWindow(

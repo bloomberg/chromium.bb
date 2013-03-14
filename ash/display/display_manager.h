@@ -107,7 +107,15 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   const gfx::Display* GetPrimaryDisplayCandidate() const;
 
+  // Returns the logical number of displays. This returns 1
+  // when displays are mirrored.
   size_t GetNumDisplays() const;
+
+  // Returns the number of connected displays. This returns 2
+  // when displays are mirrored.
+  size_t num_connected_displays() const { return num_connected_displays_; }
+
+  int64 mirrored_display_id() const { return mirrored_display_id_; }
 
   // Returns the display object nearest given |window|.
   const gfx::Display& GetDisplayNearestPoint(
@@ -124,8 +132,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // Retuns the display info associated with |display|.
   const DisplayInfo& GetDisplayInfo(const gfx::Display& display) const;
 
-  // Returns the human-readable name for the display specified by |display|.
-  std::string GetDisplayNameFor(const gfx::Display& display);
+  // Returns the human-readable name for the display |id|.
+  std::string GetDisplayNameForId(int64 id);
 
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
@@ -174,7 +182,12 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   int64 first_display_id_;
 
+  int64 mirrored_display_id_;
+
+  // List of current active dispays.
   DisplayList displays_;
+
+  int num_connected_displays_;
 
   // An internal display info cache used when the internal display is
   // disconnectd.

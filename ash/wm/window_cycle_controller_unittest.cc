@@ -329,7 +329,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
 
 TEST_F(WindowCycleControllerTest, MAYBE_AlwaysOnTopMultipleRootWindows) {
   // Set up a second root window
-  UpdateDisplay("0+0-1000x600,1001+0-600x400");
+  UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 

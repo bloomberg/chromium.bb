@@ -40,7 +40,7 @@ bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
     const gfx::Rect& work_area = display->work_area();
     const float dpi = display->device_scale_factor() * kDpi96;
     unit->id = base::Int64ToString(display->id());
-    unit->name = display_manager->GetDisplayNameFor(*display);
+    unit->name = display_manager->GetDisplayNameForId(display->id());
     unit->is_primary = (display->id() == primary_id);
     unit->is_internal = display->IsInternal();
     unit->is_enabled = true;

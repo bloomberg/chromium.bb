@@ -157,7 +157,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
     js_display->SetDouble("width", bounds.width());
     js_display->SetDouble("height", bounds.height());
     js_display->SetString("name",
-                          display_manager->GetDisplayNameFor(*display));
+                          display_manager->GetDisplayNameForId(display->id()));
     js_display->SetBoolean("isPrimary", display->id() == primary_id);
     js_display->SetBoolean("isInternal", display->IsInternal());
     display_info.Set(i, js_display);
