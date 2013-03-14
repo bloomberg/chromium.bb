@@ -56,7 +56,7 @@ void LocalFileSystemTestOriginHelper::SetUp(
   // Initialize the usage cache file.
   base::FilePath usage_cache_path = GetUsageCachePath();
   if (!usage_cache_path.empty())
-    FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
+    usage_cache()->UpdateUsage(usage_cache_path, 0);
 }
 
 void LocalFileSystemTestOriginHelper::SetUp(
@@ -79,13 +79,13 @@ void LocalFileSystemTestOriginHelper::SetUp(
   // Prepare the origin's root directory.
   FileSystemMountPointProvider* mount_point_provider =
       file_system_context_->GetMountPointProvider(type_);
-  mount_point_provider->GetFileSystemRootPathOnFileThread(CreateURL(base::FilePath()),
-                                                          true /* create */);
+  mount_point_provider->GetFileSystemRootPathOnFileThread(
+      CreateURL(base::FilePath()), true /* create */);
 
   // Initialize the usage cache file.
   base::FilePath usage_cache_path = GetUsageCachePath();
   if (!usage_cache_path.empty())
-    FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
+    usage_cache()->UpdateUsage(usage_cache_path, 0);
 }
 
 void LocalFileSystemTestOriginHelper::TearDown() {
@@ -98,7 +98,8 @@ base::FilePath LocalFileSystemTestOriginHelper::GetOriginRootPath() const {
       GetFileSystemRootPathOnFileThread(CreateURL(base::FilePath()), false);
 }
 
-base::FilePath LocalFileSystemTestOriginHelper::GetLocalPath(const base::FilePath& path) {
+base::FilePath LocalFileSystemTestOriginHelper::GetLocalPath(
+    const base::FilePath& path) {
   DCHECK(file_util_);
   base::FilePath local_path;
   scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
@@ -119,8 +120,8 @@ base::FilePath LocalFileSystemTestOriginHelper::GetUsageCachePath() const {
       sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
 }
 
-FileSystemURL LocalFileSystemTestOriginHelper::CreateURL(const base::FilePath& path)
-    const {
+FileSystemURL LocalFileSystemTestOriginHelper::CreateURL(
+    const base::FilePath& path) const {
   return file_system_context_->CreateCrackedFileSystemURL(origin_, type_, path);
 }
 
@@ -129,7 +130,8 @@ int64 LocalFileSystemTestOriginHelper::GetCachedOriginUsage() const {
       file_system_context_, origin_, type_);
 }
 
-int64 LocalFileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
+int64 LocalFileSystemTestOriginHelper::ComputeCurrentOriginUsage() {
+  usage_cache()->CloseCacheFiles();
   int64 size = file_util::ComputeDirectorySize(GetOriginRootPath());
   if (file_util::PathExists(GetUsageCachePath()))
     size -= FileSystemUsageCache::kUsageFileSize;
@@ -161,6 +163,10 @@ LocalFileSystemTestOriginHelper::NewOperationContext() {
   context->set_update_observers(
       *file_system_context_->GetUpdateObservers(type_));
   return context;
+}
+
+FileSystemUsageCache* LocalFileSystemTestOriginHelper::usage_cache() {
+  return file_system_context()->sandbox_provider()->usage_cache();
 }
 
 void LocalFileSystemTestOriginHelper::SetUpFileUtil() {

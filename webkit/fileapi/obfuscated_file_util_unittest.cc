@@ -237,7 +237,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   void RevokeUsageCache() {
     quota_manager_->ResetUsageTracker(test_helper_.storage_type());
-    file_util::Delete(test_helper_.GetUsageCachePath(), false);
+    usage_cache()->Delete(test_helper_.GetUsageCachePath());
   }
 
   int64 SizeByQuotaUtil() {
@@ -246,7 +246,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   int64 SizeInUsageFile() {
     MessageLoop::current()->RunUntilIdle();
-    return FileSystemUsageCache::GetUsage(test_helper_.GetUsageCachePath());
+    return usage_cache()->GetUsage(test_helper_.GetUsageCachePath());
   }
 
   bool PathExists(const FileSystemURL& url) {
@@ -263,6 +263,9 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 usage() const { return usage_; }
+  FileSystemUsageCache* usage_cache() {
+    return test_helper_.usage_cache();
+  }
 
   FileSystemURL CreateURLFromUTF8(const std::string& path) {
     return test_helper_.CreateURLFromUTF8(path);
@@ -459,7 +462,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     for (entry_iter = entries.begin(); entry_iter != entries.end();
         ++entry_iter) {
       const base::FileUtilProxy::Entry& entry = *entry_iter;
-      std::set<base::FilePath::StringType>::iterator iter = files.find(entry.name);
+      std::set<base::FilePath::StringType>::iterator iter =
+          files.find(entry.name);
       if (iter != files.end()) {
         EXPECT_FALSE(entry.is_directory);
         files.erase(iter);
@@ -638,8 +642,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 ComputeCurrentUsage() {
-    return test_helper().ComputeCurrentOriginUsage() -
-        test_helper().ComputeCurrentDirectoryDatabaseUsage();
+    return test_helper_.ComputeCurrentOriginUsage() -
+        test_helper_.ComputeCurrentDirectoryDatabaseUsage();
   }
 
   const LocalFileSystemTestOriginHelper& test_helper() const {

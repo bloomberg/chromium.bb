@@ -17,10 +17,12 @@ namespace fileapi {
 SandboxQuotaObserver::SandboxQuotaObserver(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* update_notify_runner,
-    ObfuscatedFileUtil* sandbox_file_util)
+    ObfuscatedFileUtil* sandbox_file_util,
+    FileSystemUsageCache* file_system_usage_cache)
     : quota_manager_proxy_(quota_manager_proxy),
       update_notify_runner_(update_notify_runner),
       sandbox_file_util_(sandbox_file_util),
+      file_system_usage_cache_(file_system_usage_cache),
       running_delayed_cache_update_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
@@ -32,7 +34,7 @@ void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
   base::FilePath usage_file_path = GetUsageCachePath(url);
   if (usage_file_path.empty())
     return;
-  FileSystemUsageCache::IncrementDirty(usage_file_path);
+  file_system_usage_cache_->IncrementDirty(usage_file_path);
 }
 
 void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
@@ -76,7 +78,7 @@ void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
     pending_update_notification_.erase(found);
   }
 
-  FileSystemUsageCache::DecrementDirty(usage_file_path);
+  file_system_usage_cache_->DecrementDirty(usage_file_path);
 }
 
 void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
@@ -89,11 +91,13 @@ void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
   }
 }
 
-base::FilePath SandboxQuotaObserver::GetUsageCachePath(const FileSystemURL& url) {
+base::FilePath SandboxQuotaObserver::GetUsageCachePath(
+    const FileSystemURL& url) {
   DCHECK(sandbox_file_util_);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath path = SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
-      sandbox_file_util_, url.origin(), url.type(), &error);
+  base::FilePath path =
+      SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
+          sandbox_file_util_, url.origin(), url.type(), &error);
   if (error != base::PLATFORM_FILE_OK) {
     LOG(WARNING) << "Could not get usage cache path for: "
                  << url.DebugString();
@@ -118,7 +122,7 @@ void SandboxQuotaObserver::UpdateUsageCacheFile(
     int64 delta) {
   DCHECK(!usage_file_path.empty());
   if (!usage_file_path.empty() && delta != 0)
-    FileSystemUsageCache::AtomicUpdateUsageByDelta(usage_file_path, delta);
+    file_system_usage_cache_->AtomicUpdateUsageByDelta(usage_file_path, delta);
 }
 
 }  // namespace fileapi

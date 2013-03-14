@@ -37,6 +37,7 @@ class SyncableFileSystemOperation;
 namespace fileapi {
 
 class AsyncFileUtilAdapter;
+class FileSystemUsageCache;
 class LocalFileSystemOperation;
 class ObfuscatedFileUtil;
 class SandboxQuotaObserver;
@@ -203,6 +204,10 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
 
   ObfuscatedFileUtil* sandbox_sync_file_util();
 
+  FileSystemUsageCache* usage_cache() {
+    return file_system_usage_cache_.get();
+  }
+
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   const base::FilePath profile_path_;
@@ -210,6 +215,8 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   FileSystemOptions file_system_options_;
 
   scoped_ptr<AsyncFileUtilAdapter> sandbox_file_util_;
+
+  scoped_ptr<FileSystemUsageCache> file_system_usage_cache_;
 
   scoped_ptr<SandboxQuotaObserver> quota_observer_;
 

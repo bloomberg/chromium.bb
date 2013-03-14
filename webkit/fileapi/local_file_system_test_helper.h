@@ -12,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/quota/quota_types.h"
 
@@ -66,7 +67,7 @@ class LocalFileSystemTestOriginHelper {
   int64 GetCachedOriginUsage() const;
 
   // This doesn't work with OFSFU.
-  int64 ComputeCurrentOriginUsage() const;
+  int64 ComputeCurrentOriginUsage();
 
   int64 ComputeCurrentDirectoryDatabaseUsage() const;
 
@@ -83,11 +84,13 @@ class LocalFileSystemTestOriginHelper {
     return FileSystemTypeToQuotaStorageType(type_);
   }
   FileSystemFileUtil* file_util() const { return file_util_; }
+  FileSystemUsageCache* usage_cache();
 
  private:
   void SetUpFileUtil();
 
   scoped_refptr<FileSystemContext> file_system_context_;
+
   const GURL origin_;
   const FileSystemType type_;
   FileSystemFileUtil* file_util_;

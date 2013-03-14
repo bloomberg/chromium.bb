@@ -26,6 +26,7 @@ class QuotaManagerProxy;
 
 namespace fileapi {
 
+class FileSystemUsageCache;
 class FileSystemURL;
 class ObfuscatedFileUtil;
 
@@ -38,7 +39,8 @@ class SandboxQuotaObserver
   SandboxQuotaObserver(
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* update_notify_runner,
-      ObfuscatedFileUtil* sandbox_file_util);
+      ObfuscatedFileUtil* sandbox_file_util,
+      FileSystemUsageCache* file_system_usage_cache_);
   virtual ~SandboxQuotaObserver();
 
   // FileUpdateObserver overrides.
@@ -60,6 +62,9 @@ class SandboxQuotaObserver
 
   // Not owned; sandbox_file_util_ should have identical lifetime with this.
   ObfuscatedFileUtil* sandbox_file_util_;
+
+  // Not owned; file_system_usage_cache_ should have longer lifetime than this.
+  FileSystemUsageCache* file_system_usage_cache_;
 
   PendingUpdateNotificationMap pending_update_notification_;
   bool running_delayed_cache_update_;
