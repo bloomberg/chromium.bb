@@ -1134,11 +1134,11 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   active_tree_->PushPersistedState(pending_tree_.get());
   if (pending_tree_->needs_full_tree_sync()) {
     active_tree_->SetRootLayer(
-        TreeSynchronizer::synchronizeTrees(pending_tree_->root_layer(),
+        TreeSynchronizer::SynchronizeTrees(pending_tree_->root_layer(),
                                            active_tree_->DetachLayerTree(),
                                            active_tree_.get()));
   }
-  TreeSynchronizer::pushProperties(pending_tree_->root_layer(),
+  TreeSynchronizer::PushProperties(pending_tree_->root_layer(),
                                    active_tree_->root_layer());
   DCHECK(!recycle_tree_);
 

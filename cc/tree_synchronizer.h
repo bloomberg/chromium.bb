@@ -17,23 +17,30 @@ class LayerTreeImpl;
 class Layer;
 
 class CC_EXPORT TreeSynchronizer {
-public:
-    // Accepts a Layer tree and returns a reference to a LayerImpl tree that duplicates the structure
-    // of the Layer tree, reusing the LayerImpls in the tree provided by oldLayerImplRoot if possible.
-    static scoped_ptr<LayerImpl> synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl*);
-    static scoped_ptr<LayerImpl> synchronizeTrees(LayerImpl* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl*);
+ public:
+  // Accepts a Layer tree and returns a reference to a LayerImpl tree that
+  // duplicates the structure of the Layer tree, reusing the LayerImpls in the
+  // tree provided by old_layer_impl_root if possible.
+  static scoped_ptr<LayerImpl> SynchronizeTrees(
+      Layer* layer_root,
+      scoped_ptr<LayerImpl> old_layer_impl_root,
+      LayerTreeImpl* tree_impl);
+  static scoped_ptr<LayerImpl> SynchronizeTrees(
+      LayerImpl* layer_root,
+      scoped_ptr<LayerImpl> old_layer_impl_root,
+      LayerTreeImpl* tree_impl);
 
-    // Pushes properties from a Layer or LayerImpl tree to a structurally equivalent
-    // LayerImpl tree.
-    static void pushProperties(Layer* layerRoot, LayerImpl* layerImplRoot);
-    static void pushProperties(LayerImpl* layerRoot, LayerImpl* layerImplRoot);
+  // Pushes properties from a Layer or LayerImpl tree to a structurally
+  // equivalent LayerImpl tree.
+  static void PushProperties(Layer* layer_root, LayerImpl* layer_impl_root);
+  static void PushProperties(LayerImpl* layer_root, LayerImpl* layer_impl_root);
 
-private:
-    TreeSynchronizer(); // Not instantiable.
+ private:
+  TreeSynchronizer();  // Not instantiable.
 
-    DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
+  DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_TREE_SYNCHRONIZER_H_
