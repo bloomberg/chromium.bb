@@ -31,5 +31,5 @@ window.location.pathname.indexOf('sunspider-results') >= 0"""
         total += value
       totals.append(total)
     for key, values in r.iteritems():
-      results.Add('t', 'ms', values, chart_name=key, data_type='unimportant')
-    results.Add('t', 'ms', totals, chart_name='total')
+      results.Add(key, 'ms', values, data_type='unimportant')
+    results.Add('Total', 'ms', totals)

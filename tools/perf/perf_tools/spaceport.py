@@ -43,5 +43,5 @@ class SpaceportBenchmark(page_benchmark.PageBenchmark):
       chart, trace = key.split('.', 1)
       results.Add(trace, 'objects (bigger is better)', float(result_dict[key]),
                   chart_name=chart, data_type='unimportant')
-    results.Add('Overall', 'objects (bigger is better)',
+    results.Add('Score', 'objects (bigger is better)',
                 [float(x) for x in result_dict.values()])

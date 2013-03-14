@@ -27,5 +27,4 @@ class Dromaeo(page_benchmark.PageBenchmark):
       data_type = 'unimportant'
       if k == suffix:
         data_type = 'default'
-      results.Add('score', 'runs/s', v, chart_name=Escape(k),
-          data_type=data_type)
+      results.Add(Escape(k), 'runs/s', v, data_type=data_type)
