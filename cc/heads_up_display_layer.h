@@ -12,19 +12,22 @@
 namespace cc {
 
 class CC_EXPORT HeadsUpDisplayLayer : public Layer {
-public:
-    static scoped_refptr<HeadsUpDisplayLayer> Create();
+ public:
+  static scoped_refptr<HeadsUpDisplayLayer> Create();
 
-    virtual void Update(ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*) OVERRIDE;
-    virtual bool DrawsContent() const OVERRIDE;
+  virtual void Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker* tracker,
+                      RenderingStats* stats) OVERRIDE;
+  virtual bool DrawsContent() const OVERRIDE;
 
-    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
 
-protected:
-    HeadsUpDisplayLayer();
+ protected:
+  HeadsUpDisplayLayer();
 
-private:
-    virtual ~HeadsUpDisplayLayer();
+ private:
+  virtual ~HeadsUpDisplayLayer();
 };
 
 }  // namespace cc
