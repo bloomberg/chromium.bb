@@ -269,8 +269,9 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
   return AV_SAMPLE_FMT_NONE;
 }
 
-void AVCodecContextToAudioDecoderConfig(
+static void AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
+    bool is_encrypted,
     AudioDecoderConfig* config) {
   DCHECK_EQ(codec_context->codec_type, AVMEDIA_TYPE_AUDIO);
 
@@ -294,12 +295,23 @@ void AVCodecContextToAudioDecoderConfig(
                      codec_context->sample_rate,
                      codec_context->extradata,
                      codec_context->extradata_size,
-                     false,  // Not encrypted.
+                     is_encrypted,
                      true);
   if (codec != kCodecOpus) {
     DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
               config->bits_per_channel());
   }
+}
+
+void AVStreamToAudioDecoderConfig(
+    const AVStream* stream,
+    AudioDecoderConfig* config) {
+  bool is_encrypted = false;
+  AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL, 0);
+  if (key)
+    is_encrypted = true;
+  return AVCodecContextToAudioDecoderConfig(stream->codec,
+                                            is_encrypted, config);
 }
 
 void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
@@ -365,12 +377,17 @@ void AVStreamToVideoDecoderConfig(
     coded_size = natural_size;
   }
 
+  bool is_encrypted = false;
+  AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL, 0);
+  if (key)
+    is_encrypted = true;
+
   config->Initialize(codec,
                      profile,
                      format,
                      coded_size, visible_rect, natural_size,
                      stream->codec->extradata, stream->codec->extradata_size,
-                     false,  // Not encrypted.
+                     is_encrypted,
                      true);
 }
 

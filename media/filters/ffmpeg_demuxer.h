@@ -22,6 +22,7 @@
 #ifndef MEDIA_FILTERS_FFMPEG_DEMUXER_H_
 #define MEDIA_FILTERS_FFMPEG_DEMUXER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -41,6 +42,14 @@ struct AVRational;
 struct AVStream;
 
 namespace media {
+
+// A new potentially encrypted stream has been parsed.
+// First parameter - The type of initialization data.
+// Second parameter - The initialization data associated with the stream.
+// Third parameter - Number of bytes of the initialization data.
+typedef base::Callback<void(const std::string& type,
+                            scoped_array<uint8> init_data,
+                            int init_data_size)> FFmpegNeedKeyCB;
 
 class FFmpegDemuxer;
 class FFmpegGlue;
@@ -121,13 +130,16 @@ class FFmpegDemuxerStream : public DemuxerStream {
   scoped_ptr<FFmpegH264ToAnnexBBitstreamConverter> bitstream_converter_;
   bool bitstream_converter_enabled_;
 
+  std::string encryption_key_id_;
+
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxerStream);
 };
 
 class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
  public:
   FFmpegDemuxer(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                const scoped_refptr<DataSource>& data_source);
+                const scoped_refptr<DataSource>& data_source,
+                const FFmpegNeedKeyCB& need_key_cb);
 
   // Demuxer implementation.
   virtual void Initialize(DemuxerHost* host,
@@ -139,6 +151,10 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   virtual scoped_refptr<DemuxerStream> GetStream(
       DemuxerStream::Type type) OVERRIDE;
   virtual base::TimeDelta GetStartTime() const OVERRIDE;
+
+  // Calls |need_key_cb_| with the initialization data encountered in the file.
+  void FireNeedKey(const std::string& init_data_type,
+                   const std::string& encryption_key_id);
 
   // Allow FFmpegDemuxerStream to notify us when there is updated information
   // about capacity and what buffered data is available.
@@ -232,6 +248,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // FFmpegURLProtocol implementation and corresponding glue bits.
   BlockingUrlProtocol url_protocol_;
   scoped_ptr<FFmpegGlue> glue_;
+
+  const FFmpegNeedKeyCB need_key_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxer);
 };

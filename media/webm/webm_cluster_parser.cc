@@ -10,18 +10,9 @@
 #include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 #include "media/webm/webm_constants.h"
+#include "media/webm/webm_crypto_helpers.h"
 
 namespace media {
-
-// Generates a 16 byte CTR counter block. The CTR counter block format is a
-// CTR IV appended with a CTR block counter. |iv| is an 8 byte CTR IV.
-// |iv_size| is the size of |iv| in btyes. Returns a string of
-// kDecryptionKeySize bytes.
-static std::string GenerateCounterBlock(const uint8* iv, int iv_size) {
-  std::string counter_block(reinterpret_cast<const char*>(iv), iv_size);
-  counter_block.append(DecryptConfig::kDecryptionKeySize - iv_size, 0);
-  return counter_block;
-}
 
 WebMClusterParser::TextTrackIterator::TextTrackIterator(
     const TextTrackMap& text_track_map) :
@@ -294,39 +285,13 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   // encrypted WebM request for comments specification is here
   // http://wiki.webmproject.org/encryption/webm-encryption-rfc
   if (!encryption_key_id.empty()) {
-    DCHECK_EQ(kWebMSignalByteSize, 1);
-    if (size < kWebMSignalByteSize) {
-      MEDIA_LOG(log_cb_)
-          << "Got a block from an encrypted stream with no data.";
+    scoped_ptr<DecryptConfig> config(WebMCreateDecryptConfig(
+        data, size,
+        reinterpret_cast<const uint8*>(encryption_key_id.data()),
+        encryption_key_id.size()));
+    if (!config)
       return false;
-    }
-    uint8 signal_byte = data[0];
-    int data_offset = sizeof(signal_byte);
-
-    // Setting the DecryptConfig object of the buffer while leaving the
-    // initialization vector empty will tell the decryptor that the frame is
-    // unencrypted.
-    std::string counter_block;
-
-    if (signal_byte & kWebMFlagEncryptedFrame) {
-      if (size < kWebMSignalByteSize + kWebMIvSize) {
-        MEDIA_LOG(log_cb_) << "Got an encrypted block with not enough data "
-                           << size;
-        return false;
-      }
-      counter_block = GenerateCounterBlock(data + data_offset, kWebMIvSize);
-      data_offset += kWebMIvSize;
-    }
-
-    // TODO(fgalligan): Revisit if DecryptConfig needs to be set on unencrypted
-    // frames after the CDM API is finalized.
-    // Unencrypted frames of potentially encrypted streams currently set
-    // DecryptConfig.
-    buffer->SetDecryptConfig(scoped_ptr<DecryptConfig>(new DecryptConfig(
-        encryption_key_id,
-        counter_block,
-        data_offset,
-        std::vector<SubsampleEntry>())));
+    buffer->SetDecryptConfig(config.Pass());
   }
 
   buffer->SetTimestamp(timestamp);

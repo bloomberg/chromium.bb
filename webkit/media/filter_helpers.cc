@@ -72,9 +72,10 @@ void BuildMediaSourceCollection(
 void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    media::FilterCollection* filter_collection) {
+    media::FilterCollection* filter_collection,
+    const media::FFmpegNeedKeyCB& need_key_cb) {
   filter_collection->SetDemuxer(new media::FFmpegDemuxer(
-      message_loop, data_source));
+      message_loop, data_source, need_key_cb));
 
   AddDefaultDecodersToCollection(message_loop, filter_collection);
 }

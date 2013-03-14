@@ -59,6 +59,16 @@ PipelineStatusCB PipelineIntegrationTestBase::QuitOnStatusCB(
                     expected_status);
 }
 
+void PipelineIntegrationTestBase::DemuxerNeedKeyCB(
+    const std::string& type,
+    scoped_array<uint8> init_data,
+    int init_data_size) {
+  DCHECK(init_data.get());
+  DCHECK_GT(init_data_size, 0);
+  CHECK(!need_key_cb_.is_null());
+  need_key_cb_.Run("", "", type, init_data.Pass(), init_data_size);
+}
+
 void PipelineIntegrationTestBase::OnEnded() {
   DCHECK(!ended_);
   ended_ = true;
@@ -94,7 +104,7 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
   EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
       .Times(AtMost(1));
   pipeline_->Start(
-      CreateFilterCollection(file_path),
+      CreateFilterCollection(file_path, NULL),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       QuitOnStatusCB(expected_status),
@@ -113,12 +123,17 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
 }
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path) {
+  return Start(file_path, NULL);
+}
+
+bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
+                                        Decryptor* decryptor) {
   EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
       .Times(AtMost(1));
   EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
       .Times(AtMost(1));
   pipeline_->Start(
-      CreateFilterCollection(file_path),
+      CreateFilterCollection(file_path, decryptor),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
@@ -186,12 +201,18 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
 
 scoped_ptr<FilterCollection>
 PipelineIntegrationTestBase::CreateFilterCollection(
-    const base::FilePath& file_path) {
+    const base::FilePath& file_path,
+    Decryptor* decryptor) {
   scoped_refptr<FileDataSource> data_source = new FileDataSource();
   CHECK(data_source->Initialize(file_path));
+  media::FFmpegNeedKeyCB need_key_cb =
+      base::Bind(&PipelineIntegrationTestBase::DemuxerNeedKeyCB,
+                 base::Unretained(this));
   return CreateFilterCollection(
-      new FFmpegDemuxer(message_loop_.message_loop_proxy(), data_source),
-      NULL);
+      new FFmpegDemuxer(message_loop_.message_loop_proxy(),
+                        data_source,
+                        need_key_cb),
+      decryptor);
 }
 
 scoped_ptr<FilterCollection>

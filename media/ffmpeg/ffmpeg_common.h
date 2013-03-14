@@ -72,8 +72,8 @@ MEDIA_EXPORT base::TimeDelta ConvertFromTimeBase(const AVRational& time_base,
 MEDIA_EXPORT int64 ConvertToTimeBase(const AVRational& time_base,
                                      const base::TimeDelta& timestamp);
 
-void AVCodecContextToAudioDecoderConfig(
-    const AVCodecContext* codec_context,
+void AVStreamToAudioDecoderConfig(
+    const AVStream* stream,
     AudioDecoderConfig* config);
 void AudioDecoderConfigToAVCodecContext(
     const AudioDecoderConfig& config,

@@ -313,6 +313,7 @@ class MockMediaSource {
                       scoped_array<uint8> init_data, int init_data_size) {
     DCHECK(init_data.get());
     DCHECK_GT(init_data_size, 0);
+    CHECK(!need_key_cb_.is_null());
     need_key_cb_.Run("", "", type, init_data.Pass(), init_data_size);
   }
 
@@ -422,6 +423,22 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   // TODO(dalecurtis): Audio decoded in float does not have a consistent hash
   // across platforms.  Fix this: http://crbug.com/168204
   // EXPECT_EQ(GetAudioHash(), "");
+}
+
+// TODO(fgalligan): Enable test when code to parse encrypted WebM files lands
+// in Chromium's FFmpeg. crbug.com/189221
+TEST_F(PipelineIntegrationTest, DISABLED_BasicPlaybackEncrypted) {
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
+  set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
+                             base::Unretained(&encrypted_media)));
+
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240-av_enc-av.webm"),
+                    encrypted_media.decryptor()));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  Stop();
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource) {

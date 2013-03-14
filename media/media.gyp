@@ -408,6 +408,8 @@
         'webm/webm_content_encodings.h',
         'webm/webm_content_encodings_client.cc',
         'webm/webm_content_encodings_client.h',
+        'webm/webm_crypto_helpers.cc',
+        'webm/webm_crypto_helpers.h',
         'webm/webm_info_parser.cc',
         'webm/webm_info_parser.h',
         'webm/webm_parser.cc',

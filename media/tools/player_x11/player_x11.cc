@@ -94,6 +94,11 @@ void Paint(MessageLoop* message_loop, const PaintCB& paint_cb,
 
 static void OnBufferingState(media::Pipeline::BufferingState buffering_state) {}
 
+static void NeedKey(const std::string& type, scoped_array<uint8> init_data,
+             int init_data_size) {
+  std::cout << "File is encrypted." << std::endl;
+}
+
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
 bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   const scoped_refptr<media::DataSource>& data_source,
@@ -104,7 +109,9 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-  collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source));
+  media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
+  collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source,
+                                                  need_key_cb));
   collection->GetAudioDecoders()->push_back(new media::FFmpegAudioDecoder(
       message_loop));
   collection->GetVideoDecoders()->push_back(new media::FFmpegVideoDecoder(

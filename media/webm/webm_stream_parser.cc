@@ -14,13 +14,11 @@
 #include "media/webm/webm_cluster_parser.h"
 #include "media/webm/webm_constants.h"
 #include "media/webm/webm_content_encodings.h"
+#include "media/webm/webm_crypto_helpers.h"
 #include "media/webm/webm_info_parser.h"
 #include "media/webm/webm_tracks_parser.h"
 
 namespace media {
-
-// TODO(xhwang): Figure out the init data type appropriately once it's spec'ed.
-static const char kWebMInitDataType[] = "video/webm";
 
 // Helper class that uses FFmpeg to create AudioDecoderConfig &
 // VideoDecoderConfig objects.
@@ -150,13 +148,12 @@ bool FFmpegConfigHelper::SetupStreamConfigs() {
   bool no_supported_streams = true;
   for (size_t i = 0; i < format_context->nb_streams; ++i) {
     AVStream* stream = format_context->streams[i];
-    AVCodecContext* codec_context = stream->codec;
-    AVMediaType codec_type = codec_context->codec_type;
+    AVMediaType codec_type = stream->codec->codec_type;
 
     if (codec_type == AVMEDIA_TYPE_AUDIO &&
         stream->codec->codec_id == CODEC_ID_VORBIS &&
         !audio_config_.IsValidConfig()) {
-      AVCodecContextToAudioDecoderConfig(stream->codec, &audio_config_);
+      AVStreamToAudioDecoderConfig(stream, &audio_config_);
       no_supported_streams = false;
       continue;
     }
@@ -473,7 +470,7 @@ void WebMStreamParser::FireNeedKey(const std::string& key_id) {
   DCHECK_GT(key_id_size, 0);
   scoped_array<uint8> key_id_array(new uint8[key_id_size]);
   memcpy(key_id_array.get(), key_id.data(), key_id_size);
-  need_key_cb_.Run(kWebMInitDataType, key_id_array.Pass(), key_id_size);
+  need_key_cb_.Run(kWebMEncryptInitDataType, key_id_array.Pass(), key_id_size);
 }
 
 }  // namespace media

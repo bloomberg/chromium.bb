@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -20,12 +21,14 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_glue.h"
 #include "media/filters/ffmpeg_h264_to_annex_b_bitstream_converter.h"
+#include "media/webm/webm_crypto_helpers.h"
 
 namespace media {
 
@@ -45,15 +48,19 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       bitstream_converter_enabled_(false) {
   DCHECK(demuxer_);
 
+  bool is_encrypted = false;
+
   // Determine our media format.
   switch (stream->codec->codec_type) {
     case AVMEDIA_TYPE_AUDIO:
       type_ = AUDIO;
-      AVCodecContextToAudioDecoderConfig(stream->codec, &audio_config_);
+      AVStreamToAudioDecoderConfig(stream, &audio_config_);
+      is_encrypted = audio_config_.is_encrypted();
       break;
     case AVMEDIA_TYPE_VIDEO:
       type_ = VIDEO;
       AVStreamToVideoDecoderConfig(stream, &video_config_);
+      is_encrypted = video_config_.is_encrypted();
       break;
     default:
       NOTREACHED();
@@ -66,6 +73,24 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
   if (stream_->codec->codec_id == CODEC_ID_H264) {
     bitstream_converter_.reset(
         new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
+  }
+
+  if (is_encrypted) {
+    AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL,
+                                         0);
+    DCHECK(key);
+    DCHECK(key->value);
+    if (!key || !key->value)
+      return;
+    base::StringPiece base64_key_id(key->value);
+    std::string enc_key_id;
+    base::Base64Decode(base64_key_id, &enc_key_id);
+    DCHECK(!enc_key_id.empty());
+    if (enc_key_id.empty())
+      return;
+
+    encryption_key_id_.assign(enc_key_id);
+    demuxer_->FireNeedKey(kWebMEncryptInitDataType, enc_key_id);
   }
 }
 
@@ -88,6 +113,18 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // into memory we control.
   scoped_refptr<DecoderBuffer> buffer;
   buffer = DecoderBuffer::CopyFrom(packet->data, packet->size);
+
+  if ((type() == DemuxerStream::AUDIO && audio_config_.is_encrypted()) ||
+      (type() == DemuxerStream::VIDEO && video_config_.is_encrypted())) {
+    scoped_ptr<DecryptConfig> config(WebMCreateDecryptConfig(
+        packet->data,  packet->size,
+        reinterpret_cast<const uint8*>(encryption_key_id_.data()),
+        encryption_key_id_.size()));
+    if (!config)
+      LOG(ERROR) << "Creation of DecryptConfig failed.";
+    buffer->SetDecryptConfig(config.Pass());
+  }
+
   buffer->SetTimestamp(ConvertStreamTimestamp(
       stream_->time_base, packet->pts));
   buffer->SetDuration(ConvertStreamTimestamp(
@@ -231,7 +268,8 @@ base::TimeDelta FFmpegDemuxerStream::ConvertStreamTimestamp(
 //
 FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    const scoped_refptr<DataSource>& data_source)
+    const scoped_refptr<DataSource>& data_source,
+    const FFmpegNeedKeyCB& need_key_cb)
     : host_(NULL),
       message_loop_(message_loop),
       blocking_thread_("FFmpegDemuxer"),
@@ -243,7 +281,8 @@ FFmpegDemuxer::FFmpegDemuxer(
       audio_disabled_(false),
       duration_known_(false),
       url_protocol_(data_source, BindToLoop(message_loop_, base::Bind(
-          &FFmpegDemuxer::OnDataSourceError, base::Unretained(this)))) {
+          &FFmpegDemuxer::OnDataSourceError, base::Unretained(this)))),
+      need_key_cb_(need_key_cb) {
   DCHECK(message_loop_);
   DCHECK(data_source_);
 }
@@ -659,6 +698,14 @@ void FFmpegDemuxer::StreamHasEnded() {
     }
     (*iter)->SetEndOfStream();
   }
+}
+
+void FFmpegDemuxer::FireNeedKey(const std::string& init_data_type,
+                                const std::string& encryption_key_id) {
+  int key_id_size = encryption_key_id.size();
+  scoped_array<uint8> key_id_local(new uint8[key_id_size]);
+  memcpy(key_id_local.get(), encryption_key_id.data(), key_id_size);
+  need_key_cb_.Run(init_data_type, key_id_local.Pass(), key_id_size);
 }
 
 void FFmpegDemuxer::NotifyCapacityAvailable() {

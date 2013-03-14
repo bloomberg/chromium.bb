@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+// TODO(fgalligan): Remove the dependency on FFmpeg.
+#include "media/filters/ffmpeg_demuxer.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -33,7 +35,8 @@ void BuildMediaSourceCollection(
 void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    media::FilterCollection* filter_collection);
+    media::FilterCollection* filter_collection,
+    const media::FFmpegNeedKeyCB& need_key_cb);
 
 }  // webkit_media
 

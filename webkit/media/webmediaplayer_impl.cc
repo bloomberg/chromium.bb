@@ -277,9 +277,11 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
 
   is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
 
-  BuildDefaultCollection(data_source_,
-                         media_thread_.message_loop_proxy(),
-                         filter_collection_.get());
+  BuildDefaultCollection(
+      data_source_,
+      media_thread_.message_loop_proxy(),
+      filter_collection_.get(),
+      BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""));
 }
 
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url,

@@ -49,6 +49,7 @@ class PipelineIntegrationTestBase {
   // Initialize the pipeline and ignore any status updates.  Useful for testing
   // invalid audio/video clips which don't have deterministic results.
   bool Start(const base::FilePath& file_path);
+  bool Start(const base::FilePath& file_path, Decryptor* decryptor);
 
   void Play();
   void Pause();
@@ -56,7 +57,7 @@ class PipelineIntegrationTestBase {
   void Stop();
   bool WaitUntilCurrentTimeIsAfter(const base::TimeDelta& wait_time);
   scoped_ptr<FilterCollection> CreateFilterCollection(
-      const base::FilePath& file_path);
+      const base::FilePath& file_path, Decryptor* decryptor);
 
   // Returns the MD5 hash of all video frames seen.  Should only be called once
   // after playback completes.  First time hashes should be generated with
@@ -77,11 +78,18 @@ class PipelineIntegrationTestBase {
   scoped_refptr<NullAudioSink> audio_sink_;
   bool ended_;
   PipelineStatus pipeline_status_;
+  NeedKeyCB need_key_cb_;
 
   void OnStatusCallbackChecked(PipelineStatus expected_status,
                                PipelineStatus status);
   void OnStatusCallback(PipelineStatus status);
   PipelineStatusCB QuitOnStatusCB(PipelineStatus expected_status);
+  void DemuxerNeedKeyCB(const std::string& type,
+                        scoped_array<uint8> init_data, int init_data_size);
+  void set_need_key_cb(const NeedKeyCB& need_key_cb) {
+    need_key_cb_ = need_key_cb;
+  }
+
   void OnEnded();
   void OnError(PipelineStatus status);
   void QuitAfterCurrentTimeTask(const base::TimeDelta& quit_time);

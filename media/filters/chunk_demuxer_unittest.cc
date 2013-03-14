@@ -6,12 +6,14 @@
 #include "base/message_loop.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/webm/cluster_builder.h"
 #include "media/webm/webm_constants.h"
+#include "media/webm/webm_crypto_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
@@ -65,8 +67,6 @@ static const char kSourceId[] = "SourceId";
 static const char kDefaultFirstClusterRange[] = "{ [0,46) }";
 static const int kDefaultFirstClusterEndTimestamp = 66;
 static const int kDefaultSecondClusterEndTimestamp = 132;
-
-static const char kWebMInitDataType[] = "video/webm";
 
 base::TimeDelta kDefaultDuration() {
   return base::TimeDelta::FromMilliseconds(201224);
@@ -784,7 +784,8 @@ TEST_F(ChunkDemuxerTest, TestInit) {
     if (is_audio_encrypted || is_video_encrypted) {
       int need_key_count = (is_audio_encrypted ? 1 : 0) +
                            (is_video_encrypted ? 1 : 0);
-      EXPECT_CALL(*this, NeedKeyMock(kWebMInitDataType, NotNull(), 16))
+      EXPECT_CALL(*this, NeedKeyMock(kWebMEncryptInitDataType, NotNull(),
+                                     DecryptConfig::kDecryptionKeySize))
           .Times(Exactly(need_key_count));
     }
 

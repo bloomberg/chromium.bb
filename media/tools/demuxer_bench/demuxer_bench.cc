@@ -43,6 +43,11 @@ void QuitLoopWithStatus(MessageLoop* message_loop,
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
 }
 
+static void NeedKey(const std::string& type, scoped_array<uint8> init_data,
+             int init_data_size) {
+  LOG(INFO) << "File is encrypted.";
+}
+
 typedef std::vector<scoped_refptr<media::DemuxerStream> > Streams;
 
 // Simulates playback reading requirements by reading from each stream
@@ -177,8 +182,10 @@ int main(int argc, char** argv) {
       new media::FileDataSource();
   CHECK(data_source->Initialize(file_path));
 
+  media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
   scoped_refptr<media::FFmpegDemuxer> demuxer =
-      new media::FFmpegDemuxer(message_loop.message_loop_proxy(), data_source);
+      new media::FFmpegDemuxer(message_loop.message_loop_proxy(), data_source,
+                               need_key_cb);
 
   demuxer->Initialize(&demuxer_host, base::Bind(
       &QuitLoopWithStatus, &message_loop));
