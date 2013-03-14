@@ -792,7 +792,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kEnableAccessibilityLogging,
     switches::kEnableBrowserPluginForAllViewTypes,
-    switches::kEnableBrowserPluginPointerLock,
     switches::kEnableDCHECK,
     switches::kEnableDelegatedRenderer,
     switches::kDisableEncryptedMedia,

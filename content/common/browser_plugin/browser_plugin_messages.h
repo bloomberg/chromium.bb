@@ -396,13 +396,6 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_RequestPermission,
                      int /* request_id */,
                      DictionaryValue /* request_info */)
 
-// Forwards a PointerLock Lock request to the BrowserPlugin.
-IPC_MESSAGE_ROUTED4(BrowserPluginMsg_LockMouse,
-                    int /* instance_id */,
-                    bool /* user_gesture */,
-                    bool /* last_unlocked_by_target */,
-                    bool /* privileged */)
-
 // Forwards a PointerLock Unlock request to the BrowserPlugin.
 IPC_MESSAGE_ROUTED1(BrowserPluginMsg_UnlockMouse, int /* instance_id */)
 
