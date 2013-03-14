@@ -635,8 +635,8 @@ download-toolchains() {
 #@ libs                  - install native libs and build bitcode libs
 libs() {
   libs-clean
-  libs-support newlib
   newlib portable
+  libs-support newlib
   for arch in arm x86-32 x86-64 mips32; do
     dummy-irt-shim ${arch}
   done
@@ -2981,7 +2981,7 @@ libs-support-native() {
   mkdir -p "${destdir}"
 
   local flags="--pnacl-allow-native --pnacl-allow-translate -Wall -Werror"
-  local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
+  local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags} -I../../.."
 
   spushd "${PNACL_SUPPORT}"
 

@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_NACL_NACL_STARTUP_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_NACL_NACL_STARTUP_H_ 1
 
+#include "native_client/src/include/elf32.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

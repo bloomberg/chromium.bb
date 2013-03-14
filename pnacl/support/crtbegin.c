@@ -20,6 +20,11 @@
 
 #include <stdint.h>
 
+#include "native_client/src/include/elf_auxv.h"
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
+#include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/nacl/nacl_startup.h"
+
 void _pnacl_wrapper_start(uint32_t *info);
 void _start(uint32_t *info);
 
@@ -82,6 +87,40 @@ static void __attribute__((destructor)) __do_eh_dtor(void) {
 
 #else
 
+/*
+ * TODO(mseaborn): Use the definition in nacl_config.h instead.
+ * nacl_config.h is not #includable here because NACL_BUILD_ARCH
+ * etc. are not defined at this point in the PNaCl toolchain build.
+ */
+#define NACL_SYSCALL_ADDR(syscall_number) (0x10000 + (syscall_number) * 32)
+
+/*
+ * If we are not running under the IRT, we fall back to using the
+ * syscall directly.  This is to support non-IRT-based tests and the
+ * non-IRT-using sandboxed PNaCl translator.
+ */
+static void *(*g_nacl_read_tp_func)(void) =
+    (void *(*)(void)) NACL_SYSCALL_ADDR(NACL_sys_tls_get);
+
+void *__nacl_read_tp(void) {
+  return g_nacl_read_tp_func();
+}
+
+static void read_auxv(const Elf32_auxv_t *auxv) {
+  const Elf32_auxv_t *av;
+  for (av = auxv; av->a_type != AT_NULL; ++av) {
+    if (av->a_type == AT_SYSINFO) {
+      TYPE_nacl_irt_query irt_query = (TYPE_nacl_irt_query) av->a_un.a_val;
+      struct nacl_irt_tls irt_tls;
+      if (irt_query(NACL_IRT_TLS_v0_1, &irt_tls, sizeof(irt_tls))
+          == sizeof(irt_tls)) {
+        g_nacl_read_tp_func = irt_tls.tls_get;
+      }
+      return;
+    }
+  }
+}
+
 static void __do_eh_ctor(void) {
   static struct object object;
   __register_frame_info (__EH_FRAME_BEGIN__, &object);
@@ -89,6 +128,8 @@ static void __do_eh_ctor(void) {
 
 /* This defines the entry point for a nexe produced by the PNaCl translator. */
 void __pnacl_start(uint32_t *info) {
+  read_auxv(nacl_startup_auxv(info));
+
   /*
    * We must register exception handling unwind info before calling
    * any user code.  Note that we do not attempt to deregister the

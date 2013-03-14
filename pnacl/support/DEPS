@@ -1,0 +1,4 @@
+include_rules = [
+  "+native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h",
+  "+native_client/src/untrusted",
+]
