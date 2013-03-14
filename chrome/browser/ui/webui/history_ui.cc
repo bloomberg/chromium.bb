@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
@@ -729,9 +728,8 @@ void BrowsingHistoryHandler::HandleSetElevated(const ListValue* elevated_arg) {
   elevated_arg->GetBoolean(0, &elevated);
   ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
-  if (elevated && !service->IsElevated()) {
-    // Will be deleted automatically when the dialog is closed.
-    new ManagedUserPassphraseDialog(
+  if (elevated) {
+    service->RequestAuthorization(
         web_ui()->GetWebContents(),
         base::Bind(&BrowsingHistoryHandler::PassphraseDialogCallback,
                    base::Unretained(this)));
