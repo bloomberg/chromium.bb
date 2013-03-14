@@ -435,15 +435,18 @@ bool JSONParser::EatComment() {
         return true;
     }
   } else if (next_char == '*') {
+    char previous_char = '\0';
     // Block comment, read until end marker.
-    while (CanConsume(2)) {
-      if (*NextChar() == '*' && *NextChar() == '/') {
+    while (CanConsume(1)) {
+      next_char = *NextChar();
+      if (previous_char == '*' && next_char == '/') {
         // EatWhitespaceAndComments will inspect pos_, which will still be on
         // the last / of the comment, so advance once more (which may also be
         // end of input).
         NextChar();
         return true;
       }
+      previous_char = next_char;
     }
 
     // If the comment is unterminated, GetNextToken will report T_END_OF_INPUT.

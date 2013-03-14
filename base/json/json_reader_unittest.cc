@@ -62,6 +62,19 @@ TEST(JSONReaderTest, Reading) {
   ASSERT_TRUE(root.get());
   list = static_cast<ListValue*>(root.get());
   EXPECT_EQ(3u, list->GetSize());
+  root.reset(JSONReader().ReadToValue("/* comment **/42"));
+  ASSERT_TRUE(root.get());
+  EXPECT_TRUE(root->IsType(Value::TYPE_INTEGER));
+  EXPECT_TRUE(root->GetAsInteger(&int_val));
+  EXPECT_EQ(42, int_val);
+  root.reset(JSONReader().ReadToValue(
+      "/* comment **/\n"
+      "// */ 43\n"
+      "44"));
+  ASSERT_TRUE(root.get());
+  EXPECT_TRUE(root->IsType(Value::TYPE_INTEGER));
+  EXPECT_TRUE(root->GetAsInteger(&int_val));
+  EXPECT_EQ(44, int_val);
 
   // Test number formats
   root.reset(JSONReader().ReadToValue("43"));
