@@ -233,12 +233,17 @@ SyncPromoUI::Source GetSigninSource(const GURL& url, GURL* continue_url) {
 
   // Find the final continue URL for this sign in.  In some cases, Gaia can
   // continue to itself, with the original continue URL buried under a couple
-  // of layers of indirection.  Peel those layers away.
-  GURL local_continue_url = url;
-  do {
-    local_continue_url =
+  // of layers of indirection.  Peel those layers away.  The final destination
+  // can also be "IsGaiaSignonRealm" so stop if we get to the end (but be sure
+  // we always extract at least one "continue" value).
+  GURL local_continue_url = SyncPromoUI::GetNextPageURLForSyncPromoURL(url);
+  while (gaia::IsGaiaSignonRealm(local_continue_url.GetOrigin())) {
+    GURL next_continue_url =
         SyncPromoUI::GetNextPageURLForSyncPromoURL(local_continue_url);
-  } while (gaia::IsGaiaSignonRealm(local_continue_url.GetOrigin()));
+    if (!next_continue_url.is_valid())
+      break;
+    local_continue_url = next_continue_url;
+  }
 
   if (continue_url && local_continue_url.is_valid()) {
     DCHECK(!continue_url->is_valid() || *continue_url == local_continue_url);
@@ -862,7 +867,7 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
 
     // If this is an explicit sign in (i.e., first run, NTP, menu,settings)
     // then force the auto accept type to explicit.
-    source = GetSigninSource(request->original_url(), &continue_url);
+    source = GetSigninSource(request->url(), &continue_url);
     if (source != SyncPromoUI::SOURCE_UNKNOWN)
       auto_accept = AUTO_ACCEPT_EXPLICIT;
   }
@@ -1070,8 +1075,7 @@ void OneClickSigninHelper::DidStopLoading(
   // if the user has continued.
   GURL::Replacements replacements;
   replacements.ClearQuery();
-  const bool continue_url_match_accept = (
-      auto_accept_ == AUTO_ACCEPT_EXPLICIT &&
+  const bool continue_url_match = (
       continue_url_.is_valid() &&
       url.ReplaceComponents(replacements) ==
         continue_url_.ReplaceComponents(replacements));
@@ -1079,7 +1083,7 @@ void OneClickSigninHelper::DidStopLoading(
   // If there is no valid email or password yet, there is nothing to do.
   if (email_.empty() || password_.empty()) {
     VLOG(1) << "OneClickSigninHelper::DidStopLoading: nothing to do";
-    if (continue_url_match_accept)
+    if (continue_url_match && auto_accept_ == AUTO_ACCEPT_EXPLICIT)
       RedirectToSignin();
     std::string unused_value;
     if (net::GetValueForKeyInQuery(url, "ntp", &unused_value)) {
@@ -1100,7 +1104,7 @@ void OneClickSigninHelper::DidStopLoading(
   bool force_same_tab_navigation = false;
 
   if (SyncPromoUI::UseWebBasedSigninFlow()) {
-    if (IsValidGaiaSigninRedirectOrResponseURL(url))
+    if (!continue_url_match && IsValidGaiaSigninRedirectOrResponseURL(url))
       return;
 
     // During an explicit sign in, if the user has not yet reached the final
@@ -1114,7 +1118,7 @@ void OneClickSigninHelper::DidStopLoading(
     // the continue URL go by.
     if (auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
       DCHECK(source_ != SyncPromoUI::SOURCE_UNKNOWN);
-      if (!continue_url_match_accept) {
+      if (!continue_url_match) {
         VLOG(1) << "OneClickSigninHelper::DidStopLoading: invalid url='"
                 << url.spec()
                 << "' expected continue url=" << continue_url_;
