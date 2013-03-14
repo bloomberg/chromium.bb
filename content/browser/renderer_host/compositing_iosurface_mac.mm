@@ -159,11 +159,13 @@ base::Closure MapBufferToVideoFrame(
     const gfx::Rect region_in_frame,
     const base::Callback<void(bool)>& callback,
     void* buf) {
-  media::CopyRGBToVideoFrame(reinterpret_cast<const uint8*>(buf),
-                             region_in_frame.width() * 4,
-                             region_in_frame,
-                             target.get());
-  return base::Bind(callback, true);
+  if (buf) {
+    media::CopyRGBToVideoFrame(reinterpret_cast<const uint8*>(buf),
+                               region_in_frame.width() * 4,
+                               region_in_frame,
+                               target.get());
+  }
+  return base::Bind(callback, buf != NULL);
 }
 
 }  // namespace
