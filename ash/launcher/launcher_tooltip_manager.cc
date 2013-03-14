@@ -37,8 +37,12 @@ const SkColor kTooltipTextColor = SkColorSetRGB(0x22, 0x22, 0x22);
 // ash/tooltip/tooltip_controller.cc
 const int kTooltipMaxWidth = 250;
 
-// The distance between the arrow tip and edge of the anchor view.
-const int kArrowOffset = 10;
+// The offset for the tooltip bubble - making sure that the bubble is flush
+// with the shelf. The offset includes the arrow size in pixels as well as
+// the activation bar and other spacing elements.
+const int kArrowOffsetLeft = 3;
+const int kArrowOffsetRight = 11;
+const int kArrowOffsetTopBottom = 7;
 
 }  // namespace
 
@@ -72,8 +76,10 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     LauncherTooltipManager* host)
     : views::BubbleDelegateView(anchor, arrow_location),
       host_(host) {
-  set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset, kArrowOffset,
-      kArrowOffset));
+  set_anchor_insets(gfx::Insets(kArrowOffsetTopBottom,
+                                kArrowOffsetLeft,
+                                kArrowOffsetTopBottom,
+                                kArrowOffsetRight));
   set_close_on_esc(false);
   set_close_on_deactivate(false);
   set_use_focusless(true);
