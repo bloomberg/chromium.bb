@@ -640,7 +640,7 @@ bool ResourceProvider::Initialize() {
   GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE,
                                         &max_texture_size_));
   best_texture_format_ =
-      PlatformColor::bestTextureFormat(context3d, use_b_g_r_a);
+      PlatformColor::BestTextureFormat(context3d, use_b_g_r_a);
   return true;
 }
 

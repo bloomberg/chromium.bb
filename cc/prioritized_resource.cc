@@ -100,7 +100,7 @@ void PrioritizedResource::setPixels(ResourceProvider* resourceProvider,
     // The component order may be bgra if we uploaded bgra pixels to rgba
     // texture. Mark contents as swizzled if image component order is
     // different than texture format.
-    m_contentsSwizzled = !PlatformColor::sameComponentOrder(m_format);
+    m_contentsSwizzled = !PlatformColor::SameComponentOrder(m_format);
 }
 
 void PrioritizedResource::link(Backing* backing)

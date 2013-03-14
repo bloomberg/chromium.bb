@@ -13,48 +13,49 @@
 namespace cc {
 
 class PlatformColor {
-public:
-    enum SourceDataFormat { SourceFormatRGBA8, SourceFormatBGRA8 };
+ public:
+  enum SourceDataFormat {
+    SOURCE_FORMAT_RGBA8,
+    SOURCE_FORMAT_BGRA8
+  };
 
-    static SourceDataFormat format()
-    {
-        return SK_B32_SHIFT ? SourceFormatRGBA8 : SourceFormatBGRA8;
-    }
+  static SourceDataFormat Format() {
+    return SK_B32_SHIFT ? SOURCE_FORMAT_RGBA8 : SOURCE_FORMAT_BGRA8;
+  }
 
-    // Returns the most efficient texture format for this platform.
-    static GLenum bestTextureFormat(WebKit::WebGraphicsContext3D* context, bool supportsBGRA8888)
-    {
-        GLenum textureFormat = GL_RGBA;
-        switch (format()) {
-        case SourceFormatRGBA8:
-            break;
-        case SourceFormatBGRA8:
-            if (supportsBGRA8888)
-                textureFormat = GL_BGRA_EXT;
-            break;
-        default:
-            NOTREACHED();
-            break;
-        }
-        return textureFormat;
+  // Returns the most efficient texture format for this platform.
+  static GLenum BestTextureFormat(WebKit::WebGraphicsContext3D* context,
+                                  bool supports_bgra8888) {
+    GLenum texture_format = GL_RGBA;
+    switch (Format()) {
+      case SOURCE_FORMAT_RGBA8:
+        break;
+      case SOURCE_FORMAT_BGRA8:
+        if (supports_bgra8888)
+          texture_format = GL_BGRA_EXT;
+        break;
+      default:
+        NOTREACHED();
+        break;
     }
+    return texture_format;
+  }
 
-    // Return true if the given texture format has the same component order
-    // as the color on this platform.
-    static bool sameComponentOrder(GLenum textureFormat)
-    {
-        switch (format()) {
-        case SourceFormatRGBA8:
-            return textureFormat == GL_RGBA;
-        case SourceFormatBGRA8:
-            return textureFormat == GL_BGRA_EXT;
-        default:
-            NOTREACHED();
-            return false;
-        }
+  // Return true if the given texture format has the same component order
+  // as the color on this platform.
+  static bool SameComponentOrder(GLenum texture_format) {
+    switch (Format()) {
+      case SOURCE_FORMAT_RGBA8:
+        return texture_format == GL_RGBA;
+      case SOURCE_FORMAT_BGRA8:
+        return texture_format == GL_BGRA_EXT;
+      default:
+        NOTREACHED();
+        return false;
     }
+  }
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_PLATFORM_COLOR_H_

@@ -907,7 +907,7 @@ void TileManager::OnRasterTaskCompleted(
     // texture. Mark contents as swizzled if image component order is
     // different than texture format.
     managed_tile_state.drawing_info.contents_swizzled_ =
-        !PlatformColor::sameComponentOrder(tile->format_);
+        !PlatformColor::SameComponentOrder(tile->format_);
 
     // Tile resources can't be freed until upload has completed.
     managed_tile_state.drawing_info.can_be_freed_ = false;
