@@ -46,6 +46,12 @@
   width: 100%;
 }
 
+html[dir=rtl] #display-overscan-operation-shift {
+  background-image: -webkit-image-set(
+    url('overscan_shift_rtl.png') 1x,
+    url('overscan_shift_rtl_2x.png') 2x);
+}
+
 #display-overscan-button-strip {
   bottom: 0;
   position: absolute;
