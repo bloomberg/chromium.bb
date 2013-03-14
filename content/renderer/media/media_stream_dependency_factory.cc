@@ -316,7 +316,6 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
   WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
   description->audioSources(audio_tracks);
 
-  bool start_stream = false;
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
     WebKit::WebMediaStreamSource source = audio_tracks[i].source();
 
@@ -348,12 +347,6 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
                               source_data->local_audio_source()));
     native_stream->AddTrack(audio_track);
     audio_track->set_enabled(audio_tracks[i].isEnabled());
-    start_stream = true;
-  }
-
-  if (start_stream) {
-    WebRtcAudioCapturer* capturer = GetWebRtcAudioDevice()->capturer();
-    capturer->Start();
   }
 
   // Add video tracks.
