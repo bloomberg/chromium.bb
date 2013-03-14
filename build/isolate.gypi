@@ -63,8 +63,11 @@
             '<(test_isolation_mode)',
             # GYP will eliminate duplicate arguments so '<(PRODUCT_DIR)' cannot
             # be provided twice. To work around this behavior, append '/'.
-            '--outdir', '<(PRODUCT_DIR)/',
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+            # Also have a space after <(PRODUCT_DIR) or visual studio will
+            # escape the argument wrappping " with the \ and merge it into
+            # the following arguments.
+            '--outdir', '<(PRODUCT_DIR)/ ',
+            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
             '--variable', 'OS', '<(OS)',
             '--variable', 'chromeos', '<(chromeos)',
             '--result', '<@(_outputs)',
