@@ -16,100 +16,99 @@
 namespace cc {
 
 ContentLayerPainter::ContentLayerPainter(ContentLayerClient* client)
-    : m_client(client)
-{
+    : client_(client) {}
+
+scoped_ptr<ContentLayerPainter> ContentLayerPainter::Create(
+    ContentLayerClient* client) {
+  return make_scoped_ptr(new ContentLayerPainter(client));
 }
 
-scoped_ptr<ContentLayerPainter> ContentLayerPainter::Create(ContentLayerClient* client)
-{
-    return make_scoped_ptr(new ContentLayerPainter(client));
+void ContentLayerPainter::Paint(SkCanvas* canvas,
+                                gfx::Rect content_rect,
+                                gfx::RectF* opaque) {
+  base::TimeTicks paint_start = base::TimeTicks::HighResNow();
+  client_->PaintContents(canvas, content_rect, opaque);
+  base::TimeTicks paint_end = base::TimeTicks::HighResNow();
+  double pixels_per_sec = (content_rect.width() * content_rect.height()) /
+                          (paint_end - paint_start).InSecondsF();
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS",
+                              (paint_end - paint_start).InMilliseconds(),
+                              0,
+                              120,
+                              30);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond",
+                              pixels_per_sec / 1000000,
+                              10,
+                              210,
+                              30);
 }
 
-void ContentLayerPainter::Paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF* opaque)
-{
-    base::TimeTicks paintStart = base::TimeTicks::HighResNow();
-    m_client->paintContents(canvas, contentRect, *opaque);
-    base::TimeTicks paintEnd = base::TimeTicks::HighResNow();
-    double pixelsPerSec = (contentRect.width() * contentRect.height()) / (paintEnd - paintStart).InSecondsF();
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS",
-                                (paintEnd - paintStart).InMilliseconds(),
-                                0, 120, 30);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond",
-                                pixelsPerSec / 1000000, 10, 210, 30);
-}
-
-scoped_refptr<ContentLayer> ContentLayer::Create(ContentLayerClient* client)
-{
-    return make_scoped_refptr(new ContentLayer(client));
+scoped_refptr<ContentLayer> ContentLayer::Create(ContentLayerClient* client) {
+  return make_scoped_refptr(new ContentLayer(client));
 }
 
 ContentLayer::ContentLayer(ContentLayerClient* client)
-    : TiledLayer()
-    , m_client(client)
-{
+    : TiledLayer(),
+      client_(client) {}
+
+ContentLayer::~ContentLayer() {}
+
+bool ContentLayer::DrawsContent() const {
+  return TiledLayer::DrawsContent() && client_;
 }
 
-ContentLayer::~ContentLayer()
-{
+void ContentLayer::SetTexturePriorities(
+    const PriorityCalculator& priority_calc) {
+  // Update the tile data before creating all the layer's tiles.
+  UpdateTileSizeAndTilingOption();
+
+  TiledLayer::SetTexturePriorities(priority_calc);
 }
 
-bool ContentLayer::DrawsContent() const
-{
-    return TiledLayer::DrawsContent() && m_client;
+void ContentLayer::Update(ResourceUpdateQueue* queue,
+                          const OcclusionTracker* occlusion,
+                          RenderingStats* stats) {
+  {
+    base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
+                                                  true);
+
+    CreateUpdaterIfNeeded();
+  }
+
+  TiledLayer::Update(queue, occlusion, stats);
+  needs_display_ = false;
 }
 
-void ContentLayer::SetTexturePriorities(const PriorityCalculator& priorityCalc)
-{
-    // Update the tile data before creating all the layer's tiles.
-    UpdateTileSizeAndTilingOption();
-
-    TiledLayer::SetTexturePriorities(priorityCalc);
+bool ContentLayer::NeedMoreUpdates() {
+  return NeedsIdlePaint();
 }
 
-void ContentLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracker* occlusion, RenderingStats* stats)
-{
-    {
-        base::AutoReset<bool> ignoreSetNeedsCommit(&ignore_set_needs_commit_, true);
-
-        CreateUpdaterIfNeeded();
-    }
-
-    TiledLayer::Update(queue, occlusion, stats);
-    needs_display_ = false;
+LayerUpdater* ContentLayer::Updater() const {
+  return updater_.get();
 }
 
-bool ContentLayer::NeedMoreUpdates()
-{
-    return NeedsIdlePaint();
+void ContentLayer::CreateUpdaterIfNeeded() {
+  if (updater_)
+    return;
+  scoped_ptr<LayerPainter> painter =
+      ContentLayerPainter::Create(client_).PassAs<LayerPainter>();
+  if (layer_tree_host()->settings().acceleratePainting)
+    updater_ = SkPictureContentLayerUpdater::create(painter.Pass());
+  else if (layer_tree_host()->settings().perTilePaintingEnabled)
+    updater_ = BitmapSkPictureContentLayerUpdater::create(painter.Pass());
+  else
+    updater_ = BitmapContentLayerUpdater::create(painter.Pass());
+  updater_->setOpaque(contents_opaque());
+
+  unsigned texture_format =
+      layer_tree_host()->GetRendererCapabilities().best_texture_format;
+  SetTextureFormat(texture_format);
 }
 
-LayerUpdater* ContentLayer::Updater() const
-{
-    return m_updater.get();
-}
-
-void ContentLayer::CreateUpdaterIfNeeded()
-{
-    if (m_updater)
-        return;
-    scoped_ptr<LayerPainter> painter = ContentLayerPainter::Create(m_client).PassAs<LayerPainter>();
-    if (layer_tree_host()->settings().acceleratePainting)
-        m_updater = SkPictureContentLayerUpdater::create(painter.Pass());
-    else if (layer_tree_host()->settings().perTilePaintingEnabled)
-        m_updater = BitmapSkPictureContentLayerUpdater::create(painter.Pass());
-    else
-        m_updater = BitmapContentLayerUpdater::create(painter.Pass());
-    m_updater->setOpaque(contents_opaque());
-
-    unsigned textureFormat = layer_tree_host()->GetRendererCapabilities().best_texture_format;
-    SetTextureFormat(textureFormat);
-}
-
-void ContentLayer::SetContentsOpaque(bool opaque)
-{
-    Layer::SetContentsOpaque(opaque);
-    if (m_updater)
-        m_updater->setOpaque(opaque);
+void ContentLayer::SetContentsOpaque(bool opaque) {
+  Layer::SetContentsOpaque(opaque);
+  if (updater_)
+    updater_->setOpaque(opaque);
 }
 
 }  // namespace cc

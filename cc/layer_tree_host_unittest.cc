@@ -779,7 +779,7 @@ public:
         m_testLayer = testLayer;
     }
 
-    virtual void paintContents(SkCanvas*, const gfx::Rect&, gfx::RectF&) OVERRIDE
+    virtual void PaintContents(SkCanvas*, gfx::Rect, gfx::RectF*) OVERRIDE
     {
         // Set layer opacity to 0.
         if (m_testLayer)
@@ -2006,13 +2006,13 @@ public:
 
     class FillRectContentLayerClient : public ContentLayerClient {
     public:
-        virtual void paintContents(SkCanvas* canvas, const gfx::Rect& clip, gfx::RectF& opaque) OVERRIDE
+        virtual void PaintContents(SkCanvas* canvas, gfx::Rect clip, gfx::RectF* opaque) OVERRIDE
         {
             SkPaint paint;
             paint.setColor(SK_ColorGREEN);
 
             SkRect rect = SkRect::MakeWH(canvas->getDeviceSize().width(), canvas->getDeviceSize().height());
-            opaque = gfx::RectF(rect.width(), rect.height());
+            *opaque = gfx::RectF(rect.width(), rect.height());
             canvas->drawRect(rect, paint);
         }
     };

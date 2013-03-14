@@ -25,10 +25,10 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   virtual bool DrawsContent() const OVERRIDE;
 
   // ContentLayerClient implementation.
-  virtual void paintContents(
+  virtual void PaintContents(
       SkCanvas* canvas,
-      const gfx::Rect& clip,
-      gfx::RectF& opaque) OVERRIDE;
+      gfx::Rect clip,
+      gfx::RectF* opaque) OVERRIDE;
 
  private:
   PictureImageLayer();

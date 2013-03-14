@@ -584,10 +584,10 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
-void Layer::paintContents(SkCanvas* sk_canvas,
-                          const gfx::Rect& clip,
-                          gfx::RectF& opaque) {
-  TRACE_EVENT0("ui", "Layer::paintContents");
+void Layer::PaintContents(SkCanvas* sk_canvas,
+                          gfx::Rect clip,
+                          gfx::RectF* opaque) {
+  TRACE_EVENT0("ui", "Layer::PaintContents");
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
       sk_canvas, ui::GetScaleFactorFromScale(device_scale_factor_)));
 

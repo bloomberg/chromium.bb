@@ -17,11 +17,13 @@ class RectF;
 namespace cc {
 
 class CC_EXPORT ContentLayerClient {
-public:
-    virtual void paintContents(SkCanvas*, const gfx::Rect& clip, gfx::RectF& opaque) = 0;
+ public:
+  virtual void PaintContents(SkCanvas* canvas,
+                             gfx::Rect clip,
+                             gfx::RectF* opaque) = 0;
 
-protected:
-    virtual ~ContentLayerClient() { }
+ protected:
+  virtual ~ContentLayerClient() {}
 };
 
 }

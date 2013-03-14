@@ -292,8 +292,8 @@ class COMPOSITOR_EXPORT Layer
   bool layer_updated_externally() const { return layer_updated_externally_; }
 
   // ContentLayerClient
-  virtual void paintContents(
-      SkCanvas*, const gfx::Rect& clip, gfx::RectF& opaque) OVERRIDE;
+  virtual void PaintContents(
+      SkCanvas* canvas, gfx::Rect clip, gfx::RectF* opaque) OVERRIDE;
 
   cc::Layer* cc_layer() { return cc_layer_; }
 

@@ -15,10 +15,10 @@ FakeContentLayerClient::FakeContentLayerClient()
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
 
-void FakeContentLayerClient::paintContents(SkCanvas* canvas,
-    const gfx::Rect& rect, gfx::RectF& opaque_rect) {
+void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
+    gfx::Rect rect, gfx::RectF* opaque_rect) {
   if (paint_all_opaque_)
-    opaque_rect = rect;
+    *opaque_rect = rect;
 
   SkPaint paint;
   for (RectVector::const_iterator rect_it = draw_rects_.begin();

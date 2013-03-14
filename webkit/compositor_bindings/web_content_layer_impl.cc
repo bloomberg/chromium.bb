@@ -36,7 +36,7 @@ WebContentLayerImpl::~WebContentLayerImpl() {
   if (usingPictureLayer())
     static_cast<PictureLayer*>(layer_->layer())->ClearClient();
   else
-    static_cast<ContentLayer*>(layer_->layer())->clearClient();
+    static_cast<ContentLayer*>(layer_->layer())->ClearClient();
 }
 
 WebLayer* WebContentLayerImpl::layer() { return layer_.get(); }
@@ -65,16 +65,16 @@ void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
   layer_->layer()->SetDrawCheckerboardForMissingTiles(enable);
 }
 
-void WebContentLayerImpl::paintContents(SkCanvas* canvas,
-                                        const gfx::Rect& clip,
-                                        gfx::RectF& opaque) {
+void WebContentLayerImpl::PaintContents(SkCanvas* canvas,
+                                        gfx::Rect clip,
+                                        gfx::RectF* opaque) {
   if (!client_)
     return;
 
   WebFloatRect web_opaque;
   client_->paintContents(
       canvas, clip, layer_->layer()->can_use_lcd_text(), web_opaque);
-  opaque = web_opaque;
+  *opaque = web_opaque;
 }
 
 }  // namespace WebKit

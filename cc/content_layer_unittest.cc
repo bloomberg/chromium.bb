@@ -17,34 +17,41 @@ namespace cc {
 namespace {
 
 class MockContentLayerClient : public ContentLayerClient {
-public:
-    explicit MockContentLayerClient(gfx::Rect opaqueLayerRect)
-        : m_opaqueLayerRect(opaqueLayerRect)
-    {
-    }
+ public:
+  explicit MockContentLayerClient(gfx::Rect opaque_layer_rect)
+      : opaque_layer_rect_(opaque_layer_rect) {}
 
-    virtual void paintContents(SkCanvas*, const gfx::Rect&, gfx::RectF& opaque) OVERRIDE
-    {
-        opaque = gfx::RectF(m_opaqueLayerRect);
-    }
+  virtual void PaintContents(SkCanvas* canvas,
+                             gfx::Rect clip,
+                             gfx::RectF* opaque) OVERRIDE {
+    *opaque = gfx::RectF(opaque_layer_rect_);
+  }
 
-private:
-    gfx::Rect m_opaqueLayerRect;
+ private:
+  gfx::Rect opaque_layer_rect_;
 };
 
-TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
-{
-    float contentsScale = 2;
-    gfx::Rect contentRect(10, 10, 100, 100);
-    gfx::Rect opaqueRectInLayerSpace(5, 5, 20, 20);
-    gfx::RectF opaqueRectInContentSpace = gfx::ScaleRect(opaqueRectInLayerSpace, contentsScale, contentsScale);
-    MockContentLayerClient client(opaqueRectInLayerSpace);
-    scoped_refptr<BitmapContentLayerUpdater> updater = BitmapContentLayerUpdater::create(ContentLayerPainter::Create(&client).PassAs<LayerPainter>());
+TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale) {
+  float contents_scale = 2.f;
+  gfx::Rect content_rect(10, 10, 100, 100);
+  gfx::Rect opaque_rect_in_layer_space(5, 5, 20, 20);
+  gfx::RectF opaque_rect_in_content_space = gfx::ScaleRect(
+      opaque_rect_in_layer_space, contents_scale, contents_scale);
+  MockContentLayerClient client(opaque_rect_in_layer_space);
+  scoped_refptr<BitmapContentLayerUpdater> updater =
+      BitmapContentLayerUpdater::create(ContentLayerPainter::Create(&client).
+                                            PassAs<LayerPainter>());
 
-    gfx::Rect resultingOpaqueRect;
-    updater->prepareToUpdate(contentRect, gfx::Size(256, 256), contentsScale, contentsScale, resultingOpaqueRect, NULL);
+  gfx::Rect resulting_opaque_rect;
+  updater->prepareToUpdate(content_rect,
+                           gfx::Size(256, 256),
+                           contents_scale,
+                           contents_scale,
+                           resulting_opaque_rect,
+                           NULL);
 
-    EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaqueRectInContentSpace), resultingOpaqueRect);
+  EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaque_rect_in_content_space),
+                 resulting_opaque_rect);
 }
 
 }  // namespace

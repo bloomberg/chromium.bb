@@ -38,9 +38,9 @@ class WebContentLayerImpl : public WebContentLayer,
   virtual ~WebContentLayerImpl();
 
   // ContentLayerClient implementation.
-  virtual void paintContents(SkCanvas*,
-                             const gfx::Rect& clip,
-                             gfx::RectF& opaque) OVERRIDE;
+  virtual void PaintContents(SkCanvas* canvas,
+                             gfx::Rect clip,
+                             gfx::RectF* opaque) OVERRIDE;
 
   scoped_ptr<WebLayerImpl> layer_;
   WebContentLayerClient* client_;

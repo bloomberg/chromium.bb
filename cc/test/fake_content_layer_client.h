@@ -18,8 +18,8 @@ public:
     FakeContentLayerClient();
     virtual ~FakeContentLayerClient();
 
-    virtual void paintContents(SkCanvas*, const gfx::Rect& rect,
-        gfx::RectF& opaque_rect) OVERRIDE;
+    virtual void PaintContents(SkCanvas* canvas, gfx::Rect rect,
+        gfx::RectF* opaque_rect) OVERRIDE;
 
     void setPaintAllOpaque(bool opaque) { paint_all_opaque_ = opaque; }
 

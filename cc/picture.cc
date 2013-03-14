@@ -100,7 +100,7 @@ void Picture::Record(ContentLayerClient* painter,
   base::TimeTicks begin_paint_time;
   if (stats)
     begin_paint_time = base::TimeTicks::Now();
-  painter->paintContents(canvas, layer_rect_, opaque_layer_rect);
+  painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
   if (stats) {
     stats->totalPaintTime += base::TimeTicks::Now() - begin_paint_time;
     stats->totalPixelsPainted +=
