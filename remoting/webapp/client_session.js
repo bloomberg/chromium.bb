@@ -34,11 +34,13 @@ var remoting = remoting || {};
  * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
  *     Mixed into authentication hashes for some authentication methods.
  * @param {remoting.ClientSession.Mode} mode The mode of this connection.
+ * @param {string} hostDisplayName The name of the host for display purposes.
  * @constructor
  */
 remoting.ClientSession = function(hostJid, clientJid,
                                   hostPublicKey, sharedSecret,
-                                  authenticationMethods, hostId, mode) {
+                                  authenticationMethods, hostId, mode,
+                                  hostDisplayName) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
@@ -47,6 +49,8 @@ remoting.ClientSession = function(hostJid, clientJid,
   this.sharedSecret = sharedSecret;
   this.authenticationMethods = authenticationMethods;
   this.hostId = hostId;
+  /** @type {string} */
+  this.hostDisplayName = hostDisplayName;
   /** @type {remoting.ClientSession.Mode} */
   this.mode = mode;
   this.sessionId = '';

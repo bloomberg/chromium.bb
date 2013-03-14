@@ -99,10 +99,21 @@ remoting.SessionConnector = function(pluginParent, onOk, onError) {
 
   /**
    * A timer that polls for an updated access token.
+   *
    * @type {number}
    * @private
    */
   this.wcsAccessTokenRefreshTimer_ = 0;
+
+  /**
+   * Host 'name', as displayed in the client tool-bar. For a Me2Me connection,
+   * this is the name of the host; for an IT2Me connection, it is the email
+   * address of the person sharing their computer.
+   *
+   * @type {string}
+   * @private
+   */
+  this.hostDisplayName_ = '';
 
   // Pre-load WCS to improve connection time.
   remoting.identity.callWithToken(this.loadWcs_.bind(this), this.onError_);
@@ -119,6 +130,7 @@ remoting.SessionConnector.prototype.connectMe2Me = function(host, pin) {
   this.hostId_ = host.hostId;
   this.hostJid_ = host.jabberId;
   this.passPhrase_ = pin;
+  this.hostDisplayName_ = host.hostName;
   this.createSessionIfReady_();
 };
 
@@ -206,6 +218,7 @@ remoting.SessionConnector.prototype.onIT2MeHostInfo_ = function(xhr) {
     if (host && host.data && host.data.jabberId && host.data.publicKey) {
       this.hostJid_ = host.data.jabberId;
       this.hostPublicKey_ = host.data.publicKey;
+      this.hostDisplayName_ = this.hostJid_.split('/')[0];
       this.createSessionIfReady_();
       return;
     } else {
@@ -257,7 +270,7 @@ remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
   this.clientSession_ = new remoting.ClientSession(
       this.hostJid_, this.clientJid_, this.hostPublicKey_,
       this.passPhrase_, securityTypes, this.hostId_,
-      this.connectionMode_);
+      this.connectionMode_, this.hostDisplayName_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
   this.clientSession_.createPluginAndConnect(this.pluginParent_);

@@ -268,6 +268,8 @@ remoting.onConnected = function(clientSession) {
   remoting.clientSession = clientSession;
   remoting.clientSession.setOnStateChange(onClientStateChange_);
   setConnectionInterruptedButtonsText_();
+  var connectedTo = document.getElementById('connected-to');
+  connectedTo.innerText = clientSession.hostDisplayName;
   remoting.setMode(remoting.AppMode.IN_SESSION);
   remoting.toolbar.center();
   remoting.toolbar.preview();
