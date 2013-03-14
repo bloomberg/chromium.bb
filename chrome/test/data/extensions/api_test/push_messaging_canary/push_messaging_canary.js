@@ -82,7 +82,7 @@ function askServerToSendPushMessageWithToken(accessToken, channelId) {
   // Setup the push request, using the access token we just got.
 
   var channelNum = 1;
-  var pushURL ='https://www.googleapis.com/chromewebstore/v1.1/notifications';
+  var pushURL ='https://www.googleapis.com/gcm_for_chrome/v1/messages';
   var pushData = { "channelId": channelId, "subchannelId": channelNum,
                    "payload": payload};
   var pushRequest = new XMLHttpRequest();
