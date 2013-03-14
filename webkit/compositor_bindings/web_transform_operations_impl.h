@@ -10,8 +10,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
-namespace WebKit { class WebTransformationMatrix; }
-
 namespace webkit {
 
 class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
@@ -29,7 +27,6 @@ class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
   virtual void appendSkew(double x, double y);
   virtual void appendPerspective(double depth);
   virtual void appendMatrix(const SkMatrix44&);
-  virtual void appendMatrix(const WebKit::WebTransformationMatrix&);
   virtual void appendIdentity();
   virtual bool isIdentity() const;
 

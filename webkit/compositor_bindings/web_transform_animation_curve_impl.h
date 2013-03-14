@@ -17,7 +17,6 @@ class KeyframedTransformAnimationCurve;
 namespace WebKit {
 
 class WebTransformKeyframe;
-class WebTransformationMatrix;
 
 class WebTransformAnimationCurveImpl : public WebTransformAnimationCurve {
  public:
@@ -35,8 +34,6 @@ class WebTransformAnimationCurveImpl : public WebTransformAnimationCurve {
                    double y1,
                    double x2,
                    double y2);
-
-  virtual WebTransformationMatrix getValue(double time) const;
 
   scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 

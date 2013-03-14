@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "webkit/compositor_bindings/web_transform_operations_impl.h"
-#include "webkit/compositor_bindings/web_transformation_matrix_util.h"
 
 namespace webkit {
 
@@ -48,12 +47,6 @@ void WebTransformOperationsImpl::appendMatrix(const SkMatrix44& matrix) {
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = matrix;
   transform_operations_.AppendMatrix(transform);
-}
-
-void WebTransformOperationsImpl::appendMatrix(
-    const WebKit::WebTransformationMatrix& matrix) {
-  transform_operations_.AppendMatrix(
-      WebTransformationMatrixUtil::ToTransform(matrix));
 }
 
 void WebTransformOperationsImpl::appendIdentity() {

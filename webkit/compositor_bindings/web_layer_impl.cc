@@ -11,14 +11,11 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
-#include "webkit/compositor_bindings/web_transformation_matrix_util.h"
 
 using cc::Animation;
 using cc::Layer;
-using webkit::WebTransformationMatrixUtil;
 
 namespace WebKit {
 
@@ -110,11 +107,6 @@ void WebLayerImpl::setSublayerTransform(const SkMatrix44& matrix) {
   layer_->SetSublayerTransform(sub_layer_transform);
 }
 
-void WebLayerImpl::setSublayerTransform(const WebTransformationMatrix& matrix) {
-  layer_->SetSublayerTransform(
-      WebTransformationMatrixUtil::ToTransform(matrix));
-}
-
 SkMatrix44 WebLayerImpl::sublayerTransform() const {
   return layer_->sublayer_transform().matrix();
 }
@@ -123,10 +115,6 @@ void WebLayerImpl::setTransform(const SkMatrix44& matrix) {
   gfx::Transform transform;
   transform.matrix() = matrix;
   layer_->SetTransform(transform);
-}
-
-void WebLayerImpl::setTransform(const WebTransformationMatrix& matrix) {
-  layer_->SetTransform(WebTransformationMatrixUtil::ToTransform(matrix));
 }
 
 SkMatrix44 WebLayerImpl::transform() const {

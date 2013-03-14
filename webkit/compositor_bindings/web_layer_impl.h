@@ -27,7 +27,6 @@ namespace WebKit {
 class WebAnimationDelegate;
 class WebFilterOperations;
 class WebLayerScrollClient;
-class WebTransformationMatrix;
 struct WebFloatRect;
 
 class WebLayerImpl : public WebLayer {
@@ -65,10 +64,8 @@ class WebLayerImpl : public WebLayer {
   virtual void setPosition(const WebFloatPoint&);
   virtual WebFloatPoint position() const;
   virtual void setSublayerTransform(const SkMatrix44&);
-  virtual void setSublayerTransform(const WebTransformationMatrix&);
   virtual SkMatrix44 sublayerTransform() const;
   virtual void setTransform(const SkMatrix44&);
-  virtual void setTransform(const WebTransformationMatrix&);
   virtual SkMatrix44 transform() const;
   virtual void setDrawsContent(bool);
   virtual bool drawsContent() const;

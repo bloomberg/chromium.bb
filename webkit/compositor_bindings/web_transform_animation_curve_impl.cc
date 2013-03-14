@@ -9,7 +9,6 @@
 #include "cc/transform_operations.h"
 #include "webkit/compositor_bindings/web_animation_curve_common.h"
 #include "webkit/compositor_bindings/web_transform_operations_impl.h"
-#include "webkit/compositor_bindings/web_transformation_matrix_util.h"
 
 namespace WebKit {
 
@@ -49,11 +48,6 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
       transform_operations,
       cc::CubicBezierTimingFunction::create(x1, y1, x2, y2)
           .PassAs<cc::TimingFunction>()));
-}
-
-WebTransformationMatrix WebTransformAnimationCurveImpl::getValue(
-    double time) const {
-  return WebTransformationMatrix();
 }
 
 scoped_ptr<cc::AnimationCurve>

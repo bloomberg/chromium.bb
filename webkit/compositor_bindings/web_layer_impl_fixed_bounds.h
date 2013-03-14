@@ -29,10 +29,8 @@ class WebLayerImplFixedBounds : public WebLayerImpl {
   virtual void setBounds(const WebSize&);
   virtual WebSize bounds() const;
   virtual void setSublayerTransform(const SkMatrix44&);
-  virtual void setSublayerTransform(const WebTransformationMatrix&);
   virtual SkMatrix44 sublayerTransform() const;
   virtual void setTransform(const SkMatrix44&);
-  virtual void setTransform(const WebTransformationMatrix&);
   virtual SkMatrix44 transform() const;
 
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT void SetFixedBounds(const gfx::Size&);

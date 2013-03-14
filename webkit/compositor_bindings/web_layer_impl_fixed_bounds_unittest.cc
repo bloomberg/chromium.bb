@@ -8,7 +8,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/gfx/point3_f.h"
 #include "webkit/compositor_bindings/web_layer_impl_fixed_bounds.h"

@@ -7,12 +7,9 @@
 #include "cc/layer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
-#include "webkit/compositor_bindings/web_transformation_matrix_util.h"
 
 using cc::Layer;
-using webkit::WebTransformationMatrixUtil;
 
 namespace WebKit {
 
@@ -58,12 +55,6 @@ void WebLayerImplFixedBounds::setSublayerTransform(const SkMatrix44& matrix) {
   SetSublayerTransformInternal(transform);
 }
 
-void WebLayerImplFixedBounds::setSublayerTransform(
-    const WebTransformationMatrix& matrix) {
-  SetSublayerTransformInternal(
-      WebTransformationMatrixUtil::ToTransform(matrix));
-}
-
 SkMatrix44 WebLayerImplFixedBounds::sublayerTransform() const {
   return original_sublayer_transform_.matrix();
 }
@@ -72,11 +63,6 @@ void WebLayerImplFixedBounds::setTransform(const SkMatrix44& matrix) {
   gfx::Transform transform;
   transform.matrix() = matrix;
   SetTransformInternal(transform);
-}
-
-void WebLayerImplFixedBounds::setTransform(
-    const WebTransformationMatrix& matrix) {
-  SetTransformInternal(WebTransformationMatrixUtil::ToTransform(matrix));
 }
 
 SkMatrix44 WebLayerImplFixedBounds::transform() const {
