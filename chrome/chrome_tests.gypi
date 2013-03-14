@@ -218,7 +218,6 @@
         'browser/ui/panels/base_panel_browser_test.h',
         'browser/ui/panels/detached_panel_browsertest.cc',
         'browser/ui/panels/docked_panel_browsertest.cc',
-        'browser/ui/panels/panel_and_desktop_notification_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',
         'browser/ui/panels/panel_drag_browsertest.cc',
         'browser/ui/panels/panel_resize_browsertest.cc',
@@ -379,7 +378,6 @@
             # chromeos does not use cross-platform panels
             'browser/ui/panels/detached_panel_browsertest.cc',
             'browser/ui/panels/docked_panel_browsertest.cc',
-            'browser/ui/panels/panel_and_desktop_notification_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',
             'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_resize_browsertest.cc',
