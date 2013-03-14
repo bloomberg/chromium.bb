@@ -61,7 +61,9 @@
             'python',
             '<(DEPTH)/tools/swarm_client/isolate.py',
             '<(test_isolation_mode)',
-            '--outdir', '<(PRODUCT_DIR)',
+            # GYP will eliminate duplicate arguments so '<(PRODUCT_DIR)' cannot
+            # be provided twice. To work around this behavior, append '/'.
+            '--outdir', '<(PRODUCT_DIR)/',
             '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
             '--variable', 'OS', '<(OS)',
             '--variable', 'chromeos', '<(chromeos)',
