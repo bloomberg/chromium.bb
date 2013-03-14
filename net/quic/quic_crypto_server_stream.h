@@ -15,6 +15,10 @@ namespace net {
 class QuicSession;
 struct CryptoHandshakeMessage;
 
+namespace test {
+class CryptoTestUtils;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
  public:
   explicit QuicCryptoServerStream(QuicSession* session);
@@ -25,6 +29,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
       const CryptoHandshakeMessage& message) OVERRIDE;
 
  private:
+  friend class test::CryptoTestUtils;
+
   // config_ contains non-crypto parameters that are negotiated in the crypto
   // handshake.
   QuicConfig config_;

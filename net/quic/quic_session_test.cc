@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/hash_tables.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,7 +88,7 @@ class QuicSessionTest : public ::testing::Test {
  protected:
   QuicSessionTest()
       : guid_(1),
-        connection_(new MockConnection(guid_, IPEndPoint())),
+        connection_(new MockConnection(guid_, IPEndPoint(), false)),
         session_(connection_, true) {
   }
 

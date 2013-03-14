@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +45,7 @@ class QuicCryptoStreamTest : public ::testing::Test {
  public:
   QuicCryptoStreamTest()
       : addr_(IPAddressNumber(), 1),
-        connection_(new MockConnection(1, addr_)),
+        connection_(new MockConnection(1, addr_, false)),
         session_(connection_, true),
         stream_(&session_) {
     message_.tag = kSHLO;

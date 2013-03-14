@@ -16,6 +16,10 @@ QuicCryptoClientStream::QuicCryptoClientStream(QuicSession* session,
     : QuicCryptoStream(session),
       server_hostname_(server_hostname) {
   config_.SetDefaults();
+
+  QuicGuid guid = session->connection()->guid();
+  crypto_config_.hkdf_info.append(reinterpret_cast<char*>(&guid),
+                                  sizeof(guid));
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
@@ -46,7 +50,7 @@ void QuicCryptoClientStream::OnHandshakeMessage(
   }
 
   QuicErrorCode err = crypto_config_.ProcessServerHello(
-      message, &crypto_negotiated_params_, &error_details);
+      message, nonce_, &crypto_negotiated_params_, &error_details);
   if (err != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(err, error_details);
     return;
@@ -64,6 +68,8 @@ bool QuicCryptoClientStream::CryptoConnect() {
   CryptoHandshakeMessage message;
   crypto_config_.FillClientHello(nonce_, server_hostname_, &message);
   config_.ToHandshakeMessage(&message);
+  const QuicData& data = message.GetSerialized();
+  crypto_config_.hkdf_info.append(data.data(), data.length());
   SendHandshakeMessage(message);
   return true;
 }

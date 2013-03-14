@@ -10,39 +10,49 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::StringPiece;
 using std::string;
 using std::vector;
+using testing::DoAll;
 using testing::InSequence;
+using testing::Return;
+using testing::SaveArg;
 using testing::_;
 
 namespace net {
 namespace test {
 namespace {
 
-class QuicPacketCreatorTest : public ::testing::Test {
+class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicPacketCreatorTest()
-      : framer_(kQuicVersion1,
-                QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL)),
+      : server_framer_(kQuicVersion1,
+                       QuicDecrypter::Create(kNULL),
+                       QuicEncrypter::Create(kNULL),
+                       true),
+        client_framer_(kQuicVersion1,
+                       QuicDecrypter::Create(kNULL),
+                       QuicEncrypter::Create(kNULL),
+                       false),
         id_(1),
         sequence_number_(0),
         guid_(2),
         data_("foo"),
-        creator_(guid_, &framer_, QuicRandom::GetInstance()) {
-    framer_.set_visitor(&framer_visitor_);
+        creator_(guid_, &client_framer_, QuicRandom::GetInstance(), false) {
+    client_framer_.set_visitor(&framer_visitor_);
+    server_framer_.set_visitor(&framer_visitor_);
   }
   ~QuicPacketCreatorTest() {
   }
 
   void ProcessPacket(QuicPacket* packet) {
     scoped_ptr<QuicEncryptedPacket> encrypted(
-        framer_.EncryptPacket(sequence_number_, *packet));
-    framer_.ProcessPacket(*encrypted);
+        server_framer_.EncryptPacket(sequence_number_, *packet));
+    server_framer_.ProcessPacket(*encrypted);
   }
 
   void CheckStreamFrame(const QuicFrame& frame, QuicStreamId stream_id,
@@ -56,7 +66,8 @@ class QuicPacketCreatorTest : public ::testing::Test {
   }
 
   QuicFrames frames_;
-  QuicFramer framer_;
+  QuicFramer server_framer_;
+  QuicFramer client_framer_;
   testing::StrictMock<MockFramerVisitor> framer_visitor_;
   QuicStreamId id_;
   QuicPacketSequenceNumber sequence_number_;
@@ -65,25 +76,8 @@ class QuicPacketCreatorTest : public ::testing::Test {
   QuicPacketCreator creator_;
 };
 
-TEST_F(QuicPacketCreatorTest, SerializeFrame) {
-  frames_.push_back(QuicFrame(new QuicStreamFrame(
-      0u, false, 0u, StringPiece(""))));
-  SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
-  delete frames_[0].stream_frame;
-
-  {
-    InSequence s;
-    EXPECT_CALL(framer_visitor_, OnPacket());
-    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-    EXPECT_CALL(framer_visitor_, OnPacketComplete());
-  }
-  ProcessPacket(serialized.packet);
-  delete serialized.packet;
-}
-
 TEST_F(QuicPacketCreatorTest, SerializeFrames) {
-  frames_.push_back(QuicFrame(new QuicAckFrame(0u, 0u)));
+  frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
   frames_.push_back(QuicFrame(new QuicStreamFrame(
       0u, false, 0u, StringPiece(""))));
   frames_.push_back(QuicFrame(new QuicStreamFrame(
@@ -147,7 +141,7 @@ TEST_F(QuicPacketCreatorTest, SerializeWithFEC) {
 TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_NO_ERROR;
-  frame.ack_frame = QuicAckFrame(0u, 0u);
+  frame.ack_frame = QuicAckFrame(0u, QuicTime::Zero(), 0u);
 
   SerializedPacket serialized = creator_.SerializeConnectionClose(&frame);
   ASSERT_EQ(1u, serialized.sequence_number);
@@ -188,11 +182,54 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
   delete frame.stream_frame;
 }
 
-TEST_F(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
+TEST_F(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
+  QuicVersionTagList versions;
+  versions.push_back(kQuicVersion1);
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      creator_.SerializeVersionNegotiationPacket(versions));
+
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnVersionNegotiationPacket(_));
+  }
+  client_framer_.ProcessPacket(*encrypted.get());
+}
+
+INSTANTIATE_TEST_CASE_P(ToggleVersionSerialization,
+                        QuicPacketCreatorTest,
+                        ::testing::Values(false, true));
+
+TEST_P(QuicPacketCreatorTest, SerializeFrame) {
+  if (!GetParam()) {
+    creator_.StopSendingVersion();
+  }
+  frames_.push_back(QuicFrame(new QuicStreamFrame(
+      0u, false, 0u, StringPiece(""))));
+  SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
+  delete frames_[0].stream_frame;
+
+  QuicPacketHeader header;
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_)).WillOnce(
+        DoAll(SaveArg<0>(&header), Return(true)));
+    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  EXPECT_EQ(GetParam(), header.public_header.version_flag);
+  delete serialized.packet;
+}
+
+TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
+  if (!GetParam()) {
+    creator_.StopSendingVersion();
+  }
   // A string larger than fits into a frame.
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(1);
-  creator_.options()->max_packet_length = ciphertext_size +
-      QuicPacketCreator::StreamFramePacketOverhead(1, !kIncludeVersion);
+  creator_.options()->max_packet_length = GetPacketLengthForOneStream(
+      QuicPacketCreatorPeer::SendVersionInPacket(&creator_), 1);
   QuicFrame frame;
   size_t consumed = creator_.CreateStreamFrame(1u, "test", 0u, true, &frame);
   EXPECT_EQ(1u, consumed);
@@ -200,11 +237,16 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   delete frame.stream_frame;
 }
 
-TEST_F(QuicPacketCreatorTest, AddFrameAndSerialize) {
+TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
+  if (!GetParam()) {
+    creator_.StopSendingVersion();
+  }
   const size_t max_plaintext_size =
-      framer_.GetMaxPlaintextSize(creator_.options()->max_packet_length);
+      client_framer_.GetMaxPlaintextSize(creator_.options()->max_packet_length);
   EXPECT_FALSE(creator_.HasPendingFrames());
-  EXPECT_EQ(max_plaintext_size - GetPacketHeaderSize(!kIncludeVersion),
+  EXPECT_EQ(max_plaintext_size -
+            GetPacketHeaderSize(
+                QuicPacketCreatorPeer::SendVersionInPacket(&creator_)),
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
@@ -243,7 +285,9 @@ TEST_F(QuicPacketCreatorTest, AddFrameAndSerialize) {
   delete serialized.retransmittable_frames;
 
   EXPECT_FALSE(creator_.HasPendingFrames());
-  EXPECT_EQ(max_plaintext_size - GetPacketHeaderSize(!kIncludeVersion),
+  EXPECT_EQ(max_plaintext_size -
+            GetPacketHeaderSize(
+                QuicPacketCreatorPeer::SendVersionInPacket(&creator_)),
             creator_.BytesFree());
 }
 

@@ -14,7 +14,8 @@
 
 namespace net {
 
-class QuicCryptoStream;
+class QuicCryptoClientStream;
+class QuicCryptoServerStream;
 
 namespace test {
 
@@ -23,10 +24,14 @@ class PacketSavingConnection;
 class CryptoTestUtils {
  public:
   static void HandshakeWithFakeServer(PacketSavingConnection* client_conn,
-                                      QuicCryptoStream* client);
+                                      QuicCryptoClientStream* client);
 
   static void HandshakeWithFakeClient(PacketSavingConnection* server_conn,
-                                      QuicCryptoStream* server);
+                                      QuicCryptoServerStream* server);
+
+ private:
+  static void CompareClientAndServerKeys(QuicCryptoClientStream* client,
+                                         QuicCryptoServerStream* server);
 };
 
 }  // namespace test

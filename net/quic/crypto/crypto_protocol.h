@@ -22,67 +22,6 @@ typedef uint32 CryptoTag;
 typedef std::string ServerConfigID;
 typedef std::map<CryptoTag, std::string> CryptoTagValueMap;
 typedef std::vector<CryptoTag> CryptoTagVector;
-// An intermediate format of a handshake message that's convenient for a
-// CryptoFramer to serialize from or parse into.
-struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
-  CryptoHandshakeMessage();
-  ~CryptoHandshakeMessage();
-
-  // SetValue sets an element with the given tag to the raw, memory contents of
-  // |v|.
-  template<class T> void SetValue(CryptoTag tag, const T& v) {
-    tag_value_map[tag] = std::string(reinterpret_cast<const char*>(&v),
-                                     sizeof(v));
-  }
-
-  // SetVector sets an element with the given tag to the raw contents of an
-  // array of elements in |v|.
-  template<class T> void SetVector(CryptoTag tag, const std::vector<T>& v) {
-    if (v.empty()) {
-      tag_value_map[tag] = std::string();
-    } else {
-      tag_value_map[tag] = std::string(reinterpret_cast<const char*>(&v[0]),
-                                       v.size() * sizeof(T));
-    }
-  }
-
-  // SetTaglist sets an element with the given tag to contain a list of tags,
-  // passed as varargs. The argument list must be terminated with a 0 element.
-  void SetTaglist(CryptoTag tag, ...);
-
-  // GetTaglist finds an element with the given tag containing zero or more
-  // tags. If such a tag doesn't exist, it returns false. Otherwise it sets
-  // |out_tags| and |out_len| to point to the array of tags and returns true.
-  // The array points into the CryptoHandshakeMessage and is valid only for as
-  // long as the CryptoHandshakeMessage exists and is not modified.
-  QuicErrorCode GetTaglist(CryptoTag tag, const CryptoTag** out_tags,
-                           size_t* out_len) const;
-
-  bool GetStringPiece(CryptoTag tag, base::StringPiece* out) const;
-
-  // GetNthValue16 interprets the value with the given tag to be a series of
-  // 16-bit length prefixed values and it returns the subvalue with the given
-  // index.
-  QuicErrorCode GetNthValue16(CryptoTag tag,
-                              unsigned index,
-                              base::StringPiece* out) const;
-  bool GetString(CryptoTag tag, std::string* out) const;
-  QuicErrorCode GetUint16(CryptoTag tag, uint16* out) const;
-  QuicErrorCode GetUint32(CryptoTag tag, uint32* out) const;
-
-  CryptoTag tag;
-  CryptoTagValueMap tag_value_map;
-
- private:
-  // GetPOD is a utility function for extracting a plain-old-data value. If
-  // |tag| exists in the message, and has a value of exactly |len| bytes then
-  // it copies |len| bytes of data into |out|. Otherwise |len| bytes at |out|
-  // are zeroed out.
-  //
-  // If used to copy integers then this assumes that the machine is
-  // little-endian.
-  QuicErrorCode GetPOD(CryptoTag tag, void* out, size_t len) const;
-};
 
 const CryptoTag kCHLO = MAKE_TAG('C', 'H', 'L', 'O');  // Client hello
 const CryptoTag kSHLO = MAKE_TAG('S', 'H', 'L', 'O');  // Server hello

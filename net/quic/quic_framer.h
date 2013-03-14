@@ -56,6 +56,13 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called if an error is detected in the QUIC protocol.
   virtual void OnError(QuicFramer* framer) = 0;
 
+  // Called only when |is_server_| is true and the the framer gets a packet with
+  // version flag true and the version on the packet doesn't match
+  // |quic_version_|. The visitor should return true after it updates the
+  // version of the |framer_| to |received_version| or false to stop processing
+  // this packet.
+  virtual bool OnProtocolVersionMismatch(QuicVersionTag received_version) = 0;
+
   // Called when a new packet has been received, before it
   // has been validated or processed.
   virtual void OnPacket() = 0;
@@ -65,12 +72,17 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& packet) = 0;
 
+  // Called only when |is_server_| is false and a version negotiation packet has
+  // been parsed.
+  virtual void OnVersionNegotiationPacket(
+      const QuicVersionNegotiationPacket& packet) = 0;
+
   // Called when a lost packet has been recovered via FEC,
   // before it has been processed.
   virtual void OnRevivedPacket() = 0;
 
-  // Called when the header of a packet had been parsed.
-  // If OnPacketHeader returns false, parsing for this packet will cease.
+  // Called when the complete header of a packet had been parsed.
+  // If OnPacketHeader returns false, framing for this packet will cease.
   virtual bool OnPacketHeader(const QuicPacketHeader& header) = 0;
 
   // Called when a data packet is parsed that is part of an FEC group.
@@ -138,9 +150,13 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Constructs a new framer that will own |decrypter| and |encrypter|.
   QuicFramer(QuicVersionTag quic_version,
              QuicDecrypter* decrypter,
-             QuicEncrypter* encrypter);
+             QuicEncrypter* encrypter,
+             bool is_server);
 
   virtual ~QuicFramer();
+
+  // Returns true if |version| is a supported protocol version.
+  bool IsSupportedVersion(QuicVersionTag version);
 
   // Calculates the largest observed packet to advertise in the case an Ack
   // Frame was truncated.  last_written in this case is the iterator for the
@@ -166,6 +182,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   QuicVersionTag version() const {
     return quic_version_;
+  }
+
+  void set_version(QuicVersionTag version) {
+    DCHECK(IsSupportedVersion(version));
+    quic_version_ = version;
   }
 
   // Set entropy calculator to be called from the framer when it needs the
@@ -206,6 +227,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static size_t GetMinConnectionCloseFrameSize();
   // Size in bytes of all GoAway frame fields without the reason phrase.
   static size_t GetMinGoAwayFrameSize();
+  // Size in bytes required for a serialized version negotiation packet
+  size_t GetVersionNegotiationPacketSize(size_t number_versions);
 
   // Returns the number of bytes added to the packet for the specified frame,
   // and 0 if the frame doesn't fit.  Includes the header size for the first
@@ -242,6 +265,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static QuicEncryptedPacket* ConstructPublicResetPacket(
       const QuicPublicResetPacket& packet);
 
+  QuicEncryptedPacket* ConstructVersionNegotiationPacket(
+      const QuicPacketPublicHeader& header,
+      const QuicVersionTagList& supported_versions);
+
   // Returns a new encrypted packet, owned by the caller.
   QuicEncryptedPacket* EncryptPacket(QuicPacketSequenceNumber sequence_number,
                                      const QuicPacket& packet);
@@ -267,6 +294,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
                          const QuicEncryptedPacket& packet);
 
   bool ProcessPublicResetPacket(const QuicPacketPublicHeader& public_header);
+
+  bool ProcessVersionNegotiationPacket(QuicPacketPublicHeader* public_header);
 
   bool WritePacketHeader(const QuicPacketHeader& header,
                          QuicDataWriter* writer);
@@ -344,6 +373,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
   scoped_ptr<QuicDecrypter> decrypter_;
   // Encrypter used to encrypt packets via EncryptPacket().
   scoped_ptr<QuicEncrypter> encrypter_;
+  // Tracks if the framer is being used by the entity that received the
+  // connection or the entity that initiated it.
+  bool is_server_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };

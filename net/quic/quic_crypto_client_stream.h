@@ -15,6 +15,10 @@ namespace net {
 class QuicSession;
 struct CryptoHandshakeMessage;
 
+namespace test {
+class CryptoTestUtils;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
  public:
   QuicCryptoClientStream(QuicSession* session, const string& server_hostname);
@@ -29,6 +33,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool CryptoConnect();
 
  private:
+  friend class test::CryptoTestUtils;
+
   QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
 

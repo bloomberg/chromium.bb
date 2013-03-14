@@ -31,14 +31,15 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MockDelegate() {}
   virtual ~MockDelegate() {}
 
-  MOCK_METHOD1(CanWrite, bool(bool is_retransmission));
+  MOCK_METHOD2(CanWrite, bool(bool is_retransmission,
+                              bool has_retransmittable_data));
 
   MOCK_METHOD0(CreateAckFrame, QuicAckFrame*());
   MOCK_METHOD0(CreateFeedbackFrame, QuicCongestionFeedbackFrame*());
   MOCK_METHOD1(OnSerializedPacket, bool(const SerializedPacket& packet));
 
   void SetCanWrite(bool can_write) {
-    EXPECT_CALL(*this, CanWrite(false)).WillRepeatedly(Return(can_write));
+    EXPECT_CALL(*this, CanWrite(false, _)).WillRepeatedly(Return(can_write));
   }
 
  private:
@@ -76,8 +77,9 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   QuicPacketGeneratorTest()
       : framer_(kQuicVersion1,
                 QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL)),
-        creator_(42, &framer_, &random_),
+                QuicEncrypter::Create(kNULL),
+                false),
+        creator_(42, &framer_, &random_, false),
         generator_(&delegate_, &creator_),
         packet_(0, NULL, 0, NULL),
         packet2_(0, NULL, 0, NULL),
@@ -101,7 +103,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
 
   QuicAckFrame* CreateAckFrame() {
     // TODO(rch): Initialize this so it can be verified later.
-    return new QuicAckFrame(0, 0);
+    return new QuicAckFrame(0, QuicTime::Zero(), 0);
   }
 
   QuicCongestionFeedbackFrame* CreateFeedbackFrame() {

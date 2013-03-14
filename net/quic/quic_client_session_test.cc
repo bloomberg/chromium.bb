@@ -28,7 +28,7 @@ class QuicClientSessionTest : public ::testing::Test {
  protected:
   QuicClientSessionTest()
       : guid_(1),
-        connection_(new PacketSavingConnection(guid_, IPEndPoint())),
+        connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
         session_(connection_, NULL, NULL, kServerHostname, &net_log_) {
   }
 
@@ -92,7 +92,8 @@ TEST_F(QuicClientSessionTest, Logging) {
   // Receive a packet, and verify that it was logged.
   QuicFramer framer(kQuicVersion1,
                     QuicDecrypter::Create(kNULL),
-                    QuicEncrypter::Create(kNULL));
+                    QuicEncrypter::Create(kNULL),
+                    false);
   QuicRstStreamFrame frame;
   frame.stream_id = 2;
   frame.error_code = QUIC_CONNECTION_TIMED_OUT;

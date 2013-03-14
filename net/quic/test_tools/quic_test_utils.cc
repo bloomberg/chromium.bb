@@ -23,11 +23,19 @@ namespace test {
 
 MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
+  ON_CALL(*this, OnProtocolVersionMismatch(_))
+      .WillByDefault(testing::Return(false));
+
+  // By default, we want to accept packets.
   ON_CALL(*this, OnPacketHeader(_))
       .WillByDefault(testing::Return(true));
 }
 
 MockFramerVisitor::~MockFramerVisitor() {
+}
+
+bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicVersionTag version) {
+  return false;
 }
 
 bool NoOpFramerVisitor::OnPacketHeader(const QuicPacketHeader& header) {
@@ -82,6 +90,12 @@ void FramerVisitorCapturingFrames::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   ++frame_count_;
 }
 
+void FramerVisitorCapturingFrames::OnVersionNegotiationPacket(
+    const QuicVersionNegotiationPacket& packet) {
+  version_negotiation_packet_.reset(new QuicVersionNegotiationPacket(packet));
+  frame_count_ = 0;
+}
+
 FramerVisitorCapturingPublicReset::FramerVisitorCapturingPublicReset() {
 }
 
@@ -113,15 +127,18 @@ QuicRandom* MockHelper::GetRandomGenerator() {
   return &random_generator_;
 }
 
-MockConnection::MockConnection(QuicGuid guid, IPEndPoint address)
-    : QuicConnection(guid, address, new MockHelper()),
+MockConnection::MockConnection(QuicGuid guid,
+                               IPEndPoint address,
+                               bool is_server)
+    : QuicConnection(guid, address, new MockHelper(), is_server),
       helper_(helper()) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
-                               QuicConnectionHelperInterface* helper)
-    : QuicConnection(guid, address, helper),
+                               QuicConnectionHelperInterface* helper,
+                               bool is_server)
+    : QuicConnection(guid, address, helper, is_server),
       helper_(helper) {
 }
 
@@ -129,8 +146,9 @@ MockConnection::~MockConnection() {
 }
 
 PacketSavingConnection::PacketSavingConnection(QuicGuid guid,
-                                               IPEndPoint address)
-    : MockConnection(guid, address) {
+                                               IPEndPoint address,
+                                               bool is_server)
+    : MockConnection(guid, address, is_server) {
 }
 
 PacketSavingConnection::~PacketSavingConnection() {
@@ -245,17 +263,19 @@ void CompareQuicDataWithHexError(
 
 static QuicPacket* ConstructPacketFromHandshakeMessage(
     QuicGuid guid,
-    const CryptoHandshakeMessage& message) {
+    const CryptoHandshakeMessage& message,
+    bool should_include_version) {
   CryptoFramer crypto_framer;
   scoped_ptr<QuicData> data(crypto_framer.ConstructHandshakeMessage(message));
   QuicFramer quic_framer(kQuicVersion1,
                          QuicDecrypter::Create(kNULL),
-                         QuicEncrypter::Create(kNULL));
+                         QuicEncrypter::Create(kNULL),
+                         false);
 
   QuicPacketHeader header;
   header.public_header.guid = guid;
   header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.public_header.version_flag = should_include_version;
   header.packet_sequence_number = 1;
   header.entropy_flag = false;
   header.entropy_hash = 0;
@@ -275,7 +295,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
 QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
   CryptoHandshakeMessage message;
   message.tag = tag;
-  return ConstructPacketFromHandshakeMessage(guid, message);
+  return ConstructPacketFromHandshakeMessage(guid, message, false);
 }
 
 CryptoHandshakeMessage CreateChloMessage(const QuicClock* clock,
@@ -298,10 +318,12 @@ CryptoHandshakeMessage CreateChloMessage(const QuicClock* clock,
 QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
                                        QuicRandom* random_generator,
-                                       const string& server_hostname) {
+                                       const string& server_hostname,
+                                       bool should_include_version) {
   CryptoHandshakeMessage chlo = CreateChloMessage(clock, random_generator,
                                                   server_hostname);
-  return ConstructPacketFromHandshakeMessage(guid, chlo);
+  return ConstructPacketFromHandshakeMessage(
+      guid, chlo, should_include_version);
 }
 
 CryptoHandshakeMessage CreateShloMessage(const QuicClock* clock,
@@ -344,10 +366,11 @@ QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
                                        const string& server_hostname) {
   CryptoHandshakeMessage shlo =
       CreateShloMessage(clock, random_generator, server_hostname);
-  return ConstructPacketFromHandshakeMessage(guid, shlo);
+  return ConstructPacketFromHandshakeMessage(guid, shlo, false);
 }
 
 size_t GetPacketLengthForOneStream(bool include_version, size_t payload) {
+  // TODO(wtc): the hardcoded use of NullEncrypter here seems wrong.
   return NullEncrypter().GetCiphertextSize(payload) +
       QuicPacketCreator::StreamFramePacketOverhead(1, include_version);
 }

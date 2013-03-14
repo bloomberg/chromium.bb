@@ -6,12 +6,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "crypto/hkdf.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_util.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/curve25519_key_exchange.h"
 #include "net/quic/crypto/key_exchange.h"
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_protocol.h"
 
@@ -25,6 +28,8 @@ namespace net {
 // implement.
 static const uint16 kVersion = 0;
 
+static const char kLabel[] = "QUIC key expansion";
+
 using crypto::SecureHash;
 
 QuicServerConfigProtobuf::QuicServerConfigProtobuf() {
@@ -32,6 +37,169 @@ QuicServerConfigProtobuf::QuicServerConfigProtobuf() {
 
 QuicServerConfigProtobuf::~QuicServerConfigProtobuf() {
   STLDeleteElements(&keys_);
+}
+
+CryptoHandshakeMessage::CryptoHandshakeMessage() {}
+
+CryptoHandshakeMessage::CryptoHandshakeMessage(
+    const CryptoHandshakeMessage& other)
+    : tag(other.tag),
+      tag_value_map(other.tag_value_map) {
+  // Don't copy serialized_. scoped_ptr doesn't have a copy constructor.
+  // The new object can reconstruct serialized_ lazily.
+}
+
+CryptoHandshakeMessage::~CryptoHandshakeMessage() {}
+
+CryptoHandshakeMessage& CryptoHandshakeMessage::operator=(
+    const CryptoHandshakeMessage& other) {
+  tag = other.tag;
+  tag_value_map = other.tag_value_map;
+  // Don't copy serialized_. scoped_ptr doesn't have an assignment operator.
+  // However, invalidate serialized_.
+  serialized_.reset();
+  return *this;
+}
+
+const QuicData& CryptoHandshakeMessage::GetSerialized() const {
+  if (!serialized_.get()) {
+    serialized_.reset(CryptoFramer::ConstructHandshakeMessage(*this));
+  }
+  return *serialized_.get();
+}
+
+void CryptoHandshakeMessage::SetTaglist(CryptoTag tag, ...) {
+  // Warning, if sizeof(CryptoTag) > sizeof(int) then this function will break
+  // because the terminating 0 will only be promoted to int.
+  COMPILE_ASSERT(sizeof(CryptoTag) <= sizeof(int),
+                 crypto_tag_not_be_larger_than_int_or_varargs_will_break);
+
+  vector<CryptoTag> tags;
+  va_list ap;
+
+  va_start(ap, tag);
+  for (;;) {
+    CryptoTag tag = va_arg(ap, CryptoTag);
+    if (tag == 0) {
+      break;
+    }
+    tags.push_back(tag);
+  }
+
+  // Because of the way that we keep tags in memory, we can copy the contents
+  // of the vector and get the correct bytes in wire format. See
+  // crypto_protocol.h. This assumes that the system is little-endian.
+  SetVector(tag, tags);
+
+  va_end(ap);
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetTaglist(CryptoTag tag,
+                                                 const CryptoTag** out_tags,
+                                                 size_t* out_len) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  QuicErrorCode ret = QUIC_NO_ERROR;
+
+  if (it == tag_value_map.end()) {
+    ret = QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+  } else if (it->second.size() % sizeof(CryptoTag) != 0) {
+    ret = QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+
+  if (ret != QUIC_NO_ERROR) {
+    *out_tags = NULL;
+    *out_len = 0;
+    return ret;
+  }
+
+  *out_tags = reinterpret_cast<const CryptoTag*>(it->second.data());
+  *out_len = it->second.size() / sizeof(CryptoTag);
+  return ret;
+}
+
+bool CryptoHandshakeMessage::GetStringPiece(CryptoTag tag,
+                                            StringPiece* out) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  if (it == tag_value_map.end()) {
+    return false;
+  }
+  *out = it->second;
+  return true;
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetNthValue16(
+    CryptoTag tag,
+    unsigned index,
+    StringPiece* out) const {
+  StringPiece value;
+  if (!GetStringPiece(tag, &value)) {
+    return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+  }
+
+  for (unsigned i = 0;; i++) {
+    if (value.empty()) {
+      return QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND;
+    }
+    if (value.size() < 2) {
+      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    }
+
+    const unsigned char* data =
+        reinterpret_cast<const unsigned char*>(value.data());
+    size_t size = static_cast<size_t>(data[0]) |
+                  (static_cast<size_t>(data[1]) << 8);
+    value.remove_prefix(2);
+
+    if (value.size() < size) {
+      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    }
+
+    if (i == index) {
+      *out = StringPiece(value.data(), size);
+      return QUIC_NO_ERROR;
+    }
+
+    value.remove_prefix(size);
+  }
+}
+
+bool CryptoHandshakeMessage::GetString(CryptoTag tag, string* out) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  if (it == tag_value_map.end()) {
+    return false;
+  }
+  *out = it->second;
+  return true;
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetUint16(CryptoTag tag,
+                                                uint16* out) const {
+  return GetPOD(tag, out, sizeof(uint16));
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetUint32(CryptoTag tag,
+                                                uint32* out) const {
+  return GetPOD(tag, out, sizeof(uint32));
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetPOD(
+    CryptoTag tag, void* out, size_t len) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  QuicErrorCode ret = QUIC_NO_ERROR;
+
+  if (it == tag_value_map.end()) {
+    ret = QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+  } else if (it->second.size() != len) {
+    ret = QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+
+  if (ret != QUIC_NO_ERROR) {
+    memset(out, 0, len);
+    return ret;
+  }
+
+  memcpy(out, it->second.data(), len);
+  return ret;
 }
 
 QuicCryptoNegotiatedParams::QuicCryptoNegotiatedParams()
@@ -42,7 +210,6 @@ QuicCryptoNegotiatedParams::QuicCryptoNegotiatedParams()
 
 QuicCryptoNegotiatedParams::~QuicCryptoNegotiatedParams() {
 }
-
 
 QuicCryptoConfig::QuicCryptoConfig()
     : version(0) {
@@ -56,7 +223,7 @@ bool QuicCryptoConfig::ProcessPeerHandshake(
     const CryptoHandshakeMessage& peer_msg,
     CryptoUtils::Priority priority,
     QuicCryptoNegotiatedParams* out_params,
-    string *error_details) const {
+    string* error_details) const {
   if (peer_msg.GetUint16(kVERS, &out_params->version) != QUIC_NO_ERROR ||
       out_params->version != kVersion) {
     if (error_details) {
@@ -125,6 +292,10 @@ bool QuicCryptoConfig::ProcessPeerHandshake(
   return true;
 }
 
+QuicCryptoClientConfig::QuicCryptoClientConfig()
+    : hkdf_info(kLabel, arraysize(kLabel)) {
+}
+
 void QuicCryptoClientConfig::SetDefaults(QuicRandom* rand) {
   // Version must be 0.
   version = kVersion;
@@ -183,6 +354,7 @@ void QuicCryptoClientConfig::FillClientHello(const string& nonce,
 
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
+    const string& nonce,
     QuicCryptoNegotiatedParams* out_params,
     string* error_details) {
   if (server_hello.tag != kSHLO) {
@@ -198,8 +370,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
 
   scoped_ptr<CryptoHandshakeMessage> scfg(
       CryptoFramer::ParseMessage(scfg_bytes));
-  if (!scfg.get() ||
-      scfg->tag != kSCFG) {
+  if (!scfg.get() || scfg->tag != kSCFG) {
     *error_details = "Invalid SCFG";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
@@ -209,11 +380,29 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
 
+  hkdf_info.append(scfg_bytes.data(), scfg_bytes.size());
+
+  out_params->encrypter.reset(QuicEncrypter::Create(out_params->aead));
+  out_params->decrypter.reset(QuicDecrypter::Create(out_params->aead));
+  size_t key_bytes = out_params->encrypter->GetKeySize();
+  size_t nonce_prefix_bytes = out_params->encrypter->GetNoncePrefixSize();
+  uint32 key_length_in_bits = 8 * 2 * (key_bytes + nonce_prefix_bytes);
+  hkdf_info.append(reinterpret_cast<char*>(&key_length_in_bits),
+                   sizeof(key_length_in_bits));
+
+  crypto::HKDF hkdf(out_params->premaster_secret, nonce,
+                    hkdf_info, key_bytes, nonce_prefix_bytes);
+  out_params->encrypter->SetKey(hkdf.client_write_key());
+  out_params->encrypter->SetNoncePrefix(hkdf.client_write_iv());
+  out_params->decrypter->SetKey(hkdf.server_write_key());
+  out_params->decrypter->SetNoncePrefix(hkdf.server_write_iv());
+
   return QUIC_NO_ERROR;
 }
 
 
-QuicCryptoServerConfig::QuicCryptoServerConfig() {
+QuicCryptoServerConfig::QuicCryptoServerConfig()
+    : hkdf_info(kLabel, arraysize(kLabel)) {
 }
 
 QuicCryptoServerConfig::~QuicCryptoServerConfig() {
@@ -399,6 +588,31 @@ bool QuicCryptoServerConfig::ProcessClientHello(
                                     error_details)) {
     return false;
   }
+
+  StringPiece client_nonce;
+  if (!client_hello.GetStringPiece(kNONC, &client_nonce)) {
+    return false;
+  }
+
+  const QuicData& client_hello_serialized = client_hello.GetSerialized();
+  hkdf_info.append(client_hello_serialized.data(),
+                   client_hello_serialized.length());
+  hkdf_info.append(config->serialized);
+
+  out_params->encrypter.reset(QuicEncrypter::Create(out_params->aead));
+  out_params->decrypter.reset(QuicDecrypter::Create(out_params->aead));
+  size_t key_bytes = out_params->encrypter->GetKeySize();
+  size_t nonce_prefix_bytes = out_params->encrypter->GetNoncePrefixSize();
+  uint32 key_length_in_bits = 8 * 2 * (key_bytes + nonce_prefix_bytes);
+  hkdf_info.append(reinterpret_cast<char*>(&key_length_in_bits),
+                   sizeof(key_length_in_bits));
+
+  crypto::HKDF hkdf(out_params->premaster_secret, client_nonce,
+                    hkdf_info, key_bytes, nonce_prefix_bytes);
+  out_params->encrypter->SetKey(hkdf.server_write_key());
+  out_params->encrypter->SetNoncePrefix(hkdf.server_write_iv());
+  out_params->decrypter->SetKey(hkdf.client_write_key());
+  out_params->decrypter->SetNoncePrefix(hkdf.client_write_iv());
 
   // TODO(agl): This is obviously missing most of the handshake.
   out->tag = kSHLO;

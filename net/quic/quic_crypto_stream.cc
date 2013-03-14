@@ -3,8 +3,15 @@
 // found in the LICENSE file.
 
 #include "net/quic/quic_crypto_stream.h"
+
+#include <string>
+
+#include "base/string_piece.h"
+#include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/quic_connection.h"
 #include "net/quic/quic_session.h"
 
+using std::string;
 using base::StringPiece;
 
 namespace net {
@@ -49,9 +56,9 @@ void QuicCryptoStream::SetHandshakeComplete(QuicErrorCode error) {
 
 void QuicCryptoStream::SendHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  scoped_ptr<QuicData> data(crypto_framer_.ConstructHandshakeMessage(message));
+  const QuicData& data = message.GetSerialized();
   // TODO(wtc): check the return value.
-  WriteData(string(data->data(), data->length()), false);
+  WriteData(string(data.data(), data.length()), false);
 }
 
 QuicNegotiatedParameters::QuicNegotiatedParameters()

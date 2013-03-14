@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Test for FixRate sender and receiver.
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/congestion_control/fix_rate_receiver.h"
@@ -24,7 +26,6 @@ class FixRateReceiverPeer : public FixRateReceiver {
   }
 };
 
-const bool kHasRetransmittableData = true;
 class FixRateTest : public ::testing::Test {
  protected:
   FixRateTest()
@@ -60,24 +61,21 @@ TEST_F(FixRateTest, SenderAPI) {
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback,  clock_.Now(),
       unused_bandwidth_, unused_packet_map_);
   EXPECT_EQ(300000, sender_->BandwidthEstimate().ToBytesPerSecond());
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-  sender_->SentPacket(clock_.Now(), 1, kMaxPacketSize, false,
-                      kHasRetransmittableData);
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-  sender_->SentPacket(clock_.Now(), 2, kMaxPacketSize, false,
-                      kHasRetransmittableData);
-  sender_->SentPacket(clock_.Now(), 3, 600, false,
-                      kHasRetransmittableData);
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  sender_->SentPacket(clock_.Now(), 1, kMaxPacketSize, false);
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+  sender_->SentPacket(clock_.Now(), 2, kMaxPacketSize, false);
+  sender_->SentPacket(clock_.Now(), 3, 600, false);
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10),
-            sender_->TimeUntilSend(clock_.Now(), false));
+            sender_->TimeUntilSend(clock_.Now(), false, true));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
-            sender_->TimeUntilSend(clock_.Now(), false));
+            sender_->TimeUntilSend(clock_.Now(), false, true));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
   sender_->OnIncomingAck(1, kMaxPacketSize, rtt_);
   sender_->OnIncomingAck(2, kMaxPacketSize, rtt_);
   sender_->OnIncomingAck(3, 600, rtt_);
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
 }
 
 TEST_F(FixRateTest, FixRatePacing) {
@@ -92,13 +90,12 @@ TEST_F(FixRateTest, FixRatePacing) {
   QuicTime acc_advance_time(QuicTime::Zero());
   QuicPacketSequenceNumber sequence_number = 0;
   for (int i = 0; i < num_packets; i += 2) {
-    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false,
-                        kHasRetransmittableData);
-    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false,
-                        kHasRetransmittableData);
-    QuicTime::Delta advance_time = sender_->TimeUntilSend(clock_.Now(), false);
+    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false);
+    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false, true).IsZero());
+    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false);
+    QuicTime::Delta advance_time = sender_->TimeUntilSend(clock_.Now(), false,
+                                                          true);
     clock_.AdvanceTime(advance_time);
     sender_->OnIncomingAck(sequence_number - 1, packet_size, rtt_);
     sender_->OnIncomingAck(sequence_number - 2, packet_size, rtt_);

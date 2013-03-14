@@ -10,6 +10,10 @@ namespace net {
 // static
 QuicDecrypter* QuicDecrypter::Create(CryptoTag algorithm) {
   switch (algorithm) {
+    case kAESG:
+      // TODO(wtc): add support for Aes128GcmDecrypter.
+      // return new Aes128GcmDecrypter();
+      return new NullDecrypter();
     case kNULL:
       return new NullDecrypter();
     default:

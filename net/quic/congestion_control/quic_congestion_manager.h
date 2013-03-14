@@ -46,8 +46,10 @@ class QuicCongestionManager {
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
                           QuicTime sent_time,
                           QuicByteCount bytes,
-                          bool is_retransmission,
-                          bool has_retransmittable_data);
+                          bool is_retransmission);
+
+  // Called when a packet is timed out.
+  virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number);
 
   // Calculate the time until we can send the next packet to the wire.
   // Note 1: When kUnknownWaitTime is returned, there is no need to poll
@@ -55,7 +57,8 @@ class QuicCongestionManager {
   // Note 2: Send algorithms may or may not use |retransmit| in their
   // calculations.
   virtual QuicTime::Delta TimeUntilSend(QuicTime now,
-                                        bool is_retransmission);
+                                        bool is_retransmission,
+                                        bool has_retransmittable_data);
 
   // Should be called before sending an ACK packet, to decide if we need
   // to attach a QuicCongestionFeedbackFrame block.
@@ -65,7 +68,7 @@ class QuicCongestionManager {
       QuicCongestionFeedbackFrame* feedback);
 
   // Should be called for each incoming packet.
-  // bytes: the packet size in bytes including IP headers.
+  // bytes: the packet size in bytes including Quic Headers.
   // sequence_number: the unique sequence number from the QUIC packet header.
   // timestamp: the arrival time of the packet.
   // revived: true if the packet was lost and then recovered with help of a
@@ -81,14 +84,21 @@ class QuicCongestionManager {
       size_t unacked_packets_count,
       size_t number_retransmissions);
 
+  // Returns the estimated smoothed RTT calculated by the congestion algorithm.
+  const QuicTime::Delta SmoothedRtt();
+
+  // Returns the estimated bandwidth calculated by the congestion algorithm.
+  QuicBandwidth BandwidthEstimate();
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicCongestionManagerPeer;
   typedef std::map<QuicPacketSequenceNumber, size_t> PendingPacketsMap;
 
+  // Get the current(last) rtt. Infinite is returned if invalid.
+  const QuicTime::Delta rtt();
+
   QuicBandwidth SentBandwidth(QuicTime feedback_receive_time) const;
-  // TODO(pwestin): Currently only used for testing. How do we surface this?
-  QuicBandwidth BandwidthEstimate();
   void CleanupPacketHistory();
 
   const QuicClock* clock_;
@@ -97,6 +107,7 @@ class QuicCongestionManager {
   SendAlgorithmInterface::SentPacketsMap packet_history_map_;
   PendingPacketsMap pending_packets_;
   QuicPacketSequenceNumber largest_missing_;
+  QuicTime::Delta current_rtt_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCongestionManager);
 };

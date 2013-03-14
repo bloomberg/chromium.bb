@@ -39,7 +39,8 @@ CryptoHandshakeMessage CreateChloMessage(const QuicClock* clock,
 QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
                                        QuicRandom* random_generator,
-                                       const std::string& server_hostname);
+                                       const std::string& server_hostname,
+                                       bool should_include_version);
 
 CryptoHandshakeMessage CreateShloMessage(const QuicClock* clock,
                                          QuicRandom* random_generator,
@@ -61,10 +62,14 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   ~MockFramerVisitor();
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
+  // The constructor sets this up to return false by default.
+  MOCK_METHOD1(OnProtocolVersionMismatch, bool(QuicVersionTag version));
   MOCK_METHOD0(OnPacket, void());
   MOCK_METHOD1(OnPublicResetPacket, void(const QuicPublicResetPacket& header));
+  MOCK_METHOD1(OnVersionNegotiationPacket,
+               void(const QuicVersionNegotiationPacket& packet));
   MOCK_METHOD0(OnRevivedPacket, void());
-  // The constructor set this up to return true by default.
+  // The constructor sets this up to return true by default.
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnFecProtectedPayload, void(base::StringPiece payload));
   MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame& frame));
@@ -90,7 +95,10 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   virtual void OnPacket() OVERRIDE {}
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& packet) OVERRIDE {}
+  virtual void OnVersionNegotiationPacket(
+      const QuicVersionNegotiationPacket& packet) OVERRIDE {}
   virtual void OnRevivedPacket() OVERRIDE {}
+  virtual bool OnProtocolVersionMismatch(QuicVersionTag version) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE {}
   virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {}
@@ -130,7 +138,8 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   virtual ~FramerVisitorCapturingFrames();
 
   // NoOpFramerVisitor
-
+  virtual void OnVersionNegotiationPacket(
+      const QuicVersionNegotiationPacket& packet) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
   virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
@@ -151,6 +160,9 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   QuicRstStreamFrame* rst() { return rst_.get(); }
   QuicConnectionCloseFrame* close() { return close_.get(); }
   QuicGoAwayFrame* goaway() { return goaway_.get(); }
+  QuicVersionNegotiationPacket* version_negotiation_packet() {
+    return version_negotiation_packet_.get();
+  }
 
  private:
   size_t frame_count_;
@@ -161,6 +173,7 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   scoped_ptr<QuicRstStreamFrame> rst_;
   scoped_ptr<QuicConnectionCloseFrame> close_;
   scoped_ptr<QuicGoAwayFrame> goaway_;
+  scoped_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
 
   DISALLOW_COPY_AND_ASSIGN(FramerVisitorCapturingFrames);
 };
@@ -209,10 +222,11 @@ class MockHelper : public QuicConnectionHelperInterface {
 class MockConnection : public QuicConnection {
  public:
   // Uses a MockHelper.
-  MockConnection(QuicGuid guid, IPEndPoint address);
+  MockConnection(QuicGuid guid, IPEndPoint address, bool is_server);
   MockConnection(QuicGuid guid,
                  IPEndPoint address,
-                 QuicConnectionHelperInterface* helper);
+                 QuicConnectionHelperInterface* helper,
+                 bool is_server);
   virtual ~MockConnection();
 
   MOCK_METHOD3(ProcessUdpPacket, void(const IPEndPoint& self_address,
@@ -233,6 +247,10 @@ class MockConnection : public QuicConnection {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
+  virtual bool OnProtocolVersionMismatch(QuicVersionTag version) OVERRIDE {
+    return false;
+  }
+
  private:
   scoped_ptr<QuicConnectionHelperInterface> helper_;
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
@@ -240,7 +258,7 @@ class MockConnection : public QuicConnection {
 
 class PacketSavingConnection : public MockConnection {
  public:
-  PacketSavingConnection(QuicGuid guid, IPEndPoint address);
+  PacketSavingConnection(QuicGuid guid, IPEndPoint address, bool is_server);
   virtual ~PacketSavingConnection();
 
   virtual bool SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
@@ -291,10 +309,13 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD3(OnIncomingAck,
                void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
   MOCK_METHOD1(OnIncomingLoss, void(QuicTime));
-  MOCK_METHOD5(SentPacket, void(QuicTime sent_time, QuicPacketSequenceNumber,
-                                QuicByteCount, bool, bool));
-  MOCK_METHOD2(TimeUntilSend, QuicTime::Delta(QuicTime now, bool));
+  MOCK_METHOD4(SentPacket, void(QuicTime sent_time, QuicPacketSequenceNumber,
+                                QuicByteCount, bool));
+  MOCK_METHOD2(AbandoningPacket, void(QuicPacketSequenceNumber sequence_number,
+                                      QuicByteCount abandoned_bytes));
+  MOCK_METHOD3(TimeUntilSend, QuicTime::Delta(QuicTime now, bool, bool));
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
+  MOCK_METHOD0(SmoothedRtt, QuicTime::Delta(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);

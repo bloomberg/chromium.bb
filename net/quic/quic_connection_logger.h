@@ -24,6 +24,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   virtual void OnPacketReceived(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) OVERRIDE;
+  virtual void OnProtocolVersionMismatch(
+      QuicVersionTag version) OVERRIDE;
   virtual void OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
   virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
@@ -34,6 +36,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
       const QuicConnectionCloseFrame& frame) OVERRIDE;
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& packet) OVERRIDE;
+  virtual void OnVersionNegotiationPacket(
+      const QuicVersionNegotiationPacket& packet) OVERRIDE;
   virtual void OnRevivedPacket(const QuicPacketHeader& revived_header,
                                base::StringPiece payload) OVERRIDE;
 

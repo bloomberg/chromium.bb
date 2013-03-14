@@ -28,6 +28,8 @@ class NET_EXPORT_PRIVATE NullEncrypter : public QuicEncrypter {
   virtual size_t GetNoncePrefixSize() const OVERRIDE;
   virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) const OVERRIDE;
   virtual size_t GetCiphertextSize(size_t plaintext_size) const OVERRIDE;
+  virtual base::StringPiece GetKey() const OVERRIDE;
+  virtual base::StringPiece GetNoncePrefix() const OVERRIDE;
 };
 
 }  // namespace net

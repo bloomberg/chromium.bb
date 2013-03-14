@@ -44,7 +44,7 @@ class TestQuicConnection : public QuicConnection {
   TestQuicConnection(QuicGuid guid,
                      IPEndPoint address,
                      QuicConnectionHelper* helper)
-      : QuicConnection(guid, address, helper) {
+      : QuicConnection(guid, address, helper, false) {
   }
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -118,8 +118,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         guid_(2),
         framer_(kQuicVersion1,
                 QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL)),
-        creator_(guid_, &framer_, &random_) {
+                QuicEncrypter::Create(kNULL),
+                false),
+        creator_(guid_, &framer_, &random_, false) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
     peer_addr_ = IPEndPoint(ip, 443);
@@ -168,7 +169,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     runner_ = new TestTaskRunner(&clock_);
     send_algorithm_ = new MockSendAlgorithm();
     receive_algorithm_ = new TestReceiveAlgorithm(NULL);
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _)).
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
                                        &random_generator_, socket);
@@ -178,10 +179,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     connection_->SetReceiveAlgorithm(receive_algorithm_);
     session_.reset(new QuicClientSession(connection_, helper_, NULL,
                                          "www.google.com", NULL));
-    CryptoHandshakeMessage message =
-        CreateShloMessage(&clock_, &random_generator_, "www.google.com");
+    scoped_ptr<QuicPacket> shlo(ConstructServerHelloPacket(
+        guid_, &clock_, &random_generator_, "www.google.com"));
+    scoped_ptr<QuicEncryptedPacket> shlo_packet(
+        framer_.EncryptPacket(1, *shlo));
     session_->GetCryptoStream()->CryptoConnect();
-    session_->GetCryptoStream()->OnHandshakeMessage(message);
+    ProcessPacket(*shlo_packet);
     EXPECT_TRUE(session_->IsCryptoHandshakeComplete());
     QuicReliableClientStream* stream =
         session_->CreateOutgoingReliableStream();
@@ -219,7 +222,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   QuicEncryptedPacket* ConstructChloPacket() {
     scoped_ptr<QuicPacket> chlo(
         ConstructClientHelloPacket(guid_, &clock_, &random_generator_,
-                                   "www.google.com"));
+                                   "www.google.com", true));
     return framer_.EncryptPacket(1, *chlo);
   }
 
@@ -241,7 +244,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
       QuicPacketSequenceNumber least_unacked) {
     InitializeHeader(sequence_number);
 
-    QuicAckFrame ack(largest_received, least_unacked);
+    QuicAckFrame ack(largest_received, QuicTime::Zero(), least_unacked);
     ack.sent_info.entropy_hash = 0;
     ack.received_info.entropy_hash = 0;
 
@@ -340,7 +343,7 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
   AddWrite(SYNCHRONOUS, ConstructChloPacket());
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, 0,
                                             request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 2));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 1));
   Initialize();
 
   request_.method = "GET";
@@ -383,7 +386,7 @@ TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
   SetRequestString("GET", "/");
   AddWrite(SYNCHRONOUS, ConstructChloPacket());
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 2));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 1));
   Initialize();
 
   request_.method = "GET";
@@ -429,7 +432,7 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2, !kFin, 0, request_data_));
   AddWrite(SYNCHRONOUS, ConstructDataPacket(3, kFin, request_data_.length(),
                                             kUploadData));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 3));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 1));
 
   Initialize();
 
@@ -489,7 +492,7 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(4, kFin,
                                             request_data_.length() + chunk_size,
                                             kUploadData));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(5, 2, 3));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(5, 2, 1));
 
   Initialize();
 
@@ -545,7 +548,7 @@ TEST_F(QuicHttpStreamTest, DestroyedEarly) {
   AddWrite(SYNCHRONOUS, ConstructChloPacket());
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, 0, request_data_));
   AddWrite(SYNCHRONOUS, ConstructRstPacket(3, 3));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 2));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 1));
   use_closing_stream_ = true;
   Initialize();
 

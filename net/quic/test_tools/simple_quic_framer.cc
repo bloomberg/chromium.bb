@@ -25,9 +25,16 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     error_ = framer->error();
   }
 
+  virtual bool OnProtocolVersionMismatch(QuicVersionTag version) {
+    return false;
+  }
+
   virtual void OnPacket() {}
   virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
+  virtual void OnVersionNegotiationPacket(
+      const QuicVersionNegotiationPacket& packet) {}
   virtual void OnRevivedPacket() {}
+
   virtual bool OnPacketHeader(const QuicPacketHeader& header) {
     has_header_ = true;
     header_ = header;
@@ -116,7 +123,9 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 SimpleQuicFramer::SimpleQuicFramer()
     : framer_(kQuicVersion1,
               QuicDecrypter::Create(kNULL),
-              QuicEncrypter::Create(kNULL)) {
+              QuicEncrypter::Create(kNULL),
+              true),
+      visitor_(NULL) {
 }
 
 SimpleQuicFramer::~SimpleQuicFramer() {

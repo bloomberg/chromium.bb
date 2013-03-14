@@ -37,7 +37,7 @@ class QuicReliableTestStream : public ReliableQuicStream {
 class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
  public:
   ReliableQuicStreamTest()
-      : connection_(new MockConnection(1, IPEndPoint())),
+      : connection_(new MockConnection(1, IPEndPoint(), false)),
         session_(connection_, true),
         stream_(1, &session_) {
   }

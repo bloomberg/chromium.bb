@@ -37,6 +37,7 @@ typedef QuicPacketSequenceNumber QuicFecGroupNumber;
 typedef uint64 QuicPublicResetNonceProof;
 typedef uint8 QuicPacketEntropyHash;
 typedef uint32 QuicVersionTag;
+typedef std::vector<QuicVersionTag> QuicVersionTagList;
 
 // TODO(rch): Consider Quic specific names for these constants.
 // Maximum size in bytes of a QUIC packet.
@@ -72,6 +73,8 @@ NET_EXPORT_PRIVATE size_t GetPublicResetPacketSize();
 NET_EXPORT_PRIVATE size_t GetStartOfFecProtectedData(bool include_version);
 // Index of the first byte in a QUIC packet of encrypted data.
 NET_EXPORT_PRIVATE size_t GetStartOfEncryptedData(bool include_version);
+// Returns true if |version| is a supported protocol version.
+NET_EXPORT_PRIVATE bool IsSupportedVersion(QuicVersionTag version);
 
 // Index of the first byte in a QUIC packet which is used in hash calculation.
 const size_t kStartOfHashData = 0;
@@ -118,6 +121,9 @@ enum QuicErrorCode {
   // Stream errors.
   QUIC_NO_ERROR = 0,
 
+  // Connection has reached an invalid state.
+  QUIC_INTERNAL_ERROR,
+
   // There were data frames after the a fin or reset.
   QUIC_STREAM_DATA_AFTER_TERMINATION,
   // There was some server error which halted stream processing.
@@ -143,6 +149,8 @@ enum QuicErrorCode {
   QUIC_INVALID_GOAWAY_DATA,
   // Ack data is malformed.
   QUIC_INVALID_ACK_DATA,
+  // Version negotiation packet is malformed.
+  QUIC_INVALID_VERSION_NEGOTIATION_PACKET,
   // There was an error decrypting.
   QUIC_DECRYPTION_FAILURE,
   // There was an error encrypting.
@@ -159,6 +167,8 @@ enum QuicErrorCode {
   QUIC_TOO_MANY_OPEN_STREAMS,
   // Received public reset for this connection.
   QUIC_PUBLIC_RESET,
+  // Invalid protocol version
+  QUIC_INVALID_VERSION,
 
   // We hit our prenegotiated (or default) timeout
   QUIC_CONNECTION_TIMED_OUT,
@@ -195,14 +205,21 @@ enum QuicErrorCode {
 // to reverse the order of the bytes.
 #define MAKE_TAG(a, b, c, d) ((d << 24) + (c << 16) + (b << 8) + a)
 
+const QuicVersionTag kUnsupportedVersion = -1;
 const QuicVersionTag kQuicVersion1 = MAKE_TAG('Q', '1', '.', '0');
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
+  QuicPacketPublicHeader();
+  explicit QuicPacketPublicHeader(const QuicPacketPublicHeader& other);
+  ~QuicPacketPublicHeader();
+
+  QuicPacketPublicHeader& operator=(const QuicPacketPublicHeader& other);
+
   // Universal header. All QuicPacket headers will have a guid and public flags.
   QuicGuid guid;
   bool reset_flag;
   bool version_flag;
-  QuicVersionTag version;
+  QuicVersionTagList versions;
 };
 
 // Header for Data or FEC packets.
@@ -231,6 +248,14 @@ struct QuicPublicResetPacket {
   QuicPacketSequenceNumber rejected_sequence_number;
   QuicPublicResetNonceProof nonce_proof;
 };
+
+enum QuicVersionNegotiationState {
+  START_NEGOTIATION = 0,
+  SENT_NEGOTIATION_PACKET,
+  NEGOTIATED_VERSION
+};
+
+typedef QuicPacketPublicHeader QuicVersionNegotiationPacket;
 
 // A padding frame contains no payload.
 struct NET_EXPORT_PRIVATE QuicPaddingFrame {
@@ -275,6 +300,10 @@ struct NET_EXPORT_PRIVATE ReceivedPacketInfo {
   // list.
   QuicPacketSequenceNumber largest_observed;
 
+  // Time elapsed since largest_observed was received until this Ack frame was
+  // sent.
+  QuicTime::Delta delta_time_largest_observed;
+
   // TODO(satyamshekhar): Can be optimized using an interval set like data
   // structure.
   // The set of packets which we're expecting and have not received.
@@ -312,6 +341,7 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   // Testing convenience method to construct a QuicAckFrame with all packets
   // from least_unacked to largest_observed acked.
   QuicAckFrame(QuicPacketSequenceNumber largest_observed,
+               QuicTime largest_observed_receive_time,
                QuicPacketSequenceNumber least_unacked);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(

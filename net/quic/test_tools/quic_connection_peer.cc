@@ -9,6 +9,7 @@
 #include "net/quic/congestion_control/receive_algorithm_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/test_tools/quic_framer_peer.h"
 
 namespace net {
 namespace test {
@@ -100,6 +101,18 @@ QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
   return connection->entropy_manager_.ReceivedEntropyHash(sequence_number);
+}
+
+// static
+bool QuicConnectionPeer::IsServer(QuicConnection* connection) {
+  return connection->is_server_;
+}
+
+// static
+void QuicConnectionPeer::SetIsServer(QuicConnection* connection,
+                                     bool is_server) {
+  connection->is_server_ = is_server;
+  QuicFramerPeer::SetIsServer(&connection->framer_, is_server);
 }
 
 }  // namespace test

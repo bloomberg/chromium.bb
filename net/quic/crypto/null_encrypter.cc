@@ -51,4 +51,12 @@ size_t NullEncrypter::GetCiphertextSize(size_t plaintext_size) const {
   return plaintext_size + kHashSize;
 }
 
+StringPiece NullEncrypter::GetKey() const {
+  return StringPiece();
+}
+
+StringPiece NullEncrypter::GetNoncePrefix() const {
+  return StringPiece();
+}
+
 }  // namespace net

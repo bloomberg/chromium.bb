@@ -17,6 +17,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using base::hash_set;
@@ -64,21 +65,6 @@ const size_t kPublicResetPacketNonceProofOffset =
 const size_t kPublicResetPacketRejectedSequenceNumberOffset =
     kPublicResetPacketNonceProofOffset + kPublicResetNonceSize;
 
-class QuicFramerPeer {
- public:
-  static QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
-      QuicFramer* framer,
-      QuicPacketSequenceNumber packet_sequence_number) {
-    return framer->CalculatePacketSequenceNumberFromWire(
-        packet_sequence_number);
-  }
-  static void SetLastSequenceNumber(
-      QuicFramer* framer,
-      QuicPacketSequenceNumber packet_sequence_number) {
-    framer->last_sequence_number_ = packet_sequence_number;
-  }
-};
-
 class TestEncrypter : public QuicEncrypter {
  public:
   virtual ~TestEncrypter() {}
@@ -108,6 +94,12 @@ class TestEncrypter : public QuicEncrypter {
   virtual size_t GetCiphertextSize(size_t plaintext_size) const OVERRIDE {
     return plaintext_size;
   }
+  virtual StringPiece GetKey() const {
+    return StringPiece();
+  }
+  virtual StringPiece GetNoncePrefix() const {
+    return StringPiece();
+  }
   QuicPacketSequenceNumber sequence_number_;
   string associated_data_;
   string plaintext_;
@@ -129,6 +121,12 @@ class TestDecrypter : public QuicDecrypter {
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
     return new QuicData(ciphertext.data(), ciphertext.length());
+  }
+  virtual StringPiece GetKey() const {
+    return StringPiece();
+  }
+  virtual StringPiece GetNoncePrefix() const {
+    return StringPiece();
   }
   QuicPacketSequenceNumber sequence_number_;
   string associated_data_;
@@ -167,8 +165,19 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     public_reset_packet_.reset(new QuicPublicResetPacket(packet));
   }
 
+  virtual void OnVersionNegotiationPacket(
+      const QuicVersionNegotiationPacket& packet) OVERRIDE {
+    version_negotiation_packet_.reset(new QuicVersionNegotiationPacket(packet));
+  }
+
   virtual void OnRevivedPacket() OVERRIDE {
     revived_packets_++;
+  }
+
+  virtual bool OnProtocolVersionMismatch(
+      QuicVersionTag version) OVERRIDE {
+    DCHECK(false);
+    return true;
   }
 
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
@@ -231,6 +240,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
 
   scoped_ptr<QuicPacketHeader> header_;
   scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
+  scoped_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   vector<QuicStreamFrame*> stream_frames_;
   vector<QuicAckFrame*> ack_frames_;
   vector<QuicCongestionFeedbackFrame*> congestion_feedback_frames_;
@@ -246,7 +256,7 @@ class QuicFramerTest : public ::testing::Test {
   QuicFramerTest()
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
-        framer_(kQuicVersion1, decrypter_, encrypter_) {
+        framer_(kQuicVersion1, decrypter_, encrypter_, true) {
     framer_.set_visitor(&visitor_);
     framer_.set_entropy_calculator(&entropy_calculator_);
   }
@@ -555,7 +565,7 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
             visitor_.header_->public_header.guid);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_TRUE(visitor_.header_->public_header.version_flag);
-  EXPECT_EQ(kQuicVersion1, visitor_.header_->public_header.version);
+  EXPECT_EQ(kQuicVersion1, visitor_.header_->public_header.versions[0]);
   EXPECT_FALSE(visitor_.header_->fec_flag);
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_FALSE(visitor_.header_->fec_entropy_flag);
@@ -814,7 +824,7 @@ TEST_F(QuicFramerTest, StreamFrameWithVersion) {
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_TRUE(visitor_.header_.get()->public_header.version_flag);
-  EXPECT_EQ(kQuicVersion1, visitor_.header_.get()->public_header.version);
+  EXPECT_EQ(kQuicVersion1, visitor_.header_.get()->public_header.versions[0]);
   EXPECT_TRUE(CheckDecryption(encrypted, kIncludeVersion));
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
@@ -1562,6 +1572,7 @@ TEST_F(QuicFramerTest, PublicResetPacket) {
   // Now test framing boundaries
   for (size_t i = 0; i < GetPublicResetPacketSize(); ++i) {
     string expected_error;
+    DLOG(INFO) << "iteration: " << i;
     if (i < kPublicFlagsOffset) {
       expected_error = "Unable to read GUID.";
     } else if (i < kPublicResetPacketNonceProofOffset) {
@@ -1572,6 +1583,42 @@ TEST_F(QuicFramerTest, PublicResetPacket) {
       expected_error = "Unable to read rejected sequence number.";
     }
     CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
+TEST_F(QuicFramerTest, VersionNegotiationPacket) {
+  unsigned char packet[] = {
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags (version)
+    0x01,
+    // version tag
+    'Q', '1', '.', '0',
+    'Q', '2', '.', '0',
+  };
+
+  QuicFramerPeer::SetIsServer(&framer_, false);
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+  ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.version_negotiation_packet_.get());
+  EXPECT_EQ(2u, visitor_.version_negotiation_packet_->versions.size());
+  EXPECT_EQ(kQuicVersion1,
+            visitor_.version_negotiation_packet_->versions[0]);
+
+  for (size_t i = 0; i <= kQuicGuidSize + kPublicFlagsSize; ++i) {
+    string expected_error;
+    QuicErrorCode error_code = QUIC_INVALID_PACKET_HEADER;
+    if (i < kPublicFlagsOffset) {
+      expected_error = "Unable to read GUID.";
+    } else if (i < kVersionOffset) {
+      expected_error = "Unable to read public flags.";
+    } else {
+      expected_error = "Unable to read supported version in negotiation.";
+      error_code = QUIC_INVALID_VERSION_NEGOTIATION_PACKET;
+    }
+    CheckProcessingFails(packet, i, expected_error, error_code);
   }
 }
 
@@ -1771,6 +1818,7 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
     'r',  'l',  'd',  '!',
   };
 
+  QuicFramerPeer::SetIsServer(&framer_, false);
   scoped_ptr<QuicPacket> data(
       framer_.ConstructFrameDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
@@ -1780,6 +1828,33 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
                                       AsChars(packet), arraysize(packet));
 }
 
+TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
+  QuicPacketPublicHeader header;
+  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.reset_flag = false;
+  header.version_flag = true;
+
+  unsigned char packet[] = {
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags (version)
+    0x01,
+    // version tag
+    'Q', '1', '.', '0',
+    'Q', '2', '.', '0',
+  };
+
+  const int kQuicVersion2 = MAKE_TAG('Q', '2', '.', '0');
+  QuicVersionTagList versions;
+  versions.push_back(kQuicVersion1);
+  versions.push_back(kQuicVersion2);
+  scoped_ptr<QuicEncryptedPacket> data(
+      framer_.ConstructVersionNegotiationPacket(header, versions));
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
 
 TEST_F(QuicFramerTest, ConstructAckFramePacket) {
   QuicPacketHeader header;

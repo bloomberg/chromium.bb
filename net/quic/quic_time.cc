@@ -121,4 +121,4 @@ QuicTime::Delta QuicTime::Subtract(const QuicTime& other) const {
   return QuicTime::Delta(ticks_ - other.ticks_);
 }
 
-}  // namespace gfe_quic
+}  // namespace net

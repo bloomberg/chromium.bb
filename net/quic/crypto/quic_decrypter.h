@@ -49,6 +49,10 @@ class NET_EXPORT_PRIVATE QuicDecrypter {
   virtual QuicData* Decrypt(QuicPacketSequenceNumber sequence_number,
                             base::StringPiece associated_data,
                             base::StringPiece ciphertext) = 0;
+
+  // For use by unit tests only.
+  virtual base::StringPiece GetKey() const = 0;
+  virtual base::StringPiece GetNoncePrefix() const = 0;
 };
 
 }  // namespace net

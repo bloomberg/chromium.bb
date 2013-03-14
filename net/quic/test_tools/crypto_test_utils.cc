@@ -4,11 +4,16 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
+#include "base/string_piece.h"
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
+
+using base::StringPiece;
 
 namespace net {
 namespace test {
@@ -61,13 +66,13 @@ void CommunicateHandshakeMessages(
 // static
 void CryptoTestUtils::HandshakeWithFakeServer(
     PacketSavingConnection* client_conn,
-    QuicCryptoStream* client) {
+    QuicCryptoClientStream* client) {
   QuicGuid guid(1);
   IPAddressNumber ip;
   CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
   IPEndPoint addr = IPEndPoint(ip, 1);
   PacketSavingConnection* server_conn =
-      new PacketSavingConnection(guid, addr);
+      new PacketSavingConnection(guid, addr, true);
   TestSession server_session(server_conn, true);
   QuicCryptoServerStream server(&server_session);
 
@@ -75,18 +80,20 @@ void CryptoTestUtils::HandshakeWithFakeServer(
   CHECK_NE(0u, client_conn->packets_.size());
 
   CommunicateHandshakeMessages(client_conn, client, server_conn, &server);
+
+  CompareClientAndServerKeys(client, &server);
 }
 
 // static
 void CryptoTestUtils::HandshakeWithFakeClient(
     PacketSavingConnection* server_conn,
-    QuicCryptoStream* server) {
+    QuicCryptoServerStream* server) {
   QuicGuid guid(1);
   IPAddressNumber ip;
   CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
   IPEndPoint addr = IPEndPoint(ip, 1);
   PacketSavingConnection* client_conn =
-      new PacketSavingConnection(guid, addr);
+      new PacketSavingConnection(guid, addr, false);
   TestSession client_session(client_conn, true);
   QuicCryptoClientStream client(&client_session, "test.example.com");
 
@@ -94,6 +101,50 @@ void CryptoTestUtils::HandshakeWithFakeClient(
   CHECK_EQ(1u, client_conn->packets_.size());
 
   CommunicateHandshakeMessages(client_conn, &client, server_conn, server);
+
+  CompareClientAndServerKeys(&client, server);
+}
+
+// static
+void CryptoTestUtils::CompareClientAndServerKeys(
+    QuicCryptoClientStream* client,
+    QuicCryptoServerStream* server) {
+  StringPiece client_encrypter_key =
+      client->crypto_negotiated_params_.encrypter->GetKey();
+  StringPiece client_encrypter_iv =
+      client->crypto_negotiated_params_.encrypter->GetNoncePrefix();
+  StringPiece client_decrypter_key =
+      client->crypto_negotiated_params_.decrypter->GetKey();
+  StringPiece client_decrypter_iv =
+      client->crypto_negotiated_params_.decrypter->GetNoncePrefix();
+  StringPiece server_encrypter_key =
+      server->crypto_negotiated_params_.encrypter->GetKey();
+  StringPiece server_encrypter_iv =
+      server->crypto_negotiated_params_.encrypter->GetNoncePrefix();
+  StringPiece server_decrypter_key =
+      server->crypto_negotiated_params_.decrypter->GetKey();
+  StringPiece server_decrypter_iv =
+      server->crypto_negotiated_params_.decrypter->GetNoncePrefix();
+  CompareCharArraysWithHexError("client write key",
+                                client_encrypter_key.data(),
+                                client_encrypter_key.length(),
+                                server_decrypter_key.data(),
+                                server_decrypter_key.length());
+  CompareCharArraysWithHexError("client write IV",
+                                client_encrypter_iv.data(),
+                                client_encrypter_iv.length(),
+                                server_decrypter_iv.data(),
+                                server_decrypter_iv.length());
+  CompareCharArraysWithHexError("server write key",
+                                server_encrypter_key.data(),
+                                server_encrypter_key.length(),
+                                client_decrypter_key.data(),
+                                client_decrypter_key.length());
+  CompareCharArraysWithHexError("server write IV",
+                                server_encrypter_iv.data(),
+                                server_encrypter_iv.length(),
+                                client_decrypter_iv.data(),
+                                client_decrypter_iv.length());
 }
 }  // namespace test
 }  // namespace net

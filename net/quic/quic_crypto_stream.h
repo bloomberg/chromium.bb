@@ -28,7 +28,6 @@ struct CryptoHandshakeMessage;
 class NET_EXPORT_PRIVATE QuicCryptoStream
     : public ReliableQuicStream,
       public CryptoFramerVisitorInterface {
-
  public:
   explicit QuicCryptoStream(QuicSession* session);
 

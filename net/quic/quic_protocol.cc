@@ -33,6 +33,29 @@ size_t GetStartOfEncryptedData(bool include_version) {
       kFecGroupSize;
 }
 
+QuicPacketPublicHeader::QuicPacketPublicHeader() {}
+
+QuicPacketPublicHeader::QuicPacketPublicHeader(
+    const QuicPacketPublicHeader& other)
+    : guid(other.guid),
+      reset_flag(other.reset_flag),
+      version_flag(other.version_flag),
+      versions(other.versions) {
+}
+
+QuicPacketPublicHeader::~QuicPacketPublicHeader() {}
+
+QuicPacketPublicHeader& QuicPacketPublicHeader::operator=(
+    const QuicPacketPublicHeader& other) {
+  guid = other.guid;
+  reset_flag = other.reset_flag;
+  version_flag = other.version_flag;
+  // Window's STL crashes when empty std::vectors are copied.
+  if (other.versions.size() > 0)
+    versions = other.versions;
+  return *this;
+}
+
 QuicStreamFrame::QuicStreamFrame() {}
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
@@ -48,8 +71,14 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
 ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   os << "{ guid: " << header.public_header.guid
      << ", reset_flag: " << header.public_header.reset_flag
-     << ", version_flag: " << header.public_header.version_flag
-     << ", fec_flag: " << header.fec_flag
+     << ", version_flag: " << header.public_header.version_flag;
+  if (header.public_header.version_flag) {
+    os << " version: ";
+    for (size_t i = 0; i < header.public_header.versions.size(); ++i) {
+      os << header.public_header.versions[0] << " ";
+    }
+  }
+  os << ", fec_flag: " << header.fec_flag
      << ", entropy_flag: " << header.entropy_flag
      << ", entropy hash: " << static_cast<int>(header.entropy_hash)
      << ", sequence_number: " << header.packet_sequence_number
@@ -59,7 +88,8 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
 
 // TODO(ianswett): Initializing largest_observed to 0 should not be necessary.
 ReceivedPacketInfo::ReceivedPacketInfo()
-    : largest_observed(0) {
+    : largest_observed(0),
+      delta_time_largest_observed(QuicTime::Delta::Infinite()) {
 }
 
 ReceivedPacketInfo::~ReceivedPacketInfo() {}
@@ -84,6 +114,7 @@ SentPacketInfo::~SentPacketInfo() {}
 
 // Testing convenience method.
 QuicAckFrame::QuicAckFrame(QuicPacketSequenceNumber largest_observed,
+                           QuicTime largest_observed_receive_time,
                            QuicPacketSequenceNumber least_unacked) {
   received_info.largest_observed = largest_observed;
   received_info.entropy_hash = 0;

@@ -45,15 +45,17 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
 
 QuicFramer::QuicFramer(QuicVersionTag version,
                        QuicDecrypter* decrypter,
-                       QuicEncrypter* encrypter)
+                       QuicEncrypter* encrypter,
+                       bool is_server)
     : visitor_(NULL),
       fec_builder_(NULL),
       error_(QUIC_NO_ERROR),
       last_sequence_number_(0),
       quic_version_(version),
       decrypter_(decrypter),
-      encrypter_(encrypter) {
-  DCHECK_EQ(kQuicVersion1, version);
+      encrypter_(encrypter),
+      is_server_(is_server) {
+  DCHECK(IsSupportedVersion(version));
 }
 
 QuicFramer::~QuicFramer() {}
@@ -94,6 +96,15 @@ size_t QuicFramer::GetMinConnectionCloseFrameSize() {
 size_t QuicFramer::GetMinGoAwayFrameSize() {
   return kQuicFrameTypeSize + kQuicErrorCodeSize + kQuicErrorDetailsLengthSize +
       kQuicStreamIdSize;
+}
+
+bool QuicFramer::IsSupportedVersion(QuicVersionTag version) {
+  return version == kQuicVersion1;
+}
+
+size_t QuicFramer::GetVersionNegotiationPacketSize(size_t number_versions) {
+  return kQuicGuidSize + kPublicFlagsSize +
+      number_versions * kQuicVersionSize;
 }
 
 size_t QuicFramer::GetSerializedFrameLength(
@@ -245,7 +256,6 @@ SerializedPacket QuicFramer::ConstructFecPacket(const QuicPacketHeader& header,
 QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
     const QuicPublicResetPacket& packet) {
   DCHECK(packet.public_header.reset_flag);
-  DCHECK(!packet.public_header.version_flag);
   size_t len = GetPublicResetPacketSize();
   QuicDataWriter writer(len);
 
@@ -270,9 +280,36 @@ QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
   return new QuicEncryptedPacket(writer.take(), len, true);
 }
 
+QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
+    const QuicPacketPublicHeader& header,
+    const QuicVersionTagList& supported_versions) {
+  DCHECK(header.version_flag);
+  size_t len = GetVersionNegotiationPacketSize(supported_versions.size());
+  QuicDataWriter writer(len);
+
+  if (!writer.WriteUInt64(header.guid)) {
+    return NULL;
+  }
+
+  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION);
+  if (!writer.WriteUInt8(flags)) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < supported_versions.size(); ++i) {
+    if (!writer.WriteUInt32(supported_versions[i])) {
+      return NULL;
+    }
+  }
+
+  return new QuicEncryptedPacket(writer.take(), len, true);
+}
+
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   DCHECK(!reader_.get());
   reader_.reset(new QuicDataReader(packet.data(), packet.length()));
+
+  visitor_->OnPacket();
 
   // First parse the public header.
   QuicPacketPublicHeader public_header;
@@ -280,13 +317,19 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
     DLOG(WARNING) << "Unable to process public header.";
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
-  // TODO(satyamshekhar): Handle version negotiation.
-  if (public_header.version_flag && public_header.version != quic_version_) {
-      return false;
+
+  if (is_server_ && public_header.version_flag &&
+      public_header.versions[0] != quic_version_) {
+    if (!visitor_->OnProtocolVersionMismatch(public_header.versions[0])) {
+      reader_.reset(NULL);
+      return true;
+    }
   }
 
   bool rv;
-  if (public_header.reset_flag) {
+  if (!is_server_ && public_header.version_flag) {
+    rv = ProcessVersionNegotiationPacket(&public_header);
+  } else if (public_header.reset_flag) {
     rv = ProcessPublicResetPacket(public_header);
   } else {
     rv = ProcessDataPacket(public_header, packet);
@@ -296,11 +339,26 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   return rv;
 }
 
+bool QuicFramer::ProcessVersionNegotiationPacket(
+    QuicPacketPublicHeader* public_header) {
+  DCHECK(!is_server_);
+  // Try reading at least once to raise error if the packet is invalid.
+  do {
+    QuicVersionTag version;
+    if (!reader_->ReadBytes(&version, kQuicVersionSize)) {
+      set_detailed_error("Unable to read supported version in negotiation.");
+      return RaiseError(QUIC_INVALID_VERSION_NEGOTIATION_PACKET);
+    }
+    public_header->versions.push_back(version);
+  } while (!reader_->IsDoneReading());
+
+  visitor_->OnVersionNegotiationPacket(*public_header);
+  return true;
+}
+
 bool QuicFramer::ProcessDataPacket(
     const QuicPacketPublicHeader& public_header,
     const QuicEncryptedPacket& packet) {
-  visitor_->OnPacket();
-
   QuicPacketHeader header(public_header);
   if (!ProcessPacketHeader(&header, packet)) {
     DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessPacketHeader sets the error.
@@ -344,6 +402,7 @@ bool QuicFramer::ProcessPublicResetPacket(
     const QuicPacketPublicHeader& public_header) {
   QuicPublicResetPacket packet(public_header);
   if (!reader_->ReadUInt64(&packet.nonce_proof)) {
+    // TODO(satyamshekhar): Raise error.
     set_detailed_error("Unable to read nonce proof.");
     return false;
   }
@@ -403,6 +462,7 @@ bool QuicFramer::WritePacketHeader(const QuicPacketHeader& header,
   }
 
   if (header.public_header.version_flag) {
+    DCHECK(!is_server_);
     writer->WriteUInt32(quic_version_);
   }
 
@@ -481,12 +541,21 @@ bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
   public_header->version_flag =
       (public_flags & PACKET_PUBLIC_FLAGS_VERSION) != 0;
 
-  if (public_header->version_flag &&
-      !reader_->ReadUInt32(&public_header->version)) {
-    set_detailed_error("Unable to read protocol version.");
+  if (public_header->reset_flag && public_header->version_flag) {
+    set_detailed_error("Got version flag in reset packet");
     return false;
   }
 
+  if (public_header->version_flag && is_server_) {
+    QuicVersionTag version;
+    if (!reader_->ReadUInt32(&version)) {
+      // Read the version only if the packet is from the client.
+      // version flag from the server means version negotiation packet.
+      set_detailed_error("Unable to read protocol version.");
+      return false;
+    }
+    public_header->versions.push_back(version);
+  }
   return true;
 }
 
@@ -673,6 +742,7 @@ bool QuicFramer::ProcessReceivedInfo(ReceivedPacketInfo* received_info) {
      set_detailed_error("Unable to read largest observed.");
      return false;
   }
+  // TODO(pwestin): read and update delta_time_largest_observed.
 
   uint8 num_missing_packets;
   if (!reader_->ReadBytes(&num_missing_packets, 1)) {
@@ -889,8 +959,8 @@ bool QuicFramer::ProcessGoAwayFrame() {
 StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
     const QuicEncryptedPacket& encrypted, bool includes_version) {
   return StringPiece(encrypted.data() + kStartOfHashData,
-                     GetStartOfEncryptedData(includes_version)
-                     - kStartOfHashData);
+                     GetStartOfEncryptedData(includes_version) -
+                         kStartOfHashData);
 }
 
 QuicEncryptedPacket* QuicFramer::EncryptPacket(
@@ -1076,6 +1146,8 @@ bool QuicFramer::AppendAckFramePayload(
                                   writer)) {
     return false;
   }
+  // TODO(pwestin): calculate and add delta_time_largest_observed to the
+  // message.
 
   // We don't check for overflowing uint8 here, because we only can fit 192 acks
   // per packet, so if we overflow we will be truncated.

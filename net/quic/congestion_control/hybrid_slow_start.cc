@@ -105,4 +105,9 @@ bool HybridSlowStart::Exit() {
   return false;
 }
 
+QuicTime::Delta HybridSlowStart::SmoothedRtt() {
+  // TODO(satyamshekhar): Calculate and return smooth average of rtt over time.
+  return current_rtt_;
+}
+
 }  // namespace net

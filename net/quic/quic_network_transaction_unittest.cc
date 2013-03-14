@@ -88,10 +88,12 @@ class QuicNetworkTransactionTest : public PlatformTest {
     scoped_ptr<QuicPacket> chlo(ConstructClientHelloPacket(0xDEADBEEF,
                                                            clock_,
                                                            &random_generator_,
-                                                           host));
+                                                           host,
+                                                           true));
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL));
+                      QuicEncrypter::Create(kNULL),
+                      false);
     return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(1, *chlo));
   }
 
@@ -103,7 +105,8 @@ class QuicNetworkTransactionTest : public PlatformTest {
                                                            host));
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL));
+                      QuicEncrypter::Create(kNULL),
+                      false);
     return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(1, *shlo));
   }
 
@@ -138,7 +141,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.fec_entropy_flag = false;
     header.fec_group = 0;
 
-    QuicAckFrame ack(largest_received, least_unacked);
+    QuicAckFrame ack(largest_received, QuicTime::Zero(), least_unacked);
 
     QuicCongestionFeedbackFrame feedback;
     feedback.type = kTCP;
@@ -147,7 +150,8 @@ class QuicNetworkTransactionTest : public PlatformTest {
 
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL));
+                      QuicEncrypter::Create(kNULL),
+                      false);
     QuicFrames frames;
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
@@ -201,7 +205,8 @@ class QuicNetworkTransactionTest : public PlatformTest {
       const QuicFrame& frame) {
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL));
+                      QuicEncrypter::Create(kNULL),
+                      false);
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(

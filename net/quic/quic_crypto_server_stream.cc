@@ -17,6 +17,10 @@ QuicCryptoServerStream::QuicCryptoServerStream(QuicSession* session)
   // Use hardcoded crypto parameters for now.
   CryptoHandshakeMessage extra_tags;
   config_.ToHandshakeMessage(&extra_tags);
+
+  QuicGuid guid = session->connection()->guid();
+  crypto_config_.hkdf_info.append(reinterpret_cast<char*>(&guid),
+                                  sizeof(guid));
   // TODO(agl): AddTestingConfig generates a new, random config. In the future
   // this will be replaced with a real source of configs.
   scoped_ptr<CryptoTagValueMap> config_tags(
@@ -56,9 +60,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   CryptoUtils::GenerateNonce(session()->connection()->clock(),
                              session()->connection()->random_generator(),
                              &server_nonce_);
-  QuicCryptoNegotiatedParams params;
-  crypto_config_.ProcessClientHello(message, server_nonce_, &shlo, &params,
-                                    &error_details);
+  crypto_config_.ProcessClientHello(message, server_nonce_, &shlo,
+                                    &crypto_negotiated_params_, &error_details);
   if (!error_details.empty()) {
     DLOG(INFO) << "Rejecting CHLO: " << error_details;
   }

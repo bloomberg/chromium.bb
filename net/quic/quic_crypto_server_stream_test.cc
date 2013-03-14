@@ -67,7 +67,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
   QuicCryptoServerStreamTest()
       : guid_(1),
         addr_(),
-        connection_(new PacketSavingConnection(guid_, addr_)),
+        connection_(new PacketSavingConnection(guid_, addr_, true)),
         session_(connection_, true),
         stream_(&session_) {
   }

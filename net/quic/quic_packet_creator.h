@@ -19,6 +19,9 @@
 #include "net/quic/quic_protocol.h"
 
 namespace net {
+namespace test {
+class QuicPacketCreatorPeer;
+}
 
 class QuicRandom;
 
@@ -41,7 +44,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // QuicRandom* required for packet entropy.
   QuicPacketCreator(QuicGuid guid,
                     QuicFramer* framer,
-                    QuicRandom* random_generator);
+                    QuicRandom* random_generator,
+                    bool is_server);
 
   virtual ~QuicPacketCreator();
 
@@ -56,6 +60,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Starts a new FEC group with the next serialized packet, if FEC is enabled
   // and there is not already an FEC group open.
   void MaybeStartFEC();
+
+  // Makes the framer not serialize the protocol version in sent packets.
+  void StopSendingVersion();
 
   // The overhead the framing will add for a packet with num_frames frames.
   static size_t StreamFramePacketOverhead(int num_frames, bool include_version);
@@ -108,6 +115,13 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   SerializedPacket SerializeConnectionClose(
       QuicConnectionCloseFrame* close_frame);
 
+  // Creates a version negotiation packet which supports |supported_versions|.
+  // Caller owns the created  packet. Also, sets the entropy hash of the
+  // serialized packet to a random bool and returns that value as a member of
+  // SerializedPacket.
+  QuicEncryptedPacket* SerializeVersionNegotiationPacket(
+      const QuicVersionTagList& supported_versions);
+
   QuicPacketSequenceNumber sequence_number() const {
     return sequence_number_;
   }
@@ -121,6 +135,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   }
 
  private:
+  friend class test::QuicPacketCreatorPeer;
+
   static bool ShouldRetransmit(const QuicFrame& frame);
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
@@ -139,6 +155,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   QuicPacketSequenceNumber sequence_number_;
   QuicFecGroupNumber fec_group_number_;
   scoped_ptr<QuicFecGroup> fec_group_;
+  // bool to keep track if this packet creator is being used the server.
+  bool is_server_;
+  // Controls whether protocol version should be included while serializing the
+  // packet.
+  bool send_version_in_packet_;
   size_t packet_size_;
   QuicFrames queued_frames_;
   scoped_ptr<RetransmittableFrames> queued_retransmittable_frames_;

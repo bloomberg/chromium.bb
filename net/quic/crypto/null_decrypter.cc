@@ -41,4 +41,12 @@ QuicData* NullDecrypter::Decrypt(QuicPacketSequenceNumber /*sequence_number*/,
   return new QuicData(plaintext.data(), plaintext.length());
 }
 
+StringPiece NullDecrypter::GetKey() const {
+  return StringPiece();
+}
+
+StringPiece NullDecrypter::GetNoncePrefix() const {
+  return StringPiece();
+}
+
 }  // namespace net

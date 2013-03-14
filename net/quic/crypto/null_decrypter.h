@@ -24,6 +24,8 @@ class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
   virtual QuicData* Decrypt(QuicPacketSequenceNumber sequence_number,
                             base::StringPiece associated_data,
                             base::StringPiece ciphertext) OVERRIDE;
+  virtual base::StringPiece GetKey() const OVERRIDE;
+  virtual base::StringPiece GetNoncePrefix() const OVERRIDE;
 };
 
 }  // namespace net

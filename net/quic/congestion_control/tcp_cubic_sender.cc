@@ -14,6 +14,7 @@ const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
 const int64 kMaxCongestionWindow = 10000;
 const int kMaxBurstLength = 3;
+const int kInitialRttMs = 60;  // At a typical RTT 60 ms.
 };
 
 TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
@@ -84,11 +85,8 @@ void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
 void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
                                 QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount bytes,
-                                bool is_retransmission,
-                                bool has_retransmittable_data) {
-  if (!is_retransmission && has_retransmittable_data) {
-    bytes_in_flight_ += bytes;
-  }
+                                bool is_retransmission) {
+  bytes_in_flight_ += bytes;
   if (!is_retransmission && update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
     if (AvailableCongestionWindow() == 0) {
@@ -98,10 +96,16 @@ void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
   }
 }
 
+void TcpCubicSender::AbandoningPacket(QuicPacketSequenceNumber sequence_number,
+                                      QuicByteCount abandoned_bytes) {
+  bytes_in_flight_ -= abandoned_bytes;
+}
+
 QuicTime::Delta TcpCubicSender::TimeUntilSend(QuicTime now,
-                                              bool is_retransmission) {
-  if (is_retransmission) {
-    // For TCP we can always send a retransmission immediately.
+                                              bool is_retransmission,
+                                              bool has_retransmittable_data) {
+  if (is_retransmission || !has_retransmittable_data) {
+    // For TCP we can always send a retransmission and/or an ACK immediately.
     return QuicTime::Delta::Zero();
   }
   if (AvailableCongestionWindow() == 0) {
@@ -128,6 +132,14 @@ QuicBandwidth TcpCubicSender::BandwidthEstimate() {
   // instantaneous estimate?
   // Throughput ~= (1/RTT)*sqrt(3/2p)
   return QuicBandwidth::Zero();
+}
+
+QuicTime::Delta TcpCubicSender::SmoothedRtt() {
+  // TODO(satyamshekhar): Return the smoothed averaged RTT.
+  if (delay_min_.IsZero()) {
+    return QuicTime::Delta::FromMilliseconds(kInitialRttMs);
+  }
+  return delay_min_;
 }
 
 void TcpCubicSender::Reset() {
@@ -192,10 +204,12 @@ void TcpCubicSender::OnTimeOut() {
 }
 
 void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {
-  if (rtt.ToMicroseconds() <= 0) {
-    // RTT can't be 0 or negative.
+  if (rtt.IsInfinite() || rtt.IsZero()) {
     return;
   }
+  // RTT can't be negative.
+  DCHECK_LT(0, rtt.ToMicroseconds());
+
   // TODO(pwestin): Discard delay samples right after fast recovery,
   // during 1 second?.
 

@@ -20,8 +20,12 @@ FixRateSender::FixRateSender(const QuicClock* clock)
     : bitrate_(QuicBandwidth::FromBytesPerSecond(kInitialBitrate)),
       fix_rate_leaky_bucket_(bitrate_),
       paced_sender_(bitrate_),
-      data_in_flight_(0) {
+      data_in_flight_(0),
+      latest_rtt_(QuicTime::Delta::Zero()) {
   DLOG(INFO) << "FixRateSender";
+}
+
+FixRateSender::~FixRateSender() {
 }
 
 void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
@@ -42,7 +46,8 @@ void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
 void FixRateSender::OnIncomingAck(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
     QuicByteCount bytes_acked,
-    QuicTime::Delta /*rtt*/) {
+    QuicTime::Delta rtt) {
+  latest_rtt_ = rtt;
   data_in_flight_ -= bytes_acked;
 }
 
@@ -53,8 +58,7 @@ void FixRateSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
 void FixRateSender::SentPacket(QuicTime sent_time,
                                QuicPacketSequenceNumber /*sequence_number*/,
                                QuicByteCount bytes,
-                               bool is_retransmission,
-                               bool /*has_retransmittable_data*/) {
+                               bool is_retransmission) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
   paced_sender_.SentPacket(sent_time, bytes);
   if (!is_retransmission) {
@@ -62,8 +66,15 @@ void FixRateSender::SentPacket(QuicTime sent_time,
   }
 }
 
-QuicTime::Delta FixRateSender::TimeUntilSend(QuicTime now,
-                                             bool /*is_retransmission*/) {
+void FixRateSender::AbandoningPacket(
+    QuicPacketSequenceNumber /*sequence_number*/,
+    QuicByteCount /*abandoned_bytes*/) {
+}
+
+QuicTime::Delta FixRateSender::TimeUntilSend(
+    QuicTime now,
+    bool /*is_retransmission*/,
+    bool /*has_retransmittable_data*/) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending(now)) {
     if (CongestionWindow() <= data_in_flight_) {
       // We need an ack before we send more.
@@ -88,6 +99,11 @@ QuicByteCount FixRateSender::CongestionWindow() {
 
 QuicBandwidth FixRateSender::BandwidthEstimate() {
   return bitrate_;
+}
+
+QuicTime::Delta FixRateSender::SmoothedRtt() {
+  // TODO(satyamshekhar): Calculate and return smoothed rtt.
+  return latest_rtt_;
 }
 
 }  // namespace net

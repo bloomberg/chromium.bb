@@ -9,7 +9,6 @@
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_utils.h"
 
-
 using base::StringPiece;
 using std::make_pair;
 using std::min;
@@ -20,14 +19,16 @@ namespace net {
 
 QuicPacketCreator::QuicPacketCreator(QuicGuid guid,
                                      QuicFramer* framer,
-                                     QuicRandom* random_generator)
+                                     QuicRandom* random_generator,
+                                     bool is_server)
     : guid_(guid),
       framer_(framer),
       random_generator_(random_generator),
       sequence_number_(0),
       fec_group_number_(0),
-      // TODO(satyashekhar): Fix this when versioning is implemented.
-      packet_size_(GetPacketHeaderSize(!kIncludeVersion)) {
+      is_server_(is_server),
+      send_version_in_packet_(!is_server),
+      packet_size_(GetPacketHeaderSize(send_version_in_packet_)) {
   framer_->set_fec_builder(this);
 }
 
@@ -52,6 +53,18 @@ void QuicPacketCreator::MaybeStartFEC() {
     // Set the fec group number to the sequence number of the next packet.
     fec_group_number_ = sequence_number() + 1;
     fec_group_.reset(new QuicFecGroup());
+  }
+}
+
+// Stops serializing version of the protocol in packets sent after this call.
+// A packet that is already open might send kQuicVersionSize bytes less than the
+// maximum packet size if we stop sending version before it is serialized.
+void QuicPacketCreator::StopSendingVersion() {
+  DCHECK(send_version_in_packet_);
+  send_version_in_packet_ = false;
+  if (packet_size_ > 0) {
+    DCHECK_LT(kQuicVersionSize, packet_size_);
+    packet_size_ -= kQuicVersionSize;
   }
 }
 
@@ -134,8 +147,7 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   SerializedPacket serialized = framer_->ConstructFrameDataPacket(
       header, queued_frames_, packet_size_);
   queued_frames_.clear();
-  // TODO(satyamshekhar) Fix this versioning is implemented.
-  packet_size_ = GetPacketHeaderSize(false);
+  packet_size_ = GetPacketHeaderSize(send_version_in_packet_);
   serialized.retransmittable_frames = queued_retransmittable_frames_.release();
   return serialized;
 }
@@ -164,13 +176,28 @@ SerializedPacket QuicPacketCreator::SerializeConnectionClose(
   return SerializeAllFrames(frames);
 }
 
+QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
+    const QuicVersionTagList& supported_versions) {
+  DCHECK(!is_server_);
+  QuicPacketPublicHeader header;
+  header.guid = guid_;
+  header.reset_flag = false;
+  header.version_flag = true;
+  header.versions = supported_versions;
+  QuicEncryptedPacket* encrypted =
+      framer_->ConstructVersionNegotiationPacket(header, supported_versions);
+  DCHECK(encrypted);
+  DCHECK_GE(options_.max_packet_length, encrypted->length());
+  return encrypted;
+}
+
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
                                          bool fec_flag,
                                          bool fec_entropy_flag,
                                          QuicPacketHeader* header) {
   header->public_header.guid = guid_;
   header->public_header.reset_flag = false;
-  header->public_header.version_flag = false;
+  header->public_header.version_flag = send_version_in_packet_;
   header->fec_flag = fec_flag;
   header->fec_entropy_flag = fec_entropy_flag;
   header->packet_sequence_number = ++sequence_number_;
