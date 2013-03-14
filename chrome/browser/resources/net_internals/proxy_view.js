@@ -46,6 +46,8 @@ var ProxyView = (function() {
   ProxyView.RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
   ProxyView.BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
   ProxyView.CLEAR_BAD_PROXIES_BUTTON_ID = 'proxy-view-clear-bad-proxies';
+  ProxyView.SOCKS_HINTS_DIV_ID = 'proxy-view-socks-hints';
+  ProxyView.SOCKS_HINTS_FLAG_DIV_ID = 'proxy-view-socks-hints-flag';
 
   cr.addSingletonGetter(ProxyView);
 
@@ -59,14 +61,15 @@ var ProxyView = (function() {
     },
 
     onProxySettingsChanged: function(proxySettings) {
-      // Both |original| and |effective| are dictionaries describing the
-      // settings.
       $(ProxyView.ORIGINAL_SETTINGS_DIV_ID).innerHTML = '';
       $(ProxyView.EFFECTIVE_SETTINGS_DIV_ID).innerHTML = '';
+      this.updateSocksHints_(null);
 
       if (!proxySettings)
         return false;
 
+      // Both |original| and |effective| are dictionaries describing the
+      // settings.
       var original = proxySettings.original;
       var effective = proxySettings.effective;
 
@@ -74,6 +77,9 @@ var ProxyView = (function() {
           proxySettingsToString(original);
       $(ProxyView.EFFECTIVE_SETTINGS_DIV_ID).innerText =
           proxySettingsToString(effective);
+
+      this.updateSocksHints_(effective);
+
       return true;
     },
 
@@ -97,8 +103,62 @@ var ProxyView = (function() {
         timeutil.addNodeWithDate(badUntilCell, badUntilDate);
       }
       return true;
+    },
+
+    updateSocksHints_: function(proxySettings) {
+      setNodeDisplay($(ProxyView.SOCKS_HINTS_DIV_ID), false);
+
+      if (!proxySettings)
+        return;
+
+      var socksProxy = getSocks5Proxy_(proxySettings.single_proxy);
+      if (!socksProxy)
+        return;
+
+      // Suggest a recommended --host-resolver-rules.
+      // NOTE: This does not compensate for any proxy bypass rules. If the
+      // proxy settings include proxy bypasses the user may need to expand the
+      // exclusions for host resolving.
+      var hostResolverRules = 'MAP * ~NOTFOUND , EXCLUDE ' + socksProxy.host;
+      var hostResolverRulesFlag = '--host-resolver-rules="' +
+                                  hostResolverRules + '"';
+
+      // TODO(eroman): On Linux the ClientInfo.command_line is wrong in that it
+      // doesn't include any quotes around the parameters. This means the
+      // string search above is going to fail :(
+      if (ClientInfo.command_line &&
+          ClientInfo.command_line.indexOf(hostResolverRulesFlag) != -1) {
+        // Chrome is already using the suggested resolver rules.
+        return;
+      }
+
+      $(ProxyView.SOCKS_HINTS_FLAG_DIV_ID).innerText = hostResolverRulesFlag;
+      setNodeDisplay($(ProxyView.SOCKS_HINTS_DIV_ID), true);
     }
   };
+
+  function getSocks5Proxy_(proxyString) {
+    var pattern = /^socks5:\/\/(.*)$/;
+    var matches = pattern.exec(proxyString);
+
+    if (!matches)
+      return null;
+
+    var hostPortString = matches[1];
+
+    matches = /^(.*):(\d+)$/.exec(hostPortString);
+    if (!matches)
+      return null;
+
+    var result = {host: matches[1], port: matches[2]};
+
+    // Strip brackets off of IPv6 literals.
+    matches = /^\[(.*)\]$/.exec(result.host);
+    if (matches)
+      result.host = matches[1];
+
+    return result;
+  }
 
   return ProxyView;
 })();

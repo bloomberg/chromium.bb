@@ -7,6 +7,15 @@
   font-size: 85%;
 }
 
+#proxy-view-socks-hints {
+  border: 1px solid orange;
+  padding: 1ex;
+}
+
+#proxy-view-socks-hints-flag {
+  margin: 1ex;
+}
+
 </style>
 
 <div id=proxy-view-tab-content class=content-box>
@@ -30,6 +39,13 @@
   </td>
 
   </tr></table>
+
+  <div id=proxy-view-socks-hints>
+    Note that some traffic such as DNS prefetching will NOT go through the proxy
+    server. To prevent the browser from doing local DNS resolves try adding this
+    command line flag:
+    <pre id=proxy-view-socks-hints-flag></pre>
+  </div>
 
   <h4>
     Recently failed proxies, marked as bad
