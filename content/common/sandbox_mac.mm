@@ -39,6 +39,9 @@ extern "C" {
 namespace content {
 namespace {
 
+// Is the sandbox currently active.
+bool gSandboxIsActive = false;
+
 struct SandboxTypeToResourceIDMapping {
   SandboxType sandbox_type;
   int sandbox_profile_resource_id;
@@ -573,7 +576,13 @@ bool Sandbox::EnableSandbox(int sandbox_type,
                            << " "
                            << error_buff;
   sandbox_free_error(error_buff);
+  gSandboxIsActive = success;
   return success;
+}
+
+// static
+bool Sandbox::SandboxIsCurrentlyActive() {
+  return gSandboxIsActive;
 }
 
 // static

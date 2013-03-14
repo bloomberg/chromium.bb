@@ -77,6 +77,8 @@ class CONTENT_EXPORT Sandbox {
   static bool EnableSandbox(int sandbox_type,
                             const base::FilePath& allowed_dir);
 
+  // Returns true if the sandbox has been enabled for the current process.
+  static bool SandboxIsCurrentlyActive();
 
   // Exposed for testing purposes, used by an accessory function of our tests
   // so we can't use FRIEND_TEST.
