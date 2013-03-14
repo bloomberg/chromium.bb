@@ -265,7 +265,7 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame& frame) {
 
   MakeContextCurrent();
   // Bind the common vertex attributes used for drawing all the layers.
-  shared_geometry_->prepareForDraw();
+  shared_geometry_->PrepareForDraw();
 
   GLC(context_, context_->disable(GL_DEPTH_TEST));
   GLC(context_, context_->disable(GL_CULL_FACE));

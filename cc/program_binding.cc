@@ -113,8 +113,8 @@ unsigned ProgramBindingBase::createShaderProgram(WebGraphicsContext3D* context, 
     GLC(context, context->attachShader(programObject, fragmentShader));
 
     // Bind the common attrib locations.
-    GLC(context, context->bindAttribLocation(programObject, GeometryBinding::positionAttribLocation(), "a_position"));
-    GLC(context, context->bindAttribLocation(programObject, GeometryBinding::texCoordAttribLocation(), "a_texCoord"));
+    GLC(context, context->bindAttribLocation(programObject, GeometryBinding::PositionAttribLocation(), "a_position"));
+    GLC(context, context->bindAttribLocation(programObject, GeometryBinding::TexCoordAttribLocation(), "a_texCoord"));
 
     return programObject;
 }

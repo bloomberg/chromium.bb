@@ -5,47 +5,34 @@
 #ifndef CC_GEOMETRY_BINDING_H_
 #define CC_GEOMETRY_BINDING_H_
 
-namespace gfx {
-class RectF;
-}
+namespace gfx { class RectF; }
 
-namespace WebKit {
-class WebGraphicsContext3D;
-}
+namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
 
 class GeometryBinding {
-public:
-    GeometryBinding(WebKit::WebGraphicsContext3D*, const gfx::RectF& quadVertexRect);
-    ~GeometryBinding();
+ public:
+  GeometryBinding(WebKit::WebGraphicsContext3D* context,
+                  const gfx::RectF& quad_vertex_rect);
+  ~GeometryBinding();
 
-    bool initialized() const { return m_initialized; }
+  void PrepareForDraw();
 
-    WebKit::WebGraphicsContext3D* context() const { return m_context; }
-    unsigned quadVerticesVbo() const { return m_quadVerticesVbo; }
-    unsigned quadElementsVbo() const { return m_quadElementsVbo; }
-    unsigned quadListVerticesVbo() const { return m_quadListVerticesVbo; }
+  // All layer shaders share the same attribute locations for the vertex
+  // positions and texture coordinates. This allows switching shaders without
+  // rebinding attribute arrays.
+  static int PositionAttribLocation() { return 0; }
+  static int TexCoordAttribLocation() { return 1; }
+  static int TriangleIndexAttribLocation() { return 2; }
 
-    void prepareForDraw();
+ private:
+  WebKit::WebGraphicsContext3D* context_;
 
-    // All layer shaders share the same attribute locations for the vertex
-    // positions and texture coordinates. This allows switching shaders without
-    // rebinding attribute arrays.
-    static int positionAttribLocation() { return 0; }
-    static int texCoordAttribLocation() { return 1; }
-    static int triangleIndexAttribLocation() { return 2; }
-
-private:
-    WebKit::WebGraphicsContext3D* m_context;
-    bool m_initialized;
-
-    unsigned m_quadVerticesVbo;
-    unsigned m_quadElementsVbo;
-    unsigned m_quadListVerticesVbo;
+  unsigned quad_vertices_vbo_;
+  unsigned quad_elements_vbo_;
 };
 
-} // namespace cc
+}  // namespace cc
 
-#endif // CC_GEOMETRY_BINDING_H_
-
+#endif  // CC_GEOMETRY_BINDING_H_
