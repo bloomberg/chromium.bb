@@ -1591,10 +1591,6 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
 
   if (write_url) {
     DoWriteURLToClipboard(url, text, browser_->profile());
-    SetSelectedRange(selection);
-
-    if (!copy && gtk_text_view_get_editable(GTK_TEXT_VIEW(text_view_)))
-      gtk_text_buffer_delete_selection(text_buffer_, true, true);
   } else {
     ui::ScopedClipboardWriter scoped_clipboard_writer(
         ui::Clipboard::GetForCurrentThread(),
@@ -1603,6 +1599,10 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
             browser_->profile()));
     scoped_clipboard_writer.WriteText(text);
   }
+
+  SetSelectedRange(selection);
+  if (!copy && gtk_text_view_get_editable(GTK_TEXT_VIEW(text_view_)))
+    gtk_text_buffer_delete_selection(text_buffer_, true, true);
 
   OwnPrimarySelection(UTF16ToUTF8(text));
 }
