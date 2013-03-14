@@ -33,6 +33,14 @@ ALREADY_COMPRESSED_TYPES = [
 ]
 
 
+def randomness():
+  """Generates low-entropy randomness for MIME encoding.
+
+  Exists so it can be mocked out in unit tests.
+  """
+  return str(time.time())
+
+
 def encode_multipart_formdata(fields, files,
                               mime_mapper=lambda _: 'application/octet-stream'):
   """Encodes a Multipart form data object.
@@ -47,7 +55,7 @@ def encode_multipart_formdata(fields, files,
     content_type: for httplib.HTTP instance
     body: for httplib.HTTP instance
   """
-  boundary = hashlib.md5(str(time.time())).hexdigest()
+  boundary = hashlib.md5(randomness()).hexdigest()
   body_list = []
   for (key, value) in fields:
     if isinstance(key, unicode):
@@ -126,7 +134,7 @@ def upload_hash_content_to_blobstore(
 
   # TODO(maruel): Support large files.
   content_type, body = encode_multipart_formdata(
-      [], [('hash_contents', hash_key, content)] + data)
+       data, [('hash_contents', hash_key, content)])
   return url_open(upload_url, body, content_type=content_type)
 
 
@@ -188,24 +196,30 @@ def compression_level(filename):
   return 0 if file_ext in ALREADY_COMPRESSED_TYPES else 7
 
 
-def zip_and_trigger_upload(infile, metadata, upload_function):
-  compressor = zlib.compressobj(compression_level(infile))
-  hash_data = cStringIO.StringIO()
-  with open(infile, 'rb') as f:
-     # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
-    while True:   # and not metadata['T']:
+def read_and_compress(filepath, level):
+  """Reads a file and returns its content gzip compressed."""
+  compressor = zlib.compressobj(level)
+  compressed_data = cStringIO.StringIO()
+  with open(filepath, 'rb') as f:
+    while True:
       chunk = f.read(run_isolated.ZIPPED_FILE_CHUNK)
       if not chunk:
         break
-      hash_data.write(compressor.compress(chunk))
+      compressed_data.write(compressor.compress(chunk))
+  compressed_data.write(compressor.flush(zlib.Z_FINISH))
+  value = compressed_data.getvalue()
+  compressed_data.close()
+  return value
 
-    hash_data.write(compressor.flush(zlib.Z_FINISH))
-    priority = (
-        run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
-        else run_isolated.Remote.MED)
-    upload_function(priority, hash_data.getvalue(), metadata['h'],
-                    None)
-  hash_data.close()
+
+def zip_and_trigger_upload(infile, metadata, upload_function):
+  # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
+  # if not metadata['T']:
+  compressed_data = read_and_compress(infile, compression_level(infile))
+  priority = (
+      run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
+      else run_isolated.Remote.MED)
+  return upload_function(priority, compressed_data, metadata['h'], None)
 
 
 def process_items(contains_hash_url, infiles, zip_and_upload):
@@ -233,11 +247,13 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
                query if an element was already uploaded, and |base_url|/store/
                can be used to upload a new element.
     indir:     Root directory the infiles are based in.
-    infiles:   dict of files to map from |indir| to |outdir|.
+    infiles:   dict of files to upload files from |indir| to |base_url|.
     namespace: The namespace to use on the server.
   """
   logging.info('upload tree(base_url=%s, indir=%s, files=%d)' %
                (base_url, indir, len(infiles)))
+  assert base_url.startswith('http'), base_url
+  base_url = base_url.rstrip('/')
 
   # TODO(maruel): Make this request much earlier asynchronously while the files
   # are being enumerated.
@@ -260,7 +276,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
     uploaded.append(query)
 
   contains_hash_url = '%s/content/contains/%s?token=%s' % (
-      base_url.rstrip('/'), namespace, token)
+      base_url, namespace, token)
   process_items(contains_hash_url, infiles, zip_and_upload)
 
   logging.info('Waiting for all files to finish zipping')
@@ -294,14 +310,14 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
       cache_miss_size / 1024.,
       len(cache_miss) * 100. / total,
       cache_miss_size * 100. / total_size if total_size else 0)
+  return 0
 
 
-def main():
+def main(args):
   parser = optparse.OptionParser(
       usage='%prog [options] <file1..fileN> or - to read from stdin',
       description=sys.modules[__name__].__doc__)
-  # TODO(maruel): Support both NFS and isolateserver.
-  parser.add_option('-o', '--outdir', help='Remote server to archive to')
+  parser.add_option('-r', '--remote', help='Remote server to archive to')
   parser.add_option(
         '-v', '--verbose',
         action='count', default=0,
@@ -309,7 +325,7 @@ def main():
   parser.add_option('--namespace', default='default-gzip',
                     help='The namespace to use on the server.')
 
-  options, files = parser.parse_args()
+  options, files = parser.parse_args(args)
 
   levels = [logging.ERROR, logging.INFO, logging.DEBUG]
   logging.basicConfig(
@@ -320,8 +336,8 @@ def main():
 
   if not files:
     parser.error('Nothing to upload')
-  if not options.outdir:
-    parser.error('Nowhere to send. Please specify --outdir')
+  if not options.remote:
+    parser.error('Nowhere to send. Please specify --remote')
 
   # Load the necessary metadata. This is going to be rewritten eventually to be
   # more efficient.
@@ -336,13 +352,12 @@ def main():
       for f in files)
 
   with run_isolated.Profiler('Archive'):
-    upload_sha1_tree(
-        base_url=options.outdir,
+    return upload_sha1_tree(
+        base_url=options.remote,
         indir=os.getcwd(),
         infiles=infiles,
         namespace=options.namespace)
-  return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

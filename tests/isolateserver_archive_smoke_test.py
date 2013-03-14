@@ -41,7 +41,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     args = [
         sys.executable,
         os.path.join(ROOT_DIR, 'isolateserver_archive.py'),
-        '--outdir', ISOLATE_SERVER,
+        '--remote', ISOLATE_SERVER,
         '--namespace', self.namespace
     ]
     if '-v' in sys.argv:

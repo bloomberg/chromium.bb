@@ -1280,7 +1280,7 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
         if not RE_IS_SHA1.match(isolated_hash):
           # Adds it in the cache. While not strictly necessary, this simplifies
           # the rest.
-          h = hashlib.sha1(open(isolated_hash, 'r').read()).hexdigest()
+          h = hashlib.sha1(open(isolated_hash, 'rb').read()).hexdigest()
           cache.add(isolated_hash, h)
           isolated_hash = h
         settings.load(cache, isolated_hash)
