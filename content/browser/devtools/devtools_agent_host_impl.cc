@@ -4,19 +4,38 @@
 
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 
+#include <map>
+
 #include "base/basictypes.h"
-#include "base/stringprintf.h"
+#include "base/guid.h"
+#include "base/lazy_instance.h"
 #include "content/common/devtools_messages.h"
 
 namespace content {
 
 namespace {
-static int g_next_agent_host_id = 0;
+typedef std::map<std::string, DevToolsAgentHostImpl*> Instances;
+base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 DevToolsAgentHostImpl::DevToolsAgentHostImpl()
     : close_listener_(NULL),
-      id_(base::StringPrintf("%d", ++g_next_agent_host_id)) {
+      id_(base::GenerateGUID()) {
+  g_instances.Get()[id_] = this;
+}
+
+DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
+  g_instances.Get().erase(g_instances.Get().find(id_));
+}
+
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
+    const std::string& id) {
+  if (g_instances == NULL)
+    return NULL;
+  Instances::iterator it = g_instances.Get().find(id);
+  if (it == g_instances.Get().end())
+    return NULL;
+  return it->second;
 }
 
 void DevToolsAgentHostImpl::Attach() {

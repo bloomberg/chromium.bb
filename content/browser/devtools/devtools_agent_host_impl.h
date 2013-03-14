@@ -48,7 +48,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
  protected:
   DevToolsAgentHostImpl();
-  virtual ~DevToolsAgentHostImpl() {}
+  virtual ~DevToolsAgentHostImpl();
 
   virtual void SendMessageToAgent(IPC::Message* msg) = 0;
   virtual void NotifyClientAttaching() = 0;

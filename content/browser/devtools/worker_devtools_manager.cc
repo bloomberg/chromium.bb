@@ -61,6 +61,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
   explicit WorkerDevToolsAgentHost(WorkerId worker_id)
       : has_worker_id_(false) {
     SetWorkerId(worker_id, false);
+    AddRef();  //  Balanced in ResetWorkerId.
   }
 
   void SetWorkerId(WorkerId worker_id, bool reattach) {
@@ -83,6 +84,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
   void ResetWorkerId() {
     g_agent_map.Get().erase(worker_id_);
     has_worker_id_ = false;
+    Release();
   }
 
   void SaveAgentRuntimeState(const std::string& state) {

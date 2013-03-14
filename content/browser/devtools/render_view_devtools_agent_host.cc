@@ -173,6 +173,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
   RenderViewHostDelegate* delegate = render_view_host_->GetDelegate();
   if (delegate && delegate->GetAsWebContents())
     Observe(delegate->GetAsWebContents());
+  AddRef();  // Balanced in RenderViewHostDestroyed.
 }
 
 RenderViewHost* RenderViewDevToolsAgentHost::GetRenderViewHost() {
@@ -290,6 +291,7 @@ void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
   scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
   NotifyCloseListener();
   render_view_host_ = NULL;
+  Release();
 }
 
 bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(

@@ -614,6 +614,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAddMessageToConsole) {
   CloseDevToolsWindow();
 }
 
+class DevToolsAgentHostTest : public InProcessBrowserTest {};
+
+// Tests DevToolsAgentHost retention by its target.
+IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  RenderViewHost* rvh = browser()->tab_strip_model()->GetWebContentsAt(0)->
+      GetRenderViewHost();
+  DevToolsAgentHost* agent_raw = DevToolsAgentHost::GetFor(rvh);
+  const std::string agent_id = agent_raw->GetId();
+  ASSERT_EQ(agent_raw, DevToolsAgentHost::GetForId(agent_id)) <<
+      "DevToolsAgentHost cannot be found by id";
+  browser()->tab_strip_model()->
+      CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
+  ASSERT_FALSE(DevToolsAgentHost::GetForId(agent_id)) <<
+      "DevToolsAgentHost is not released when the tab is closed";
+}
+
 class DISABLED_RemoteDebuggingTest : public ExtensionBrowserTest {
 
   class ResultCatcher : public content::NotificationObserver {
