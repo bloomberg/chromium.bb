@@ -842,6 +842,49 @@ std::string FragmentShaderColor::getShaderString() const
     );
 }
 
+FragmentShaderColorAA::FragmentShaderColorAA()
+    : m_edgeLocation(-1)
+    , m_colorLocation(-1)
+{
+}
+
+void FragmentShaderColorAA::init(WebGraphicsContext3D* context, unsigned program, bool usingBindUniform, int* baseUniformIndex)
+{
+    static const char* shaderUniforms[] = {
+        "edge",
+        "color",
+    };
+    int locations[2];
+
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
+
+    m_edgeLocation = locations[0];
+    m_colorLocation = locations[1];
+    DCHECK(m_edgeLocation != -1 && m_colorLocation != -1);
+}
+
+std::string FragmentShaderColorAA::getShaderString() const
+{
+    return SHADER(
+        precision mediump float;
+        uniform vec4 color;
+        uniform vec3 edge[8];
+        void main()
+        {
+            vec3 pos = vec3(gl_FragCoord.xy, 1);
+            float a0 = clamp(dot(edge[0], pos), 0.0, 1.0);
+            float a1 = clamp(dot(edge[1], pos), 0.0, 1.0);
+            float a2 = clamp(dot(edge[2], pos), 0.0, 1.0);
+            float a3 = clamp(dot(edge[3], pos), 0.0, 1.0);
+            float a4 = clamp(dot(edge[4], pos), 0.0, 1.0);
+            float a5 = clamp(dot(edge[5], pos), 0.0, 1.0);
+            float a6 = clamp(dot(edge[6], pos), 0.0, 1.0);
+            float a7 = clamp(dot(edge[7], pos), 0.0, 1.0);
+            gl_FragColor = color * min(min(a0, a2) * min(a1, a3), min(a4, a6) * min(a5, a7));
+        }
+    );
+}
+
 FragmentShaderCheckerboard::FragmentShaderCheckerboard()
     : m_alphaLocation(-1)
     , m_texTransformLocation(-1)

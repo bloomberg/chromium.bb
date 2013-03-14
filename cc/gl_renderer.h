@@ -152,6 +152,17 @@ class CC_EXPORT GLRenderer :
                                 gfx::Rect rect,
                                 const gfx::Transform& draw_matrix);
 
+  // Check if quad needs antialiasing and if so, inflate the quad and
+  // fill edge array for fragment shader.  localQuad is set to
+  // inflated quad if antialiasing is required, otherwise it is left
+  // unchanged.  edge array is filled with inflated quad's edge data
+  // if antialiasing is required, otherwise it is left unchanged.
+  // Returns true if quad requires antialiasing and false otherwise.
+  bool SetupQuadForAntialiasing(const gfx::Transform& deviceTransform,
+                                const DrawQuad* quad,
+                                gfx::QuadF* localQuad,
+                                float edge[24]) const;
+
   bool UseScopedTexture(DrawingFrame& frame,
                         const ScopedResource* resource,
                         gfx::Rect viewport_rect);
@@ -232,8 +243,10 @@ class CC_EXPORT GLRenderer :
       VideoYUVProgram;
 
   // Special purpose / effects shaders.
-  typedef ProgramBinding<VertexShaderPos, FragmentShaderColor>
+  typedef ProgramBinding<VertexShaderQuad, FragmentShaderColor>
       SolidColorProgram;
+  typedef ProgramBinding<VertexShaderQuad, FragmentShaderColorAA>
+      SolidColorProgramAA;
 
   const TileProgram* GetTileProgram();
   const TileProgramOpaque* GetTileProgramOpaque();
@@ -256,6 +269,7 @@ class CC_EXPORT GLRenderer :
   const VideoStreamTextureProgram* GetVideoStreamTextureProgram();
 
   const SolidColorProgram* GetSolidColorProgram();
+  const SolidColorProgramAA* GetSolidColorProgramAA();
 
   scoped_ptr<TileProgram> tile_program_;
   scoped_ptr<TileProgramOpaque> tile_program_opaque_;
@@ -278,6 +292,7 @@ class CC_EXPORT GLRenderer :
   scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_;
 
   scoped_ptr<SolidColorProgram> solid_color_program_;
+  scoped_ptr<SolidColorProgramAA> solid_color_program_aa_;
 
   OutputSurface* output_surface_;
   WebKit::WebGraphicsContext3D* context_;
