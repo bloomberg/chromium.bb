@@ -15,6 +15,29 @@ namespace net {
 
 namespace test {
 
+// Delegate that calls Close() on |stream_| on OnClose. Used by tests
+// to make sure that such an action is harmless.
+class ClosingDelegate : public SpdyStream::Delegate {
+ public:
+  explicit ClosingDelegate(const scoped_refptr<SpdyStream>& stream);
+  virtual ~ClosingDelegate();
+
+  // SpdyStream::Delegate implementation.
+  virtual bool OnSendHeadersComplete(int status) OVERRIDE;
+  virtual int OnSendBody() OVERRIDE;
+  virtual int OnSendBodyComplete(int status, bool* eof) OVERRIDE;
+  virtual int OnResponseReceived(const SpdyHeaderBlock& response,
+                                 base::Time response_time,
+                                 int status) OVERRIDE;
+  virtual void OnHeadersSent() OVERRIDE;
+  virtual int OnDataReceived(const char* data, int length) OVERRIDE;
+  virtual void OnDataSent(int length) OVERRIDE;
+  virtual void OnClose(int status) OVERRIDE;
+
+ private:
+  scoped_refptr<SpdyStream> stream_;
+};
+
 // Base class with shared functionality for test delegate
 // implementations below.
 class StreamDelegateBase : public SpdyStream::Delegate {

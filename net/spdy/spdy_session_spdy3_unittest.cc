@@ -41,77 +41,7 @@ base::TimeTicks TheNearFuture() {
   return base::TimeTicks::Now() + base::TimeDelta::FromSeconds(g_delta_seconds);
 }
 
-class ClosingDelegate : public SpdyStream::Delegate {
- public:
-  ClosingDelegate(SpdyStream* stream) : stream_(stream) {}
-
-  // SpdyStream::Delegate implementation:
-  virtual bool OnSendHeadersComplete(int status) OVERRIDE {
-    return true;
-  }
-  virtual int OnSendBody() OVERRIDE {
-    return OK;
-  }
-  virtual int OnSendBodyComplete(int status, bool* eof) OVERRIDE {
-    return OK;
-  }
-  virtual int OnResponseReceived(const SpdyHeaderBlock& response,
-                                 base::Time response_time,
-                                 int status) OVERRIDE {
-    return OK;
-  }
-  virtual void OnHeadersSent() OVERRIDE {}
-  virtual int OnDataReceived(const char* data, int length) OVERRIDE {
-    return OK;
-  }
-  virtual void OnDataSent(int length) OVERRIDE {}
-  virtual void OnClose(int status) OVERRIDE {
-    stream_->Close();
-  }
- private:
-  SpdyStream* stream_;
-};
-
-class TestSpdyStreamDelegate : public SpdyStream::Delegate {
- public:
-  explicit TestSpdyStreamDelegate(const CompletionCallback& callback)
-      : callback_(callback) {}
-  virtual ~TestSpdyStreamDelegate() {}
-
-  virtual bool OnSendHeadersComplete(int status) OVERRIDE { return true; }
-
-  virtual int OnSendBody() OVERRIDE {
-    return ERR_UNEXPECTED;
-  }
-
-  virtual int OnSendBodyComplete(int /*status*/, bool* /*eof*/) OVERRIDE {
-    return ERR_UNEXPECTED;
-  }
-
-  virtual int OnResponseReceived(const SpdyHeaderBlock& response,
-                                 base::Time response_time,
-                                 int status) OVERRIDE {
-    return status;
-  }
-
-  virtual void OnHeadersSent() OVERRIDE {}
-  virtual int OnDataReceived(const char* buffer, int bytes) OVERRIDE {
-    return OK;
-  }
-
-  virtual void OnDataSent(int length) OVERRIDE {}
-
-  virtual void OnClose(int status) OVERRIDE {
-    CompletionCallback callback = callback_;
-    callback_.Reset();
-    callback.Run(OK);
-  }
-
- private:
-  CompletionCallback callback_;
-};
-
-} // namespace
+}  // namespace
 
 class SpdySessionSpdy3Test : public PlatformTest {
  protected:
@@ -281,20 +211,19 @@ TEST_F(SpdySessionSpdy3Test, ClientPing) {
   scoped_refptr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  TestCompletionCallback callback1;
-
-  scoped_ptr<TestSpdyStreamDelegate> delegate(
-      new TestSpdyStreamDelegate(callback1.callback()));
-  spdy_stream1->SetDelegate(delegate.get());
+  test::StreamDelegateSendImmediate delegate(
+      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  spdy_stream1->SetDelegate(&delegate);
 
   base::TimeTicks before_ping_time = base::TimeTicks::Now();
 
-  session->set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(0));
+  session->set_connection_at_risk_of_loss_time(
+      base::TimeDelta::FromSeconds(-1));
   session->set_hung_interval(base::TimeDelta::FromMilliseconds(50));
 
   session->SendPrefacePingIfNoneInFlight();
 
-  EXPECT_EQ(OK, callback1.WaitForResult());
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
   session->CheckPingStatus(before_ping_time);
 
@@ -337,10 +266,9 @@ TEST_F(SpdySessionSpdy3Test, ServerPing) {
   scoped_refptr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  TestCompletionCallback callback1;
-  scoped_ptr<TestSpdyStreamDelegate> delegate(
-      new TestSpdyStreamDelegate(callback1.callback()));
-  spdy_stream1->SetDelegate(delegate.get());
+  test::StreamDelegateSendImmediate delegate(
+      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  spdy_stream1->SetDelegate(&delegate);
 
   // Flush the SpdySession::OnReadComplete() task.
   MessageLoop::current()->RunUntilIdle();
@@ -433,10 +361,9 @@ TEST_F(SpdySessionSpdy3Test, FailedPing) {
   scoped_refptr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  TestCompletionCallback callback1;
-  scoped_ptr<TestSpdyStreamDelegate> delegate(
-      new TestSpdyStreamDelegate(callback1.callback()));
-  spdy_stream1->SetDelegate(delegate.get());
+  test::StreamDelegateSendImmediate delegate(
+      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  spdy_stream1->SetDelegate(&delegate);
 
   session->set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(0));
   session->set_hung_interval(base::TimeDelta::FromSeconds(0));
@@ -1177,12 +1104,12 @@ TEST_F(SpdySessionSpdy3Test, CloseSessionWithTwoCreatedStreams) {
 
   spdy_stream1->set_spdy_headers(headers.Pass());
   EXPECT_TRUE(spdy_stream1->HasUrl());
-  ClosingDelegate delegate1(spdy_stream1.get());
+  test::ClosingDelegate delegate1(spdy_stream1.get());
   spdy_stream1->SetDelegate(&delegate1);
 
   spdy_stream2->set_spdy_headers(headers2.Pass());
   EXPECT_TRUE(spdy_stream2->HasUrl());
-  ClosingDelegate delegate2(spdy_stream2.get());
+  test::ClosingDelegate delegate2(spdy_stream2.get());
   spdy_stream2->SetDelegate(&delegate2);
 
   spdy_stream1->SendRequest(false);

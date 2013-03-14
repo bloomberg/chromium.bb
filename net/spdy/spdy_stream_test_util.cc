@@ -12,6 +12,42 @@ namespace net {
 
 namespace test {
 
+ClosingDelegate::ClosingDelegate(
+    const scoped_refptr<SpdyStream>& stream) : stream_(stream) {}
+
+ClosingDelegate::~ClosingDelegate() {}
+
+bool ClosingDelegate::OnSendHeadersComplete(int status) {
+  return true;
+}
+
+int ClosingDelegate::OnSendBody() {
+  return OK;
+}
+
+int ClosingDelegate::OnSendBodyComplete(int status, bool* eof) {
+  return OK;
+}
+int ClosingDelegate::OnResponseReceived(const SpdyHeaderBlock& response,
+                                        base::Time response_time,
+                                        int status) {
+  return OK;
+}
+
+void ClosingDelegate::OnHeadersSent() {}
+
+int ClosingDelegate::OnDataReceived(const char* data, int length) {
+  return OK;
+}
+
+void ClosingDelegate::OnDataSent(int length) {}
+
+void ClosingDelegate::OnClose(int status) {
+  if (stream_)
+    stream_->Close();
+  stream_ = NULL;
+}
+
 StreamDelegateBase::StreamDelegateBase(
     const scoped_refptr<SpdyStream>& stream)
     : stream_(stream),
