@@ -39,16 +39,6 @@ const char kTestChildrenResponse[] =
 const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
 const char kTestUploadNewFilePath[] = "/upload/newfile/path";
 
-void CopyResultFromUploadRangeCallbackAndQuit(
-    UploadRangeResponse* response_out,
-    scoped_ptr<FileResource>* file_resource_out,
-    const UploadRangeResponse& response_in,
-    scoped_ptr<FileResource> file_resource_in) {
-  *response_out = response_in;
-  *file_resource_out = file_resource_in.Pass();
-  MessageLoop::current()->Quit();
-}
-
 }  // namespace
 
 class DriveApiOperationsTest : public testing::Test {
@@ -624,9 +614,9 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
           kTestContent.size(),  // content_length,
           kTestContentType,
           buffer,
-          base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                     &response, &new_entry));
-
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&response, &new_entry)));
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -715,9 +705,9 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
           0,  // content_length,
           kTestContentType,
           buffer,
-          base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                     &response, &new_entry));
-
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&response, &new_entry)));
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -811,9 +801,9 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
             kTestContent.size(),  // content_length,
             kTestContentType,
             buffer,
-            base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                       &response, &new_entry));
-
+            CreateComposedCallback(
+                base::Bind(&test_util::RunAndQuit),
+                test_util::CreateCopyResultCallback(&response, &new_entry)));
     resume_operation->Start(
         kTestDriveApiAuthToken, kTestUserAgent,
         base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -908,9 +898,9 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
           kTestContent.size(),  // content_length,
           kTestContentType,
           buffer,
-          base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                     &response, &new_entry));
-
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&response, &new_entry)));
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -994,9 +984,9 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
           kTestContent.size(),  // content_length,
           kTestContentType,
           buffer,
-          base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
-                     &response, &new_entry));
-
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&response, &new_entry)));
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
