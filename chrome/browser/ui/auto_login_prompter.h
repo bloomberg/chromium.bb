@@ -9,12 +9,11 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/auto_login_info_bar_delegate.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-class GURL;
+#include "content/public/browser/web_contents_observer.h"
+#include "googleurl/src/gurl.h"
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -26,7 +25,7 @@ class URLRequest;
 // the currently loaded page with one click.  This is used when the browser
 // detects that the user has navigated to a login page and that there are stored
 // tokens that would allow a one-click login.
-class AutoLoginPrompter : public content::NotificationObserver {
+class AutoLoginPrompter : public content::WebContentsObserver {
  public:
   typedef AutoLoginInfoBarDelegate::Params Params;
 
@@ -40,7 +39,9 @@ class AutoLoginPrompter : public content::NotificationObserver {
  private:
   friend class AutoLoginPrompterTest;
 
-  AutoLoginPrompter(content::WebContents* web_contents, const Params& params);
+  AutoLoginPrompter(content::WebContents* web_contents,
+                    const Params& params,
+                    const GURL& url);
 
   virtual ~AutoLoginPrompter();
 
@@ -49,14 +50,18 @@ class AutoLoginPrompter : public content::NotificationObserver {
                                   int child_id,
                                   int route_id);
 
-  // content::NotificationObserver override.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
-  content::WebContents* web_contents_;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
+
+  // Add the infobar to the WebContents, if it's still needed.
+  void AddInfoBarToWebContents();
+
   const Params params_;
-  content::NotificationRegistrar registrar_;
+  const GURL url_;
+  bool infobar_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginPrompter);
 };
