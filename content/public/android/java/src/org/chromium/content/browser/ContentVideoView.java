@@ -200,11 +200,16 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
 
     private static void initResources(Context context) {
         if (mPlaybackErrorText != null) return;
-        mPlaybackErrorText = sDelegate.getPlayBackErrorText();
-        mUnknownErrorText = sDelegate.getUnknownErrorText();
-        mErrorButton = sDelegate.getErrorButton();
-        mErrorTitle = sDelegate.getErrorTitle();
-        mVideoLoadingText = sDelegate.getVideoLoadingText();
+        mPlaybackErrorText = context.getString(
+                org.chromium.content.R.string.media_player_error_text_invalid_progressive_playback);
+        mUnknownErrorText = context.getString(
+                org.chromium.content.R.string.media_player_error_text_unknown);
+        mErrorButton = context.getString(
+                org.chromium.content.R.string.media_player_error_button);
+        mErrorTitle = context.getString(
+                org.chromium.content.R.string.media_player_error_title);
+        mVideoLoadingText = context.getString(
+                org.chromium.content.R.string.media_player_loading_video);
     }
 
     void showContentVideoView() {

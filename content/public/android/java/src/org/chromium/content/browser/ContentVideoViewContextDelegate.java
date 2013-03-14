@@ -16,10 +16,5 @@ public interface ContentVideoViewContextDelegate {
     public void onShowCustomView(View view);
     public void onDestroyContentVideoView();
     public Context getContext();
-    public String getPlayBackErrorText();
-    public String getUnknownErrorText();
-    public String getErrorButton();
-    public String getErrorTitle();
-    public String getVideoLoadingText();
     public View getVideoLoadingProgressView();
 }
