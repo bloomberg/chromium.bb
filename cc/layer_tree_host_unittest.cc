@@ -2086,9 +2086,9 @@ public:
 
         const ThreadProxy* proxy = static_cast<ThreadProxy*>(hostImpl->proxy());
         if (m_delegatingRenderer)
-            EXPECT_EQ(1, proxy->maxFramesPendingForTesting());
+            EXPECT_EQ(1, proxy->MaxFramesPendingForTesting());
         else
-            EXPECT_EQ(FrameRateController::kDefaultMaxFramesPending, proxy->maxFramesPendingForTesting());
+            EXPECT_EQ(FrameRateController::kDefaultMaxFramesPending, proxy->MaxFramesPendingForTesting());
         endTest();
     }
 

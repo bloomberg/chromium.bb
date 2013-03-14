@@ -96,7 +96,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
 
 bool LayerTreeHost::Initialize(scoped_ptr<Thread> impl_thread) {
   if (impl_thread)
-    return InitializeProxy(ThreadProxy::create(this, impl_thread.Pass()));
+    return InitializeProxy(ThreadProxy::Create(this, impl_thread.Pass()));
   else
     return InitializeProxy(SingleThreadProxy::Create(this));
 }
