@@ -2719,12 +2719,12 @@
                   '-Wno-abi',
                 ],
                 'conditions': [
-                  ['arm_thumb==1', {
+                  ['arm_thumb==1 and android_webview_build==0', {
                     'cflags': [
                     '-mthumb',
                     ]
                   }],
-                  ['armv7==1', {
+                  ['armv7==1 and android_webview_build==0', {
                     'cflags': [
                       '-march=armv7-a',
                       '-mtune=cortex-a8',
@@ -2763,10 +2763,10 @@
                         '-fuse-ld=gold',
                     ],
                     'conditions': [
-                      ['arm_thumb==1', {
+                      ['arm_thumb==1 and android_webview_build==0', {
                         'cflags': [ '-mthumb-interwork' ],
                       }],
-                      ['armv7==0', {
+                      ['armv7==0 and android_webview_build==0', {
                         # Flags suitable for Android emulator
                         'cflags': [
                           '-march=armv5te',
