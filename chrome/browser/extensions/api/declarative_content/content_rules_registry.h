@@ -140,6 +140,8 @@ class ContentRulesRegistry : public RulesRegistryWithCache,
   content::NotificationRegistrar registrar_;
 
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentRulesRegistry);
 };
 
 }  // namespace extensions

@@ -77,6 +77,8 @@ class InitializingRulesRegistry : public RulesRegistry {
   typedef std::map<std::string, std::set<std::string> > RuleIdentifiersMap;
   RuleIdentifiersMap used_rule_identifiers_;
   int last_generated_rule_identifier_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitializingRulesRegistry);
 };
 
 }  // namespace extensions

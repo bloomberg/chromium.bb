@@ -21,22 +21,15 @@ namespace extensions {
 
 class RulesRegistry;
 
-// Traits that describe how RulesRegistry should be deleted. This just deletes
-// the RulesRegistry on its owner thread.
-struct RulesRegistryDeleteTraits {
- public:
-  static void Destruct(const RulesRegistry* rules_registry);
-};
-
 // Interface for rule registries.
 //
-// All functions except GetOwnerThread() are only called on the thread
-// indicated by GetOwnerThread(). The object is destroyed on the owner thread.
-class RulesRegistry
-    : public base::RefCountedThreadSafe<RulesRegistry,
-                                        RulesRegistryDeleteTraits> {
+// All functions except GetOwnerThread() and the destructor are only called on
+// the thread indicated by GetOwnerThread().
+class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
  public:
   typedef extensions::api::events::Rule Rule;
+
+  RulesRegistry() {}
 
   // Registers |rules|, owned by |extension_id| to this RulesRegistry.
   // If a concrete RuleRegistry does not support some of the rules,
@@ -99,9 +92,11 @@ class RulesRegistry
   virtual content::BrowserThread::ID GetOwnerThread() const = 0;
 
  protected:
-  friend struct RulesRegistryDeleteTraits;
-  friend class base::DeleteHelper<RulesRegistry>;
   virtual ~RulesRegistry() {}
+
+ private:
+  friend class base::RefCountedThreadSafe<RulesRegistry>;
+  DISALLOW_COPY_AND_ASSIGN(RulesRegistry);
 };
 
 }  // namespace extensions

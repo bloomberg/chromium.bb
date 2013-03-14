@@ -65,7 +65,7 @@ class RulesRegistryWithCache : public RulesRegistry {
       const std::string& extension_id,
       std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
   virtual void OnExtensionUnloaded(const std::string& extension_id) OVERRIDE;
-  virtual content::BrowserThread::ID GetOwnerThread() const = 0;
+  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE = 0;
 
  protected:
   virtual ~RulesRegistryWithCache();
@@ -95,6 +95,8 @@ class RulesRegistryWithCache : public RulesRegistry {
 
   scoped_ptr<Delegate> delegate_;
   std::vector<base::Closure> ready_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(RulesRegistryWithCache);
 };
 
 }  // namespace extensions

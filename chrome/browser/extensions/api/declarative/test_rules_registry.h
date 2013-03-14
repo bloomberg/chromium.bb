@@ -39,6 +39,8 @@ class TestRulesRegistry : public RulesRegistryWithCache {
   // RulesRegistryWithCache. Defaults to "".
   std::string result_;
   content::BrowserThread::ID owner_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRulesRegistry);
 };
 
 }  // namespace extensions
