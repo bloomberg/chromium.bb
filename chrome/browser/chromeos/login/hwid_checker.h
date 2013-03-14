@@ -9,13 +9,10 @@
 
 namespace chromeos {
 
-// Calculates checksum for given string as it made for HWID v1 and v2.
-std::string CalculateHWIDChecksum(const std::string& data);
-
-// Checks if given HWID correct in terms of HWID v1 or v2.
+// Checks if given HWID correct.
 bool IsHWIDCorrect(const std::string& hwid);
 
-// Checks if current machine has correct HWID v1 or v2.
+// Checks if current machine has correct HWID.
 bool IsMachineHWIDCorrect();
 
 } // namespace chromeos
