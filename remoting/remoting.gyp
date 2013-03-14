@@ -397,8 +397,6 @@
             'host/local_input_monitor.h',
             'host/local_input_monitor_linux.cc',
             'host/local_input_monitor_mac.mm',
-            'host/local_input_monitor_thread_linux.cc',
-            'host/local_input_monitor_thread_linux.h',
             'host/local_input_monitor_win.cc',
             'host/log_to_server.cc',
             'host/log_to_server.h',

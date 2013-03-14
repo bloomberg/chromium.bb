@@ -36,7 +36,9 @@ void HostUserInterface::Init() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   disconnect_window_ = DisconnectWindow::Create(&ui_strings());
-  local_input_monitor_ = LocalInputMonitor::Create();
+  local_input_monitor_ = LocalInputMonitor::Create(ui_task_runner_,
+                                                   network_task_runner_,
+                                                   ui_task_runner_);
 }
 
 void HostUserInterface::Start(ChromotingHost* host,

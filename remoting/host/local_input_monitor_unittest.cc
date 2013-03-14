@@ -20,6 +20,12 @@ using testing::AnyNumber;
 
 namespace {
 
+#if defined(OS_WIN)
+const MessageLoop::Type kDesiredMessageLoopType = MessageLoop::TYPE_UI;
+#else  // !defined(OS_WIN)
+const MessageLoop::Type kDesiredMessageLoopType = MessageLoop::TYPE_IO;
+#endif  // !defined(OS_WIN)
+
 class FakeMouseMoveObserver : public MouseMoveObserver {
  public:
   FakeMouseMoveObserver() {}
@@ -34,28 +40,13 @@ class FakeMouseMoveObserver : public MouseMoveObserver {
 
 class LocalInputMonitorTest : public testing::Test {
  public:
-  LocalInputMonitorTest() {}
+  LocalInputMonitorTest() : message_loop_(kDesiredMessageLoopType) {
+  }
 
   virtual void SetUp() OVERRIDE {
+    // Arrange to run |message_loop_| until no components depend on it.
     task_runner_ = new AutoThreadTaskRunner(
-        message_loop_.message_loop_proxy(),
-        base::Bind(&LocalInputMonitorTest::OnStopTaskRunner,
-                   base::Unretained(this)));
-  }
-
-  void OnStopTaskRunner() {
-    message_loop_.PostTask(
-        FROM_HERE, base::Bind(&LocalInputMonitorTest::DestroyLocalInputMonitor,
-                              base::Unretained(this)));
-  }
-
-  void DestroyLocalInputMonitor() {
-    if (local_input_monitor_) {
-      local_input_monitor_->Stop();
-      local_input_monitor_.reset();
-    }
-
-    message_loop_.PostTask(FROM_HERE, run_loop_.QuitClosure());
+        message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
   }
 
   MessageLoop message_loop_;
@@ -63,19 +54,23 @@ class LocalInputMonitorTest : public testing::Test {
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
   FakeMouseMoveObserver mouse_move_observer_;
-  scoped_ptr<LocalInputMonitor> local_input_monitor_;
 };
 
 // This test is really to exercise only the creation and destruction code in
 // LocalInputMonitor.
 TEST_F(LocalInputMonitorTest, Basic) {
-  local_input_monitor_ = LocalInputMonitor::Create();
-  local_input_monitor_->Start(
-      &mouse_move_observer_,
-      base::Bind(&FakeMouseMoveObserver::OnDisconnectCallback,
-                 base::Unretained(&mouse_move_observer_)));
+  {
+    scoped_ptr<LocalInputMonitor> local_input_monitor =
+        LocalInputMonitor::Create(task_runner_, task_runner_, task_runner_);
+    task_runner_ = NULL;
 
-  task_runner_ = NULL;
+    local_input_monitor->Start(
+        &mouse_move_observer_,
+        base::Bind(&FakeMouseMoveObserver::OnDisconnectCallback,
+                   base::Unretained(&mouse_move_observer_)));
+    local_input_monitor->Stop();
+  }
+
   run_loop_.Run();
 }
 

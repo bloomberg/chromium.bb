@@ -6,7 +6,12 @@
 #define REMOTING_HOST_LOCAL_INPUT_MONITOR_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace remoting {
 
@@ -26,7 +31,10 @@ class LocalInputMonitor {
                      const base::Closure& disconnect_callback) = 0;
   virtual void Stop() = 0;
 
-  static scoped_ptr<LocalInputMonitor> Create();
+  static scoped_ptr<LocalInputMonitor> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 };
 
 }  // namespace remoting

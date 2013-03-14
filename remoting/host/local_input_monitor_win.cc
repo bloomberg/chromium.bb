@@ -4,8 +4,11 @@
 
 #include "remoting/host/local_input_monitor.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/win/wrapped_window_proc.h"
@@ -25,7 +28,9 @@ const USHORT kMouseUsage = 2;
 class LocalInputMonitorWin : public base::NonThreadSafe,
                              public LocalInputMonitor {
  public:
-  LocalInputMonitorWin();
+  LocalInputMonitorWin(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~LocalInputMonitorWin();
 
   virtual void Start(MouseMoveObserver* mouse_move_observer,
@@ -33,53 +38,117 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
   virtual void Stop() OVERRIDE;
 
  private:
-  // Handles WM_CREATE messages.
-  LRESULT OnCreate(HWND hwnd);
+  // The actual implementation resides in LocalInputMonitorWin::Core class.
+  class Core : public base::RefCountedThreadSafe<Core> {
+   public:
+    Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+         scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  // Handles WM_INPUT messages.
-  LRESULT OnInput(HRAWINPUT input_handle);
+    void Start(MouseMoveObserver* mouse_move_observer);
+    void Stop();
 
-  // Window procedure invoked by the OS to process window messages.
-  static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message,
-                                     WPARAM wparam, LPARAM lparam);
+   private:
+    friend class base::RefCountedThreadSafe<Core>;
+    virtual ~Core();
 
-  // Atom representing the input window class.
-  ATOM atom_;
+    void StartOnUiThread();
+    void StopOnUiThread();
 
-  // Instance of the module containing the window procedure.
-  HINSTANCE instance_;
+    // Posts OnLocalMouseMoved() notification to |mouse_move_observer_| on
+    // the |caller_task_runner_| thread.
+    void OnLocalMouseMoved(const SkIPoint& position);
 
-  // Handle of the input window.
-  HWND window_;
+    // Handles WM_CREATE messages.
+    LRESULT OnCreate(HWND hwnd);
 
-  // Observer to dispatch mouse event notifications to.
-  MouseMoveObserver* observer_;
+    // Handles WM_INPUT messages.
+    LRESULT OnInput(HRAWINPUT input_handle);
+
+    // Window procedure invoked by the OS to process window messages.
+    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message,
+                                       WPARAM wparam, LPARAM lparam);
+
+    // Task runner on which public methods of this class must be called.
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+
+    // Task runner on which |window_| is created.
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+    // Atom representing the input window class.
+    ATOM atom_;
+
+    // Instance of the module containing the window procedure.
+    HINSTANCE instance_;
+
+    // Handle of the input window.
+    HWND window_;
+
+    // Observer to dispatch mouse event notifications to.
+    MouseMoveObserver* mouse_move_observer_;
+
+    DISALLOW_COPY_AND_ASSIGN(Core);
+  };
+
+  scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorWin);
 };
 
-LocalInputMonitorWin::LocalInputMonitorWin()
-    : atom_(0),
-      instance_(NULL),
-      window_(NULL),
-      observer_(NULL) {
+LocalInputMonitorWin::LocalInputMonitorWin(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : core_(new Core(caller_task_runner, ui_task_runner)) {
 }
 
 LocalInputMonitorWin::~LocalInputMonitorWin() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!atom_);
-  DCHECK(!instance_);
-  DCHECK(!window_);
-  DCHECK(!observer_);
 }
 
 void LocalInputMonitorWin::Start(MouseMoveObserver* mouse_move_observer,
                                  const base::Closure& disconnect_callback) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!observer_);
+  core_->Start(mouse_move_observer);
+}
+
+void LocalInputMonitorWin::Stop() {
+  core_->Stop();
+}
+
+LocalInputMonitorWin::Core::Core(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : caller_task_runner_(caller_task_runner),
+      ui_task_runner_(ui_task_runner),
+      atom_(0),
+      instance_(NULL),
+      window_(NULL),
+      mouse_move_observer_(NULL) {
+}
+
+void LocalInputMonitorWin::Core::Start(MouseMoveObserver* mouse_move_observer) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(!mouse_move_observer_);
   DCHECK(mouse_move_observer);
 
-  observer_ = mouse_move_observer;
+  mouse_move_observer_ = mouse_move_observer;
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&Core::StartOnUiThread, this));
+}
+
+void LocalInputMonitorWin::Core::Stop() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  mouse_move_observer_ = NULL;
+  ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::StopOnUiThread, this));
+}
+
+LocalInputMonitorWin::Core::~Core() {
+  DCHECK(!atom_);
+  DCHECK(!instance_);
+  DCHECK(!window_);
+  DCHECK(!mouse_move_observer_);
+}
+
+void LocalInputMonitorWin::Core::StartOnUiThread() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   // Create a window for receiving raw input.
   string16 window_class_name = base::StringPrintf(kWindowClassFormat, this);
@@ -105,9 +174,8 @@ void LocalInputMonitorWin::Start(MouseMoveObserver* mouse_move_observer,
   }
 }
 
-void LocalInputMonitorWin::Stop() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(observer_);
+void LocalInputMonitorWin::Core::StopOnUiThread() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (window_ != NULL) {
     DestroyWindow(window_);
@@ -119,12 +187,21 @@ void LocalInputMonitorWin::Stop() {
     atom_ = 0;
     instance_ = NULL;
   }
-
-  observer_ = NULL;
 }
 
-LRESULT LocalInputMonitorWin::OnCreate(HWND hwnd) {
-  DCHECK(CalledOnValidThread());
+void LocalInputMonitorWin::Core::OnLocalMouseMoved(const SkIPoint& position) {
+  if (!caller_task_runner_->BelongsToCurrentThread()) {
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Core::OnLocalMouseMoved, this, position));
+    return;
+  }
+
+  if (mouse_move_observer_)
+    mouse_move_observer_->OnLocalMouseMoved(position);
+}
+
+LRESULT LocalInputMonitorWin::Core::OnCreate(HWND hwnd) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   // Register to receive raw mouse input.
   RAWINPUTDEVICE device = {0};
@@ -140,8 +217,8 @@ LRESULT LocalInputMonitorWin::OnCreate(HWND hwnd) {
   return 0;
 }
 
-LRESULT LocalInputMonitorWin::OnInput(HRAWINPUT input_handle) {
-  DCHECK(CalledOnValidThread());
+LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   // Get the size of the input record.
   UINT size = 0;
@@ -178,14 +255,14 @@ LRESULT LocalInputMonitorWin::OnInput(HRAWINPUT input_handle) {
       position.y = 0;
     }
 
-    observer_->OnLocalMouseMoved(SkIPoint::Make(position.x, position.y));
+    OnLocalMouseMoved(SkIPoint::Make(position.x, position.y));
   }
 
   return DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
 }
 
 // static
-LRESULT CALLBACK LocalInputMonitorWin::WindowProc(
+LRESULT CALLBACK LocalInputMonitorWin::Core::WindowProc(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   // Store |this| to the window's user data.
   if (message == WM_CREATE) {
@@ -196,8 +273,7 @@ LRESULT CALLBACK LocalInputMonitorWin::WindowProc(
     CHECK(result != 0 || GetLastError() == ERROR_SUCCESS);
   }
 
-  LocalInputMonitorWin* self = reinterpret_cast<LocalInputMonitorWin*>(
-      GetWindowLongPtr(hwnd, GWLP_USERDATA));
+  Core* self = reinterpret_cast<Core*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
   switch (message) {
     case WM_CREATE:
       return self->OnCreate(hwnd);
@@ -212,8 +288,12 @@ LRESULT CALLBACK LocalInputMonitorWin::WindowProc(
 
 }  // namespace
 
-scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {
-  return scoped_ptr<LocalInputMonitor>(new LocalInputMonitorWin());
+scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+  return scoped_ptr<LocalInputMonitor>(
+      new LocalInputMonitorWin(caller_task_runner, ui_task_runner));
 }
 
 }  // namespace remoting
