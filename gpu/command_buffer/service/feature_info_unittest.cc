@@ -34,13 +34,14 @@ class FeatureInfoTest : public testing::Test {
   }
 
   void SetupInitExpectations(const char* extensions) {
-    SetupInitExpectationsWithVendor(extensions, "", "");
+    SetupInitExpectationsWithVendor(extensions, "", "", "");
   }
 
   void SetupInitExpectationsWithVendor(
-      const char* extensions, const char* vendor, const char* renderer) {
+      const char* extensions, const char* vendor, const char* renderer,
+      const char* version) {
     TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
-        gl_.get(), extensions, vendor, renderer);
+        gl_.get(), extensions, vendor, renderer, version);
   }
 
  protected:
@@ -801,14 +802,14 @@ TEST_F(FeatureInfoTest, InitializeOES_element_index_uint) {
 }
 
 TEST_F(FeatureInfoTest, InitializeARM) {
-  SetupInitExpectationsWithVendor("", "ARM", "MAli-T604");
+  SetupInitExpectationsWithVendor("", "ARM", "MAli-T604", "");
   info_->Initialize(NULL);
   EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
 }
 
 TEST_F(FeatureInfoTest, InitializeImagination) {
   SetupInitExpectationsWithVendor(
-      "", "Imagination Techologies", "PowerVR SGX 540");
+      "", "Imagination Techologies", "PowerVR SGX 540", "");
   info_->Initialize(NULL);
   EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
@@ -816,7 +817,7 @@ TEST_F(FeatureInfoTest, InitializeImagination) {
 
 TEST_F(FeatureInfoTest, InitializeARMVAOs) {
   SetupInitExpectationsWithVendor(
-      "GL_OES_vertex_array_object", "ARM", "MAli-T604");
+      "GL_OES_vertex_array_object", "ARM", "MAli-T604", "");
   info_->Initialize(NULL);
   EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
@@ -825,9 +826,28 @@ TEST_F(FeatureInfoTest, InitializeARMVAOs) {
 TEST_F(FeatureInfoTest, InitializeImaginationVAOs) {
   SetupInitExpectationsWithVendor(
       "GL_OES_vertex_array_object",
-      "Imagination Techologies", "PowerVR SGX 540");
+      "Imagination Techologies", "PowerVR SGX 540", "");
   info_->Initialize(NULL);
   EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
+}
+
+TEST_F(FeatureInfoTest, InitializeSamplersWithARBSamplerObjects) {
+  SetupInitExpectationsWithVendor("GL_ARB_sampler_objects", "", "",
+                                  "OpenGL 3.0");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->feature_flags().enable_samplers);
+}
+
+TEST_F(FeatureInfoTest, InitializeSamplersWithES3) {
+  SetupInitExpectationsWithVendor("", "", "", "OpenGL ES 3.0");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->feature_flags().enable_samplers);
+}
+
+TEST_F(FeatureInfoTest, InitializeWithoutSamplers) {
+  SetupInitExpectationsWithVendor("", "", "", "OpenGL GL 3.0");
+  info_->Initialize(NULL);
+  EXPECT_FALSE(info_->feature_flags().enable_samplers);
 }
 
 }  // namespace gles2

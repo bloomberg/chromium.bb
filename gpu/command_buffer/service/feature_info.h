@@ -39,6 +39,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool native_vertex_array_object;
     bool disable_workarounds;
     bool enable_shader_name_hashing;
+    bool enable_samplers;
   };
 
   struct Workarounds {

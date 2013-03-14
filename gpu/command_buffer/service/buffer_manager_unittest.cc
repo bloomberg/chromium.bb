@@ -29,7 +29,7 @@ class BufferManagerTestBase : public testing::Test {
     ::gfx::GLInterface::SetGLInterface(gl_.get());
     if (feature_info) {
       TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
-          gl_.get(), extensions, vendor, renderer);
+          gl_.get(), extensions, vendor, renderer, "");
       feature_info->Initialize(NULL);
     }
     decoder_.reset(new MockGLES2Decoder());

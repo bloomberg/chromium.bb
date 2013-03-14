@@ -81,7 +81,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
       native_vertex_array_object(false),
       disable_workarounds(false),
-      enable_shader_name_hashing(false) {
+      enable_shader_name_hashing(false),
+      enable_samplers(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds()
@@ -662,6 +663,19 @@ void FeatureInfo::AddFeatures() {
       workarounds_.max_cube_map_texture_size = 4096;
     }
 #endif
+  }
+
+  bool is_es3 = false;
+  const char* str = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  if (str) {
+    std::string lstr(StringToLowerASCII(std::string(str)));
+    is_es3 = (lstr.substr(0, 12) == "opengl es 3.");
+  }
+
+  if (is_es3 || extensions.Contains("GL_ARB_sampler_objects")) {
+    feature_flags_.enable_samplers = true;
+    // TODO(dsinclair): Add AddExtensionString("GL_CHROMIUM_sampler_objects")
+    // when available.
   }
 }
 

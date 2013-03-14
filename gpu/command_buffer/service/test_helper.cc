@@ -272,14 +272,15 @@ void TestHelper::SetupContextGroupInitExpectations(
 
 void TestHelper::SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions) {
-  SetupFeatureInfoInitExpectationsWithVendor(gl, extensions, "", "");
+  SetupFeatureInfoInitExpectationsWithVendor(gl, extensions, "", "", "");
 }
 
 void TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
      ::gfx::MockGLInterface* gl,
      const char* extensions,
      const char* vendor,
-     const char* renderer) {
+     const char* renderer,
+     const char* version) {
   InSequence sequence;
 
   EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
@@ -290,6 +291,9 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetString(GL_RENDERER))
       .WillOnce(Return(reinterpret_cast<const uint8*>(renderer)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, GetString(GL_VERSION))
+      .WillOnce(Return(reinterpret_cast<const uint8*>(version)))
       .RetiresOnSaturation();
 }
 

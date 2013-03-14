@@ -71,7 +71,8 @@ class TestHelper {
       ::gfx::MockGLInterface* gl,
       const char* extensions,
       const char* vendor,
-      const char* renderer);
+      const char* renderer,
+      const char* version);
   static void SetupTextureManagerInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);
   static void SetupTextureManagerDestructionExpectations(
