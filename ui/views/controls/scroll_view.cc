@@ -167,6 +167,22 @@ int ScrollView::GetScrollBarHeight() const {
   return horiz_sb_ ? horiz_sb_->GetLayoutSize() : 0;
 }
 
+void ScrollView::SetHorizontalScrollBar(ScrollBar* horiz_sb) {
+  DCHECK(horiz_sb);
+  horiz_sb->SetVisible(horiz_sb_->visible());
+  delete horiz_sb_;
+  horiz_sb->set_controller(this);
+  horiz_sb_ = horiz_sb;
+}
+
+void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
+  DCHECK(vert_sb);
+  vert_sb->SetVisible(vert_sb_->visible());
+  delete vert_sb_;
+  vert_sb->set_controller(this);
+  vert_sb_ = vert_sb;
+}
+
 void ScrollView::Layout() {
   // Most views will want to auto-fit the available space. Most of them want to
   // use all available width (without overflowing) and only overflow in

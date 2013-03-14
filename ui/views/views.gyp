@@ -179,6 +179,8 @@
         'controls/scrollbar/base_scroll_bar_thumb.h',
         'controls/scrollbar/bitmap_scroll_bar.cc',
         'controls/scrollbar/bitmap_scroll_bar.h',
+        'controls/scrollbar/kennedy_scroll_bar.cc',
+        'controls/scrollbar/kennedy_scroll_bar.h',
         'controls/scrollbar/native_scroll_bar_views.cc',
         'controls/scrollbar/native_scroll_bar_views.h',
         'controls/scrollbar/native_scroll_bar_wrapper.h',

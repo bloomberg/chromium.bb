@@ -57,12 +57,19 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // Scroll the contents by the specified offset (contents coordinates).
   bool ScrollByContentsOffset(int contents_offset);
 
+  // Called when the thumb state has been changed from |old_state| to
+  // |new_state|.
+  void OnThumbStateChanged(CustomButton::ButtonState old_state,
+                           CustomButton::ButtonState new_state);
+
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE = 0;
   virtual void Layout() OVERRIDE = 0;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
@@ -93,7 +100,6 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE = 0;
 
   BaseScrollBarThumb* GetThumb() const;
-
   CustomButton::ButtonState GetThumbTrackState() const;
 
   // Wrapper functions that calls the controller. We need this since native
@@ -108,8 +114,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // Changes to 'pushed' state and starts a timer to scroll repeatedly.
   void ProcessPressEvent(const ui::LocatedEvent& event);
 
-  // Resets state to 'normal' and stops the repeater.
-  void ResetState();
+  // Sets state to |state| and stops the repeater.
+  void SetState(CustomButton::ButtonState state);
 
   // Called when the mouse is pressed down in the track area.
   void TrackClicked();

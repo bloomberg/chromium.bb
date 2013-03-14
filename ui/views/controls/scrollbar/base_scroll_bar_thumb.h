@@ -60,6 +60,8 @@ class VIEWS_EXPORT BaseScrollBarThumb : public View {
   // Update our state and schedule a repaint when the mouse moves over us.
   void SetState(CustomButton::ButtonState state);
 
+  BaseScrollBar* scroll_bar() { return scroll_bar_; }
+
  private:
   // The BaseScrollBar that owns us.
   BaseScrollBar* scroll_bar_;

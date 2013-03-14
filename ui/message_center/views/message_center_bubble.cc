@@ -25,6 +25,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/scrollbar/kennedy_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
@@ -242,6 +243,7 @@ class BoundedScrollView : public views::ScrollView {
     if (IsRichNotificationEnabled()) {
       set_background(views::Background::CreateSolidBackground(
           kMessageCenterBackgroundColor));
+      SetVerticalScrollBar(new views::KennedyScrollBar(false));
     }
   }
 

@@ -57,6 +57,11 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   const ScrollBar* horizontal_scroll_bar() const { return horiz_sb_; }
   const ScrollBar* vertical_scroll_bar() const { return vert_sb_; }
 
+  // Customize the scrollbar design. ScrollView takes the ownership of the
+  // specified ScrollBar. |horiz_sb| and |vert_sb| cannot be NULL.
+  void SetHorizontalScrollBar(ScrollBar* horiz_sb);
+  void SetVerticalScrollBar(ScrollBar* vert_sb);
+
   // View overrides:
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
