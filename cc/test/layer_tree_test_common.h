@@ -37,6 +37,7 @@ public:
     virtual bool prepareToDrawOnThread(
         LayerTreeHostImpl*, LayerTreeHostImpl::FrameData*, bool result);
     virtual void drawLayersOnThread(LayerTreeHostImpl*) { }
+    virtual void swapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) { }
     virtual void animateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
     virtual void updateAnimationState(LayerTreeHostImpl*, bool hasUnfinishedAnimation) { }
     virtual void willAnimateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
@@ -167,6 +168,7 @@ public:
     virtual void CommitComplete() OVERRIDE;
     virtual bool PrepareToDraw(FrameData* frame) OVERRIDE;
     virtual void DrawLayers(FrameData* frame) OVERRIDE;
+    virtual bool SwapBuffers() OVERRIDE;
     virtual bool ActivatePendingTreeIfNeeded() OVERRIDE;
     virtual bool InitializeRenderer(scoped_ptr<OutputSurface> outputSurface) OVERRIDE;
     virtual void SetVisible(bool visible) OVERRIDE;

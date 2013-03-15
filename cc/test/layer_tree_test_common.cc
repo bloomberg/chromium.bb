@@ -98,6 +98,13 @@ void MockLayerTreeHostImpl::DrawLayers(FrameData* frame)
     m_testHooks->drawLayersOnThread(this);
 }
 
+bool MockLayerTreeHostImpl::SwapBuffers()
+{
+    bool result = LayerTreeHostImpl::SwapBuffers();
+    m_testHooks->swapBuffersOnThread(this, result);
+    return result;
+}
+
 bool MockLayerTreeHostImpl::ActivatePendingTreeIfNeeded()
 {
     if (!pending_tree())

@@ -187,7 +187,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   Renderer* renderer() { return renderer_.get(); }
   const RendererCapabilities& GetRendererCapabilities() const;
 
-  bool SwapBuffers();
+  virtual bool SwapBuffers();
 
   void Readback(void* pixels, gfx::Rect rect_in_device_viewport);
 

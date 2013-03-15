@@ -4,101 +4,13 @@
 
 #include "cc/gl_renderer.h"
 
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "cc/compositor_frame_metadata.h"
 #include "cc/draw_quad.h"
-#include "cc/prioritized_resource_manager.h"
-#include "cc/resource_provider.h"
-#include "cc/test/paths.h"
-#include "cc/test/pixel_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/codec/png_codec.h"
-#include "ui/gl/gl_implementation.h"
-#include "webkit/gpu/context_provider_in_process.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "cc/test/pixel_test.h"
 
 namespace cc {
 namespace {
 
-const int kDeviceViewportWidth = 200;
-const int kDeviceViewportHeight = 200;
-
-class FakeRendererClient : public RendererClient {
- public:
-  FakeRendererClient()
-  {
-  }
-
-  // RendererClient methods.
-  virtual gfx::Size DeviceViewportSize() const OVERRIDE {
-    return gfx::Size(kDeviceViewportWidth, kDeviceViewportHeight);
-  }
-  virtual const LayerTreeSettings& Settings() const OVERRIDE {
-    static LayerTreeSettings fake_settings;
-    return fake_settings;
-  }
-  virtual void DidLoseOutputSurface() OVERRIDE { }
-  virtual void OnSwapBuffersComplete() OVERRIDE { }
-  virtual void SetFullRootLayerDamage() OVERRIDE { }
-  virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy&) OVERRIDE {}
-  virtual void EnforceManagedMemoryPolicy(
-      const ManagedMemoryPolicy&) OVERRIDE {}
-  virtual bool HasImplThread() const OVERRIDE { return false; }
-  virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
-  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
-      OVERRIDE { return CompositorFrameMetadata(); }
-};
-
-class GLRendererPixelTest : public testing::Test {
- protected:
-  GLRendererPixelTest() {}
-
-  virtual void SetUp() {
-    gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
-    scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
-        context3d(
-            new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl);
-    context3d->Initialize(WebKit::WebGraphicsContext3D::Attributes(), NULL);
-    output_surface_.reset(new OutputSurface(
-        context3d.PassAs<WebKit::WebGraphicsContext3D>()));
-    resource_provider_ = ResourceProvider::Create(output_surface_.get());
-    renderer_ = GLRenderer::Create(&fake_client_,
-                                   output_surface_.get(),
-                                   resource_provider_.get());
-
-    scoped_refptr<cc::ContextProvider> offscreen_contexts =
-        new webkit::gpu::ContextProviderInProcess(
-            webkit::gpu::ContextProviderInProcess::IN_PROCESS_COMMAND_BUFFER);
-    ASSERT_TRUE(offscreen_contexts->InitializeOnMainThread());
-    resource_provider_->SetOffscreenContextProvider(offscreen_contexts);
-  }
-
-  bool PixelsMatchReference(base::FilePath ref_file) {
-    gfx::Rect viewport_rect(kDeviceViewportWidth, kDeviceViewportHeight);
-
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     viewport_rect.width(), viewport_rect.height());
-    bitmap.allocPixels();
-    unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
-    renderer_->GetFramebufferPixels(pixels, viewport_rect);
-
-    base::FilePath test_data_dir;
-    if (!PathService::Get(cc::DIR_TEST_DATA, &test_data_dir))
-      return false;
-
-    // To rebaseline:
-    //return WritePNGFile(bitmap, test_data_dir.Append(ref_file));
-
-    return IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file));
-  }
-
-  scoped_ptr<OutputSurface> output_surface_;
-  FakeRendererClient fake_client_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<GLRenderer> renderer_;
-};
+class GLRendererPixelTest : public PixelTest {};
 
 scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
                                                 gfx::Rect rect) {
@@ -158,7 +70,7 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
 
 #if !defined(OS_ANDROID)
 TEST_F(GLRendererPixelTest, simpleGreenRect) {
-  gfx::Rect rect(kDeviceViewportWidth, kDeviceViewportHeight);
+  gfx::Rect rect(device_viewport_size_);
 
   RenderPass::Id id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
@@ -182,14 +94,14 @@ TEST_F(GLRendererPixelTest, simpleGreenRect) {
 }
 
 TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
-  gfx::Rect viewport_rect(kDeviceViewportWidth, kDeviceViewportHeight);
+  gfx::Rect viewport_rect(device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
   RenderPass::Id child_pass_id(2, 2);
-  gfx::Rect pass_rect(kDeviceViewportWidth, kDeviceViewportHeight);
+  gfx::Rect pass_rect(device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -202,15 +114,15 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   blue->SetNew(shared_state.get(),
                gfx::Rect(0,
                          0,
-                         kDeviceViewportWidth / 2,
-                         kDeviceViewportHeight),
+                         device_viewport_size_.width() / 2,
+                         device_viewport_size_.height()),
                SK_ColorBLUE);
   scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
   yellow->SetNew(shared_state.get(),
-               gfx::Rect(kDeviceViewportWidth / 2,
-                         0,
-                         kDeviceViewportWidth / 2,
-                         kDeviceViewportHeight),
+                 gfx::Rect(device_viewport_size_.width() / 2,
+                           0,
+                           device_viewport_size_.width() / 2,
+                           device_viewport_size_.height()),
                  SK_ColorYELLOW);
 
   child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
@@ -238,7 +150,7 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
 class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
  protected:
   void DrawFrame() {
-    gfx::Rect device_viewport_rect(kDeviceViewportWidth, kDeviceViewportHeight);
+    gfx::Rect device_viewport_rect(device_viewport_size_);
 
     RenderPass::Id root_id(1, 1);
     scoped_ptr<RenderPass> root_pass =
@@ -288,10 +200,10 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
       root_pass->shared_quad_state_list.push_back(shared_state.Pass());
     }
 
-    const int kColumnWidth = kDeviceViewportWidth / 3;
+    const int kColumnWidth = device_viewport_rect.width() / 3;
 
     gfx::Rect left_rect = gfx::Rect(0, 0, kColumnWidth, 20);
-    for (int i = 0; left_rect.y() < kDeviceViewportHeight; ++i) {
+    for (int i = 0; left_rect.y() < device_viewport_rect.height(); ++i) {
       scoped_ptr<SharedQuadState> shared_state =
           CreateTestSharedQuadState(identity_content_to_target_transform,
                                     left_rect);
@@ -303,7 +215,7 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
     }
 
     gfx::Rect middle_rect = gfx::Rect(kColumnWidth+1, 0, kColumnWidth, 20);
-    for (int i = 0; middle_rect.y() < kDeviceViewportHeight; ++i) {
+    for (int i = 0; middle_rect.y() < device_viewport_rect.height(); ++i) {
       scoped_ptr<SharedQuadState> shared_state =
           CreateTestSharedQuadState(identity_content_to_target_transform,
                                     middle_rect);
@@ -315,7 +227,7 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
     }
 
     gfx::Rect right_rect = gfx::Rect((kColumnWidth+1)*2, 0, kColumnWidth, 20);
-    for (int i = 0; right_rect.y() < kDeviceViewportHeight; ++i) {
+    for (int i = 0; right_rect.y() < device_viewport_rect.height(); ++i) {
       scoped_ptr<SharedQuadState> shared_state =
           CreateTestSharedQuadState(identity_content_to_target_transform,
                                     right_rect);
@@ -354,8 +266,7 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
   background_filters_.append(
       WebKit::WebFilterOperation::createInvertFilter(1.f));
 
-  filter_pass_content_rect_ =
-      gfx::Rect(kDeviceViewportWidth, kDeviceViewportHeight);
+  filter_pass_content_rect_ = gfx::Rect(device_viewport_size_);
   filter_pass_content_rect_.Inset(12, 14, 16, 18);
 
   DrawFrame();
