@@ -47,6 +47,7 @@ LayerTreeSettings::LayerTreeSettings()
     , defaultTileSize(gfx::Size(256, 256))
     , maxUntiledLayerSize(gfx::Size(512, 512))
     , minimumOcclusionTrackingSize(gfx::Size(160, 160))
+    , usePinchZoomScrollbars(false)
 {
     // TODO(danakj): Renable surface caching when we can do it more realiably. crbug.com/170713
     cacheRenderPassContents = false;

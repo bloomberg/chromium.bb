@@ -51,6 +51,7 @@ class CC_EXPORT LayerTreeSettings {
   gfx::Size defaultTileSize;
   gfx::Size maxUntiledLayerSize;
   gfx::Size minimumOcclusionTrackingSize;
+  bool usePinchZoomScrollbars;
 
   LayerTreeDebugState initialDebugState;
 };

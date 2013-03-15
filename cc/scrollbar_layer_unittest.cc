@@ -5,6 +5,7 @@
 #include "cc/scrollbar_layer.h"
 
 #include "cc/append_quads_data.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/priority_calculator.h"
 #include "cc/resource_update_queue.h"
@@ -340,6 +341,70 @@ TEST_F(ScrollbarLayerTestResourceCreation, solidColorNoResourceUpload)
 {
     m_layerTreeSettings.solidColorScrollbars = true;
     testResourceUpload(0);
+}
+
+TEST(ScrollbarLayerTest, pinchZoomScrollbarUpdates)
+{
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+
+    scoped_refptr<Layer> layerTreeRoot = Layer::Create();
+    layerTreeRoot->SetScrollable(true);
+
+    scoped_refptr<Layer> contentLayer = Layer::Create();
+    scoped_ptr<WebKit::WebScrollbar> scrollbar1(FakeWebScrollbar::Create());
+    scoped_refptr<Layer> scrollbarLayerHorizontal =
+        ScrollbarLayer::Create(scrollbar1.Pass(),
+        FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(),
+        FakeWebScrollbarThemeGeometry::create(true),
+        Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID);
+    scoped_ptr<WebKit::WebScrollbar> scrollbar2(FakeWebScrollbar::Create());
+    scoped_refptr<Layer> scrollbarLayerVertical =
+        ScrollbarLayer::Create(scrollbar2.Pass(),
+        FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(),
+        FakeWebScrollbarThemeGeometry::create(true),
+        Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID);
+
+    layerTreeRoot->AddChild(contentLayer);
+    layerTreeRoot->AddChild(scrollbarLayerHorizontal);
+    layerTreeRoot->AddChild(scrollbarLayerVertical);
+
+    layerTreeRoot->SetScrollOffset(gfx::Vector2d(10, 20));
+    layerTreeRoot->SetMaxScrollOffset(gfx::Vector2d(30, 50));
+    layerTreeRoot->SetBounds(gfx::Size(100, 200));
+    contentLayer->SetBounds(gfx::Size(100, 200));
+
+    scoped_ptr<LayerImpl> layerImplTreeRoot =
+        TreeSynchronizer::SynchronizeTrees(layerTreeRoot.get(),
+            scoped_ptr<LayerImpl>(), hostImpl.active_tree());
+    TreeSynchronizer::PushProperties(layerTreeRoot.get(),
+        layerImplTreeRoot.get());
+
+    ScrollbarLayerImpl* pinchZoomHorizontal = static_cast<ScrollbarLayerImpl*>(
+        layerImplTreeRoot->children()[1]);
+    ScrollbarLayerImpl* pinchZoomVertical = static_cast<ScrollbarLayerImpl*>(
+        layerImplTreeRoot->children()[2]);
+
+    // Need a root layer in the active tree in order for DidUpdateScroll()
+    // to work.
+    hostImpl.active_tree()->SetRootLayer(layerImplTreeRoot.Pass());
+    hostImpl.active_tree()->FindRootScrollLayer();
+
+    // Manually set the pinch-zoom layers: normally this is done by
+    // LayerTreeHost.
+    hostImpl.active_tree()->SetPinchZoomHorizontalLayerId(
+        pinchZoomHorizontal->id());
+    hostImpl.active_tree()->SetPinchZoomVerticalLayerId(
+        pinchZoomVertical->id());
+
+    hostImpl.active_tree()->DidUpdateScroll();
+
+    EXPECT_EQ(10, pinchZoomHorizontal->CurrentPos());
+    EXPECT_EQ(100, pinchZoomHorizontal->TotalSize());
+    EXPECT_EQ(30, pinchZoomHorizontal->Maximum());
+    EXPECT_EQ(20, pinchZoomVertical->CurrentPos());
+    EXPECT_EQ(200, pinchZoomVertical->TotalSize());
+    EXPECT_EQ(50, pinchZoomVertical->Maximum());
 }
 
 }  // namespace

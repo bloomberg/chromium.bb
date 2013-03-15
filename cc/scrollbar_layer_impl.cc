@@ -4,6 +4,7 @@
 
 #include "cc/scrollbar_layer_impl.h"
 
+#include "cc/layer.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/layer_tree_settings.h"
 #include "cc/quad_sink.h"
@@ -40,7 +41,7 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(
       total_size_(0),
       maximum_(0),
       vertical_adjust_(0.f),
-      scroll_layer_id_(-1),
+      scroll_layer_id_(Layer::INVALID_ID),
       scrollbar_overlay_style_(WebScrollbar::ScrollbarOverlayStyleDefault),
       orientation_(WebScrollbar::Horizontal),
       control_size_(WebScrollbar::RegularScrollbar),

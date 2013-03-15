@@ -61,6 +61,10 @@ void ScrollbarLayer::SetScrollLayerId(int id) {
   SetNeedsFullTreeSync();
 }
 
+bool ScrollbarLayer::OpacityCanAnimateOnImplThread() const {
+  return scrollbar_->isOverlay();
+}
+
 WebKit::WebScrollbar::Orientation ScrollbarLayer::Orientation() const {
   return scrollbar_->orientation();
 }
@@ -129,6 +133,11 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
     scrollbar_layer->set_thumb_resource_id(thumb_->texture()->resourceId());
   else
     scrollbar_layer->set_thumb_resource_id(0);
+
+  // Pinch zoom scrollbarLayerImpl does not get its scroll_layer_id_
+  // set in LayerImpl, so we need to push it here.
+  if (scroll_layer_id_ == Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID)
+    scrollbar_layer->set_scroll_layer_id(scroll_layer_id_);
 }
 
 ScrollbarLayer* ScrollbarLayer::ToScrollbarLayer() {

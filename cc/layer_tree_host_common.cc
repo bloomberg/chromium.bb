@@ -232,7 +232,10 @@ static inline bool subtreeShouldBeSkipped(Layer* layer)
     // If the opacity is being animated then the opacity on the main thread is unreliable
     // (since the impl thread may be using a different opacity), so it should not be trusted.
     // In particular, it should not cause the subtree to be skipped.
-    return !layer->opacity() && !layer->OpacityIsAnimating();
+    // Similarly, for layers that might animate opacity using an impl-only
+    // animation, their subtree should also not be skipped.
+    return !layer->opacity() && !layer->OpacityIsAnimating() &&
+           !layer->OpacityCanAnimateOnImplThread();
 }
 
 // Called on each layer that could be drawn after all information from

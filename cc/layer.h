@@ -51,6 +51,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
                         public LayerAnimationValueObserver {
  public:
   typedef std::vector<scoped_refptr<Layer> > LayerList;
+  enum LayerIdLabels {
+    PINCH_ZOOM_ROOT_SCROLL_LAYER_ID = -2,
+    INVALID_ID = -1,
+  };
 
   static scoped_refptr<Layer> Create();
 
@@ -96,6 +100,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
   bool OpacityIsAnimating() const;
+  virtual bool OpacityCanAnimateOnImplThread() const;
 
   void SetFilters(const WebKit::WebFilterOperations& filters);
   const WebKit::WebFilterOperations& filters() const { return filters_; }

@@ -396,6 +396,10 @@ bool Layer::OpacityIsAnimating() const {
   return layer_animation_controller_->IsAnimatingProperty(Animation::Opacity);
 }
 
+bool Layer::OpacityCanAnimateOnImplThread() const {
+  return false;
+}
+
 void Layer::SetContentsOpaque(bool opaque) {
   if (contents_opaque_ == opaque)
     return;

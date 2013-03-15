@@ -53,6 +53,7 @@ class PrioritizedResource;
 class Region;
 class ResourceProvider;
 class ResourceUpdateQueue;
+class ScrollbarLayer;
 class TopControlsManager;
 struct ScrollAndScaleSet;
 
@@ -100,6 +101,8 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   void Layout();
   void BeginCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
+  void SetPinchZoomScrollbarsBoundsAndPosition();
+  void CreateAndAddPinchZoomScrollbars();
   void WillCommit();
   void CommitComplete();
   scoped_ptr<OutputSurface> CreateOutputSurface();
@@ -159,6 +162,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   void SetRootLayer(scoped_refptr<Layer> root_layer);
   Layer* root_layer() { return root_layer_.get(); }
   const Layer* root_layer() const { return root_layer_.get(); }
+  const Layer* RootScrollLayer() const;
 
   const LayerTreeSettings& settings() const { return settings_; }
 
@@ -279,6 +283,8 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
+  scoped_refptr<ScrollbarLayer> pinch_zoom_scrollbar_horizontal_;
+  scoped_refptr<ScrollbarLayer> pinch_zoom_scrollbar_vertical_;
 
   scoped_ptr<PrioritizedResourceManager> contents_texture_manager_;
   scoped_ptr<PrioritizedResource> surface_memory_placeholder_;

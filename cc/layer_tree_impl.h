@@ -34,6 +34,7 @@ class OutputSurface;
 class PaintTimeCounter;
 class Proxy;
 class ResourceProvider;
+class ScrollbarLayerImpl;
 class TileManager;
 struct RendererCapabilities;
 
@@ -191,10 +192,25 @@ class CC_EXPORT LayerTreeImpl {
   // Useful for debug assertions, probably shouldn't be used for anything else.
   Proxy* proxy() const;
 
+  void SetPinchZoomHorizontalLayerId(int layer_id);
+  void SetPinchZoomVerticalLayerId(int layer_id);
+
+  void DidBeginScroll();
+  void DidUpdateScroll();
+  void DidEndScroll();
+
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
   void UpdateSolidColorScrollbars();
+
+  // Hide existence of pinch-zoom scrollbars.
+  void UpdatePinchZoomScrollbars();
+  void FadeInPinchZoomScrollbars();
+  void FadeOutPinchZoomScrollbars();
+  ScrollbarLayerImpl* PinchZoomScrollbarHorizontal();
+  ScrollbarLayerImpl* PinchZoomScrollbarVertical();
+  bool HasPinchZoomScrollbars() const;
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
@@ -204,6 +220,9 @@ protected:
   LayerImpl* currently_scrolling_layer_;
   SkColor background_color_;
   bool has_transparent_background_;
+
+  int pinch_zoom_scrollbar_horizontal_layer_id_;
+  int pinch_zoom_scrollbar_vertical_layer_id_;
 
   float page_scale_factor_;
   float page_scale_delta_;

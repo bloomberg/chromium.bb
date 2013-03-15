@@ -45,6 +45,7 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
   void set_thumb_resource_id(ResourceProvider::ResourceId id) {
     thumb_resource_id_ = id;
   }
+  bool HasThumbTexture() { return thumb_resource_id_; }
 
 
   // ScrollbarLayerImplBase implementation.

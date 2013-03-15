@@ -32,6 +32,8 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   int scroll_layer_id() const { return scroll_layer_id_; }
   void SetScrollLayerId(int id);
 
+  virtual bool OpacityCanAnimateOnImplThread() const OVERRIDE;
+
   WebKit::WebScrollbar::Orientation Orientation() const;
 
   // Layer interface

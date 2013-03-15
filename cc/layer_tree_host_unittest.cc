@@ -16,6 +16,7 @@
 #include "cc/prioritized_resource.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_update_queue.h"
+#include "cc/scrollbar_layer.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -2194,6 +2195,178 @@ private:
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted)
+
+class LayerTreeHostTestPinchZoomScrollbarCreation : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestPinchZoomScrollbarCreation()
+        : m_rootLayer(ContentLayer::Create(&m_client))
+    {
+        m_settings.usePinchZoomScrollbars = true;
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        m_rootLayer->SetIsDrawable(true);
+        m_rootLayer->SetBounds(gfx::Size(100, 100));
+        m_layerTreeHost->SetRootLayer(m_rootLayer);
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didCommit() OVERRIDE
+    {
+        // We always expect two pinch-zoom scrollbar layers.
+        ASSERT_TRUE(2 == m_rootLayer->children().size());
+
+        // Pinch-zoom scrollbar layers always have invalid scrollLayerIds.
+        ScrollbarLayer* layer1 = m_rootLayer->children()[0]->ToScrollbarLayer();
+        ASSERT_TRUE(layer1);
+        EXPECT_EQ(Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID, layer1->scroll_layer_id());
+        EXPECT_EQ(0, layer1->opacity());
+        EXPECT_TRUE(layer1->OpacityCanAnimateOnImplThread());
+        EXPECT_TRUE(layer1->DrawsContent());
+
+        ScrollbarLayer* layer2 = m_rootLayer->children()[1]->ToScrollbarLayer();
+        ASSERT_TRUE(layer2);
+        EXPECT_EQ(Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID, layer2->scroll_layer_id());
+        EXPECT_EQ(0, layer2->opacity());
+        EXPECT_TRUE(layer2->OpacityCanAnimateOnImplThread());
+        EXPECT_TRUE(layer2->DrawsContent());
+
+        endTest();
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    FakeContentLayerClient m_client;
+    scoped_refptr<ContentLayer> m_rootLayer;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPinchZoomScrollbarCreation)
+
+class LayerTreeHostTestPinchZoomScrollbarResize : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestPinchZoomScrollbarResize()
+        : m_rootLayer(ContentLayer::Create(&m_client))
+        , m_numCommits(0)
+    {
+        m_settings.usePinchZoomScrollbars = true;
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        m_rootLayer->SetIsDrawable(true);
+        m_rootLayer->SetBounds(gfx::Size(100, 100));
+        m_layerTreeHost->SetRootLayer(m_rootLayer);
+        m_layerTreeHost->SetViewportSize(gfx::Size(100, 100),
+            gfx::Size(100, 100));
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didCommit() OVERRIDE
+    {
+        m_numCommits++;
+
+        ScrollbarLayer* layer1 = m_rootLayer->children()[0]->ToScrollbarLayer();
+        ASSERT_TRUE(layer1);
+        ScrollbarLayer* layer2 = m_rootLayer->children()[1]->ToScrollbarLayer();
+        ASSERT_TRUE(layer2);
+
+        // Get scrollbar thickness from horizontal scrollbar's height.
+        int thickness = layer1->bounds().height();
+
+        if (!layer1->Orientation() == WebKit::WebScrollbar::Horizontal)
+          std::swap(layer1, layer2);
+
+        gfx::Size viewportSize = m_layerTreeHost->layout_viewport_size();
+        EXPECT_EQ(viewportSize.width() - thickness, layer1->bounds().width());
+        EXPECT_EQ(viewportSize.height() - thickness, layer2->bounds().height());
+
+        switch (m_numCommits) {
+          case 1:
+          // Resizing the viewport should also resize the pinch-zoom scrollbars.
+          m_layerTreeHost->SetViewportSize(gfx::Size(120, 150),
+              gfx::Size(120, 150));
+          break;
+        default:
+          endTest();
+        }
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    FakeContentLayerClient m_client;
+    scoped_refptr<ContentLayer> m_rootLayer;
+    int m_numCommits;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPinchZoomScrollbarResize)
+
+class LayerTreeHostTestPinchZoomScrollbarNewRootLayer : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestPinchZoomScrollbarNewRootLayer()
+        : m_rootLayer(ContentLayer::Create(&m_client))
+        , m_numCommits(0)
+    {
+        m_settings.usePinchZoomScrollbars = true;
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        m_rootLayer->SetIsDrawable(true);
+        m_rootLayer->SetBounds(gfx::Size(100, 100));
+        m_layerTreeHost->SetRootLayer(m_rootLayer);
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didCommit() OVERRIDE
+    {
+        m_numCommits++;
+
+        // We always expect two pinch-zoom scrollbar layers.
+        ASSERT_TRUE(2 == m_rootLayer->children().size());
+
+        // Pinch-zoom scrollbar layers always have invalid scrollLayerIds.
+        ScrollbarLayer* layer1 = m_rootLayer->children()[0]->ToScrollbarLayer();
+        ASSERT_TRUE(layer1);
+        EXPECT_EQ(Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID, layer1->scroll_layer_id());
+        EXPECT_EQ(0, layer1->opacity());
+        EXPECT_TRUE(layer1->DrawsContent());
+
+        ScrollbarLayer* layer2 = m_rootLayer->children()[1]->ToScrollbarLayer();
+        ASSERT_TRUE(layer2);
+        EXPECT_EQ(Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID, layer2->scroll_layer_id());
+        EXPECT_EQ(0, layer2->opacity());
+        EXPECT_TRUE(layer2->DrawsContent());
+
+        if (m_numCommits == 1) {
+            // Create a new root layer and attach to tree to verify the pinch
+            // zoom scrollbars get correctly re-attached.
+            m_rootLayer = ContentLayer::Create(&m_client);
+            m_rootLayer->SetIsDrawable(true);
+            m_rootLayer->SetBounds(gfx::Size(100, 100));
+            m_layerTreeHost->SetRootLayer(m_rootLayer);
+            postSetNeedsCommitToMainThread();
+        } else
+            endTest();
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    FakeContentLayerClient m_client;
+    scoped_refptr<ContentLayer> m_rootLayer;
+    int m_numCommits;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPinchZoomScrollbarNewRootLayer)
 
 }  // namespace
 }  // namespace cc

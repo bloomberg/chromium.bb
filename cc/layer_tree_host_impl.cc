@@ -1357,6 +1357,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     if (status == ScrollOnMainThread) {
       num_main_thread_scrolls_++;
       UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
+      active_tree()->DidBeginScroll();
       return ScrollOnMainThread;
     }
 
@@ -1370,6 +1371,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     if (status == ScrollOnMainThread) {
       num_main_thread_scrolls_++;
       UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
+      active_tree()->DidBeginScroll();
       return ScrollOnMainThread;
     }
 
@@ -1394,6 +1396,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     num_impl_thread_scrolls_++;
     client_->RenewTreePriority();
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
+    active_tree()->DidBeginScroll();
     return ScrollStarted;
   }
   return ScrollIgnored;
@@ -1551,6 +1554,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
       break;
   }
 
+  active_tree()->DidUpdateScroll();
   if (did_scroll) {
     client_->SetNeedsCommitOnImplThread();
     client_->SetNeedsRedrawOnImplThread();
@@ -1568,6 +1572,7 @@ void LayerTreeHostImpl::ScrollEnd() {
   if (top_controls_manager_)
     top_controls_manager_->ScrollEnd();
   ClearCurrentlyScrollingLayer();
+  active_tree()->DidEndScroll();
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {
