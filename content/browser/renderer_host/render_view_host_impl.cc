@@ -21,7 +21,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -266,9 +265,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.swapped_out = is_swapped_out_;
   params.next_page_id = next_page_id;
   GetWebScreenInfo(&params.screen_info);
-
-  params.accessibility_mode =
-      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
+  params.accessibility_mode = accessibility_mode();
   params.allow_partial_swap = !GetProcess()->IsGuest();
 
   Send(new ViewMsg_New(params));

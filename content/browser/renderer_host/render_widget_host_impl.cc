@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "cc/compositor_frame.h"
 #include "cc/compositor_frame_ack.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -195,6 +196,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   // Because the widget initializes as is_hidden_ == false,
   // tell the process host that we're alive.
   process_->WidgetRestored();
+
+  accessibility_mode_ =
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
 
 #if defined(USE_AURA)
   bool overscroll_enabled = !CommandLine::ForCurrentProcess()->
