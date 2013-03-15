@@ -167,7 +167,7 @@ TEST_F(SearchTest, CoerceCommandLineURLToTemplateURL) {
       GURL("https://foo.com/instant?bar=bar#bar=bar"),
       CoerceCommandLineURLToTemplateURL(
           GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
-          template_url->instant_url_ref()));
+          template_url->instant_url_ref(), kDisableStartMargin));
 }
 
 const SearchTestCase kInstantNTPTestCases[] = {
@@ -240,30 +240,30 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
 
 TEST_F(SearchTest, GetInstantURLExtendedDisabled) {
   // Instant is disabled, so no Instant URL.
-  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
   // Enable Instant.
   profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
   EXPECT_EQ(GURL("http://foo.com/instant?foo=foo#foo=foo"),
-            GetInstantURL(profile()));
+            GetInstantURL(profile(), kDisableStartMargin));
 
   // Override the Instant URL on the commandline.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kInstantURL,
       "http://myserver.com:9000/dev?bar=bar#bar=bar");
   EXPECT_EQ(GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
-            GetInstantURL(profile()));
+            GetInstantURL(profile(), kDisableStartMargin));
 }
 
 TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
   EnableInstantExtendedAPIForTesting();
 
   // Instant is disabled, so no Instant URL.
-  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
   // Enable Instant. Still no Instant URL because "strk" is missing.
   profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, true);
-  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
   {
     // Set an Instant URL with a valid search terms replacement key.
@@ -283,34 +283,34 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
 
   // Now there should be a valid Instant URL. Note the HTTPS "upgrade".
   EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
-            GetInstantURL(profile()));
+            GetInstantURL(profile(), kDisableStartMargin));
 
   // Enable suggest. No difference.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
   EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
-            GetInstantURL(profile()));
+            GetInstantURL(profile(), kDisableStartMargin));
 
   // Disable Instant. No difference, because suggest is still enabled.
   profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, false);
   EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
-            GetInstantURL(profile()));
+            GetInstantURL(profile(), kDisableStartMargin));
 
   // Override the Instant URL on the commandline. Oops, forgot "strk".
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kInstantURL,
       "http://myserver.com:9000/dev?bar=bar#bar=bar");
-  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
   // Override with "strk". For fun, put it in the query, instead of the ref.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kInstantURL,
       "http://myserver.com:9000/dev?bar=bar&strk#bar=bar");
   EXPECT_EQ(GURL("http://myserver.com:9000/dev?bar=bar&strk#bar=bar"),
-            GetInstantURL(profile()));
+            GetInstantURL(profile(), kDisableStartMargin));
 
   // Disable suggest. No Instant URL.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
-  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 }
 
 }  // namespace search

@@ -1443,7 +1443,8 @@ bool InstantController::GetInstantURL(Profile* profile,
     return true;
   }
 
-  const GURL instant_url_obj = chrome::search::GetInstantURL(profile);
+  const GURL instant_url_obj =
+      chrome::search::GetInstantURL(profile, omnibox_bounds_.x());
   if (!instant_url_obj.is_valid())
     return false;
 

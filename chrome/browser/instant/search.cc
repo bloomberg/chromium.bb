@@ -72,9 +72,11 @@ TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   return NULL;
 }
 
-GURL TemplateURLRefToGURL(const TemplateURLRef& ref) {
-  return GURL(
-      ref.ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(string16())));
+GURL TemplateURLRefToGURL(const TemplateURLRef& ref, int start_margin) {
+  TemplateURLRef::SearchTermsArgs search_terms_args =
+      TemplateURLRef::SearchTermsArgs(string16());
+  search_terms_args.omnibox_start_margin = start_margin;
+  return GURL(ref.ReplaceSearchTerms(search_terms_args));
 }
 
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
@@ -93,14 +95,15 @@ bool IsCommandLineInstantURL(const GURL& url) {
 }
 
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
-  GURL search_url = TemplateURLRefToGURL(template_url->url_ref());
+  GURL search_url =
+      TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin);
   if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
     return true;
 
   // "URLCount() - 1" because we already tested url_ref above.
   for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
     TemplateURLRef ref(template_url, i);
-    search_url = TemplateURLRefToGURL(ref);
+    search_url = TemplateURLRefToGURL(ref, kDisableStartMargin);
     if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
       return true;
   }
@@ -152,7 +155,8 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   GURL effective_url = url;
 
   if (IsCommandLineInstantURL(url))
-    effective_url = CoerceCommandLineURLToTemplateURL(url, instant_url_ref);
+    effective_url = CoerceCommandLineURLToTemplateURL(url, instant_url_ref,
+                                                      kDisableStartMargin);
 
   if (!effective_url.is_valid())
     return false;
@@ -164,7 +168,8 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
       !template_url->HasSearchTermsReplacementKey(effective_url))
     return false;
 
-  const GURL instant_url = TemplateURLRefToGURL(instant_url_ref);
+  const GURL instant_url =
+      TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin);
   if (!instant_url.is_valid())
     return false;
 
@@ -210,7 +215,8 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
   GURL url = entry->GetVirtualURL();
 
   if (IsCommandLineInstantURL(url))
-    url = CoerceCommandLineURLToTemplateURL(url, template_url->url_ref());
+    url = CoerceCommandLineURLToTemplateURL(url, template_url->url_ref(),
+                                            kDisableStartMargin);
 
   if (url.SchemeIsSecure() && template_url->HasSearchTermsReplacementKey(url))
     template_url->ExtractSearchTermsFromURL(url, &search_terms);
@@ -221,6 +227,9 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
 }  // namespace
 
 const char kInstantExtendedSearchTermsKey[] = "search_terms";
+
+// Negative start-margin values prevent the "es_sm" parameter from being used.
+const int kDisableStartMargin = -1;
 
 bool IsInstantExtendedAPIEnabled() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
@@ -389,7 +398,7 @@ void SetInstantExtendedPrefDefault(Profile* profile) {
                              Value::CreateBooleanValue(pref_default));
 }
 
-GURL GetInstantURL(Profile* profile) {
+GURL GetInstantURL(Profile* profile, int start_margin) {
   const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
 
   const PrefService* prefs = profile && !profile->IsOffTheRecord() ?
@@ -409,14 +418,15 @@ GURL GetInstantURL(Profile* profile) {
     if (extended_api_enabled) {
       // Extended mode won't work if the search terms replacement key is absent.
       GURL coerced_url = CoerceCommandLineURLToTemplateURL(
-          instant_url, template_url->instant_url_ref());
+          instant_url, template_url->instant_url_ref(), start_margin);
       if (!template_url->HasSearchTermsReplacementKey(coerced_url))
         return GURL();
     }
     return instant_url;
   }
 
-  GURL instant_url = TemplateURLRefToGURL(template_url->instant_url_ref());
+  GURL instant_url =
+      TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin);
 
   if (extended_api_enabled) {
     // Extended mode won't work if the search terms replacement key is absent.
@@ -436,7 +446,7 @@ GURL GetInstantURL(Profile* profile) {
 }
 
 bool IsInstantEnabled(Profile* profile) {
-  return GetInstantURL(profile).is_valid();
+  return GetInstantURL(profile, kDisableStartMargin).is_valid();
 }
 
 void EnableInstantExtendedAPIForTesting() {
@@ -516,8 +526,10 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
 // Coerces the commandline Instant URL to look like a template URL, so that we
 // can extract search terms from it.
 GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
-                                       const TemplateURLRef& ref) {
-  GURL search_url = TemplateURLRefToGURL(ref);
+                                       const TemplateURLRef& ref,
+                                       int start_margin) {
+  GURL search_url = TemplateURLRefToGURL(ref, start_margin);
+
   // NOTE(samarth): GURL returns temporaries which we must save because
   // GURL::Replacements expects the replacements to live until
   // ReplaceComponents is called.

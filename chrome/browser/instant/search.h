@@ -31,6 +31,10 @@ namespace search {
 // InstantController sets the correct search terms to be displayed.
 extern const char kInstantExtendedSearchTermsKey[];
 
+// Use this value for "start margin" to prevent the "es_sm" parameter from
+// being used.
+extern const int kDisableStartMargin;
+
 // Returns whether the Instant Extended API is enabled.
 bool IsInstantExtendedAPIEnabled();
 
@@ -87,11 +91,12 @@ void SetInstantExtendedPrefDefault(Profile* profile);
 // if the engine doesn't have an Instant URL, or if it shouldn't be used (say
 // because it doesn't satisfy the requirements for extended mode or if Instant
 // is disabled through preferences). Callers must check that the returned URL is
-// valid before using it.
+// valid before using it. The value of |start_margin| is used for the "es_sm"
+// parameter in the URL.
 // NOTE: This method expands the default search engine's instant_url template,
 // so it shouldn't be called from SearchTermsData or other such code that would
 // lead to an infinite recursion.
-GURL GetInstantURL(Profile* profile);
+GURL GetInstantURL(Profile* profile, int start_margin);
 
 // Instant (loading a remote server page and talking to it using the searchbox
 // API) is considered enabled if there's a valid Instant URL that can be used,
@@ -145,7 +150,8 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
 // Coerces the commandline Instant URL to look like a template URL, so that we
 // can extract search terms from it. Exposed for testing only.
 GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
-                                       const TemplateURLRef& ref);
+                                       const TemplateURLRef& ref,
+                                       int start_margin);
 
 }  // namespace search
 }  // namespace chrome
