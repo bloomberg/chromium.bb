@@ -182,7 +182,7 @@ void DialogClientView::Layout() {
 
   // Layout the footnote view.
   if (footnote_view_) {
-    const int height = footnote_view_->GetPreferredSize().height();
+    const int height = footnote_view_->GetHeightForWidth(bounds.width());
     footnote_view_->SetBounds(bounds.x(), bounds.bottom() - height,
                               bounds.width(), height);
     bounds.Inset(0, 0, 0, height + kRelatedControlVerticalSpacing);

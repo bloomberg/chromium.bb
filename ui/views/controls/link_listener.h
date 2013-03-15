@@ -5,12 +5,14 @@
 #ifndef UI_VIEWS_CONTROLS_LINK_LISTENER_H_
 #define UI_VIEWS_CONTROLS_LINK_LISTENER_H_
 
+#include "ui/views/views_export.h"
+
 namespace views {
 
 class Link;
 
 // An interface implemented by an object to let it know that a link was clicked.
-class LinkListener {
+class VIEWS_EXPORT LinkListener {
  public:
   virtual void LinkClicked(Link* source, int event_flags) = 0;
 
