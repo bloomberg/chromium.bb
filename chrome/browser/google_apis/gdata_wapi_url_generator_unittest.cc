@@ -70,7 +70,7 @@ TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
 TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // This is the very basic URL for the GetResourceList operation.
   EXPECT_EQ(
-      "https://docs.google.com/feeds/default/private/full/-/mine"
+      "https://docs.google.com/feeds/default/private/full"
       "?v=3&alt=json&showroot=true&showfolders=true&max-results=500"
       "&include-installed-apps=true",
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
@@ -95,7 +95,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
           ).spec());
 
   // With a non-zero start_changestamp provided, the base URL is changed from
-  // "full/-/mine" to "changes", and "start-index" parameter is added.
+  // "full" to "changes", and "start-index" parameter is added.
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/changes"
       "?v=3&alt=json&showroot=true&showfolders=true&max-results=500"
@@ -111,7 +111,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // With a non-empty search string provided, "max-results" value is changed,
   // and "q" parameter is added.
   EXPECT_EQ(
-      "https://docs.google.com/feeds/default/private/full/-/mine"
+      "https://docs.google.com/feeds/default/private/full"
       "?v=3&alt=json&showroot=true&showfolders=true&max-results=50"
       "&include-installed-apps=true&q=foo",
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
@@ -137,7 +137,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // With a non-empty directory resource ID provided, the base URL is
   // changed, but the default parameters remain.
   EXPECT_EQ(
-      "https://docs.google.com/feeds/default/private/full/XXX/contents/-/mine"
+      "https://docs.google.com/feeds/default/private/full/XXX/contents"
       "?v=3&alt=json&showroot=true&showfolders=true&max-results=500"
       "&include-installed-apps=true",
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,

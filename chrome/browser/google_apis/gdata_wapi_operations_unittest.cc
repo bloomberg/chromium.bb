@@ -102,19 +102,19 @@ class GDataWapiOperationsTest : public testing::Test {
     }
 
     if (!test_util::RemovePrefix(absolute_url.path(),
-                                 "/feeds/default/private/full/",
+                                 "/feeds/default/private/full",
                                  &remaining_path)) {
       return scoped_ptr<test_server::HttpResponse>();
     }
 
-    if (remaining_path == "-/mine") {
+    if (remaining_path.empty()) {
       // Process the default feed.
       return test_util::CreateHttpResponseFromFile(
           test_util::GetTestFilePath("chromeos/gdata/root_feed.json"));
     } else {
       // Process a feed for a single resource ID.
       const std::string resource_id = net::UnescapeURLComponent(
-          remaining_path, net::UnescapeRule::URL_SPECIAL_CHARS);
+          remaining_path.substr(1), net::UnescapeRule::URL_SPECIAL_CHARS);
       if (resource_id == "file:2_file_resource_id") {
         // Check if this is an authorization request for an app.
         if (request.method == test_server::METHOD_PUT &&
@@ -337,7 +337,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/feeds/default/private/full/-/mine?v=3&alt=json&showroot=true&"
+  EXPECT_EQ("/feeds/default/private/full?v=3&alt=json&showroot=true&"
             "showfolders=true&max-results=500&include-installed-apps=true",
             http_request_.relative_url);
   EXPECT_TRUE(test_util::VerifyJsonData(

@@ -750,7 +750,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
   // There was a bug (crbug.com/181487), which broke this behavior.
   // Make sure this is fixed.
   ASSERT_TRUE(entries.get());
-  EXPECT_EQ(2U, entries->size());
+  EXPECT_EQ(3U, entries->size());
 }
 
 TEST_F(DriveFileSystemTest, FilePathTests) {

@@ -113,7 +113,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_All) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
   // Do some sanity check.
-  EXPECT_EQ(13U, resource_list->entries().size());
+  EXPECT_EQ(14U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
@@ -136,9 +136,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndex) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
-  // Because the start-offset was set to 2, the size should be 11 instead of
-  // 13 (the total number).
-  EXPECT_EQ(11U, resource_list->entries().size());
+  // Because the start-offset was set to 2, the size should be 12 instead of
+  // 14 (the total number).
+  EXPECT_EQ(12U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
