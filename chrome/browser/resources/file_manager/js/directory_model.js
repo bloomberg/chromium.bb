@@ -44,7 +44,7 @@ function DirectoryModel(root, singleSelection,
 
 /**
  * Fake entry to be used in currentDirEntry_ when current directory is
- * unmounted DRIVE.
+ * unmounted DRIVE. TODO(haruki): Support "drive/root" and "drive/other".
  * @private
  */
 DirectoryModel.fakeDriveEntry_ = {
@@ -1026,7 +1026,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
   if (this.driveEnabled_) {
     var fake = [DirectoryModel.fakeDriveEntry_];
     if (this.isDriveMounted()) {
-      readSingle(RootDirectory.DRIVE.substring(1), 'drive', fake);
+      readSingle(DirectoryModel.fakeDriveEntry_.fullPath, 'drive', fake);
     } else {
       groups.drive = fake;
       done();
@@ -1092,8 +1092,10 @@ DirectoryModel.prototype.onDriveStatusChanged_ = function() {
         this.getDriveOfflineFiles('');
       }
     }
-    this.root_.getDirectory(RootDirectory.DRIVE, {},
-                            onGotDirectory.bind(this));
+    this.root_.getDirectory(
+        DirectoryModel.fakeDriveEntry_.fullPath, {},
+        onGotDirectory.bind(this));
+    // TODO(haruki): support "other" root.
   } else {
     var rootType = this.getCurrentRootType();
     if (rootType != RootType.DRIVE && rootType != RootType.DRIVE_OFFLINE)

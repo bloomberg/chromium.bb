@@ -1302,8 +1302,7 @@ DialogType.isModal = function(type) {
         this.finishSetupCurrentDirectory_(path, invokeHandlers);
         return;
       }
-      var drivePath = RootDirectory.DRIVE;
-      if (this.volumeManager_.isMounted(drivePath)) {
+      if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
         this.finishSetupCurrentDirectory_(path, invokeHandlers);
         return;
       }
@@ -1311,7 +1310,7 @@ DialogType.isModal = function(type) {
         this.delayShow_(500);
       // Reflect immediatelly in the UI we are on Drive and display
       // mounting UI.
-      this.directoryModel_.setupPath(drivePath);
+      this.directoryModel_.setupPath(RootDirectory.DRIVE);
 
       if (!this.isOnDrive()) {
         // Since DRIVE is not mounted it should be resolved synchronously
@@ -2024,8 +2023,8 @@ DialogType.isModal = function(type) {
     util.updateAppState(event.initial, this.getCurrentDirectory());
 
     if (this.closeOnUnmount_ && !event.initial &&
-          PathUtil.getRootPath(event.previousDirEntry.fullPath) !=
-          PathUtil.getRootPath(event.newDirEntry.fullPath)) {
+        PathUtil.getRootPath(event.previousDirEntry.fullPath) !=
+            PathUtil.getRootPath(event.newDirEntry.fullPath)) {
       this.closeOnUnmount_ = false;
     }
 
@@ -2034,9 +2033,11 @@ DialogType.isModal = function(type) {
     this.updateGearMenu_();
   };
 
+  // TODO(haruki): Rename this method. "Drive" here does not refer
+  // "Google Drive".
   FileManager.prototype.updateUnformattedDriveStatus_ = function() {
     var volumeInfo = this.volumeManager_.getVolumeInfo_(
-        this.directoryModel_.getCurrentRootPath());
+        PathUtil.getRootPath(this.directoryModel_.getCurrentRootPath()));
 
     if (volumeInfo.error) {
       this.dialogDom_.setAttribute('unformatted', '');

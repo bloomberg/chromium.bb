@@ -364,7 +364,7 @@ FileListBannerController.prototype.checkFreeSpace_ = function(currentPath) {
   };
 
   // TODO(kaznacheev): Unify the two low space warning.
-  var root = PathUtil.getRootPath(currentPath);
+  var root = PathUtil.getTopDirectory(currentPath);
   if (root === RootDirectory.DOWNLOADS) {
     scheduleCheck(500, root, 0.2);
     this.showLowDriveSpaceWarning_(false);

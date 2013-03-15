@@ -26,15 +26,25 @@ var RootDirectory = {
   DRIVE_OFFLINE: '/drive_offline'  // A fake root. Not the actual filesystem.
 };
 
+/**
+ * Sub root directory for Drive. "root" and "other". This is not used now.
+ * TODO(haruki): Add namespaces support. http://crbug.com/174233.
+ * @enum
+ */
+var DriveSubRootDirectory = {
+  ROOT: 'root',
+  OTHER: 'other',
+};
+
 var PathUtil = {};
 
 /**
  * @param {string} path Path starting with '/'.
- * @return {string} Root directory (starting with '/').
+ * @return {string} Top directory (starting with '/').
  */
-PathUtil.getRootDirectory = function(path) {
+PathUtil.getTopDirectory = function(path) {
   var i = path.indexOf('/', 1);
-  return i === -1 ? path.substring(0) : path.substring(0, i);
+  return i === -1 ? path : path.substring(0, i);
 };
 
 /**
@@ -92,7 +102,7 @@ PathUtil.join = function() {
  * @return {RootType} RootType.DOWNLOADS, RootType.DRIVE etc.
  */
 PathUtil.getRootType = function(path) {
-  var rootDir = PathUtil.getRootDirectory(path);
+  var rootDir = PathUtil.getTopDirectory(path);
   for (var type in RootDirectory) {
     if (rootDir === RootDirectory[type])
       return RootType[type];
@@ -106,11 +116,13 @@ PathUtil.getRootType = function(path) {
 PathUtil.getRootPath = function(path) {
   var type = PathUtil.getRootType(path);
 
+  // TODO(haruki): Add support for "drive/root" and "drive/other".
   if (type == RootType.DOWNLOADS || type == RootType.DRIVE ||
       type == RootType.DRIVE_OFFLINE)
-    return PathUtil.getRootDirectory(path);
+    return PathUtil.getTopDirectory(path);
 
-  if (type == RootType.ARCHIVE || type == RootType.REMOVABLE) {
+  if (type == RootType.ARCHIVE ||
+      type == RootType.REMOVABLE) {
     var components = PathUtil.split(path);
     if (components.length > 1) {
       return PathUtil.join(components[0], components[1]);
@@ -184,6 +196,7 @@ PathUtil.getRootLabel = function(path) {
   if (PathUtil.isParentPath(RootDirectory.REMOVABLE, path))
     return path.substring(RootDirectory.REMOVABLE.length + 1);
 
+  // TODO(haruki): Add support for "drive/root" and "drive/other".
   if (path === RootDirectory.DRIVE)
     return str('DRIVE_DIRECTORY_LABEL');
 
