@@ -45,11 +45,6 @@ void CloneBookmarkNode(BookmarkModel* model,
                        const BookmarkNode* parent,
                        int index_to_add_at);
 
-// Begins dragging a folder of bookmarks.
-void DragBookmarks(Profile* profile,
-                   const std::vector<const BookmarkNode*>& nodes,
-                   gfx::NativeView view);
-
 // Copies nodes onto the clipboard. If |remove_nodes| is true the nodes are
 // removed after copied to the clipboard. The nodes are copied in such a way
 // that if pasted again copies are made.

@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
@@ -405,8 +406,8 @@ bool BookmarkManagerPrivateStartDragFunction::RunImpl() {
     WebContents* web_contents =
         dispatcher()->delegate()->GetAssociatedWebContents();
     CHECK(web_contents);
-    bookmark_utils::DragBookmarks(profile(), nodes,
-                                  web_contents->GetView()->GetNativeView());
+    chrome::DragBookmarks(profile(), nodes,
+                          web_contents->GetView()->GetNativeView());
 
     return true;
   } else {

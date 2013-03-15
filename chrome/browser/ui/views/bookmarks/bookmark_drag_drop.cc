@@ -6,18 +6,18 @@
 
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
 #include "ui/views/drag_utils.h"
-#include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
 
-namespace bookmark_utils {
+namespace chrome {
 
 void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
@@ -50,10 +50,6 @@ void DragBookmarks(Profile* profile,
 
   MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 }
-
-}  // namespace bookmark_utils
-
-namespace chrome {
 
 int GetBookmarkDragOperation(content::BrowserContext* browser_context,
                              const BookmarkNode* node) {

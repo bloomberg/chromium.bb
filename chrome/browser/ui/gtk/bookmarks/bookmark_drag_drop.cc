@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
 #include "chrome/browser/ui/gtk/custom_drag.h"
 
-namespace bookmark_utils {
+namespace chrome {
 
 void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
@@ -16,4 +16,4 @@ void DragBookmarks(Profile* profile,
   BookmarkDrag::BeginDrag(profile, nodes);
 }
 
-}  // namespace bookmark_utils
+}  // namespace chrome
