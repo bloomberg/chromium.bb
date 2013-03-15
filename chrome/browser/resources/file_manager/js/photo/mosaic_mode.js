@@ -547,21 +547,66 @@ Mosaic.prototype.hide = function() {
  * @private
  */
 Mosaic.prototype.loadVisibleTiles_ = function() {
-  if (this.loadVisibleTilesTimer_) {
-    clearTimeout(this.loadVisibleTilesTimer_);
-    this.loadVisibleTilesTimer_ = null;
+  if (this.loadVisibleTilesSuppressed_) {
+    this.loadVisibleTilesScheduled_ = true;
+    return;
   }
-  this.loadVisibleTilesTimer_ = setTimeout(function() {
-    var viewportRect = new Rect(0, 0, this.clientWidth, this.clientHeight);
+
+  this.loadVisibleTilesSuppressed_ = true;
+  this.loadVisibleTilesScheduled_ = false;
+  setTimeout(function() {
+    this.loadVisibleTilesSuppressed_ = false;
+    if (this.loadVisibleTilesScheduled_)
+      this.loadVisibleTiles_();
+  }.bind(this), 100);
+
+  // Tiles only in the viewport (visible).
+  var visibleRect = new Rect(0,
+                             0,
+                             this.clientWidth,
+                             this.clientHeight);
+
+  // Tiles in the viewport and also some distance on the left and right.
+  var renderableRect = new Rect(-this.clientWidth,
+                                0,
+                                3 * this.clientWidth,
+                                this.clientHeight);
+
+  // Unload tiles out of scope.
+  for (var index = 0; index < this.tiles_.length; index++) {
+    var tile = this.tiles_[index];
+    var imageRect = tile.getImageRect();
+    // Unload a thumbnail.
+    if (imageRect && !imageRect.intersects(renderableRect)) {
+      tile.unload();
+    }
+  }
+
+  // Load the visible tiles first.
+  var allVisibleLoaded = true;
+  for (var index = 0; index < this.tiles_.length; index++) {
+    var tile = this.tiles_[index];
+    var imageRect = tile.getImageRect();
+    // Load a thumbnail.
+    if (!tile.isLoading() && !tile.isLoaded() && imageRect &&
+        imageRect.intersects(visibleRect)) {
+      tile.load(function() {}, this.onThumbnailError_);
+      allVisibleLoaded = false;
+    }
+  }
+
+  // Load also another, nearby, if the visible has been already loaded.
+  if (allVisibleLoaded) {
     for (var index = 0; index < this.tiles_.length; index++) {
       var tile = this.tiles_[index];
       var imageRect = tile.getImageRect();
+      // Load a thumbnail.
       if (!tile.isLoading() && !tile.isLoaded() && imageRect &&
-          imageRect.intersects(viewportRect)) {
+          imageRect.intersects(renderableRect)) {
         tile.load(function() {}, this.onThumbnailError_);
       }
     }
-  }.bind(this), 100);
+  }
 };
 
 /**
@@ -1726,6 +1771,16 @@ Mosaic.Tile.prototype.load = function(onImageLoaded, opt_onThumbnailError) {
     this.imageLoaded_ = true;
     this.imageLoading_ = false;
   }.bind(this));
+};
+
+/**
+ * Unloads an image from the tile.
+ */
+Mosaic.Tile.prototype.unload = function() {
+  this.thumbnailLoader_.cancel();
+  this.imageLoaded_ = false;
+  this.imageLoading_ = false;
+  this.wrapper_.innerText = '';
 };
 
 /**
