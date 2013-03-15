@@ -75,6 +75,17 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @param {DirectoryTree} tree Its sub items will could be drop target.
+   */
+  attachTreeDropTarget: function(tree) {
+    tree.addEventListener('dragover', this.onDragOver_.bind(this, true, tree));
+    tree.addEventListener('dragenter', this.onDragEnterTree_.bind(this, tree));
+    tree.addEventListener('dragleave', this.onDragLeave_.bind(this, tree));
+    tree.addEventListener('drop', this.onDrop_.bind(this, true));
+  },
+
+  /**
+   * @this {FileTransferController}
    * @param {HTMLElement} breadcrumbsContainer Element which contains target
    *     breadcrumbs.
    */
@@ -360,6 +371,31 @@ FileTransferController.prototype = {
       return;
 
     var entry = item && list.dataModel.item(item.listIndex);
+    if (entry) {
+      this.setDropTarget_(item, entry.isDirectory, event.dataTransfer,
+          entry.fullPath);
+    } else {
+      this.clearDropTarget_();
+    }
+  },
+
+  /**
+   * @this {FileTransferController}
+   * @param {DirectoryTree} tree Drop target tree.
+   * @param {Event} event A dragenter event of DOM.
+   */
+  onDragEnterTree_: function(tree, event) {
+    event.preventDefault();  // Required to prevent the cursor flicker.
+    this.lastEnteredTarget_ = event.target;
+    var item = event.target;
+    while (item && !(item instanceof DirectoryItem)) {
+      item = item.parentNode;
+    }
+
+    if (item == this.dropTarget_)
+      return;
+
+    var entry = item && item.entry;
     if (entry) {
       this.setDropTarget_(item, entry.isDirectory, event.dataTransfer,
           entry.fullPath);

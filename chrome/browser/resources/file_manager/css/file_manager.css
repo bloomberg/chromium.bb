@@ -233,7 +233,7 @@ div.sidebar-splitter {
   border-color: rgba(0, 0, 0, 0.05);
 }
 
-#directory-tree .accepts,
+#directory-tree .tree-item.accepts > .tree-row,
 #directory-tree .tree-row[lead][selected],
 #directory-tree .tree-row[lead],
 #directory-tree .tree-row[selected],
@@ -241,15 +241,15 @@ div.sidebar-splitter {
   background-color: rgb(204, 204, 204);
 }
 
-#directory-tree:focus  .accepts,
-#directory-tree:focus  .tree-row[lead][selected],
-#directory-tree:focus  .tree-row[lead],
-#directory-tree:focus  .tree-row[selected],
-#directory-tree:focus  .tree-row[anchor] {
+#directory-tree:focus .tree-item.accepts > .tree-row,
+#directory-tree:focus .tree-row[lead][selected],
+#directory-tree:focus .tree-row[lead],
+#directory-tree:focus .tree-row[selected],
+#directory-tree:focus .tree-row[anchor] {
   background-color: rgb(193, 209, 232);
 }
 
-#directory-tree  .accepts:hover,
+#directory-tree  .tree-item.accepts > .tree-row:hover,
 #directory-tree  .tree-row[lead]:hover,
 #directory-tree  .tree-row[lead][selected]:hover,
 #directory-tree  .tree-row[selected]:hover,
@@ -257,7 +257,7 @@ div.sidebar-splitter {
   background-color: rgb(192, 192, 192);
 }
 
-#directory-tree:hover .accepts:hover,
+#directory-tree:hover .tree-item.accepts > .tree-row:hover,
 #directory-tree:hover .tree-row[lead]:hover,
 #directory-tree:hover .tree-row[lead][selected]:hover,
 #directory-tree:hover .tree-row[selected]:hover,
@@ -868,7 +868,7 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
   border-color: transparent;
 }
 
-#roots-list > .accepts,
+#directory-tree .tree-item.accepts > .tree-row,
 #list-container list > .accepts,
 #list-container grid > .accepts {
   -webkit-animation: acceptsBlink 200ms linear 1s 3;

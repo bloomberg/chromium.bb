@@ -47,6 +47,15 @@ function updateSubElementsFromList(parentElement, iterator, directoryModel) {
 }
 
 /**
+ * Returns true if the given directory entry is dummy.
+ * @param {DirectoryEntry|Object} dirEntry DirectoryEntry to be checked.
+ * @return {boolean} True if the given directory entry is dummy.
+ */
+function isDummyEntry(dirEntry) {
+  return !('createReader' in dirEntry);
+}
+
+/**
  * A directory in the tree. One this element represents one directory. Each
  * element represents one director.
  *
@@ -77,6 +86,16 @@ DirectoryItem.decorate =
 
 DirectoryItem.prototype = {
   __proto__: cr.ui.TreeItem.prototype,
+
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem. This may be
+   * a dummy DirectoryEntry.
+   * @type {DirectoryEntry|Object}
+   * @override
+   **/
+  get entry() {
+      return this.dirEntry_;
+  }
 
   /**
    * The element containing the label text and the icon.
@@ -115,6 +134,7 @@ DirectoryItem.prototype.decorate = function(
   this.label = label;
   this.fullPath = path;
   this.draggable = true;
+  this.dirEntry_ = dirEntry;
 
   // Sets hasChildren=true tentatively. This will be overridden after
   // scanning sub-directories in updateSubElementsFromList.
@@ -145,7 +165,7 @@ DirectoryItem.prototype.decorate = function(
       }.bind(this));
 
   if ('expanded' in parentDirItem || parentDirItem.expanded)
-    this.updateSubDirectoriesWithEntry_(dirEntry);
+    this.updateSubDirectories_();
 };
 
 /**
@@ -154,7 +174,7 @@ DirectoryItem.prototype.decorate = function(
  * @private
  **/
 DirectoryItem.prototype.onExpand_ = function(e) {
-  this.updateSubDirectories(function() {
+  this.updateSubDirectories_(function() {
     this.expanded = false;
   }.bind(this));
 
@@ -164,32 +184,30 @@ DirectoryItem.prototype.onExpand_ = function(e) {
 /**
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {function()=} opt_errorCallback Callback called on error.
- */
-DirectoryItem.prototype.updateSubDirectories = function(opt_errorCallback) {
-  this.directoryModel_.resolveDirectory(
-      this.fullPath,
-      function(entry) {
-        this.updateSubDirectoriesWithEntry_(entry, opt_errorCallback);
-      }.bind(this),
-      opt_errorCallback);
-};
-
-/**
- * Retrieves the latest subdirectories and update them on the tree.
- * @param {!DirectoryEntry} dirEntry DirectoryEntry to read from.
- * @param {function()=} opt_errorCallback Callback called on error.
  * @private
  */
-DirectoryItem.prototype.updateSubDirectoriesWithEntry_ =
-    function(dirEntry, opt_errorCallback) {
-  // Skips if the entry is dummy.
-  if (!('createReader' in dirEntry)) {
-    if (opt_errorCallback)
-      opt_errorCallback();
+DirectoryItem.prototype.updateSubDirectories_ = function(opt_errorCallback) {
+  // Tries to retrieve new entry if the cached entry is dummy.
+  if (isDummyEntry(this.dirEntry_)) {
+    this.directoryModel_.resolveDirectory(
+        this.fullPath,
+        function(entry) {
+          this.dirEntry_ = entry;
+
+          // If the retrieved entry is dummy again, returns with an error.
+          if (isDummyEntry(entry)) {
+            if (opt_errorCallback)
+              opt_errorCallback();
+            return;
+          }
+
+          this.updateSubDirectories_(opt_errorCallback);
+        }.bind(this),
+        opt_errorCallback);
     return;
   }
 
-  var reader = dirEntry.createReader();
+  var reader = this.dirEntry_.createReader();
   var entries = [];
 
   var readEntry = function() {

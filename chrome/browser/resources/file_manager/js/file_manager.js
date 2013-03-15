@@ -522,8 +522,7 @@ DialogType.isModal = function(type) {
     controller.attachDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);
     controller.attachDropTarget(this.grid_);
-    controller.attachDropTarget(this.directoryTree_,
-                                true /* onlyIntoDirectories */);
+    controller.attachTreeDropTarget(this.directoryTree_);
     controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
