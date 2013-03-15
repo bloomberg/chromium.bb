@@ -28,7 +28,7 @@ class SurfaceStatsCollector(object):
       self.value = value
       self.unit = unit
 
-  def __init__(self, adb, trace_tag=''):
+  def __init__(self, adb):
     self._adb = adb
     self._collector_thread = None
     self._use_legacy_method = False
@@ -37,9 +37,6 @@ class SurfaceStatsCollector(object):
     self._data_queue = None
     self._stop_event = None
     self._results = []
-
-  def __enter__(self):
-    self.Start()
 
   def Start(self):
     assert not self._collector_thread
@@ -53,9 +50,6 @@ class SurfaceStatsCollector(object):
     else:
       self._use_legacy_method = True
       self._surface_before = self._GetSurfaceStatsLegacy()
-
-  def __exit__(self, *args):
-    self.Stop()
 
   def Stop(self):
     self._StorePerfResults()
