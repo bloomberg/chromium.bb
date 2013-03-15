@@ -177,6 +177,7 @@ IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(text)
   IPC_STRUCT_TRAITS_MEMBER(behavior)
   IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(query)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(chrome::search::Mode::Type)
@@ -671,7 +672,7 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusedNodeTouched,
 
 // Suggest results -----------------------------------------------------------
 
-// Sent by Instant to populate the omnibox with query suggestions.
+// Sent by Instant to populate the omnibox with query or URL suggestions.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetSuggestions,
                     int /* page_id */,
                     std::vector<InstantSuggestion> /* suggestions */)

@@ -359,6 +359,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
         // The user is typing, and backspaced away all omnibox text. Clear
         // |last_omnibox_text_| so that we don't attempt to set suggestions.
         last_omnibox_text_.clear();
+        last_user_text_.clear();
         last_suggestion_ = InstantSuggestion();
         if (instant_tab_) {
           // On a search results page, tell it to clear old results.
@@ -381,12 +382,14 @@ bool InstantController::Update(const AutocompleteMatch& match,
         // partial text is not a query (|last_match_was_search_| is false), we
         // won't Submit(), so no need to worry about that.
         last_omnibox_text_ = full_text;
+        last_user_text_ = user_text;
         last_suggestion_ = InstantSuggestion();
       }
       return false;
     } else if (full_text.empty()) {
       // The user typed a solitary "?". Same as the backspace case above.
       last_omnibox_text_.clear();
+      last_user_text_.clear();
       last_suggestion_ = InstantSuggestion();
       if (instant_tab_)
         instant_tab_->Update(string16(), 0, 0, true);
@@ -425,6 +428,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
     last_suggestion_ = InstantSuggestion();
 
   last_omnibox_text_ = full_text;
+  last_user_text_ = user_text;
 
   if (!extended_enabled_) {
     // In non-extended mode, the query is verbatim if there's any selection
@@ -579,6 +583,7 @@ bool InstantController::OnUpOrDownKeyPressed(int count) {
 }
 
 void InstantController::OnCancel(const AutocompleteMatch& match,
+                                 const string16& user_text,
                                  const string16& full_text) {
   if (!extended_enabled_)
     return;
@@ -591,6 +596,7 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
   last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type) &&
                            !full_text.empty();
   last_omnibox_text_ = full_text;
+  last_user_text_ = user_text;
   last_suggestion_ = InstantSuggestion();
 
   if (instant_tab_)
@@ -1104,48 +1110,12 @@ void InstantController::SetSuggestions(
         UTF16ToUTF8(suggestion.text).c_str(), suggestion.type));
     browser_->SetInstantSuggestion(suggestion);
   } else {
-    bool is_valid_suggestion = true;
-
-    // If the page is trying to set inline autocompletion in verbatim mode,
-    // instead try suggesting the exact omnibox text. This makes the omnibox
-    // interpret user text as an URL if possible while preventing unwanted
-    // autocompletion during backspacing.
-    if (suggestion.behavior == INSTANT_COMPLETE_NOW && last_verbatim_)
-      suggestion.text = last_omnibox_text_;
-
-    // Suggestion text should be a full URL for URL suggestions, or the
-    // completion of a query for query suggestions.
-    if (suggestion.type == INSTANT_SUGGESTION_URL) {
-      // If the suggestion is not a valid URL, perhaps it's something like
-      // "foo.com". Try prefixing "http://". If it still isn't valid, drop it.
-      if (!GURL(suggestion.text).is_valid()) {
-        suggestion.text.insert(0, ASCIIToUTF16("http://"));
-        if (!GURL(suggestion.text).is_valid())
-          is_valid_suggestion = false;
-      }
-    } else if (StartsWith(suggestion.text, last_omnibox_text_, true)) {
-      // The user typed an exact prefix of the suggestion.
-      suggestion.text.erase(0, last_omnibox_text_.size());
-    } else if (!NormalizeAndStripPrefix(&suggestion.text, last_omnibox_text_)) {
-      // Unicode normalize and case-fold the user text and suggestion. If the
-      // user text is a prefix, suggest the normalized, case-folded completion;
-      // for instance, if the user types 'i' and the suggestion is 'INSTANT',
-      // suggest 'nstant'. Otherwise, the user text really isn't a prefix, so
-      // suggest nothing.
-      is_valid_suggestion = false;
-    }
-
-    // Don't suggest gray text if there already was inline autocompletion.
-    // http://crbug.com/162303
-    if (suggestion.behavior == INSTANT_COMPLETE_NEVER &&
-        last_omnibox_text_has_inline_autocompletion_)
-      is_valid_suggestion = false;
-
-    if (is_valid_suggestion) {
+    if (FixSuggestion(&suggestion)) {
       last_suggestion_ = suggestion;
       LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
           "SetInstantSuggestion: text='%s' behavior=%d",
-          UTF16ToUTF8(suggestion.text).c_str(), suggestion.behavior));
+          UTF16ToUTF8(suggestion.text).c_str(),
+          suggestion.behavior));
       browser_->SetInstantSuggestion(suggestion);
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_INSTANT_SET_SUGGESTION,
@@ -1564,4 +1534,59 @@ void InstantController::SendMostVisitedItems(
       chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
       content::Source<InstantController>(this),
       content::NotificationService::NoDetails());
+}
+
+bool InstantController::FixSuggestion(InstantSuggestion* suggestion) const {
+  // Don't suggest gray text if there already was inline autocompletion.
+  // http://crbug.com/162303
+  if (suggestion->behavior == INSTANT_COMPLETE_NEVER &&
+      last_omnibox_text_has_inline_autocompletion_)
+    return false;
+
+  // If the page is trying to set inline autocompletion in verbatim mode,
+  // instead try suggesting the exact omnibox text. This makes the omnibox
+  // interpret user text as an URL if possible while preventing unwanted
+  // autocompletion during backspacing.
+  if (suggestion->behavior == INSTANT_COMPLETE_NOW && last_verbatim_)
+    suggestion->text = last_omnibox_text_;
+
+  // Suggestion text should be a full URL for URL suggestions, or the
+  // completion of a query for query suggestions.
+  if (suggestion->type == INSTANT_SUGGESTION_URL) {
+    // If the suggestion is not a valid URL, perhaps it's something like
+    // "foo.com". Try prefixing "http://". If it still isn't valid, drop it.
+    if (!GURL(suggestion->text).is_valid()) {
+      suggestion->text.insert(0, ASCIIToUTF16("http://"));
+      if (!GURL(suggestion->text).is_valid())
+        return false;
+    }
+
+    // URL suggestions are only accepted if the query for which the suggestion
+    // was generated is the same as |last_user_text_|.
+    //
+    // Any other URL suggestions--in particular suggestions for old user_text
+    // lagging behind a slow IPC--are ignored. See crbug.com/181589.
+    //
+    // TODO(samarth): Accept stale suggestions if they would be accepted by
+    // SearchProvider as an inlinable suggestion. http://crbug.com/191656.
+    return suggestion->query == last_user_text_;
+  }
+
+  if (suggestion->type == INSTANT_SUGGESTION_SEARCH) {
+    if (StartsWith(suggestion->text, last_omnibox_text_, true)) {
+      // The user typed an exact prefix of the suggestion.
+      suggestion->text.erase(0, last_omnibox_text_.size());
+      return true;
+    } else if (NormalizeAndStripPrefix(&suggestion->text, last_omnibox_text_)) {
+      // Unicode normalize and case-fold the user text and suggestion. If the
+      // user text is a prefix, suggest the normalized, case-folded completion
+      // for instance, if the user types 'i' and the suggestion is 'INSTANT',
+      // suggest 'nstant'. Otherwise, the user text really isn't a prefix, so
+      // suggest nothing.
+      // TODO(samarth|jered): revisit this logic. http://crbug.com/196572.
+      return true;
+    }
+  }
+
+  return false;
 }

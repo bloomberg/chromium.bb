@@ -33,18 +33,27 @@ enum InstantSuggestionType {
   INSTANT_SUGGESTION_URL,
 };
 
-// A wrapper to hold Instant suggested text and its metadata such as the type
-// of the suggestion and what completion behavior should be applied to it.
+// A wrapper to hold Instant suggested text and its metadata.
 struct InstantSuggestion {
   InstantSuggestion();
   InstantSuggestion(const string16& text,
                     InstantCompleteBehavior behavior,
-                    InstantSuggestionType type);
+                    InstantSuggestionType type,
+                    const string16& query);
   ~InstantSuggestion();
 
+  // Full suggested text.
   string16 text;
+
+  // Completion behavior for the suggestion.
   InstantCompleteBehavior behavior;
+
+  // Is this a search or a URL suggestion?
   InstantSuggestionType type;
+
+  // Query for which this suggestion was generated. May be set to empty string
+  // if unknown.
+  string16 query;
 };
 
 // Omnibox dropdown matches provided by the native autocomplete providers.

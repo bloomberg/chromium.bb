@@ -262,7 +262,8 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
   FinalizeInstantQuery(view_->GetText(),
                        InstantSuggestion(suggestion,
                                          INSTANT_COMPLETE_NOW,
-                                         INSTANT_SUGGESTION_SEARCH),
+                                         INSTANT_SUGGESTION_SEARCH,
+                                         string16()),
                        skip_inline_autocomplete);
   return true;
 }
@@ -1227,6 +1228,7 @@ void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
         false, false);
     AutocompleteResult::const_iterator match(result().default_match());
     instant->OnCancel(match != result().end() ? *match : AutocompleteMatch(),
+                      user_text_,
                       user_text_ + inline_autocomplete_text_);
   }
   if (revert_popup)

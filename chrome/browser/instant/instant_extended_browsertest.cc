@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -715,14 +716,49 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   if (start > end)
     std::swap(start, end);
   EXPECT_EQ(ASCIIToUTF16("ample.com"), text.substr(start, end - start));
+  // Now try to set gray text for the same query.
   EXPECT_TRUE(ExecuteScript("behavior = 2"));
   EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com rocks'"));
-  // Now try to set gray text for the same query.
   SetOmniboxText("http://www.ex");
   EXPECT_EQ(ASCIIToUTF16("http://www.example.com"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 
   omnibox()->RevertAll();
+
+  // Ignore an out-of-date blue text suggestion. (Simulates a laggy
+  // SetSuggestion IPC by directly calling into InstantController.)
+  SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/");
+  instant()->SetSuggestions(
+      instant()->overlay()->contents(),
+      std::vector<InstantSuggestion>(
+          1,
+          InstantSuggestion(ASCIIToUTF16("www.exa"),
+                            INSTANT_COMPLETE_NOW,
+                            INSTANT_SUGGESTION_URL,
+                            ASCIIToUTF16("www.exa"))));
+  EXPECT_EQ(
+      "http://www.example.com/",
+      omnibox()->model()->result().default_match()->destination_url.spec());
+
+  omnibox()->RevertAll();
+
+  // TODO(samarth): uncomment after fixing crbug.com/191656.
+  // Use an out-of-date blue text suggestion, if the text typed by the user is
+  // contained in the suggestion.
+  // SetOmniboxTextAndWaitForOverlayToShow("ex");
+  // instant()->SetSuggestions(
+  //     instant()->overlay()->contents(),
+  //     std::vector<InstantSuggestion>(
+  //         1,
+  //         InstantSuggestion(ASCIIToUTF16("www.example.com"),
+  //                           INSTANT_COMPLETE_NOW,
+  //                           INSTANT_SUGGESTION_URL,
+  //                           ASCIIToUTF16("e"))));
+  // EXPECT_EQ(
+  //     "http://www.example.com/",
+  //     omnibox()->model()->result().default_match()->destination_url.spec());
+
+  // omnibox()->RevertAll();
 
   // When asked to suggest blue text in verbatim mode, suggest the exact
   // omnibox text rather than using the supplied suggestion text.

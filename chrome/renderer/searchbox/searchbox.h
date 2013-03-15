@@ -27,7 +27,7 @@ class SearchBox : public content::RenderViewObserver,
   explicit SearchBox(content::RenderView* render_view);
   virtual ~SearchBox();
 
-  // Sends ChromeViewHostMsg_SetSuggestions to the browser.
+  // Sends ChromeViewHostMsg_SetSuggestion to the browser.
   void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
 
   // Clears the current query text, used to ensure that restricted query strings

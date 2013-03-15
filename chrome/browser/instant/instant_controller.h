@@ -118,6 +118,7 @@ class InstantController : public InstantPage::Delegate,
   // reverted to |full_text| by the OmniboxEditModel prior to calling this.
   // |match| is the match reverted to.
   void OnCancel(const AutocompleteMatch& match,
+                const string16& user_text,
                 const string16& full_text);
 
   // The overlay WebContents. May be NULL. InstantController retains ownership.
@@ -212,6 +213,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
       OmniboxCommitsWhenShownFullHeight);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
@@ -355,6 +357,11 @@ class InstantController : public InstantPage::Delegate,
   // the appropriate InstantPage subclass.
   void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
 
+  // If possible, tries to mutate |suggestion| to a valid suggestion. Returns
+  // true if successful. (Note that |suggestion| may be modified even if this
+  // returns false.)
+  bool FixSuggestion(InstantSuggestion* suggestion) const;
+
   chrome::BrowserInstantController* const browser_;
 
   // Whether the extended API and regular API are enabled. If both are false,
@@ -382,6 +389,10 @@ class InstantController : public InstantPage::Delegate,
   // The most recent full_text passed to Update(). If empty, we'll not accept
   // search suggestions from |overlay_| or |instant_tab_|.
   string16 last_omnibox_text_;
+
+  // The most recent user_text passed to Update(). Used to filter out-of-date
+  // URL suggestions from the Instant page.
+  string16 last_user_text_;
 
   // True if the last Update() had an inline autocompletion. Used only to make
   // sure that we don't accidentally suggest gray text suggestion in that case.

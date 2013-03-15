@@ -11,10 +11,12 @@ InstantSuggestion::InstantSuggestion()
 
 InstantSuggestion::InstantSuggestion(const string16& in_text,
                                      InstantCompleteBehavior in_behavior,
-                                     InstantSuggestionType in_type)
+                                     InstantSuggestionType in_type,
+                                     const string16& in_query)
     : text(in_text),
       behavior(in_behavior),
-      type(in_type) {
+      type(in_type),
+      query(in_query) {
 }
 
 InstantSuggestion::~InstantSuggestion() {

@@ -95,11 +95,11 @@ if (!chrome.embeddedSearch) {
       native function GetDisplayInstantResults();
       native function GetFontSize();
       native function IsKeyCaptureEnabled();
-      native function SetSuggestions();
-      native function SetQuerySuggestion();
-      native function SetQuerySuggestionFromAutocompleteResult();
       native function SetQuery();
       native function SetQueryFromAutocompleteResult();
+      native function SetSuggestion();
+      native function SetSuggestionFromAutocompleteResult();
+      native function SetSuggestions();
       native function ShowOverlay();
       native function FocusOmnibox();
       native function StartCapturingKeyStrokes();
@@ -240,10 +240,10 @@ if (!chrome.embeddedSearch) {
         SetSuggestions(text);
       };
       this.setAutocompleteText = function(text, behavior) {
-        SetQuerySuggestion(text, behavior);
+        SetSuggestion(text, behavior);
       };
       this.setRestrictedAutocompleteText = function(autocompleteResultId) {
-        SetQuerySuggestionFromAutocompleteResult(autocompleteResultId);
+        SetSuggestionFromAutocompleteResult(autocompleteResultId);
       };
       this.setValue = function(text, type) {
         SetQuery(text, type);

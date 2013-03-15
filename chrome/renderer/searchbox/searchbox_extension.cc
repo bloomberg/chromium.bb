@@ -328,11 +328,11 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> SetSuggestions(const v8::Arguments& args);
 
   // Sets the text to be autocompleted into the search box.
-  static v8::Handle<v8::Value> SetQuerySuggestion(const v8::Arguments& args);
+  static v8::Handle<v8::Value> SetSuggestion(const v8::Arguments& args);
 
-  // Like |SetQuerySuggestion| but uses a restricted autocomplete result ID to
+  // Like SetSuggestion() but uses a restricted autocomplete result ID to
   // identify the text.
-  static v8::Handle<v8::Value> SetQuerySuggestionFromAutocompleteResult(
+  static v8::Handle<v8::Value> SetSuggestionFromAutocompleteResult(
       const v8::Arguments& args);
 
   // Sets the search box text, completely replacing what the user typed.
@@ -420,10 +420,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(NavigateContentWindow);
   if (name->Equals(v8::String::New("SetSuggestions")))
     return v8::FunctionTemplate::New(SetSuggestions);
-  if (name->Equals(v8::String::New("SetQuerySuggestion")))
-    return v8::FunctionTemplate::New(SetQuerySuggestion);
-  if (name->Equals(v8::String::New("SetQuerySuggestionFromAutocompleteResult")))
-    return v8::FunctionTemplate::New(SetQuerySuggestionFromAutocompleteResult);
+  if (name->Equals(v8::String::New("SetSuggestion")))
+    return v8::FunctionTemplate::New(SetSuggestion);
+  if (name->Equals(v8::String::New("SetSuggestionFromAutocompleteResult")))
+    return v8::FunctionTemplate::New(SetSuggestionFromAutocompleteResult);
   if (name->Equals(v8::String::New("SetQuery")))
     return v8::FunctionTemplate::New(SetQuery);
   if (name->Equals(v8::String::New("SetQueryFromAutocompleteResult")))
@@ -805,6 +805,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view || !args.Length()) return v8::Undefined();
+  SearchBox* search_box = SearchBox::Get(render_view);
 
   DVLOG(1) << render_view << " SetSuggestions";
   v8::Handle<v8::Object> suggestion_json = args[0]->ToObject();
@@ -830,22 +831,23 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     for (size_t i = 0; i < suggestions_array->Length(); i++) {
       string16 text = V8ValueToUTF16(
           suggestions_array->Get(i)->ToObject()->Get(v8::String::New("value")));
-      suggestions.push_back(InstantSuggestion(text, behavior, type));
+      suggestions.push_back(
+          InstantSuggestion(text, behavior, type, search_box->query()));
     }
   }
 
-  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  search_box->SetSuggestions(suggestions);
 
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuerySuggestion(
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestion(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view || args.Length() < 2) return v8::Undefined();
 
-  DVLOG(1) << render_view << " SetQuerySuggestion";
+  DVLOG(1) << render_view << " SetSuggestion";
   string16 text = V8ValueToUTF16(args[0]);
   InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
   InstantSuggestionType type = INSTANT_SUGGESTION_URL;
@@ -855,21 +857,23 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuerySuggestion(
     type = INSTANT_SUGGESTION_SEARCH;
   }
 
+  SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
-  suggestions.push_back(InstantSuggestion(text, behavior, type));
-  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  suggestions.push_back(
+      InstantSuggestion(text, behavior, type, search_box->query()));
+  search_box->SetSuggestions(suggestions);
 
   return v8::Undefined();
 }
 
 // static
 v8::Handle<v8::Value>
-    SearchBoxExtensionWrapper::SetQuerySuggestionFromAutocompleteResult(
+    SearchBoxExtensionWrapper::SetSuggestionFromAutocompleteResult(
         const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view || !args.Length()) return v8::Undefined();
 
-  DVLOG(1) << render_view << " SetQuerySuggestionFromAutocompleteResult";
+  DVLOG(1) << render_view << " SetSuggestionFromAutocompleteResult";
   const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
       GetAutocompleteResultWithId(args[0]->Uint32Value());
   if (!result) return v8::Undefined();
@@ -879,9 +883,11 @@ v8::Handle<v8::Value>
   InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
   InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
+  SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
-  suggestions.push_back(InstantSuggestion(text, behavior, type));
-  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  suggestions.push_back(
+      InstantSuggestion(text, behavior, type, search_box->query()));
+  search_box->SetSuggestions(suggestions);
 
   return v8::Undefined();
 }
@@ -900,9 +906,11 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuery(
   if (args[1]->Uint32Value() == 1)
     type = INSTANT_SUGGESTION_URL;
 
+  SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
-  suggestions.push_back(InstantSuggestion(text, behavior, type));
-  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  suggestions.push_back(
+      InstantSuggestion(text, behavior, type, search_box->query()));
+  search_box->SetSuggestions(suggestions);
 
   return v8::Undefined();
 }
@@ -925,12 +933,14 @@ v8::Handle<v8::Value>
   // navsuggest URLs so that we can do proper accounting on history URLs.
   InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
+  SearchBox* search_box = SearchBox::Get(render_view);
   std::vector<InstantSuggestion> suggestions;
-  suggestions.push_back(InstantSuggestion(text, behavior, type));
-  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  suggestions.push_back(
+      InstantSuggestion(text, behavior, type, search_box->query()));
+  search_box->SetSuggestions(suggestions);
   // Clear the SearchBox's query text explicitly since this is a restricted
   // value.
-  SearchBox::Get(render_view)->ClearQuery();
+  search_box->ClearQuery();
 
   return v8::Undefined();
 }

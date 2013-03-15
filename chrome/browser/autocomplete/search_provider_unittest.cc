@@ -510,7 +510,8 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
-                                                    INSTANT_SUGGESTION_SEARCH));
+                                                    INSTANT_SUGGESTION_SEARCH,
+                                                    string16()));
 
   // The provider should now be done.
   EXPECT_TRUE(provider_->done());
@@ -551,7 +552,8 @@ TEST_F(SearchProviderTest, FinalizeInstantURL) {
                                   InstantSuggestion(
                                       ASCIIToUTF16("http://example.com/"),
                                       INSTANT_COMPLETE_NOW,
-                                      INSTANT_SUGGESTION_URL));
+                                      INSTANT_SUGGESTION_URL,
+                                      string16()));
 
   // The provider should now be done.
   EXPECT_TRUE(provider_->done());
@@ -594,7 +596,8 @@ TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
                                   InstantSuggestion(
                                       ASCIIToUTF16("http://example.com/"),
                                       INSTANT_COMPLETE_NOW,
-                                      INSTANT_SUGGESTION_URL));
+                                      INSTANT_SUGGESTION_URL,
+                                      string16()));
 
   // The provider should now be done.
   EXPECT_TRUE(provider_->done());
@@ -626,7 +629,8 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
-                                                    INSTANT_SUGGESTION_SEARCH));
+                                                    INSTANT_SUGGESTION_SEARCH,
+                                                    string16()));
 
   // There should be two matches, one for what you typed, the other for
   // 'foobar'.
@@ -665,7 +669,8 @@ TEST_F(SearchProviderTest, DifferingText) {
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
-                                                    INSTANT_SUGGESTION_SEARCH));
+                                                    INSTANT_SUGGESTION_SEARCH,
+                                                    string16()));
 
   // Query with the same input text, but trailing whitespace.
   AutocompleteMatch instant_match;
