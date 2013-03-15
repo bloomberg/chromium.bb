@@ -62,7 +62,13 @@ class FindDialogTest : public InProcessBrowserTest {
 
 // Copy text in Incognito window, close window, check the test disappeared from
 // the clipboard.
-IN_PROC_BROWSER_TEST_F(FindDialogTest, CopyTextInIncognito) {
+// http://crbug.com/196592
+#if defined(OS_WIN)
+#define MAYBE_CopyTextInIncognito DISABLED_CopyTextInIncognito
+#else
+#define MAYBE_CopyTextInIncognito CopyTextInIncognito
+#endif
+IN_PROC_BROWSER_TEST_F(FindDialogTest, MAYBE_CopyTextInIncognito) {
   EXPECT_FALSE(browser()->profile()->IsOffTheRecord());
   Browser* browser_incognito = CreateIncognitoBrowser();
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser_incognito));
