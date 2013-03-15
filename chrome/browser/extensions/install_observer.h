@@ -11,6 +11,8 @@ class ImageSkia;
 
 namespace extensions {
 
+class Extension;
+
 class InstallObserver {
  public:
   virtual void OnBeginExtensionInstall(
@@ -24,6 +26,12 @@ class InstallObserver {
                                   int percent_downloaded) = 0;
 
   virtual void OnInstallFailure(const std::string& extension_id) = 0;
+
+  virtual void OnExtensionInstalled(const Extension* extension) = 0;
+  virtual void OnExtensionUninstalled(const Extension* extension) = 0;
+  virtual void OnExtensionDisabled(const Extension* extension) = 0;
+  virtual void OnAppsReordered() = 0;
+  virtual void OnAppInstalledToAppList(const std::string& extension_id) = 0;
 
   // Notifies observers that the observed object is going away.
   virtual void OnShutdown() = 0;

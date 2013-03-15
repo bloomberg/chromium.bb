@@ -60,7 +60,6 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
       highlighted_app_pending_(false),
       ignore_changes_(false),
       tracker_(extensions::InstallTrackerFactory::GetForProfile(profile_)) {
-  tracker_->AddObserver(this);
   model_->AddObserver(this);
 }
 
@@ -76,23 +75,7 @@ void AppsModelBuilder::Build() {
   UpdateHighlight();
 
   // Start observing after model is built.
-  extensions::ExtensionPrefs* extension_prefs =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          extension_prefs();
-
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-      content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-      content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<ExtensionSorting>(extension_prefs->extension_sorting()));
-  registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-      content::Source<Profile>(profile_));
-
-  pref_change_registrar_.Init(extension_prefs->pref_service());
-  pref_change_registrar_.Add(extensions::ExtensionPrefs::kExtensionsPref,
-                             base::Bind(&AppsModelBuilder::ResortApps,
-                                        base::Unretained(this)));
+  tracker_->AddObserver(this);
 }
 
 void AppsModelBuilder::OnBeginExtensionInstall(
@@ -125,6 +108,48 @@ void AppsModelBuilder::OnInstallFailure(const std::string& extension_id) {
   if (i == -1)
     return;
   model_->DeleteAt(i);
+}
+
+void AppsModelBuilder::OnExtensionInstalled(const Extension* extension) {
+  if (!extension->ShouldDisplayInAppLauncher())
+    return;
+
+  const int existing_index = FindApp(extension->id());
+  if (existing_index != -1) {
+    GetAppAt(existing_index)->Reload();
+    return;
+  }
+
+  InsertApp(new ExtensionAppItem(profile_,
+                                 extension->id(),
+                                 controller_,
+                                 "",
+                                 gfx::ImageSkia(),
+                                 extension->is_platform_app()));
+  UpdateHighlight();
+}
+
+void AppsModelBuilder::OnExtensionUninstalled(const Extension* extension) {
+  int index = FindApp(extension->id());
+  if (index < 0)
+    return;
+  model_->DeleteAt(index);
+}
+
+void AppsModelBuilder::OnExtensionDisabled(const Extension* extension) {
+  int index = FindApp(extension->id());
+  if (index < 0)
+    return;
+  GetAppAt(index)->UpdateIcon();
+}
+
+void AppsModelBuilder::OnAppsReordered() {
+  ResortApps();
+}
+
+void AppsModelBuilder::OnAppInstalledToAppList(
+    const std::string& extension_id) {
+  SetHighlightedApp(extension_id);
 }
 
 void AppsModelBuilder::OnShutdown() {
@@ -266,58 +291,6 @@ ExtensionAppItem* AppsModelBuilder::GetAppAt(size_t index) {
   DCHECK_EQ(item->type(), ChromeAppListItem::TYPE_APP);
 
   return static_cast<ExtensionAppItem*>(item);
-}
-
-void AppsModelBuilder::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      if (!extension->ShouldDisplayInAppLauncher())
-        return;
-
-      const int existing_index = FindApp(extension->id());
-      if (existing_index != -1) {
-        GetAppAt(existing_index)->Reload();
-        return;
-      }
-
-      InsertApp(new ExtensionAppItem(profile_,
-                                     extension->id(),
-                                     controller_,
-                                     "",
-                                     gfx::ImageSkia(),
-                                     extension->is_platform_app()));
-      UpdateHighlight();
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const content::Details<extensions::UnloadedExtensionInfo>& unload_info(
-          details);
-      const Extension* extension = unload_info->extension;
-      int index = FindApp(extension->id());
-      if (index < 0)
-        break;
-
-      if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL)
-        model_->DeleteAt(index);
-      else
-        GetAppAt(index)->UpdateIcon();
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED: {
-      ResortApps();
-      break;
-    }
-    case chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST: {
-      SetHighlightedApp(*content::Details<const std::string>(details).ptr());
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
 }
 
 void AppsModelBuilder::ListItemsAdded(size_t start, size_t count) {

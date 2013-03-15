@@ -5,6 +5,9 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -23,6 +26,7 @@ InstallTrackerFactory* InstallTrackerFactory::GetInstance() {
 InstallTrackerFactory::InstallTrackerFactory()
     : ProfileKeyedServiceFactory("InstallTracker",
                                  ProfileDependencyManager::GetInstance()) {
+  DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 InstallTrackerFactory::~InstallTrackerFactory() {
@@ -30,7 +34,9 @@ InstallTrackerFactory::~InstallTrackerFactory() {
 
 ProfileKeyedService* InstallTrackerFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new InstallTracker();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  return new InstallTracker(profile, service->extension_prefs());
 }
 
 bool InstallTrackerFactory::ServiceRedirectedInIncognito() const {

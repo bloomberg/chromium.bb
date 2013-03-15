@@ -9,10 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/extensions/install_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/base/models/list_model_observer.h"
 
@@ -22,6 +19,7 @@ class ExtensionSet;
 class Profile;
 
 namespace extensions {
+class Extension;
 class InstallTracker;
 }
 
@@ -29,8 +27,7 @@ namespace gfx {
 class ImageSkia;
 }
 
-class AppsModelBuilder : public content::NotificationObserver,
-                         public ui::ListModelObserver,
+class AppsModelBuilder : public ui::ListModelObserver,
                          public extensions::InstallObserver {
  public:
   AppsModelBuilder(Profile* profile,
@@ -55,6 +52,15 @@ class AppsModelBuilder : public content::NotificationObserver,
                                   int percent_downloaded) OVERRIDE;
 
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
+  virtual void OnExtensionInstalled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionDisabled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnAppsReordered() OVERRIDE;
+  virtual void OnAppInstalledToAppList(
+      const std::string& extension_id) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
   // Adds apps in |extensions| to |apps|.
@@ -89,11 +95,6 @@ class AppsModelBuilder : public content::NotificationObserver,
   // Returns app instance with id |extension_id|.
   ExtensionAppItem* GetApp(const std::string& extension_id);
 
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // ui::ListModelObserver overrides:
   virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
   virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
@@ -114,9 +115,6 @@ class AppsModelBuilder : public content::NotificationObserver,
 
   // True to ignore |model_| changes.
   bool ignore_changes_;
-
-  content::NotificationRegistrar registrar_;
-  PrefChangeRegistrar pref_change_registrar_;
 
   // We listen to this to show app installing progress.
   extensions::InstallTracker* tracker_;
