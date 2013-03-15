@@ -422,6 +422,7 @@ class DriveFileSystemTest : public testing::Test {
     DriveEntryProto* file = root_dir->add_child_files();
     file->set_title("File1");
     file->set_resource_id("resource_id:File1");
+    file->set_parent_resource_id(root_dir->drive_entry().resource_id());
     file->set_upload_url("http://resumable-edit-media/1");
     file->mutable_file_specific_info()->set_file_md5("md5");
     platform_info = file->mutable_file_info();
@@ -433,6 +434,7 @@ class DriveFileSystemTest : public testing::Test {
     dir_base = dir1->mutable_drive_entry();
     dir_base->set_title("Dir1");
     dir_base->set_resource_id("resource_id:Dir1");
+    dir_base->set_parent_resource_id(root_dir->drive_entry().resource_id());
     dir_base->set_upload_url("http://resumable-create-media/2");
     platform_info = dir_base->mutable_file_info();
     platform_info->set_is_directory(true);
@@ -441,6 +443,7 @@ class DriveFileSystemTest : public testing::Test {
     file = dir1->add_child_files();
     file->set_title("File2");
     file->set_resource_id("resource_id:File2");
+    file->set_parent_resource_id(dir1->drive_entry().resource_id());
     file->set_upload_url("http://resumable-edit-media/2");
     file->mutable_file_specific_info()->set_file_md5("md5");
     platform_info = file->mutable_file_info();
@@ -452,6 +455,7 @@ class DriveFileSystemTest : public testing::Test {
     dir_base = dir2->mutable_drive_entry();
     dir_base->set_title("SubDir2");
     dir_base->set_resource_id("resource_id:SubDir2");
+    dir_base->set_parent_resource_id(dir1->drive_entry().resource_id());
     dir_base->set_upload_url("http://resumable-create-media/3");
     platform_info = dir_base->mutable_file_info();
     platform_info->set_is_directory(true);
@@ -460,6 +464,7 @@ class DriveFileSystemTest : public testing::Test {
     file = dir2->add_child_files();
     file->set_title("File3");
     file->set_resource_id("resource_id:File3");
+    file->set_parent_resource_id(dir2->drive_entry().resource_id());
     file->set_upload_url("http://resumable-edit-media/3");
     file->mutable_file_specific_info()->set_file_md5("md5");
     platform_info = file->mutable_file_info();

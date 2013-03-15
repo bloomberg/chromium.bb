@@ -284,43 +284,42 @@ class DriveResourceMetadata {
   DriveEntryProto* GetDirectory(const std::string& resource_id);
 
   // Returns virtual file path of the entry.
-  base::FilePath GetFilePath(const DriveEntryProto& entry);
+  base::FilePath GetFilePath(const std::string& resource_id);
 
   // Recursively extracts the paths set of all sub-directories.
-  void GetDescendantDirectoryPaths(const DriveEntryProto& directory,
+  void GetDescendantDirectoryPaths(const std::string& resource_id,
                                    std::set<base::FilePath>* child_directories);
 
-  // Adds child file to the directory and takes over the ownership of |entry|
+  // Adds child file to its parent and takes over the ownership of |entry|
   // object. The method will also do name de-duplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  void AddEntryToDirectory(DriveEntryProto* directory, DriveEntryProto* entry);
+  void AddEntryToDirectory(DriveEntryProto* entry);
 
-  // Removes the entry from its children list and destroys the entry instance.
-  void RemoveDirectoryChild(DriveEntryProto* directory, DriveEntryProto* entry);
+  // Removes the entry from its parent and destroys the entry instance.
+  void RemoveDirectoryChild(const std::string& child_resource_id);
 
   // Find a child's resource_id by its name. Returns the empty string if not
   // found.
-  std::string FindDirectoryChild(DriveEntryProto* directory,
+  std::string FindDirectoryChild(const std::string& directory_resource_id,
                                  const base::FilePath::StringType& file_name);
 
-  // Removes the entry from its children without destroying the
-  // entry instance.
-  void DetachEntryFromDirectory(DriveEntryProto* directory,
-                                DriveEntryProto* entry);
+  // Detaches the entry from its parent without destroying the entry instance.
+  void DetachEntryFromDirectory(const std::string& child_resource_id);
 
   // Removes child elements of directory.
-  void RemoveDirectoryChildren(DriveEntryProto* directory);
+  void RemoveDirectoryChildren(const std::string& directory_resource_id);
 
-  // Converts directory to proto, and vice versa.
-  void ProtoToDirectory(const DriveDirectoryProto& proto,
-                        DriveEntryProto* directory);
-  void DirectoryToProto(DriveEntryProto* directory,
+  // Adds directory children recursively from |proto|.
+  void AddDescendantsFromProto(const DriveDirectoryProto& proto);
+
+  // Converts directory to proto.
+  void DirectoryToProto(const std::string& directory_resource_id,
                         DriveDirectoryProto* proto);
 
   // Converts the children as a vector of DriveEntryProto.
   scoped_ptr<DriveEntryProtoVector> DirectoryChildrenToProtoVector(
-      DriveEntryProto* directory);
+      const std::string& directory_resource_id);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

@@ -1188,6 +1188,7 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   DriveEntryProto* directory_entry = directory->mutable_drive_entry();
   directory_entry->mutable_file_info()->set_is_directory(true);
   directory_entry->set_resource_id(kSubDirectoryResourceId);
+  directory_entry->set_parent_resource_id(kTestRootResourceId);
   directory_entry->set_title("directory");
   // At this point, both the root and the sub directory do not contain the
   // per-directory changestamp.
