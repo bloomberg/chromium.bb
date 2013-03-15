@@ -12,8 +12,8 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
-import android.database.Cursor;
 import android.database.AbstractCursor;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
@@ -35,7 +35,7 @@ public class TestContentProvider extends ContentProvider {
     private enum ColumnIndex {
         RESOURCE_REQUEST_COUNT_COLUMN,
     };
-    private Map<String, Integer> mResourceRequestCount;
+    private final Map<String, Integer> mResourceRequestCount;
 
     public static String createContentUrl(String target) {
         return CONTENT_SCHEME + AUTHORITY + "/" + target;
@@ -107,8 +107,8 @@ public class TestContentProvider extends ContentProvider {
     /**
      * Cursor object for retrieving resource request counters.
      */
-    private class ProviderStateCursor extends AbstractCursor {
-        private int mResourceRequestCount;
+    private static class ProviderStateCursor extends AbstractCursor {
+        private final int mResourceRequestCount;
 
         public ProviderStateCursor(int resourceRequestCount) {
             mResourceRequestCount = resourceRequestCount;

@@ -12,12 +12,11 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
@@ -27,8 +26,6 @@ import java.io.FileOutputStream;
 import java.util.concurrent.TimeUnit;
 
 public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
-
-    protected static int WAIT_TIMEOUT_SECONDS = 15;
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

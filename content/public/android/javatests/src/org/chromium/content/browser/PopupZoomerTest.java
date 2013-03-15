@@ -22,7 +22,7 @@ import org.chromium.base.test.util.Feature;
 public class PopupZoomerTest extends InstrumentationTestCase {
     private CustomCanvasPopupZoomer mPopupZoomer;
 
-    private class CustomCanvasPopupZoomer extends PopupZoomer {
+    private static class CustomCanvasPopupZoomer extends PopupZoomer {
         Canvas mCanvas;
         long mPendingDraws = 0;
 
@@ -44,6 +44,7 @@ public class PopupZoomerTest extends InstrumentationTestCase {
 
         // Test doesn't attach PopupZoomer to the view hierarchy,
         // but onDraw() should still go on.
+        @Override
         protected boolean acceptZeroSizeView() {
             return true;
         }

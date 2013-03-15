@@ -40,7 +40,7 @@ public class JavaBridgeFieldsTest extends JavaBridgeTestBase {
     }
 
     // A custom type used when testing passing objects.
-    private class CustomType {
+    private static class CustomType {
     }
 
     TestObject mTestObject;

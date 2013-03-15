@@ -11,11 +11,11 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.ScalableTimeout;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test suite for LongPressDetector.
@@ -159,6 +159,7 @@ public class LongPressDetectorTest extends InstrumentationTestCase {
                 LongPressDetector longPressDetector = new LongPressDetector(
                         getInstrumentation().getTargetContext(),
                         new LongPressDetector.LongPressDelegate() {
+                            @Override
                             public void onLongPress(MotionEvent event) {
                                 longPressCalled.countDown();
                             }
@@ -166,7 +167,7 @@ public class LongPressDetectorTest extends InstrumentationTestCase {
 
                 final long downTime = SystemClock.uptimeMillis();
                 final long eventTime = SystemClock.uptimeMillis();
-                MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+                MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, eventTime);
                 longPressDetector.startLongPressTimerIfNeeded(event);
             }
         });

@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.android_webview.AwContents;
@@ -85,7 +84,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
             final String testPath = "/test.html";
             final String syncPath = "/sync.html";
 
-            final String testUrl = webServer.setResponse(testPath, testHtml, null);
+            webServer.setResponse(testPath, testHtml, null);
             final String syncUrl = webServer.setResponse(syncPath, testHtml, null);
 
             assertEquals(0, onPageFinishedHelper.getCallCount());

@@ -1,10 +1,5 @@
 H C EC: Using pointer equality to compare a JavaBridgeCoercionTest$CustomType with a JavaBridgeCoercionTest$CustomType2 in org.chromium.content.browser.JavaBridgeCoercionTest.testPassJavaObject()  At JavaBridgeCoercionTest.java
 H D RCN: Redundant nullcheck of org.chromium.content.browser.SandboxedProcessConnection.mConnectionParams, which is known to be non-null in org.chromium.content.browser.SandboxedProcessConnection.doConnectionSetup()  Redundant null check at SandboxedProcessConnection.java
-H D ST: Write to static field org.chromium.net.test.util.TestWebServer.sInstance from instance method org.chromium.net.test.util.TestWebServer.shutdown()  At TestWebServer.java
-H V MS: org.chromium.android_webview.test.AndroidWebViewTestBase.WAIT_TIMEOUT_SECONDS isn't final but should be  At AndroidWebViewTestBase.java
-H V MS: org.chromium.android_webview.test.LoadDataWithBaseUrlTest.WAIT_TIMEOUT_SECONDS isn't final but should be  At LoadDataWithBaseUrlTest.java
-H V MS: org.chromium.content.browser.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS isn't final but should be  At CallbackHelper.java
-H V MS: org.chromium.content.browser.test.util.HistoryUtils.WAIT_TIMEOUT_SECONDS isn't final but should be  At HistoryUtils.java
 M B DE: org.chromium.net.X509Util.clearTestRootCertificates() might ignore java.io.IOException  At X509Util.java
 M B Nm: The method name org.chromium.base.test.util.ScalableTimeout.ScaleTimeout(long) doesn't start with a lower case letter  At ScalableTimeout.java
 M B RV: exceptional return value of java.io.File.delete() ignored in org.chromium.android_webview.test.ArchiveTest.doArchiveTest(AwContents, String, boolean, String)  At ArchiveTest.java
@@ -59,10 +54,6 @@ M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$7.
 M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$8.method2() defined in anonymous class  At JavaBridgeBasicsTest.java
 M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$9.method() defined in anonymous class  At JavaBridgeBasicsTest.java
 M C USELESS_STRING: Invocation of toString on certChain in org.chromium.net.X509Util.verifyServerCertificates(byte[][], String)  At X509Util.java
-M D DLS: Dead store to eventTime in org.chromium.content.browser.LongPressDetectorTest$1.run()  At LongPressDetectorTest.java
-M D DLS: Dead store to prevEditableLength in org.chromium.content.browser.ImeAdapter$AdapterInputConnection.setEditableText(String, int, int, int, int)  At ImeAdapter.java
-M D DLS: Dead store to testUrl in org.chromium.android_webview.test.ClientOnPageFinishedTest.testOnPageFinishedNotCalledForValidSubresources()  At ClientOnPageFinishedTest.java
-M D DLS: Dead store to time in org.chromium.net.test.util.TestWebServer.setDateHeaders(HttpResponse)  At TestWebServer.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testAutoBadPath()  At ArchiveTest.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
 M D ICAST: integral division result cast to double or float in org.chromium.content.browser.HandleView.setOrientation(int)  At HandleView.java
@@ -74,7 +65,6 @@ M D SF: Switch statement found in org.chromium.content.browser.HandleView.onTouc
 M D SF: Switch statement found in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent) where default case is missing  At GestureDetector.java
 M D ST: Write to static field org.chromium.content.app.SandboxedProcessService.sContext from instance method org.chromium.content.app.SandboxedProcessService.onCreate()  At SandboxedProcessService.java
 M D ST: Write to static field org.chromium.content.browser.ContentSettings.sAppCachePathIsSet from instance method org.chromium.content.browser.ContentSettings.setAppCachePath(String)  At ContentSettings.java
-M D ST: Write to static field org.chromium.net.test.util.TestWebServer.sInstance from instance method new org.chromium.net.test.util.TestWebServer(boolean)  At TestWebServer.java
 M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeBasicsTest$21.field  At JavaBridgeBasicsTest.java
 M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.booleanField  At JavaBridgeFieldsTest.java
 M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.byteField  At JavaBridgeFieldsTest.java
@@ -95,15 +85,6 @@ M M LI: Incorrect lazy initialization and update of static field org.chromium.ba
 M M LI: Incorrect lazy initialization and update of static field org.chromium.content.browser.ContentVideoView.sContentVideoView in org.chromium.content.browser.ContentVideoView.createContentVideoView(int)  At ContentVideoView.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getBooleanValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setBooleanValue(boolean) is synchronized  At JavaBridgeReturnValuesTest.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getStringValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setStringValue(String) is synchronized  At JavaBridgeReturnValuesTest.java
-M P SIC: Should org.chromium.android_webview.test.TestAwContentsClient$AddMessageToConsoleHelper be a _static_ inner class?  At TestAwContentsClient.java
-M P SIC: Should org.chromium.android_webview.test.TestContentProvider$ProviderStateCursor be a _static_ inner class?  At TestContentProvider.java
-M P SIC: Should org.chromium.content.browser.ContentViewGestureHandlerTest$GestureRecordingMotionEventDelegate$GestureEvent be a _static_ inner class?  At ContentViewGestureHandlerTest.java
-M P SIC: Should org.chromium.content.browser.JavaBridgeArrayCoercionTest$CustomType be a _static_ inner class?  At JavaBridgeArrayCoercionTest.java
-M P SIC: Should org.chromium.content.browser.JavaBridgeFieldsTest$CustomType be a _static_ inner class?  At JavaBridgeFieldsTest.java
-M P SIC: Should org.chromium.content.browser.JavaBridgeReturnValuesTest$CustomType be a _static_ inner class?  At JavaBridgeReturnValuesTest.java
-M P SIC: Should org.chromium.content.browser.PopupZoomerTest$CustomCanvasPopupZoomer be a _static_ inner class?  At PopupZoomerTest.java
-M P SS: Unread field: org.chromium.android_webview.test.util.ImagePageGenerator.IMAGE_PREFIX; should this field be static?  At ImagePageGenerator.java
-M P SS: Unread field: org.chromium.android_webview.test.util.ImagePageGenerator.IMAGE_SUFFIX; should this field be static?  At ImagePageGenerator.java
 M P UuF: Unused field: org.chromium.content.browser.JavaBridgeBasicsTest$19.privateField  In JavaBridgeBasicsTest.java
 M P UuF: Unused field: org.chromium.content.browser.JavaBridgeBasicsTest$23.field  In JavaBridgeBasicsTest.java
 M V EI2: new org.chromium.chrome.browser.FindMatchRectsDetails(int, RectF[], RectF) may expose internal representation by storing an externally mutable object into FindMatchRectsDetails.rects  At FindMatchRectsDetails.java

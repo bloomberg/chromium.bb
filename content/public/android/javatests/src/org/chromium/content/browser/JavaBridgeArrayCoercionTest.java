@@ -6,8 +6,8 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 
 /**
  * Part of the test suite for the Java Bridge. This class tests that we correctly convert
@@ -22,8 +22,8 @@ import org.chromium.base.test.util.DisabledTest;
  */
 public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     private class TestObject extends Controller {
-        private Object mObjectInstance;
-        private CustomType mCustomTypeInstance;
+        private final Object mObjectInstance;
+        private final CustomType mCustomTypeInstance;
 
         private boolean[] mBooleanArray;
         private byte[] mByteArray;
@@ -141,7 +141,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     }
 
     // Two custom types used when testing passing objects.
-    private class CustomType {
+    private static class CustomType {
     }
 
     private TestObject mTestObject;

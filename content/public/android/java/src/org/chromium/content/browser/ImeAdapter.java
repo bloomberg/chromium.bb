@@ -111,16 +111,16 @@ class ImeAdapter {
     private int mNativeImeAdapterAndroid;
     private int mTextInputType;
 
-    private Context mContext;
+    private final Context mContext;
     private InputMethodManagerWrapper mInputMethodManagerWrapper;
-    private SelectionHandleController mSelectionHandleController;
-    private InsertionHandleController mInsertionHandleController;
+    private final SelectionHandleController mSelectionHandleController;
+    private final InsertionHandleController mInsertionHandleController;
     private AdapterInputConnection mInputConnection;
-    private ViewEmbedder mViewEmbedder;
-    private Handler mHandler;
+    private final ViewEmbedder mViewEmbedder;
+    private final Handler mHandler;
 
     private class DelayedDismissInput implements Runnable {
-        private int mNativeImeAdapter;
+        private final int mNativeImeAdapter;
 
         DelayedDismissInput(int nativeImeAdapter) {
             mNativeImeAdapter = nativeImeAdapter;
@@ -471,8 +471,8 @@ class ImeAdapter {
     // It then adapts android's IME to chrome's RenderWidgetHostView using the
     // native ImeAdapterAndroid via the outer class ImeAdapter.
     public static class AdapterInputConnection extends BaseInputConnection {
-        private View mInternalView;
-        private ImeAdapter mImeAdapter;
+        private final View mInternalView;
+        private final ImeAdapter mImeAdapter;
         private boolean mSingleLine;
         private int mNumNestedBatchEdits = 0;
         private boolean mIgnoreTextInputStateUpdates = false;
@@ -498,7 +498,6 @@ class ImeAdapter {
 
             int prevSelectionStart = Selection.getSelectionStart(editable);
             int prevSelectionEnd = Selection.getSelectionEnd(editable);
-            int prevEditableLength = editable.length();
             int prevCompositionStart = getComposingSpanStart(editable);
             int prevCompositionEnd = getComposingSpanEnd(editable);
             String prevText = editable.toString();

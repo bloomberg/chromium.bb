@@ -7,6 +7,7 @@ package org.chromium.content.browser.test.util;
 import android.app.Instrumentation;
 
 import org.chromium.base.test.util.InstrumentationUtils;
+import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.util.concurrent.Callable;
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HistoryUtils {
 
-    protected static int WAIT_TIMEOUT_SECONDS = 15;
+    protected final static int WAIT_TIMEOUT_SECONDS = 15;
 
     /**
      * Calls {@link ContentView#canGoBack()} on UI thread.

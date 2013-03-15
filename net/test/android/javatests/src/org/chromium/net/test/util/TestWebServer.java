@@ -70,9 +70,9 @@ public class TestWebServer {
     private static TestWebServer sInstance;
     private static Hashtable<Integer, String> sReasons;
 
-    private ServerThread mServerThread;
+    private final ServerThread mServerThread;
     private String mServerUri;
-    private boolean mSsl;
+    private final boolean mSsl;
 
     private static class Response {
         final byte[] mResponseData;
@@ -91,9 +91,9 @@ public class TestWebServer {
     // The Maps below are modified on both the client thread and the internal server thread, so
     // need to use a lock when accessing them.
     private final Object mLock = new Object();
-    private Map<String, Response> mResponseMap = new HashMap<String, Response>();
-    private Map<String, Integer> mResponseCountMap = new HashMap<String, Integer>();
-    private Map<String, HttpRequest> mLastRequestMap = new HashMap<String, HttpRequest>();
+    private final Map<String, Response> mResponseMap = new HashMap<String, Response>();
+    private final Map<String, Integer> mResponseCountMap = new HashMap<String, Integer>();
+    private final Map<String, HttpRequest> mLastRequestMap = new HashMap<String, HttpRequest>();
 
     /**
      * Create and start a local HTTP server instance.
@@ -106,7 +106,7 @@ public class TestWebServer {
             // shut down the old instance first
             sInstance.shutdown();
         }
-        sInstance = this;
+        setStaticInstance(this);
         mSsl = ssl;
         if (mSsl) {
             mServerUri = "https://localhost:" + SSL_SERVER_PORT;
@@ -115,6 +115,10 @@ public class TestWebServer {
         }
         mServerThread = new ServerThread(this, mSsl);
         mServerThread.start();
+    }
+
+    private static void setStaticInstance(TestWebServer instance) {
+        sInstance = instance;
     }
 
     /**
@@ -149,7 +153,7 @@ public class TestWebServer {
             throw new IllegalStateException(e);
         }
 
-        TestWebServer.sInstance = null;
+        setStaticInstance(null);
     }
 
     private final static int RESPONSE_STATUS_NORMAL = 0;
@@ -369,7 +373,6 @@ public class TestWebServer {
     }
 
     private void setDateHeaders(HttpResponse response) {
-        long time = System.currentTimeMillis();
         response.addHeader("Date", DateUtils.formatDate(new Date(), DateUtils.PATTERN_RFC1123));
     }
 
@@ -451,7 +454,7 @@ public class TestWebServer {
             "1gaEjsC/0wGmmBDg1dTDH+F1p9TInzr3EFuYD0YiQ7YlAHq3cPuyGoLXJ5dXYuSBfhDXJSeddUkl" +
             "k1ufZyOOcskeInQge7jzaRfmKg3U94r+spMEvb0AzDQVOKvjjo1ivxMSgFRZaDb/4qw=";
 
-        private String PASSWORD = "android";
+        private static final String PASSWORD = "android";
 
         /**
          * Loads a keystore from a base64-encoded String. Returns the KeyManager[]

@@ -12,15 +12,12 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.concurrent.CountDownLatch;
-
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.third_party.GestureDetector;
-import org.chromium.content.browser.third_party.GestureDetector.SimpleOnGestureListener;
+
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Test suite for ContentViewGestureHandler.
@@ -613,12 +610,12 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
      * Mock MotionEventDelegate that remembers the most recent gesture event.
      */
     static class GestureRecordingMotionEventDelegate implements MotionEventDelegate {
-        public class GestureEvent {
-            private int mType;
-            private long mTimeMs;
-            private int mX;
-            private int mY;
-            private Bundle mExtraParams;
+        static class GestureEvent {
+            private final int mType;
+            private final long mTimeMs;
+            private final int mX;
+            private final int mY;
+            private final Bundle mExtraParams;
 
             public GestureEvent(int type, long timeMs, int x, int y, Bundle extraParams) {
                 mType = type;
@@ -649,7 +646,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             }
         };
         private GestureEvent mMostRecentGestureEvent;
-        private ArrayList<Integer> mGestureTypeList = new ArrayList<Integer>();
+        private final ArrayList<Integer> mGestureTypeList = new ArrayList<Integer>();
 
         @Override
         public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {

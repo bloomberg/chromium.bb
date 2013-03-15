@@ -7,19 +7,19 @@ package org.chromium.android_webview.test;
 import android.webkit.ConsoleMessage;
 
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 class TestAwContentsClient extends NullContentsClient {
     private String mUpdatedTitle;
-    private OnPageStartedHelper mOnPageStartedHelper;
-    private OnPageFinishedHelper mOnPageFinishedHelper;
-    private OnReceivedErrorHelper mOnReceivedErrorHelper;
-    private OnEvaluateJavaScriptResultHelper mOnEvaluateJavaScriptResultHelper;
-    private AddMessageToConsoleHelper mAddMessageToConsoleHelper;
-    private OnScaleChangedHelper mOnScaleChangedHelper;
+    private final OnPageStartedHelper mOnPageStartedHelper;
+    private final OnPageFinishedHelper mOnPageFinishedHelper;
+    private final OnReceivedErrorHelper mOnReceivedErrorHelper;
+    private final OnEvaluateJavaScriptResultHelper mOnEvaluateJavaScriptResultHelper;
+    private final AddMessageToConsoleHelper mAddMessageToConsoleHelper;
+    private final OnScaleChangedHelper mOnScaleChangedHelper;
 
     public TestAwContentsClient() {
         mOnPageStartedHelper = new OnPageStartedHelper();
@@ -99,7 +99,7 @@ class TestAwContentsClient extends NullContentsClient {
         return false;
     }
 
-    public class AddMessageToConsoleHelper extends CallbackHelper {
+    public static class AddMessageToConsoleHelper extends CallbackHelper {
         private int mLevel;
         private String mMessage;
         private int mLineNumber;
