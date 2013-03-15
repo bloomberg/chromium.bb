@@ -17,7 +17,7 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_center_bubble.h"
-#include "ui/message_center/views/message_popup_collection.h"
+#include "ui/message_center/views/message_popup_bubble.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -103,8 +103,8 @@ typedef InProcessBrowserTest WebNotificationTrayWinTest;
 
 // TODO(dewittj): More exhaustive testing.
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, WebNotifications) {
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
+  scoped_ptr<WebNotificationTrayWin> tray(new WebNotificationTrayWin());
+  message_center::MessageCenter* message_center = tray->message_center();
   scoped_ptr<TestDelegate> delegate(new TestDelegate(message_center));
 
   // Add a notification.
@@ -187,8 +187,6 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest,
             message_center->NotificationCount());
   EXPECT_EQ(NotificationList::kMaxVisibleMessageCenterNotifications,
             tray->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
-  message_center->notification_list()->RemoveAllNotifications();
-  message_center->NotifyMessageCenterChanged(false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, ManyPopupNotifications) {
@@ -209,11 +207,10 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, ManyPopupNotifications) {
   EXPECT_TRUE(tray->message_center_tray_->popups_visible());
   EXPECT_EQ(notifications_to_add,
             message_center->NotificationCount());
-  NotificationList::PopupNotifications popups =
-      message_center->notification_list()->GetPopupNotifications();
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, popups.size());
+  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications,
+            tray->GetPopupBubbleForTest()->NumMessageViewsForTest());
+  message_center->SetDelegate(NULL);
   message_center->notification_list()->RemoveAllNotifications();
-  message_center->NotifyMessageCenterChanged(false);
 }
 
 }  // namespace message_center

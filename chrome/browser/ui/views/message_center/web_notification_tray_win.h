@@ -16,7 +16,7 @@ class StatusIcon;
 namespace message_center {
 class MessageCenter;
 class MessageCenterBubble;
-class MessagePopupCollection;
+class MessagePopupBubble;
 }
 
 namespace views {
@@ -75,10 +75,11 @@ class WebNotificationTrayWin
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, ManyPopupNotifications);
 
   void AddQuietModeMenu(StatusIcon* status_icon);
+  message_center::MessagePopupBubble* GetPopupBubbleForTest();
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
 
+  scoped_ptr<internal::NotificationBubbleWrapperWin> popup_bubble_;
   scoped_ptr<internal::NotificationBubbleWrapperWin> message_center_bubble_;
-  scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
 
   StatusIcon* status_icon_;
   bool message_center_visible_;
