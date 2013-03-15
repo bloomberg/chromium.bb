@@ -101,11 +101,13 @@ bool NotificationUIManagerImpl::CancelAllBySourceOrigin(const GURL& source) {
   bool removed = false;
   for (NotificationDeque::iterator loopiter = show_queue_.begin();
        loopiter != show_queue_.end(); ) {
-    NotificationDeque::iterator curiter = loopiter++;
-    if ((*curiter)->notification().origin_url() == source) {
-      show_queue_.erase(curiter);
-      removed = true;
+    if ((*loopiter)->notification().origin_url() != source) {
+      ++loopiter;
+      continue;
     }
+
+    loopiter = show_queue_.erase(loopiter);
+    removed = true;
   }
   return removed;
 }
@@ -115,11 +117,13 @@ bool NotificationUIManagerImpl::CancelAllByProfile(Profile* profile) {
   bool removed = false;
   for (NotificationDeque::iterator loopiter = show_queue_.begin();
        loopiter != show_queue_.end(); ) {
-    NotificationDeque::iterator curiter = loopiter++;
-    if ((*curiter)->profile() == profile) {
-      show_queue_.erase(curiter);
-      removed = true;
+    if ((*loopiter)->profile() != profile) {
+      ++loopiter;
+      continue;
     }
+
+    loopiter = show_queue_.erase(loopiter);
+    removed = true;
   }
   return removed;
 }
