@@ -98,11 +98,11 @@ using content::UserMetricsAction;
   return NO;
 }
 
--(NSTextField*)noItemTextfield {
+-(BookmarkBarTextField*)noItemTextfield {
   return noItemTextfield_;
 }
 
--(NSButton*)importBookmarksButton {
+-(BookmarkBarImportButton*)importBookmarksButton {
   return importBookmarksButton_;
 }
 
@@ -278,3 +278,27 @@ using content::UserMetricsAction;
 }
 
 @end  // @implementation BookmarkBarView
+
+@implementation BookmarkBarTextField
+
+- (NSMenu*)menu {
+  return [barView_ menu];
+}
+
+@end  // @implementation BookmarkBarTextField
+
+@implementation BookmarkBarImportButton
+
+- (NSMenu*)menu {
+  return [barView_ menu];
+}
+
+@end  // @implementation BookmarkBarImportButton
+
+@implementation BookmarkBarItemContainer
+
+- (NSMenu*)menu {
+  return [barView_ menu];
+}
+
+@end  // @implementation BookmarkBarItemContainer

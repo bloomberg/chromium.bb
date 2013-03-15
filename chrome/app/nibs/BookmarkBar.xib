@@ -120,7 +120,7 @@
 								<reference key="NSSuperview" ref="610146462"/>
 								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="1013234954"/>
-								<string key="NSClassName">GTMWidthBasedTweaker</string>
+								<string key="NSClassName">BookmarkBarItemContainer</string>
 							</object>
 						</object>
 						<string key="NSFrame">{{0, -2}, {584, 144}}</string>
@@ -274,6 +274,30 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
+						<string key="label">barView_</string>
+						<reference key="source" ref="1013234954"/>
+						<reference key="destination" ref="610146462"/>
+					</object>
+					<int key="connectionID">139</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">barView_</string>
+						<reference key="source" ref="1020224577"/>
+						<reference key="destination" ref="610146462"/>
+					</object>
+					<int key="connectionID">138</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">barView_</string>
+						<reference key="source" ref="1023728927"/>
+						<reference key="destination" ref="610146462"/>
+					</object>
+					<int key="connectionID">140</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
 						<string key="label">localizerOwner_</string>
 						<reference key="source" ref="191941755"/>
 						<reference key="destination" ref="1001"/>
@@ -417,6 +441,7 @@
 					<string>-2.IBPluginDependency</string>
 					<string>-3.IBPluginDependency</string>
 					<string>1.IBPluginDependency</string>
+					<string>106.CustomClassName</string>
 					<string>106.IBPluginDependency</string>
 					<string>107.CustomClassName</string>
 					<string>107.IBPluginDependency</string>
@@ -428,6 +453,7 @@
 					<string>64.CustomClassName</string>
 					<string>64.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
+					<string>82.CustomClassName</string>
 					<string>82.IBPluginDependency</string>
 					<string>83.IBPluginDependency</string>
 				</object>
@@ -437,6 +463,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>BookmarkBarImportButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>HyperlinkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -448,6 +475,7 @@
 					<string>BookmarkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>BookmarkBarTextField</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
@@ -464,7 +492,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">137</int>
+			<int key="maxID">140</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -503,41 +531,13 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addFolder:</string>
-							<string>addPage:</string>
-							<string>copyBookmark:</string>
-							<string>cutBookmark:</string>
-							<string>deleteBookmark:</string>
-							<string>editBookmark:</string>
 							<string>importBookmarks:</string>
-							<string>openAllBookmarks:</string>
-							<string>openAllBookmarksIncognitoWindow:</string>
-							<string>openAllBookmarksNewWindow:</string>
 							<string>openBookmark:</string>
 							<string>openBookmarkFolderFromButton:</string>
-							<string>openBookmarkInIncognitoWindow:</string>
-							<string>openBookmarkInNewForegroundTab:</string>
-							<string>openBookmarkInNewWindow:</string>
-							<string>openBookmarkMenuItem:</string>
 							<string>openOffTheSideFolderFromButton:</string>
-							<string>pasteBookmark:</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -548,65 +548,15 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addFolder:</string>
-							<string>addPage:</string>
-							<string>copyBookmark:</string>
-							<string>cutBookmark:</string>
-							<string>deleteBookmark:</string>
-							<string>editBookmark:</string>
 							<string>importBookmarks:</string>
-							<string>openAllBookmarks:</string>
-							<string>openAllBookmarksIncognitoWindow:</string>
-							<string>openAllBookmarksNewWindow:</string>
 							<string>openBookmark:</string>
 							<string>openBookmarkFolderFromButton:</string>
-							<string>openBookmarkInIncognitoWindow:</string>
-							<string>openBookmarkInNewForegroundTab:</string>
-							<string>openBookmarkInNewWindow:</string>
-							<string>openBookmarkMenuItem:</string>
 							<string>openOffTheSideFolderFromButton:</string>
-							<string>pasteBookmark:</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="IBActionInfo">
-								<string key="name">addFolder:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">addPage:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">copyBookmark:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">cutBookmark:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">deleteBookmark:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">editBookmark:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
 								<string key="name">importBookmarks:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">openAllBookmarks:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">openAllBookmarksIncognitoWindow:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">openAllBookmarksNewWindow:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -618,27 +568,7 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">openBookmarkInIncognitoWindow:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">openBookmarkInNewForegroundTab:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">openBookmarkInNewWindow:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">openBookmarkMenuItem:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
 								<string key="name">openOffTheSideFolderFromButton:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">pasteBookmark:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 						</object>
@@ -647,13 +577,11 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>buttonContextMenu_</string>
 							<string>buttonView_</string>
 							<string>offTheSideButton_</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSMenu</string>
 							<string>BookmarkBarView</string>
 							<string>BookmarkButton</string>
 						</object>
@@ -662,16 +590,11 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>buttonContextMenu_</string>
 							<string>buttonView_</string>
 							<string>offTheSideButton_</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">buttonContextMenu_</string>
-								<string key="candidateClassName">NSMenu</string>
-							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">buttonView_</string>
 								<string key="candidateClassName">BookmarkBarView</string>
@@ -685,6 +608,63 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/BookmarkBarController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkBarImportButton</string>
+					<string key="superclassName">NSButton</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">barView_</string>
+						<string key="NS.object.0">BookmarkBarView</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">barView_</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">barView_</string>
+							<string key="candidateClassName">BookmarkBarView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/BookmarkBarImportButton.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkBarItemContainer</string>
+					<string key="superclassName">GTMWidthBasedTweaker</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">barView_</string>
+						<string key="NS.object.0">BookmarkBarView</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">barView_</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">barView_</string>
+							<string key="candidateClassName">BookmarkBarView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/BookmarkBarItemContainer.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkBarTextField</string>
+					<string key="superclassName">NSTextField</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">barView_</string>
+						<string key="NS.object.0">BookmarkBarView</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">barView_</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">barView_</string>
+							<string key="candidateClassName">BookmarkBarView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/BookmarkBarTextField.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -721,9 +701,9 @@
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>BookmarkBarController</string>
-							<string>NSButton</string>
-							<string>NSView</string>
-							<string>NSTextField</string>
+							<string>BookmarkBarImportButton</string>
+							<string>BookmarkBarItemContainer</string>
+							<string>BookmarkBarTextField</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -743,15 +723,15 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">importBookmarksButton_</string>
-								<string key="candidateClassName">NSButton</string>
+								<string key="candidateClassName">BookmarkBarImportButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">noItemContainer</string>
-								<string key="candidateClassName">NSView</string>
+								<string key="candidateClassName">BookmarkBarItemContainer</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">noItemTextfield_</string>
-								<string key="candidateClassName">NSTextField</string>
+								<string key="candidateClassName">BookmarkBarTextField</string>
 							</object>
 						</object>
 					</object>
@@ -985,6 +965,10 @@
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
 			<integer value="1050" key="NS.object.0"/>
+		</object>
+		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
+			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
+			<real value="1060" key="NS.object.0"/>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>

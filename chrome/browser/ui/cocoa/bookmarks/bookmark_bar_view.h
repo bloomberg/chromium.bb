@@ -11,8 +11,12 @@
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @class BookmarkBarController;
+@class BookmarkBarImportButton;
+@class BookmarkBarItemContainer;
+@class BookmarkBarTextField;
 
 @interface BookmarkBarView : BackgroundGradientView {
  @private
@@ -20,21 +24,49 @@
   CGFloat dropIndicatorPosition_;  // x position
 
   IBOutlet BookmarkBarController* controller_;
-  IBOutlet NSTextField* noItemTextfield_;
-  IBOutlet NSButton* importBookmarksButton_;
-  NSView* noItemContainer_;
+  IBOutlet BookmarkBarTextField* noItemTextfield_;
+  IBOutlet BookmarkBarImportButton* importBookmarksButton_;
+  BookmarkBarItemContainer* noItemContainer_;
 }
-- (NSTextField*)noItemTextfield;
-- (NSButton*)importBookmarksButton;
+- (BookmarkBarTextField*)noItemTextfield;
+- (BookmarkBarImportButton*)importBookmarksButton;
 - (BookmarkBarController*)controller;
 
-@property(nonatomic, assign) IBOutlet NSView* noItemContainer;
+@property(nonatomic, assign) IBOutlet BookmarkBarItemContainer* noItemContainer;
 @end
 
 @interface BookmarkBarView()  // TestingOrInternalAPI
 @property(nonatomic, readonly) BOOL dropIndicatorShown;
 @property(nonatomic, readonly) CGFloat dropIndicatorPosition;
 - (void)setController:(id)controller;
+@end
+
+
+// NSTextField subclass responsible for routing -menu to the BookmarBarView.
+// This is necessary when building with the 10.6 SDK because -rightMouseDown:
+// does not follow the responder chain.
+@interface BookmarkBarTextField : NSTextField {
+ @private
+  IBOutlet BookmarkBarView* barView_;
+}
+@end
+
+// NSButton subclass responsible for routing -menu to the BookmarBarView.
+// This is necessary when building with the 10.6 SDK because -rightMouseDown:
+// does not follow the responder chain.
+@interface BookmarkBarImportButton : NSButton {
+ @private
+  IBOutlet BookmarkBarView* barView_;
+}
+@end
+
+// GTMWidthBasedTweaker subclass responsible for routing -menu to the
+// BookmarBarView. This is necessary when building with the 10.6 SDK because
+// -rightMouseDown: does not follow the responder chain.
+@interface BookmarkBarItemContainer : GTMWidthBasedTweaker {
+ @private
+  IBOutlet BookmarkBarView* barView_;
+}
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
