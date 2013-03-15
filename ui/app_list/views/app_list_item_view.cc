@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/cached_label.h"
@@ -40,7 +41,6 @@ const int kProgressBarHeight = 4;
 const SkColor kTitleColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 const SkColor kTitleHoverColor = SkColorSetRGB(0x3C, 0x3C, 0x3C);
 
-const SkColor kHoverAndPushedColor = SkColorSetARGB(0x19, 0, 0, 0);
 const SkColor kSelectedColor = SkColorSetARGB(0x0D, 0, 0, 0);
 const SkColor kHighlightedColor = kHoverAndPushedColor;
 const SkColor kDownloadProgressBackgroundColor =
@@ -75,7 +75,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kTitleColor);
-  title_->SetFont(rb.GetFont(ui::ResourceBundle::SmallBoldFont));
+  title_->SetFont(rb.GetFont(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetVisible(!model_->is_installing());
   title_->Invalidate();

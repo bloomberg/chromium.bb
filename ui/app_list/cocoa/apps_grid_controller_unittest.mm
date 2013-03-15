@@ -8,6 +8,7 @@
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_item_model.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
+#import "ui/app_list/cocoa/apps_grid_view_item.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #import "ui/base/test/cocoa_test_event_utils.h"
@@ -58,6 +59,16 @@ class AppsGridControllerTest : public ui::CocoaTest {
     [test_window() keyDown:cocoa_test_event_utils::KeyEventWithCharacter(c)];
   }
 
+  void SimulateMouseEnterItemAt(size_t index) {
+    [[apps_grid_controller_ itemAtIndex:index] mouseEntered:
+        cocoa_test_event_utils::EnterExitEventWithType(NSMouseEntered)];
+  }
+
+  void SimulateMouseExitItemAt(size_t index) {
+    [[apps_grid_controller_ itemAtIndex:index] mouseExited:
+        cocoa_test_event_utils::EnterExitEventWithType(NSMouseExited)];
+  }
+
   // Do a bulk replacement of the items in the grid.
   void ReplaceTestModel(int item_count) {
     scoped_ptr<app_list::test::AppListTestModel> new_model(
@@ -78,7 +89,7 @@ class AppsGridControllerTest : public ui::CocoaTest {
   }
 
   NSButton* GetItemViewAt(size_t index) {
-    return [apps_grid_controller_ viewAtItemIndex:index];
+    return [[apps_grid_controller_ itemAtIndex:index] button];
   }
 
   NSCollectionView* GetPageAt(size_t index) {
@@ -90,9 +101,9 @@ class AppsGridControllerTest : public ui::CocoaTest {
   NSView* GetSelectedView() {
     NSIndexSet* selection = [GetPageAt(0) selectionIndexes];
     if ([selection count]) {
-      NSCollectionViewItem* item =
-          [GetPageAt(0) itemAtIndex:[selection firstIndex]];
-      return [item view];
+      AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
+          [GetPageAt(0) itemAtIndex:[selection firstIndex]]);
+      return [item button];
     }
 
     return nil;
@@ -280,4 +291,26 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   icon_size = [[button image] size];
   EXPECT_EQ(kTestImageSize, icon_size.width);
   EXPECT_EQ(kTestImageSize, icon_size.height);
+}
+
+// Test mouseover selection.
+TEST_F(AppsGridControllerTest, MouseoverSelects) {
+  model()->PopulateApps(2);
+  EXPECT_EQ(nil, GetSelectedView());
+
+  // Test entering and exiting the first item.
+  SimulateMouseEnterItemAt(0);
+  EXPECT_EQ(GetItemViewAt(0), GetSelectedView());
+  SimulateMouseExitItemAt(0);
+  EXPECT_EQ(nil, GetSelectedView());
+
+  // AppKit doesn't guarantee the order, so test moving between items.
+  SimulateMouseEnterItemAt(0);
+  EXPECT_EQ(GetItemViewAt(0), GetSelectedView());
+  SimulateMouseEnterItemAt(1);
+  EXPECT_EQ(GetItemViewAt(1), GetSelectedView());
+  SimulateMouseExitItemAt(0);
+  EXPECT_EQ(GetItemViewAt(1), GetSelectedView());
+  SimulateMouseExitItemAt(1);
+  EXPECT_EQ(nil, GetSelectedView());
 }

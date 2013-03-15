@@ -38,7 +38,7 @@ class AppsGridDelegateBridge;
 
 - (NSCollectionView*)collectionViewAtPageIndex:(size_t)pageIndex;
 
-- (NSButton*)viewAtItemIndex:(size_t)itemIndex;
+- (AppsGridViewItem*)itemAtIndex:(size_t)itemIndex;
 
 - (app_list::AppListModel*)model;
 

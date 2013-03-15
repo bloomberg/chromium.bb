@@ -7,6 +7,7 @@
 namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
+const SkColor kHoverAndPushedColor = SkColorSetARGB(0x19, 0, 0, 0);
 
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 180;
@@ -17,5 +18,9 @@ const int kOverscrollPageTransitionDurationMs = 50;
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 4;
 const int kPreferredRows = 4;
+
+// Font style for app item labels.
+const ui::ResourceBundle::FontStyle kItemTextFontStyle =
+    ui::ResourceBundle::SmallBoldFont;
 
 }  // namespace app_list

@@ -5,12 +5,22 @@
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_item_model_observer.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/font.h"
+
+namespace {
+
+// Padding from the top of the tile to the top of the app icon.
+const CGFloat kTileTopPadding = 10;
+
+}  // namespace
 
 namespace app_list {
 
@@ -67,7 +77,96 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 
 }  // namespace app_list
 
+// Container for an NSButton to allow proper alignment of the icon in the apps
+// grid, and to draw with a highlight when selected.
+@interface AppsGridItemBackgroundView : NSView {
+ @private
+  BOOL selected_;
+}
+
+- (NSButton*)button;
+
+- (void)setSelected:(BOOL)flag;
+
+@end
+
+@implementation AppsGridItemBackgroundView
+
+- (NSButton*)button {
+  return base::mac::ObjCCastStrict<NSButton>([[self subviews] objectAtIndex:0]);
+}
+
+- (void)setSelected:(BOOL)flag {
+  if (selected_ == flag)
+    return;
+
+  selected_ = flag;
+  [self setNeedsDisplay:YES];
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  if (!selected_)
+    return;
+
+  [gfx::SkColorToCalibratedNSColor(app_list::kHoverAndPushedColor) set];
+  NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
+}
+
+- (void)mouseDown:(NSEvent*)theEvent {
+  [[[self button] cell] setHighlighted:YES];
+}
+
+- (void)mouseDragged:(NSEvent*)theEvent {
+  NSPoint pointInView = [self convertPoint:[theEvent locationInWindow]
+                                  fromView:nil];
+  BOOL isInView = [self mouse:pointInView inRect:[self bounds]];
+  [[[self button] cell] setHighlighted:isInView];
+}
+
+- (void)mouseUp:(NSEvent*)theEvent {
+  NSPoint pointInView = [self convertPoint:[theEvent locationInWindow]
+                                  fromView:nil];
+  if (![self mouse:pointInView inRect:[self bounds]])
+    return;
+
+  [[self button] performClick:self];
+}
+
+@end
+
+@interface AppsGridViewItem ()
+
+- (AppsGridItemBackgroundView*)itemBackgroundView;
+
+@end
+
 @implementation AppsGridViewItem
+
+- (id)initWithSize:(NSSize)tileSize {
+  if ((self = [super init])) {
+    scoped_nsobject<NSButton> prototypeButton(
+        [[NSButton alloc] initWithFrame:NSMakeRect(
+            0, 0, tileSize.width, tileSize.height - kTileTopPadding)]);
+
+    // This NSButton style always positions the icon at the very top of the
+    // button frame. AppsGridViewItem uses an enclosing view so that it is
+    // visually correct.
+    [prototypeButton setImagePosition:NSImageAbove];
+    [prototypeButton setButtonType:NSMomentaryChangeButton];
+    [prototypeButton setBordered:NO];
+
+    [[prototypeButton cell]
+        setFont:ui::ResourceBundle::GetSharedInstance().GetFont(
+            app_list::kItemTextFontStyle).GetNativeFont()];
+
+    scoped_nsobject<AppsGridItemBackgroundView> prototypeButtonBackground(
+        [[AppsGridItemBackgroundView alloc] initWithFrame:NSMakeRect(
+            0, 0, tileSize.width, tileSize.height)]);
+    [prototypeButtonBackground addSubview:prototypeButton];
+    [self setView:prototypeButtonBackground];
+  }
+  return self;
+}
 
 - (void)setModel:(app_list::AppListItemModel*)itemModel {
   if (!itemModel) {
@@ -79,6 +178,18 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   [button setTitle:base::SysUTF8ToNSString(itemModel->title())];
   [button setImage:gfx::NSImageFromImageSkia(itemModel->icon())];
   observerBridge_.reset(new app_list::ItemModelObserverBridge(self, itemModel));
+
+  if (trackingArea_.get())
+    [[self view] removeTrackingArea:trackingArea_.get()];
+
+  trackingArea_.reset(
+      [[CrTrackingArea alloc] initWithRect:NSZeroRect
+                                   options:NSTrackingInVisibleRect |
+                                           NSTrackingMouseEnteredAndExited |
+                                           NSTrackingActiveInKeyWindow
+                                     owner:self
+                                  userInfo:nil]);
+  [[self view] addTrackingArea:trackingArea_.get()];
 }
 
 - (app_list::AppListItemModel*)model {
@@ -86,16 +197,25 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 }
 
 - (NSButton*)button {
-  return base::mac::ObjCCastStrict<NSButton>([self view]);
+  DCHECK_EQ(1u, [[[self view] subviews] count]);
+  return base::mac::ObjCCastStrict<NSButton>(
+      [[[self view] subviews] objectAtIndex:0]);
+}
+
+- (AppsGridItemBackgroundView*)itemBackgroundView {
+  return base::mac::ObjCCastStrict<AppsGridItemBackgroundView>([self view]);
+}
+
+- (void)mouseEntered:(NSEvent*)theEvent {
+  [self setSelected:YES];
+}
+
+- (void)mouseExited:(NSEvent*)theEvent {
+  [self setSelected:NO];
 }
 
 - (void)setSelected:(BOOL)flag {
-  if (flag) {
-    [[[self button] cell] setBackgroundColor:[NSColor lightGrayColor]];
-  } else {
-    [[[self button] cell] setBackgroundColor:gfx::SkColorToCalibratedNSColor(
-        app_list::kContentsBackgroundColor)];
-  }
+  [[self itemBackgroundView] setSelected:flag];
   [super setSelected:flag];
 }
 

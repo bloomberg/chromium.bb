@@ -7,16 +7,20 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace app_list {
 
 APP_LIST_EXPORT extern const SkColor kContentsBackgroundColor;
+APP_LIST_EXPORT extern const SkColor kHoverAndPushedColor;
 
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
 APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;
 
 APP_LIST_EXPORT extern const int kPreferredCols;
 APP_LIST_EXPORT extern const int kPreferredRows;
+
+APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 
 }  // namespace app_list
 

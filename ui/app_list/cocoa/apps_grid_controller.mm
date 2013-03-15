@@ -40,9 +40,6 @@ const CGFloat kViewHeight = kFixedRows * kPreferredTileHeight;
 // Index of the page with the most content currently visible.
 - (size_t)nearestPageIndex;
 
-// Make an item prototype containing an app button for an NSCollectionView page.
-- (NSCollectionViewItem*)makeItemPrototype;
-
 // Make an empty NSCollectionView positioned horizontally for |pageIndex|.
 - (NSCollectionView*)makePageForIndex:(size_t)pageIndex;
 
@@ -54,8 +51,6 @@ const CGFloat kViewHeight = kFixedRows * kPreferredTileHeight;
 
 - (AppsGridViewItem*)itemAtPageIndex:(size_t)pageIndex
                          indexInPage:(size_t)indexInPage;
-
-- (AppsGridViewItem*)itemAtIndex:(size_t)itemIndex;
 
 // Update the model in full, and rebuild subviews.
 - (void)modelUpdated;
@@ -126,11 +121,6 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
 - (NSCollectionView*)collectionViewAtPageIndex:(size_t)pageIndex {
   return [pages_ objectAtIndex:pageIndex];
-}
-
-- (NSButton*)viewAtItemIndex:(size_t)itemIndex {
-  return base::mac::ObjCCastStrict<NSButton>(
-      [[self itemAtIndex:itemIndex] view]);
 }
 
 - (app_list::AppListModel*)model {
@@ -209,21 +199,6 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   }
 }
 
-- (NSCollectionViewItem*)makeItemPrototype {
-  scoped_nsobject<NSButton> prototypeButton(
-      [[NSButton alloc] initWithFrame:NSZeroRect]);
-  [prototypeButton setImagePosition:NSImageAbove];
-  [prototypeButton setButtonType:NSMomentaryPushInButton];
-  [prototypeButton setTarget:self];
-  [prototypeButton setAction:@selector(onItemClicked:)];
-  [prototypeButton setBordered:NO];
-
-  scoped_nsobject<AppsGridViewItem> itemPrototype(
-      [[AppsGridViewItem alloc] init]);
-  [itemPrototype setView:prototypeButton];
-  return itemPrototype.autorelease();
-}
-
 - (NSCollectionView*)makePageForIndex:(size_t)pageIndex {
   NSRect pageFrame = NSMakeRect(
       kLeftRightPadding + kViewWidth * pageIndex, 0,
@@ -236,7 +211,13 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   [itemCollectionView setMaxItemSize:itemSize];
   [itemCollectionView setSelectable:YES];
   [itemCollectionView setFocusRingType:NSFocusRingTypeNone];
-  [itemCollectionView setItemPrototype:[self makeItemPrototype]];
+
+  scoped_nsobject<AppsGridViewItem> itemPrototype(
+      [[AppsGridViewItem alloc] initWithSize:itemSize]);
+  [[itemPrototype button] setTarget:self];
+  [[itemPrototype button] setAction:@selector(onItemClicked:)];
+
+  [itemCollectionView setItemPrototype:itemPrototype];
   return itemCollectionView.autorelease();
 }
 
@@ -259,7 +240,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 - (void)onItemClicked:(id)sender {
   for (size_t i = 0; i < [items_ count]; ++i) {
     AppsGridViewItem* item = [self itemAtIndex:i];
-    if ([[item view] isEqual:sender])
+    if ([[item button] isEqual:sender])
       delegate_->ActivateAppListItem([item model], 0);
   }
 }
