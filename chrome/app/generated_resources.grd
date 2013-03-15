@@ -6877,24 +6877,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_BLUETOOTH_DESCRIPTION" desc="Description for the flag to enable experimental Bluetooth features.">
           Enable experimental Bluetooth features.
         </message>
-        <message name="IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_DESCRIPTION" desc="Description for the flag to specify the UI scale of the internal display.">
-          Specify the UI scale of the intenral display.
-        </message>
-        <message name="IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_NAME" desc="Name for the flag to specify the UI scale of the internal display.">
-          UI scale of the internal display.
-        </message>
-        <message name="IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_DEFAULT" desc="">
-          Default (1.0x)
-        </message>
-        <message name="IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_125" desc="">
-          1.25x
-        </message>
-        <message name="IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_150" desc="">
-          1.5x
-        </message>
-        <message name="IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_80" desc="">
-          0.8x
-        </message>
       </if>
       <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to enable full history sync.">
         Enable full history sync.

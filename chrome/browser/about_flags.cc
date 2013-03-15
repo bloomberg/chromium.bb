@@ -187,16 +187,6 @@ const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
     switches::kDisableChromeCaptivePortalDetector, ""}
 };
 
-const Experiment::Choice kAshInternalDisplayUIScaleChoices[] = {
-  { IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_DEFAULT, "", "" },
-  { IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_80,
-    ash::switches::kAshInternalDisplayUIScale, "0.8"},
-  { IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_125,
-    ash::switches::kAshInternalDisplayUIScale, "1.25"},
-  { IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_150,
-    ash::switches::kAshInternalDisplayUIScale, "1.5"},
-};
-
 #endif
 
 const Experiment::Choice kImplSidePaintingChoices[] = {
@@ -1008,13 +998,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_FORCE_FULLSCREEN_APP_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kForceFullscreenApp),
-  },
-  {
-    "ash-internal-display-ui-scale",
-    IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_NAME,
-    IDS_FLAGS_ASH_INTERNAL_DISPLAY_SCALE_DESCRIPTION,
-    kOsCrOS,
-    MULTI_VALUE_TYPE(kAshInternalDisplayUIScaleChoices)
   },
 #endif  // defined(OS_CHROMEOS)
   {

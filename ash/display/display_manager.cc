@@ -102,7 +102,7 @@ void DisplayManager::CycleDisplay() {
 }
 
 // static
-void DisplayManager::ToggleDisplayScale() {
+void DisplayManager::ToggleDisplayScaleFactor() {
   Shell::GetInstance()->display_manager()->ScaleDisplayImpl();
 }
 
@@ -173,6 +173,8 @@ void DisplayManager::ClearCustomOverscanInsets(int64 display_id) {
 
 void DisplayManager::SetDisplayRotation(int64 display_id,
                                         gfx::Display::Rotation rotation) {
+  if (!IsDisplayRotationEnabled())
+    return;
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
@@ -182,6 +184,44 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
     display_info_list.push_back(info);
   }
   UpdateDisplays(display_info_list);
+}
+
+void DisplayManager::SetDisplayUIScale(int64 display_id,
+                                       float ui_scale) {
+  if (!IsDisplayUIScalingEnabled())
+    return;
+  DisplayInfoList display_info_list;
+  for (DisplayList::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    DisplayInfo info = GetDisplayInfo(*iter);
+    if (info.id() == display_id)
+      info.set_ui_scale(ui_scale);
+    display_info_list.push_back(info);
+  }
+  UpdateDisplays(display_info_list);
+}
+
+
+bool DisplayManager::IsDisplayRotationEnabled() const {
+  static bool enabled = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kAshDisableDisplayRotation);
+  return enabled;
+}
+
+bool DisplayManager::IsDisplayUIScalingEnabled() const {
+  static bool enabled = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kAshDisableUIScaling);
+  if (!enabled)
+    return false;
+  // UI Scaling is effective only when the internal display has
+  // 2x density (currently Pixel).
+  int64 display_id = gfx::Display::InternalDisplayId();
+#if defined(OS_CHROMEOS)
+  // On linux desktop, allow ui scaling on the first dislpay.
+  if (!base::chromeos::IsRunningOnChromeOS())
+    display_id = Shell::GetInstance()->display_manager()->first_display_id();
+#endif
+  return GetDisplayForId(display_id).device_scale_factor() == 2.0f;
 }
 
 gfx::Insets DisplayManager::GetOverscanInsets(int64 display_id) const {

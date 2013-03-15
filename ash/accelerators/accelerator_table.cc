@@ -77,7 +77,11 @@ const AcceleratorData kAcceleratorData[] = {
   // Extra shortcut to lock the screen on linux desktop.
   { true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
+  // Extra shortcut to rotate/scale up/down the screen on linux desktop.
   { true, ui::VKEY_F3, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, ROTATE_SCREEN },
+  { true, ui::VKEY_F2, ui::EF_CONTROL_DOWN , SCALE_UI_UP },
+  { true, ui::VKEY_F2,
+    ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, SCALE_UI_DOWN },
 #endif  // !defined(NDEBUG)
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_DIALOG },
   { true, ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
@@ -101,6 +105,10 @@ const AcceleratorData kAcceleratorData[] = {
     NEW_INCOGNITO_WINDOW },
   { true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN, NEW_TAB },
+  { true, ui::VKEY_BROWSER_BACK,
+    ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, SCALE_UI_UP },
+  { true, ui::VKEY_BROWSER_FORWARD,
+    ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, SCALE_UI_DOWN },
   { true, ui::VKEY_BROWSER_REFRESH,
     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, ROTATE_SCREEN },
   { true, ui::VKEY_BROWSER_REFRESH,
@@ -129,7 +137,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_F14, ui::EF_NONE, SHOW_KEYBOARD_OVERLAY },
   { true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     SHOW_MESSAGE_CENTER_BUBBLE },
-  { true, ui::VKEY_BROWSER_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+  { true, ui::VKEY_BROWSER_BACK,
+    ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     SHOW_OAK },
   { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     SHOW_SYSTEM_TRAY_BUBBLE },
@@ -228,6 +237,8 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   VOLUME_UP,
   ROTATE_SCREEN,
   ROTATE_WINDOW,
+  SCALE_UI_UP,
+  SCALE_UI_DOWN,
 #if !defined(NDEBUG)
   PRINT_LAYER_HIERARCHY,
   PRINT_VIEW_HIERARCHY,
@@ -294,6 +305,8 @@ const AcceleratorAction kNonrepeatableActions[] = {
   CYCLE_FORWARD_MRU,
   ROTATE_SCREEN,
   ROTATE_WINDOW,
+  SCALE_UI_UP,
+  SCALE_UI_DOWN,
   TOGGLE_MAXIMIZED,
   WINDOW_MINIMIZE,
 };
@@ -321,6 +334,8 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   POWER_RELEASED,
   PREVIOUS_IME,
   ROTATE_SCREEN,
+  SCALE_UI_UP,
+  SCALE_UI_DOWN,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TOGGLE_CAPS_LOCK,
