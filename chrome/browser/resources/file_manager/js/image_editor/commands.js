@@ -17,22 +17,27 @@ function CommandQueue(document, canvas, saveFunction) {
   this.undo_ = [];
   this.redo_ = [];
   this.subscribers_ = [];
-
   this.currentImage_ = canvas;
 
-  this.baselineImage_ = document.createElement('canvas');
-  this.baselineImage_.width = this.currentImage_.width;
-  this.baselineImage_.height = this.currentImage_.height;
-  var context = this.baselineImage_.getContext('2d');
-  context.drawImage(this.currentImage_, 0, 0);
+  // Current image may be null or not-null but with width = height = 0.
+  // Copying an image with zero dimensions causes js errors.
+  if (this.currentImage_) {
+    this.baselineImage_ = document.createElement('canvas');
+    this.baselineImage_.width = this.currentImage_.width;
+    this.baselineImage_.height = this.currentImage_.height;
+    if (this.currentImage_.width > 0 && this.currentImage_.height > 0) {
+      var context = this.baselineImage_.getContext('2d');
+      context.drawImage(this.currentImage_, 0, 0);
+    }
+  } else {
+    this.baselineImage_ = null;
+  }
 
   this.previousImage_ = document.createElement('canvas');
   this.previousImageAvailable_ = false;
 
   this.saveFunction_ = saveFunction;
-
   this.busy_ = false;
-
   this.UIContext_ = {};
 }
 
@@ -247,8 +252,10 @@ CommandQueue.prototype.close = function() {
   this.previousImage_.height = 0;
   this.previousImageAvailable_ = false;
 
-  this.baselineImage_.width = 0;
-  this.baselineImage_.height = 0;
+  if (this.baselineImage_) {
+    this.baselineImage_.width = 0;
+    this.baselineImage_.height = 0;
+  }
 };
 
 /**
