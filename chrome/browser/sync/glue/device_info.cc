@@ -21,6 +21,25 @@ bool IsTabletUI() {
 }
 #endif
 
+// Converts VersionInfo::Channel to string for user-agent string.
+std::string ChannelToString(chrome::VersionInfo::Channel channel) {
+  switch (channel) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      return "unknown";
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      return "canary";
+    case chrome::VersionInfo::CHANNEL_DEV:
+      return "dev";
+    case chrome::VersionInfo::CHANNEL_BETA:
+      return "beta";
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      return "stable";
+    default:
+      NOTREACHED();
+      return "unknown";
+  };
+}
+
 }  // namespace
 
 DeviceInfo::DeviceInfo(const std::string& client_name,
@@ -104,8 +123,13 @@ std::string DeviceInfo::MakeUserAgentForSyncApi(
 
   user_agent += version_info.Version();
   user_agent += " (" + version_info.LastChange() + ")";
-  if (!version_info.IsOfficialBuild())
+  if (!version_info.IsOfficialBuild()) {
     user_agent += "-devel";
+  } else {
+    user_agent += " channel(" +
+        ChannelToString(version_info.GetChannel()) + ")";
+  }
+
   return user_agent;
 }
 

@@ -342,16 +342,6 @@ void ServerConnectionManager::TerminateAllIO() {
   active_connection_ = NULL;
 }
 
-bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
-                                 syncable::Directory* directory,
-                                 const std::string& share) {
-  string birthday = directory->store_birthday();
-  if (!birthday.empty())
-    csm->set_store_birthday(birthday);
-  csm->set_share(share);
-  return true;
-}
-
 std::ostream& operator << (std::ostream& s, const struct HttpResponse& hr) {
   s << " Response Code (bogus on error): " << hr.response_code;
   s << " Content-Length (bogus on error): " << hr.content_length;

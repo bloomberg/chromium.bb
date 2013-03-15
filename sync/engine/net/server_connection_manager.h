@@ -345,12 +345,6 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);
 };
 
-// Fills a ClientToServerMessage with the appropriate share and birthday
-// settings.
-bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
-                                 syncable::Directory* manager,
-                                 const std::string& share);
-
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr);
 
 }  // namespace syncer
