@@ -48,7 +48,7 @@ void InitializeDebugGLBindings();
 void ClearGLBindings();
 
 // Set the current GL implementation.
-void SetGLImplementation(GLImplementation implementation);
+GL_EXPORT void SetGLImplementation(GLImplementation implementation);
 
 // Get the current GL implementation.
 GL_EXPORT GLImplementation GetGLImplementation();

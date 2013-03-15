@@ -544,6 +544,16 @@ void TestHelper::SetTexParameterWithExpectations(
   manager->SetParameter("", decoder, texture, pname, value);
 }
 
+ScopedGLImplementationSetter::ScopedGLImplementationSetter(
+    gfx::GLImplementation implementation)
+    : old_implementation_(gfx::GetGLImplementation()) {
+  gfx::SetGLImplementation(implementation);
+}
+
+ScopedGLImplementationSetter::~ScopedGLImplementationSetter() {
+  gfx::SetGLImplementation(old_implementation_);
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

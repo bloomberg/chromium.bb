@@ -1368,6 +1368,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetAttachedShadersBadSharedMemoryFails) {
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatSucceeds) {
+  ScopedGLImplementationSetter gl_impl(::gfx::kGLImplementationEGLGLES2);
   GetShaderPrecisionFormat cmd;
   typedef GetShaderPrecisionFormat::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);

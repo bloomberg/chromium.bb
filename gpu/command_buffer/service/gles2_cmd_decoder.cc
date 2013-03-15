@@ -107,12 +107,8 @@ static void GetShaderPrecisionFormatImpl(GLenum shader_type,
       break;
   }
 
-  // TODO(kbr): fix this to not require testing for the mock. Tests
-  // should be able to change what GetGLImplementation returns in
-  // order to test all code paths.
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationMockGL ||
-      (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-       gfx::g_driver_gl.fn.glGetShaderPrecisionFormatFn)) {
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      gfx::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
     // This function is sometimes defined even though it's really just
     // a stub, so we need to set range and precision as if it weren't
     // defined before calling it.
