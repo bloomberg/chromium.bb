@@ -60,8 +60,6 @@ AppBindings::AppBindings(Dispatcher* dispatcher, ChromeV8Context* context)
       ChromeV8ExtensionHandler(context) {
   RouteFunction("GetIsInstalled",
       base::Bind(&AppBindings::GetIsInstalled, base::Unretained(this)));
-  RouteFunction("Install",
-      base::Bind(&AppBindings::Install, base::Unretained(this)));
   RouteFunction("GetDetails",
       base::Bind(&AppBindings::GetDetails, base::Unretained(this)));
   RouteFunction("GetDetailsForFrame",
@@ -80,20 +78,6 @@ v8::Handle<v8::Value> AppBindings::GetIsInstalled(
   bool result = extension && extension->is_hosted_app() &&
       dispatcher_->IsExtensionActive(extension->id());
   return v8::Boolean::New(result);
-}
-
-v8::Handle<v8::Value> AppBindings::Install(const v8::Arguments& args) {
-  content::RenderView* render_view = context_->GetRenderView();
-  CHECK(render_view);
-
-  string16 error;
-  ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-  if (!helper->InstallWebApplicationUsingDefinitionFile(
-          context_->web_frame(), &error)) {
-    v8::ThrowException(v8::String::New(UTF16ToUTF8(error).c_str()));
-  }
-
-  return v8::Undefined();
 }
 
 v8::Handle<v8::Value> AppBindings::GetDetails(

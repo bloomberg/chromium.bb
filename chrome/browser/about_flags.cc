@@ -296,13 +296,6 @@ const Experiment kExperiments[] = {
   },
 #endif  // OS_WIN
   {
-    "crxless-web-apps",
-    IDS_FLAGS_CRXLESS_WEB_APPS_NAME,
-    IDS_FLAGS_CRXLESS_WEB_APPS_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableCrxlessWebApps)
-  },
-  {
     "ignore-gpu-blacklist",
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION,

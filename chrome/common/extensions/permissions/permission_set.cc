@@ -67,7 +67,6 @@ const char* kNonPermissionFunctionNames[] = {
   "app.getDetails",
   "app.getDetailsForFrame",
   "app.getIsInstalled",
-  "app.install",
   "app.installState",
   "app.runningState",
   "management.getPermissionWarningsByManifest",

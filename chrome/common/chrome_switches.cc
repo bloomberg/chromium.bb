@@ -462,9 +462,6 @@ const char kEnableComponentCloudPolicy[]    = "enable-component-cloud-policy";
 // Chrome OS apps list.
 const char kEnableContacts[]                = "enable-contacts";
 
-// Enables web developers to create apps for Chrome without using crx packages.
-const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
-
 // Enables desktop guest mode.
 const char kEnableDesktopGuestMode[]        = "enable-desktop-guest-mode";
 

@@ -64,12 +64,6 @@
         }
       },
       {
-        "name": "install",
-        "description": "TODO",
-        "type": "function",
-        "parameters": []
-      },
-      {
         "name": "getDetails",
         "description": "TODO",
         "type": "function",

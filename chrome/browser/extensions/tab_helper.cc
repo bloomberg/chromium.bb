@@ -232,8 +232,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_DidGetApplicationInfo,
                         OnDidGetApplicationInfo)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_InstallApplication,
-                        OnInstallApplication)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
                         OnInlineWebstoreInstall)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
@@ -289,21 +287,6 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
 
   pending_web_app_action_ = NONE;
 #endif
-}
-
-void TabHelper::OnInstallApplication(const WebApplicationInfo& info) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (!extension_service)
-    return;
-
-  ExtensionInstallPrompt* prompt = NULL;
-  if (extension_service->show_extensions_prompts())
-    prompt = new ExtensionInstallPrompt(web_contents());
-  scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::Create(extension_service, prompt));
-  installer->InstallWebApp(info);
 }
 
 void TabHelper::OnInlineWebstoreInstall(

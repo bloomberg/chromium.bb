@@ -53,13 +53,6 @@ class ExtensionHelper
   ExtensionHelper(content::RenderView* render_view, Dispatcher* dispatcher);
   virtual ~ExtensionHelper();
 
-  // Starts installation of the page in the specified frame as a web app. The
-  // page must link to an external 'definition file'. This is different from
-  // the 'application shortcuts' feature where we pull the application
-  // definition out of optional meta tags in the page.
-  bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
-                                                string16* error);
-
   int tab_id() const { return tab_id_; }
   int browser_window_id() const { return browser_window_id_; }
   chrome::ViewType view_type() const { return view_type_; }
@@ -105,16 +98,6 @@ class ExtensionHelper
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
   void OnAppWindowClosed();
-
-  // Callback triggered when we finish downloading the application definition
-  // file.
-  void DidDownloadApplicationDefinition(const WebKit::WebURLResponse& response,
-                                        const std::string& data);
-
-  // Callback triggered after each icon referenced by the application definition
-  // is downloaded.
-  void DidDownloadApplicationIcon(webkit_glue::ImageResourceFetcher* fetcher,
-                                  const SkBitmap& image);
 
   // Helper to add a logging message to the root frame's console.
   void AddMessageToRootConsole(content::ConsoleMessageLevel level,

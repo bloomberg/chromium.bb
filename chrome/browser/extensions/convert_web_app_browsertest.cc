@@ -4,10 +4,10 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 
 namespace extensions {
 
@@ -33,11 +35,6 @@ class ExtensionFromWebAppTest
   const Extension* installed_extension_;
 
  private:
-  // InProcessBrowserTest
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableCrxlessWebApps);
-  }
-
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -53,8 +50,14 @@ class ExtensionFromWebAppTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
-  ASSERT_TRUE(test_server()->Start());
+#if defined(OS_CHROMEOS)
+// The Apps tab is not included in the new tab page in Chrome OS.
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, MAYBE_Basic) {
   browser()->profile()->GetExtensionService()->set_show_extensions_prompts(
       false);
 
@@ -62,11 +65,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
   registrar.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                 content::NotificationService::AllSources());
 
-  expected_extension_id_ = "fnpgoaochgbdfjndakichfafiocjjpmm";
+  expected_extension_id_ = "ffnmbohohhobhkjpfbefbjifapgcmpaa";
   ui_test_utils::NavigateToURL(
       browser(),
-      test_server()->GetURL(
-          "files/extensions/convert_web_app/application.html"));
+      GURL("chrome://newtab"));
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "chrome.send('generateAppForLink', "
+      "['http://www.example.com', 'Test application', 0])"));
 
   if (!installed_extension_)
     content::RunMessageLoop();
@@ -74,21 +80,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
   EXPECT_TRUE(installed_extension_);
   EXPECT_TRUE(installed_extension_->is_hosted_app());
   EXPECT_EQ("Test application", installed_extension_->name());
-  EXPECT_EQ("the description is", installed_extension_->description());
-  EXPECT_EQ(extension_misc::LAUNCH_PANEL,
+  EXPECT_EQ("", installed_extension_->description());
+  EXPECT_EQ("http://www.example.com/", installed_extension_->launch_web_url());
+  EXPECT_EQ(extension_misc::LAUNCH_TAB,
             installed_extension_->launch_container());
-
-  ASSERT_EQ(2u, installed_extension_->GetActivePermissions()->apis().size());
-  EXPECT_TRUE(installed_extension_->HasAPIPermission(
-      APIPermission::kGeolocation));
-  EXPECT_TRUE(installed_extension_->HasAPIPermission(
-      APIPermission::kNotification));
-
-  const ExtensionIconSet& icons = IconsInfo::GetIcons(installed_extension_);
-  ASSERT_EQ(3u, icons.map().size());
-  EXPECT_EQ("icons/16.png", icons.Get(16, ExtensionIconSet::MATCH_EXACTLY));
-  EXPECT_EQ("icons/48.png", icons.Get(48, ExtensionIconSet::MATCH_EXACTLY));
-  EXPECT_EQ("icons/128.png", icons.Get(128, ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ(0u, installed_extension_->GetActivePermissions()->apis().size());
+  EXPECT_EQ(0u, IconsInfo::GetIcons(installed_extension_).map().size());
 }
 
 }  // namespace extensions

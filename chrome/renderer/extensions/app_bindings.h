@@ -31,7 +31,6 @@ class AppBindings : public ChromeV8Extension,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   v8::Handle<v8::Value> GetIsInstalled(const v8::Arguments& args);
-  v8::Handle<v8::Value> Install(const v8::Arguments& args);
   v8::Handle<v8::Value> GetDetails(const v8::Arguments& args);
   v8::Handle<v8::Value> GetDetailsForFrame(const v8::Arguments& args);
   v8::Handle<v8::Value> GetInstallState(const v8::Arguments& args);
