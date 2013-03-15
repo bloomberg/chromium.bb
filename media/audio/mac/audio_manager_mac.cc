@@ -17,7 +17,6 @@
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
 #include "media/audio/mac/audio_low_latency_output_mac.h"
-#include "media/audio/mac/audio_output_mac.h"
 #include "media/audio/mac/audio_synchronized_mac.h"
 #include "media/audio/mac/audio_unified_mac.h"
 #include "media/base/bind_to_loop.h"
@@ -380,14 +379,11 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
 
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
     const AudioParameters& params) {
-  DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
-  return new PCMQueueOutAudioOutputStream(this, params);
+  return MakeLowLatencyOutputStream(params);
 }
 
 AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     const AudioParameters& params) {
-  DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-
   // TODO(crogers): support more than stereo input.
   if (params.input_channels() == 2) {
     if (HasUnifiedDefaultIO())

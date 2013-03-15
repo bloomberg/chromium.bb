@@ -11,7 +11,6 @@
 namespace media {
 
 class PCMQueueInAudioInputStream;
-class PCMQueueOutAudioOutputStream;
 
 // iOS implementation of the AudioManager singleton. Supports only audio input.
 class MEDIA_EXPORT AudioManagerIOS : public AudioManagerBase {

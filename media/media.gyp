@@ -133,8 +133,6 @@
         'audio/mac/audio_low_latency_output_mac.h',
         'audio/mac/audio_manager_mac.cc',
         'audio/mac/audio_manager_mac.h',
-        'audio/mac/audio_output_mac.cc',
-        'audio/mac/audio_output_mac.h',
         'audio/mac/audio_synchronized_mac.cc',
         'audio/mac/audio_synchronized_mac.h',
         'audio/mac/audio_unified_mac.cc',
@@ -686,7 +684,7 @@
               'message': 'Generating Pulse stubs for dynamic loading.',
             },
           ],
-          'conditions': [ 
+          'conditions': [
             # Linux/Solaris need libdl for dlopen() and friends.
             ['OS == "linux" or OS == "solaris"', {
               'link_settings': {
@@ -855,7 +853,6 @@
         'audio/linux/alsa_output_unittest.cc',
         'audio/mac/audio_device_listener_mac_unittest.cc',
         'audio/mac/audio_low_latency_input_mac_unittest.cc',
-        'audio/mac/audio_output_mac_unittest.cc',
         'audio/simple_sources_unittest.cc',
         'audio/virtual_audio_input_stream_unittest.cc',
         'audio/virtual_audio_output_stream_unittest.cc',
