@@ -28,10 +28,6 @@
 #ifndef CONTENT_COMMON_CC_MESSAGES_H_
 #define CONTENT_COMMON_CC_MESSAGES_H_
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace gfx {
 class Transform;
 }
@@ -236,4 +232,10 @@ IPC_STRUCT_TRAITS_BEGIN(cc::GLFrameData)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
   IPC_STRUCT_TRAITS_MEMBER(sync_point)
   IPC_STRUCT_TRAITS_MEMBER(size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::SoftwareFrameData)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(damage_rect)
+  IPC_STRUCT_TRAITS_MEMBER(content_dib)
 IPC_STRUCT_TRAITS_END()

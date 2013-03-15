@@ -17,6 +17,7 @@ class CC_EXPORT SoftwareFrameData {
   SoftwareFrameData();
   ~SoftwareFrameData();
 
+  gfx::Size size;
   gfx::Rect damage_rect;
   TransportDIB::Handle content_dib;
 };

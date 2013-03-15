@@ -543,6 +543,7 @@ namespace {
     NO_FRAME,
     DELEGATED_FRAME,
     GL_FRAME,
+    SOFTWARE_FRAME,
   };
 }
 
@@ -551,11 +552,16 @@ void ParamTraits<cc::CompositorFrame>::Write(Message* m,
   WriteParam(m, p.metadata);
   if (p.delegated_frame_data) {
     DCHECK(!p.gl_frame_data);
+    DCHECK(!p.software_frame_data);
     WriteParam(m, static_cast<int>(DELEGATED_FRAME));
     WriteParam(m, *p.delegated_frame_data);
   } else if (p.gl_frame_data) {
+    DCHECK(!p.software_frame_data);
     WriteParam(m, static_cast<int>(GL_FRAME));
     WriteParam(m, *p.gl_frame_data);
+  } else if (p.software_frame_data) {
+    WriteParam(m, static_cast<int>(SOFTWARE_FRAME));
+    WriteParam(m, *p.software_frame_data);
   } else {
     WriteParam(m, static_cast<int>(NO_FRAME));
   }
@@ -582,6 +588,11 @@ bool ParamTraits<cc::CompositorFrame>::Read(const Message* m,
       if (!ReadParam(m, iter, p->gl_frame_data.get()))
         return false;
       break;
+    case SOFTWARE_FRAME:
+      p->software_frame_data.reset(new cc::SoftwareFrameData());
+      if (!ReadParam(m, iter, p->software_frame_data.get()))
+        return false;
+      break;
     case NO_FRAME:
       break;
     default:
@@ -599,12 +610,15 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
     LogParam(*p.delegated_frame_data, l);
   else if (p.gl_frame_data)
     LogParam(*p.gl_frame_data, l);
+  else if (p.software_frame_data)
+    LogParam(*p.software_frame_data, l);
   l->append(")");
 }
 
 void ParamTraits<cc::CompositorFrameAck>::Write(Message* m,
                                                 const param_type& p) {
   WriteParam(m, p.resources);
+  WriteParam(m, p.last_content_dib);
   if (p.gl_frame_data) {
     WriteParam(m, static_cast<int>(GL_FRAME));
     WriteParam(m, *p.gl_frame_data);
@@ -617,6 +631,9 @@ bool ParamTraits<cc::CompositorFrameAck>::Read(const Message* m,
                                                PickleIterator* iter,
                                                param_type* p) {
   if (!ReadParam(m, iter, &p->resources))
+    return false;
+
+  if (!ReadParam(m, iter, &p->last_content_dib))
     return false;
 
   int compositor_frame_type;
@@ -641,6 +658,8 @@ void ParamTraits<cc::CompositorFrameAck>::Log(const param_type& p,
                                               std::string* l) {
   l->append("CompositorFrameAck(");
   LogParam(p.resources, l);
+  l->append(", ");
+  LogParam(p.last_content_dib, l);
   l->append(", ");
   if (p.gl_frame_data)
     LogParam(*p.gl_frame_data, l);
