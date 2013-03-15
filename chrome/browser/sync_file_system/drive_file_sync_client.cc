@@ -296,6 +296,14 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
   if (error == google_apis::HTTP_FOUND)
     error = google_apis::HTTP_CREATED;
 
+  if (error != google_apis::HTTP_SUCCESS &&
+      error != google_apis::HTTP_CREATED) {
+    callback.Run(error, std::string());
+    return;
+  }
+
+  DCHECK(entry) << "No entry: " << error;
+
   if (entry->title() == kSyncRootDirectoryName)
     EnsureSyncRootIsNotInMyDrive(entry->resource_id());
 
