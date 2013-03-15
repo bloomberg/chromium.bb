@@ -128,7 +128,7 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
 
   scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
       message_loop,
-      new media::NullAudioSink(),
+      new media::NullAudioSink(message_loop),
       media::SetDecryptorReadyCB()));
   collection->SetAudioRenderer(audio_renderer.Pass());
 
