@@ -128,16 +128,10 @@ scoped_ptr<google_apis::ResourceList> ParseFeedOnBlockingPool(
 // When all feeds are loaded, |feed_load_callback| is invoked with the retrieved
 // feeds. |feed_load_callback| must not be null.
 struct ChangeListLoader::LoadFeedParams {
-  explicit LoadFeedParams(const LoadFeedListCallback& feed_load_callback)
+  LoadFeedParams()
       : start_changestamp(0),
         shared_with_me(false),
-        load_subsequent_feeds(true),
-        feed_load_callback(feed_load_callback) {}
-
-  // Runs this->feed_load_callback with |error|.
-  void RunFeedLoadCallback(DriveFileError error) {
-    feed_load_callback.Run(feed_list, error);
-  }
+        load_subsequent_feeds(true) {}
 
   // Changestamps are positive numbers in increasing order. The difference
   // between two changestamps is proportional equal to number of items in
@@ -149,7 +143,6 @@ struct ChangeListLoader::LoadFeedParams {
   std::string directory_resource_id;
   GURL feed_to_load;
   bool load_subsequent_feeds;
-  const LoadFeedListCallback feed_load_callback;
   ScopedVector<google_apis::ResourceList> feed_list;
   scoped_ptr<GetResourceListUiState> ui_state;
 };
@@ -164,26 +157,6 @@ struct ChangeListLoader::LoadRootFeedParams {
   base::Time last_modified;
   // Time when filesystem began to be loaded from disk.
   base::Time load_start_time;
-  const FileOperationCallback callback;
-};
-
-// Defines parameters sent to UpdateMetadataFromFeedAfterLoadFromServer().
-//
-// In the case of loading the root feed we use |root_feed_changestamp| as its
-// initial changestamp value since it does not come with that info.
-//
-// On initial feed load for Drive API, remember root ID for
-// DriveResourceData initialization later in UpdateFromFeed().
-struct ChangeListLoader::UpdateMetadataParams {
-  UpdateMetadataParams(bool is_delta_feed,
-                       int64 feed_changestamp,
-                       const FileOperationCallback& callback)
-      : is_delta_feed(is_delta_feed),
-        feed_changestamp(feed_changestamp),
-        callback(callback) {}
-
-  const bool is_delta_feed;
-  const int64 feed_changestamp;
   const FileOperationCallback callback;
 };
 
@@ -328,18 +301,27 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
     return;
   }
 
-  // Load changes from the server.
   int64 start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
-  scoped_ptr<LoadFeedParams> load_params(new LoadFeedParams(
-      base::Bind(&ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 UpdateMetadataParams(start_changestamp != 0,  // is_delta_feed
-                                      remote_changestamp,
-                                      callback))));
-  load_params->start_changestamp = start_changestamp;
 
   // TODO(satorux): Use directory_fetch_info to start "fast-fetch" here.
-  LoadFromServer(load_params.Pass());
+  LoadChangeListFromServer(start_changestamp,
+                           remote_changestamp,
+                           callback);
+}
+
+void ChangeListLoader::LoadChangeListFromServer(
+    int64 start_changestamp,
+    int64 remote_changestamp,
+    const FileOperationCallback& callback) {
+  scoped_ptr<LoadFeedParams> load_params(new LoadFeedParams);
+  load_params->start_changestamp = start_changestamp;
+  LoadFromServer(
+      load_params.Pass(),
+      base::Bind(&ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 start_changestamp != 0,  // is_delta_feed
+                 remote_changestamp,
+                 callback));
 }
 
 void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
@@ -355,8 +337,10 @@ void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
   }
 }
 
-void ChangeListLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
+void ChangeListLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params,
+                                      const LoadFeedListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -368,9 +352,10 @@ void ChangeListLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
       params_ptr->search_query,
       params_ptr->shared_with_me,
       params_ptr->directory_resource_id,
-      base::Bind(&ChangeListLoader::OnGetResourceList,
+      base::Bind(&ChangeListLoader::LoadFromServerAfterGetResourceList,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params),
+                 callback,
                  start_time));
 }
 
@@ -416,13 +401,14 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   DCHECK(!callback.is_null());
   DCHECK(!directory_fetch_info.empty());
 
-  scoped_ptr<LoadFeedParams> params(new LoadFeedParams(
+  scoped_ptr<LoadFeedParams> params(new LoadFeedParams);
+  params->directory_resource_id = directory_fetch_info.resource_id();
+  LoadFromServer(
+      params.Pass(),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
-                 callback)));
-  params->directory_resource_id = directory_fetch_info.resource_id();
-  LoadFromServer(params.Pass());
+                 callback));
 }
 
 void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
@@ -476,41 +462,45 @@ void ChangeListLoader::SearchFromServer(
     const LoadFeedListCallback& feed_load_callback) {
   DCHECK(!feed_load_callback.is_null());
 
-  scoped_ptr<LoadFeedParams> params(new LoadFeedParams(feed_load_callback));
+  scoped_ptr<LoadFeedParams> params(new LoadFeedParams);
   params->search_query = search_query;
   params->shared_with_me = shared_with_me;
   params->feed_to_load = next_feed;
   params->load_subsequent_feeds = false;
-  LoadFromServer(params.Pass());
+  LoadFromServer(params.Pass(), feed_load_callback);
 }
 
 void ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer(
-    const UpdateMetadataParams& params,
+    bool is_delta_feed,
+    int64 feed_changestamp,
+    const FileOperationCallback& callback,
     const ScopedVector<google_apis::ResourceList>& feed_list,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.callback.is_null());
+  DCHECK(!callback.is_null());
   DCHECK(refreshing_);
 
   if (error != DRIVE_FILE_OK) {
-    OnChangeListLoadComplete(params.callback, error);
+    OnChangeListLoadComplete(callback, error);
     return;
   }
 
   UpdateFromFeed(feed_list,
-                 params.is_delta_feed,
-                 params.feed_changestamp,
+                 is_delta_feed,
+                 feed_changestamp,
                  base::Bind(&ChangeListLoader::OnUpdateFromFeed,
                             weak_ptr_factory_.GetWeakPtr(),
-                            params.callback));
+                            callback));
 }
 
-void ChangeListLoader::OnGetResourceList(
+void ChangeListLoader::LoadFromServerAfterGetResourceList(
     scoped_ptr<LoadFeedParams> params,
+    const LoadFeedListCallback& callback,
     base::TimeTicks start_time,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (params->feed_list.empty()) {
     UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
@@ -519,7 +509,7 @@ void ChangeListLoader::OnGetResourceList(
 
   DriveFileError error = util::GDataToDriveFileError(status);
   if (error != DRIVE_FILE_OK) {
-    params->RunFeedLoadCallback(error);
+    callback.Run(params->feed_list, error);
     return;
   }
   DCHECK(resource_list);
@@ -569,9 +559,10 @@ void ChangeListLoader::OnGetResourceList(
         params_ptr->search_query,
         params_ptr->shared_with_me,
         params_ptr->directory_resource_id,
-        base::Bind(&ChangeListLoader::OnGetResourceList,
+        base::Bind(&ChangeListLoader::LoadFromServerAfterGetResourceList,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
+                   callback,
                    start_time));
     return;
   }
@@ -584,7 +575,7 @@ void ChangeListLoader::OnGetResourceList(
                       base::TimeTicks::Now() - start_time);
 
   // Run the callback so the client can process the retrieved feeds.
-  params->RunFeedLoadCallback(DRIVE_FILE_OK);
+  callback.Run(params->feed_list, DRIVE_FILE_OK);
 }
 
 void ChangeListLoader::OnNotifyResourceListFetched(

@@ -136,7 +136,6 @@ class ChangeListLoader {
   struct GetResourceListUiState;
   struct LoadFeedParams;
   struct LoadRootFeedParams;
-  struct UpdateMetadataParams;
 
   // Part of Load(). Called after loading from the cache is complete.
   void LoadAfterLoadFromCache(
@@ -144,8 +143,20 @@ class ChangeListLoader {
       const FileOperationCallback& callback,
       DriveFileError error);
 
-  // Starts root feed load from the server, with details specified in |params|.
-  void LoadFromServer(scoped_ptr<LoadFeedParams> params);
+  // Starts loading from the server, with details specified in |params|. This
+  // is a general purpuse function, which is used for loading change lists,
+  // full resource lists, and directory contents.
+  void LoadFromServer(scoped_ptr<LoadFeedParams> params,
+                      const LoadFeedListCallback& callback);
+
+  // Part of LoadFromServer. Called when DriveScheduler::GetResourceList() is
+  // complete. |callback| must not be null.
+  void LoadFromServerAfterGetResourceList(
+      scoped_ptr<LoadFeedParams> params,
+      const LoadFeedListCallback& callback,
+      base::TimeTicks start_time,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceList> data);
 
   // Part of LoadDirectoryFromServer() Callled when
   // DriveScheduler::GetAboutResource() is complete. Calls
@@ -198,6 +209,15 @@ class ChangeListLoader {
       int64 remote_changestamp,
       int64 local_changestamp);
 
+  // Starts loading the change list since |start_changestamp|, or the full
+  // resource list if |start_changestamp| is zero. |remote_changestamp| will
+  // be stored in DriveResourceMetadata, once loading is done.
+  // callback must not be null.
+  void LoadChangeListFromServer(
+      int64 start_changestamp,
+      int64 remote_changestamp,
+      const FileOperationCallback& callback);
+
   // Callback for handling response from |DriveAPIService::GetAppList|.
   // If the application list is successfully parsed, passes the list to
   // Drive webapps registry.
@@ -210,17 +230,11 @@ class ChangeListLoader {
   // the content of the refreshed directory object and continue initially
   // started FindEntryByPath() request.
   void UpdateMetadataFromFeedAfterLoadFromServer(
-      const UpdateMetadataParams& params,
+      bool is_delta_feed,
+      int64 feed_changestamp,
+      const FileOperationCallback& callback,
       const ScopedVector<google_apis::ResourceList>& feed_list,
       DriveFileError error);
-
-  // Callback for handling response from |GDataWapiService::GetResourceList|.
-  // Invokes |callback| when done.
-  // |callback| must not be null.
-  void OnGetResourceList(scoped_ptr<LoadFeedParams> params,
-                         base::TimeTicks start_time,
-                         google_apis::GDataErrorCode status,
-                         scoped_ptr<google_apis::ResourceList> data);
 
   // Save filesystem to disk.
   void SaveFileSystem();
