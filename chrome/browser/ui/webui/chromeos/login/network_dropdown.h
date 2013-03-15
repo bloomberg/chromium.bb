@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,7 +23,7 @@ class NetworkMenuWebUI;
 // Class which implements network dropdown menu using WebUI.
 class NetworkDropdown : public NetworkMenu::Delegate,
                         public NetworkMenuIcon::Delegate,
-                        NetworkLibrary::NetworkManagerObserver {
+                        public ConnectivityStateHelperObserver {
  public:
   NetworkDropdown(content::WebUI* web_ui, bool oobe);
   virtual ~NetworkDropdown();
@@ -42,8 +42,8 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   // NetworkMenuIcon::Delegate implementation:
   virtual void NetworkMenuIconChanged() OVERRIDE;
 
-  // NetworkLibrary::NetworkManagerObserver implementation:
-  virtual void OnNetworkManagerChanged(NetworkLibrary* cros) OVERRIDE;
+  // ConnectivityStateHelperObserver implementation:
+  virtual void NetworkManagerChanged() OVERRIDE;
 
   // Refreshes control state. Usually there's no need to do it manually
   // as control refreshes itself on network state change.

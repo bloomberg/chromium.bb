@@ -311,9 +311,11 @@ class DBusServices {
     DeviceSettingsService::Get()->Initialize(
         DBusThreadManager::Get()->GetSessionManagerClient(),
         OwnerKeyUtil::Create());
+    chromeos::ConnectivityStateHelper::Initialize();
   }
 
   ~DBusServices() {
+    chromeos::ConnectivityStateHelper::Shutdown();
     // CrosLibrary is shut down before DBusThreadManager even though it
     // is initialized first becuase some of its libraries depend on DBus
     // clients.
@@ -325,7 +327,6 @@ class DBusServices {
     chromeos::ManagedNetworkConfigurationHandler::Shutdown();
     chromeos::NetworkConfigurationHandler::Shutdown();
 
-    chromeos::ConnectivityStateHelper::Shutdown();
     chromeos::NetworkStateHandler::Shutdown();
     chromeos::GeolocationHandler::Shutdown();
     chromeos::network_event_log::Shutdown();
@@ -434,9 +435,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-  // Must be called after about_flags settings are applied (see note above).
-  chromeos::ConnectivityStateHelper::Initialize();
-
   AudioHandler::Initialize();
   imageburner::BurnManager::Initialize();
 

@@ -1130,8 +1130,6 @@
         'browser/chromeos/login/wizard_in_process_browser_test.h',
         'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/memory/oom_priority_manager_browsertest.cc',
-        'browser/chromeos/net/mock_connectivity_state_helper.cc',
-        'browser/chromeos/net/mock_connectivity_state_helper.h',
         'browser/chromeos/policy/device_local_account_browsertest.cc',
         'browser/chromeos/policy/device_status_collector_browsertest.cc',
         'browser/chromeos/policy/power_policy_browsertest.cc',
