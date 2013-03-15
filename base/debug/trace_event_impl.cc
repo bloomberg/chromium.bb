@@ -52,6 +52,7 @@ namespace debug {
 // before throwing them away.
 const size_t kTraceEventBufferSize = 500000;
 const size_t kTraceEventBatchSize = 1000;
+const size_t kTraceEventInitialBufferSize = 1024;
 
 #define TRACE_EVENT_MAX_CATEGORIES 100
 
@@ -67,6 +68,7 @@ const char* g_categories[TRACE_EVENT_MAX_CATEGORIES] = {
   "tracing categories exhausted; must increase TRACE_EVENT_MAX_CATEGORIES",
   "__metadata",
 };
+
 // The enabled flag is char instead of bool so that the API can be used from C.
 unsigned char g_category_enabled[TRACE_EVENT_MAX_CATEGORIES] = { 0 };
 const int g_category_already_shutdown = 0;
@@ -81,8 +83,146 @@ LazyInstance<ThreadLocalPointer<const char> >::Leaky
     g_current_thread_name = LAZY_INSTANCE_INITIALIZER;
 
 const char kRecordUntilFull[] = "record-until-full";
+const char kRecordContinuously[] = "record-continuously";
+
+size_t NextIndex(size_t index) {
+  index++;
+  if (index >= kTraceEventBufferSize)
+    index = 0;
+  return index;
+}
 
 }  // namespace
+
+class TraceBufferRingBuffer : public TraceBuffer {
+ public:
+  TraceBufferRingBuffer()
+      : unused_event_index_(0),
+        oldest_event_index_(0) {
+    logged_events_.reserve(kTraceEventInitialBufferSize);
+  }
+
+  ~TraceBufferRingBuffer() {}
+
+  void AddEvent(const TraceEvent& event) OVERRIDE {
+    if (unused_event_index_ < Size())
+      logged_events_[unused_event_index_] = event;
+    else
+      logged_events_.push_back(event);
+
+    unused_event_index_ = NextIndex(unused_event_index_);
+    if (unused_event_index_ == oldest_event_index_) {
+      oldest_event_index_ = NextIndex(oldest_event_index_);
+    }
+  }
+
+  bool HasMoreEvents() const OVERRIDE {
+    return oldest_event_index_ != unused_event_index_;
+  }
+
+  const TraceEvent& NextEvent() OVERRIDE {
+    DCHECK(HasMoreEvents());
+
+    size_t next = oldest_event_index_;
+    oldest_event_index_ = NextIndex(oldest_event_index_);
+    return GetEventAt(next);
+  }
+
+  bool IsFull() const OVERRIDE {
+    return false;
+  }
+
+  size_t CountEnabledByName(const unsigned char* category,
+                            const std::string& event_name) const OVERRIDE {
+    size_t notify_count = 0;
+    size_t index = oldest_event_index_;
+    while (index != unused_event_index_) {
+      const TraceEvent& event = GetEventAt(index);
+      if (category == event.category_enabled() &&
+          strcmp(event_name.c_str(), event.name()) == 0) {
+        ++notify_count;
+      }
+      index = NextIndex(index);
+    }
+    return notify_count;
+  }
+
+  const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
+    DCHECK(index < logged_events_.size());
+    return logged_events_[index];
+  }
+
+  size_t Size() const OVERRIDE {
+    return logged_events_.size();
+  }
+
+ private:
+  size_t unused_event_index_;
+  size_t oldest_event_index_;
+  std::vector<TraceEvent> logged_events_;
+
+  DISALLOW_COPY_AND_ASSIGN(TraceBufferRingBuffer);
+};
+
+class TraceBufferVector : public TraceBuffer {
+ public:
+  TraceBufferVector() : current_iteration_index_(0) {
+    logged_events_.reserve(kTraceEventInitialBufferSize);
+  }
+
+  ~TraceBufferVector() {
+  }
+
+  void AddEvent(const TraceEvent& event) OVERRIDE {
+    // Note, we have two callers which need to be handled. The first is
+    // AddTraceEventWithThreadIdAndTimestamp() which checks Size() and does an
+    // early exit if full. The second is AddThreadNameMetadataEvents().
+    // We can not DECHECK(!IsFull()) because we have to add the metadata
+    // events even if the buffer is full.
+    logged_events_.push_back(event);
+  }
+
+  bool HasMoreEvents() const OVERRIDE {
+    return current_iteration_index_ < Size();
+  }
+
+  const TraceEvent& NextEvent() OVERRIDE {
+    DCHECK(HasMoreEvents());
+    return GetEventAt(current_iteration_index_++);
+  }
+
+  bool IsFull() const OVERRIDE {
+    return Size() >= kTraceEventBufferSize;
+  }
+
+  size_t CountEnabledByName(const unsigned char* category,
+                            const std::string& event_name) const OVERRIDE {
+    size_t notify_count = 0;
+    for (size_t i = 0; i < Size(); i++) {
+      const TraceEvent& event = GetEventAt(i);
+      if (category == event.category_enabled() &&
+          strcmp(event_name.c_str(), event.name()) == 0) {
+        ++notify_count;
+      }
+    }
+    return notify_count;
+  }
+
+  const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
+    DCHECK(index < logged_events_.size());
+    return logged_events_[index];
+  }
+
+  size_t Size() const OVERRIDE {
+    return logged_events_.size();
+  }
+
+ private:
+  size_t current_iteration_index_;
+  std::vector<TraceEvent> logged_events_;
+
+  DISALLOW_COPY_AND_ASSIGN(TraceBufferVector);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -235,17 +375,6 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
     default:
       NOTREACHED() << "Don't know how to print this value";
       break;
-  }
-}
-
-void TraceEvent::AppendEventsAsJSON(const std::vector<TraceEvent>& events,
-                                    size_t start,
-                                    size_t count,
-                                    std::string* out) {
-  for (size_t i = 0; i < count && start + i < events.size(); ++i) {
-    if (i > 0)
-      *out += ",";
-    events[i + start].AppendAsJSON(out);
   }
 }
 
@@ -511,15 +640,13 @@ TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
        ++iter) {
     if (*iter == kRecordUntilFull) {
       ret |= RECORD_UNTIL_FULL;
+    } else if (*iter == kRecordContinuously) {
+      ret |= RECORD_CONTINUOUSLY;
     } else {
       NOTREACHED();  // Unknown option provided.
     }
   }
-  // Check to see if any RECORD_* options are set, and if none, then provide
-  // a default.
-  // TODO(dsinclair): Remove this comment when we have more then one RECORD_*
-  // flag and the code's structure is then sensible.
-  if (!(ret & RECORD_UNTIL_FULL))
+  if (!(ret & RECORD_UNTIL_FULL) && !(ret & RECORD_CONTINUOUSLY))
     ret |= RECORD_UNTIL_FULL;  // Default when no options are specified.
 
   return static_cast<Options>(ret);
@@ -527,6 +654,7 @@ TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
 
 TraceLog::TraceLog()
     : enable_count_(0),
+      logged_events_(NULL),
       dispatching_to_observer_list_(false),
       watch_category_(NULL),
       trace_options_(RECORD_UNTIL_FULL),
@@ -547,6 +675,8 @@ TraceLog::TraceLog()
 #else
   SetProcessID(static_cast<int>(GetCurrentProcId()));
 #endif
+
+  logged_events_.reset(GetTraceBuffer());
 }
 
 TraceLog::~TraceLog() {
@@ -682,7 +812,11 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
     }
     return;
   }
-  trace_options_ = options;
+
+  if (options != trace_options_) {
+    trace_options_ = options;
+    logged_events_.reset(GetTraceBuffer());
+  }
 
   if (dispatching_to_observer_list_) {
     DLOG(ERROR) <<
@@ -695,7 +829,6 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
                     OnTraceLogWillEnable());
   dispatching_to_observer_list_ = false;
 
-  logged_events_.reserve(1024);
   included_categories_ = included_categories;
   excluded_categories_ = excluded_categories;
   // Note that if both included and excluded_categories are empty, the else
@@ -811,7 +944,7 @@ void TraceLog::RemoveEnabledStateObserver(
 }
 
 float TraceLog::GetBufferPercentFull() const {
-  return (float)((double)logged_events_.size()/(double)kTraceEventBufferSize);
+  return (float)((double)logged_events_->Size()/(double)kTraceEventBufferSize);
 }
 
 void TraceLog::SetNotificationCallback(
@@ -820,27 +953,40 @@ void TraceLog::SetNotificationCallback(
   notification_callback_ = cb;
 }
 
+TraceBuffer* TraceLog::GetTraceBuffer() {
+  if (trace_options_ & RECORD_CONTINUOUSLY)
+    return new TraceBufferRingBuffer();
+  return new TraceBufferVector();
+}
+
 void TraceLog::SetEventCallback(EventCallback cb) {
   AutoLock lock(lock_);
   event_callback_ = cb;
 };
 
 void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
-  std::vector<TraceEvent> previous_logged_events;
+  scoped_ptr<TraceBuffer> previous_logged_events;
   {
     AutoLock lock(lock_);
     previous_logged_events.swap(logged_events_);
+    logged_events_.reset(GetTraceBuffer());
   }  // release lock
 
-  for (size_t i = 0;
-       i < previous_logged_events.size();
-       i += kTraceEventBatchSize) {
+  while (previous_logged_events->HasMoreEvents()) {
     scoped_refptr<RefCountedString> json_events_str_ptr =
         new RefCountedString();
-    TraceEvent::AppendEventsAsJSON(previous_logged_events,
-                                   i,
-                                   kTraceEventBatchSize,
-                                   &(json_events_str_ptr->data()));
+
+    for (size_t i = 0; i < kTraceEventBatchSize; ++i) {
+      if (i > 0)
+        *(&(json_events_str_ptr->data())) += ",";
+
+      previous_logged_events->NextEvent().AppendAsJSON(
+          &(json_events_str_ptr->data()));
+
+      if (!previous_logged_events->HasMoreEvents())
+        break;
+    }
+
     cb.Run(json_events_str_ptr);
   }
 }
@@ -892,7 +1038,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     AutoLock lock(lock_);
     if (*category_enabled != CATEGORY_ENABLED)
       return;
-    if (logged_events_.size() >= kTraceEventBufferSize)
+    if (logged_events_->IsFull())
       return;
 
     const char* new_name = ThreadIdNameManager::GetInstance()->
@@ -925,13 +1071,12 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       }
     }
 
-    logged_events_.push_back(
-        TraceEvent(thread_id,
-                   now, phase, category_enabled, name, id,
-                   num_args, arg_names, arg_types, arg_values,
-                   flags));
+    logged_events_->AddEvent(TraceEvent(thread_id,
+        now, phase, category_enabled, name, id,
+        num_args, arg_names, arg_types, arg_values,
+        flags));
 
-    if (logged_events_.size() == kTraceEventBufferSize)
+    if (logged_events_->IsFull())
       notifier.AddNotificationWhileLocked(TRACE_BUFFER_FULL);
 
     if (watch_category_ == category_enabled && watch_event_name_ == name)
@@ -974,24 +1119,19 @@ void TraceLog::AddTraceEventEtw(char phase,
 void TraceLog::SetWatchEvent(const std::string& category_name,
                              const std::string& event_name) {
   const unsigned char* category = GetCategoryEnabled(category_name.c_str());
-  int notify_count = 0;
+  size_t notify_count = 0;
   {
     AutoLock lock(lock_);
     watch_category_ = category;
     watch_event_name_ = event_name;
 
-    // First, search existing events for watch event because we want to catch it
-    // even if it has already occurred.
-    for (size_t i = 0u; i < logged_events_.size(); ++i) {
-      if (category == logged_events_[i].category_enabled() &&
-          strcmp(event_name.c_str(), logged_events_[i].name()) == 0) {
-        ++notify_count;
-      }
-    }
+    // First, search existing events for watch event because we want to catch
+    // it even if it has already occurred.
+    notify_count = logged_events_->CountEnabledByName(category, event_name);
   }  // release lock
 
   // Send notification for each event found.
-  for (int i = 0; i < notify_count; ++i) {
+  for (size_t i = 0; i < notify_count; ++i) {
     NotificationHelper notifier(this);
     lock_.Acquire();
     notifier.AddNotificationWhileLocked(EVENT_WATCH_NOTIFICATION);
@@ -1017,13 +1157,12 @@ void TraceLog::AddThreadNameMetadataEvents() {
       unsigned char arg_type;
       unsigned long long arg_value;
       trace_event_internal::SetTraceValue(it->second, &arg_type, &arg_value);
-      logged_events_.push_back(
-          TraceEvent(it->first,
-                     TimeTicks(), TRACE_EVENT_PHASE_METADATA,
-                     &g_category_enabled[g_category_metadata],
-                     "thread_name", trace_event_internal::kNoEventId,
-                     num_args, &arg_name, &arg_type, &arg_value,
-                     TRACE_EVENT_FLAG_NONE));
+      logged_events_->AddEvent(TraceEvent(it->first,
+          TimeTicks(), TRACE_EVENT_PHASE_METADATA,
+          &g_category_enabled[g_category_metadata],
+          "thread_name", trace_event_internal::kNoEventId,
+          num_args, &arg_name, &arg_type, &arg_value,
+          TRACE_EVENT_FLAG_NONE));
     }
   }
 }

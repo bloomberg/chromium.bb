@@ -1531,6 +1531,8 @@ TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
 
   EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL,
             TraceLog::TraceOptionsFromString("record-until-full"));
+  EXPECT_EQ(TraceLog::RECORD_CONTINUOUSLY,
+            TraceLog::TraceOptionsFromString("record-continuously"));
 }
 
 TEST_F(TraceEventTestFixture, TraceSampling) {
@@ -1605,6 +1607,8 @@ TEST_F(TraceEventCallbackTest, TraceEventCallback) {
   EXPECT_EQ("event1", collected_events_[0]);
   EXPECT_EQ("event2", collected_events_[1]);
 }
+
+// TODO(dsinclair): Continuous Tracing unit test.
 
 }  // namespace debug
 }  // namespace base

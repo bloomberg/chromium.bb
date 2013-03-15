@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/string_util.h"
 #include "base/synchronization/condition_variable.h"
@@ -114,6 +115,20 @@ class BASE_EXPORT TraceEvent {
   unsigned char arg_types_[kTraceMaxNumArgs];
 };
 
+// TraceBuffer holds the events as they are collected.
+class BASE_EXPORT TraceBuffer {
+ public:
+  virtual ~TraceBuffer() {}
+
+  virtual void AddEvent(const TraceEvent& event) = 0;
+  virtual bool HasMoreEvents() const = 0;
+  virtual const TraceEvent& NextEvent() = 0;
+  virtual bool IsFull() const = 0;
+  virtual size_t CountEnabledByName(const unsigned char* category,
+                                    const std::string& event_name) const = 0;
+  virtual size_t Size() const = 0;
+  virtual const TraceEvent& GetEventAt(size_t index) const = 0;
+};
 
 // TraceResultBuffer collects and converts trace fragments returned by TraceLog
 // to JSON output.
@@ -174,9 +189,15 @@ class BASE_EXPORT TraceLog {
 
   // Options determines how the trace buffer stores data.
   enum Options {
+    // Record until the trace buffer is full.
     RECORD_UNTIL_FULL = 1 << 0,
+
+    // Record until the user ends the trace. The trace buffer is a fixed size
+    // and we use it as a ring buffer during recording.
+    RECORD_CONTINUOUSLY = 1 << 1,
+
     // Enable the sampling profiler.
-    ENABLE_SAMPLING = 1 << 1,
+    ENABLE_SAMPLING = 1 << 2
   };
 
   static TraceLog* GetInstance();
@@ -342,10 +363,9 @@ class BASE_EXPORT TraceLog {
   static void Resurrect();
 
   // Allow tests to inspect TraceEvents.
-  size_t GetEventsSize() const { return logged_events_.size(); }
+  size_t GetEventsSize() const { return logged_events_->Size(); }
   const TraceEvent& GetEventAt(size_t index) const {
-    DCHECK(index < logged_events_.size());
-    return logged_events_[index];
+    return logged_events_->GetEventAt(index);
   }
 
   void SetProcessID(int process_id);
@@ -411,14 +431,16 @@ class BASE_EXPORT TraceLog {
   static void ApplyATraceEnabledFlag(unsigned char* category_enabled);
 #endif
 
+  TraceBuffer* GetTraceBuffer();
+
   // TODO(nduca): switch to per-thread trace buffers to reduce thread
   // synchronization.
   // This lock protects TraceLog member accesses from arbitrary threads.
   Lock lock_;
   int enable_count_;
   NotificationCallback notification_callback_;
+  scoped_ptr<TraceBuffer> logged_events_;
   EventCallback event_callback_;
-  std::vector<TraceEvent> logged_events_;
   std::vector<std::string> included_categories_;
   std::vector<std::string> excluded_categories_;
   bool dispatching_to_observer_list_;
