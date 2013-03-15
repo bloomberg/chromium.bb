@@ -24,6 +24,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 
 using base::TimeDelta;
@@ -33,7 +34,7 @@ namespace {
 
 class StartupTest : public UIPerfTest {
  public:
-  StartupTest() {
+  StartupTest() : tracing_enabled_(false) {
     show_window_ = true;
   }
   virtual void SetUp() {
@@ -69,6 +70,32 @@ class StartupTest : public UIPerfTest {
     launch_arguments_.AppendSwitchPath(switches::kProfilingOutputFile,
                                        profiling_file_);
     collect_profiling_stats_ = true;
+  }
+
+  // Set the command line arguments to enable tracing.
+  void SetUpWithTracing(std::string trace_file_prefix) {
+    tracing_enabled_ = true;
+    trace_file_prefix_ = trace_file_prefix;
+    launch_arguments_.AppendSwitch(switches::kTraceStartup);
+    launch_arguments_.AppendSwitchASCII(switches::kTraceStartupDuration,
+                                        "1");
+  }
+
+  // Pause after running a test with tracing, to wait for the trace to
+  // be written.
+  void PauseForTracing() {
+    if (tracing_enabled_) {
+#if defined(OS_MACOSX)
+      sleep(1);
+#else
+      NOTREACHED();
+#endif
+    }
+  }
+
+  // Set the command line arguments to use force-compositing-mode.
+  void SetUpWithForceCompositingMode() {
+    launch_arguments_.AppendSwitch(switches::kForceCompositingMode);
   }
 
   // Load a complex html file on startup represented by |which_tab|.
@@ -191,7 +218,15 @@ class StartupTest : public UIPerfTest {
     };
     TimingInfo timings[kNumCyclesMax];
 
+    CommandLine launch_arguments_without_trace_file(launch_arguments_);
     for (int i = 0; i < numCycles; ++i) {
+      if (tracing_enabled_) {
+        std::stringstream tracing_enabled_file;
+        tracing_enabled_file << trace_file_prefix_ << i;
+        launch_arguments_ = launch_arguments_without_trace_file;
+        launch_arguments_.AppendSwitchASCII(switches::kTraceStartupFile,
+                                            tracing_enabled_file.str());
+      }
       if (test_cold == COLD) {
         base::FilePath dir_app;
         ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app));
@@ -235,6 +270,7 @@ class StartupTest : public UIPerfTest {
         }
       }
       timings[i].end_to_end = end_time - browser_launch_time();
+      PauseForTracing();
       UITest::TearDown();
 
       if (i == 0) {
@@ -297,6 +333,8 @@ class StartupTest : public UIPerfTest {
 
   base::FilePath profiling_file_;
   bool collect_profiling_stats_;
+  bool tracing_enabled_;
+  std::string trace_file_prefix_;
 };
 
 TEST_F(StartupTest, PerfWarm) {
@@ -468,5 +506,24 @@ TEST_F(StartupTest, ProfilingScript1) {
   RunStartupTest("warm", "profiling_scripts1", WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(StartupTest, TracedProfilingScript1) {
+  SetUpWithFileURL();
+  SetUpWithProfiling();
+  SetUpWithTracing("startup_trace_sw_");
+  RunStartupTest("warm", "traced_profiling_scripts1", WARM, NOT_IMPORTANT,
+                 UITestBase::DEFAULT_THEME, 1, 0);
+}
+
+TEST_F(StartupTest, TracedProfilingScript1FCM) {
+  SetUpWithFileURL();
+  SetUpWithProfiling();
+  SetUpWithForceCompositingMode();
+  SetUpWithTracing("startup_trace_fcm_");
+  RunStartupTest("warm", "traced_profiling_scripts1_fcm", WARM, NOT_IMPORTANT,
+                 UITestBase::DEFAULT_THEME, 1, 0);
+}
+#endif
 
 }  // namespace
