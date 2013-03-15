@@ -86,5 +86,23 @@ TEST_F(ModelTypeTest, ModelTypeOfInvalidSpecificsFieldNumber) {
   EXPECT_EQ(UNSPECIFIED, GetModelTypeFromSpecificsFieldNumber(0));
 }
 
+TEST_F(ModelTypeTest, ModelTypeHistogramMapping) {
+  std::set<int> histogram_values;
+  ModelTypeSet all_types = ModelTypeSet::All();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    SCOPED_TRACE(ModelTypeToString(it.Get()));
+    int histogram_value = ModelTypeToHistogramInt(it.Get());
+
+    EXPECT_TRUE(histogram_values.insert(histogram_value).second)
+        << "Expected histogram values to be unique";
+
+    // This is not necessary for the mapping to be valid, but most instances of
+    // UMA_HISTOGRAM that use this mapping specify MODEL_TYPE_COUNT as the
+    // maximum possible value.  If you break this assumption, you should update
+    // those histograms.
+    EXPECT_LT(histogram_value, MODEL_TYPE_COUNT);
+  }
+}
+
 }  // namespace
 }  // namespace syncer

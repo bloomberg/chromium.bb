@@ -333,7 +333,8 @@ void NonFrontendDataTypeController::RecordAssociationTime(
 
 void NonFrontendDataTypeController::RecordStartFailure(StartResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures", type(),
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
+                            ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_ENUMERATION("Sync." type_str "StartFailure", result, \

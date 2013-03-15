@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-
+#include "sync/internal_api/public/base/model_type.h"
 
 using content::BrowserThread;
 using syncer::ModelTypeSet;
@@ -300,7 +300,7 @@ void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
   LOG(ERROR) << "Failed to associate models for "
              << syncer::ModelTypeToString(error.type());
   UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
-                            error.type(),
+                            ModelTypeToHistogramInt(error.type()),
                             syncer::MODEL_TYPE_COUNT);
 }
 

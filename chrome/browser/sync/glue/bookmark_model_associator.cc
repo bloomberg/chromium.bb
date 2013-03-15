@@ -706,7 +706,8 @@ void BookmarkModelAssociator::CheckModelSyncState() const {
     if (base::StringToInt64(version_str, &native_version) &&
         native_version != trans.GetModelVersion(syncer::BOOKMARKS)) {
       UMA_HISTOGRAM_ENUMERATION("Sync.LocalModelOutOfSync",
-                                syncer::BOOKMARKS, syncer::MODEL_TYPE_COUNT);
+                                ModelTypeToHistogramInt(syncer::BOOKMARKS),
+                                syncer::MODEL_TYPE_COUNT);
       // Clear version on bookmark model so that we only report error once.
       bookmark_model_->DeleteNodeMetaInfo(bookmark_model_->root_node(),
                                           kBookmarkTransactionVersionKey);

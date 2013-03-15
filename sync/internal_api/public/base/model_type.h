@@ -49,11 +49,6 @@ enum ModelType {
   // can be represented in the protocol using a specific Message type in the
   // EntitySpecifics protocol buffer.
   //
-  // WARNING: Modifying the order of these types or inserting a new type above
-  // these will affect numerous histograms that rely on the enum values being
-  // consistent. When adding a new type, add it to the end of the user model
-  // types section, but before the proxy types.
-  //
   // A bookmark folder or a bookmark URL object.
   BOOKMARKS,
   FIRST_USER_MODEL_TYPE = BOOKMARKS,  // Declared 2nd, for debugger prettiness.
@@ -243,6 +238,11 @@ FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
 // Returns a pointer to a string with application lifetime that represents
 // the name of |model_type|.
 SYNC_EXPORT const char* ModelTypeToString(ModelType model_type);
+
+// Some histograms take an integer parameter that represents a model type.
+// The mapping from ModelType to integer is defined here.  It should match
+// the mapping from integer to labels defined in histograms.xml.
+SYNC_EXPORT int ModelTypeToHistogramInt(ModelType model_type);
 
 // Handles all model types, and not just real ones.
 //

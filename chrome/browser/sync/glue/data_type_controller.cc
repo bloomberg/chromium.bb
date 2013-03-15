@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
 
 namespace browser_sync {
@@ -32,7 +33,8 @@ void DataTypeController::RecordUnrecoverableError(
            << ModelTypeToString(type()) << "  "
            << message << " at location "
            << from_here.ToString();
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures", type(),
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
 
   // TODO(sync): remove this once search engines triggers less errors, such as

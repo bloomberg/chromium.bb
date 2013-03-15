@@ -449,6 +449,71 @@ const char* ModelTypeToString(ModelType model_type) {
   return "INVALID";
 }
 
+// The normal rules about histograms apply here.  Always append to the bottom of
+// the list, and be careful to not reuse integer values that have already been
+// assigned.  Don't forget to update histograms.xml when you make changes to
+// this list.
+int ModelTypeToHistogramInt(ModelType model_type) {
+  switch (model_type) {
+    case UNSPECIFIED:
+      return 0;
+    case TOP_LEVEL_FOLDER:
+      return 1;
+    case BOOKMARKS:
+      return 2;
+    case PREFERENCES:
+      return 3;
+    case PASSWORDS:
+      return 4;
+    case AUTOFILL_PROFILE:
+      return 5;
+    case AUTOFILL:
+      return 6;
+    case THEMES:
+      return 7;
+    case TYPED_URLS:
+      return 8;
+    case EXTENSIONS:
+      return 9;
+    case SEARCH_ENGINES:
+      return 10;
+    case SESSIONS:
+      return 11;
+    case APPS:
+      return 12;
+    case APP_SETTINGS:
+      return 13;
+    case EXTENSION_SETTINGS:
+      return 14;
+    case APP_NOTIFICATIONS:
+      return 15;
+    case HISTORY_DELETE_DIRECTIVES:
+      return 16;
+    case NIGORI:
+      return 17;
+    case DEVICE_INFO:
+      return 18;
+    case EXPERIMENTS:
+      return 19;
+    case SYNCED_NOTIFICATIONS:
+      return 20;
+    case PRIORITY_PREFERENCES:
+      return 21;
+    case DICTIONARY:
+      return 22;
+    case FAVICON_IMAGES:
+      return 23;
+    case FAVICON_TRACKING:
+      return 24;
+    case PROXY_TABS:
+      return 25;
+    // Silence a compiler warning.
+    case MODEL_TYPE_COUNT:
+      return 0;
+  }
+  return 0;
+}
+
 base::StringValue* ModelTypeToValue(ModelType model_type) {
   if (model_type >= FIRST_REAL_MODEL_TYPE) {
     return new base::StringValue(ModelTypeToString(model_type));
