@@ -121,9 +121,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // observer.
   void OnFileExistenceChecked(int32 download_id, bool result);
 
-  // Remove from internal maps.
-  int RemoveDownloadItems(const DownloadItemImplVector& pending_deletes);
-
   // Overridden from DownloadItemImplDelegate
   // (Note that |GetBrowserContext| are present in both interfaces.)
   virtual void DetermineDownloadTarget(

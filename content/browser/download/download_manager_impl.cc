@@ -521,50 +521,37 @@ DownloadFileFactory* DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
   return file_factory_.get();
 }
 
-int DownloadManagerImpl::RemoveDownloadItems(
-    const DownloadItemImplVector& pending_deletes) {
-  if (pending_deletes.empty())
-    return 0;
-
-  // Delete from internal maps.
-  for (DownloadItemImplVector::const_iterator it = pending_deletes.begin();
-       it != pending_deletes.end();
-       ++it) {
-    DownloadItemImpl* download = *it;
-    DCHECK(download);
-    int32 download_id = download->GetId();
-    delete download;
-    downloads_.erase(download_id);
-  }
-  return static_cast<int>(pending_deletes.size());
-}
-
 void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
-  if (!download ||
-      downloads_.find(download->GetId()) == downloads_.end())
+  if (!download)
     return;
 
-  // Remove from our tables and delete.
-  int downloads_count =
-      RemoveDownloadItems(DownloadItemImplVector(1, download));
-  DCHECK_EQ(1, downloads_count);
+  int32 download_id = download->GetId();
+  if (downloads_.find(download_id) == downloads_.end())
+    return;
+
+  delete download;
+  downloads_.erase(download_id);
 }
 
 int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
                                                 base::Time remove_end) {
-  DownloadItemImplVector pending_deletes;
-  for (DownloadMap::const_iterator it = downloads_.begin();
-      it != downloads_.end();
-      ++it) {
+  int count = 0;
+  DownloadMap::const_iterator it = downloads_.begin();
+  while (it != downloads_.end()) {
     DownloadItemImpl* download = it->second;
+
+    // Increment done here to protect against invalidation below.
+    ++it;
+
     if (download->GetStartTime() >= remove_begin &&
         (remove_end.is_null() || download->GetStartTime() < remove_end) &&
         (download->IsComplete() || download->IsCancelled())) {
-      download->NotifyRemoved();
-      pending_deletes.push_back(download);
+      // Erases the download from downloads_.
+      download->Remove();
+      count++;
     }
   }
-  return RemoveDownloadItems(pending_deletes);
+  return count;
 }
 
 int DownloadManagerImpl::RemoveDownloads(base::Time remove_begin) {
