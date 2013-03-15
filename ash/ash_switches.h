@@ -31,8 +31,6 @@ ASH_EXPORT extern const char kAshDisableLauncherPerDisplay[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
 ASH_EXPORT extern const char kAshDisableNewNetworkStatusArea[];
 ASH_EXPORT extern const char kAshDisablePerAppLauncher[];
-ASH_EXPORT extern const char kAshDisableUIScaling[];
-ASH_EXPORT extern const char kAshDisableDisplayRotation[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 #if defined(OS_LINUX)

@@ -154,7 +154,7 @@ bool HandleRotateActiveWindow() {
   return true;
 }
 
-gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
+const gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
   switch (current) {
     case gfx::Display::ROTATE_0:
       return gfx::Display::ROTATE_90;
@@ -169,40 +169,13 @@ gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
   return gfx::Display::ROTATE_0;
 }
 
-float GetNextScale(float scale, int next) {
-  // These scales are equivalent to 1024, 1280, 1600 and 1920 pixel width
-  // respectively on 2560 pixel width 2x density display.
-  static const float kScales[] = {0.8f, 1.0f, 1.25f, 1.5f};
-  static const int kScaleTableSize = arraysize(kScales);
-  int index = std::distance(kScales, std::find(kScales,
-                                               kScales + kScaleTableSize,
-                                               scale));
-  // Fallback to 1.0f if the |scale| wasn't in the list.
-  index = index == kScaleTableSize ? 1 : index + next;
-  return kScales[std::max(std::min(kScaleTableSize - 1, index), 0)];
-}
-
-bool HandleScaleUI(bool up) {
-  // UI Scaling is effective only on internal display.
-  int64 display_id = gfx::Display::InternalDisplayId();
-#if defined(OS_CHROMEOS)
-  // On linux desktop, allow ui scaling on the first dislpay.
-  if (!base::chromeos::IsRunningOnChromeOS())
-    display_id = Shell::GetInstance()->display_manager()->first_display_id();
-#endif
-  const gfx::Display& display = Shell::GetInstance()->display_manager()->
-      GetDisplayForId(display_id);
-  const DisplayInfo& display_info = Shell::GetInstance()->display_manager()->
-      GetDisplayInfo(display);
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(
-      display.id(), GetNextScale(display_info.ui_scale(), up ? 1 : -1));
-  return true;
-}
-
 // Rotates the screen.
 bool HandleRotateScreen() {
-  gfx::Point point = Shell::GetScreen()->GetCursorScreenPoint();
-  gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(point);
+  aura::Window* active_window = wm::GetActiveWindow();
+  if (!active_window)
+    return false;
+  const gfx::Display& display =
+      Shell::GetScreen()->GetDisplayNearestWindow(active_window);
   const DisplayInfo& display_info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display);
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
@@ -785,10 +758,6 @@ bool AcceleratorController::PerformAction(int action,
       }
       break;
     }
-    case SCALE_UI_UP:
-      return HandleScaleUI(true /* up */);
-    case SCALE_UI_DOWN:
-      return HandleScaleUI(false /* down */);
     case ROTATE_WINDOW:
       return HandleRotateActiveWindow();
     case ROTATE_SCREEN:
@@ -798,7 +767,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
     case DISPLAY_TOGGLE_SCALE:
-      internal::DisplayManager::ToggleDisplayScaleFactor();
+      internal::DisplayManager::ToggleDisplayScale();
       return true;
     case MAGNIFY_SCREEN_ZOOM_IN:
       return HandleMagnifyScreen(1);
