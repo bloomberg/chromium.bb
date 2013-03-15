@@ -334,6 +334,22 @@ bool DismissVirtualKeyboard() {
 
 // There are optimizer bugs in x86 VS2012 pre-Update 1.
 #if _MSC_VER == 1700 && defined _M_IX86 && _MSC_FULL_VER < 170051106
+
+#pragma message("Relevant defines:")
+#define __STR2__(x) #x
+#define __STR1__(x) __STR2__(x)
+#define __PPOUT__(x) "#define " #x " " __STR1__(x)
+#if defined(_M_IX86)
+  #pragma message(__PPOUT__(_M_IX86))
+#endif
+#if defined(_M_X64)
+  #pragma message(__PPOUT__(_M_X64))
+#endif
+#if defined(_MSC_FULL_VER)
+  #pragma message(__PPOUT__(_MSC_FULL_VER))
+#endif
+
+#pragma message("Visual Studio 2012 x86 must be updated to at least Update 1")
 #error Must install Update 1 to Visual Studio 2012.
 #endif
 
