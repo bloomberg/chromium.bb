@@ -332,8 +332,8 @@ bool DismissVirtualKeyboard() {
 
 #ifdef _MSC_VER
 
-// There are optimizer bugs in VS2012 pre-Update 1.
-#if _MSC_VER == 1700 && _MSC_FULL_VER < 170051106
+// There are optimizer bugs in x86 VS2012 pre-Update 1.
+#if _MSC_VER == 1700 && defined _M_IX86 && _MSC_FULL_VER < 170051106
 #error Must install Update 1 to Visual Studio 2012.
 #endif
 
