@@ -146,7 +146,13 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, FindLink) {
   RunTest("runTest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, ArgumentValidation) {
+// Crashes at random intervals on MacOS: http://crbug.com/95713.
+#if defined(OS_MACOSX)
+#define Maybe_ArgumentValidation DISABLED_ArgumentValidation
+#else
+#define Maybe_ArgumentValidation ArgumentValidation
+#endif
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Maybe_ArgumentValidation) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
 
