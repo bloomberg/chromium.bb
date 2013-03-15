@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
@@ -107,6 +108,13 @@ AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
 
 AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
 
+string16 AutofillCreditCardWrapper::GetInfo(AutofillFieldType type) {
+  if (type == CREDIT_CARD_EXP_MONTH)
+    return MonthComboboxModel::FormatMonth(card_->expiration_month());
+
+  return AutofillFormGroupWrapper::GetInfo(type);
+}
+
 gfx::Image AutofillCreditCardWrapper::GetIcon() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetImageNamed(card_->IconResourceId());
@@ -151,15 +159,14 @@ WalletInstrumentWrapper::WalletInstrumentWrapper(
 WalletInstrumentWrapper::~WalletInstrumentWrapper() {}
 
 string16 WalletInstrumentWrapper::GetInfo(AutofillFieldType type) {
-  return instrument_->address().GetInfo(type);
+  if (type == CREDIT_CARD_EXP_MONTH)
+    return MonthComboboxModel::FormatMonth(instrument_->expiration_month());
+
+  return instrument_->GetInfo(type);
 }
 
 gfx::Image WalletInstrumentWrapper::GetIcon() {
   return instrument_->CardIcon();
-}
-
-void WalletInstrumentWrapper::FillInputs(DetailInputs* inputs) {
-  // TODO(estade): implement.
 }
 
 string16 WalletInstrumentWrapper::GetDisplayText() {

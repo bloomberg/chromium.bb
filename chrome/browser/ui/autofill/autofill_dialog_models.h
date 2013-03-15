@@ -164,6 +164,8 @@ class MonthComboboxModel : public ui::ComboboxModel {
   MonthComboboxModel();
   virtual ~MonthComboboxModel();
 
+  static string16 FormatMonth(int index);
+
   // ui::Combobox implementation:
   virtual int GetItemCount() const OVERRIDE;
   virtual string16 GetItemAt(int index) OVERRIDE;

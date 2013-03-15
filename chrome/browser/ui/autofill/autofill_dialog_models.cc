@@ -188,11 +188,13 @@ int MonthComboboxModel::GetItemCount() const {
   return 13;
 }
 
-string16 MonthComboboxModel::GetItemAt(int index) {
-  if (index == 0)
-    return string16();
-
+// static
+string16 MonthComboboxModel::FormatMonth(int index) {
   return ASCIIToUTF16(StringPrintf("%2d", index));
+}
+
+string16 MonthComboboxModel::GetItemAt(int index) {
+  return index == 0 ? string16() : FormatMonth(index);
 }
 
 // YearComboboxModel -----------------------------------------------------------

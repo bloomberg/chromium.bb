@@ -5,7 +5,9 @@
 #include "components/autofill/browser/wallet/wallet_items.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "components/autofill/browser/autofill_type.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -255,6 +257,31 @@ const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {
   }
 
   return ResourceBundle::GetSharedInstance().GetImageNamed(idr);
+}
+
+string16 WalletItems::MaskedInstrument::GetInfo(AutofillFieldType type) const {
+  if (AutofillType(type).group() != AutofillType::CREDIT_CARD)
+    return address().GetInfo(type);
+
+  switch (type) {
+    case CREDIT_CARD_NAME:
+      return address().recipient_name();
+
+    case CREDIT_CARD_NUMBER:
+      // TODO(dbeam): show these as XXXX-#### and non-editable in the UI.
+      return last_four_digits();
+
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      return base::IntToString16(expiration_year());
+
+    case CREDIT_CARD_VERIFICATION_CODE:
+      break;
+
+    default:
+      NOTREACHED();
+  }
+
+  return string16();
 }
 
 WalletItems::LegalDocument::LegalDocument(const std::string& document_id,

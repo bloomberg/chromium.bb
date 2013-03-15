@@ -97,6 +97,7 @@ class AutofillCreditCardWrapper : public AutofillFormGroupWrapper {
   explicit AutofillCreditCardWrapper(const CreditCard* card);
   virtual ~AutofillCreditCardWrapper();
 
+  virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
@@ -128,7 +129,6 @@ class WalletInstrumentWrapper : public DataModelWrapper {
 
   virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
-  virtual void FillInputs(DetailInputs* inputs) OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
  private:

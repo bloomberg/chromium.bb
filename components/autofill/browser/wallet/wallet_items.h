@@ -82,6 +82,9 @@ class WalletItems {
     string16 DisplayName() const;
     string16 DisplayNameDetail() const;
 
+    // Gets info that corresponds with |type|.
+    string16 GetInfo(AutofillFieldType type) const;
+
     const string16& descriptive_name() const { return descriptive_name_; }
     const Type& type() const { return type_; }
     const std::vector<string16>& supported_currencies() const {
