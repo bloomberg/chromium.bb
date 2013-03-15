@@ -20,7 +20,6 @@ ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(L
     , m_pinchGestureInEffect(false)
     , m_fadeoutDelay(fadeoutDelay)
     , m_fadeoutLength(fadeoutLength)
-    , m_currentTimeForTesting(0)
 {
 }
 

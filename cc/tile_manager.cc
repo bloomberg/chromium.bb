@@ -165,8 +165,8 @@ TileManager::TileManager(
       record_rendering_stats_(false),
       use_cheapness_estimator_(use_cheapness_estimator),
       use_color_estimator_(use_color_estimator),
-      allow_cheap_tasks_(true),
       did_schedule_cheap_tasks_(false),
+      allow_cheap_tasks_(true),
       prediction_benchmarking_(prediction_benchmarking),
       pending_tasks_(0),
       max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads) {

@@ -17,9 +17,9 @@ scoped_ptr<DamageTracker> DamageTracker::Create() {
 }
 
 DamageTracker::DamageTracker()
-    : force_full_damage_next_update_(false),
-      current_rect_history_(new RectMap),
-      next_rect_history_(new RectMap) {}
+    : current_rect_history_(new RectMap),
+      next_rect_history_(new RectMap),
+      force_full_damage_next_update_(false) {}
 
 DamageTracker::~DamageTracker() {}
 

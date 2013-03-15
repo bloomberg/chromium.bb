@@ -46,7 +46,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  protected:
   virtual void BindFramebufferToOutputSurface(DrawingFrame& frame) OVERRIDE;
   virtual bool BindFramebufferToTexture(
-      DrawingFrame& frame, 
+      DrawingFrame& frame,
       const ScopedResource* texture,
       gfx::Rect framebuffer_rect) OVERRIDE;
   virtual void SetDrawViewportSize(gfx::Size viewport_size) OVERRIDE;

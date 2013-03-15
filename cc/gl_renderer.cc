@@ -1414,7 +1414,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame& frame,
   // Generate the uv-transform
   gfx::PointF uv0 = quad->uv_top_left;
   gfx::PointF uv1 = quad->uv_bottom_right;
-  Float4 uv = { uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y() };
+  Float4 uv = { { uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y() } };
   draw_cache_.uv_xform_data.push_back(uv);
 
   // Generate the vertex opacity

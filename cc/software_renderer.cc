@@ -65,9 +65,9 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
                                    OutputSurface* output_surface,
                                    ResourceProvider* resource_provider)
   : DirectRenderer(client, resource_provider),
-    output_surface_(output_surface),
     visible_(true),
     is_scissor_enabled_(false),
+    output_surface_(output_surface),
     output_device_(output_surface->software_device()),
     current_canvas_(NULL) {
   resource_provider_->set_default_resource_type(ResourceProvider::Bitmap);

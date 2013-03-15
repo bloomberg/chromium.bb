@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/managed_tile_state.h"
+
 #include "cc/math_util.h"
 
 namespace cc {
@@ -10,12 +11,12 @@ namespace cc {
 ManagedTileState::ManagedTileState()
     : can_use_gpu_memory(false),
       need_to_gather_pixel_refs(true),
-      gpu_memmgr_stats_bin(NEVER_BIN),
       raster_state(IDLE_STATE),
+      picture_pile_analyzed(false),
+      gpu_memmgr_stats_bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
       time_to_needed_in_seconds(std::numeric_limits<float>::infinity()),
-      distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()),
-      picture_pile_analyzed(false) {
+      distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()) {
   for (int i = 0; i < NUM_TREES; ++i) {
     tree_bin[i] = NEVER_BIN;
     bin[i] = NEVER_BIN;

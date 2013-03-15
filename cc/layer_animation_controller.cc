@@ -17,8 +17,8 @@ namespace cc {
 
 LayerAnimationController::LayerAnimationController(int id)
     : force_sync_(false),
-      id_(id),
       registrar_(0),
+      id_(id),
       is_active_(false),
       last_tick_time_(0) {}
 
@@ -259,7 +259,6 @@ void LayerAnimationController::SetAnimationRegistrar(
   if (registrar_)
     registrar_->RegisterAnimationController(this);
 
-  bool force = true;
   UpdateActivation(ForceActivation);
 }
 

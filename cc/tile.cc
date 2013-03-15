@@ -22,8 +22,8 @@ Tile::Tile(TileManager* tile_manager,
     tile_size_(tile_size),
     format_(format),
     content_rect_(content_rect),
-    opaque_rect_(opaque_rect),
     contents_scale_(contents_scale),
+    opaque_rect_(opaque_rect),
     layer_id_(layer_id) {
   set_picture_pile(picture_pile);
   tile_manager_->RegisterTile(this);

@@ -26,9 +26,9 @@ template<typename T> T* TypedCopy(const cc::DrawQuad* other) {
 namespace cc {
 
 DrawQuad::DrawQuad()
-    : shared_quad_state(),
-      material(INVALID),
-      needs_blending(false) {
+    : material(INVALID),
+      needs_blending(false),
+      shared_quad_state() {
 }
 
 void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
