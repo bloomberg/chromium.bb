@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
@@ -578,6 +579,10 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   user_script_slave_->RemoveIsolatedWorld(id);
 
   v8_context_set_.OnExtensionUnloaded(id);
+
+  // Invalidates the messages map for the extension in case the extension is
+  // reloaded with a new messages map.
+  EraseL10nMessagesMap(id);
 
   // We don't do anything with existing platform-app stylesheets. They will
   // stay resident, but the URL pattern corresponding to the unloaded

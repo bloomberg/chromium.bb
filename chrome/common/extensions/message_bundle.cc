@@ -341,4 +341,8 @@ L10nMessagesMap* GetL10nMessagesMap(const std::string& extension_id) {
   return NULL;
 }
 
+void EraseL10nMessagesMap(const std::string& extension_id) {
+  g_extension_to_messages_map.Get().messages_map.erase(extension_id);
+}
+
 }  // namespace extensions

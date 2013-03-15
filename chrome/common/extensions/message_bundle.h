@@ -165,6 +165,9 @@ ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap();
 // Returns message map that matches given extension_id, or NULL.
 L10nMessagesMap* GetL10nMessagesMap(const std::string& extension_id);
 
+// Erases the L10nMessagesMap for the given |extension_id|.
+void EraseL10nMessagesMap(const std::string& extension_id);
+
 }  // namsepace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_MESSAGE_BUNDLE_H_
