@@ -48,12 +48,7 @@ ClientSession::ClientSession(
       connection_(connection.Pass()),
       connection_factory_(connection_.get()),
       client_jid_(connection_->session()->jid()),
-      // TODO(alexeypa): delay creation of |desktop_environment_| until
-      // the curtain is enabled.
-      desktop_environment_(desktop_environment_factory->Create(
-          client_jid_,
-          base::Bind(&protocol::ConnectionToClient::Disconnect,
-                     connection_factory_.GetWeakPtr()))),
+      desktop_environment_factory_(desktop_environment_factory),
       input_tracker_(&host_input_filter_),
       remote_input_filter_(&input_tracker_),
       mouse_clamping_filter_(&remote_input_filter_),
@@ -161,11 +156,17 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK(!session_controller_);
   DCHECK(!video_scheduler_);
 
+  scoped_ptr<DesktopEnvironment> desktop_environment =
+      desktop_environment_factory_->Create(
+          client_jid_,
+          base::Bind(&protocol::ConnectionToClient::Disconnect,
+                     connection_factory_.GetWeakPtr()));
+
   // Create the session controller.
-  session_controller_ = desktop_environment_->CreateSessionController();
+  session_controller_ = desktop_environment->CreateSessionController();
 
   // Create and start the event executor.
-  event_executor_ = desktop_environment_->CreateEventExecutor(
+  event_executor_ = desktop_environment->CreateEventExecutor(
       input_task_runner_, ui_task_runner_);
   event_executor_->Start(CreateClipboardProxy());
 
@@ -184,8 +185,8 @@ void ClientSession::OnConnectionChannelsConnected(
       video_capture_task_runner_,
       video_encode_task_runner_,
       network_task_runner_,
-      desktop_environment_->CreateVideoCapturer(video_capture_task_runner_,
-                                                video_encode_task_runner_),
+      desktop_environment->CreateVideoCapturer(video_capture_task_runner_,
+                                               video_encode_task_runner_),
       video_encoder.Pass(),
       connection_->client_stub(),
       &mouse_clamping_filter_);
@@ -197,7 +198,7 @@ void ClientSession::OnConnectionChannelsConnected(
     audio_scheduler_ = AudioScheduler::Create(
         audio_task_runner_,
         network_task_runner_,
-        desktop_environment_->CreateAudioCapturer(audio_task_runner_),
+        desktop_environment->CreateAudioCapturer(audio_task_runner_),
         audio_encoder.Pass(),
         connection_->audio_stub());
   }

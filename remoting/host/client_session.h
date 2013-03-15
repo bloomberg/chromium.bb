@@ -81,8 +81,7 @@ class ClientSession
     virtual ~EventHandler() {}
   };
 
-  // |event_handler| must outlive |this|. |desktop_environment_factory| is only
-  // used by the constructor to create an instance of DesktopEnvironment.
+  // |event_handler| and |desktop_environment_factory| must outlive |this|.
   ClientSession(
       EventHandler* event_handler,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
@@ -162,8 +161,8 @@ class ClientSession
 
   std::string client_jid_;
 
-  // The desktop environment used by this session.
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
+  // Used to create a DesktopEnvironment instance for this session.
+  DesktopEnvironmentFactory* desktop_environment_factory_;
 
   // Filter used as the final element in the input pipeline.
   protocol::InputFilter host_input_filter_;
