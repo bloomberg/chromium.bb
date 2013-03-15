@@ -25,7 +25,6 @@
 #include "base/time.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test_utils.h"
@@ -57,6 +56,9 @@ base::ProcessHandle LaunchChrome(const std::wstring& url,
 // Since the caller might be running in either MTA or STA, the function does
 // not perform this initialization itself.
 int CloseAllIEWindows();
+
+// Saves a screen snapshot to the desktop and logs its location.
+bool TakeSnapshotAndLog();
 
 extern const wchar_t kIEImageName[];
 extern const wchar_t kIEBrokerImageName[];
@@ -246,21 +248,7 @@ class TimedMsgLoop {
 
  private:
   static void SnapshotAndQuit() {
-    base::FilePath snapshot;
-    if (ui_test_utils::SaveScreenSnapshotToDesktop(&snapshot)) {
-      testing::UnitTest* unit_test = testing::UnitTest::GetInstance();
-      const testing::TestInfo* test_info = unit_test->current_test_info();
-      std::string name;
-      if (test_info != NULL) {
-        name.append(test_info->test_case_name())
-            .append(1, '.')
-            .append(test_info->name());
-      } else {
-        name = "unknown test";
-      }
-      LOG(ERROR) << name << " timed out. Screen snapshot saved to "
-                 << snapshot.value();
-    }
+    TakeSnapshotAndLog();
     MessageLoop::current()->Quit();
   }
 

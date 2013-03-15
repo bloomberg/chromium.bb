@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome_frame/utils.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -237,6 +238,29 @@ base::ProcessHandle LaunchIE(const std::wstring& url) {
     return LaunchIEOnVista(url);
   }
   return LaunchExecutable(kIEImageName, url);
+}
+
+bool TakeSnapshotAndLog() {
+  testing::UnitTest* unit_test = testing::UnitTest::GetInstance();
+  const testing::TestInfo* test_info = unit_test->current_test_info();
+  std::string name;
+  if (test_info != NULL) {
+    name.append(test_info->test_case_name())
+        .append(1, '.')
+        .append(test_info->name());
+  } else {
+    name = "unknown test";
+  }
+
+  base::FilePath snapshot;
+  if (!ui_test_utils::SaveScreenSnapshotToDesktop(&snapshot)) {
+    LOG(ERROR) << "Failed saving screen snapshot for " << name;
+    return false;
+  }
+
+  LOG(ERROR) << "Saved screen snapshot for " << name << " to "
+             << snapshot.value();
+  return true;
 }
 
 int CloseAllIEWindows() {

@@ -17,7 +17,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome_frame/test/chrome_frame_ui_test_utils.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 #include "chrome_frame/test/simulate_input.h"
@@ -389,6 +389,7 @@ ACTION_P3(CloseWhenFileSaved, mock, file, timeout_ms) {
   while (!file_util::PathExists(file)) {
     if ((base::Time::Now() - start).InMilliseconds() > timeout_ms) {
       ADD_FAILURE() << "File was not saved within timeout";
+      TakeSnapshotAndLog();
       break;
     }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
@@ -402,6 +403,7 @@ ACTION_P2(WaitForFileSave, file, timeout_ms) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
     if ((base::Time::Now() - start).InMilliseconds() > timeout_ms) {
       ADD_FAILURE() << "File was not saved within timeout";
+      TakeSnapshotAndLog();
       break;
     }
   }
