@@ -252,6 +252,7 @@ void OAuth2LoginManager::OnOAuthLoginFailure() {
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_OAUTHLOGIN_FAILED,
                             SESSION_RESTORE_COUNT);
+  delegate_->OnCompletedMergeSession();
 }
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {
