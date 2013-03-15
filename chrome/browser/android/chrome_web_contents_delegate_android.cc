@@ -33,9 +33,6 @@
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #endif
 
-using base::android::AttachCurrentThread;
-using base::android::GetClass;
-using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 using content::FileChooserParams;
 using content::NavigationController;
@@ -43,28 +40,6 @@ using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
-
-// Convenience method to create Android rects.
-// RectType should be either gfx::Rect or gfx::RectF.
-template <typename RectType>
-ScopedJavaLocalRef<jobject> CreateAndroidRect(
-    JNIEnv* env,
-    const ScopedJavaLocalRef<jclass>& clazz,
-    const jmethodID& constructor,
-    const RectType& rect) {
-
-  ScopedJavaLocalRef<jobject> rect_object(
-      env,
-      env->NewObject(clazz.obj(),
-                     constructor,
-                     rect.x(),
-                     rect.y(),
-                     rect.right(),
-                     rect.bottom()));
-
-  DCHECK(!rect_object.is_null());
-  return rect_object;
-}
 
 NavigationEntry* GetActiveEntry(WebContents* web_contents) {
   return web_contents->GetController().GetActiveEntry();
@@ -80,6 +55,29 @@ bool IsActiveNavigationGoogleSearch(WebContents* web_contents) {
   GURL search_url = GoogleURLTracker::GoogleURL(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   return StartsWithASCII(entry->GetURL().spec(), search_url.spec(), false);
+}
+
+ScopedJavaLocalRef<jobject> CreateJavaRectF(
+    JNIEnv* env,
+    const gfx::RectF& rect) {
+  return ScopedJavaLocalRef<jobject>(
+      Java_ChromeWebContentsDelegateAndroid_createRectF(env,
+                                                        rect.x(),
+                                                        rect.y(),
+                                                        rect.right(),
+                                                        rect.bottom()));
+}
+
+ScopedJavaLocalRef<jobject> CreateJavaRect(
+    JNIEnv* env,
+    const gfx::Rect& rect) {
+  return ScopedJavaLocalRef<jobject>(
+      Java_ChromeWebContentsDelegateAndroid_createRect(
+          env,
+          static_cast<int>(rect.x()),
+          static_cast<int>(rect.y()),
+          static_cast<int>(rect.right()),
+          static_cast<int>(rect.bottom())));
 }
 
 }  // anonymous namespace
@@ -163,37 +161,22 @@ void ChromeWebContentsDelegateAndroid::FindReply(
 void ChromeWebContentsDelegateAndroid::OnFindResultAvailable(
     WebContents* web_contents,
     const FindNotificationDetails* find_result) {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
 
-  // Create the selection rect.
-  ScopedJavaLocalRef<jclass> rect_clazz =
-      GetClass(env, "android/graphics/Rect");
-
-  jmethodID rect_constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, rect_clazz.obj(), "<init>", "(IIII)V");
-
-  ScopedJavaLocalRef<jobject> selection_rect = CreateAndroidRect(
-      env, rect_clazz, rect_constructor, find_result->selection_rect());
+  ScopedJavaLocalRef<jobject> selection_rect = CreateJavaRect(
+      env, find_result->selection_rect());
 
   // Create the details object.
-  ScopedJavaLocalRef<jclass> details_clazz =
-      GetClass(env, "org/chromium/chrome/browser/FindNotificationDetails");
-
-  jmethodID details_constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, details_clazz.obj(), "<init>", "(ILandroid/graphics/Rect;IZ)V");
-
-  ScopedJavaLocalRef<jobject> details_object(
-      env,
-      env->NewObject(details_clazz.obj(),
-                     details_constructor,
-                     find_result->number_of_matches(),
-                     selection_rect.obj(),
-                     find_result->active_match_ordinal(),
-                     find_result->final_update()));
-  DCHECK(!details_object.is_null());
+  ScopedJavaLocalRef<jobject> details_object =
+      Java_ChromeWebContentsDelegateAndroid_createFindNotificationDetails(
+          env,
+          find_result->number_of_matches(),
+          selection_rect.obj(),
+          find_result->active_match_ordinal(),
+          find_result->final_update());
 
   Java_ChromeWebContentsDelegateAndroid_onFindResultAvailable(
       env,
@@ -212,49 +195,27 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
       content::Source<WebContents>(web_contents),
       content::Details<FindMatchRectsDetails>(&match_rects));
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
 
-  // Create the rects.
-  ScopedJavaLocalRef<jclass> rect_clazz =
-      GetClass(env, "android/graphics/RectF");
-
-  jmethodID rect_constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, rect_clazz.obj(), "<init>", "(FFFF)V");
-
-  ScopedJavaLocalRef<jobjectArray> jrects(env, env->NewObjectArray(
-      match_rects.rects().size(), rect_clazz.obj(), NULL));
-
-  for (size_t i = 0; i < match_rects.rects().size(); ++i) {
-    env->SetObjectArrayElement(
-        jrects.obj(), i,
-        CreateAndroidRect(env,
-                          rect_clazz,
-                          rect_constructor,
-                          match_rects.rects()[i]).obj());
-  }
-
-  ScopedJavaLocalRef<jobject> jactive_rect = CreateAndroidRect(
-      env, rect_clazz, rect_constructor, match_rects.active_rect());
-
   // Create the details object.
-  ScopedJavaLocalRef<jclass> details_clazz =
-      GetClass(env, "org/chromium/chrome/browser/FindMatchRectsDetails");
+  ScopedJavaLocalRef<jobject> details_object =
+      Java_ChromeWebContentsDelegateAndroid_createFindMatchRectsDetails(
+          env,
+          match_rects.version(),
+          match_rects.rects().size(),
+          CreateJavaRectF(env, match_rects.active_rect()).obj());
 
-  jmethodID details_constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, details_clazz.obj(), "<init>",
-      "(I[Landroid/graphics/RectF;Landroid/graphics/RectF;)V");
-
-  ScopedJavaLocalRef<jobject> details_object(
-      env,
-      env->NewObject(details_clazz.obj(),
-                     details_constructor,
-                     match_rects.version(),
-                     jrects.obj(),
-                     jactive_rect.obj()));
-  DCHECK(!details_object.is_null());
+  // Add the rects
+  for (size_t i = 0; i < match_rects.rects().size(); ++i) {
+      Java_ChromeWebContentsDelegateAndroid_setMatchRectByIndex(
+          env,
+          details_object.obj(),
+          i,
+          CreateJavaRectF(env, match_rects.rects()[i]).obj());
+  }
 
   Java_ChromeWebContentsDelegateAndroid_onFindMatchRectsAvailable(
       env,

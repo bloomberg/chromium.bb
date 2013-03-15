@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser;
 
+import android.graphics.Rect;
+import android.graphics.RectF;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 
@@ -21,5 +24,36 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
 
     @CalledByNative
     public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
+    }
+
+    // Helper functions used to create types that are part of the public interface
+    @CalledByNative
+    private static Rect createRect(int x, int y, int right, int bottom) {
+        return new Rect(x, y, right, bottom);
+    }
+
+    @CalledByNative
+    private static RectF createRectF(float x, float y, float right, float bottom) {
+        return new RectF(x, y, right, bottom);
+    }
+
+    @CalledByNative
+    private static FindNotificationDetails createFindNotificationDetails(
+            int numberOfMatches, Rect rendererSelectionRect,
+            int activeMatchOrdinal, boolean finalUpdate) {
+        return new FindNotificationDetails(numberOfMatches, rendererSelectionRect,
+                activeMatchOrdinal, finalUpdate);
+    }
+
+    @CalledByNative
+    private static FindMatchRectsDetails createFindMatchRectsDetails(
+            int version, int numRects, RectF activeRect) {
+        return new FindMatchRectsDetails(version, new RectF[numRects], activeRect);
+    }
+
+    @CalledByNative
+    private static void setMatchRectByIndex(
+            FindMatchRectsDetails findMatchRectsDetails, int index, RectF rect) {
+        findMatchRectsDetails.rects[index] = rect;
     }
 }
