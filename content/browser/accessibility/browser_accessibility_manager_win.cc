@@ -116,6 +116,9 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case AccessibilityNotificationObjectShow:
       event_id = EVENT_OBJECT_SHOW;
       break;
+    case AccessibilityNotificationScrolledToAnchor:
+      event_id = EVENT_SYSTEM_SCROLLINGSTART;
+      break;
     case AccessibilityNotificationSelectedChildrenChanged:
       event_id = EVENT_OBJECT_SELECTIONWITHIN;
       break;
