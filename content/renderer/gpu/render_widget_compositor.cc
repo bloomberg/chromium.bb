@@ -128,7 +128,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.useCheapnessEstimator =
       cmd->HasSwitch(cc::switches::kUseCheapnessEstimator);
   settings.useColorEstimator =
-      cmd->HasSwitch(cc::switches::kUseColorEstimator);
+      !cmd->HasSwitch(cc::switches::kDisableColorEstimator);
   settings.predictionBenchmarking =
       cmd->HasSwitch(cc::switches::kEnablePredictionBenchmarking);
 
