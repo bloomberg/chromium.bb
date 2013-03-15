@@ -91,6 +91,7 @@ class MediaPlayerAPI : public ProfileKeyedAPI {
   static const char* service_name() {
     return "MediaPlayerAPI";
   }
+  static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
   scoped_ptr<MediaPlayerEventRouter> media_player_event_router_;
