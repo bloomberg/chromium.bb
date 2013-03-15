@@ -116,6 +116,10 @@ void TestSuite::PreInitialize(int argc, char** argv,
     at_exit_manager_.reset(new base::AtExitManager);
 #endif
 
+#if defined(OS_IOS)
+  InitIOSRunHook(this, argc, argv);
+#endif
+
   // Don't add additional code to this function.  Instead add it to
   // Initialize().  See bug 6436.
 }
@@ -141,6 +145,10 @@ void TestSuite::ResetCommandLine() {
 // Don't add additional code to this method.  Instead add it to
 // Initialize().  See bug 6436.
 int TestSuite::Run() {
+#if defined(OS_IOS)
+  RunTestsFromIOSApp();
+#endif
+
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool scoped_pool;
 #endif

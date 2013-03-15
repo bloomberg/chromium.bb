@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/metrics/statistics_recorder.h"
-#include "base/test/main_hook.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/base/net_test_suite.h"
@@ -24,8 +23,6 @@ using net::internal::ClientSocketPoolBaseHelper;
 using net::SpdySession;
 
 int main(int argc, char** argv) {
-  MainHook hook(main, argc, argv);
-
   // Record histograms, so we can get histograms data in tests.
   base::StatisticsRecorder::Initialize();
 
