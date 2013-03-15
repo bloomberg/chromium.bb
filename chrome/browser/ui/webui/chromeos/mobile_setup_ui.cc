@@ -240,29 +240,22 @@ void MobileSetupUIHTMLSource::StartDataRequest(
 
   LOG(WARNING) << "Starting mobile setup for " << path;
   DictionaryValue strings;
-  // The webui differs based on whether the network is activated or not. If the
-  // network is activated, the webui goes straight to portal. Otherwise the
-  // webui is used for activation flow.
-  if (network->activated()) {
-    strings.SetString("portal_unreachable_header",
-        l10n_util::GetStringUTF16(IDS_MOBILE_NO_CONNECTION_HEADER));
-  } else {
-    strings.SetString("connecting_header",
-                      l10n_util::GetStringFUTF16(IDS_MOBILE_CONNECTING_HEADER,
-                          network ? UTF8ToUTF16(network->name()) : string16()));
-    strings.SetString("error_header",
-                      l10n_util::GetStringUTF16(IDS_MOBILE_ERROR_HEADER));
-    strings.SetString("activating_header",
-                      l10n_util::GetStringUTF16(IDS_MOBILE_ACTIVATING_HEADER));
-    strings.SetString("completed_header",
-                      l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_HEADER));
-    strings.SetString("please_wait",
-                      l10n_util::GetStringUTF16(IDS_MOBILE_PLEASE_WAIT));
-    strings.SetString("completed_text",
-                      l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_TEXT));
-  }
 
-  // Strings shared between both webui versions.
+  strings.SetString("connecting_header",
+                    l10n_util::GetStringFUTF16(IDS_MOBILE_CONNECTING_HEADER,
+                        network ? UTF8ToUTF16(network->name()) : string16()));
+  strings.SetString("error_header",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_ERROR_HEADER));
+  strings.SetString("activating_header",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_ACTIVATING_HEADER));
+  strings.SetString("completed_header",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_HEADER));
+  strings.SetString("please_wait",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_PLEASE_WAIT));
+  strings.SetString("completed_text",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_TEXT));
+  strings.SetString("portal_unreachable_header",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_NO_CONNECTION_HEADER));
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
   strings.SetString("close_button",
                     l10n_util::GetStringUTF16(IDS_CLOSE));
@@ -272,6 +265,9 @@ void MobileSetupUIHTMLSource::StartDataRequest(
                     l10n_util::GetStringUTF16(IDS_OK));
   webui::SetFontAndTextDirection(&strings);
 
+  // The webui differs based on whether the network is activated or not. If the
+  // network is activated, the webui goes straight to portal. Otherwise the
+  // webui is used for activation flow.
   int html_page = network->activated() ? IDR_MOBILE_SETUP_PORTAL_PAGE_HTML :
                                          IDR_MOBILE_SETUP_PAGE_HTML;
   static const base::StringPiece html(
@@ -405,17 +401,24 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
   // If this is the initial call, update the network status and start observing
   // network changes, but only for LTE networks. The other networks should
   // ignore network status.
-  if (type_ == TYPE_UNDETERMINED &&
-      (network->network_technology() == chromeos::NETWORK_TECHNOLOGY_LTE ||
-       network->network_technology() ==
-           chromeos::NETWORK_TECHNOLOGY_LTE_ADVANCED)) {
-    type_ = TYPE_PORTAL_LTE;
-    network_lib->AddNetworkManagerObserver(this);
-    // Update the network status and notify the webui. This is the initial
-    // network state so the webui should be notified no matter what.
-    UpdatePortalReachability(network_lib, network, true /*force notification*/);
-  } else {
-    type_ = TYPE_PORTAL;
+  if (type_ == TYPE_UNDETERMINED) {
+    if (network->network_technology() == chromeos::NETWORK_TECHNOLOGY_LTE ||
+        network->network_technology() ==
+            chromeos::NETWORK_TECHNOLOGY_LTE_ADVANCED) {
+      type_ = TYPE_PORTAL_LTE;
+      network_lib->AddNetworkManagerObserver(this);
+      // Update the network status and notify the webui. This is the initial
+      // network state so the webui should be notified no matter what.
+      UpdatePortalReachability(network_lib,
+                               network,
+                               true /*force notification*/);
+    } else {
+      type_ = TYPE_PORTAL;
+      // For non-LTE networks network state is ignored, so report the portal is
+      // reachable, so it gets shown.
+      web_ui()->CallJavascriptFunction(kJsConnectivityChangedCallback,
+                                       base::FundamentalValue(true));
+    }
   }
 
   DictionaryValue device_info;
@@ -468,6 +471,8 @@ void MobileSetupHandler::GetDeviceInfo(CellularNetwork* network,
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (!cros)
     return;
+  value->SetBoolean("activate_over_non_cellular_network",
+                    network->activate_over_non_cellular_network());
   value->SetString("carrier", network->name());
   value->SetString("payment_url", network->payment_url());
   if (network->using_post() && network->post_data().length())

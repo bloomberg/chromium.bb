@@ -189,9 +189,25 @@ void MobileActivator::TerminateActivation() {
 }
 
 void MobileActivator::OnNetworkManagerChanged(NetworkLibrary* cros) {
-  if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
+  if (state_ == PLAN_ACTIVATION_PAGE_LOADING ||
+      state_ == PLAN_ACTIVATION_DONE ||
+      state_ == PLAN_ACTIVATION_ERROR) {
     return;
-  EvaluateCellularNetwork(FindMatchingCellularNetwork(true));
+  }
+
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
+  if (network && network->activate_over_non_cellular_network()) {
+    bool waiting = (state_ == PLAN_ACTIVATION_WAITING_FOR_CONNECTION);
+    bool is_online =
+        cros->connected_network() && cros->connected_network()->online();
+    if (waiting && is_online) {
+      ChangeState(network, post_reconnect_state_, "");
+    } else if (!waiting && !is_online) {
+      ChangeState(network, PLAN_ACTIVATION_WAITING_FOR_CONNECTION, "");
+    }
+  }
+
+  EvaluateCellularNetwork(network);
 }
 
 void MobileActivator::OnNetworkChanged(NetworkLibrary* cros,
@@ -238,6 +254,9 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
   meid_ = device->meid();
   iccid_ = device->iccid();
   service_path_ = service_path;
+
+  ChangeState(network, PLAN_ACTIVATION_PAGE_LOADING, "");
+
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&CellularConfigDocument::LoadCellularConfigFile,
                  cellular_config_.get()),
@@ -278,7 +297,6 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
     if (network && network->activate_over_non_cellular_network()) {
       state_ = PLAN_ACTIVATION_DONE;
       network->CompleteActivation();
-      EvaluateCellularNetwork(network);
     } else {
       StartOTASP();
     }
@@ -306,6 +324,11 @@ void MobileActivator::HandlePortalLoaded(bool success) {
       payment_reconnect_count_ = 0;
       ChangeState(network, PLAN_ACTIVATION_SHOWING_PAYMENT, std::string());
     } else {
+      // There is no point in forcing reconnecting the cellular network if the
+      // activation should not be done over it.
+      if (network->activate_over_non_cellular_network())
+        return;
+
       payment_reconnect_count_++;
       if (payment_reconnect_count_ > kMaxPortalReconnectCount) {
         ChangeState(NULL, PLAN_ACTIVATION_ERROR,
@@ -382,9 +405,14 @@ void MobileActivator::StartActivation() {
                 PLAN_ACTIVATION_DONE :
                 PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
                 "");
-  } else if (lib->HasRecentCellularPlanPayment() &&
-             network->activation_state() ==
-                 ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
+    // Verify that there is no need to wait for the connection. This will also
+    // evaluate the network.
+    OnNetworkManagerChanged(lib);
+    return;
+  }
+
+  if (lib->HasRecentCellularPlanPayment() &&
+      network->activation_state() == ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
     // Try to start with OTASP immediately if we have received payment recently.
     state_ = PLAN_ACTIVATION_START_OTASP;
   } else {
@@ -518,6 +546,11 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
       << "\n  error=" << network->GetErrorString()
       << "\n  setvice_path=" << network->service_path()
       << "\n  connected=" << network->connected();
+
+  // If the network is activated over non cellular network, the activator state
+  // does not depend on the network's own state.
+  if (network->activate_over_non_cellular_network())
+    return;
 
   std::string error_description;
   PlanActivationState new_state = PickNextState(network, &error_description);
@@ -689,6 +722,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
     // Just ignore all signals until the site confirms payment.
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
+    case PLAN_ACTIVATION_WAITING_FOR_CONNECTION:
       break;
     // Go where we decided earlier.
     case PLAN_ACTIVATION_RECONNECTING:
@@ -732,6 +766,8 @@ const char* MobileActivator::GetStateDescription(PlanActivationState state) {
       return "ERROR";
     case PLAN_ACTIVATION_RECONNECTING:
       return "RECONNECTING";
+    case PLAN_ACTIVATION_WAITING_FOR_CONNECTION:
+      return "WAITING FOR CONNECTION";
   }
   return "UNKNOWN";
 }
@@ -819,6 +855,9 @@ void MobileActivator::ChangeState(CellularNetwork* network,
     case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
       // Fix for fix SSL for the walled gardens where cert chain verification
       // might not work.
+      break;
+    case PLAN_ACTIVATION_WAITING_FOR_CONNECTION:
+      post_reconnect_state_ = old_state;
       break;
     case PLAN_ACTIVATION_RECONNECTING: {
       PlanActivationState next_state = old_state;
