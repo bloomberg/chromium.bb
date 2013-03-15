@@ -44,7 +44,7 @@ int32_t WriteEntireBuffer(PP_Instance instance,
     callback.WaitForResult(file_io->Write(write_offset,
                                           &buf[write_offset - offset],
                                           size - write_offset + offset,
-                                          callback));
+                                          callback.GetCallback()));
     if (callback.result() < 0)
       return callback.result();
     if (callback.result() == 0)
@@ -128,7 +128,8 @@ std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
   int64_t offset = 0;
 
   for (;;) {
-    callback.WaitForResult(file_io->Read(offset, buf, sizeof(buf), callback));
+    callback.WaitForResult(file_io->Read(offset, buf, sizeof(buf),
+                           callback.GetCallback()));
     if (callback.result() < 0)
       return ReportError("FileIO::Read", callback.result());
     if (callback.result() == 0)
@@ -147,7 +148,7 @@ std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader* loader,
 
   for (;;) {
     callback.WaitForResult(
-        loader->ReadResponseBody(buf, sizeof(buf), callback));
+        loader->ReadResponseBody(buf, sizeof(buf), callback.GetCallback()));
     if (callback.result() < 0)
       return ReportError("URLLoader::ReadResponseBody", callback.result());
     if (callback.result() == 0)
@@ -164,7 +165,7 @@ std::string TestURLLoader::LoadAndCompareBody(
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
 
   pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback));
+  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -191,7 +192,7 @@ std::string TestURLLoader::LoadAndCompareBody(
 int32_t TestURLLoader::OpenFileSystem(pp::FileSystem* file_system,
                                       std::string* message) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(file_system->Open(1024, callback));
+  callback.WaitForResult(file_system->Open(1024, callback.GetCallback()));
   if (callback.failed()) {
     message->assign(callback.errors());
     return callback.result();
@@ -213,7 +214,7 @@ int32_t TestURLLoader::PrepareFileForPost(
                                       PP_FILEOPENFLAG_CREATE |
                                       PP_FILEOPENFLAG_TRUNCATE |
                                       PP_FILEOPENFLAG_WRITE,
-                                      callback));
+                                      callback.GetCallback()));
   if (callback.failed()) {
     message->assign(callback.errors());
     return callback.result();
@@ -297,7 +298,7 @@ int32_t TestURLLoader::Open(const pp::URLRequestInfo& request,
   if (trusted)
     url_loader_trusted_interface_->GrantUniversalAccess(loader.pp_resource());
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(loader.Open(request, callback));
+  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
   return callback.result();
 }
 
@@ -421,7 +422,7 @@ std::string TestURLLoader::TestStreamToFile() {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
 
   pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback));
+  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -436,12 +437,13 @@ std::string TestURLLoader::TestStreamToFile() {
   if (body.is_null())
     return "URLResponseInfo::GetBody returned null";
 
-  callback.WaitForResult(loader.FinishStreamingToFile(callback));
+  callback.WaitForResult(loader.FinishStreamingToFile(callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
   pp::FileIO reader(instance_);
-  callback.WaitForResult(reader.Open(body, PP_FILEOPENFLAG_READ, callback));
+  callback.WaitForResult(reader.Open(body, PP_FILEOPENFLAG_READ,
+                                     callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -697,7 +699,7 @@ std::string TestURLLoader::TestAuditURLRedirect() {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
 
   pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback));
+  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -711,7 +713,7 @@ std::string TestURLLoader::TestAuditURLRedirect() {
     return "Response status should be 301";
 
   // Test that the paused loader can be resumed.
-  callback.WaitForResult(loader.FollowRedirect(callback));
+  callback.WaitForResult(loader.FollowRedirect(callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
   std::string body;
@@ -734,7 +736,7 @@ std::string TestURLLoader::TestAbortCalls() {
 
   // Abort |Open()|.
   {
-    rv = pp::URLLoader(instance_).Open(request, callback);
+    rv = pp::URLLoader(instance_).Open(request, callback.GetCallback());
   }
   callback.WaitForAbortResult(rv);
   CHECK_CALLBACK_BEHAVIOR(callback);
@@ -744,11 +746,11 @@ std::string TestURLLoader::TestAbortCalls() {
     char buf[2] = { 0 };
     {
       pp::URLLoader loader(instance_);
-      callback.WaitForResult(loader.Open(request, callback));
+      callback.WaitForResult(loader.Open(request, callback.GetCallback()));
       CHECK_CALLBACK_BEHAVIOR(callback);
       ASSERT_EQ(PP_OK, callback.result());
 
-      rv = loader.ReadResponseBody(buf, sizeof(buf), callback);
+      rv = loader.ReadResponseBody(buf, sizeof(buf), callback.GetCallback());
     }  // Destroy |loader|.
     callback.WaitForAbortResult(rv);
     CHECK_CALLBACK_BEHAVIOR(callback);
@@ -773,7 +775,7 @@ std::string TestURLLoader::TestUntendedLoad() {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
 
   pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback));
+  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -793,7 +795,7 @@ std::string TestURLLoader::TestUntendedLoad() {
     //                 with GetForMainThread. We only need to yield on the main
     //                 thread.
     if (callback_type() != PP_BLOCKING) {
-      pp::Module::Get()->core()->CallOnMainThread(10, callback);
+      pp::Module::Get()->core()->CallOnMainThread(10, callback.GetCallback());
       callback.WaitForResult();
     }
   }

@@ -1113,7 +1113,8 @@ std::string TestWebSocket::TestCcInterfaces() {
   TestCompletionCallback connect_callback(
       instance_->pp_instance(), callback_type());
   connect_callback.WaitForResult(ws.Connect(
-      pp::Var(GetFullURL(kCloseServerURL)), NULL, 0U, connect_callback));
+      pp::Var(GetFullURL(kCloseServerURL)), NULL, 0U,
+              connect_callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(connect_callback);
   ASSERT_EQ(PP_OK, connect_callback.result());
 
@@ -1132,7 +1133,8 @@ std::string TestWebSocket::TestCcInterfaces() {
   TestCompletionCallback text_receive_callback(
       instance_->pp_instance(), callback_type());
   text_receive_callback.WaitForResult(
-      ws.ReceiveMessage(&text_receive_var, text_receive_callback));
+      ws.ReceiveMessage(&text_receive_var,
+                        text_receive_callback.GetCallback()));
   ASSERT_EQ(PP_OK, text_receive_callback.result());
   ASSERT_TRUE(
       AreEqualWithString(text_receive_var.pp_var(), text_message.c_str()));
@@ -1141,7 +1143,8 @@ std::string TestWebSocket::TestCcInterfaces() {
   TestCompletionCallback binary_receive_callback(
       instance_->pp_instance(), callback_type());
   binary_receive_callback.WaitForResult(
-      ws.ReceiveMessage(&binary_receive_var, binary_receive_callback));
+      ws.ReceiveMessage(&binary_receive_var,
+                        binary_receive_callback.GetCallback()));
   ASSERT_EQ(PP_OK, binary_receive_callback.result());
   ASSERT_TRUE(AreEqualWithBinary(binary_receive_var.pp_var(), binary));
 
@@ -1149,7 +1152,8 @@ std::string TestWebSocket::TestCcInterfaces() {
       instance_->pp_instance(), callback_type());
   std::string reason("bye");
   close_callback.WaitForResult(ws.Close(
-      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason), close_callback));
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason),
+      close_callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(close_callback);
   ASSERT_EQ(PP_OK, close_callback.result());
 

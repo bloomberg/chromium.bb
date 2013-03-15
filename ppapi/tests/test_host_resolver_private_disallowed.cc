@@ -42,7 +42,8 @@ std::string TestHostResolverPrivateDisallowed::TestResolve() {
   hint.family = PP_NETADDRESSFAMILY_UNSPECIFIED;
   hint.flags = PP_HOST_RESOLVER_FLAGS_CANONNAME;
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = host_resolver.Resolve(host_, port_, hint, callback);
+  int32_t rv = host_resolver.Resolve(host_, port_, hint,
+                                     callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_HostResolver_Private::Resolve force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)

@@ -27,15 +27,15 @@ std::string TestFileSystem::TestOpen() {
 
   // Open.
   pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  callback.WaitForResult(file_system.Open(1024, callback));
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
   // Open aborted (see the DirectoryReader test for comments).
   int32_t rv = 0;
   {
-    rv = pp::FileSystem(instance_,
-                        PP_FILESYSTEMTYPE_LOCALTEMPORARY).Open(1024, callback);
+    pp::FileSystem fs(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+    rv = fs.Open(1024, callback.GetCallback());
   }
   callback.WaitForAbortResult(rv);
   CHECK_CALLBACK_BEHAVIOR(callback);
@@ -48,10 +48,10 @@ std::string TestFileSystem::TestMultipleOpens() {
   // open has completed.
   TestCompletionCallback callback_1(instance_->pp_instance(), force_async_);
   pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  int32_t rv_1 = file_system.Open(1024, callback_1);
+  int32_t rv_1 = file_system.Open(1024, callback_1.GetCallback());
 
   TestCompletionCallback callback_2(instance_->pp_instance(), force_async_);
-  callback_2.WaitForResult(file_system.Open(1024, callback_2));
+  callback_2.WaitForResult(file_system.Open(1024, callback_2.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback_2);
   // FileSystem should not allow multiple opens.
   ASSERT_NE(PP_OK, callback_2.result());
@@ -61,7 +61,7 @@ std::string TestFileSystem::TestMultipleOpens() {
   ASSERT_EQ(PP_OK, callback_1.result());
 
   TestCompletionCallback callback_3(instance_->pp_instance(), force_async_);
-  callback_3.WaitForResult(file_system.Open(1024, callback_3));
+  callback_3.WaitForResult(file_system.Open(1024, callback_3.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback_3);
   ASSERT_NE(PP_OK, callback_3.result());
 

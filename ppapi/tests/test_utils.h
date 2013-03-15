@@ -133,9 +133,6 @@ class TestCompletionCallback {
   // Retrieve a pp::CompletionCallback for use in testing. This Reset()s the
   // TestCompletionCallback.
   pp::CompletionCallback GetCallback();
-  operator pp::CompletionCallback() {
-    return GetCallback();
-  }
 
   // TODO(dmichael): Remove run_count when all tests are updated. Most cases
   //                 that use this can simply use CHECK_CALLBACK_BEHAVIOR.

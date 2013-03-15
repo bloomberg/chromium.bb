@@ -96,7 +96,7 @@ bool TestGraphics2D::IsDCUniformColor(const pp::Graphics2D& dc,
 bool TestGraphics2D::ResourceHealthCheck(pp::Instance* instance,
                                          pp::Graphics2D* context) {
   TestCompletionCallback callback(instance->pp_instance(), callback_type());
-  callback.WaitForResult(context->Flush(callback));
+  callback.WaitForResult(context->Flush(callback.GetCallback()));
   if (callback.result() < 0)
     return callback.result() != PP_ERROR_FAILED;
   else if (callback.result() == 0)

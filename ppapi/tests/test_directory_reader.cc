@@ -66,14 +66,14 @@ int32_t TestDirectoryReader::DeleteDirectoryRecursively(pp::FileRef* dir) {
       if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
         return rv;
     } else {
-      rv = file_ref.Delete(callback);
+      rv = file_ref.Delete(callback.GetCallback());
       if (rv == PP_OK_COMPLETIONPENDING)
         rv = callback.WaitForResult();
       if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
         return rv;
     }
   }
-  rv = dir->Delete(callback);
+  rv = dir->Delete(callback.GetCallback());
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   return rv;
@@ -83,7 +83,7 @@ std::string TestDirectoryReader::TestReadEntries() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   pp::FileSystem file_system(
       instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  int32_t rv = file_system.Open(1024, callback);
+  int32_t rv = file_system.Open(1024, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("FileSystem::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -101,7 +101,7 @@ std::string TestDirectoryReader::TestReadEntries() {
   if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
     return ReportError("DeleteDirectoryRecursively", rv);
 
-  rv = test_dir.MakeDirectory(callback);
+  rv = test_dir.MakeDirectory(callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("FileRef::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -116,7 +116,7 @@ std::string TestDirectoryReader::TestReadEntries() {
     pp::FileRef file_ref(file_system, buffer);
 
     pp::FileIO file_io(instance_);
-    rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
+    rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("FileIO::Open force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
@@ -133,7 +133,7 @@ std::string TestDirectoryReader::TestReadEntries() {
     sprintf(buffer, "%s/%s%d", test_dir_name, dir_prefix, i);
     pp::FileRef file_ref(file_system, buffer);
 
-    rv = file_ref.MakeDirectory(callback);
+    rv = file_ref.MakeDirectory(callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("FileRef::MakeDirectory force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)

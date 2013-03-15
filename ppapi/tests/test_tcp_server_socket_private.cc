@@ -68,7 +68,7 @@ std::string TestTCPServerSocketPrivate::GetLocalAddress(
     PP_NetAddress_Private* address) {
   TCPSocketPrivate socket(instance_);
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket.Connect(host_.c_str(), port_, callback);
+  int32_t rv = socket.Connect(host_.c_str(), port_, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_TCPSocket_Private::Connect force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -86,7 +86,7 @@ std::string TestTCPServerSocketPrivate::SyncRead(TCPSocketPrivate* socket,
                                                  size_t num_bytes) {
   while (num_bytes > 0) {
     TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = socket->Read(buffer, num_bytes, callback);
+    int32_t rv = socket->Read(buffer, num_bytes, callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("PPB_TCPSocket_Private::Read force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
@@ -104,7 +104,7 @@ std::string TestTCPServerSocketPrivate::SyncWrite(TCPSocketPrivate* socket,
                                                   size_t num_bytes) {
   while (num_bytes > 0) {
     TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = socket->Write(buffer, num_bytes, callback);
+    int32_t rv = socket->Write(buffer, num_bytes, callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("PPB_TCPSocket_Private::Write force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
@@ -121,7 +121,7 @@ std::string TestTCPServerSocketPrivate::SyncConnect(
     TCPSocketPrivate* socket,
     PP_NetAddress_Private* address) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->ConnectWithNetAddress(address, callback);
+  int32_t rv = socket->ConnectWithNetAddress(address, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_TCPSocket_Private::Connect force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -154,7 +154,7 @@ std::string TestTCPServerSocketPrivate::SyncListen(
       return ReportError("PPB_NetAddress_Private::ReplacePort", 0);
 
     TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = socket->Listen(address, backlog, callback);
+    int32_t rv = socket->Listen(address, backlog, callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("PPB_TCPServerSocket_Private::Listen force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
@@ -181,7 +181,8 @@ std::string TestTCPServerSocketPrivate::TestListen() {
   TestCompletionCallback accept_callback(instance_->pp_instance(),
                                          force_async_);
   PP_Resource resource;
-  int32_t accept_rv = server_socket.Accept(&resource, accept_callback);
+  int32_t accept_rv = server_socket.Accept(&resource,
+                                           accept_callback.GetCallback());
 
   TCPSocketPrivate client_socket(instance_);
   ForceConnect(&client_socket, &address);
@@ -233,7 +234,7 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
                                                       force_async_);
     connect_rv[i] = client_sockets[i]->ConnectWithNetAddress(
         &address,
-        *connect_callbacks[i]);
+        connect_callbacks[i]->GetCallback());
     if (force_async_ && connect_rv[i] != PP_OK_COMPLETIONPENDING) {
       return ReportError("PPB_TCPSocket_Private::Connect force_async",
                          connect_rv[i]);
@@ -244,7 +245,7 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
   std::vector<TCPSocketPrivate*> accepted_sockets(kBacklog);
   for (size_t i = 0; i < kBacklog; ++i) {
     TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = server_socket.Accept(&resources[i], callback);
+    int32_t rv = server_socket.Accept(&resources[i], callback.GetCallback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("PPB_TCPServerSocket_Private::Accept force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)

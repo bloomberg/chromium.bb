@@ -215,8 +215,7 @@ std::string TestAudio::TestAudioCallback1() {
   // |AudioCallbackTest()| calls |test_callback_|, sleeps a bit, then sets
   // |test_done_|.
   TestCompletionCallback test_callback(instance_->pp_instance());
-  test_callback_ = static_cast<pp::CompletionCallback>(
-      test_callback).pp_completion_callback();
+  test_callback_ = test_callback.GetCallback().pp_completion_callback();
   test_done_ = false;
   callback_fired_ = false;
 
@@ -262,8 +261,7 @@ std::string TestAudio::TestAudioCallback2() {
   // |AudioCallbackTest()| calls |test_callback_|, sleeps a bit, then sets
   // |test_done_|.
   TestCompletionCallback test_callback(instance_->pp_instance());
-  test_callback_ = static_cast<pp::CompletionCallback>(
-      test_callback).pp_completion_callback();
+  test_callback_ = test_callback.GetCallback().pp_completion_callback();
   test_done_ = false;
   callback_fired_ = false;
 
@@ -308,8 +306,7 @@ std::string TestAudio::TestAudioCallback3() {
   // |AudioCallbackTest()| calls |test_callback_|, sleeps a bit, then sets
   // |test_done_|.
   TestCompletionCallback test_callback_1(instance_->pp_instance());
-  test_callback_ = static_cast<pp::CompletionCallback>(
-      test_callback_1).pp_completion_callback();
+  test_callback_ = test_callback_1.GetCallback().pp_completion_callback();
   test_done_ = false;
   callback_fired_ = false;
 
@@ -326,8 +323,7 @@ std::string TestAudio::TestAudioCallback3() {
   ASSERT_TRUE(callback_fired_);
 
   TestCompletionCallback test_callback_2(instance_->pp_instance());
-  test_callback_ = static_cast<pp::CompletionCallback>(
-      test_callback_2).pp_completion_callback();
+  test_callback_ = test_callback_2.GetCallback().pp_completion_callback();
 
   // Repeat one more |StartPlayback| & |StopPlayback| cycle, and verify again
   // that the callback function was invoked.

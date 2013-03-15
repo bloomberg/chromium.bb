@@ -74,8 +74,7 @@ std::string TestTCPServerSocketPrivateDisallowed::TestListen() {
         socket,
         &current_address,
         1,
-        static_cast<pp::CompletionCallback>(
-            callback).pp_completion_callback());
+        callback.GetCallback().pp_completion_callback());
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("PPB_TCPServerSocket_Private::Listen force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)

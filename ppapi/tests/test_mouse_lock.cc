@@ -41,7 +41,7 @@ std::string TestMouseLock::TestSucceedWhenAllowed() {
   // Please see chrome/test/ppapi/ppapi_interactive_browsertest.cc.
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   SimulateUserGesture();
-  callback.WaitForResult(LockMouse(callback));
+  callback.WaitForResult(LockMouse(callback.GetCallback()));
   ASSERT_EQ(PP_OK, callback.result());
 
   UnlockMouse();
@@ -56,7 +56,7 @@ std::string TestMouseLock::TestFailWhenBlocked() {
   // Please see chrome/test/ppapi/ppapi_interactive_browsertest.cc.
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   SimulateUserGesture();
-  callback.WaitForResult(LockMouse(callback));
+  callback.WaitForResult(LockMouse(callback.GetCallback()));
   ASSERT_NE(PP_OK, callback.result());
 
   PASS();

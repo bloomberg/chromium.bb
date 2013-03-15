@@ -64,7 +64,7 @@ std::string TestUDPSocketPrivate::GetLocalAddress(
     PP_NetAddress_Private* address) {
   pp::TCPSocketPrivate socket(instance_);
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket.Connect(host_.c_str(), port_, callback);
+  int32_t rv = socket.Connect(host_.c_str(), port_, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_TCPSocket_Private::Connect force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -95,7 +95,7 @@ std::string TestUDPSocketPrivate::BindUDPSocket(
     pp::UDPSocketPrivate* socket,
     PP_NetAddress_Private* address) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->Bind(address, callback);
+  int32_t rv = socket->Bind(address, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_UDPSocket_Private::Bind force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -131,7 +131,7 @@ std::string TestUDPSocketPrivate::BindUDPSocketFailure(
     pp::UDPSocketPrivate* socket,
     PP_NetAddress_Private *address) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->Bind(address, callback);
+  int32_t rv = socket->Bind(address, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_UDPSocket_Private::Bind force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -149,7 +149,7 @@ std::string TestUDPSocketPrivate::ReadSocket(pp::UDPSocketPrivate* socket,
                                              std::string* message) {
   std::vector<char> buffer(size);
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->RecvFrom(&buffer[0], size, callback);
+  int32_t rv = socket->RecvFrom(&buffer[0], size, callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_UDPSocket_Private::RecvFrom force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
@@ -166,7 +166,7 @@ std::string TestUDPSocketPrivate::PassMessage(pp::UDPSocketPrivate* target,
                                               const std::string& message) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   int32_t rv = source->SendTo(message.c_str(), message.size(), address,
-                              callback);
+                              callback.GetCallback());
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("PPB_UDPSocket_Private::SendTo force_async", rv);
 

@@ -42,13 +42,13 @@ std::string TestTCPSocketPrivateTrusted::TestGetServerCertificate() {
   pp::TCPSocketPrivate socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), force_async_);
 
-  int32_t rv = socket.Connect(host_.c_str(), ssl_port_, cb);
+  int32_t rv = socket.Connect(host_.c_str(), ssl_port_, cb.GetCallback());
   ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = cb.WaitForResult();
   ASSERT_EQ(PP_OK, rv);
 
-  rv = socket.SSLHandshake(host_.c_str(), ssl_port_, cb);
+  rv = socket.SSLHandshake(host_.c_str(), ssl_port_, cb.GetCallback());
   ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = cb.WaitForResult();

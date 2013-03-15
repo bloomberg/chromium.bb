@@ -41,7 +41,7 @@ std::string TestTCPSocketPrivateDisallowed::TestConnect() {
     TestCompletionCallback callback(instance_->pp_instance());
     int32_t rv = tcp_socket_private_interface_->Connect(
         socket, kServerName, kPort,
-        static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+        callback.GetCallback().pp_completion_callback());
 
     if (PP_OK_COMPLETIONPENDING == rv)
       rv = callback.WaitForResult();
