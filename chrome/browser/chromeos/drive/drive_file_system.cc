@@ -62,29 +62,6 @@ void RunGetFileCallbackHelper(const GetFileCallback& callback,
   callback.Run(error, *file_path, mime_type, file_type);
 }
 
-// The class to wait for the initial load of root feed and runs the callback
-// after the initialization.
-class InitialLoadObserver : public DriveFileSystemObserver {
- public:
-  InitialLoadObserver(DriveFileSystemInterface* file_system,
-                      const FileOperationCallback& callback)
-      : file_system_(file_system), callback_(callback) {
-    DCHECK(!callback.is_null());
-    file_system_->AddObserver(this);
-  }
-
-  virtual void OnInitialLoadFinished(DriveFileError error) OVERRIDE {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(callback_, error));
-    file_system_->RemoveObserver(this);
-    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
-  }
-
- private:
-  DriveFileSystemInterface* const file_system_;
-  const FileOperationCallback callback_;
-};
-
 // The class to wait for the drive service to be ready to start operation.
 class OperationReadinessObserver : public google_apis::DriveServiceObserver {
  public:
@@ -440,11 +417,10 @@ void DriveFileSystem::LoadIfNeeded(
   }
 
   if (change_list_loader_->refreshing()) {
-    // If root feed is not loaded but the initialization process has
-    // already started, add an observer to execute the remaining task after
-    // the end of the initialization.
-    // The observer deletes itself after OnInitialLoadFinished() gets called.
-    new InitialLoadObserver(this, callback);
+    // If the change list loading is in progress, schedule the callback to
+    // run when it's ready (i.e. when the entire resource list is loaded, or
+    // the directory contents are available per "fast fetch").
+    change_list_loader_->ScheduleRun(directory_fetch_info, callback);
     return;
   }
 

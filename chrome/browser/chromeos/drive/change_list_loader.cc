@@ -324,8 +324,7 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
     }
 
     // No changes detected, tell the client that the loading was successful.
-    refreshing_ = false;
-    callback.Run(DRIVE_FILE_OK);
+    OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
     return;
   }
 
@@ -494,8 +493,7 @@ void ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer(
   DCHECK(refreshing_);
 
   if (error != DRIVE_FILE_OK) {
-    refreshing_ = false;
-    params.callback.Run(error);
+    OnChangeListLoadComplete(params.callback, error);
     return;
   }
 
@@ -655,8 +653,7 @@ void ChangeListLoader::LoadAfterLoadFromCache(
   if (error == DRIVE_FILE_OK) {
     // The loading from the cache file succeeded. Change the refreshing state
     // and tell the callback that the loading was successful.
-    refreshing_ = false;
-    callback.Run(DRIVE_FILE_OK);
+    OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
 
     // Load from server if needed (i.e. the cache is old). Note that we
     // should still propagate |directory_fetch_info| though the directory is
@@ -768,9 +765,19 @@ void ChangeListLoader::UpdateFromFeed(
                  update_finished_callback));
 }
 
+void ChangeListLoader::ScheduleRun(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  queue_.push(std::make_pair(directory_fetch_info, callback));
+}
+
 void ChangeListLoader::NotifyDirectoryChanged(
     bool should_notify_changed_directories,
     const base::Closure& update_finished_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(change_list_processor_.get());
   DCHECK(!update_finished_callback.is_null());
 
@@ -791,20 +798,44 @@ void ChangeListLoader::NotifyDirectoryChanged(
 }
 
 void ChangeListLoader::OnUpdateFromFeed(
-    const FileOperationCallback& load_finished_callback) {
-  DCHECK(!load_finished_callback.is_null());
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  refreshing_ = false;
+  OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
 
   // Save file system metadata to disk.
   SaveFileSystem();
 
-  // Run the callback now that the filesystem is ready.
-  load_finished_callback.Run(DRIVE_FILE_OK);
-
   FOR_EACH_OBSERVER(ChangeListLoaderObserver,
                     observers_,
                     OnFeedFromServerLoaded());
+}
+
+void ChangeListLoader::OnChangeListLoadComplete(
+    const FileOperationCallback& callback,
+    DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  refreshing_ = false;
+  callback.Run(error);
+
+  FlushQueue(error);
+}
+
+void ChangeListLoader::FlushQueue(DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!refreshing_);
+
+  while (!queue_.empty()) {
+    QueuedCallbackInfo info  = queue_.front();
+    const FileOperationCallback& callback = info.second;
+    queue_.pop();
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, error));
+  }
 }
 
 }  // namespace drive

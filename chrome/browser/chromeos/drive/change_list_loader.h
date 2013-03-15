@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
 
+#include <queue>
 #include <string>
+#include <utility>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
@@ -119,6 +121,14 @@ class ChangeListLoader {
                       int64 root_feed_changestamp,
                       const base::Closure& update_finished_callback);
 
+  // Schedules |callback| to run when it's ready (i.e. the change list
+  // loading is complete or the directory specified by |directory_fetch_info|
+  // is loaded). |directory_fetch_info| can be empty if the callback is not
+  // interested in a particular directory.
+  // |callback| must not be null.
+  void ScheduleRun(const DirectoryFetchInfo& directory_fetch_info,
+                   const FileOperationCallback& callback);
+
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing() const { return refreshing_; }
 
@@ -226,6 +236,15 @@ class ChangeListLoader {
   // Callback for UpdateFromFeed.
   void OnUpdateFromFeed(const FileOperationCallback& load_finished_callback);
 
+  // This function should be called when the change list load is complete.
+  // Runs |callback| with |error|, and flushes the queue.
+  void OnChangeListLoadComplete(const FileOperationCallback& callback,
+                                DriveFileError error);
+
+  // Flushes the queue by running all the callbacks scheduled via
+  // ScheduleRun(), with the given error code.
+  void FlushQueue(DriveFileError error);
+
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
@@ -233,6 +252,9 @@ class ChangeListLoader {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ObserverList<ChangeListLoaderObserver> observers_;
   scoped_ptr<ChangeListProcessor> change_list_processor_;
+  typedef std::pair<DirectoryFetchInfo,
+                    FileOperationCallback> QueuedCallbackInfo;
+  std::queue<QueuedCallbackInfo> queue_;
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing_;
