@@ -830,11 +830,20 @@ void ChromeActiveDocument::UpdateNavigationState(
            title.AsInput(), NULL);
   }
 
-  // It is important that we only update the navigation_info_ after we have
-  // finalized the travel log. This is because IE will ask for information
-  // such as navigation index when the travel log is finalized and we need
-  // supply the old index and not the new one.
-  *navigation_info_ = new_navigation_info;
+  // There are cases in which we receive NavigationStateChanged events for
+  // provisional loads. These events will contain a new URL but will not be
+  // considered new navigations since their navigation_index is 0. For these
+  // events, do not update the navigation_info_ state, as this will muck up the
+  // travel log when the subsequent committed navigation event takes place.
+  if (IsNewNavigation(new_navigation_info, flags) ||
+      new_navigation_info.url == navigation_info_->url) {
+    // It is important that we only update the navigation_info_ after we have
+    // finalized the travel log. This is because IE will ask for information
+    // such as navigation index when the travel log is finalized and we need
+    // supply the old index and not the new one.
+    *navigation_info_ = new_navigation_info;
+  }
+
   // Update the IE zone here. Ideally we would like to do it when the active
   // document is activated. However that does not work at times as the frame we
   // get there is not the actual frame which handles the command.
