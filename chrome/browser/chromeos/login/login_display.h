@@ -67,6 +67,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Sign in into the public account identified by |username|.
     virtual void LoginAsPublicAccount(const std::string& username) = 0;
 
+    // Notify the delegate when the sign-in UI is finished loading.
+    virtual void OnSigninScreenReady() = 0;
+
     // Called when existing user pod is selected in the UI.
     virtual void OnUserSelected(const std::string& username) = 0;
 
@@ -78,6 +81,9 @@ class LoginDisplay : public RemoveUserDelegate {
 
     // Shows wrong HWID screen.
     virtual void ShowWrongHWIDScreen() = 0;
+
+    // Restarts the public-session auto-login timer if it is running.
+    virtual void ResetPublicSessionAutoLoginTimer() = 0;
 
     // Ignore password change, remove existing cryptohome and
     // force full sync of user data.

@@ -227,6 +227,9 @@ void WebUIScreenLocker::LoginAsPublicAccount(const std::string& username) {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::OnSigninScreenReady() {
+}
+
 void WebUIScreenLocker::OnUserSelected(const std::string& username) {
 }
 
@@ -240,6 +243,9 @@ void WebUIScreenLocker::OnStartDeviceReset() {
 
 void WebUIScreenLocker::ShowWrongHWIDScreen() {
   NOTREACHED();
+}
+
+void WebUIScreenLocker::ResetPublicSessionAutoLoginTimer() {
 }
 
 void WebUIScreenLocker::ResyncUserData() {

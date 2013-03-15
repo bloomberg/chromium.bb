@@ -150,7 +150,7 @@ void DeviceLocalAccountPolicyStore::Validate(
   DCHECK_NE(chromeos::DeviceSettingsService::OWNERSHIP_UNKNOWN,
             ownership_status);
   chromeos::OwnerKey* key = device_settings_service_->GetOwnerKey();
-  if (!key->public_key()) {
+  if (!key || !key->public_key()) {
     status_ = CloudPolicyStore::STATUS_BAD_STATE;
     NotifyStoreLoaded();
     return;

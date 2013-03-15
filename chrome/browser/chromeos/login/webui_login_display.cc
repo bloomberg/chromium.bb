@@ -278,6 +278,11 @@ void WebUILoginDisplay::LoadSigninWallpaper() {
   WallpaperManager::Get()->SetDefaultWallpaper();
 }
 
+void WebUILoginDisplay::OnSigninScreenReady() {
+  if (delegate_)
+    delegate_->OnSigninScreenReady();
+}
+
 void WebUILoginDisplay::RemoveUser(const std::string& username) {
   UserManager::Get()->RemoveUser(username, this);
 }
@@ -344,6 +349,8 @@ void WebUILoginDisplay::OnUserActivity() {
   if (!password_clear_timer_.IsRunning())
     StartPasswordClearTimer();
   password_clear_timer_.Reset();
+  if (delegate_)
+    delegate_->ResetPublicSessionAutoLoginTimer();
 }
 
 void WebUILoginDisplay::StartPasswordClearTimer() {

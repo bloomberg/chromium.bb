@@ -39,6 +39,10 @@ UserFlow* MockUserManager::GetUserFlow(const std::string&) const {
   return user_flow_.get();
 }
 
+User* MockUserManager::CreatePublicAccountUser(const std::string& email) {
+  return User::CreatePublicAccountUser(email);
+}
+
 ScopedMockUserManagerEnabler::ScopedMockUserManagerEnabler() {
   user_manager_.reset(new MockUserManager());
   old_user_manager_ = UserManager::Set(user_manager_.get());

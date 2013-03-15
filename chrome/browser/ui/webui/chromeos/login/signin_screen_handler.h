@@ -106,6 +106,9 @@ class SigninScreenHandlerDelegate {
   // Loads the default sign-in wallpaper.
   virtual void LoadSigninWallpaper() = 0;
 
+  // Notify the delegate when the sign-in UI is finished loading.
+  virtual void OnSigninScreenReady() = 0;
+
   // Attempts to remove given user.
   virtual void RemoveUser(const std::string& username) = 0;
 
