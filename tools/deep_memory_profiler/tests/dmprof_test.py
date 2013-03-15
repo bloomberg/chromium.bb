@@ -172,6 +172,18 @@ class PolicyTest(unittest.TestCase):
     self.assertEqual('malloc-catch-all', policy.find(bucket3))
 
 
+class UploadCommandTest(unittest.TestCase):
+  def test(self):
+    command = dmprof.UploadCommand()
+    returncode = command.do([
+        'upload',
+         '--gsutil',
+        os.path.join(ROOT_DIR, 'tests', 'mock_gsutil.py'),
+        os.path.join(ROOT_DIR, 'tests', 'data', 'heap.01234.0001.heap'),
+        'gs://test-storage/'])
+    self.assertEqual(0, returncode)
+
+
 if __name__ == '__main__':
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
