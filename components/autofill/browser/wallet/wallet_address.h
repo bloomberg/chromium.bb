@@ -83,6 +83,10 @@ class Address {
   // the user.
   string16 DisplayName() const;
 
+  // Returns a string that could be used as a sub-label, suitable for display
+  // to the user together with DisplayName().
+  string16 DisplayNameDetail() const;
+
   // Returns data appropriate for |type|.
   string16 GetInfo(AutofillFieldType type) const;
 

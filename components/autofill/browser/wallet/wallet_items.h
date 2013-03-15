@@ -77,6 +77,11 @@ class WalletItems {
     // Gets an image to display for this instrument.
     const gfx::Image& CardIcon() const;
 
+    // Returns a pair of strings that summarizes this CC,
+    // suitable for display to the user.
+    string16 DisplayName() const;
+    string16 DisplayNameDetail() const;
+
     const string16& descriptive_name() const { return descriptive_name_; }
     const Type& type() const { return type_; }
     const std::vector<string16>& supported_currencies() const {

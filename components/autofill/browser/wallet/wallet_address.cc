@@ -214,8 +214,22 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
 }
 
 string16 Address::DisplayName() const {
-  // TODO(estade): improve this stub implementation.
+#if defined(OS_ANDROID)
+  // TODO(aruslan): improve this stub implementation.
+  return recipient_name();
+#else
+  // TODO(estade): improve this stub implementation + l10n.
   return recipient_name() + ASCIIToUTF16(", ") + address_line_1();
+#endif
+}
+
+string16 Address::DisplayNameDetail() const {
+#if defined(OS_ANDROID)
+  // TODO(aruslan): improve this stub implementation.
+  return address_line_1();
+#else
+  return string16();
+#endif
 }
 
 string16 Address::GetInfo(AutofillFieldType type) const {

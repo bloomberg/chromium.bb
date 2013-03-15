@@ -1276,17 +1276,20 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
           wallet_items_->addresses();
       for (size_t i = 0; i < addresses.size(); ++i) {
         // TODO(dbeam): respect wallet_items_->default_instrument_id().
-        suggested_shipping_.AddKeyedItem(base::IntToString(i),
-                                         addresses[i]->DisplayName());
+        suggested_shipping_.AddKeyedItemWithSublabel(
+            base::IntToString(i),
+            addresses[i]->DisplayName(),
+            addresses[i]->DisplayNameDetail());
       }
 
       const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
           wallet_items_->instruments();
       for (size_t i = 0; i < instruments.size(); ++i) {
         // TODO(dbeam): respect wallet_items_->default_address_id().
-        suggested_cc_billing_.AddKeyedItemWithIcon(
+        suggested_cc_billing_.AddKeyedItemWithSublabelAndIcon(
             base::IntToString(i),
-            instruments[i]->descriptive_name(),
+            instruments[i]->DisplayName(),
+            instruments[i]->DisplayNameDetail(),
             instruments[i]->CardIcon());
       }
     }

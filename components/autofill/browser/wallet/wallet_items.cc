@@ -206,6 +206,24 @@ bool WalletItems::HasRequiredAction(RequiredAction action) const {
                    action) != required_actions_.end();
 }
 
+string16 WalletItems::MaskedInstrument::DisplayName() const {
+#if defined(OS_ANDROID)
+  // TODO(aruslan): improve this stub implementation.
+  return descriptive_name();
+#else
+  return descriptive_name();
+#endif
+}
+
+string16 WalletItems::MaskedInstrument::DisplayNameDetail() const {
+#if defined(OS_ANDROID)
+  // TODO(aruslan): improve this stub implementation.
+  return address().DisplayName();
+#else
+  return string16();
+#endif
+}
+
 const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {
   int idr = 0;
   switch (type_) {

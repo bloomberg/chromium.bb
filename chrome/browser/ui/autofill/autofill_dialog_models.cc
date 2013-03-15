@@ -43,6 +43,21 @@ void SuggestionsMenuModel::AddKeyedItemWithIcon(
   SetIcon(items_.size() - 1, icon);
 }
 
+void SuggestionsMenuModel::AddKeyedItemWithSublabel(
+    const std::string& key,
+    const string16& display_label, const string16& display_sublabel) {
+  AddKeyedItem(key, display_label);
+  SetSublabel(items_.size() - 1, display_sublabel);
+}
+
+void SuggestionsMenuModel::AddKeyedItemWithSublabelAndIcon(
+    const std::string& key,
+    const string16& display_label, const string16& display_sublabel,
+    const gfx::Image& icon) {
+  AddKeyedItemWithIcon(key, display_label, icon);
+  SetSublabel(items_.size() - 1, display_sublabel);
+}
+
 void SuggestionsMenuModel::Reset() {
   checked_item_ = 0;
   items_.clear();

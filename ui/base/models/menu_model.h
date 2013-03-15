@@ -58,15 +58,23 @@ class UI_EXPORT MenuModel {
   // Returns the label of the item at the specified index.
   virtual string16 GetLabelAt(int index) const = 0;
 
-  // Returns true if the menu item (label/icon) at the specified index can
-  // change over the course of the menu's lifetime. If this function returns
-  // true, the label and icon of the menu item will be updated each time the
-  // menu is shown.
+  // Returns the sublabel of the item at the specified index. The sublabel
+  // is rendered beneath the label and using the font GetSublabelFontAt().
+  virtual string16 GetSublabelAt(int index) const;
+
+  // Returns true if the menu item (label/sublabel/icon) at the specified
+  // index can change over the course of the menu's lifetime. If this function
+  // returns true, the label, sublabel and icon of the menu item will be
+  // updated each time the menu is shown.
   virtual bool IsItemDynamicAt(int index) const = 0;
 
-  // Returns the font use for the label at the specified index.
-  // If NULL, then use default font.
+  // Returns the font used for the label at the specified index.
+  // If NULL, then the default font should be used.
   virtual const gfx::Font* GetLabelFontAt(int index) const;
+
+  // Returns the font used for the sublabel at the specified index.
+  // If NULL, then the default font should be used.
+  virtual const gfx::Font* GetSublabelFontAt(int index) const;
 
   // Gets the acclerator information for the specified index, returning true if
   // there is a shortcut accelerator for the item, false otherwise.

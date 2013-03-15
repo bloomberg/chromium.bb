@@ -47,6 +47,19 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
                             const string16& display_label,
                             const gfx::Image& icon);
 
+  // Adds a label with a sublabel and its identifying key to the model.
+  // Keys needn't be unique.
+  void AddKeyedItemWithSublabel(const std::string& key,
+                                const string16& display_label,
+                                const string16& display_sublabel);
+
+  // As above, but also accepts an image which will be displayed alongside the
+  // text.
+  void AddKeyedItemWithSublabelAndIcon(const std::string& key,
+                                       const string16& display_label,
+                                       const string16& display_sublabel,
+                                       const gfx::Image& icon);
+
   // Resets the model to empty.
   void Reset();
 
