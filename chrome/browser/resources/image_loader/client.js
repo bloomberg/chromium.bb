@@ -54,6 +54,31 @@ ImageLoader.Client.getInstance = function() {
 };
 
 /**
+ * Records binary metrics. Counts for true and false are stored as a histogram.
+ * @param {string} name Histogram's name.
+ * @param {boolean} value True or false.
+ */
+ImageLoader.Client.recordBinary = function(name, value) {
+  chrome.metricsPrivate.recordValue(
+      { metricName: 'ImageLoader.Client.' + name,
+        type: 'histogram-linear',
+        min: 1,  // According to histogram.h, this should be 1 for enums.
+        max: 2,  // Maximum should be exclusive.
+        buckets: 3 },  // Number of buckets: 0, 1 and overflowing 2.
+      value ? 1 : 0);
+};
+
+/**
+ * Records percent metrics, stored as a histogram.
+ * @param {string} name Histogram's name.
+ * @param {number} value Value (0..100).
+ */
+ImageLoader.Client.recordPercentage = function(name, value) {
+  chrome.metricsPrivate.recordPercentage('ImageLoader.Client.' + name,
+                                         Math.round(value));
+};
+
+/**
  * Handles a message from the remote image loader and calls the registered
  * callback to pass the response back to the requester.
  *
@@ -93,6 +118,9 @@ ImageLoader.Client.prototype.load = function(
   opt_options = opt_options || {};
   opt_isValid = opt_isValid || function() { return true; };
 
+  // Record cache usage.
+  ImageLoader.Client.recordPercentage('Cache.Usage', this.cache_.getUsage());
+
   // Cancel old, invalid tasks.
   var taskKeys = Object.keys(this.tasks_);
   for (var index = 0; index < taskKeys.length; index++) {
@@ -116,13 +144,18 @@ ImageLoader.Client.prototype.load = function(
   var cacheKey = ImageLoader.Client.Cache.createKey(url, opt_options);
   if (opt_options.cache) {
     // Load from cache.
+    ImageLoader.Client.recordBinary('Cached', 1);
     var cachedData = this.cache_.loadImage(cacheKey, opt_options.timestamp);
     if (cachedData) {
+      ImageLoader.Client.recordBinary('Cache.HitMiss', 1);
       callback({ status: 'success', data: cachedData });
       return null;
+    } else {
+      ImageLoader.Client.recordBinary('Cache.HitMiss', 0);
     }
   } else {
     // Remove from cache.
+    ImageLoader.Client.recordBinary('Cached', 0);
     this.cache_.removeImage(cacheKey);
   }
 
@@ -155,13 +188,6 @@ ImageLoader.Client.prototype.cancel = function(taskId) {
   chrome.extension.sendMessage(
       ImageLoader.EXTENSION_ID,
       { taskId: taskId, cancel: true });
-};
-
-/**
- * Prints the cache usage statistics.
- */
-ImageLoader.Client.prototype.stat = function() {
-  this.cache_.stat();
 };
 
 /**
@@ -236,7 +262,13 @@ ImageLoader.Client.Cache.prototype.saveImage = function(
   if (this.images_[key])
     this.removeImage(key);
 
-  this.evictCache_(data.length);
+  if (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ < data.length) {
+    ImageLoader.Client.recordBinary('Evicted', 1);
+    this.evictCache_(data.length);
+  } else {
+    ImageLoader.Client.recordBinary('Evicted', 0);
+  }
+
   if (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
     this.images_[key] = { lastLoadTimestamp: Date.now(),
                           timestamp: opt_timestamp ? opt_timestamp : null,
@@ -271,12 +303,11 @@ ImageLoader.Client.Cache.prototype.loadImage = function(key, opt_timestamp) {
 };
 
 /**
- * Prints the cache usage stats.
+ * Returns cache usage.
+ * @return {number} Value in percent points (0..100).
  */
-ImageLoader.Client.Cache.prototype.stat = function() {
-  console.log('Cache entries: ' + Object.keys(this.images_).length);
-  console.log('Usage: ' + Math.round(this.size_ /
-              ImageLoader.Client.Cache.MEMORY_LIMIT * 100.0) + '%');
+ImageLoader.Client.Cache.prototype.getUsage = function() {
+  return this.size_ / ImageLoader.Client.Cache.MEMORY_LIMIT * 100.0;
 };
 
 /**
