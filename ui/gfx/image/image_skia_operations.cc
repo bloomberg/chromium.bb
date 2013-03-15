@@ -14,6 +14,8 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
@@ -23,6 +25,15 @@
 
 namespace gfx {
 namespace {
+
+gfx::Size DIPToPixelSize(gfx::Size dip_size, float scale) {
+  return ToCeiledSize(ScaleSize(dip_size, scale));
+}
+
+gfx::Rect DIPToPixelBounds(gfx::Rect dip_bounds, float scale) {
+  return gfx::Rect(ToFlooredPoint(ScalePoint(dip_bounds.origin(), scale)),
+                   DIPToPixelSize(dip_bounds.size(), scale));
+}
 
 // Returns an image rep for the ImageSkiaSource to return to visually indicate
 // an error.
@@ -216,10 +227,12 @@ class TiledImageSource : public gfx::ImageSkiaSource {
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep source_rep = source_.GetRepresentation(scale_factor);
     float scale = ui::GetScaleFactorScale(source_rep.scale_factor());
+    gfx::Rect bounds = DIPToPixelBounds(gfx::Rect(src_x_, src_y_, dst_w_,
+                                                  dst_h_), scale);
     return ImageSkiaRep(
         SkBitmapOperations::CreateTiledBitmap(
             source_rep.sk_bitmap(),
-            src_x_ * scale, src_y_ * scale, dst_w_ * scale, dst_h_ * scale),
+            bounds.x(), bounds.y(), bounds.width(), bounds.height()),
         source_rep.scale_factor());
   }
 
@@ -259,7 +272,8 @@ class HSLImageSource : public gfx::ImageSkiaSource {
 };
 
 // ImageSkiaSource which uses SkBitmapOperations::CreateButtonBackground
-// to generate image reps for the target image.
+// to generate image reps for the target image.  The image and mask can be
+// diferent sizes (crbug.com/171725).
 class ButtonImageSource: public gfx::ImageSkiaSource {
  public:
   ButtonImageSource(SkColor color,
@@ -312,8 +326,8 @@ class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
     float scale_to_pixel = ui::GetScaleFactorScale(image_rep.scale_factor());
-    SkIRect subset_bounds_in_pixel = RectToSkIRect(ToFlooredRectDeprecated(
-        gfx::ScaleRect(subset_bounds_, scale_to_pixel)));
+    SkIRect subset_bounds_in_pixel = RectToSkIRect(
+        DIPToPixelBounds(subset_bounds_, scale_to_pixel));
     SkBitmap dst;
     bool success = image_rep.sk_bitmap().extractSubset(&dst,
                                                        subset_bounds_in_pixel);
@@ -349,8 +363,7 @@ class ResizeSource : public ImageSkiaSource {
       return image_rep;
 
     const float scale = ui::GetScaleFactorScale(scale_factor);
-    const Size target_pixel_size = gfx::ToFlooredSize(
-        gfx::ScaleSize(target_dip_size_, scale));
+    const Size target_pixel_size = DIPToPixelSize(target_dip_size_, scale);
     const SkBitmap resized = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(),
         resize_method_,

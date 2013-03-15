@@ -28,7 +28,7 @@ Canvas::Canvas(const gfx::Size& size,
                bool is_opaque)
       : scale_factor_(scale_factor),
         canvas_(NULL) {
-  gfx::Size pixel_size = gfx::ToFlooredSize(
+  gfx::Size pixel_size = gfx::ToCeiledSize(
       gfx::ScaleSize(size, ui::GetScaleFactorScale(scale_factor)));
   owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
                                                             pixel_size.height(),
