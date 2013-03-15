@@ -22,9 +22,9 @@ SkColor GdkColorToSkColor(GdkColor color) {
 GdkColor SkColorToGdkColor(SkColor color) {
   GdkColor gdk_color = {
       0,
-      SkColorGetR(color) * kSkiaToGDKMultiplier,
-      SkColorGetG(color) * kSkiaToGDKMultiplier,
-      SkColorGetB(color) * kSkiaToGDKMultiplier
+      static_cast<guint16>(SkColorGetR(color) * kSkiaToGDKMultiplier),
+      static_cast<guint16>(SkColorGetG(color) * kSkiaToGDKMultiplier),
+      static_cast<guint16>(SkColorGetB(color) * kSkiaToGDKMultiplier)
   };
   return gdk_color;
 }
