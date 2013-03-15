@@ -7,6 +7,7 @@
 
 #include "base/time.h"
 #include "base/timer.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -16,7 +17,7 @@ class TapSuppressionControllerClient;
 // immediately following a GestureFlingCancel event (caused by the same tap).
 // Only taps of sufficient speed and within a specified time window after a
 // GestureFlingCancel are suppressed.
-class TapSuppressionController {
+class CONTENT_EXPORT TapSuppressionController {
  public:
   explicit TapSuppressionController(TapSuppressionControllerClient* client);
   virtual ~TapSuppressionController();
@@ -27,14 +28,12 @@ class TapSuppressionController {
   // Should be called whenever an ACK for a GestureFlingCancel event is
   // received. |processed| is true when the GestureFlingCancel actually stopped
   // a fling and therefore should suppress the forwarding of the following tap.
-  // |event_time| is the time ACK was received.
-  void GestureFlingCancelAck(bool processed, const base::TimeTicks& event_time);
+  void GestureFlingCancelAck(bool processed);
 
   // Should be called whenever a tap down (touchpad or touchscreen) is received.
   // Returns true if the tap down should be deferred. The caller is responsible
-  // for keeping the event for later release, if needed. |event_time| is the
-  // time tap down occured.
-  bool ShouldDeferTapDown(const base::TimeTicks& event_time);
+  // for keeping the event for later release, if needed.
+  bool ShouldDeferTapDown();
 
   // Should be called whenever a tap up (touchpad or touchscreen) is received.
   // Returns true if the tap up should be suppressed.
@@ -44,8 +43,14 @@ class TapSuppressionController {
   // cancel should be suppressed.
   bool ShouldSuppressTapCancel();
 
+ protected:
+  virtual base::TimeTicks Now();
+  virtual void StartTapDownTimer(const base::TimeDelta& delay);
+  virtual void StopTapDownTimer();
+  void TapDownTimerExpired();
+
  private:
-  friend class MockRenderWidgetHost;
+  friend class MockTapSuppressionController;
 
   enum State {
     NOTHING,
@@ -54,8 +59,6 @@ class TapSuppressionController {
     LAST_CANCEL_STOPPED_FLING,
   };
 
-  void StartTapDownTimer();
-  void TapDownTimerExpired();
 
   TapSuppressionControllerClient* client_;
   base::OneShotTimer<TapSuppressionController> tap_down_timer_;

@@ -30,9 +30,8 @@ void TapSuppressionController::GestureFlingCancel() {
   }
 }
 
-void TapSuppressionController::GestureFlingCancelAck(
-    bool processed,
-    const base::TimeTicks& event_time) {
+void TapSuppressionController::GestureFlingCancelAck(bool processed) {
+  base::TimeTicks event_time = Now();
   switch (state_) {
     case NOTHING:
       NOTREACHED() << "GFC_ACK without a GFC";
@@ -46,7 +45,7 @@ void TapSuppressionController::GestureFlingCancelAck(
       if (!processed) {
         TRACE_EVENT0("browser",
                      "TapSuppressionController::GestureFlingCancelAck");
-        tap_down_timer_.Stop();
+        StopTapDownTimer();
         client_->ForwardStashedTapDownForDeferral();
         state_ = NOTHING;
       }  // Else waiting for the timer to release the stashed tap down.
@@ -56,14 +55,15 @@ void TapSuppressionController::GestureFlingCancelAck(
   }
 }
 
-bool TapSuppressionController::ShouldDeferTapDown(
-    const base::TimeTicks& event_time) {
+bool TapSuppressionController::ShouldDeferTapDown() {
+  base::TimeTicks event_time = Now();
   switch (state_) {
     case NOTHING:
       return false;
     case GFC_IN_PROGRESS:
       state_ = TAP_DOWN_STASHED;
-      StartTapDownTimer();
+      StartTapDownTimer(
+          base::TimeDelta::FromMilliseconds(client_->MaxTapGapTimeInMs()));
       return true;
     case TAP_DOWN_STASHED:
       NOTREACHED() << "TapDown on TAP_DOWN_STASHED state";
@@ -73,7 +73,8 @@ bool TapSuppressionController::ShouldDeferTapDown(
       if ((event_time - fling_cancel_time_).InMilliseconds()
           < client_->MaxCancelToDownTimeInMs()) {
         state_ = TAP_DOWN_STASHED;
-        StartTapDownTimer();
+        StartTapDownTimer(
+            base::TimeDelta::FromMilliseconds(client_->MaxTapGapTimeInMs()));
         return true;
       } else {
         state_ = NOTHING;
@@ -91,7 +92,7 @@ bool TapSuppressionController::ShouldSuppressTapUp() {
       return false;
     case TAP_DOWN_STASHED:
       state_ = NOTHING;
-      tap_down_timer_.Stop();
+      StopTapDownTimer();
       client_->DropStashedTapDown();
       return true;
     case LAST_CANCEL_STOPPED_FLING:
@@ -107,7 +108,7 @@ bool TapSuppressionController::ShouldSuppressTapCancel() {
       return false;
     case TAP_DOWN_STASHED:
       state_ = NOTHING;
-      tap_down_timer_.Stop();
+      StopTapDownTimer();
       client_->DropStashedTapDown();
       return true;
     case LAST_CANCEL_STOPPED_FLING:
@@ -116,12 +117,17 @@ bool TapSuppressionController::ShouldSuppressTapCancel() {
   return false;
 }
 
-void TapSuppressionController::StartTapDownTimer() {
-  tap_down_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(client_->MaxTapGapTimeInMs()),
-      this,
-      &TapSuppressionController::TapDownTimerExpired);
+base::TimeTicks TapSuppressionController::Now() {
+  return base::TimeTicks::Now();
+}
+
+void TapSuppressionController::StartTapDownTimer(const base::TimeDelta& delay) {
+  tap_down_timer_.Start(FROM_HERE, delay, this,
+                        &TapSuppressionController::TapDownTimerExpired);
+}
+
+void TapSuppressionController::StopTapDownTimer() {
+  tap_down_timer_.Stop();
 }
 
 void TapSuppressionController::TapDownTimerExpired() {

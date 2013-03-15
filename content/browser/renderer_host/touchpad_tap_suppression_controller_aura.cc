@@ -24,12 +24,12 @@ void TouchpadTapSuppressionController::GestureFlingCancel() {
 }
 
 void TouchpadTapSuppressionController::GestureFlingCancelAck(bool processed) {
-  controller_->GestureFlingCancelAck(processed, base::TimeTicks::Now());
+  controller_->GestureFlingCancelAck(processed);
 }
 
 bool TouchpadTapSuppressionController::ShouldDeferMouseDown(
     const WebKit::WebMouseEvent& event) {
-  bool should_defer = controller_->ShouldDeferTapDown(base::TimeTicks::Now());
+  bool should_defer = controller_->ShouldDeferTapDown();
   if (should_defer)
     stashed_mouse_down_ = event;
   return should_defer;
