@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/script_badge_controller.h"
 #include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/script_executor.h"
-#include "chrome/browser/extensions/webstore_standalone_installer.h"
+#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -314,14 +314,11 @@ void TabHelper::OnInlineWebstoreInstall(
   WebstoreStandaloneInstaller::Callback callback =
       base::Bind(&TabHelper::OnInlineInstallComplete, base::Unretained(this),
                  install_id, return_route_id);
-  scoped_refptr<WebstoreStandaloneInstaller> installer(
-      new WebstoreStandaloneInstaller(
-          webstore_item_id,
-          WebstoreStandaloneInstaller::REQUIRE_VERIFIED_SITE,
-          WebstoreStandaloneInstaller::INLINE_PROMPT,
-          requestor_url,
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+  scoped_refptr<WebstoreInlineInstaller> installer(
+      new WebstoreInlineInstaller(
           web_contents(),
+          webstore_item_id,
+          requestor_url,
           callback));
   installer->BeginInstall();
 }

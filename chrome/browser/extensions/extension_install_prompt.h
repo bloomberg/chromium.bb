@@ -300,7 +300,7 @@ class ExtensionInstallPrompt
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
   friend class extensions::MockGetAuthTokenFunction;
-  friend class WebstoreStandaloneInstallUnpackFailureTest;
+  friend class WebstoreStartupInstallUnpackFailureTest;
 
   // Whether or not we should record the oauth2 grant upon successful install.
   bool record_oauth2_grant_;

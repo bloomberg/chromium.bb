@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/webstore_standalone_installer.h"
+#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,10 +11,10 @@ namespace extensions {
 // A macro, so that the IsRequestorURLInVerifiedSite calls are inside of the
 // the test, which is marked as a friend of WebstoreStandaloneInstaller.
 #define IsVerified(requestor_url, verified_site) \
-  WebstoreStandaloneInstaller::IsRequestorURLInVerifiedSite( \
+  WebstoreInlineInstaller::IsRequestorURLInVerifiedSite( \
       GURL(requestor_url), verified_site)
 
-TEST(WebstoreStandaloneInstallerTest, DomainVerification) {
+TEST(WebstoreInlineInstallerTest, DomainVerification) {
   // Exact domain match.
   EXPECT_TRUE(IsVerified("http://example.com", "example.com"));
 

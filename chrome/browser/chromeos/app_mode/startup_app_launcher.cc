@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/webstore_standalone_installer.h"
+#include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension.h"
@@ -19,7 +19,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
-using extensions::WebstoreStandaloneInstaller;
+using extensions::WebstoreStartupInstaller;
 
 namespace chromeos {
 
@@ -123,13 +123,10 @@ void StartupAppLauncher::Launch() {
 }
 
 void StartupAppLauncher::BeginInstall() {
-  installer_ = new WebstoreStandaloneInstaller(
+  installer_ = new WebstoreStartupInstaller(
       app_id_,
-      WebstoreStandaloneInstaller::DO_NOT_REQUIRE_VERIFIED_SITE,
-      WebstoreStandaloneInstaller::SKIP_PROMPT,
-      GURL(),
       profile_,
-      NULL,
+      false,
       base::Bind(&StartupAppLauncher::InstallCallback, AsWeakPtr()));
   installer_->BeginInstall();
 }

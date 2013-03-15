@@ -775,7 +775,7 @@
         'browser/extensions/updater/extension_updater_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',
-        'browser/extensions/webstore_standalone_installer_unittest.cc',
+        'browser/extensions/webstore_inline_installer_unittest.cc',
         'browser/external_protocol/external_protocol_handler_unittest.cc',
         'browser/favicon/favicon_handler_unittest.cc',
         'browser/file_select_helper_unittest.cc',

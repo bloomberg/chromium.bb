@@ -40,7 +40,7 @@ const char kAppDomain[] = "app.com";
 const char kNonAppDomain[] = "nonapp.com";
 const char kTestExtensionId[] = "ecglahbcnmdpdciemllbhojghbkagdje";
 
-class WebstoreStandaloneInstallTest : public InProcessBrowserTest {
+class WebstoreStartupInstallerTest : public InProcessBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // We start the test server now instead of in
@@ -113,7 +113,7 @@ class WebstoreStandaloneInstallTest : public InProcessBrowserTest {
   std::string test_gallery_url_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, Install) {
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Install) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, Install) {
   EXPECT_TRUE(extension);
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest,
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
     InstallNotAllowedFromNonVerifiedDomains) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
@@ -139,14 +139,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest,
   RunTest("runTest2");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, FindLink) {
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, FindLink) {
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "find_link.html"));
 
   RunTest("runTest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, ArgumentValidation) {
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, ArgumentValidation) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
 
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, ArgumentValidation) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, MultipleInstallCalls) {
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, MultipleInstallCalls) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
 
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, MultipleInstallCalls) {
   RunTest("runTest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, InstallNotSupported) {
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallNotSupported) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, InstallNotSupported) {
 }
 
 // Regression test for http://crbug.com/144991.
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, InstallFromHostedApp) {
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
@@ -229,11 +229,11 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, InstallFromHostedApp) {
 
 // The unpack failure test needs to use a different install .crx, which is
 // specified via a command-line flag, so it needs its own test subclass.
-class WebstoreStandaloneInstallUnpackFailureTest
-    : public WebstoreStandaloneInstallTest {
+class WebstoreStartupInstallUnpackFailureTest
+    : public WebstoreStartupInstallerTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    WebstoreStandaloneInstallTest::SetUpCommandLine(command_line);
+    WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
 
     GURL crx_url = GenerateTestServerUrl(
         kWebstoreDomain, "malformed_extension.crx");
@@ -242,13 +242,13 @@ class WebstoreStandaloneInstallUnpackFailureTest
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    WebstoreStandaloneInstallTest::SetUpInProcessBrowserTestFixture();
+    WebstoreStartupInstallerTest::SetUpInProcessBrowserTestFixture();
     ExtensionInstallUI::DisableFailureUIForTests();
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallUnpackFailureTest,
-    WebstoreStandaloneInstallUnpackFailureTest) {
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallUnpackFailureTest,
+    WebstoreStartupInstallUnpackFailureTest) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
@@ -258,14 +258,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallUnpackFailureTest,
   RunTest("runTest");
 }
 
-class CommandLineWebstoreInstall : public WebstoreStandaloneInstallTest,
+class CommandLineWebstoreInstall : public WebstoreStartupInstallerTest,
                                    public content::NotificationObserver {
  public:
   CommandLineWebstoreInstall() : saw_install_(false), browser_open_count_(0) {}
   virtual ~CommandLineWebstoreInstall() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    WebstoreStandaloneInstallTest::SetUpOnMainThread();
+    WebstoreStartupInstallerTest::SetUpOnMainThread();
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,

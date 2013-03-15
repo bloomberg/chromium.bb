@@ -1293,7 +1293,7 @@
         'browser/extensions/api/system_private/system_private_apitest.cc',
         'browser/extensions/web_contents_browsertest.cc',
         'browser/extensions/web_view_browsertest.cc',
-        'browser/extensions/webstore_standalone_install_browsertest.cc',
+        'browser/extensions/webstore_startup_installer_browsertest.cc',
         'browser/extensions/window_open_apitest.cc',
         'browser/external_extension_browsertest.cc',
         'browser/fast_shutdown_browsertest.cc',
