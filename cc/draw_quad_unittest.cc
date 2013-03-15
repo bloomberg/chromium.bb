@@ -488,15 +488,15 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
     gfx::Rect opaqueRect(3, 7, 10, 12);
     gfx::SizeF texScale(0.75, 0.5);
     VideoLayerImpl::FramePlane yPlane;
-    yPlane.resourceId = 45;
+    yPlane.resource_id = 45;
     yPlane.size = gfx::Size(34, 23);
     yPlane.format = 8;
     VideoLayerImpl::FramePlane uPlane;
-    uPlane.resourceId = 532;
+    uPlane.resource_id = 532;
     uPlane.size = gfx::Size(134, 16);
     uPlane.format = 2;
     VideoLayerImpl::FramePlane vPlane;
-    vPlane.resourceId = 4;
+    vPlane.resource_id = 4;
     vPlane.size = gfx::Size(456, 486);
     vPlane.format = 46;
     CREATE_SHARED_STATE();
@@ -505,26 +505,26 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
     EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
     EXPECT_EQ(texScale, copyQuad->tex_scale);
-    EXPECT_EQ(yPlane.resourceId, copyQuad->y_plane.resourceId);
+    EXPECT_EQ(yPlane.resource_id, copyQuad->y_plane.resource_id);
     EXPECT_EQ(yPlane.size, copyQuad->y_plane.size);
     EXPECT_EQ(yPlane.format, copyQuad->y_plane.format);
-    EXPECT_EQ(uPlane.resourceId, copyQuad->u_plane.resourceId);
+    EXPECT_EQ(uPlane.resource_id, copyQuad->u_plane.resource_id);
     EXPECT_EQ(uPlane.size, copyQuad->u_plane.size);
     EXPECT_EQ(uPlane.format, copyQuad->u_plane.format);
-    EXPECT_EQ(vPlane.resourceId, copyQuad->v_plane.resourceId);
+    EXPECT_EQ(vPlane.resource_id, copyQuad->v_plane.resource_id);
     EXPECT_EQ(vPlane.size, copyQuad->v_plane.size);
     EXPECT_EQ(vPlane.format, copyQuad->v_plane.format);
 
     CREATE_QUAD_4_ALL(YUVVideoDrawQuad, texScale, yPlane, uPlane, vPlane);
     EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copyQuad->material);
     EXPECT_EQ(texScale, copyQuad->tex_scale);
-    EXPECT_EQ(yPlane.resourceId, copyQuad->y_plane.resourceId);
+    EXPECT_EQ(yPlane.resource_id, copyQuad->y_plane.resource_id);
     EXPECT_EQ(yPlane.size, copyQuad->y_plane.size);
     EXPECT_EQ(yPlane.format, copyQuad->y_plane.format);
-    EXPECT_EQ(uPlane.resourceId, copyQuad->u_plane.resourceId);
+    EXPECT_EQ(uPlane.resource_id, copyQuad->u_plane.resource_id);
     EXPECT_EQ(uPlane.size, copyQuad->u_plane.size);
     EXPECT_EQ(uPlane.format, copyQuad->u_plane.format);
-    EXPECT_EQ(vPlane.resourceId, copyQuad->v_plane.resourceId);
+    EXPECT_EQ(vPlane.resource_id, copyQuad->v_plane.resource_id);
     EXPECT_EQ(vPlane.size, copyQuad->v_plane.size);
     EXPECT_EQ(vPlane.format, copyQuad->v_plane.format);
 }
@@ -652,28 +652,28 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   gfx::Rect opaqueRect(3, 7, 10, 12);
   gfx::SizeF texScale(0.75, 0.5);
   VideoLayerImpl::FramePlane yPlane;
-  yPlane.resourceId = 45;
+  yPlane.resource_id = 45;
   yPlane.size = gfx::Size(34, 23);
   yPlane.format = 8;
   VideoLayerImpl::FramePlane uPlane;
-  uPlane.resourceId = 532;
+  uPlane.resource_id = 532;
   uPlane.size = gfx::Size(134, 16);
   uPlane.format = 2;
   VideoLayerImpl::FramePlane vPlane;
-  vPlane.resourceId = 4;
+  vPlane.resource_id = 4;
   vPlane.size = gfx::Size(456, 486);
   vPlane.format = 46;
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_5_NEW(YUVVideoDrawQuad, opaqueRect, texScale, yPlane, uPlane, vPlane);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copyQuad->material);
-  EXPECT_EQ(yPlane.resourceId, quadNew->y_plane.resourceId);
-  EXPECT_EQ(uPlane.resourceId, quadNew->u_plane.resourceId);
-  EXPECT_EQ(vPlane.resourceId, quadNew->v_plane.resourceId);
+  EXPECT_EQ(yPlane.resource_id, quadNew->y_plane.resource_id);
+  EXPECT_EQ(uPlane.resource_id, quadNew->u_plane.resource_id);
+  EXPECT_EQ(vPlane.resource_id, quadNew->v_plane.resource_id);
   EXPECT_EQ(3, IterateAndCount(quadNew.get()));
-  EXPECT_EQ(yPlane.resourceId + 1, quadNew->y_plane.resourceId);
-  EXPECT_EQ(uPlane.resourceId + 1, quadNew->u_plane.resourceId);
-  EXPECT_EQ(vPlane.resourceId + 1, quadNew->v_plane.resourceId);
+  EXPECT_EQ(yPlane.resource_id + 1, quadNew->y_plane.resource_id);
+  EXPECT_EQ(uPlane.resource_id + 1, quadNew->u_plane.resource_id);
+  EXPECT_EQ(vPlane.resource_id + 1, quadNew->v_plane.resource_id);
 }
 
 

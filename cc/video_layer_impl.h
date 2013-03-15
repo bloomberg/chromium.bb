@@ -24,57 +24,63 @@ class LayerTreeHostImpl;
 class VideoFrameProviderClientImpl;
 
 class CC_EXPORT VideoLayerImpl : public LayerImpl {
-public:
-    static scoped_ptr<VideoLayerImpl> Create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider);
-    virtual ~VideoLayerImpl();
+ public:
+  static scoped_ptr<VideoLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                           int id,
+                                           VideoFrameProvider* provider);
+  virtual ~VideoLayerImpl();
 
-    // LayerImpl implementation.
-    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl*) OVERRIDE;
-    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
-    virtual void WillDraw(ResourceProvider*) OVERRIDE;
-    virtual void AppendQuads(QuadSink* quad_sink,
-                             AppendQuadsData* append_quads_data) OVERRIDE;
-    virtual void DidDraw(ResourceProvider*) OVERRIDE;
-    virtual void DidBecomeActive() OVERRIDE;
-    virtual void DidLoseOutputSurface() OVERRIDE;
+  // LayerImpl implementation.
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void WillDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
+  virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual void DidBecomeActive() OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
 
-    void setNeedsRedraw();
+  void SetNeedsRedraw();
 
-    void setProviderClientImpl(scoped_refptr<VideoFrameProviderClientImpl>);
+  void SetProviderClientImpl(
+      scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl);
 
-    struct FramePlane {
-        ResourceProvider::ResourceId resourceId;
-        gfx::Size size;
-        GLenum format;
+  struct FramePlane {
+    ResourceProvider::ResourceId resource_id;
+    gfx::Size size;
+    GLenum format;
 
-        FramePlane() : resourceId(0), format(GL_LUMINANCE) { }
+    FramePlane() : resource_id(0), format(GL_LUMINANCE) {}
 
-        bool allocateData(ResourceProvider*);
-        void freeData(ResourceProvider*);
-    };
+    bool AllocateData(ResourceProvider* resource_provider);
+    void FreeData(ResourceProvider* resource_provider);
+  };
 
-private:
-    VideoLayerImpl(LayerTreeImpl*, int);
+ private:
+  VideoLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-    virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const OVERRIDE;
 
-    void willDrawInternal(ResourceProvider*);
-    bool allocatePlaneData(ResourceProvider*);
-    bool copyPlaneData(ResourceProvider*);
-    void freePlaneData(ResourceProvider*);
-    void freeUnusedPlaneData(ResourceProvider*);
-    size_t numPlanes() const;
+  void WillDrawInternal(ResourceProvider* resource_provider);
+  bool AllocatePlaneData(ResourceProvider* resource_provider);
+  bool CopyPlaneData(ResourceProvider* resource_provider);
+  void FreePlaneData(ResourceProvider* resource_provider);
+  void FreeUnusedPlaneData(ResourceProvider* resource_provider);
+  size_t NumPlanes() const;
 
-    scoped_refptr<VideoFrameProviderClientImpl> m_providerClientImpl;
+  scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl_;
 
-    media::VideoFrame* m_frame;
-    GLenum m_format;
-    bool m_convertYUV;
-    ResourceProvider::ResourceId m_externalTextureResource;
-    scoped_ptr<media::SkCanvasVideoRenderer> m_videoRenderer;
+  media::VideoFrame* frame_;
+  GLenum format_;
+  bool convert_yuv_;
+  ResourceProvider::ResourceId external_texture_resource_;
+  scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
 
-    // Each index in this array corresponds to a plane in media::VideoFrame.
-    FramePlane m_framePlanes[media::VideoFrame::kMaxPlanes];
+  // Each index in this array corresponds to a plane in media::VideoFrame.
+  FramePlane frame_planes_[media::VideoFrame::kMaxPlanes];
+
+  DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };
 
 }  // namespace cc

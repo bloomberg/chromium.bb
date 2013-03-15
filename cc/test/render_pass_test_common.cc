@@ -203,12 +203,12 @@ void TestRenderPass::AppendOneOfEveryQuadType(
 
   cc::VideoLayerImpl::FramePlane planes[3];
   for (int i = 0; i < 3; ++i) {
-    planes[i].resourceId =
+    planes[i].resource_id =
         resourceProvider->CreateResource(
             gfx::Size(20, 12),
             resourceProvider->best_texture_format(),
             ResourceProvider::TextureUsageAny);
-    resourceProvider->AllocateForTesting(planes[i].resourceId);
+    resourceProvider->AllocateForTesting(planes[i].resource_id);
     planes[i].size = gfx::Size(100, 100);
     planes[i].format = GL_LUMINANCE;
   }

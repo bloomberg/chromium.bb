@@ -51,9 +51,9 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
 
 void YUVVideoDrawQuad::IterateResources(
     const ResourceIteratorCallback& callback) {
-  y_plane.resourceId = callback.Run(y_plane.resourceId);
-  u_plane.resourceId = callback.Run(u_plane.resourceId);
-  v_plane.resourceId = callback.Run(v_plane.resourceId);
+  y_plane.resource_id = callback.Run(y_plane.resource_id);
+  u_plane.resource_id = callback.Run(u_plane.resource_id);
+  v_plane.resource_id = callback.Run(v_plane.resource_id);
 }
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(

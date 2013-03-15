@@ -34,12 +34,12 @@ class VideoFrameProvider {
     virtual void DidReceiveFrame() = 0;
 
     // Notifies the provider's client of a new UV transform matrix to be used.
-    virtual void DidUpdateMatrix(const float*) = 0;
+    virtual void DidUpdateMatrix(const float* matrix) = 0;
   };
 
   // May be called from any thread, but there must be some external guarantee
   // that the provider is not destroyed before this call returns.
-  virtual void SetVideoFrameProviderClient(Client*) = 0;
+  virtual void SetVideoFrameProviderClient(Client* client) = 0;
 
   // This function places a lock on the current frame and returns a pointer to
   // it. Calls to this method should always be followed with a call to
@@ -51,7 +51,8 @@ class VideoFrameProvider {
   // called after GetCurrentFrame(). Frames passed into this method
   // should no longer be referenced after the call is made. Only the current
   // provider client should call this function.
-  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>&) = 0;
+  virtual void PutCurrentFrame(
+      const scoped_refptr<media::VideoFrame>& frame) = 0;
 };
 
 }  // namespace cc

@@ -71,7 +71,7 @@ void VideoFrameProviderClientImpl::StopUsingProvider() {
 
 void VideoFrameProviderClientImpl::DidReceiveFrame() {
   if (active_video_layer_)
-    active_video_layer_->setNeedsRedraw();
+    active_video_layer_->SetNeedsRedraw();
 }
 
 void VideoFrameProviderClientImpl::DidUpdateMatrix(const float* matrix) {
@@ -81,7 +81,7 @@ void VideoFrameProviderClientImpl::DidUpdateMatrix(const float* matrix) {
       matrix[2], matrix[6], matrix[10], matrix[14],
       matrix[3], matrix[7], matrix[11], matrix[15]);
   if (active_video_layer_)
-    active_video_layer_->setNeedsRedraw();
+    active_video_layer_->SetNeedsRedraw();
 }
 
 }  // namespace cc

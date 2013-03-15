@@ -1195,13 +1195,13 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
 
   GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
   ResourceProvider::ScopedSamplerGL y_plane_lock(
-      resource_provider_, y_plane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
+      resource_provider_, y_plane.resource_id, GL_TEXTURE_2D, GL_LINEAR);
   GLC(Context(), Context()->activeTexture(GL_TEXTURE2));
   ResourceProvider::ScopedSamplerGL u_plane_lock(
-      resource_provider_, u_plane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
+      resource_provider_, u_plane.resource_id, GL_TEXTURE_2D, GL_LINEAR);
   GLC(Context(), Context()->activeTexture(GL_TEXTURE3));
   ResourceProvider::ScopedSamplerGL v_plane_lock(
-      resource_provider_, v_plane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
+      resource_provider_, v_plane.resource_id, GL_TEXTURE_2D, GL_LINEAR);
 
   SetUseProgram(program->program());
 

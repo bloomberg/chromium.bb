@@ -162,13 +162,13 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const YUVVideoDrawQuad* a, const YUVVideoDrawQuad* b) {
     EXPECT_EQ(a->tex_scale, b->tex_scale);
-    EXPECT_EQ(a->y_plane.resourceId, b->y_plane.resourceId);
+    EXPECT_EQ(a->y_plane.resource_id, b->y_plane.resource_id);
     EXPECT_EQ(a->y_plane.size.ToString(), b->y_plane.size.ToString());
     EXPECT_EQ(a->y_plane.format, b->y_plane.format);
-    EXPECT_EQ(a->u_plane.resourceId, b->u_plane.resourceId);
+    EXPECT_EQ(a->u_plane.resource_id, b->u_plane.resource_id);
     EXPECT_EQ(a->u_plane.size.ToString(), b->u_plane.size.ToString());
     EXPECT_EQ(a->u_plane.format, b->u_plane.format);
-    EXPECT_EQ(a->v_plane.resourceId, b->v_plane.resourceId);
+    EXPECT_EQ(a->v_plane.resource_id, b->v_plane.resource_id);
     EXPECT_EQ(a->v_plane.size.ToString(), b->v_plane.size.ToString());
     EXPECT_EQ(a->v_plane.format, b->v_plane.format);
   }
@@ -216,17 +216,17 @@ TEST_F(CCMessagesTest, AllQuads) {
   ResourceProvider::ResourceId arbitrary_resourceid = 55;
 
   VideoLayerImpl::FramePlane arbitrary_plane1;
-  arbitrary_plane1.resourceId = arbitrary_resourceid;
+  arbitrary_plane1.resource_id = arbitrary_resourceid;
   arbitrary_plane1.size = arbitrary_size1;
   arbitrary_plane1.format = arbitrary_int;
 
   VideoLayerImpl::FramePlane arbitrary_plane2;
-  arbitrary_plane2.resourceId = arbitrary_resourceid;
+  arbitrary_plane2.resource_id = arbitrary_resourceid;
   arbitrary_plane2.size = arbitrary_size2;
   arbitrary_plane2.format = arbitrary_int;
 
   VideoLayerImpl::FramePlane arbitrary_plane3;
-  arbitrary_plane3.resourceId = arbitrary_resourceid;
+  arbitrary_plane3.resource_id = arbitrary_resourceid;
   arbitrary_plane3.size = arbitrary_size3;
   arbitrary_plane3.format = arbitrary_int;
 

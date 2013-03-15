@@ -10,16 +10,14 @@
 #include "cc/video_frame_provider.h"
 #include "ui/gfx/transform.h"
 
-namespace media {
-class VideoFrame;
-}
+namespace media { class VideoFrame; }
 
 namespace cc {
 class VideoLayerImpl;
 
-class VideoFrameProviderClientImpl :
-    public VideoFrameProvider::Client,
-    public base::RefCounted<VideoFrameProviderClientImpl> {
+class VideoFrameProviderClientImpl
+    : public VideoFrameProvider::Client,
+      public base::RefCounted<VideoFrameProviderClientImpl> {
  public:
   static scoped_refptr<VideoFrameProviderClientImpl> Create(
       VideoFrameProvider* provider);
@@ -38,10 +36,11 @@ class VideoFrameProviderClientImpl :
     return stream_texture_matrix_;
   }
 
-  // VideoFrameProvider::Client implementation.
-  virtual void StopUsingProvider() OVERRIDE; // Callable on any thread.
-  virtual void DidReceiveFrame() OVERRIDE; // Callable on impl thread.
-  virtual void DidUpdateMatrix(const float*) OVERRIDE; // Callable on impl thread.
+  // VideoFrameProvider::Client implementation. These methods are all callable
+  // on any thread.
+  virtual void StopUsingProvider() OVERRIDE;
+  virtual void DidReceiveFrame() OVERRIDE;
+  virtual void DidUpdateMatrix(const float* matrix) OVERRIDE;
 
  private:
   explicit VideoFrameProviderClientImpl(VideoFrameProvider* provider);
@@ -55,6 +54,8 @@ class VideoFrameProviderClientImpl :
   VideoFrameProvider* provider_;
 
   gfx::Transform stream_texture_matrix_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameProviderClientImpl);
 };
 
 }  // namespace cc
