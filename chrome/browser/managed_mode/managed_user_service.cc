@@ -101,23 +101,22 @@ bool ManagedUserService::ProfileIsManaged() const {
 }
 
 bool ManagedUserService::IsElevated() const {
-  PrefService* pref_service = profile_->GetPrefs();
-  // If there is no passphrase set, the profile is considered to be elevated.
-  if (pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty())
-    return true;
   return is_elevated_;
 }
 
 void ManagedUserService::RequestAuthorization(
     content::WebContents* web_contents,
     const PassphraseCheckedCallback& callback) {
-  PrefService* pref_service = profile_->GetPrefs();
 
-  // If there is no passphrase set, we do not need to ask for authentication.
-  if (pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty()) {
+  // If the profile is already elevated or there is no passphrase set, no
+  // authentication is needed.
+  PrefService* pref_service = profile_->GetPrefs();
+  if (IsElevated() ||
+      pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty()) {
     callback.Run(true);
     return;
   }
+
   // Is deleted automatically when the dialog is closed.
   new ManagedUserPassphraseDialog(web_contents, callback);
 }
