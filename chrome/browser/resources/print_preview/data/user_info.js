@@ -22,14 +22,6 @@ cr.define('print_preview', function() {
     this.tracker_ = new EventTracker();
 
     /**
-     * Google Cloud Print interface to listen to for events. Currently, through
-     * Google Cloud Print is how we determine the info of the logged in user.
-     * @type {cloudprint.CloudPrintInterface}
-     * @private
-     */
-    this.cloudPrintInterface_ = null;
-
-    /**
      * Email address of the logged in user or {@code null} if no user is logged
      * in.
      * @type {?string}
@@ -62,9 +54,8 @@ cr.define('print_preview', function() {
      *     to Google Cloud Print that the print preview uses.
      */
     setCloudPrintInterface: function(cloudPrintInterface) {
-      this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          cloudPrintInterface,
           cloudprint.CloudPrintInterface.EventType.SEARCH_DONE,
           this.onCloudPrintSearchDone_.bind(this));
     },
