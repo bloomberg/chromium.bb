@@ -144,6 +144,16 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new TypedUrlDataTypeController(this, profile_, pss));
   }
 
+  // Unless it is explicitly disabled, history delete directive sync is
+  // enabled whenever full history sync is enabled.
+  if (command_line_->HasSwitch(switches::kHistoryEnableFullHistorySync) &&
+      !command_line_->HasSwitch(
+          switches::kDisableSyncHistoryDeleteDirectives)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(
+            syncer::HISTORY_DELETE_DIRECTIVES, this, profile_, pss));
+  }
+
   // Session sync is enabled by default.  Register unless explicitly disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncTabs)) {
     pss->RegisterDataTypeController(
@@ -226,16 +236,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
             syncer::APP_SETTINGS, this, profile_, pss));
-  }
-
-  // Unless it is explicitly disabled, history delete directive sync is
-  // enabled whenever full history sync is enabled.
-  if (command_line_->HasSwitch(switches::kHistoryEnableFullHistorySync) &&
-      !command_line_->HasSwitch(
-          switches::kDisableSyncHistoryDeleteDirectives)) {
-    pss->RegisterDataTypeController(
-        new UIDataTypeController(
-            syncer::HISTORY_DELETE_DIRECTIVES, this, profile_, pss));
   }
 
   // Synced Notifications sync is disabled by default.
