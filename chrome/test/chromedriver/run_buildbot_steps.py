@@ -75,7 +75,7 @@ def Download():
 
 def MaybeRelease(revision):
   # Version is embedded as: const char kChromeDriverVersion[] = "0.1";
-  with open(os.path.join(_THIS_DIR, 'version.cc'), 'r') as f:
+  with open(os.path.join(_THIS_DIR, 'chrome', 'version.cc'), 'r') as f:
     version_line = filter(lambda x: 'kChromeDriverVersion' in x, f.readlines())
   version = version_line[0].split('"')[1]
 
