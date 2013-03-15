@@ -15,7 +15,10 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/permissions/api_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error.h"
@@ -130,6 +133,7 @@ ProfileKeyedService* BuildMockThemeService(Profile* profile) {
 scoped_refptr<extensions::Extension> MakeThemeExtension(
     const base::FilePath& extension_path,
     const string& name,
+    extensions::Manifest::Location location,
     const string& update_url) {
   DictionaryValue source;
   source.SetString(extension_manifest_keys::kName, name);
@@ -139,7 +143,7 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
   string error;
   scoped_refptr<extensions::Extension> extension =
       extensions::Extension::Create(
-          extension_path, extensions::Manifest::EXTERNAL_PREF_DOWNLOAD, source,
+          extension_path, location, source,
           extensions::Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension);
   EXPECT_EQ("", error);
@@ -186,9 +190,22 @@ class ThemeSyncableServiceTest : public testing::Test {
     // Create and add custom theme extension so the ThemeSyncableService can
     // find it.
     theme_extension_ = MakeThemeExtension(base::FilePath(kExtensionFilePath),
-                                          kCustomThemeName, kCustomThemeUrl);
+                                          kCustomThemeName,
+                                          GetThemeLocation(),
+                                          kCustomThemeUrl);
+    extensions::APIPermissionSet empty_set;
+    extensions::URLPatternSet empty_extent;
+    scoped_refptr<extensions::PermissionSet> permissions =
+        new extensions::PermissionSet(empty_set, empty_extent, empty_extent);
+    service->extension_prefs()->AddGrantedPermissions(
+        theme_extension_->id(), permissions.get());
     service->AddExtension(theme_extension_);
     ASSERT_EQ(1u, service->extensions()->size());
+  }
+
+  // Overridden in PolicyInstalledThemeTest below.
+  virtual extensions::Manifest::Location GetThemeLocation() {
+    return extensions::Manifest::INTERNAL;
   }
 
   FakeThemeService* BuildForProfile(Profile* profile) {
@@ -219,6 +236,12 @@ class ThemeSyncableServiceTest : public testing::Test {
   scoped_refptr<extensions::Extension> theme_extension_;
   scoped_ptr<ThemeSyncableService> theme_sync_service_;
   scoped_ptr<syncer::SyncChangeProcessor> fake_change_processor_;
+};
+
+class PolicyInstalledThemeTest : public ThemeSyncableServiceTest {
+  virtual extensions::Manifest::Location GetThemeLocation() OVERRIDE {
+    return extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD;
+  }
 };
 
 TEST_F(ThemeSyncableServiceTest, AreThemeSpecificsEqual) {
@@ -569,3 +592,13 @@ TEST_F(ThemeSyncableServiceTest,
   EXPECT_TRUE(change_specifics.use_system_theme_by_default());
 }
 #endif
+
+TEST_F(PolicyInstalledThemeTest, InstallThemeByPolicy) {
+  // Set up theme service to use custom theme that was installed by policy.
+  fake_theme_service_->SetTheme(theme_extension_.get());
+
+  syncer::SyncDataList data_list =
+      theme_sync_service_->GetAllSyncData(syncer::THEMES);
+
+  ASSERT_EQ(0u, data_list.size());
+}
