@@ -305,18 +305,12 @@ void DriveFileSystem::ResetResourceMetadata() {
 
 void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  CheckForUpdatesWithDirectoryFetchInfo(DirectoryFetchInfo());
-}
-
-void DriveFileSystem::CheckForUpdatesWithDirectoryFetchInfo(
-    const DirectoryFetchInfo& directory_fetch_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
   if (resource_metadata_->loaded() && !change_list_loader_->refreshing()) {
     change_list_loader_->LoadFromServerIfNeeded(
-        directory_fetch_info,
+        DirectoryFetchInfo(),
         base::Bind(&DriveFileSystem::OnUpdateChecked,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -454,11 +448,10 @@ void DriveFileSystem::LoadIfNeeded(
     return;
   }
 
-  // Load root feed from the disk cache.
-  change_list_loader_->LoadFromCache(
-      base::Bind(&DriveFileSystem::OnCacheLoaded,
+  change_list_loader_->Load(
+      directory_fetch_info,
+      base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                  weak_ptr_factory_.GetWeakPtr(),
-                 directory_fetch_info,
                  callback));
 }
 
@@ -1358,30 +1351,6 @@ void DriveFileSystem::NotifyFileSystemToBeUnmounted() {
   // Notify the observers that the file system is being unmounted.
   FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
                     OnFileSystemBeingUnmounted());
-}
-
-void DriveFileSystem::OnCacheLoaded(
-    const DirectoryFetchInfo& directory_fetch_info,
-    const FileOperationCallback& callback,
-    DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != DRIVE_FILE_OK) {
-    // If cache cannot be loaded, try to load from server directly.
-    change_list_loader_->LoadFromServerIfNeeded(
-        directory_fetch_info,
-        base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-    return;
-  }
-
-  // If successfully loaded from the server, notify the success, and check for
-  // the latest feed from the server.
-  DCHECK(resource_metadata_->loaded());
-  NotifyInitialLoadFinishedAndRun(callback, DRIVE_FILE_OK);
-  CheckForUpdatesWithDirectoryFetchInfo(directory_fetch_info);
 }
 
 void DriveFileSystem::NotifyInitialLoadFinishedAndRun(

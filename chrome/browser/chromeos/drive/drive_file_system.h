@@ -308,14 +308,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // from CheckForUpdates().
   void OnUpdateChecked(DriveFileError error);
 
-  // Called when the initial cache load is finished. It triggers change list
-  // loading from the server. If the cache loading was successful, runs
-  // |callback| for notifying it to the callers. Otherwise, defer till the
-  // change list arrival. |callback| must not be null.
-  void OnCacheLoaded(const DirectoryFetchInfo& directory_fetch_info,
-                     const FileOperationCallback& callback,
-                     DriveFileError error);
-
   // Notifies that the initial feed load is finished and runs |callback|.
   // |callback| must not be null.
   void NotifyInitialLoadFinishedAndRun(const FileOperationCallback& callback,
@@ -466,11 +458,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetEntryInfoCallback& callback,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
-
-  // Similar to CheckForUpdates(), but takes the directory fetch info, so the
-  // directory fetch info can be passed to ChangeListLoader.
-  void CheckForUpdatesWithDirectoryFetchInfo(
-      const DirectoryFetchInfo& directory_fetch_info);
 
   scoped_ptr<DriveResourceMetadata> resource_metadata_;
 

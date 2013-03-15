@@ -633,6 +633,45 @@ void ChangeListLoader::OnNotifyResourceListFetched(
   }
 }
 
+void ChangeListLoader::Load(const DirectoryFetchInfo directory_fetch_info,
+                            const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // First start loading from the cache.
+  LoadFromCache(base::Bind(&ChangeListLoader::LoadAfterLoadFromCache,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           directory_fetch_info,
+                           callback));
+}
+
+void ChangeListLoader::LoadAfterLoadFromCache(
+    const DirectoryFetchInfo directory_fetch_info,
+    const FileOperationCallback& callback,
+    DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error == DRIVE_FILE_OK) {
+    // The loading from the cache file succeeded. Change the refreshing state
+    // and tell the callback that the loading was successful.
+    refreshing_ = false;
+    callback.Run(DRIVE_FILE_OK);
+
+    // Load from server if needed (i.e. the cache is old). Note that we
+    // should still propagate |directory_fetch_info| though the directory is
+    // loaded first. This way, the UI can get notified via a directory change
+    // event as soons as the current directory contents are fetched.
+    LoadFromServerIfNeeded(directory_fetch_info,
+                           base::Bind(&util::EmptyFileOperationCallback));
+  } else {
+    // The loading from the cache file failed. Start loading from the
+    // server. Though the function name ends with "IfNeeded", this function
+    // should always start loading as the local changestamp is zero now.
+    LoadFromServerIfNeeded(directory_fetch_info, callback);
+  }
+}
+
 void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -641,8 +680,8 @@ void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
   // Sets the refreshing flag, so that the caller does not send refresh requests
   // in parallel (see DriveFileSystem::LoadFeedIfNeeded).
   //
-  // Corresponding unset is in ContinueWithInitializedResourceMetadata, where
-  // all the control paths reach.
+  // The flag will be unset when loading from the cache is complete, or
+  // loading from the server is complete.
   refreshing_ = true;
 
   LoadRootFeedParams* params = new LoadRootFeedParams(callback);
@@ -654,14 +693,15 @@ void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
       FROM_HERE,
       base::Bind(&LoadProtoOnBlockingPool,
                  path, &params->last_modified, &params->proto),
-      base::Bind(&ChangeListLoader::OnProtoLoaded,
+      base::Bind(&ChangeListLoader::LoadFromCacheAfterReadProto,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(params)));
 }
 
-void ChangeListLoader::OnProtoLoaded(LoadRootFeedParams* params,
-                                    DriveFileError error) {
+void ChangeListLoader::LoadFromCacheAfterReadProto(LoadRootFeedParams* params,
+                                                   DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params->callback.is_null());
   DCHECK(refreshing_);
 
   // Update directory structure only if everything is OK and we haven't yet
@@ -671,25 +711,14 @@ void ChangeListLoader::OnProtoLoaded(LoadRootFeedParams* params,
     if (resource_metadata_->ParseFromString(params->proto)) {
       resource_metadata_->set_last_serialized(params->last_modified);
       resource_metadata_->set_serialized_size(params->proto.size());
+      base::TimeDelta elapsed = (base::Time::Now() - params->load_start_time);
+      DVLOG(1) << "Time for loading from the cache: "
+               << elapsed.InMilliseconds() << " milliseconds";
     } else {
       error = DRIVE_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
     }
   }
-
-  ContinueWithInitializedResourceMetadata(params, error);
-}
-
-void ChangeListLoader::ContinueWithInitializedResourceMetadata(
-    LoadRootFeedParams* params,
-    DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params->callback.is_null());
-  refreshing_ = false;
-
-  DVLOG(1) << "Time elapsed to load resource metadata from disk="
-           << (base::Time::Now() - params->load_start_time).InMilliseconds()
-           << " milliseconds";
 
   params->callback.Run(error);
 }

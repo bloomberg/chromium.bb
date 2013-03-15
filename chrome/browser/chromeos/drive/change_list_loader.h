@@ -53,9 +53,24 @@ class ChangeListLoader {
   void AddObserver(ChangeListLoaderObserver* observer);
   void RemoveObserver(ChangeListLoaderObserver* observer);
 
-  // Starts root feed load from the cache, and runs |callback| to tell the
-  // result to the caller.
+  // Starts the change list loading first from the cache. If loading from the
+  // cache is successful, runs |callback| and starts loading from the server
+  // if needed (i.e. the cache is old). If loading from the cache is
+  // unsuccessful, starts loading from the server, and runs |callback| to
+  // tell the result to the caller.
+  //
+  // If |directory_fetch_info| is not empty, the directory will be fetched
+  // first from the server, so the UI can show the directory contents
+  // instantly before the entire change list loading is complete.
+  // TODO(satorux): Implement the "fast-fetch" behavior. crbug.com/178348
+  //
   // |callback| must not be null.
+  void Load(const DirectoryFetchInfo directory_fetch_info,
+            const FileOperationCallback& callback);
+
+  // Starts the change list loading from the cache, and runs |callback| to
+  // tell the result to the caller.  |callback| must not be null.
+  // TODO(satorux): make this private. crbug.com/193417
   void LoadFromCache(const FileOperationCallback& callback);
 
   // Initiates the directory contents loading. This function first obtains
@@ -87,13 +102,9 @@ class ChangeListLoader {
 
   // Initiates the chnage list loading from the server if the local
   // changestamp is older than the server changestamp.
-  //
-  // If |directory_fetch_info| is not empty, the directory will be fetched
-  // first so the UI can show the directory contents instantly before the
-  // entire change list loading is complete.
-  // TODO(satorux): Implement the "fast-fetch" behavior.
-  //
+  // See the comment at Load() for |directory_fetch_info| parameter.
   // |callback| must not be null.
+  // TODO(satorux): make this private. crbug.com/193417
   void LoadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
                               const FileOperationCallback& callback);
 
@@ -116,6 +127,12 @@ class ChangeListLoader {
   struct LoadFeedParams;
   struct LoadRootFeedParams;
   struct UpdateMetadataParams;
+
+  // Part of Load(). Called after loading from the cache is complete.
+  void LoadAfterLoadFromCache(
+      const DirectoryFetchInfo directory_fetch_info,
+      const FileOperationCallback& callback,
+      DriveFileError error);
 
   // Starts root feed load from the server, with details specified in |params|.
   void LoadFromServer(scoped_ptr<LoadFeedParams> params);
@@ -149,13 +166,9 @@ class ChangeListLoader {
       DriveFileError error,
       const base::FilePath& directory_path);
 
-  // Callback for handling root directory refresh from the cache.
-  void OnProtoLoaded(LoadRootFeedParams* params, DriveFileError error);
-
-  // Continues handling root directory refresh after the resource metadata
-  // is fully loaded.
-  void ContinueWithInitializedResourceMetadata(LoadRootFeedParams* params,
-                                               DriveFileError error);
+  // Part of LoadFromCache(). Called after reading of proto is complete.
+  void LoadFromCacheAfterReadProto(LoadRootFeedParams* params,
+                                   DriveFileError error);
 
   // Part of LoadFromServerIfNeeded() Callled when
   // DriveScheduler::GetAboutResource() is complete. This method calls
