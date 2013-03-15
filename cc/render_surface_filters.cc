@@ -424,7 +424,6 @@ SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
         break;
       }
       case WebKit::WebFilterOperation::FilterTypeZoom: {
-#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
         SkPaint paint;
         int width = state.Source().width();
         int height = state.Source().height();
@@ -440,7 +439,6 @@ SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
         canvas->saveLayer(NULL, &paint);
         canvas->drawBitmap(state.Source(), 0, 0);
         canvas->restore();
-#endif
         break;
       }
       case WebKit::WebFilterOperation::FilterTypeBrightness:

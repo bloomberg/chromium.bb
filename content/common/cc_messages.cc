@@ -38,10 +38,8 @@ void ParamTraits<WebKit::WebFilterOperation>::Write(
         WriteParam(m, p.matrix()[i]);
       break;
     case WebKit::WebFilterOperation::FilterTypeZoom:
-#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
       WriteParam(m, p.amount());
       WriteParam(m, p.zoomInset());
-#endif
       break;
   }
 }
@@ -53,9 +51,7 @@ bool ParamTraits<WebKit::WebFilterOperation>::Read(
   WebKit::WebPoint dropShadowOffset;
   WebKit::WebColor dropShadowColor;
   SkScalar matrix[20];
-#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
   int zoom_inset;
-#endif
 
   if (!ReadParam(m, iter, &type))
     return false;
@@ -101,7 +97,6 @@ bool ParamTraits<WebKit::WebFilterOperation>::Read(
       break;
     }
     case WebKit::WebFilterOperation::FilterTypeZoom:
-#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
       if (ReadParam(m, iter, &amount) &&
           ReadParam(m, iter, &zoom_inset) &&
           amount >= 0.f &&
@@ -110,7 +105,6 @@ bool ParamTraits<WebKit::WebFilterOperation>::Read(
         r->setZoomInset(zoom_inset);
         success = true;
       }
-#endif
       break;
   }
   return success;
@@ -150,11 +144,9 @@ void ParamTraits<WebKit::WebFilterOperation>::Log(
       }
       break;
     case WebKit::WebFilterOperation::FilterTypeZoom:
-#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
       LogParam(p.amount(), l);
       l->append(", ");
       LogParam(p.zoomInset(), l);
-#endif
       break;
   }
   l->append(")");

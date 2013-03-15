@@ -338,10 +338,8 @@ void Layer::SetLayerFilters() {
 void Layer::SetLayerBackgroundFilters() {
   WebKit::WebFilterOperations filters;
   if (zoom_ != 1) {
-#ifdef NEW_ZOOM_FILTER // TODO(danakj): Remove this when WebKit rolls.
     filters.append(WebKit::WebFilterOperation::createZoomFilter(zoom_,
                                                                 zoom_inset_));
-#endif
   }
 
   if (background_blur_radius_) {
