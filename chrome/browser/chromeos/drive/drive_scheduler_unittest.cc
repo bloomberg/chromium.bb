@@ -230,10 +230,7 @@ TEST_F(DriveSchedulerTest, GetResourceEntry) {
   scheduler_->GetResourceEntry(
       "file:2_file_resource_id",  // resource ID
       DriveClientContext(USER_INITIATED),
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
-          &error,
-          &entry));
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -262,10 +259,7 @@ TEST_F(DriveSchedulerTest, CopyHostedDocument) {
   scheduler_->CopyHostedDocument(
       "document:5_document_resource_id",  // resource ID
       "New Document",  // new name
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
-          &error,
-          &entry));
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -323,10 +317,7 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),  // Root directory.
       "New Directory",
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
-          &error,
-          &entry));
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_CREATED, error);

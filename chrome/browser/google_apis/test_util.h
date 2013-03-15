@@ -83,13 +83,6 @@ void CopyResultsFromGetDataCallbackAndQuit(GDataErrorCode* error_out,
                                            GDataErrorCode error_in,
                                            scoped_ptr<base::Value> value_in);
 
-// Copies the results from GetResourceEntryCallback.
-void CopyResultsFromGetResourceEntryCallback(
-    GDataErrorCode* error_out,
-    scoped_ptr<ResourceEntry>* resource_entry_out,
-    GDataErrorCode error_in,
-    scoped_ptr<ResourceEntry> resource_entry_in);
-
 // Copies the results from GetResourceListCallback.
 void CopyResultsFromGetResourceListCallback(
     GDataErrorCode* error_out,

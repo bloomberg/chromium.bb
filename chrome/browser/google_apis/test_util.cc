@@ -124,15 +124,6 @@ void CopyResultsFromGetDataCallbackAndQuit(GDataErrorCode* error_out,
   MessageLoop::current()->Quit();
 }
 
-void CopyResultsFromGetResourceEntryCallback(
-    GDataErrorCode* error_out,
-    scoped_ptr<ResourceEntry>* resource_entry_out,
-    GDataErrorCode error_in,
-    scoped_ptr<ResourceEntry> resource_entry_in) {
-  resource_entry_out->swap(resource_entry_in);
-  *error_out = error_in;
-}
-
 void CopyResultsFromGetResourceListCallback(
     GDataErrorCode* error_out,
     scoped_ptr<ResourceList>* resource_list_out,

@@ -1991,10 +1991,8 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   fake_drive_service_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),  // Add to the root directory.
       "New Directory 1!",
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
-          &error,
-          &resource_entry));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_entry));
   message_loop_.RunUntilIdle();
 
   // As the result of the first Search(), only entries in the current file
