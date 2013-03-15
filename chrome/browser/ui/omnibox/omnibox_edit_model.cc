@@ -267,11 +267,6 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
   return true;
 }
 
-bool OmniboxEditModel::AcceptCurrentInstantPreview() {
-  return controller_->GetInstant() &&
-      controller_->GetInstant()->CommitIfPossible(INSTANT_COMMIT_PRESSED_ENTER);
-}
-
 void OmniboxEditModel::OnChanged() {
   // Don't call CurrentMatch() when there's no editing, as in this case we'll
   // never actually use it.  This avoids running the autocomplete providers (and

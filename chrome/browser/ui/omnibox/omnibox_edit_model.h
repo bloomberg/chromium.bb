@@ -176,10 +176,6 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // TODO: can the return type be void?
   bool CommitSuggestedText(bool skip_inline_autocomplete);
 
-  // Accepts the currently showing Instant preview, if any, and returns true.
-  // Returns false if there is no Instant preview showing.
-  bool AcceptCurrentInstantPreview();
-
   // Invoked any time the text may have changed in the edit. Updates Instant and
   // notifies the controller.
   void OnChanged();

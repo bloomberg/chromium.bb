@@ -1540,9 +1540,6 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   if (!handled && gtk_widget_get_visible(instant_view_))
     handled = model()->CommitSuggestedText(true);
 
-  if (!handled)
-    handled = model()->AcceptCurrentInstantPreview();
-
   if (handled) {
     static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
     g_signal_stop_emission(widget, signal_id, 0);
