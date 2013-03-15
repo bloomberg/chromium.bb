@@ -101,12 +101,9 @@ cr.define('ntp', function() {
                       orig.metaKey,
                       orig.shiftKey];
         chrome.send('reopenTab', params);
-
-        // We are likely deleted by this point!
-        e.stopPropagation();
-        e.preventDefault();
       }
       a.addEventListener('activate', onActivated);
+      a.addEventListener('click', function(e) { e.preventDefault(); });
 
       this.menu.appendChild(a);
       cr.ui.decorate(a, MenuItem);
