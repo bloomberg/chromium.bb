@@ -17,6 +17,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace views {
+class ScrollView;
+}
+
 namespace message_center {
 
 // A class to show the list of notifier extensions / URL patterns and allow
@@ -48,15 +52,19 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   virtual ~NotifierSettingsView();
 
   // Overridden from views::WidgetDelegate:
-  virtual bool CanResize() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
+
+  // Overridden from views::View:
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  views::View* title_entry_;
+  views::ScrollView* scroller_;
   NotifierSettingsProvider* delegate_;
   std::set<NotifierButton*> buttons_;
 

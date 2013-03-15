@@ -7,6 +7,8 @@
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_constants.h"
@@ -16,6 +18,8 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/scrollbar/kennedy_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -28,8 +32,85 @@ namespace {
 
 const int kSpaceInButtonComponents = 16;
 const int kMarginWidth = 16;
+const int kMinimumWindowWidth = 320;
+const int kMinimumWindowHeight = 480;
+const int kEntryHeight = kMinimumWindowHeight / 10;
+const SkColor kSeparatorColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
 
 NotifierSettingsView* settings_view_ = NULL;
+
+// The view to guarantee the 48px height and place the contents at the
+// middle. It also guarantee the left margin.
+class EntryView : public views::View {
+ public:
+  EntryView(views::View* contents);
+  virtual ~EntryView();
+
+  // Overridden from views::View:
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EntryView);
+};
+
+EntryView::EntryView(views::View* contents) {
+  AddChildView(contents);
+}
+
+EntryView::~EntryView() {
+}
+
+void EntryView::Layout() {
+  DCHECK_EQ(1, child_count());
+  views::View* contents = child_at(0);
+  gfx::Size size = contents->GetPreferredSize();
+  int y = 0;
+  if (size.height() < height())
+    y = (height() - size.height()) / 2;
+  contents->SetBounds(kMarginWidth, y, width() - kMarginWidth, size.height());
+}
+
+gfx::Size EntryView::GetPreferredSize() {
+  DCHECK_EQ(1, child_count());
+  gfx::Size size = child_at(0)->GetPreferredSize();
+  size.ClampToMin(gfx::Size(kMinimumWindowWidth, kEntryHeight));
+  return size;
+}
+
+// The separator line between the title and the scroll view. Currently
+// it is achieved as a top border of the scroll view.
+class Separator : public views::Border {
+ public:
+  Separator();
+  virtual ~Separator();
+
+  // Overridden from views::Border:
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Separator);
+};
+
+Separator::Separator() {
+}
+
+Separator::~Separator() {
+}
+
+void Separator::Paint(const views::View& view, gfx::Canvas* canvas) {
+  gfx::Rect bounds(view.GetLocalBounds());
+  bounds.Inset(kMarginWidth, 0);
+  const views::ScrollView* scroll_view =
+      static_cast<const views::ScrollView*>(&view);
+  bounds.set_width(bounds.width() - scroll_view->GetScrollBarWidth());
+  canvas->DrawLine(bounds.origin(), bounds.top_right(), kSeparatorColor);
+}
+
+gfx::Insets Separator::GetInsets() const {
+  return gfx::Insets(1, 0, 0, 0);
+}
 
 }  // namespace
 
@@ -152,40 +233,53 @@ NotifierSettingsView::NotifierSettingsView(
     : delegate_(delegate) {
   DCHECK(delegate_);
 
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, kMarginWidth, kMarginWidth, kMarginWidth));
   set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
-  views::Label* top_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE));
-  top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(top_label);
+  gfx::Font title_font =
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
+  views::Label* title_label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL),
+      title_font);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetMultiLine(true);
+  title_entry_ = new EntryView(title_label);
+  AddChildView(title_entry_);
 
-  views::View* items = new views::View();
-  items->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, kMarginWidth));
-  items->set_border(views::Border::CreateEmptyBorder(0, kMarginWidth, 0, 0));
-  AddChildView(items);
+  scroller_ = new views::ScrollView();
+  scroller_->set_border(new Separator());
+  scroller_->SetVerticalScrollBar(new views::KennedyScrollBar(false));
+  AddChildView(scroller_);
+
+  views::View* contents_view = new views::View();
+  contents_view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0, 0));
+
+  views::Label* top_label = new views::Label(l10n_util::GetStringUTF16(
+      IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
+  top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  top_label->SetMultiLine(true);
+  top_label->SizeToFit(kMinimumWindowWidth - kMarginWidth);
+  contents_view->AddChildView(new EntryView(top_label));
 
   std::vector<Notifier*> notifiers;
   delegate_->GetNotifierList(&notifiers);
   for (size_t i = 0; i < notifiers.size(); ++i) {
     NotifierButton* button = new NotifierButton(notifiers[i], this);
-    items->AddChildView(button);
+    contents_view->AddChildView(new EntryView(button));
     buttons_.insert(button);
   }
+  scroller_->SetContents(contents_view);
+
+  gfx::Size contents_size = contents_view->GetPreferredSize();
+  if (kMinimumWindowHeight <
+      title_entry_->GetPreferredSize().height() + contents_size.height()) {
+    contents_size.Enlarge(-scroller_->GetScrollBarWidth(), 0);
+  }
+  contents_view->SetBoundsRect(gfx::Rect(contents_size));
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
   settings_view_ = NULL;
-}
-
-bool NotifierSettingsView::CanResize() const {
-  return true;
-}
-
-string16 NotifierSettingsView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL);
 }
 
 void NotifierSettingsView::WindowClosing() {
@@ -195,6 +289,16 @@ void NotifierSettingsView::WindowClosing() {
 
 views::View* NotifierSettingsView::GetContentsView() {
   return this;
+}
+
+void NotifierSettingsView::Layout() {
+  int title_height = title_entry_->GetPreferredSize().height();
+  title_entry_->SetBounds(0, 0, width(), title_height);
+  scroller_->SetBounds(0, title_height, width(), height() - title_height);
+}
+
+gfx::Size NotifierSettingsView::GetMinimumSize() {
+  return gfx::Size(kMinimumWindowWidth, kMinimumWindowHeight);
 }
 
 void NotifierSettingsView::ButtonPressed(views::Button* sender,
