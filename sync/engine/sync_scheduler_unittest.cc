@@ -1256,4 +1256,30 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
   MessageLoop::current()->RunUntilIdle();
 }
 
+// Tests that we don't crash trying to run two canaries at once if we receive
+// extra connection status change notifications.  See crbug.com/190085.
+TEST_F(SyncSchedulerTest, DoubleCanaryInConfigure) {
+  EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES))
+      .WillRepeatedly(DoAll(
+              Invoke(sessions::test_util::SimulateConnectionFailure),
+              Return(true)));
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  connection()->SetServerNotReachable();
+  connection()->UpdateConnectionStatus();
+
+  ModelTypeSet model_types(BOOKMARKS);
+  CallbackCounter counter;
+  ConfigurationParams params(
+      GetUpdatesCallerInfo::RECONFIGURATION,
+      model_types,
+      TypesToRoutingInfo(model_types),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
+  scheduler()->ScheduleConfiguration(params);
+
+  scheduler()->OnConnectionStatusChange();
+  scheduler()->OnConnectionStatusChange();
+
+  PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
+}
+
 }  // namespace syncer

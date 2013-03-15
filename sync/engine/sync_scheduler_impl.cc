@@ -734,6 +734,11 @@ bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job,
     pending_nudge_ = NULL;
   }
 
+  if (!job->session()) {
+    SDVLOG(2) << "Dropping abandoned job";
+    return false;  // Fix for crbug.com/190085.
+  }
+
   base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
   JobProcessDecision decision = DecideOnJob(*job, priority);
   SDVLOG(2) << "Should run "
