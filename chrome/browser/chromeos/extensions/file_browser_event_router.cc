@@ -740,11 +740,27 @@ void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
   const base::FilePath dcim_path = mount_path.Append(
       FILE_PATH_LITERAL("DCIM"));
 
-  // Show the action choice dialog only for media with a DCIM directory.
-  // Otherwise, just show Files.app.
+  // TODO(mtomasz): Temporarily for M26. Remove it on M27.
+  // If an external photo importer is installed, then do not show the action
+  // choice dialog.
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (!service)
+    return;
+  const std::string kExternalPhotoImporterExtensionId =
+      "efjnaogkjbogokcnohkmnjdojkikgobo";
+  const bool external_photo_importer_available =
+      service->GetExtensionById(kExternalPhotoImporterExtensionId,
+                                false /* include_disable */) != NULL;
+
+  // If DCIM folder is available and there is no external photo importer,
+  // then open the action choose dialog. If DCIM folder doesn't exist, then
+  // just launch Files.app.
   DirectoryExistsOnUIThread(
       dcim_path,
-      base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path),
+      external_photo_importer_available ?
+        base::Bind(&base::DoNothing) :
+        base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path),
       base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
 }
 
