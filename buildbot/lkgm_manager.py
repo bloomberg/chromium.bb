@@ -61,7 +61,7 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
     chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
     version_file: version file location.
   """
-  LKGM_RE = '(\d+\.\d+\.\d+)(?:-rc(\d+))?'
+  LKGM_RE = r'(\d+\.\d+\.\d+)(?:-rc(\d+))?'
 
   def __init__(self, version_string=None, chrome_branch=None, incr_type=None,
                version_file=None):
@@ -478,9 +478,9 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
     only_print_chumps: If True, only print changes that were chumped.
   """
   handler = git.Manifest(lkgm_path)
-  reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
-  author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
-  committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')
+  reviewed_on_re = re.compile(r'\s*Reviewed-on:\s*(\S+)')
+  author_re = re.compile(r'\s*Author:.*<(\S+)@\S+>\s*')
+  committer_re = re.compile(r'\s*Commit:.*<(\S+)@\S+>\s*')
   for project in handler.projects.keys():
     rel_src_path = handler.projects[project].get('path')
 

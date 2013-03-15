@@ -39,12 +39,12 @@ CPV = collections.namedtuple('CPV', ['category'] + _PV_FIELDS)
 
 # Package matching regexp, as dictated by package manager specification:
 # http://www.gentoo.org/proj/en/qa/pms.xml
-_pkg = '(?P<package>' + '[\w+][\w+-]*)'
-_ver = '(?P<version>' + \
-       '(?P<version_no_rev>(\d+)((\.\d+)*)([a-z]?)' + \
-       '((_(pre|p|beta|alpha|rc)\d*)*))' + \
-       '(-(?P<rev>r(\d+)))?)'
-_pvr_re = re.compile('^(?P<pv>%s-%s)$' % (_pkg, _ver), re.VERBOSE)
+_pkg = r'(?P<package>' + r'[\w+][\w+-]*)'
+_ver = r'(?P<version>' + \
+       r'(?P<version_no_rev>(\d+)((\.\d+)*)([a-z]?)' + \
+       r'((_(pre|p|beta|alpha|rc)\d*)*))' + \
+       r'(-(?P<rev>r(\d+)))?)'
+_pvr_re = re.compile(r'^(?P<pv>%s-%s)$' % (_pkg, _ver), re.VERBOSE)
 
 # This regex matches blank lines, commented lines, and the EAPI line.
 _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')

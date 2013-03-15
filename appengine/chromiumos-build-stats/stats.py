@@ -32,8 +32,8 @@ class MainPage(webapp.RequestHandler):
   # Example: "WHERE blah blah"
   #          ==> No match
   QUERY_SELECT_PREFIX_RE = re.compile(r'^\s*SELECT\s+'
-                                      '([^\s,]+(?:\s*,\s*[^\s,]+)*)' # Group 1
-                                      '(?:$|\s+)(.*)',               # Group 2
+                                      r'([^\s,]+(?:\s*,\s*[^\s,]+)*)' # Group 1
+                                      r'(?:$|\s+)(.*)',               # Group 2
                                       re.IGNORECASE | re.VERBOSE)
 
   # Regex to determine if WHERE is present, and capture everything after it.

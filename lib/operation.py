@@ -150,7 +150,7 @@ class Operation:
     Args:
       line: the output line to filter, as a string.
     """
-    match = re.match('Pending (\d+).*Total (\d+)', line)
+    match = re.match(r'Pending (\d+).*Total (\d+)', line)
     if match:
       pending = int(match.group(1))
       total = int(match.group(2))

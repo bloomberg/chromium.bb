@@ -111,7 +111,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
            line.startswith('Tested-by: '):
         # If the tag is malformed, or the person lacks a name,
         # then that's just too bad -- throw it away.
-        ele = re.split('[<>@]+', line)
+        ele = re.split(r'[<>@]+', line)
         if len(ele) == 4:
           reviewers.add('@'.join(ele[-3:-1]))
         continue
@@ -136,7 +136,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
           carbon_copy=False, dryrun=dryrun, reviewers=reviewers)
     except cros_build_lib.RunCommandError as e:
       if (e.result.returncode == 128 and
-          re.search('fatal: user ".*?" not found', e.result.error)):
+          re.search(r'fatal: user ".*?" not found', e.result.error)):
         logging.warning('Some reviewers were not found (%s); '
                         'dropping them & retrying upload', ' '.join(reviewers))
         continue

@@ -589,7 +589,7 @@ def GetChromeosVersion(str_obj):
       chromeos_version.sh. Or None if not found.
   """
   if str_obj is not None:
-    match = re.search('CHROMEOS_VERSION_STRING=([0-9_.]+)', str_obj)
+    match = re.search(r'CHROMEOS_VERSION_STRING=([0-9_.]+)', str_obj)
     if match and match.group(1):
       Info ('CHROMEOS_VERSION_STRING = %s' % match.group(1))
       return match.group(1)

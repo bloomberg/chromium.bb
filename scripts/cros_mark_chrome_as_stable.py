@@ -31,8 +31,8 @@ from chromite.lib import git
 from chromite.scripts import cros_mark_as_stable
 
 # Helper regex's for finding ebuilds.
-_CHROME_VERSION_REGEX = '\d+\.\d+\.\d+\.\d+'
-_NON_STICKY_REGEX = '%s[(_rc.*)|(_alpha.*)]+' % _CHROME_VERSION_REGEX
+_CHROME_VERSION_REGEX = r'\d+\.\d+\.\d+\.\d+'
+_NON_STICKY_REGEX = r'%s[(_rc.*)|(_alpha.*)]+' % _CHROME_VERSION_REGEX
 
 # Dir where all the action happens.
 _CHROME_OVERLAY_DIR = ('%(srcroot)s/third_party/chromiumos-overlay/' +
@@ -136,9 +136,9 @@ def _GetLatestRelease(base_url, branch=None):
                                         input=svn_ls,
                                         redirect_stdout=True).output
   if branch:
-    chrome_version_re = re.compile('^%s\.\d+.*' % branch)
+    chrome_version_re = re.compile(r'^%s\.\d+.*' % branch)
   else:
-    chrome_version_re = re.compile('^[0-9]+\..*')
+    chrome_version_re = re.compile(r'^[0-9]+\..*')
 
   for chrome_version in sorted_ls.splitlines():
     if chrome_version_re.match(chrome_version):
@@ -170,7 +170,7 @@ def _GetStickyEBuild(stable_ebuilds):
 
 class ChromeEBuild(portage_utilities.EBuild):
   """Thin sub-class of EBuild that adds a chrome_version field."""
-  chrome_version_re = re.compile('.*%s-(%s|9999).*' % (
+  chrome_version_re = re.compile(r'.*%s-(%s|9999).*' % (
       constants.CHROME_PN, _CHROME_VERSION_REGEX))
   chrome_version = ''
 
@@ -238,20 +238,20 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
                     constants.CHROME_REV_SPEC]:
     # These are labelled alpha, for historic reasons,
     # not just for the fun of confusion.
-    chrome_branch_re = re.compile('%s.*_alpha.*' % _CHROME_VERSION_REGEX)
+    chrome_branch_re = re.compile(r'%s.*_alpha.*' % _CHROME_VERSION_REGEX)
     for ebuild in stable_ebuilds:
       if chrome_branch_re.search(ebuild.version):
         candidates.append(ebuild)
 
   elif chrome_rev == constants.CHROME_REV_STICKY:
     assert sticky_branch is not None
-    chrome_branch_re = re.compile('%s\..*' % sticky_branch)
+    chrome_branch_re = re.compile(r'%s\..*' % sticky_branch)
     for ebuild in stable_ebuilds:
       if chrome_branch_re.search(ebuild.version):
         candidates.append(ebuild)
 
   else:
-    chrome_branch_re = re.compile('%s.*_rc.*' % _CHROME_VERSION_REGEX)
+    chrome_branch_re = re.compile(r'%s.*_rc.*' % _CHROME_VERSION_REGEX)
     for ebuild in stable_ebuilds:
       if chrome_branch_re.search(ebuild.version):
         candidates.append(ebuild)
@@ -306,7 +306,7 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
 
 def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                              chrome_version, commit, overlay_dir):
-  """Uprevs the chrome ebuild specified by chrome_rev.
+  r"""Uprevs the chrome ebuild specified by chrome_rev.
 
   This is the main function that uprevs the chrome_rev from a stable candidate
   to its new version.
@@ -397,7 +397,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
 
 def ParseMaxRevision(revision_list):
   """Returns the max revision from a list of url@revision string."""
-  revision_re = re.compile('.*@(\d+)')
+  revision_re = re.compile(r'.*@(\d+)')
 
   def RevisionKey(revision):
     return revision_re.match(revision).group(1)

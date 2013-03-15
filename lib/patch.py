@@ -805,7 +805,7 @@ class GitRepoPatch(object):
     this is left up to the invoker.
     """
     # Grab just the last pararaph.
-    git_metadata = re.split('\n{2,}', data.rstrip())[-1]
+    git_metadata = re.split(r'\n{2,}', data.rstrip())[-1]
     change_id_match = self._GIT_CHANGE_ID_RE.findall(git_metadata)
     if not change_id_match:
       raise BrokenChangeID(self, 'Missing Change-Id in %s' % (data,),

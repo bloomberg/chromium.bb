@@ -176,10 +176,10 @@ class Upgrader(object):
 
     # Pre-compiled regexps for speed.
     self._missing_eclass_re = re.compile(r'(\S+\.eclass) could not be '
-                                         'found by inherit')
+                                         r'found by inherit')
     self._outdated_eclass_re = re.compile(r'Call stack:\n'
-                                          '(?:.*?\s+\S+,\sline.*?\n)*'
-                                          '.*?\s+(\S+\.eclass),\s+line')
+                                          r'(?:.*?\s+\S+,\sline.*?\n)*'
+                                          r'.*?\s+(\S+\.eclass),\s+line')
 
   def _IsInUpgradeMode(self):
     """Return True if running in upgrade mode."""
@@ -638,7 +638,7 @@ class Upgrader(object):
 
     upgraded_cp = Upgrader._GetCatPkgFromCpv(upgraded_cpv)
     regexp = re.compile(r'#\s*required by.+=\S+.*\n'
-                        '#\s*(\S+/package\.mask):\s*\n'
+                        r'#\s*(\S+/package\.mask):\s*\n'
                         '[<>=]+%s' % upgraded_cp)
 
     match = regexp.search(emerge_output)

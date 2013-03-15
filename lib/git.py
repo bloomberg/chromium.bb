@@ -648,7 +648,7 @@ def RunGit(git_repo, cmd, **kwds):
 def GetProjectUserEmail(git_repo):
   """Get the email configured for the project ."""
   output = RunGit(git_repo, ['var', 'GIT_COMMITTER_IDENT']).output
-  m = re.search('<([^>]*)>', output.strip())
+  m = re.search(r'<([^>]*)>', output.strip())
   return m.group(1) if m else None
 
 

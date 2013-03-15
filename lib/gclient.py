@@ -64,7 +64,7 @@ def GetTipOfTrunkSvnRevision(svn_url):
   cmd = ['svn', 'info', svn_url]
   svn_info = cros_build_lib.RunCommand(cmd, redirect_stdout=True).output
 
-  revision_re = re.compile('^Revision:\s+(\d+)')
+  revision_re = re.compile(r'^Revision:\s+(\d+)')
   for line in svn_info.splitlines():
     match = revision_re.match(line)
     if match:

@@ -148,7 +148,7 @@ class VersionInfo(object):
     version_file: version file location.
   """
   # Pattern for matching build name format.  Includes chrome branch hack.
-  VER_PATTERN = '(\d+).(\d+).(\d+)(?:-R(\d+))*'
+  VER_PATTERN = r'(\d+).(\d+).(\d+)(?:-R(\d+))*'
 
   def __init__(self, version_string=None, chrome_branch=None,
                incr_type='build', version_file=None):
@@ -214,7 +214,7 @@ class VersionInfo(object):
        None: on a non match
        value: for a matching key
     """
-    regex = '.*(%s)\s*=\s*(\d+)$' % key
+    regex = r'.*(%s)\s*=\s*(\d+)$' % key
 
     match = re.match(regex, line)
     if match:

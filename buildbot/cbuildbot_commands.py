@@ -545,7 +545,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
           for line in f:
             # Stack frame line example to be matched here:
             #    #0 0x721d1831 (/opt/google/chrome/chrome+0xb837831)
-            stackline_match = re.search('^ *#[0-9]* 0x.* \(', line)
+            stackline_match = re.search(r'^ *#[0-9]* 0x.* \(', line)
             if stackline_match:
               frame_end = stackline_match.span()[1]
               line = line[:frame_end] + board_path + line[frame_end:]

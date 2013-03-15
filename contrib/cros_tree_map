@@ -239,7 +239,7 @@ def dump_nm(nmfile, strip_prefix):
 
 def parse_objdump(input):
     """Parse objdump -h output."""
-    sec_re = re.compile('^\d+ (\S+) +([0-9a-z]+)')
+    sec_re = re.compile(r'^\d+ (\S+) +([0-9a-z]+)')
     sections = []
     debug_sections = []
 

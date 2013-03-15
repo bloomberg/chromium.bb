@@ -109,7 +109,7 @@ def MergeTables(tables):
       # Merge users by taking the superset.
       return MergeToSuperset(col, val, other_val)
 
-    regexp = utable.UpgradeTable.COL_UPGRADED.replace('ARCH', '\S+')
+    regexp = utable.UpgradeTable.COL_UPGRADED.replace('ARCH', r'\S+')
     if re.search(regexp, col):
       return MergeWithAND(col, val, other_val)
 

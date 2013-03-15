@@ -25,7 +25,7 @@ from chromite.lib import cros_build_lib
 
 class BuilderStage(object):
   """Parent class for stages to be performed by a builder."""
-  name_stage_re = re.compile('(\w+)Stage')
+  name_stage_re = re.compile(r'(\w+)Stage')
 
   # TODO(sosa): Remove these once we have a SEND/RECIEVE IPC mechanism
   # implemented.
