@@ -338,8 +338,7 @@
   // values to verify restrictions.
   "runtime": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
-    "min_manifest_version": 2
+    "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "screensaver": {
     "channel": "stable",
