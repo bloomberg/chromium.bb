@@ -916,7 +916,9 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
       layer_tree_host_impl_->CanDraw() &&
       (layer_tree_host_impl_->PrepareToDraw(&frame) || forced_draw);
   if (draw_frame) {
-    layer_tree_host_impl_->DrawLayers(&frame);
+    layer_tree_host_impl_->DrawLayers(
+        &frame,
+        scheduler_on_impl_thread_->lastVSyncTime());
     result.didDraw = true;
   }
   layer_tree_host_impl_->DidDrawAllLayers(frame);

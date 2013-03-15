@@ -150,6 +150,11 @@ base::TimeTicks Scheduler::anticipatedDrawTime()
     return m_frameRateController->nextTickTime();
 }
 
+base::TimeTicks Scheduler::lastVSyncTime()
+{
+    return m_frameRateController->lastTickTime();
+}
+
 void Scheduler::vsyncTick(bool throttled)
 {
     TRACE_EVENT1("cc", "Scheduler::vsyncTick", "throttled", throttled);

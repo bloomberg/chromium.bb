@@ -153,4 +153,12 @@ base::TimeTicks FrameRateController::nextTickTime()
     return base::TimeTicks();
 }
 
+base::TimeTicks FrameRateController::lastTickTime()
+{
+    if (m_isTimeSourceThrottling)
+        return m_timeSource->lastTickTime();
+
+    return base::TimeTicks::Now();
+}
+
 }  // namespace cc

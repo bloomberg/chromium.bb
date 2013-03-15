@@ -57,6 +57,9 @@ public:
     // This returns null for unthrottled frame-rate.
     base::TimeTicks nextTickTime();
 
+    // This returns now for unthrottled frame-rate.
+    base::TimeTicks lastTickTime();
+
     void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval);
     void setSwapBuffersCompleteSupported(bool);
 

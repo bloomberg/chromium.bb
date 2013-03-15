@@ -271,8 +271,8 @@ void RenderWidgetCompositor::Animate(base::TimeTicks time) {
   layer_tree_host_->UpdateAnimations(time);
 }
 
-void RenderWidgetCompositor::Composite() {
-  layer_tree_host_->Composite();
+void RenderWidgetCompositor::Composite(base::TimeTicks frame_begin_time) {
+  layer_tree_host_->Composite(frame_begin_time);
 }
 
 void RenderWidgetCompositor::GetRenderingStats(cc::RenderingStats* stats) {

@@ -129,7 +129,7 @@ CompositorImpl::~CompositorImpl() {
 
 void CompositorImpl::Composite() {
   if (host_.get())
-    host_->Composite();
+    host_->Composite(base::TimeTicks::Now());
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {

@@ -1240,7 +1240,7 @@ void RenderWidget::DoDeferredUpdate() {
     // If it needs to (e.g. composited UI), the GPU process does its own ACK
     // with the browser for the GPU surface.
     pending_update_params_->needs_ack = false;
-    Composite();
+    Composite(frame_begin_ticks);
   }
 
   // If we're holding a pending input event ACK, send the ACK before sending the
@@ -1266,10 +1266,10 @@ void RenderWidget::DoDeferredUpdate() {
     DidInitiatePaint();
 }
 
-void RenderWidget::Composite() {
+void RenderWidget::Composite(base::TimeTicks frame_begin_time) {
   DCHECK(is_accelerated_compositing_active_);
   if (compositor_)  // TODO(jamesr): Figure out how this can be null.
-    compositor_->Composite();
+    compositor_->Composite(frame_begin_time);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

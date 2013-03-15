@@ -55,7 +55,7 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   TRACE_EVENT0("cc", "SingleThreadProxy::compositeAndReadback");
   DCHECK(Proxy::IsMainThread());
 
-  if (!CommitAndComposite())
+  if (!CommitAndComposite(base::TimeTicks::Now()))
     return false;
 
   {
@@ -337,8 +337,8 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
 
 // Called by the legacy scheduling path (e.g. where render_widget does the
 // scheduling)
-void SingleThreadProxy::CompositeImmediately() {
-  if (CommitAndComposite()) {
+void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
+  if (CommitAndComposite(frame_begin_time)) {
     layer_tree_host_impl_->SwapBuffers();
     DidSwapFrame();
   }
@@ -368,7 +368,7 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
 
 void SingleThreadProxy::OnSwapBuffersCompleteOnImplThread() { NOTREACHED(); }
 
-bool SingleThreadProxy::CommitAndComposite() {
+bool SingleThreadProxy::CommitAndComposite(base::TimeTicks frame_begin_time) {
   DCHECK(Proxy::IsMainThread());
 
   if (!layer_tree_host_->InitializeRendererIfNeeded())
@@ -392,13 +392,14 @@ bool SingleThreadProxy::CommitAndComposite() {
 
   layer_tree_host_->WillCommit();
   DoCommit(queue.Pass());
-  bool result = DoComposite(offscreen_context_provider);
+  bool result = DoComposite(offscreen_context_provider, frame_begin_time);
   layer_tree_host_->DidBeginFrame();
   return result;
 }
 
 bool SingleThreadProxy::DoComposite(
-    scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
+    scoped_refptr<cc::ContextProvider> offscreen_context_provider,
+    base::TimeTicks frame_begin_time) {
   DCHECK(!output_surface_lost_);
   {
     DebugScopedSetImplThread impl(this);
@@ -421,7 +422,7 @@ bool SingleThreadProxy::DoComposite(
 
     LayerTreeHostImpl::FrameData frame;
     layer_tree_host_impl_->PrepareToDraw(&frame);
-    layer_tree_host_impl_->DrawLayers(&frame);
+    layer_tree_host_impl_->DrawLayers(&frame, frame_begin_time);
     layer_tree_host_impl_->DidDrawAllLayers(frame);
     output_surface_lost_ = layer_tree_host_impl_->IsContextLost();
 

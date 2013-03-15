@@ -135,7 +135,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   // must also be called, regardless of whether DrawLayers is called between the
   // two.
   virtual bool PrepareToDraw(FrameData* frame);
-  virtual void DrawLayers(FrameData* frame);
+  virtual void DrawLayers(FrameData* frame, base::TimeTicks frame_begin_time);
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
 

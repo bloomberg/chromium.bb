@@ -75,15 +75,16 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void RenewTreePriority() OVERRIDE {}
 
   // Called by the legacy path where RenderWidget does the scheduling.
-  void CompositeImmediately();
+  void CompositeImmediately(base::TimeTicks frame_begin_time);
 
  private:
   explicit SingleThreadProxy(LayerTreeHost* layer_tree_host);
 
-  bool CommitAndComposite();
+  bool CommitAndComposite(base::TimeTicks frame_begin_time);
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
   bool DoComposite(
-      scoped_refptr<cc::ContextProvider> offscreen_context_provider);
+      scoped_refptr<cc::ContextProvider> offscreen_context_provider,
+      base::TimeTicks frame_begin_time);
   void DidSwapFrame();
 
   // Accessed on main thread only.

@@ -524,9 +524,10 @@ void LayerTreeHost::StartPageScaleAnimation(gfx::Vector2d target_offset,
   proxy_->StartPageScaleAnimation(target_offset, use_anchor, scale, duration);
 }
 
-void LayerTreeHost::Composite() {
+void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   if (!proxy_->HasImplThread())
-    static_cast<SingleThreadProxy*>(proxy_.get())->CompositeImmediately();
+    static_cast<SingleThreadProxy*>(proxy_.get())->CompositeImmediately(
+        frame_begin_time);
   else
     SetNeedsCommit();
 }

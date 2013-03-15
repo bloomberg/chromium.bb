@@ -473,7 +473,7 @@ void Compositor::Terminate() {
 
 void Compositor::ScheduleDraw() {
   if (g_compositor_thread)
-    host_->Composite();
+    host_->Composite(base::TimeTicks::Now());
   else if (delegate_)
     delegate_->ScheduleDraw();
 }
@@ -508,7 +508,7 @@ void Compositor::Draw(bool force_clear) {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
     layout();
-    host_->Composite();
+    host_->Composite(base::TimeTicks::Now());
   }
   if (!pending_swap.posted())
     NotifyEnd();

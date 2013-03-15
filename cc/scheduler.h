@@ -99,6 +99,8 @@ public:
 
     base::TimeTicks anticipatedDrawTime();
 
+    base::TimeTicks lastVSyncTime();
+
     // FrameRateControllerClient implementation
     virtual void vsyncTick(bool throttled) OVERRIDE;
 

@@ -129,7 +129,7 @@ bool WebLayerTreeViewImplForTesting::commitRequested() const {
 }
 
 void WebLayerTreeViewImplForTesting::composite() {
-  layer_tree_host_->Composite();
+  layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
 void WebLayerTreeViewImplForTesting::updateAnimations(

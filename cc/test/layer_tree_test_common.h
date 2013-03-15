@@ -167,7 +167,7 @@ public:
     virtual void BeginCommit() OVERRIDE;
     virtual void CommitComplete() OVERRIDE;
     virtual bool PrepareToDraw(FrameData* frame) OVERRIDE;
-    virtual void DrawLayers(FrameData* frame) OVERRIDE;
+    virtual void DrawLayers(FrameData* frame, base::TimeTicks frameBeginTime) OVERRIDE;
     virtual bool SwapBuffers() OVERRIDE;
     virtual bool ActivatePendingTreeIfNeeded() OVERRIDE;
     virtual bool InitializeRenderer(scoped_ptr<OutputSurface> outputSurface) OVERRIDE;

@@ -928,15 +928,13 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   return metadata;
 }
 
-void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
+void LayerTreeHostImpl::DrawLayers(FrameData* frame,
+                                   base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
   DCHECK(CanDraw());
   DCHECK(!frame->render_passes.empty());
 
-  // FIXME: use the frame begin time from the overall compositor scheduler.
-  // This value is currently inaccessible because it is up in Chromium's
-  // RenderWidget.
-  fps_counter_->saveTimeStamp(base::TimeTicks::Now());
+  fps_counter_->saveTimeStamp(frame_begin_time);
 
   if (tile_manager_) {
     memory_history_->SaveEntry(

@@ -92,9 +92,9 @@ bool MockLayerTreeHostImpl::PrepareToDraw(FrameData* frame)
     return result;
 }
 
-void MockLayerTreeHostImpl::DrawLayers(FrameData* frame)
+void MockLayerTreeHostImpl::DrawLayers(FrameData* frame, base::TimeTicks frameBeginTime)
 {
-    LayerTreeHostImpl::DrawLayers(frame);
+    LayerTreeHostImpl::DrawLayers(frame, frameBeginTime);
     m_testHooks->drawLayersOnThread(this);
 }
 
@@ -494,7 +494,7 @@ void ThreadedTest::dispatchComposite()
     }
 
     m_scheduleWhenSetVisibleTrue = false;
-    m_layerTreeHost->Composite();
+    m_layerTreeHost->Composite(base::TimeTicks::Now());
 }
 
 void ThreadedTest::runTest(bool threaded)

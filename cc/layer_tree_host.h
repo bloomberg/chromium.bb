@@ -124,7 +124,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 
   LayerTreeHostClient* client() { return client_; }
 
-  void Composite();
+  void Composite(base::TimeTicks frame_begin_time);
 
   // Only used when compositing on the main thread.
   void ScheduleComposite();
