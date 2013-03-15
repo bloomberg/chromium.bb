@@ -35,7 +35,7 @@ class CHROMEOS_EXPORT IBusDaemonController {
   // Similar to Initialize(), but can inject alternative IBusDaemonController
   // such as MockIBusDaemonController for testing. The injected object object
   // will be owned by the internal pointer and deleted by Shutdown().
-  static void InitializeForTesting(IBusDaemonController* controller_);
+  static void InitializeForTesting(IBusDaemonController* controller);
 
   // Destroys the global instance.
   static void Shutdown();
@@ -57,7 +57,7 @@ class CHROMEOS_EXPORT IBusDaemonController {
   virtual bool Stop() = 0;
 
  protected:
-  // IBusDaemonController is managed as singleton. USe GetInstance instead.
+  // IBusDaemonController is managed as singleton. Use GetInstance instead.
   IBusDaemonController();
 
   DISALLOW_COPY_AND_ASSIGN(IBusDaemonController);

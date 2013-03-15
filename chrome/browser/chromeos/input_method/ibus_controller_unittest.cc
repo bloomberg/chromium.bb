@@ -14,8 +14,11 @@ namespace input_method {
 TEST(IBusControllerTest, TestCreate) {
   chromeos::IBusDaemonController::InitializeForTesting(
       new chromeos::MockIBusDaemonController());
-  scoped_ptr<IBusController> controller(IBusController::Create());
-  EXPECT_TRUE(controller.get());
+  {
+    scoped_ptr<IBusController> controller(IBusController::Create());
+    EXPECT_TRUE(controller.get());
+  }
+  chromeos::IBusDaemonController::Shutdown();
 }
 
 }  // namespace input_method

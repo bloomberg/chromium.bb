@@ -338,10 +338,10 @@ void IBusDaemonController::Initialize(
 
 // static
 void IBusDaemonController::InitializeForTesting(
-    IBusDaemonController* controller_) {
+    IBusDaemonController* controller) {
   DCHECK(g_ibus_daemon_controller == NULL);
-  DCHECK(controller_);
-  g_ibus_daemon_controller = controller_;
+  DCHECK(controller);
+  g_ibus_daemon_controller = controller;
 }
 
 // static
