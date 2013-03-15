@@ -547,8 +547,9 @@
         }],
 
         # linux_use_gold_binary: whether to use the binary checked into
-        # third_party/gold.
-        ['OS=="linux" and target_arch=="x64"', {
+        # third_party/gold.  Gold is not used for 32-bit linux builds
+        # as it runs out of address space.
+        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
           'linux_use_gold_binary%': 1,
         }, {
           'linux_use_gold_binary%': 0,
