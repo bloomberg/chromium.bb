@@ -13,6 +13,8 @@
       'sources': [ 'libc++.cc', ],
       'xcode_settings': {
         'CC': 'clang',
+        # libc++ requires OS X 10.7+.
+        'MACOSX_DEPLOYMENT_TARGET': '10.7',
         'CLANG_CXX_LIBRARY': 'libc++',
       },
     },

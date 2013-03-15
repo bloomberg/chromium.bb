@@ -363,11 +363,9 @@ class XcodeSettings(object):
 
     clang_cxx_language_standard = self._Settings().get(
         'CLANG_CXX_LANGUAGE_STANDARD')
-    if clang_cxx_language_standard == 'c++0x':
-      cflags_cc.append('-std=c++11')
-    elif clang_cxx_language_standard == 'gnu++0x':
-      cflags_cc.append('-std=gnu++11')
-    elif clang_cxx_language_standard:
+    # Note: Don't make c++0x to c++11 so that c++0x can be used with older
+    # clangs that don't understand c++11 yet (like Xcode 4.2's).
+    if clang_cxx_language_standard:
       cflags_cc.append('-std=%s' % clang_cxx_language_standard)
 
     self._Appendf(cflags_cc, 'CLANG_CXX_LIBRARY', '-stdlib=%s')
