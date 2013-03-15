@@ -82,6 +82,7 @@ GURL GDataWapiUrlGenerator::AddFeedUrlParams(
     const std::string& search_string) {
   GURL result = AddStandardUrlParams(url);
   result = net::AppendOrReplaceQueryParameter(result, "showfolders", "true");
+  result = net::AppendOrReplaceQueryParameter(result, "include-shared", "true");
   result = net::AppendOrReplaceQueryParameter(
       result,
       "max-results",

@@ -338,7 +338,8 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full?v=3&alt=json&showroot=true&"
-            "showfolders=true&max-results=500&include-installed-apps=true",
+            "showfolders=true&include-shared=true&max-results=500&"
+            "include-installed-apps=true",
             http_request_.relative_url);
   EXPECT_TRUE(test_util::VerifyJsonData(
       test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
@@ -368,7 +369,8 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/chromeos/gdata/root_feed.json?v=3&alt=json&showroot=true&"
-            "showfolders=true&max-results=500&include-installed-apps=true",
+            "showfolders=true&include-shared=true&max-results=500"
+            "&include-installed-apps=true",
             http_request_.relative_url);
   EXPECT_TRUE(test_util::VerifyJsonData(
       test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
@@ -400,7 +402,8 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/chromeos/gdata/testfile.txt?v=3&alt=json&showroot=true&"
-            "showfolders=true&max-results=500&include-installed-apps=true",
+            "showfolders=true&include-shared=true&max-results=500&"
+            "include-installed-apps=true",
             http_request_.relative_url);
   EXPECT_FALSE(result_data);
 }
