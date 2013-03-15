@@ -92,10 +92,41 @@
 
   include decode_x86_64 "decoder_x86_64_instruction.rl";
 
-  include decoder
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  action end_of_instruction_cleanup {
+    process_instruction(instruction_begin, current_position + 1, &instruction,
+                        userdata);
+    instruction_begin = current_position + 1;
+    SET_DISP_TYPE(DISPNONE);
+    SET_IMM_TYPE(IMMNONE);
+    SET_IMM2_TYPE(IMMNONE);
+    SET_REX_PREFIX(FALSE);
+    SET_DATA16_PREFIX(FALSE);
+    SET_LOCK_PREFIX(FALSE);
+    SET_REPNZ_PREFIX(FALSE);
+    SET_REPZ_PREFIX(FALSE);
+    SET_BRANCH_NOT_TAKEN(FALSE);
+    SET_BRANCH_TAKEN(FALSE);
+    /*
+     * Top three bits of VEX2 are inverted: see AMD/Intel manual.
+     * Pass VEX2 prefix value that corresponds to zero bits.
+     */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    SET_ATT_INSTRUCTION_SUFFIX(NULL);
+    CLEAR_SPURIOUS_REX_B();
+    CLEAR_SPURIOUS_REX_X();
+    CLEAR_SPURIOUS_REX_R();
+    CLEAR_SPURIOUS_REX_W();
+  }
 
-  main := decoder;
+  action report_fatal_error {
+    process_error(current_position, userdata);
+    result = FALSE;
+    goto error_detected;
+  }
+
+  decoder := (one_instruction @end_of_instruction_cleanup)*
+             $!report_fatal_error;
 }%%
 
 %% write data;
@@ -107,7 +138,11 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *current_position = data;
   const uint8_t *end_of_data = data + size;
   const uint8_t *instruction_begin = current_position;
-  uint8_t vex_prefix2 = 0xe0;
+  /*
+   * Top three bits of VEX2 are inverted: see AMD/Intel manual.
+   * Start with VEX2 prefix value that corresponds to zero bits.
+   */
+  uint8_t vex_prefix2 = VEX_R | VEX_X | VEX_B;
   uint8_t vex_prefix3 = 0x00;
   enum ImmediateMode imm_operand = IMMNONE;
   enum ImmediateMode imm2_operand = IMMNONE;
@@ -116,21 +151,7 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
 
   int current_state;
 
-  SET_DISP_TYPE(DISPNONE);
-  SET_IMM_TYPE(IMMNONE);
-  SET_IMM2_TYPE(IMMNONE);
-  SET_REX_PREFIX(FALSE);
-  SET_DATA16_PREFIX(FALSE);
-  SET_LOCK_PREFIX(FALSE);
-  SET_REPNZ_PREFIX(FALSE);
-  SET_REPZ_PREFIX(FALSE);
-  SET_BRANCH_NOT_TAKEN(FALSE);
-  SET_BRANCH_TAKEN(FALSE);
-  SET_ATT_INSTRUCTION_SUFFIX(NULL);
-  instruction.prefix.rex_b_spurious = FALSE;
-  instruction.prefix.rex_x_spurious = FALSE;
-  instruction.prefix.rex_r_spurious = FALSE;
-  instruction.prefix.rex_w_spurious = FALSE;
+  memset(&instruction, 0, sizeof instruction);
 
   %% write init;
   %% write exec;

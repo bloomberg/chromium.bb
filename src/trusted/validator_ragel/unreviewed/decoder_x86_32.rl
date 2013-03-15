@@ -22,21 +22,6 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
-/*
- * These prefixes are not useful in IA32 mode, but they will "cleaned up" by
- * decoder's cleanup procedure anyway.  Do nothing when that happens.
- */
-#define SET_REX_PREFIX(P)
-#define SET_VEX_PREFIX2(P)
-#define CLEAR_SPURIOUS_REX_B()
-#define SET_SPURIOUS_REX_B()
-#define CLEAR_SPURIOUS_REX_X()
-#define SET_SPURIOUS_REX_X()
-#define CLEAR_SPURIOUS_REX_R()
-#define SET_SPURIOUS_REX_R()
-#define CLEAR_SPURIOUS_REX_W()
-#define SET_SPURIOUS_REX_W()
-
 %%{
   machine x86_32_decoder;
   alphtype unsigned char;
@@ -78,10 +63,31 @@
 
   include decode_x86_32 "decoder_x86_32_instruction.rl";
 
-  include decoder
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  action end_of_instruction_cleanup {
+    process_instruction(instruction_begin, current_position + 1, &instruction,
+                        userdata);
+    instruction_begin = current_position + 1;
+    SET_DISP_TYPE(DISPNONE);
+    SET_IMM_TYPE(IMMNONE);
+    SET_IMM2_TYPE(IMMNONE);
+    SET_DATA16_PREFIX(FALSE);
+    SET_LOCK_PREFIX(FALSE);
+    SET_REPNZ_PREFIX(FALSE);
+    SET_REPZ_PREFIX(FALSE);
+    SET_BRANCH_NOT_TAKEN(FALSE);
+    SET_BRANCH_TAKEN(FALSE);
+    SET_VEX_PREFIX3(0x00);
+    SET_ATT_INSTRUCTION_SUFFIX(NULL);
+  }
 
-  main := decoder;
+  action report_fatal_error {
+    process_error(current_position, userdata);
+    result = FALSE;
+    goto error_detected;
+  }
+
+  decoder := (one_instruction @end_of_instruction_cleanup)*
+             $!report_fatal_error;
 }%%
 
 %% write data;
@@ -100,23 +106,7 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
 
   int current_state;
 
-  /* Not used in ia32_mode.  */
-  instruction.prefix.rex = 0;
-
-  SET_DISP_TYPE(DISPNONE);
-  SET_IMM_TYPE(IMMNONE);
-  SET_IMM2_TYPE(IMMNONE);
-  SET_DATA16_PREFIX(FALSE);
-  SET_LOCK_PREFIX(FALSE);
-  SET_REPNZ_PREFIX(FALSE);
-  SET_REPZ_PREFIX(FALSE);
-  SET_BRANCH_NOT_TAKEN(FALSE);
-  SET_BRANCH_TAKEN(FALSE);
-  SET_ATT_INSTRUCTION_SUFFIX(NULL);
-  instruction.prefix.rex_b_spurious = FALSE;
-  instruction.prefix.rex_x_spurious = FALSE;
-  instruction.prefix.rex_r_spurious = FALSE;
-  instruction.prefix.rex_w_spurious = FALSE;
+  memset(&instruction, 0, sizeof instruction);
 
   %% write init;
   %% write exec;
