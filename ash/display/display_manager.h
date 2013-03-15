@@ -43,7 +43,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
   static void CycleDisplay();
-  static void ToggleDisplayScale();
+  static void ToggleDisplayScaleFactor();
 
   // When set to true, the MonitorManager calls OnDisplayBoundsChanged
   // even if the display's bounds didn't change. Used to swap primary
@@ -85,6 +85,13 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   // Sets the display's rotation.
   void SetDisplayRotation(int64 display_id, gfx::Display::Rotation rotation);
+
+  // Sets the display's ui scale.
+  void SetDisplayUIScale(int64 display_id, float ui_scale);
+
+  // Tells if display rotation/ui scaling features are enabled.
+  bool IsDisplayRotationEnabled() const;
+  bool IsDisplayUIScalingEnabled() const;
 
   // Returns the current overscan insets for the specified |display_id|.
   // Returns an empty insets (0, 0, 0, 0) if no insets are specified for
