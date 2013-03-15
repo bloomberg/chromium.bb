@@ -68,7 +68,6 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -93,7 +92,6 @@ const char kNoClearProfileSwitch[] = "noclearprofile";
 const char kSaveDebugLogSwitch[] = "savedebuglog";
 const char kStressOptSwitch[] = "stress-opt";
 const char kStressDeoptSwitch[] = "stress-deopt";
-const char kSearchDumpsByPid[] = "search-dumps-by-pid";
 
 const char kDefaultServerUrl[] = "http://urllist.com";
 std::string g_server_url;
@@ -128,7 +126,6 @@ base::FilePath g_test_log_path;
 bool g_stand_alone = false;
 bool g_stress_opt = false;
 bool g_stress_deopt = false;
-bool g_search_dumps_by_pid = false;
 
 void ReportHandler(const std::string& str) {
   // Ignore report events.
@@ -236,9 +233,6 @@ void SetPageRange(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(kStressDeoptSwitch)) {
     g_stress_deopt = true;
   }
-  if (parsed_command_line.HasSwitch(kSearchDumpsByPid)) {
-    g_search_dumps_by_pid = true;
-  }
 }
 
 class PageLoadTest : public UITest {
@@ -331,16 +325,6 @@ class PageLoadTest : public UITest {
     time_now = base::Time::Now();
     test_log << "browser_launched_seconds=";
     test_log << (time_now.ToDoubleT() - time_start) << std::endl;
-
-    // Create crash dump directory with pid.
-    if (g_search_dumps_by_pid) {
-      actual_crash_dumps_dir_path_ = base::FilePath(crash_dumps_dir_path_);
-      ChromeProcessList processes =
-          GetRunningChromeProcesses(browser_process_id());
-      if (!processes.empty())
-        actual_crash_dumps_dir_path_ = actual_crash_dumps_dir_path_.AppendASCII(
-            base::Int64ToString(*processes.begin()));
-    }
 
     int result = AUTOMATION_MSG_NAVIGATION_ERROR;
     // This is essentially what NavigateToURL does except we don't fire
@@ -704,7 +688,7 @@ class PageLoadTest : public UITest {
   }
 
   bool HasNewCrashDumps() {
-    file_util::FileEnumerator enumerator(actual_crash_dumps_dir_path_,
+    file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
                                          false,  // not recursive
                                          file_util::FileEnumerator::FILES);
     for (base::FilePath path = enumerator.Next(); !path.value().empty();
@@ -724,7 +708,7 @@ class PageLoadTest : public UITest {
                             NavigationMetrics* metrics,
                             bool delete_dumps) {
     int num_dumps = 0;
-    file_util::FileEnumerator enumerator(actual_crash_dumps_dir_path_,
+    file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
                                          false,  // not recursive
                                          file_util::FileEnumerator::FILES);
     for (base::FilePath path = enumerator.Next(); !path.value().empty();
@@ -732,7 +716,7 @@ class PageLoadTest : public UITest {
       if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")) &&
           !crash_dumps_[path.BaseName()]) {
         crash_dumps_[path.BaseName()] = true;
-        base::FilePath crash_dump_file_path(actual_crash_dumps_dir_path_);
+        base::FilePath crash_dump_file_path(crash_dumps_dir_path_);
         crash_dump_file_path = crash_dump_file_path.Append(path.BaseName());
         new_crash_dumps.push_back(crash_dump_file_path);
         if (delete_dumps)
@@ -796,9 +780,6 @@ class PageLoadTest : public UITest {
 
   // The pathname of Chrome's crash dumps directory.
   base::FilePath crash_dumps_dir_path_;
-
-  // The actual crash dumps directory that will be used.
-  base::FilePath actual_crash_dumps_dir_path_;
 
   // The set of all the crash dumps we have seen.  Each crash generates a
   // .dmp and a .txt file in the crash dumps directory.  We only store the

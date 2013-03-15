@@ -14,7 +14,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
@@ -152,9 +151,6 @@ const char CrashService::kNoWindow[]          = "no-window";
 const char CrashService::kReporterTag[]       = "reporter";
 const char CrashService::kDumpsDir[]          = "dumps-dir";
 const char CrashService::kPipeName[]          = "pipe-name";
-const char CrashService::kArchiveDumpsByPid[] = "archive-dumps-by-pid";
-
-bool CrashService::archive_dumps_by_pid_ = false;
 
 CrashService::CrashService(const std::wstring& report_dir)
     : report_path_(report_dir),
@@ -206,9 +202,6 @@ bool CrashService::Initialize(const std::wstring& command_line) {
       return false;
     }
   }
-
-  if (cmd_line.HasSwitch(kArchiveDumpsByPid))
-    archive_dumps_by_pid_ = true;
 
   // We can override the send reports quota with a command line switch.
   if (cmd_line.HasSwitch(kMaxReports))
@@ -362,9 +355,6 @@ void CrashService::OnClientDumpRequest(void* context,
     return;
   }
 
-  DWORD pid = client_info->pid();
-  VLOG(1) << "dump for pid = " << pid << " is " << *file_path;
-
   CrashService* self = static_cast<CrashService*>(context);
   if (!self) {
     LOG(ERROR) << "dump with no context";
@@ -374,18 +364,23 @@ void CrashService::OnClientDumpRequest(void* context,
   CrashMap map;
   CustomInfoToMap(client_info, self->reporter_tag_, &map);
 
-  if (!WriteCustomInfoToFile(*file_path, map)) {
-    LOG(ERROR) << "could not write custom info file";
+  // Move dump file to the directory under client breakpad dump location.
+  base::FilePath dump_location = base::FilePath(*file_path);
+  CrashMap::const_iterator it = map.find(L"breakpad-dump-location");
+  if (it != map.end()) {
+    base::FilePath alternate_dump_location = base::FilePath(it->second);
+    file_util::CreateDirectoryW(alternate_dump_location);
+    alternate_dump_location = alternate_dump_location.Append(
+        dump_location.BaseName());
+    file_util::Move(dump_location, alternate_dump_location);
+    dump_location = alternate_dump_location;
   }
 
-  // Move dump file to the directory under client pid.
-  base::FilePath dump_path = base::FilePath(*file_path);
-  if (archive_dumps_by_pid_) {
-    base::FilePath dump_path_with_pid(dump_path.DirName());
-    dump_path_with_pid = dump_path_with_pid.Append(base::Int64ToString16(pid));
-    file_util::CreateDirectoryW(dump_path_with_pid);
-    dump_path_with_pid = dump_path_with_pid.Append(dump_path.BaseName());
-    file_util::Move(dump_path, dump_path_with_pid);
+  DWORD pid = client_info->pid();
+  VLOG(1) << "dump for pid = " << pid << " is " << dump_location.value();
+
+  if (!WriteCustomInfoToFile(dump_location.value(), map)) {
+    LOG(ERROR) << "could not write custom info file";
   }
 
   if (!self->sender_)
@@ -394,7 +389,7 @@ void CrashService::OnClientDumpRequest(void* context,
   // Send the crash dump using a worker thread. This operation has retry
   // logic in case there is no internet connection at the time.
   DumpJobInfo* dump_job = new DumpJobInfo(pid, self, map,
-                                          dump_path.value());
+                                          dump_location.value());
   if (!::QueueUserWorkItem(&CrashService::AsyncSendDump,
                            dump_job, WT_EXECUTELONGFUNCTION)) {
     LOG(ERROR) << "could not queue job";
