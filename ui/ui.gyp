@@ -75,6 +75,7 @@
         'base/clipboard/clipboard.cc',
         'base/clipboard/clipboard.h',
         'base/clipboard/clipboard_android.cc',
+        'base/clipboard/clipboard_android_initialization.h',
         'base/clipboard/clipboard_aurax11.cc',
         'base/clipboard/clipboard_chromeos.cc',
         'base/clipboard/clipboard_gtk.cc',
@@ -863,6 +864,7 @@
              'android/java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java',
              'android/java/src/org/chromium/ui/gfx/NativeWindow.java',
              'android/java/src/org/chromium/ui/SelectFileDialog.java',
+             'android/java/src/org/chromium/ui/Clipboard.java',
            ],
            'variables': {
              'jni_gen_package': 'ui',
