@@ -68,7 +68,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
   InstantExtendedTest()
       : on_most_visited_change_calls_(0),
         most_visited_items_count_(0),
-        first_most_visited_item_id_(0) {
+        first_most_visited_item_id_(0),
+        on_native_suggestions_calls_(0),
+        on_change_calls_(0) {
   }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -107,12 +109,18 @@ class InstantExtendedTest : public InProcessBrowserTest,
            GetIntFromJS(contents, "mostVisitedItemsCount",
                         &most_visited_items_count_) &&
            GetIntFromJS(contents, "firstMostVisitedItemId",
-                        &first_most_visited_item_id_);
+                        &first_most_visited_item_id_) &&
+           GetIntFromJS(contents, "onNativeSuggestionsCalls",
+                        &on_native_suggestions_calls_) &&
+           GetIntFromJS(contents, "onChangeCalls",
+                        &on_change_calls_);
   }
 
   int on_most_visited_change_calls_;
   int most_visited_items_count_;
   int first_most_visited_item_id_;
+  int on_native_suggestions_calls_;
+  int on_change_calls_;
 };
 
 // Test class used to verify chrome-search: scheme and access policy from the
@@ -253,6 +261,32 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Check that there are now two tabs.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       UnfocusingOmniboxDoesNotChangeSuggestions) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // Get a committed tab to work with.
+  content::WebContents* instant_tab = instant()->GetOverlayContents();
+  SetOmniboxTextAndWaitForOverlayToShow("committed");
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // Put focus back into the omnibox, type, and wait for some gray text.
+  EXPECT_TRUE(content::ExecuteScript(instant_tab,
+                                     "suggestion = 'santa claus';"));
+  SetOmniboxTextAndWaitForSuggestion("santa ");
+  EXPECT_EQ(ASCIIToUTF16("claus"), omnibox()->GetInstantSuggestion());
+  EXPECT_TRUE(content::ExecuteScript(instant_tab,
+      "onChangeCalls = onNativeSuggestionsCalls = 0;"));
+
+  // Now unfocus the omnibox.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  EXPECT_TRUE(UpdateSearchState(instant_tab));
+  EXPECT_EQ(0, on_change_calls_);
+  EXPECT_EQ(0, on_native_suggestions_calls_);
 }
 
 // Test that omnibox text is correctly set when overlay is committed with Enter.

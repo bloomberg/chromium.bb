@@ -87,6 +87,7 @@ class InstantTestBase {
 
   void SetOmniboxText(const std::string& text);
   void SetOmniboxTextAndWaitForOverlayToShow(const std::string& text);
+  void SetOmniboxTextAndWaitForSuggestion(const std::string& text);
 
   bool GetBoolFromJS(content::WebContents* contents,
                      const std::string& script,

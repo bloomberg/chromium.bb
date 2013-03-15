@@ -134,6 +134,15 @@ void InstantTestBase::SetOmniboxTextAndWaitForOverlayToShow(
   observer.WaitForDesiredOverlayState();
 }
 
+void InstantTestBase::SetOmniboxTextAndWaitForSuggestion(
+    const std::string& text) {
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_SET_SUGGESTION,
+      content::NotificationService::AllSources());
+  SetOmniboxText(text);
+  observer.Wait();
+}
+
 bool InstantTestBase::GetBoolFromJS(content::WebContents* contents,
                                     const std::string& script,
                                     bool* result) {

@@ -12,6 +12,8 @@ var behavior = 2;
 var onMostVisitedChangedCalls = 0;
 var mostVisitedItemsCount = 0;
 var firstMostVisitedItemId = 0;
+var onNativeSuggestionsCalls = 0;
+var onChangeCalls = 0;
 
 function getApiHandle() {
   if (window.navigator && window.navigator.searchBox)
@@ -32,6 +34,7 @@ function getNewTabPageHandle() {
 }
 
 function handleNativeSuggestions() {
+  onNativeSuggestionsCalls++;
   // Showing the loader at 100% height.
   apiHandle.show(2 /* QUERY_SUGGESTIONS */);
 }
@@ -41,6 +44,7 @@ function handleSubmit() {
 }
 
 function handleOnChange() {
+  onChangeCalls++;
   savedUserText = apiHandle.value;
   suggestionIndex = -1;
   if (suggestion) {

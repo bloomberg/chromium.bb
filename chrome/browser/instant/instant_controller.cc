@@ -281,6 +281,11 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
+  // Ignore spurious updates when the omnibox is blurred; otherwise click
+  // targets on the page may vanish before a click event arrives.
+  if (omnibox_focus_state_ == OMNIBOX_FOCUS_NONE)
+    return false;
+
   // If the popup is open, the user has to be typing.
   DCHECK(!omnibox_popup_is_open || user_input_in_progress);
 
@@ -519,6 +524,11 @@ void InstantController::HandleAutocompleteResults(
     return;
 
   if (!instant_tab_ && !overlay_)
+    return;
+
+  // The omnibox sends suggestions when its possibly imaginary popup closes
+  // as it stops autocomplete. Ignore these.
+  if (omnibox_focus_state_ == OMNIBOX_FOCUS_NONE)
     return;
 
   DVLOG(1) << "AutocompleteResults:";
@@ -1137,6 +1147,10 @@ void InstantController::SetSuggestions(
           "SetInstantSuggestion: text='%s' behavior=%d",
           UTF16ToUTF8(suggestion.text).c_str(), suggestion.behavior));
       browser_->SetInstantSuggestion(suggestion);
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_INSTANT_SET_SUGGESTION,
+          content::Source<InstantController>(this),
+          content::NotificationService::NoDetails());
     } else {
       last_suggestion_ = InstantSuggestion();
     }
