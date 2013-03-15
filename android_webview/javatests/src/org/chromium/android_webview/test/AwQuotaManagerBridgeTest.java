@@ -93,7 +93,7 @@ public class AwQuotaManagerBridgeTest extends AndroidWebViewTestBase {
         }
 
         public AwQuotaManagerBridge.Origins getOrigins() {
-            assert mCallCount > 0;
+            assert getCallCount() > 0;
             return mOrigins;
         }
     }
@@ -130,7 +130,7 @@ public class AwQuotaManagerBridgeTest extends AndroidWebViewTestBase {
         }
 
         public long getValue() {
-            assert mCallCount > 0;
+            assert getCallCount() > 0;
             return mValue;
         }
     }
