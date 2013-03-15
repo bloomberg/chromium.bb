@@ -23,6 +23,7 @@
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
@@ -203,26 +204,37 @@ bool IsLenovoDCuteInstalled() {
 
   return true;
 }
-}  // namespace anonymous
 
-namespace gpu_info_collector {
+// Determines whether D3D11 won't work, either because it is not supported on
+// the machine or because it is known it is likely to crash.
+bool D3D11ShouldWork(const content::GPUInfo& gpu_info) {
+  // Windows XP never supports D3D11.
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return false;
 
-#if !defined(GOOGLE_CHROME_BUILD)
-AMDVideoCardType GetAMDVideocardType() {
-  return UNKNOWN;
+  // Intel?
+  if (gpu_info.gpu.vendor_id == 0x8086) {
+    // 2nd Generation Core Processor Family Integrated Graphics Controller?
+    if (gpu_info.gpu.device_id == 0x0102 ||
+        gpu_info.gpu.device_id == 0x0106 ||
+        gpu_info.gpu.device_id == 0x0116 ||
+        gpu_info.gpu.device_id == 0x0126) {
+      // http://crbug.com/196373.
+      if (base::win::GetVersion() == base::win::VERSION_VISTA)
+        return false;
+
+      // http://crbug.com/175525.
+      if (gpu_info.display_link_version.IsValid())
+        return false;
+    }
+  }
+
+  return true;
 }
-#else
-// This function has a real implementation for official builds that can
-// be found in src/third_party/amd.
-AMDVideoCardType GetAMDVideocardType();
-#endif
 
 // Collects information about the level of D3D11 support and records it in
 // the UMA stats. Records no stats when D3D11 in not supported at all.
-//
-// http://crbug.com/175525. Using D3D11 seems to crash when dlumd32.dll is
-// loaded. This function is not currently called.
-void CollectD3D11Support(HMODULE d3d11_module) {
+void CollectD3D11SupportOnWorkerThread() {
   TRACE_EVENT0("gpu", "CollectD3D11Support");
 
   typedef HRESULT (WINAPI *D3D11CreateDeviceFunc)(
@@ -256,12 +268,18 @@ void CollectD3D11Support(HMODULE d3d11_module) {
   FeatureLevel feature_level = FEATURE_LEVEL_UNKNOWN;
   UINT bgra_support = 0;
 
+  // This module is leaked in case it is hooked by third party software.
+  base::NativeLibrary d3d11_module = base::LoadNativeLibrary(
+      base::FilePath(L"d3d11.dll"),
+      NULL);
+
   if (!d3d11_module) {
     feature_level = FEATURE_LEVEL_NO_D3D11_DLL;
   } else {
     D3D11CreateDeviceFunc create_func =
         reinterpret_cast<D3D11CreateDeviceFunc>(
-            GetProcAddress(d3d11_module, "D3D11CreateDevice"));
+            base::GetFunctionPointerFromNativeLibrary(d3d11_module,
+                                                      "D3D11CreateDevice"));
     if (!create_func) {
       feature_level = FEATURE_LEVEL_NO_CREATE_DEVICE_ENTRY_POINT;
     } else {
@@ -338,23 +356,28 @@ void CollectD3D11Support(HMODULE d3d11_module) {
       (bgra_support & D3D11_FORMAT_SUPPORT_RENDER_TARGET) != 0);
 }
 
-void CollectD3D11SupportDelayed(
-    const scoped_refptr<base::MessageLoopProxy> main_loop) {
-  // Windows XP is expected to not support D3D11.
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-
-  // This is leaked in case it is hooked by a third party DLL.
-  HMODULE d3d11_module = LoadLibrary(L"d3d11.dll");
-
-  // Collect the D3D11 stats after a delay to allow third party DLLs
-  // to hook D3D11 before we try to use it. Also do it on the main thread
-  // in case the third party DLL does this on the main thread.
-  main_loop->PostDelayedTask(
+// Collects information about the level of D3D11 support and records it in
+// the UMA stats. Records no stats when D3D11 in not supported at all.
+void CollectD3D11Support() {
+  // D3D11 takes about 50ms to initialize so do this on a worker thread.
+  base::WorkerPool::PostTask(
       FROM_HERE,
-      base::Bind(CollectD3D11Support, d3d11_module),
-      base::TimeDelta::FromSeconds(10));
+      base::Bind(CollectD3D11SupportOnWorkerThread),
+      false);
 }
+}  // namespace anonymous
+
+namespace gpu_info_collector {
+
+#if !defined(GOOGLE_CHROME_BUILD)
+AMDVideoCardType GetAMDVideocardType() {
+  return UNKNOWN;
+}
+#else
+// This function has a real implementation for official builds that can
+// be found in src/third_party/amd.
+AMDVideoCardType GetAMDVideocardType();
+#endif
 
 bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
@@ -562,18 +585,30 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
     }
   }
 
-  if (id.length() > 20) {
-    int vendor_id = 0, device_id = 0;
-    std::wstring vendor_id_string = id.substr(8, 4);
-    std::wstring device_id_string = id.substr(17, 4);
-    base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
-    base::HexStringToInt(WideToASCII(device_id_string), &device_id);
-    gpu_info->gpu.vendor_id = vendor_id;
-    gpu_info->gpu.device_id = device_id;
-    // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
-    return CollectDriverInfoD3D(id, gpu_info);
+  if (id.length() <= 20)
+    return false;
+
+  int vendor_id = 0, device_id = 0;
+  string16 vendor_id_string = id.substr(8, 4);
+  string16 device_id_string = id.substr(17, 4);
+  base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
+  base::HexStringToInt(WideToASCII(device_id_string), &device_id);
+  gpu_info->gpu.vendor_id = vendor_id;
+  gpu_info->gpu.device_id = device_id;
+  // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
+  if (!CollectDriverInfoD3D(id, gpu_info))
+    return false;
+
+  // Collect basic information about supported D3D11 features. Delay for 45
+  // seconds so as not to regress performance tests.
+  if (D3D11ShouldWork(*gpu_info)) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CollectD3D11Support),
+        base::TimeDelta::FromSeconds(45));
   }
-  return false;
+
+  return true;
 }
 
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
