@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 
 TopContainerView::TopContainerView(BrowserView* browser_view)
     : browser_view_(browser_view),
