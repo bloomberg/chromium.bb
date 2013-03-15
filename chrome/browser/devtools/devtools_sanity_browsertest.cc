@@ -156,7 +156,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     // first.
     Browser* browser = window_->browser();
     scoped_refptr<DevToolsAgentHost> agent(
-        DevToolsAgentHost::GetOrCreateFor(inspected_rvh_));
+        DevToolsAgentHost::GetFor(inspected_rvh_));
     devtools_manager->UnregisterDevToolsClientHostFor(agent);
 
     // Wait only when DevToolsWindow has a browser. For docked DevTools, this
@@ -595,6 +595,22 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
 
   // Wait until worker script is paused on the debugger statement.
   RunTestFunction(window_, "testPauseInSharedWorkerInitialization");
+  CloseDevToolsWindow();
+}
+
+// Tests DevToolsAgentHost::AddMessageToConsole.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAddMessageToConsole) {
+  OpenDevToolsWindow("about:blank");
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetFor(inspected_rvh_));
+  devtools_manager->AddMessageToConsole(agent_host,
+                                        content::CONSOLE_MESSAGE_LEVEL_LOG,
+                                        "log");
+  devtools_manager->AddMessageToConsole(agent_host,
+                                        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+                                        "error");
+  RunTestFunction(window_, "checkLogAndErrorMessages");
   CloseDevToolsWindow();
 }
 

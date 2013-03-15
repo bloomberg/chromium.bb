@@ -26,7 +26,7 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns DevToolsAgentHost that can be used for inspecting |rvh|.
   // New DevToolsAgentHost will be created if it does not exist.
-  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(RenderViewHost* rvh);
+  static scoped_refptr<DevToolsAgentHost> GetFor(RenderViewHost* rvh);
 
   // Returns true iff an instance of DevToolsAgentHost for the |rvh|
   // does exist.
@@ -51,9 +51,6 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns a list of all existing RenderViewHost's that can be debugged.
   static std::vector<RenderViewHost*> GetValidRenderViewHosts();
-
-  // Starts inspecting element at position (|x|, |y|) in the specified page.
-  virtual void InspectElement(int x, int y) = 0;
 
   // Returns the unique id of the agent.
   virtual std::string GetId() = 0;
