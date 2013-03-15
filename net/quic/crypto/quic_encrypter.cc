@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "net/quic/crypto/quic_encrypter.h"
+
+#include "net/quic/crypto/aes_128_gcm_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
 
 namespace net {
@@ -11,9 +13,7 @@ namespace net {
 QuicEncrypter* QuicEncrypter::Create(CryptoTag algorithm) {
   switch (algorithm) {
     case kAESG:
-      // TODO(wtc): add support for Aes128GcmEncrypter.
-      // return new Aes128GcmEncrypter();
-      return new NullEncrypter();
+      return new Aes128GcmEncrypter();
     case kNULL:
       return new NullEncrypter();
     default:
