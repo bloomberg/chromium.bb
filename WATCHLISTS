@@ -30,7 +30,11 @@
       'filepath': 'android_webview/',
     },
     'app_list': {
-      'filepath': 'ui/app_list/',
+      'filepath': 'chrome/browser/ui/app_list'\
+                  '|chrome/browser/ui/ash/app_list'\
+                  '|chrome/browser/ui/cocoa/app_list'\
+                  '|chrome/browser/ui/views/app_list'\
+                  '|ui/app_list/'
     },
     'appcache': {
       'filepath': 'appcache/',
@@ -523,7 +527,7 @@
                       'klundberg+watch@chromium.org',
                       'frankf+watch@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
-    'app_list': ['tfarina@chromium.org'],
+    'app_list': ['tfarina@chromium.org', 'chrome-apps-syd-reviews@chromium.org'],
     'appcache': ['michaeln@chromium.org'],
     'apps': ['tfarina@chromium.org', 'chromium-apps-reviews@chromium.org'],
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
