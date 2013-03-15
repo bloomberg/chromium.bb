@@ -1987,8 +1987,8 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_unscaled_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
