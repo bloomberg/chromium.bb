@@ -123,7 +123,7 @@ LayerTreeHost::~LayerTreeHost() {
   s_num_layer_tree_instances--;
   RateLimiterMap::iterator it = rate_limiters_.begin();
   if (it != rate_limiters_.end())
-    it->second->stop();
+    it->second->Stop();
 
   if (root_layer_) {
     // The layer tree must be destroyed before the layer tree host. We've
@@ -824,24 +824,24 @@ void LayerTreeHost::StartRateLimiter(WebKit::WebGraphicsContext3D* context3d) {
   DCHECK(context3d);
   RateLimiterMap::iterator it = rate_limiters_.find(context3d);
   if (it != rate_limiters_.end()) {
-    it->second->start();
+    it->second->Start();
   } else {
     scoped_refptr<RateLimiter> rate_limiter =
-        RateLimiter::create(context3d, this, proxy_->MainThread());
+        RateLimiter::Create(context3d, this, proxy_->MainThread());
     rate_limiters_[context3d] = rate_limiter;
-    rate_limiter->start();
+    rate_limiter->Start();
   }
 }
 
 void LayerTreeHost::StopRateLimiter(WebKit::WebGraphicsContext3D* context3d) {
   RateLimiterMap::iterator it = rate_limiters_.find(context3d);
   if (it != rate_limiters_.end()) {
-    it->second->stop();
+    it->second->Stop();
     rate_limiters_.erase(it);
   }
 }
 
-void LayerTreeHost::rateLimit() {
+void LayerTreeHost::RateLimit() {
   // Force a no-op command on the compositor context, so that any ratelimiting
   // commands will wait for the compositing context, and therefore for the
   // SwapBuffers.

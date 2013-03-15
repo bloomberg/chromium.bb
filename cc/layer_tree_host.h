@@ -200,8 +200,8 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   void StartRateLimiter(WebKit::WebGraphicsContext3D* context3d);
   void StopRateLimiter(WebKit::WebGraphicsContext3D* context3d);
 
-  // RateLimitClient implementation
-  virtual void rateLimit() OVERRIDE;
+  // RateLimiterClient implementation.
+  virtual void RateLimit() OVERRIDE;
 
   bool buffered_updates() const {
     return settings_.maxPartialTextureUpdates !=

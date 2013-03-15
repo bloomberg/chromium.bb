@@ -10,50 +10,48 @@
 
 namespace cc {
 
-scoped_refptr<RateLimiter> RateLimiter::create(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client, Thread* thread)
-{
-    return make_scoped_refptr(new RateLimiter(context, client, thread));
+scoped_refptr<RateLimiter> RateLimiter::Create(
+    WebKit::WebGraphicsContext3D* context,
+    RateLimiterClient* client,
+    Thread* thread) {
+  return make_scoped_refptr(new RateLimiter(context, client, thread));
 }
 
-RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client, Thread* thread)
-    : m_thread(thread)
-    , m_context(context)
-    , m_active(false)
-    , m_client(client)
-{
-    DCHECK(context);
+RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context,
+                         RateLimiterClient* client,
+                         Thread* thread)
+    : thread_(thread),
+      context_(context),
+      active_(false),
+      client_(client) {
+  DCHECK(context);
 }
 
-RateLimiter::~RateLimiter()
-{
+RateLimiter::~RateLimiter() {}
+
+void RateLimiter::Start() {
+  if (active_)
+    return;
+
+  TRACE_EVENT0("cc", "RateLimiter::Start");
+  active_ = true;
+  thread_->postTask(base::Bind(&RateLimiter::RateLimitContext, this));
 }
 
-void RateLimiter::start()
-{
-    if (m_active)
-        return;
-
-    TRACE_EVENT0("cc", "RateLimiter::start");
-    m_active = true;
-    m_thread->postTask(base::Bind(&RateLimiter::rateLimitContext, this));
+void RateLimiter::Stop() {
+  TRACE_EVENT0("cc", "RateLimiter::Stop");
+  client_ = NULL;
 }
 
-void RateLimiter::stop()
-{
-    TRACE_EVENT0("cc", "RateLimiter::stop");
-    m_client = 0;
-}
+void RateLimiter::RateLimitContext() {
+  if (!client_)
+    return;
 
-void RateLimiter::rateLimitContext()
-{
-    if (!m_client)
-        return;
+  TRACE_EVENT0("cc", "RateLimiter::RateLimitContext");
 
-    TRACE_EVENT0("cc", "RateLimiter::rateLimitContext");
-
-    m_active = false;
-    m_client->rateLimit();
-    m_context->rateLimitOffscreenContextCHROMIUM();
+  active_ = false;
+  client_->RateLimit();
+  context_->rateLimitOffscreenContextCHROMIUM();
 }
 
 }  // namespace cc
