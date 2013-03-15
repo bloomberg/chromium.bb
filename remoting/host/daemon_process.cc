@@ -184,6 +184,9 @@ void DaemonProcess::CreateDesktopSession(int terminal_id,
     return;
   }
 
+  // Terminal IDs cannot be reused. Update the expected next terminal ID.
+  next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
+
   // Validate |params|.
   if (params.client_dpi_.x() < 0 || params.client_dpi_.y() < 0) {
     LOG(ERROR) << "Invalid DPI of the remote screen specified: "
@@ -203,18 +206,15 @@ void DaemonProcess::CreateDesktopSession(int terminal_id,
   // Create the desktop session.
   scoped_ptr<DesktopSession> session = DoCreateDesktopSession(
       terminal_id, params, virtual_terminal);
-  if (session) {
-    VLOG(1) << "Daemon: opened desktop session " << terminal_id;
-    desktop_sessions_.push_back(session.release());
-  } else {
+  if (!session) {
     LOG(ERROR) << "Failed to create a desktop session.";
     SendToNetwork(
         new ChromotingDaemonNetworkMsg_TerminalDisconnected(terminal_id));
     return;
   }
 
-  // Update the expected terminal ID.
-  next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
+  VLOG(1) << "Daemon: opened desktop session " << terminal_id;
+  desktop_sessions_.push_back(session.release());
 }
 
 void DaemonProcess::CrashNetworkProcess(

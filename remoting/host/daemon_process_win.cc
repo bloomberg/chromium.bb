@@ -25,7 +25,6 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
-#include "remoting/host/win/host_service.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
 #include "remoting/host/win/worker_process_launcher.h"
@@ -151,9 +150,13 @@ scoped_ptr<DesktopSession> DaemonProcessWin::DoCreateDesktopSession(
     bool virtual_terminal) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return scoped_ptr<DesktopSession>(new DesktopSessionWin(
-      caller_task_runner(), io_task_runner(), this, terminal_id,
-      params, virtual_terminal, HostService::GetInstance()));
+  if (virtual_terminal) {
+    return DesktopSessionWin::CreateForVirtualTerminal(
+        caller_task_runner(), io_task_runner(), this, terminal_id, params);
+  } else {
+    return DesktopSessionWin::CreateForConsole(
+        caller_task_runner(), io_task_runner(), this, terminal_id, params);
+  }
 }
 
 void DaemonProcessWin::DoCrashNetworkProcess(
