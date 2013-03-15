@@ -1485,6 +1485,9 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   gfx::Vector2dF pending_delta = scroll_delta;
   bool did_scroll = false;
 
+  if (top_controls_manager_ && CurrentlyScrollingLayer() == RootScrollLayer())
+    pending_delta = top_controls_manager_->ScrollBy(pending_delta);
+
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
        layer_impl = layer_impl->parent()) {
@@ -1492,9 +1495,6 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
       continue;
 
     gfx::Vector2dF applied_delta;
-    if (top_controls_manager_ && layer_impl == RootScrollLayer())
-      pending_delta = top_controls_manager_->ScrollBy(pending_delta);
-
     // Gesture events need to be transformed from viewport coordinates to local
     // layer coordinates so that the scrolling contents exactly follow the
     // user's finger. In contrast, wheel events represent a fixed amount of
