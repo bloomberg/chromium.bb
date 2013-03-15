@@ -236,7 +236,17 @@ cmpxchg16b Mo, rexw 0x0f 0xc7 /1, amd64 lock CPUFeature_CX16
 # "cpuid" is not marked as nacl-amd64-zero-extends just because it shouldn't be.
 cpuid, 0x0f 0xa2
 ######## CRC32 #################################################################
-crc32 E Gy, 0xf2 0x0f 0x38 0xf0, CPUFeature_SSE42
+# In principle, this instruction can be defined as
+#   crc32b E Gy, 0xf2 0x0f 0x38 0xf0, CPUFeature_SSE42
+# but first, it's somewhat counterintuitive how splitting can produce the
+# following five variations, so it's better to make it explicit, and second,
+# rules to determine what suffix instruction name is followed with, special
+# treatment would be required (for compatibility with objdump).
+crc32b Eb Gd, 0xf2 0x0f 0x38 0xf0, norexw CPUFeature_SSE42
+crc32b Eb Gq, rexw 0xf2 0x0f 0x38 0xf0, amd64 CPUFeature_SSE42
+crc32w Ew Gd, data16 0xf2 0x0f 0x38 0xf1, norexw CPUFeature_SSE42
+crc32l Ed Gd, 0xf2 0x0f 0x38 0xf1, norexw CPUFeature_SSE42
+crc32q Eq Gq, rexw 0xf2 0x0f 0x38 0xf1, amd64 CPUFeature_SSE42
 ######## DEC ###################################################################
 dec E, 0xfe /1, lock nacl-amd64-zero-extends
 dec rz, 0x48, ia32

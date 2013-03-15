@@ -485,22 +485,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       printf("%s", instruction->att_instruction_suffix);
       shown_name += strlen(instruction->att_instruction_suffix);
     }
-  } else {
-    /*
-     * Objdump prints size suffixes for "crc32" instruction even when it's
-     * not really needed.
-     */
-    if (strcmp(instruction_name, "crc32") == 0) {
-      if (instruction->operands[1].format == OPERAND_FORMAT_8_BIT)
-        print_name("b");
-      else if (instruction->operands[1].format == OPERAND_FORMAT_16_BIT)
-        print_name("w");
-      else if (instruction->operands[1].format == OPERAND_FORMAT_32_BIT)
-        print_name("l");
-      else if (instruction->operands[1].format == OPERAND_FORMAT_64_BIT)
-        print_name("q");
-    }
   }
+
   if (strcmp(instruction_name, "mov") == 0 &&
       instruction->operands[1].name == REG_IMM &&
       instruction->operands[1].format == OPERAND_FORMAT_64_BIT)
