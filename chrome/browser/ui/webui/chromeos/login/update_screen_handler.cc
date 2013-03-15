@@ -54,6 +54,9 @@ void UpdateScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_UPDATE_CANCEL));
   localized_strings->SetString("cancelledUpdateMessage",
       l10n_util::GetStringUTF16(IDS_UPDATE_CANCELLED));
+#else
+  localized_strings->SetString("cancelUpdateHint", "");
+  localized_strings->SetString("cancelledUpdateMessage", "");
 #endif
 }
 
