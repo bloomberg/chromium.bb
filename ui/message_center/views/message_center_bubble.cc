@@ -291,7 +291,7 @@ class BoundedScrollView : public views::ScrollView {
 // Displays a list of messages.
 class MessageListView : public views::View {
  public:
-  MessageListView() {
+  MessageListView(views::View* container) : container_(container) {
     if (IsRichNotificationEnabled()) {
       // Set the margin to 0 for the layout. BoxLayout assumes the same margin
       // for top and bottom, but the bottom margin here should be smaller
@@ -321,7 +321,15 @@ class MessageListView : public views::View {
   virtual ~MessageListView() {
   }
 
+ protected:
+  // Overridden from views::View:
+  void ChildPreferredSizeChanged(View* child) {
+    container_->Layout();
+  }
+
  private:
+  views::View* container_;  // Weak reference.
+
   DISALLOW_COPY_AND_ASSIGN(MessageListView);
 };
 
@@ -355,7 +363,7 @@ class MessageCenterView : public views::View {
       scroller_->layer()->SetMasksToBounds(true);
     }
 
-    message_list_view_ = new MessageListView();
+    message_list_view_ = new MessageListView(this);
     scroller_->SetContents(message_list_view_);
 
     AddChildView(scroller_);

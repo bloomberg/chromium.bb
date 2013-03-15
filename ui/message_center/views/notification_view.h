@@ -10,7 +10,6 @@
 #include "ui/message_center/views/message_view.h"
 
 namespace views {
-class ImageView;
 class Label;
 }  // namespace views
 
@@ -54,10 +53,10 @@ class NotificationView : public MessageView {
   views::Label* title_view_;
   views::Label* message_view_;
   std::vector<views::View*> item_views_;
-  views::ImageView* icon_view_;
+  views::View* icon_view_;
   views::View* bottom_view_;
-  views::ImageView* image_view_;
-  std::vector<views::Button*> action_buttons_;
+  views::View* image_view_;
+  std::vector<views::View*> action_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
 };

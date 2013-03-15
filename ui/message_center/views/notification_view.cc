@@ -64,7 +64,9 @@ views::Border* MakeBorder(int top,
          views::Border::CreateSolidSidedBorder(top, left, bottom, right, color);
 }
 
-// ContainerViews is a vertical BoxLayout view that propagates its childrens'
+// ContainerView ///////////////////////////////////////////////////////////////
+
+// ContainerViews are vertical BoxLayout views that propagates their childrens'
 // ChildPreferredSizeChanged() and ChildVisibilityChanged() calls.
 class ContainerView : public views::View {
  public:
@@ -93,6 +95,8 @@ void ContainerView::ChildPreferredSizeChanged(View* child) {
 void ContainerView::ChildVisibilityChanged(View* child) {
   PreferredSizeChanged();
 }
+
+// ItemView ////////////////////////////////////////////////////////////////////
 
 // ItemViews are responsible for drawing each list notification item's title and
 // message next to each other within a single column.
@@ -140,13 +144,12 @@ void ItemView::SetVisible(bool visible) {
     child_at(i)->SetVisible(visible);
 }
 
+// ProportionalImageView ///////////////////////////////////////////////////////
+
 // ProportionalImageViews center their images to preserve their proportion.
-// Note that for this subclass of views::ImageView GetImageBounds() will return
-// potentially incorrect values (this can't be fixed because GetImageBounds()
-// is not virtual) and horizontal and vertical alignments will be ignored.
-class ProportionalImageView : public views::ImageView {
+class ProportionalImageView : public views::View {
  public:
-  ProportionalImageView();
+  ProportionalImageView(const gfx::ImageSkia& image);
   virtual ~ProportionalImageView();
 
   // Overridden from views::View:
@@ -157,17 +160,20 @@ class ProportionalImageView : public views::ImageView {
  private:
   gfx::Size GetImageSizeForWidth(int width);
 
+  gfx::ImageSkia image_;
+
   DISALLOW_COPY_AND_ASSIGN(ProportionalImageView);
 };
 
-ProportionalImageView::ProportionalImageView() {
+ProportionalImageView::ProportionalImageView(const gfx::ImageSkia& image)
+    : image_(image) {
 }
 
 ProportionalImageView::~ProportionalImageView() {
 }
 
 gfx::Size ProportionalImageView::GetPreferredSize() {
-  gfx::Size size = GetImageSizeForWidth(GetImage().width());
+  gfx::Size size = GetImageSizeForWidth(image_.width());
   return gfx::Size(size.width() + GetInsets().width(),
                    size.height() + GetInsets().height());
 }
@@ -177,29 +183,32 @@ int ProportionalImageView::GetHeightForWidth(int width) {
 }
 
 void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
+  views::View::OnPaint(canvas);
 
   gfx::Size draw_size(GetImageSizeForWidth(width()));
   if (!draw_size.IsEmpty()) {
-    int x = (width() - draw_size.width()) / 2;
-    int y = (height() - draw_size.height()) / 2;
+    gfx::Rect draw_bounds = GetLocalBounds();
+    draw_bounds.Inset(GetInsets());
+    draw_bounds.ClampToCenteredSize(draw_size);
 
-    gfx::Size image_size(GetImage().size());
+    gfx::Size image_size(image_.size());
     if (image_size == draw_size) {
-      canvas->DrawImageInt(GetImage(), x, y);
+      canvas->DrawImageInt(image_, draw_bounds.x(), draw_bounds.y());
     } else {
       // Resize case
       SkPaint paint;
       paint.setFilterBitmap(true);
-      canvas->DrawImageInt(GetImage(), 0, 0,
-                           image_size.width(), image_size.height(), x, y,
-                           draw_size.width(), draw_size.height(), true, paint);
+      canvas->DrawImageInt(image_, 0, 0,
+                           image_size.width(), image_size.height(),
+                           draw_bounds.x(), draw_bounds.y(),
+                           draw_size.width(), draw_size.height(),
+                           true, paint);
     }
   }
 }
 
 gfx::Size ProportionalImageView::GetImageSizeForWidth(int width) {
-  gfx::Size size = visible() ? GetImage().size() : gfx::Size();
+  gfx::Size size = visible() ? image_.size() : gfx::Size();
   if (width > 0 && !size.IsEmpty()) {
     double proportion = size.height() / (double) size.width();
     size.SetSize(width, std::max(0.5 + width * proportion, 1.0));
@@ -211,7 +220,9 @@ gfx::Size ProportionalImageView::GetImageSizeForWidth(int width) {
   return size;
 }
 
-// NotificationsButtons render the action buttons of notifications.
+// NotificationButton //////////////////////////////////////////////////////////
+
+// NotificationButtons render the action buttons of notifications.
 class NotificationButton : public views::CustomButton {
  public:
   NotificationButton(views::ButtonListener* listener);
@@ -286,6 +297,8 @@ int NotificationButton::GetHeightForWidth(int width) {
 }  // namespace
 
 namespace message_center {
+
+// NotificationView ////////////////////////////////////////////////////////////
 
 // static
 MessageView* NotificationView::Create(const Notification& notification,
@@ -380,8 +393,7 @@ NotificationView::NotificationView(const Notification& notification,
   }
 
   // Create the notification icon view.
-  icon_view_ = new ProportionalImageView();
-  icon_view_->SetImage(notification.icon().AsImageSkia());
+  icon_view_ = new ProportionalImageView(notification.icon().AsImageSkia());
 
   // Create the bottom_view_, which collects into a vertical box all content
   // below the notification icon except for the expand button.
@@ -392,9 +404,8 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the image view if appropriate.
   image_view_ = NULL;
   if (!notification.image().IsEmpty()) {
-    image_view_ = new ProportionalImageView();
+    image_view_ = new ProportionalImageView(notification.image().AsImageSkia());
     image_view_->SetVisible(is_expanded());
-    image_view_->SetImage(notification.image().ToImageSkia());
     bottom_view_->AddChildView(image_view_);
   }
 
@@ -417,7 +428,7 @@ NotificationView::NotificationView(const Notification& notification,
   expand_button()->SetVisible(expandable && !is_expanded());
 
   // Put together the different content and control views. Layering those allows
-  // for proper layout logit and it also allows the close and expand buttons to
+  // for proper layout logic and it also allows the close and expand buttons to
   // overlap the content as needed to provide large enough click and touch areas
   // (<http://crbug.com/168822> and <http://crbug.com/168856>).
   AddChildView(background_view_);
