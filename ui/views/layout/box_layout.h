@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/layout/layout_manager.h"
 
 namespace gfx {
@@ -46,13 +47,20 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // Overridden from views::LayoutManager:
   virtual void Layout(View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(View* host) OVERRIDE;
+  virtual int GetPreferredHeightForWidth(View* host, int width) OVERRIDE;
 
  private:
+  // The preferred size for the dialog given the width of the child area.
+  gfx::Size GetPreferredSizeForChildWidth(View* host, int child_area_width);
+
+  // The amount of space the layout requires in addition to any space for the
+  // child views.
+  gfx::Size NonChildSize(View* host);
+
   const Orientation orientation_;
 
   // Spacing between child views and host view border.
-  const int inside_border_horizontal_spacing_;
-  const int inside_border_vertical_spacing_;
+  gfx::Insets inside_border_insets_;
 
   // Spacing to put in between child views.
   const int between_child_spacing_;

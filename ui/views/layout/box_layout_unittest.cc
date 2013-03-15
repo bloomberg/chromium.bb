@@ -16,13 +16,33 @@ class StaticSizedView : public View {
   explicit StaticSizedView(const gfx::Size& size)
     : size_(size) {
   }
+  virtual ~StaticSizedView() {}
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE{
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     return size_;
   }
 
  private:
   gfx::Size size_;
+
+  DISALLOW_COPY_AND_ASSIGN(StaticSizedView);
+};
+
+class ProportionallySizedView : public View {
+ public:
+  explicit ProportionallySizedView(int factor) : factor_(factor) {}
+  virtual ~ProportionallySizedView() {}
+
+  virtual int GetHeightForWidth(int w) OVERRIDE {
+    return w * factor_;
+  }
+
+ private:
+  // The multiplicative factor between width and height, i.e.
+  // height = width * factor_.
+  int factor_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProportionallySizedView);
 };
 
 class BoxLayoutTest : public testing::Test {
@@ -129,6 +149,22 @@ TEST_F(BoxLayoutTest, DistributeEmptySpace) {
   layout_->Layout(host_.get());
   EXPECT_EQ(gfx::Rect(10, 10, 40, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(60, 10, 30, 20).ToString(), v2->bounds().ToString());
+}
+
+TEST_F(BoxLayoutTest, UseHeightForWidth) {
+  layout_.reset(new BoxLayout(BoxLayout::kVertical, 0, 0, 0));
+  View* v1 = new StaticSizedView(gfx::Size(20, 10));
+  host_->AddChildView(v1);
+  View* v2 = new ProportionallySizedView(2);
+  host_->AddChildView(v2);
+  EXPECT_EQ(gfx::Size(20, 50), layout_->GetPreferredSize(host_.get()));
+
+  host_->SetBounds(0, 0, 20, 50);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(0, 0, 20, 10), v1->bounds());
+  EXPECT_EQ(gfx::Rect(0, 10, 20, 40), v2->bounds());
+
+  EXPECT_EQ(110, layout_->GetPreferredHeightForWidth(host_.get(), 50));
 }
 
 }  // namespace views
