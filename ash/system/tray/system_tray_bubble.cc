@@ -260,7 +260,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
   }
   bubble_view_ = TrayBubbleView::Create(
       tray_->GetBubbleWindowContainer(), anchor, tray_, init_params);
-
+  bubble_view_->set_adjust_if_offscreen(false);
   CreateItemViews(login_status);
 }
 
