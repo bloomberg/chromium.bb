@@ -108,13 +108,13 @@ void StorageMonitorWinTest::PreAttachDevices() {
 
   int expect_attach_calls = 0;
   std::vector<base::FilePath> initial_devices =
-      volume_mount_watcher_->GetAttachedDevices();
+      volume_mount_watcher_->GetAttachedDevicesCallback().Run();
   for (std::vector<base::FilePath>::const_iterator it = initial_devices.begin();
        it != initial_devices.end(); ++it) {
     std::string unique_id;
     string16 device_name;
     bool removable;
-    ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
+    ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
         *it, NULL, &unique_id, &device_name, &removable, NULL));
     if (removable)
       expect_attach_calls++;
@@ -190,7 +190,7 @@ void StorageMonitorWinTest::DoMassStorageDevicesDetachedTest(
        it != device_indices.end(); ++it) {
     volume_broadcast.dbcv_unitmask |= 0x1 << *it;
     bool removable;
-    ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
+    ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
         VolumeMountWatcherWin::DriveNumberToFilePath(*it), NULL, NULL,
         NULL, &removable, NULL));
     if (removable)

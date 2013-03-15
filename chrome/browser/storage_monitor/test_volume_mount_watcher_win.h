@@ -49,20 +49,11 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
   void ReleaseDeviceCheck();
 
   // VolumeMountWatcherWin:
-  virtual bool GetDeviceInfo(const base::FilePath& device_path,
-                             string16* device_location,
-                             std::string* unique_id,
-                             string16* name,
-                             bool* removable,
-                             uint64* total_size_in_bytes) const OVERRIDE;
-  virtual std::vector<base::FilePath> GetAttachedDevices();
 
-  bool GetRawDeviceInfo(const base::FilePath& device_path,
-                        string16* device_location,
-                        std::string* unique_id,
-                        string16* name,
-                        bool* removable,
-                        uint64* total_size_in_bytes);
+  virtual GetAttachedDevicesCallbackType
+      GetAttachedDevicesCallback() const OVERRIDE;
+  virtual GetDeviceDetailsCallbackType
+      GetDeviceDetailsCallback() const OVERRIDE;
 
   // Should be used by unit tests to make sure the worker pool doesn't survive
   // into other test runs.
@@ -71,6 +62,7 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
  private:
   std::vector<base::FilePath> devices_checked_;
   scoped_ptr<base::WaitableEvent> device_check_complete_event_;
+  bool attached_devices_fake_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVolumeMountWatcherWin);
 };

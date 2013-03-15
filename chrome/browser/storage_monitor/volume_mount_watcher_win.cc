@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -79,7 +80,7 @@ bool GetDeviceDetails(const base::FilePath& device_path,
                       std::string* unique_id,
                       string16* name,
                       bool* removable,
-                      uint64* volume_size) {
+                      uint64* total_size_in_bytes) {
   string16 mount_point;
   if (!GetVolumePathName(device_path.value().c_str(),
                          WriteInto(&mount_point, kMaxPathBufLen),
@@ -99,8 +100,8 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   if (device_type == FLOPPY)
     return true;
 
-  if (volume_size)
-    *volume_size = GetVolumeSize(mount_point);
+  if (total_size_in_bytes)
+    *total_size_in_bytes = GetVolumeSize(mount_point);
 
   if (unique_id) {
     string16 guid;
@@ -174,13 +175,10 @@ const int kWorkerPoolNumThreads = 3;
 const char* kWorkerPoolNamePrefix = "DeviceInfoPool";
 
 VolumeMountWatcherWin::VolumeMountWatcherWin()
-    : weak_factory_(this),
+    : device_info_worker_pool_(new base::SequencedWorkerPool(
+          kWorkerPoolNumThreads, kWorkerPoolNamePrefix)),
+      weak_factory_(this),
       notifications_(NULL) {
-  get_attached_devices_callback_ = base::Bind(&GetAttachedDevices);
-  get_device_details_callback_ = base::Bind(&GetDeviceDetails);
-
-  device_info_worker_pool_ = new base::SequencedWorkerPool(
-      kWorkerPoolNumThreads, kWorkerPoolNamePrefix);
   task_runner_ =
       device_info_worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
           device_info_worker_pool_->GetSequenceToken(),
@@ -210,26 +208,14 @@ void VolumeMountWatcherWin::Init() {
   // so a posted task from the constructor would never run. Therefore, do all
   // the initializations here.
   // Disabled pending resolution of http://crbug.com/173953
-  // task_runner_->PostTask(FROM_HERE, base::Bind(
-  //     &FindExistingDevicesAndAdd, get_attached_devices_callback_,
-  //     weak_factory_.GetWeakPtr()));
+  // base::PostTaskAndReplyWithResult(task_runner_, FROM_HERE,
+  //     GetAttachedDevicesCallback(),
+  //     base::Bind(&VolumeMountWatcherWin::AddDevicesOnUIThread,
+  //                weak_factory_.GetWeakPtr()));
 
   // This task is a mystery. Without it, the ToastCrasher test fails, but
   // it isn't clear why. Need to move pool creation later?
   task_runner_->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
-}
-
-// static
-void VolumeMountWatcherWin::FindExistingDevicesAndAdd(
-    base::Callback<std::vector<base::FilePath>(void)>
-        get_attached_devices_callback,
-    base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher) {
-  std::vector<base::FilePath> removable_devices =
-      get_attached_devices_callback.Run();
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &chrome::VolumeMountWatcherWin::AddDevicesOnUIThread,
-      volume_watcher, removable_devices));
 }
 
 void VolumeMountWatcherWin::AddDevicesOnUIThread(
@@ -240,19 +226,17 @@ void VolumeMountWatcherWin::AddDevicesOnUIThread(
     if (ContainsKey(pending_device_checks_, removable_devices[i]))
       continue;
     pending_device_checks_.insert(removable_devices[i]);
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&RetrieveInfoForDeviceAndAdd,
-                                      removable_devices[i],
-                                      get_device_details_callback_,
-                                      weak_factory_.GetWeakPtr()));
+    task_runner_->PostTask(FROM_HERE, base::Bind(
+        &VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd,
+        removable_devices[i], GetDeviceDetailsCallback(),
+        weak_factory_.GetWeakPtr()));
   }
 }
 
 // static
 void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
     const base::FilePath& device_path,
-    base::Callback<bool(const base::FilePath&, string16*, std::string*,
-                        string16*, bool*, uint64*)> get_device_details_callback,
+    const GetDeviceDetailsCallbackType& get_device_details_callback,
     base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher) {
   string16 device_location;
   std::string unique_id;
@@ -294,9 +278,20 @@ void VolumeMountWatcherWin::DeviceCheckComplete(
   pending_device_checks_.erase(device_path);
 }
 
+VolumeMountWatcherWin::GetAttachedDevicesCallbackType
+    VolumeMountWatcherWin::GetAttachedDevicesCallback() const {
+  return base::Bind(&GetAttachedDevices);
+}
+
+VolumeMountWatcherWin::GetDeviceDetailsCallbackType
+    VolumeMountWatcherWin::GetDeviceDetailsCallback() const {
+  return base::Bind(&GetDeviceDetails);
+}
+
 bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
     string16* device_location, std::string* unique_id, string16* name,
     bool* removable, uint64* total_size_in_bytes) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FilePath path(device_path);
   MountPointDeviceMetadataMap::const_iterator iter =
       device_metadata_.find(path.value());
@@ -308,9 +303,9 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
   // If the requested device hasn't been scanned yet,
   // synchronously get the device info.
   if (iter == device_metadata_.end()) {
-    return get_device_details_callback_.Run(device_path, device_location,
-                                            unique_id, name, removable,
-                                            total_size_in_bytes);
+    return GetDeviceDetailsCallback().Run(device_path, device_location,
+                                          unique_id, name, removable,
+                                          total_size_in_bytes);
   }
 
   if (device_location)
