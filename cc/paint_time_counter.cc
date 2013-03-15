@@ -7,7 +7,7 @@
 namespace cc {
 
 // static
-scoped_ptr<PaintTimeCounter> PaintTimeCounter::create() {
+scoped_ptr<PaintTimeCounter> PaintTimeCounter::Create() {
   return make_scoped_ptr(new PaintTimeCounter());
 }
 
@@ -33,7 +33,8 @@ void PaintTimeCounter::SaveRasterizeTime(
     const base::TimeDelta& total_rasterize_time,
     int commit_number) {
   if (can_save_rasterize_time_delta_) {
-    Entry* entry = ring_buffer_.MutableReadBuffer(ring_buffer_.BufferSize() - 1);
+    Entry* entry =
+        ring_buffer_.MutableReadBuffer(ring_buffer_.BufferSize() - 1);
     DCHECK(commit_number == entry->commit_number);
     entry->rasterize_time = total_rasterize_time - last_total_rasterize_time_;
   }
