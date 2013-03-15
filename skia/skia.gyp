@@ -236,12 +236,6 @@
         # SkGraphics::Init().
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
 
-        'SK_DISABLE_BLUR_ROUNDING',
-        'SK_IGNORE_SUBPIXEL_AXIS_ALIGN_FIX',
-        'SK_IGNORE_PICTURE_RECORD_SAVE_LAYER_OPT',
-        'SK_IGNORE_FAST_RECT_BLUR',
-        'SK_IGNORE_CUBIC_STROKE_FIX',
-
         # Disable this check because it is too strict for some Chromium-specific
         # subclasses of SkPixelRef. See bug: crbug.com/171776.
         'SK_DISABLE_PIXELREF_LOCKCOUNT_BALANCE_CHECK',
