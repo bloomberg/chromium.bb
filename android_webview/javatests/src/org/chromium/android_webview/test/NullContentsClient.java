@@ -163,6 +163,10 @@ class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void onHideCustomView() {
+    }
+
+    @Override
     public void onScaleChangedScaled(float oldScale, float newScale) {
     }
 

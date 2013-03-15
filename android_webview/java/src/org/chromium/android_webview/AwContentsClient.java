@@ -278,25 +278,7 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     protected abstract void onRequestFocus();
 
-    // TODO (michaelbai): This method should be abstract, having empty body here
-    // makes the merge to the Android easy.
-    protected View getVideoLoadingProgressView() {
-        return null;
-    }
-
-    //--------------------------------------------------------------------------------------------
-    //                              Other WebView-specific methods
-    //--------------------------------------------------------------------------------------------
-    //
-
-    public abstract void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
-            boolean isDoneCounting);
-
-    /**
-     * Called whenever there is a new content picture available.
-     * @param picture New picture.
-     */
-    public abstract void onNewPicture(Picture picture);
+    protected abstract View getVideoLoadingProgressView();
 
     public abstract void onPageStarted(String url);
 
@@ -306,6 +288,24 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onShowCustomView(View view,
            int requestedOrientation, WebChromeClient.CustomViewCallback callback);
+
+    // TODO (michaelbai): This method should be abstract, having empty body here
+    // makes the merge to the Android easy.
+    public void onHideCustomView() {
+    }
+
+    //--------------------------------------------------------------------------------------------
+    //                              Other WebView-specific methods
+    //--------------------------------------------------------------------------------------------
+    //
+    public abstract void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
+            boolean isDoneCounting);
+
+    /**
+     * Called whenever there is a new content picture available.
+     * @param picture New picture.
+     */
+    public abstract void onNewPicture(Picture picture);
 
     //--------------------------------------------------------------------------------------------
     //             Stuff that we ignore since it only makes sense for Chrome browser

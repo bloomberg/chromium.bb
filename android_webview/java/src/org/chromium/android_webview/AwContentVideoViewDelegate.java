@@ -39,6 +39,7 @@ public class AwContentVideoViewDelegate implements ContentVideoViewContextDelega
 
     @Override
     public void onDestroyContentVideoView() {
+        mAwContentsClient.onHideCustomView();
     }
 
     @Override

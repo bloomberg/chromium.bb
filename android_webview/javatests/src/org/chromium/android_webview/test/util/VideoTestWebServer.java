@@ -4,10 +4,14 @@
 
 package org.chromium.android_webview.test.util;
 
+import android.content.Context;
 import android.util.Pair;
 
 import org.chromium.net.test.util.TestWebServer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -24,14 +28,16 @@ public class VideoTestWebServer {
             "0aNGjRo0aNGjRo0VAAD+/729RWRzH4mOZ9/O8Dl319afX4gsgAAA";
 
     private String mOnePixelOneFrameWebmURL;
+    private String mFullScreenVideoTestURL;
     private TestWebServer mTestWebServer;
 
-    public VideoTestWebServer() throws Exception {
+    public VideoTestWebServer(Context context) throws Exception {
         mTestWebServer = new TestWebServer(false);
         List<Pair<String, String>> headers = getWebmHeaders(true);
         mOnePixelOneFrameWebmURL = mTestWebServer.setResponseBase64("/" +
                 ONE_PIXEL_ONE_FRAME_WEBM_FILENAME,
                 ONE_PIXEL_ONE_FRAME_WEBM_BASE64, headers);
+        initFullScreenVideoTest(context);
     }
 
     /**
@@ -41,12 +47,41 @@ public class VideoTestWebServer {
         return mOnePixelOneFrameWebmURL;
     }
 
+    public String getFullScreenVideoTestURL() {
+        return mFullScreenVideoTestURL;
+    }
+
     public TestWebServer getTestWebServer() {
         return mTestWebServer;
     }
 
-    // Content-type headers used for javascript code.
     private static List<Pair<String, String>> getWebmHeaders(boolean disableCache) {
         return CommonResources.getContentTypeAndCacheHeaders("video/webm", disableCache);
     }
+
+    private static List<Pair<String, String>> getHTMLHeaders(boolean disableCache) {
+        return CommonResources.getContentTypeAndCacheHeaders("text/html", disableCache);
+    }
+
+    private void initFullScreenVideoTest(Context context) throws IOException {
+        final String FULL_SCREEN_VIDEO_PATH = "full_screen_video_test.html";
+        String data = loadAssetData(context, FULL_SCREEN_VIDEO_PATH);
+        mFullScreenVideoTestURL = mTestWebServer.setResponse("/" + FULL_SCREEN_VIDEO_PATH,
+                data.replace("VIDEO_FILE_URL", getOnePixelOneFrameWebmURL()),
+                getHTMLHeaders(false));
+    }
+
+    private String loadAssetData(Context context, String asset) throws IOException {
+        InputStream in = context.getAssets().open(asset);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        int buflen = 128;
+        byte[] buffer = new byte[buflen];
+        int len = in.read(buffer, 0, buflen);
+        while (len != -1) {
+            os.write(buffer, 0, len);
+            if (len < buflen) break;
+            len = in.read(buffer, 0, buflen);
+        }
+        return os.toString();
+  }
 }

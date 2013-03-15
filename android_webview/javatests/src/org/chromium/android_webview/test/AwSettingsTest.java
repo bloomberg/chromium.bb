@@ -2540,7 +2540,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 observer.register(awContents.getContentViewCore(), "javaObserver");
             }
         });
-        VideoTestWebServer webServer = new VideoTestWebServer();
+        VideoTestWebServer webServer = new VideoTestWebServer(getInstrumentation().getContext());
         try {
             String data = "<html><head><script>" +
                 "addEventListener('DOMContentLoaded', function() { " +
