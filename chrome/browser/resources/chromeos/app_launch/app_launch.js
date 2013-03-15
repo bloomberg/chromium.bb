@@ -15,5 +15,9 @@ initialize = function() {
   window.webkitRequestAnimationFrame(function() {});
 };
 
+updateMessage = function(message) {
+  $('launch-text').innerText = message;
+};
+
 disableTextSelectAndDrag();
 document.addEventListener('DOMContentLoaded', initialize);

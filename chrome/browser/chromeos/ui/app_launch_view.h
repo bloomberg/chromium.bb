@@ -21,8 +21,14 @@ class WebView;
 
 namespace chromeos {
 
+enum AppLaunchState {
+  APP_LAUNCH_STATE_PREPARING_NETWORK,
+  APP_LAUNCH_STATE_INSTALLING_APPLICATION,
+};
+
 void ShowAppLaunchSplashScreen();
 void CloseAppLaunchSplashScreen();
+void UpdateAppLaunchSplashScreenState(AppLaunchState state);
 
 namespace internal {
 
@@ -32,6 +38,7 @@ class AppLaunchView : public views::WidgetDelegateView,
  public:
   static void ShowAppLaunchSplashScreen();
   static void CloseAppLaunchSplashScreen();
+  static void UpdateAppLaunchState(AppLaunchState state);
 
  private:
   explicit AppLaunchView();
@@ -45,6 +52,9 @@ class AppLaunchView : public views::WidgetDelegateView,
 
   void Show();
   void Close();
+
+  // Updates UI state of the app launch splash screen.
+  void UpdateState(AppLaunchState state);
 
   // Creates and adds web contents to our view.
   void AddChildWebContents();
@@ -64,6 +74,9 @@ class AppLaunchView : public views::WidgetDelegateView,
 
   // Window that holds the webview.
   views::Widget* container_window_;
+
+  // Launch state.
+  AppLaunchState state_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchView);
 };

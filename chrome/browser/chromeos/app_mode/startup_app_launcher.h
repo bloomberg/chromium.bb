@@ -33,7 +33,7 @@ namespace chromeos {
 // If anything goes wrong, it exits app mode and goes back to login screen.
 class StartupAppLauncher
     : public base::SupportsWeakPtr<StartupAppLauncher>,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
       public ui::EventHandler {
  public:
   StartupAppLauncher(Profile* profile, const std::string& app_id);
@@ -52,8 +52,8 @@ class StartupAppLauncher
 
   void OnNetworkWaitTimedout();
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
-  virtual void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver overrides:
+  virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // ui::EventHandler overrides:

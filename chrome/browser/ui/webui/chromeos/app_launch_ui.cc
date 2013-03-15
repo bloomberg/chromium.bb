@@ -13,6 +13,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
@@ -26,7 +27,10 @@ content::WebUIDataSource* CreateWebUIDataSource() {
         content::WebUIDataSource::Create(chrome::kChromeUIAppLaunchHost);
   source->SetDefaultResource(IDR_APP_LAUNCH_SPLASH_HTML);
   source->SetUseJsonJSFormatV2();
-  source->AddLocalizedString("appStartMessage", IDS_APP_START_MESSAGE);
+  source->AddLocalizedString("appStartMessage",
+                             net::NetworkChangeNotifier::IsOffline() ?
+                                 IDS_APP_START_NETWORK_WAIT_MESSAGE :
+                                 IDS_APP_START_APP_WAIT_MESSAGE);
   source->AddLocalizedString("productName", IDS_SHORT_PRODUCT_NAME);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("app_launch.js", IDR_APP_LAUNCH_SPLASH_JS);
