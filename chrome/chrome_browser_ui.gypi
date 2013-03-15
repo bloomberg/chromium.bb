@@ -776,6 +776,8 @@
         'browser/ui/cocoa/tabpose_window.h',
         'browser/ui/cocoa/tabpose_window.mm',
         'browser/ui/cocoa/tabs/dock_info_mac.cc',
+        'browser/ui/cocoa/tabs/tab_audio_indicator_view_mac.h',
+        'browser/ui/cocoa/tabs/tab_audio_indicator_view_mac.mm',
         'browser/ui/cocoa/tabs/tab_controller.h',
         'browser/ui/cocoa/tabs/tab_controller.mm',
         'browser/ui/cocoa/tabs/tab_projecting_image_view.h',

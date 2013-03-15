@@ -37,6 +37,7 @@
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_audio_indicator_view_mac.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_projecting_image_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
@@ -1572,6 +1573,9 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     if (newHasIcon) {
       if (newState == kTabDone) {
         NSImageView* imageView = [self iconImageViewForContents:contents];
+        TabAudioIndicatorViewMac* tabAudioIndicatorViewMac =
+            base::mac::ObjCCast<TabAudioIndicatorViewMac>(
+                [tabController iconView]);
 
         ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
         if (theme && [tabController projecting]) {
@@ -1605,6 +1609,18 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                   throbPosition:kThrobPositionBottomRight] autorelease];
 
           iconView = recordingView;
+        } else if (chrome::IsPlayingAudio(contents) ||
+                   [tabAudioIndicatorViewMac isAnimating]) {
+          if (!tabAudioIndicatorViewMac) {
+            NSRect frame =
+                NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
+            tabAudioIndicatorViewMac = [[[TabAudioIndicatorViewMac alloc]
+                initWithFrame:frame] autorelease];
+          }
+          [tabAudioIndicatorViewMac
+              setIsPlayingAudio:chrome::IsPlayingAudio(contents)];
+          [tabAudioIndicatorViewMac setBackgroundImage:[imageView image]];
+          iconView = tabAudioIndicatorViewMac;
         } else {
           iconView = imageView;
         }
