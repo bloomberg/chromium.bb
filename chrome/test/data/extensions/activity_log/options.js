@@ -26,6 +26,12 @@ function $(o) {
   return document.getElementById(o);
 }
 
+// Constructs and returns a function to remove a given tab. These functions
+// are used as callbacks in calls to chrome.tabs.executeScript.
+function removeTabCallbackMaker(tabId) {
+    return function() { chrome.tabs.remove(tabId); };
+}
+
 // Track how many tests have finished.
 function setCompleted(str) {
   completed++;
@@ -60,15 +66,15 @@ function makeBlockedApiCall() {
 function injectContentScript() {
   chrome.tabs.onUpdated.addListener(
     function injCS(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === "complete" && tab.url.match(/google\.cr/g)) {
-        chrome.tabs.executeScript(tab.id, {'file': 'google_cs.js'});
+      if (changeInfo['status'] === "complete" && tab.url.match(/google\.fr/g)) {
+        chrome.tabs.executeScript(tab.id, {'file': 'google_cs.js'},
+                                  removeTabCallbackMaker(tabId));
         chrome.tabs.onUpdated.removeListener(injCS);
-        chrome.tabs.remove(tabId);
         setCompleted('injectContentScript');
       }
     }
   );
-  window.open('http://www.google.cr');
+  window.open('http://www.google.fr');
 }
 
 // Injects a blob of script into a page.
@@ -78,9 +84,9 @@ function injectScriptBlob() {
       if (changeInfo['status'] === "complete"
           && tab.url.match(/google\.com/g)) {
         chrome.tabs.executeScript(tab.id,
-                                  {'code': 'document.write("g o o g l e");'});
+                                  {'code': 'document.write("g o o g l e");'},
+                                  removeTabCallbackMaker(tabId));
         chrome.tabs.onUpdated.removeListener(injSB);
-        chrome.tabs.remove(tabId);
         setCompleted('injectScriptBlob');
       }
     }
@@ -109,9 +115,9 @@ function doContentScriptXHR() {
   chrome.tabs.onUpdated.addListener(
     function doCSXHR(tabId, changeInfo, tab) {
       if (changeInfo['status'] === "complete" && tab.url.match(/google\.cn/g)) {
-        chrome.tabs.executeScript(tab.id, {'code': xhr});
+        chrome.tabs.executeScript(tab.id, {'code': xhr},
+                                  removeTabCallbackMaker(tabId));
         chrome.tabs.onUpdated.removeListener(doCSXHR);
-        chrome.tabs.remove(tabId);
         setCompleted('doContentScriptXHR');
       }
     }
