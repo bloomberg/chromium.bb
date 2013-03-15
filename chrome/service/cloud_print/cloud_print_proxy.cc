@@ -135,7 +135,7 @@ void CloudPrintProxy::EnableForUserWithRobot(
   if (!printer_blacklist.empty()) {
     scoped_ptr<base::ListValue> printers(new base::ListValue());
     printers->AppendStrings(printer_blacklist);
-    service_prefs_->SetValue(prefs::kCloudPrintConnectNewPrinters,
+    service_prefs_->SetValue(prefs::kCloudPrintPrinterBlacklist,
                              printers.release());
   }
   service_prefs_->WritePrefs();
