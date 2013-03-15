@@ -105,10 +105,6 @@ class Panel : public BaseWindow,
   // b) it remains on top when an app exits full screen mode.
   void FullScreenModeChanged(bool is_full_screen);
 
-  // Ensures that the panel is fully visible, that is, not obscured by other
-  // top-most windows.
-  void EnsureFullyVisible();
-
   int TitleOnlyHeight() const;
 
   // Returns true if the panel can show minimize or restore button in its

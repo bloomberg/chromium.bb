@@ -779,12 +779,6 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   return NSHeight([titlebar convertRect:[titlebar bounds] toView:nil]);
 }
 
-- (void)ensureFullyVisible {
-  // Shows the window without making it key, on top of its layer, even if
-  // Chromium is not an active app.
-  [[self window] orderFrontRegardless];
-}
-
 // TODO(dcheng): These two selectors are almost copy-and-paste from
 // BrowserWindowController. Figure out the appropriate way of code sharing,
 // whether it's refactoring more things into BrowserWindowUtils or making a

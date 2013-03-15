@@ -125,8 +125,6 @@ class PanelCocoa;
 // Returns true if Panel requested activation of the window.
 - (BOOL)activationRequestedByPanel;
 
-- (void)ensureFullyVisible;
-
 // Adjust NSStatusWindowLevel based on whether panel is always on top
 // and whether the panel is minimized. The first version wraps the second
 // version using the current panel expanstion state.
