@@ -184,6 +184,11 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
       MirrorArrowIfOffScreen(true, anchor_rect, client_size);
       MirrorArrowIfOffScreen(false, anchor_rect, client_size);
     } else {
+      // Mirror as needed vertically if the arrow is on a horizontal edge and
+      // vice-versa.
+      MirrorArrowIfOffScreen(BubbleBorder::is_arrow_on_horizontal(arrow),
+                             anchor_rect,
+                             client_size);
       OffsetArrowIfOffScreen(anchor_rect, client_size);
     }
   }
