@@ -8,6 +8,7 @@
   "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
       "cookies",
+      "chromeosInfoPrivate",
       "echoPrivate",
       "experimental",  // Needed for the infobar API.
       "https://*/*"
