@@ -237,7 +237,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // |view_|.
   void FillOutputForSection(DialogSection section);
   // As above, but uses |compare| to determine whether a DetailInput matches
-  // a field.
+  // a field. Saves any new Autofill data to the PersonalDataManager.
   void FillOutputForSectionWithComparator(DialogSection section,
                                           const InputFieldComparator& compare);
 
@@ -285,7 +285,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   bool IsManuallyEditingSection(DialogSection section);
 
   // Whether the billing section should be used to fill in the shipping details.
-  bool UseBillingForShipping();
+  bool ShouldUseBillingForShipping();
+
+  // Whether the user wishes to save information locally to Autofill.
+  bool ShouldSaveDetailsLocally();
 
   // Start the submit proccess to interact with Online Wallet (might do various
   // things like accept documents, save details, update details, respond to

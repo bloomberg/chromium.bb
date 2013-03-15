@@ -8,10 +8,11 @@
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
+#include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/form_group.h"
 #include "components/autofill/browser/form_structure.h"
-#include "components/autofill/browser/wallet/wallet_address.h"
+#include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
 #include "components/autofill/browser/wallet/wallet_items.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -49,6 +50,20 @@ void DataModelWrapper::FillFormStructure(
   }
 }
 
+void DataModelWrapper::FillInputs(DetailInputs* inputs) {
+  for (size_t i = 0; i < inputs->size(); ++i) {
+    (*inputs)[i].autofilled_value = GetInfo((*inputs)[i].type);
+  }
+}
+
+void DataModelWrapper::FillFormField(AutofillField* field) {
+  field->value = GetInfo(field->type());
+}
+
+gfx::Image DataModelWrapper::GetIcon() {
+  return gfx::Image();
+}
+
 // AutofillFormGroupWrapper
 
 AutofillFormGroupWrapper::AutofillFormGroupWrapper(const FormGroup* form_group,
@@ -60,10 +75,6 @@ AutofillFormGroupWrapper::~AutofillFormGroupWrapper() {}
 
 string16 AutofillFormGroupWrapper::GetInfo(AutofillFieldType type) {
   return form_group_->GetInfo(type, AutofillCountry::ApplicationLocale());
-}
-
-gfx::Image AutofillFormGroupWrapper::GetIcon() {
-  return gfx::Image();
 }
 
 void AutofillFormGroupWrapper::FillFormField(AutofillField* field) {
@@ -101,14 +112,6 @@ gfx::Image AutofillCreditCardWrapper::GetIcon() {
   return rb.GetImageNamed(card_->IconResourceId());
 }
 
-void AutofillCreditCardWrapper::FillInputs(DetailInputs* inputs) {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-  for (size_t j = 0; j < inputs->size(); ++j) {
-    (*inputs)[j].autofilled_value =
-        card_->GetInfo((*inputs)[j].type, app_locale);
-  }
-}
-
 string16 AutofillCreditCardWrapper::GetDisplayText() {
   return card_->TypeAndLastFourDigits();
 }
@@ -139,20 +142,6 @@ string16 WalletAddressWrapper::GetInfo(AutofillFieldType type) {
   return address_->GetInfo(type);
 }
 
-gfx::Image WalletAddressWrapper::GetIcon() {
-  return gfx::Image();
-}
-
-void WalletAddressWrapper::FillInputs(DetailInputs* inputs) {
-  for (size_t j = 0; j < inputs->size(); ++j) {
-    (*inputs)[j].autofilled_value = address_->GetInfo((*inputs)[j].type);
-  }
-}
-
-void WalletAddressWrapper::FillFormField(AutofillField* field) {
-  field->value = GetInfo(field->type());
-}
-
 // WalletInstrumentWrapper
 
 WalletInstrumentWrapper::WalletInstrumentWrapper(
@@ -180,8 +169,35 @@ string16 WalletInstrumentWrapper::GetDisplayText() {
   return line1 + ASCIIToUTF16("\n") + DataModelWrapper::GetDisplayText();
 }
 
-void WalletInstrumentWrapper::FillFormField(AutofillField* field) {
-  field->value = GetInfo(field->type());
+// FullWalletBillingWrapper
+
+FullWalletBillingWrapper::FullWalletBillingWrapper(
+    wallet::FullWallet* full_wallet)
+    : full_wallet_(full_wallet) {
+  DCHECK(full_wallet_);
+}
+
+FullWalletBillingWrapper::~FullWalletBillingWrapper() {}
+
+string16 FullWalletBillingWrapper::GetInfo(AutofillFieldType type) {
+  if (AutofillType(type).group() == AutofillType::CREDIT_CARD)
+    return full_wallet_->GetInfo(type);
+
+  return full_wallet_->billing_address()->GetInfo(type);
+}
+
+// FullWalletShippingWrapper
+
+FullWalletShippingWrapper::FullWalletShippingWrapper(
+    wallet::FullWallet* full_wallet)
+    : full_wallet_(full_wallet) {
+  DCHECK(full_wallet_);
+}
+
+FullWalletShippingWrapper::~FullWalletShippingWrapper() {}
+
+string16 FullWalletShippingWrapper::GetInfo(AutofillFieldType type) {
+  return full_wallet_->shipping_address()->GetInfo(type);
 }
 
 }  // namespace autofill

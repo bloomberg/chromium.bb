@@ -106,6 +106,10 @@ bool DetailInputMatchesField(const DetailInput& input,
   return InputTypeMatchesFieldType(input, field) && right_section;
 }
 
+bool IsCreditCardType(AutofillFieldType type) {
+  return AutofillType(type).group() == AutofillType::CREDIT_CARD;
+}
+
 // Returns true if |input| should be used to fill a site-requested |field| which
 // is notated with a "shipping" tag, for use when the user has decided to use
 // the billing address as the shipping address.
@@ -166,14 +170,14 @@ void GetBillingInfoFromOutputs(const DetailOutputMap& output,
 
     // Special case CVC as CreditCard just swallows it.
     if (it->first->type == CREDIT_CARD_VERIFICATION_CODE) {
-      *cvc = trimmed;
+      cvc->assign(trimmed);
     } else {
       // Copy the credit card name to |profile| in addition to |card| as
       // wallet::Instrument requires a recipient name for its billing address.
       if (it->first->type == CREDIT_CARD_NAME)
         profile->SetRawInfo(NAME_FULL, trimmed);
 
-      if (AutofillType(it->first->type).group() == AutofillType::CREDIT_CARD)
+      if (IsCreditCardType(it->first->type))
         card->SetRawInfo(it->first->type, trimmed);
       else
         profile->SetRawInfo(it->first->type, trimmed);
@@ -616,16 +620,24 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     return wrapper.Pass();
 
   if (IsPayingWithWallet()) {
-    int index;
-    bool success = base::StringToInt(item_key, &index);
-    DCHECK(success);
-
-    if (section == SECTION_CC_BILLING) {
-      wrapper.reset(
-          new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
+    // Use |full_wallet_| if it exists as it has unmasked data.
+    if (full_wallet_.get()) {
+      if (section == SECTION_CC_BILLING)
+        wrapper.reset(new FullWalletBillingWrapper(full_wallet_.get()));
+      else
+        wrapper.reset(new FullWalletShippingWrapper(full_wallet_.get()));
     } else {
-      wrapper.reset(
-          new WalletAddressWrapper(wallet_items_->addresses()[index]));
+      int index;
+      bool success = base::StringToInt(item_key, &index);
+      DCHECK(success);
+
+      if (section == SECTION_CC_BILLING) {
+        wrapper.reset(
+            new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
+      } else {
+        wrapper.reset(
+            new WalletAddressWrapper(wallet_items_->addresses()[index]));
+      }
     }
   } else if (section == SECTION_CC) {
     CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
@@ -1099,19 +1111,10 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
   // TODO(dbeam): handle more required actions.
   full_wallet_ = full_wallet.Pass();
 
-  if (!full_wallet_->HasRequiredAction(wallet::VERIFY_CVV)) {
+  if (full_wallet_->HasRequiredAction(wallet::VERIFY_CVV))
+    DisableWallet();
+  else
     FinishSubmit();
-    return;
-  }
-
-  // TODO(dbeam): pause this flow to ask for a CVC from the user?
-  DetailOutputMap output;
-  view_->GetUserInput(SECTION_CC_BILLING, &output);
-
-  wallet_client_.AuthenticateInstrument(
-      active_instrument_id_,
-      UTF16ToUTF8(GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE)),
-      wallet_items_->obfuscated_gaia_id());
 }
 
 void AutofillDialogControllerImpl::OnDidGetWalletItems(
@@ -1216,10 +1219,8 @@ bool AutofillDialogControllerImpl::RequestingCreditCardInfo() const {
   DCHECK_GT(form_structure_.field_count(), 0U);
 
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    if (AutofillType(form_structure_.field(i)->type()).group() ==
-        AutofillType::CREDIT_CARD) {
+    if (IsCreditCardType(form_structure_.field(i)->type()))
       return true;
-    }
   }
 
   return false;
@@ -1362,52 +1363,47 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
   if (!SectionIsActive(section))
     return;
 
-  if (!IsManuallyEditingSection(section)) {
-    if (section == SECTION_CC_BILLING) {
-      // TODO(dbeam): implement.
-    } else {
-      scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
-      // Only fill in data that is associated with this section.
-      const DetailInputs& inputs = RequestedFieldsForSection(section);
-      model->FillFormStructure(inputs, compare, &form_structure_);
+  // Fill the combined credit card and billing section from |full_wallet_| (via
+  // |CreateWrapper()|) as card number and CVC are auto-generated.
+  if (!IsManuallyEditingSection(section) || section == SECTION_CC_BILLING) {
+    scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+    // Only fill in data that is associated with this section.
+    const DetailInputs& inputs = RequestedFieldsForSection(section);
+    model->FillFormStructure(inputs, compare, &form_structure_);
 
-      // CVC needs special-casing because the CreditCard class doesn't store
-      // or handle them.
-      if (section == SECTION_CC)
-        SetCvcResult(view_->GetCvc());
-    }
+    // CVC needs special-casing because the CreditCard class doesn't store or
+    // handle them. This isn't necessary when filling the combined CC and
+    // billing section as CVC comes from |full_wallet_| in this case.
+    if (section == SECTION_CC)
+      SetCvcResult(view_->GetCvc());
   } else {
-    // The user manually input data.
+    // The user manually input data. If using Autofill, save the info as new or
+    // edited data. Always fill local data into |form_structure_|.
     DetailOutputMap output;
     view_->GetUserInput(section, &output);
 
-    if (IsPayingWithWallet()) {
-      // TODO(dbeam): implement.
+    if (section == SECTION_CC) {
+      CreditCard card;
+      FillFormGroupFromOutputs(output, &card);
+
+      if (ShouldSaveDetailsLocally())
+        GetManager()->SaveImportedCreditCard(card);
+
+      FillFormStructureForSection(card, 0, section, compare);
+
+      // Again, CVC needs special-casing. Fill it in directly from |output|.
+      SetCvcResult(GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
     } else {
-      // Save the info as new or edited data and fill it into |form_structure_|.
-      if (section == SECTION_CC) {
-        CreditCard card;
-        FillFormGroupFromOutputs(output, &card);
+      AutofillProfile profile;
+      FillFormGroupFromOutputs(output, &profile);
 
-        if (view_->SaveDetailsLocally())
-          GetManager()->SaveImportedCreditCard(card);
+      // TODO(estade): we should probably edit the existing profile in the
+      // cases where the input data is based on an existing profile (user
+      // clicked "Edit" or autofill popup filled in the form).
+      if (ShouldSaveDetailsLocally())
+        GetManager()->SaveImportedProfile(profile);
 
-        FillFormStructureForSection(card, 0, section, compare);
-
-        // Again, CVC needs special-casing. Fill it in directly from |output|.
-        SetCvcResult(GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
-      } else {
-        AutofillProfile profile;
-        FillFormGroupFromOutputs(output, &profile);
-
-        // TODO(estade): we should probably edit the existing profile in the
-        // cases where the input data is based on an existing profile (user
-        // clicked "Edit" or autofill popup filled in the form).
-        if (view_->SaveDetailsLocally())
-          GetManager()->SaveImportedProfile(profile);
-
-        FillFormStructureForSection(profile, 0, section, compare);
-      }
+      FillFormStructureForSection(profile, 0, section, compare);
     }
   }
 }
@@ -1531,7 +1527,7 @@ bool AutofillDialogControllerImpl::IsManuallyEditingSection(
              GetItemKeyForCheckedItem().empty();
 }
 
-bool AutofillDialogControllerImpl::UseBillingForShipping() {
+bool AutofillDialogControllerImpl::ShouldUseBillingForShipping() {
   // If the user is editing or inputting data, ask the view.
   if (IsManuallyEditingSection(SECTION_SHIPPING))
     return view_->UseBillingForShipping();
@@ -1539,6 +1535,13 @@ bool AutofillDialogControllerImpl::UseBillingForShipping() {
   // Otherwise, the checkbox should be hidden so its state is irrelevant.
   // Always use the shipping suggestion model.
   return false;
+}
+
+bool AutofillDialogControllerImpl::ShouldSaveDetailsLocally() {
+  // It's possible that the user checked [X] Save details locally before
+  // switching payment methods, so only ask the view whether to save details
+  // locally if that checkbox is showing (currently if not paying with wallet).
+  return !IsPayingWithWallet() && view_->SaveDetailsLocally();
 }
 
 void AutofillDialogControllerImpl::SubmitWithWallet() {
@@ -1558,7 +1561,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
       active_instrument_id_ = active_instrument->object_id();
 
       // TODO(dbeam): does re-using instrument address IDs work?
-      if (UseBillingForShipping())
+      if (ShouldUseBillingForShipping())
         active_address_id_ = active_instrument->address().object_id();
     }
   }
@@ -1599,7 +1602,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   scoped_ptr<wallet::Address> new_address;
   if (active_address_id_.empty()) {
-    if (UseBillingForShipping() && new_instrument.get()) {
+    if (ShouldUseBillingForShipping() && new_instrument.get()) {
       new_address.reset(new wallet::Address(new_instrument->address()));
     } else {
       DetailOutputMap output;
@@ -1649,7 +1652,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   FillOutputForSection(SECTION_CC);
   FillOutputForSection(SECTION_BILLING);
   FillOutputForSection(SECTION_CC_BILLING);
-  if (UseBillingForShipping()) {
+  if (ShouldUseBillingForShipping()) {
     FillOutputForSectionWithComparator(
         SECTION_BILLING,
         base::Bind(DetailInputMatchesShippingField));

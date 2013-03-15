@@ -37,13 +37,8 @@ class FullWallet {
   static scoped_ptr<FullWallet>
       CreateFullWallet(const base::DictionaryValue& dictionary);
 
-  // Decrypts and returns the primary account number (PAN) using the generated
-  // one time pad, |one_time_pad_|.
-  const std::string& GetPan();
-
-  // Decrypts and returns the card verification number (CVN) using the generated
-  // one time pad, |one_time_pad_|.
-  const std::string& GetCvn();
+  // Returns corresponding data for |type|.
+  string16 GetInfo(AutofillFieldType type);
 
   // Whether or not |action| is in |required_actions_|.
   bool HasRequiredAction(RequiredAction action) const;
@@ -79,7 +74,17 @@ class FullWallet {
              scoped_ptr<Address> billing_address,
              scoped_ptr<Address> shipping_address,
              const std::vector<RequiredAction>& required_actions);
+
+  // Decrypts both |pan_| and |cvn_|.
   void DecryptCardInfo();
+
+  // Decrypts and returns the primary account number (PAN) using the generated
+  // one time pad, |one_time_pad_|.
+  const std::string& GetPan();
+
+  // Decrypts and returns the card verification number (CVN) using the generated
+  // one time pad, |one_time_pad_|.
+  const std::string& GetCvn();
 
   // The expiration month of the proxy card. It should be 1-12.
   int expiration_month_;

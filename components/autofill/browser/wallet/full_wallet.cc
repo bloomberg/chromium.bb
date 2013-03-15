@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace {
@@ -123,6 +124,30 @@ scoped_ptr<FullWallet>
                                                required_actions));
 }
 
+string16 FullWallet::GetInfo(AutofillFieldType type) {
+  switch (type) {
+    case CREDIT_CARD_NUMBER:
+      return UTF8ToUTF16(GetPan());
+
+    case CREDIT_CARD_NAME:
+      return billing_address()->recipient_name();
+
+    case CREDIT_CARD_VERIFICATION_CODE:
+      return UTF8ToUTF16(GetCvn());
+
+    case CREDIT_CARD_EXP_MONTH:
+      return base::IntToString16(expiration_month());
+
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      return base::IntToString16(expiration_year());
+
+    default:
+      NOTREACHED();
+  }
+
+  return string16();
+}
+
 bool FullWallet::HasRequiredAction(RequiredAction action) const {
   DCHECK(ActionAppliesToFullWallet(action));
   return std::find(required_actions_.begin(),
@@ -167,18 +192,6 @@ bool FullWallet::operator!=(const FullWallet& other) const {
   return !(*this == other);
 }
 
-const std::string& FullWallet::GetPan() {
-  if (pan_.empty())
-    DecryptCardInfo();
-  return pan_;
-}
-
-const std::string& FullWallet::GetCvn() {
-  if (cvn_.empty())
-    DecryptCardInfo();
-  return cvn_;
-}
-
 void FullWallet::DecryptCardInfo() {
   std::vector<uint8> operating_data;
   // Convert |encrypted_rest_| to bytes so we can decrypt it with |otp|.
@@ -218,6 +231,18 @@ void FullWallet::DecryptCardInfo() {
   size_t split = kPanSize - kBinSize;
   cvn_ = card_info.substr(split);
   pan_ = iin_ + card_info.substr(0, split);
+}
+
+const std::string& FullWallet::GetPan() {
+  if (pan_.empty())
+    DecryptCardInfo();
+  return pan_;
+}
+
+const std::string& FullWallet::GetCvn() {
+  if (cvn_.empty())
+    DecryptCardInfo();
+  return cvn_;
 }
 
 }  // namespace wallet
