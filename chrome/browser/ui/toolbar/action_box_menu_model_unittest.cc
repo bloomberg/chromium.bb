@@ -80,7 +80,7 @@ class ActionBoxMenuModelTest : public BrowserWithTestWindowTest,
   }
 
   void NavigateToLocalPage() {
-    AddTab(browser(), GURL("chrome://flags"));
+    AddTab(browser(), GURL("chrome://blank"));
   }
 
  private:
