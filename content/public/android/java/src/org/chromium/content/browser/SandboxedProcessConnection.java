@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CpuFeatures;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
@@ -53,6 +54,7 @@ public class SandboxedProcessConnection implements ServiceConnection {
     private final Context mContext;
     private final int mServiceNumber;
     private final SandboxedProcessConnection.DeathCallback mDeathCallback;
+    private final Class<? extends SandboxedProcessService> mServiceClass;
 
     // Synchronization: While most internal flow occurs on the UI thread, the public API
     // (specifically bind and unbind) may be called from any thread, hence all entry point methods
@@ -89,10 +91,12 @@ public class SandboxedProcessConnection implements ServiceConnection {
     private boolean mIsBound;
 
     SandboxedProcessConnection(Context context, int number,
-            SandboxedProcessConnection.DeathCallback deathCallback) {
+            SandboxedProcessConnection.DeathCallback deathCallback,
+            Class<? extends SandboxedProcessService> serviceClass) {
         mContext = context;
         mServiceNumber = number;
         mDeathCallback = deathCallback;
+        mServiceClass = serviceClass;
     }
 
     int getServiceNumber() {
@@ -105,8 +109,7 @@ public class SandboxedProcessConnection implements ServiceConnection {
 
     private Intent createServiceBindIntent() {
         Intent intent = new Intent();
-        String n = org.chromium.content.app.SandboxedProcessService.class.getName();
-        intent.setClassName(mContext, n + mServiceNumber);
+        intent.setClassName(mContext, mServiceClass.getName() + mServiceNumber);
         intent.setPackage(mContext.getPackageName());
         return intent;
     }

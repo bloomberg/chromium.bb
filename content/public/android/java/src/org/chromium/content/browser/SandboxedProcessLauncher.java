@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.Surface;
 
@@ -19,6 +18,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.app.LibraryLoader;
+import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
 
@@ -57,6 +57,19 @@ public class SandboxedProcessLauncher {
         }
     }
 
+    // Service class for sandboxed process. As the default value it uses
+    // SandboxedProcessService.
+    private static Class<? extends SandboxedProcessService> mServiceClass =
+            SandboxedProcessService.class;
+    private static boolean mConnectionAllocated = false;
+
+    // Sets service class for sandboxed service.
+    public static void setServiceClass(Class<? extends SandboxedProcessService> serviceClass) {
+        // We should guarantee this is called before allocating connection.
+        assert !mConnectionAllocated;
+        mServiceClass = serviceClass;
+    }
+
     private static SandboxedProcessConnection allocateConnection(Context context) {
         SandboxedProcessConnection.DeathCallback deathCallback =
             new SandboxedProcessConnection.DeathCallback() {
@@ -72,7 +85,9 @@ public class SandboxedProcessLauncher {
             }
             int slot = mFreeConnectionIndices.remove(0);
             assert mConnections[slot] == null;
-            mConnections[slot] = new SandboxedProcessConnection(context, slot, deathCallback);
+            mConnections[slot] = new SandboxedProcessConnection(context, slot, deathCallback,
+                    mServiceClass);
+            mConnectionAllocated = true;
             return mConnections[slot];
         }
     }
