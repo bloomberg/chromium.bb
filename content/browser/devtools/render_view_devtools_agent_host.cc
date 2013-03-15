@@ -71,7 +71,7 @@ class DevToolsAgentHostRvhObserver : public RenderViewHostObserver {
 
 // static
 scoped_refptr<DevToolsAgentHost>
-DevToolsAgentHost::GetFor(RenderViewHost* rvh) {
+DevToolsAgentHost::GetOrCreateFor(RenderViewHost* rvh) {
   RenderViewDevToolsAgentHost* result = FindAgentHost(rvh);
   if (!result)
     result = new RenderViewDevToolsAgentHost(rvh);

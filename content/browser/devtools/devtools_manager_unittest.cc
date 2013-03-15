@@ -129,7 +129,8 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
   DevToolsManagerImpl manager;
 
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh()));
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetOrCreateFor(rvh()));
   DevToolsClientHost* host = manager.GetDevToolsClientHostFor(agent);
   EXPECT_TRUE(NULL == host);
 
@@ -155,12 +156,13 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
   DevToolsManagerImpl manager;
 
   TestDevToolsClientHost client_host;
-  scoped_refptr<DevToolsAgentHost> agent_host(DevToolsAgentHost::GetFor(rvh()));
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetOrCreateFor(rvh()));
   manager.RegisterDevToolsClientHostFor(agent_host, &client_host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
   std::string m = "test message";
-  agent_host = DevToolsAgentHost::GetFor(rvh());
+  agent_host = DevToolsAgentHost::GetOrCreateFor(rvh());
   manager.DispatchOnInspectorFrontend(agent_host, m);
   EXPECT_TRUE(&m == client_host.last_sent_message);
 
@@ -177,7 +179,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
 
   TestDevToolsClientHost client_host;
   scoped_refptr<DevToolsAgentHost> agent_host(
-      DevToolsAgentHost::GetFor(inspected_rvh));
+      DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
   DevToolsManager::GetInstance()->
       RegisterDevToolsClientHostFor(agent_host, &client_host);
 
@@ -214,7 +216,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   TestDevToolsClientHost client_host;
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   devtools_manager->RegisterDevToolsClientHostFor(
-      DevToolsAgentHost::GetFor(rvh()),
+      DevToolsAgentHost::GetOrCreateFor(rvh()),
       &client_host);
 
   // Navigate to new site which should get a new RenderViewHost.
@@ -223,7 +225,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
-      DevToolsAgentHost::GetFor(pending_rvh())));
+      DevToolsAgentHost::GetOrCreateFor(pending_rvh())));
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
@@ -231,7 +233,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   contents()->TestDidNavigate(rvh(), 1, url, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
-      DevToolsAgentHost::GetFor(rvh())));
+      DevToolsAgentHost::GetOrCreateFor(rvh())));
   client_host.Close(DevToolsManager::GetInstance());
 }
 

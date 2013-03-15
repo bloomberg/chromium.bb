@@ -580,7 +580,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   }
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetOrCreateFor(rvh));
   if (manager->GetDevToolsClientHostFor(agent)) {
     Send500(connection_id,
             "Target with given id is being inspected: " + page_id);
@@ -763,7 +764,8 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
     const std::string& host) {
   base::DictionaryValue* dictionary = new base::DictionaryValue;
 
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetOrCreateFor(rvh));
 
   std::string id = binding_->GetIdentifier(agent);
   dictionary->SetString("id", id);
