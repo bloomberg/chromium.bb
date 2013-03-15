@@ -39,6 +39,7 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(
       current_pos_(0),
       total_size_(0),
       maximum_(0),
+      vertical_adjust_(0.f),
       scroll_layer_id_(-1),
       scrollbar_overlay_style_(WebScrollbar::ScrollbarOverlayStyleDefault),
       orientation_(WebScrollbar::Horizontal),
@@ -84,6 +85,15 @@ void ScrollbarLayerImpl::SetThumbSize(gfx::Size size) {
   geometry_->setThumbSize(size);
 }
 
+void ScrollbarLayerImpl::SetViewportWithinScrollableArea(
+    gfx::RectF scrollable_viewport, gfx::SizeF scrollable_area) {
+  normalized_viewport_ = gfx::RectF(
+      scrollable_viewport.x() / scrollable_area.width(),
+      scrollable_viewport.y() / scrollable_area.height(),
+      scrollable_viewport.width() / scrollable_area.width(),
+      scrollable_viewport.height() / scrollable_area.height());
+}
+
 float ScrollbarLayerImpl::CurrentPos() const {
   return current_pos_;
 }
@@ -105,8 +115,8 @@ static gfx::RectF ToUVRect(gfx::Rect r, gfx::Rect bounds) {
 }
 
 gfx::Rect ScrollbarLayerImpl::ScrollbarLayerRectToContentRect(
-    gfx::Rect layer_rect) const {
-  // Don't intersect with the bounds as in LayerRectToContentRect() because
+    gfx::RectF layer_rect) const {
+  // Don't intersect with the bounds as in layerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
   gfx::RectF content_rect = gfx::ScaleRect(layer_rect,
                                            contents_scale_x(),
@@ -147,23 +157,29 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->useSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-  WebRect thumb_rect, back_track_rect, foreTrackRect;
-  geometry_->splitTrack(&scrollbar_,
-                        geometry_->trackRect(&scrollbar_),
-                        back_track_rect,
-                        thumb_rect,
-                        foreTrackRect);
-  if (!geometry_->hasThumb(&scrollbar_))
-    thumb_rect = WebRect();
-
   if (layer_tree_impl()->settings().solidColorScrollbars) {
+    gfx::Rect track_rect = geometry_->trackRect(&scrollbar_);
     int thickness_override =
         layer_tree_impl()->settings().solidColorScrollbarThicknessDIP;
-    if (thickness_override != -1) {
-      if (scrollbar_.orientation() == WebScrollbar::Vertical)
-        thumb_rect.width = thickness_override;
-      else
-        thumb_rect.height = thickness_override;
+    gfx::RectF thumb_rect;
+    if (scrollbar_.orientation() == WebScrollbar::Horizontal) {
+      track_rect.set_y(track_rect.y() + vertical_adjust_);
+      thumb_rect = gfx::RectF(track_rect.x() +
+                              (normalized_viewport_.x() * track_rect.width()),
+                              track_rect.y(),
+                              normalized_viewport_.width() * track_rect.width(),
+                              track_rect.height());
+      if (thickness_override != -1)
+        thumb_rect.set_height(thickness_override);
+    } else {
+      track_rect.set_height(track_rect.height() + vertical_adjust_);
+      thumb_rect = gfx::RectF(
+          track_rect.x(),
+          track_rect.y() + (normalized_viewport_.y() * track_rect.height()),
+          track_rect.width(),
+          normalized_viewport_.height() * track_rect.height());
+      if (thickness_override != -1)
+        thumb_rect.set_width(thickness_override);
     }
     gfx::Rect quad_rect(ScrollbarLayerRectToContentRect(thumb_rect));
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
@@ -174,8 +190,17 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
     return;
   }
 
+  WebRect thumb_rect, back_track_rect, foreTrackRect;
+  geometry_->splitTrack(&scrollbar_,
+                        geometry_->trackRect(&scrollbar_),
+                        back_track_rect,
+                        thumb_rect,
+                        foreTrackRect);
+  if (!geometry_->hasThumb(&scrollbar_))
+    thumb_rect = WebRect();
+
   if (thumb_resource_id_ && !thumb_rect.isEmpty()) {
-    gfx::Rect quad_rect(ScrollbarLayerRectToContentRect(thumb_rect));
+    gfx::Rect quad_rect(ScrollbarLayerRectToContentRect(gfx::Rect(thumb_rect)));
     gfx::Rect opaque_rect;
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
@@ -197,7 +222,8 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
   // We only paint the track in two parts if we were given a texture for the
   // forward track part.
   if (fore_track_resource_id_ && !foreTrackRect.isEmpty()) {
-    gfx::Rect quad_rect(ScrollbarLayerRectToContentRect(foreTrackRect));
+    gfx::Rect quad_rect(ScrollbarLayerRectToContentRect(
+        gfx::Rect(foreTrackRect)));
     gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
     gfx::RectF uv_rect(ToUVRect(foreTrackRect, boundsRect));
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};

@@ -860,6 +860,10 @@ void LayerImpl::SetScrollDelta(gfx::Vector2dF scroll_delta) {
   UpdateScrollbarPositions();
 }
 
+gfx::Vector2dF LayerImpl::TotalScrollOffset() const {
+  return scroll_offset_ + scroll_delta_;
+}
+
 void LayerImpl::SetImplTransform(const gfx::Transform& transform) {
   if (impl_transform_ == transform)
     return;

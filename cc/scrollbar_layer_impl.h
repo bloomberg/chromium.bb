@@ -30,6 +30,12 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
   void SetScrollbarData(WebKit::WebScrollbar* scrollbar);
   void SetThumbSize(gfx::Size size);
 
+  void set_vertical_adjust(float vertical_adjust) {
+    vertical_adjust_ = vertical_adjust;
+  }
+  void SetViewportWithinScrollableArea(gfx::RectF scrollable_viewport,
+      gfx::SizeF scrollable_area);
+
   void set_back_track_resource_id(ResourceProvider::ResourceId id) {
     back_track_resource_id_ = id;
   }
@@ -98,7 +104,7 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
-  gfx::Rect ScrollbarLayerRectToContentRect(gfx::Rect layer_rect) const;
+  gfx::Rect ScrollbarLayerRectToContentRect(gfx::RectF layer_rect) const;
 
   Scrollbar scrollbar_;
 
@@ -112,6 +118,15 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
   int total_size_;
   int maximum_;
   gfx::Size thumb_size_;
+
+  // Difference between the clip layer's height and the visible viewport
+  // height (which may differ in the presence of top-controls hiding).
+  float vertical_adjust_;
+
+  // Specifies the position and size of the viewport within the scrollable
+  // area (normalized as if the scrollable area is a unit-sized box
+  // [0, 0, 1, 1]).
+  gfx::RectF normalized_viewport_;
 
   int scroll_layer_id_;
 

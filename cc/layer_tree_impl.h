@@ -98,8 +98,9 @@ class CC_EXPORT LayerTreeImpl {
     hud_layer_ = layer_impl;
   }
 
-  LayerImpl* RootScrollLayer();
-  LayerImpl* CurrentlyScrollingLayer();
+  LayerImpl* RootScrollLayer() const;
+  LayerImpl* RootClipLayer() const;
+  LayerImpl* CurrentlyScrollingLayer() const;
   void set_currently_scrolling_layer(LayerImpl* layer) {
     currently_scrolling_layer_ = layer;
   }
@@ -192,6 +193,8 @@ class CC_EXPORT LayerTreeImpl {
 
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
+
+  void UpdateSolidColorScrollbars();
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;

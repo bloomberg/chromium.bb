@@ -8,6 +8,8 @@
 #include "cc/heads_up_display_layer_impl.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/scrollbar_layer_impl.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
 namespace cc {
@@ -118,12 +120,16 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->set_hud_layer(NULL);
 }
 
-LayerImpl* LayerTreeImpl::RootScrollLayer() {
+LayerImpl* LayerTreeImpl::RootScrollLayer() const {
   DCHECK(IsActiveTree());
   return root_scroll_layer_;
 }
 
-LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() {
+LayerImpl* LayerTreeImpl::RootClipLayer() const {
+  return root_scroll_layer_ ? root_scroll_layer_->parent() : NULL;
+}
+
+LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   DCHECK(IsActiveTree());
   return currently_scrolling_layer_;
 }
@@ -171,22 +177,8 @@ void LayerTreeImpl::SetPageScaleDelta(float delta)
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
-  gfx::SizeF view_bounds;
-  // The clip layer should be used for scrolling bounds if available since it
-  // adjusts for non-overlay scrollbars. Otherwise, fall back to our knowledge
-  // of the physical viewport size.
-  LayerImpl* clip_layer = NULL;
-  if (root_scroll_layer_)
-    clip_layer = root_scroll_layer_->parent();
-  if (clip_layer && clip_layer->masks_to_bounds()) {
-    view_bounds = clip_layer->bounds();
-  } else {
-    view_bounds = gfx::ScaleSize(device_viewport_size(),
-        1 / device_scale_factor());
-  }
-  view_bounds.Scale(1 / total_page_scale_factor());
-
-  return view_bounds;
+  return gfx::ScaleSize(layer_tree_host_impl_->VisibleViewportSize(),
+                        1.0f / total_page_scale_factor());
 }
 
 void LayerTreeImpl::UpdateMaxScrollOffset() {
@@ -209,6 +201,35 @@ gfx::Transform LayerTreeImpl::ImplTransform() const {
   return transform;
 }
 
+void LayerTreeImpl::UpdateSolidColorScrollbars() {
+  DCHECK(settings().solidColorScrollbars);
+
+  LayerImpl* root_scroll = RootScrollLayer();
+  if (!root_scroll)
+    return;
+
+  if (!IsActiveTree())
+    return;
+
+  gfx::RectF scrollable_viewport(
+      gfx::PointAtOffsetFromOrigin(root_scroll->TotalScrollOffset()),
+      ScrollableViewportSize());
+  float vertical_adjust = 0.0f;
+  if (RootClipLayer())
+    vertical_adjust = layer_tree_host_impl_->VisibleViewportSize().height() -
+                      RootClipLayer()->bounds().height();
+  if (ScrollbarLayerImpl* horiz = root_scroll->horizontal_scrollbar_layer()) {
+    horiz->set_vertical_adjust(vertical_adjust);
+    horiz->SetViewportWithinScrollableArea(scrollable_viewport,
+                                           ScrollableSize());
+  }
+  if (ScrollbarLayerImpl* vertical = root_scroll->vertical_scrollbar_layer()) {
+    vertical->set_vertical_adjust(vertical_adjust);
+    vertical->SetViewportWithinScrollableArea(scrollable_viewport,
+                                              ScrollableSize());
+  }
+}
+
 struct UpdateTilePrioritiesForLayer {
   void operator()(LayerImpl *layer) {
     layer->UpdateTilePriorities();
@@ -216,6 +237,17 @@ struct UpdateTilePrioritiesForLayer {
 };
 
 void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
+  if (settings().solidColorScrollbars && IsActiveTree()) {
+    UpdateSolidColorScrollbars();
+
+    // The top controls manager is incompatible with the WebKit-created cliprect
+    // because it can bring into view a larger amount of content when it
+    // hides. It's safe to deactivate the clip rect if no non-overlay scrollbars
+    // are present.
+    if (layer_tree_host_impl_->top_controls_manager())
+      RootScrollLayer()->parent()->SetMasksToBounds(false);
+  }
+
   if (!needs_update_draw_properties_) {
     if (reason == UPDATE_ACTIVE_TREE_FOR_DRAW && root_layer())
       LayerTreeHostCommon::callFunctionForSubtree<UpdateTilePrioritiesForLayer>(

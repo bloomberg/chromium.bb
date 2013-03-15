@@ -106,7 +106,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   virtual void setActiveTreeNeedsUpdateDrawProperties() OVERRIDE;
   virtual void setNeedsRedraw() OVERRIDE;
   virtual bool haveRootScrollLayer() const OVERRIDE;
-  virtual float rootScrollLayerTotalScrollY() const OVERRIDE;
 
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
@@ -141,6 +140,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   void DidDrawAllLayers(const FrameData& frame);
 
   const LayerTreeSettings& settings() const { return settings_; }
+
+  // Returns the currently visible viewport size in DIP. This value excludes
+  // the URL bar and non-overlay scrollbars.
+  gfx::SizeF VisibleViewportSize() const;
 
   // RendererClient implementation
  private:
@@ -346,6 +349,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
  private:
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
+  void AnimateTopControls(base::TimeTicks monotonic_time);
 
   gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
       LayerImpl* layerImpl,

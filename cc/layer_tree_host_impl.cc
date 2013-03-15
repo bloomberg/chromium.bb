@@ -262,8 +262,7 @@ void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time,
   AnimatePageScale(monotonic_time);
   AnimateLayers(monotonic_time, wall_clock_time);
   AnimateScrollbars(monotonic_time);
-  if (top_controls_manager_)
-    top_controls_manager_->Animate(monotonic_time);
+  AnimateTopControls(monotonic_time);
 }
 
 void LayerTreeHostImpl::ManageTiles() {
@@ -924,8 +923,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   if (!RootScrollLayer())
     return metadata;
 
-  metadata.root_scroll_offset = RootScrollLayer()->scroll_offset() +
-                                RootScrollLayer()->scroll_delta();
+  metadata.root_scroll_offset = RootScrollLayer()->TotalScrollOffset();
 
   return metadata;
 }
@@ -1013,6 +1011,22 @@ gfx::Size LayerTreeHostImpl::DeviceViewportSize() const {
   return device_viewport_size();
 }
 
+gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
+  gfx::SizeF dip_size =
+      gfx::ScaleSize(DeviceViewportSize(), 1.f / device_scale_factor());
+
+  // The clip layer should be used if non-overlay scrollbars may exist since
+  // it adjusts for them.
+  LayerImpl* clip_layer = active_tree_->RootClipLayer();
+  if (!Settings().solidColorScrollbars && clip_layer &&
+      clip_layer->masks_to_bounds())
+    dip_size = clip_layer->bounds();
+
+  float topOffset =
+      top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
+  return gfx::SizeF(dip_size.width(), dip_size.height() - topOffset);
+}
+
 const LayerTreeSettings& LayerTreeHostImpl::Settings() const {
   return settings();
 }
@@ -1033,12 +1047,6 @@ void LayerTreeHostImpl::Readback(void* pixels,
 
 bool LayerTreeHostImpl::haveRootScrollLayer() const {
   return RootScrollLayer();
-}
-
-float LayerTreeHostImpl::rootScrollLayerTotalScrollY() const {
-  if (LayerImpl* layer = RootScrollLayer())
-    return layer->scroll_offset().y() + layer->scroll_delta().y();
-  return 0.0f;
 }
 
 LayerImpl* LayerTreeHostImpl::RootLayer() const {
@@ -1485,8 +1493,10 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   gfx::Vector2dF pending_delta = scroll_delta;
   bool did_scroll = false;
 
-  if (top_controls_manager_ && CurrentlyScrollingLayer() == RootScrollLayer())
+  if (top_controls_manager_ && CurrentlyScrollingLayer() == RootScrollLayer()) {
     pending_delta = top_controls_manager_->ScrollBy(pending_delta);
+    UpdateMaxScrollOffset();
+  }
 
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
@@ -1674,6 +1684,15 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
     client_->SetNeedsCommitOnImplThread();
     client_->RenewTreePriority();
   }
+}
+
+void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
+  if (!top_controls_manager_ || !RootScrollLayer())
+    return;
+  gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
+  UpdateMaxScrollOffset();
+  RootScrollLayer()->ScrollBy(gfx::ScaleVector2d(
+      scroll, 1.f / active_tree_->total_page_scale_factor()));
 }
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,

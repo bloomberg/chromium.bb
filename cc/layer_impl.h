@@ -274,6 +274,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetScrollDelta(gfx::Vector2dF scroll_delta);
   gfx::Vector2dF scroll_delta() const { return scroll_delta_; }
 
+  gfx::Vector2dF TotalScrollOffset() const;
+
   void SetImplTransform(const gfx::Transform& transform);
   const gfx::Transform& impl_transform() const { return impl_transform_; }
 

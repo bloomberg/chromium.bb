@@ -39,7 +39,9 @@ class CC_EXPORT TopControlsManager
   virtual ~TopControlsManager();
 
   float controls_top_offset() { return controls_top_offset_; }
-  float content_top_offset() { return content_top_offset_; }
+  float content_top_offset() {
+    return controls_top_offset_ + top_controls_height_;
+  }
   KeyframedFloatAnimationCurve* animation() {
     return top_controls_animation_.get();
   }
@@ -51,7 +53,7 @@ class CC_EXPORT TopControlsManager
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF pending_delta);
   void ScrollEnd();
 
-  void Animate(base::TimeTicks monotonic_time);
+  gfx::Vector2dF Animate(base::TimeTicks monotonic_time);
 
  protected:
   TopControlsManager(TopControlsManagerClient* client,
@@ -60,9 +62,8 @@ class CC_EXPORT TopControlsManager
                      float top_controls_hide_threshold);
 
  private:
-  gfx::Vector2dF ScrollInternal(const gfx::Vector2dF pending_delta);
+  void SetControlsTopOffset(float);
   void ResetAnimations();
-  float RootScrollLayerTotalScrollY();
   void SetupAnimation(AnimationDirection direction);
   void StartAnimationIfNecessary();
   bool IsAnimationCompleteAtTime(base::TimeTicks time);
@@ -73,13 +74,11 @@ class CC_EXPORT TopControlsManager
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
   bool enable_hiding_;
-  bool in_scroll_gesture_;
   float controls_top_offset_;
-  float content_top_offset_;
   float top_controls_height_;
-  float previous_root_scroll_offset_;
-  float scroll_start_offset_;
+
   float current_scroll_delta_;
+  float controls_scroll_begin_offset_;
 
   // The height of the visible top control such that it must be shown when
   // the user stops the scroll.

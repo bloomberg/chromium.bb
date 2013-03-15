@@ -147,7 +147,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     EXPECT_EQ(300, ccScrollbarLayer->Maximum());
 }
 
-TEST(ScrollbarLayerTest, solidColorThicknessOverride)
+TEST(ScrollbarLayerTest, solidColorDrawQuads)
 {
     LayerTreeSettings layerTreeSettings;
     layerTreeSettings.solidColorScrollbars = true;
@@ -160,6 +160,8 @@ TEST(ScrollbarLayerTest, solidColorThicknessOverride)
     scoped_ptr<LayerImpl> layerImplTreeRoot = layerImplForScrollAreaAndScrollbar(&hostImpl, scrollbar.Pass(), false);
     ScrollbarLayerImpl* scrollbarLayerImpl = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
     scrollbarLayerImpl->SetThumbSize(gfx::Size(4, 4));
+    scrollbarLayerImpl->SetViewportWithinScrollableArea(
+        gfx::RectF(10.f, 0.f, 40.f, 0.f), gfx::SizeF(100.f, 100.f));
 
     // Thickness should be overridden to 3.
     {
@@ -185,6 +187,23 @@ TEST(ScrollbarLayerTest, solidColorThicknessOverride)
         ASSERT_EQ(1, quads.size());
         EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
         EXPECT_RECT_EQ(gfx::Rect(2, 0, 8, 6), quads[0]->rect);
+    }
+    scrollbarLayerImpl->draw_properties().contents_scale_x = 1;
+    scrollbarLayerImpl->draw_properties().contents_scale_y = 1;
+
+    // For solid color scrollbars, position and size should reflect the
+    // viewport, not the geometry object.
+    scrollbarLayerImpl->SetViewportWithinScrollableArea(
+        gfx::RectF(40.f, 0.f, 20.f, 0.f), gfx::SizeF(100.f, 100.f));
+    {
+        MockQuadCuller quadCuller;
+        AppendQuadsData data;
+        scrollbarLayerImpl->AppendQuads(&quadCuller, &data);
+
+        const QuadList& quads = quadCuller.quadList();
+        ASSERT_EQ(1, quads.size());
+        EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
+        EXPECT_RECT_EQ(gfx::Rect(4, 0, 2, 3), quads[0]->rect);
     }
 
 }
