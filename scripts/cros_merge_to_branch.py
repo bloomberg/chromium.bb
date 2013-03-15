@@ -131,7 +131,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
       patch.tracking_branch, patch.remote, new_sha1)
   for reviewers in (reviewers, ()):
     try:
-      ret = local_patch.Upload(
+      return local_patch.Upload(
           patch.project_url, 'refs/%s/%s' % (upload_type, branch),
           carbon_copy=False, dryrun=dryrun, reviewers=reviewers)
     except cros_build_lib.RunCommandError as e:
@@ -141,7 +141,6 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
                         'dropping them & retrying upload', ' '.join(reviewers))
         continue
       raise
-  return ret
 
 
 def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
