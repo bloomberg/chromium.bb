@@ -105,8 +105,6 @@
         'audio/cross_process_notification.h',
         'audio/cross_process_notification_posix.cc',
         'audio/cross_process_notification_win.cc',
-        'audio/fake_audio_consumer.cc',
-        'audio/fake_audio_consumer.h',
         'audio/fake_audio_input_stream.cc',
         'audio/fake_audio_input_stream.h',
         'audio/fake_audio_output_stream.cc',
@@ -528,7 +526,6 @@
             ['include', '^audio/audio_manager\\.'],
             ['include', '^audio/audio_manager_base\\.'],
             ['include', '^audio/audio_parameters\\.'],
-            ['include', '^audio/fake_audio_consumer\\.'],
             ['include', '^audio/fake_audio_input_stream\\.'],
             ['include', '^audio/fake_audio_output_stream\\.'],
             ['include', '^base/audio_bus\\.'],
@@ -689,7 +686,7 @@
               'message': 'Generating Pulse stubs for dynamic loading.',
             },
           ],
-          'conditions': [
+          'conditions': [ 
             # Linux/Solaris need libdl for dlopen() and friends.
             ['OS == "linux" or OS == "solaris"', {
               'link_settings': {
@@ -853,7 +850,7 @@
         'audio/audio_parameters_unittest.cc',
         'audio/audio_util_unittest.cc',
         'audio/cross_process_notification_unittest.cc',
-        'audio/fake_audio_consumer_unittest.cc',
+        'audio/fake_audio_output_stream_unittest.cc',
         'audio/ios/audio_manager_ios_unittest.cc',
         'audio/linux/alsa_output_unittest.cc',
         'audio/mac/audio_device_listener_mac_unittest.cc',

@@ -201,7 +201,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Create default audio renderer using the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
       params.audio_renderer_sink() ? params.audio_renderer_sink() :
-      new media::NullAudioSink(media_thread_.message_loop_proxy()));
+      new media::NullAudioSink());
   scoped_ptr<media::AudioRenderer> audio_renderer(
       new media::AudioRendererImpl(
         media_thread_.message_loop_proxy(),

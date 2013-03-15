@@ -246,7 +246,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
       !hashing_enabled_));
   collection->SetVideoRenderer(renderer.Pass());
 
-  audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
+  audio_sink_ = new NullAudioSink();
   AudioRendererImpl* audio_renderer_impl = new AudioRendererImpl(
       message_loop_.message_loop_proxy(),
       audio_sink_,
