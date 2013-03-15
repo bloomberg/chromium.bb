@@ -61,6 +61,12 @@ const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 // Disables immersive fullscreen mode.
 const char kAshDisableImmersiveMode[] = "ash-disable-immersive-mode";
 
+// Disables display rotation.
+const char kAshDisableDisplayRotation[] = "ash-disable-display-rotation";
+
+// Disables ui scaling.
+const char kAshDisableUIScaling[] = "ash-disable-ui-scaling";
+
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 
