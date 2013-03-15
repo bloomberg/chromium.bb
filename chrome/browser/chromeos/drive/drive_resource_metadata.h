@@ -25,6 +25,7 @@ namespace drive {
 
 class DriveDirectoryProto;
 class DriveEntryProto;
+class DriveResourceMetadataStorage;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 typedef std::map<std::string /* resource_id */, DriveEntryProto>
@@ -234,25 +235,6 @@ class DriveResourceMetadata {
   bool ParseFromString(const std::string& serialized_proto);
 
  private:
-  // Map of resource id strings to DriveEntryProto*.
-  typedef std::map<std::string, DriveEntryProto*> ResourceMap;
-
-  // Map from base_name to resource id of child.
-  typedef std::map<base::FilePath::StringType, std::string> ChildMap;
-
-  // Map from resource id to ChildMap.
-  typedef std::map<std::string, ChildMap> ChildMaps;
-
-  // Adds the entry to resource map. Returns false if an entry with the same
-  // resource_id exists.
-  bool AddEntryToResourceMap(DriveEntryProto* entry);
-
-  // Removes the entry from resource map.
-  void RemoveEntryFromResourceMap(const std::string& resource_id);
-
-  // Returns the entry with the corresponding |resource_id|.
-  DriveEntryProto* GetEntryByResourceId(const std::string& resource_id);
-
   // Clears root_ and the resource map.
   void ClearRoot();
 
@@ -276,12 +258,13 @@ class DriveResourceMetadata {
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Searches for |file_path| synchronously.
-  DriveEntryProto* FindEntryByPathSync(const base::FilePath& file_path);
+  scoped_ptr<DriveEntryProto> FindEntryByPathSync(
+      const base::FilePath& file_path);
 
   // Helper function to get a directory given |resource_id|. |resource_id| can
   // not be empty. Returns NULL if it finds no corresponding entry, or the
   // corresponding entry is not a directory.
-  DriveEntryProto* GetDirectory(const std::string& resource_id);
+  scoped_ptr<DriveEntryProto> GetDirectory(const std::string& resource_id);
 
   // Returns virtual file path of the entry.
   base::FilePath GetFilePath(const std::string& resource_id);
@@ -290,21 +273,16 @@ class DriveResourceMetadata {
   void GetDescendantDirectoryPaths(const std::string& resource_id,
                                    std::set<base::FilePath>* child_directories);
 
-  // Adds child file to its parent and takes over the ownership of |entry|
-  // object. The method will also do name de-duplication to ensure that the
+  // Adds a child entry to its parent directory.
+  // The method will also do name de-duplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  void AddEntryToDirectory(DriveEntryProto* entry);
+  void AddEntryToDirectory(const DriveEntryProto& entry);
 
-  // Removes the entry from its parent and destroys the entry instance.
+  // Removes the entry from its parent directory.
   void RemoveDirectoryChild(const std::string& child_resource_id);
 
-  // Find a child's resource_id by its name. Returns the empty string if not
-  // found.
-  std::string FindDirectoryChild(const std::string& directory_resource_id,
-                                 const base::FilePath::StringType& file_name);
-
-  // Detaches the entry from its parent without destroying the entry instance.
+  // Detaches the entry from its parent directory.
   void DetachEntryFromDirectory(const std::string& child_resource_id);
 
   // Removes child elements of directory.
@@ -324,11 +302,9 @@ class DriveResourceMetadata {
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  ResourceMap resource_map_;
+  scoped_ptr<DriveResourceMetadataStorage> storage_;
 
-  ChildMaps child_maps_;
-
-  scoped_ptr<DriveEntryProto> root_;
+  std::string root_resource_id_;
 
   base::Time last_serialized_;
   size_t serialized_size_;
