@@ -32,7 +32,10 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('Test_00_ManifestData', function(status) {
     plugin.addEventListener('message', function(message_event) {
       this.removeEventListener('message', arguments.callee, false);
-      var golden = 'File Contents:\nTest File Content\nOpening non-existent file:\nGot descriptor -1, status 0\n';
+      // TODO(bsy): remove golden_old once NaCl DEPS rolls pass 10970
+      var golden_old = 'File Contents:\nTest File Content\nOpening non-existent file:\nGot descriptor -1, status 0\n';
+      // when there is a non-existent file, we expect errno of NACL_ABI_ENOENT
+      var golden = 'File Contents:\nTest File Content\nOpening non-existent file:\nGot descriptor -1, status 2\n';
       status.log('expecting golden: ' + golden);
       status.log('golden.length: ' + golden.length);
       status.log('message_event.data.length: ' + message_event.data.length);
@@ -47,7 +50,10 @@ function setupTests(tester, plugin) {
           status.log('charcodes: ' + mchar.charCodeAt(0) + ' != ' + gchar.charCodeAt(0));
         }
       }
-      status.assertEqual(message_event.data, golden);
+      var accept_both = (message_event.data == golden) ||
+                        (message_event.data == golden_old);
+      status.assert(accept_both);
+      // status.assertEqual(message_event.data, golden);
       status.pass();
     }, false);
     plugin.postMessage('manifest_data');
