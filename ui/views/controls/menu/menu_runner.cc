@@ -32,7 +32,7 @@ void RecordSelectedIndexes(const MenuItemView* menu_item) {
   SubmenuView* submenu = parent->GetSubmenu();
   for (int i = 0; i < submenu->GetMenuItemCount(); ++i) {
     if (submenu->GetMenuItemAt(i) == menu_item) {
-      HISTOGRAM_COUNTS_100("MenuSelection.Index", i);
+      UMA_HISTOGRAM_COUNTS_100("MenuSelection.Index", i);
       break;
     }
   }
@@ -42,11 +42,11 @@ void RecordSelectedIndexes(const MenuItemView* menu_item) {
 
 void RecordMenuStats(MenuItemView* result, base::TimeDelta time_elapsed) {
   // Report if user made a selection.
-  HISTOGRAM_BOOLEAN("MenuSelection", result != NULL);
+  UMA_HISTOGRAM_BOOLEAN("MenuSelection.Result", result != NULL);
 
   if (result) {
     // Report how much time it took to make a selection.
-    HISTOGRAM_TIMES("MenuSelection.Time", time_elapsed);
+    UMA_HISTOGRAM_TIMES("MenuSelection.Time", time_elapsed);
     RecordSelectedIndexes(result);
   }
 }
