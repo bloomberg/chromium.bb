@@ -149,10 +149,10 @@ void TiledLayer::UpdateBounds() {
   Region old_region = gfx::Rect(gfx::Point(), old_bounds);
   Region new_region = gfx::Rect(gfx::Point(), new_bounds);
   new_region.Subtract(old_region);
-  for (Region::Iterator newRects(new_region);
-       newRects.has_rect();
-       newRects.next())
-    InvalidateContentRect(newRects.rect());
+  for (Region::Iterator new_rects(new_region);
+       new_rects.has_rect();
+       new_rects.next())
+    InvalidateContentRect(new_rects.rect());
 }
 
 void TiledLayer::SetTileSize(gfx::Size size) { tiler_->setTileSize(size); }
@@ -348,7 +348,7 @@ void TiledLayer::MarkOcclusionsAndRequestTextures(
     const OcclusionTracker* occlusion) {
   // There is some difficult dependancies between occlusions, recording
   // occlusion metrics and requesting memory so those are encapsulated in this
-  // function: - We only want to call requestLate on unoccluded textures (to
+  // function: - We only want to call RequestLate on unoccluded textures (to
   // preserve memory for other layers when near OOM).  - We only want to record
   // occlusion metrics if all memory requests succeed.
 
@@ -357,7 +357,7 @@ void TiledLayer::MarkOcclusionsAndRequestTextures(
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
-      DCHECK(tile);  // Did setTexturePriorities get skipped?
+      DCHECK(tile);  // Did SetTexturePriorities get skipped?
       // FIXME: This should not ever be null.
       if (!tile)
         continue;
@@ -395,7 +395,7 @@ bool TiledLayer::HaveTexturesForTiles(int left,
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
-      DCHECK(tile);  // Did setTexturePriorites get skipped?
+      DCHECK(tile);  // Did SetTexturePriorites get skipped?
                      // FIXME: This should not ever be null.
       if (!tile)
         continue;
@@ -425,7 +425,7 @@ gfx::Rect TiledLayer::MarkTilesForUpdate(int left,
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
-      DCHECK(tile);  // Did setTexturePriorites get skipped?
+      DCHECK(tile);  // Did SetTexturePriorites get skipped?
                      // FIXME: This should not ever be null.
       if (!tile)
         continue;
@@ -472,7 +472,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
       bounds().height() / static_cast<float>(content_bounds().height());
   update_rect_ = gfx::ScaleRect(paint_rect, width_scale, height_scale);
 
-  // Calling prepareToUpdate() calls into WebKit to paint, which may have the
+  // Calling PrepareToUpdate() calls into WebKit to paint, which may have the
   // side effect of disabling compositing, which causes our reference to the
   // texture updater to be deleted.  However, we can't free the memory backing
   // the SkCanvas until the paint finishes, so we grab a local reference here to
@@ -489,7 +489,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
-      DCHECK(tile);  // Did setTexturePriorites get skipped?
+      DCHECK(tile);  // Did SetTexturePriorites get skipped?
                      // FIXME: This should not ever be null.
       if (!tile)
         continue;
@@ -719,7 +719,7 @@ void TiledLayer::UpdateScrollPrediction() {
 void TiledLayer::Update(ResourceUpdateQueue* queue,
                         const OcclusionTracker* occlusion,
                         RenderingStats* stats) {
-  DCHECK(!skips_draw_ && !failed_update_);  // Did resetUpdateState get skipped?
+  DCHECK(!skips_draw_ && !failed_update_);  // Did ResetUpdateState get skipped?
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);
@@ -853,7 +853,7 @@ bool TiledLayer::NeedsIdlePaint() {
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
-      DCHECK(tile);  // Did setTexturePriorities get skipped?
+      DCHECK(tile);  // Did SetTexturePriorities get skipped?
       if (!tile)
         continue;
 
