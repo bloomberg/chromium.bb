@@ -91,7 +91,8 @@ bool ExecuteBuiltinHandler(
     const base::FilePath& path,
     const std::string& internal_task_id);
 
-bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);
+// Checks whether a pepper plugin for |file_extension| is enabled.
+bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension);
 
 // Converts the vector of progress status to their JSON (Value) form.
 base::ListValue* ProgressStatusVectorToListValue(

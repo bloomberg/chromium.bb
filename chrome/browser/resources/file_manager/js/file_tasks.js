@@ -136,6 +136,12 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (taskParts[2] == 'open-hosted-gslides') {
         task.iconType = 'gslides';
         task.title = loadTimeData.getString('ACTION_OPEN_GSLIDES');
+      } else if (taskParts[2] == 'view-swf') {
+        // Do not render this task if disabled.
+        if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED'))
+          continue;
+        task.iconType = 'generic';
+        task.title = loadTimeData.getString('ACTION_VIEW');
       } else if (taskParts[2] == 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
@@ -350,7 +356,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
     return;
   }
 
-  if (id == 'view-pdf' || id == 'view-in-browser' ||
+  if (id == 'view-pdf' || id == 'view-swf' || id == 'view-in-browser' ||
       id == 'install-crx' || id.match(/^open-hosted-/) || id == 'watch') {
     chrome.fileBrowserPrivate.viewFiles(urls, id, function(success) {
       if (!success)

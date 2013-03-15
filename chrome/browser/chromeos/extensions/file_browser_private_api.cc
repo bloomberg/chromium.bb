@@ -2353,7 +2353,9 @@ bool FileDialogStringsFunction::RunImpl() {
 #undef SET_STRING
 
   dict->SetBoolean("PDF_VIEW_ENABLED",
-      file_manager_util::ShouldBeOpenedWithPdfPlugin(profile(), ".pdf"));
+      file_manager_util::ShouldBeOpenedWithPlugin(profile(), ".pdf"));
+  dict->SetBoolean("SWF_VIEW_ENABLED",
+      file_manager_util::ShouldBeOpenedWithPlugin(profile(), ".swf"));
 
   webui::SetFontAndTextDirection(dict);
 

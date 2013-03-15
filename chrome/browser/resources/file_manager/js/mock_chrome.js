@@ -200,6 +200,12 @@ chrome.fileBrowserPrivate = {
         title: 'View',
         regexp: /\.pdf$/i,
         iconUrl: emptyIcon
+      },
+      {
+        taskId: internalTaskPrefix + '|view-swf',
+        title: 'View',
+        regexp: /\.swf$/i,
+        iconUrl: emptyIcon
       }
     ];
 
@@ -494,6 +500,7 @@ chrome.fileBrowserPrivate = {
       DRIVE_DIRECTORY_LABEL: 'Google Drive',
       ENABLE_DRIVE: true,
       PDF_VIEW_ENABLED: true,
+      SWF_VIEW_ENABLED: true,
 
       ROOT_DIRECTORY_LABEL: 'Files',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',

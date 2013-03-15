@@ -90,6 +90,14 @@
       ]
     },
     {
+      "id": "view-swf",
+      "default_title": "__MSG_OPEN_ACTION__",
+      "default_icon": "images/filetype_generic.png",
+      "file_filters": [
+        "filesystem:*.swf"
+      ]
+    },
+    {
       "id": "view-in-browser",
       "default_title": "__MSG_OPEN_ACTION__",
       "default_icon": "images/filetype_generic.png",
