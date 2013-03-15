@@ -59,11 +59,6 @@ class CONTENT_EXPORT DevToolsManagerImpl
   virtual void UnregisterDevToolsClientHostFor(
       DevToolsAgentHost* agent_host) OVERRIDE;
   virtual void ClientHostClosing(DevToolsClientHost* host) OVERRIDE;
-  virtual void InspectElement(DevToolsAgentHost* agent_host,
-                              int x, int y) OVERRIDE;
-  virtual void AddMessageToConsole(DevToolsAgentHost* agent_host,
-                                   ConsoleMessageLevel level,
-                                   const std::string& message) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<DevToolsManagerImpl>;

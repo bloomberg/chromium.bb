@@ -66,14 +66,6 @@ void DevToolsAgentHostImpl::InspectElement(int x, int y) {
                                                          x, y));
 }
 
-void DevToolsAgentHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
-                                                const std::string& message) {
-  SendMessageToAgent(new DevToolsAgentMsg_AddMessageToConsole(
-      MSG_ROUTING_NONE,
-      level,
-      message));
-}
-
 std::string DevToolsAgentHostImpl::GetId() {
   return id_;
 }

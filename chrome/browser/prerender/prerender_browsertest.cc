@@ -2562,7 +2562,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   DisableJavascriptCalls();
   WebContents* web_contents =
       current_browser()->tab_strip_model()->GetActiveWebContents();
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetOrCreateFor(
       web_contents->GetRenderViewHost()));
   DevToolsManager* manager = DevToolsManager::GetInstance();
   FakeDevToolsClientHost client_host;

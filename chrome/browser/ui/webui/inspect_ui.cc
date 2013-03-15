@@ -106,7 +106,8 @@ bool HasClientHost(RenderViewHost* rvh) {
   if (!DevToolsAgentHost::HasFor(rvh))
     return false;
 
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetOrCreateFor(rvh));
   return !!DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent);
 }
 
