@@ -27,6 +27,14 @@ void _start(unsigned int info[]) {
       "leal 4095(%%rsp), %k0\n"
       "movl -4095(%%r15,%0), %k0"
       : "=r" (scratch));
+#elif defined(__mips__)
+  char *sp, *scratch;
+  __asm__("move %0, $sp" : "=r" (sp));
+  __asm__ volatile(
+      ".p2align 4\n"
+      "and %0, %0, $t7\n"
+      "lw  %0, -0x7fff(%0)\n"
+      : "=r" (scratch) : "0" (sp + 0x7fff));
 #endif
   NACL_SYSCALL(exit)(0);
 }

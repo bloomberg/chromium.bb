@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -10,6 +10,14 @@ void unfixed_code(void);
 
 #if defined(__i386__) || defined(__x86_64__)
 __asm__("unfixed_code: ret\n");
+#elif defined(__mips__)
+/*
+ * We need to mark unfixed_code as global, otherwise linker can not resolve pic
+ * CALL16 relocation against local symbol unfixed_code.
+ */
+__asm__(".global unfixed_code\n"
+        "unfixed_code: jr $ra\n"
+                      "nop\n");
 #else
 # error "Unsupported architecture"
 #endif
@@ -31,6 +39,11 @@ __asm__(".p2align 5\n"
         /* "0f 05" disassembles to "syscall". */
         ".fill 1000, 2, 0x050f\n"
         ".p2align 5\n");
+#elif defined(__mips__)
+__asm__(".p2align 4\n"
+        /* "0xc" disassembles to "syscall". */
+        ".fill 1000, 4, 0x0000000c\n"
+        ".p2align 4\n");
 #else
 # error "Unsupported architecture"
 #endif

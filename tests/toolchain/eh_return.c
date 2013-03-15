@@ -24,6 +24,8 @@ void* return_address = 0;
  */
 #if defined(__arm__)
   #define STACK_REMAINDER 0L
+#elif defined(__mips__)
+  #define STACK_REMAINDER 0L
 #elif defined(__i386__)
   #define STACK_REMAINDER -4L
 #elif defined(__x86_64__)

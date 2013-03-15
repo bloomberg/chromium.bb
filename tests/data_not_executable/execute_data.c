@@ -13,6 +13,9 @@ int main(void) {
   uint8_t code[] __attribute__((aligned(32))) = { 0xc3 /* ret */ };
 #elif defined(__arm__)
   uint32_t code[] __attribute__((aligned(32))) = { 0xe12fff1e /* BX LR */ };
+#elif defined(__mips__)
+  uint32_t code[] __attribute__((aligned(32))) = { 0x03e00008, /* JR RA */
+                                                   0           /* NOP   */ };
 #else
 # error Unknown architecture
 #endif

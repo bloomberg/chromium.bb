@@ -75,18 +75,26 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node, test_suites, 'run_without_stubout_2_test')
 
 # With "-s", the executable runs part way but then faults.
+
+if env.Bit('target_mips32'):
+  partly_invalid_exit_status = 'sigtrap'
+else:
+  partly_invalid_exit_status = 'untrusted_sigill'
+
 node = env.CommandSelLdrTestNacl(
     'partly_invalid_3.out', partly_invalid_nexe,
     stdout_golden=env.File('with_stubout.stdout'),
     sel_ldr_flags=['-s'],
-    exit_status='untrusted_sigill')
+    exit_status=partly_invalid_exit_status)
 env.AddNodeToTestSuite(node, test_suites, 'run_stubout_mode_test')
 
 # Using the standalone ncval_stubout tool to rewrite the executable
 # offline should be equivalent to using sel_ldr's "-s" option.
+# This tool exists only for x86.
 node = env.CommandSelLdrTestNacl(
     'partly_invalid_stubout.out',
     partly_invalid_stubout_nexe,
     stdout_golden=env.File('with_stubout.stdout'),
     exit_status='untrusted_sigill')
-env.AddNodeToTestSuite(node, test_suites, 'run_offline_stubout_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_offline_stubout_test',
+                       is_broken=env.Bit('target_mips32'))

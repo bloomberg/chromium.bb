@@ -31,7 +31,11 @@ char *g_registered_stack;
 size_t g_registered_stack_size;
 
 
+#if defined(__mips__)
+#define STACK_ALIGNMENT 8
+#else
 #define STACK_ALIGNMENT 16
+#endif
 
 #if defined(__i386__)
 const int kReturnAddrSize = 4;
@@ -45,32 +49,13 @@ const int kRedZoneSize = 128;
 const int kReturnAddrSize = 0;
 const int kArgSizeOnStack = 0;
 const int kRedZoneSize = 0;
+#elif defined(__mips__)
+const int kReturnAddrSize = 0;
+const int kArgSizeOnStack = 16;
+const int kRedZoneSize = 0;
 #else
 # error Unsupported architecture
 #endif
-
-struct AlignedType {
-  int blah;
-} __attribute__((aligned(16)));
-
-/*
- * We do this check in a separate function in an attempt to prevent
- * the compiler from optimising away the check for a stack-allocated
- * variable.
- *
- * We test for an alignment that is small enough for the compiler to
- * assume on x86-32, even if sel_ldr sets up a larger alignment.
- */
-__attribute__((noinline))
-void check_pointer_is_aligned(void *pointer) {
-  assert((uintptr_t) pointer % 16 == 0);
-}
-
-void check_stack_is_aligned(void) {
-  struct AlignedType var;
-  check_pointer_is_aligned(&var);
-}
-
 
 void crash_at_known_address(void);
 extern char prog_ctr_at_crash[];
@@ -97,6 +82,16 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
         "prog_ctr_at_crash:\n"
         "str r0, [r0]\n"
         ".popsection\n");
+#elif defined(__mips__)
+__asm__(".pushsection .text, \"ax\", %progbits\n"
+        ".p2align 4\n"
+        ".global crash_at_known_address\n"
+        "crash_at_known_address:\n"
+        "and $zero, $zero, $t7\n"
+        ".global prog_ctr_at_crash\n"
+        "prog_ctr_at_crash:\n"
+        "sw $t0, 0($zero)\n"
+        ".popsection\n");
 #else
 # error Unsupported architecture
 #endif
@@ -111,8 +106,6 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
 
   printf("handler called\n");
 
-  check_stack_is_aligned();
-
   assert(context->stack_ptr == (uint32_t) g_regs_at_crash.stack_ptr);
   assert(context->prog_ctr == (uintptr_t) prog_ctr_at_crash);
 #if defined(__i386__)
@@ -121,6 +114,8 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   assert(context->frame_ptr == (uint32_t) g_regs_at_crash.rbp);
 #elif defined(__arm__)
   assert(context->frame_ptr == g_regs_at_crash.r11);
+#elif defined(__mips__)
+  assert(context->frame_ptr == g_regs_at_crash.frame_ptr);
 #else
 # error Unsupported architecture
 #endif

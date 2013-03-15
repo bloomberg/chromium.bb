@@ -205,6 +205,10 @@ win64_exit_via_ntdll_patch = [
 # returns SIGSEGV, except for actual x86 segmentation violations. 64-bit
 # processes on Mac OS X behave differently.
 status_map = {
+    'sigtrap' : {
+        'linux2': [-5], # SIGTRAP
+        'darwin': [-5], # SIGTRAP
+        },
     'trusted_sigabrt' : {
         'linux2': [-6], # SIGABRT
         'mac32': [-6], # SIGABRT

@@ -48,7 +48,6 @@ for name, arg in crash_types:
       node, ['small_tests'], name,
       is_broken=(not env.Bit('nacl_static_link') or
                  trusted_env.Bit('coverage_enabled') or
-                 # qemu-arm hangs on the following test:
+                 # qemu-user hangs on the following test:
                  (name == 'run_jump_to_zero_in_syscall_test' and
-                  env.Bit('target_arm') and
                   env.UsingEmulator())))

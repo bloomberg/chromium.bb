@@ -1485,6 +1485,10 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
   if env.Bit('nacl_glibc') and not env.Bit('nacl_static_link'):
     return []
 
+  # TODO(petarj): Sel_universal hangs on qemu-mips. Enable when fixed.
+  if env.Bit('target_mips32') and env.UsingEmulator():
+    return []
+
   if sel_universal_flags is None:
     sel_universal_flags = []
 

@@ -60,6 +60,21 @@ __asm__(
 static const int kStackAlignment = 8;
 static const int kStackPadBelowAlign = 0;
 
+#elif defined(__mips__)
+
+__asm__(
+    ".pushsection .text, \"ax\", %progbits\n"
+    ".global ThreadStartWrapper\n"
+    "ThreadStartWrapper:\n"
+    "move $a0, $sp\n"  /* Set argument. */
+    "nop\n"
+    "bal ThreadStart\n"
+    "nop\n"
+    ".popsection\n");
+
+static const int kStackAlignment = 8;
+static const int kStackPadBelowAlign = 0;
+
 #else
 # error Unsupported architecture
 #endif

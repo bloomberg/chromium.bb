@@ -76,6 +76,25 @@ void error_exit(void) {
   _exit(1);
 }
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+
+char recovery_stack[0x1000] __attribute__((aligned(8)));
+
+void bad_stack_exception_handler(struct NaClExceptionContext *context);
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        ".global bad_stack_exception_handler\n"
+        "bad_stack_exception_handler:\n"
+        "lui   $t9,      %hi(recovery_stack)\n"
+        "addiu $sp, $t9, %lo(recovery_stack)\n"
+        "and   $sp, $sp, $t7\n"
+        "j error_exit\n"
+        "nop\n"
+        ".popsection\n");
+
+void error_exit() {
+  _exit(1);
+}
+
 #else
 
 /* TODO(mseaborn): Implement a stack switcher, like the one above, for ARM. */
