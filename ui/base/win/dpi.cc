@@ -114,6 +114,11 @@ gfx::Size DIPToScreenSize(const gfx::Size& dip_size) {
   return gfx::ToFlooredSize(gfx::ScaleSize(dip_size, GetDeviceScaleFactor()));
 }
 
+int GetSystemMetricsInDIP(int metric) {
+  return static_cast<int>(GetSystemMetrics(metric) /
+      GetDeviceScaleFactor() + 0.5);
+}
+
 double GetUndocumentedDPIScale() {
   // TODO(girard): Remove this code when chrome is DPIAware.
   static double scale = -1.0;

@@ -25,6 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/win/dpi.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
@@ -272,7 +273,7 @@ int GlassBrowserFrameView::NonClientTopBorderHeight(
   // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
   // frame has a 0 frame border around most edges and a CYSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
-  return GetSystemMetrics(SM_CYSIZEFRAME) +
+  return ui::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME) +
       ((!restored && !frame()->ShouldLeaveOffsetNearTopBorder()) ?
       -kTabstripTopShadowThickness : kNonClientRestoredExtraThickness);
 }

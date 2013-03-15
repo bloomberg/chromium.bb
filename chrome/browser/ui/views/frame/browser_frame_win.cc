@@ -38,6 +38,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/win/dpi.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/menu/native_menu_win.h"
@@ -441,6 +442,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
     if (!IsFullscreen()) {
       gfx::Rect tabstrip_bounds(
           browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
+      tabstrip_bounds = ui::win::DIPToScreenRect(tabstrip_bounds);
       margins.cyTopHeight = tabstrip_bounds.bottom() + kDWMFrameTopOffset;
     }
   }

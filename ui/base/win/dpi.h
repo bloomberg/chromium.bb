@@ -38,6 +38,10 @@ UI_EXPORT gfx::Size ScreenToDIPSize(const gfx::Size& size_in_pixels);
 
 UI_EXPORT gfx::Size DIPToScreenSize(const gfx::Size& dip_size);
 
+// Win32's GetSystemMetrics uses pixel measures. This function calls
+// GetSystemMetrics for the given |metric|, then converts the result to DIP.
+UI_EXPORT int GetSystemMetricsInDIP(int metric);
+
 // The OS secretly scales apps that are not DPIAware. This is not visible
 // through standard OS calls like GetWindowPos(), or through GetDPIScale().
 // Returns the scale factor of the display, where 96 DPI is 1.0.
