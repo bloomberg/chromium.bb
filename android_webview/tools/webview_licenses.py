@@ -240,7 +240,7 @@ def GenerateNoticeFile():
 
   # We provide attribution for all third-party directories.
   # TODO(steveblock): Limit this to only code used by the WebView binary.
-  for directory in third_party_dirs:
+  for directory in sorted(third_party_dirs):
     metadata = licenses.ParseDir(directory, REPOSITORY_ROOT,
                                  require_license_file=False)
     license_file = metadata['License File']
