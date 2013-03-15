@@ -173,10 +173,14 @@ enum VariationID {
   BOOKMARK_PROMPT_TRIAL_CONTROL = 3310187,
   BOOKMARK_PROMPT_TRIAL_EXPERIMENT = 3310188,
 
+  // iOS tour trial.
+  IOS_TOUR_DEFAULT = 3310189,
+  IOS_TOUR_EXPERIMENT = 3310190,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310189,
+  NEXT_ID = 3310191,
 
   // USABLE IDs END HERE.
   //
