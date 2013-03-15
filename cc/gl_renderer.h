@@ -158,9 +158,9 @@ class CC_EXPORT GLRenderer :
   // unchanged.  edge array is filled with inflated quad's edge data
   // if antialiasing is required, otherwise it is left unchanged.
   // Returns true if quad requires antialiasing and false otherwise.
-  bool SetupQuadForAntialiasing(const gfx::Transform& deviceTransform,
+  bool SetupQuadForAntialiasing(const gfx::Transform& device_transform,
                                 const DrawQuad* quad,
-                                gfx::QuadF* localQuad,
+                                gfx::QuadF* local_quad,
                                 float edge[24]) const;
 
   bool UseScopedTexture(DrawingFrame& frame,

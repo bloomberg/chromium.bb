@@ -1989,8 +1989,7 @@ const GLRenderer::SolidColorProgram* GLRenderer::GetSolidColorProgram() {
   return solid_color_program_.get();
 }
 
-const GLRenderer::SolidColorProgramAA* GLRenderer::GetSolidColorProgramAA()
-{
+const GLRenderer::SolidColorProgramAA* GLRenderer::GetSolidColorProgramAA() {
   if (!solid_color_program_aa_) {
     solid_color_program_aa_ =
         make_scoped_ptr(new SolidColorProgramAA(context_));
