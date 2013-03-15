@@ -568,8 +568,9 @@ class Cgroup(object):
     to ensure that it cleanses any children before returning.
     """
 
+    pid = os.getpid()
     if pool_name is None:
-      pool_name = str(os.getpid())
+      pool_name = str(pid)
 
     run_kill = False
     try:
@@ -585,13 +586,14 @@ class Cgroup(object):
       run_kill = True
       yield
     finally:
-      with signals.DeferSignals():
-        self.TransferCurrentProcess()
-        if run_kill:
-          node.KillProcesses(remove=True, sigterm_timeout=sigterm_timeout)
-        else:
-          # Non strict since the group may have failed to be created.
-          node.RemoveThisGroup(strict=False)
+      if os.getpid() == pid:
+        with signals.DeferSignals():
+          self.TransferCurrentProcess()
+          if run_kill:
+            node.KillProcesses(remove=True, sigterm_timeout=sigterm_timeout)
+          else:
+            # Non strict since the group may have failed to be created.
+            node.RemoveThisGroup(strict=False)
 
   def KillProcesses(self, poll_interval=0.05, remove=False, sigterm_timeout=10):
     """Kill all processes in this namespace."""
