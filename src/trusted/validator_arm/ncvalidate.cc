@@ -24,30 +24,6 @@ using nacl_arm_dec::Register;
 using nacl_arm_dec::RegisterList;
 using std::vector;
 
-class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
- private:
-  bool problems_;
- public:
-  EarlyExitProblemSink() : nacl_arm_val::ProblemSink(), problems_(false) {}
-  virtual bool should_continue() {
-    return !problems_;
-  }
-
- protected:
-  virtual void ReportProblemInternal(
-      uint32_t vaddr,
-      nacl_arm_val::ValidatorProblem problem,
-      nacl_arm_val::ValidatorProblemMethod method,
-      nacl_arm_val::ValidatorProblemUserData user_data) {
-    UNREFERENCED_PARAMETER(vaddr);
-    UNREFERENCED_PARAMETER(problem);
-    UNREFERENCED_PARAMETER(method);
-    UNREFERENCED_PARAMETER(user_data);
-
-    problems_ = true;
-  }
-};
-
 static inline bool IsAligned(intptr_t value) {
   return (value & (NACL_BLOCK_SHIFT - 1)) == 0;
 }
@@ -92,7 +68,6 @@ static NaClValidationStatus ValidatorCopyArm(
   CHECK(guest_addr <= std::numeric_limits<uint32_t>::max());
   CodeSegment dest_code(data_old, static_cast<uint32_t>(guest_addr), size);
   CodeSegment source_code(data_new, static_cast<uint32_t>(guest_addr), size);
-  EarlyExitProblemSink sink;
   SfiValidator validator(
       kBytesPerBundle,
       kBytesOfCodeSpace,
@@ -102,7 +77,7 @@ static NaClValidationStatus ValidatorCopyArm(
       features);
 
   bool success = validator.CopyCode(source_code, dest_code, copy_func,
-                                    &sink);
+                                    NULL);
   return success ? NaClValidationSucceeded : NaClValidationFailed;
 }
 
@@ -123,7 +98,6 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
   CHECK(guest_addr <= std::numeric_limits<uint32_t>::max());
   CodeSegment new_code(data_new, static_cast<uint32_t>(guest_addr), size);
   CodeSegment old_code(data_old, static_cast<uint32_t>(guest_addr), size);
-  EarlyExitProblemSink sink;
   SfiValidator validator(
       kBytesPerBundle,
       kBytesOfCodeSpace,
@@ -132,8 +106,7 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
       RegisterList(Register::Sp()),
       features);
 
-  bool success = validator.ValidateSegmentPair(old_code, new_code,
-                                               &sink);
+  bool success = validator.ValidateSegmentPair(old_code, new_code, NULL);
   return success ? NaClValidationSucceeded : NaClValidationFailed;
 }
 
@@ -156,12 +129,10 @@ static int NCValidateSegment(
       RegisterList(Register::Sp()),
       features);
 
-  EarlyExitProblemSink sink;
-
   vector<CodeSegment> segments;
   segments.push_back(CodeSegment(mbase, vbase, size));
 
-  bool success = validator.validate(segments, &sink);
+  bool success = validator.validate(segments, NULL);
   if (!success) return 2;  // for compatibility with old validator
   return 0;
 }

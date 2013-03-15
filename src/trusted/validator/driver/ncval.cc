@@ -268,25 +268,27 @@ class NcvalArmProblemReporter : public ProblemReporter {
  public:
   explicit NcvalArmProblemReporter(vector<Error> *errors) : errors(errors) {}
 
-  virtual bool should_continue() {
-    // Collect *all* problems before returning.
-    return true;
-  }
-
  protected:
   virtual void ReportProblemInternal(
       uint32_t vaddr,
       nacl_arm_val::ValidatorProblem problem,
       nacl_arm_val::ValidatorProblemMethod method,
       nacl_arm_val::ValidatorProblemUserData user_data) {
-    const size_t kBufferSize = 256;
-    char buffer[kBufferSize];
-    ToText(buffer, kBufferSize, problem, method, user_data);
-    errors->push_back(Error(vaddr, buffer));
+    if (errors->size() < max_errors) {
+      const size_t kBufferSize = 256;
+      char buffer[kBufferSize];
+      ToText(buffer, kBufferSize, problem, method, user_data);
+      errors->push_back(Error(vaddr, buffer));
+    } else if (errors->size() == max_errors) {
+      errors->push_back(
+          Error(vaddr, "Too may errors: supressing remaining errors."));
+    }
   }
 
  private:
   vector<Error> *errors;
+  // Maximum number of errors to generate.
+  static const size_t max_errors = 5000;
 };
 
 

@@ -12,11 +12,181 @@
 
 #include "native_client/src/include/portability_io.h"
 
-// Note: This file must be kept in sink with the internal
-// representations of user_data, as defined by class ProblemSink in
-// validator.cc.
-
 namespace nacl_arm_val {
+
+// Holds the number of data elements associated with each method.
+static const size_t kUserDataSize[] = {
+  1,  // kReportProblemSafety,
+  0,  // kReportProblem,
+  1,  // kReportProblemAddress,
+  5,  // kReportProblemInstructionPair,
+  1,  // kReportProblemRegister,
+  6,  // kReportProblemRegisterInstructionPair,
+  1,  // kReportProblemRegisterList,
+  6,  // kReportProblemRegisterListInstructionPair
+};
+
+ProblemReporter::ProblemReporter()
+    : last_vaddr(0),
+      last_problem(kProblemOtherDiagnosticMessage),
+      last_method(kReportProblem) {
+  for (size_t i = 0; i < kValidatorProblemUserDataSize; ++i) {
+    last_user_data[i] = 0;
+  }
+}
+
+void ProblemReporter::ReportProblemDiagnostic(char* buffer,
+                                              size_t buffer_size,
+                                              nacl_arm_dec::Violation violation,
+                                              uint32_t vaddr,
+                                              const char* format, ...) {
+  // For the moment, we have not fleshed out this routine. However,
+  // we would like to move to use this simpler interface for reporting errors,
+  // rather than the complicated set of report problem methods.
+  // The current (temporary) solution is to pipe it through
+  // method ReportProblemInternal to record that a diagnostic should be
+  // generated. This allows it to work with downstream ProblemReporters.
+  //
+  // TODO(kschimpf): replace this with a better solution once the notion
+  // or problem sinks has been abstracted out of the validator.
+  UNREFERENCED_PARAMETER(violation);
+  UNREFERENCED_PARAMETER(format);
+  ReportProblem(vaddr, kProblemOtherDiagnosticMessage);
+  ToText(buffer, buffer_size, last_problem, last_method, last_user_data);
+}
+
+size_t ProblemReporter::UserDataSize(ValidatorProblemMethod method) {
+  size_t index = static_cast<size_t>(method);
+  return (index < NACL_ARRAY_SIZE(kUserDataSize)) ? kUserDataSize[index] : 0;
+}
+
+void ProblemReporter::ReportProblemInternal(
+    uint32_t vaddr,
+    ValidatorProblem problem,
+    ValidatorProblemMethod method,
+    ValidatorProblemUserData user_data) {
+  last_vaddr = vaddr;
+  last_problem = problem;
+  last_method = method;
+
+  size_t data_size = UserDataSize(method);
+  for (size_t i = 0; i < data_size; ++i) {
+    last_user_data[i] = user_data[i];
+  }
+
+  // Before returning, be sure unused fields in user data are set to zero.
+  // This way, we don't need to fill in each ReportProblem... method.
+  for (size_t i = data_size; i < kValidatorProblemUserDataSize; ++i) {
+    last_user_data[i] = 0;
+  }
+}
+
+void ProblemReporter::ReportProblemSafety(
+    uint32_t vaddr, nacl_arm_dec::SafetyLevel safety) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(safety),
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, kProblemUnsafe,
+                        kReportProblemSafety, user_data);
+}
+
+void ProblemReporter::ReportProblem(uint32_t vaddr, ValidatorProblem problem) {
+  ValidatorProblemUserData user_data = {
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem, kReportProblem, user_data);
+}
+
+void ProblemReporter::ReportProblemAddress(
+    uint32_t vaddr, ValidatorProblem problem, uint32_t problem_vaddr) {
+  ValidatorProblemUserData user_data = {
+    problem_vaddr
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem, kReportProblemAddress, user_data);
+}
+
+void ProblemReporter::ReportProblemInstructionPair(
+    uint32_t vaddr, ValidatorProblem problem,
+    ValidatorInstructionPairProblem pair_problem,
+    const DecodedInstruction& first, const DecodedInstruction& second) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(pair_problem),
+    first.addr(),
+    first.inst().Bits(),
+    second.addr(),
+    second.inst().Bits()
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemInstructionPair, user_data);
+}
+
+void ProblemReporter::ReportProblemRegister(
+    uint32_t vaddr, ValidatorProblem problem,
+    nacl_arm_dec::Register reg) {
+  ValidatorProblemUserData user_data = {
+    reg.number()
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem, kReportProblemRegister, user_data);
+}
+
+void ProblemReporter::ReportProblemRegisterInstructionPair(
+    uint32_t vaddr, ValidatorProblem problem,
+    ValidatorInstructionPairProblem pair_problem,
+    nacl_arm_dec::Register reg,
+    const DecodedInstruction& first, const DecodedInstruction& second) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(pair_problem),
+    reg.number(),
+    first.addr(),
+    first.inst().Bits(),
+    second.addr(),
+    second.inst().Bits()
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemRegisterInstructionPair, user_data);
+}
+
+void ProblemReporter::ReportProblemRegisterList(
+    uint32_t vaddr, ValidatorProblem problem,
+    nacl_arm_dec::RegisterList registers) {
+  ValidatorProblemUserData user_data = {
+    registers.bits()
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemRegisterList, user_data);
+}
+
+void ProblemReporter::ReportProblemRegisterListInstructionPair(
+    uint32_t vaddr, ValidatorProblem problem,
+    ValidatorInstructionPairProblem pair_problem,
+    nacl_arm_dec::RegisterList registers,
+    const DecodedInstruction& first, const DecodedInstruction& second) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(pair_problem),
+    registers.bits(),
+    first.addr(),
+    first.inst().Bits(),
+    second.addr(),
+    second.inst().Bits()
+  };
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemRegisterListInstructionPair, user_data);
+}
 
 void ProblemReporter::ExtractProblemSafety(
     const ValidatorProblemUserData user_data,

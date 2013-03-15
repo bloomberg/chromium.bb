@@ -6,7 +6,8 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstdarg>
 #include <string.h>
 
 #include <algorithm>
@@ -44,12 +45,6 @@ using std::vector;
  * For possible problem ID strings, see validator.h.
  */
 class NcvalProblemReporter : public ProblemReporter {
- public:
-  virtual bool should_continue() {
-    // Collect *all* problems before returning!
-    return true;
-  }
-
  protected:
   virtual void ReportProblemInternal(
       uint32_t vaddr,

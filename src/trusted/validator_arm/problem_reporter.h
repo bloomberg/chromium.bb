@@ -14,12 +14,74 @@
 
 namespace nacl_arm_val {
 
+// Defines the maximum number of data elements assocated with validator
+// problem user data.
+static const size_t kValidatorProblemUserDataSize = 6;
+
+// Defines array used to hold user data associated with a problem.
+typedef uint32_t ValidatorProblemUserData[kValidatorProblemUserDataSize];
+
+// Defines Which ReportProblem... function was called to generate
+// user data associated with the problem.
+typedef enum {
+  kReportProblemSafety,
+  kReportProblem,
+  kReportProblemAddress,
+  kReportProblemInstructionPair,
+  kReportProblemRegister,
+  kReportProblemRegisterInstructionPair,
+  kReportProblemRegisterList,
+  kReportProblemRegisterListInstructionPair
+} ValidatorProblemMethod;
+
 // ProblemSink that converts (internal) user data back to high-level
 // data, and converts reported problems into human readable text.
 class ProblemReporter : public ProblemSink {
  public:
-  ProblemReporter() {}
+  ProblemReporter();
   virtual ~ProblemReporter() {}
+
+  // The following override inherited virtuals.
+
+  virtual void ReportProblemDiagnostic(char* buffer,
+                                       size_t buffer_size,
+                                       nacl_arm_dec::Violation violation,
+                                       uint32_t vaddr,
+                                       const char* format, ...)
+               // Note: format is the 6th argument because of implicit this.
+               ATTRIBUTE_FORMAT_PRINTF(6, 7);
+
+  virtual void ReportProblemSafety(uint32_t vaddr,
+                                   nacl_arm_dec::SafetyLevel safety);
+
+  virtual void ReportProblem(uint32_t vaddr, ValidatorProblem problem);
+
+  virtual void ReportProblemAddress(uint32_t vaddr, ValidatorProblem problem,
+                                    uint32_t problem_vaddr);
+
+  virtual void ReportProblemInstructionPair(
+      uint32_t vaddr, ValidatorProblem problem,
+      ValidatorInstructionPairProblem pair_problem,
+      const DecodedInstruction& first, const DecodedInstruction& second);
+
+  virtual void ReportProblemRegister(uint32_t vaddr, ValidatorProblem problem,
+                                     nacl_arm_dec::Register reg);
+
+  virtual void ReportProblemRegisterInstructionPair(
+      uint32_t vaddr, ValidatorProblem problem,
+      ValidatorInstructionPairProblem pair_problem,
+      nacl_arm_dec::Register reg,
+      const DecodedInstruction& first, const DecodedInstruction& second);
+
+  virtual void ReportProblemRegisterList(
+      uint32_t vaddr, ValidatorProblem problem,
+      nacl_arm_dec::RegisterList registers);
+
+  virtual void ReportProblemRegisterListInstructionPair(
+      uint32_t vaddr, ValidatorProblem problem,
+      ValidatorInstructionPairProblem pair_problem,
+      nacl_arm_dec::RegisterList registers,
+      const DecodedInstruction& first, const DecodedInstruction& second);
 
  protected:
   // Extracts safety parameter from user data. Assumes that
@@ -104,6 +166,32 @@ class ProblemReporter : public ProblemSink {
               ValidatorProblem problem,
               ValidatorProblemMethod method,
               const ValidatorProblemUserData user_data);
+
+  // Reports a problem in untrusted code. All public report problem functions
+  // are automatically converted to a call to this function.
+  //  vaddr - the virtual address where the problem occurred.  Note that this is
+  //      probably not the address of memory that contains the offending
+  //      instruction, since we allow CodeSegments to lie about their base
+  //      addresses.
+  //  problem - An enumerated type defining the type of problem found.
+  //  method - The reporting method used to generate user data.
+  //  user_data - An array of additional information about the instruction.
+  //
+  // Default implementation does nothing!
+  virtual void ReportProblemInternal(uint32_t vaddr,
+                                     ValidatorProblem problem,
+                                     ValidatorProblemMethod method,
+                                     ValidatorProblemUserData user_data);
+
+  // Holds the values passed to the last call to ReportProblemInternal.
+  uint32_t last_vaddr;
+  ValidatorProblem last_problem;
+  ValidatorProblemMethod last_method;
+  ValidatorProblemUserData last_user_data;
+
+  // Returns the number of elements in user_data, for the given method.
+  // Used so that we can blindly copy/compare user data.
+  static size_t UserDataSize(ValidatorProblemMethod method);
 
  private:
   // Internal method to convert internal error report data

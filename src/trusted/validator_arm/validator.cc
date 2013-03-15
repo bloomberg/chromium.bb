@@ -5,6 +5,7 @@
  */
 
 #include <climits>
+#include <cstdarg>
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/validator_arm/model.h"
@@ -22,98 +23,55 @@ using std::vector;
 
 namespace nacl_arm_val {
 
-// Note: When updating the code on ProblemSink, be sure to update
-// file problem_reporter.cc appropriately. Both files must maintain
-// user_data consistently for the code to work.
-
-static const size_t kUserDataSize[] = {
-  1,  // kReportProblemSafety,
-  0,  // kReportProblem,
-  1,  // kReportProblemAddress,
-  5,  // kReportProblemInstructionPair,
-  1,  // kReportProblemRegister,
-  6,  // kReportProblemRegisterInstructionPair,
-  1,  // kReportProblemRegisterList,
-  6,  // kReportProblemRegisterListInstructionPair
-};
-
-size_t ProblemSink::UserDataSize(ValidatorProblemMethod method) {
-  size_t index = static_cast<size_t>(method);
-  return (index < NACL_ARRAY_SIZE(kUserDataSize)) ? kUserDataSize[index] : 0;
-}
-
-void ProblemSink::ReportProblemInternal(uint32_t vaddr,
-                                        ValidatorProblem problem,
-                                        ValidatorProblemMethod method,
-                                        ValidatorProblemUserData user_data) {
+// Default implementations for sel_ldr. Provides empty methods so that
+// code will link.
+void ProblemSink::ReportProblemDiagnostic(char* buffer,
+                                          size_t buffer_size,
+                                          nacl_arm_dec::Violation violation,
+                                          uint32_t vaddr,
+                                          const char* format, ...) {
+  UNREFERENCED_PARAMETER(buffer);
+  UNREFERENCED_PARAMETER(buffer_size);
+  UNREFERENCED_PARAMETER(violation);
   UNREFERENCED_PARAMETER(vaddr);
-  UNREFERENCED_PARAMETER(problem);
-  UNREFERENCED_PARAMETER(method);
-  UNREFERENCED_PARAMETER(user_data);
-
-  // Before returning, be sure unused fields in user data are set to zero.
-  // This way, we don't need to fill in each ReportProblem... method.
-  for (size_t i = UserDataSize(method);
-       i < kValidatorProblemUserDataSize; ++i) {
-    user_data[i] = 0;
-  }
+  UNREFERENCED_PARAMETER(format);
 }
 
 void ProblemSink::ReportProblemSafety(
     uint32_t vaddr, nacl_arm_dec::SafetyLevel safety) {
-  ValidatorProblemUserData user_data = {
-    static_cast<uint32_t>(safety),
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, kProblemUnsafe,
-                        kReportProblemSafety, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(safety);
 }
 
 void ProblemSink::ReportProblem(uint32_t vaddr, ValidatorProblem problem) {
-  ValidatorProblemUserData user_data = {
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, problem, kReportProblem, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
 }
 
 void ProblemSink::ReportProblemAddress(
     uint32_t vaddr, ValidatorProblem problem, uint32_t problem_vaddr) {
-  ValidatorProblemUserData user_data = {
-    problem_vaddr
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, problem, kReportProblemAddress, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
+  UNREFERENCED_PARAMETER(problem_vaddr);
 }
 
 void ProblemSink::ReportProblemInstructionPair(
     uint32_t vaddr, ValidatorProblem problem,
     ValidatorInstructionPairProblem pair_problem,
     const DecodedInstruction& first, const DecodedInstruction& second) {
-  ValidatorProblemUserData user_data = {
-    static_cast<uint32_t>(pair_problem),
-    first.addr(),
-    first.inst().Bits(),
-    second.addr(),
-    second.inst().Bits()
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, problem,
-                        kReportProblemInstructionPair, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
+  UNREFERENCED_PARAMETER(pair_problem);
+  UNREFERENCED_PARAMETER(first);
+  UNREFERENCED_PARAMETER(second);
 }
 
 void ProblemSink::ReportProblemRegister(
     uint32_t vaddr, ValidatorProblem problem,
     nacl_arm_dec::Register reg) {
-  ValidatorProblemUserData user_data = {
-    reg.number()
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, problem, kReportProblemRegister, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
+  UNREFERENCED_PARAMETER(reg);
 }
 
 void ProblemSink::ReportProblemRegisterInstructionPair(
@@ -121,30 +79,20 @@ void ProblemSink::ReportProblemRegisterInstructionPair(
     ValidatorInstructionPairProblem pair_problem,
     nacl_arm_dec::Register reg,
     const DecodedInstruction& first, const DecodedInstruction& second) {
-  ValidatorProblemUserData user_data = {
-    static_cast<uint32_t>(pair_problem),
-    reg.number(),
-    first.addr(),
-    first.inst().Bits(),
-    second.addr(),
-    second.inst().Bits()
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, problem,
-                        kReportProblemRegisterInstructionPair, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
+  UNREFERENCED_PARAMETER(pair_problem);
+  UNREFERENCED_PARAMETER(reg);
+  UNREFERENCED_PARAMETER(first);
+  UNREFERENCED_PARAMETER(second);
 }
 
 void ProblemSink::ReportProblemRegisterList(
     uint32_t vaddr, ValidatorProblem problem,
     nacl_arm_dec::RegisterList registers) {
-  ValidatorProblemUserData user_data = {
-    registers.bits()
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, problem,
-                        kReportProblemRegisterList, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
+  UNREFERENCED_PARAMETER(registers);
 }
 
 void ProblemSink::ReportProblemRegisterListInstructionPair(
@@ -152,18 +100,12 @@ void ProblemSink::ReportProblemRegisterListInstructionPair(
     ValidatorInstructionPairProblem pair_problem,
     nacl_arm_dec::RegisterList registers,
     const DecodedInstruction& first, const DecodedInstruction& second) {
-  ValidatorProblemUserData user_data = {
-    static_cast<uint32_t>(pair_problem),
-    registers.bits(),
-    first.addr(),
-    first.inst().Bits(),
-    second.addr(),
-    second.inst().Bits()
-  };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, problem,
-                        kReportProblemRegisterListInstructionPair, user_data);
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
+  UNREFERENCED_PARAMETER(pair_problem);
+  UNREFERENCED_PARAMETER(registers);
+  UNREFERENCED_PARAMETER(first);
+  UNREFERENCED_PARAMETER(second);
 }
 
 // Looks at the conditions associated with a pair of instructions
@@ -294,14 +236,11 @@ find_violations(const vector<CodeSegment>& segments,
 
   for (vector<CodeSegment>::const_iterator it = segments.begin();
       it != segments.end(); ++it) {
+    nacl_arm_dec::ViolationSet segment_violations =
+        validate_fallthrough(*it, out, &branches, &critical);
     found_violations =
-        nacl_arm_dec::ViolationUnion(
-            found_violations,
-            validate_fallthrough(*it, out, &branches, &critical));
-
-    if (!out->should_continue()) {
-      return found_violations;
-    }
+        nacl_arm_dec::ViolationUnion(found_violations, segment_violations);
+    if (segment_violations && (out == NULL)) return found_violations;
   }
 
   return
@@ -371,10 +310,9 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
 
     // Report problem if the sentinels differ, and reject the replacement.
     if (!new_sentinel.Equals(old_sentinel)) {
+      if (out == NULL) return false;
       out->ReportProblem(va, kProblemUnsafe);
       complete_success = false;
-      if (!out->should_continue())
-        return false;
     }
   }
 
@@ -410,7 +348,7 @@ bool SfiValidator::CopyCode(const CodeSegment& source_code,
 }
 
 bool SfiValidator::ConstructionFailed(ProblemSink* out) {
-  if (construction_failed_) {
+  if (construction_failed_ && (out != NULL)) {
     uint32_t invalid_addr = ~(uint32_t)0;
     out->ReportProblem(invalid_addr, kProblemConstructionFailed);
   }
@@ -446,11 +384,8 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_fallthrough(
     if (violations) {
       found_violations =
           nacl_arm_dec::ViolationUnion(found_violations, violations);
-      // TODO(kschimpf): Refactor so that ProblemSink out can be NULL (when
-      // run in sel_ldr), and don't bother to generate diagnostics in such
-      // cases. Note: This has to be done throughout this file, not just here.
+      if (out == NULL) return found_violations;
       decoder.generate_diagnostics(violations, pred, inst, *this, out);
-      if (!out->should_continue()) return found_violations;
     }
     pred.Copy(inst);
   }
@@ -468,6 +403,7 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_fallthrough(
   if (violations) {
     found_violations =
         nacl_arm_dec::ViolationUnion(found_violations, violations);
+    if (out == NULL) return found_violations;
     nop_decoder.generate_diagnostics(violations, pred, one_past_end,
                                      *this, out);
   }
@@ -515,10 +451,8 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
                 found_violations,
                 nacl_arm_dec::ViolationBit(
                     nacl_arm_dec::BRANCH_SPLITS_PATTERN_VIOLATION));
+        if (out == NULL) return found_violations;
         out->ReportProblemAddress(va, kProblemBranchSplitsPattern, target_va);
-        if (!out->should_continue()) {
-          return found_violations;
-        }
       }
     } else if ((target_va & code_address_mask()) == 0) {
       // Allow bundle-aligned, in-range direct jump.
@@ -528,10 +462,8 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
               found_violations,
               nacl_arm_dec::ViolationBit(
                   nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION));
+      if (out == NULL) return found_violations;
       out->ReportProblemAddress(va, kProblemBranchInvalidDest, target_va);
-      if (!out->should_continue()) {
-        return found_violations;
-      }
     }
   }
 
