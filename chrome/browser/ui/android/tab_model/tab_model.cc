@@ -104,6 +104,10 @@ std::string TabModel::GetQueryExtractionParam() {
   return search_terms_data.InstantExtendedEnabledParam();
 }
 
+string16 TabModel::GetCorpusNameForCurrentTab() {
+  return toolbar_model_->GetCorpusNameForMobile();
+}
+
 void TabModel::Observe(
     int type,
     const content::NotificationSource& source,

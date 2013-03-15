@@ -39,6 +39,7 @@ class ToolbarModelImpl : public ToolbarModel {
   // Overriden from ToolbarModel.
   virtual string16 GetText(
       bool display_search_urls_as_search_terms) const OVERRIDE;
+  virtual string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
   virtual bool WouldReplaceSearchURLWithSearchTerms() const OVERRIDE;
   virtual SecurityLevel GetSecurityLevel() const OVERRIDE;

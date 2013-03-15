@@ -21,6 +21,10 @@ string16 MockToolbarModel::GetText(
     return string16();
 }
 
+string16 MockToolbarModel::GetCorpusNameForMobile() const {
+  return string16();
+}
+
 GURL MockToolbarModel::GetURL() const {
   return GURL();
 }

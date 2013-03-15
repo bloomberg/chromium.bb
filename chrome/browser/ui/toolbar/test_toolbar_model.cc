@@ -21,6 +21,10 @@ string16 TestToolbarModel::GetText(
   return text_;
 }
 
+string16 TestToolbarModel::GetCorpusNameForMobile() const {
+  return string16();
+}
+
 GURL TestToolbarModel::GetURL() const {
   return url_;
 }

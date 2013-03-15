@@ -64,6 +64,10 @@ class TabModel : public content::NotificationObserver,
   // Returns the parameter that is used to trigger query extraction.
   std::string GetQueryExtractionParam();
 
+  // Calls through to the ToolbarModel's GetCorpusNameForMobile -- see
+  // comments in toolbar_model.h.
+  string16 GetCorpusNameForCurrentTab();
+
  protected:
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.

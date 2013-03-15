@@ -107,6 +107,24 @@ string16 ToolbarModelImpl::GetText(
                           net::UnescapeRule::NORMAL, NULL, NULL, NULL));
 }
 
+string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
+  if (!WouldReplaceSearchURLWithSearchTerms())
+    return string16();
+  GURL url(GetURL());
+  const std::string& query_str(url.query());
+  url_parse::Component query(0, query_str.length()), key, value;
+  const char kChipKey[] = "sboxchip";
+  while (url_parse::ExtractQueryKeyValue(query_str.c_str(), &query, &key,
+                                         &value)) {
+    if (key.is_nonempty() && query_str.substr(key.begin, key.len) == kChipKey) {
+      return net::UnescapeAndDecodeUTF8URLComponent(
+          query_str.substr(value.begin, value.len),
+          net::UnescapeRule::NORMAL, NULL);
+    }
+  }
+  return string16();
+}
+
 GURL ToolbarModelImpl::GetURL() const {
   const NavigationController* navigation_controller = GetNavigationController();
   if (navigation_controller) {

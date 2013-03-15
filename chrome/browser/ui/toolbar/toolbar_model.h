@@ -40,6 +40,13 @@ class ToolbarModel {
   //   will be displayed in place of the URL.
   virtual string16 GetText(bool display_search_urls_as_search_terms) const = 0;
 
+  // Some search URLs bundle a special "corpus" param that we can extract and
+  // display next to users' search terms in cases where we'd show the search
+  // terms instead of the URL anyway.  For example, a Google image search might
+  // show the corpus "Images:" plus a search string.  This is only used on
+  // mobile.
+  virtual string16 GetCorpusNameForMobile() const = 0;
+
   // Returns the URL of the current navigation entry.
   virtual GURL GetURL() const = 0;
 
