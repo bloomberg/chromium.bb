@@ -33,7 +33,9 @@ body.uber-frame header {
   /* <section>s in options currently amount to 638px total, broken up into
    * 600px max-width + 18px -webkit-padding-start + 20px -webkit-margin-end
    * so we mirror this value here so the headers match width and horizontal
-   * alignment when scrolling sideways. */
+   * alignment when scrolling sideways.
+   * other-devices.css' .device width depends on this, please keep in sync.
+   */
   max-width: 738px;
   min-width: 600px;
   position: fixed;

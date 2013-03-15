@@ -14,10 +14,9 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/string16.h"
-#include "base/string_piece.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -29,30 +28,26 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/instant/search.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/url_data_source.h"
-#include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "sync/protocol/history_delete_directive_specifics.pb.h"
@@ -62,13 +57,14 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#else
+#include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #endif
-
-using content::UserMetricsAction;
-using content::WebContents;
 
 static const char kStringsJsFile[] = "strings.js";
 static const char kHistoryJsFile[] = "history.js";
+static const char kOtherDevicesJsFile[] = "other_devices.js";
 
 // The amount of time to wait for a response from the WebHistoryService.
 static const int kWebHistoryTimeoutSeconds = 3;
@@ -97,6 +93,15 @@ const char kIncognitoModeShortcut[] = "(Shift+Ctrl+N)";
 content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
+  source->AddBoolean("isUserSignedIn",
+      !profile->GetPrefs()->GetString(prefs::kGoogleServicesUsername).empty());
+  source->AddLocalizedString("collapseSessionMenuItemText",
+      IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION);
+  source->AddLocalizedString("expandSessionMenuItemText",
+      IDS_NEW_TAB_OTHER_SESSIONS_EXPAND_SESSION);
+  source->AddLocalizedString("restoreSessionMenuItemText",
+      IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL);
+  source->AddLocalizedString("xMore", IDS_OTHER_DEVICES_X_MORE);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
   source->AddLocalizedString("newest", IDS_HISTORY_NEWEST);
@@ -148,6 +153,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
           switches::kHistoryEnableGroupByDomain));
   source->SetJsonPath(kStringsJsFile);
   source->AddResourcePath(kHistoryJsFile, IDR_HISTORY_JS);
+  source->AddResourcePath(kOtherDevicesJsFile, IDR_OTHER_DEVICES_JS);
   source->SetDefaultResource(IDR_HISTORY_HTML);
   source->SetUseJsonJSFormatV2();
   source->DisableDenyXFrameOptions();
@@ -1085,10 +1091,17 @@ void BrowsingHistoryHandler::Observe(
 HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
 
+// Android deals with foreign sessions differently.
+#if !defined(OS_ANDROID)
+  if (chrome::search::IsInstantExtendedAPIEnabled()) {
+    web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
+    web_ui->AddMessageHandler(new NTPLoginHandler());
+  }
+#endif  // !defined(OS_ANDROID)
+
   // Set up the chrome://history-frame/ source.
-  content::WebUIDataSource::Add(
-      Profile::FromWebUI(web_ui),
-      CreateHistoryUIHTMLSource(Profile::FromWebUI(web_ui)));
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource::Add(profile, CreateHistoryUIHTMLSource(profile));
 }
 
 // static

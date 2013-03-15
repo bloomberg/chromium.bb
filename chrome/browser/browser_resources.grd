@@ -122,6 +122,7 @@
       <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_OTHER_DEVICES_JS" file="resources\history\other_devices.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INSPECT_CSS" file="resources\inspect\inspect.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INSPECT_HTML" file="resources\inspect\inspect.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_INSPECT_JS" file="resources\inspect\inspect.js" flattenhtml="true" type="BINDATA" />

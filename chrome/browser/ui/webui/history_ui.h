@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_
 
-#include <string>
-
 #include "base/string16.h"
 #include "base/timer.h"
 #include "base/values.h"
@@ -17,7 +15,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "ui/base/layout.h"
 
 class BookmarkModel;
 class ManagedUserService;

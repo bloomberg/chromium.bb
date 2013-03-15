@@ -16,6 +16,9 @@
 <link rel="stylesheet" href="../uber/uber_shared.css">
 </if>
 <link rel="stylesheet" href="history.css">
+<if expr="not pp_ifdef('android')">
+<link rel="stylesheet" href="other_devices.css">
+</if>
 
 <script src="chrome://resources/js/event_tracker.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
@@ -25,10 +28,17 @@
 <script src="chrome://resources/js/cr/ui/menu.js"></script>
 <script src="chrome://resources/js/cr/ui/position_util.js"></script>
 <script src="chrome://resources/js/cr/ui/menu_button.js"></script>
+<script src="chrome://resources/js/cr/ui/context_menu_button.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/cr/ui/context_menu_handler.js"></script>
+
 <script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 
 <script src="chrome://history-frame/history.js"></script>
+<if expr="not pp_ifdef('android')">
+<script src="chrome://history-frame/other_devices.js"></script>
+</if>
 
 </head>
 
@@ -74,6 +84,9 @@
       </label>
     </div>
   </div>
+<if expr="not pp_ifdef('android')">
+  <div id="other-devices" class="other-devices"></div>
+</if>
   <div id="editing-controls">
     <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
     <button id="remove-selected" disabled="disabled"
