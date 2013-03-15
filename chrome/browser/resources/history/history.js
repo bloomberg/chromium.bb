@@ -1389,7 +1389,7 @@ function load() {
 
   var doSearch = function(e) {
     // Disable the group by domain control when a search is active.
-    $('display-filter-sites').disabled = (searchField.value != '');
+    $('group-by-domain').disabled = (searchField.value != '');
     historyView.setSearch(searchField.value);
   };
 
