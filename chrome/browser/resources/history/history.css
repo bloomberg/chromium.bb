@@ -57,6 +57,7 @@ html[dir=rtl] #notification-bar {
 }
 
 #notification-bar:not(.warning) {
+  -webkit-padding-end: 0;
   background-color: inherit;
   border: 1px solid transparent;
   box-shadow: none;
