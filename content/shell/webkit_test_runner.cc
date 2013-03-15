@@ -371,10 +371,6 @@ void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {
   }
 }
 
-void WebKitTestRunner::setFocus(bool focus) {
-  // TODO(jochen): Remove once the new WebKit API is rolled.
-}
-
 void WebKitTestRunner::setAcceptAllCookies(bool accept) {
   Send(new ShellViewHostMsg_AcceptAllCookies(routing_id(), accept));
 }

@@ -67,7 +67,6 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setDatabaseQuota(int quota);
   virtual void setDeviceScaleFactor(float factor);
   virtual void setFocus(WebTestRunner::WebTestProxyBase* proxy, bool focus);
-  virtual void setFocus(bool focus);
   virtual void setAcceptAllCookies(bool accept);
   virtual std::string pathToLocalResource(const std::string& resource);
   virtual void setLocale(const std::string& locale);
