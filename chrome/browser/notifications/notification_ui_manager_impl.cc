@@ -13,7 +13,9 @@
 #include "chrome/browser/idle.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
@@ -49,6 +51,10 @@ class QueuedNotification {
 NotificationUIManagerImpl::NotificationUIManagerImpl()
     : is_user_active_(true) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
 }
 
@@ -200,6 +206,17 @@ void NotificationUIManagerImpl::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_TERMINATING) {
     CancelAll();
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+    if (!content::Source<Profile>(source)->IsOffTheRecord()) {
+      extensions::UnloadedExtensionInfo* extension_info =
+          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
+      const extensions::Extension* extension = extension_info->extension;
+      CancelAllBySourceOrigin(extension->url());
+    }
+  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
+    // We only want to remove the incognito notifications.
+    if (content::Source<Profile>(source)->IsOffTheRecord())
+      CancelAllByProfile(content::Source<Profile>(source).ptr());
   } else {
     NOTREACHED();
   }

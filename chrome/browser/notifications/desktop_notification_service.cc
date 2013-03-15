@@ -314,20 +314,6 @@ DesktopNotificationService::DesktopNotificationService(
     NotificationUIManager* ui_manager)
     : profile_(profile),
       ui_manager_(ui_manager) {
-  StartObserving();
-}
-
-DesktopNotificationService::~DesktopNotificationService() {
-  StopObserving();
-}
-
-void DesktopNotificationService::StartObserving() {
-  if (!profile_->IsOffTheRecord()) {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                                content::Source<Profile>(profile_));
-  }
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::Source<Profile>(profile_));
 #if defined(ENABLE_MESSAGE_CENTER)
   OnDisabledExtensionIdsChanged();
   disabled_extension_id_pref_.Init(
@@ -339,8 +325,7 @@ void DesktopNotificationService::StartObserving() {
 #endif
 }
 
-void DesktopNotificationService::StopObserving() {
-  notification_registrar_.RemoveAll();
+DesktopNotificationService::~DesktopNotificationService() {
 #if defined(ENABLE_MESSAGE_CENTER)
   disabled_extension_id_pref_.Destroy();
 #endif
@@ -366,34 +351,6 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       NO_RESOURCE_IDENTIFIER,
       CONTENT_SETTING_BLOCK);
-}
-
-void DesktopNotificationService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  // This may get called during shutdown, so don't use GetUIManager() here,
-  // and don't do anything if ui_manager_ hasn't already been set.
-  if (!ui_manager_)
-    return;
-
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
-    // Remove all notifications currently shown or queued by the extension
-    // which was unloaded.
-    const extensions::Extension* extension =
-        content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-    if (extension &&
-        g_browser_process && g_browser_process->notification_ui_manager()) {
-      g_browser_process->notification_ui_manager()->
-          CancelAllBySourceOrigin(extension->url());
-    }
-  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
-    if (g_browser_process && g_browser_process->notification_ui_manager()) {
-      g_browser_process->notification_ui_manager()->
-          CancelAllByProfile(profile_);
-    }
-    StopObserving();
-  }
 }
 
 ContentSetting DesktopNotificationService::GetDefaultContentSetting(

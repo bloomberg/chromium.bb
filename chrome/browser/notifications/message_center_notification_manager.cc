@@ -91,7 +91,7 @@ bool MessageCenterNotificationManager::CancelAllByProfile(Profile* profile) {
   for (NotificationMap::iterator loopiter = profile_notifications_.begin();
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
-    if ((*curiter).second->profile()->IsSameProfile(profile)) {
+    if ((*curiter).second->profile() == profile) {
       // This action occurs when profile is unloaded. Closing notifications is
       // not by user, so |false|.
       RemoveProfileNotification((*curiter).second, false);
