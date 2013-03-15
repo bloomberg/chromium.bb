@@ -574,7 +574,7 @@ std::string SyncerProtoUtil::SyncEntityDebugString(
       GetTimeDebugString(ProtoTimeToTime(entry.ctime()));
   return base::StringPrintf(
       "id: %s, parent_id: %s, "
-      "version: %"PRId64"d, "
+      "version: %" PRId64"d, "
       "mtime: %" PRId64"d (%s), "
       "ctime: %" PRId64"d (%s), "
       "name: %s, sync_timestamp: %" PRId64"d, "
