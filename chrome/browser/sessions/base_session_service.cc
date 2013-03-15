@@ -44,12 +44,17 @@ void WriteStringToPickle(Pickle& pickle, int* bytes_written, int max_bytes,
 // thread if it's not canceled.
 void RunIfNotCanceled(
     const CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    base::TaskRunner* task_runner,
     const BaseSessionService::InternalGetCommandsCallback& callback,
     ScopedVector<SessionCommand> commands) {
   if (is_canceled.Run())
     return;
+  callback.Run(commands.Pass());
+}
 
+void PostOrRunInternalGetCommandsCallback(
+    base::TaskRunner* task_runner,
+    const BaseSessionService::InternalGetCommandsCallback& callback,
+    ScopedVector<SessionCommand> commands) {
   if (task_runner->RunsTasksOnCurrentThread()) {
     callback.Run(commands.Pass());
   } else {
@@ -273,9 +278,12 @@ CancelableTaskTracker::TaskId
   CancelableTaskTracker::IsCanceledCallback is_canceled;
   CancelableTaskTracker::TaskId id = tracker->NewTrackedTaskId(&is_canceled);
 
+  InternalGetCommandsCallback run_if_not_canceled =
+      base::Bind(&RunIfNotCanceled, is_canceled, callback);
+
   InternalGetCommandsCallback callback_runner =
-      base::Bind(&RunIfNotCanceled,
-                 is_canceled, base::MessageLoopProxy::current(), callback);
+      base::Bind(&PostOrRunInternalGetCommandsCallback,
+                 base::MessageLoopProxy::current(), run_if_not_canceled);
 
   RunTaskOnBackendThread(
       FROM_HERE,
