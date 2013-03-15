@@ -3,15 +3,22 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/browser_thread.h"
+#include "ui/base/gtk/focus_store_gtk.h"
 
 namespace {
 
 class NativeWebContentsModalDialogManagerGtk
     : public NativeWebContentsModalDialogManager {
  public:
-  NativeWebContentsModalDialogManagerGtk() {
+  NativeWebContentsModalDialogManagerGtk(
+      NativeWebContentsModalDialogManagerDelegate* native_delegate)
+          : native_delegate_(native_delegate),
+            shown_widget_(NULL) {
   }
 
   virtual ~NativeWebContentsModalDialogManagerGtk() {
@@ -19,10 +26,26 @@ class NativeWebContentsModalDialogManagerGtk
 
   // NativeWebContentsModalDialogManager overrides
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    g_signal_connect(GetGtkWidget(dialog), "hierarchy-changed",
+                     G_CALLBACK(OnHierarchyChangedThunk), this);
+    g_signal_connect(GetGtkWidget(dialog),
+                     "destroy",
+                     G_CALLBACK(OnDestroyThunk),
+                     this);
   }
 
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    GetConstrainedWindowGtk(dialog)->ShowWebContentsModalDialog();
+    // Any previously-shown widget should be destroyed before showing a new
+    // widget.
+    DCHECK(shown_widget_ == NULL);
+
+    GtkWidget* widget = GetGtkWidget(dialog);
+    gtk_widget_show_all(widget);
+    shown_widget_ = widget;
+
+    // We collaborate with WebContentsView and stick ourselves in the
+    // WebContentsView's floating container.
+    ContainingView()->AttachWebContentsModalDialog(widget);
   }
 
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
@@ -30,14 +53,27 @@ class NativeWebContentsModalDialogManagerGtk
   }
 
   virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    GetConstrainedWindowGtk(dialog)->FocusWebContentsModalDialog();
+    GtkWidget* focus_widget =
+        reinterpret_cast<GtkWidget*>(
+            g_object_get_data(G_OBJECT(GetGtkWidget(dialog)), "focus_widget"));
+
+    if (!focus_widget)
+      return;
+
+    // The user may have focused another tab. In this case do not grab focus
+    // until this tab is refocused.
+    if (gtk_util::IsWidgetAncestryVisible(focus_widget))
+      gtk_widget_grab_focus(focus_widget);
+    else
+      ContainingView()->focus_store()->SetWidget(focus_widget);
   }
 
   virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    GetConstrainedWindowGtk(dialog)->PulseWebContentsModalDialog();
   }
 
  private:
+  typedef ChromeWebContentsViewDelegateGtk TabContentsViewType;
+
   GtkWidget* GetGtkWidget(NativeWebContentsModalDialog dialog) {
     return GTK_WIDGET(dialog);
   }
@@ -50,13 +86,60 @@ class NativeWebContentsModalDialogManagerGtk
     return static_cast<ConstrainedWindowGtk*>(constrained_window_gtk);
   }
 
+  // Returns the View that we collaborate with to position ourselves.
+  TabContentsViewType* ContainingView() const {
+    // WebContents may be destroyed already on tab shutdown.
+     content::WebContents* web_contents = native_delegate_->GetWebContents();
+    return web_contents ?
+        ChromeWebContentsViewDelegateGtk::GetFor(web_contents) : NULL;
+  }
+
+  CHROMEGTK_CALLBACK_1(NativeWebContentsModalDialogManagerGtk,
+                       void,
+                       OnHierarchyChanged,
+                       GtkWidget*);
+  CHROMEGTK_CALLBACK_0(NativeWebContentsModalDialogManagerGtk, void, OnDestroy);
+
+  NativeWebContentsModalDialogManagerDelegate* native_delegate_;
+
+  // The widget currently being shown.
+  GtkWidget* shown_widget_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerGtk);
 };
+
+void NativeWebContentsModalDialogManagerGtk::OnHierarchyChanged(
+    GtkWidget* sender,
+    GtkWidget* previous_toplevel) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(sender)))
+    return;
+
+  FocusDialog(sender);
+}
+
+void NativeWebContentsModalDialogManagerGtk::OnDestroy(
+    GtkWidget* sender) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (shown_widget_ == sender) {
+    // The containing view may already be destroyed on tab shutdown.
+    if (ContainingView())
+      ContainingView()->RemoveWebContentsModalDialog(sender);
+
+    shown_widget_ = NULL;
+  }
+
+  native_delegate_->WillClose(sender);
+
+  delete GetConstrainedWindowGtk(sender);
+}
 
 }  // namespace
 
 NativeWebContentsModalDialogManager*
     WebContentsModalDialogManager::CreateNativeManager(
         NativeWebContentsModalDialogManagerDelegate* native_delegate) {
-  return new NativeWebContentsModalDialogManagerGtk;
+  return new NativeWebContentsModalDialogManagerGtk(native_delegate);
 }

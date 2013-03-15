@@ -73,7 +73,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
 
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroyThunk), this);
 
-  window_ = CreateWebContentsModalDialogGtk(web_contents, dialog_, cancel_);
+  window_ = CreateWebContentsModalDialogGtk(dialog_, cancel_);
   delegate_->set_close_delegate(this);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =

@@ -117,9 +117,7 @@ class LoginHandlerGtk : public LoginHandler {
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
-    dialog_ = CreateWebContentsModalDialogGtk(requesting_contents,
-                                              root_.get(),
-                                              username_entry_);
+    dialog_ = CreateWebContentsModalDialogGtk(root_.get(), username_entry_);
 
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(requesting_contents);

@@ -137,7 +137,6 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
           browser_context, delegate, tab_delegate);
   GtkWidget* window =
       CreateWebContentsModalDialogGtk(
-          web_contents,
           constrained_delegate->GetWebContents()->GetView()->GetNativeView(),
           constrained_delegate->GetWebContents()->GetView()->
               GetContentNativeView());

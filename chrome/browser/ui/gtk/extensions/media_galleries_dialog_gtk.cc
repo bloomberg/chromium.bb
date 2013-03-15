@@ -30,9 +30,7 @@ MediaGalleriesDialogGtk::MediaGalleriesDialogGtk(
 
   // May be NULL during tests.
   if (controller->web_contents()) {
-    window_ = CreateWebContentsModalDialogGtk(controller->web_contents(),
-                                              contents_.get(),
-                                              confirm_);
+    window_ = CreateWebContentsModalDialogGtk(contents_.get(), confirm_);
 
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(

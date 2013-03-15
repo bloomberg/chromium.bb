@@ -44,6 +44,7 @@ class WebContentsModalDialogManager
   void FocusTopmostDialog();
 
   // Overriden from NativeWebContentsModalDialogManagerDelegate:
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   // Called when a WebContentsModalDialogs we own is about to be closed.
   virtual void WillClose(NativeWebContentsModalDialog dialog) OVERRIDE;
 
@@ -103,6 +104,9 @@ class WebContentsModalDialogManager
 
   // All active dialogs.
   WebContentsModalDialogList child_dialogs_;
+
+  // True while closing the dialogs on WebContents close.
+  bool closing_all_dialogs_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManager);
 };

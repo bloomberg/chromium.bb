@@ -7,6 +7,10 @@
 
 #include "chrome/browser/ui/native_web_contents_modal_dialog.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 // Interface from NativeWebContentsModalDialogManager to
 // WebContentsModalDialogManager.
 class NativeWebContentsModalDialogManagerDelegate {
@@ -14,6 +18,7 @@ class NativeWebContentsModalDialogManagerDelegate {
   NativeWebContentsModalDialogManagerDelegate() {}
   virtual ~NativeWebContentsModalDialogManagerDelegate() {}
 
+  virtual content::WebContents* GetWebContents() const = 0;
   virtual void WillClose(NativeWebContentsModalDialog dialog) = 0;
 
  private:

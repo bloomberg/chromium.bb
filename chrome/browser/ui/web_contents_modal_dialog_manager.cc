@@ -59,6 +59,10 @@ void WebContentsModalDialogManager::FocusTopmostDialog() {
   native_manager_->FocusDialog(*dialog_begin());
 }
 
+content::WebContents* WebContentsModalDialogManager::GetWebContents() const {
+  return web_contents();
+}
+
 void WebContentsModalDialogManager::WillClose(
     NativeWebContentsModalDialog dialog) {
   WebContentsModalDialogList::iterator i(
@@ -71,7 +75,7 @@ void WebContentsModalDialogManager::WillClose(
   if (child_dialogs_.empty()) {
     BlockWebContentsInteraction(false);
   } else {
-    if (removed_topmost_dialog)
+    if (removed_topmost_dialog && !closing_all_dialogs_)
       native_manager_->ShowDialog(child_dialogs_[0]);
     BlockWebContentsInteraction(true);
   }
@@ -82,11 +86,14 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
     : content::WebContentsObserver(web_contents),
       delegate_(NULL),
       native_manager_(
-          ALLOW_THIS_IN_INITIALIZER_LIST(CreateNativeManager(this))) {
+          ALLOW_THIS_IN_INITIALIZER_LIST(CreateNativeManager(this))),
+      closing_all_dialogs_(false) {
   DCHECK(native_manager_);
 }
 
 void WebContentsModalDialogManager::CloseAllDialogs() {
+  closing_all_dialogs_ = true;
+
   // Clear out any dialogs since we are leaving this page entirely.  To ensure
   // that we iterate over every element in child_dialogs_ we need to use a copy
   // of child_dialogs_. Otherwise if closing a dialog causes child_dialogs_ to
@@ -97,6 +104,8 @@ void WebContentsModalDialogManager::CloseAllDialogs() {
     native_manager_->CloseDialog(*it);
     BlockWebContentsInteraction(false);
   }
+
+  closing_all_dialogs_ = false;
 }
 
 void WebContentsModalDialogManager::DidNavigateMainFrame(

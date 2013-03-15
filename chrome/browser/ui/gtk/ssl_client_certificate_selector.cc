@@ -197,9 +197,7 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Show() {
   DCHECK(!window_);
-  window_ = CreateWebContentsModalDialogGtk(web_contents_,
-                                            root_widget_.get(),
-                                            select_button_);
+  window_ = CreateWebContentsModalDialogGtk(root_widget_.get(), select_button_);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);

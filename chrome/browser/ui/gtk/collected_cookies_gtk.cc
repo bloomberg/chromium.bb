@@ -191,9 +191,7 @@ void CollectedCookiesGtk::Init() {
   blocked_cookies_tree_adapter_->Init();
   EnableControls();
   ShowCookieInfo(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook_)));
-  window_ = CreateWebContentsModalDialogGtk(web_contents_,
-                                            dialog_,
-                                            close_button_);
+  window_ = CreateWebContentsModalDialogGtk(dialog_, close_button_);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
