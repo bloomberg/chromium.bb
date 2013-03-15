@@ -11,21 +11,29 @@
 
 namespace content {
 
-class BrowserAccessibilityManagerMac : public BrowserAccessibilityManager {
+class CONTENT_EXPORT BrowserAccessibilityManagerMac
+    : public BrowserAccessibilityManager {
  public:
+  BrowserAccessibilityManagerMac(
+      NSView* parent_view,
+      const AccessibilityNodeData& src,
+      BrowserAccessibilityDelegate* delegate,
+      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+
+  static AccessibilityNodeData GetEmptyDocument();
+
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(int type,
                                         BrowserAccessibility* node) OVERRIDE;
+
+  NSView* parent_view() { return parent_view_; }
 
  private:
   // This gives BrowserAccessibilityManager::Create access to the class
   // constructor.
   friend class BrowserAccessibilityManager;
 
-  BrowserAccessibilityManagerMac(gfx::NativeView parent_view,
-                                 const AccessibilityNodeData& src,
-                                 BrowserAccessibilityDelegate* delegate,
-                                 BrowserAccessibilityFactory* factory);
+  NSView* parent_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerMac);
 };

@@ -13,6 +13,8 @@
 #include "base/string_number_conversions.h"
 #include "cc/compositor_frame.h"
 #include "cc/compositor_frame_ack.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -62,6 +64,8 @@
 #include "ui/gfx/skia_util.h"
 
 #if defined(OS_WIN)
+#include "content/browser/accessibility/browser_accessibility_manager_win.h"
+#include "content/browser/accessibility/browser_accessibility_win.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/gdi_util.h"
 #endif
@@ -767,8 +771,47 @@ gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
+#if defined(OS_WIN)
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (!root_window)
+    return static_cast<gfx::NativeViewAccessible>(NULL);
+  HWND hwnd = root_window->GetAcceleratedWidget();
+
+  BrowserAccessibilityManager* manager =
+      GetOrCreateBrowserAccessibilityManager();
+  if (manager)
+    return manager->GetRoot()->ToBrowserAccessibilityWin();
+#endif
+
   NOTIMPLEMENTED();
   return static_cast<gfx::NativeViewAccessible>(NULL);
+}
+
+BrowserAccessibilityManager*
+RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  if (manager)
+    return NULL;
+
+#if defined(OS_WIN)
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (!root_window)
+    return NULL;
+  HWND hwnd = root_window->GetAcceleratedWidget();
+
+  // TODO: this should be the accessible of the parent View, for example
+  // GetNativeViewAccessible() called on this tab's ContentsContainer.
+  IAccessible* parent_iaccessible = NULL;
+
+  manager = new BrowserAccessibilityManagerWin(
+      hwnd, parent_iaccessible,
+      BrowserAccessibilityManagerWin::GetEmptyDocument(), this);
+#else
+  manager = BrowserAccessibilityManager::Create(AccessibilityNodeData(), this);
+#endif
+
+  SetBrowserAccessibilityManager(manager);
+  return manager;
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(
@@ -1513,6 +1556,10 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
 
 void RenderWidgetHostViewAura::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+  BrowserAccessibilityManager* manager =
+      GetOrCreateBrowserAccessibilityManager();
+  if (manager)
+    manager->OnAccessibilityNotifications(params);
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
@@ -2269,6 +2316,58 @@ void RenderWidgetHostViewAura::OnUpdateVSyncParameters(
     base::TimeDelta interval) {
   if (IsShowing() && !last_draw_ended_.is_null())
     host_->UpdateVSyncParameters(last_draw_ended_, interval);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, BrowserAccessibilityDelegate implementation:
+
+void RenderWidgetHostViewAura::SetAccessibilityFocus(int acc_obj_id) {
+  if (!host_)
+    return;
+
+  host_->AccessibilitySetFocus(acc_obj_id);
+}
+
+void RenderWidgetHostViewAura::AccessibilityDoDefaultAction(int acc_obj_id) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityDoDefaultAction(acc_obj_id);
+}
+
+void RenderWidgetHostViewAura::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
+}
+
+void RenderWidgetHostViewAura::AccessibilityScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityScrollToPoint(acc_obj_id, point);
+}
+
+void RenderWidgetHostViewAura::AccessibilitySetTextSelection(
+    int acc_obj_id, int start_offset, int end_offset) {
+  if (!host_)
+    return;
+
+  host_->AccessibilitySetTextSelection(
+      acc_obj_id, start_offset, end_offset);
+}
+
+gfx::Point RenderWidgetHostViewAura::GetLastTouchEventLocation() const {
+  // Only needed for Win 8 non-aura.
+  return gfx::Point();
+}
+
+void RenderWidgetHostViewAura::FatalAccessibilityTreeError() {
+  host_->FatalAccessibilityTreeError();
+  SetBrowserAccessibilityManager(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

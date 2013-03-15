@@ -18,10 +18,10 @@ typedef AccessibilityNodeData::IntAttribute IntAttribute;
 typedef AccessibilityNodeData::StringAttribute StringAttribute;
 
 #if !defined(OS_MACOSX) && \
-    !(defined(OS_WIN) && !defined(USE_AURA)) && \
+    !defined(OS_WIN) && \
     !defined(TOOLKIT_GTK)
 // We have subclassess of BrowserAccessibility on Mac, Linux/GTK,
-// and non-Aura Win. For any other platform, instantiate the base class.
+// and Win. For any other platform, instantiate the base class.
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibility();

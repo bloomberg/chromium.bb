@@ -13,22 +13,29 @@ namespace content {
 class BrowserAccessibilityGtk;
 
 // Manages a tree of BrowserAccessibilityGtk objects.
-class BrowserAccessibilityManagerGtk : public BrowserAccessibilityManager {
+class CONTENT_EXPORT BrowserAccessibilityManagerGtk
+    : public BrowserAccessibilityManager {
  public:
+  BrowserAccessibilityManagerGtk(
+      GtkWidget* parent_widget,
+      const AccessibilityNodeData& src,
+      BrowserAccessibilityDelegate* delegate,
+      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+
   virtual ~BrowserAccessibilityManagerGtk();
+
+  static AccessibilityNodeData GetEmptyDocument();
 
   // BrowserAccessibilityManager methods
   virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node)
       OVERRIDE;
 
- private:
-  BrowserAccessibilityManagerGtk(
-      GtkWidget* parent_window,
-      const AccessibilityNodeData& src,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory);
+  GtkWidget* parent_widget() { return parent_widget_; }
 
+ private:
   void RecursivelySendChildrenChanged(BrowserAccessibilityGtk* node);
+
+  GtkWidget* parent_widget_;
 
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;

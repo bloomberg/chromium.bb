@@ -23,43 +23,24 @@ BrowserAccessibility* BrowserAccessibilityFactory::Create() {
 int32 BrowserAccessibilityManager::next_child_id_ = -1;
 
 #if !defined(OS_MACOSX) && \
-    !(defined(OS_WIN) && !defined(USE_AURA)) && \
+    !defined(OS_WIN) && \
     !defined(TOOLKIT_GTK)
 // We have subclassess of BrowserAccessibilityManager on Mac, Linux/GTK,
-// and non-Aura Win. For any other platform, instantiate the base class.
+// and Win. For any other platform, instantiate the base class.
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    gfx::NativeView parent_view,
     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManager(
-      parent_view, src, delegate, factory);
+  return new BrowserAccessibilityManager(src, delegate, factory);
 }
 #endif
 
-// static
-BrowserAccessibilityManager* BrowserAccessibilityManager::CreateEmptyDocument(
-    gfx::NativeView parent_view,
-    AccessibilityNodeData::State state,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) {
-  // Use empty document to process notifications
-  AccessibilityNodeData empty_document;
-  empty_document.id = 0;
-  empty_document.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
-  empty_document.state = state | (1 << AccessibilityNodeData::STATE_READONLY);
-  return BrowserAccessibilityManager::Create(
-      parent_view, empty_document, delegate, factory);
-}
-
 BrowserAccessibilityManager::BrowserAccessibilityManager(
-    gfx::NativeView parent_view,
     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : parent_view_(parent_view),
-      delegate_(delegate),
+    : delegate_(delegate),
       factory_(factory),
       root_(NULL),
       focus_(NULL),
@@ -197,10 +178,6 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
         NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
     }
   }
-}
-
-gfx::NativeView BrowserAccessibilityManager::GetParentView() {
-  return parent_view_;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus(

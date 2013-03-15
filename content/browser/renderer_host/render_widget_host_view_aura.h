@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
@@ -66,6 +67,7 @@ class RenderWidgetHostViewAura
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
       public ImageTransportFactoryObserver,
+      public BrowserAccessibilityDelegate,
       public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
  public:
   // Used to notify whenever the paint-content of the view changes.
@@ -295,6 +297,18 @@ class RenderWidgetHostViewAura
   // Overridden from ImageTransportFactoryObserver:
   virtual void OnLostResources() OVERRIDE;
 
+  // Overridden from BrowserAccessibilityDelegate:
+  virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityScrollToMakeVisible(
+      int acc_obj_id, gfx::Rect subfocus) OVERRIDE;
+  virtual void AccessibilityScrollToPoint(
+      int acc_obj_id, gfx::Point point) OVERRIDE;
+  virtual void AccessibilitySetTextSelection(
+      int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+  virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
+  virtual void FatalAccessibilityTreeError() OVERRIDE;
+
   virtual ~RenderWidgetHostViewAura();
 
   void UpdateCursorIfOverSelf();
@@ -376,6 +390,9 @@ class RenderWidgetHostViewAura
       scoped_ptr<cc::DelegatedFrameData> frame,
       float device_scale_factor);
   void SendDelegatedFrameAck();
+
+  BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
+
 #if defined(OS_WIN)
   // Sets the cutout rects from transient windows. These are rectangles that
   // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout

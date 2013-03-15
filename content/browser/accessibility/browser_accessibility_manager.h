@@ -52,21 +52,12 @@ class CONTENT_EXPORT BrowserAccessibilityFactory {
 // Manages a tree of BrowserAccessibility objects.
 class CONTENT_EXPORT BrowserAccessibilityManager {
  public:
-  // Creates the platform specific BrowserAccessibilityManager. Ownership passes
-  // to the caller.
+  // Creates the platform-specific BrowserAccessibilityManager, but
+  // with no parent window pointer. Only useful for unit tests.
   static BrowserAccessibilityManager* Create(
-    gfx::NativeView parent_view,
-    const AccessibilityNodeData& src,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
-
-  // Creates the platform specific BrowserAccessibilityManager. Ownership passes
-  // to the caller.
-  static BrowserAccessibilityManager* CreateEmptyDocument(
-    gfx::NativeView parent_view,
-    AccessibilityNodeData::State state,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+      const AccessibilityNodeData& src,
+      BrowserAccessibilityDelegate* delegate,
+      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManager();
 
@@ -141,8 +132,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params);
 
-  gfx::NativeView GetParentView();
-
 #if defined(OS_WIN)
   BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();
 #endif
@@ -170,7 +159,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
  protected:
   BrowserAccessibilityManager(
-      gfx::NativeView parent_view,
       const AccessibilityNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
@@ -214,9 +202,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
  protected:
   // The next unique id for a BrowserAccessibility instance.
   static int32 next_child_id_;
-
-  // The parent view.
-  gfx::NativeView parent_view_;
 
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;

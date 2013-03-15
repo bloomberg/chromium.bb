@@ -56,8 +56,10 @@ static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
     return NULL;
   if (obj->parent())
     return obj->parent()->ToBrowserAccessibilityGtk()->GetAtkObject();
-  else
-    return gtk_widget_get_accessible(obj->manager()->GetParentView());
+
+  BrowserAccessibilityManagerGtk* manager =
+      static_cast<BrowserAccessibilityManagerGtk*>(obj->manager());
+  return gtk_widget_get_accessible(manager->parent_widget());
 }
 
 static gint browser_accessibility_get_n_children(AtkObject* atk_object) {

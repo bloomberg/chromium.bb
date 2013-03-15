@@ -26,6 +26,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
+#include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -515,18 +516,27 @@ RenderWidgetHostViewWin::GetNativeViewAccessible() {
     NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
   }
 
-  if (!GetBrowserAccessibilityManager()) {
-    // Return busy document tree while renderer accessibility tree loads.
-    AccessibilityNodeData::State busy_state =
-        static_cast<AccessibilityNodeData::State>(
-            1 << AccessibilityNodeData::STATE_BUSY);
-    SetBrowserAccessibilityManager(
-        BrowserAccessibilityManager::CreateEmptyDocument(
-            m_hWnd, busy_state, this));
-  }
+  CreateBrowserAccessibilityManagerIfNeeded();
 
   return GetBrowserAccessibilityManager()->GetRoot()->
       ToBrowserAccessibilityWin();
+}
+
+void RenderWidgetHostViewWin::CreateBrowserAccessibilityManagerIfNeeded() {
+  if (GetBrowserAccessibilityManager())
+    return;
+
+  HRESULT hr = ::CreateStdAccessibleObject(
+      m_hWnd, OBJID_WINDOW, IID_IAccessible,
+      reinterpret_cast<void **>(&window_iaccessible_));
+  DCHECK(SUCCEEDED(hr));
+
+  SetBrowserAccessibilityManager(
+      new BrowserAccessibilityManagerWin(
+          m_hWnd,
+          window_iaccessible_.get(),
+          BrowserAccessibilityManagerWin::GetEmptyDocument(),
+          this));
 }
 
 void RenderWidgetHostViewWin::MovePluginWindows(
@@ -1779,8 +1789,9 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
   }
 
   if (message == WM_LBUTTONDOWN && pointer_down_context_ &&
-      GetBrowserAccessibilityManager())
+      GetBrowserAccessibilityManager()) {
     GetBrowserAccessibilityManager()->GotMouseDown();
+  }
 
   if (message == WM_LBUTTONUP && ui::IsMouseEventFromTouch(message) &&
       base::win::IsMetroProcess())
@@ -2277,13 +2288,7 @@ LRESULT RenderWidgetHostViewWin::OnMoveOrSize(
 
 void RenderWidgetHostViewWin::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
-  if (!GetBrowserAccessibilityManager()) {
-    SetBrowserAccessibilityManager(
-        BrowserAccessibilityManager::CreateEmptyDocument(
-            m_hWnd,
-            static_cast<AccessibilityNodeData::State>(0),
-            this));
-  }
+  CreateBrowserAccessibilityManagerIfNeeded();
   GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
 }
 

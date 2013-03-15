@@ -11,15 +11,11 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    gfx::NativeView parent_view,
     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerWin(
-      parent_view,
-      src,
-      delegate,
-      factory);
+      GetDesktopWindow(), NULL, src, delegate, factory);
 }
 
 BrowserAccessibilityManagerWin*
@@ -28,22 +24,15 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 }
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
-    HWND parent_view,
+    HWND parent_hwnd,
+    IAccessible* parent_iaccessible,
     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(parent_view, src, delegate, factory),
+    : BrowserAccessibilityManager(src, delegate, factory),
+      parent_hwnd_(parent_hwnd),
+      parent_iaccessible_(parent_iaccessible),
       tracked_scroll_object_(NULL) {
-  // Allow NULL parent_view for unit testing.
-  if (parent_view == NULL) {
-    window_iaccessible_ = NULL;
-    return;
-  }
-
-  HRESULT hr = ::CreateStdAccessibleObject(
-      parent_view, OBJID_WINDOW, IID_IAccessible,
-      reinterpret_cast<void **>(&window_iaccessible_));
-  DCHECK(SUCCEEDED(hr));
 }
 
 BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
@@ -53,8 +42,23 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
   }
 }
 
-IAccessible* BrowserAccessibilityManagerWin::GetParentWindowIAccessible() {
-  return window_iaccessible_;
+// static
+AccessibilityNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
+  AccessibilityNodeData empty_document;
+  empty_document.id = 0;
+  empty_document.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  empty_document.state =
+      (1 << AccessibilityNodeData::STATE_READONLY) |
+      (1 << AccessibilityNodeData::STATE_BUSY);
+  return empty_document;
+}
+
+IAccessible* BrowserAccessibilityManagerWin::parent_iaccessible() {
+  return parent_iaccessible_;
+}
+
+HWND BrowserAccessibilityManagerWin::parent_hwnd() {
+  return parent_hwnd_;
 }
 
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
@@ -137,7 +141,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   }
 
   if (event_id != EVENT_MIN)
-    NotifyWinEvent(event_id, GetParentView(), OBJID_CLIENT, node->child_id());
+    NotifyWinEvent(event_id, parent_hwnd(), OBJID_CLIENT, node->child_id());
 
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
@@ -146,7 +150,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
       tracked_scroll_object_ &&
       tracked_scroll_object_->IsDescendantOf(node)) {
     NotifyWinEvent(IA2_EVENT_VISIBLE_DATA_CHANGED,
-                   GetParentView(),
+                   parent_hwnd(),
                    OBJID_CLIENT,
                    tracked_scroll_object_->child_id());
     tracked_scroll_object_->Release();

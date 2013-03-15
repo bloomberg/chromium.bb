@@ -23,7 +23,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/plugin_process_host.h"
 #import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
@@ -1620,9 +1620,9 @@ void RenderWidgetHostViewMac::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   if (!GetBrowserAccessibilityManager()) {
     SetBrowserAccessibilityManager(
-        BrowserAccessibilityManager::CreateEmptyDocument(
+        new BrowserAccessibilityManagerMac(
             cocoa_view_,
-            static_cast<AccessibilityNodeData::State>(0),
+            BrowserAccessibilityManagerMac::GetEmptyDocument(),
             NULL));
   }
   GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);

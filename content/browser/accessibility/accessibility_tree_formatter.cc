@@ -68,7 +68,7 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
   }
 }
 
-#if (!defined(OS_WIN) && !defined(OS_MACOSX)) || defined(USE_AURA)
+#if (!defined(OS_WIN) && !defined(OS_MACOSX))
 string16 AccessibilityTreeFormatter::ToString(BrowserAccessibility* node,
                                               char* prefix) {
   return UTF8ToUTF16(prefix) + base::IntToString16(node->renderer_id()) +

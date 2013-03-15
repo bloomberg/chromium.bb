@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -83,7 +84,7 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
 
     delegate_.reset([[MockAccessibilityDelegate alloc] init]);
     manager_.reset(
-        BrowserAccessibilityManager::Create(delegate_, root, NULL));
+        new BrowserAccessibilityManagerMac(delegate_, root, NULL));
     manager_->UpdateNodesForTesting(child1, child2);
     accessibility_.reset([manager_->GetRoot()->ToBrowserAccessibilityCocoa()
         retain]);

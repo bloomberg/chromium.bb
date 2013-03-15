@@ -1195,11 +1195,6 @@
         '../ui/compositor/compositor.gyp:compositor',
       ],
       'sources/': [
-        ['exclude', '^browser/accessibility/accessibility_tree_formatter_win.cc'],
-        ['exclude', '^browser/accessibility/browser_accessibility_manager_win.cc'],
-        ['exclude', '^browser/accessibility/browser_accessibility_manager_win.h'],
-        ['exclude', '^browser/accessibility/browser_accessibility_win.cc'],
-        ['exclude', '^browser/accessibility/browser_accessibility_win.h'],
         ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
         ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],
         ['exclude', '^browser/renderer_host/native_web_keyboard_event_win.cc'],

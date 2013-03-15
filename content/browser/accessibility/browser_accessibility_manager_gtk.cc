@@ -11,26 +11,36 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    gfx::NativeView parent_view,
-    const AccessibilityNodeData& src,
+     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerGtk(
-      parent_view,
+      NULL,
       src,
       delegate,
       factory);
 }
 
 BrowserAccessibilityManagerGtk::BrowserAccessibilityManagerGtk(
-    GtkWidget* parent_view,
+    GtkWidget* parent_widget,
     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(parent_view, src, delegate, factory) {
+    : BrowserAccessibilityManager(src, delegate, factory),
+      parent_widget_(parent_widget) {
 }
 
 BrowserAccessibilityManagerGtk::~BrowserAccessibilityManagerGtk() {
+}
+
+// static
+AccessibilityNodeData BrowserAccessibilityManagerGtk::GetEmptyDocument() {
+  AccessibilityNodeData empty_document;
+  empty_document.id = 0;
+  empty_document.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  empty_document.state =
+      1 << AccessibilityNodeData::STATE_READONLY;
+  return empty_document;
 }
 
 void BrowserAccessibilityManagerGtk::NotifyAccessibilityEvent(

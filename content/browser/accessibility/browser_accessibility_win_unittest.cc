@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,7 +95,6 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          GetDesktopWindow(),
           root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -109,7 +109,6 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   // to get new references to two of the three nodes in the tree.
   manager =
       BrowserAccessibilityManager::Create(
-          GetDesktopWindow(),
           root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -164,7 +163,6 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          GetDesktopWindow(),
           root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -257,7 +255,6 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          GetDesktopWindow(),
           root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -298,7 +295,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
 
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
-      GetDesktopWindow(), root, NULL,
+      root, NULL,
       new CountedBrowserAccessibilityFactory());
   manager->UpdateNodesForTesting(text1);
   ASSERT_EQ(2, CountedBrowserAccessibility::global_obj_count_);
@@ -395,7 +392,7 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
 
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
-      GetDesktopWindow(), root, NULL,
+      root, NULL,
       new CountedBrowserAccessibilityFactory());
   manager->UpdateNodesForTesting(root, text1, text2);
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
@@ -482,7 +479,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
 
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
-      GetDesktopWindow(), root, NULL,
+      root, NULL,
       new CountedBrowserAccessibilityFactory());
   manager->UpdateNodesForTesting(root,
                                  text1, button1, button1_text,
@@ -544,6 +541,87 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
   delete manager;
+  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+}
+
+TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
+  // Try creating an empty document with busy state. Readonly is
+  // set automatically.
+  const int32 busy_state = 1 << AccessibilityNodeData::STATE_BUSY;
+  const int32 readonly_state = 1 << AccessibilityNodeData::STATE_READONLY;
+  scoped_ptr<BrowserAccessibilityManager> manager;
+  manager.reset(new BrowserAccessibilityManagerWin(
+      GetDesktopWindow(),
+      NULL,
+      BrowserAccessibilityManagerWin::GetEmptyDocument(),
+      NULL,
+      new CountedBrowserAccessibilityFactory()));
+
+  // Verify the root is as we expect by default.
+  BrowserAccessibility* root = manager->GetRoot();
+  EXPECT_EQ(0, root->renderer_id());
+  EXPECT_EQ(AccessibilityNodeData::ROLE_ROOT_WEB_AREA, root->role());
+  EXPECT_EQ(busy_state | readonly_state, root->state());
+
+  // Tree with a child textfield.
+  AccessibilityNodeData tree1_1;
+  tree1_1.id = 1;
+  tree1_1.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  tree1_1.child_ids.push_back(2);
+
+  AccessibilityNodeData tree1_2;
+  tree1_2.id = 2;
+  tree1_2.role = AccessibilityNodeData::ROLE_TEXT_FIELD;
+
+  // Process a load complete.
+  std::vector<AccessibilityHostMsg_NotificationParams> params;
+  params.push_back(AccessibilityHostMsg_NotificationParams());
+  AccessibilityHostMsg_NotificationParams* msg = &params[0];
+  msg->notification_type = AccessibilityNotificationLoadComplete;
+  msg->nodes.push_back(tree1_1);
+  msg->nodes.push_back(tree1_2);
+  msg->id = tree1_1.id;
+  manager->OnAccessibilityNotifications(params);
+
+  // Save for later comparison.
+  BrowserAccessibility* acc1_2 = manager->GetFromRendererID(2);
+
+  // Verify the root has changed.
+  EXPECT_NE(root, manager->GetRoot());
+
+  // And the proper child remains.
+  EXPECT_EQ(AccessibilityNodeData::ROLE_TEXT_FIELD, acc1_2->role());
+  EXPECT_EQ(2, acc1_2->renderer_id());
+
+  // Tree with a child button.
+  AccessibilityNodeData tree2_1;
+  tree2_1.id = 1;
+  tree2_1.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  tree2_1.child_ids.push_back(3);
+
+  AccessibilityNodeData tree2_2;
+  tree2_2.id = 3;
+  tree2_2.role = AccessibilityNodeData::ROLE_BUTTON;
+
+  msg->nodes.clear();
+  msg->nodes.push_back(tree2_1);
+  msg->nodes.push_back(tree2_2);
+  msg->id = tree2_1.id;
+
+  // Fire another load complete.
+  manager->OnAccessibilityNotifications(params);
+
+  BrowserAccessibility* acc2_2 = manager->GetFromRendererID(3);
+
+  // Verify the root has changed.
+  EXPECT_NE(root, manager->GetRoot());
+
+  // And the new child exists.
+  EXPECT_EQ(AccessibilityNodeData::ROLE_BUTTON, acc2_2->role());
+  EXPECT_EQ(3, acc2_2->renderer_id());
+
+  // Ensure we properly cleaned up.
+  manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
 }
 

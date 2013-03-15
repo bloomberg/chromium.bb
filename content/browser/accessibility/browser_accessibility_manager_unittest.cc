@@ -117,7 +117,6 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          NULL,
           root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -133,7 +132,6 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   // the three nodes in the tree.
   manager =
       BrowserAccessibilityManager::Create(
-          NULL,
           root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -224,7 +222,6 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          NULL,
           tree1_root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -396,7 +393,6 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          NULL,
           tree1_root,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -528,7 +524,6 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          NULL,
           tree1_1,
           NULL,
           new CountedBrowserAccessibilityFactory());
@@ -555,86 +550,6 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
 }
 
-TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
-  // Try creating an empty document with busy state. Readonly is
-  // set automatically.
-  const int32 busy_state = 1 << AccessibilityNodeData::STATE_BUSY;
-  const int32 readonly_state = 1 << AccessibilityNodeData::STATE_READONLY;
-  scoped_ptr<BrowserAccessibilityManager> manager;
-  manager.reset(BrowserAccessibilityManager::CreateEmptyDocument(
-      NULL,
-      static_cast<AccessibilityNodeData::State>(busy_state),
-      NULL,
-      new CountedBrowserAccessibilityFactory()));
-
-  // Verify the root is as we expect by default.
-  BrowserAccessibility* root = manager->GetRoot();
-  EXPECT_EQ(0, root->renderer_id());
-  EXPECT_EQ(AccessibilityNodeData::ROLE_ROOT_WEB_AREA, root->role());
-  EXPECT_EQ(busy_state | readonly_state, root->state());
-
-  // Tree with a child textfield.
-  AccessibilityNodeData tree1_1;
-  tree1_1.id = 1;
-  tree1_1.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
-  tree1_1.child_ids.push_back(2);
-
-  AccessibilityNodeData tree1_2;
-  tree1_2.id = 2;
-  tree1_2.role = AccessibilityNodeData::ROLE_TEXT_FIELD;
-
-  // Process a load complete.
-  std::vector<AccessibilityHostMsg_NotificationParams> params;
-  params.push_back(AccessibilityHostMsg_NotificationParams());
-  AccessibilityHostMsg_NotificationParams* msg = &params[0];
-  msg->notification_type = AccessibilityNotificationLoadComplete;
-  msg->nodes.push_back(tree1_1);
-  msg->nodes.push_back(tree1_2);
-  msg->id = tree1_1.id;
-  manager->OnAccessibilityNotifications(params);
-
-  // Save for later comparison.
-  BrowserAccessibility* acc1_2 = manager->GetFromRendererID(2);
-
-  // Verify the root has changed.
-  EXPECT_NE(root, manager->GetRoot());
-
-  // And the proper child remains.
-  EXPECT_EQ(AccessibilityNodeData::ROLE_TEXT_FIELD, acc1_2->role());
-  EXPECT_EQ(2, acc1_2->renderer_id());
-
-  // Tree with a child button.
-  AccessibilityNodeData tree2_1;
-  tree2_1.id = 1;
-  tree2_1.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
-  tree2_1.child_ids.push_back(3);
-
-  AccessibilityNodeData tree2_2;
-  tree2_2.id = 3;
-  tree2_2.role = AccessibilityNodeData::ROLE_BUTTON;
-
-  msg->nodes.clear();
-  msg->nodes.push_back(tree2_1);
-  msg->nodes.push_back(tree2_2);
-  msg->id = tree2_1.id;
-
-  // Fire another load complete.
-  manager->OnAccessibilityNotifications(params);
-
-  BrowserAccessibility* acc2_2 = manager->GetFromRendererID(3);
-
-  // Verify the root has changed.
-  EXPECT_NE(root, manager->GetRoot());
-
-  // And the new child exists.
-  EXPECT_EQ(AccessibilityNodeData::ROLE_BUTTON, acc2_2->role());
-  EXPECT_EQ(3, acc2_2->renderer_id());
-
-  // Ensure we properly cleaned up.
-  manager.reset();
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
-}
-
 TEST(BrowserAccessibilityManagerTest, TestFatalError) {
   // Test that BrowserAccessibilityManager raises a fatal error
   // (which will crash the renderer) if the same id is used in
@@ -653,7 +568,6 @@ TEST(BrowserAccessibilityManagerTest, TestFatalError) {
   scoped_ptr<BrowserAccessibilityManager> manager;
   ASSERT_FALSE(delegate->got_fatal_error());
   manager.reset(BrowserAccessibilityManager::Create(
-      NULL,
       root,
       delegate.get(),
       factory));
@@ -678,7 +592,6 @@ TEST(BrowserAccessibilityManagerTest, TestFatalError) {
   delegate->reset_got_fatal_error();
   factory = new CountedBrowserAccessibilityFactory();
   manager.reset(BrowserAccessibilityManager::Create(
-      NULL,
       root2,
       delegate.get(),
       factory));

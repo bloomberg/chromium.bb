@@ -13,6 +13,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/public/common/content_client.h"
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
@@ -25,6 +26,7 @@ extern "C" void NSAccessibilityUnregisterUniqueIdForUIElement(id element);
 using content::AccessibilityNodeData;
 using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;
+using content::BrowserAccessibilityManagerMac;
 using content::ContentClient;
 typedef AccessibilityNodeData::StringAttribute StringAttribute;
 
@@ -595,7 +597,10 @@ NSDictionary* attributeToMethodNameMap = nil;
         browserAccessibility_->parent()->ToBrowserAccessibilityCocoa());
   } else {
     // Hook back up to RenderWidgetHostViewCocoa.
-    return browserAccessibility_->manager()->GetParentView();
+    BrowserAccessibilityManagerMac* manager =
+        static_cast<BrowserAccessibilityManagerMac*>(
+            browserAccessibility_->manager());
+    return manager->parent_view();
   }
 }
 
