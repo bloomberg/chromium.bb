@@ -65,15 +65,15 @@ public class AutofillDialogContentView extends FrameLayout {
         super(context, attrs);
         AutofillDialogMenuItem[] billingItems = {
                 new AutofillDialogMenuItem(0,
-                        getResources().getString(R.string.autofill_new_billing), ""),
+                        getResources().getString(R.string.autofill_new_billing)),
                 new AutofillDialogMenuItem(0,
-                        getResources().getString(R.string.autofill_edit_billing), "")
+                        getResources().getString(R.string.autofill_edit_billing))
         };
         AutofillDialogMenuItem[] shippingItems = {
                 new AutofillDialogMenuItem(0,
-                        getResources().getString(R.string.autofill_new_shipping), ""),
+                        getResources().getString(R.string.autofill_new_shipping)),
                 new AutofillDialogMenuItem(0,
-                        getResources().getString(R.string.autofill_edit_shipping), "")
+                        getResources().getString(R.string.autofill_edit_shipping))
         };
 
         mDefaultMenuItems[SECTION_CC_BILLING] = billingItems;
@@ -123,10 +123,10 @@ public class AutofillDialogContentView extends FrameLayout {
     private void createAndAddPlaceHolders() {
         AutofillDialogMenuItem[] ccItems = new AutofillDialogMenuItem[1];
         ccItems[0] = new AutofillDialogMenuItem(
-                0, "XXXX-XXXX-XXXX-1000", "Additional info required");
+                0, "XXXX-XXXX-XXXX-1000", "Additional info required", null);
         AutofillDialogMenuItem[] addressItems = new AutofillDialogMenuItem[1];
         addressItems[0] = new AutofillDialogMenuItem(
-                0, "Place Holder", "1600 Amphitheatre Pkwy");
+                0, "Place Holder", "1600 Amphitheatre Pkwy", null);
         updateMenuItemsForSection(SECTION_CC_BILLING, ccItems);
         updateMenuItemsForSection(SECTION_SHIPPING, addressItems);
     }

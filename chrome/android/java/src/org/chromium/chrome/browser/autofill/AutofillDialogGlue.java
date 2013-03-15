@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.graphics.Bitmap;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.ui.gfx.NativeWindow;
@@ -114,7 +116,7 @@ public class AutofillDialogGlue {
 
     @CalledByNative
     private static void addToAutofillDialogMenuItemArray(AutofillDialogMenuItem[] array, int index,
-            String line1, String line2) {
-        array[index] = new AutofillDialogMenuItem(index, line1, line2);
+            String line1, String line2, Bitmap icon) {
+        array[index] = new AutofillDialogMenuItem(index, line1, line2, icon);
     }
 }

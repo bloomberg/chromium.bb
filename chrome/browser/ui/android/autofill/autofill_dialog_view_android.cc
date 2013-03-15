@@ -12,6 +12,7 @@
 #include "jni/AutofillDialogGlue_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/android/window_android.h"
 
 namespace autofill {
@@ -99,9 +100,18 @@ void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
     ScopedJavaLocalRef<jstring> line1 =
         base::android::ConvertUTF16ToJavaString(env, menuModel->GetLabelAt(i));
     ScopedJavaLocalRef<jstring> line2 =
-        base::android::ConvertUTF16ToJavaString(env, string16());
+        base::android::ConvertUTF16ToJavaString(env,
+            menuModel->GetSublabelAt(i));
+
+    ScopedJavaLocalRef<jobject> bitmap;
+    gfx::Image icon;
+    if (menuModel->GetIconAt(i, &icon)) {
+      const SkBitmap& sk_icon = icon.AsBitmap();
+      bitmap = gfx::ConvertToJavaBitmap(&sk_icon);
+    }
+
     Java_AutofillDialogGlue_addToAutofillDialogMenuItemArray(
-        env, menu_array.obj(), i, line1.obj(), line2.obj());
+        env, menu_array.obj(), i, line1.obj(), line2.obj(), bitmap.obj());
   }
 
   Java_AutofillDialogGlue_updateSection(env,
