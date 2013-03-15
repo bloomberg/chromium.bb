@@ -167,7 +167,7 @@ void RulesRegistryStorageDelegate::OnRulesChanged(
   DCHECK_EQ("", error);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&Inner::WriteToStorage, inner_.get(), extension_id,
+      base::Bind(&Inner::WriteToStorage, inner_, extension_id,
                  base::Passed(RulesToValue(new_rules))));
 }
 
@@ -251,8 +251,11 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
   extensions::StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
   if (store) {
     waiting_for_extensions_.insert(extension_id);
-    store->GetExtensionValue(extension_id, storage_key_,
-        base::Bind(&Inner::ReadFromStorageCallback, this, extension_id));
+    store->GetExtensionValue(extension_id,
+                             storage_key_,
+                             base::Bind(&Inner::ReadFromStorageCallback,
+                                        make_scoped_refptr(this),
+                                        extension_id));
   }
 
   // TODO(mpcomplete): Migration code. Remove when declarativeWebRequest goes
@@ -261,8 +264,11 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
   store = ExtensionSystem::Get(profile_)->state_store();
   if (store) {
     waiting_for_extensions_.insert(extension_id);
-    store->GetExtensionValue(extension_id, storage_key_,
-        base::Bind(&Inner::ReadFromStorageCallback, this, extension_id));
+    store->GetExtensionValue(extension_id,
+                             storage_key_,
+                             base::Bind(&Inner::ReadFromStorageCallback,
+                                        make_scoped_refptr(this),
+                                        extension_id));
     store->RemoveExtensionValue(extension_id, storage_key_);
   }
 }
@@ -271,8 +277,11 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorageCallback(
     const std::string& extension_id, scoped_ptr<base::Value> value) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   content::BrowserThread::PostTask(
-      rules_registry_thread_, FROM_HERE,
-      base::Bind(&Inner::ReadFromStorageOnRegistryThread, this, extension_id,
+      rules_registry_thread_,
+      FROM_HERE,
+      base::Bind(&Inner::ReadFromStorageOnRegistryThread,
+                 make_scoped_refptr(this),
+                 extension_id,
                  base::Passed(&value)));
 
   waiting_for_extensions_.erase(extension_id);
@@ -301,8 +310,10 @@ void RulesRegistryStorageDelegate::Inner::CheckIfReady() {
     return;
 
   content::BrowserThread::PostTask(
-      rules_registry_thread_, FROM_HERE,
-      base::Bind(&Inner::NotifyReadyOnRegistryThread, this));
+      rules_registry_thread_,
+      FROM_HERE,
+      base::Bind(&Inner::NotifyReadyOnRegistryThread,
+                 make_scoped_refptr(this)));
 }
 
 void RulesRegistryStorageDelegate::Inner::ReadFromStorageOnRegistryThread(
@@ -320,6 +331,9 @@ void RulesRegistryStorageDelegate::Inner::NotifyReadyOnRegistryThread() {
     return;  // we've already notified our readiness
 
   ready_ = true;
+
+  if (!rules_registry_)
+    return;  // registry went away
   rules_registry_->OnReady();
 }
 
