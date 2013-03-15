@@ -75,7 +75,7 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
 
   void GetRenderingStats(RenderingStats* stats);
 
-  void PostTask(scoped_ptr<internal::WorkerPoolTask> task);
+  void PostTask(scoped_ptr<internal::WorkerPoolTask> task, bool signal_workers);
 
   // Appends all completed tasks to worker pool's completed tasks queue
   // and returns true if idle.
@@ -236,13 +236,15 @@ void WorkerPool::Inner::GetRenderingStats(RenderingStats* stats) {
     stats->Add(*rendering_stats_);
 }
 
-void WorkerPool::Inner::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
+void WorkerPool::Inner::PostTask(scoped_ptr<internal::WorkerPoolTask> task,
+                                 bool signal_workers) {
   base::AutoLock lock(lock_);
 
   pending_tasks_.push_back(task.Pass());
 
   // There is more work available, so wake up worker thread.
-  has_pending_tasks_cv_.Signal();
+  if (signal_workers)
+    has_pending_tasks_cv_.Signal();
 }
 
 bool WorkerPool::Inner::CollectCompletedTasks() {
@@ -303,6 +305,9 @@ bool WorkerPool::Inner::RunCheapTasksUntilTimeLimit(
     // Decrement |running_task_count_| now that we are done running task.
     running_task_count_--;
   }
+
+  if (!pending_tasks_.empty())
+    has_pending_tasks_cv_.Signal();
 
   // Append any other completed tasks before releasing lock.
   return AppendCompletedTasksWithLockAcquired(
@@ -558,13 +563,18 @@ void WorkerPool::DispatchCompletionCallbacks() {
 }
 
 void WorkerPool::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
-  if (task->IsCheap())
+  bool signal_workers = true;
+  if (task->IsCheap()) {
+    // To make cheap tasks more likely to run on the origin thread, don't wake
+    // workers when posting them.
+    signal_workers = false;
     ScheduleRunCheapTasks();
+  }
 
   // Schedule check for completed tasks if not pending.
   ScheduleCheckForCompletedTasks();
 
-  inner_->PostTask(task.Pass());
+  inner_->PostTask(task.Pass(), signal_workers);
 }
 
 void WorkerPool::ScheduleRunCheapTasks() {
