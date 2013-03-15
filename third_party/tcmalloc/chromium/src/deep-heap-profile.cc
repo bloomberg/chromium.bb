@@ -704,6 +704,10 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
         }
 
         if (last_address_of_unhooked + 1 > cursor) {
+          RAW_CHECK(cursor >= first_address,
+                    "Wrong calculation for unhooked");
+          RAW_CHECK(last_address_of_unhooked <= last_address,
+                    "Wrong calculation for unhooked");
           uint64 committed_size = unhooked_[type].Record(
               memory_residence_info_getter,
               cursor,
@@ -748,6 +752,37 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
                mmap_iter->end_addr - 1 <= last_address);
     }
   }
+
+  // TODO(dmikurube): Investigate and fix http://crbug.com/189114.
+  //
+  // The total committed memory usage in all_ (from /proc/<pid>/maps) is
+  // sometimes smaller than the sum of the committed mmap'ed addresses and
+  // unhooked regions.  Within our observation, the difference was only 4KB
+  // in committed usage, zero in reserved virtual addresses
+  //
+  // A guess is that an uncommitted (but reserved) page may become committed
+  // during counting memory usage in the loop above.
+  //
+  // The difference is accounted as "ABSENT" to investigate such cases.
+
+  RegionStats all_total;
+  RegionStats unhooked_total;
+  for (int i = 0; i < NUMBER_OF_MAPS_REGION_TYPES; ++i) {
+    all_total.AddAnotherRegionStat(all_[i]);
+    unhooked_total.AddAnotherRegionStat(unhooked_[i]);
+  }
+
+  size_t absent_virtual = profiled_mmap_.virtual_bytes() +
+                          unhooked_total.virtual_bytes() -
+                          all_total.virtual_bytes();
+  if (absent_virtual > 0)
+    all_[ABSENT].AddToVirtualBytes(absent_virtual);
+
+  size_t absent_committed = profiled_mmap_.committed_bytes() +
+                            unhooked_total.committed_bytes() -
+                            all_total.committed_bytes();
+  if (absent_committed > 0)
+    all_[ABSENT].AddToCommittedBytes(absent_committed);
 }
 
 void DeepHeapProfile::GlobalStats::SnapshotAllocations(
@@ -786,6 +821,7 @@ void DeepHeapProfile::GlobalStats::Unparse(TextBuffer* buffer) {
   buffer->AppendString("\n", 0);
 
   all_total.Unparse("total", buffer);
+  all_[ABSENT].Unparse("absent", buffer);
   all_[FILE_EXEC].Unparse("file-exec", buffer);
   all_[FILE_NONEXEC].Unparse("file-nonexec", buffer);
   all_[ANONYMOUS].Unparse("anonymous", buffer);

@@ -736,8 +736,8 @@ class Dump(object):
         lambda n: self._lines[n] != 'GLOBAL_STATS:\n')
 
     global_stat_names = [
-        'total', 'file-exec', 'file-nonexec', 'anonymous', 'stack', 'other',
-        'nonprofiled-absent', 'nonprofiled-anonymous',
+        'total', 'absent', 'file-exec', 'file-nonexec', 'anonymous', 'stack',
+        'other', 'nonprofiled-absent', 'nonprofiled-anonymous',
         'nonprofiled-file-exec', 'nonprofiled-file-nonexec',
         'nonprofiled-stack', 'nonprofiled-other',
         'profiled-mmap', 'profiled-malloc']
@@ -996,6 +996,7 @@ class PolicyCommands(Command):
     for key, value in {
         'total': 'total_committed',
         'filemapped': 'file_committed',
+        'absent': 'absent_committed',
         'file-exec': 'file-exec_committed',
         'file-nonexec': 'file-nonexec_committed',
         'anonymous': 'anonymous_committed',

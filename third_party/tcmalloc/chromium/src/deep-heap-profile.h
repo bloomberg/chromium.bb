@@ -230,6 +230,7 @@ class DeepHeapProfile {
     // Writes stats of the region into |buffer| with |name|.
     void Unparse(const char* name, TextBuffer* buffer);
 
+    size_t virtual_bytes() const { return virtual_bytes_; }
     size_t committed_bytes() const { return committed_bytes_; }
     void AddToVirtualBytes(size_t additional_virtual_bytes) {
       virtual_bytes_ += additional_virtual_bytes;

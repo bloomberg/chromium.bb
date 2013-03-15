@@ -27,6 +27,7 @@
     "UNTIL_HERE_FOR_TOTAL",
     "total-exclude-profiler",
     "total",
+    "absent",
     "anonymous",
     "file-exec",
     "file-nonexec",
@@ -164,6 +165,11 @@
     },
     {
       "name": "total",
+      "stacktrace": "optional",
+      "allocator": "optional"
+    },
+    {
+      "name": "absent",
       "stacktrace": "optional",
       "allocator": "optional"
     },
