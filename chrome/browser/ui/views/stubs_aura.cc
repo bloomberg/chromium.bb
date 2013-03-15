@@ -45,14 +45,6 @@ void ShowAboutIPCDialog() {
 
 }  // namespace chrome
 
-#if defined(OS_WIN)
-void ShowCertificateViewer(content::WebContents* web_contents,
-                           gfx::NativeWindow parent,
-                           net::X509Certificate* cert) {
-  // No certificate viewer on Windows.
-}
-#endif // OS_WIN
-
 namespace importer {
 
 void ShowImportProgressDialog(uint16 items,

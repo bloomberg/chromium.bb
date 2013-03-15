@@ -11,9 +11,17 @@
 #include "base/logging.h"
 #include "net/base/x509_certificate.h"
 
-void ShowCertificateViewer(content::WebContents* web_contents,
-                           gfx::NativeWindow parent,
-                           net::X509Certificate* cert) {
+#if defined(USE_AURA)
+#include "chrome/browser/ui/host_desktop.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
+namespace {
+
+void ShowCertificateViewerImpl(content::WebContents* web_contents,
+                               HWND parent,
+                               net::X509Certificate* cert) {
   // Create a new cert context and store containing just the certificate
   // and its intermediate certificates.
   PCCERT_CONTEXT cert_list = cert->CreateOSCertChainForCert();
@@ -38,3 +46,25 @@ void ShowCertificateViewer(content::WebContents* web_contents,
 
   CertFreeCertificateContext(cert_list);
 }
+
+}  // namespace
+
+#if defined(USE_AURA)
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
+                           net::X509Certificate* cert) {
+  if (chrome::GetHostDesktopTypeForNativeWindow(parent) !=
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    ShowCertificateViewerImpl(
+        web_contents, parent->GetRootWindow()->GetAcceleratedWidget(), cert);
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+#else
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
+                           net::X509Certificate* cert) {
+  ShowCertificateViewerImpl(web_contents, parent, cert);
+}
+#endif

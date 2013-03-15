@@ -2436,7 +2436,6 @@
             ['exclude', '^browser/ui/panels/taskbar_window_thumbnailer_win.h'],
             ['exclude', '^browser/ui/views/about_ipc_dialog.cc'],
             ['exclude', '^browser/ui/views/app_menu_button_win.cc'],
-            ['exclude', '^browser/ui/views/certificate_viewer_win.cc'],
             ['exclude', '^browser/ui/views/dropdown_bar_host_win.cc'],
             ['exclude', '^browser/ui/views/external_protocol_dialog.cc'],
             ['exclude', '^browser/ui/views/find_bar_host_win.cc'],
