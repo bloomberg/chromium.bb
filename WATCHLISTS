@@ -95,6 +95,7 @@
                   '|chrome/browser/common/' \
                   '|chrome/browser/favicon/' \
                   '|chrome/browser/history/' \
+                  '|chrome/browser/webdata/' \
                   '|components/autofill/'
     },
     'browser_compositor': {
