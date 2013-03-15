@@ -10,196 +10,16 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/message_loop_proxy.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_decoder_config.h"
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-#include "media/mp4/es_descriptor.h"
-#include "media/mp4/mp4_stream_parser.h"
-#endif
-#include "media/webm/webm_stream_parser.h"
+#include "media/filters/stream_parser_factory.h"
 
 using base::TimeDelta;
 
 namespace media {
 
-struct CodecInfo {
-  const char* pattern;
-  DemuxerStream::Type type;
-};
-
-typedef StreamParser* (*ParserFactoryFunction)(
-    const std::vector<std::string>& codecs, const LogCB& log_cb);
-
-struct SupportedTypeInfo {
-  const char* type;
-  const ParserFactoryFunction factory_function;
-  const CodecInfo** codecs;
-};
-
-static const CodecInfo kVP8CodecInfo = { "vp8", DemuxerStream::VIDEO };
-static const CodecInfo kVorbisCodecInfo = { "vorbis", DemuxerStream::AUDIO };
-
-static const CodecInfo* kVideoWebMCodecs[] = {
-  &kVP8CodecInfo,
-  &kVorbisCodecInfo,
-  NULL
-};
-
-static const CodecInfo* kAudioWebMCodecs[] = {
-  &kVorbisCodecInfo,
-  NULL
-};
-
-static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs,
-                                     const LogCB& log_cb) {
-  return new WebMStreamParser();
-}
-
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-static const CodecInfo kH264CodecInfo = { "avc1.*", DemuxerStream::VIDEO };
-static const CodecInfo kMPEG4AACCodecInfo = {
-  "mp4a.40.*", DemuxerStream::AUDIO
-};
-
-static const CodecInfo kMPEG2AACLCCodecInfo = {
-  "mp4a.67", DemuxerStream::AUDIO
-};
-
-static const CodecInfo* kVideoMP4Codecs[] = {
-  &kH264CodecInfo,
-  &kMPEG4AACCodecInfo,
-  &kMPEG2AACLCCodecInfo,
-  NULL
-};
-
-static const CodecInfo* kAudioMP4Codecs[] = {
-  &kMPEG4AACCodecInfo,
-  &kMPEG2AACLCCodecInfo,
-  NULL
-};
-
-// AAC Object Type IDs that Chrome supports.
-static const int kAACLCObjectType = 2;
-static const int kAACSBRObjectType = 5;
-
-static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
-                                    const LogCB& log_cb) {
-  std::set<int> audio_object_types;
-  bool has_sbr = false;
-  for (size_t i = 0; i < codecs.size(); ++i) {
-    if (MatchPattern(codecs[i], kMPEG2AACLCCodecInfo.pattern)) {
-      audio_object_types.insert(mp4::kISO_13818_7_AAC_LC);
-    } else if (MatchPattern(codecs[i], kMPEG4AACCodecInfo.pattern)) {
-      std::vector<std::string> tokens;
-      int audio_object_type;
-      if (Tokenize(codecs[i], ".", &tokens) != 3 ||
-          !base::HexStringToInt(tokens[2], &audio_object_type)) {
-        MEDIA_LOG(log_cb) << "Malformed mimetype codec '" << codecs[i] << "'";
-        return NULL;
-      }
-
-      if (audio_object_type != kAACLCObjectType &&
-          audio_object_type != kAACSBRObjectType) {
-        MEDIA_LOG(log_cb) << "Unsupported audio object type "
-                          << "0x" << std::hex << audio_object_type
-                          << " in codec '" << codecs[i] << "'";
-        return NULL;
-      }
-
-      audio_object_types.insert(mp4::kISO_14496_3);
-
-      if (audio_object_type == kAACSBRObjectType) {
-        has_sbr = true;
-        break;
-      }
-    }
-  }
-
-  return new mp4::MP4StreamParser(audio_object_types, has_sbr);
-}
-#endif
-
-static const SupportedTypeInfo kSupportedTypeInfo[] = {
-  { "video/webm", &BuildWebMParser, kVideoWebMCodecs },
-  { "audio/webm", &BuildWebMParser, kAudioWebMCodecs },
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-  { "video/mp4", &BuildMP4Parser, kVideoMP4Codecs },
-  { "audio/mp4", &BuildMP4Parser, kAudioMP4Codecs },
-#endif
-};
-
-// Checks to see if the specified |type| and |codecs| list are supported.
-// Returns true if |type| and all codecs listed in |codecs| are supported.
-//         |factory_function| contains a function that can build a StreamParser
-//                            for this type.
-//         |has_audio| is true if an audio codec was specified.
-//         |has_video| is true if a video codec was specified.
-// Returns false otherwise. The values of |factory_function|, |has_audio|,
-//         and |has_video| are undefined.
-static bool IsSupported(const std::string& type,
-                        std::vector<std::string>& codecs,
-                        const LogCB& log_cb,
-                        ParserFactoryFunction* factory_function,
-                        bool* has_audio,
-                        bool* has_video) {
-  *factory_function = NULL;
-  *has_audio = false;
-  *has_video = false;
-
-  // Search for the SupportedTypeInfo for |type|.
-  for (size_t i = 0; i < arraysize(kSupportedTypeInfo); ++i) {
-    const SupportedTypeInfo& type_info = kSupportedTypeInfo[i];
-    if (type == type_info.type) {
-      // Make sure all the codecs specified in |codecs| are
-      // in the supported type info.
-      for (size_t j = 0; j < codecs.size(); ++j) {
-        // Search the type info for a match.
-        bool found_codec = false;
-        DemuxerStream::Type codec_type = DemuxerStream::UNKNOWN;
-
-        for (int k = 0; type_info.codecs[k]; ++k) {
-          if (MatchPattern(codecs[j], type_info.codecs[k]->pattern)) {
-            found_codec = true;
-            codec_type = type_info.codecs[k]->type;
-            break;
-          }
-        }
-
-        if (!found_codec) {
-          MEDIA_LOG(log_cb) << "Codec '" << codecs[j]
-                            <<"' is not supported for '" << type << "'";
-          return false;
-        }
-
-        switch (codec_type) {
-          case DemuxerStream::AUDIO:
-            *has_audio = true;
-            break;
-          case DemuxerStream::VIDEO:
-            *has_video = true;
-            break;
-          default:
-            MEDIA_LOG(log_cb) << "Unsupported codec type '"<< codec_type
-                              << "' for " << codecs[j];
-            return false;
-        }
-      }
-
-      *factory_function = type_info.factory_function;
-
-      // All codecs were supported by this |type|.
-      return true;
-    }
-  }
-
-  // |type| didn't match any of the supported types.
-  return false;
-}
 
 class ChunkDemuxerStream : public DemuxerStream {
  public:
@@ -717,12 +537,12 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   bool has_audio = false;
   bool has_video = false;
-  ParserFactoryFunction factory_function = NULL;
-  std::string error;
-  if (!IsSupported(type, codecs, log_cb_, &factory_function, &has_audio,
-                   &has_video)) {
-    return kNotSupported;
-  }
+  scoped_ptr<media::StreamParser> stream_parser(
+      StreamParserFactory::Create(type, codecs, log_cb_,
+                                  &has_audio, &has_video));
+
+  if (!stream_parser)
+    return ChunkDemuxer::kNotSupported;
 
   if ((has_audio && !source_id_audio_.empty()) ||
       (has_video && !source_id_video_.empty()))
@@ -730,10 +550,6 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   StreamParser::NewBuffersCB audio_cb;
   StreamParser::NewBuffersCB video_cb;
-
-  scoped_ptr<StreamParser> stream_parser(factory_function(codecs, log_cb_));
-  if (!stream_parser)
-    return kNotSupported;
 
   if (has_audio) {
     source_id_audio_ = id;

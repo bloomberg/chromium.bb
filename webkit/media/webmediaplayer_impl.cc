@@ -975,7 +975,8 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
 void WebMediaPlayerImpl::OnDemuxerOpened(
     scoped_ptr<WebKit::WebMediaSource> media_source) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  media_source->open(new WebMediaSourceClientImpl(chunk_demuxer_));
+  media_source->open(new WebMediaSourceClientImpl(
+      chunk_demuxer_, base::Bind(&LogMediaSourceError, media_log_)));
 }
 
 void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,

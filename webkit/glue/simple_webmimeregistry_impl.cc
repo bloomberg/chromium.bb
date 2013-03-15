@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
@@ -104,6 +105,18 @@ WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
 
   // Otherwise we have a perfect match.
   return IsSupported;
+}
+
+bool SimpleWebMimeRegistryImpl::supportsMediaSourceMIMEType(
+    const WebKit::WebString& mime_type,
+    const WebString& codecs) {
+  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
+  std::vector<std::string> parsed_codec_ids;
+  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
+  if (mime_type_ascii.empty() || parsed_codec_ids.size() == 0)
+    return false;
+  return media::StreamParserFactory::IsTypeSupported(
+      mime_type_ascii, parsed_codec_ids);
 }
 
 WebMimeRegistry::SupportsType

@@ -233,6 +233,12 @@ WorkerWebKitPlatformSupportImpl::supportsMediaMIMEType(
   return WebMimeRegistry::IsSupported;
 }
 
+bool WorkerWebKitPlatformSupportImpl::supportsMediaSourceMIMEType(
+    const WebKit::WebString& mimeType, const WebKit::WebString& codecs) {
+  NOTREACHED();
+  return false;
+}
+
 WebMimeRegistry::SupportsType
 WorkerWebKitPlatformSupportImpl::supportsNonImageMIMEType(
     const WebString&) {

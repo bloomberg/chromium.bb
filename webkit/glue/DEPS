@@ -1,5 +1,6 @@
 include_rules = [
   "+gpu",
+  "+media/filters",
   "+skia/ext",
   "+skia/include",
   "+ui",

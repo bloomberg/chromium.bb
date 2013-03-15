@@ -31,6 +31,8 @@ class WEBKIT_GLUE_EXPORT SimpleWebMimeRegistryImpl :
       const WebKit::WebString&,
       const WebKit::WebString&,
       const WebKit::WebString&);
+  virtual bool supportsMediaSourceMIMEType(const WebKit::WebString&,
+                                           const WebKit::WebString&);
   virtual WebKit::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
       const WebKit::WebString&);
   virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);

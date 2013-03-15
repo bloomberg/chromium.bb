@@ -324,6 +324,8 @@
         'filters/skcanvas_video_renderer.h',
         'filters/source_buffer_stream.cc',
         'filters/source_buffer_stream.h',
+        'filters/stream_parser_factory.cc',
+        'filters/stream_parser_factory.h',
         'filters/video_decoder_selector.cc',
         'filters/video_decoder_selector.h',
         'filters/video_renderer_base.cc',

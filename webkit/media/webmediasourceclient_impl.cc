@@ -85,8 +85,10 @@ void WebSourceBufferImpl::removedFromMediaSource() {
 }
 
 WebMediaSourceClientImpl::WebMediaSourceClientImpl(
-    const scoped_refptr<media::ChunkDemuxer>& demuxer)
-    : demuxer_(demuxer) {
+    const scoped_refptr<media::ChunkDemuxer>& demuxer,
+    media::LogCB log_cb)
+    : demuxer_(demuxer),
+      log_cb_(log_cb) {
   DCHECK(demuxer_);
 }
 
@@ -100,7 +102,6 @@ WebMediaSourceClient::AddStatus WebMediaSourceClientImpl::addSourceBuffer(
   std::vector<std::string> new_codecs(codecs.size());
   for (size_t i = 0; i < codecs.size(); ++i)
     new_codecs[i] = codecs[i].utf8().data();
-
   WebMediaSourceClient::AddStatus result =
       static_cast<WebMediaSourceClient::AddStatus>(
           demuxer_->AddId(id, type.utf8().data(), new_codecs));
