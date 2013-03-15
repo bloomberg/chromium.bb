@@ -56,6 +56,7 @@ class ToastContentsView : public views::WidgetDelegateView {
                   GetHeightForWidth(kWebNotificationWidth)));
     params.delegate = this;
     views::Widget* widget = new views::Widget();
+    widget->set_focus_on_creation(false);
     widget->Init(params);
     return widget;
   }
