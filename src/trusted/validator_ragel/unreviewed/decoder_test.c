@@ -78,17 +78,20 @@ struct DecodeState {
   int ia32_mode;
 };
 
-const char *RegisterNameAsString(enum OperandName name, enum OperandType type,
-                                 Bool rex) {
+const char *RegisterNameAsString(
+    enum OperandName name,
+    enum OperandFormat format,
+    Bool rex) {
   /* There are not 16, but 20 8-bit registers: handle %ah/%ch/%dh/%bh case.  */
-  if (!rex && type == OPERAND_TYPE_8_BIT &&
+  if (!rex && format == OPERAND_FORMAT_8_BIT &&
       name >= REG_RSP && name <= REG_RDI) {
     static const char *kRegisterNames[REG_RDI - REG_RSP + 1] = {
       "ah", "ch", "dh", "bh"
     };
     return kRegisterNames[name - REG_RSP];
-  } else if (name <= REG_R15 && type <= OPERAND_TYPES_REGISTER_MAX) {
-    static const char *kRegisterNames[REG_R15 + 1][OPERAND_TYPES_REGISTER_MAX] =
+  } else if (name <= REG_R15 && format <= OPERAND_FORMATS_REGISTER_MAX) {
+    static const char
+        *kRegisterNames[REG_R15 + 1][OPERAND_FORMATS_REGISTER_MAX] =
     {
       {   "al",   "ax",  "eax",  "rax", "st(0)", "mm0",  "xmm0",  "ymm0",
           "es",  "cr0",  "db0",  "tr0" },
@@ -123,8 +126,8 @@ const char *RegisterNameAsString(enum OperandName name, enum OperandType type,
       { "r15b", "r15w", "r15d",  "r15",    NULL,  NULL, "xmm15", "ymm15",
           NULL, "cr15", "db15", "tr15" }
     };
-    assert(kRegisterNames[name][type]);
-    return kRegisterNames[name][type];
+    assert(kRegisterNames[name][format]);
+    return kRegisterNames[name][format];
   } else {
     assert(FALSE);
     return NULL;
@@ -165,7 +168,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   Bool spurious_rex_prefix = FALSE;
 #define print_name(x) (printf((x)), shown_name += strlen((x)))
   size_t shown_name = 0;
-  int i, operand_type;
+  int i, operand_format;
 
   /*
    * "fwait" is nasty: few of them will be included in other X87 instructions
@@ -322,8 +325,10 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
          * mode.  It's perfectly valid in amd64, too, so instead of changing
          * the decoder we fix it here.
          */
-        if (instruction->operands[i].type == OPERAND_TYPE_CONTROL_REGISTER &&
-            *begin == 0xf0 && !instruction->prefix.lock) {
+        if (instruction->operands[i].format ==
+            OPERAND_FORMAT_CONTROL_REGISTER &&
+            *begin == 0xf0 &&
+            !instruction->prefix.lock) {
           print_name("lock ");
           if (rex_prefix & 0x04) {
             if (!instruction->prefix.rex_b_spurious &&
@@ -369,7 +374,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                      "jecxz", "jrcxz", "loop", "loope", "loopne",
                      "call", "jmp", NULL) &&
         instruction->operands[0].name == JMP_TO &&
-        instruction->operands[0].type != OPERAND_TYPE_8_BIT)
+        instruction->operands[0].format != OPERAND_FORMAT_8_BIT)
       spurious_rex_prefix = FALSE;
     /*
      * Both AMD manual and Intel manual agree that mov from general purpose
@@ -446,7 +451,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         /*
          * "Empty" rex prefix (0x40) is used to select "sil"/"dil"/"spl"/"bpl".
          */
-        if (instruction->operands[i].type == OPERAND_TYPE_8_BIT &&
+        if (instruction->operands[i].format == OPERAND_FORMAT_8_BIT &&
             instruction->operands[i].name <= REG_RDI) {
           empty_rex_prefix_ok = TRUE;
         }
@@ -486,19 +491,19 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
      * not really needed.
      */
     if (strcmp(instruction_name, "crc32") == 0) {
-      if (instruction->operands[1].type == OPERAND_TYPE_8_BIT)
+      if (instruction->operands[1].format == OPERAND_FORMAT_8_BIT)
         print_name("b");
-      else if (instruction->operands[1].type == OPERAND_TYPE_16_BIT)
+      else if (instruction->operands[1].format == OPERAND_FORMAT_16_BIT)
         print_name("w");
-      else if (instruction->operands[1].type == OPERAND_TYPE_32_BIT)
+      else if (instruction->operands[1].format == OPERAND_FORMAT_32_BIT)
         print_name("l");
-      else if (instruction->operands[1].type == OPERAND_TYPE_64_BIT)
+      else if (instruction->operands[1].format == OPERAND_FORMAT_64_BIT)
         print_name("q");
     }
   }
   if (strcmp(instruction_name, "mov") == 0 &&
       instruction->operands[1].name == REG_IMM &&
-      instruction->operands[1].type == OPERAND_TYPE_64_BIT)
+      instruction->operands[1].format == OPERAND_FORMAT_64_BIT)
     print_name("abs");
 
   if (IsNameInList(instruction_name,
@@ -552,14 +557,14 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
      * it here and not in decoder.
      */
     if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) && (begin[1] == 0x8e) &&
-        (instruction->operands[i].type == OPERAND_TYPE_16_BIT)) {
-      operand_type = OPERAND_TYPE_64_BIT;
+        (instruction->operands[i].format == OPERAND_FORMAT_16_BIT)) {
+      operand_format = OPERAND_FORMAT_64_BIT;
     } else if (((begin[0] == 0x8e) ||
        ((begin[0] >= 0x40) && (begin[0] <= 0x4f) && (begin[1] == 0x8e))) &&
-        (instruction->operands[i].type == OPERAND_TYPE_16_BIT)) {
-      operand_type = OPERAND_TYPE_32_BIT;
+        (instruction->operands[i].format == OPERAND_FORMAT_16_BIT)) {
+      operand_format = OPERAND_FORMAT_32_BIT;
     } else {
-      operand_type = instruction->operands[i].type;
+      operand_format = instruction->operands[i].format;
     }
     switch (instruction->operands[i].name) {
       case REG_RAX:
@@ -579,10 +584,10 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       case REG_R14:
       case REG_R15:
         printf("%%%s", RegisterNameAsString(instruction->operands[i].name,
-                                            operand_type, rex_prefix));
+                                            operand_format, rex_prefix));
         break;
       case REG_ST:
-        assert(operand_type == OPERAND_TYPE_ST);
+        assert(operand_format == OPERAND_FORMAT_ST);
         printf("%%st");
         break;
       case REG_RM:
@@ -600,13 +605,13 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             printf("(");
           if (rm_base != NO_REG)
             printf("%%%s",
-                   RegisterNameAsString(rm_base, OPERAND_TYPE_32_BIT, FALSE));
+                   RegisterNameAsString(rm_base, OPERAND_FORMAT_32_BIT, FALSE));
           if (rm_index == REG_RIZ) {
             if ((rm_base != REG_RSP) || (instruction->rm.scale != 0))
               printf(",%%eiz,%d", 1 << instruction->rm.scale);
           } else if (rm_index != NO_REG) {
             printf(",%%%s,%d",
-                   RegisterNameAsString(rm_index, OPERAND_TYPE_32_BIT, FALSE),
+                   RegisterNameAsString(rm_index, OPERAND_FORMAT_32_BIT, FALSE),
                    1 << instruction->rm.scale);
           }
           if ((rm_base != NO_REG) ||
@@ -623,7 +628,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             print_rip = TRUE;
           } else if (rm_base != NO_REG) {
             printf("%%%s",
-                   RegisterNameAsString(rm_base, OPERAND_TYPE_64_BIT, FALSE));
+                   RegisterNameAsString(rm_base, OPERAND_FORMAT_64_BIT, FALSE));
           }
           if (rm_index == REG_RIZ) {
             if ((rm_base != NO_REG &&
@@ -633,7 +638,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
               printf(",%%riz,%d",1 << instruction->rm.scale);
           } else if (rm_index != NO_REG) {
             printf(",%%%s,%d",
-                   RegisterNameAsString(rm_index, OPERAND_TYPE_64_BIT, FALSE),
+                   RegisterNameAsString(rm_index, OPERAND_FORMAT_64_BIT, FALSE),
                    1 << instruction->rm.scale);
           }
           if ((rm_base != NO_REG) ||
@@ -670,7 +675,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           printf("%%ds:(%%rsi)");
         break;
       case JMP_TO:
-        if (instruction->operands[0].type == OPERAND_TYPE_16_BIT)
+        if (instruction->operands[0].format == OPERAND_FORMAT_16_BIT)
           printf("0x%lx", (long)((end + instruction->rm.offset -
                          (((struct DecodeState *)userdata)->offset)) & 0xffff));
         else

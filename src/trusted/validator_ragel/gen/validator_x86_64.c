@@ -48,14 +48,14 @@ enum OperandKind {
 };
 
 #define SET_OPERAND_NAME(N, S) operand_states |= ((S) << ((N) << 3))
-#define SET_OPERAND_TYPE(N, T) SET_OPERAND_TYPE_ ## T(N)
-#define SET_OPERAND_TYPE_OPERAND_TYPE_8_BIT(N) \
+#define SET_OPERAND_FORMAT(N, T) SET_OPERAND_FORMAT_ ## T(N)
+#define SET_OPERAND_FORMAT_OPERAND_FORMAT_8_BIT(N) \
   operand_states |= OPERAND_SANDBOX_8BIT << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OPERAND_TYPE_16_BIT(N) \
+#define SET_OPERAND_FORMAT_OPERAND_FORMAT_16_BIT(N) \
   operand_states |= OPERAND_SANDBOX_UNRESTRICTED << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OPERAND_TYPE_32_BIT(N) \
+#define SET_OPERAND_FORMAT_OPERAND_FORMAT_32_BIT(N) \
   operand_states |= OPERAND_SANDBOX_RESTRICTED << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OPERAND_TYPE_64_BIT(N) \
+#define SET_OPERAND_FORMAT_OPERAND_FORMAT_64_BIT(N) \
   operand_states |= OPERAND_SANDBOX_UNRESTRICTED << (5 + ((N) << 3))
 #define CHECK_OPERAND(N, S, T) \
   ((operand_states & (0xff << ((N) << 3))) == ((S | (T << 5)) << ((N) << 3)))
@@ -2748,7 +2748,7 @@ tr7:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -2939,7 +2939,7 @@ tr17:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -2980,7 +2980,7 @@ tr17:
   }
 	goto st798;
 tr18:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -3042,7 +3042,7 @@ tr25:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -3231,7 +3231,7 @@ tr32:
   }
 	goto st798;
 tr35:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -3294,7 +3294,7 @@ tr42:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -3736,7 +3736,7 @@ tr94:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -3776,7 +3776,7 @@ tr94:
   }
 	goto st798;
 tr98:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MON);       }
 	{ SET_OPERAND_NAME(0, REG_RDX); }
 	{
@@ -3818,7 +3818,7 @@ tr98:
   }
 	goto st798;
 tr99:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MON);       }
 	{ SET_OPERAND_NAME(0, REG_RCX); }
 	{
@@ -4578,7 +4578,7 @@ tr177:
   }
 	goto st798;
 tr184:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -4730,7 +4730,7 @@ tr207:
   }
 	goto st798;
 tr217:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -4793,7 +4793,7 @@ tr224:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -4839,7 +4839,7 @@ tr225:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -4885,7 +4885,7 @@ tr235:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	{
     Process1OperandZeroExtends(&restricted_register,
@@ -5026,7 +5026,7 @@ tr247:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -5072,7 +5072,7 @@ tr256:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -5263,8 +5263,8 @@ tr272:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_8_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     Process2Operands(&restricted_register, &instruction_info_collected,
                      rex_prefix, operand_states);
@@ -5304,7 +5304,7 @@ tr272:
   }
 	goto st798;
 tr273:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -5371,8 +5371,8 @@ tr280:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     Process2Operands(&restricted_register, &instruction_info_collected,
                      rex_prefix, operand_states);
@@ -5417,7 +5417,7 @@ tr282:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -5467,8 +5467,8 @@ tr283:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     Process2OperandsZeroExtends(&restricted_register,
                                 &instruction_info_collected, rex_prefix,
@@ -5565,7 +5565,7 @@ tr300:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -5792,7 +5792,7 @@ tr329:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -5840,8 +5840,8 @@ tr341:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     Process2OperandsZeroExtends(&restricted_register,
@@ -5888,8 +5888,8 @@ tr342:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     Process2OperandsZeroExtends(&restricted_register,
@@ -6073,7 +6073,7 @@ tr434:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -6121,7 +6121,7 @@ tr435:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -6165,7 +6165,7 @@ tr435:
   }
 	goto st798;
 tr438:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -6230,7 +6230,7 @@ tr445:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -6273,7 +6273,7 @@ tr445:
   }
 	goto st798;
 tr446:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -6339,7 +6339,7 @@ tr453:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -6383,7 +6383,7 @@ tr453:
   }
 	goto st798;
 tr454:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -6582,7 +6582,7 @@ tr470:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -6712,7 +6712,7 @@ tr494:
   }
 	goto st798;
 tr495:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	{
@@ -6806,8 +6806,8 @@ tr512:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     Process2Operands(&restricted_register, &instruction_info_collected,
@@ -6848,7 +6848,7 @@ tr512:
   }
 	goto st798;
 tr519:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -6910,7 +6910,7 @@ tr526:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -6950,7 +6950,7 @@ tr526:
   }
 	goto st798;
 tr537:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -7008,7 +7008,7 @@ tr537:
   }
 	goto st798;
 tr544:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -7071,7 +7071,7 @@ tr551:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -7117,7 +7117,7 @@ tr552:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -7163,7 +7163,7 @@ tr553:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -7214,8 +7214,8 @@ tr555:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process2Operands(&restricted_register, &instruction_info_collected,
                      rex_prefix, operand_states);
@@ -7311,7 +7311,7 @@ tr564:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -7398,7 +7398,7 @@ tr602:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -7441,7 +7441,7 @@ tr602:
   }
 	goto st798;
 tr603:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -7506,7 +7506,7 @@ tr610:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -7549,7 +7549,7 @@ tr610:
   }
 	goto st798;
 tr611:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -7920,7 +7920,7 @@ tr687:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -7965,8 +7965,8 @@ tr698:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_16_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     Process2Operands(&restricted_register, &instruction_info_collected,
@@ -8012,7 +8012,7 @@ tr707:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -8052,7 +8052,7 @@ tr707:
   }
 	goto st798;
 tr708:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -8114,7 +8114,7 @@ tr715:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -8468,7 +8468,7 @@ tr766:
   }
 	goto st798;
 tr767:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -8526,7 +8526,7 @@ tr767:
   }
 	goto st798;
 tr812:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -8589,7 +8589,7 @@ tr819:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -8635,7 +8635,7 @@ tr820:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -8810,7 +8810,7 @@ tr838:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     Process1OperandZeroExtends(&restricted_register,
@@ -8862,8 +8862,8 @@ tr840:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_16_BIT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     Process2Operands(&restricted_register, &instruction_info_collected,
                      rex_prefix, operand_states);
@@ -8951,7 +8951,7 @@ tr889:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -8994,7 +8994,7 @@ tr889:
   }
 	goto st798;
 tr890:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -9059,7 +9059,7 @@ tr897:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -9102,7 +9102,7 @@ tr897:
   }
 	goto st798;
 tr898:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -9160,7 +9160,7 @@ tr921:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -9206,7 +9206,7 @@ tr922:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -9247,7 +9247,7 @@ tr922:
   }
 	goto st798;
 tr941:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -9310,7 +9310,7 @@ tr948:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -9527,7 +9527,7 @@ tr982:
   }
 	goto st798;
 tr1075:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -9583,7 +9583,7 @@ tr1075:
   }
 	goto st798;
 tr1078:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -9671,7 +9671,7 @@ tr1081:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -9712,7 +9712,7 @@ tr1081:
   }
 	goto st798;
 tr1084:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -9768,7 +9768,7 @@ tr1084:
   }
 	goto st798;
 tr1087:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -9817,7 +9817,7 @@ tr1089:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -9899,7 +9899,7 @@ tr1168:
   }
 	goto st798;
 tr1224:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -9962,7 +9962,7 @@ tr1227:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -10273,7 +10273,7 @@ tr1242:
   }
 	goto st798;
 tr1244:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -10336,7 +10336,7 @@ tr1247:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -10377,7 +10377,7 @@ tr1247:
   }
 	goto st798;
 tr1322:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -10433,7 +10433,7 @@ tr1322:
   }
 	goto st798;
 tr1325:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -10477,7 +10477,7 @@ tr1325:
   }
 	goto st798;
 tr1327:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -10533,7 +10533,7 @@ tr1327:
   }
 	goto st798;
 tr1330:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -10628,7 +10628,7 @@ tr1355:
   }
 	goto st798;
 tr1362:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -10729,7 +10729,7 @@ tr1371:
   }
 	goto st798;
 tr1375:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -10787,7 +10787,7 @@ tr1375:
   }
 	goto st798;
 tr1383:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -10850,7 +10850,7 @@ tr1390:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -10891,7 +10891,7 @@ tr1390:
   }
 	goto st798;
 tr1399:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -10949,7 +10949,7 @@ tr1399:
   }
 	goto st798;
 tr1406:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -11012,7 +11012,7 @@ tr1413:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -11053,7 +11053,7 @@ tr1413:
   }
 	goto st798;
 tr1414:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -11116,7 +11116,7 @@ tr1421:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -11157,7 +11157,7 @@ tr1421:
   }
 	goto st798;
 tr1422:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -11220,7 +11220,7 @@ tr1429:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -11261,7 +11261,7 @@ tr1429:
   }
 	goto st798;
 tr1435:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -11319,7 +11319,7 @@ tr1435:
   }
 	goto st798;
 tr1442:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -11382,7 +11382,7 @@ tr1449:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -11423,7 +11423,7 @@ tr1449:
   }
 	goto st798;
 tr1450:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -11486,7 +11486,7 @@ tr1457:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -11527,7 +11527,7 @@ tr1457:
   }
 	goto st798;
 tr1458:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -11590,7 +11590,7 @@ tr1465:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -13052,7 +13052,7 @@ case 11:
 		goto _again;
 	}
 tr19:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13060,7 +13060,7 @@ tr19:
   }
 	goto st12;
 tr274:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13068,7 +13068,7 @@ tr274:
   }
 	goto st12;
 tr185:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13077,7 +13077,7 @@ tr185:
   }
 	goto st12;
 tr218:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13086,7 +13086,7 @@ tr218:
   }
 	goto st12;
 tr439:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13097,7 +13097,7 @@ tr439:
   }
 	goto st12;
 tr520:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13105,7 +13105,7 @@ tr520:
   }
 	goto st12;
 tr538:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13114,7 +13114,7 @@ tr538:
   }
 	goto st12;
 tr545:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13123,7 +13123,7 @@ tr545:
   }
 	goto st12;
 tr604:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13134,7 +13134,7 @@ tr604:
   }
 	goto st12;
 tr709:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13142,7 +13142,7 @@ tr709:
   }
 	goto st12;
 tr768:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13151,7 +13151,7 @@ tr768:
   }
 	goto st12;
 tr813:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13160,7 +13160,7 @@ tr813:
   }
 	goto st12;
 tr891:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13171,7 +13171,7 @@ tr891:
   }
 	goto st12;
 tr942:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13180,7 +13180,7 @@ tr942:
   }
 	goto st12;
 tr1191:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13189,7 +13189,7 @@ tr1191:
   }
 	goto st12;
 tr1199:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13198,35 +13198,35 @@ tr1199:
   }
 	goto st12;
 tr1060:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1063:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1316:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1318:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1363:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13235,7 +13235,7 @@ tr1363:
   }
 	goto st12;
 tr1376:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13244,7 +13244,7 @@ tr1376:
   }
 	goto st12;
 tr1384:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13253,7 +13253,7 @@ tr1384:
   }
 	goto st12;
 tr1400:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13262,7 +13262,7 @@ tr1400:
   }
 	goto st12;
 tr1407:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13271,7 +13271,7 @@ tr1407:
   }
 	goto st12;
 tr1415:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13280,7 +13280,7 @@ tr1415:
   }
 	goto st12;
 tr1423:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13289,7 +13289,7 @@ tr1423:
   }
 	goto st12;
 tr1436:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13298,7 +13298,7 @@ tr1436:
   }
 	goto st12;
 tr1443:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13307,7 +13307,7 @@ tr1443:
   }
 	goto st12;
 tr1451:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13316,7 +13316,7 @@ tr1451:
   }
 	goto st12;
 tr1459:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13356,7 +13356,7 @@ tr34:
   }
 	goto st13;
 tr20:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13371,7 +13371,7 @@ tr20:
   }
 	goto st13;
 tr23:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13386,7 +13386,7 @@ tr23:
   }
 	goto st13;
 tr275:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13401,7 +13401,7 @@ tr275:
   }
 	goto st13;
 tr278:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13416,7 +13416,7 @@ tr278:
   }
 	goto st13;
 tr186:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13432,7 +13432,7 @@ tr186:
   }
 	goto st13;
 tr189:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13448,7 +13448,7 @@ tr189:
   }
 	goto st13;
 tr219:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13464,7 +13464,7 @@ tr219:
   }
 	goto st13;
 tr222:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13480,7 +13480,7 @@ tr222:
   }
 	goto st13;
 tr440:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13498,7 +13498,7 @@ tr440:
   }
 	goto st13;
 tr443:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13516,7 +13516,7 @@ tr443:
   }
 	goto st13;
 tr521:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13531,7 +13531,7 @@ tr521:
   }
 	goto st13;
 tr524:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13546,7 +13546,7 @@ tr524:
   }
 	goto st13;
 tr539:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13562,7 +13562,7 @@ tr539:
   }
 	goto st13;
 tr542:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13578,7 +13578,7 @@ tr542:
   }
 	goto st13;
 tr546:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13594,7 +13594,7 @@ tr546:
   }
 	goto st13;
 tr549:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13610,7 +13610,7 @@ tr549:
   }
 	goto st13;
 tr605:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13628,7 +13628,7 @@ tr605:
   }
 	goto st13;
 tr608:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13646,7 +13646,7 @@ tr608:
   }
 	goto st13;
 tr710:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13661,7 +13661,7 @@ tr710:
   }
 	goto st13;
 tr713:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -13676,7 +13676,7 @@ tr713:
   }
 	goto st13;
 tr769:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13692,7 +13692,7 @@ tr769:
   }
 	goto st13;
 tr772:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13708,7 +13708,7 @@ tr772:
   }
 	goto st13;
 tr814:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13724,7 +13724,7 @@ tr814:
   }
 	goto st13;
 tr817:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13740,7 +13740,7 @@ tr817:
   }
 	goto st13;
 tr892:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13758,7 +13758,7 @@ tr892:
   }
 	goto st13;
 tr895:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13776,7 +13776,7 @@ tr895:
   }
 	goto st13;
 tr943:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13792,7 +13792,7 @@ tr943:
   }
 	goto st13;
 tr946:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13808,7 +13808,7 @@ tr946:
   }
 	goto st13;
 tr1226:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13824,7 +13824,7 @@ tr1226:
   }
 	goto st13;
 tr1246:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13840,7 +13840,7 @@ tr1246:
   }
 	goto st13;
 tr1281:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13856,7 +13856,7 @@ tr1281:
   }
 	goto st13;
 tr1289:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -13872,7 +13872,7 @@ tr1289:
   }
 	goto st13;
 tr1077:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13886,7 +13886,7 @@ tr1077:
   }
 	goto st13;
 tr1086:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13900,7 +13900,7 @@ tr1086:
   }
 	goto st13;
 tr1104:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13914,7 +13914,7 @@ tr1104:
   }
 	goto st13;
 tr1107:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13928,7 +13928,7 @@ tr1107:
   }
 	goto st13;
 tr1324:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13942,7 +13942,7 @@ tr1324:
   }
 	goto st13;
 tr1329:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13956,7 +13956,7 @@ tr1329:
   }
 	goto st13;
 tr1334:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13970,7 +13970,7 @@ tr1334:
   }
 	goto st13;
 tr1336:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -13984,7 +13984,7 @@ tr1336:
   }
 	goto st13;
 tr1364:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14000,7 +14000,7 @@ tr1364:
   }
 	goto st13;
 tr1367:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14016,7 +14016,7 @@ tr1367:
   }
 	goto st13;
 tr1377:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14032,7 +14032,7 @@ tr1377:
   }
 	goto st13;
 tr1380:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14048,7 +14048,7 @@ tr1380:
   }
 	goto st13;
 tr1385:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14064,7 +14064,7 @@ tr1385:
   }
 	goto st13;
 tr1388:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14080,7 +14080,7 @@ tr1388:
   }
 	goto st13;
 tr1401:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14096,7 +14096,7 @@ tr1401:
   }
 	goto st13;
 tr1404:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14112,7 +14112,7 @@ tr1404:
   }
 	goto st13;
 tr1408:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14128,7 +14128,7 @@ tr1408:
   }
 	goto st13;
 tr1411:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14144,7 +14144,7 @@ tr1411:
   }
 	goto st13;
 tr1416:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14160,7 +14160,7 @@ tr1416:
   }
 	goto st13;
 tr1419:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14176,7 +14176,7 @@ tr1419:
   }
 	goto st13;
 tr1424:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14192,7 +14192,7 @@ tr1424:
   }
 	goto st13;
 tr1427:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14208,7 +14208,7 @@ tr1427:
   }
 	goto st13;
 tr1437:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14224,7 +14224,7 @@ tr1437:
   }
 	goto st13;
 tr1440:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14240,7 +14240,7 @@ tr1440:
   }
 	goto st13;
 tr1444:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14256,7 +14256,7 @@ tr1444:
   }
 	goto st13;
 tr1447:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14272,7 +14272,7 @@ tr1447:
   }
 	goto st13;
 tr1452:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14288,7 +14288,7 @@ tr1452:
   }
 	goto st13;
 tr1455:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14304,7 +14304,7 @@ tr1455:
   }
 	goto st13;
 tr1460:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14320,7 +14320,7 @@ tr1460:
   }
 	goto st13;
 tr1463:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14377,7 +14377,7 @@ tr33:
   }
 	goto st17;
 tr21:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14392,7 +14392,7 @@ tr21:
   }
 	goto st17;
 tr276:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14407,7 +14407,7 @@ tr276:
   }
 	goto st17;
 tr187:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14423,7 +14423,7 @@ tr187:
   }
 	goto st17;
 tr220:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14439,7 +14439,7 @@ tr220:
   }
 	goto st17;
 tr441:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -14457,7 +14457,7 @@ tr441:
   }
 	goto st17;
 tr522:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14472,7 +14472,7 @@ tr522:
   }
 	goto st17;
 tr540:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14488,7 +14488,7 @@ tr540:
   }
 	goto st17;
 tr547:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14504,7 +14504,7 @@ tr547:
   }
 	goto st17;
 tr606:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -14522,7 +14522,7 @@ tr606:
   }
 	goto st17;
 tr711:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14537,7 +14537,7 @@ tr711:
   }
 	goto st17;
 tr770:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14553,7 +14553,7 @@ tr770:
   }
 	goto st17;
 tr815:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14569,7 +14569,7 @@ tr815:
   }
 	goto st17;
 tr893:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -14587,7 +14587,7 @@ tr893:
   }
 	goto st17;
 tr944:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14603,7 +14603,7 @@ tr944:
   }
 	goto st17;
 tr1225:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14619,7 +14619,7 @@ tr1225:
   }
 	goto st17;
 tr1245:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14635,7 +14635,7 @@ tr1245:
   }
 	goto st17;
 tr1076:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -14649,7 +14649,7 @@ tr1076:
   }
 	goto st17;
 tr1085:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -14663,7 +14663,7 @@ tr1085:
   }
 	goto st17;
 tr1323:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -14677,7 +14677,7 @@ tr1323:
   }
 	goto st17;
 tr1328:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -14691,7 +14691,7 @@ tr1328:
   }
 	goto st17;
 tr1365:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14707,7 +14707,7 @@ tr1365:
   }
 	goto st17;
 tr1378:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14723,7 +14723,7 @@ tr1378:
   }
 	goto st17;
 tr1386:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14739,7 +14739,7 @@ tr1386:
   }
 	goto st17;
 tr1402:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14755,7 +14755,7 @@ tr1402:
   }
 	goto st17;
 tr1409:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14771,7 +14771,7 @@ tr1409:
   }
 	goto st17;
 tr1417:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14787,7 +14787,7 @@ tr1417:
   }
 	goto st17;
 tr1425:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14803,7 +14803,7 @@ tr1425:
   }
 	goto st17;
 tr1438:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14819,7 +14819,7 @@ tr1438:
   }
 	goto st17;
 tr1445:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14835,7 +14835,7 @@ tr1445:
   }
 	goto st17;
 tr1453:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14851,7 +14851,7 @@ tr1453:
   }
 	goto st17;
 tr1461:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14872,7 +14872,7 @@ st17:
 case 17:
 	goto tr32;
 tr22:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14880,7 +14880,7 @@ tr22:
   }
 	goto st18;
 tr277:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14888,7 +14888,7 @@ tr277:
   }
 	goto st18;
 tr188:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14897,7 +14897,7 @@ tr188:
   }
 	goto st18;
 tr221:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14906,7 +14906,7 @@ tr221:
   }
 	goto st18;
 tr442:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -14917,7 +14917,7 @@ tr442:
   }
 	goto st18;
 tr523:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14925,7 +14925,7 @@ tr523:
   }
 	goto st18;
 tr541:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14934,7 +14934,7 @@ tr541:
   }
 	goto st18;
 tr548:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14943,7 +14943,7 @@ tr548:
   }
 	goto st18;
 tr607:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -14954,7 +14954,7 @@ tr607:
   }
 	goto st18;
 tr712:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14962,7 +14962,7 @@ tr712:
   }
 	goto st18;
 tr771:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14971,7 +14971,7 @@ tr771:
   }
 	goto st18;
 tr816:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -14980,7 +14980,7 @@ tr816:
   }
 	goto st18;
 tr894:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -14991,7 +14991,7 @@ tr894:
   }
 	goto st18;
 tr945:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15000,7 +15000,7 @@ tr945:
   }
 	goto st18;
 tr1135:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15009,7 +15009,7 @@ tr1135:
   }
 	goto st18;
 tr1151:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15018,35 +15018,35 @@ tr1151:
   }
 	goto st18;
 tr1042:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1047:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1307:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1311:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1366:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15055,7 +15055,7 @@ tr1366:
   }
 	goto st18;
 tr1379:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15064,7 +15064,7 @@ tr1379:
   }
 	goto st18;
 tr1387:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15073,7 +15073,7 @@ tr1387:
   }
 	goto st18;
 tr1403:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15082,7 +15082,7 @@ tr1403:
   }
 	goto st18;
 tr1410:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15091,7 +15091,7 @@ tr1410:
   }
 	goto st18;
 tr1418:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15100,7 +15100,7 @@ tr1418:
   }
 	goto st18;
 tr1426:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15109,7 +15109,7 @@ tr1426:
   }
 	goto st18;
 tr1439:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15118,7 +15118,7 @@ tr1439:
   }
 	goto st18;
 tr1446:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15127,7 +15127,7 @@ tr1446:
   }
 	goto st18;
 tr1454:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15136,7 +15136,7 @@ tr1454:
   }
 	goto st18;
 tr1462:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15150,7 +15150,7 @@ st18:
 case 18:
 	goto tr33;
 tr24:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15158,7 +15158,7 @@ tr24:
   }
 	goto st19;
 tr279:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15166,7 +15166,7 @@ tr279:
   }
 	goto st19;
 tr190:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15175,7 +15175,7 @@ tr190:
   }
 	goto st19;
 tr223:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15184,7 +15184,7 @@ tr223:
   }
 	goto st19;
 tr444:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15195,7 +15195,7 @@ tr444:
   }
 	goto st19;
 tr525:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15203,7 +15203,7 @@ tr525:
   }
 	goto st19;
 tr543:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15212,7 +15212,7 @@ tr543:
   }
 	goto st19;
 tr550:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15221,7 +15221,7 @@ tr550:
   }
 	goto st19;
 tr609:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15232,7 +15232,7 @@ tr609:
   }
 	goto st19;
 tr714:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15240,7 +15240,7 @@ tr714:
   }
 	goto st19;
 tr773:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15249,7 +15249,7 @@ tr773:
   }
 	goto st19;
 tr818:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15258,7 +15258,7 @@ tr818:
   }
 	goto st19;
 tr896:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15269,7 +15269,7 @@ tr896:
   }
 	goto st19;
 tr947:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15278,7 +15278,7 @@ tr947:
   }
 	goto st19;
 tr1136:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15287,7 +15287,7 @@ tr1136:
   }
 	goto st19;
 tr1152:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15296,35 +15296,35 @@ tr1152:
   }
 	goto st19;
 tr1043:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1048:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1308:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1312:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1368:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15333,7 +15333,7 @@ tr1368:
   }
 	goto st19;
 tr1381:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15342,7 +15342,7 @@ tr1381:
   }
 	goto st19;
 tr1389:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15351,7 +15351,7 @@ tr1389:
   }
 	goto st19;
 tr1405:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15360,7 +15360,7 @@ tr1405:
   }
 	goto st19;
 tr1412:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15369,7 +15369,7 @@ tr1412:
   }
 	goto st19;
 tr1420:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15378,7 +15378,7 @@ tr1420:
   }
 	goto st19;
 tr1428:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15387,7 +15387,7 @@ tr1428:
   }
 	goto st19;
 tr1441:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15396,7 +15396,7 @@ tr1441:
   }
 	goto st19;
 tr1448:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15405,7 +15405,7 @@ tr1448:
   }
 	goto st19;
 tr1456:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15414,7 +15414,7 @@ tr1456:
   }
 	goto st19;
 tr1464:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -15437,7 +15437,7 @@ case 20:
 		goto _again;
 	}
 tr36:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15445,7 +15445,7 @@ tr36:
   }
 	goto st21;
 tr447:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15487,7 +15487,7 @@ tr51:
   }
 	goto st22;
 tr37:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15502,7 +15502,7 @@ tr37:
   }
 	goto st22;
 tr40:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15517,7 +15517,7 @@ tr40:
   }
 	goto st22;
 tr448:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15535,7 +15535,7 @@ tr448:
   }
 	goto st22;
 tr451:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15594,7 +15594,7 @@ tr50:
   }
 	goto st26;
 tr38:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15609,7 +15609,7 @@ tr38:
   }
 	goto st26;
 tr449:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15632,7 +15632,7 @@ st26:
 case 26:
 	goto tr49;
 tr39:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15640,7 +15640,7 @@ tr39:
   }
 	goto st27;
 tr450:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15656,7 +15656,7 @@ st27:
 case 27:
 	goto tr50;
 tr41:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15664,7 +15664,7 @@ tr41:
   }
 	goto st28;
 tr452:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15723,7 +15723,7 @@ tr255:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st29;
 tr292:
 	{
@@ -15731,11 +15731,11 @@ tr292:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st29;
 tr323:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st29;
 tr344:
@@ -15744,7 +15744,7 @@ tr344:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15755,7 +15755,7 @@ tr400:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	goto st29;
 tr478:
 	{
@@ -15763,7 +15763,7 @@ tr478:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -15774,7 +15774,7 @@ tr554:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	goto st29;
 tr556:
 	{
@@ -15782,11 +15782,11 @@ tr556:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st29;
 tr582:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15811,7 +15811,7 @@ tr589:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	goto st29;
 tr787:
 	{
@@ -15819,7 +15819,7 @@ tr787:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st29;
 tr839:
@@ -15828,7 +15828,7 @@ tr839:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	goto st29;
 tr841:
 	{
@@ -15836,11 +15836,11 @@ tr841:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st29;
 tr864:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15865,7 +15865,7 @@ tr871:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	goto st29;
 tr920:
 	{
@@ -15873,7 +15873,7 @@ tr920:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st29;
 tr923:
@@ -15882,7 +15882,7 @@ tr923:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st29;
 st29:
@@ -15934,10 +15934,10 @@ tr408:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st30;
 tr324:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st30;
 tr345:
@@ -15946,13 +15946,13 @@ tr345:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	goto st30;
 tr365:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -15977,7 +15977,7 @@ tr372:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st30;
 tr486:
 	{
@@ -15985,7 +15985,7 @@ tr486:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -17715,14 +17715,14 @@ tr409:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st102;
 tr326:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st102;
 tr502:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st102;
 tr599:
@@ -17731,10 +17731,10 @@ tr599:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	goto st102;
 tr565:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -17759,7 +17759,7 @@ tr572:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	goto st102;
 tr635:
 	{
@@ -17767,13 +17767,13 @@ tr635:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	goto st102;
 tr1022:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -17799,11 +17799,11 @@ tr1025:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	goto st102;
 tr1027:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -17829,7 +17829,7 @@ tr1030:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	goto st102;
 st102:
@@ -18061,7 +18061,7 @@ case 117:
 		goto _again;
 	}
 tr366:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18100,7 +18100,7 @@ tr381:
   }
 	goto st119;
 tr367:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18115,7 +18115,7 @@ tr367:
   }
 	goto st119;
 tr370:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18171,7 +18171,7 @@ tr380:
   }
 	goto st123;
 tr368:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18191,7 +18191,7 @@ st123:
 case 123:
 	goto tr379;
 tr369:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18204,7 +18204,7 @@ st124:
 case 124:
 	goto tr380;
 tr371:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18269,10 +18269,10 @@ tr419:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st127;
 tr382:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18297,7 +18297,7 @@ tr389:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st127;
 st127:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -18305,7 +18305,7 @@ st127:
 case 127:
 	goto tr390;
 tr383:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18344,7 +18344,7 @@ tr399:
   }
 	goto st129;
 tr384:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18359,7 +18359,7 @@ tr384:
   }
 	goto st129;
 tr387:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18415,7 +18415,7 @@ tr398:
   }
 	goto st133;
 tr385:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18435,7 +18435,7 @@ st133:
 case 133:
 	goto tr397;
 tr386:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18448,7 +18448,7 @@ st134:
 case 134:
 	goto tr398;
 tr388:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -18697,7 +18697,7 @@ tr420:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st147;
 st147:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -18789,7 +18789,7 @@ tr425:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st150;
 st150:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -18890,7 +18890,7 @@ tr436:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -18939,7 +18939,7 @@ tr655:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -19042,7 +19042,7 @@ case 158:
 		goto _again;
 	}
 tr455:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19081,7 +19081,7 @@ tr469:
   }
 	goto st160;
 tr456:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19096,7 +19096,7 @@ tr456:
   }
 	goto st160;
 tr459:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19152,7 +19152,7 @@ tr468:
   }
 	goto st164;
 tr457:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19172,7 +19172,7 @@ st164:
 case 164:
 	goto tr467;
 tr458:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19185,7 +19185,7 @@ st165:
 case 165:
 	goto tr468;
 tr460:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19618,7 +19618,7 @@ case 205:
 		goto _again;
 	}
 tr566:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19626,7 +19626,7 @@ tr566:
   }
 	goto st206;
 tr1016:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19635,7 +19635,7 @@ tr1016:
   }
 	goto st206;
 tr1018:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19675,7 +19675,7 @@ tr581:
   }
 	goto st207;
 tr567:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19690,7 +19690,7 @@ tr567:
   }
 	goto st207;
 tr570:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19705,7 +19705,7 @@ tr570:
   }
 	goto st207;
 tr1024:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19721,7 +19721,7 @@ tr1024:
   }
 	goto st207;
 tr1029:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19737,7 +19737,7 @@ tr1029:
   }
 	goto st207;
 tr1034:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19753,7 +19753,7 @@ tr1034:
   }
 	goto st207;
 tr1036:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19810,7 +19810,7 @@ tr580:
   }
 	goto st211;
 tr568:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19825,7 +19825,7 @@ tr568:
   }
 	goto st211;
 tr1023:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19841,7 +19841,7 @@ tr1023:
   }
 	goto st211;
 tr1028:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19862,7 +19862,7 @@ st211:
 case 211:
 	goto tr579;
 tr569:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19870,7 +19870,7 @@ tr569:
   }
 	goto st212;
 tr1007:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19879,7 +19879,7 @@ tr1007:
   }
 	goto st212;
 tr1011:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19893,7 +19893,7 @@ st212:
 case 212:
 	goto tr580;
 tr571:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19901,7 +19901,7 @@ tr571:
   }
 	goto st213;
 tr1008:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19910,7 +19910,7 @@ tr1008:
   }
 	goto st213;
 tr1012:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -19933,7 +19933,7 @@ case 214:
 		goto _again;
 	}
 tr583:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19941,7 +19941,7 @@ tr583:
   }
 	goto st215;
 tr865:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19980,7 +19980,7 @@ tr598:
   }
 	goto st216;
 tr584:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -19995,7 +19995,7 @@ tr584:
   }
 	goto st216;
 tr587:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20010,7 +20010,7 @@ tr587:
   }
 	goto st216;
 tr866:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20025,7 +20025,7 @@ tr866:
   }
 	goto st216;
 tr869:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20081,7 +20081,7 @@ tr597:
   }
 	goto st220;
 tr585:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20096,7 +20096,7 @@ tr585:
   }
 	goto st220;
 tr867:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20116,7 +20116,7 @@ st220:
 case 220:
 	goto tr596;
 tr586:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20124,7 +20124,7 @@ tr586:
   }
 	goto st221;
 tr868:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20137,7 +20137,7 @@ st221:
 case 221:
 	goto tr597;
 tr588:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20145,7 +20145,7 @@ tr588:
   }
 	goto st222;
 tr870:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20181,15 +20181,15 @@ tr600:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	goto st225;
 st225:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof225;
 case 225:
-	if ( (*( current_position)) <= 127u )
-		goto tr52;
-	goto tr601;
+	if ( 128u <= (*( current_position)) )
+		goto tr601;
+	goto tr52;
 st226:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof226;
@@ -20218,7 +20218,7 @@ case 228:
 		goto _again;
 	}
 tr612:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20226,7 +20226,7 @@ tr612:
   }
 	goto st229;
 tr899:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20265,7 +20265,7 @@ tr626:
   }
 	goto st230;
 tr613:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20280,7 +20280,7 @@ tr613:
   }
 	goto st230;
 tr616:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20295,7 +20295,7 @@ tr616:
   }
 	goto st230;
 tr900:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20310,7 +20310,7 @@ tr900:
   }
 	goto st230;
 tr903:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20366,7 +20366,7 @@ tr625:
   }
 	goto st234;
 tr614:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20381,7 +20381,7 @@ tr614:
   }
 	goto st234;
 tr901:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20401,7 +20401,7 @@ st234:
 case 234:
 	goto tr624;
 tr615:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20409,7 +20409,7 @@ tr615:
   }
 	goto st235;
 tr902:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20422,7 +20422,7 @@ st235:
 case 235:
 	goto tr625;
 tr617:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20430,7 +20430,7 @@ tr617:
   }
 	goto st236;
 tr904:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20448,7 +20448,7 @@ tr513:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -20641,7 +20641,7 @@ case 256:
 		goto _again;
 	}
 tr644:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -20744,7 +20744,7 @@ tr648:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -20793,7 +20793,7 @@ tr1495:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -20869,7 +20869,7 @@ case 261:
 		goto _again;
 	}
 tr650:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21006,7 +21006,7 @@ tr437:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -21055,7 +21055,7 @@ tr656:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -21131,7 +21131,7 @@ case 269:
 		goto _again;
 	}
 tr658:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21308,7 +21308,7 @@ case 278:
 		goto _again;
 	}
 tr662:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21325,7 +21325,7 @@ case 279:
 		goto _again;
 	}
 tr663:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21359,7 +21359,7 @@ case 281:
 		goto tr642;
 	goto tr624;
 tr664:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21393,7 +21393,7 @@ case 283:
 		goto tr643;
 	goto tr624;
 tr665:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21457,7 +21457,7 @@ case 288:
 		goto tr642;
 	goto tr623;
 tr666:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21632,7 +21632,7 @@ tr861:
   }
 	goto st301;
 tr681:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st301;
 tr699:
@@ -21641,7 +21641,7 @@ tr699:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -21652,10 +21652,10 @@ tr879:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	goto st301;
 tr847:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21680,7 +21680,7 @@ tr854:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	goto st301;
 tr912:
 	{
@@ -21688,7 +21688,7 @@ tr912:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -22125,7 +22125,7 @@ case 341:
 		goto _again;
 	}
 tr848:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22164,7 +22164,7 @@ tr863:
   }
 	goto st343;
 tr849:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22179,7 +22179,7 @@ tr849:
   }
 	goto st343;
 tr852:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22235,7 +22235,7 @@ tr862:
   }
 	goto st347;
 tr850:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22255,7 +22255,7 @@ st347:
 case 347:
 	goto tr861;
 tr851:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22268,7 +22268,7 @@ st348:
 case 348:
 	goto tr862;
 tr853:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22915,7 +22915,7 @@ tr949:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	goto st399;
 st399:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23007,7 +23007,7 @@ tr952:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -23352,7 +23352,7 @@ tr964:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -23401,7 +23401,7 @@ tr976:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -23477,7 +23477,7 @@ case 420:
 		goto _again;
 	}
 tr967:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -23580,7 +23580,7 @@ tr971:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -23629,7 +23629,7 @@ tr1471:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -23705,7 +23705,7 @@ case 425:
 		goto _again;
 	}
 tr973:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -23817,7 +23817,7 @@ tr965:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -23866,7 +23866,7 @@ tr977:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -23942,7 +23942,7 @@ case 431:
 		goto _again;
 	}
 tr979:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -24292,7 +24292,7 @@ case 455:
 		goto _again;
 	}
 tr1006:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -24301,7 +24301,7 @@ tr1006:
   }
 	goto st456;
 tr1010:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -24545,7 +24545,7 @@ case 476:
 		goto _again;
 	}
 tr1134:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -24554,7 +24554,7 @@ tr1134:
   }
 	goto st477;
 tr1150:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
@@ -24563,28 +24563,28 @@ tr1150:
   }
 	goto st477;
 tr1041:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st477;
 tr1046:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st477;
 tr1306:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st477;
 tr1310:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
@@ -27979,7 +27979,7 @@ tr1473:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -28028,7 +28028,7 @@ tr1480:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -28104,7 +28104,7 @@ case 717:
 		goto _again;
 	}
 tr1475:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -28348,7 +28348,7 @@ tr1483:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -28817,7 +28817,7 @@ tr1497:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -28866,7 +28866,7 @@ tr1503:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -28942,7 +28942,7 @@ case 754:
 		goto _again;
 	}
 tr1499:
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -29186,7 +29186,7 @@ tr1507:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -29309,7 +29309,7 @@ tr1512:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -29446,7 +29446,7 @@ tr1518:
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -29715,7 +29715,7 @@ tr1524:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);

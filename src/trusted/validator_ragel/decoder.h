@@ -17,61 +17,61 @@
 
 EXTERN_C_BEGIN
 
-enum OperandType {
+enum OperandFormat {
   /*
    * These are for general-purpose registers, memory access and immediates.
    * They are not used for XMM, MMX etc.
    */
-  OPERAND_TYPE_8_BIT,
-  OPERAND_TYPE_16_BIT,
-  OPERAND_TYPE_32_BIT,
-  OPERAND_TYPE_64_BIT,
+  OPERAND_FORMAT_8_BIT,
+  OPERAND_FORMAT_16_BIT,
+  OPERAND_FORMAT_32_BIT,
+  OPERAND_FORMAT_64_BIT,
 
   /* Non-GP registers.  */
-  OPERAND_TYPE_ST,               /* Any X87 register.                         */
-  OPERAND_TYPE_MMX,              /* MMX registers: %mmX.                      */
-  OPERAND_TYPE_XMM,              /* XMM register: %xmmX.                      */
-  OPERAND_TYPE_YMM,              /* YMM registers: %ymmX.                     */
-  OPERAND_TYPE_SEGMENT_REGISTER, /* Operand is segment register: %es … %gs.   */
-  OPERAND_TYPE_CONTROL_REGISTER, /* Operand is control register: %crX.        */
-  OPERAND_TYPE_DEBUG_REGISTER,   /* Operand is debug register: %drX.          */
-  OPERAND_TYPE_TEST_REGISTER,    /* Operand is test register: %trX.           */
+  OPERAND_FORMAT_ST,               /* Any X87 register.                       */
+  OPERAND_FORMAT_MMX,              /* MMX registers: %mmX.                    */
+  OPERAND_FORMAT_XMM,              /* XMM register: %xmmX.                    */
+  OPERAND_FORMAT_YMM,              /* YMM registers: %ymmX.                   */
+  OPERAND_FORMAT_SEGMENT_REGISTER, /* Operand is segment register: %es … %gs. */
+  OPERAND_FORMAT_CONTROL_REGISTER, /* Operand is control register: %crX.      */
+  OPERAND_FORMAT_DEBUG_REGISTER,   /* Operand is debug register: %drX.        */
+  OPERAND_FORMAT_TEST_REGISTER,    /* Operand is test register: %trX.         */
 
   /*
-   * All other operand types are not used as register arguments.  These are
+   * All other operand format are not used as register arguments.  These are
    * immediates or memory.
    */
-  OPERAND_TYPES_REGISTER_MAX = OPERAND_TYPE_TEST_REGISTER + 1,
+  OPERAND_FORMATS_REGISTER_MAX = OPERAND_FORMAT_TEST_REGISTER + 1,
 
   /* See VPERMIL2Px instruction for description of 2-bit operand type. */
-  OPERAND_TYPE_2_BIT = OPERAND_TYPES_REGISTER_MAX,
+  OPERAND_FORMAT_2_BIT = OPERAND_FORMATS_REGISTER_MAX,
   /*
    * SIMD memory access operands.  Note: 3D Now! and MMX instructions use
-   * OPERAND_TYPE_64_BIT operands which are used for GP registers, too.
+   * OPERAND_FORMAT_64_BIT operands which are used for GP registers, too.
    * This overloading is not good and it may be good idea to separate them
    * but sadly AMD/Intel manuals conflate them and it was deemed that it's
    * too much work to separate them.
    */
-  OPERAND_TYPE_128_BIT,
-  OPERAND_TYPE_256_BIT,
+  OPERAND_FORMAT_128_BIT,
+  OPERAND_FORMAT_256_BIT,
 
   /* OPERAND_X87_SIZE_*_BIT are signed integers in memory.*/
-  OPERAND_TYPE_X87_16_BIT,
-  OPERAND_TYPE_X87_32_BIT,
-  OPERAND_TYPE_X87_64_BIT,
+  OPERAND_FORMAT_X87_16_BIT,
+  OPERAND_FORMAT_X87_32_BIT,
+  OPERAND_FORMAT_X87_64_BIT,
 
   /* OPERAND_FLOAT_SIZE_*_BIT are used for in-memory operands. */
-  OPERAND_TYPE_FLOAT_32_BIT,
-  OPERAND_TYPE_FLOAT_64_BIT,
-  OPERAND_TYPE_FLOAT_80_BIT,
+  OPERAND_FORMAT_FLOAT_32_BIT,
+  OPERAND_FORMAT_FLOAT_64_BIT,
+  OPERAND_FORMAT_FLOAT_80_BIT,
 
   /* Miscellaneous structures in memory.  */
-  OPERAND_TYPE_X87_BCD,           /* 10-byte packed BCD value.                */
-  OPERAND_TYPE_X87_ENV,           /* A 14-byte or 28-byte x87 environment.    */
-  OPERAND_TYPE_X87_STATE,         /* A 94-byte or 108-byte x87 state.         */
-  OPERAND_TYPE_X87_MMX_XMM_STATE, /* A 512-byte extended x87/MMX/XMM state.   */
-  OPERAND_TYPE_SELECTOR,          /* Operand is 6/10 bytes selector.          */
-  OPERAND_TYPE_FAR_PTR            /* Operand is 6/10 bytes far pointer.       */
+  OPERAND_FORMAT_X87_BCD,           /* 10-byte packed BCD value.              */
+  OPERAND_FORMAT_X87_ENV,           /* A 14-byte or 28-byte x87 environment.  */
+  OPERAND_FORMAT_X87_STATE,         /* A 94-byte or 108-byte x87 state.       */
+  OPERAND_FORMAT_X87_MMX_XMM_STATE, /* A 512-byte extended x87/MMX/XMM state. */
+  OPERAND_FORMAT_SELECTOR,          /* Operand is 6/10 bytes selector.        */
+  OPERAND_FORMAT_FAR_PTR            /* Operand is 6/10 bytes far pointer.     */
 };
 
 enum OperandName {
@@ -140,7 +140,7 @@ struct Instruction {
   } prefix;
   struct {
     enum OperandName name;
-    enum OperandType type;
+    enum OperandFormat format;
   } operands[5];
   struct {
     enum OperandName base;

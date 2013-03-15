@@ -31,7 +31,7 @@
 #define SET_INSTRUCTION_NAME(N) instruction.name = (N)
 #define GET_OPERAND_NAME(N) instruction.operands[(N)].name
 #define SET_OPERAND_NAME(N, S) instruction.operands[(N)].name = (S)
-#define SET_OPERAND_TYPE(N, S) instruction.operands[(N)].type = (S)
+#define SET_OPERAND_FORMAT(N, S) instruction.operands[(N)].format = (S)
 #define SET_OPERANDS_COUNT(N) instruction.operands_count = (N)
 #define SET_MODRM_BASE(N) instruction.rm.base = (N)
 #define SET_MODRM_INDEX(N) instruction.rm.index = (N)
