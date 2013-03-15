@@ -23,6 +23,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -461,6 +462,23 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
   }
 
   return false;
+}
+
+void FindBarView::OnAfterCutOrCopy() {
+  Profile* profile = host()->browser_view()->browser()->profile();
+  ui::Clipboard::SourceTag source_tag =
+      content::BrowserContext::GetMarkerForOffTheRecordContext(profile);
+  if (source_tag != ui::Clipboard::SourceTag()) {
+    // Overwrite the clipboard with the correct SourceTag
+    ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+    string16 text;
+    clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
+
+    ui::ScopedClipboardWriter scw(clipboard,
+                                  ui::Clipboard::BUFFER_STANDARD,
+                                  source_tag);
+    scw.WriteText(text);
+  }
 }
 
 void FindBarView::UpdateMatchCountAppearance(bool no_match) {

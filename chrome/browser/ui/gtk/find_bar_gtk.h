@@ -154,6 +154,9 @@ class FindBarGtk : public FindBar,
   // Handles Enter key.
   CHROMEGTK_CALLBACK_0(FindBarGtk, void, OnActivate);
 
+  // After Copy and cut handlers.
+  CHROMEGTK_CALLBACK_0(FindBarGtk, void, HandleAfterCopyOrCutClipboard);
+
   static void OnWidgetDirectionChanged(GtkWidget* widget,
                                        GtkTextDirection previous_direction,
                                        FindBarGtk* find_bar) {

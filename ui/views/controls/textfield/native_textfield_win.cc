@@ -617,10 +617,10 @@ void NativeTextfieldWin::OnCopy() {
 
   const string16 text(GetSelectedText());
   if (!text.empty()) {
-    ui::ScopedClipboardWriter scw(
-        ui::Clipboard::GetForCurrentThread(),
-        ui::Clipboard::BUFFER_STANDARD);
-    scw.WriteText(text);
+    ui::ScopedClipboardWriter(ui::Clipboard::GetForCurrentThread(),
+                              ui::Clipboard::BUFFER_STANDARD).WriteText(text);
+    if (TextfieldController* controller = textfield_->GetController())
+      controller->OnAfterCutOrCopy();
   }
 }
 

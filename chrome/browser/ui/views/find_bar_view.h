@@ -81,6 +81,7 @@ class FindBarView : public DropdownBarView,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
+  virtual void OnAfterCutOrCopy() OVERRIDE;
 
  private:
   // Update the appearance for the match count label.

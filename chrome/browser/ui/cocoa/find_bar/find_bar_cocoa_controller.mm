@@ -9,6 +9,7 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#include "ui/base/clipboard/clipboard.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 #import "ui/base/cocoa/focus_tracker.h"
 
@@ -33,6 +35,36 @@ const float kFindBarOpenDuration = 0.2;
 const float kFindBarCloseDuration = 0.15;
 const float kFindBarMoveDuration = 0.15;
 const float kRightEdgeOffset = 25;
+
+@interface FindTextFieldEditor : NSTextView {
+ @private
+  ui::Clipboard::SourceTag sourceTag_;
+}
+- (id)initWithSourceTag:(ui::Clipboard::SourceTag)sourceTag;
+
+- (void)copy:(id)sender;
+- (void)cut:(id)sender;
+@end
+
+@implementation FindTextFieldEditor
+
+- (id)initWithSourceTag:(ui::Clipboard::SourceTag)sourceTag {
+  if (self = [super init]) {
+    sourceTag_ = sourceTag;
+  }
+  return self;
+}
+
+- (void)copy:(id)sender {
+  [super copy:sender];
+  ui::Clipboard::WriteSourceTag([NSPasteboard generalPasteboard], sourceTag_);
+}
+
+- (void)cut:(id)sender {
+  [super cut:sender];
+  ui::Clipboard::WriteSourceTag([NSPasteboard generalPasteboard], sourceTag_);
+}
+@end
 
 @interface FindBarCocoaController (PrivateMethods) <NSAnimationDelegate>
 // Returns the appropriate frame for a hidden find bar.
@@ -440,6 +472,40 @@ const float kRightEdgeOffset = 25;
 - (int)findBarWidth {
   return NSWidth([[self view] frame]);
 }
+
+- (Browser*)getBrowser {
+  if (!findBarBridge_)
+    return NULL;
+  if (!findBarBridge_->GetFindBarController())
+    return NULL;
+  content::WebContents* activeWebContents =
+      findBarBridge_->GetFindBarController()->web_contents();
+  if (!activeWebContents)
+    return NULL;
+  return chrome::FindBrowserWithWebContents(activeWebContents);
+}
+
+- (id)customFieldEditorForObject:(id)obj {
+  if (obj == findText_) {
+    // Lazily construct a field editor. The Cocoa UI code always runs on the
+    // same thread, so there is no race condition here.
+    if (!customTextFieldEditor_) {
+      Browser* browser = [self getBrowser];
+      Profile* profile = browser ? browser->profile() : NULL;
+      ui::Clipboard::SourceTag tag =
+          content::BrowserContext::GetMarkerForOffTheRecordContext(profile);
+      customTextFieldEditor_.reset(
+          [[FindTextFieldEditor alloc] initWithSourceTag:tag]);
+    }
+
+    // This needs to be called every time, otherwise notifications
+    // aren't sent correctly.
+    DCHECK(customTextFieldEditor_.get());
+    [customTextFieldEditor_.get() setFieldEditor:YES];
+    return customTextFieldEditor_.get();
+  }
+  return nil;
+}
 @end
 
 @implementation FindBarCocoaController (PrivateMethods)
@@ -571,15 +637,12 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)clearFindResultsForCurrentBrowser {
-  if (!findBarBridge_)
-    return;
-  content::WebContents* activeWebContents =
-      findBarBridge_->GetFindBarController()->web_contents();
-  if (!activeWebContents)
-    return;
-  Browser* browser = chrome::FindBrowserWithWebContents(activeWebContents);
+  Browser* browser = [self getBrowser];
   if (!browser)
     return;
+
+  content::WebContents* activeWebContents =
+      findBarBridge_->GetFindBarController()->web_contents();
 
   TabStripModel* tabStripModel = browser->tab_strip_model();
   for (int i = 0; i < tabStripModel->count(); ++i) {
@@ -592,5 +655,4 @@ const float kRightEdgeOffset = 25;
     findBarBridge_->ClearResults(findTabHelper->find_result());
   }
 }
-
 @end

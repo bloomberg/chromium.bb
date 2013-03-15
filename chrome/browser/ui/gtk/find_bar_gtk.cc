@@ -41,6 +41,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -216,6 +217,10 @@ FindBarGtk::FindBarGtk(BrowserWindowGtk* window)
                    G_CALLBACK(OnFocusInThunk), this);
   g_signal_connect(text_entry_, "focus-out-event",
                    G_CALLBACK(OnFocusOutThunk), this);
+  g_signal_connect_after(text_entry_, "copy-clipboard",
+                         G_CALLBACK(&HandleAfterCopyOrCutClipboardThunk), this);
+  g_signal_connect_after(text_entry_, "cut-clipboard",
+                         G_CALLBACK(&HandleAfterCopyOrCutClipboardThunk), this);
   g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExpose), this);
 }
@@ -1032,4 +1037,21 @@ gboolean FindBarGtk::OnFocusOut(GtkWidget* entry, GdkEventFocus* event) {
       reinterpret_cast<gpointer>(&OnKeymapDirectionChanged), this);
 
   return FALSE;  // Continue propagation.
+}
+
+void FindBarGtk::HandleAfterCopyOrCutClipboard(GtkWidget* sender) {
+  ui::Clipboard::SourceTag source_tag = content::BrowserContext::
+      GetMarkerForOffTheRecordContext(browser_->profile());
+  if (source_tag == ui::Clipboard::SourceTag())
+    return;
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  string16 text;
+  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
+
+  // Overwrite clipboard with the correct source tag.
+  ui::ScopedClipboardWriter scw(clipboard,
+                                ui::Clipboard::BUFFER_STANDARD,
+                                source_tag);
+  scw.WriteText(text);
 }

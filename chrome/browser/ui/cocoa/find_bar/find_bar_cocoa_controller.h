@@ -12,6 +12,7 @@
 class FindBarBridge;
 @class FindBarTextField;
 class FindNotificationDetails;
+@class FindTextFieldEditor;
 @class FocusTracker;
 
 // A controller for the find bar in the browser window.  Manages
@@ -47,6 +48,9 @@ class FindNotificationDetails;
   // is nil when the animation is not running, and is also stopped by
   // stopAnimation.
   scoped_nsobject<NSViewAnimation> moveAnimation_;
+
+  // Custom editor for NSTextField allows to customize cut/copy.
+  scoped_nsobject<FindTextFieldEditor> customTextFieldEditor_;
 
   // If YES, do nothing as a result of find pasteboard update notifications.
   BOOL suppressPboardUpdateActions_;
@@ -99,5 +103,8 @@ class FindNotificationDetails;
 
 // Returns the width of the FindBar.
 - (int)findBarWidth;
+
+// Returns custom editor for findText_.
+- (id)customFieldEditorForObject:(id)obj;
 
 @end
