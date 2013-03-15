@@ -371,7 +371,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Updates internal state based in incoming_ack.sent_info
   void UpdatePacketInformationSentByPeer(const QuicAckFrame& incoming_ack);
 
-  QuicConnectionHelperInterface* helper() { return helper_; }
+  QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
  private:
   friend class test::QuicConnectionPeer;
@@ -461,7 +461,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Closes any FEC groups protecting packets before |sequence_number|.
   void CloseFecGroupsBefore(QuicPacketSequenceNumber sequence_number);
 
-  QuicConnectionHelperInterface* helper_;
+  scoped_ptr<QuicConnectionHelperInterface> helper_;
   QuicFramer framer_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;

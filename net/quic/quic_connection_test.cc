@@ -263,7 +263,7 @@ class QuicConnectionTest : public ::testing::Test {
         creator_(guid_, &framer_, QuicRandom::GetInstance(), false),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
-        connection_(guid_, IPEndPoint(), helper_.get(), false),
+        connection_(guid_, IPEndPoint(), helper_, false),
         frame1_(1, false, 0, data1),
         frame2_(1, false, 3, data2),
         accept_packet_(true) {
@@ -495,7 +495,7 @@ class QuicConnectionTest : public ::testing::Test {
   TestReceiveAlgorithm* receive_algorithm_;
   MockClock clock_;
   MockRandom random_generator_;
-  scoped_ptr<TestConnectionHelper> helper_;
+  TestConnectionHelper* helper_;
   TestConnection connection_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
 

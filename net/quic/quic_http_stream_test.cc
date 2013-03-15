@@ -177,7 +177,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
     connection_->SetReceiveAlgorithm(receive_algorithm_);
-    session_.reset(new QuicClientSession(connection_, helper_, NULL,
+    session_.reset(new QuicClientSession(connection_, socket, NULL,
                                          "www.google.com", NULL));
     scoped_ptr<QuicPacket> shlo(ConstructServerHelloPacket(
         guid_, &clock_, &random_generator_, "www.google.com"));

@@ -130,16 +130,14 @@ QuicRandom* MockHelper::GetRandomGenerator() {
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                bool is_server)
-    : QuicConnection(guid, address, new MockHelper(), is_server),
-      helper_(helper()) {
+    : QuicConnection(guid, address, new MockHelper(), is_server) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                bool is_server)
-    : QuicConnection(guid, address, helper, is_server),
-      helper_(helper) {
+    : QuicConnection(guid, address, helper, is_server) {
 }
 
 MockConnection::~MockConnection() {

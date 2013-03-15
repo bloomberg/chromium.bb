@@ -100,16 +100,16 @@ class QuicConnectionHelperTest : public ::testing::Test {
     socket_data_.reset(new StaticSocketDataProvider(NULL, 0, mock_writes_.get(),
                                                     writes_.size()));
 
-    MockUDPClientSocket* socket =
-        new MockUDPClientSocket(socket_data_.get(), net_log_.net_log());
-    socket->Connect(IPEndPoint());
+    socket_.reset(new MockUDPClientSocket(socket_data_.get(),
+                                          net_log_.net_log()));
+    socket_->Connect(IPEndPoint());
     runner_ = new TestTaskRunner(&clock_);
-    helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
-                                           &random_generator_, socket));
+    helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
+                                       &random_generator_, socket_.get());
     send_algorithm_ = new testing::StrictMock<MockSendAlgorithm>();
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
-    connection_.reset(new TestConnection(guid_, IPEndPoint(), helper_.get()));
+    connection_.reset(new TestConnection(guid_, IPEndPoint(), helper_));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
   }
@@ -173,7 +173,8 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
   testing::StrictMock<MockSendAlgorithm>* send_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
-  scoped_ptr<QuicConnectionHelper> helper_;
+  QuicConnectionHelper* helper_;
+  scoped_ptr<MockUDPClientSocket> socket_;
   scoped_array<MockWrite> mock_writes_;
   MockClock clock_;
   MockRandom random_generator_;

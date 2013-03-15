@@ -17,15 +17,15 @@
 namespace net {
 
 QuicClientSession::QuicClientSession(QuicConnection* connection,
-                                     QuicConnectionHelper* helper,
+                                     DatagramClientSocket* socket,
                                      QuicStreamFactory* stream_factory,
                                      const string& server_hostname,
                                      NetLog* net_log)
     : QuicSession(connection, false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(crypto_stream_(this, server_hostname)),
-      helper_(helper),
       stream_factory_(stream_factory),
+      socket_(socket),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
       read_pending_(false),
       num_total_streams_(0),
@@ -109,7 +109,7 @@ void QuicClientSession::StartReading() {
     return;
   }
   read_pending_ = true;
-  int rv = helper_->Read(read_buffer_, read_buffer_->size(),
+  int rv = socket_->Read(read_buffer_, read_buffer_->size(),
                          base::Bind(&QuicClientSession::OnReadComplete,
                                     weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING) {
@@ -158,8 +158,8 @@ void QuicClientSession::OnReadComplete(int result) {
     QuicEncryptedPacket packet(buffer->data(), result);
     IPEndPoint local_address;
     IPEndPoint peer_address;
-    helper_->GetLocalAddress(&local_address);
-    helper_->GetPeerAddress(&peer_address);
+    socket_->GetLocalAddress(&local_address);
+    socket_->GetPeerAddress(&peer_address);
     // ProcessUdpPacket might result in |this| being deleted, so we
     // use a weak pointer to be safe.
     connection()->ProcessUdpPacket(local_address, peer_address, packet);

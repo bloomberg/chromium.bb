@@ -252,7 +252,6 @@ class MockConnection : public QuicConnection {
   }
 
  private:
-  scoped_ptr<QuicConnectionHelperInterface> helper_;
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
 };
 

@@ -21,6 +21,7 @@
 
 namespace net {
 
+class DatagramClientSocket;
 class QuicConnectionHelper;
 class QuicStreamFactory;
 
@@ -30,7 +31,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // not |stream_factory|, which must outlive this session.
   // TODO(rch): decouple the factory from the session via a Delegate interface.
   QuicClientSession(QuicConnection* connection,
-                    QuicConnectionHelper* helper,
+                    DatagramClientSocket* socket,
                     QuicStreamFactory* stream_factory,
                     const std::string& server_hostname,
                     NetLog* net_log);
@@ -68,8 +69,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
   QuicCryptoClientStream crypto_stream_;
-  scoped_ptr<QuicConnectionHelper> helper_;
   QuicStreamFactory* stream_factory_;
+  scoped_ptr<DatagramClientSocket> socket_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
   bool read_pending_;
   CompletionCallback callback_;
