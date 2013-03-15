@@ -9,6 +9,8 @@ import android.database.AbstractCursor;
 import android.database.CursorWindow;
 import android.util.Log;
 
+import org.chromium.base.CalledByNative;
+
 import java.sql.Types;
 
 /**
@@ -31,8 +33,13 @@ public class SQLiteCursor extends AbstractCursor {
     private final Object mMoveLock = new Object();
     private final Object mGetBlobLock = new Object();
 
-    SQLiteCursor(int nativeSQLiteCursor) {
+    private SQLiteCursor(int nativeSQLiteCursor) {
         mNativeSQLiteCursor = nativeSQLiteCursor;
+    }
+
+    @CalledByNative
+    private static SQLiteCursor create(int nativeSQLiteCursor) {
+        return new SQLiteCursor(nativeSQLiteCursor);
     }
 
     @Override

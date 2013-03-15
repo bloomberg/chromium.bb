@@ -15,19 +15,8 @@
 #include "media/base/android/cookie_getter.h"
 #include "media/base/android/media_player_bridge_manager.h"
 
-using base::android::AttachCurrentThread;
-using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::GetClass;
-using base::android::JavaRef;
-using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
-
-// These constants are from the android source tree and need to be kept in
-// sync with android/media/MediaMetadata.java.
-static const jint kPauseAvailable = 1;
-static const jint kSeekBackwardAvailable = 2;
-static const jint kSeekForwardAvailable = 3;
 
 // Time update happens every 250ms.
 static const int kTimeUpdateInterval = 250;
@@ -90,7 +79,7 @@ MediaPlayerBridge::~MediaPlayerBridge() {
 }
 
 void MediaPlayerBridge::InitializePlayer() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
   j_media_player_.Reset(JNI_MediaPlayer::Java_MediaPlayer_Constructor(env));
@@ -105,7 +94,7 @@ void MediaPlayerBridge::SetVideoSurface(jobject surface) {
   if (j_media_player_.is_null() && surface != NULL)
     Prepare();
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
   JNI_MediaPlayer::Java_MediaPlayer_setSurface(
@@ -130,7 +119,7 @@ void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
   if (j_media_player_.is_null())
     return;
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
   // Create a Java String for the URL.
@@ -180,7 +169,7 @@ bool MediaPlayerBridge::IsPlaying() {
   if (!prepared_)
     return pending_play_;
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   jboolean result = JNI_MediaPlayer::Java_MediaPlayer_isPlaying(
       env, j_media_player_.obj());
@@ -190,7 +179,7 @@ bool MediaPlayerBridge::IsPlaying() {
 int MediaPlayerBridge::GetVideoWidth() {
   if (!prepared_)
     return width_;
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   return JNI_MediaPlayer::Java_MediaPlayer_getVideoWidth(
       env, j_media_player_.obj());
 }
@@ -198,7 +187,7 @@ int MediaPlayerBridge::GetVideoWidth() {
 int MediaPlayerBridge::GetVideoHeight() {
   if (!prepared_)
     return height_;
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   return JNI_MediaPlayer::Java_MediaPlayer_getVideoHeight(
       env, j_media_player_.obj());
 }
@@ -216,7 +205,7 @@ void MediaPlayerBridge::SeekTo(base::TimeDelta time) {
 base::TimeDelta MediaPlayerBridge::GetCurrentTime() {
   if (!prepared_)
     return pending_seek_;
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   return base::TimeDelta::FromMilliseconds(
       JNI_MediaPlayer::Java_MediaPlayer_getCurrentPosition(
           env, j_media_player_.obj()));
@@ -225,7 +214,7 @@ base::TimeDelta MediaPlayerBridge::GetCurrentTime() {
 base::TimeDelta MediaPlayerBridge::GetDuration() {
   if (!prepared_)
     return duration_;
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   return base::TimeDelta::FromMilliseconds(
       JNI_MediaPlayer::Java_MediaPlayer_getDuration(
           env, j_media_player_.obj()));
@@ -244,7 +233,7 @@ void MediaPlayerBridge::Release() {
   pending_play_ = false;
   SetVideoSurface(NULL);
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   JNI_MediaPlayer::Java_MediaPlayer_release(env, j_media_player_.obj());
   j_media_player_.Reset();
 
@@ -255,7 +244,7 @@ void MediaPlayerBridge::SetVolume(float left_volume, float right_volume) {
   if (j_media_player_.is_null())
     return;
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   JNI_MediaPlayer::Java_MediaPlayer_setVolume(
       env, j_media_player_.obj(), left_volume, right_volume);
@@ -325,41 +314,20 @@ void MediaPlayerBridge::OnMediaPrepared() {
 }
 
 void MediaPlayerBridge::GetMetadata() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  ScopedJavaLocalRef<jclass> media_player_class(
-      GetClass(env, "android/media/MediaPlayer"));
-  jmethodID method = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, media_player_class.obj(), "getMetadata",
-      "(ZZ)Landroid/media/Metadata;");
-  ScopedJavaLocalRef<jobject> j_metadata(
-      env, env->CallObjectMethod(
-          j_media_player_.obj(), method, JNI_FALSE, JNI_FALSE));
-  CheckException(env);
-  if (j_metadata.is_null())
-    return;
-
-  ScopedJavaLocalRef<jclass> metadata_class(
-      GetClass(env, "android/media/Metadata"));
-  jmethodID get_boolean = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, metadata_class.obj(), "getBoolean", "(I)Z");
-  can_pause_ = env->CallBooleanMethod(j_metadata.obj(),
-                                      get_boolean,
-                                      kPauseAvailable);
-  CheckException(env);
-  can_seek_forward_ = env->CallBooleanMethod(j_metadata.obj(),
-                                             get_boolean,
-                                             kSeekBackwardAvailable);
-  CheckException(env);
-  can_seek_backward_ = env->CallBooleanMethod(j_metadata.obj(),
-                                              get_boolean,
-                                              kSeekForwardAvailable);
-  CheckException(env);
+  ScopedJavaLocalRef<jobject> allowedOperations =
+      Java_MediaPlayerBridge_getAllowedOperations(env, j_media_player_.obj());
+  can_pause_ = Java_AllowedOperations_canPause(env, allowedOperations.obj());
+  can_seek_forward_ = Java_AllowedOperations_canSeekForward(
+      env, allowedOperations.obj());
+  can_seek_backward_ = Java_AllowedOperations_canSeekBackward(
+      env, allowedOperations.obj());
 }
 
 void MediaPlayerBridge::StartInternal() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   JNI_MediaPlayer::Java_MediaPlayer_start(env, j_media_player_.obj());
   if (!time_update_timer_.IsRunning()) {
     time_update_timer_.Start(
@@ -370,13 +338,13 @@ void MediaPlayerBridge::StartInternal() {
 }
 
 void MediaPlayerBridge::PauseInternal() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   JNI_MediaPlayer::Java_MediaPlayer_pause(env, j_media_player_.obj());
   time_update_timer_.Stop();
 }
 
 void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
   int time_msec = static_cast<int>(time.InMilliseconds());
