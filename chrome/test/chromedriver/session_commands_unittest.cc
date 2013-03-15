@@ -8,11 +8,11 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/fake_session_accessor.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/session_map.h"
-#include "chrome/test/chromedriver/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -14,10 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
-#include "chrome/test/chromedriver/version.h"
 #include "third_party/mongoose/mongoose.h"
 
 namespace {

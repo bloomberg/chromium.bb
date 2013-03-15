@@ -9,17 +9,17 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome.h"
-#include "chrome/test/chromedriver/chrome_android_impl.h"
-#include "chrome/test/chromedriver/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
+#include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
+#include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_map.h"
-#include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/util.h"
-#include "chrome/test/chromedriver/version.h"
-#include "chrome/test/chromedriver/web_view.h"
 
 Status ExecuteGetStatus(
     const base::DictionaryValue& params,

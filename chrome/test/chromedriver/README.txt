@@ -37,6 +37,30 @@ ChromeDriver is also available as a standalone server executable which
 communicates via the WebDriver JSON wire protocol. This can be used with the
 open source WebDriver client libraries.
 
+=====Code structure=====
+Code under the 'chrome' subdirectory is intended to be unaware of WebDriver and
+serve as a basic C++ interface for controlling Chrome remotely via DevTools.
+As such, it should not have any WebDriver-related dependencies.
+
+1) chrome/test/chromedriver
+Implements chromedriver commands.
+
+2) chrome/test/chromedriver/chrome
+Code to deal with chrome specific stuff, like starting Chrome on different OS
+platforms, controlling Chrome via DevTools, handling events from DevTools, etc.
+
+3) chrome/test/chromedriver/js
+Javascript helper scripts.
+
+4) chrome/test/chromedriver/net
+Code to deal with network communication, such as connection to DevTools.
+
+5) chrome/test/chromedriver/server
+Code for the chromedriver server.
+
+6) chrome/test/chromedriver/third_party
+Third party libraries used by chromedriver.
+
 =====Testing=====
 There are 4 test suites for verifying ChromeDriver's correctness:
 
@@ -61,6 +85,6 @@ See http://src.chromium.org/viewvc/chrome/trunk/deps/third_party/webdriver
 
 =====Contributing=====
 Find an open issue and submit a patch for review by an individual listed in
-the OWNERS file in this directory. Issues are tracked in chromium's issue
-tracker with Feature=WebDriver:
-    https://code.google.com/p/chromium/issues/list?q=feature%3Dwebdriver
+the OWNERS file in this directory. Issues are tracked in chromedriver's issue
+tracker:
+    https://code.google.com/p/chromedriver/issues/list

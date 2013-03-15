@@ -12,11 +12,11 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
-#include "chrome/test/chromedriver/chrome.h"
+#include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_map.h"
-#include "chrome/test/chromedriver/status.h"
-#include "chrome/test/chromedriver/web_view.h"
 
 namespace {
 

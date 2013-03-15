@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
-#include "chrome/test/chromedriver/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(CommandExecutorImplTest, UnknownCommand) {

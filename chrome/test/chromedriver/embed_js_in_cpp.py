@@ -37,7 +37,7 @@ def main():
         contents, func_name)
     global_string_map[script_name] = script
 
-  cpp_source.WriteSource('js', 'chrome/test/chromedriver',
+  cpp_source.WriteSource('js', 'chrome/test/chromedriver/chrome',
                          options.directory, global_string_map)
 
 

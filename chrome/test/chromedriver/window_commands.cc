@@ -13,14 +13,14 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
-#include "chrome/test/chromedriver/chrome.h"
+#include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/js.h"
+#include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/ui_events.h"
+#include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/element_util.h"
-#include "chrome/test/chromedriver/js.h"
 #include "chrome/test/chromedriver/session.h"
-#include "chrome/test/chromedriver/status.h"
-#include "chrome/test/chromedriver/ui_events.h"
 #include "chrome/test/chromedriver/util.h"
-#include "chrome/test/chromedriver/web_view.h"
 
 namespace {
 

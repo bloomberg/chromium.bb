@@ -10,10 +10,10 @@
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_executor.h"
 #include "chrome/test/chromedriver/command_names.h"
 #include "chrome/test/chromedriver/server/http_response.h"
-#include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/util.h"
 
 namespace {

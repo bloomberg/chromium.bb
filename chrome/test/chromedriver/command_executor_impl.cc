@@ -11,6 +11,8 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/command_names.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/element_commands.h"
@@ -18,8 +20,6 @@
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/session_map.h"
-#include "chrome/test/chromedriver/status.h"
-#include "chrome/test/chromedriver/version.h"
 #include "chrome/test/chromedriver/window_commands.h"
 
 #if defined(OS_MACOSX)

@@ -9,7 +9,7 @@
 #include <cctype>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/test/chromedriver/ui_events.h"
+#include "chrome/test/chromedriver/chrome/ui_events.h"
 
 std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
   UINT scan_code = ::MapVirtualKeyW(key_code, MAPVK_VK_TO_VSC);

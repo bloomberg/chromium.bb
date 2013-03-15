@@ -8,10 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/stub_chrome.h"
+#include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/session.h"
-#include "chrome/test/chromedriver/status.h"
-#include "chrome/test/chromedriver/stub_chrome.h"
-#include "chrome/test/chromedriver/stub_web_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SessionAccessorTest, LocksSession) {
