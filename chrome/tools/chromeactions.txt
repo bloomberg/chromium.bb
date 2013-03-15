@@ -499,6 +499,7 @@
 0xb8890ced118a58f6	InsertText
 0x1342e1e52f335f69	InsertUnorderedList
 0xb7c371f7dd19c6fd	InstallSite
+0x9ee757dac968cead	InstantExtended.MostVisitedClicked
 0x3545f6127f5688ab	InstantExtended.ShowNTP
 0x67ae87c0c5a6f55d	InstantExtended.ShowSRP
 0x1d874710ccdcd46b	Italic

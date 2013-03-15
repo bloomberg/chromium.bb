@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/escape.h"
@@ -1194,6 +1195,11 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
     return;
   if (overlay_)
     HideOverlay();
+
+  if (transition == content::PAGE_TRANSITION_AUTO_BOOKMARK) {
+    content::RecordAction(
+        content::UserMetricsAction("InstantExtended.MostVisitedClicked"));
+  }
   browser_->OpenURL(url, transition, disposition);
 }
 

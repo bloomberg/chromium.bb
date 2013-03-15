@@ -755,6 +755,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateNewTabPage(
     destination_url = MostVisitedItemIDToURL(
         SearchBox::Get(render_view)->GetMostVisitedItems(),
         args[0]->Uint32Value());
+    transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
   } else {
     destination_url = GURL(V8ValueToUTF16(args[0]));
   }
