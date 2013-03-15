@@ -454,9 +454,10 @@ def process_variables(cwd, variables, relative_base_dir):
   for i in PATH_VARIABLES:
     if i not in variables:
       continue
+    variable = variables[i].strip()
     # Variables could contain / or \ on windows. Always normalize to
     # os.path.sep.
-    variable = variables[i].replace('/', os.path.sep)
+    variable = variable.replace('/', os.path.sep)
     variable = os.path.join(cwd, variable)
     variable = os.path.normpath(variable)
     variable = trace_inputs.get_native_path_case(variable)
