@@ -431,6 +431,12 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 }
 
 void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
+  // Finish animations being handled by cc_layer_.
+  if (animator_) {
+    animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
+    animator_->StopAnimatingProperty(LayerAnimationElement::OPACITY);
+  }
+
   if (texture_layer_.get())
     texture_layer_->WillModifyTexture();
   // TODO(piman): delegated_renderer_layer_ cleanup.
@@ -459,6 +465,12 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetForceRenderSurface(force_render_surface_);
   cc_layer_->SetIsDrawable(IsDrawn());
+}
+
+void Layer::SwitchCCLayerForTest() {
+  scoped_refptr<cc::ContentLayer> new_layer = cc::ContentLayer::Create(this);
+  SwitchToLayer(new_layer);
+  content_layer_ = new_layer;
 }
 
 void Layer::SetExternalTexture(Texture* texture) {

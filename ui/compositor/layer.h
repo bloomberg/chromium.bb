@@ -316,6 +316,9 @@ class COMPOSITOR_EXPORT Layer
     return pending_threaded_animations_.size() != 0;
   }
 
+  // Triggers a call to SwitchToLayer.
+  void SwitchCCLayerForTest();
+
  private:
   // Stacks |child| above or below |other|.  Helper method for StackAbove() and
   // StackBelow().

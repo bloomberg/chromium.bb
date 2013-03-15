@@ -326,6 +326,7 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_ScaleReparent DISABLED_ScaleReparent
 #define MAYBE_NoScaleCanvas DISABLED_NoScaleCanvas
 #define MAYBE_AddRemoveThreadedAnimations DISABLED_AddRemoveThreadedAnimations
+#define MAYBE_SwitchCCLayerAnimations DISABLED_SwitchCCLayerAnimations
 #else
 #define MAYBE_Delegate Delegate
 #define MAYBE_Draw Draw
@@ -341,6 +342,7 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_ScaleReparent ScaleReparent
 #define MAYBE_NoScaleCanvas NoScaleCanvas
 #define MAYBE_AddRemoveThreadedAnimations AddRemoveThreadedAnimations
+#define MAYBE_SwitchCCLayerAnimations SwitchCCLayerAnimations
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -1356,6 +1358,28 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_AddRemoveThreadedAnimations) {
 
   l1->Add(l2.get());
   EXPECT_FALSE(l2->HasPendingThreadedAnimations());
+}
+
+// Tests that in-progress threaded animations complete when a Layer's
+// cc::Layer changes.
+TEST_F(LayerWithRealCompositorTest, MAYBE_SwitchCCLayerAnimations) {
+  scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+  scoped_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
+  GetCompositor()->SetRootLayer(root.get());
+  root->Add(l1.get());
+
+  l1->SetAnimator(LayerAnimator::CreateImplicitAnimator());
+
+  EXPECT_FLOAT_EQ(l1->opacity(), 1.0f);
+
+  // Trigger a threaded animation.
+  l1->SetOpacity(0.5f);
+
+  // Change l1's cc::Layer.
+  l1->SwitchCCLayerForTest();
+
+  // Ensure that the opacity animation completed.
+  EXPECT_FLOAT_EQ(l1->opacity(), 0.5f);
 }
 
 }  // namespace ui
