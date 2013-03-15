@@ -54,6 +54,30 @@ namespace {
 const size_t kNumMaxOutstandingPermissionRequests = 1024;
 }
 
+class BrowserPluginGuest::EmbedderRenderViewHostObserver
+    : public RenderViewHostObserver {
+ public:
+  explicit EmbedderRenderViewHostObserver(BrowserPluginGuest* guest)
+      : RenderViewHostObserver(
+          guest->embedder_web_contents()->GetRenderViewHost()),
+        browser_plugin_guest_(guest) {
+  }
+
+  virtual ~EmbedderRenderViewHostObserver() {
+  }
+
+  // RenderViewHostObserver:
+  virtual void RenderViewHostDestroyed(
+      RenderViewHost* render_view_host) OVERRIDE {
+    browser_plugin_guest_->Destroy();
+  }
+
+ private:
+  BrowserPluginGuest* browser_plugin_guest_;
+
+  DISALLOW_COPY_AND_ASSIGN(EmbedderRenderViewHostObserver);
+};
+
 BrowserPluginGuest::BrowserPluginGuest(
     int instance_id,
     WebContentsImpl* web_contents,
@@ -147,19 +171,17 @@ void BrowserPluginGuest::Initialize(
   renderer_prefs->browser_handles_all_top_level_requests = false;
 
   notification_registrar_.Add(
-      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
+      this, NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       Source<WebContents>(GetWebContents()));
 
   // Listen to embedder visibility changes so that the guest is in a 'shown'
   // state if both the embedder is visible and the BrowserPlugin is marked as
   // visible.
   notification_registrar_.Add(
-      this, content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+      this, NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       Source<WebContents>(embedder_web_contents_));
 
-  notification_registrar_.Add(
-      this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-      Source<RenderViewHost>(embedder_web_contents_->GetRenderViewHost()));
+  embedder_rvh_observer_.reset(new EmbedderRenderViewHostObserver(this));
 
   OnSetSize(instance_id_, params.auto_size_params, params.resize_guest_params);
 
@@ -223,10 +245,6 @@ void BrowserPluginGuest::Observe(int type,
       DCHECK_EQ(Source<WebContents>(source).ptr(), embedder_web_contents_);
       embedder_visible_ = *Details<bool>(details).ptr();
       UpdateVisibility();
-      break;
-    }
-    case NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
-      Destroy();
       break;
     }
     default:
@@ -900,11 +918,11 @@ void BrowserPluginGuest::OnUpdateFrameName(int frame_id,
 
 void BrowserPluginGuest::RequestMediaAccessPermission(
     WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    const MediaStreamRequest& request,
+    const MediaResponseCallback& callback) {
   if (media_requests_map_.size() >= kNumMaxOutstandingPermissionRequests) {
     // Deny the media request.
-    callback.Run(content::MediaStreamDevices());
+    callback.Run(MediaStreamDevices());
     return;
   }
   int request_id = next_permission_request_id_++;
@@ -1017,8 +1035,8 @@ void BrowserPluginGuest::OnRespondPermissionMedia(
     LOG(INFO) << "Not a valid request ID.";
     return;
   }
-  const content::MediaStreamRequest& request = media_request_iter->second.first;
-  const content::MediaResponseCallback& callback =
+  const MediaStreamRequest& request = media_request_iter->second.first;
+  const MediaResponseCallback& callback =
       media_request_iter->second.second;
 
   if (should_allow && embedder_web_contents_) {
@@ -1027,7 +1045,7 @@ void BrowserPluginGuest::OnRespondPermissionMedia(
     embedder_web_contents_->RequestMediaAccessPermission(request, callback);
   } else {
     // Deny the request.
-    callback.Run(content::MediaStreamDevices());
+    callback.Run(MediaStreamDevices());
   }
   media_requests_map_.erase(media_request_iter);
 }

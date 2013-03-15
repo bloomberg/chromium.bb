@@ -89,7 +89,6 @@ void DeveloperPrivateAPI::Observe(
   switch (type) {
     // TODO(grv): Listen to other notifications and expose them
     // as events in API.
-    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED:
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
       break;
     default:
@@ -102,9 +101,6 @@ void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
 }
 
 void DeveloperPrivateAPI::RegisterNotifications() {
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
                  content::NotificationService::AllBrowserContextsAndSources());

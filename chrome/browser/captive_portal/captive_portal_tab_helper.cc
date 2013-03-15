@@ -52,12 +52,18 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
   registrar_.Add(this,
                  content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                  content::Source<content::WebContents>(web_contents));
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-                 content::NotificationService::AllSources());
 }
 
 CaptivePortalTabHelper::~CaptivePortalTabHelper() {
+}
+
+void CaptivePortalTabHelper::RenderViewDeleted(
+    content::RenderViewHost* render_view_host) {
+  // This can happen when a cross-process navigation is aborted, either by
+  // pressing stop or by starting a new cross-process navigation that can't
+  // re-use |provisional_render_view_host_|.  May also happen on a crash.
+  if (render_view_host == provisional_render_view_host_)
+    OnLoadAborted();
 }
 
 void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
@@ -174,16 +180,6 @@ void CaptivePortalTabHelper::Observe(
           content::Details<CaptivePortalService::Results>(details).ptr();
 
       OnCaptivePortalResults(results->previous_result, results->result);
-      break;
-    }
-    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
-      content::RenderViewHost* render_view_host =
-          content::Source<content::RenderViewHost>(source).ptr();
-      // This can happen when a cross-process navigation is aborted, either by
-      // pressing stop or by starting a new cross-process navigation that can't
-      // re-use |provisional_render_view_host_|.  May also happen on a crash.
-      if (render_view_host == provisional_render_view_host_)
-        OnLoadAborted();
       break;
     }
     default:

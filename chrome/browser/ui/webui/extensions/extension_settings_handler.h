@@ -87,8 +87,9 @@ class ExtensionSettingsHandler
 
   void GetLocalizedValues(content::WebUIDataSource* source);
 
-  // content::WebContentsObserver implementation, which reloads all unpacked
-  // extensions whenever chrome://extensions is reloaded.
+  // content::WebContentsObserver implementation.
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void NavigateToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
@@ -238,7 +239,7 @@ class ExtensionSettingsHandler
   // notification.
   bool ignore_notifications_;
 
-  // The page may be refreshed in response to a RENDER_VIEW_HOST_DELETED,
+  // The page may be refreshed in response to a RenderViewHost being destroyed,
   // but the iteration over RenderViewHosts will include the host because the
   // notification is sent when it is in the process of being deleted (and before
   // it is removed from the process). Keep a pointer to it so we can exclude

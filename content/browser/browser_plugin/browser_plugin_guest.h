@@ -32,6 +32,7 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
@@ -84,7 +85,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
-    content::BrowserPluginGuest::factory_ = factory;
+    BrowserPluginGuest::factory_ = factory;
   }
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
@@ -154,8 +155,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
   virtual void RequestMediaAccessPermission(
       WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
+      const MediaStreamRequest& request,
+      const MediaResponseCallback& callback) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents();
@@ -200,11 +201,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
 
  private:
-  typedef std::pair<content::MediaStreamRequest, content::MediaResponseCallback>
+  typedef std::pair<MediaStreamRequest, MediaResponseCallback>
       MediaStreamRequestAndCallbackPair;
   typedef std::map<int, MediaStreamRequestAndCallbackPair>
       MediaStreamRequestsMap;
 
+  class EmbedderRenderViewHostObserver;
   friend class TestBrowserPluginGuest;
 
   BrowserPluginGuest(int instance_id,
@@ -349,9 +351,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   base::WeakPtrFactory<BrowserPluginGuest> weak_ptr_factory_;
 
   // Static factory instance (always NULL for non-test).
-  static content::BrowserPluginHostFactory* factory_;
+  static BrowserPluginHostFactory* factory_;
 
   NotificationRegistrar notification_registrar_;
+  scoped_ptr<EmbedderRenderViewHostObserver> embedder_rvh_observer_;
   WebContentsImpl* embedder_web_contents_;
   typedef std::map<int, GeolocationCallback> GeolocationRequestsMap;
   GeolocationRequestsMap geolocation_request_callback_map_;

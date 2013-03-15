@@ -51,8 +51,9 @@ class WebNavigationTabObserver
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-
   // content::WebContentsObserver implementation.
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(

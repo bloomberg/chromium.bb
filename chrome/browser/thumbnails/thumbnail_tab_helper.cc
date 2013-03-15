@@ -153,54 +153,37 @@ void ThumbnailTabHelper::Observe(int type,
         WidgetHidden(content::Source<RenderWidgetHost>(source).ptr());
       break;
 
-    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED:
-      RenderViewHostDeleted(content::Source<RenderViewHost>(source).ptr());
-      break;
-
     default:
       NOTREACHED() << "Unexpected notification type: " << type;
   }
 }
 
-void ThumbnailTabHelper::RenderViewHostCreated(
-    content::RenderViewHost* renderer) {
-  // NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED is really a new
-  // RenderView, not RenderViewHost, and there is no good way to get
-  // notifications of RenderViewHosts. So just be tolerant of re-registrations.
+void ThumbnailTabHelper::RenderViewDeleted(
+    content::RenderViewHost* render_view_host) {
+  g_browser_process->GetRenderWidgetSnapshotTaker()->CancelSnapshot(
+      render_view_host);
+
   bool registered = registrar_.IsRegistered(
       this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(renderer));
-  if (!registered) {
-    registrar_.Add(
+      content::Source<RenderWidgetHost>(render_view_host));
+  if (registered) {
+    registrar_.Remove(
         this,
         content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        content::Source<RenderWidgetHost>(renderer));
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-        content::Source<RenderViewHost>(renderer));
+        content::Source<RenderWidgetHost>(render_view_host));
   }
 }
 
-void ThumbnailTabHelper::WidgetHidden(RenderWidgetHost* widget) {
-  if (!enabled_)
-    return;
-  UpdateThumbnailIfNecessary(web_contents());
+void ThumbnailTabHelper::DidStartLoading(
+    content::RenderViewHost* render_view_host) {
+  load_interrupted_ = false;
 }
 
-void ThumbnailTabHelper::RenderViewHostDeleted(
-    content::RenderViewHost* renderer) {
-  g_browser_process->GetRenderWidgetSnapshotTaker()->CancelSnapshot(renderer);
-
-  registrar_.Remove(
-      this,
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(renderer));
-  registrar_.Remove(
-      this,
-      content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-      content::Source<RenderViewHost>(renderer));
+void ThumbnailTabHelper::StopNavigation() {
+  // This function gets called when the page loading is interrupted by the
+  // stop button.
+  load_interrupted_ = true;
 }
 
 void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
@@ -237,13 +220,26 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
   AsyncProcessThumbnail(web_contents, context, algorithm);
 }
 
-void ThumbnailTabHelper::DidStartLoading(
-    content::RenderViewHost* render_view_host) {
-  load_interrupted_ = false;
+void ThumbnailTabHelper::RenderViewHostCreated(
+    content::RenderViewHost* renderer) {
+  // NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED is really a new
+  // RenderView, not RenderViewHost, and there is no good way to get
+  // notifications of RenderViewHosts. So just be tolerant of re-registrations.
+  bool registered = registrar_.IsRegistered(
+      this,
+      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      content::Source<RenderWidgetHost>(renderer));
+  if (!registered) {
+    registrar_.Add(
+        this,
+        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+        content::Source<RenderWidgetHost>(renderer));
+  }
 }
 
-void ThumbnailTabHelper::StopNavigation() {
-  // This function gets called when the page loading is interrupted by the
-  // stop button.
-  load_interrupted_ = true;
+void ThumbnailTabHelper::WidgetHidden(RenderWidgetHost* widget) {
+  if (!enabled_)
+    return;
+  UpdateThumbnailIfNecessary(web_contents());
 }
+

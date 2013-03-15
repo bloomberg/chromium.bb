@@ -40,6 +40,7 @@ class ExtensionRendererState {
       int render_process_host_id, int routing_id, int* tab_id, int* window_id);
 
  private:
+  class RenderViewHostObserver;
   class TabObserver;
   friend class TabObserver;
   friend struct DefaultSingletonTraits<ExtensionRendererState>;

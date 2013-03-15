@@ -210,10 +210,6 @@ enum NotificationType {
   // the details unused.
   NOTIFICATION_RENDER_VIEW_HOST_CREATED,
 
-  // Sent from ~RenderViewHost. The source is the RenderViewHost, the details
-  // unused.
-  NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-
   // Sent from RenderViewHost::ClosePage.  The hosted RenderView has
   // processed the onbeforeunload handler and is about to be sent a
   // ViewMsg_ClosePage message to complete the tear-down process.  The source

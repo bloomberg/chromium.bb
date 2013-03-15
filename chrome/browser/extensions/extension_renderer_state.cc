@@ -17,12 +17,49 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::RenderProcessHost;
 using content::RenderViewHost;
 using content::WebContents;
+
+//
+// ExtensionRendererState::RenderViewHostObserver
+//
+
+class ExtensionRendererState::RenderViewHostObserver
+    : public content::RenderViewHostObserver {
+ public:
+  explicit RenderViewHostObserver(content::RenderViewHost* host)
+      : content::RenderViewHostObserver(host) {
+  }
+
+  virtual void RenderViewHostDestroyed(content::RenderViewHost* host) OVERRIDE {
+    if (host->GetProcess()->IsGuest()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(
+              &ExtensionRendererState::RemoveWebView,
+              base::Unretained(ExtensionRendererState::GetInstance()),
+              host->GetProcess()->GetID(),
+              host->GetRoutingID()));
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(
+              &ExtensionRendererState::ClearTabAndWindowId,
+              base::Unretained(ExtensionRendererState::GetInstance()),
+              host->GetProcess()->GetID(), host->GetRoutingID()));
+    }
+
+    delete this;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostObserver);
+};
 
 //
 // ExtensionRendererState::TabObserver
@@ -53,8 +90,6 @@ ExtensionRendererState::TabObserver::TabObserver() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -87,6 +122,10 @@ void ExtensionRendererState::TabObserver::Observe(
               host->GetProcess()->GetID(), host->GetRoutingID(),
               session_tab_helper->session_id().id(),
               session_tab_helper->window_id().id()));
+
+      // The observer deletes itself.
+      new ExtensionRendererState::RenderViewHostObserver(host);
+
       break;
     }
     case content::NOTIFICATION_WEB_CONTENTS_CONNECTED: {
@@ -148,26 +187,6 @@ void ExtensionRendererState::TabObserver::Observe(
               host->GetProcess()->GetID(), host->GetRoutingID(),
               session_tab_helper->session_id().id(),
               session_tab_helper->window_id().id()));
-      break;
-    }
-    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
-      RenderViewHost* host = content::Source<RenderViewHost>(source).ptr();
-      if (host->GetProcess()->IsGuest()) {
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(
-                &ExtensionRendererState::RemoveWebView,
-                base::Unretained(ExtensionRendererState::GetInstance()),
-                host->GetProcess()->GetID(),
-                host->GetRoutingID()));
-        return;
-      }
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::ClearTabAndWindowId,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              host->GetProcess()->GetID(), host->GetRoutingID()));
       break;
     }
     default:

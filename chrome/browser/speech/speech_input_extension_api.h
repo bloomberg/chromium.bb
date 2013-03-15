@@ -7,6 +7,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 // Handles asynchronous operations such as starting or stopping speech
 // recognition in the framework of the extension API state machine.

@@ -132,10 +132,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
       // For interrupted provisional cross-process navigations, the
       // RenderViewHost is destroyed without sending a DidFailProvisionalLoad
       // notification.
-      tab_helper().Observe(
-          content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-          content::Source<content::RenderViewHost>(render_view_host),
-          content::NotificationService::NoDetails());
+      tab_helper().RenderViewDeleted(render_view_host);
     }
 
     // Make sure that above call resulted in abort, for tests that continue
@@ -166,10 +163,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
       // For interrupted provisional cross-process navigations, the
       // RenderViewHost is destroyed without sending a DidFailProvisionalLoad
       // notification.
-      tab_helper().Observe(
-          content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-          content::Source<content::RenderViewHost>(render_view_host),
-          content::NotificationService::NoDetails());
+      tab_helper().RenderViewDeleted(render_view_host);
     }
 
     // Make sure that above call resulted in abort, for tests that continue

@@ -170,7 +170,9 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   void UnregisterRenderViewHost(content::RenderViewHost* render_view_host);
 
   // Overridden from content::WebContentsObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
       bool is_main_frame,

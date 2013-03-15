@@ -253,9 +253,6 @@ WebNavigationTabObserver::WebNavigationTabObserver(
   registrar_.Add(this,
                  content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                  content::Source<content::WebContents>(web_contents));
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-                 content::NotificationService::AllSources());
 }
 
 WebNavigationTabObserver::~WebNavigationTabObserver() {}
@@ -315,28 +312,26 @@ void WebNavigationTabObserver::Observe(
       break;
     }
 
-    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
-      content::RenderViewHost* render_view_host =
-          content::Source<content::RenderViewHost>(source).ptr();
-      if (render_view_host == render_view_host_) {
-        render_view_host_ = NULL;
-        if (pending_render_view_host_) {
-          render_view_host_ = pending_render_view_host_;
-          pending_render_view_host_ = NULL;
-        }
-      } else if (render_view_host == pending_render_view_host_) {
-        pending_render_view_host_ = NULL;
-      } else {
-        return;
-      }
-      SendErrorEvents(
-          web_contents(), render_view_host, FrameNavigationState::FrameID());
-      break;
-    }
-
     default:
       NOTREACHED();
   }
+}
+
+void WebNavigationTabObserver::RenderViewDeleted(
+    content::RenderViewHost* render_view_host) {
+  if (render_view_host == render_view_host_) {
+    render_view_host_ = NULL;
+    if (pending_render_view_host_) {
+      render_view_host_ = pending_render_view_host_;
+      pending_render_view_host_ = NULL;
+    }
+  } else if (render_view_host == pending_render_view_host_) {
+    pending_render_view_host_ = NULL;
+  } else {
+    return;
+  }
+  SendErrorEvents(
+      web_contents(), render_view_host, FrameNavigationState::FrameID());
 }
 
 void WebNavigationTabObserver::AboutToNavigateRenderView(

@@ -65,6 +65,9 @@ class CaptivePortalTabHelper
   virtual ~CaptivePortalTabHelper();
 
   // content::WebContentsObserver:
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       int64 parent_frame_id,

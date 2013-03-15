@@ -39,6 +39,8 @@ class ThumbnailTabHelper
                        const content::NotificationDetails& details) OVERRIDE;
 
   // content::WebContentsObserver overrides.
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void StopNavigation() OVERRIDE;
@@ -51,9 +53,6 @@ class ThumbnailTabHelper
 
   // Indicates that the given widget has changed is visibility.
   void WidgetHidden(content::RenderWidgetHost* widget);
-
-  // Called when the given render view host was deleted.
-  void RenderViewHostDeleted(content::RenderViewHost* renderer);
 
   bool enabled_;
 
