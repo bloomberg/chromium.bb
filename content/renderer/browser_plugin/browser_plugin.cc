@@ -533,12 +533,6 @@ void BrowserPlugin::OnRequestPermission(
     BrowserPluginPermissionType permission_type,
     int request_id,
     const base::DictionaryValue& request_info) {
-  if (!HasEventListeners(browser_plugin::kEventRequestPermission)) {
-    // Automatically deny the request if there are no event listeners for
-    // permissionrequest.
-    RespondPermission(permission_type, request_id, false /* allow */);
-    return;
-  }
   AddPermissionRequestToMap(request_id, permission_type);
 
   std::map<std::string, base::Value*> props;
@@ -579,26 +573,6 @@ void BrowserPlugin::AddPermissionRequestToMap(int request_id,
     BrowserPluginPermissionType type) {
   DCHECK(!pending_permission_requests_.count(request_id));
   pending_permission_requests_.insert(std::make_pair(request_id, type));
-}
-
-bool BrowserPlugin::HasEventListeners(const std::string& event_name) {
-  if (!container())
-    return false;
-
-  WebKit::WebNode node = container()->element();
-  // Escape the <webview> shim if this BrowserPlugin has one.
-  WebKit::WebElement shim = node.shadowHost();
-  if (!shim.isNull())
-    node = shim;
-
-  const WebKit::WebString& web_event_name =
-      WebKit::WebString::fromUTF8(event_name);
-  while (!node.isNull()) {
-    if (node.hasEventListeners(web_event_name))
-      return true;
-    node = node.parentNode();
-  }
-  return false;
 }
 
 void BrowserPlugin::OnUpdateRect(

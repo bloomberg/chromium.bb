@@ -268,8 +268,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Informs the BrowserPlugin that guest has changed its size in autosize mode.
   void SizeChangedDueToAutoSize(const gfx::Size& old_view_size);
 
-  bool HasEventListeners(const std::string& event_name);
-
   // Indicates whether a damage buffer was used by the guest process for the
   // provided |params|.
   static bool UsesDamageBuffer(
