@@ -103,6 +103,7 @@ void ShellWindowLauncherController::OnShellWindowIconChanged(
   if (iter == app_controller_map_.end())
     return;
   ShellWindowLauncherItemController* controller = iter->second;
+  controller->set_image_set_by_controller(true);
   owner_->SetLauncherItemImage(controller->launcher_id(),
                                shell_window->app_icon().AsImageSkia());
 }

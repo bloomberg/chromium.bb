@@ -19,7 +19,8 @@ LauncherItemController::LauncherItemController(
       app_id_(app_id),
       launcher_id_(0),
       launcher_controller_(launcher_controller),
-      locked_(0) {
+      locked_(0),
+      image_set_by_controller_(false) {
 }
 
 LauncherItemController::~LauncherItemController() {

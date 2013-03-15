@@ -58,6 +58,11 @@ class LauncherItemController {
   }
   bool locked() { return locked_ > 0; }
 
+  bool image_set_by_controller() const { return image_set_by_controller_; }
+  void set_image_set_by_controller(bool image_set_by_controller) {
+    image_set_by_controller_ = image_set_by_controller;
+  }
+
   // Returns the title for this item.
   virtual string16 GetTitle() = 0;
 
@@ -114,6 +119,9 @@ class LauncherItemController {
   // the launcher (0) or not (>0). It is being used for windowed V1
   // applications.
   int locked_;
+
+  // Set to true if the launcher item image has been set by the controller.
+  bool image_set_by_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherItemController);
 };
