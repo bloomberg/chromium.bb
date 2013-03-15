@@ -31,6 +31,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -816,10 +817,10 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
        part.menu->GetRootMenuItem() != state_.item->GetRootMenuItem())) {
     // Mouse wasn't pressed over any menu, or the active menu, cancel.
 
+#if defined(OS_WIN) && !defined(USE_AURA)
     // We're going to close and we own the mouse capture. We need to repost the
     // mouse down, otherwise the window the user clicked on won't get the
     // event.
-#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(USE_X11)
     RepostEvent(source, event);
 #endif
 
@@ -836,6 +837,15 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
         exit_type = EXIT_OUTERMOST;
     }
     Cancel(exit_type);
+
+#if defined(USE_AURA)
+    // We're going to exit the menu and want to repost the event so that is
+    // is handled normally after the context menu has exited. We call
+    // RepostEvent after Cancel so that mouse capture has been released so
+    // that finding the event target is unaffected by the current capture.
+    RepostEvent(source, event);
+#endif
+
     return;
   }
 
@@ -2075,25 +2085,13 @@ void MenuController::RepostEvent(SubmenuView* source,
     }
   }
 }
-#elif defined(USE_X11)
+#elif defined(USE_AURA)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const ui::LocatedEvent& event) {
-  if (!state_.item) {
-    // We some times get an event after closing all the menus. Ignore it.
-    // Make sure the menu is in fact not visible. If the menu is visible, then
-    // we're in a bad state where we think the menu isn't visibile but it is.
-    DCHECK(!source->GetWidget()->IsVisible());
-    return;
-  }
-  if (!event.native_event())
-    return;
-  // We putback the X11 event. We set the "send_event" field in the
-  // XEvent. Otherwise a mouse click would generate a double click
-  // event. The field "send_event" is in the same place for all event
-  // types so we can use "xany" regardless of type.
-  XEvent xevent = *event.native_event();
-  xevent.xany.send_event = True;
-  XPutBackEvent(xevent.xany.display, &xevent);
+  aura::RootWindow* root_window =
+      source->GetWidget()->GetNativeWindow()->GetRootWindow();
+  DCHECK(root_window);
+  root_window->RepostEvent(event);
 }
 #endif
 

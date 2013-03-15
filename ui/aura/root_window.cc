@@ -118,7 +118,8 @@ RootWindow::RootWindow(const CreateParams& params)
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(held_mouse_event_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(held_event_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(repostable_event_factory_(this)),
       root_window_scale_(1.0f) {
   SetName("RootWindow");
   root_window_scale_ = params.initial_root_window_scale;
@@ -178,12 +179,32 @@ void RootWindow::PrepareForShutdown() {
   synthesize_mouse_move_ = false;
 }
 
+void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
+  // We allow for only one outstanding repostable event. This is used
+  // in exiting context menus.  A dropped repost request is allowed.
+  if (event.type() == ui::ET_MOUSE_PRESSED) {
+    held_repostable_event_.reset(
+        new ui::MouseEvent(
+            static_cast<const ui::MouseEvent&>(event),
+            static_cast<aura::Window*>(event.target()),
+            static_cast<aura::Window*>(this)));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RootWindow::DispatchHeldEvents,
+                   repostable_event_factory_.GetWeakPtr()));
+  } else {
+    DCHECK(event.type() == ui::ET_GESTURE_TAP_DOWN);
+    held_repostable_event_.reset();
+    // TODO(sschmitz): add similar code for gesture events.
+  }
+}
+
 RootWindowHostDelegate* RootWindow::AsRootWindowHostDelegate() {
   return this;
 }
 
 void RootWindow::SetHostSize(const gfx::Size& size_in_pixel) {
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
   gfx::Rect bounds = host_->GetBounds();
   bounds.set_size(size_in_pixel);
   host_->SetBounds(bounds);
@@ -210,7 +231,7 @@ void RootWindow::SetHostBoundsAndInsetsAndRootWindowScale(
     const gfx::Insets& insets_in_pixel,
     float root_window_scale) {
   DCHECK(!bounds_in_pixel.IsEmpty());
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
   root_window_scale_ = root_window_scale;
   // Scale the composited result if the |root_window_scale_| is specified,
   // rather than sacling each layers.
@@ -292,7 +313,7 @@ Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
 }
 
 bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
 
   Window* target = GetGestureTarget(event);
   if (target) {
@@ -400,7 +421,7 @@ void RootWindow::ToggleFullScreen() {
 
 void RootWindow::HoldMouseMoves() {
   if (!mouse_move_hold_count_)
-    held_mouse_event_factory_.InvalidateWeakPtrs();
+    held_event_factory_.InvalidateWeakPtrs();
   ++mouse_move_hold_count_;
   TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::HoldMouseMoves", this);
 }
@@ -409,15 +430,15 @@ void RootWindow::ReleaseMouseMoves() {
   --mouse_move_hold_count_;
   DCHECK_GE(mouse_move_hold_count_, 0);
   if (!mouse_move_hold_count_ && held_mouse_move_.get()) {
-    // We don't want to call DispatchHeldMouseMove directly, because this might
+    // We don't want to call DispatchHeldEvents directly, because this might
     // be called from a deep stack while another event, in which case
     // dispatching another one may not be safe/expected.
     // Instead we post a task, that we may cancel if HoldMouseMoves is called
     // again before it executes.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&RootWindow::DispatchHeldMouseMove,
-                   held_mouse_event_factory_.GetWeakPtr()));
+        base::Bind(&RootWindow::DispatchHeldEvents,
+                   held_event_factory_.GetWeakPtr()));
   }
   TRACE_EVENT_ASYNC_END0("ui", "RootWindow::HoldMouseMoves", this);
 }
@@ -822,7 +843,7 @@ void RootWindow::OnLayerAnimationAborted(
 // RootWindow, RootWindowHostDelegate implementation:
 
 bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
   if (event->key_code() == ui::VKEY_UNKNOWN)
     return false;
   client::EventClient* client = client::GetEventClient(GetRootWindow());
@@ -845,18 +866,18 @@ bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
       return true;
     } else {
       // We may have a held event for a period between the time
-      // mouse_move_hold_count_ fell to 0 and the DispatchHeldMouseMove
+      // mouse_move_hold_count_ fell to 0 and the DispatchHeldEvents
       // executes. Since we're going to dispatch the new event directly below,
       // we can reset the old one.
       held_mouse_move_.reset();
     }
   }
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
   return DispatchMouseEventImpl(event);
 }
 
 bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
 
   TransformEventForDeviceScaleFactor(event);
   SetLastMouseLocation(this, event->location());
@@ -883,7 +904,7 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
 }
 
 bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
       touch_ids_down_ |= (1 << event->touch_id());
@@ -979,7 +1000,7 @@ void RootWindow::OnHostMoved(const gfx::Point& origin) {
 }
 
 void RootWindow::OnHostResized(const gfx::Size& size) {
-  DispatchHeldMouseMove();
+  DispatchHeldEvents();
   // The compositor should have the same size as the native root window host.
   // Get the latest scale from display because it might have been changed.
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this), size);
@@ -1010,6 +1031,14 @@ bool RootWindow::DispatchMouseEventImpl(ui::MouseEvent* event) {
       mouse_pressed_handler_ : client::GetCaptureWindow(this);
   if (!target)
     target = GetEventHandlerForPoint(event->location());
+  return DispatchMouseEventToTarget(event, target);
+}
+
+bool RootWindow::DispatchMouseEventRepost(ui::MouseEvent* event) {
+  if (event->type() != ui::ET_MOUSE_PRESSED)
+    return false;
+  mouse_pressed_handler_ = NULL;
+  Window* target = GetEventHandlerForPoint(event->location());
   return DispatchMouseEventToTarget(event, target);
 }
 
@@ -1064,7 +1093,19 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
   return false;
 }
 
-void RootWindow::DispatchHeldMouseMove() {
+void RootWindow::DispatchHeldEvents() {
+  if (held_repostable_event_.get()) {
+    if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
+      ui::MouseEvent mouse_event(
+          static_cast<const ui::MouseEvent&>(*held_repostable_event_.get()));
+      held_repostable_event_.reset(); // must be reset before dispatch
+      DispatchMouseEventRepost(&mouse_event);
+    } else {
+      DCHECK(held_repostable_event_->type() == ui::ET_GESTURE_TAP_DOWN);
+      // TODO(sschmitz): add similar code for gesture events
+    }
+    held_repostable_event_.reset();
+  }
   if (held_mouse_move_.get()) {
     // If a mouse move has been synthesized, the target location is suspect,
     // so drop the held event.

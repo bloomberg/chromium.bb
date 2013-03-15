@@ -1599,6 +1599,8 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
 VIEW_TEST(BookmarkBarViewTest19, BookmarkBarViewTest19_SiblingMenu)
 
 #if !defined(OS_WIN)
+// Not ready for Win Aura. (NOTREACHED in chrome_views_delegate.cc
+// and desktop_root_window_host_win.cc.)
 
 // Verify that when clicking a mouse button outside a context menu,
 // the context menu is dismissed *and* the underlying view receives

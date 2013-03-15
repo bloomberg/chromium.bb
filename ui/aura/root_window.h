@@ -101,6 +101,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Stop listening events in preparation for shutdown.
   void PrepareForShutdown();
 
+  // Repost event for re-processing. Used when exiting context menus.
+  void RepostEvent(const ui::LocatedEvent& event);
+
   RootWindowHostDelegate* AsRootWindowHostDelegate();
 
   // Gets/sets the size of the host window.
@@ -372,8 +375,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // NOTE: because these methods dispatch events from RootWindowHost the
   // coordinates are in terms of the root.
   bool DispatchMouseEventImpl(ui::MouseEvent* event);
+  bool DispatchMouseEventRepost(ui::MouseEvent* event);
   bool DispatchMouseEventToTarget(ui::MouseEvent* event, Window* target);
-  void DispatchHeldMouseMove();
+  void DispatchHeldEvents();
 
   // Parses the switch describing the initial size for the host window and
   // returns bounds for the window.
@@ -426,9 +430,13 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // while the count is > 0.
   int mouse_move_hold_count_;
   scoped_ptr<ui::MouseEvent> held_mouse_move_;
-  // Used to schedule DispatchHeldMouseMove() when |mouse_move_hold_count_| goes
+  // Used to schedule DispatchHeldEvents() when |mouse_move_hold_count_| goes
   // to 0.
-  base::WeakPtrFactory<RootWindow> held_mouse_event_factory_;
+  base::WeakPtrFactory<RootWindow> held_event_factory_;
+
+  // Allowing for reposting of events. Used when exiting context menus.
+  scoped_ptr<ui::LocatedEvent>  held_repostable_event_;
+  base::WeakPtrFactory<RootWindow> repostable_event_factory_;
 
   scoped_ptr<ui::ViewProp> prop_;
 

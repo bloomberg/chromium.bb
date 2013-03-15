@@ -126,6 +126,17 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
   EXPECT_TRUE(delegate1->mouse_event_flags() & ui::EF_IS_NON_CLIENT);
 }
 
+TEST_F(RootWindowTest, RepostEvent) {
+  // Test RepostEvent in RootWindow. It only works for Mouse Press.
+  EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
+  gfx::Point point(10, 10);
+  ui::MouseEvent event(
+      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
+  root_window()->RepostEvent(event);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
+}
+
 // Check that we correctly track the state of the mouse buttons in response to
 // button press and release events.
 TEST_F(RootWindowTest, MouseButtonState) {
