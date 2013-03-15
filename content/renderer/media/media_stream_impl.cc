@@ -270,6 +270,10 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
     return CreateLocalAudioRenderer(extra_data->stream());
   }
 
+  webrtc::MediaStreamInterface* stream = extra_data->stream();
+  if (!stream || stream->GetAudioTracks().empty())
+    return NULL;
+
   // This is a remote media stream.
   WebRtcAudioDeviceImpl* audio_device =
       dependency_factory_->GetWebRtcAudioDevice();
