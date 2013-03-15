@@ -77,6 +77,10 @@
               'type': 'loadable_module',
               'mac_bundle': 1,
               'product_extension': 'plugin',
+              'libraries': [
+                # Copied by widevine_cdm_binaries.
+                '<(PRODUCT_DIR)/libwidevinecdm.dylib',
+              ],
               'xcode_settings': {
                 'OTHER_LDFLAGS': [
                   # Not to strip important symbols by -Wl,-dead_strip.
@@ -84,6 +88,15 @@
                   '-Wl,-exported_symbol,_PPP_InitializeModule',
                   '-Wl,-exported_symbol,_PPP_ShutdownModule'
                 ]},
+              'copies': [
+                {
+                  'destination':
+                      '<(PRODUCT_DIR)/widevinecdmadapter.plugin/Contents/MacOS/',
+                  'files': [
+                    '<(PRODUCT_DIR)/libwidevinecdm.dylib',
+                  ]
+                }
+              ]
             }],
           ],
         }],

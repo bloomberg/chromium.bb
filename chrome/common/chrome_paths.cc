@@ -367,7 +367,7 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
 #if defined(WIDEVINE_CDM_AVAILABLE)
     case chrome::FILE_WIDEVINE_CDM_PLUGIN:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
+      if (!GetInternalPluginsDirectory(&cur))
         return false;
       cur = cur.Append(kWidevineCdmPluginFileName);
       break;
