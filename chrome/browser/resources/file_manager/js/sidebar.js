@@ -95,7 +95,7 @@ DirectoryItem.prototype = {
    **/
   get entry() {
       return this.dirEntry_;
-  }
+  },
 
   /**
    * The element containing the label text and the icon.
