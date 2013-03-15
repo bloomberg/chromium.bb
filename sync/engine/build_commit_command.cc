@@ -16,10 +16,10 @@
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/directory.h"
-#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/entry.h"
+#include "sync/syncable/syncable_base_transaction.h"
 #include "sync/syncable/syncable_changes_version.h"
 #include "sync/syncable/syncable_proto_util.h"
-#include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/time.h"
 
 // TODO(vishwath): Remove this include after node positions have
@@ -40,7 +40,6 @@ using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::Id;
-using syncable::MutableEntry;
 using syncable::SPECIFICS;
 
 // static
@@ -59,9 +58,14 @@ int64 BuildCommitCommand::GetGap() {
 }
 
 BuildCommitCommand::BuildCommitCommand(
+    syncable::BaseTransaction* trans,
     const sessions::OrderedCommitSet& batch_commit_set,
-    sync_pb::ClientToServerMessage* commit_message)
-  : batch_commit_set_(batch_commit_set), commit_message_(commit_message) {
+    sync_pb::ClientToServerMessage* commit_message,
+    ExtensionsActivityMonitor::Records* extensions_activity_buffer)
+  : trans_(trans),
+    batch_commit_set_(batch_commit_set),
+    commit_message_(commit_message),
+    extensions_activity_buffer_(extensions_activity_buffer) {
 }
 
 BuildCommitCommand::~BuildCommitCommand() {}
@@ -81,10 +85,10 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
     // We will push this list of extensions activity back into the
     // ExtensionsActivityMonitor if this commit fails.  That's why we must keep
     // a copy of these records in the session.
-    monitor->GetAndClearRecords(session->mutable_extensions_activity());
+    monitor->GetAndClearRecords(extensions_activity_buffer_);
 
     const ExtensionsActivityMonitor::Records& records =
-        session->extensions_activity();
+        *extensions_activity_buffer_;
     for (ExtensionsActivityMonitor::Records::const_iterator it =
          records.begin();
          it != records.end(); ++it) {
@@ -111,7 +115,7 @@ void BuildCommitCommand::AddClientConfigParamsToMessage(
 }
 
 namespace {
-void SetEntrySpecifics(MutableEntry* meta_entry,
+void SetEntrySpecifics(Entry* meta_entry,
                        sync_pb::SyncEntity* sync_entry) {
   // Add the new style extension and the folder bit.
   sync_entry->mutable_specifics()->CopyFrom(meta_entry->Get(SPECIFICS));
@@ -126,8 +130,7 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   commit_message_->set_message_contents(sync_pb::ClientToServerMessage::COMMIT);
 
   sync_pb::CommitMessage* commit_message = commit_message_->mutable_commit();
-  commit_message->set_cache_guid(
-      session->write_transaction()->directory()->cache_guid());
+  commit_message->set_cache_guid(trans_->directory()->cache_guid());
   AddExtensionsActivityToMessage(session, commit_message);
   AddClientConfigParamsToMessage(session, commit_message);
 
@@ -143,8 +146,7 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     Id id = batch_commit_set_.GetCommitIdAt(i);
     sync_pb::SyncEntity* sync_entry = commit_message->add_entries();
     sync_entry->set_id_string(SyncableIdToProto(id));
-    MutableEntry meta_entry(session->write_transaction(),
-                            syncable::GET_BY_ID, id);
+    Entry meta_entry(trans_, syncable::GET_BY_ID, id);
     CHECK(meta_entry.good());
 
     DCHECK_NE(0UL,
@@ -173,7 +175,7 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     Id new_parent_id;
     if (meta_entry.Get(syncable::IS_DEL) &&
         !meta_entry.Get(syncable::PARENT_ID).ServerKnows()) {
-      new_parent_id = session->write_transaction()->root_id();
+      new_parent_id = trans_->root_id();
     } else {
       new_parent_id = meta_entry.Get(syncable::PARENT_ID);
     }
@@ -231,8 +233,8 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
               FindAnchorPosition(syncable::PREV_ID, meta_entry),
               FindAnchorPosition(syncable::NEXT_ID, meta_entry));
         }
-        position_block.first = InterpolatePosition(position_block.first,
-                                                   position_block.second);
+        position_block.first = BuildCommitCommand::InterpolatePosition(
+            position_block.first, position_block.second);
 
         position_map[id] = position_block;
         sync_entry->set_position_in_parent(position_block.first);
@@ -261,6 +263,7 @@ int64 BuildCommitCommand::FindAnchorPosition(syncable::IdField direction,
       GetFirstPosition() : GetLastPosition();
 }
 
+// static
 int64 BuildCommitCommand::InterpolatePosition(const int64 lo,
                                               const int64 hi) {
   DCHECK_LE(lo, hi);

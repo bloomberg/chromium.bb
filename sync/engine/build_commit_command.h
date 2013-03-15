@@ -11,6 +11,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/syncable/entry_kernel.h"
+#include "sync/util/extensions_activity_monitor.h"
 
 namespace syncer {
 
@@ -20,6 +21,7 @@ class OrderedCommitSet;
 
 namespace syncable {
 class Entry;
+class BaseTransaction;
 }
 
 // A class that contains the code used to serialize a set of sync items into a
@@ -36,8 +38,11 @@ class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
   //
   // The commit_message parameter is an output parameter which will contain the
   // fully initialized commit message once ExecuteImpl() has been called.
-  BuildCommitCommand(const sessions::OrderedCommitSet& batch_commit_set,
-                     sync_pb::ClientToServerMessage* commit_message);
+  BuildCommitCommand(
+      syncable::BaseTransaction* trans,
+      const sessions::OrderedCommitSet& batch_commit_set,
+      sync_pb::ClientToServerMessage* commit_message,
+      ExtensionsActivityMonitor::Records* extensions_activity_buffer);
   virtual ~BuildCommitCommand();
 
   // SyncerCommand implementation.
@@ -67,15 +72,20 @@ class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
                            const syncable::Entry& entry);
   // Given two values of the type returned by FindAnchorPosition,
   // compute a third value in between the two ranges.
-  int64 InterpolatePosition(int64 lo, int64 hi);
+  static int64 InterpolatePosition(int64 lo, int64 hi);
 
   DISALLOW_COPY_AND_ASSIGN(BuildCommitCommand);
+
+  // A pointer to a valid transaction not owned by this class.
+  syncable::BaseTransaction* trans_;
 
   // Input parameter; see constructor comment.
   const sessions::OrderedCommitSet& batch_commit_set_;
 
   // Output parameter; see constructor comment.
   sync_pb::ClientToServerMessage* commit_message_;
+
+  ExtensionsActivityMonitor::Records* extensions_activity_buffer_;
 };
 
 }  // namespace syncer

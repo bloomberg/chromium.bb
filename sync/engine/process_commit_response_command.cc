@@ -84,25 +84,6 @@ std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
 
 SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
-  SyncerError result = ProcessCommitResponse(session);
-  ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
-
-  // This is to be run on one model only: the bookmark model.
-  if (session->status_controller().HasBookmarkCommitActivity()) {
-    // If the commit failed, return the data to the ExtensionsActivityMonitor.
-    if (session->status_controller().
-        model_neutral_state().num_successful_bookmark_commits == 0) {
-      monitor->PutRecords(session->extensions_activity());
-    }
-    // Clear our cached data in either case.
-    session->mutable_extensions_activity()->clear();
-  }
-
-  return result;
-}
-
-SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
-    SyncSession* session) {
   syncable::Directory* dir = session->context()->directory();
   StatusController* status = session->mutable_status_controller();
   const CommitResponse& cr = commit_response_.commit();

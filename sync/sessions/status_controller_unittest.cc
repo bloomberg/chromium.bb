@@ -9,20 +9,13 @@
 namespace syncer {
 namespace sessions {
 
-class StatusControllerTest : public testing::Test {
- public:
-  virtual void SetUp() {
-    routes_[BOOKMARKS] = GROUP_UI;
-  }
- protected:
-  ModelSafeRoutingInfo routes_;
-};
+class StatusControllerTest : public testing::Test { };
 
 // This test is useful, as simple as it sounds, due to the copy-paste prone
 // nature of status_controller.cc (we have had bugs in the past where a set_foo
 // method was actually setting |bar_| instead!).
 TEST_F(StatusControllerTest, ReadYourWrites) {
-  StatusController status(routes_);
+  StatusController status;
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());
 
@@ -39,7 +32,7 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
 }
 
 TEST_F(StatusControllerTest, CountUpdates) {
-  StatusController status(routes_);
+  StatusController status;
   EXPECT_EQ(0, status.CountUpdates());
   sync_pb::ClientToServerResponse* response(status.mutable_updates_response());
   sync_pb::SyncEntity* entity1 = response->mutable_get_updates()->add_entries();
@@ -50,7 +43,7 @@ TEST_F(StatusControllerTest, CountUpdates) {
 
 // Test TotalNumConflictingItems
 TEST_F(StatusControllerTest, TotalNumConflictingItems) {
-  StatusController status(routes_);
+  StatusController status;
   EXPECT_EQ(0, status.TotalNumConflictingItems());
 
   status.increment_num_server_conflicts();
@@ -61,7 +54,7 @@ TEST_F(StatusControllerTest, TotalNumConflictingItems) {
 
 // Basic test that non group-restricted state accessors don't cause violations.
 TEST_F(StatusControllerTest, Unrestricted) {
-  StatusController status(routes_);
+  StatusController status;
   status.model_neutral_state();
   status.download_updates_succeeded();
   status.ServerSaysNothingMoreToDownload();

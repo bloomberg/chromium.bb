@@ -21,9 +21,8 @@ SyncSession::SyncSession(
     const SyncSourceInfo& source)
     : context_(context),
       source_(source),
-      write_transaction_(NULL),
       delegate_(delegate) {
-  status_controller_.reset(new StatusController(context_->routing_info()));
+  status_controller_.reset(new StatusController());
   debug_info_sources_list_.push_back(source_);
 }
 

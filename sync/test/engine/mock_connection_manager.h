@@ -174,6 +174,8 @@ class MockConnectionManager : public ServerConnectionManager {
   void SetGUClientCommand(sync_pb::ClientCommand* command);
   void SetCommitClientCommand(sync_pb::ClientCommand* command);
 
+  void SetTransientErrorId(syncable::Id);
+
   const std::vector<syncable::Id>& committed_ids() const {
     return committed_ids_;
   }
@@ -284,6 +286,10 @@ class MockConnectionManager : public ServerConnectionManager {
   // Determine if one entry in a commit should be rejected with a conflict.
   bool ShouldConflictThisCommit();
 
+  // Determine if the given item's commit request should be refused with
+  // a TRANSIENT_ERROR response.
+  bool ShouldTransientErrorThisId(syncable::Id id);
+
   // Generate a numeric position_in_parent value.  We use a global counter
   // that only decreases; this simulates new objects always being added to the
   // front of the ordering.
@@ -314,6 +320,9 @@ class MockConnectionManager : public ServerConnectionManager {
 
   // All IDs that have been committed.
   std::vector<syncable::Id> committed_ids_;
+
+  // List of IDs which should return a transient error.
+  std::vector<syncable::Id> transient_error_ids_;
 
   // Control of when/if we return conflicts.
   bool conflict_all_commits_;

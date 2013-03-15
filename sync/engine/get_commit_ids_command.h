@@ -12,7 +12,6 @@
 #include "sync/base/sync_export.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/directory.h"
 
@@ -20,6 +19,10 @@ using std::pair;
 using std::vector;
 
 namespace syncer {
+
+namespace sessions {
+class OrderedCommitSet;
+}
 
 // A class that contains the code used to search the syncable::Directory for
 // locally modified items that are ready to be committed to the server.
@@ -36,7 +39,8 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
   // set of items that are ready to commit.  Its size shall not exceed the
   // provided batch_size.  This contents of this "set" will be ordered; see the
   // comments in this class' implementation for details.
-  GetCommitIdsCommand(const size_t commit_batch_size,
+  GetCommitIdsCommand(syncable::BaseTransaction* trans,
+                      const size_t commit_batch_size,
                       sessions::OrderedCommitSet* ordered_commit_set);
   virtual ~GetCommitIdsCommand();
 
@@ -44,7 +48,7 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
   virtual SyncerError ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
   // Builds a vector of IDs that should be committed.
-  void BuildCommitIds(syncable::WriteTransaction* write_transaction,
+  void BuildCommitIds(syncable::BaseTransaction* write_transaction,
                       const ModelSafeRoutingInfo& routes,
                       const std::set<int64>& ready_unsynced_set);
 
@@ -119,12 +123,15 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
 
   bool IsCommitBatchFull() const;
 
-  void AddCreatesAndMoves(syncable::WriteTransaction* write_transaction,
+  void AddCreatesAndMoves(syncable::BaseTransaction* write_transaction,
                           const ModelSafeRoutingInfo& routes,
                           const std::set<int64>& ready_unsynced_set);
 
-  void AddDeletes(syncable::WriteTransaction* write_transaction,
+  void AddDeletes(syncable::BaseTransaction* write_transaction,
                   const std::set<int64>& ready_unsynced_set);
+
+  // A pointer to a valid transaction not owned by this class.
+  syncable::BaseTransaction* trans_;
 
   // Input parameter; see constructor comment.
   const size_t requested_commit_batch_size_;

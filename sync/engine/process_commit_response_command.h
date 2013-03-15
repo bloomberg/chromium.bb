@@ -73,9 +73,6 @@ class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
       const syncable::Id& pre_commit_id,
       std::set<syncable::Id>* deleted_folders);
 
-  // Actually does the work of execute.
-  SyncerError ProcessCommitResponse(sessions::SyncSession* session);
-
   void ProcessSuccessfulCommitResponse(
       const sync_pb::SyncEntity& committed_entry,
       const sync_pb::CommitResponse_EntryResponse& entry_response,

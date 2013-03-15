@@ -13,10 +13,9 @@
 namespace syncer {
 namespace sessions {
 
-StatusController::StatusController(const ModelSafeRoutingInfo& routes)
+StatusController::StatusController()
     : group_restriction_in_effect_(false),
-      group_restriction_(GROUP_PASSIVE),
-      routing_info_(routes) {
+      group_restriction_(GROUP_PASSIVE) {
 }
 
 StatusController::~StatusController() {}

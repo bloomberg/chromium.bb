@@ -140,20 +140,6 @@ class SyncSessionTest : public testing::Test,
   scoped_ptr<ThrottledDataTypeTracker> throttled_data_type_tracker_;
 };
 
-TEST_F(SyncSessionTest, SetWriteTransaction) {
-  TestDirectorySetterUpper dir_maker;
-  dir_maker.SetUp();
-  syncable::Directory* directory = dir_maker.directory();
-
-  scoped_ptr<SyncSession> session(MakeSession());
-  EXPECT_TRUE(NULL == session->write_transaction());
-  {
-    WriteTransaction trans(FROM_HERE, syncable::UNITTEST, directory);
-    sessions::ScopedSetSessionWriteTransaction set_trans(session.get(), &trans);
-    EXPECT_TRUE(&trans == session->write_transaction());
-  }
-}
-
 TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
   status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
 

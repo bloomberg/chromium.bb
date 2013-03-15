@@ -18,6 +18,7 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::find;
 using std::map;
 using std::string;
 using sync_pb::ClientToServerMessage;
@@ -222,6 +223,10 @@ void MockConnectionManager::SetGUClientCommand(
 void MockConnectionManager::SetCommitClientCommand(
     sync_pb::ClientCommand* command) {
   commit_client_command_.reset(command);
+}
+
+void MockConnectionManager::SetTransientErrorId(syncable::Id id) {
+  transient_error_ids_.push_back(id);
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
@@ -545,6 +550,11 @@ bool MockConnectionManager::ShouldConflictThisCommit() {
   return conflict;
 }
 
+bool MockConnectionManager::ShouldTransientErrorThisId(syncable::Id id) {
+  return find(transient_error_ids_.begin(), transient_error_ids_.end(), id)
+      != transient_error_ids_.end();
+}
+
 void MockConnectionManager::ProcessCommit(
     sync_pb::ClientToServerMessage* csm,
     sync_pb::ClientToServerResponse* response_buffer) {
@@ -559,21 +569,28 @@ void MockConnectionManager::ProcessCommit(
   for (int i = 0; i < commit_message.entries_size() ; i++) {
     const sync_pb::SyncEntity& entry = commit_message.entries(i);
     CHECK(entry.has_id_string());
-    string id = entry.id_string();
+    string id_string = entry.id_string();
     ASSERT_LT(entry.name().length(), 256ul) << " name probably too long. True "
         "server name checking not implemented";
+    syncable::Id id;
     if (entry.version() == 0) {
       // Relies on our new item string id format. (string representation of a
       // negative number).
-      committed_ids_.push_back(syncable::Id::CreateFromClientString(id));
+      id = syncable::Id::CreateFromClientString(id_string);
     } else {
-      committed_ids_.push_back(syncable::Id::CreateFromServerId(id));
+      id = syncable::Id::CreateFromServerId(id_string);
     }
-    if (response_map.end() == response_map.find(id))
-      response_map[id] = commit_response->add_entryresponse();
-    sync_pb::CommitResponse_EntryResponse* er = response_map[id];
+    committed_ids_.push_back(id);
+
+    if (response_map.end() == response_map.find(id_string))
+      response_map[id_string] = commit_response->add_entryresponse();
+    sync_pb::CommitResponse_EntryResponse* er = response_map[id_string];
     if (ShouldConflictThisCommit()) {
       er->set_response_type(CommitResponse::CONFLICT);
+      continue;
+    }
+    if (ShouldTransientErrorThisId(id)) {
+      er->set_response_type(CommitResponse::TRANSIENT_ERROR);
       continue;
     }
     er->set_response_type(CommitResponse::SUCCESS);
@@ -582,17 +599,17 @@ void MockConnectionManager::ProcessCommit(
       // Commit time rename sent down from the server.
       er->set_name(commit_time_rename_prepended_string_ + entry.name());
     }
-    string parent_id = entry.parent_id_string();
+    string parent_id_string = entry.parent_id_string();
     // Remap id's we've already assigned.
-    if (changed_ids.end() != changed_ids.find(parent_id)) {
-      parent_id = changed_ids[parent_id];
-      er->set_parent_id_string(parent_id);
+    if (changed_ids.end() != changed_ids.find(parent_id_string)) {
+      parent_id_string = changed_ids[parent_id_string];
+      er->set_parent_id_string(parent_id_string);
     }
     if (entry.has_version() && 0 != entry.version()) {
-      er->set_id_string(id);  // Allows verification.
+      er->set_id_string(id_string);  // Allows verification.
     } else {
       string new_id = base::StringPrintf("mock_server:%d", next_new_id_++);
-      changed_ids[id] = new_id;
+      changed_ids[id_string] = new_id;
       er->set_id_string(new_id);
     }
   }

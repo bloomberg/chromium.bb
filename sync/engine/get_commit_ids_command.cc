@@ -11,11 +11,10 @@
 #include "sync/engine/syncer_util.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/syncable/entry.h"
-#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/nigori_util.h"
+#include "sync/syncable/syncable_base_transaction.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 using std::set;
@@ -28,9 +27,11 @@ using sessions::SyncSession;
 using sessions::StatusController;
 
 GetCommitIdsCommand::GetCommitIdsCommand(
+    syncable::BaseTransaction* trans,
     const size_t commit_batch_size,
     sessions::OrderedCommitSet* commit_set)
-    : requested_commit_batch_size_(commit_batch_size),
+    : trans_(trans),
+      requested_commit_batch_size_(commit_batch_size),
       commit_set_(commit_set) {
 }
 
@@ -41,17 +42,17 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   // are not in the correct order for commit.
   std::set<int64> ready_unsynced_set;
   syncable::Directory::UnsyncedMetaHandles all_unsynced_handles;
-  GetUnsyncedEntries(session->write_transaction(),
+  GetUnsyncedEntries(trans_,
                      &all_unsynced_handles);
 
   ModelTypeSet encrypted_types;
   bool passphrase_missing = false;
   Cryptographer* cryptographer =
       session->context()->
-      directory()->GetCryptographer(session->write_transaction());
+      directory()->GetCryptographer(trans_);
   if (cryptographer) {
     encrypted_types = session->context()->directory()->GetNigoriHandler()->
-        GetEncryptedTypes(session->write_transaction());
+        GetEncryptedTypes(trans_);
     passphrase_missing = cryptographer->has_pending_keys();
   };
 
@@ -60,14 +61,14 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   // We filter out all unready entries from the set of unsynced handles. This
   // new set of ready and unsynced items (which excludes throttled items as
   // well) is then what we use to determine what is a candidate for commit.
-  FilterUnreadyEntries(session->write_transaction(),
+  FilterUnreadyEntries(trans_,
                        throttled_types,
                        encrypted_types,
                        passphrase_missing,
                        all_unsynced_handles,
                        &ready_unsynced_set);
 
-  BuildCommitIds(session->write_transaction(),
+  BuildCommitIds(trans_,
                  session->context()->routing_info(),
                  ready_unsynced_set);
 
@@ -292,7 +293,7 @@ bool GetCommitIdsCommand::IsCommitBatchFull() const {
 }
 
 void GetCommitIdsCommand::AddCreatesAndMoves(
-    syncable::WriteTransaction* write_transaction,
+    syncable::BaseTransaction* trans,
     const ModelSafeRoutingInfo& routes,
     const std::set<int64>& ready_unsynced_set) {
   // Add moves and creates, and prepend their uncommitted parents.
@@ -302,7 +303,7 @@ void GetCommitIdsCommand::AddCreatesAndMoves(
     if (commit_set_->HaveCommitItem(metahandle))
       continue;
 
-    syncable::Entry entry(write_transaction,
+    syncable::Entry entry(trans,
                           syncable::GET_BY_HANDLE,
                           metahandle);
     if (!entry.Get(syncable::IS_DEL)) {
@@ -310,12 +311,12 @@ void GetCommitIdsCommand::AddCreatesAndMoves(
       // dependencies are not in conflict.
       OrderedCommitSet item_dependencies(routes);
       if (AddUncommittedParentsAndTheirPredecessors(
-              write_transaction,
+              trans,
               routes,
               ready_unsynced_set,
               entry,
               &item_dependencies) &&
-          AddPredecessorsThenItem(write_transaction,
+          AddPredecessorsThenItem(trans,
                                   routes,
                                   ready_unsynced_set,
                                   entry,
@@ -331,7 +332,7 @@ void GetCommitIdsCommand::AddCreatesAndMoves(
 }
 
 void GetCommitIdsCommand::AddDeletes(
-    syncable::WriteTransaction* write_transaction,
+    syncable::BaseTransaction* trans,
     const std::set<int64>& ready_unsynced_set) {
   set<syncable::Id> legal_delete_parents;
 
@@ -341,11 +342,11 @@ void GetCommitIdsCommand::AddDeletes(
     if (commit_set_->HaveCommitItem(metahandle))
       continue;
 
-    syncable::Entry entry(write_transaction, syncable::GET_BY_HANDLE,
+    syncable::Entry entry(trans, syncable::GET_BY_HANDLE,
                           metahandle);
 
     if (entry.Get(syncable::IS_DEL)) {
-      syncable::Entry parent(write_transaction, syncable::GET_BY_ID,
+      syncable::Entry parent(trans, syncable::GET_BY_ID,
                              entry.Get(syncable::PARENT_ID));
       // If the parent is deleted and unsynced, then any children of that
       // parent don't need to be added to the delete queue.
@@ -402,8 +403,8 @@ void GetCommitIdsCommand::AddDeletes(
     int64 metahandle = *iter;
     if (commit_set_->HaveCommitItem(metahandle))
       continue;
-    syncable::MutableEntry entry(write_transaction, syncable::GET_BY_HANDLE,
-                                 metahandle);
+    syncable::Entry entry(trans, syncable::GET_BY_HANDLE,
+                          metahandle);
     if (entry.Get(syncable::IS_DEL)) {
       syncable::Id parent_id = entry.Get(syncable::PARENT_ID);
       if (legal_delete_parents.count(parent_id)) {
@@ -415,7 +416,7 @@ void GetCommitIdsCommand::AddDeletes(
 }
 
 void GetCommitIdsCommand::BuildCommitIds(
-    syncable::WriteTransaction* write_transaction,
+    syncable::BaseTransaction* trans,
     const ModelSafeRoutingInfo& routes,
     const std::set<int64>& ready_unsynced_set) {
   // Commits follow these rules:
@@ -428,10 +429,10 @@ void GetCommitIdsCommand::BuildCommitIds(
   // delete trees.
 
   // Add moves and creates, and prepend their uncommitted parents.
-  AddCreatesAndMoves(write_transaction, routes, ready_unsynced_set);
+  AddCreatesAndMoves(trans, routes, ready_unsynced_set);
 
   // Add all deletes.
-  AddDeletes(write_transaction, ready_unsynced_set);
+  AddDeletes(trans, ready_unsynced_set);
 }
 
 }  // namespace syncer
