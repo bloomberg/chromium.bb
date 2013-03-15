@@ -6,6 +6,7 @@
     'isolate_dependency_tracked': [
       '<(PRODUCT_DIR)/resources.pak',
       '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
+      'browser/safe_browsing/two_phase_testserver.py',
     ],
     'isolate_dependency_untracked': [
       '../base/prefs/test/data/',
