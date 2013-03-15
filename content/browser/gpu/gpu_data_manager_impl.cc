@@ -423,8 +423,11 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
 #if defined(OS_WIN)
   // DisplayLink 7.1 and earlier can cause the GPU process to crash on startup.
   // http://crbug.com/177611
-  if (gpu_info_.display_link_version.IsValid()
-      && gpu_info_.display_link_version.IsOlderThan("7.2")) {
+  // Thinkpad USB Port Replicator driver causes GPU process to crash when the
+  // sandbox is enabled. http://crbug.com/181665.
+  if ((gpu_info_.display_link_version.IsValid()
+      && gpu_info_.display_link_version.IsOlderThan("7.2")) ||
+      gpu_info_.lenovo_dcute) {
     command_line->AppendSwitch(switches::kReduceGpuSandbox);
   }
 #endif
