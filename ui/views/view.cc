@@ -57,12 +57,6 @@ bool use_acceleration_when_possible = true;
 bool use_acceleration_when_possible = false;
 #endif
 
-#if defined(OS_WIN)
-const bool kContextMenuOnMousePress = false;
-#else
-const bool kContextMenuOnMousePress = true;
-#endif
-
 // Saves the drawing state, and restores the state when going out of scope.
 class ScopedCanvas {
  public:
@@ -2067,7 +2061,6 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
        GetDragOperations(event.location()) : 0;
   ContextMenuController* context_menu_controller = event.IsRightMouseButton() ?
       context_menu_controller_ : 0;
-  View::DragInfo* drag_info = GetDragInfo();
 
   const bool enabled = enabled_;
   const bool result = OnMousePressed(event);
@@ -2076,20 +2069,8 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
   if (!enabled)
     return result;
 
-  // Assume that if there is a context menu controller we won't be deleted
-  // from mouse pressed.
-  if (event.IsOnlyRightMouseButton() && context_menu_controller &&
-      kContextMenuOnMousePress) {
-    gfx::Point location(event.location());
-    if (HitTestPoint(location)) {
-      ConvertPointToScreen(this, &location);
-      ShowContextMenu(location, true);
-      return true;
-    }
-  }
-
   if (drag_operations != ui::DragDropTypes::DRAG_NONE) {
-    drag_info->PossibleDrag(event.location());
+    GetDragInfo()->PossibleDrag(event.location());
     return true;
   }
   return !!context_menu_controller || result;
@@ -2118,8 +2099,7 @@ bool View::ProcessMouseDragged(const ui::MouseEvent& event) {
 }
 
 void View::ProcessMouseReleased(const ui::MouseEvent& event) {
-  if (!kContextMenuOnMousePress && context_menu_controller_ &&
-      event.IsOnlyRightMouseButton()) {
+  if (context_menu_controller_ && event.IsOnlyRightMouseButton()) {
     // Assume that if there is a context menu controller we won't be deleted
     // from mouse released.
     gfx::Point location(event.location());
