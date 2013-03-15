@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/geometry_binding.h"
-#include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/gl_renderer.h"  // For the GLC() macro.
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -15,124 +15,129 @@ using WebKit::WebGraphicsContext3D;
 namespace cc {
 
 ProgramBindingBase::ProgramBindingBase()
-    : m_program(0)
-    , m_vertexShaderId(0)
-    , m_fragmentShaderId(0)
-    , m_initialized(false)
-{
+    : program_(0),
+      vertex_shader_id_(0),
+      fragment_shader_id_(0),
+      initialized_(false) {}
+
+ProgramBindingBase::~ProgramBindingBase() {
+  // If you hit these asserts, you initialized but forgot to call Cleanup().
+  DCHECK(!program_);
+  DCHECK(!vertex_shader_id_);
+  DCHECK(!fragment_shader_id_);
+  DCHECK(!initialized_);
 }
 
-ProgramBindingBase::~ProgramBindingBase()
-{
-    // If you hit these asserts, you initialized but forgot to call cleanup().
-    DCHECK(!m_program);
-    DCHECK(!m_vertexShaderId);
-    DCHECK(!m_fragmentShaderId);
-    DCHECK(!m_initialized);
+void ProgramBindingBase::Init(WebGraphicsContext3D* context,
+                              const std::string& vertex_shader,
+                              const std::string& fragment_shader) {
+  TRACE_EVENT0("cc", "ProgramBindingBase::init");
+  vertex_shader_id_ = LoadShader(context, GL_VERTEX_SHADER, vertex_shader);
+  if (!vertex_shader_id_) {
+    if (!IsContextLost(context))
+      LOG(ERROR) << "Failed to create vertex shader";
+    return;
+  }
+
+  fragment_shader_id_ =
+      LoadShader(context, GL_FRAGMENT_SHADER, fragment_shader);
+  if (!fragment_shader_id_) {
+    GLC(context, context->deleteShader(vertex_shader_id_));
+    vertex_shader_id_ = 0;
+    if (!IsContextLost(context))
+      LOG(ERROR) << "Failed to create fragment shader";
+    return;
+  }
+
+  program_ =
+      CreateShaderProgram(context, vertex_shader_id_, fragment_shader_id_);
+  DCHECK(program_ || IsContextLost(context));
 }
 
-void ProgramBindingBase::init(WebGraphicsContext3D* context, const std::string& vertexShader, const std::string& fragmentShader)
-{
-    TRACE_EVENT0("cc", "ProgramBindingBase::init");
-    m_vertexShaderId = loadShader(context, GL_VERTEX_SHADER, vertexShader);
-    if (!m_vertexShaderId) {
-        if (!IsContextLost(context))
-            LOG(ERROR) << "Failed to create vertex shader";
-        return;
-    }
-
-    m_fragmentShaderId = loadShader(context, GL_FRAGMENT_SHADER, fragmentShader);
-    if (!m_fragmentShaderId) {
-        GLC(context, context->deleteShader(m_vertexShaderId));
-        m_vertexShaderId = 0;
-        if (!IsContextLost(context))
-            LOG(ERROR) << "Failed to create fragment shader";
-        return;
-    }
-
-    m_program = createShaderProgram(context, m_vertexShaderId, m_fragmentShaderId);
-    DCHECK(m_program || IsContextLost(context));
-}
-
-void ProgramBindingBase::link(WebGraphicsContext3D* context)
-{
-    GLC(context, context->linkProgram(m_program));
-    cleanupShaders(context);
+void ProgramBindingBase::Link(WebGraphicsContext3D* context) {
+  GLC(context, context->linkProgram(program_));
+  CleanupShaders(context);
 #ifndef NDEBUG
-    int linked = 0;
-    GLC(context, context->getProgramiv(m_program, GL_LINK_STATUS, &linked));
-    if (!linked) {
-        if (!IsContextLost(context))
-            LOG(ERROR) << "Failed to link shader program";
-        GLC(context, context->deleteProgram(m_program));
-    }
+  int linked = 0;
+  GLC(context, context->getProgramiv(program_, GL_LINK_STATUS, &linked));
+  if (!linked) {
+    if (!IsContextLost(context))
+      LOG(ERROR) << "Failed to link shader program";
+    GLC(context, context->deleteProgram(program_));
+  }
 #endif
 }
 
-void ProgramBindingBase::cleanup(WebGraphicsContext3D* context)
-{
-    m_initialized = false;
-    if (!m_program)
-        return;
+void ProgramBindingBase::Cleanup(WebGraphicsContext3D* context) {
+  initialized_ = false;
+  if (!program_)
+    return;
 
-    DCHECK(context);
-    GLC(context, context->deleteProgram(m_program));
-    m_program = 0;
+  DCHECK(context);
+  GLC(context, context->deleteProgram(program_));
+  program_ = 0;
 
-    cleanupShaders(context);
+  CleanupShaders(context);
 }
 
-unsigned ProgramBindingBase::loadShader(WebGraphicsContext3D* context, unsigned type, const std::string& shaderSource)
-{
-    unsigned shader = context->createShader(type);
-    if (!shader)
-        return 0;
-    GLC(context, context->shaderSource(shader, shaderSource.data()));
-    GLC(context, context->compileShader(shader));
+unsigned ProgramBindingBase::LoadShader(WebGraphicsContext3D* context,
+                                        unsigned type,
+                                        const std::string& shader_source) {
+  unsigned shader = context->createShader(type);
+  if (!shader)
+    return 0;
+  GLC(context, context->shaderSource(shader, shader_source.data()));
+  GLC(context, context->compileShader(shader));
 #ifndef NDEBUG
-    int compiled = 0;
-    GLC(context, context->getShaderiv(shader, GL_COMPILE_STATUS, &compiled));
-    if (!compiled) {
-        GLC(context, context->deleteShader(shader));
-        return 0;
-    }
+  int compiled = 0;
+  GLC(context, context->getShaderiv(shader, GL_COMPILE_STATUS, &compiled));
+  if (!compiled) {
+    GLC(context, context->deleteShader(shader));
+    return 0;
+  }
 #endif
-    return shader;
+  return shader;
 }
 
-unsigned ProgramBindingBase::createShaderProgram(WebGraphicsContext3D* context, unsigned vertexShader, unsigned fragmentShader)
-{
-    unsigned programObject = context->createProgram();
-    if (!programObject) {
-        if (!IsContextLost(context))
-            LOG(ERROR) << "Failed to create shader program";
-        return 0;
-    }
+unsigned ProgramBindingBase::CreateShaderProgram(WebGraphicsContext3D* context,
+                                                 unsigned vertex_shader,
+                                                 unsigned fragment_shader) {
+  unsigned program_object = context->createProgram();
+  if (!program_object) {
+    if (!IsContextLost(context))
+      LOG(ERROR) << "Failed to create shader program";
+    return 0;
+  }
 
-    GLC(context, context->attachShader(programObject, vertexShader));
-    GLC(context, context->attachShader(programObject, fragmentShader));
+  GLC(context, context->attachShader(program_object, vertex_shader));
+  GLC(context, context->attachShader(program_object, fragment_shader));
 
-    // Bind the common attrib locations.
-    GLC(context, context->bindAttribLocation(programObject, GeometryBinding::PositionAttribLocation(), "a_position"));
-    GLC(context, context->bindAttribLocation(programObject, GeometryBinding::TexCoordAttribLocation(), "a_texCoord"));
+  // Bind the common attrib locations.
+  GLC(context,
+      context->bindAttribLocation(program_object,
+                                  GeometryBinding::PositionAttribLocation(),
+                                  "a_position"));
+  GLC(context,
+      context->bindAttribLocation(program_object,
+                                  GeometryBinding::TexCoordAttribLocation(),
+                                  "a_texCoord"));
 
-    return programObject;
+  return program_object;
 }
 
-void ProgramBindingBase::cleanupShaders(WebGraphicsContext3D* context)
-{
-    if (m_vertexShaderId) {
-        GLC(context, context->deleteShader(m_vertexShaderId));
-        m_vertexShaderId = 0;
-    }
-    if (m_fragmentShaderId) {
-        GLC(context, context->deleteShader(m_fragmentShaderId));
-        m_fragmentShaderId = 0;
-    }
+void ProgramBindingBase::CleanupShaders(WebGraphicsContext3D* context) {
+  if (vertex_shader_id_) {
+    GLC(context, context->deleteShader(vertex_shader_id_));
+    vertex_shader_id_ = 0;
+  }
+  if (fragment_shader_id_) {
+    GLC(context, context->deleteShader(fragment_shader_id_));
+    fragment_shader_id_ = 0;
+  }
 }
 
 bool ProgramBindingBase::IsContextLost(WebGraphicsContext3D* context) {
-    return (context->getGraphicsResetStatusARB() != GL_NO_ERROR);
+  return (context->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
 
 }  // namespace cc

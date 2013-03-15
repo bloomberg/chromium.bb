@@ -9,77 +9,82 @@
 
 #include "base/logging.h"
 
-namespace WebKit {
-class WebGraphicsContext3D;
-}
+namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
 
 class ProgramBindingBase {
-public:
-    ProgramBindingBase();
-    ~ProgramBindingBase();
+ public:
+  ProgramBindingBase();
+  ~ProgramBindingBase();
 
-    void init(WebKit::WebGraphicsContext3D*, const std::string& vertexShader, const std::string& fragmentShader);
-    void link(WebKit::WebGraphicsContext3D*);
-    void cleanup(WebKit::WebGraphicsContext3D*);
+  void Init(WebKit::WebGraphicsContext3D* context,
+            const std::string& vertex_shader,
+            const std::string& fragment_shader);
+  void Link(WebKit::WebGraphicsContext3D* context);
+  void Cleanup(WebKit::WebGraphicsContext3D* context);
 
-    unsigned program() const { return m_program; }
-    bool initialized() const { return m_initialized; }
+  unsigned program() const { return program_; }
+  bool initialized() const { return initialized_; }
 
-protected:
+ protected:
+  unsigned LoadShader(WebKit::WebGraphicsContext3D* context,
+                      unsigned type,
+                      const std::string& shader_source);
+  unsigned CreateShaderProgram(WebKit::WebGraphicsContext3D* context,
+                               unsigned vertex_shader,
+                               unsigned fragment_shader);
+  void CleanupShaders(WebKit::WebGraphicsContext3D* context);
+  bool IsContextLost(WebKit::WebGraphicsContext3D* context);
 
-    unsigned loadShader(WebKit::WebGraphicsContext3D*, unsigned type, const std::string& shaderSource);
-    unsigned createShaderProgram(WebKit::WebGraphicsContext3D*, unsigned vertexShader, unsigned fragmentShader);
-    void cleanupShaders(WebKit::WebGraphicsContext3D*);
-    bool IsContextLost(WebKit::WebGraphicsContext3D*);
-
-    unsigned m_program;
-    unsigned m_vertexShaderId;
-    unsigned m_fragmentShaderId;
-    bool m_initialized;
+  unsigned program_;
+  unsigned vertex_shader_id_;
+  unsigned fragment_shader_id_;
+  bool initialized_;
 };
 
-template<class VertexShader, class FragmentShader>
+template <class VertexShader, class FragmentShader>
 class ProgramBinding : public ProgramBindingBase {
-public:
-    explicit ProgramBinding(WebKit::WebGraphicsContext3D* context)
-    {
-        ProgramBindingBase::init(context, m_vertexShader.getShaderString(), m_fragmentShader.getShaderString());
-    }
+ public:
+  explicit ProgramBinding(WebKit::WebGraphicsContext3D* context) {
+    ProgramBindingBase::Init(context,
+                             vertex_shader_.getShaderString(),
+                             fragment_shader_.getShaderString());
+  }
 
-    void initialize(WebKit::WebGraphicsContext3D* context, bool usingBindUniform)
-    {
-        DCHECK(context);
-        DCHECK(!m_initialized);
+  void Initialize(WebKit::WebGraphicsContext3D* context,
+                  bool using_bind_uniform) {
+    DCHECK(context);
+    DCHECK(!initialized_);
 
-        if (IsContextLost(context))
-            return;
+    if (IsContextLost(context))
+      return;
 
-        // Need to bind uniforms before linking
-        if (!usingBindUniform)
-            link(context);
+    // Need to bind uniforms before linking
+    if (!using_bind_uniform)
+      Link(context);
 
-        int baseUniformIndex = 0;
-        m_vertexShader.init(context, m_program, usingBindUniform, &baseUniformIndex);
-        m_fragmentShader.init(context, m_program, usingBindUniform, &baseUniformIndex);
+    int base_uniform_index = 0;
+    vertex_shader_.init(
+        context, program_, using_bind_uniform, &base_uniform_index);
+    fragment_shader_.init(
+        context, program_, using_bind_uniform, &base_uniform_index);
 
-        // Link after binding uniforms
-        if (usingBindUniform)
-            link(context);
+    // Link after binding uniforms
+    if (using_bind_uniform)
+      Link(context);
 
-        m_initialized = true;
-    }
+    initialized_ = true;
+  }
 
-    const VertexShader& vertexShader() const { return m_vertexShader; }
-    const FragmentShader& fragmentShader() const { return m_fragmentShader; }
+  const VertexShader& vertex_shader() const { return vertex_shader_; }
+  const FragmentShader& fragment_shader() const { return fragment_shader_; }
 
-private:
-
-    VertexShader m_vertexShader;
-    FragmentShader m_fragmentShader;
+ private:
+  VertexShader vertex_shader_;
+  FragmentShader fragment_shader_;
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_PROGRAM_BINDING_H_

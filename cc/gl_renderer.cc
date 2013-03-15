@@ -332,7 +332,7 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame& frame,
 
   SkColor color = quad->color;
   GLC(Context(),
-      Context()->uniform4f(program->fragmentShader().colorLocation(),
+      Context()->uniform4f(program->fragment_shader().colorLocation(),
                            SkColorGetR(color) * (1.0f / 255.0f),
                            SkColorGetG(color) * (1.0f / 255.0f),
                            SkColorGetB(color) * (1.0f / 255.0f),
@@ -347,21 +347,21 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame& frame,
   float tex_scale_x = tile_rect.width();
   float tex_scale_y = tile_rect.height();
   GLC(Context(),
-      Context()->uniform4f(program->fragmentShader().texTransformLocation(),
+      Context()->uniform4f(program->fragment_shader().texTransformLocation(),
                            tex_offset_x,
                            tex_offset_y,
                            tex_scale_x,
                            tex_scale_y));
 
   GLC(Context(),
-      Context()->uniform1f(program->fragmentShader().frequencyLocation(),
+      Context()->uniform1f(program->fragment_shader().frequencyLocation(),
                            frequency));
 
-  SetShaderOpacity(quad->opacity(), program->fragmentShader().alphaLocation());
+  SetShaderOpacity(quad->opacity(), program->fragment_shader().alphaLocation());
   DrawQuadGeometry(frame,
                    quad->quadTransform(),
                    quad->rect,
-                   program->vertexShader().matrixLocation());
+                   program->vertex_shader().matrixLocation());
 }
 
 void GLRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
@@ -384,13 +384,13 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
                          frame.projection_matrix * render_matrix);
   GLC(Context(),
       Context()->uniformMatrix4fv(
-          program->vertexShader().matrixLocation(), 1, false, &gl_matrix[0]));
+          program->vertex_shader().matrixLocation(), 1, false, &gl_matrix[0]));
 
   SkColor color = quad->color;
   float alpha = SkColorGetA(color) * (1.0f / 255.0f);
 
   GLC(Context(),
-      Context()->uniform4f(program->fragmentShader().colorLocation(),
+      Context()->uniform4f(program->fragment_shader().colorLocation(),
                            (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
                            (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
                            (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
@@ -730,56 +730,56 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
     const RenderPassMaskProgramAA* program = GetRenderPassMaskProgramAA();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
 
-    shader_quad_location = program->vertexShader().pointLocation();
-    shader_edge_location = program->fragmentShader().edgeLocation();
+    shader_quad_location = program->vertex_shader().pointLocation();
+    shader_edge_location = program->fragment_shader().edgeLocation();
     shader_mask_sampler_location =
-        program->fragmentShader().maskSamplerLocation();
+        program->fragment_shader().maskSamplerLocation();
     shader_mask_tex_coord_scale_location =
-        program->fragmentShader().maskTexCoordScaleLocation();
+        program->fragment_shader().maskTexCoordScaleLocation();
     shader_mask_tex_coord_offset_location =
-        program->fragmentShader().maskTexCoordOffsetLocation();
-    shader_matrix_location = program->vertexShader().matrixLocation();
-    shader_alpha_location = program->fragmentShader().alphaLocation();
-    shader_tex_scale_location = program->vertexShader().texScaleLocation();
+        program->fragment_shader().maskTexCoordOffsetLocation();
+    shader_matrix_location = program->vertex_shader().matrixLocation();
+    shader_alpha_location = program->fragment_shader().alphaLocation();
+    shader_tex_scale_location = program->vertex_shader().texScaleLocation();
   } else if (!use_aa && mask_texture_id) {
     const RenderPassMaskProgram* program = GetRenderPassMaskProgram();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
 
     shader_mask_sampler_location =
-        program->fragmentShader().maskSamplerLocation();
+        program->fragment_shader().maskSamplerLocation();
     shader_mask_tex_coord_scale_location =
-        program->fragmentShader().maskTexCoordScaleLocation();
+        program->fragment_shader().maskTexCoordScaleLocation();
     shader_mask_tex_coord_offset_location =
-        program->fragmentShader().maskTexCoordOffsetLocation();
-    shader_matrix_location = program->vertexShader().matrixLocation();
-    shader_alpha_location = program->fragmentShader().alphaLocation();
+        program->fragment_shader().maskTexCoordOffsetLocation();
+    shader_matrix_location = program->vertex_shader().matrixLocation();
+    shader_alpha_location = program->fragment_shader().alphaLocation();
     shader_tex_transform_location =
-        program->vertexShader().texTransformLocation();
+        program->vertex_shader().texTransformLocation();
   } else if (use_aa && !mask_texture_id) {
     const RenderPassProgramAA* program = GetRenderPassProgramAA();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
 
-    shader_quad_location = program->vertexShader().pointLocation();
-    shader_edge_location = program->fragmentShader().edgeLocation();
-    shader_matrix_location = program->vertexShader().matrixLocation();
-    shader_alpha_location = program->fragmentShader().alphaLocation();
-    shader_tex_scale_location = program->vertexShader().texScaleLocation();
+    shader_quad_location = program->vertex_shader().pointLocation();
+    shader_edge_location = program->fragment_shader().edgeLocation();
+    shader_matrix_location = program->vertex_shader().matrixLocation();
+    shader_alpha_location = program->fragment_shader().alphaLocation();
+    shader_tex_scale_location = program->vertex_shader().texScaleLocation();
   } else {
     const RenderPassProgram* program = GetRenderPassProgram();
     SetUseProgram(program->program());
     GLC(Context(),
-        Context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
+        Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
 
-    shader_matrix_location = program->vertexShader().matrixLocation();
-    shader_alpha_location = program->fragmentShader().alphaLocation();
+    shader_matrix_location = program->vertex_shader().matrixLocation();
+    shader_alpha_location = program->fragment_shader().alphaLocation();
     shader_tex_transform_location =
-        program->vertexShader().texTransformLocation();
+        program->vertex_shader().texTransformLocation();
   }
 
   float tex_scale_x =
@@ -859,11 +859,11 @@ template<class T>
 static void SolidColorUniformLocation(T program,
                                       SolidColorProgramUniforms* uniforms) {
   uniforms->program = program->program();
-  uniforms->matrix_location = program->vertexShader().matrixLocation();
-  uniforms->color_location = program->fragmentShader().colorLocation();
-  uniforms->point_location = program->vertexShader().pointLocation();
-  uniforms->tex_scale_location = program->vertexShader().texScaleLocation();
-  uniforms->edge_location = program->fragmentShader().edgeLocation();
+  uniforms->matrix_location = program->vertex_shader().matrixLocation();
+  uniforms->color_location = program->fragment_shader().colorLocation();
+  uniforms->point_location = program->vertex_shader().pointLocation();
+  uniforms->tex_scale_location = program->vertex_shader().texScaleLocation();
+  uniforms->edge_location = program->fragment_shader().edgeLocation();
 }
 
 bool GLRenderer::SetupQuadForAntialiasing(
@@ -1025,15 +1025,15 @@ template <class T>
 static void TileUniformLocation(T program, TileProgramUniforms* uniforms) {
   uniforms->program = program->program();
   uniforms->vertex_tex_transform_location =
-      program->vertexShader().vertexTexTransformLocation();
-  uniforms->matrix_location = program->vertexShader().matrixLocation();
-  uniforms->point_location = program->vertexShader().pointLocation();
+      program->vertex_shader().vertexTexTransformLocation();
+  uniforms->matrix_location = program->vertex_shader().matrixLocation();
+  uniforms->point_location = program->vertex_shader().pointLocation();
 
-  uniforms->sampler_location = program->fragmentShader().samplerLocation();
-  uniforms->alpha_location = program->fragmentShader().alphaLocation();
+  uniforms->sampler_location = program->fragment_shader().samplerLocation();
+  uniforms->alpha_location = program->fragment_shader().alphaLocation();
   uniforms->fragment_tex_transform_location =
-      program->fragmentShader().fragmentTexTransformLocation();
-  uniforms->edge_location = program->fragmentShader().edgeLocation();
+      program->fragment_shader().fragmentTexTransformLocation();
+  uniforms->edge_location = program->fragment_shader().edgeLocation();
 }
 
 void GLRenderer::DrawTileQuad(const DrawingFrame& frame,
@@ -1208,15 +1208,15 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
   SetUseProgram(program->program());
 
   GLC(Context(),
-      Context()->uniform2f(program->vertexShader().texScaleLocation(),
+      Context()->uniform2f(program->vertex_shader().texScaleLocation(),
                            quad->tex_scale.width(),
                            quad->tex_scale.height()));
   GLC(Context(),
-      Context()->uniform1i(program->fragmentShader().yTextureLocation(), 1));
+      Context()->uniform1i(program->fragment_shader().yTextureLocation(), 1));
   GLC(Context(),
-      Context()->uniform1i(program->fragmentShader().uTextureLocation(), 2));
+      Context()->uniform1i(program->fragment_shader().uTextureLocation(), 2));
   GLC(Context(),
-      Context()->uniform1i(program->fragmentShader().vTextureLocation(), 3));
+      Context()->uniform1i(program->fragment_shader().vTextureLocation(), 3));
 
   // These values are magic numbers that are used in the transformation from YUV
   // to RGB color values.  They are taken from the following webpage:
@@ -1228,7 +1228,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
   };
   GLC(Context(),
       Context()->uniformMatrix3fv(
-          program->fragmentShader().yuvMatrixLocation(), 1, 0, yuv_to_rgb));
+          program->fragment_shader().yuvMatrixLocation(), 1, 0, yuv_to_rgb));
 
   // These values map to 16, 128, and 128 respectively, and are computed
   // as a fraction over 256 (e.g. 16 / 256 = 0.0625).
@@ -1239,13 +1239,13 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
   float yuv_adjust[3] = { -0.0625f, -0.5f, -0.5f, };
   GLC(Context(),
       Context()->uniform3fv(
-          program->fragmentShader().yuvAdjLocation(), 1, yuv_adjust));
+          program->fragment_shader().yuvAdjLocation(), 1, yuv_adjust));
 
-  SetShaderOpacity(quad->opacity(), program->fragmentShader().alphaLocation());
+  SetShaderOpacity(quad->opacity(), program->fragment_shader().alphaLocation());
   DrawQuadGeometry(frame,
                    quad->quadTransform(),
                    quad->rect,
-                   program->vertexShader().matrixLocation());
+                   program->vertex_shader().matrixLocation());
 
   // Reset active texture back to texture 0.
   GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
@@ -1265,19 +1265,19 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame& frame,
   ToGLMatrix(&gl_matrix[0], quad->matrix);
   GLC(Context(),
       Context()->uniformMatrix4fv(
-          program->vertexShader().texMatrixLocation(), 1, false, gl_matrix));
+          program->vertex_shader().texMatrixLocation(), 1, false, gl_matrix));
 
   GLC(Context(),
       Context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, quad->texture_id));
 
   GLC(Context(),
-      Context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
+      Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
 
-  SetShaderOpacity(quad->opacity(), program->fragmentShader().alphaLocation());
+  SetShaderOpacity(quad->opacity(), program->fragment_shader().alphaLocation());
   DrawQuadGeometry(frame,
                    quad->quadTransform(),
                    quad->rect,
-                   program->vertexShader().matrixLocation());
+                   program->vertex_shader().matrixLocation());
 }
 
 struct TextureProgramBinding {
@@ -1285,9 +1285,9 @@ struct TextureProgramBinding {
   void Set(Program* program, WebKit::WebGraphicsContext3D* context) {
     DCHECK(program && (program->initialized() || context->isContextLost()));
     program_id = program->program();
-    sampler_location = program->fragmentShader().samplerLocation();
-    matrix_location = program->vertexShader().matrixLocation();
-    alpha_location = program->fragmentShader().alphaLocation();
+    sampler_location = program->fragment_shader().samplerLocation();
+    matrix_location = program->vertex_shader().matrixLocation();
+    alpha_location = program->fragment_shader().alphaLocation();
   }
   int program_id;
   int sampler_location;
@@ -1299,8 +1299,8 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
   template <class Program>
   void Set(Program* program, WebKit::WebGraphicsContext3D* context) {
     TextureProgramBinding::Set(program, context);
-    tex_transform_location = program->vertexShader().texTransformLocation();
-    vertex_opacity_location = program->vertexShader().vertexOpacityLocation();
+    tex_transform_location = program->vertex_shader().texTransformLocation();
+    vertex_opacity_location = program->vertex_shader().vertexOpacityLocation();
   }
   int tex_transform_location;
   int vertex_opacity_location;
@@ -1626,16 +1626,16 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame& frame,
 
   SetUseProgram(program->program());
   GLC(Context(),
-      Context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
+      Context()->uniform1i(program->fragment_shader().samplerLocation(), 0));
   GLC(Context(),
-      Context()->uniform4f(program->vertexShader().texTransformLocation(),
+      Context()->uniform4f(program->vertex_shader().texTransformLocation(),
                            0.0f,
                            0.0f,
                            1.0f,
                            1.0f));
-  SetShaderOpacity(1, program->fragmentShader().alphaLocation());
+  SetShaderOpacity(1, program->fragment_shader().alphaLocation());
   DrawQuadGeometry(
-      frame, draw_matrix, rect, program->vertexShader().matrixLocation());
+      frame, draw_matrix, rect, program->vertex_shader().matrixLocation());
 }
 
 void GLRenderer::Finish() {
@@ -1976,7 +1976,7 @@ GLRenderer::GetTileCheckerboardProgram() {
   }
   if (!tile_checkerboard_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::checkerboardProgram::initalize");
-    tile_checkerboard_program_->initialize(context_, is_using_bind_uniform_);
+    tile_checkerboard_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return tile_checkerboard_program_.get();
 }
@@ -1986,7 +1986,7 @@ const GLRenderer::SolidColorProgram* GLRenderer::GetSolidColorProgram() {
     solid_color_program_ = make_scoped_ptr(new SolidColorProgram(context_));
   if (!solid_color_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::solidColorProgram::initialize");
-    solid_color_program_->initialize(context_, is_using_bind_uniform_);
+    solid_color_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return solid_color_program_.get();
 }
@@ -1999,7 +1999,7 @@ const GLRenderer::SolidColorProgramAA* GLRenderer::GetSolidColorProgramAA()
   }
   if (!solid_color_program_aa_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::solidColorProgramAA::initialize");
-    solid_color_program_aa_->initialize(context_, is_using_bind_uniform_);
+    solid_color_program_aa_->Initialize(context_, is_using_bind_uniform_);
   }
   return solid_color_program_aa_.get();
 }
@@ -2008,7 +2008,7 @@ const GLRenderer::RenderPassProgram* GLRenderer::GetRenderPassProgram() {
   DCHECK(render_pass_program_);
   if (!render_pass_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassProgram::initialize");
-    render_pass_program_->initialize(context_, is_using_bind_uniform_);
+    render_pass_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return render_pass_program_.get();
 }
@@ -2019,7 +2019,7 @@ const GLRenderer::RenderPassProgramAA* GLRenderer::GetRenderPassProgramAA() {
         make_scoped_ptr(new RenderPassProgramAA(context_));
   if (!render_pass_program_aa_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassProgramAA::initialize");
-    render_pass_program_aa_->initialize(context_, is_using_bind_uniform_);
+    render_pass_program_aa_->Initialize(context_, is_using_bind_uniform_);
   }
   return render_pass_program_aa_.get();
 }
@@ -2031,7 +2031,7 @@ GLRenderer::GetRenderPassMaskProgram() {
         make_scoped_ptr(new RenderPassMaskProgram(context_));
   if (!render_pass_mask_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgram::initialize");
-    render_pass_mask_program_->initialize(context_, is_using_bind_uniform_);
+    render_pass_mask_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return render_pass_mask_program_.get();
 }
@@ -2043,7 +2043,7 @@ GLRenderer::GetRenderPassMaskProgramAA() {
         make_scoped_ptr(new RenderPassMaskProgramAA(context_));
   if (!render_pass_mask_program_aa_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgramAA::initialize");
-    render_pass_mask_program_aa_->initialize(context_, is_using_bind_uniform_);
+    render_pass_mask_program_aa_->Initialize(context_, is_using_bind_uniform_);
   }
   return render_pass_mask_program_aa_.get();
 }
@@ -2052,7 +2052,7 @@ const GLRenderer::TileProgram* GLRenderer::GetTileProgram() {
   DCHECK(tile_program_);
   if (!tile_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgram::initialize");
-    tile_program_->initialize(context_, is_using_bind_uniform_);
+    tile_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return tile_program_.get();
 }
@@ -2061,7 +2061,7 @@ const GLRenderer::TileProgramOpaque* GLRenderer::GetTileProgramOpaque() {
   DCHECK(tile_program_opaque_);
   if (!tile_program_opaque_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramOpaque::initialize");
-    tile_program_opaque_->initialize(context_, is_using_bind_uniform_);
+    tile_program_opaque_->Initialize(context_, is_using_bind_uniform_);
   }
   return tile_program_opaque_.get();
 }
@@ -2071,7 +2071,7 @@ const GLRenderer::TileProgramAA* GLRenderer::GetTileProgramAA() {
     tile_program_aa_ = make_scoped_ptr(new TileProgramAA(context_));
   if (!tile_program_aa_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramAA::initialize");
-    tile_program_aa_->initialize(context_, is_using_bind_uniform_);
+    tile_program_aa_->Initialize(context_, is_using_bind_uniform_);
   }
   return tile_program_aa_.get();
 }
@@ -2081,7 +2081,7 @@ const GLRenderer::TileProgramSwizzle* GLRenderer::GetTileProgramSwizzle() {
     tile_program_swizzle_ = make_scoped_ptr(new TileProgramSwizzle(context_));
   if (!tile_program_swizzle_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzle::initialize");
-    tile_program_swizzle_->initialize(context_, is_using_bind_uniform_);
+    tile_program_swizzle_->Initialize(context_, is_using_bind_uniform_);
   }
   return tile_program_swizzle_.get();
 }
@@ -2093,7 +2093,7 @@ GLRenderer::GetTileProgramSwizzleOpaque() {
         make_scoped_ptr(new TileProgramSwizzleOpaque(context_));
   if (!tile_program_swizzle_opaque_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleOpaque::initialize");
-    tile_program_swizzle_opaque_->initialize(context_, is_using_bind_uniform_);
+    tile_program_swizzle_opaque_->Initialize(context_, is_using_bind_uniform_);
   }
   return tile_program_swizzle_opaque_.get();
 }
@@ -2104,7 +2104,7 @@ const GLRenderer::TileProgramSwizzleAA* GLRenderer::GetTileProgramSwizzleAA() {
         make_scoped_ptr(new TileProgramSwizzleAA(context_));
   if (!tile_program_swizzle_aa_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleAA::initialize");
-    tile_program_swizzle_aa_->initialize(context_, is_using_bind_uniform_);
+    tile_program_swizzle_aa_->Initialize(context_, is_using_bind_uniform_);
   }
   return tile_program_swizzle_aa_.get();
 }
@@ -2114,7 +2114,7 @@ const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram() {
     texture_program_ = make_scoped_ptr(new TextureProgram(context_));
   if (!texture_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
-    texture_program_->initialize(context_, is_using_bind_uniform_);
+    texture_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return texture_program_.get();
 }
@@ -2124,7 +2124,7 @@ const GLRenderer::TextureProgramFlip* GLRenderer::GetTextureProgramFlip() {
     texture_program_flip_ = make_scoped_ptr(new TextureProgramFlip(context_));
   if (!texture_program_flip_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureProgramFlip::initialize");
-    texture_program_flip_->initialize(context_, is_using_bind_uniform_);
+    texture_program_flip_->Initialize(context_, is_using_bind_uniform_);
   }
   return texture_program_flip_.get();
 }
@@ -2136,7 +2136,7 @@ GLRenderer::GetTextureIOSurfaceProgram() {
         make_scoped_ptr(new TextureIOSurfaceProgram(context_));
   if (!texture_io_surface_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureIOSurfaceProgram::initialize");
-    texture_io_surface_program_->initialize(context_, is_using_bind_uniform_);
+    texture_io_surface_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return texture_io_surface_program_.get();
 }
@@ -2146,7 +2146,7 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram() {
     video_yuv_program_ = make_scoped_ptr(new VideoYUVProgram(context_));
   if (!video_yuv_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVProgram::initialize");
-    video_yuv_program_->initialize(context_, is_using_bind_uniform_);
+    video_yuv_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return video_yuv_program_.get();
 }
@@ -2158,7 +2158,7 @@ GLRenderer::GetVideoStreamTextureProgram() {
         make_scoped_ptr(new VideoStreamTextureProgram(context_));
   if (!video_stream_texture_program_->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::streamTextureProgram::initialize");
-    video_stream_texture_program_->initialize(context_, is_using_bind_uniform_);
+    video_stream_texture_program_->Initialize(context_, is_using_bind_uniform_);
   }
   return video_stream_texture_program_.get();
 }
@@ -2169,45 +2169,45 @@ void GLRenderer::CleanupSharedObjects() {
   shared_geometry_.reset();
 
   if (tile_program_)
-    tile_program_->cleanup(context_);
+    tile_program_->Cleanup(context_);
   if (tile_program_opaque_)
-    tile_program_opaque_->cleanup(context_);
+    tile_program_opaque_->Cleanup(context_);
   if (tile_program_swizzle_)
-    tile_program_swizzle_->cleanup(context_);
+    tile_program_swizzle_->Cleanup(context_);
   if (tile_program_swizzle_opaque_)
-    tile_program_swizzle_opaque_->cleanup(context_);
+    tile_program_swizzle_opaque_->Cleanup(context_);
   if (tile_program_aa_)
-    tile_program_aa_->cleanup(context_);
+    tile_program_aa_->Cleanup(context_);
   if (tile_program_swizzle_aa_)
-    tile_program_swizzle_aa_->cleanup(context_);
+    tile_program_swizzle_aa_->Cleanup(context_);
   if (tile_checkerboard_program_)
-    tile_checkerboard_program_->cleanup(context_);
+    tile_checkerboard_program_->Cleanup(context_);
 
   if (render_pass_mask_program_)
-    render_pass_mask_program_->cleanup(context_);
+    render_pass_mask_program_->Cleanup(context_);
   if (render_pass_program_)
-    render_pass_program_->cleanup(context_);
+    render_pass_program_->Cleanup(context_);
   if (render_pass_mask_program_aa_)
-    render_pass_mask_program_aa_->cleanup(context_);
+    render_pass_mask_program_aa_->Cleanup(context_);
   if (render_pass_program_aa_)
-    render_pass_program_aa_->cleanup(context_);
+    render_pass_program_aa_->Cleanup(context_);
 
   if (texture_program_)
-    texture_program_->cleanup(context_);
+    texture_program_->Cleanup(context_);
   if (texture_program_flip_)
-    texture_program_flip_->cleanup(context_);
+    texture_program_flip_->Cleanup(context_);
   if (texture_io_surface_program_)
-    texture_io_surface_program_->cleanup(context_);
+    texture_io_surface_program_->Cleanup(context_);
 
   if (video_yuv_program_)
-    video_yuv_program_->cleanup(context_);
+    video_yuv_program_->Cleanup(context_);
   if (video_stream_texture_program_)
-    video_stream_texture_program_->cleanup(context_);
+    video_stream_texture_program_->Cleanup(context_);
 
   if (solid_color_program_)
-    solid_color_program_->cleanup(context_);
+    solid_color_program_->Cleanup(context_);
   if (solid_color_program_aa_)
-    solid_color_program_aa_->cleanup(context_);
+    solid_color_program_aa_->Cleanup(context_);
 
   if (offscreen_framebuffer_id_)
     GLC(context_, context_->deleteFramebuffer(offscreen_framebuffer_id_));

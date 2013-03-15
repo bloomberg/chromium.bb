@@ -37,7 +37,7 @@ AcceleratedTextureCopier::AcceleratedTextureCopier(WebKit::WebGraphicsContext3D*
 AcceleratedTextureCopier::~AcceleratedTextureCopier()
 {
     if (m_blitProgram)
-        m_blitProgram->cleanup(m_context);
+        m_blitProgram->Cleanup(m_context);
     if (m_positionBuffer)
         GLC(m_context, m_context->deleteBuffer(m_positionBuffer));
     if (m_fbo)
@@ -65,7 +65,7 @@ void AcceleratedTextureCopier::copyTexture(Parameters parameters)
     GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
     if (!m_blitProgram->initialized())
-        m_blitProgram->initialize(m_context, m_usingBindUniforms);
+        m_blitProgram->Initialize(m_context, m_usingBindUniforms);
 
     // TODO: Use EXT_framebuffer_blit if available.
     GLC(m_context, m_context->useProgram(m_blitProgram->program()));
