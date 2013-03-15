@@ -453,7 +453,7 @@ function testType() {
   assertNotValid("Type", "42", {type: "number"},
                  [formatError("invalidType", ["number", "string"])]);
   assertNotValid("Type", 88.8, {type: "integer"},
-                 [formatError("invalidType", ["integer", "number"])]);
+                 [formatError("invalidTypeIntegerNumber")]);
   assertNotValid("Type", 1, {type: "boolean"},
                  [formatError("invalidType", ["boolean", "integer"])]);
   assertNotValid("Type", false, {type: "null"},

@@ -68,6 +68,8 @@ const char JSONSchemaValidator::kNumberMaximum[] =
     "Value must not be greater than *.";
 const char JSONSchemaValidator::kInvalidType[] =
     "Expected '*' but got '*'.";
+const char JSONSchemaValidator::kInvalidTypeIntegerNumber[] =
+    "Expected 'integer' but got 'number', consider using Math.round().";
 
 
 // static
@@ -464,6 +466,10 @@ bool JSONSchemaValidator::ValidateType(const Value* instance,
   if (expected_type == actual_type ||
       (expected_type == schema::kNumber && actual_type == schema::kInteger)) {
     return true;
+  } else if (expected_type == schema::kInteger &&
+             actual_type == schema::kNumber) {
+    errors_.push_back(Error(path, kInvalidTypeIntegerNumber));
+    return false;
   } else {
     errors_.push_back(Error(path, FormatErrorMessage(
         kInvalidType, expected_type, actual_type)));

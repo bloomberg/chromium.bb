@@ -655,20 +655,7 @@ void JSONSchemaValidatorTestBase::TestTypes() {
                  scoped_ptr<base::Value>(
                      new base::FundamentalValue(88.8)).get(),
                  schema.get(), NULL, "",
-                 JSONSchemaValidator::FormatErrorMessage(
-                     JSONSchemaValidator::kInvalidType,
-                     schema::kInteger,
-                     schema::kNumber));
-
-  schema->SetString(schema::kType, schema::kInteger);
-  ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<base::Value>(
-                     new base::FundamentalValue(88.8)).get(),
-                 schema.get(), NULL, "",
-                 JSONSchemaValidator::FormatErrorMessage(
-                     JSONSchemaValidator::kInvalidType,
-                     schema::kInteger,
-                     schema::kNumber));
+                 JSONSchemaValidator::kInvalidTypeIntegerNumber);
 
   schema->SetString(schema::kType, schema::kBoolean);
   ExpectNotValid(TEST_SOURCE,

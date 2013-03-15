@@ -92,6 +92,8 @@ chromeHidden.JSONSchemaValidator.messages = {
   numberIntValue: "Value must fit in a 32-bit signed integer.",
   numberMaxDecimal: "Value must not have more than * decimal places.",
   invalidType: "Expected '*' but got '*'.",
+  invalidTypeIntegerNumber:
+      "Expected 'integer' but got 'number', consider using Math.round().",
   invalidChoice: "Value does not match any valid type choices.",
   invalidPropertyType: "Missing property type.",
   schemaRequired: "Schema value required.",
@@ -483,13 +485,16 @@ chromeHidden.JSONSchemaValidator.prototype.validateNumber =
 chromeHidden.JSONSchemaValidator.prototype.validateType =
     function(instance, schema, path) {
   var actualType = chromeHidden.JSONSchemaValidator.getType(instance);
-  if (schema.type != actualType && !(schema.type == "number" &&
-      actualType == "integer")) {
+  if (schema.type == actualType ||
+      (schema.type == "number" && actualType == "integer")) {
+    return true;
+  } else if (schema.type == "integer" && actualType == "number") {
+    this.addError(path, "invalidTypeIntegerNumber");
+    return false;
+  } else {
     this.addError(path, "invalidType", [schema.type, actualType]);
     return false;
   }
-
-  return true;
 };
 
 /**

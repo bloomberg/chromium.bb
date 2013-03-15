@@ -84,6 +84,7 @@ class JSONSchemaValidator {
   static const char kNumberMinimum[];
   static const char kNumberMaximum[];
   static const char kInvalidType[];
+  static const char kInvalidTypeIntegerNumber[];
 
   // Classifies a Value as one of the JSON schema primitive types.
   static std::string GetJSONSchemaType(const base::Value* value);
