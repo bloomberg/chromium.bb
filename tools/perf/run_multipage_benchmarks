@@ -9,9 +9,10 @@ import urllib
 
 # Directory path in which to save bootstrap files.
 BOOTSTRAPPED_FILES_DIR = 'support/bootstrap_files'
+PERF_DIR = 'src/tools/perf'
+DEPS_FILE = 'bootstrap_deps'
 
-
-def bootstrapIfNeeded(module_name, module_path, module_deps_url):
+def BootstrapIfNeeded(module_name, module_path, module_deps_url):
   """Ensures that the given module_name is available, grab from URL if not."""
   try:
     imp.find_module(module_name)
@@ -32,13 +33,27 @@ def bootstrapIfNeeded(module_name, module_path, module_deps_url):
       bootstrap.DownloadDepsURL(os.path.join(os.path.dirname(__file__),
                                              BOOTSTRAPPED_FILES_DIR),
                                 module_deps_url)
+      return
 
+def ListBootstrapDeps():
+  """List the deps required for telemetry.
+
+  Returns: a list of telemetry deps.
+  """
+  from tools import telemetry_bootstrap
+  deps_file = os.path.join(os.path.dirname(perf_tools.__file__),
+                           DEPS_FILE)
+  return telemetry_bootstrap.ListAllDepsPaths(open(deps_file).read())
 
 if __name__ == '__main__':
-  bootstrapIfNeeded('perf_tools', 'src/tools/perf',
-                    'http://src.chromium.org/viewvc/chrome/trunk/src/tools/' +
-                    'perf/perf_tools/bootstrap_deps')
+  BootstrapIfNeeded('perf_tools', PERF_DIR,
+                    'http://src.chromium.org/viewvc/chrome/trunk/src/tools'
+                    '/perf/perf_tools/' + DEPS_FILE)
   import perf_tools
+  if '--print-bootstrap-deps' in sys.argv:
+    print ListBootstrapDeps()
+    sys.exit(0)
+
   from telemetry.page import page_benchmark_runner
   benchmark_dir = os.path.join(os.path.dirname(__file__), 'perf_tools')
   sys.exit(page_benchmark_runner.Main(benchmark_dir))
