@@ -165,7 +165,10 @@
 
   NSRect activeFrame = bounds;
   activeFrame.size.height -= activeContainerOffset_;
-  [activeContainer_ setFrame:activeFrame];
+  if (!NSEqualRects(activeFrame, [activeContainer_ frame])) {
+    [[activeContainer_ window] disableScreenUpdatesUntilFlush];
+    [activeContainer_ setFrame:activeFrame];
+  }
 }
 
 - (CGFloat)overlayHeightInPixels {
