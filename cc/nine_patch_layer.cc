@@ -88,7 +88,7 @@ void NinePatchLayer::CreateResource() {
   needs_display_ = false;
 
   if (!resource_) {
-    resource_ = updater_->createResource(
+    resource_ = updater_->CreateResource(
         layer_tree_host()->contents_texture_manager());
   }
 }

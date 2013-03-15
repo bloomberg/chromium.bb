@@ -18,9 +18,9 @@ ImageLayerUpdater::Resource::~Resource()
 {
 }
 
-void ImageLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*)
+void ImageLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats*)
 {
-    m_updater->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
+    m_updater->updateTexture(*queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
 // static
@@ -29,7 +29,7 @@ scoped_refptr<ImageLayerUpdater> ImageLayerUpdater::create()
     return make_scoped_refptr(new ImageLayerUpdater());
 }
 
-scoped_ptr<LayerUpdater::Resource> ImageLayerUpdater::createResource(
+scoped_ptr<LayerUpdater::Resource> ImageLayerUpdater::CreateResource(
     PrioritizedResourceManager* manager)
 {
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));

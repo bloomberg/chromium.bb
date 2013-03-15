@@ -28,14 +28,14 @@ CachingBitmapContentLayerUpdater::
 {
 }
 
-void CachingBitmapContentLayerUpdater::prepareToUpdate(
-    const gfx::Rect& content_rect,
-    const gfx::Size& tile_size,
+void CachingBitmapContentLayerUpdater::PrepareToUpdate(
+    gfx::Rect content_rect,
+    gfx::Size tile_size,
     float contents_width_scale,
     float contents_height_scale,
-    gfx::Rect& resulting_opaque_rect,
+    gfx::Rect* resulting_opaque_rect,
     RenderingStats* stats) {
-  BitmapContentLayerUpdater::prepareToUpdate(
+  BitmapContentLayerUpdater::PrepareToUpdate(
       content_rect,
       tile_size,
       contents_width_scale,

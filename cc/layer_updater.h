@@ -8,12 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-
-namespace gfx {
-class Rect;
-class Size;
-class Vector2d;
-}
+#include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 
 namespace cc {
 
@@ -24,41 +20,54 @@ class TextureManager;
 struct RenderingStats;
 
 class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
-public:
-    // Allows updaters to store per-resource update properties.
-    class CC_EXPORT Resource {
-    public:
-        virtual ~Resource();
+ public:
+  // Allows updaters to store per-resource update properties.
+  class CC_EXPORT Resource {
+   public:
+    virtual ~Resource();
 
-        PrioritizedResource* texture() { return m_texture.get(); }
-        void swapTextureWith(scoped_ptr<PrioritizedResource>& texture);
-        // TODO(reveman): partialUpdate should be a property of this class
-        // instead of an argument passed to update().
-        virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*) = 0;
-    protected:
-        explicit Resource(scoped_ptr<PrioritizedResource> texture);
+    PrioritizedResource* texture() { return texture_.get(); }
+    // TODO(reveman): partial_update should be a property of this class
+    // instead of an argument passed to Update().
+    virtual void Update(ResourceUpdateQueue* queue,
+                        gfx::Rect source_rect,
+                        gfx::Vector2d dest_offset,
+                        bool partial_update,
+                        RenderingStats* stats) = 0;
+   protected:
+    explicit Resource(scoped_ptr<PrioritizedResource> texture);
 
-    private:
-        scoped_ptr<PrioritizedResource> m_texture;
+   private:
+    scoped_ptr<PrioritizedResource> texture_;
 
-        DISALLOW_COPY_AND_ASSIGN(Resource);
-    };
+    DISALLOW_COPY_AND_ASSIGN(Resource);
+  };
 
-    LayerUpdater() { }
+  LayerUpdater() {}
 
-    virtual scoped_ptr<Resource> createResource(PrioritizedResourceManager*) = 0;
-    // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
-    // then this region should be ignored in preference for the entire layer's area.
-    virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats*) { }
+  virtual scoped_ptr<Resource> CreateResource(
+      PrioritizedResourceManager* manager) = 0;
+  // The |resulting_opaque_rect| gives back a region of the layer that was
+  // painted opaque. If the layer is marked opaque in the updater, then this
+  // region should be ignored in preference for the entire layer's area.
+  virtual void PrepareToUpdate(gfx::Rect content_rect,
+                               gfx::Size tile_size,
+                               float contents_width_scale,
+                               float contents_height_scale,
+                               gfx::Rect* resulting_opaque_rect,
+                               RenderingStats* stats) {}
 
-    // Set true by the layer when it is known that the entire output is going to be opaque.
-    virtual void setOpaque(bool) { }
+  // Set true by the layer when it is known that the entire output is going to
+  // be opaque.
+  virtual void SetOpaque(bool opaque) {}
 
-protected:
-    virtual ~LayerUpdater() { }
+ protected:
+  virtual ~LayerUpdater() {}
 
-private:
-    friend class base::RefCounted<LayerUpdater>;
+ private:
+  friend class base::RefCounted<LayerUpdater>;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerUpdater);
 };
 
 }  // namespace cc

@@ -20,7 +20,7 @@ BitmapSkPictureContentLayerUpdater::Resource::Resource(BitmapSkPictureContentLay
 {
 }
 
-void BitmapSkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats* stats)
+void BitmapSkPictureContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats* stats)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, sourceRect.width(), sourceRect.height());
     m_bitmap.allocPixels();
@@ -37,9 +37,9 @@ void BitmapSkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& q
     ResourceUpdate upload = ResourceUpdate::Create(
         texture(), &m_bitmap, sourceRect, sourceRect, destOffset);
     if (partialUpdate)
-        queue.appendPartialUpload(upload);
+        queue->appendPartialUpload(upload);
     else
-        queue.appendFullUpload(upload);
+        queue->appendFullUpload(upload);
 }
 
 scoped_refptr<BitmapSkPictureContentLayerUpdater> BitmapSkPictureContentLayerUpdater::create(scoped_ptr<LayerPainter> painter)
@@ -56,7 +56,7 @@ BitmapSkPictureContentLayerUpdater::~BitmapSkPictureContentLayerUpdater()
 {
 }
 
-scoped_ptr<LayerUpdater::Resource> BitmapSkPictureContentLayerUpdater::createResource(PrioritizedResourceManager* manager)
+scoped_ptr<LayerUpdater::Resource> BitmapSkPictureContentLayerUpdater::CreateResource(PrioritizedResourceManager* manager)
 {
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }

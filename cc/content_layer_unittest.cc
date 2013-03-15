@@ -43,11 +43,11 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale) {
                                             PassAs<LayerPainter>());
 
   gfx::Rect resulting_opaque_rect;
-  updater->prepareToUpdate(content_rect,
+  updater->PrepareToUpdate(content_rect,
                            gfx::Size(256, 256),
                            contents_scale,
                            contents_scale,
-                           resulting_opaque_rect,
+                           &resulting_opaque_rect,
                            NULL);
 
   EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaque_rect_in_content_space),

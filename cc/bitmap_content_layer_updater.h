@@ -25,7 +25,7 @@ public:
         Resource(BitmapContentLayerUpdater*, scoped_ptr<PrioritizedResource>);
         virtual ~Resource();
 
-        virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*) OVERRIDE;
+        virtual void Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats* stats) OVERRIDE;
 
     private:
         BitmapContentLayerUpdater* updater() { return m_updater; }
@@ -35,11 +35,11 @@ public:
 
     static scoped_refptr<BitmapContentLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedResourceManager*) OVERRIDE;
-    virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats*) OVERRIDE;
-    void updateTexture(ResourceUpdateQueue&, PrioritizedResource*, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate);
+    virtual scoped_ptr<LayerUpdater::Resource> CreateResource(PrioritizedResourceManager*) OVERRIDE;
+    virtual void PrepareToUpdate(gfx::Rect contentRect, gfx::Size tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect* resultingOpaqueRect, RenderingStats*) OVERRIDE;
+    void updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* resource, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate);
 
-    virtual void setOpaque(bool) OVERRIDE;
+    virtual void SetOpaque(bool) OVERRIDE;
 
 protected:
     explicit BitmapContentLayerUpdater(scoped_ptr<LayerPainter>);

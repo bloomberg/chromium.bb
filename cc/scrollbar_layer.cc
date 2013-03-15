@@ -274,7 +274,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
             WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
   }
   if (!back_track_) {
-    back_track_ = back_track_updater_->createResource(
+    back_track_ = back_track_updater_->CreateResource(
         layer_tree_host()->contents_texture_manager());
   }
 
@@ -290,7 +290,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
               WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
     }
     if (!fore_track_) {
-      fore_track_ = fore_track_updater_->createResource(
+      fore_track_ = fore_track_updater_->CreateResource(
           layer_tree_host()->contents_texture_manager());
     }
   }
@@ -302,7 +302,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
                                       geometry_.get()).PassAs<LayerPainter>());
   }
   if (!thumb_) {
-    thumb_ = thumb_updater_->createResource(
+    thumb_ = thumb_updater_->CreateResource(
         layer_tree_host()->contents_texture_manager());
   }
 }
@@ -329,11 +329,11 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
 
   // Paint and upload the entire part.
   gfx::Rect painted_opaque_rect;
-  painter->prepareToUpdate(rect,
+  painter->PrepareToUpdate(rect,
                            rect.size(),
                            contents_scale_x(),
                            contents_scale_y(),
-                           painted_opaque_rect,
+                           &painted_opaque_rect,
                            stats);
   if (!painter->pixelsDidChange() &&
       resource->texture()->haveBackingTexture()) {
@@ -348,7 +348,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
     resource->texture()->returnBackingTexture();
 
   gfx::Vector2d dest_offset(0, 0);
-  resource->update(*queue, rect, dest_offset, partial_updates_allowed, stats);
+  resource->Update(queue, rect, dest_offset, partial_updates_allowed, stats);
 }
 
 gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(

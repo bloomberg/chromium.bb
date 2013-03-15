@@ -263,7 +263,7 @@ UpdatableTile* TiledLayer::CreateTile(int i, int j) {
   CreateUpdaterIfNeeded();
 
   scoped_ptr<UpdatableTile> tile(
-      UpdatableTile::Create(Updater()->createResource(ResourceManager())));
+      UpdatableTile::Create(Updater()->CreateResource(ResourceManager())));
   tile->managed_resource()->setDimensions(tiler_->tileSize(), texture_format_);
 
   UpdatableTile* added_tile = tile.get();
@@ -479,11 +479,11 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
   // hold the updater alive until the paint completes.
   scoped_refptr<LayerUpdater> protector(Updater());
   gfx::Rect painted_opaque_rect;
-  Updater()->prepareToUpdate(paint_rect,
+  Updater()->PrepareToUpdate(paint_rect,
                              tiler_->tileSize(),
                              1.f / width_scale,
                              1.f / height_scale,
-                             painted_opaque_rect,
+                             &painted_opaque_rect,
                              stats);
 
   for (int j = top; j <= bottom; ++j) {
@@ -548,8 +548,8 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
       CHECK_LE(paint_offset.x() + source_rect.width(), paint_rect.width());
       CHECK_LE(paint_offset.y() + source_rect.height(), paint_rect.height());
 
-      tile->updater_resource()->update(
-          *queue, source_rect, dest_offset, tile->partial_update, stats);
+      tile->updater_resource()->Update(
+          queue, source_rect, dest_offset, tile->partial_update, stats);
       if (occlusion) {
         occlusion->overdraw_metrics()->
             DidUpload(gfx::Transform(), source_rect, tile->opaqueRect());

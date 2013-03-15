@@ -28,7 +28,7 @@ public:
         Resource(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedResource>);
         virtual ~Resource();
 
-        virtual void update(cc::ResourceUpdateQueue&, const gfx::Rect&, const gfx::Vector2d&, bool, cc::RenderingStats*) OVERRIDE;
+        virtual void Update(cc::ResourceUpdateQueue* queue, gfx::Rect source_rect, gfx::Vector2d dest_offset, bool partial_update, cc::RenderingStats* stats) OVERRIDE;
 
     private:
         FakeLayerUpdater* m_layer;
@@ -37,9 +37,9 @@ public:
 
     FakeLayerUpdater();
 
-    virtual scoped_ptr<cc::LayerUpdater::Resource> createResource(cc::PrioritizedResourceManager*) OVERRIDE;
+    virtual scoped_ptr<cc::LayerUpdater::Resource> CreateResource(cc::PrioritizedResourceManager* resource) OVERRIDE;
 
-    virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, cc::RenderingStats*) OVERRIDE;
+    virtual void PrepareToUpdate(gfx::Rect content_rect, gfx::Size tile_size, float contents_width_scale, float contents_height_scale, gfx::Rect* resulting_opaque_rect, RenderingStats* stats) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next
     // call to prepareToUpdate() the rect is reset.
     void setRectToInvalidate(const gfx::Rect&, FakeTiledLayer*);

@@ -98,7 +98,7 @@ void ContentLayer::CreateUpdaterIfNeeded() {
     updater_ = BitmapSkPictureContentLayerUpdater::create(painter.Pass());
   else
     updater_ = BitmapContentLayerUpdater::create(painter.Pass());
-  updater_->setOpaque(contents_opaque());
+  updater_->SetOpaque(contents_opaque());
 
   unsigned texture_format =
       layer_tree_host()->GetRendererCapabilities().best_texture_format;
@@ -108,7 +108,7 @@ void ContentLayer::CreateUpdaterIfNeeded() {
 void ContentLayer::SetContentsOpaque(bool opaque) {
   Layer::SetContentsOpaque(opaque);
   if (updater_)
-    updater_->setOpaque(opaque);
+    updater_->SetOpaque(opaque);
 }
 
 }  // namespace cc

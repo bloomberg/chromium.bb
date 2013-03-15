@@ -27,15 +27,15 @@ FakeLayerUpdater::Resource::~Resource()
 {
 }
 
-void FakeLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect&, const gfx::Vector2d&, bool partialUpdate, RenderingStats*)
+void FakeLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats* stats)
 {
     const gfx::Rect rect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
         texture(), &m_bitmap, rect, rect, gfx::Vector2d());
     if (partialUpdate)
-        queue.appendPartialUpload(upload);
+        queue->appendPartialUpload(upload);
     else
-        queue.appendFullUpload(upload);
+        queue->appendFullUpload(upload);
 
     m_layer->update();
 }
@@ -50,7 +50,7 @@ FakeLayerUpdater::~FakeLayerUpdater()
 {
 }
 
-void FakeLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, RenderingStats*)
+void FakeLayerUpdater::PrepareToUpdate(gfx::Rect contentRect, gfx::Size, float, float, gfx::Rect* resultingOpaqueRect, RenderingStats*)
 {
     m_prepareCount++;
     m_lastUpdateRect = contentRect;
@@ -59,7 +59,7 @@ void FakeLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::
         m_rectToInvalidate = gfx::Rect();
         m_layer = NULL;
     }
-    resultingOpaqueRect = m_opaquePaintRect;
+    *resultingOpaqueRect = m_opaquePaintRect;
 }
 
 void FakeLayerUpdater::setRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer* layer)
@@ -68,7 +68,7 @@ void FakeLayerUpdater::setRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer
     m_layer = layer;
 }
 
-scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::createResource(PrioritizedResourceManager* manager)
+scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::CreateResource(PrioritizedResourceManager* manager)
 {
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }

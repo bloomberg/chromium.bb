@@ -22,9 +22,9 @@ SkPictureContentLayerUpdater::Resource::~Resource()
 {
 }
 
-void SkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*)
+void SkPictureContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats*)
 {
-    updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
+    updater()->updateTexture(*queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
 SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter)
@@ -42,15 +42,15 @@ scoped_refptr<SkPictureContentLayerUpdater> SkPictureContentLayerUpdater::create
     return make_scoped_refptr(new SkPictureContentLayerUpdater(painter.Pass()));
 }
 
-scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::createResource(PrioritizedResourceManager* manager)
+scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::CreateResource(PrioritizedResourceManager* manager)
 {
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
-void SkPictureContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats* stats)
+void SkPictureContentLayerUpdater::PrepareToUpdate(gfx::Rect contentRect, gfx::Size, float contentsWidthScale, float contentsHeightScale, gfx::Rect* resultingOpaqueRect, RenderingStats* stats)
 {
     SkCanvas* canvas = m_picture.beginRecording(contentRect.width(), contentRect.height());
-    paintContents(canvas, contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
+    paintContents(canvas, contentRect, contentsWidthScale, contentsHeightScale, *resultingOpaqueRect, stats);
     m_picture.endRecording();
 }
 
@@ -70,7 +70,7 @@ void SkPictureContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, Pri
         queue.appendFullUpload(upload);
 }
 
-void SkPictureContentLayerUpdater::setOpaque(bool opaque)
+void SkPictureContentLayerUpdater::SetOpaque(bool opaque)
 {
     m_layerIsOpaque = opaque;
 }

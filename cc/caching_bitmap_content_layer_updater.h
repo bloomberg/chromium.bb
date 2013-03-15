@@ -17,11 +17,11 @@ class CachingBitmapContentLayerUpdater
   static scoped_refptr<CachingBitmapContentLayerUpdater> Create(
       scoped_ptr<LayerPainter>);
 
-  virtual void prepareToUpdate(const gfx::Rect& content_rect,
-                               const gfx::Size& tile_size,
+  virtual void PrepareToUpdate(gfx::Rect content_rect,
+                               gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect& resulting_opaque_rect,
+                               gfx::Rect* resulting_opaque_rect,
                                RenderingStats*) OVERRIDE;
 
   bool pixelsDidChange() const;

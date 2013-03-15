@@ -23,9 +23,9 @@ BitmapContentLayerUpdater::Resource::~Resource()
 {
 }
 
-void BitmapContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*)
+void BitmapContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats* stats)
 {
-    updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
+    updater()->updateTexture(*queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
 scoped_refptr<BitmapContentLayerUpdater> BitmapContentLayerUpdater::create(scoped_ptr<LayerPainter> painter)
@@ -43,12 +43,12 @@ BitmapContentLayerUpdater::~BitmapContentLayerUpdater()
 {
 }
 
-scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::createResource(PrioritizedResourceManager* manager)
+scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::CreateResource(PrioritizedResourceManager* manager)
 {
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
-void BitmapContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats* stats)
+void BitmapContentLayerUpdater::PrepareToUpdate(gfx::Rect contentRect, gfx::Size tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect* resultingOpaqueRect, RenderingStats* stats)
 {
     if (m_canvasSize != contentRect.size()) {
         m_canvasSize = contentRect.size();
@@ -58,7 +58,7 @@ void BitmapContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, co
     if (stats)
       stats->totalPixelsRasterized += contentRect.width() * contentRect.height();
 
-    paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
+    paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, *resultingOpaqueRect, stats);
 }
 
 void BitmapContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
@@ -75,7 +75,7 @@ void BitmapContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, Priori
         queue.appendFullUpload(upload);
 }
 
-void BitmapContentLayerUpdater::setOpaque(bool opaque)
+void BitmapContentLayerUpdater::SetOpaque(bool opaque)
 {
     if (opaque != m_opaque) {
         m_canvas.reset();

@@ -9,15 +9,8 @@
 namespace cc {
 
 LayerUpdater::Resource::Resource(scoped_ptr<PrioritizedResource> texture)
-    : m_texture(texture.Pass()) {
-}
+    : texture_(texture.Pass()) {}
 
-void LayerUpdater::Resource::swapTextureWith(
-    scoped_ptr<PrioritizedResource>& texture) {
-  m_texture.swap(texture);
-}
-
-LayerUpdater::Resource::~Resource() {
-}
+LayerUpdater::Resource::~Resource() {}
 
 }  // namespace cc
