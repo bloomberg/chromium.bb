@@ -18,10 +18,22 @@ class FakeContextProvider : public cc::ContextProvider {
   typedef base::Callback<scoped_ptr<TestWebGraphicsContext3D>(void)>
     CreateCallback;
 
-  FakeContextProvider();
-  explicit FakeContextProvider(const CreateCallback& create_callback);
+  static scoped_refptr<FakeContextProvider> Create() {
+    scoped_refptr<FakeContextProvider> provider = new FakeContextProvider();
+    if (!provider->InitializeOnMainThread())
+      return NULL;
+    return provider;
+  }
 
-  virtual bool InitializeOnMainThread() OVERRIDE;
+  static scoped_refptr<FakeContextProvider> Create(
+      const CreateCallback& create_callback) {
+    scoped_refptr<FakeContextProvider> provider =
+        new FakeContextProvider(create_callback);
+    if (!provider->InitializeOnMainThread())
+      return NULL;
+    return provider;
+  }
+
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
@@ -29,10 +41,15 @@ class FakeContextProvider : public cc::ContextProvider {
   virtual bool DestroyedOnMainThread() OVERRIDE;
 
  protected:
+  FakeContextProvider();
+  explicit FakeContextProvider(const CreateCallback& create_callback);
   virtual ~FakeContextProvider();
+
+  bool InitializeOnMainThread();
 
   CreateCallback create_callback_;
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
+  bool bound_;
 
   base::Lock destroyed_lock_;
   bool destroyed_;

@@ -385,27 +385,13 @@ void CompositorImpl::scheduleComposite() {
   client_->ScheduleComposite();
 }
 
-class NullContextProvider : public cc::ContextProvider {
-  virtual bool InitializeOnMainThread() OVERRIDE { return false; }
-  virtual bool BindToCurrentThread() OVERRIDE { return false; }
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE { return NULL; }
-  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
-  virtual void VerifyContexts() OVERRIDE {}
-  virtual bool DestroyedOnMainThread() OVERRIDE { return false; }
-
- protected:
-  virtual ~NullContextProvider() {}
-};
-
 scoped_refptr<cc::ContextProvider>
 CompositorImpl::OffscreenContextProviderForMainThread() {
   // There is no support for offscreen contexts, or compositor filters that
   // would require them in this compositor instance. If they are needed,
   // then implement a context provider that provides contexts from
   // ImageTransportSurfaceAndroid.
-  if (!null_offscreen_context_provider_)
-    null_offscreen_context_provider_ = new NullContextProvider();
-  return null_offscreen_context_provider_;
+  return NULL;
 }
 
 scoped_refptr<cc::ContextProvider>
@@ -414,9 +400,7 @@ CompositorImpl::OffscreenContextProviderForCompositorThread() {
   // would require them in this compositor instance. If they are needed,
   // then implement a context provider that provides contexts from
   // ImageTransportSurfaceAndroid.
-  if (!null_offscreen_context_provider_)
-    null_offscreen_context_provider_ = new NullContextProvider();
-  return null_offscreen_context_provider_;
+  return NULL;
 }
 
 void CompositorImpl::OnViewContextSwapBuffersPosted() {

@@ -581,10 +581,18 @@ class GpuProcessTransportFactory
 
   class MainThreadContextProvider : public ContextProviderCommandBuffer {
    public:
-    explicit MainThreadContextProvider(GpuProcessTransportFactory* factory)
-        : factory_(factory) {}
+    static scoped_refptr<MainThreadContextProvider> Create(
+        GpuProcessTransportFactory* factory) {
+      scoped_refptr<MainThreadContextProvider> provider =
+          new MainThreadContextProvider(factory);
+      if (!provider->InitializeOnMainThread())
+        return NULL;
+      return provider;
+    }
 
    protected:
+    explicit MainThreadContextProvider(GpuProcessTransportFactory* factory)
+        : factory_(factory) {}
     virtual ~MainThreadContextProvider() {}
 
     virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
@@ -593,8 +601,6 @@ class GpuProcessTransportFactory
     }
 
     virtual void OnLostContext() OVERRIDE {
-      ContextProviderCommandBuffer::OnLostContext();
-
       MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&GpuProcessTransportFactory::OnLostMainThreadSharedContext,
@@ -609,17 +615,28 @@ class GpuProcessTransportFactory
       OffscreenContextProviderForMainThread() OVERRIDE {
     if (!shared_contexts_main_thread_ ||
         shared_contexts_main_thread_->DestroyedOnMainThread()) {
-      shared_contexts_main_thread_ = new MainThreadContextProvider(this);
+      shared_contexts_main_thread_ = MainThreadContextProvider::Create(this);
+      if (shared_contexts_main_thread_ &&
+          !shared_contexts_main_thread_->BindToCurrentThread())
+        shared_contexts_main_thread_ = NULL;
     }
     return shared_contexts_main_thread_;
   }
 
   class CompositorThreadContextProvider : public ContextProviderCommandBuffer {
    public:
-    explicit CompositorThreadContextProvider(
-        GpuProcessTransportFactory* factory) : factory_(factory) {}
+    static scoped_refptr<CompositorThreadContextProvider> Create(
+        GpuProcessTransportFactory* factory) {
+      scoped_refptr<CompositorThreadContextProvider> provider =
+          new CompositorThreadContextProvider(factory);
+      if (!provider->InitializeOnMainThread())
+        return NULL;
+      return provider;
+    }
 
    protected:
+    explicit CompositorThreadContextProvider(
+        GpuProcessTransportFactory* factory) : factory_(factory) {}
     virtual ~CompositorThreadContextProvider() {}
 
     virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
@@ -636,7 +653,7 @@ class GpuProcessTransportFactory
     if (!shared_contexts_compositor_thread_ ||
         shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
       shared_contexts_compositor_thread_ =
-          new CompositorThreadContextProvider(this);
+          CompositorThreadContextProvider::Create(this);
     }
     return shared_contexts_compositor_thread_;
   }
@@ -644,15 +661,10 @@ class GpuProcessTransportFactory
   void CreateSharedContextLazy() {
     scoped_refptr<cc::ContextProvider> provider =
         OffscreenContextProviderForMainThread();
-    if (!provider->InitializeOnMainThread()) {
+    if (!provider) {
       // If we can't recreate contexts, we won't be able to show the UI.
       // Better crash at this point.
       FatalGPUError("Failed to initialize UI shared context.");
-    }
-    if (!provider->BindToCurrentThread()) {
-      // If we can't recreate contexts, we won't be able to show the UI.
-      // Better crash at this point.
-      FatalGPUError("Failed to make UI shared context current.");
     }
   }
 
@@ -689,27 +701,6 @@ void CompositorSwapClient::OnLostContext() {
   // Note: previous line destroyed this. Don't access members from now on.
 }
 
-class FailingContextProvider : public cc::ContextProvider {
- public:
-  FailingContextProvider() {}
-
-  virtual bool InitializeOnMainThread() OVERRIDE { return false; }
-
-  virtual bool BindToCurrentThread() OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE { return NULL; }
-  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
-  virtual void VerifyContexts() OVERRIDE {}
-  virtual bool DestroyedOnMainThread() OVERRIDE { return false; }
-
- protected:
-  virtual ~FailingContextProvider() {}
-  DISALLOW_COPY_AND_ASSIGN(FailingContextProvider);
-};
-
 class SoftwareContextFactory : public ui::ContextFactory {
  public:
   SoftwareContextFactory() {}
@@ -738,20 +729,15 @@ class SoftwareContextFactory : public ui::ContextFactory {
 
   virtual scoped_refptr<cc::ContextProvider>
   OffscreenContextProviderForMainThread() OVERRIDE {
-    if (!context_provider_)
-      context_provider_ = new FailingContextProvider();
-    return context_provider_;
+    return NULL;
   }
 
   virtual scoped_refptr<cc::ContextProvider>
   OffscreenContextProviderForCompositorThread() OVERRIDE {
-    if (!context_provider_)
-      context_provider_ = new FailingContextProvider();
-    return context_provider_;
+    return NULL;
   }
 
  private:
-  scoped_refptr<FailingContextProvider> context_provider_;
   DISALLOW_COPY_AND_ASSIGN(SoftwareContextFactory);
 };
 

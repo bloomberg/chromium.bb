@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
+#include "cc/context_provider.h"
 #include "cc/output_surface.h"
 #include "cc/texture_copier.h"
 #include "cc/texture_mailbox.h"
@@ -35,8 +36,6 @@ class Vector2d;
 }
 
 namespace cc {
-
-class ContextProvider;
 class TextureUploader;
 
 // This class is not thread-safe and can only be called from the thread it was
@@ -305,8 +304,10 @@ class CC_EXPORT ResourceProvider {
   cc::ContextProvider* offscreen_context_provider() {
     return offscreen_context_provider_.get();
   }
-  void SetOffscreenContextProvider(
-      scoped_refptr<cc::ContextProvider> offscreen_context_provider);
+  void set_offscreen_context_provider(
+      scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
+    offscreen_context_provider_ = offscreen_context_provider;
+  }
 
  private:
   struct Resource {

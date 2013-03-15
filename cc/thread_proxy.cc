@@ -252,7 +252,7 @@ bool ThreadProxy::RecreateOutputSurface() {
   if (created_offscreen_context_provider_) {
     offscreen_context_provider = layer_tree_host_->client()->
         OffscreenContextProviderForCompositorThread();
-    if (!offscreen_context_provider->InitializeOnMainThread())
+    if (!offscreen_context_provider)
       return false;
   }
 
@@ -730,10 +730,8 @@ void ThreadProxy::BeginFrame(
       layer_tree_host_->needs_offscreen_context()) {
     offscreen_context_provider = layer_tree_host_->client()->
         OffscreenContextProviderForCompositorThread();
-    if (offscreen_context_provider->InitializeOnMainThread())
+    if (offscreen_context_provider)
       created_offscreen_context_provider_ = true;
-    else
-      offscreen_context_provider = NULL;
   }
 
   // Notify the impl thread that the beginFrame has completed. This will
@@ -782,8 +780,10 @@ void ThreadProxy::BeginFrameCompleteOnImplThread(
     return;
   }
 
+  if (offscreen_context_provider)
+    offscreen_context_provider->BindToCurrentThread();
   layer_tree_host_impl_->resource_provider()->
-      SetOffscreenContextProvider(offscreen_context_provider);
+      set_offscreen_context_provider(offscreen_context_provider);
 
   if (layer_tree_host_->contents_texture_manager()->
           linkedEvictedBackingsExist()) {
@@ -1163,14 +1163,18 @@ void ThreadProxy::RecreateOutputSurfaceOnImplThread(
     RendererCapabilities* capabilities) {
   TRACE_EVENT0("cc", "ThreadProxy::RecreateOutputSurfaceOnImplThread");
   DCHECK(IsImplThread());
+
   layer_tree_host_->DeleteContentsTexturesOnImplThread(
       layer_tree_host_impl_->resource_provider());
   *recreate_succeeded =
       layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
+  if (offscreen_context_provider)
+      offscreen_context_provider->BindToCurrentThread();
+
   if (*recreate_succeeded) {
     *capabilities = layer_tree_host_impl_->GetRendererCapabilities();
     layer_tree_host_impl_->resource_provider()->
-        SetOffscreenContextProvider(offscreen_context_provider);
+        set_offscreen_context_provider(offscreen_context_provider);
     scheduler_on_impl_thread_->didRecreateOutputSurface();
   } else if (offscreen_context_provider) {
     offscreen_context_provider->VerifyContexts();

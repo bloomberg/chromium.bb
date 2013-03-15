@@ -2682,8 +2682,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   scoped_refptr<cc::ContextProvider> context_provider =
       RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  if (!context_provider->InitializeOnMainThread() ||
-      !context_provider->BindToCurrentThread()) {
+  if (!context_provider) {
     LOG(ERROR) << "Failed to get context3d for media player";
     return NULL;
   }

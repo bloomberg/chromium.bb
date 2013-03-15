@@ -22,9 +22,6 @@ namespace content {
 // WebGraphicsContext3DCommandBufferImpl context and a GrContext.
 class ContextProviderCommandBuffer : public cc::ContextProvider {
  public:
-  ContextProviderCommandBuffer();
-
-  virtual bool InitializeOnMainThread() OVERRIDE;
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebGraphicsContext3DCommandBufferImpl* Context3d() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
@@ -37,13 +34,19 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   }
 
  protected:
+  ContextProviderCommandBuffer();
   virtual ~ContextProviderCommandBuffer();
+
+  // This must be called immedately after creating this object, and it should
+  // be thrown away if this returns false.
+  bool InitializeOnMainThread();
 
   // Subclass must provide an implementation to create an offscreen context.
   virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
       CreateOffscreenContext3d() = 0;
 
-  virtual void OnLostContext();
+  void OnLostContextInternal();
+  virtual void OnLostContext() {}
   virtual void OnMemoryAllocationChanged(bool nonzero_allocation);
 
  private:

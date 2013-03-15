@@ -128,9 +128,12 @@ class LayerTreeHostContextTest : public ThreadedTest {
 
     if (!offscreen_contexts_main_thread_ ||
         offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_main_thread_ = new FakeContextProvider(
+      offscreen_contexts_main_thread_ = FakeContextProvider::Create(
           base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
                      base::Unretained(this)));
+      if (offscreen_contexts_main_thread_ &&
+          !offscreen_contexts_main_thread_->BindToCurrentThread())
+        offscreen_contexts_main_thread_ = NULL;
     }
     return offscreen_contexts_main_thread_;
   }
@@ -141,7 +144,7 @@ class LayerTreeHostContextTest : public ThreadedTest {
 
     if (!offscreen_contexts_compositor_thread_ ||
         offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_compositor_thread_ = new FakeContextProvider(
+      offscreen_contexts_compositor_thread_ = FakeContextProvider::Create(
           base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
                      base::Unretained(this)));
     }

@@ -22,9 +22,14 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
     IN_PROCESS,
     IN_PROCESS_COMMAND_BUFFER,
   };
-  explicit ContextProviderInProcess(InProcessType type);
+  static scoped_refptr<ContextProviderInProcess> Create(InProcessType type) {
+    scoped_refptr<ContextProviderInProcess> provider =
+        new ContextProviderInProcess(type);
+    if (!provider->InitializeOnMainThread())
+      return NULL;
+    return provider;
+  }
 
-  virtual bool InitializeOnMainThread() OVERRIDE;
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
@@ -32,11 +37,15 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual bool DestroyedOnMainThread() OVERRIDE;
 
  protected:
+  explicit ContextProviderInProcess(InProcessType type);
   virtual ~ContextProviderInProcess();
+
+  bool InitializeOnMainThread();
 
   scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext3d();
 
-  virtual void OnLostContext();
+  void OnLostContextInternal();
+  virtual void OnLostContext() {}
   virtual void OnMemoryAllocationChanged(bool nonzero_allocation);
 
  private:

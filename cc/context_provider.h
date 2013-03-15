@@ -14,10 +14,6 @@ namespace cc {
 
 class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
  public:
-  // Initialize and create a 3d context. This must be called from the main
-  // thread. Calling it more than once should have no effect.
-  virtual bool InitializeOnMainThread() = 0;
-
   // Bind the 3d context to the current thread. This should be called before
   // accessing the contexts. Calling it more than once should have no effect.
   // Once this function has been called, the class should only be accessed

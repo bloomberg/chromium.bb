@@ -54,7 +54,8 @@ PixelTest::PixelTest() : device_viewport_size_(gfx::Size(200, 200)) {}
 PixelTest::~PixelTest() {}
 
 void PixelTest::SetUp() {
-  gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
+  CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+
   scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
       context3d(
           new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl);
@@ -68,11 +69,11 @@ void PixelTest::SetUp() {
                                  output_surface_.get(),
                                  resource_provider_.get());
 
-  scoped_refptr<cc::ContextProvider> offscreen_contexts =
-      new webkit::gpu::ContextProviderInProcess(
+  scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts =
+      webkit::gpu::ContextProviderInProcess::Create(
           webkit::gpu::ContextProviderInProcess::IN_PROCESS_COMMAND_BUFFER);
-  ASSERT_TRUE(offscreen_contexts->InitializeOnMainThread());
-  resource_provider_->SetOffscreenContextProvider(offscreen_contexts);
+  ASSERT_TRUE(offscreen_contexts->BindToCurrentThread());
+  resource_provider_->set_offscreen_context_provider(offscreen_contexts);
 }
 
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file) {

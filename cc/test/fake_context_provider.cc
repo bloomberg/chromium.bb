@@ -15,39 +15,51 @@ FakeContextProvider::FakeContextProvider()
 FakeContextProvider::FakeContextProvider(
     const CreateCallback& create_callback)
     : create_callback_(create_callback),
+      bound_(false),
       destroyed_(false) {
 }
 
 FakeContextProvider::~FakeContextProvider() {}
 
 bool FakeContextProvider::InitializeOnMainThread() {
-  if (destroyed_)
-    return false;
-  if (context3d_)
-    return true;
+  DCHECK(!context3d_);
 
   if (create_callback_.is_null())
     context3d_ = TestWebGraphicsContext3D::Create().Pass();
   else
     context3d_ = create_callback_.Run();
-  destroyed_ = !context3d_;
-  return !!context3d_;
+  return context3d_;
 }
 
 bool FakeContextProvider::BindToCurrentThread() {
-  return context3d_->makeContextCurrent();
+  bound_ = true;
+  if (!context3d_->makeContextCurrent()) {
+    base::AutoLock lock(destroyed_lock_);
+    destroyed_ = true;
+    return false;
+  }
+  return true;
 }
 
 WebKit::WebGraphicsContext3D* FakeContextProvider::Context3d() {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+
   return context3d_.get();
 }
 class GrContext* FakeContextProvider::GrContext() {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+
   // TODO(danakj): Make a fake GrContext.
   return NULL;
 }
 
 void FakeContextProvider::VerifyContexts() {
-  if (!Context3d() || Context3d()->isContextLost()) {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+
+  if (context3d_->isContextLost()) {
     base::AutoLock lock(destroyed_lock_);
     destroyed_ = true;
   }

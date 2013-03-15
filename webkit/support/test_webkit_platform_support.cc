@@ -395,11 +395,8 @@ TestWebKitPlatformSupport::sharedOffscreenGraphicsContext3D() {
   main_thread_contexts_ =
       webkit::gpu::TestContextProviderFactory::GetInstance()->
           OffscreenContextProviderForMainThread();
-  if (!main_thread_contexts_->InitializeOnMainThread() ||
-      !main_thread_contexts_->BindToCurrentThread()) {
-    main_thread_contexts_ = NULL;
+  if (!main_thread_contexts_)
     return NULL;
-  }
   return main_thread_contexts_->Context3d();
 }
 

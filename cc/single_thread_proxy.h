@@ -89,7 +89,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;
   bool output_surface_lost_;
-  bool created_offscreen_context_provider;
+  bool created_offscreen_context_provider_;
 
   // Holds on to the context between initializeContext() and
   // InitializeRenderer() calls. Shouldn't be used for anything else.

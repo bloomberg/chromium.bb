@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
-#include "cc/context_provider.h"
 #include "cc/gl_renderer.h"  // For the GLC() macro.
 #include "cc/platform_color.h"
 #include "cc/texture_uploader.h"
@@ -1207,13 +1206,6 @@ void ResourceProvider::EnableReadLockFences(ResourceProvider::ResourceId id,
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   resource->enable_read_lock_fences = enable;
-}
-
-void ResourceProvider::SetOffscreenContextProvider(
-    scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
-  if (offscreen_context_provider)
-    offscreen_context_provider->BindToCurrentThread();
-  offscreen_context_provider_ = offscreen_context_provider;
 }
 
 }  // namespace cc

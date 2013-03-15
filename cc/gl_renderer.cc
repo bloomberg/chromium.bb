@@ -412,8 +412,7 @@ static inline SkBitmap ApplyFilters(GLRenderer* renderer,
 
   ContextProvider* offscreen_contexts =
       renderer->resource_provider()->offscreen_context_provider();
-  if (!offscreen_contexts || !offscreen_contexts->Context3d() ||
-      !offscreen_contexts->GrContext())
+  if (!offscreen_contexts || !offscreen_contexts->GrContext())
     return SkBitmap();
 
   ResourceProvider::ScopedWriteLockGL lock(renderer->resource_provider(),
@@ -454,8 +453,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
 
   ContextProvider* offscreen_contexts =
       renderer->resource_provider()->offscreen_context_provider();
-  if (!offscreen_contexts || !offscreen_contexts->Context3d() ||
-      !offscreen_contexts->GrContext())
+  if (!offscreen_contexts || !offscreen_contexts->GrContext())
     return SkBitmap();
 
   ResourceProvider::ScopedWriteLockGL lock(renderer->resource_provider(),

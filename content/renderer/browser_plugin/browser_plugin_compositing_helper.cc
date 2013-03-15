@@ -70,9 +70,7 @@ void BrowserPluginCompositingHelper::FreeMailboxMemory(
 
   scoped_refptr<cc::ContextProvider> context_provider =
       RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  if (!context_provider->InitializeOnMainThread())
-    return;
-  if (!context_provider->BindToCurrentThread())
+  if (!context_provider)
     return;
 
   WebKit::WebGraphicsContext3D *context = context_provider->Context3d();

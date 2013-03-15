@@ -26,7 +26,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host)
     : Proxy(scoped_ptr<Thread>(NULL)),
       layer_tree_host_(layer_tree_host),
       output_surface_lost_(false),
-      created_offscreen_context_provider(false),
+      created_offscreen_context_provider_(false),
       renderer_initialized_(false),
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false),
@@ -140,10 +140,10 @@ bool SingleThreadProxy::RecreateOutputSurface() {
   if (!outputSurface.get())
     return false;
   scoped_refptr<cc::ContextProvider> offscreen_context_provider;
-  if (created_offscreen_context_provider) {
+  if (created_offscreen_context_provider_) {
     offscreen_context_provider =
         layer_tree_host_->client()->OffscreenContextProviderForMainThread();
-    if (!offscreen_context_provider->InitializeOnMainThread())
+    if (!offscreen_context_provider)
       return false;
   }
 
@@ -158,8 +158,8 @@ bool SingleThreadProxy::RecreateOutputSurface() {
     if (initialized) {
       renderer_capabilities_for_main_thread_ =
           layer_tree_host_impl_->GetRendererCapabilities();
-      layer_tree_host_impl_->resource_provider()
-          ->SetOffscreenContextProvider(offscreen_context_provider);
+      layer_tree_host_impl_->resource_provider()->
+          set_offscreen_context_provider(offscreen_context_provider);
     } else if (offscreen_context_provider) {
       offscreen_context_provider->VerifyContexts();
     }
@@ -379,10 +379,8 @@ bool SingleThreadProxy::CommitAndComposite() {
       layer_tree_host_->needs_offscreen_context()) {
     offscreen_context_provider =
         layer_tree_host_->client()->OffscreenContextProviderForMainThread();
-    if (offscreen_context_provider->InitializeOnMainThread())
-      created_offscreen_context_provider = true;
-    else
-      offscreen_context_provider = NULL;
+    if (offscreen_context_provider)
+      created_offscreen_context_provider_ = true;
   }
 
   layer_tree_host_->contents_texture_manager()->unlinkAndClearEvictedBackings();
@@ -407,7 +405,7 @@ bool SingleThreadProxy::DoComposite(
     base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
     layer_tree_host_impl_->resource_provider()->
-        SetOffscreenContextProvider(offscreen_context_provider);
+        set_offscreen_context_provider(offscreen_context_provider);
 
     if (!layer_tree_host_impl_->visible())
       return false;

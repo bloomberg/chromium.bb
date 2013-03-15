@@ -125,11 +125,9 @@ bool PlatformContext3DImpl::SetParentAndCreateBackingTextureIfNeeded() {
 
   parent_context_provider_ =
       RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  if (!parent_context_provider_->InitializeOnMainThread() ||
-      !parent_context_provider_->BindToCurrentThread()) {
-    DestroyParentContextProviderAndBackingTexture();
+  parent_texture_id_ = 0;
+  if (!parent_context_provider_)
     return false;
-  }
 
   // Flush any remaining commands in the parent context to make sure the
   // texture id accounting stays consistent.

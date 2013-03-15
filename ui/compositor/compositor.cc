@@ -117,26 +117,30 @@ void ContextFactory::SetInstance(ContextFactory* instance) {
 
 class ContextProviderFromContextFactory : public cc::ContextProvider {
  public:
-  explicit ContextProviderFromContextFactory(ContextFactory* factory)
-      : factory_(factory),
-        destroyed_(false) {}
-
-  virtual bool InitializeOnMainThread() OVERRIDE {
-    if (context3d_)
-      return true;
-    context3d_.reset(factory_->CreateOffscreenContext());
-    return !!context3d_;
+  static scoped_refptr<ContextProviderFromContextFactory> Create(
+      ContextFactory* factory) {
+    scoped_refptr<ContextProviderFromContextFactory> provider =
+        new ContextProviderFromContextFactory(factory);
+    if (!provider->InitializeOnMainThread())
+      return NULL;
+    return provider;
   }
 
   virtual bool BindToCurrentThread() OVERRIDE {
+    DCHECK(context3d_);
+
     return context3d_->makeContextCurrent();
   }
 
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    DCHECK(context3d_);
+
     return context3d_.get();
   }
 
   virtual class GrContext* GrContext() OVERRIDE {
+    DCHECK(context3d_);
+
     if (!gr_context_) {
       gr_context_.reset(
           new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
@@ -145,10 +149,12 @@ class ContextProviderFromContextFactory : public cc::ContextProvider {
   }
 
   virtual void VerifyContexts() OVERRIDE {
-    if (context3d_ && !context3d_->isContextLost())
-      return;
-    base::AutoLock lock(destroyed_lock_);
-    destroyed_ = true;
+    DCHECK(context3d_);
+
+    if (context3d_->isContextLost()) {
+      base::AutoLock lock(destroyed_lock_);
+      destroyed_ = true;
+    }
   }
 
   virtual bool DestroyedOnMainThread() OVERRIDE {
@@ -157,7 +163,17 @@ class ContextProviderFromContextFactory : public cc::ContextProvider {
   }
 
  protected:
+  explicit ContextProviderFromContextFactory(ContextFactory* factory)
+      : factory_(factory),
+        destroyed_(false) {}
   virtual ~ContextProviderFromContextFactory() {}
+
+  bool InitializeOnMainThread() {
+    if (context3d_)
+      return true;
+    context3d_.reset(factory_->CreateOffscreenContext());
+    return !!context3d_;
+  }
 
  private:
   ContextFactory* factory_;
@@ -197,7 +213,10 @@ DefaultContextFactory::OffscreenContextProviderForMainThread() {
   if (!offscreen_contexts_main_thread_ ||
       !offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_main_thread_ =
-        new ContextProviderFromContextFactory(this);
+        ContextProviderFromContextFactory::Create(this);
+    if (offscreen_contexts_main_thread_ &&
+        !offscreen_contexts_main_thread_->BindToCurrentThread())
+      offscreen_contexts_main_thread_ = NULL;
   }
   return offscreen_contexts_main_thread_;
 }
@@ -207,7 +226,7 @@ DefaultContextFactory::OffscreenContextProviderForCompositorThread() {
   if (!offscreen_contexts_compositor_thread_ ||
       !offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_compositor_thread_ =
-        new ContextProviderFromContextFactory(this);
+        ContextProviderFromContextFactory::Create(this);
   }
   return offscreen_contexts_compositor_thread_;
 }
@@ -244,15 +263,9 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
   return context;
 }
 
-TestContextFactory::TestContextFactory() {
-  offscreen_contexts_main_thread_ =
-      new ContextProviderFromContextFactory(this);
-  offscreen_contexts_compositor_thread_ =
-      new ContextProviderFromContextFactory(this);
-}
+TestContextFactory::TestContextFactory() {}
 
-TestContextFactory::~TestContextFactory() {
-}
+TestContextFactory::~TestContextFactory() {}
 
 cc::OutputSurface* TestContextFactory::CreateOutputSurface(
     Compositor* compositor) {
@@ -267,11 +280,22 @@ WebKit::WebGraphicsContext3D* TestContextFactory::CreateOffscreenContext() {
 
 scoped_refptr<cc::ContextProvider>
 TestContextFactory::OffscreenContextProviderForMainThread() {
+  if (!offscreen_contexts_main_thread_ ||
+      offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
+    offscreen_contexts_main_thread_ =
+        ContextProviderFromContextFactory::Create(this);
+    CHECK(offscreen_contexts_main_thread_->BindToCurrentThread());
+  }
   return offscreen_contexts_main_thread_;
 }
 
 scoped_refptr<cc::ContextProvider>
 TestContextFactory::OffscreenContextProviderForCompositorThread() {
+  if (!offscreen_contexts_compositor_thread_ ||
+      offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
+    offscreen_contexts_compositor_thread_ =
+        ContextProviderFromContextFactory::Create(this);
+  }
   return offscreen_contexts_compositor_thread_;
 }
 

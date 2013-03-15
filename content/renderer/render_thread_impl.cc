@@ -242,6 +242,15 @@ class RenderThreadImpl::GpuVDAContextLostCallback
 
 class RenderThreadImpl::RendererContextProviderCommandBuffer
     : public ContextProviderCommandBuffer {
+ public:
+  static scoped_refptr<RendererContextProviderCommandBuffer> Create() {
+    scoped_refptr<RendererContextProviderCommandBuffer> provider =
+        new RendererContextProviderCommandBuffer();
+    if (!provider->InitializeOnMainThread())
+      return NULL;
+    return provider;
+  }
+
  protected:
   virtual ~RendererContextProviderCommandBuffer() {}
 
@@ -953,18 +962,27 @@ RenderThreadImpl::CreateOffscreenContext3d() {
 
 scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::OffscreenContextProviderForMainThread() {
+  DCHECK(IsMainThread());
+
   if (!shared_contexts_main_thread_ ||
-      shared_contexts_main_thread_->DestroyedOnMainThread())
-    shared_contexts_main_thread_ = new RendererContextProviderCommandBuffer;
+      shared_contexts_main_thread_->DestroyedOnMainThread()) {
+    shared_contexts_main_thread_ =
+        RendererContextProviderCommandBuffer::Create();
+    if (shared_contexts_main_thread_ &&
+        !shared_contexts_main_thread_->BindToCurrentThread())
+      shared_contexts_main_thread_ = NULL;
+  }
   return shared_contexts_main_thread_;
 }
 
 scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::OffscreenContextProviderForCompositorThread() {
+  DCHECK(IsMainThread());
+
   if (!shared_contexts_compositor_thread_ ||
       shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
     shared_contexts_compositor_thread_ =
-        new RendererContextProviderCommandBuffer;
+        RendererContextProviderCommandBuffer::Create();
   }
   return shared_contexts_compositor_thread_;
 }
