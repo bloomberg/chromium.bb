@@ -16,6 +16,7 @@
 
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/dialogs.css"></link>
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/list.css"></link>
+    <link rel="stylesheet" href="../../../../ui/webui/resources/css/tree.css"></link>
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/table.css"></link>
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/menu.css"></link>
 
@@ -52,6 +53,8 @@
       <script src="../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js"></script>
       <script src="../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"></script>
       <script src="../../../../ui/webui/resources/js/cr/ui/list.js"></script>
+      <script src="../../../../ui/webui/resources/js/cr/ui/tree.js"></script>
+      <script src="../../../../ui/webui/resources/css/tree.css.js"></script>
       <script src="../../../../ui/webui/resources/js/cr/ui/autocomplete_list.js"></script>
 
       <script src="../../../../ui/webui/resources/js/cr/ui/splitter.js"></script>
@@ -91,6 +94,7 @@
       <script src="js/file_tasks.js"></script>
       <script src="js/file_transfer_controller.js"></script>
       <script src="js/file_type.js"></script>
+      <script src="js/sidebar.js"></script>
       <script src="js/volume_manager.js"></script>
       <script src="js/media/media_util.js"></script>
       <script src="js/metadata/metadata_cache.js"></script>
@@ -213,7 +217,7 @@
     <div class=dialog-title invisibleif="full-page">[TITLE]</div>
     <div class=dialog-container>
       <div class=dialog-sidebar>
-        <list id="roots-list" tabindex="8"></list>
+        <tree id="directory-tree" tabindex="8"></tree>
       </div>
       <div class=sidebar-splitter></div>
       <div class=dialog-main>

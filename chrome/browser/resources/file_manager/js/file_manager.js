@@ -522,7 +522,8 @@ DialogType.isModal = function(type) {
     controller.attachDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);
     controller.attachDropTarget(this.grid_);
-    controller.attachDropTarget(this.rootsList_, true);
+    controller.attachDropTarget(this.directoryTree_,
+                                true /* onlyIntoDirectories */);
     controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
@@ -548,6 +549,8 @@ DialogType.isModal = function(type) {
     this.rootsContextMenu_ =
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
+
+    this.directoryTree_.setContextMenu(this.rootsContextMenu_);
 
     this.textContextMenu_ =
         this.dialogDom_.querySelector('#text-context-menu');
@@ -589,14 +592,15 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'newwindow',
         Commands.newWindowCommand, this);
 
-    CommandUtil.registerCommand(this.rootsList_, 'unmount',
-        Commands.unmountCommand, this.rootsList_, this);
+    CommandUtil.registerCommand(this.directoryTree_, 'unmount',
+        Commands.unmountCommand, this.directoryTree_, this);
 
     CommandUtil.registerCommand(doc, 'format',
-        Commands.formatCommand, this.rootsList_, this, this.directoryModel_);
+        Commands.formatCommand, this.directoryTree_, this,
+        this.directoryModel_);
 
-    CommandUtil.registerCommand(this.rootsList_, 'import-photos',
-        Commands.importCommand, this.rootsList_);
+    CommandUtil.registerCommand(this.directoryTree_, 'import-photos',
+        Commands.importCommand, this.directoryTree_);
 
     CommandUtil.registerCommand(doc, 'delete',
         Commands.deleteFileCommand, this);
@@ -914,7 +918,7 @@ DialogType.isModal = function(type) {
     this.table_.list.addEventListener('blur', fileListBlurBound);
     this.grid_.addEventListener('blur', fileListBlurBound);
 
-    this.initRootsList_();
+    this.initSidebar_();
 
     this.table_.addEventListener('column-resize-end',
                                  this.updateStartupPrefs_.bind(this));
@@ -947,24 +951,15 @@ DialogType.isModal = function(type) {
                today.getTime() + MILLISECONDS_IN_DAY - Date.now() + 1000);
   };
 
-  FileManager.prototype.initRootsList_ = function() {
-    this.rootsList_ = this.dialogDom_.querySelector('#roots-list');
-    cr.ui.List.decorate(this.rootsList_);
+  FileManager.prototype.initSidebar_ = function() {
+    this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
+    DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
 
-    // Overriding default role 'list' set by cr.ui.List.decorate() to 'listbox'
-    // role for better accessibility on ChromeOS.
-    this.rootsList_.setAttribute('role', 'listbox');
-
-    var self = this;
-    this.rootsList_.itemConstructor = function(entry) {
-      return self.renderRoot_(entry.fullPath);
-    };
-
-    this.rootsList_.selectionModel =
-        this.directoryModel_.getRootsListSelectionModel();
-
-    // TODO(dgozman): add "Add a drive" item.
-    this.rootsList_.dataModel = this.directoryModel_.getRootsList();
+    this.directoryTree_.addEventListener('change', function() {
+      var currentPath = this.directoryTree_.getCurrentPath() ||
+                        this.directoryModel_.getDefaultDirectory();
+      this.directoryModel_.changeDirectory(currentPath);
+    }.bind(this));
   };
 
   FileManager.prototype.updateStartupPrefs_ = function() {
@@ -1031,13 +1026,6 @@ DialogType.isModal = function(type) {
     if (this.params_.includeAllFiles)  // Already 1-based.
       return index;
     return index + 1;  // Convert to 1-based;
-  };
-
-  FileManager.prototype.getRootEntry_ = function(index) {
-    if (index == -1)
-      return null;
-
-    return this.rootsList_.dataModel.item(index);
   };
 
   FileManager.prototype.setListType = function(type) {
@@ -1247,7 +1235,6 @@ DialogType.isModal = function(type) {
       this.table_.redraw();
     }
 
-    this.rootsList_.redraw();
     this.breadcrumbs_.truncate();
     this.searchBreadcrumbs_.truncate();
 
@@ -1464,74 +1451,12 @@ DialogType.isModal = function(type) {
     this.dialogDom_.setAttribute('type', this.dialogType);
   };
 
-  FileManager.prototype.renderRoot_ = function(path) {
-    var li = this.document_.createElement('li');
-    li.className = 'root-item';
-    li.setAttribute('role', 'option');
-    var dm = this.directoryModel_;
-    var handleClick = function() {
-      if (li.selected && path !== dm.getCurrentDirPath()) {
-        dm.changeDirectory(path);
-      }
-    };
-    li.addEventListener('mousedown', handleClick);
-    li.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START, handleClick);
-
-    var rootType = PathUtil.getRootType(path);
-
-    var iconDiv = this.document_.createElement('div');
-    iconDiv.className = 'volume-icon';
-    iconDiv.setAttribute('volume-type-icon', rootType);
-    if (rootType === RootType.REMOVABLE) {
-      iconDiv.setAttribute('volume-subtype',
-          this.volumeManager_.getDeviceType(path));
-    }
-    li.appendChild(iconDiv);
-
-    var div = this.document_.createElement('div');
-    div.className = 'root-label';
-
-    div.textContent = PathUtil.getRootLabel(path);
-    li.appendChild(div);
-
-    if (rootType === RootType.ARCHIVE || rootType === RootType.REMOVABLE) {
-      var eject = this.document_.createElement('div');
-      eject.className = 'root-eject';
-      eject.addEventListener('click', function(event) {
-        event.stopPropagation();
-        var unmountCommand = this.dialogDom_.querySelector('command#unmount');
-        // Let's make sure 'canExecute' state of the command is properly set for
-        // the root before executing it.
-        unmountCommand.canExecuteChange(li);
-        unmountCommand.execute(li);
-      }.bind(this));
-      // Block other mouse handlers.
-      eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
-      eject.addEventListener('mousedown', function(e) { e.stopPropagation() });
-      li.appendChild(eject);
-    }
-
-    if (rootType != RootType.DRIVE && rootType != RootType.DOWNLOADS)
-      cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
-
-    cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
-    cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
-
-    return li;
-  };
-
   /**
    * Unmounts device.
    * @param {string} path Path to a volume to unmount.
    */
   FileManager.prototype.unmountVolume = function(path) {
-    var listItem = this.rootsList_.getListItemByIndex(
-        this.directoryModel_.findRootsListIndex(path));
-    if (listItem)
-      listItem.setAttribute('disabled', '');
     var onError = function(error) {
-      if (listItem)
-        listItem.removeAttribute('disabled');
       this.alert.showHtml('', str('UNMOUNT_FAILED'));
     };
     this.volumeManager_.unmount(path, function() {}, onError.bind(this));

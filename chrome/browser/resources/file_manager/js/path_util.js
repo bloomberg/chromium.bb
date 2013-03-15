@@ -131,6 +131,18 @@ PathUtil.isRootPath = function(path) {
 };
 
 /**
+ * @param {string} path A root path.
+ * @return {boolean} True if the given path is root and user can unmount it.
+ */
+PathUtil.isUnmountableByUser = function(path) {
+  if (!PathUtil.isRootPath(path))
+    return false;
+
+  var type = PathUtil.getRootType(path);
+  return (type == RootType.ARCHIVE || type == RootType.REMOVABLE);
+};
+
+/**
  * @param {string} parent_path The parent path.
  * @param {string} child_path The child path.
  * @return {boolean} True if |parent_path| is parent file path of |child_path|.

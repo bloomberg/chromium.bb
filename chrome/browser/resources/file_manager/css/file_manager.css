@@ -160,7 +160,7 @@ body.loaded {
   display: -webkit-box;
 }
 
-/* Roots list at the left. */
+/* Directory tree at the left. */
 .dialog-sidebar {
   -webkit-box-flex: 0;
   background-color: #e6e6e6;
@@ -184,83 +184,88 @@ div.sidebar-splitter {
   z-index: 2;
 }
 
-/* Roots list at the left. */
-#roots-list {
-  -webkit-box-flex: 1;
+#directory-tree {
   -webkit-box-orient: vertical;
   border-right: 1px solid rgb(170, 170, 170);
   display: -webkit-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 100%;
 }
 
-#roots-list > * {
+#directory-tree .tree-row {
   background-color: #e6e6e6;
   background-image: none;
   border: none;
-  height: 39px;
+  display: -webkit-box;
+  line-height: 39px;
   margin: 0;
-  padding: 0 5px;
+  padding: 0 3px;
 }
 
-#roots-list > :hover {
+#directory-tree .tree-row > .expand-icon {
+  height: 37px;
+  left: 3px;
+  margin: -13px;
+  top: 0;
+  vertical-align: middle;
+  width: 37px;
+}
+
+#directory-tree .tree-row > .volume-icon {
+  background-position: center 2px;
+  background-repeat: no-repeat;
+  height: 24px;
+  vertical-align: middle;
+  width: 24px;
+}
+
+#directory-tree .tree-row > .label {
+  -webkit-box-flex: 1;
+  display: block;
+  margin: 0 3px;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+#directory-tree .tree-row:hover {
   background-color: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.05);
 }
 
-#roots-list > .accepts,
-#roots-list > [lead][selected],
-#roots-list > [lead],
-#roots-list > [selected],
-#roots-list > [anchor] {
+#directory-tree .accepts,
+#directory-tree .tree-row[lead][selected],
+#directory-tree .tree-row[lead],
+#directory-tree .tree-row[selected],
+#directory-tree .tree-row[anchor] {
   background-color: rgb(204, 204, 204);
 }
 
-#roots-list:focus > .accepts,
-#roots-list:focus > [lead][selected],
-#roots-list:focus > [lead],
-#roots-list:focus > [selected],
-#roots-list:focus > [anchor] {
+#directory-tree:focus  .accepts,
+#directory-tree:focus  .tree-row[lead][selected],
+#directory-tree:focus  .tree-row[lead],
+#directory-tree:focus  .tree-row[selected],
+#directory-tree:focus  .tree-row[anchor] {
   background-color: rgb(193, 209, 232);
 }
 
-#roots-list > .accepts:hover,
-#roots-list > [lead]:hover,
-#roots-list > [lead][selected]:hover,
-#roots-list > [selected]:hover,
-#roots-list > [anchor]:hover {
+#directory-tree  .accepts:hover,
+#directory-tree  .tree-row[lead]:hover,
+#directory-tree  .tree-row[lead][selected]:hover,
+#directory-tree  .tree-row[selected]:hover,
+#directory-tree  .tree-row[anchor]:hover {
   background-color: rgb(192, 192, 192);
 }
 
-#roots-list:hover > .accepts:hover,
-#roots-list:hover > [lead]:hover,
-#roots-list:hover > [lead][selected]:hover,
-#roots-list:hover > [selected]:hover,
-#roots-list:hover > [anchor]:hover {
+#directory-tree:hover .accepts:hover,
+#directory-tree:hover .tree-row[lead]:hover,
+#directory-tree:hover .tree-row[lead][selected]:hover,
+#directory-tree:hover .tree-row[selected]:hover,
+#directory-tree:hover .tree-row[anchor]:hover {
   background-color: rgb(177, 193, 216);
 }
 
-#roots-list li.root-item {
-  -webkit-box-align: center;
-  display: -webkit-box;
-  line-height: 22px;  /* To accomodate for icons. */
-  padding-left: 11px;
-}
-
-li.root-item > .root-label {
-  -webkit-box-flex: 1;
-  margin: 0 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.volume-icon {
-  background-position: center 2px;
-  background-repeat: no-repeat;
-  height: 24px;
-  width: 24px;
-}
-
-div.root-eject {
+#directory-tree .tree-row > div.root-eject {
   /* The transition commented out to work around crbug.com/157813 */
   /*-webkit-transition: opacity 70ms linear;*/
   background-image: -webkit-image-set(
@@ -272,19 +277,22 @@ div.root-eject {
   height: 20px;
   margin-right: 6px;
   opacity: 0.7;
+  vertical-align: middle;
   width: 20px;
 }
 
-div.root-eject:hover {
+#directory-tree .tree-row > div.root-eject[hidden] {
+  /* [hidden] has alredy set in dialog.css, but it is overridden by the
+   * selector '.tree-item > .tree-row > * 'in tree.js, hence we need to
+   * override it again. */
+  display: none;
+}
+
+#directory-tree .tree-row > div.root-eject:hover {
   opacity: 1;
 }
 
-.root-item[selected] > div.root-eject:not(:hover),
-.root-item:hover > div.root-eject:not(:hover) {
-  opacity: 0.7;
-}
-
-.root-item[disabled] {
+#directory-tree .root-item[disabled] {
   opacity: 0.5;
   pointer-events: none;
 }

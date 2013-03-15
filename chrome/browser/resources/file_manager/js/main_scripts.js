@@ -42,6 +42,8 @@
 //<include src="../../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/list.js"/>
+//<include src="../../../../../ui/webui/resources/js/cr/ui/tree.js"/>
+//<include src="../../../../../ui/webui/resources/css/tree.css.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/autocomplete_list.js"/>
 //
 //<include src="../../../../../ui/webui/resources/js/cr/ui/splitter.js"/>
@@ -80,6 +82,7 @@
 //<include src="file_tasks.js"/>
 //<include src="file_transfer_controller.js"/>
 //<include src="file_type.js"/>
+//<include src="sidebar.js"/>
 //<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>

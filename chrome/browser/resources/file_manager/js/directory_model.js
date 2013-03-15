@@ -38,19 +38,6 @@ function DirectoryModel(root, singleSelection,
       this.currentFileListContext_, root);
 
   this.rootsList_ = new cr.ui.ArrayDataModel([]);
-  this.rootsListSelection_ = new cr.ui.ListSingleSelectionModel();
-  this.rootsListSelection_.addEventListener(
-      'change', this.onRootChange_.bind(this));
-
-  this.rootsListSelection_.addEventListener(
-      'beforeChange', this.onBeforeRootChange_.bind(this));
-
-  /**
-   * A map root.fullPath -> currentDirectory.fullPath.
-   * @type {Object.<string, string>}
-   * @private
-   */
-  this.currentDirByRoot_ = {};
 
   this.volumeManager_ = volumeManager;
 }
@@ -338,13 +325,6 @@ DirectoryModel.prototype.setLeadPath_ = function(value) {
  */
 DirectoryModel.prototype.getRootsList = function() {
   return this.rootsList_;
-};
-
-/**
- * @return {cr.ui.ListSingleSelectionModel} Root list selection model.
- */
-DirectoryModel.prototype.getRootsListSelectionModel = function() {
-  return this.rootsListSelection_;
 };
 
 /**
@@ -746,53 +726,6 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
 };
 
 /**
- * @return {Entry} Directory entry of the root selected in rootsList.
- * @private
- */
-DirectoryModel.prototype.getSelectedRootDirEntry_ = function() {
-  return this.rootsList_.item(this.rootsListSelection_.selectedIndex);
-};
-
-/**
- * Handler before root item change.
- * @param {Event} event The event.
- * @private
- */
-DirectoryModel.prototype.onBeforeRootChange_ = function(event) {
-  if (event.changes.length == 1 && !event.changes[0].selected)
-    event.preventDefault();
-};
-
-/**
- * Handler for root item being clicked.
- * @param {Event} event The event.
- * @private
- */
-DirectoryModel.prototype.onRootChange_ = function(event) {
-  var newRootDir = this.getSelectedRootDirEntry_();
-  if (newRootDir)
-    this.changeRoot(newRootDir.fullPath);
-};
-
-/**
- * Changes directory. If path points to a root (except current one)
- * then directory changed to the last used one for the root.
- *
- * @param {string} path New current directory path or new root.
- */
-DirectoryModel.prototype.changeRoot = function(path) {
-  var currentDir = this.currentDirByRoot_[path] || path;
-  if (currentDir == this.getCurrentDirPath())
-    return;
-  var onError = path != currentDir && path != this.getCurrentDirPath() ?
-      this.changeDirectory.bind(this, path) : null;
-  this.resolveDirectory(
-      currentDir,
-      this.changeDirectoryEntry_.bind(this, false),
-      onError);
-};
-
-/**
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
  * @param {function=} opt_callback Executed if the directory loads successfully.
  * @private
@@ -809,8 +742,6 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
   this.clearAndScan_(new DirectoryContentsBasic(this.currentFileListContext_,
                                                 dirEntry),
                      onScanComplete.bind(this));
-  this.currentDirByRoot_[this.getCurrentRootPath()] = dirEntry.fullPath;
-  this.updateRootsListSelection_();
 };
 
 /**
@@ -1098,10 +1029,12 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
       readSingle(RootDirectory.DRIVE.substring(1), 'drive', fake);
     } else {
       groups.drive = fake;
+      done();
     }
     // TODO(haruki): Add DirectoryModel.fakeDriveOfflineEntry_ to show the tab.
   } else {
     groups.drive = [];
+    done();
   }
 };
 
@@ -1115,32 +1048,7 @@ DirectoryModel.prototype.updateRoots_ = function() {
     var dm = self.rootsList_;
     var args = [0, dm.length].concat(rootEntries);
     dm.splice.apply(dm, args);
-
-    self.updateRootsListSelection_();
   });
-};
-
-/**
- * Find roots list item by root path.
- *
- * @param {string} path Root path.
- * @return {number} Index of the item.
- */
-DirectoryModel.prototype.findRootsListIndex = function(path) {
-  var roots = this.rootsList_;
-  for (var index = 0; index < roots.length; index++) {
-    if (roots.item(index).fullPath == path)
-      return index;
-  }
-  return -1;
-};
-
-/**
- * @private
- */
-DirectoryModel.prototype.updateRootsListSelection_ = function() {
-  var rootPath = this.getCurrentRootPath();
-  this.rootsListSelection_.selectedIndex = this.findRootsListIndex(rootPath);
 };
 
 /**
@@ -1314,7 +1222,7 @@ DirectoryModel.prototype.search = function(query,
     // |directoryEntry|.
     newDirContents = new DirectoryContentsDriveSearch(
         this.currentFileListContext_,
-        this.getSelectedRootDirEntry_(),
+        this.getCurrentDirEntry(),
         this.currentDirContents_.getLastNonSearchDirectoryEntry(),
         query);
   } else {
