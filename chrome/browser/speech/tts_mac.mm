@@ -25,6 +25,29 @@ class TtsPlatformImplMac;
 
 @end
 
+// Subclass of NSSpeechSynthesizer that takes an utterance
+// string on initialization, retains it and only allows it
+// to be spoken once.
+//
+// We construct a new NSSpeechSynthesizer for each utterance, for
+// two reasons:
+// 1. To associate delegate callbacks with a particular utterance,
+//    without assuming anything undocumented about the protocol.
+// 2. To work around http://openradar.appspot.com/radar?id=2854403,
+//    where Nuance voices don't retain the utterance string and
+//    crash when trying to call willSpeakWord.
+@interface SingleUseSpeechSynthesizer : NSSpeechSynthesizer {
+ @private
+  scoped_nsobject<NSString> utterance_;
+  bool didSpeak_;
+}
+
+- (id)initWithUtterance:(NSString*)utterance;
+- (bool)startSpeakingRetainedUtterance;
+- (bool)startSpeakingString:(NSString*)utterance;
+
+@end
+
 class TtsPlatformImplMac : public TtsPlatformImpl {
  public:
   virtual bool PlatformImplAvailable() OVERRIDE {
@@ -57,7 +80,7 @@ class TtsPlatformImplMac : public TtsPlatformImpl {
   TtsPlatformImplMac();
   virtual ~TtsPlatformImplMac();
 
-  scoped_nsobject<NSSpeechSynthesizer> speech_synthesizer_;
+  scoped_nsobject<SingleUseSpeechSynthesizer> speech_synthesizer_;
   scoped_nsobject<ChromeTtsDelegate> delegate_;
   int utterance_id_;
   std::string utterance_;
@@ -78,19 +101,24 @@ bool TtsPlatformImplMac::Speak(
     const std::string& utterance,
     const std::string& lang,
     const UtteranceContinuousParameters& params) {
+  // TODO: convert SSML to SAPI xml. http://crbug.com/88072
+  utterance_ = utterance;
+
+  NSString* utterance_nsstring =
+      [NSString stringWithUTF8String:utterance_.c_str()];
+
   // Deliberately construct a new speech synthesizer every time Speak is
   // called, otherwise there's no way to know whether calls to the delegate
   // apply to the current utterance or a previous utterance. In
   // experimentation, the overhead of constructing and destructing a
   // NSSpeechSynthesizer is minimal.
-  speech_synthesizer_.reset([[NSSpeechSynthesizer alloc] init]);
+  speech_synthesizer_.reset(
+      [[SingleUseSpeechSynthesizer alloc]
+        initWithUtterance:utterance_nsstring]);
   [speech_synthesizer_ setDelegate:delegate_];
 
   utterance_id_ = utterance_id;
   sent_start_event_ = false;
-
-  // TODO: convert SSML to SAPI xml. http://crbug.com/88072
-  utterance_ = utterance;
 
   // TODO: support languages other than the default: crbug.com/88059
 
@@ -114,8 +142,7 @@ bool TtsPlatformImplMac::Speak(
         forProperty:NSSpeechVolumeProperty error:nil];
   }
 
-  return [speech_synthesizer_ startSpeakingString:
-             [NSString stringWithUTF8String: utterance.c_str()]];
+  return [speech_synthesizer_ startSpeakingRetainedUtterance];
 }
 
 bool TtsPlatformImplMac::StopSpeaking() {
@@ -203,6 +230,31 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
   std::string message_utf8 = base::SysNSStringToUTF8(message);
   ttsImplMac_->OnSpeechEvent(sender, TTS_EVENT_ERROR, character_index,
       message_utf8);
+}
+
+@end
+
+@implementation SingleUseSpeechSynthesizer
+
+- (id)initWithUtterance:(NSString*)utterance {
+  self = [super init];
+  if (self) {
+    utterance_.reset([utterance retain]);
+    didSpeak_ = false;
+  }
+  return self;
+}
+
+- (bool)startSpeakingRetainedUtterance {
+  CHECK(!didSpeak_);
+  CHECK(utterance_);
+  didSpeak_ = true;
+  return [super startSpeakingString:utterance_];
+}
+
+- (bool)startSpeakingString:(NSString*)utterance {
+  CHECK(false);
+  return false;
 }
 
 @end
