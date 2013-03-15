@@ -116,15 +116,15 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
                 '../base/win/dllmain.cc',
 
-                '../webkit/glue/resources/aliasb.cur',
-                '../webkit/glue/resources/cell.cur',
-                '../webkit/glue/resources/col_resize.cur',
-                '../webkit/glue/resources/copy.cur',
-                '../webkit/glue/resources/none.cur',
-                '../webkit/glue/resources/row_resize.cur',
-                '../webkit/glue/resources/vertical_text.cur',
-                '../webkit/glue/resources/zoom_in.cur',
-                '../webkit/glue/resources/zoom_out.cur',
+                '../ui/resources/cursors/aliasb.cur',
+                '../ui/resources/cursors/cell.cur',
+                '../ui/resources/cursors/col_resize.cur',
+                '../ui/resources/cursors/copy.cur',
+                '../ui/resources/cursors/none.cur',
+                '../ui/resources/cursors/row_resize.cur',
+                '../ui/resources/cursors/vertical_text.cur',
+                '../ui/resources/cursors/zoom_in.cur',
+                '../ui/resources/cursors/zoom_out.cur',
 
                 # TODO:  It would be nice to have these pulled in
                 # automatically from direct_dependent_settings in
@@ -137,8 +137,8 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_unscaled_resources.rc',
               ],
               'include_dirs': [
                 '<(DEPTH)/third_party/wtl/include',
