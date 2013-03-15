@@ -181,6 +181,7 @@ void NativeAppWindowViews::InitializePanelWindow(
   // could plumb context through to here in some cases.
   params.top_level = true;
   window_->Init(params);
+  window_->set_focus_on_creation(false);
 
 #if !defined(USE_ASH)
   // TODO(oshima|stevenjb): Ideally, we should be able to just pre-determine

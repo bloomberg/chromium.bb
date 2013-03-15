@@ -383,7 +383,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPanelWindow) {
   ASSERT_EQ(item_count, launcher_model()->item_count());
   const ash::LauncherItem& item = GetLastLauncherPanelItem();
   EXPECT_EQ(ash::TYPE_APP_PANEL, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  // Opening a panel does not activate it.
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
   CloseShellWindow(window);
   --item_count;
   EXPECT_EQ(item_count, launcher_model()->item_count());
