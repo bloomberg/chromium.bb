@@ -248,7 +248,7 @@ class CloudPrintURLFetcherNoServiceProcess
       context_getter_(new net::TestURLRequestContextGetter(
           base::MessageLoopProxy::current())) {}
  protected:
-  virtual net::URLRequestContextGetter* GetRequestContextGetter() {
+  virtual net::URLRequestContextGetter* GetRequestContextGetter() OVERRIDE {
     return context_getter_.get();
   }
 
@@ -261,7 +261,7 @@ class CloudPrintURLFetcherNoServiceProcess
 class CloudPrintURLFetcherNoServiceProcessFactory
     : public CloudPrintURLFetcherFactory {
  public:
-  virtual CloudPrintURLFetcher* CreateCloudPrintURLFetcher() {
+  virtual CloudPrintURLFetcher* CreateCloudPrintURLFetcher() OVERRIDE {
     return new CloudPrintURLFetcherNoServiceProcess;
   }
 
@@ -437,8 +437,8 @@ class MockPrintSystem : public PrintSystem {
 class PrinterJobHandlerTest : public ::testing::Test {
  public:
   PrinterJobHandlerTest();
-  void SetUp() OVERRIDE;
-  void TearDown() OVERRIDE;
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
   void IdleOut();
   bool GetPrinterInfo(printing::PrinterBasicInfo* info);
   void SendCapsAndDefaults(

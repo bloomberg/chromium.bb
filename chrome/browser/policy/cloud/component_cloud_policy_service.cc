@@ -36,7 +36,7 @@ class ComponentCloudPolicyService::Backend
   Backend(base::WeakPtr<ComponentCloudPolicyService> service,
           scoped_refptr<base::SequencedTaskRunner> task_runner,
           scoped_ptr<ResourceCache> cache);
-  ~Backend();
+  virtual ~Backend();
 
   // This is invoked right after the constructor but on the backend background
   // thread. Used to create the store on the right thread.

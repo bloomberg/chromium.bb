@@ -967,7 +967,7 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
     static_cast<SyncRequestProxy*>(proxy_)->WaitForCompletion();
   }
 
-  virtual void DidChangePriority(net::RequestPriority new_priority) {
+  virtual void DidChangePriority(net::RequestPriority new_priority) OVERRIDE {
     // Not really needed for DRT.
   }
 

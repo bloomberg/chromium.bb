@@ -67,7 +67,7 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
         size_t num_threads,
         const std::string& thread_name_prefix,
         bool need_on_task_completed_callback);
-  ~Inner();
+  virtual ~Inner();
 
   void Shutdown();
 

@@ -121,7 +121,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
 class MessageCenterExtensionCrashRecoveryTest
     : public ExtensionCrashRecoveryTestBase {
  protected:
-  virtual void AcceptNotification(size_t index) {
+  virtual void AcceptNotification(size_t index) OVERRIDE {
     message_center::MessageCenter* message_center =
         message_center::MessageCenter::Get();
     ASSERT_GT(message_center->NotificationCount(), index);
@@ -134,7 +134,7 @@ class MessageCenterExtensionCrashRecoveryTest
     WaitForExtensionLoad();
   }
 
-  virtual void CancelNotification(size_t index) {
+  virtual void CancelNotification(size_t index) OVERRIDE {
     message_center::MessageCenter* message_center =
         message_center::MessageCenter::Get();
     ASSERT_GT(message_center->NotificationCount(), index);
@@ -145,7 +145,7 @@ class MessageCenterExtensionCrashRecoveryTest
         g_browser_process->notification_ui_manager()->CancelById((*it)->id()));
   }
 
-  virtual size_t CountBalloons() {
+  virtual size_t CountBalloons() OVERRIDE {
     message_center::MessageCenter* message_center =
         message_center::MessageCenter::Get();
     return message_center->NotificationCount();
@@ -160,21 +160,21 @@ typedef MessageCenterExtensionCrashRecoveryTest
 class BalloonExtensionCrashRecoveryTest
     : public ExtensionCrashRecoveryTestBase {
  protected:
-  virtual void AcceptNotification(size_t index) {
+  virtual void AcceptNotification(size_t index) OVERRIDE {
     Balloon* balloon = GetNotificationDelegate(index);
     ASSERT_TRUE(balloon);
     balloon->OnClick();
     WaitForExtensionLoad();
   }
 
-  virtual void CancelNotification(size_t index) {
+  virtual void CancelNotification(size_t index) OVERRIDE {
     Balloon* balloon = GetNotificationDelegate(index);
     ASSERT_TRUE(balloon);
     std::string id = balloon->notification().notification_id();
     ASSERT_TRUE(g_browser_process->notification_ui_manager()->CancelById(id));
   }
 
-  virtual size_t CountBalloons() {
+  virtual size_t CountBalloons() OVERRIDE {
     BalloonNotificationUIManager* manager =
         BalloonNotificationUIManager::GetInstanceForTesting();
     BalloonCollection::Balloons balloons =

@@ -36,7 +36,8 @@ class ContextProviderInProcess::MemoryAllocationCallbackProxy
     provider_->context3d_->setMemoryAllocationChangedCallbackCHROMIUM(this);
   }
 
-  void onMemoryAllocationChanged(WebKit::WebGraphicsMemoryAllocation alloc) {
+  virtual void onMemoryAllocationChanged(
+      WebKit::WebGraphicsMemoryAllocation alloc) {
     provider_->OnMemoryAllocationChanged(!!alloc.gpuResourceSizeInBytes);
   }
 

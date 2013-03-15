@@ -42,7 +42,7 @@ class TestRendererAccessibilityComplete : public RendererAccessibilityComplete {
     TestRendererAccessibilityComplete* owner_;
   };
 
-  virtual BrowserTreeNode* CreateBrowserTreeNode() {
+  virtual BrowserTreeNode* CreateBrowserTreeNode() OVERRIDE {
     return new TestBrowserTreeNode(this);
   }
 

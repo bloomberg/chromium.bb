@@ -30,7 +30,7 @@ class FakeDesktopResizer : public DesktopResizer {
     }
   }
 
-  ~FakeDesktopResizer() {
+  virtual ~FakeDesktopResizer() {
     EXPECT_EQ(initial_size_, GetCurrentSize());
   }
 

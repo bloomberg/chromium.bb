@@ -264,7 +264,8 @@ class MergeToEffective : public MergeSettingsAndPolicies {
   }
 
   // MergeSettingsAndPolicies override.
-  virtual scoped_ptr<base::Value> MergeValues(ValueParams values) {
+  virtual scoped_ptr<base::Value> MergeValues(
+      ValueParams values) OVERRIDE {
     std::string which;
     return MergeValues(values, &which);
   }
@@ -276,7 +277,8 @@ class MergeToEffective : public MergeSettingsAndPolicies {
 class MergeToAugmented : public MergeToEffective {
  protected:
   // MergeSettingsAndPolicies override.
-  virtual scoped_ptr<base::Value> MergeValues(ValueParams values) {
+  virtual scoped_ptr<base::Value> MergeValues(
+      ValueParams values) OVERRIDE {
     scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
     std::string which_effective;
     MergeToEffective::MergeValues(values, &which_effective).reset();

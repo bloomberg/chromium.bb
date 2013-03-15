@@ -14,7 +14,7 @@
 namespace extensions {
 
 class PageLauncherManifestTest : public ExtensionManifestTest {
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
     (new PageLauncherHandler)->Register();
     // Required to be recognized as a platform app.

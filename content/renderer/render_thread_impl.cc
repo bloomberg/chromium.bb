@@ -246,7 +246,7 @@ class RenderThreadImpl::RendererContextProviderCommandBuffer
   virtual ~RendererContextProviderCommandBuffer() {}
 
   virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-  CreateOffscreenContext3d() {
+  CreateOffscreenContext3d() OVERRIDE {
     RenderThreadImpl* self = RenderThreadImpl::current();
     DCHECK(self);
     return self->CreateOffscreenContext3d().Pass();

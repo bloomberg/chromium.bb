@@ -26,7 +26,7 @@ class TestQuicVisitor : public NoOpFramerVisitor {
   }
 
   // NoOpFramerVisitor
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) {
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     frame_ = frame;
     frame_valid_ = true;
   }
@@ -51,8 +51,10 @@ class TestMockSession : public MockSession {
   }
   virtual ~TestMockSession() {}
 
-  virtual QuicConsumedData WriteData(QuicStreamId id, base::StringPiece data,
-                                     QuicStreamOffset offset, bool fin) {
+  virtual QuicConsumedData WriteData(QuicStreamId id,
+                                     base::StringPiece data,
+                                     QuicStreamOffset offset,
+                                     bool fin) OVERRIDE {
     return QuicSession::WriteData(id, data, offset, fin);
   }
 };

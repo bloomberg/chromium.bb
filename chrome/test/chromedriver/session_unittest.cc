@@ -31,7 +31,7 @@ class MockChrome : public StubChrome {
   MockChrome() : web_view_("1") {}
   virtual ~MockChrome() {}
 
-  Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE {
+  virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE {
     web_views->clear();
     web_views->push_back(&web_view_);
     return Status(kOk);

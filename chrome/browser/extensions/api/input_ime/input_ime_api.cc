@@ -305,7 +305,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   virtual void OnSurroundingTextChanged(const std::string& engine_id,
                                         const std::string& text,
                                         int cursor_pos,
-                                        int anchor_pos) {
+                                        int anchor_pos) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
     DictionaryValue* dict = new DictionaryValue();

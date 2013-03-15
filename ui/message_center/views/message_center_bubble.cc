@@ -210,7 +210,7 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
 
  private:
   // Overridden from views::View:
-  virtual void ChildVisibilityChanged(views::View* child) {
+  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE {
     InvalidateLayout();
   }
 

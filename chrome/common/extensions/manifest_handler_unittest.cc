@@ -131,13 +131,14 @@ class ManifestHandlerTest : public testing::Test {
       return true;
     }
 
-    virtual bool Validate(const Extension* extension,
-                          std::string* error,
-                          std::vector<InstallWarning>* warnings) const {
+    virtual bool Validate(
+        const Extension* extension,
+        std::string* error,
+        std::vector<InstallWarning>* warnings) const OVERRIDE {
       return return_value_;
     }
 
-    virtual bool AlwaysValidateForType(Manifest::Type type) const {
+    virtual bool AlwaysValidateForType(Manifest::Type type) const OVERRIDE {
       return always_validate_;
     }
 

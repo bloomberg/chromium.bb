@@ -90,7 +90,7 @@ class GLARBTimerTrace : public Trace {
   virtual void Process() OVERRIDE;
 
  private:
-  ~GLARBTimerTrace();
+  virtual ~GLARBTimerTrace();
 
   void Output();
 
@@ -118,7 +118,7 @@ class NoopTrace : public Trace {
   virtual void Process() OVERRIDE {}
 
  private:
-  ~NoopTrace() {}
+  virtual ~NoopTrace() {}
 
   DISALLOW_COPY_AND_ASSIGN(NoopTrace);
 };

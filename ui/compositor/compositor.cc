@@ -128,13 +128,15 @@ class ContextProviderFromContextFactory : public cc::ContextProvider {
     return !!context3d_;
   }
 
-  virtual bool BindToCurrentThread() {
+  virtual bool BindToCurrentThread() OVERRIDE {
     return context3d_->makeContextCurrent();
   }
 
-  virtual WebKit::WebGraphicsContext3D* Context3d() { return context3d_.get(); }
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    return context3d_.get();
+  }
 
-  virtual class GrContext* GrContext() {
+  virtual class GrContext* GrContext() OVERRIDE {
     if (!gr_context_) {
       gr_context_.reset(
           new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
@@ -149,7 +151,7 @@ class ContextProviderFromContextFactory : public cc::ContextProvider {
     destroyed_ = true;
   }
 
-  bool DestroyedOnMainThread() {
+  virtual bool DestroyedOnMainThread() OVERRIDE {
     base::AutoLock lock(destroyed_lock_);
     return destroyed_;
   }

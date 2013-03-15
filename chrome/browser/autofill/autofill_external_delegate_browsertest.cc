@@ -72,7 +72,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   TestAutofillExternalDelegate(content::WebContents* web_contents,
                                AutofillManager* autofill_manager)
       : AutofillExternalDelegate(web_contents, autofill_manager) {}
-  ~TestAutofillExternalDelegate() {}
+  virtual ~TestAutofillExternalDelegate() {}
 };
 
 }  // namespace

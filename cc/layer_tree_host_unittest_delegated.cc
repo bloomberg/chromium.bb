@@ -243,7 +243,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
 
   virtual bool prepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame,
-                                     bool result) {
+                                     bool result) OVERRIDE {
     EXPECT_TRUE(result);
 
     if (!first_draw_for_source_frame_)

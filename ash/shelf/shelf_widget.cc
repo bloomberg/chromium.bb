@@ -69,21 +69,21 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   bool GetDimmed() const { return dimmed_; }
 
   // views::View overrides:
-  void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // views::WidgetDelegateView overrides:
-  views::Widget* GetWidget() OVERRIDE {
+  virtual views::Widget* GetWidget() OVERRIDE {
     return View::GetWidget();
   }
-  const views::Widget* GetWidget() const OVERRIDE {
+  virtual const views::Widget* GetWidget() const OVERRIDE {
     return View::GetWidget();
   }
 
-  bool CanActivate() const OVERRIDE;
-  void Layout() OVERRIDE;
+  virtual bool CanActivate() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   // BackgroundAnimatorDelegate overrides:
-  void UpdateBackground(int alpha) OVERRIDE;
+  virtual void UpdateBackground(int alpha) OVERRIDE;
 
  private:
   ShelfWidget* shelf_;

@@ -37,7 +37,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
     sync_setup_helper_.reset(new SyncSetupHelper());
   }
 
-  ~PushMessagingCanaryTest() {
+  virtual ~PushMessagingCanaryTest() {
   }
 
   virtual void SetUp() OVERRIDE {

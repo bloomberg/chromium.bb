@@ -191,7 +191,7 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow {
   virtual ~FullscreenTestBrowserWindow() {}
 
   // TestBrowserWindow overrides:
-  virtual bool ShouldHideUIForFullscreen() const {
+  virtual bool ShouldHideUIForFullscreen() const OVERRIDE {
     return fullscreen_;
   }
   virtual bool IsFullscreen() const OVERRIDE {

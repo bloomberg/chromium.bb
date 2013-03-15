@@ -46,7 +46,7 @@ class MockAutofillManagerDelegate
   MockAutofillManagerDelegate() {}
   virtual ~MockAutofillManagerDelegate() {}
 
-  virtual PrefService* GetPrefs() { return &prefs_; }
+  virtual PrefService* GetPrefs() OVERRIDE { return &prefs_; }
 
  private:
   TestingPrefServiceSimple prefs_;

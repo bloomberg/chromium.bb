@@ -47,7 +47,7 @@ class InvalidatorStorageTest : public testing::Test {
         kAppNotificationsId_(kChromeSyncSourceId, "APP_NOTIFICATION"),
         kAutofillId_(kChromeSyncSourceId, "AUTOFILL") {}
 
-  void SetUp() {
+  virtual void SetUp() {
     InvalidatorStorage::RegisterUserPrefs(pref_service_.registry());
   }
 

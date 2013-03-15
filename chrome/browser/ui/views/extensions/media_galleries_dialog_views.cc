@@ -40,7 +40,7 @@ class ScrollableView : public views::View {
   ScrollableView() {}
   virtual ~ScrollableView() {}
 
-  void Layout() OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollableView);

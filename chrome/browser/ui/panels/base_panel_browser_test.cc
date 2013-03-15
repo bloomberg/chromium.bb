@@ -64,8 +64,10 @@ class MockDisplaySettingsProviderImpl :
   // Overridden from DisplaySettingsProvider:
   virtual gfx::Rect GetPrimaryDisplayArea() const OVERRIDE;
   virtual gfx::Rect GetPrimaryWorkArea() const OVERRIDE;
-  virtual gfx::Rect GetDisplayAreaMatching(const gfx::Rect& bounds) const;
-  virtual gfx::Rect GetWorkAreaMatching(const gfx::Rect& bounds) const;
+  virtual gfx::Rect GetDisplayAreaMatching(
+      const gfx::Rect& bounds) const OVERRIDE;
+  virtual gfx::Rect GetWorkAreaMatching(
+      const gfx::Rect& bounds) const OVERRIDE;
   virtual bool IsAutoHidingDesktopBarEnabled(
       DesktopBarAlignment alignment) OVERRIDE;
   virtual int GetDesktopBarThickness(

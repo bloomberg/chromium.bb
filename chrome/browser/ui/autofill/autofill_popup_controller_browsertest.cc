@@ -26,7 +26,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                                AutofillManager* autofill_manager)
       : AutofillExternalDelegate(web_contents, autofill_manager),
         popup_hidden_(true) {}
-  ~TestAutofillExternalDelegate() {}
+  virtual ~TestAutofillExternalDelegate() {}
 
   virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE {
     popup_hidden_ = false;

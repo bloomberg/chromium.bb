@@ -90,7 +90,7 @@ class NoTransportFactory : public ImageTransportFactory {
     return 0;
   }
 
-  void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
   }
 
   // We don't generate lost context events, so we don't need to keep track of
@@ -588,7 +588,7 @@ class GpuProcessTransportFactory
     virtual ~MainThreadContextProvider() {}
 
     virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-        CreateOffscreenContext3d() {
+        CreateOffscreenContext3d() OVERRIDE {
       return make_scoped_ptr(factory_->CreateOffscreenContext());
     }
 
@@ -623,7 +623,7 @@ class GpuProcessTransportFactory
     virtual ~CompositorThreadContextProvider() {}
 
     virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-        CreateOffscreenContext3d() {
+        CreateOffscreenContext3d() OVERRIDE {
       return make_scoped_ptr(factory_->CreateOffscreenContext());
     }
 

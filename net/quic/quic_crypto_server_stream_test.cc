@@ -38,7 +38,7 @@ class TestQuicVisitor : public NoOpFramerVisitor {
   TestQuicVisitor() {}
 
   // NoOpFramerVisitor
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) {
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     frame_ = frame;
   }
 

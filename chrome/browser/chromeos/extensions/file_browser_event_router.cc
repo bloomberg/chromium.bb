@@ -169,7 +169,7 @@ class SuspendStateDelegateImpl
   }
 
   // chromeos::SessionManagerClient::Observer implementation.
-  virtual void ScreenIsUnlocked() {
+  virtual void ScreenIsUnlocked() OVERRIDE {
     is_resuming_ = true;
     // Undo any previous resets.
     weak_factory_.InvalidateWeakPtrs();

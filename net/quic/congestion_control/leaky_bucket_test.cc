@@ -13,7 +13,7 @@ namespace test {
 
 class LeakyBucketTest : public ::testing::Test {
  protected:
-  void SetUp() {
+  virtual void SetUp() {
     leaky_bucket_.reset(new LeakyBucket(QuicBandwidth::Zero()));
   }
   MockClock clock_;

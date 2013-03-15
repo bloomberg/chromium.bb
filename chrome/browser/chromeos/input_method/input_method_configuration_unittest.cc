@@ -13,10 +13,10 @@ namespace input_method {
 
 class InputMethodConfigurationTest : public testing::Test {
  public:
-  void SetUp() {
+  virtual void SetUp() {
   }
 
-  void TearDown() {
+  virtual void TearDown() {
   }
 };
 

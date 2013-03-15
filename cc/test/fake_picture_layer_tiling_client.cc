@@ -16,7 +16,7 @@ class FakeInfinitePicturePileImpl : public PicturePileImpl {
   }
 
  protected:
-  ~FakeInfinitePicturePileImpl() {}
+  virtual ~FakeInfinitePicturePileImpl() {}
 };
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()

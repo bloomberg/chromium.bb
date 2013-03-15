@@ -76,7 +76,7 @@ class MessageCenterChangeObserver
     message_center::MessageCenter::Get()->AddObserver(this);
   }
 
-  ~MessageCenterChangeObserver() {
+  virtual ~MessageCenterChangeObserver() {
     message_center::MessageCenter::Get()->RemoveObserver(this);
   }
 
@@ -89,7 +89,7 @@ class MessageCenterChangeObserver
     return notification_received_;
   }
 
-  virtual void OnMessageCenterChanged(bool new_notification) {
+  virtual void OnMessageCenterChanged(bool new_notification) OVERRIDE {
     notification_received_ = true;
     if (message_loop_runner_)
       message_loop_runner_->Quit();

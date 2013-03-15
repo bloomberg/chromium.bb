@@ -21,7 +21,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
       : error_(QUIC_NO_ERROR) {
   }
 
-  virtual void OnError(QuicFramer* framer) {
+  virtual void OnError(QuicFramer* framer) OVERRIDE {
     error_ = framer->error();
   }
 
@@ -29,21 +29,22 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return false;
   }
 
-  virtual void OnPacket() {}
-  virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
+  virtual void OnPacket() OVERRIDE {}
+  virtual void OnPublicResetPacket(
+      const QuicPublicResetPacket& packet) OVERRIDE {}
   virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) {}
-  virtual void OnRevivedPacket() {}
+      const QuicVersionNegotiationPacket& packet) OVERRIDE {}
+  virtual void OnRevivedPacket() OVERRIDE {}
 
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) {
+  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
     has_header_ = true;
     header_ = header;
     return true;
   }
 
-  virtual void OnFecProtectedPayload(StringPiece payload) {}
+  virtual void OnFecProtectedPayload(StringPiece payload) OVERRIDE {}
 
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) {
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     // Save a copy of the data so it is valid after the packet is processed.
     stream_data_.push_back(frame.data.as_string());
     QuicStreamFrame stream_frame(frame);
@@ -52,35 +53,35 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     stream_frames_.push_back(stream_frame);
   }
 
-  virtual void OnAckFrame(const QuicAckFrame& frame) {
+  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE {
     ack_frames_.push_back(frame);
   }
 
   virtual void OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) {
+      const QuicCongestionFeedbackFrame& frame) OVERRIDE {
     feedback_frames_.push_back(frame);
   }
 
-  virtual void OnFecData(const QuicFecData& fec) {
+  virtual void OnFecData(const QuicFecData& fec) OVERRIDE {
     fec_data_ = fec;
     fec_redundancy_ = fec_data_.redundancy.as_string();
     fec_data_.redundancy = fec_redundancy_;
   }
 
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) {
+  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {
     rst_stream_frames_.push_back(frame);
   }
 
   virtual void OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) {
+      const QuicConnectionCloseFrame& frame) OVERRIDE {
     connection_close_frames_.push_back(frame);
   }
 
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) {
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {
     goaway_frames_.push_back(frame);
   }
 
-  virtual void OnPacketComplete() {}
+  virtual void OnPacketComplete() OVERRIDE {}
 
   const QuicPacketHeader& header() const { return header_; }
   const vector<QuicAckFrame>& ack_frames() const { return ack_frames_; }

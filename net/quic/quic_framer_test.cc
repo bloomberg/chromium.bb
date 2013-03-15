@@ -225,7 +225,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     connection_close_frame_ = frame;
   }
 
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) {
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {
     goaway_frame_ = frame;
   }
 

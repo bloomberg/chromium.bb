@@ -136,7 +136,7 @@ class MockCanvas : public SkCanvas {
  public:
   explicit MockCanvas(SkDevice* device) : SkCanvas(device) {}
 
-  virtual void drawRect(const SkRect& rect, const SkPaint& paint) {
+  virtual void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE {
     // Capture calls before SkCanvas quickReject kicks in
     rects_.push_back(rect);
   }

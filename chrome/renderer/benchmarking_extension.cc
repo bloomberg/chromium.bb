@@ -56,7 +56,7 @@ class BenchmarkingWrapper : public v8::Extension {
         ) {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) {
+      v8::Handle<v8::String> name) OVERRIDE {
     if (name->Equals(v8::String::New("GetCounter"))) {
       return v8::FunctionTemplate::New(GetCounter);
     } else if (name->Equals(v8::String::New("IsSingleProcess"))) {

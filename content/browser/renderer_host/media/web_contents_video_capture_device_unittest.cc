@@ -255,7 +255,7 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       bool swapped_out,
-      SessionStorageNamespace* session_storage_namespace) {
+      SessionStorageNamespace* session_storage_namespace) OVERRIDE {
     return new CaptureTestRenderViewHost(instance, delegate, widget_delegate,
                                          routing_id, swapped_out, controller_);
   }

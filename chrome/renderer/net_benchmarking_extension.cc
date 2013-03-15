@@ -48,7 +48,7 @@ class NetBenchmarkingWrapper : public v8::Extension {
         ) {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) {
+      v8::Handle<v8::String> name) OVERRIDE {
     if (name->Equals(v8::String::New("ClearCache"))) {
       return v8::FunctionTemplate::New(ClearCache);
     } else if (name->Equals(v8::String::New("ClearHostResolverCache"))) {
