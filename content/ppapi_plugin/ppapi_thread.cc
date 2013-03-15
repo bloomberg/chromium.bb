@@ -117,16 +117,6 @@ PpapiThread::~PpapiThread() {
     plugin_entry_points_.shutdown_module();
   WebKit::shutdown();
 
-#if defined(OS_MACOSX)
-  // TODO(shess): <http://crbug.com/172319> is about how modules
-  // cannot be unloaded when Objective-C is involved.  interaction
-  // between the Objective-C runtime and module unloading.  Leaking
-  // the module here to work around this, a later CL should autodetect
-  // the problem and leak in NativeLibrary.
-  if (is_broker_)
-    library_.Release();
-#endif
-
 #if defined(OS_WIN)
   if (permissions_.HasPermission(ppapi::PERMISSION_FLASH))
     base::win::SetShouldCrashOnProcessDetach(false);

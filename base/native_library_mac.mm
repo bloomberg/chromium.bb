@@ -5,15 +5,41 @@
 #include "base/native_library.h"
 
 #include <dlfcn.h>
+#include <mach-o/getsect.h>
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 
 namespace base {
+
+static NativeLibraryObjCStatus GetObjCStatusForImage(
+    const void* function_pointer) {
+  Dl_info info;
+  if (!dladdr(function_pointer, &info))
+    return OBJC_UNKNOWN;
+
+  // See if the the image contains an "ObjC image info" segment. This method
+  // of testing is used in _CFBundleGrokObjcImageInfoFromFile in
+  // CF-744/CFBundle.c, around lines 2447-2474.
+  //
+  // In 32-bit images, ObjC can be recognized in __OBJC,__image_info, whereas
+  // in 64-bit, the data is in __DATA,__objc_imageinfo.
+#if __LP64__
+  const section_64* section = getsectbynamefromheader_64(
+      reinterpret_cast<const struct mach_header_64*>(info.dli_fbase),
+      SEG_DATA, "__objc_imageinfo");
+#else
+  const section* section = getsectbynamefromheader(
+      reinterpret_cast<const struct mach_header*>(info.dli_fbase),
+      SEG_OBJC, "__image_info");
+#endif
+  return section == NULL ? OBJC_NOT_PRESENT : OBJC_PRESENT;
+}
 
 // static
 NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
@@ -27,6 +53,7 @@ NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
     NativeLibrary native_lib = new NativeLibraryStruct();
     native_lib->type = DYNAMIC_LIB;
     native_lib->dylib = dylib;
+    native_lib->objc_status = OBJC_UNKNOWN;
     return native_lib;
   }
   base::mac::ScopedCFTypeRef<CFURLRef> url(
@@ -45,17 +72,26 @@ NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
   native_lib->type = BUNDLE;
   native_lib->bundle = bundle;
   native_lib->bundle_resource_ref = CFBundleOpenBundleResourceMap(bundle);
+  native_lib->objc_status = OBJC_UNKNOWN;
   return native_lib;
 }
 
 // static
 void UnloadNativeLibrary(NativeLibrary library) {
-  if (library->type == BUNDLE) {
-    CFBundleCloseBundleResourceMap(library->bundle,
-                                   library->bundle_resource_ref);
-    CFRelease(library->bundle);
+  if (library->objc_status == OBJC_NOT_PRESENT) {
+    if (library->type == BUNDLE) {
+      CFBundleCloseBundleResourceMap(library->bundle,
+                                     library->bundle_resource_ref);
+      CFRelease(library->bundle);
+    } else {
+      dlclose(library->dylib);
+    }
   } else {
-    dlclose(library->dylib);
+    VLOG(2) << "Not unloading NativeLibrary because it may contain an ObjC "
+               "segment. library->objc_status = " << library->objc_status;
+    // Deliberately do not CFRelease the bundle or dlclose the dylib because
+    // doing so can corrupt the ObjC runtime method caches. See
+    // http://crbug.com/172319 for details.
   }
   delete library;
 }
@@ -63,13 +99,25 @@ void UnloadNativeLibrary(NativeLibrary library) {
 // static
 void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
                                           const char* name) {
+  void* function_pointer = NULL;
+
+  // Get the function pointer using the right API for the type.
   if (library->type == BUNDLE) {
     base::mac::ScopedCFTypeRef<CFStringRef> symbol_name(
         CFStringCreateWithCString(kCFAllocatorDefault, name,
                                   kCFStringEncodingUTF8));
-    return CFBundleGetFunctionPointerForName(library->bundle, symbol_name);
+    function_pointer = CFBundleGetFunctionPointerForName(library->bundle,
+                                                         symbol_name);
+  } else {
+    function_pointer = dlsym(library->dylib, name);
   }
-  return dlsym(library->dylib, name);
+
+  // If this library hasn't been tested for having ObjC, use the function
+  // pointer to look up the section information for the library.
+  if (function_pointer && library->objc_status == OBJC_UNKNOWN)
+    library->objc_status = GetObjCStatusForImage(function_pointer);
+
+  return function_pointer;
 }
 
 // static
