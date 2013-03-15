@@ -130,16 +130,18 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
   // Only listen for output device changes right now...
   if (flow != eConsole && role != eRender)
     return S_OK;
-  VLOG(1) << "OnDefaultDeviceChanged() "
-          << "new_default_device: "
-          << CoreAudioUtil::GetFriendlyName(WideToUTF8(new_default_device_id))
-          << ", flow: " << FlowToString(flow)
-          << ", role: " << RoleToString(role);
 
   // If no device is now available, |new_default_device_id| will be NULL.
-  std::string new_device_id = "";
+  std::string new_device_id;
   if (new_default_device_id)
     new_device_id = WideToUTF8(new_default_device_id);
+
+  VLOG(1) << "OnDefaultDeviceChanged() "
+          << "new_default_device: "
+          << (new_default_device_id ?
+              CoreAudioUtil::GetFriendlyName(new_device_id) : "No device")
+          << ", flow: " << FlowToString(flow)
+          << ", role: " << RoleToString(role);
 
   // Only fire a state change event if the device has actually changed.
   // TODO(dalecurtis): This still seems to fire an extra event on my machine for
