@@ -22,6 +22,7 @@ const SkColor kNotificationReadColor = SkColorSetRGB(0xfa, 0xfa, 0xfa);
 MessageSimpleView::MessageSimpleView(const Notification& notification,
                                      NotificationChangeObserver* observer)
     : MessageView(notification, observer, false) {
+  set_focusable(true);
   views::ImageButton* close = new views::ImageButton(this);
   close->SetImage(
       views::CustomButton::STATE_NORMAL,

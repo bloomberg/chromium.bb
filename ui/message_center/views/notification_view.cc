@@ -244,6 +244,7 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
     : views::CustomButton(listener),
       icon_(NULL),
       title_(NULL) {
+  set_focusable(true);
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                         kButtonHorizontalPadding,
                                         kButtonVecticalPadding,

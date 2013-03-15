@@ -103,7 +103,6 @@ class WebNotificationButtonView : public WebNotificationButtonViewBase,
     views::TextButton* close_all_button = new views::TextButton(
         this, rb.GetLocalizedString(IDS_MESSAGE_CENTER_CLEAR_ALL));
     close_all_button->set_alignment(views::TextButton::ALIGN_CENTER);
-    close_all_button->set_focusable(true);
     close_all_button->set_request_focus_on_press(false);
 
     layout->AddPaddingRow(0, 4);
@@ -184,9 +183,11 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
     settings_button_ = new WebNotificationButton(
         this, l10n_util::GetStringUTF16(
             IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL));
+    settings_button_->set_focusable(true);
     AddChildView(settings_button_);
     WebNotificationButton* close_all_button = new WebNotificationButton(
         this, l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_CLEAR_ALL));
+    close_all_button->set_focusable(true);
     AddChildView(close_all_button);
 
     views::GridLayout* layout = new views::GridLayout(this);
