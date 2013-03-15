@@ -52,6 +52,7 @@ ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
       web_contents_(web_contents),
       expanded_container_(NULL),
       focus_store_(NULL) {
+  g_object_ref_sink(floating_.get());
   gtk_widget_set_name(floating_.get(), "chrome-tab-contents-view");
   g_signal_connect(floating_.get(), "set-floating-position",
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
@@ -62,7 +63,6 @@ ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
 }
 
 ChromeWebContentsViewDelegateGtk::~ChromeWebContentsViewDelegateGtk() {
-  floating_.Destroy();
 }
 
 void ChromeWebContentsViewDelegateGtk::AttachWebContentsModalDialog(

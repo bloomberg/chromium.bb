@@ -23,8 +23,7 @@ class MediaGalleriesDialogTest;
 
 // The media galleries configuration view for Gtk. It will immediately show
 // upon construction.
-class MediaGalleriesDialogGtk : public MediaGalleriesDialog,
-                                public ConstrainedWindowGtkDelegate {
+class MediaGalleriesDialogGtk : public MediaGalleriesDialog {
  public:
   explicit MediaGalleriesDialogGtk(MediaGalleriesDialogController* controller);
   virtual ~MediaGalleriesDialogGtk();
@@ -33,11 +32,6 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog,
   virtual void UpdateGallery(const MediaGalleryPrefInfo* gallery,
                              bool permitted) OVERRIDE;
   virtual void ForgetGallery(const MediaGalleryPrefInfo* gallery) OVERRIDE;
-
-  // ConstrainedWindowGtkDelegate implementation:
-  virtual GtkWidget* GetWidgetRoot() OVERRIDE;
-  virtual GtkWidget* GetFocusWidget() OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
 
   // Event callbacks.
   CHROMEGTK_CALLBACK_0(MediaGalleriesDialogGtk, void, OnToggled);
@@ -58,6 +52,8 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog,
 
   // Updates the state of the confirm button. It will be disabled when
   void UpdateConfirmButtonState();
+
+  CHROMEGTK_CALLBACK_0(MediaGalleriesDialogGtk, void, OnDestroy);
 
   MediaGalleriesDialogController* controller_;
   GtkWidget* window_;

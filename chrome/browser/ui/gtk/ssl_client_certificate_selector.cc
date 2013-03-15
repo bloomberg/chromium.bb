@@ -43,8 +43,7 @@ enum {
 ///////////////////////////////////////////////////////////////////////////////
 // SSLClientCertificateSelector
 
-class SSLClientCertificateSelector : public SSLClientAuthObserver,
-                                     public ConstrainedWindowGtkDelegate {
+class SSLClientCertificateSelector : public SSLClientAuthObserver {
  public:
   explicit SSLClientCertificateSelector(
       WebContents* parent,
@@ -57,11 +56,6 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
 
   // SSLClientAuthObserver implementation:
   virtual void OnCertSelectedByNotification() OVERRIDE;
-
-  // ConstrainedWindowGtkDelegate implementation:
-  virtual GtkWidget* GetWidgetRoot() OVERRIDE { return root_widget_.get(); }
-  virtual GtkWidget* GetFocusWidget() OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   void PopulateCerts();
@@ -83,6 +77,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnOkClicked);
   CHROMEGTK_CALLBACK_1(SSLClientCertificateSelector, void, OnPromptShown,
                        GtkWidget*);
+  CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnDestroy);
 
   std::vector<std::string> details_strings_;
 
@@ -108,6 +103,10 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       web_contents_(web_contents),
       window_(NULL) {
   root_widget_.Own(gtk_vbox_new(FALSE, ui::kControlSpacing));
+  g_signal_connect(root_widget_.get(),
+                   "destroy",
+                   G_CALLBACK(OnDestroyThunk),
+                   this);
 
   GtkWidget* site_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(root_widget_.get()), site_vbox,
@@ -198,7 +197,9 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Show() {
   DCHECK(!window_);
-  window_ = CreateWebContentsModalDialogGtk(web_contents_, this);
+  window_ = CreateWebContentsModalDialogGtk(web_contents_,
+                                            root_widget_.get(),
+                                            select_button_);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
@@ -208,17 +209,6 @@ void SSLClientCertificateSelector::Show() {
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
   DCHECK(window_);
   gtk_widget_destroy(window_);
-}
-
-GtkWidget* SSLClientCertificateSelector::GetFocusWidget() {
-  return select_button_;
-}
-
-void SSLClientCertificateSelector::DeleteDelegate() {
-  // The dialog was closed by escape key.
-  StopObserving();
-  CertificateSelected(NULL);
-  delete this;
 }
 
 void SSLClientCertificateSelector::PopulateCerts() {
@@ -383,6 +373,13 @@ void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
     return;
   gtk_widget_set_can_default(select_button_, TRUE);
   gtk_widget_grab_default(select_button_);
+}
+
+void SSLClientCertificateSelector::OnDestroy(GtkWidget* widget) {
+  // The dialog was closed by escape key.
+  StopObserving();
+  CertificateSelected(NULL);
+  delete this;
 }
 
 }  // namespace

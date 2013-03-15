@@ -45,11 +45,16 @@ class ConstrainedWebDialogDelegateGtk
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateGtk);
 };
 
+void SetBackgroundColor(GtkWidget* widget, const GdkColor &color) {
+  gtk_widget_modify_base(widget, GTK_STATE_NORMAL, &color);
+  gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, &color);
+  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &color);
+}
+
 }  // namespace
 
 class ConstrainedWebDialogDelegateViewGtk
-    : public ConstrainedWindowGtkDelegate,
-      public ConstrainedWebDialogDelegate {
+    : public ConstrainedWebDialogDelegate {
  public:
   ConstrainedWebDialogDelegateViewGtk(
       content::BrowserContext* browser_context,
@@ -79,23 +84,6 @@ class ConstrainedWebDialogDelegateViewGtk
     return impl_->GetWebContents();
   }
 
-  // ConstrainedWindowGtkDelegate interface
-  virtual GtkWidget* GetWidgetRoot() OVERRIDE {
-    return GetWebContents()->GetView()->GetNativeView();
-  }
-  virtual GtkWidget* GetFocusWidget() OVERRIDE {
-    return GetWebContents()->GetView()->GetContentNativeView();
-  }
-  virtual void DeleteDelegate() OVERRIDE {
-    if (!impl_->closed_via_webui())
-      GetWebDialogDelegate()->OnDialogClosed("");
-    delete this;
-  }
-  virtual bool GetBackgroundColor(GdkColor* color) OVERRIDE {
-    *color = ui::kGdkWhite;
-    return true;
-  }
-
   void SetWindow(GtkWidget* window) {
     impl_->set_window(window);
   }
@@ -105,6 +93,8 @@ class ConstrainedWebDialogDelegateViewGtk
   }
 
  private:
+  CHROMEGTK_CALLBACK_0(ConstrainedWebDialogDelegateViewGtk, void, OnDestroy);
+
   scoped_ptr<ConstrainedWebDialogDelegateGtk> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViewGtk);
@@ -120,11 +110,21 @@ ConstrainedWebDialogDelegateViewGtk::ConstrainedWebDialogDelegateViewGtk(
           tab_delegate)) {
   gfx::Size dialog_size;
   delegate->GetDialogSize(&dialog_size);
-  gtk_widget_set_size_request(GTK_WIDGET(GetWidgetRoot()),
+  GtkWidget* contents =
+      GTK_WIDGET(GetWebContents()->GetView()->GetNativeView());
+  gtk_widget_set_size_request(contents,
                               dialog_size.width(),
                               dialog_size.height());
 
-  gtk_widget_show_all(GetWidgetRoot());
+  gtk_widget_show_all(contents);
+
+  g_signal_connect(contents, "destroy", G_CALLBACK(OnDestroyThunk), this);
+}
+
+void ConstrainedWebDialogDelegateViewGtk::OnDestroy(GtkWidget* widget) {
+  if (!impl_->closed_via_webui())
+    GetWebDialogDelegate()->OnDialogClosed("");
+  delete this;
 }
 
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
@@ -136,7 +136,12 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       new ConstrainedWebDialogDelegateViewGtk(
           browser_context, delegate, tab_delegate);
   GtkWidget* window =
-      CreateWebContentsModalDialogGtk(web_contents, constrained_delegate);
+      CreateWebContentsModalDialogGtk(
+          web_contents,
+          constrained_delegate->GetWebContents()->GetView()->GetNativeView(),
+          constrained_delegate->GetWebContents()->GetView()->
+              GetContentNativeView());
+  SetBackgroundColor(window, ui::kGdkWhite);
   constrained_delegate->SetWindow(window);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =

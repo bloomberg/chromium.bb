@@ -121,6 +121,7 @@ CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
 void CollectedCookiesGtk::Init() {
   dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   gtk_box_set_spacing(GTK_BOX(dialog_), ui::kContentAreaSpacing);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroyThunk), this);
 
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_DIALOG_TITLE).c_str());
@@ -190,7 +191,9 @@ void CollectedCookiesGtk::Init() {
   blocked_cookies_tree_adapter_->Init();
   EnableControls();
   ShowCookieInfo(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook_)));
-  window_ = CreateWebContentsModalDialogGtk(web_contents_, this);
+  window_ = CreateWebContentsModalDialogGtk(web_contents_,
+                                            dialog_,
+                                            close_button_);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
@@ -400,18 +403,6 @@ CollectedCookiesGtk::~CollectedCookiesGtk() {
   gtk_widget_destroy(dialog_);
 }
 
-GtkWidget* CollectedCookiesGtk::GetWidgetRoot() {
-  return dialog_;
-}
-
-GtkWidget* CollectedCookiesGtk::GetFocusWidget() {
-  return close_button_;
-}
-
-void CollectedCookiesGtk::DeleteDelegate() {
-  delete this;
-}
-
 bool CollectedCookiesGtk::SelectionContainsHostNode(
     GtkTreeSelection* selection, gtk_tree::TreeAdapter* adapter) {
   // Check whether at least one "origin" node is selected.
@@ -549,4 +540,8 @@ void CollectedCookiesGtk::OnTreeViewRowExpanded(GtkWidget* tree_view,
 void CollectedCookiesGtk::OnTreeViewSelectionChange(GtkWidget* selection) {
   EnableControls();
   ShowCookieInfo(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook_)));
+}
+
+void CollectedCookiesGtk::OnDestroy(GtkWidget* widget) {
+  delete this;
 }

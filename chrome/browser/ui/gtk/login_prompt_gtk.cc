@@ -36,8 +36,7 @@ using content::WebContents;
 // the UI thread) to the net::URLRequest (on the I/O thread).
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
-class LoginHandlerGtk : public LoginHandler,
-                        public ConstrainedWindowGtkDelegate {
+class LoginHandlerGtk : public LoginHandler {
  public:
   LoginHandlerGtk(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
@@ -70,6 +69,8 @@ class LoginHandlerGtk : public LoginHandler,
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     root_.Own(gtk_vbox_new(FALSE, ui::kContentAreaBorder));
+    g_signal_connect(root_.get(), "destroy", G_CALLBACK(OnDestroyThunk), this);
+
     GtkWidget* label = gtk_label_new(UTF16ToUTF8(explanation).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     gtk_box_pack_start(GTK_BOX(root_.get()), label, FALSE, FALSE, 0);
@@ -116,7 +117,9 @@ class LoginHandlerGtk : public LoginHandler,
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
-    dialog_ = CreateWebContentsModalDialogGtk(requesting_contents, this);
+    dialog_ = CreateWebContentsModalDialogGtk(requesting_contents,
+                                              root_.get(),
+                                              username_entry_);
 
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(requesting_contents);
@@ -131,25 +134,6 @@ class LoginHandlerGtk : public LoginHandler,
       gtk_widget_destroy(dialog_);
   }
 
-  // Overridden from ConstrainedWindowGtkDelegate:
-  virtual GtkWidget* GetWidgetRoot() OVERRIDE {
-    return root_.get();
-  }
-
-  virtual GtkWidget* GetFocusWidget() OVERRIDE {
-    return username_entry_;
-  }
-
-  virtual void DeleteDelegate() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-    // The constrained window is going to delete itself; clear our pointer.
-    dialog_ = NULL;
-    SetModel(NULL);
-
-    ReleaseSoon();
-  }
-
  protected:
   virtual ~LoginHandlerGtk() {
     root_.Destroy();
@@ -162,6 +146,7 @@ class LoginHandlerGtk : public LoginHandler,
   CHROMEGTK_CALLBACK_0(LoginHandlerGtk, void, OnCancelClicked);
   CHROMEGTK_CALLBACK_1(LoginHandlerGtk, void, OnPromptHierarchyChanged,
                        GtkWidget*);
+  CHROMEGTK_CALLBACK_0(LoginHandlerGtk, void, OnDestroy);
 
   // The GtkWidgets that form our visual hierarchy:
   // The root container we pass to our parent.
@@ -204,4 +189,14 @@ void LoginHandlerGtk::OnPromptHierarchyChanged(GtkWidget* sender,
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
                                    net::URLRequest* request) {
   return new LoginHandlerGtk(auth_info, request);
+}
+
+void LoginHandlerGtk::OnDestroy(GtkWidget* widget) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // The web contents modal dialog is going to delete itself; clear our pointer.
+  dialog_ = NULL;
+  SetModel(NULL);
+
+  ReleaseSoon();
 }

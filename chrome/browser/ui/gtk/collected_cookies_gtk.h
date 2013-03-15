@@ -29,16 +29,10 @@ class WebContents;
 // ShowCollectedCookiesDialog() on the delegate of the web contents's
 // content settings tab helper.
 
-class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
-                            public gtk_tree::TreeAdapter::Delegate,
+class CollectedCookiesGtk : public gtk_tree::TreeAdapter::Delegate,
                             public content::NotificationObserver {
  public:
   CollectedCookiesGtk(GtkWindow* parent, content::WebContents* web_contents);
-
-  // ConstrainedWindowGtkDelegate methods.
-  virtual GtkWidget* GetWidgetRoot() OVERRIDE;
-  virtual GtkWidget* GetFocusWidget() OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   virtual ~CollectedCookiesGtk();
@@ -84,6 +78,7 @@ class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
                        OnForSessionBlockedButtonClicked);
   CHROMEGTK_CALLBACK_2(CollectedCookiesGtk, void, OnSwitchPage,
                        gpointer, guint);
+  CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnDestroy);
 
   content::NotificationRegistrar registrar_;
 

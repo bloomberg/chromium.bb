@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/base/gtk/scoped_gobject.h"
 
 class RenderViewContextMenuGtk;
 class WebDragBookmarkHandlerGtk;
@@ -57,7 +57,7 @@ class ChromeWebContentsViewDelegateGtk
                        GtkAllocation*);
 
   // Contains |expanded_| as its GtkBin member.
-  ui::OwnedWidgetGtk floating_;
+  ui::ScopedGObject<GtkWidget>::Type floating_;
 
   // The UI for the web contents modal dialog currently displayed. This is owned
   // by WebContents, not the view.

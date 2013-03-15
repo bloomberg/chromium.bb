@@ -71,24 +71,14 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnAcceptThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  window_ = CreateWebContentsModalDialogGtk(web_contents, this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroyThunk), this);
+
+  window_ = CreateWebContentsModalDialogGtk(web_contents, dialog_, cancel_);
   delegate_->set_close_delegate(this);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   web_contents_modal_dialog_manager->ShowDialog(window_);
-}
-
-GtkWidget* TabModalConfirmDialogGtk::GetWidgetRoot() {
-  return dialog_;
-}
-
-GtkWidget* TabModalConfirmDialogGtk::GetFocusWidget() {
-  return cancel_;
-}
-
-void TabModalConfirmDialogGtk::DeleteDelegate() {
-  delete this;
 }
 
 TabModalConfirmDialogGtk::~TabModalConfirmDialogGtk() {
@@ -113,4 +103,8 @@ void TabModalConfirmDialogGtk::OnAccept(GtkWidget* widget) {
 
 void TabModalConfirmDialogGtk::OnCancel(GtkWidget* widget) {
   delegate_->Cancel();
+}
+
+void TabModalConfirmDialogGtk::OnDestroy(GtkWidget* widget) {
+  delete this;
 }

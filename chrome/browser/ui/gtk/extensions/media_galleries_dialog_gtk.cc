@@ -30,7 +30,9 @@ MediaGalleriesDialogGtk::MediaGalleriesDialogGtk(
 
   // May be NULL during tests.
   if (controller->web_contents()) {
-    window_ = CreateWebContentsModalDialogGtk(controller->web_contents(), this);
+    window_ = CreateWebContentsModalDialogGtk(controller->web_contents(),
+                                              contents_.get(),
+                                              confirm_);
 
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(
@@ -44,6 +46,10 @@ MediaGalleriesDialogGtk::~MediaGalleriesDialogGtk() {
 
 void MediaGalleriesDialogGtk::InitWidgets() {
   contents_.Own(gtk_vbox_new(FALSE, ui::kContentAreaSpacing));
+  g_signal_connect(contents_.get(),
+                   "destroy",
+                   G_CALLBACK(OnDestroyThunk),
+                   this);
 
   GtkWidget* header =
       gtk_util::CreateBoldLabel(UTF16ToUTF8(controller_->GetHeader()));
@@ -135,18 +141,6 @@ void MediaGalleriesDialogGtk::ForgetGallery(
   checkbox_map_.erase(iter);
 }
 
-GtkWidget* MediaGalleriesDialogGtk::GetWidgetRoot() {
-  return contents_.get();
-}
-
-GtkWidget* MediaGalleriesDialogGtk::GetFocusWidget() {
-  return confirm_;
-}
-
-void MediaGalleriesDialogGtk::DeleteDelegate() {
-  controller_->DialogFinished(accepted_);
-}
-
 void MediaGalleriesDialogGtk::OnToggled(GtkWidget* widget) {
   if (confirm_)
     gtk_widget_set_sensitive(confirm_, TRUE);
@@ -178,6 +172,10 @@ void MediaGalleriesDialogGtk::OnConfirm(GtkWidget* widget) {
 
 void MediaGalleriesDialogGtk::OnCancel(GtkWidget* widget) {
   gtk_widget_destroy(window_);
+}
+
+void MediaGalleriesDialogGtk::OnDestroy(GtkWidget* widget) {
+  controller_->DialogFinished(accepted_);
 }
 
 // MediaGalleriesDialogController ----------------------------------------------

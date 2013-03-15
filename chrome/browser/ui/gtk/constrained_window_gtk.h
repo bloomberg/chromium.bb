@@ -20,25 +20,6 @@ namespace content {
 class WebContents;
 }
 
-class ConstrainedWindowGtkDelegate {
- public:
-  // Returns the widget that will be put in the constrained window's container.
-  virtual GtkWidget* GetWidgetRoot() = 0;
-
-  // Returns the widget that should get focus when ConstrainedWindowGtk is
-  // focused.
-  virtual GtkWidget* GetFocusWidget() = 0;
-
-  // Tells the delegate to either delete itself or set up a task to delete
-  // itself later.
-  virtual void DeleteDelegate() = 0;
-
-  virtual bool GetBackgroundColor(GdkColor* color);
-
- protected:
-  virtual ~ConstrainedWindowGtkDelegate();
-};
-
 // Web contents modal dialog implementation for the GTK port. Unlike the Win32
 // system, ConstrainedWindowGtk doesn't draw draggable fake windows and instead
 // just centers the dialog. It is thus an order of magnitude simpler.
@@ -47,7 +28,8 @@ class ConstrainedWindowGtk {
   typedef ChromeWebContentsViewDelegateGtk TabContentsViewType;
 
   ConstrainedWindowGtk(content::WebContents* web_contents,
-                       ConstrainedWindowGtkDelegate* delegate);
+                       GtkWidget* contents,
+                       GtkWidget* focus_widget);
   virtual ~ConstrainedWindowGtk();
 
   void ShowWebContentsModalDialog();
@@ -75,8 +57,8 @@ class ConstrainedWindowGtk {
   // The top level widget container that exports to our WebContentsView.
   GtkWidget* border_;
 
-  // Delegate that provides the contents of this constrained window.
-  ConstrainedWindowGtkDelegate* delegate_;
+  // The widget that should get focus when ConstrainedWindowGtk is focused.
+  GtkWidget* focus_widget_;
 
   // Stores if |ShowWebContentsModalDialog()| has been called.
   bool visible_;
@@ -86,6 +68,7 @@ class ConstrainedWindowGtk {
 
 GtkWidget* CreateWebContentsModalDialogGtk(
     content::WebContents* web_contents,
-    ConstrainedWindowGtkDelegate* delegate);
+    GtkWidget* contents,
+    GtkWidget* focus_widget);
 
 #endif  // CHROME_BROWSER_UI_GTK_CONSTRAINED_WINDOW_GTK_H_
