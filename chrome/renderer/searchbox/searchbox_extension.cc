@@ -13,6 +13,7 @@
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -727,7 +728,13 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateSearchBox(
       transition = result->transition;
     }
   } else {
-    destination_url = GURL(V8ValueToUTF16(args[0]));
+    // Resolve the URL.
+    const string16& possibly_relative_url = V8ValueToUTF16(args[0]);
+    WebKit::WebView* webview = render_view->GetWebView();
+    if (!possibly_relative_url.empty() && webview) {
+      GURL current_url(webview->mainFrame()->document().url());
+      destination_url = current_url.Resolve(possibly_relative_url);
+    }
   }
 
   DVLOG(1) << render_view << " NavigateSearchBox: " << destination_url;
@@ -740,6 +747,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateSearchBox(
     SearchBox::Get(render_view)->NavigateToURL(
         destination_url, transition, disposition);
   }
+
   return v8::Undefined();
 }
 
