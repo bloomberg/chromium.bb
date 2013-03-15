@@ -25,8 +25,7 @@ const SkColor kSelectionHandleColor =
 // The minimum selection size to trigger selection controller.
 const int kMinSelectionSize = 4;
 
-const int kContextMenuTimoutMs = 1000;
-const int kContextMenuVerticalOffset = 5;
+const int kContextMenuTimoutMs = 500;
 
 // Convenience struct to represent a circle shape.
 struct Circle {
@@ -64,6 +63,12 @@ bool IsEmptySelection(const gfx::Point& p1, const gfx::Point& p2) {
   return (abs(delta_x) < kMinSelectionSize && abs(delta_y) < kMinSelectionSize);
 }
 
+gfx::Rect GetHandleBoundsFromCursor(const gfx::Rect& cursor) {
+  return gfx::Rect(cursor.x() - kSelectionHandleRadius, cursor.y(),
+          2 * kSelectionHandleRadius,
+          2 * kSelectionHandleRadius + cursor.height());
+}
+
 }  // namespace
 
 namespace views {
@@ -86,6 +91,9 @@ class TouchSelectionControllerImpl::EditingHandleView : public View {
   virtual ~EditingHandleView() {
   }
 
+  int cursor_height() const { return cursor_height_; }
+
+  // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     Circle circle = {kSelectionHandleRadius, gfx::Point(kSelectionHandleRadius,
                      kSelectionHandleRadius + cursor_height_),
@@ -135,9 +143,7 @@ class TouchSelectionControllerImpl::EditingHandleView : public View {
 
   void SetSelectionRectInScreen(const gfx::Rect& rect) {
     cursor_height_ = rect.height();
-    gfx::Rect widget_bounds(rect.x() - kSelectionHandleRadius, rect.y(),
-        2 * kSelectionHandleRadius,
-        2 * kSelectionHandleRadius + cursor_height_);
+    gfx::Rect widget_bounds = GetHandleBoundsFromCursor(rect);
     widget_->SetBounds(widget_bounds);
   }
 
@@ -258,7 +264,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
   if (dragging_handle_ == cursor_handle_.get()) {
     gfx::Point p(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
     ConvertPointToClientView(dragging_handle_, &p);
-    client_view_->SelectRect(p, p);
+    client_view_->MoveCaretTo(p);
     return;
   }
 
@@ -271,7 +277,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
   gfx::Point p1(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
   ConvertPointToClientView(dragging_handle_, &p1);
 
-  gfx::Point p2(kSelectionHandleRadius, 0);
+  gfx::Point p2(kSelectionHandleRadius, fixed_handle->cursor_height() / 2);
   ConvertPointToClientView(fixed_handle, &p2);
 
   // Instruct client_view to select the region between p1 and p2. The position
@@ -298,7 +304,7 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
 
 void TouchSelectionControllerImpl::OpenContextMenu() {
   gfx::Point anchor = context_menu_->anchor_point();
-  anchor.Offset(0, kContextMenuVerticalOffset);
+  anchor.Offset(0, -kSelectionHandleRadius);
   HideContextMenu();
   client_view_->OpenContextMenu(anchor);
 }
@@ -326,28 +332,31 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   gfx::Rect r1, r2;
   client_view_->GetSelectionEndPoints(&r1, &r2);
 
+  gfx::Rect handle_1_bounds = GetHandleBoundsFromCursor(r1);
+  gfx::Rect handle_2_bounds = GetHandleBoundsFromCursor(r2);
+
   // if selection is completely inside the view, we display the context menu
   // in the middle of the end points on the top. Else, we show it above the
   // visible handle. If no handle is visible, we do not show the menu.
-  gfx::Point menu_pos;
+  gfx::Rect menu_anchor;
   gfx::Rect client_bounds = client_view_->GetBounds();
   if (client_bounds.Contains(r1.origin()) &&
       client_bounds.Contains(r2.origin())) {
-    menu_pos.set_x((r1.origin().x() + r2.origin().x()) / 2);
-    menu_pos.set_y(std::min(r1.y(), r2.y()));
+    menu_anchor = gfx::UnionRects(handle_1_bounds, handle_2_bounds);
   } else if (client_bounds.Contains(r1.origin())) {
-    menu_pos = r1.origin();
+    menu_anchor = handle_1_bounds;
   } else if (client_bounds.Contains(r2.origin())) {
-    menu_pos = r2.origin();
+    menu_anchor = handle_2_bounds;
   } else {
     return;
   }
 
-  menu_pos.Offset(0, -kContextMenuVerticalOffset);
-  client_view_->ConvertPointToScreen(&menu_pos);
+  gfx::Point menu_origin = menu_anchor.origin();
+  client_view_->ConvertPointToScreen(&menu_origin);
+  menu_anchor.set_origin(menu_origin);
 
   DCHECK(!context_menu_);
-  context_menu_ = new TouchEditingMenuView(this, menu_pos,
+  context_menu_ = new TouchEditingMenuView(this, menu_anchor,
       client_view_->GetNativeView());
 }
 

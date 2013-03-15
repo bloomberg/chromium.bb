@@ -41,7 +41,7 @@ class VIEWS_EXPORT TouchEditingMenuView : public BubbleDelegateView,
                                           public ButtonListener {
  public:
   TouchEditingMenuView(TouchEditingMenuController* controller,
-                       gfx::Point anchor_point,
+                       gfx::Rect anchor_rect,
                        gfx::NativeView context);
   virtual ~TouchEditingMenuView();
 

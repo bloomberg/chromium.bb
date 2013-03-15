@@ -356,6 +356,10 @@ void NativeTextfieldViews::SelectRect(const gfx::Point& start,
   OnAfterUserAction();
 }
 
+void NativeTextfieldViews::MoveCaretTo(const gfx::Point& point) {
+  SelectRect(point, point);
+}
+
 void NativeTextfieldViews::GetSelectionEndPoints(gfx::Rect* p1,
                                                  gfx::Rect* p2) {
   gfx::RenderText* render_text = GetRenderText();

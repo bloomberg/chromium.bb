@@ -15,6 +15,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -22,12 +23,10 @@ namespace {
 
 const int kMenuCommands[] = {IDS_APP_CUT,
                              IDS_APP_COPY,
-                             IDS_APP_PASTE,
-                             IDS_APP_DELETE,
-                             IDS_APP_SELECT_ALL};
+                             IDS_APP_PASTE};
 const int kSpacingBetweenButtons = 0;
 const int kButtonSeparatorColor = SkColorSetARGB(13, 0, 0, 0);
-const int kMenuButtonBorderThickness = 5;
+const int kMenuButtonBorderThickness = 10;
 const SkColor kMenuButtonColorNormal = SkColorSetARGB(102, 255, 255, 255);
 const SkColor kMenuButtonColorHover = SkColorSetARGB(13, 0, 0, 0);
 
@@ -37,30 +36,36 @@ const int kEllipsesButtonTag = -1;
 
 namespace views {
 
-class TouchEditingMenuButtonBackground : public Background {
+class TouchEditingMenuButtonBorder : public LabelButtonBorder {
  public:
-  TouchEditingMenuButtonBackground() {}
+  explicit TouchEditingMenuButtonBorder(Button::ButtonStyle style)
+      : LabelButtonBorder(style) {
+  }
 
-  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
-    CustomButton::ButtonState state = static_cast<CustomButton*>(view)->state();
-    SkColor background_color = (state == CustomButton::STATE_NORMAL)?
-        kMenuButtonColorNormal : kMenuButtonColorHover;
-    int w = view->width();
-    int h = view->height();
-    canvas->FillRect(gfx::Rect(1, 0, w, h), background_color);
+  virtual ~TouchEditingMenuButtonBorder() {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TouchEditingMenuButtonBackground);
+  // Overridden from LabelButtonBorder
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    return gfx::Insets(kMenuButtonBorderThickness, kMenuButtonBorderThickness,
+                       kMenuButtonBorderThickness, kMenuButtonBorderThickness);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TouchEditingMenuButtonBorder);
 };
 
 TouchEditingMenuView::TouchEditingMenuView(
     TouchEditingMenuController* controller,
-    gfx::Point anchor_point,
+    gfx::Rect anchor_rect,
     gfx::NativeView context)
     : BubbleDelegateView(NULL, views::BubbleBorder::BOTTOM_CENTER),
       controller_(controller) {
-  set_anchor_point(anchor_point);
+  set_anchor_point(anchor_rect.CenterPoint());
+  set_anchor_insets(gfx::Insets(-anchor_rect.height() / 2,
+                                -anchor_rect.width() / 2,
+                                -anchor_rect.height() / 2,
+                                -anchor_rect.width() / 2));
   set_shadow(views::BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
   set_margins(gfx::Insets());
@@ -136,11 +141,7 @@ Button* TouchEditingMenuView::CreateButton(const string16& title, int tag) {
       title, '&', NULL, NULL));
   button->set_focusable(true);
   button->set_request_focus_on_press(false);
-  button->set_background(new TouchEditingMenuButtonBackground);
-  button->set_border(Border::CreateEmptyBorder(kMenuButtonBorderThickness,
-                                               kMenuButtonBorderThickness,
-                                               kMenuButtonBorderThickness,
-                                               kMenuButtonBorderThickness));
+  button->set_border(new TouchEditingMenuButtonBorder(button->style()));
   button->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::SmallFont));
   button->set_tag(tag);

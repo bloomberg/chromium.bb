@@ -20,6 +20,9 @@ class UI_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   // end of selection. Visually, |start| may lie after |end|.
   virtual void SelectRect(const gfx::Point& start, const gfx::Point& end) = 0;
 
+  // Move the caret to |point|. |point| is in local coordinates.
+  virtual void MoveCaretTo(const gfx::Point& point) = 0;
+
   // Gets the end points of the current selection. The end points p1 and p2 must
   // be the cursor rect for the start and end of selection:
   // ____________________________________
