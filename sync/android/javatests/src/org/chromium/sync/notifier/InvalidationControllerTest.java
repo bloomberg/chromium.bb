@@ -22,6 +22,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationController.IntentProtocol;
 import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
 import java.util.ArrayList;
@@ -117,8 +118,9 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         // We don't want to use the system content resolver, so we override it.
         SyncStatusHelper.overrideSyncStatusHelperForTests(mContext, contentResolver);
         Account account = AccountManagerHelper.createAccountFromName("test@gmail.com");
+        ChromeSigninController chromeSigninController = ChromeSigninController.get(mContext);
+        chromeSigninController.setSignedInAccountName(account.name);
         SyncStatusHelper syncStatusHelper = SyncStatusHelper.get(mContext);
-        syncStatusHelper.setSignedInAccountName(account.name);
         if (syncEnabled) {
             syncStatusHelper.enableAndroidSync(account);
         } else {

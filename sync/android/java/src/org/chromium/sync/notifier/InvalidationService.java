@@ -26,6 +26,7 @@ import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationController.IntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
 import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -189,7 +190,7 @@ public class InvalidationService extends AndroidListener {
     @Override
     public void requestAuthToken(final PendingIntent pendingIntent,
             @Nullable String invalidAuthToken) {
-        @Nullable Account account = SyncStatusHelper.get(this).getSignedInUser();
+        @Nullable Account account = ChromeSigninController.get(this).getSignedInUser();
         if (account == null) {
             // This should never happen, because this code should only be run if a user is
             // signed-in.
@@ -387,7 +388,7 @@ public class InvalidationService extends AndroidListener {
             bundle.putLong("version", (version == null) ? 0 : version);
             bundle.putString("payload", (payload == null) ? "" : payload);
         }
-        Account account = SyncStatusHelper.get(this).getSignedInUser();
+        Account account = ChromeSigninController.get(this).getSignedInUser();
         String contractAuthority = InvalidationController.get(this).getContractAuthority();
         requestSyncFromContentResolver(bundle, account, contractAuthority);
     }
