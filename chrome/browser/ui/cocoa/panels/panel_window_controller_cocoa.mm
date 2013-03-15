@@ -843,9 +843,14 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 - (void)fullScreenModeChanged:(bool)isFullScreen {
   [self updateWindowLevel];
 
-  // The full-screen window is in normal level and changing the panel window to
-  // same normal level will not move it below the full-screen window. Thus we
-  // need to reorder the panel window.
+  // If the panel is not always on top, its z-order should not be affected if
+  // some other window enters fullscreen mode.
+  if (!windowShim_->panel()->IsAlwaysOnTop())
+    return;
+
+  // The full-screen window is in normal level and changing the panel window
+  // to same normal level will not move it below the full-screen window. Thus
+  // we need to reorder the panel window.
   if (isFullScreen)
     [[self window] orderBack:nil];
   else

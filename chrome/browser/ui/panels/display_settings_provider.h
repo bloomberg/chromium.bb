@@ -128,7 +128,7 @@ class DisplaySettingsProvider {
   virtual bool NeedsPeriodicFullScreenCheck() const;
 
   // Returns true if full screen or presentation mode in main screen is entered.
-  virtual bool IsFullScreen() const;
+  virtual bool IsFullScreen();
 
   // Callback to perform periodic check for full screen mode changes.
   void CheckFullScreenMode();

@@ -106,8 +106,6 @@ class DockedPanelCollection :
 
   int StartingRightPosition() const;
 
-  void OnFullScreenModeChanged(bool is_full_screen);
-
 #ifdef UNIT_TEST
   int minimized_panel_count() const {return minimized_panel_count_; }
 #endif

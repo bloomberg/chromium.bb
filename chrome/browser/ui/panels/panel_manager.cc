@@ -196,7 +196,11 @@ void PanelManager::OnDisplayChanged() {
 }
 
 void PanelManager::OnFullScreenModeChanged(bool is_full_screen) {
-  docked_collection_->OnFullScreenModeChanged(is_full_screen);
+  std::vector<Panel*> all_panels = panels();
+  for (std::vector<Panel*>::const_iterator iter = all_panels.begin();
+       iter != all_panels.end(); ++iter) {
+    (*iter)->FullScreenModeChanged(is_full_screen);
+  }
 }
 
 int PanelManager::GetMaxPanelWidth(const gfx::Rect& work_area) const {

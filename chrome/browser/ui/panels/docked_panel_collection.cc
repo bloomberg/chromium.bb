@@ -644,13 +644,6 @@ void DockedPanelCollection::OnAutoHidingDesktopBarThicknessChanged(
   RefreshLayout();
 }
 
-void DockedPanelCollection::OnFullScreenModeChanged(bool is_full_screen) {
-  for (Panels::const_iterator iter = panels_.begin();
-       iter != panels_.end(); ++iter) {
-    (*iter)->FullScreenModeChanged(is_full_screen);
-  }
-}
-
 void DockedPanelCollection::RefreshLayout() {
   int total_active_width = 0;
   int total_inactive_width = 0;

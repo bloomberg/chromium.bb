@@ -3,16 +3,25 @@
 // found in the LICENSE file.
 
 #include "base/mac/mac_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
-#include "ui/base/work_area_watcher_observer.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/base/work_area_watcher_observer.h"
 
 namespace {
+
+enum ChromeFullScreenState {
+  FULLSCREEN_UNKNOWN,
+  FULLSCREEN_ON,
+  FULLSCREEN_OFF
+};
 
 class DisplaySettingsProviderCocoa : public DisplaySettingsProvider,
                                      public ui::WorkAreaWatcherObserver,
@@ -24,7 +33,7 @@ class DisplaySettingsProviderCocoa : public DisplaySettingsProvider,
  protected:
   // Overridden from DisplaySettingsProvider:
   virtual bool NeedsPeriodicFullScreenCheck() const OVERRIDE;
-  virtual bool IsFullScreen() const OVERRIDE;
+  virtual bool IsFullScreen() OVERRIDE;
 
   // Overridden from ui::WorkAreaWatcherObserver:
   virtual void WorkAreaChanged() OVERRIDE;
@@ -36,7 +45,7 @@ class DisplaySettingsProviderCocoa : public DisplaySettingsProvider,
 
  private:
   content::NotificationRegistrar registrar_;
-  bool is_chrome_fullscreen_;
+  ChromeFullScreenState chrome_fullscreen_state_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySettingsProviderCocoa);
 };
@@ -48,7 +57,7 @@ DisplaySettingsProviderCocoa::DisplaySettingsProviderCocoa()
     // This will get automatically fixed when DisplaySettingsProvider is changed
     // to be initialized before any chrome window is created with planning
     // refactor effort to move it out of panel scope.
-    : is_chrome_fullscreen_(false) {
+    : chrome_fullscreen_state_(FULLSCREEN_UNKNOWN) {
   AppController* appController = static_cast<AppController*>([NSApp delegate]);
   [appController addObserverForWorkAreaChange:this];
 
@@ -73,11 +82,20 @@ bool DisplaySettingsProviderCocoa::NeedsPeriodicFullScreenCheck() const {
   return !base::mac::IsOSLionOrLater();
 }
 
-bool DisplaySettingsProviderCocoa::IsFullScreen() const {
+bool DisplaySettingsProviderCocoa::IsFullScreen() {
   // For Lion and later, we only need to check if chrome enters fullscreen mode
   // (see detailed reason above in NeedsPeriodicFullScreenCheck).
-  return base::mac::IsOSLionOrLater() ? is_chrome_fullscreen_ :
-      DisplaySettingsProvider::IsFullScreen();
+  if (!base::mac::IsOSLionOrLater())
+    return DisplaySettingsProvider::IsFullScreen();
+
+  if (chrome_fullscreen_state_ == FULLSCREEN_UNKNOWN) {
+    Browser* browser = chrome::GetLastActiveBrowser();
+    chrome_fullscreen_state_ =
+        browser && browser->fullscreen_controller()->IsFullscreenForBrowser() ?
+            FULLSCREEN_ON : FULLSCREEN_OFF;
+  }
+
+  return chrome_fullscreen_state_ == FULLSCREEN_ON;
 }
 
 void DisplaySettingsProviderCocoa::WorkAreaChanged() {
@@ -89,7 +107,8 @@ void DisplaySettingsProviderCocoa::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
-  is_chrome_fullscreen_ = *(content::Details<bool>(details)).ptr();
+  chrome_fullscreen_state_ = *(content::Details<bool>(details)).ptr() ?
+      FULLSCREEN_ON : FULLSCREEN_OFF;
   CheckFullScreenMode();
 }
 

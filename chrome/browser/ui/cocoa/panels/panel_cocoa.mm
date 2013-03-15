@@ -210,8 +210,22 @@ void PanelCocoa::HandlePanelKeyboardEvent(
   [event_window redispatchKeyEvent:event.os_event];
 }
 
-void PanelCocoa::FullScreenModeChanged(
-    bool is_full_screen) {
+void PanelCocoa::FullScreenModeChanged(bool is_full_screen) {
+  if (!is_shown_) {
+    // If the panel window is not shown due to that a Chrome tab window is in
+    // fullscreen mode when the panel is being created, we need to show the
+    // panel window now. In addition, its titlebar needs to be updated since it
+    // is not done at the panel creation time.
+    if (!is_full_screen) {
+      ShowPanelInactive();
+      UpdatePanelTitleBar();
+    }
+
+    // No need to proceed when the panel window was not shown previously.
+    // We either show the panel window or do not show it depending on current
+    // full screen state.
+    return;
+  }
   [controller_ fullScreenModeChanged:is_full_screen];
 }
 
