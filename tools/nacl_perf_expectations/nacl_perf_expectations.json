@@ -161,8 +161,8 @@
  "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/ld_armv7_size/total": {"reva": 10101, "revb": 10102, "type": "absolute", "better": "lower", "improve": 2224808, "regress": 2461830, "sha1": "e6711452"},
  "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/ld_i686_size/total": {"reva": 10101, "revb": 10102, "type": "absolute", "better": "lower", "improve": 1842350, "regress": 2038231, "sha1": "6f8e350f"},
  "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/ld_x86_64_size/total": {"reva": 10101, "revb": 10102, "type": "absolute", "better": "lower", "improve": 2132670, "regress": 2359145, "sha1": "c863a612"},
- "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/llc_armv7_size/total": {"reva": 10157, "revb": 10158, "type": "absolute", "better": "lower", "improve": 11593081, "regress": 12813407, "sha1": "b4c3b4fe"},
- "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/llc_i686_size/total": {"reva": 10157, "revb": 10158, "type": "absolute", "better": "lower", "improve": 10801990, "regress": 11945842, "sha1": "b4b95170"},
- "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/llc_x86_64_size/total": {"reva": 10157, "revb": 10158, "type": "absolute", "better": "lower", "improve": 11772802, "regress": 13016426, "sha1": "f5c3bdd2"},
+ "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/llc_armv7_size/total": {"reva": 10993, "revb": 10993, "type": "absolute", "better": "lower", "improve": 10668541, "regress": 11791547, "sha1": "f2a81441"},
+ "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/llc_i686_size/total": {"reva": 10993, "revb": 10993, "type": "absolute", "better": "lower", "improve": 10057429, "regress": 11116107, "sha1": "1a47a363"},
+ "nacl-toolchain-linux-pnacl-x86_64/pnacl-tools/llc_x86_64_size/total": {"reva": 10993, "revb": 10993, "type": "absolute", "better": "lower", "improve": 10961153, "regress": 12114959, "sha1": "439227ed"},
  "load": true
 }
