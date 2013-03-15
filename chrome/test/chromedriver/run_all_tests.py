@@ -122,7 +122,7 @@ def main():
     _AddToolsToSystemPathForWindows()
 
   if options.android_package:
-    os.environ['PATH'] += os.pathsep + _THIS_DIR
+    os.environ['PATH'] += os.pathsep + os.path.join(_THIS_DIR, 'chrome')
     return RunPythonTests(chromedriver,
                           android_package=options.android_package)
   else:

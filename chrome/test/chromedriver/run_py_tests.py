@@ -27,7 +27,6 @@ from common import unittest_util
 from common import util
 
 if util.IsLinux():
-  sys.path.insert(0, os.path.join(_THIS_DIR, 'chrome'))
   sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
                                   'build', 'android'))
   from pylib import android_commands
