@@ -859,7 +859,7 @@ class Command(object):
     return re.sub('\.[0-9][0-9][0-9][0-9]\.heap', '', path)
 
   @staticmethod
-  def find_all_dumps(dump_path):
+  def _find_all_dumps(dump_path):
     prefix = Command._find_prefix(dump_path)
     dump_path_list = [dump_path]
 
@@ -876,7 +876,7 @@ class Command(object):
     return dump_path_list
 
   @staticmethod
-  def find_all_buckets(dump_path):
+  def _find_all_buckets(dump_path):
     prefix = Command._find_prefix(dump_path)
     bucket_path_list = []
 
@@ -1341,8 +1341,8 @@ class UploadCommand(Command):
     dump_path = args[1]
     gs_path = args[2]
 
-    dump_files = Command.find_all_dumps(dump_path)
-    bucket_files = Command.find_all_buckets(dump_path)
+    dump_files = Command._find_all_dumps(dump_path)
+    bucket_files = Command._find_all_buckets(dump_path)
     prefix = Command._find_prefix(dump_path)
     symbol_data_sources = SymbolDataSources(prefix)
     symbol_data_sources.prepare()
