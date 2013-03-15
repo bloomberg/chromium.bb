@@ -24,7 +24,8 @@ function checkExpectations() {
 var getURL = chrome.extension.getURL;
 
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
-  console.log('---onUpdated: ' + info.status + ', ' + info.url);
+  console.log('---onUpdated: ' + info.status + ', ' + info.url + '. ' +
+               info.favIconUrl);
   if (shouldIgnore && shouldIgnore(info)) {
     return;
   }
@@ -108,5 +109,15 @@ chrome.test.runTests([
     ]);
 
     chrome.tabs.create({ url: getURL('internalAnchorNavigated/a.html') });
+  },
+
+  function faviconLoaded() {
+    expect([
+      { status: 'loading', url: getURL('favicon/a.html') },
+      { status: 'complete' },
+      { favIconUrl: getURL('favicon/favicon.ico') },
+    ]);
+
+    chrome.tabs.create({ url: getURL('favicon/a.html') });
   }
 ]);

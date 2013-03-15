@@ -97,6 +97,10 @@ class BrowserEventRouter : public TabStripModelObserver,
   // and Observe/NAV_ENTRY_COMMITTED.
   void TabUpdated(content::WebContents* contents, bool did_navigate);
 
+  // Triggers a tab updated event if the favicon URL changes.
+  void FaviconUrlUpdated(content::WebContents* contents,
+                         const bool* icon_url_changed);
+
   // The DispatchEvent methods forward events to the |profile|'s event router.
   // The BrowserEventRouter listens to events for all profiles,
   // so we avoid duplication by dropping events destined for other profiles.
