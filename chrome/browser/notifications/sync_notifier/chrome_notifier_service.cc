@@ -46,16 +46,8 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
   // that we are currently on the UI thread here.
   DCHECK_EQ(syncer::SYNCED_NOTIFICATIONS, type);
   syncer::SyncMergeResult merge_result(syncer::SYNCED_NOTIFICATIONS);
-
-  // Mark all data we have now as local.  New incoming data will clear
-  // the local flag, and merged data will clear the local flag.  We use
-  // this to know what has to go back up to the server.
-  for (std::vector<SyncedNotification*>::iterator it =
-           notification_data_.begin();
-      it != notification_data_.end();
-      ++it) {
-    (*it)->set_has_local_changes(true);
-  }
+  // A list of local changes to send up to the sync server.
+  syncer::SyncChangeList new_changes;
 
   for (syncer::SyncDataList::const_iterator it = initial_sync_data.begin();
        it != initial_sync_data.end(); ++it) {
@@ -76,27 +68,36 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
       // If there are no conflicts, copy in the data from remote.
       Add(incoming.Pass());
     } else {
-      // If the remote and local data conflict (the read or deleted flag),
-      // resolve the conflict.
-      // TODO(petewil): Implement.
-    }
-  }
+      // If the incoming (remote) and stored (local) notifications match
+      // in all fields, we don't need to do anything here.
+      if (incoming->EqualsIgnoringReadState(*found)) {
 
-  // TODO(petewil): Implement the code that does the actual merging.
-  // See chrome/browser/history/history.cc for an example to follow.
-
-  // Make a list of local changes to send up to the sync server.
-  syncer::SyncChangeList new_changes;
-  for (std::vector<SyncedNotification*>::iterator it =
-           notification_data_.begin();
-      it != notification_data_.end();
-      ++it) {
-    if ((*it)->has_local_changes()) {
-      syncer::SyncData sync_data = CreateSyncDataFromNotification(**it);
-      new_changes.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_ADD,
-                             sync_data));
+        if (incoming->read_state() == found->read_state()) {
+          // Notification matches on the client and the server, nothing to do.
+          continue;
+        } else  {
+          // If the read state is different, read wins for both places.
+          if (incoming->read_state() == SyncedNotification::kRead) {
+            // If it is marked as read on the server, but not the client.
+            found->NotificationHasBeenRead();
+            // TODO(petewil): Tell the Notification UI Manager to mark it read.
+          } else {
+            // If it is marked as read on the client, but not the server.
+            syncer::SyncData sync_data = CreateSyncDataFromNotification(*found);
+            new_changes.push_back(
+                syncer::SyncChange(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data));
+          }
+          // If local state changed, notify Notification UI Manager.
+        }
+      // For any other conflict besides read state, treat it as an update.
+      } else {
+        // If different, just replace the local with the remote.
+        // TODO(petewil): Someday we may allow changes from the client to
+        // flow upwards, when we do, we will need better merge resolution.
+        found->Update(sync_data);
+      }
     }
   }
 
@@ -171,7 +172,10 @@ syncer::SyncError ChromeNotifierService::ProcessSyncChanges(
 // Static method.  Get to the sync data in our internal format.
 syncer::SyncData ChromeNotifierService::CreateSyncDataFromNotification(
     const SyncedNotification& notification) {
-  return *notification.sync_data();
+  // Construct the sync_data using the specifics from the notification.
+  return syncer::SyncData::CreateLocalData(
+      notification.notification_id(), notification.notification_id(),
+      notification.GetEntitySpecifics());
 }
 
 // Static Method.  Convert from SyncData to our internal format.
