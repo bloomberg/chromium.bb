@@ -128,21 +128,11 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Must be called without holding the lock. Returns true on success.
   bool Reconfigure(int sample_rate, media::ChannelLayout channel_layout);
 
-  // Distributes information about a stopped capture device to all registered
-  // capture sinks.
-  // Runs on the main render thread.
-  void DoOnDeviceStopped();
-
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // Message loop for the main render thread. Utilized in OnDeviceStopped() to
-  // ensure that OnSourceCaptureDeviceStopped() is called on the main thread
-  // instead of the originating IO thread.
-  scoped_refptr<base::MessageLoopProxy> main_loop_;
-
-  // Protects |source_|, |sinks_|, |running_|, |on_device_stopped_cb_|,
-  // |loopback_fifo_|, |params_|, |buffering_| and |agc_is_enabled_|.
+  // Protects |source_|, |sinks_|, |running_|, |loopback_fifo_|, |params_|,
+  // |buffering_| and |agc_is_enabled_|.
   mutable base::Lock lock_;
 
   // A list of sinks that the audio data is fed to.

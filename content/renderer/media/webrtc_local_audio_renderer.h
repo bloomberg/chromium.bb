@@ -75,9 +75,6 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Can be called on different user thread.
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
 
-  // Called on the main render thread.
-  virtual void OnCaptureDeviceStopped() OVERRIDE;
-
   // media::AudioRendererSink::RenderCallback implementation.
   // Render() is called on the AudioOutputDevice thread and OnRenderError()
   // on the IO thread.

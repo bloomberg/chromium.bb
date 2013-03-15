@@ -85,19 +85,6 @@ void WebRtcLocalAudioRenderer::SetCaptureFormat(
   NOTIMPLEMENTED() << "WebRtcLocalAudioRenderer::SetCaptureFormat()";
 }
 
-void WebRtcLocalAudioRenderer::OnCaptureDeviceStopped() {
-  DVLOG(1) << "WebRtcLocalAudioRenderer::OnCaptureDeviceStopped()";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  {
-    base::AutoLock auto_lock(thread_lock_);
-    if (!sink_)
-      return;
-
-    if (loopback_fifo_)
-      loopback_fifo_->Clear();
-  }
-}
-
 // webrtc::ObserverInterface implementation
 void WebRtcLocalAudioRenderer::OnChanged() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::OnChanged()";

@@ -78,7 +78,6 @@ class WebRtcAudioCapturer::SinkOwner
                            int audio_delay_milliseconds,
                            double volume) OVERRIDE;
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
-  virtual void OnCaptureDeviceStopped() OVERRIDE;
 
   bool IsEqual(const WebRtcAudioCapturerSink* other) const;
   void Reset();
@@ -124,12 +123,6 @@ void WebRtcAudioCapturer::SinkOwner::SetCaptureFormat(
   base::AutoLock lock(lock_);
   if (delegate_)
     delegate_->SetCaptureFormat(params);
-}
-
-void WebRtcAudioCapturer::SinkOwner::OnCaptureDeviceStopped() {
-  base::AutoLock lock(lock_);
-  if (delegate_)
-    delegate_->OnCaptureDeviceStopped();
 }
 
 bool WebRtcAudioCapturer::SinkOwner::IsEqual(
@@ -257,8 +250,7 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
 }
 
 WebRtcAudioCapturer::WebRtcAudioCapturer()
-    : main_loop_(base::MessageLoopProxy::current()),
-      source_(NULL),
+    : source_(NULL),
       running_(false),
       agc_is_enabled_(false) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
@@ -455,27 +447,7 @@ void WebRtcAudioCapturer::OnDeviceStarted(const std::string& device_id) {
 }
 
 void WebRtcAudioCapturer::OnDeviceStopped() {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
-  main_loop_->PostTask(
-      FROM_HERE, base::Bind(&WebRtcAudioCapturer::DoOnDeviceStopped, this));
-}
-
-// TODO(henrika): this implementation should be removed as soon as we add
-// suppport for proper handling of LocalMediaStream::stop().
-void WebRtcAudioCapturer::DoOnDeviceStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcAudioCapturer::DoOnDeviceStopped()";
-  SinkList sinks;
-  {
-    base::AutoLock auto_lock(lock_);
-    running_ = false;
-    sinks = sinks_;
-  }
-
-  // Inform registered sinks about the stopped device so they can take
-  // appropriate actions.
-  for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it)
-    (*it)->OnCaptureDeviceStopped();
+  NOTIMPLEMENTED();
 }
 
 media::AudioParameters WebRtcAudioCapturer::audio_parameters() const {

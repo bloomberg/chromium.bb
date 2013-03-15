@@ -220,10 +220,6 @@ void WebRtcAudioDeviceImpl::SetCaptureFormat(
   input_audio_parameters_ = params;
 }
 
-void WebRtcAudioDeviceImpl::OnCaptureDeviceStopped() {
-  DVLOG(1) << "WebRtcAudioDeviceImpl::OnCaptureDeviceStopped()";
-}
-
 int32_t WebRtcAudioDeviceImpl::ChangeUniqueId(const int32_t id) {
   NOTIMPLEMENTED();
   return -1;

@@ -212,9 +212,6 @@ class WebRtcAudioCapturerSink {
   // Set the format for the capture audio parameters.
   virtual void SetCaptureFormat(const media::AudioParameters& params) = 0;
 
-  // Callback to notify the client that the capturer is being stopped.
-  virtual void OnCaptureDeviceStopped() = 0;
-
  protected:
   virtual ~WebRtcAudioCapturerSink() {}
 };
@@ -248,7 +245,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
                            int audio_delay_milliseconds,
                            double volume) OVERRIDE;
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
-  virtual void OnCaptureDeviceStopped() OVERRIDE;
 
   // webrtc::Module implementation.
   virtual int32_t ChangeUniqueId(const int32_t id) OVERRIDE;
