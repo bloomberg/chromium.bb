@@ -40,13 +40,6 @@
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
-        {
-          'action_name': 'webkit_unscaled_resources',
-          'variables': {
-            'grit_grd_file': 'resources/webkit_unscaled_resources.grd',
-          },
-          'includes': [ '../../build/grit_action.gypi' ],
-        },
       ],
       'includes': [ '../../build/grit_target.gypi' ],
       'direct_dependent_settings': {
@@ -99,6 +92,7 @@
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/native_theme/native_theme.gyp:native_theme',
         '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
@@ -112,6 +106,7 @@
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
+        '<(SHARED_INTERMEDIATE_DIR)/ui',
       ],
       'sources': [
         # This list contains all .h, .cc, and .mm files in glue except for

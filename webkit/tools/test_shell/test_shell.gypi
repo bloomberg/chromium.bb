@@ -6,15 +6,15 @@
   'variables': {
     'test_shell_windows_resource_files': [
       'resources/test_shell.rc',
-      '../../glue/resources/pan_east.cur',
-      '../../glue/resources/pan_middle.cur',
-      '../../glue/resources/pan_north.cur',
-      '../../glue/resources/pan_north_east.cur',
-      '../../glue/resources/pan_north_west.cur',
-      '../../glue/resources/pan_south.cur',
-      '../../glue/resources/pan_south_east.cur',
-      '../../glue/resources/pan_south_west.cur',
-      '../../glue/resources/pan_west.cur',
+      '../../../ui/resources/cursors/pan_east.cur',
+      '../../../ui/resources/cursors/pan_middle.cur',
+      '../../../ui/resources/cursors/pan_north.cur',
+      '../../../ui/resources/cursors/pan_north_east.cur',
+      '../../../ui/resources/cursors/pan_north_west.cur',
+      '../../../ui/resources/cursors/pan_south.cur',
+      '../../../ui/resources/cursors/pan_south_east.cur',
+      '../../../ui/resources/cursors/pan_south_west.cur',
+      '../../../ui/resources/cursors/pan_west.cur',
       'resources/small.ico',
       'resources/test_shell.ico',
       'resource.h',
@@ -276,9 +276,9 @@
                 # but that causes errors in other targets when
                 # resulting .res files get referenced multiple times.
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_unscaled_resources.rc',
               ],
               'configurations': {
                 'Debug_Base': {
