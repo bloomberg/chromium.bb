@@ -337,7 +337,20 @@ bool IsInstantPrefEnabled(Profile* profile) {
   if (!prefs)
     return false;
 
-  return prefs->GetBoolean(GetInstantPrefName());
+  const char* pref_name = GetInstantPrefName();
+  const bool pref_value = prefs->GetBoolean(pref_name);
+
+  if (pref_name == prefs::kInstantExtendedEnabled) {
+    // Note that this is only recorded for the first profile that calls this
+    // code (which happens on startup).
+    static bool recorded = false;
+    if (!recorded) {
+      UMA_HISTOGRAM_BOOLEAN("InstantExtended.PrefValue", pref_value);
+      recorded = true;
+    }
+  }
+
+  return pref_value;
 }
 
 void SetInstantExtendedPrefDefault(Profile* profile) {
