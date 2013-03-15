@@ -212,8 +212,9 @@ WebString WebKitTestRunner::registerIsolatedFileSystem(
 }
 
 long long WebKitTestRunner::getCurrentTimeInMillisecond() {
-    return base::TimeTicks::Now().ToInternalValue() /
-        base::Time::kMicrosecondsPerMillisecond;
+  return base::TimeDelta(base::Time::Now() -
+                         base::Time::UnixEpoch()).ToInternalValue() /
+         base::Time::kMicrosecondsPerMillisecond;
 }
 
 WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
