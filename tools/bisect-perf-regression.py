@@ -35,6 +35,7 @@ An example usage (using git hashes):
 
 """
 
+import errno
 import imp
 import math
 import optparse
@@ -175,6 +176,15 @@ def IsStringInt(string_to_check):
     return False
 
 
+def IsWindows():
+  """Checks whether or not the script is running on Windows.
+
+  Returns:
+    True if running on Windows.
+  """
+  return os.name == 'nt'
+
+
 def RunProcess(command, print_output=False):
   """Run an arbitrary command, returning its output and return code.
 
@@ -186,8 +196,11 @@ def RunProcess(command, print_output=False):
   Returns:
     A tuple of the output and return code.
   """
+  if print_output:
+    print 'Running: [%s]' % ' '.join(command)
+
   # On Windows, use shell=True to get PATH interpretation.
-  shell = (os.name == 'nt')
+  shell = IsWindows()
   proc = subprocess.Popen(command,
                           shell=shell,
                           stdout=subprocess.PIPE,
@@ -227,6 +240,37 @@ def RunGit(command):
   return RunProcess(command)
 
 
+def BuildWithMake(threads, targets, print_output):
+  cmd = ['make', 'BUILDTYPE=Release', '-j%d' % threads] + targets
+
+  (output, return_code) = RunProcess(cmd, print_output)
+
+  return not return_code
+
+
+def BuildWithNinja(threads, targets, print_output):
+  cmd = ['ninja', '-C', os.path.join('out', 'Release'),
+      '-j%d' % threads] + targets
+
+  (output, return_code) = RunProcess(cmd, print_output)
+
+  return not return_code
+
+
+def BuildWithVisualStudio(targets, print_output):
+  path_to_devenv = os.path.abspath(
+      os.path.join(os.environ['VS100COMNTOOLS'], '..', 'IDE', 'devenv.com'))
+  path_to_sln = os.path.join(os.getcwd(), 'chrome', 'chrome.sln')
+  cmd = [path_to_devenv, '/build', 'Release', path_to_sln]
+
+  for t in targets:
+    cmd.extend(['/Project', t])
+
+  (output, return_code) = RunProcess(cmd, print_output)
+
+  return not return_code
+
+
 class SourceControl(object):
   """SourceControl is an abstraction over the underlying source control
   system used for chromium. For now only git is supported, but in the
@@ -243,11 +287,9 @@ class SourceControl(object):
       revision: The git SHA1 or svn CL (depending on workflow).
 
     Returns:
-      A tuple of the output and return code.
+      The return code of the call.
     """
-    args = ['gclient', 'sync', '--revision', revision]
-
-    return RunProcess(args)
+    return bisect_utils.RunGClient(['sync', '--revision', revision])
 
 
 class GitSourceControl(SourceControl):
@@ -297,9 +339,9 @@ class GitSourceControl(SourceControl):
     if use_gclient:
       results = self.SyncToRevisionWithGClient(revision)
     else:
-      results = RunGit(['checkout', revision])
+      results = RunGit(['checkout', revision])[1]
 
-    return not results[1]
+    return not results
 
   def ResolveToRevision(self, revision_to_check, depot, search):
     """If an SVN revision is supplied, try to resolve it to a git SHA1.
@@ -500,40 +542,35 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if the build was successful.
     """
-
     if self.opts.debug_ignore_build:
       return True
 
-    gyp_var = os.getenv('GYP_GENERATORS')
-
-    num_threads = 16
-
+    targets = ['chrome', 'performance_ui_tests']
+    threads = 16
     if self.opts.use_goma:
-      num_threads = 100
-
-    if gyp_var != None and 'ninja' in gyp_var:
-      args = ['ninja',
-              '-C',
-              'out/Release',
-              '-j%d' % num_threads,
-              'chrome',
-              'performance_ui_tests']
-    else:
-      args = ['make',
-              'BUILDTYPE=Release',
-              '-j%d' % num_threads,
-              'chrome',
-              'performance_ui_tests']
+      threads = 300
 
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
 
-    (output, return_code) = RunProcess(args,
-        self.opts.output_buildbot_annotations)
+    if self.opts.build_preference == 'make':
+      build_success = BuildWithMake(threads, targets,
+          self.opts.output_buildbot_annotations)
+    elif self.opts.build_preference == 'ninja':
+      if IsWindows():
+        targets = [t + '.exe' for t in targets]
+      build_success = BuildWithNinja(threads, targets,
+          self.opts.output_buildbot_annotations)
+    elif self.opts.build_preference == 'msvs':
+      assert IsWindows(), 'msvs is only supported on Windows.'
+      build_success = BuildWithVisualStudio(targets,
+          self.opts.output_buildbot_annotations)
+    else:
+      assert False, 'No build system defined.'
 
     os.chdir(cwd)
 
-    return not return_code
+    return build_success
 
   def RunGClientHooks(self):
     """Runs gclient with runhooks command.
@@ -545,9 +582,7 @@ class BisectPerformanceMetrics(object):
     if self.opts.debug_ignore_build:
       return True
 
-    results = RunProcess(['gclient', 'runhooks'])
-
-    return not results[1]
+    return not bisect_utils.RunGClient(['runhooks'])
 
   def ParseMetricValuesFromOutput(self, metric, text):
     """Parses output from performance_ui_tests and retrieves the results for
@@ -644,6 +679,9 @@ class BisectPerformanceMetrics(object):
     if self.opts.debug_ignore_perf_test:
       return ({'debug' : 0.0}, 0)
 
+    if IsWindows():
+      command_to_run = command_to_run.replace('/', r'\\')
+
     args = shlex.split(command_to_run)
 
     cwd = os.getcwd()
@@ -735,10 +773,11 @@ class BisectPerformanceMetrics(object):
 
     # Having these pyc files around between runs can confuse the
     # perf tests and cause them to crash.
-    cmd = ['find', '.', '-name', '*.pyc', '-exec', 'rm', '-f', '{}', ';']
-    (output, return_code) = RunProcess(cmd)
-
-    assert not output, "Cleaning *.pyc failed."
+    for (path, dir, files) in os.walk(os.getcwd()):
+      for cur_file in files:
+        if cur_file.endswith('.pyc'):
+          path_to_file = os.path.join(path, cur_file)
+          os.remove(path_to_file)
 
   def SyncBuildAndRunRevision(self, revision, depot, command_to_run, metric):
     """Performs a full sync/build/run of the specified revision.
@@ -1311,6 +1350,100 @@ def DetermineAndCreateSourceControl():
   return None
 
 
+def SetNinjaBuildSystemDefault():
+  """Makes ninja the default build system to be used by
+  the bisection script."""
+  gyp_var = os.getenv('GYP_GENERATORS')
+
+  if not gyp_var or not 'ninja' in gyp_var:
+    if gyp_var:
+      os.environ['GYP_GENERATORS'] = gyp_var + ',ninja'
+    else:
+      os.environ['GYP_GENERATORS'] = 'ninja'
+
+    if IsWindows():
+      os.environ['GYP_DEFINES'] = 'component=shared_library '\
+          'incremental_chrome_dll=1 disable_nacl=1 fastbuild=1 '\
+          'chromium_win_pch=0'
+
+
+def CheckPlatformSupported(opts):
+  """Checks that this platform and build system are supported.
+
+  Args:
+    opts: The options parsed from the command line.
+
+  Returns:
+    True if the platform and build system are supported.
+  """
+  # Haven't tested the script out on any other platforms yet.
+  supported = ['posix', 'nt']
+  if not os.name in supported:
+    print "Sorry, this platform isn't supported yet."
+    print
+    return False
+
+  if IsWindows():
+    if not opts.build_preference:
+      opts.build_preference = 'msvs'
+
+    if opts.build_preference == 'msvs':
+      if not os.getenv('VS100COMNTOOLS'):
+        print 'Error: Path to visual studio could not be determined.'
+        print
+        return False
+    elif opts.build_preference == 'ninja':
+      SetNinjaBuildSystemDefault()
+    else:
+      assert False, 'Error: %s build not supported' % opts.build_preference
+  else:
+    if not opts.build_preference:
+      opts.build_preference = 'make'
+
+    if opts.build_preference == 'ninja':
+      SetNinjaBuildSystemDefault()
+    elif opts.build_preference != 'make':
+      assert False, 'Error: %s build not supported' % opts.build_preference
+
+  bisect_utils.RunGClient(['runhooks'])
+
+  return True
+
+
+def RmTreeAndMkDir(path_to_dir):
+  """Removes the directory tree specified, and then creates an empty
+  directory in the same location.
+
+  Args:
+    path_to_dir: Path to the directory tree.
+
+  Returns:
+    True if successful, False if an error occurred.
+  """
+  try:
+    if os.path.exists(path_to_dir):
+      shutil.rmtree(path_to_dir)
+  except OSError, e:
+    if e.errno != errno.ENOENT:
+      return False
+
+  try:
+    os.mkdir(path_to_dir)
+  except OSError, e:
+    if e.errno != errno.EEXIST:
+      return False
+
+  return True
+
+
+def RemoveBuildFiles():
+  """Removes build files from previous runs."""
+  if RmTreeAndMkDir(os.path.join('out', 'Release')):
+    if RmTreeAndMkDir(os.path.join('build', 'Release')):
+      return True
+  return False
+
+
 def main():
 
   usage = ('%prog [options] [-- chromium-options]\n'
@@ -1358,6 +1491,12 @@ def main():
                     'truncated mean. Values will be clamped to range [0, 25]. '
                     'Default value is 10 (highest/lowest 10% will be '
                     'discarded).')
+  parser.add_option('--build_preference',
+                    type='choice',
+                    choices=['msvs', 'ninja', 'make'],
+                    help='The preferred build system to use. On linux/mac '
+                    'the options are make/ninja. On Windows, the options '
+                    'are msvs/ninja.')
   parser.add_option('--use_goma',
                     action="store_true",
                     help='Add a bunch of extra threads for goma.')
@@ -1403,12 +1542,6 @@ def main():
   opts.truncate_percent = min(max(opts.truncate_percent, 0), 25)
   opts.truncate_percent = opts.truncate_percent / 100.0
 
-  # Haven't tested the script out on any other platforms yet.
-  if not os.name in ['posix']:
-    print "Sorry, this platform isn't supported yet."
-    print
-    return 1
-
   metric_values = opts.metric.split('/')
   if len(metric_values) != 2:
     print "Invalid metric specified: [%s]" % (opts.metric,)
@@ -1420,6 +1553,14 @@ def main():
       return 1
 
     os.chdir(os.path.join(os.getcwd(), 'src'))
+
+    if not RemoveBuildFiles():
+      print "Something went wrong removing the build files."
+      print
+      return 1
+
+  if not CheckPlatformSupported(opts):
+    return 1
 
   # Check what source control method they're using. Only support git workflow
   # at the moment.
