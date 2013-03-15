@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -1548,6 +1549,36 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 }
 
 #endif  // defined(TOOLKIT_GTK) || defined(USE_AURA)
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DoesNotUpdateAutocompleteOnBlur) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
+  ASSERT_TRUE(popup_model);
+
+  // Input something to trigger inline autocomplete.
+  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kInlineAutocompleteTextKeys));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  ASSERT_TRUE(popup_model->IsOpen());
+  size_t start, end;
+  omnibox_view->GetSelectionBounds(&start, &end);
+  EXPECT_TRUE(start != end);
+  string16 old_autocomplete_text =
+      omnibox_view->model()->autocomplete_controller()->input().text();
+
+  // Unfocus the omnibox. This should clear the text field selection and
+  // close the popup, but should not run autocomplete.
+  // Note: GTK preserves the selection when the omnibox is unfocused.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  ASSERT_FALSE(popup_model->IsOpen());
+  omnibox_view->GetSelectionBounds(&start, &end);
+#if !defined(TOOLKIT_GTK)
+  EXPECT_TRUE(start == end);
+#endif
+
+  EXPECT_EQ(old_autocomplete_text,
+      omnibox_view->model()->autocomplete_controller()->input().text());
+}
 
 #if defined(TOOLKIT_GTK)
 // See http://crbug.com/63860

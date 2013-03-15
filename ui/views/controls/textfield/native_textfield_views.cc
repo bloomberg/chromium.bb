@@ -165,7 +165,9 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       break;
     case ui::ET_GESTURE_DOUBLE_TAP:
+      OnBeforeUserAction();
       SelectAll(false);
+      OnAfterUserAction();
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -495,19 +497,15 @@ string16 NativeTextfieldViews::GetSelectedText() const {
 }
 
 void NativeTextfieldViews::SelectAll(bool reversed) {
-  OnBeforeUserAction();
   model_->SelectAll(reversed);
   OnCaretBoundsChanged();
   SchedulePaint();
-  OnAfterUserAction();
 }
 
 void NativeTextfieldViews::ClearSelection() {
-  OnBeforeUserAction();
   model_->ClearSelection();
   OnCaretBoundsChanged();
   SchedulePaint();
-  OnAfterUserAction();
 }
 
 void NativeTextfieldViews::UpdateBorder() {

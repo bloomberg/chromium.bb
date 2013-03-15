@@ -1217,6 +1217,15 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   EXPECT_EQ(1, on_before_user_action_);
   EXPECT_EQ(1, on_after_user_action_);
 
+  // On{Before,After}UserAction should be called by whatever user action
+  // triggers clearing or setting a selection if appropriate.
+  on_before_user_action_ = on_after_user_action_ = 0;
+  textfield_->clear();
+  textfield_->ClearSelection();
+  textfield_->SelectAll(false);
+  EXPECT_EQ(0, on_before_user_action_);
+  EXPECT_EQ(0, on_after_user_action_);
+
   input_method_->Clear();
   textfield_->SetReadOnly(true);
   EXPECT_TRUE(input_method_->text_input_type_changed());
