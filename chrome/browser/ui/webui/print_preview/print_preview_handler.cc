@@ -185,12 +185,6 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
   return settings.release();
 }
 
-void ReportPageCount(int page_count, const std::string& printer_type) {
-  UMA_HISTOGRAM_COUNTS(base::StringPrintf("PrintPreview.PageCount.%s",
-                                          printer_type.c_str()),
-                       page_count);
-}
-
 // Track the popularity of print settings and report the stats.
 void ReportPrintSettingsStats(const DictionaryValue& settings) {
   bool landscape;
@@ -440,7 +434,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   settings->GetInteger(printing::kSettingPreviewPageCount, &page_count);
 
   if (print_to_pdf) {
-    ReportPageCount(page_count, "PrintToPDF");
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF", page_count);
     ReportUserActionHistogram(PRINT_TO_PDF);
     PrintToPdf();
     return;
@@ -454,14 +448,16 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   }
 
   if (is_cloud_printer) {
-    ReportPageCount(page_count, "PrintToCloudPrint");
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
+                         page_count);
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
     SendCloudPrintJob(data);
   } else if (is_cloud_dialog) {
-    ReportPageCount(page_count, "PrintToCloudPrintWebDialog");
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrintWebDialog",
+                         page_count);
     PrintWithCloudPrintDialog(data, title);
   } else {
-    ReportPageCount(page_count, "PrintToPrinter");
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
     ReportPrintSettingsStats(*settings);
 
