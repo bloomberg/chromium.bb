@@ -2514,6 +2514,10 @@ void WebContentsImpl::SetIsLoading(bool is_loading,
     delegate_->LoadingStateChanged(this);
   NotifyNavigationStateChanged(INVALIDATE_TYPE_LOAD);
 
+  if (is_loading)
+    TRACE_EVENT_ASYNC_BEGIN0("browser", "WebContentsImpl Loading", this);
+  else
+    TRACE_EVENT_ASYNC_END0("browser", "WebContentsImpl Loading", this);
   int type = is_loading ? NOTIFICATION_LOAD_START : NOTIFICATION_LOAD_STOP;
   NotificationDetails det = NotificationService::NoDetails();
   if (details)
