@@ -28,6 +28,7 @@ from chromite.lib import gerrit
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
+
 _GetNumber = iter(itertools.count()).next
 
 class MockPatch(mox.MockObject):
@@ -320,8 +321,8 @@ class TestPatchSeries(base):
 
     self.mox.ReplayAll()
     applied = self.assertResults(series, [patch1, patch3], [patch3, patch1])[0]
-    self.assertIs(applied[0], patch3)
-    self.assertIs(applied[1], patch1)
+    self.assertTrue(applied[0] is patch3)
+    self.assertTrue(applied[1] is patch1)
     self.mox.VerifyAll()
 
   def testCrosGerritDeps(self):
@@ -827,7 +828,6 @@ class TestCoreLogic(base):
 
 
 class TestPickling(cros_test_lib.TempDirTestCase):
-
   """Tests to validate pickling of ValidationPool, covering CQ's needs"""
 
   def testSelfCompatibility(self):
@@ -898,7 +898,9 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
   def _CheckTestData(data):
     results = pickle.loads(data)
     pool, changes, non_os, conflicting = results
-    def _f(source, value, getter=lambda x:x):
+    def _f(source, value, getter=None):
+      if getter is None:
+        getter = lambda x: x
       assert len(source) == len(value)
       for s_item, v_item in zip(source, value):
         assert getter(s_item).id == getter(v_item).id
