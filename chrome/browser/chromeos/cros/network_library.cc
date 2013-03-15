@@ -18,7 +18,9 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chromeos/network/cros_network_functions.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/url_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -442,6 +444,13 @@ void Network::AttemptConnection(const base::Closure& closure) {
   // By default, just invoke the closure right away.  Some subclasses
   // (Wifi, VPN, etc.) override to do more work.
   closure.Run();
+}
+
+void Network::set_connecting() {
+  state_ = STATE_CONNECT_REQUESTED;
+  // Set the connecting network in NetworkStateHandler for the status area UI.
+  if (NetworkStateHandler::IsInitialized())
+    NetworkStateHandler::Get()->set_connecting_network(service_path());
 }
 
 void Network::SetProfilePath(const std::string& profile_path) {

@@ -552,8 +552,6 @@
         'browser/chromeos/net/onc_utils.h',
         'browser/chromeos/network_login_observer.cc',
         'browser/chromeos/network_login_observer.h',
-        'browser/chromeos/network_message_observer.cc',
-        'browser/chromeos/network_message_observer.h',
         'browser/chromeos/notifications/balloon_view_host_chromeos.cc',
         'browser/chromeos/notifications/balloon_view_host_chromeos.h',
         'browser/chromeos/offline/offline_load_page.cc',

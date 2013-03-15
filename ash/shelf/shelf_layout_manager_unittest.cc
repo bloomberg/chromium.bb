@@ -914,7 +914,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureRevealsTrayBubble) {
   generator.GestureScrollSequence(start, end,
       base::TimeDelta::FromMilliseconds(10), 1);
   EXPECT_TRUE(tray->HasSystemBubble());
-  tray->CloseBubbleForTest();
+  tray->CloseSystemBubbleForTest();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(tray->HasSystemBubble());
 
@@ -1081,7 +1081,7 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
     EXPECT_TRUE(shelf->IsVisible());
     if (!i) {
       // In our first iteration we make sure there is no bubble.
-      tray->CloseBubbleForTest();
+      tray->CloseSystemBubbleForTest();
       EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
     } else {
       // In our second iteration we show a bubble.

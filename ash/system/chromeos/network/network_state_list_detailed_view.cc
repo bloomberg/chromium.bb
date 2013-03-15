@@ -770,15 +770,14 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
 
 void NetworkStateListDetailedView::ConnectToNetwork(
     const std::string& service_path) {
-  const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  const NetworkState* network = handler->GetNetworkState(service_path);
   if (!network)
     return;
-  if (!network->IsConnectedState())
-    TrayNetworkStateObserver::AddConnectingNetwork(service_path);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kUseNewNetworkConfigurationHandlers) &&
       !network->IsConnectedState()) {
+    handler->set_connecting_network(service_path);
     chromeos::NetworkConfigurationHandler::Get()->Connect(
         service_path,
         base::Bind(&base::DoNothing),

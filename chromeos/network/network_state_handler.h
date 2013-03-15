@@ -144,6 +144,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   static const char kMatchTypeMobile[];
   static const char kMatchTypeNonVirtual[];
 
+  const std::string& connecting_network() const { return connecting_network_; }
+  void set_connecting_network(const std::string& service_path) {
+    connecting_network_ = service_path;
+  }
+
  protected:
   NetworkStateHandler();
 
@@ -218,6 +223,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Logs an event and notifies observers.
   void OnDefaultNetworkChanged();
 
+  // Notifies observers and updates connecting_network_.
+  void NetworkPropertiesUpdated(const NetworkState* network);
+
   // Shill property handler instance, owned by this class.
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
 
@@ -230,6 +238,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Keeps track of the default network for notifying observers when it changes.
   std::string default_network_path_;
+
+  // Convenience member to track the user initiated connecting network. Set
+  // externally when a connection is requested and cleared here when the state
+  // changes to something other than Connecting (after observers are notified).
+  // TODO(stevenjb): Move this to NetworkConfigurationHandler.
+  std::string connecting_network_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandler);
 };

@@ -139,9 +139,9 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
   // Ensure that closing the bubble destroys it.
-  ASSERT_TRUE(tray->CloseBubbleForTest());
+  ASSERT_TRUE(tray->CloseSystemBubbleForTest());
   RunAllPendingInMessageLoop();
-  ASSERT_FALSE(tray->CloseBubbleForTest());
+  ASSERT_FALSE(tray->CloseSystemBubbleForTest());
 }
 
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
@@ -245,7 +245,7 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
   ASSERT_TRUE(test_item->notification_view() != NULL);
 
   // Hide the detailed view, ensure the notificaiton view still exists.
-  ASSERT_TRUE(tray->CloseBubbleForTest());
+  ASSERT_TRUE(tray->CloseSystemBubbleForTest());
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(detailed_item->detailed_view() == NULL);
   ASSERT_TRUE(test_item->notification_view() != NULL);

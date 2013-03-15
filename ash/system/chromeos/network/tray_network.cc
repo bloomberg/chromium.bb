@@ -10,6 +10,7 @@
 #include "ash/system/chromeos/network/network_list_detailed_view.h"
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
+#include "ash/system/chromeos/network/network_state_notifier.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -408,10 +409,13 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       request_wifi_view_(false) {
   if (UseNewNetworkHandlers())
     network_state_observer_.reset(new TrayNetworkStateObserver(this));
+  if (NetworkStateHandler::IsInitialized())
+    network_state_notifier_.reset(new NetworkStateNotifier());
   Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
 }
 
 TrayNetwork::~TrayNetwork() {
+  network_state_notifier_.reset();
   Shell::GetInstance()->system_tray_notifier()->RemoveNetworkObserver(this);
 }
 
@@ -563,8 +567,8 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
   // network, or the connection was user requested, use the connecting
   // network.
   if (connecting_network &&
-      (!connected_network || TrayNetworkStateObserver::HasConnectingNetwork(
-          connecting_network->path()))) {
+      (!connected_network ||
+       handler->connecting_network() == connecting_network->path())) {
     network = connecting_network;
   } else {
     network = connected_network;

@@ -11,15 +11,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace {
-
-std::set<std::string>& GetConnectingNetworks() {
-  static std::set<std::string> s_connecting_networks_;
-  return s_connecting_networks_;
-}
-
-}
-
 namespace ash {
 namespace internal {
 
@@ -51,21 +42,7 @@ void TrayNetworkStateObserver::DefaultNetworkChanged(
 
 void TrayNetworkStateObserver::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
-  if (!network->IsConnectingState())
-    GetConnectingNetworks().erase(network->path());
   delegate_->NetworkServiceChanged(network);
-}
-
-// static
-void TrayNetworkStateObserver::AddConnectingNetwork(
-    const std::string& service_path) {
-  GetConnectingNetworks().insert(service_path);
-}
-
-// static
-bool TrayNetworkStateObserver::HasConnectingNetwork(
-    const std::string& service_path) {
-  return GetConnectingNetworks().count(service_path) > 0;
 }
 
 }  // namespace ash

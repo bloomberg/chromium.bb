@@ -376,8 +376,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     // Signal connection state changed after all properties have been updated.
     if (network->connection_state() != prev_connection_state)
       OnNetworkConnectionStateChanged(network);
-    FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
-                      NetworkPropertiesUpdated(network));
+    NetworkPropertiesUpdated(network);
   }
   network_event_log::AddEntry(
       kLogModule, "PropertiesReceived",
@@ -397,8 +396,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (network->connection_state() != prev_connection_state)
     OnNetworkConnectionStateChanged(network);
 
-  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
-                    NetworkPropertiesUpdated(network));
+  NetworkPropertiesUpdated(network);
 
   std::string detail = network->name() + "." + key;
   std::string vstr = ValueAsString(value);
@@ -416,9 +414,7 @@ void NetworkStateHandler::UpdateNetworkServiceIPAddress(
   std::string detail = network->name() + ".IPAddress = " + ip_address;
   network_event_log::AddEntry(kLogModule, "NetworkIPChanged", detail);
   network->set_ip_address(ip_address);
-  FOR_EACH_OBSERVER(
-      NetworkStateHandlerObserver, observers_,
-      NetworkPropertiesUpdated(network));
+  NetworkPropertiesUpdated(network);
 }
 
 void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
@@ -543,6 +539,14 @@ void NetworkStateHandler::OnDefaultNetworkChanged() {
       default_network ? default_network->path() : "None");
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     DefaultNetworkChanged(default_network));
+}
+
+void NetworkStateHandler::NetworkPropertiesUpdated(
+    const NetworkState* network) {
+  if (network->path() == connecting_network_ && !network->IsConnectingState())
+    connecting_network_.clear();
+  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
+                    NetworkPropertiesUpdated(network));
 }
 
 }  // namespace chromeos

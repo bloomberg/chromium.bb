@@ -21,6 +21,7 @@ class NetworkState;
 namespace ash {
 namespace internal {
 
+class NetworkStateNotifier;
 class TrayNetworkStateObserver;
 
 namespace tray {
@@ -92,6 +93,7 @@ private:
   scoped_ptr<tray::NetworkMessages> messages_;
   bool request_wifi_view_;
   scoped_ptr<TrayNetworkStateObserver> network_state_observer_;
+  scoped_ptr<NetworkStateNotifier> network_state_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };

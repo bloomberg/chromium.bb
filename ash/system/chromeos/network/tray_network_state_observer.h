@@ -42,12 +42,6 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
   virtual void NetworkPropertiesUpdated(
       const chromeos::NetworkState* network) OVERRIDE;
 
-  // Keep track of user initiated connecting networks
-  static void AddConnectingNetwork(const std::string& service_path);
-
-  // Returns true if a user initiated connection to |network| occured
-  static bool HasConnectingNetwork(const std::string& service_path);
-
  private:
   Delegate* delegate_;
 

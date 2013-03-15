@@ -270,6 +270,10 @@ bool SystemTray::HasSystemBubble() const {
   return system_bubble_.get() != NULL;
 }
 
+bool SystemTray::HasNotificationBubble() const {
+  return notification_bubble_.get() != NULL;
+}
+
 internal::SystemTrayBubble* SystemTray::GetSystemBubble() {
   if (!system_bubble_.get())
     return NULL;
@@ -290,10 +294,17 @@ bool SystemTray::IsMouseInNotificationBubble() const {
       Shell::GetScreen()->GetCursorScreenPoint());
 }
 
-bool SystemTray::CloseBubbleForTest() const {
+bool SystemTray::CloseSystemBubbleForTest() const {
   if (!system_bubble_.get())
     return false;
   system_bubble_->bubble()->Close();
+  return true;
+}
+
+bool SystemTray::CloseNotificationBubbleForTest() const {
+  if (!notification_bubble_.get())
+    return false;
+  notification_bubble_->bubble()->Close();
   return true;
 }
 

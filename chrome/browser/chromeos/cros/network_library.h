@@ -562,9 +562,7 @@ class Network {
   }
   void set_name(const std::string& name) { name_ = name; }
   void set_mode(ConnectionMode mode) { mode_ = mode; }
-  void set_connecting() {
-    state_ = STATE_CONNECT_REQUESTED;
-  }
+  void set_connecting();
   void set_is_behind_portal_for_testing(bool value) {
     is_behind_portal_for_testing_ = value;
   }
