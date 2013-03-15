@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
+#include "chrome/installer/util/util_constants.h"
 
 class CommandLine;
 
@@ -128,6 +129,10 @@ class Product {
   void AddDefaultShortcutProperties(
       const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const;
+
+  void LaunchUserExperiment(const base::FilePath& setup_path,
+                            InstallStatus status,
+                            bool system_level) const;
 
  protected:
   enum CacheStateFlags {

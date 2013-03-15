@@ -19,10 +19,6 @@
 #include <windows.h>  // NOLINT
 #endif
 
-namespace installer {
-class Product;
-}
-
 class BrowserDistribution {
  public:
   enum Type {
@@ -31,28 +27,6 @@ class BrowserDistribution {
     CHROME_BINARIES,
     CHROME_APP_HOST,
     NUM_TYPES
-  };
-
-  // Flags to control what to show in the UserExperiment dialog.
-  enum ToastUIflags {
-    kUninstall          = 1,    // Uninstall radio button.
-    kDontBugMeAsButton  = 2,    // Don't bug me is a button, not a radio button.
-    kWhyLink            = 4,    // Has the 'why I am seeing this' link.
-    kMakeDefault        = 8     // Has the 'make it default' checkbox.
-  };
-
-  // A struct for communicating what a UserExperiment contains. In these
-  // experiments we show toasts to the user if they are inactive for a certain
-  // amount of time.
-  struct UserExperiment {
-    string16 prefix;      // The experiment code prefix for this experiment,
-                          // also known as the 'TV' part in 'TV80'.
-    int flavor;           // The flavor index for this experiment.
-    int heading;          // The heading resource ID to use for this experiment.
-    int flags;            // See ToastUIFlags above.
-    int control_group;    // Size of the control group (in percentages). Control
-                          // group is the group that qualifies for the
-                          // experiment but does not participate.
   };
 
   virtual ~BrowserDistribution() {}
@@ -145,31 +119,11 @@ class BrowserDistribution {
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status);
 
-  // Gets the experiment details for a given language-brand combo. If |flavor|
-  // is -1, then a flavor will be selected at random. |experiment| is the struct
-  // you want to write the experiment information to. Returns false if no
-  // experiment details could be gathered.
-  virtual bool GetExperimentDetails(UserExperiment* experiment, int flavor);
-
-  // After an install or upgrade the user might qualify to participate in an
-  // experiment. This function determines if the user qualifies and if so it
-  // sets the wheels in motion or in simple cases does the experiment itself.
-  virtual void LaunchUserExperiment(const base::FilePath& setup_path,
-                                    installer::InstallStatus status,
-                                    const Version& version,
-                                    const installer::Product& product,
-                                    bool system_level);
-
-  // The user has qualified for the inactive user toast experiment and this
-  // function just performs it.
-  virtual void InactiveUserToastExperiment(int flavor,
-      const string16& experiment_group,
-      const installer::Product& installation,
-      const base::FilePath& application_path);
-
   // Returns true if this distribution should set the Omaha experiment_labels
   // registry value.
   virtual bool ShouldSetExperimentLabels();
+
+  virtual bool HasUserExperiments();
 
  protected:
   explicit BrowserDistribution(Type type);

@@ -15,34 +15,32 @@
 
 namespace installer {
 
-void ChromeBinariesOperations::ReadOptions(
-    const MasterPreferences& prefs,
-    std::set<std::wstring>* options) const {
+void ChromeBinariesOperations::ReadOptions(const MasterPreferences& prefs,
+                                           std::set<string16>* options) const {
   DCHECK(options);
   options->insert(kOptionMultiInstall);
 }
 
-void ChromeBinariesOperations::ReadOptions(
-    const CommandLine& uninstall_command,
-    std::set<std::wstring>* options) const {
+void ChromeBinariesOperations::ReadOptions(const CommandLine& uninstall_command,
+                                           std::set<string16>* options) const {
   DCHECK(options);
   options->insert(kOptionMultiInstall);
 }
 
 void ChromeBinariesOperations::AddKeyFiles(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
   key_files->push_back(base::FilePath(installer::kChromeDll));
 }
 
 void ChromeBinariesOperations::AddComDllList(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     std::vector<base::FilePath>* com_dll_list) const {
 }
 
 void ChromeBinariesOperations::AppendProductFlags(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
@@ -54,7 +52,7 @@ void ChromeBinariesOperations::AppendProductFlags(
 }
 
 void ChromeBinariesOperations::AppendRenameFlags(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
@@ -66,14 +64,14 @@ void ChromeBinariesOperations::AppendRenameFlags(
 }
 
 bool ChromeBinariesOperations::SetChannelFlags(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     bool set,
     ChannelInfo* channel_info) const {
   return false;
 }
 
 bool ChromeBinariesOperations::ShouldCreateUninstallEntry(
-    const std::set<std::wstring>& options) const {
+    const std::set<string16>& options) const {
   return false;
 }
 
@@ -82,6 +80,15 @@ void ChromeBinariesOperations::AddDefaultShortcutProperties(
     const base::FilePath& target_exe,
     ShellUtil::ShortcutProperties* properties) const {
   NOTREACHED() << "Chrome Binaries do not create shortcuts.";
+}
+
+void ChromeBinariesOperations::LaunchUserExperiment(
+    const base::FilePath& setup_path,
+    const std::set<string16>& options,
+    InstallStatus status,
+    bool system_level) const {
+  // Not meaningful to have binaries run experiments.
+  NOTREACHED();
 }
 
 }  // namespace installer

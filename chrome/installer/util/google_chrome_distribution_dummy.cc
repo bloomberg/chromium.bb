@@ -143,24 +143,9 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
   NOTREACHED();
 }
 
-bool GoogleChromeDistribution::GetExperimentDetails(
-    UserExperiment* experiment, int flavor) {
+bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
   NOTREACHED();
   return false;
-}
-
-void GoogleChromeDistribution::LaunchUserExperiment(
-    const base::FilePath& setup_path, installer::InstallStatus status,
-    const Version& version, const installer::Product& product,
-    bool system_level) {
-  NOTREACHED();
-}
-
-void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
-    const string16& experiment_group,
-    const installer::Product& installation,
-    const base::FilePath& application_path) {
-  NOTREACHED();
 }
 
 bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
@@ -181,7 +166,7 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
   return false;
 }
 
-bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
+bool GoogleChromeDistribution::HasUserExperiments() {
   NOTREACHED();
   return false;
 }

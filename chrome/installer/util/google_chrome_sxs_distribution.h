@@ -31,6 +31,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
       string16* handler_class_uuid) OVERRIDE;
   virtual bool AppHostIsSupported() OVERRIDE;
   virtual bool ShouldSetExperimentLabels() OVERRIDE;
+  virtual bool HasUserExperiments() OVERRIDE;
   // returns the channel name for GoogleChromeSxSDistribution
   static string16 ChannelName();
  private:

@@ -262,23 +262,10 @@ void BrowserDistribution::UpdateInstallStatus(bool system_install,
     installer::InstallStatus install_status) {
 }
 
-bool BrowserDistribution::GetExperimentDetails(
-    UserExperiment* experiment, int flavor) {
-  return false;
-}
-
-void BrowserDistribution::LaunchUserExperiment(
-    const base::FilePath& setup_path, installer::InstallStatus status,
-    const Version& version, const installer::Product& product,
-    bool system_level) {
-}
-
 bool BrowserDistribution::ShouldSetExperimentLabels() {
   return false;
 }
 
-void BrowserDistribution::InactiveUserToastExperiment(int flavor,
-    const string16& experiment_group,
-    const installer::Product& installation,
-    const base::FilePath& application_path) {
+bool BrowserDistribution::HasUserExperiments() {
+  return false;
 }

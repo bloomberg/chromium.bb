@@ -17,8 +17,8 @@ namespace installer {
 
 // Remove ready-mode if not multi-install.
 void ChromeFrameOperations::NormalizeOptions(
-    std::set<std::wstring>* options) const {
-  std::set<std::wstring>::iterator ready_mode(options->find(kOptionReadyMode));
+    std::set<string16>* options) const {
+  std::set<string16>::iterator ready_mode(options->find(kOptionReadyMode));
   if (ready_mode != options->end() &&
       options->find(kOptionMultiInstall) == options->end()) {
     LOG(WARNING) << "--ready-mode option does not apply when --multi-install "
@@ -27,9 +27,8 @@ void ChromeFrameOperations::NormalizeOptions(
   }
 }
 
-void ChromeFrameOperations::ReadOptions(
-    const MasterPreferences& prefs,
-    std::set<std::wstring>* options) const {
+void ChromeFrameOperations::ReadOptions(const MasterPreferences& prefs,
+                                        std::set<string16>* options) const {
   DCHECK(options);
 
   static const struct PrefToOption {
@@ -51,9 +50,8 @@ void ChromeFrameOperations::ReadOptions(
   NormalizeOptions(options);
 }
 
-void ChromeFrameOperations::ReadOptions(
-    const CommandLine& uninstall_command,
-    std::set<std::wstring>* options) const {
+void ChromeFrameOperations::ReadOptions(const CommandLine& uninstall_command,
+                                        std::set<string16>* options) const {
   DCHECK(options);
 
   static const struct FlagToOption {
@@ -74,7 +72,7 @@ void ChromeFrameOperations::ReadOptions(
 }
 
 void ChromeFrameOperations::AddKeyFiles(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
   key_files->push_back(base::FilePath(installer::kChromeFrameDll));
@@ -82,14 +80,14 @@ void ChromeFrameOperations::AddKeyFiles(
 }
 
 void ChromeFrameOperations::AddComDllList(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     std::vector<base::FilePath>* com_dll_list) const {
   DCHECK(com_dll_list);
   com_dll_list->push_back(base::FilePath(installer::kChromeFrameDll));
 }
 
 void ChromeFrameOperations::AppendProductFlags(
-    const std::set<std::wstring>& options,
+    const std::set<string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
@@ -106,9 +104,8 @@ void ChromeFrameOperations::AppendProductFlags(
     cmd_line->AppendSwitch(switches::kChromeFrameReadyMode);
 }
 
-void ChromeFrameOperations::AppendRenameFlags(
-    const std::set<std::wstring>& options,
-    CommandLine* cmd_line) const {
+void ChromeFrameOperations::AppendRenameFlags(const std::set<string16>& options,
+                                              CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
 
@@ -121,10 +118,9 @@ void ChromeFrameOperations::AppendRenameFlags(
     cmd_line->AppendSwitch(switches::kChromeFrame);
 }
 
-bool ChromeFrameOperations::SetChannelFlags(
-    const std::set<std::wstring>& options,
-    bool set,
-    ChannelInfo* channel_info) const {
+bool ChromeFrameOperations::SetChannelFlags(const std::set<string16>& options,
+                                            bool set,
+                                            ChannelInfo* channel_info) const {
 #if defined(GOOGLE_CHROME_BUILD)
   DCHECK(channel_info);
   bool modified = channel_info->SetChromeFrame(set);
@@ -141,7 +137,7 @@ bool ChromeFrameOperations::SetChannelFlags(
 }
 
 bool ChromeFrameOperations::ShouldCreateUninstallEntry(
-    const std::set<std::wstring>& options) const {
+    const std::set<string16>& options) const {
   return options.find(kOptionReadyMode) == options.end();
 }
 
@@ -150,6 +146,16 @@ void ChromeFrameOperations::AddDefaultShortcutProperties(
     const base::FilePath& target_exe,
     ShellUtil::ShortcutProperties* properties) const {
   NOTREACHED() << "Chrome Frame does not create shortcuts.";
+}
+
+void ChromeFrameOperations::LaunchUserExperiment(
+    const base::FilePath& setup_path,
+    const std::set<string16>& options,
+    InstallStatus status,
+    bool system_level) const {
+  // No experiments yet.  If adding some in the future, need to have
+  // ChromeFrameDistribution::HasUserExperiments() return true.
+  NOTREACHED();
 }
 
 }  // namespace installer

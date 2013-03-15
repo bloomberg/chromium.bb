@@ -17,41 +17,44 @@ class ChromeFrameOperations : public ProductOperations {
   ChromeFrameOperations() {}
 
   virtual void ReadOptions(const MasterPreferences& prefs,
-                           std::set<std::wstring>* options) const OVERRIDE;
+                           std::set<string16>* options) const OVERRIDE;
 
   virtual void ReadOptions(const CommandLine& uninstall_command,
-                           std::set<std::wstring>* options) const OVERRIDE;
+                           std::set<string16>* options) const OVERRIDE;
 
   virtual void AddKeyFiles(
-      const std::set<std::wstring>& options,
+      const std::set<string16>& options,
       std::vector<base::FilePath>* key_files) const OVERRIDE;
 
   virtual void AddComDllList(
-      const std::set<std::wstring>& options,
+      const std::set<string16>& options,
       std::vector<base::FilePath>* com_dll_list) const OVERRIDE;
 
-  virtual void AppendProductFlags(
-      const std::set<std::wstring>& options,
-      CommandLine* cmd_line) const OVERRIDE;
+  virtual void AppendProductFlags(const std::set<string16>& options,
+                                  CommandLine* cmd_line) const OVERRIDE;
 
-  virtual void AppendRenameFlags(
-      const std::set<std::wstring>& options,
-      CommandLine* cmd_line) const OVERRIDE;
+  virtual void AppendRenameFlags(const std::set<string16>& options,
+                                 CommandLine* cmd_line) const OVERRIDE;
 
-  virtual bool SetChannelFlags(const std::set<std::wstring>& options,
+  virtual bool SetChannelFlags(const std::set<string16>& options,
                                bool set,
                                ChannelInfo* channel_info) const OVERRIDE;
 
   virtual bool ShouldCreateUninstallEntry(
-      const std::set<std::wstring>& options) const OVERRIDE;
+      const std::set<string16>& options) const OVERRIDE;
 
   virtual void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
       const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const OVERRIDE;
 
+  virtual void LaunchUserExperiment(const base::FilePath& setup_path,
+                                    const std::set<string16>& options,
+                                    InstallStatus status,
+                                    bool system_level) const OVERRIDE;
+
  protected:
-  void NormalizeOptions(std::set<std::wstring>* options) const;
+  void NormalizeOptions(std::set<string16>* options) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameOperations);

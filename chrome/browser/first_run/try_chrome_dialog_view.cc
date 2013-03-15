@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/user_experiment.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -174,13 +175,9 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   layout->AddView(icon);
 
   // Find out what experiment we are conducting.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist) {
-    NOTREACHED() << "Cannot determine browser distribution";
-    return DIALOG_ERROR;
-  }
-  BrowserDistribution::UserExperiment experiment;
-  if (!dist->GetExperimentDetails(&experiment, flavor_) ||
+  installer::ExperimentDetails experiment;
+  if (!BrowserDistribution::GetDistribution()->HasUserExperiments() ||
+      !installer::CreateExperimentDetails(flavor_, &experiment) ||
       !experiment.heading) {
     NOTREACHED() << "Cannot determine which headline to show.";
     return DIALOG_ERROR;
@@ -214,7 +211,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   // Decide if the don't bug me is a button or a radio button.
   bool dont_bug_me_button =
-      ((experiment.flags & BrowserDistribution::kDontBugMeAsButton) != 0);
+      !!(experiment.flags & installer::kToastUiDontBugMeAsButton);
 
   // Optional third and fourth row.
   if (!dont_bug_me_button) {
@@ -225,7 +222,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     dont_try_chrome_->set_listener(this);
     layout->AddView(dont_try_chrome_);
   }
-  if (experiment.flags & BrowserDistribution::kUninstall) {
+  if (experiment.flags & installer::kToastUiUninstall) {
     layout->StartRow(0, 2);
     kill_chrome_ = new views::RadioButton(
         l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME), kRadioGroupID);
@@ -237,7 +234,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   accept_button->set_tag(BT_OK_BUTTON);
 
   views::Separator* separator = NULL;
-  if (experiment.flags & BrowserDistribution::kMakeDefault) {
+  if (experiment.flags & installer::kToastUiMakeDefault) {
     // In this flavor we have some veritical space, then a separator line
     // and the 'make default' checkbox and the OK button on the same row.
     layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
@@ -267,7 +264,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     }
   }
 
-  if (experiment.flags & BrowserDistribution::kWhyLink) {
+  if (experiment.flags & installer::kToastUiWhyLink) {
     layout->StartRowWithPadding(0, 4, 0, 10);
     views::Link* link = new views::Link(
         l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));

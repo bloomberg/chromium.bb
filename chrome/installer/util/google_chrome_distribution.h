@@ -11,7 +11,6 @@
 #include "base/string16.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/util_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -87,26 +86,9 @@ class GoogleChromeDistribution : public BrowserDistribution {
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status) OVERRIDE;
 
-  virtual bool GetExperimentDetails(UserExperiment* experiment,
-                                    int flavor) OVERRIDE;
-
-  virtual void LaunchUserExperiment(
-      const base::FilePath& setup_path,
-      installer::InstallStatus status,
-      const Version& version,
-      const installer::Product& product,
-      bool system_level) OVERRIDE;
-
-  // Assuming that the user qualifies, this function performs the inactive user
-  // toast experiment. It will use chrome to show the UI and it will record the
-  // outcome in the registry.
-  virtual void InactiveUserToastExperiment(
-      int flavor,
-      const string16& experiment_group,
-      const installer::Product& installation,
-      const base::FilePath& application_path) OVERRIDE;
-
   virtual bool ShouldSetExperimentLabels() OVERRIDE;
+
+  virtual bool HasUserExperiments() OVERRIDE;
 
   const string16& product_guid() { return product_guid_; }
 

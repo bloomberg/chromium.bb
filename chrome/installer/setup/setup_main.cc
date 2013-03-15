@@ -60,6 +60,7 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
+#include "chrome/installer/util/user_experiment.h"
 #include "chrome/installer/util/util_constants.h"
 
 #include "installer_util_strings.h"  // NOLINT
@@ -923,8 +924,8 @@ installer::InstallStatus InstallProductsHelper(
       for (Products::const_iterator it = products.begin(); it < products.end();
            ++it) {
         const Product& product = **it;
-        product.distribution()->LaunchUserExperiment(setup_path,
-            install_status, *installer_version, product, system_install);
+        product.LaunchUserExperiment(setup_path, install_status,
+                                     system_install);
       }
     }
   }
@@ -1428,8 +1429,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       for (Products::const_iterator it = products.begin(); it < products.end();
            ++it) {
         const Product& product = **it;
-        BrowserDistribution* browser_dist = product.distribution();
-        browser_dist->InactiveUserToastExperiment(
+        installer::InactiveUserToastExperiment(
             flavor, ASCIIToUTF16(experiment_group), product,
             installer_state->target_path());
       }
@@ -1449,9 +1449,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
                    << browser_dist->GetAppShortCutName()
                    << " found for system-level toast.";
       } else {
-        browser_dist->LaunchUserExperiment(cmd_line.GetProgram(),
-                                           installer::REENTRY_SYS_UPDATE,
-                                           installed_version, product, true);
+        product.LaunchUserExperiment(
+            cmd_line.GetProgram(), installer::REENTRY_SYS_UPDATE, true);
       }
     }
   } else if (cmd_line.HasSwitch(
