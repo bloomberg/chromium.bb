@@ -117,6 +117,30 @@ namespace chromeos {
 
 namespace {
 
+const char kNetworkStateOffline[] = "offline";
+const char kNetworkStateOnline[] = "online";
+const char kNetworkStateCaptivePortal[] = "behind captive portal";
+const char kNetworkStateConnecting[] = "connecting";
+const char kNetworkStateProxyAuthRequired[] = "proxy auth required";
+
+const char* NetworkStateStatusString(NetworkStateInformer::State state) {
+  switch (state) {
+    case NetworkStateInformer::OFFLINE:
+      return kNetworkStateOffline;
+    case NetworkStateInformer::ONLINE:
+      return kNetworkStateOnline;
+    case NetworkStateInformer::CAPTIVE_PORTAL:
+      return kNetworkStateCaptivePortal;
+    case NetworkStateInformer::CONNECTING:
+      return kNetworkStateConnecting;
+    case NetworkStateInformer::PROXY_AUTH_REQUIRED:
+      return kNetworkStateProxyAuthRequired;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+}
+
 // Updates params dictionary passed to the auth extension with related
 // preferences from CrosSettings.
 void UpdateAuthParamsFromSettings(DictionaryValue* params,
@@ -546,7 +570,7 @@ void SigninScreenHandler::UpdateStateInternal(
   // TODO (ygorshenin@): switch log level to INFO once signin screen
   // will be tested well.
   LOG(WARNING) << "SigninScreenHandler::UpdateStateInternal(): "
-               << "state=" << state << ", "
+               << "state=" << NetworkStateStatusString(state) << ", "
                << "network_id=" << network_id << ", "
                << "connection_type=" << connection_type << ", "
                << "reason=" << reason << ", "
@@ -555,8 +579,8 @@ void SigninScreenHandler::UpdateStateInternal(
 
   // Delay UpdateStateInternal() call in the following cases:
   // 1. this is the first call and it's about offline state of the
-  //   current network. This can happen because device is just powered
-  //   up and network stack isn't ready now.
+  //    current network. This can happen because device is just powered
+  //    up and network stack isn't ready now.
   // 2. proxy auth ui is displayed. UpdateStateCall() is delayed to
   //    prevent screen change behind proxy auth ui.
   if ((state == NetworkStateInformer::OFFLINE && is_first_update_state_call_) ||
@@ -605,21 +629,18 @@ void SigninScreenHandler::UpdateStateInternal(
   bool error_screen_should_overlay = !offline_login_active_ && IsGaiaLogin();
 
   // Reload frame if network is changed.
-  if (reason == ErrorScreenActor::kErrorReasonNetworkChanged) {
-    if (is_online &&
-        last_network_state_ != NetworkStateInformer::ONLINE &&
-        is_gaia_signin && !is_gaia_reloaded) {
-      // Schedules a immediate retry.
-      LOG(WARNING) << "Retry page load since network has been changed.";
-      ReloadGaiaScreen();
-      is_gaia_reloaded = true;
-    }
+  if (reason == ErrorScreenActor::kErrorReasonNetworkChanged &&
+      is_online && last_network_state_ != NetworkStateInformer::ONLINE &&
+      is_gaia_signin && !is_gaia_reloaded) {
+    // Schedules a immediate retry.
+    LOG(WARNING) << "Retry page load since network has been changed.";
+    ReloadGaiaScreen();
+    is_gaia_reloaded = true;
   }
   last_network_state_ = state;
 
   if (reason == ErrorScreenActor::kErrorReasonProxyConfigChanged &&
-      error_screen_should_overlay &&
-      is_gaia_signin && !is_gaia_reloaded) {
+      error_screen_should_overlay && is_gaia_signin && !is_gaia_reloaded) {
     // Schedules a immediate retry.
     LOG(WARNING) << "Retry page load since proxy settings has been changed.";
     ReloadGaiaScreen();
@@ -639,7 +660,8 @@ void SigninScreenHandler::UpdateStateInternal(
   if (is_online || !is_under_captive_portal)
     error_screen_actor_->HideCaptivePortal();
 
-  if (!is_online && is_gaia_signin && !offline_login_active_) {
+  if ((!is_online || is_gaia_loading_timeout) && is_gaia_signin &&
+      !offline_login_active_) {
     SetupAndShowOfflineMessage(state, service_path, connection_type, reason,
                                is_proxy_error, is_under_captive_portal,
                                is_gaia_loading_timeout);
@@ -674,7 +696,7 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
     // check makes captive portal being shown only once: either when error
     // screen is shown for the first time or when switching from another
     // error screen (offline, proxy).
-    if (!IsGaiaLogin() ||
+    if (IsGaiaLogin() ||
         (error_screen_actor_->state() !=
          ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR)) {
       error_screen_actor_->FixCaptivePortal();
@@ -711,7 +733,8 @@ void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
                                              bool is_gaia_reloaded) {
   if (IsSigninScreenHiddenByError()) {
     std::string network_id = GetNetworkUniqueId(service_path);
-    LOG(WARNING) << "Hide offline message. state=" << state << ", "
+    LOG(WARNING) << "Hide offline message, "
+                 << "state=" << NetworkStateStatusString(state) << ", "
                  << "network_id=" << network_id << ", "
                  << "reason=" << reason;
     error_screen_actor_->Hide();
@@ -724,6 +747,12 @@ void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
 }
 
 void SigninScreenHandler::ReloadGaiaScreen() {
+  NetworkStateInformer::State state = network_state_informer_->state();
+  if (state != NetworkStateInformer::ONLINE) {
+    LOG(WARNING) << "Skipping reload of auth extension frame since "
+                 << "network state=" << NetworkStateStatusString(state);
+    return;
+  }
   LOG(WARNING) << "Reload auth extension frame.";
   web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.doReload");
 }
@@ -1602,15 +1631,11 @@ void SigninScreenHandler::HandleShowGaiaFrameError(
     return;
   LOG(WARNING) << "Gaia frame error: "  << error;
   std::string reason = base::StringPrintf("frame error:%d", error);
-  if (network_state_informer_->state() != NetworkStateInformer::CONNECTING) {
-    // TODO (ygorshenin): this case should be handled as a generic
-    // network connectivity issue that leads to timeout.
-    UpdateStateInternal(NetworkStateInformer::CAPTIVE_PORTAL,
-                        network_state_informer_->last_network_service_path(),
-                        network_state_informer_->last_network_type(),
-                        reason,
-                        false);
-  }
+  UpdateStateInternal(network_state_informer_->state(),
+                      network_state_informer_->last_network_service_path(),
+                      network_state_informer_->last_network_type(),
+                      reason,
+                      false);
 }
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError(

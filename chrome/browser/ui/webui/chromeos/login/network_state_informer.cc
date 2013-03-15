@@ -8,15 +8,15 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/error_screen_actor.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
-#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "net/proxy/proxy_config.h"
 
 namespace {
 
 // Timeout to smooth temporary network state transitions for flaky networks.
-const int kNetworkStateCheckDelayMs = 5000;
+const int kNetworkStateCheckDelaySec = 3;
 
 }  // namespace
 
@@ -98,11 +98,11 @@ void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         check_state_.callback(),
-        base::TimeDelta::FromMilliseconds(kNetworkStateCheckDelayMs));
+        base::TimeDelta::FromSeconds(kNetworkStateCheckDelaySec));
   }
 }
 
-void NetworkStateInformer::OnPortalStateChanged(
+void NetworkStateInformer::OnPortalDetectionCompleted(
     const Network* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
   if (CrosLibrary::Get()) {
@@ -120,13 +120,13 @@ void NetworkStateInformer::Observe(
   if (type == chrome::NOTIFICATION_SESSION_STARTED)
     registrar_.RemoveAll();
   else if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED)
-    SendStateToObservers(ErrorScreenHandler::kErrorReasonProxyConfigChanged);
+    SendStateToObservers(ErrorScreenActor::kErrorReasonProxyConfigChanged);
   else
     NOTREACHED() << "Unknown notification: " << type;
 }
 
 void NetworkStateInformer::OnPortalDetected() {
-  SendStateToObservers(ErrorScreenHandler::kErrorReasonPortalDetected);
+  SendStateToObservers(ErrorScreenActor::kErrorReasonPortalDetected);
 }
 
 bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
@@ -157,7 +157,9 @@ void NetworkStateInformer::UpdateStateAndNotify() {
   check_state_.Cancel();
 
   if (UpdateState(CrosLibrary::Get()->GetNetworkLibrary()))
-    SendStateToObservers(ErrorScreenHandler::kErrorReasonNetworkChanged);
+    SendStateToObservers(ErrorScreenActor::kErrorReasonNetworkChanged);
+  else
+    SendStateToObservers(ErrorScreenActor::kErrorReasonUpdate);
 }
 
 void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
@@ -171,36 +173,37 @@ void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
 NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     const Network* network) {
   DCHECK(network);
-  if (network->online()) {
-    // For a proxied network shill's Captive Portal detector isn't
-    // activated and we should rely on a Chrome's Captive Portal
-    // detector results.
-    // For a non-proxied networks to prevent shill's false positives we
-    // also rely on a Chrome's Captive Portal detector results.
-    if (IsProxyConfigured(network) && ProxyAuthRequired(network))
-      return PROXY_AUTH_REQUIRED;
-    else if (IsRestrictedPool(network))
-      return CAPTIVE_PORTAL;
-    else
-      return ONLINE;
-  } else if (network->connecting()) {
-    return CONNECTING;
-  } else if (IsRestrictedPool(network)) {
-    return CAPTIVE_PORTAL;
-  }
-  return OFFLINE;
-}
-
-bool NetworkStateInformer::IsRestrictedPool(const Network* network) {
-  DCHECK(network);
   if (NetworkPortalDetector::IsEnabled()) {
     NetworkPortalDetector::CaptivePortalState state =
         NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
     NetworkPortalDetector::CaptivePortalStatus status = state.status;
-    return (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
+        network->connecting()) {
+      return CONNECTING;
+    }
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
+        (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
+         network->online())) {
+      return ONLINE;
+    }
+    if (status ==
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED &&
+        IsProxyConfigured(network)) {
+      return PROXY_AUTH_REQUIRED;
+    }
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
+        (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
+         network->restricted_pool()))
+      return CAPTIVE_PORTAL;
   } else {
-    return network->restricted_pool();
+    if (network->connecting())
+      return CONNECTING;
+    if (network->online())
+      return ONLINE;
+    if (network->restricted_pool())
+      return CAPTIVE_PORTAL;
   }
+  return OFFLINE;
 }
 
 bool NetworkStateInformer::IsProxyConfigured(const Network* network) {
@@ -217,19 +220,6 @@ bool NetworkStateInformer::IsProxyConfigured(const Network* network) {
   proxy_state_map_[network->unique_id()] =
       ProxyState(network->proxy_config(), configured);
   return configured;
-}
-
-bool NetworkStateInformer::ProxyAuthRequired(const Network* network) {
-  DCHECK(network);
-  if (NetworkPortalDetector::IsEnabled()) {
-    NetworkPortalDetector::CaptivePortalState state =
-        NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
-    NetworkPortalDetector::CaptivePortalStatus status = state.status;
-    return (status ==
-            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED);
-  } else {
-    return false;
-  }
 }
 
 }  // namespace chromeos
