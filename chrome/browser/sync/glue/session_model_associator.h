@@ -233,6 +233,8 @@ class SessionModelAssociator
     current_machine_tag_ = machine_tag;
   }
 
+  FaviconCache* GetFaviconCache();
+
  private:
   friend class SyncSessionModelAssociatorTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, WriteSessionToNode);
@@ -351,7 +353,6 @@ class SessionModelAssociator
 
   // For testing only.
   void QuitLoopForSubtleTesting();
-  FaviconCache* GetFaviconCacheForTesting();
 
   // Unique client tag.
   std::string current_machine_tag_;

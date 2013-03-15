@@ -176,6 +176,7 @@ extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncSyncedNotifications[];
+extern const char kEnableSyncFavicons[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWatchdog[];

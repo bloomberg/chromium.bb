@@ -61,7 +61,7 @@ class SyncSessionModelAssociatorTest : public testing::Test {
 
   bool FaviconEquals(const GURL page_url,
                      std::string expected_bytes) {
-    FaviconCache* cache = model_associator_.GetFaviconCacheForTesting();
+    FaviconCache* cache = model_associator_.GetFaviconCache();
     GURL gurl(page_url);
     scoped_refptr<base::RefCountedMemory> favicon;
     if (!cache->GetSyncedFaviconForPageURL(gurl, &favicon))

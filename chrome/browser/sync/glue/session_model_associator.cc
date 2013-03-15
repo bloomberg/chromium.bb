@@ -900,7 +900,9 @@ void SessionModelAssociator::LoadForeignTabFavicon(
       const std::string& favicon_url = tab.navigation(i).favicon_url();
       favicon_cache_.OnReceivedSyncFavicon(GURL(page_url),
                                            GURL(favicon_url),
-                                           std::string());
+                                           std::string(),
+                                           syncer::TimeToProtoTime(
+                                               base::Time::Now()));
     }
   }
 
@@ -929,7 +931,11 @@ void SessionModelAssociator::LoadForeignTabFavicon(
   const std::string& favicon = tab.favicon();
   DVLOG(1) << "Storing synced favicon for url " << navigation_url.spec()
            << " with size " << favicon.size() << " bytes.";
-  favicon_cache_.OnReceivedSyncFavicon(navigation_url, favicon_source, favicon);
+  favicon_cache_.OnReceivedSyncFavicon(navigation_url,
+                                       favicon_source,
+                                       favicon,
+                                       syncer::TimeToProtoTime(
+                                           base::Time::Now()));
 }
 
 bool SessionModelAssociator::UpdateSyncModelDataFromClient(
@@ -1113,7 +1119,7 @@ void SessionModelAssociator::QuitLoopForSubtleTesting() {
   }
 }
 
-FaviconCache* SessionModelAssociator::GetFaviconCacheForTesting() {
+FaviconCache* SessionModelAssociator::GetFaviconCache() {
   return &favicon_cache_;
 }
 

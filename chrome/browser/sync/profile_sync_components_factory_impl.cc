@@ -51,6 +51,7 @@
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
@@ -149,6 +150,19 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new ProxyDataTypeController(syncer::PROXY_TABS));
     pss->RegisterDataTypeController(
         new SessionDataTypeController(this, profile_, pss));
+  }
+
+  if (command_line_->HasSwitch(switches::kEnableSyncFavicons)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(syncer::FAVICON_IMAGES,
+                                 this,
+                                 profile_,
+                                 pss));
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(syncer::FAVICON_TRACKING,
+                                 this,
+                                 profile_,
+                                 pss));
   }
 
   // Password sync is enabled by default.  Register unless explicitly
@@ -316,7 +330,6 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
               profile_, Profile::EXPLICIT_ACCESS);
       return history ? history->AsWeakPtr() : base::WeakPtr<HistoryService>();
     }
-
 #if !defined(OS_ANDROID)
     case syncer::SYNCED_NOTIFICATIONS: {
       notifier::ChromeNotifierService* notifier_service =
@@ -326,11 +339,13 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
           : base::WeakPtr<syncer::SyncableService>();
     }
 #endif
-
     case syncer::DICTIONARY:
       return SpellcheckServiceFactory::GetForProfile(profile_)->
           GetCustomDictionary()->AsWeakPtr();
-
+    case syncer::FAVICON_IMAGES:
+    case syncer::FAVICON_TRACKING:
+      return ProfileSyncServiceFactory::GetForProfile(profile_)->
+          GetSessionModelAssociator()->GetFaviconCache()->AsWeakPtr();
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:

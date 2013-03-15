@@ -28,6 +28,8 @@ import dictionary_specifics_pb2
 import get_updates_caller_info_pb2
 import extension_setting_specifics_pb2
 import extension_specifics_pb2
+import favicon_image_specifics_pb2
+import favicon_tracking_specifics_pb2
 import history_delete_directive_specifics_pb2
 import nigori_specifics_pb2
 import password_specifics_pb2
@@ -65,7 +67,9 @@ ALL_TYPES = (
     SYNCED_NOTIFICATION,
     THEME,
     TYPED_URL,
-    EXTENSION_SETTINGS) = range(21)
+    EXTENSION_SETTINGS,
+    FAVICON_IMAGES,
+    FAVICON_TRACKING) = range(23)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -93,6 +97,8 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     EXPERIMENTS: SYNC_TYPE_FIELDS['experiments'],
     EXTENSION_SETTINGS: SYNC_TYPE_FIELDS['extension_setting'],
     EXTENSIONS: SYNC_TYPE_FIELDS['extension'],
+    FAVICON_IMAGES: SYNC_TYPE_FIELDS['favicon_image'],
+    FAVICON_TRACKING: SYNC_TYPE_FIELDS['favicon_tracking'],
     HISTORY_DELETE_DIRECTIVE: SYNC_TYPE_FIELDS['history_delete_directive'],
     NIGORI: SYNC_TYPE_FIELDS['nigori'],
     PASSWORD: SYNC_TYPE_FIELDS['password'],
@@ -474,6 +480,14 @@ class SyncDataModel(object):
                     name='History Delete Directives',
                     parent_tag=ROOT_ID,
                     sync_type=HISTORY_DELETE_DIRECTIVE),
+      PermanentItem('google_chrome_favicon_images',
+                    name='Favicon Images',
+                    parent_tag=ROOT_ID,
+                    sync_type=FAVICON_IMAGES),
+      PermanentItem('google_chrome_favicon_tracking',
+                    name='Favicon Tracking',
+                    parent_tag=ROOT_ID,
+                    sync_type=FAVICON_TRACKING),
       PermanentItem('google_chrome_nigori', name='Nigori',
                     parent_tag=ROOT_ID, sync_type=NIGORI),
       PermanentItem('google_chrome_passwords', name='Passwords',

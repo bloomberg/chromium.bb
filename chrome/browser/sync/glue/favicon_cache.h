@@ -19,6 +19,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "googleurl/src/gurl.h"
+#include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/syncable_service.h"
 
@@ -57,7 +58,6 @@ class FaviconCache : public syncer::SyncableService {
   virtual ~FaviconCache();
 
   // SyncableService implementation.
-  // TODO(zea): implement these.
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -99,7 +99,8 @@ class FaviconCache : public syncer::SyncableService {
   // If |icon_bytes| is empty, only updates the page->favicon url mapping.
   void OnReceivedSyncFavicon(const GURL& page_url,
                              const GURL& icon_url,
-                             const std::string& icon_bytes);
+                             const std::string& icon_bytes,
+                             int64 visit_time_ms);
 
   // Support for syncing favicons using the legacy format (within tab sync).
   void SetLegacyDelegate(FaviconCacheObserver* observer);
@@ -129,11 +130,32 @@ class FaviconCache : public syncer::SyncableService {
       const std::vector<history::FaviconBitmapResult>& bitmap_result);
 
   // Helper method to update the sync state of the favicon at |icon_url|.
-  void UpdateSyncState(const GURL& icon_url, SyncState state_to_update);
+  void UpdateSyncState(const GURL& icon_url,
+                       SyncState state_to_update,
+                       syncer::SyncChange::SyncChangeType change_type);
 
   // Helper method to get favicon info from |synced_favicons_|. If no info
   // exists for |icon_url|, creates a new SyncedFaviconInfo and returns it.
   SyncedFaviconInfo* GetFaviconInfo(const GURL& icon_url);
+
+  // Returns the local favicon url associated with |sync_favicon| if one exists
+  // in |synced_favicons_|, else returns an invalid GURL.
+  GURL GetLocalFaviconFromSyncedData(
+      const syncer::SyncData& sync_favicon) const;
+
+  // Merges |sync_favicon| into |synced_favicons_|, updating |local_changes|
+  // with any changes that should be pushed to the sync processor.
+  void MergeSyncFavicon(const syncer::SyncData& sync_favicon,
+                        syncer::SyncChangeList* sync_changes);
+
+  // Updates |synced_favicons_| with the favicon data from |sync_favicon|.
+  void AddLocalFaviconFromSyncedData(const syncer::SyncData& sync_favicon);
+
+  // Creates a SyncData object from the |type| data of |favicon_url|
+  // from within |synced_favicons_|.
+  syncer::SyncData CreateSyncDataFromLocalFavicon(
+      syncer::ModelType type,
+      const GURL& favicon_url) const;
 
   // For testing only.
   size_t NumFaviconsForTest() const;
@@ -155,11 +177,15 @@ class FaviconCache : public syncer::SyncableService {
   // TODO(zea): consider creating a favicon handler here for fetching unsynced
   // favicons from the web.
 
+  // Weak pointer factory for favicon loads.
   base::WeakPtrFactory<FaviconCache> weak_ptr_factory_;
 
   // Delegate for legacy favicon sync support.
   // TODO(zea): Remove this eventually.
   FaviconCacheObserver* legacy_delegate_;
+
+  scoped_ptr<syncer::SyncChangeProcessor> favicon_images_sync_processor_;
+  scoped_ptr<syncer::SyncChangeProcessor> favicon_tracking_sync_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconCache);
 };
