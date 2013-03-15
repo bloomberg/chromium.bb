@@ -22,6 +22,11 @@ const size_t kAuthTagSize = 16;
 
 }  // namespace
 
+// static
+bool Aes128GcmEncrypter::IsSupported() {
+  return true;
+}
+
 bool Aes128GcmEncrypter::SetKey(StringPiece key) {
   DCHECK_EQ(key.size(), sizeof(key_));
   if (key.size() != sizeof(key_)) {
