@@ -139,8 +139,9 @@ void MockTimeSingleThreadTaskRunner::FastForwardBy(int64 delta) {
   const base::Time latest = now_ + base::TimeDelta::FromMilliseconds(delta);
   while (!tasks_.empty() && tasks_.top().first <= latest) {
     now_ = tasks_.top().first;
-    tasks_.top().second.Run();
+    base::Closure task = tasks_.top().second;
     tasks_.pop();
+    task.Run();
   }
   now_ = latest;
 }
@@ -148,15 +149,16 @@ void MockTimeSingleThreadTaskRunner::FastForwardBy(int64 delta) {
 void MockTimeSingleThreadTaskRunner::FastForwardUntilNoTasksRemain() {
   while (!tasks_.empty()) {
     now_ = tasks_.top().first;
-    tasks_.top().second.Run();
+    base::Closure task = tasks_.top().second;
     tasks_.pop();
+    task.Run();
   }
 }
 
 bool MockTimeSingleThreadTaskRunner::TemporalOrder::operator()(
     const std::pair<base::Time, base::Closure>& first_task,
     const std::pair<base::Time, base::Closure>& second_task) const {
-  return first_task.first < second_task.first;
+  return first_task.first >= second_task.first;
 }
 
 MockTimeSingleThreadTaskRunner::~MockTimeSingleThreadTaskRunner() {
