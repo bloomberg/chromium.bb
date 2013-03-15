@@ -460,8 +460,7 @@ void URLRequestAutomationJob::StartAsync() {
   for (size_t i = 0; i < arraysize(kFilteredHeaderStrings); ++i)
     new_request_headers.RemoveHeader(kFilteredHeaderStrings[i]);
 
-  // Only add default Accept-Language and Accept-Charset if the request
-  // didn't have them specified.
+  // Only add default Accept-Language if the request didn't have it specified.
   if (!new_request_headers.HasHeader(
       net::HttpRequestHeaders::kAcceptLanguage) &&
       http_user_agent_settings_) {
@@ -470,15 +469,6 @@ void URLRequestAutomationJob::StartAsync() {
     if (!accept_language.empty()) {
       new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
                                     accept_language);
-    }
-  }
-  if (!new_request_headers.HasHeader(
-      net::HttpRequestHeaders::kAcceptCharset) &&
-      http_user_agent_settings_) {
-    std::string accept_charset = http_user_agent_settings_->GetAcceptCharset();
-    if (!accept_charset.empty()) {
-      new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptCharset,
-                                    accept_charset);
     }
   }
 

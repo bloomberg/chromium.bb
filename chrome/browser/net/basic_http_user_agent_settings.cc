@@ -7,9 +7,8 @@
 #include "content/public/common/content_client.h"
 
 BasicHttpUserAgentSettings::BasicHttpUserAgentSettings(
-    const std::string& accept_language, const std::string& accept_charset)
-    : accept_language_(accept_language),
-      accept_charset_(accept_charset) {
+    const std::string& accept_language)
+    : accept_language_(accept_language) {
 }
 
 BasicHttpUserAgentSettings::~BasicHttpUserAgentSettings() {
@@ -17,10 +16,6 @@ BasicHttpUserAgentSettings::~BasicHttpUserAgentSettings() {
 
 std::string BasicHttpUserAgentSettings::GetAcceptLanguage() const {
   return accept_language_;
-}
-
-std::string BasicHttpUserAgentSettings::GetAcceptCharset() const {
-  return accept_charset_;
 }
 
 std::string BasicHttpUserAgentSettings::GetUserAgent(const GURL& url) const {

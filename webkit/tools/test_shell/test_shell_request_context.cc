@@ -40,12 +40,9 @@ class TestShellHttpUserAgentSettings : public net::HttpUserAgentSettings {
   TestShellHttpUserAgentSettings() {}
   virtual ~TestShellHttpUserAgentSettings() {}
 
-  // hard-code A-L and A-C for test shells
+  // Hard-code Accept-Language for test shells.
   virtual std::string GetAcceptLanguage() const OVERRIDE {
     return "en-us,en";
-  }
-  virtual std::string GetAcceptCharset() const OVERRIDE {
-    return "iso-8859-1,*,utf-8";
   }
 
   virtual std::string GetUserAgent(const GURL& url) const OVERRIDE {

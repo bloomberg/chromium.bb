@@ -11,23 +11,20 @@
 #include "base/compiler_specific.h"
 #include "net/url_request/http_user_agent_settings.h"
 
-// An implementation of |HttpUserAgentSettings| that provides fixed values for
-// the HTTP headers Accept-Language and Accept-Charset and uses
-// |content::GetUserAgent| to provide the HTTP User-Agent header value.
+// An implementation of |HttpUserAgentSettings| that provides fixed value for
+// the Accept-Language HTTP header and uses |content::GetUserAgent| to provide
+// the HTTP User-Agent header value.
 class BasicHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:
-  BasicHttpUserAgentSettings(const std::string& accept_language,
-                             const std::string& accept_charset);
+  explicit BasicHttpUserAgentSettings(const std::string& accept_language);
   virtual ~BasicHttpUserAgentSettings();
 
   // HttpUserAgentSettings implementation
   virtual std::string GetAcceptLanguage() const OVERRIDE;
-  virtual std::string GetAcceptCharset() const OVERRIDE;
   virtual std::string GetUserAgent(const GURL& url) const OVERRIDE;
 
  private:
   const std::string accept_language_;
-  const std::string accept_charset_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicHttpUserAgentSettings);
 };

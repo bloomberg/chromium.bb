@@ -85,11 +85,6 @@ void URLRequestContext::set_cookie_store(CookieStore* cookie_store) {
   cookie_store_ = cookie_store;
 }
 
-std::string URLRequestContext::GetAcceptCharset() const {
-  return http_user_agent_settings_ ?
-      http_user_agent_settings_->GetAcceptCharset() : EmptyString();
-}
-
 std::string URLRequestContext::GetAcceptLanguage() const {
   return http_user_agent_settings_ ?
       http_user_agent_settings_->GetAcceptLanguage() : EmptyString();

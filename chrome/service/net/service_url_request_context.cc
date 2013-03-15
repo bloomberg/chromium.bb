@@ -139,7 +139,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   // In-memory cookie store.
   storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
   storage_.set_http_user_agent_settings(new net::StaticHttpUserAgentSettings(
-      "en-us,fr", "iso-8859-1,*,utf-8", user_agent));
+      "en-us,fr", user_agent));
 }
 
 ServiceURLRequestContext::~ServiceURLRequestContext() {

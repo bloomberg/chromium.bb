@@ -196,7 +196,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   URLRequestContextStorage* storage = context->storage();
 
   storage->set_http_user_agent_settings(new StaticHttpUserAgentSettings(
-      accept_language_, accept_charset_, user_agent_));
+      accept_language_, user_agent_));
 
   if (!network_delegate_)
     network_delegate_.reset(new BasicNetworkDelegate);

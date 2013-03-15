@@ -124,8 +124,7 @@ void TestURLRequestContext::Init() {
   }
   if (!http_user_agent_settings()) {
     context_storage_.set_http_user_agent_settings(
-        new StaticHttpUserAgentSettings(
-            "en-us,fr", "iso-8859-1,*,utf-8", EmptyString()));
+        new StaticHttpUserAgentSettings("en-us,fr", EmptyString()));
   }
   if (!job_factory())
     context_storage_.set_job_factory(new URLRequestJobFactoryImpl);

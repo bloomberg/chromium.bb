@@ -13,17 +13,10 @@
 ChromeHttpUserAgentSettings::ChromeHttpUserAgentSettings(PrefService* prefs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   pref_accept_language_.Init(prefs::kAcceptLanguages, prefs);
-  pref_accept_charset_.Init(prefs::kDefaultCharset, prefs);
   last_pref_accept_language_ = *pref_accept_language_;
   last_http_accept_language_ =
       net::HttpUtil::GenerateAcceptLanguageHeader(last_pref_accept_language_);
-  last_pref_accept_charset_ = *pref_accept_charset_;
-  last_http_accept_charset_ =
-      net::HttpUtil::GenerateAcceptCharsetHeader(last_pref_accept_charset_);
   pref_accept_language_.MoveToThread(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO));
-  pref_accept_charset_.MoveToThread(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO));
 }
@@ -35,7 +28,6 @@ ChromeHttpUserAgentSettings::~ChromeHttpUserAgentSettings() {
 void ChromeHttpUserAgentSettings::CleanupOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   pref_accept_language_.Destroy();
-  pref_accept_charset_.Destroy();
 }
 
 std::string ChromeHttpUserAgentSettings::GetAcceptLanguage() const {
@@ -47,17 +39,6 @@ std::string ChromeHttpUserAgentSettings::GetAcceptLanguage() const {
     last_pref_accept_language_ = new_pref_accept_language;
   }
   return last_http_accept_language_;
-}
-
-std::string ChromeHttpUserAgentSettings::GetAcceptCharset() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  std::string new_pref_accept_charset = *pref_accept_charset_;
-  if (new_pref_accept_charset != last_pref_accept_charset_) {
-    last_http_accept_charset_ =
-        net::HttpUtil::GenerateAcceptCharsetHeader(new_pref_accept_charset);
-    last_pref_accept_charset_ = new_pref_accept_charset;
-  }
-  return last_http_accept_charset_;
 }
 
 std::string ChromeHttpUserAgentSettings::GetUserAgent(const GURL& url) const {

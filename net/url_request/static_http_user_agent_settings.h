@@ -15,23 +15,19 @@
 namespace net {
 
 // An implementation of |HttpUserAgentSettings| that always provides the
-// same constant values for the HTTP Accept-Language, Accept-Charset, and
-// User-Agent headers.
+// same constant values for the HTTP Accept-Language and User-Agent headers.
 class NET_EXPORT StaticHttpUserAgentSettings : public HttpUserAgentSettings {
  public:
   StaticHttpUserAgentSettings(const std::string& accept_language,
-                              const std::string& accept_charset,
                               const std::string& user_agent);
   virtual ~StaticHttpUserAgentSettings();
 
   // HttpUserAgentSettings implementation
   virtual std::string GetAcceptLanguage() const OVERRIDE;
-  virtual std::string GetAcceptCharset() const OVERRIDE;
   virtual std::string GetUserAgent(const GURL& url) const OVERRIDE;
 
  private:
   const std::string accept_language_;
-  const std::string accept_charset_;
   const std::string user_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(StaticHttpUserAgentSettings);

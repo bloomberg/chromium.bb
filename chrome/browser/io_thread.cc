@@ -511,7 +511,7 @@ void IOThread::Init() {
   globals_->load_time_stats.reset(new chrome_browser_net::LoadTimeStats());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
   globals_->http_user_agent_settings.reset(
-      new BasicHttpUserAgentSettings(EmptyString(), EmptyString()));
+      new BasicHttpUserAgentSettings(std::string()));
   if (command_line.HasSwitch(switches::kHostRules)) {
     globals_->host_mapping_rules->SetRulesFromString(
         command_line.GetSwitchValueASCII(switches::kHostRules));

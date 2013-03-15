@@ -632,13 +632,6 @@ TEST(HttpUtilTest, GenerateAcceptLanguageHeader) {
             HttpUtil::GenerateAcceptLanguageHeader("en-US,fr,de,ko,zh-CN,ja"));
 }
 
-TEST(HttpUtilTest, GenerateAcceptCharsetHeader) {
-  EXPECT_EQ(std::string("utf-8,*;q=0.5"),
-            HttpUtil::GenerateAcceptCharsetHeader("utf-8"));
-  EXPECT_EQ(std::string("EUC-JP,utf-8;q=0.7,*;q=0.3"),
-            HttpUtil::GenerateAcceptCharsetHeader("EUC-JP"));
-}
-
 // HttpResponseHeadersTest.GetMimeType also tests ParseContentType.
 TEST(HttpUtilTest, ParseContentType) {
   const struct {

@@ -58,9 +58,6 @@ void AwURLRequestContextGetter::Init() {
       content::GetContentClient()->browser()->GetAcceptLangs(
           browser_context_)));
 
-  builder.set_accept_charset(
-      net::HttpUtil::GenerateAcceptCharsetHeader("utf-8"));
-
   url_request_context_.reset(builder.Build());
 
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.

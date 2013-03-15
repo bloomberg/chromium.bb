@@ -484,20 +484,14 @@ void URLRequestHttpJob::AddExtraHeaders() {
   }
 
   if (http_user_agent_settings_) {
-    // Only add default Accept-Language and Accept-Charset if the request
-    // didn't have them specified.
+    // Only add default Accept-Language if the request didn't have it
+    // specified.
     std::string accept_language =
         http_user_agent_settings_->GetAcceptLanguage();
     if (!accept_language.empty()) {
       request_info_.extra_headers.SetHeaderIfMissing(
           HttpRequestHeaders::kAcceptLanguage,
           accept_language);
-    }
-    std::string accept_charset = http_user_agent_settings_->GetAcceptCharset();
-    if (!accept_charset.empty()) {
-      request_info_.extra_headers.SetHeaderIfMissing(
-          HttpRequestHeaders::kAcceptCharset,
-          accept_charset);
     }
   }
 }

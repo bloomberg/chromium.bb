@@ -221,8 +221,8 @@ class DeviceManagementRequestContext : public net::URLRequestContext {
 
 DeviceManagementRequestContext::DeviceManagementRequestContext(
     net::URLRequestContext* base_context)
-    // Use sane Accept-Language and Accept-Charset values for our purposes.
-    : basic_http_user_agent_settings_("*", "*") {
+    // Use sane Accept-Language value for our purposes.
+    : basic_http_user_agent_settings_("*") {
   // Share resolver, proxy service and ssl bits with the baseline context. This
   // is important so we don't make redundant requests (e.g. when resolving proxy
   // auto configuration).

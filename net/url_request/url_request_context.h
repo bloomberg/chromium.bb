@@ -178,8 +178,6 @@ class NET_EXPORT URLRequestContext
   // Legacy accessors that delegate to http_user_agent_settings_.
   // TODO(pauljensen): Remove after all clients are updated to directly access
   // http_user_agent_settings_.
-  // Gets the value of 'Accept-Charset' header field.
-  std::string GetAcceptCharset() const;
   // Gets the value of 'Accept-Language' header field.
   std::string GetAcceptLanguage() const;
   // Gets the UA string to use for the given URL.  Pass an invalid URL (such as
@@ -209,7 +207,7 @@ class NET_EXPORT URLRequestContext
   void AssertNoURLRequests() const;
 
   // Get the underlying |HttpUserAgentSettings| implementation that provides
-  // the HTTP Accept-Language, Accept-Charset and User-Agent header values.
+  // the HTTP Accept-Language and User-Agent header values.
   const HttpUserAgentSettings* http_user_agent_settings() const {
     return http_user_agent_settings_;
   }

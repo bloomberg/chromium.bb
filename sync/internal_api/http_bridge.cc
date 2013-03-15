@@ -111,7 +111,6 @@ HttpBridge::RequestContext::RequestContext(
   // figure out if we need to give the user explicit control over policies etc.
   http_user_agent_settings_.reset(new net::StaticHttpUserAgentSettings(
       baseline_context->GetAcceptLanguage(),
-      baseline_context->GetAcceptCharset(),
       user_agent));
   set_http_user_agent_settings(http_user_agent_settings_.get());
 

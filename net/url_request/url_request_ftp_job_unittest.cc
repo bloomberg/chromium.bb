@@ -307,8 +307,7 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotReuseSocket) {
               "Connection: keep-alive\r\n"
               "User-Agent:\r\n"
               "Accept-Encoding: gzip,deflate\r\n"
-              "Accept-Language: en-us,fr\r\n"
-              "Accept-Charset: iso-8859-1,*,utf-8\r\n\r\n"),
+              "Accept-Language: en-us,fr\r\n\r\n"),
   };
   MockRead reads1[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),

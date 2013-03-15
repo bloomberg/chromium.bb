@@ -50,8 +50,8 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   // not use a cache. Thus the same type can be used for incognito mode.
   class RequestContext : public net::URLRequestContext {
    public:
-    // |baseline_context| is used to obtain the accept-language,
-    // accept-charsets, and proxy service information for bridged requests.
+    // |baseline_context| is used to obtain the accept-language
+    // and proxy service information for bridged requests.
     // Typically |baseline_context| should be the net::URLRequestContext of the
     // currently active profile.
     RequestContext(
