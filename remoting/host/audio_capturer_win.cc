@@ -39,8 +39,9 @@ namespace remoting {
 
 AudioCapturerWin::AudioCapturerWin()
     : sampling_rate_(AudioPacket::SAMPLING_RATE_INVALID),
-      silence_detector_(kSilenceThreshold){
-      thread_checker_.DetachFromThread();
+      silence_detector_(kSilenceThreshold),
+      last_capture_error_(S_OK) {
+    thread_checker_.DetachFromThread();
 }
 
 AudioCapturerWin::~AudioCapturerWin() {
@@ -223,13 +224,12 @@ void AudioCapturerWin::DoCapture() {
   DCHECK(IsStarted());
 
   // Fetch all packets from the audio capture endpoint buffer.
+  HRESULT hr = S_OK;
   while (true) {
     UINT32 next_packet_size;
     HRESULT hr = audio_capture_client_->GetNextPacketSize(&next_packet_size);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to GetNextPacketSize. Error " << hr;
-      return;
-    }
+    if (FAILED(hr))
+      break;
 
     if (next_packet_size <= 0) {
       return;
@@ -239,10 +239,8 @@ void AudioCapturerWin::DoCapture() {
     UINT32 frames;
     DWORD flags;
     hr = audio_capture_client_->GetBuffer(&data, &frames, &flags, NULL, NULL);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to GetBuffer. Error " << hr;
-      return;
-    }
+    if (FAILED(hr))
+      break;
 
     if (!silence_detector_.IsSilence(
             reinterpret_cast<const int16*>(data), frames * kChannels)) {
@@ -258,10 +256,20 @@ void AudioCapturerWin::DoCapture() {
     }
 
     hr = audio_capture_client_->ReleaseBuffer(frames);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to ReleaseBuffer. Error " << hr;
-      return;
-    }
+    if (FAILED(hr))
+      break;
+  }
+
+  // There is nothing to capture if the audio endpoint device has been unplugged
+  // or disabled.
+  if (hr == AUDCLNT_E_DEVICE_INVALIDATED)
+    return;
+
+  // Avoid reporting the same error multiple times.
+  if (FAILED(hr) && hr != last_capture_error_) {
+    last_capture_error_ = hr;
+    LOG(ERROR) << "Failed to capture an audio packet: 0x"
+               << std::hex << hr << std::dec << ".";
   }
 }
 

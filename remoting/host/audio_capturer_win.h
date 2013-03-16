@@ -48,6 +48,8 @@ class AudioCapturerWin : public AudioCapturer {
   base::win::ScopedComPtr<IAudioClient> audio_client_;
   base::win::ScopedComPtr<IMMDevice> mm_device_;
 
+  HRESULT last_capture_error_;
+
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioCapturerWin);
