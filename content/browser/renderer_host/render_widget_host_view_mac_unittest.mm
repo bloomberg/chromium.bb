@@ -334,6 +334,11 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
 TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
   rwhv_mac_->InitAsFullscreen(NULL);
   EXPECT_TRUE(rwhv_mac_->pepper_fullscreen_window());
+
+  // Break the reference cycle caused by pepper_fullscreen_window() without
+  // an <esc> event. See comment in
+  // release_pepper_fullscreen_window_for_testing().
+  rwhv_mac_->release_pepper_fullscreen_window_for_testing();
 }
 
 // Verify that escape key down in fullscreen mode suppressed the keyup event on

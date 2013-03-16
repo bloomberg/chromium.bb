@@ -425,6 +425,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
     return pepper_fullscreen_window_;
   }
 
+  CONTENT_EXPORT void release_pepper_fullscreen_window_for_testing();
+
   RenderWidgetHostViewMac* fullscreen_parent_host_view() const {
     return fullscreen_parent_host_view_;
   }
