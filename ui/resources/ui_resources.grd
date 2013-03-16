@@ -165,6 +165,10 @@
       <structure type="chrome_scaled_image" name="IDR_FRAME" file="frame_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" />
+      <if expr="pp_ifdef('use_ash')">
+        <structure type="chrome_scaled_image" name="IDR_LAUNCHER_BROWSER" file="common/window_switcher_icon_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_LAUNCHER_INCOGNITO_BROWSER" file="common/window_switcher_icon_incognito.png" />
+      </if>
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE" file="linux/linux_maximize.png" />
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_H" file="linux/linux_maximize_hover.png" />
