@@ -47,17 +47,22 @@
     '<(DEPTH)/build/build_output_dirs_android.gyp:build_output_dirs'
   ],
   'variables': {
-    'input_jars_paths': [],
+    'android_jar': '<(android_sdk)/android.jar',
+    'input_jars_paths': [ '<(android_jar)' ],
     'additional_src_dirs': [],
     'javac_includes': [],
     'jar_name': '<(_target_name).jar',
     'jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
+    'excluded_classes': [ '*/R.class', '*/R##*.class' ],
     'additional_input_paths': ['>@(additional_R_files)'],
     'generated_src_dirs': ['>@(generated_R_dirs)'],
     'generated_R_dirs': [],
     'additional_R_files': [],
     'has_java_resources%': 0,
     'java_strings_grd%': '',
+    'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
+    'classes_dir': '<(intermediate_dir)/classes',
+    'compile_stamp': '<(intermediate_dir)/compile.stamp',
   },
   # This all_dependent_settings is used for java targets only. This will add the
   # jar path to the classpath of dependent java targets.
@@ -70,8 +75,8 @@
     ['has_java_resources == 1', {
       'variables': {
         'res_dir': '<(java_in_dir)/res',
-        'out_res_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)/res',
-        'R_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)/java_R',
+        'out_res_dir': '<(intermediate_dir)/res',
+        'R_dir': '<(intermediate_dir)/java_R',
         'R_file': '<(R_dir)/<(R_package_relpath)/R.java',
         'R_text_file': '<(R_dir)/R.txt',
         'generated_src_dirs': ['<(R_dir)'],
@@ -150,43 +155,56 @@
   ],
   'actions': [
     {
-      'action_name': 'ant_<(_target_name)',
-      'message': 'Building <(_target_name) java sources.',
+      'action_name': 'javac_<(_target_name)',
+      'message': 'Compiling <(_target_name) java sources',
+      'variables': {
+        'all_src_dirs': [
+          '>@(java_in_dir)/src',
+          '>@(additional_src_dirs)',
+          '>@(generated_src_dirs)',
+        ],
+      },
       'inputs': [
-        'android/ant/common.xml',
-        'android/ant/chromium-jars.xml',
+        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/javac.py',
         '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
         '>@(input_jars_paths)',
         '>@(additional_input_paths)',
       ],
       'outputs': [
+        '<(compile_stamp)',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/javac.py',
+        '--output-dir=<(classes_dir)',
+        '--classpath=>(input_jars_paths)',
+        '--src-dirs=>(all_src_dirs)',
+        '--javac-includes=<(javac_includes)',
+        '--stamp=<(compile_stamp)',
+
+        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo >(_inputs) | md5sum)',
+      ]
+    },
+    {
+      'action_name': 'jar_<(_target_name)',
+      'message': 'Creating <(_target_name) jar',
+      'inputs': [
+        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/jar.py',
+        '<(compile_stamp)',
+      ],
+      'outputs': [
         '<(jar_path)',
       ],
       'action': [
-        'ant', '-quiet',
-        '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-        '-DANDROID_SDK=<(android_sdk)',
-        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-        '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
-        '-DANDROID_GDBSERVER=<(android_gdbserver)',
-        '-DPRODUCT_DIR=<(ant_build_out)',
+        'python', '<(DEPTH)/build/android/jar.py',
+        '--classes-dir=<(classes_dir)',
+        '--jar-path=<(jar_path)',
+        '--excluded-classes=<(excluded_classes)',
 
-        '-DADDITIONAL_SRC_DIRS=>(additional_src_dirs)',
-        '-DGENERATED_SRC_DIRS=>(generated_src_dirs)',
-        '-DINPUT_JARS_PATHS=>(input_jars_paths)',
-        '-DJAR_NAME=<(jar_name)',
-        '-DOUT_DIR=<(ant_build_out)/<(_target_name)',
-        '-DJAVAC_INCLUDES=>(javac_includes)',
-
-        # Add list of inputs to the command line, so if inputs change
-        # (e.g. if a Java file is removed), the command will be re-run.
-        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-        '-DTHIS_IS_IGNORED=>(_inputs)',
-
-        '-Dbasedir=<(java_in_dir)',
-        '-buildfile',
-        '<(DEPTH)/build/android/ant/chromium-jars.xml'
+        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo >(_inputs) | md5sum)',
       ]
     },
   ],

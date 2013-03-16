@@ -31,7 +31,7 @@ def main(argv):
 
   options, paths = parser.parse_args()
 
-  build_utils.EnsureDirectoryExists(options.stripped_libraries_dir)
+  build_utils.MakeDirectory(options.stripped_libraries_dir)
 
   for library_path in paths:
     stripped_library_path = os.path.join(options.stripped_libraries_dir,
