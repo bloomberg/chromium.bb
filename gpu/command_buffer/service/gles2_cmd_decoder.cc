@@ -3521,7 +3521,7 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
 
   if (!resize_callback_.is_null()) {
     resize_callback_.Run(gfx::Size(width, height));
-    CHECK(context_->IsCurrent(surface_.get()));
+    DCHECK(context_->IsCurrent(surface_.get()));
     if (!context_->IsCurrent(surface_.get())) {
       LOG(ERROR) << "GLES2DecoderImpl: Context lost because context no longer "
                  << "current after resize callback.";
