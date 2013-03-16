@@ -88,23 +88,23 @@ class ThreadProxy : public Proxy,
   virtual void RenewTreePriority() OVERRIDE;
 
   // SchedulerClient implementation
-  virtual void scheduledActionBeginFrame() OVERRIDE;
+  virtual void ScheduledActionBeginFrame() OVERRIDE;
   virtual ScheduledActionDrawAndSwapResult
-      scheduledActionDrawAndSwapIfPossible() OVERRIDE;
-  virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced()
+      ScheduledActionDrawAndSwapIfPossible() OVERRIDE;
+  virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
       OVERRIDE;
-  virtual void scheduledActionCommit() OVERRIDE;
-  virtual void scheduledActionCheckForCompletedTileUploads() OVERRIDE;
-  virtual void scheduledActionActivatePendingTreeIfNeeded() OVERRIDE;
-  virtual void scheduledActionBeginContextRecreation() OVERRIDE;
-  virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
-  virtual void didAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
+  virtual void ScheduledActionCommit() OVERRIDE;
+  virtual void ScheduledActionCheckForCompletedTileUploads() OVERRIDE;
+  virtual void ScheduledActionActivatePendingTreeIfNeeded() OVERRIDE;
+  virtual void ScheduledActionBeginContextRecreation() OVERRIDE;
+  virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
+  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
 
   // ResourceUpdateControllerClient implementation
   virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;
 
   int MaxFramesPendingForTesting() const {
-    return scheduler_on_impl_thread_->maxFramesPending();
+    return scheduler_on_impl_thread_->MaxFramesPending();
   }
 
  private:

@@ -9,13 +9,12 @@
 
 namespace cc {
 
-class CC_EXPORT SchedulerSettings
-{
-public:
+class CC_EXPORT SchedulerSettings {
+ public:
   SchedulerSettings();
   ~SchedulerSettings();
 
-  bool implSidePainting;
+  bool impl_side_painting;
 };
 
 }  // namespace cc

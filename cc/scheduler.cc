@@ -11,214 +11,192 @@
 namespace cc {
 
 Scheduler::Scheduler(SchedulerClient* client,
-                     scoped_ptr<FrameRateController> frameRateController,
-                     const SchedulerSettings& schedulerSettings)
-    : m_settings(schedulerSettings)
-    , m_client(client)
-    , m_frameRateController(frameRateController.Pass())
-    , m_stateMachine(schedulerSettings)
-    , m_insideProcessScheduledActions(false)
-{
-    DCHECK(m_client);
-    m_frameRateController->setClient(this);
-    DCHECK(!m_stateMachine.VSyncCallbackNeeded());
+                     scoped_ptr<FrameRateController> frame_rate_controller,
+                     const SchedulerSettings& scheduler_settings)
+    : settings_(scheduler_settings),
+      client_(client),
+      frame_rate_controller_(frame_rate_controller.Pass()),
+      state_machine_(scheduler_settings),
+      inside_process_scheduled_actions_(false) {
+  DCHECK(client_);
+  frame_rate_controller_->setClient(this);
+  DCHECK(!state_machine_.VSyncCallbackNeeded());
 }
 
-Scheduler::~Scheduler()
-{
-    m_frameRateController->setActive(false);
+Scheduler::~Scheduler() { frame_rate_controller_->setActive(false); }
+
+void Scheduler::SetCanBeginFrame(bool can) {
+  state_machine_.SetCanBeginFrame(can);
+  ProcessScheduledActions();
 }
 
-void Scheduler::setCanBeginFrame(bool can)
-{
-    m_stateMachine.SetCanBeginFrame(can);
-    processScheduledActions();
+void Scheduler::SetVisible(bool visible) {
+  state_machine_.SetVisible(visible);
+  ProcessScheduledActions();
 }
 
-void Scheduler::setVisible(bool visible)
-{
-    m_stateMachine.SetVisible(visible);
-    processScheduledActions();
+void Scheduler::SetCanDraw(bool can_draw) {
+  state_machine_.SetCanDraw(can_draw);
+  ProcessScheduledActions();
 }
 
-void Scheduler::setCanDraw(bool canDraw)
-{
-    m_stateMachine.SetCanDraw(canDraw);
-    processScheduledActions();
+void Scheduler::SetHasPendingTree(bool has_pending_tree) {
+  state_machine_.SetHasPendingTree(has_pending_tree);
+  ProcessScheduledActions();
 }
 
-void Scheduler::setHasPendingTree(bool hasPendingTree)
-{
-    m_stateMachine.SetHasPendingTree(hasPendingTree);
-    processScheduledActions();
+void Scheduler::SetNeedsCommit() {
+  state_machine_.SetNeedsCommit();
+  ProcessScheduledActions();
 }
 
-void Scheduler::setNeedsCommit()
-{
-    m_stateMachine.SetNeedsCommit();
-    processScheduledActions();
+void Scheduler::SetNeedsForcedCommit() {
+  state_machine_.SetNeedsCommit();
+  state_machine_.SetNeedsForcedCommit();
+  ProcessScheduledActions();
 }
 
-void Scheduler::setNeedsForcedCommit()
-{
-    m_stateMachine.SetNeedsCommit();
-    m_stateMachine.SetNeedsForcedCommit();
-    processScheduledActions();
+void Scheduler::SetNeedsRedraw() {
+  state_machine_.SetNeedsRedraw();
+  ProcessScheduledActions();
 }
 
-void Scheduler::setNeedsRedraw()
-{
-    m_stateMachine.SetNeedsRedraw();
-    processScheduledActions();
+void Scheduler::DidSwapUseIncompleteTile() {
+  state_machine_.DidSwapUseIncompleteTile();
+  ProcessScheduledActions();
 }
 
-void Scheduler::didSwapUseIncompleteTile()
-{
-    m_stateMachine.DidSwapUseIncompleteTile();
-    processScheduledActions();
+void Scheduler::SetNeedsForcedRedraw() {
+  state_machine_.SetNeedsForcedRedraw();
+  ProcessScheduledActions();
 }
 
-void Scheduler::setNeedsForcedRedraw()
-{
-    m_stateMachine.SetNeedsForcedRedraw();
-    processScheduledActions();
+void Scheduler::SetMainThreadNeedsLayerTextures() {
+  state_machine_.SetMainThreadNeedsLayerTextures();
+  ProcessScheduledActions();
 }
 
-void Scheduler::setMainThreadNeedsLayerTextures()
-{
-    m_stateMachine.SetMainThreadNeedsLayerTextures();
-    processScheduledActions();
+void Scheduler::BeginFrameComplete() {
+  TRACE_EVENT0("cc", "Scheduler::beginFrameComplete");
+  state_machine_.BeginFrameComplete();
+  ProcessScheduledActions();
 }
 
-void Scheduler::beginFrameComplete()
-{
-    TRACE_EVENT0("cc", "Scheduler::beginFrameComplete");
-    m_stateMachine.BeginFrameComplete();
-    processScheduledActions();
+void Scheduler::BeginFrameAborted() {
+  TRACE_EVENT0("cc", "Scheduler::beginFrameAborted");
+  state_machine_.BeginFrameAborted();
+  ProcessScheduledActions();
 }
 
-void Scheduler::beginFrameAborted()
-{
-    TRACE_EVENT0("cc", "Scheduler::beginFrameAborted");
-    m_stateMachine.BeginFrameAborted();
-    processScheduledActions();
+void Scheduler::SetMaxFramesPending(int max_frames_pending) {
+  frame_rate_controller_->setMaxFramesPending(max_frames_pending);
 }
 
-void Scheduler::setMaxFramesPending(int maxFramesPending)
-{
-    m_frameRateController->setMaxFramesPending(maxFramesPending);
+int Scheduler::MaxFramesPending() const {
+  return frame_rate_controller_->maxFramesPending();
 }
 
-int Scheduler::maxFramesPending() const
-{
-    return m_frameRateController->maxFramesPending();
+void Scheduler::SetSwapBuffersCompleteSupported(bool supported) {
+  frame_rate_controller_->setSwapBuffersCompleteSupported(supported);
 }
 
-void Scheduler::setSwapBuffersCompleteSupported(bool supported)
-{
-    m_frameRateController->setSwapBuffersCompleteSupported(supported);
+void Scheduler::DidSwapBuffersComplete() {
+  TRACE_EVENT0("cc", "Scheduler::didSwapBuffersComplete");
+  frame_rate_controller_->didFinishFrame();
 }
 
-void Scheduler::didSwapBuffersComplete()
-{
-    TRACE_EVENT0("cc", "Scheduler::didSwapBuffersComplete");
-    m_frameRateController->didFinishFrame();
+void Scheduler::DidLoseOutputSurface() {
+  TRACE_EVENT0("cc", "Scheduler::didLoseOutputSurface");
+  frame_rate_controller_->didAbortAllPendingFrames();
+  state_machine_.DidLoseOutputSurface();
+  ProcessScheduledActions();
 }
 
-void Scheduler::didLoseOutputSurface()
-{
-    TRACE_EVENT0("cc", "Scheduler::didLoseOutputSurface");
-    m_frameRateController->didAbortAllPendingFrames();
-    m_stateMachine.DidLoseOutputSurface();
-    processScheduledActions();
+void Scheduler::DidRecreateOutputSurface() {
+  TRACE_EVENT0("cc", "Scheduler::didRecreateOutputSurface");
+  state_machine_.DidRecreateOutputSurface();
+  ProcessScheduledActions();
 }
 
-void Scheduler::didRecreateOutputSurface()
-{
-    TRACE_EVENT0("cc", "Scheduler::didRecreateOutputSurface");
-    m_stateMachine.DidRecreateOutputSurface();
-    processScheduledActions();
+void Scheduler::SetTimebaseAndInterval(base::TimeTicks timebase,
+                                       base::TimeDelta interval) {
+  frame_rate_controller_->setTimebaseAndInterval(timebase, interval);
 }
 
-void Scheduler::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
-{
-    m_frameRateController->setTimebaseAndInterval(timebase, interval);
+base::TimeTicks Scheduler::AnticipatedDrawTime() {
+  return frame_rate_controller_->nextTickTime();
 }
 
-base::TimeTicks Scheduler::anticipatedDrawTime()
-{
-    return m_frameRateController->nextTickTime();
+base::TimeTicks Scheduler::LastVSyncTime() {
+  return frame_rate_controller_->lastTickTime();
 }
 
-base::TimeTicks Scheduler::lastVSyncTime()
-{
-    return m_frameRateController->lastTickTime();
+void Scheduler::vsyncTick(bool throttled) {
+  TRACE_EVENT1("cc", "Scheduler::vsyncTick", "throttled", throttled);
+  if (!throttled)
+    state_machine_.DidEnterVSync();
+  ProcessScheduledActions();
+  if (!throttled)
+    state_machine_.DidLeaveVSync();
 }
 
-void Scheduler::vsyncTick(bool throttled)
-{
-    TRACE_EVENT1("cc", "Scheduler::vsyncTick", "throttled", throttled);
-    if (!throttled)
-        m_stateMachine.DidEnterVSync();
-    processScheduledActions();
-    if (!throttled)
-        m_stateMachine.DidLeaveVSync();
-}
+void Scheduler::ProcessScheduledActions() {
+  // We do not allow ProcessScheduledActions to be recursive.
+  // The top-level call will iteratively execute the next action for us anyway.
+  if (inside_process_scheduled_actions_)
+    return;
 
-void Scheduler::processScheduledActions()
-{
-    // We do not allow processScheduledActions to be recursive.
-    // The top-level call will iteratively execute the next action for us anyway.
-    if (m_insideProcessScheduledActions)
-        return;
+  base::AutoReset<bool> mark_inside(&inside_process_scheduled_actions_, true);
 
-    base::AutoReset<bool> markInside(&m_insideProcessScheduledActions, true);
+  SchedulerStateMachine::Action action = state_machine_.NextAction();
+  while (action != SchedulerStateMachine::ACTION_NONE) {
+    state_machine_.UpdateState(action);
+    TRACE_EVENT1(
+        "cc", "Scheduler::ProcessScheduledActions()", "action", action);
 
-    SchedulerStateMachine::Action action = m_stateMachine.NextAction();
-    while (action != SchedulerStateMachine::ACTION_NONE) {
-        m_stateMachine.UpdateState(action);
-        TRACE_EVENT1("cc", "Scheduler::processScheduledActions()", "action", action);
-
-        switch (action) {
-        case SchedulerStateMachine::ACTION_NONE:
-            break;
-        case SchedulerStateMachine::ACTION_BEGIN_FRAME:
-            m_client->scheduledActionBeginFrame();
-            break;
-        case SchedulerStateMachine::ACTION_COMMIT:
-            m_client->scheduledActionCommit();
-            break;
-        case SchedulerStateMachine::ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS:
-            m_client->scheduledActionCheckForCompletedTileUploads();
-            break;
-        case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
-            m_client->scheduledActionActivatePendingTreeIfNeeded();
-            break;
-        case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE: {
-            ScheduledActionDrawAndSwapResult result = m_client->scheduledActionDrawAndSwapIfPossible();
-            m_stateMachine.DidDrawIfPossibleCompleted(result.didDraw);
-            if (result.didSwap)
-                m_frameRateController->didBeginFrame();
-            break;
-        }
-        case SchedulerStateMachine::ACTION_DRAW_FORCED: {
-            ScheduledActionDrawAndSwapResult result = m_client->scheduledActionDrawAndSwapForced();
-            if (result.didSwap)
-                m_frameRateController->didBeginFrame();
-            break;
-        } case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION:
-            m_client->scheduledActionBeginContextRecreation();
-            break;
-        case SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
-            m_client->scheduledActionAcquireLayerTexturesForMainThread();
-            break;
-        }
-        action = m_stateMachine.NextAction();
+    switch (action) {
+      case SchedulerStateMachine::ACTION_NONE:
+        break;
+      case SchedulerStateMachine::ACTION_BEGIN_FRAME:
+        client_->ScheduledActionBeginFrame();
+        break;
+      case SchedulerStateMachine::ACTION_COMMIT:
+        client_->ScheduledActionCommit();
+        break;
+      case SchedulerStateMachine::ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS:
+        client_->ScheduledActionCheckForCompletedTileUploads();
+        break;
+      case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
+        client_->ScheduledActionActivatePendingTreeIfNeeded();
+        break;
+      case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE: {
+        ScheduledActionDrawAndSwapResult result =
+            client_->ScheduledActionDrawAndSwapIfPossible();
+        state_machine_.DidDrawIfPossibleCompleted(result.did_draw);
+        if (result.did_swap)
+          frame_rate_controller_->didBeginFrame();
+        break;
+      }
+      case SchedulerStateMachine::ACTION_DRAW_FORCED: {
+        ScheduledActionDrawAndSwapResult result =
+            client_->ScheduledActionDrawAndSwapForced();
+        if (result.did_swap)
+          frame_rate_controller_->didBeginFrame();
+        break;
+      }
+      case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION:
+        client_->ScheduledActionBeginContextRecreation();
+        break;
+      case SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
+        client_->ScheduledActionAcquireLayerTexturesForMainThread();
+        break;
     }
+    action = state_machine_.NextAction();
+  }
 
-    // Activate or deactivate the frame rate controller.
-    m_frameRateController->setActive(m_stateMachine.VSyncCallbackNeeded());
-    m_client->didAnticipatedDrawTimeChange(m_frameRateController->nextTickTime());
+  // Activate or deactivate the frame rate controller.
+  frame_rate_controller_->setActive(state_machine_.VSyncCallbackNeeded());
+  client_->DidAnticipatedDrawTimeChange(frame_rate_controller_->nextTickTime());
 }
 
 }  // namespace cc

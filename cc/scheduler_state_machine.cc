@@ -37,8 +37,9 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
 
 std::string SchedulerStateMachine::ToString() {
   std::string str;
-  base::StringAppendF(
-      &str, "settings_.implSidePainting = %d; ", settings_.implSidePainting);
+  base::StringAppendF(&str,
+                      "settings_.impl_side_painting = %d; ",
+                      settings_.impl_side_painting);
   base::StringAppendF(&str, "commit_state_ = %d; ", commit_state_);
   base::StringAppendF(
       &str, "current_frame_number_ = %d; ", current_frame_number_);
@@ -142,7 +143,7 @@ bool SchedulerStateMachine::ShouldAttemptTreeActivation() const {
 }
 
 bool SchedulerStateMachine::ShouldCheckForCompletedTileUploads() const {
-  if (!settings_.implSidePainting)
+  if (!settings_.impl_side_painting)
     return false;
   if (HasCheckedForCompletedTileUploadsThisFrame())
     return false;
@@ -271,7 +272,7 @@ void SchedulerStateMachine::UpdateState(Action action) {
       else
         commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
       // When impl-side painting, we draw on activation instead of on commit.
-      if (!settings_.implSidePainting)
+      if (!settings_.impl_side_painting)
         needs_redraw_ = true;
       if (draw_if_possible_failed_)
         last_frame_number_where_draw_was_called_ = -1;

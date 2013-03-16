@@ -19,104 +19,107 @@ namespace cc {
 class Thread;
 
 struct ScheduledActionDrawAndSwapResult {
-    ScheduledActionDrawAndSwapResult()
-            : didDraw(false)
-            , didSwap(false)
-    {
-    }
-    ScheduledActionDrawAndSwapResult(bool didDraw, bool didSwap)
-            : didDraw(didDraw)
-            , didSwap(didSwap)
-    {
-    }
-    bool didDraw;
-    bool didSwap;
+  ScheduledActionDrawAndSwapResult()
+      : did_draw(false),
+        did_swap(false) {}
+  ScheduledActionDrawAndSwapResult(bool did_draw, bool did_swap)
+      : did_draw(did_draw),
+        did_swap(did_swap) {}
+  bool did_draw;
+  bool did_swap;
 };
 
 class SchedulerClient {
-public:
-    virtual void scheduledActionBeginFrame() = 0;
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() = 0;
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() = 0;
-    virtual void scheduledActionCommit() = 0;
-    virtual void scheduledActionCheckForCompletedTileUploads() = 0;
-    virtual void scheduledActionActivatePendingTreeIfNeeded() = 0;
-    virtual void scheduledActionBeginContextRecreation() = 0;
-    virtual void scheduledActionAcquireLayerTexturesForMainThread() = 0;
-    virtual void didAnticipatedDrawTimeChange(base::TimeTicks) = 0;
+ public:
+  virtual void ScheduledActionBeginFrame() = 0;
+  virtual ScheduledActionDrawAndSwapResult
+  ScheduledActionDrawAndSwapIfPossible() = 0;
+  virtual ScheduledActionDrawAndSwapResult
+  ScheduledActionDrawAndSwapForced() = 0;
+  virtual void ScheduledActionCommit() = 0;
+  virtual void ScheduledActionCheckForCompletedTileUploads() = 0;
+  virtual void ScheduledActionActivatePendingTreeIfNeeded() = 0;
+  virtual void ScheduledActionBeginContextRecreation() = 0;
+  virtual void ScheduledActionAcquireLayerTexturesForMainThread() = 0;
+  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
 
-protected:
-    virtual ~SchedulerClient() { }
+ protected:
+  virtual ~SchedulerClient() {}
 };
 
 class CC_EXPORT Scheduler : FrameRateControllerClient {
-public:
-    static scoped_ptr<Scheduler> create(SchedulerClient* client,
-                                        scoped_ptr<FrameRateController> frameRateController,
-                                        const SchedulerSettings& schedulerSettings)
-    {
-        return make_scoped_ptr(new Scheduler(client, frameRateController.Pass(), schedulerSettings));
-    }
+ public:
+  static scoped_ptr<Scheduler> Create(
+      SchedulerClient* client,
+      scoped_ptr<FrameRateController> frame_rate_controller,
+      const SchedulerSettings& scheduler_settings) {
+    return make_scoped_ptr(new Scheduler(
+        client, frame_rate_controller.Pass(), scheduler_settings));
+  }
 
-    virtual ~Scheduler();
+  virtual ~Scheduler();
 
-    void setCanBeginFrame(bool);
+  void SetCanBeginFrame(bool can);
 
-    void setVisible(bool);
-    void setCanDraw(bool);
-    void setHasPendingTree(bool);
+  void SetVisible(bool visible);
+  void SetCanDraw(bool can_draw);
+  void SetHasPendingTree(bool has_pending_tree);
 
-    void setNeedsCommit();
+  void SetNeedsCommit();
 
-    // Like setNeedsCommit(), but ensures a commit will definitely happen even if we are not visible.
-    void setNeedsForcedCommit();
+  // Like SetNeedsCommit(), but ensures a commit will definitely happen even if
+  // we are not visible.
+  void SetNeedsForcedCommit();
 
-    void setNeedsRedraw();
+  void SetNeedsRedraw();
 
-    void setMainThreadNeedsLayerTextures();
+  void SetMainThreadNeedsLayerTextures();
 
-    // Like setNeedsRedraw(), but ensures the draw will definitely happen even if we are not visible.
-    void setNeedsForcedRedraw();
+  // Like SetNeedsRedraw(), but ensures the draw will definitely happen even if
+  // we are not visible.
+  void SetNeedsForcedRedraw();
 
-    void didSwapUseIncompleteTile();
+  void DidSwapUseIncompleteTile();
 
-    void beginFrameComplete();
-    void beginFrameAborted();
+  void BeginFrameComplete();
+  void BeginFrameAborted();
 
-    void setMaxFramesPending(int);
-    int maxFramesPending() const;
+  void SetMaxFramesPending(int max);
+  int MaxFramesPending() const;
 
-    void setSwapBuffersCompleteSupported(bool);
-    void didSwapBuffersComplete();
+  void SetSwapBuffersCompleteSupported(bool supported);
+  void DidSwapBuffersComplete();
 
-    void didLoseOutputSurface();
-    void didRecreateOutputSurface();
+  void DidLoseOutputSurface();
+  void DidRecreateOutputSurface();
 
-    bool commitPending() const { return m_stateMachine.CommitPending(); }
-    bool redrawPending() const { return m_stateMachine.RedrawPending(); }
+  bool CommitPending() const { return state_machine_.CommitPending(); }
+  bool RedrawPending() const { return state_machine_.RedrawPending(); }
 
-    void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval);
+  void SetTimebaseAndInterval(base::TimeTicks timebase,
+                              base::TimeDelta interval);
 
-    base::TimeTicks anticipatedDrawTime();
+  base::TimeTicks AnticipatedDrawTime();
 
-    base::TimeTicks lastVSyncTime();
+  base::TimeTicks LastVSyncTime();
 
-    // FrameRateControllerClient implementation
-    virtual void vsyncTick(bool throttled) OVERRIDE;
+  // FrameRateControllerClient implementation
+  virtual void vsyncTick(bool throttled) OVERRIDE;
 
-private:
-    Scheduler(SchedulerClient*, scoped_ptr<FrameRateController>,
-              const SchedulerSettings& schedulerSettings);
+ private:
+  Scheduler(SchedulerClient* client,
+            scoped_ptr<FrameRateController> frame_rate_controller,
+            const SchedulerSettings& scheduler_settings);
 
-    void processScheduledActions();
+  void ProcessScheduledActions();
 
-    const SchedulerSettings m_settings;
-    SchedulerClient* m_client;
-    scoped_ptr<FrameRateController> m_frameRateController;
-    SchedulerStateMachine m_stateMachine;
-    bool m_insideProcessScheduledActions;
+  const SchedulerSettings settings_;
+  SchedulerClient* client_;
+  scoped_ptr<FrameRateController> frame_rate_controller_;
+  SchedulerStateMachine state_machine_;
+  bool inside_process_scheduled_actions_;
 
-    DISALLOW_COPY_AND_ASSIGN(Scheduler);
+  DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };
 
 }  // namespace cc

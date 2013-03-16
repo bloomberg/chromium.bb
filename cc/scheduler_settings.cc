@@ -6,13 +6,8 @@
 
 namespace cc {
 
-SchedulerSettings::SchedulerSettings()
-  : implSidePainting(false)
-{
-}
+SchedulerSettings::SchedulerSettings() : impl_side_painting(false) {}
 
-SchedulerSettings::~SchedulerSettings()
-{
-}
+SchedulerSettings::~SchedulerSettings() {}
 
 }  // namespace cc
