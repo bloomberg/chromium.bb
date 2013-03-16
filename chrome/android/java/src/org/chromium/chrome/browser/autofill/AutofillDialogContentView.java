@@ -17,14 +17,17 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.NUM_SECTIONS;;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.NUM_SECTIONS;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_EMAIL;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC_BILLING;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_BILLING;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_SHIPPING;
 
 import org.chromium.chrome.R;
@@ -35,19 +38,18 @@ import org.chromium.chrome.R;
  * actual workflow, but rather respond to any UI update messages coming to it
  * from the AutofillDialog.
  */
-public class AutofillDialogContentView extends FrameLayout {
+public class AutofillDialogContentView extends LinearLayout {
     private static final int ANIMATION_DURATION_MS = 1000;
     // TODO(yusufo): Remove all placeholders here and also in related layout xml files.
     private final AutofillDialogMenuItem[][] mDefaultMenuItems =
             new AutofillDialogMenuItem[NUM_SECTIONS][];
-    static final int LAYOUT_FETCHING = 0;
-    static final int LAYOUT_STEADY = 1;
-    static final int LAYOUT_EDITING_SHIPPING = 2;
-    static final int LAYOUT_EDITING_BILLING = 3;
-
-    private final ArrayList<View> mTopViewGroup;
-    private final ArrayList<View> mMidViewGroup;
-    private final ArrayList<View> mBottomViewGroup;
+    static final int INVALID_LAYOUT = -1;
+    static final int LAYOUT_EDITING_SHIPPING = 0;
+    static final int LAYOUT_EDITING_CC = 1;
+    static final int LAYOUT_EDITING_BILLING = 2;
+    static final int LAYOUT_EDITING_CC_BILLING = 3;
+    static final int LAYOUT_FETCHING = 4;
+    static final int LAYOUT_STEADY = 5;
     private final Runnable mDismissSteadyLayoutRunnable = new Runnable() {
         @Override
         public void run() {
@@ -56,9 +58,8 @@ public class AutofillDialogContentView extends FrameLayout {
     };
     private Spinner[] mSpinners = new Spinner[NUM_SECTIONS];
     private AutofillDialogMenuAdapter[] mAdapters = new AutofillDialogMenuAdapter[NUM_SECTIONS];
-    private View mSteadyLayout;
-    private View mEditShippingLayout;
-    private View mEditBillingLayout;
+    private ViewGroup mSteadyLayout;
+    private ViewGroup[] mEditLayouts = new ViewGroup[NUM_SECTIONS];
     private int mCurrentLayout = -1;
 
     public AutofillDialogContentView(Context context, AttributeSet attrs) {
@@ -78,33 +79,15 @@ public class AutofillDialogContentView extends FrameLayout {
 
         mDefaultMenuItems[SECTION_CC_BILLING] = billingItems;
         mDefaultMenuItems[SECTION_SHIPPING] = shippingItems;
-        mTopViewGroup = new ArrayList<View>();
-        mMidViewGroup = new ArrayList<View>();
-        mBottomViewGroup = new ArrayList<View>();
-    }
-
-    private void setViewGroups() {
-        mTopViewGroup.clear();
-        mTopViewGroup.add(findViewById(R.id.billing_title));
-        mTopViewGroup.add(findViewById(R.id.cc_spinner));
-
-        mMidViewGroup.clear();
-        mMidViewGroup.add(findViewById(R.id.shipping_title));
-        mMidViewGroup.add(findViewById(R.id.address_spinner));
-
-        mBottomViewGroup.clear();
-        mBottomViewGroup.add(findViewById(R.id.check_box));
-        mBottomViewGroup.add(findViewById(R.id.line_bottom));
-        mBottomViewGroup.add(findViewById(R.id.terms_info));
     }
 
     @Override
     protected void onFinishInflate () {
-        mSteadyLayout = findViewById(R.id.general_layout);
-        mEditBillingLayout = findViewById(R.id.editing_layout_billing);
-        mEditShippingLayout = findViewById(R.id.editing_layout_shipping);
+        mSteadyLayout = (ViewGroup) findViewById(R.id.general_layout);
 
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
+            mEditLayouts[i] = (ViewGroup) findViewById(
+                    AutofillDialogUtils.getLayoutIDForSection(i));
             int id = AutofillDialogUtils.getSpinnerIDForSection(i);
             mSpinners[i] = (Spinner) findViewById(id);
             AutofillDialogMenuAdapter adapter = new AutofillDialogMenuAdapter(getContext(),
@@ -114,7 +97,6 @@ public class AutofillDialogContentView extends FrameLayout {
             mSpinners[i].setAdapter(adapter);
         }
 
-        setViewGroups();
         createAndAddPlaceHolders();
         changeLayoutTo(LAYOUT_FETCHING);
     }
@@ -147,20 +129,21 @@ public class AutofillDialogContentView extends FrameLayout {
      * @param listener The listener object to attach to the dropdowns.
      */
     public void setOnItemSelectedListener(OnItemSelectedListener listener) {
-        mSpinners[SECTION_CC_BILLING].setOnItemSelectedListener(listener);
-        mSpinners[SECTION_SHIPPING].setOnItemSelectedListener(listener);
+        for (int i = 0; i < NUM_SECTIONS; i++) {
+            if (mSpinners[i] != null) mSpinners[i].setOnItemSelectedListener(listener);
+        }
     }
 
     /**
      * @param spinner The dropdown that was selected by the user.
+     * @param section The section  that the dropdown corresponds to.
      * @param position The position for the selected item in the dropdown.
      * @return Whether the selection should cause a layout state change.
      */
-    public boolean selectionShouldChangeLayout(AdapterView<?> spinner, int position) {
-        int numConstantItems = spinner.getId() == R.id.cc_spinner ?
-                mDefaultMenuItems[SECTION_CC_BILLING].length :
-                mDefaultMenuItems[SECTION_SHIPPING].length;
-        return position >= spinner.getCount() - numConstantItems;
+    public boolean selectionShouldChangeLayout(AdapterView<?> spinner, int section, int position) {
+        int numDefaultItems = mDefaultMenuItems[section] != null ?
+                mDefaultMenuItems[section].length : 0;
+        return position >= spinner.getCount() - numDefaultItems;
     }
 
     /**
@@ -188,12 +171,12 @@ public class AutofillDialogContentView extends FrameLayout {
      * @param mode The layout mode to transition to.
      */
     public void changeLayoutTo(int mode) {
-        if (mode == mCurrentLayout) return;
+        assert(mode != INVALID_LAYOUT);
+        if (mode == mCurrentLayout || mode == INVALID_LAYOUT) return;
 
         mCurrentLayout = mode;
         removeCallbacks(mDismissSteadyLayoutRunnable);
-        mEditBillingLayout.setVisibility(GONE);
-        mEditShippingLayout.setVisibility(GONE);
+        setVisibilityForEditLayouts(false);
         if (mode == LAYOUT_FETCHING) {
             mSteadyLayout.setVisibility(GONE);
             findViewById(R.id.loading_icon).setVisibility(VISIBLE);
@@ -205,11 +188,15 @@ public class AutofillDialogContentView extends FrameLayout {
 
         addTranslateAnimations(mode);
         addDisappearAnimationForSteadyLayout();
-        View centeredLayout = mode == LAYOUT_EDITING_BILLING ?
-                mEditBillingLayout : mEditShippingLayout;
+        View centeredLayout = mEditLayouts[getSectionForLayoutMode(mode)];
         addAppearAnimationForEditLayout(mode, centeredLayout);
 
         centeredLayout.setVisibility(VISIBLE);
+        if (mode == LAYOUT_EDITING_CC_BILLING) {
+            mEditLayouts[SECTION_CC].setVisibility(VISIBLE);
+            mEditLayouts[SECTION_BILLING].setVisibility(VISIBLE);
+        }
+        ((View) centeredLayout.getParent()).setVisibility(VISIBLE);
         centeredLayout.animate();
         mSteadyLayout.animate();
         postDelayed(mDismissSteadyLayoutRunnable, ANIMATION_DURATION_MS);
@@ -217,9 +204,25 @@ public class AutofillDialogContentView extends FrameLayout {
         mCurrentLayout = mode;
     }
 
+    private void setVisibilityForEditLayouts(boolean visible) {
+        int visibility = visible ? VISIBLE : GONE;
+        for (int i = 0; i < NUM_SECTIONS; i++) {
+            if (mEditLayouts[i] != null) mEditLayouts[i].setVisibility(visibility);
+        }
+    }
+
+    /**
+     * Sets the visibility for all items related with the given section.
+     * @param section The section that will change visibility.
+     * @param visible Whether the section should be visible.
+     */
+    public void setVisibilityForSection(int section, boolean visible) {
+        int visibility = visible ? VISIBLE : GONE;
+        mSpinners[section].setVisibility(visibility);
+    }
+
     private void addAppearAnimationForEditLayout(int mode, View layout) {
-        View centerView = mode == LAYOUT_EDITING_BILLING ?
-                mSpinners[SECTION_CC_BILLING] : mSpinners[SECTION_SHIPPING];
+        View centerView = mSpinners[getSectionForLayoutMode(mode)];
         float yOffset = centerView.getY() - (float) centerView.getHeight() / 2;
 
         TranslateAnimation toLocationAnimation = new TranslateAnimation(0, 0, yOffset, 0);
@@ -252,21 +255,50 @@ public class AutofillDialogContentView extends FrameLayout {
         toTopAnimation.setDuration(ANIMATION_DURATION_MS);
         TranslateAnimation toBottomAnimation = new TranslateAnimation(0, 0, 0, distance);
         toBottomAnimation.setDuration(ANIMATION_DURATION_MS);
-        TranslateAnimation midViewGroupAnimation = mode == LAYOUT_EDITING_BILLING ?
-                toBottomAnimation : toTopAnimation;
+        for (int i = 0; i < mSteadyLayout.getChildCount(); i++) {
+            View currentChild = mSteadyLayout.getChildAt(i);
+            if (currentChild.getVisibility() == GONE) continue;
 
-        for (int i = 0; i < mTopViewGroup.size(); i++) {
-            mTopViewGroup.get(i).setAnimation(toTopAnimation);
-            mTopViewGroup.get(i).animate();
+            if (currentChild.getTop() <=
+                    mSpinners[getSectionForLayoutMode(mode)].getTop()) {
+                currentChild.setAnimation(toTopAnimation);
+                currentChild.animate();
+            } else if (currentChild.getTop() >
+                    mSpinners[getSectionForLayoutMode(mode)].getTop()) {
+                currentChild.setAnimation(toBottomAnimation);
+                currentChild.animate();
+            }
         }
-        for (int i = 0; i < mMidViewGroup.size(); i++) {
-            mMidViewGroup.get(i).setAnimation(midViewGroupAnimation);
-            mMidViewGroup.get(i).animate();
+    }
+
+    private static int getSectionForLayoutMode(int mode) {
+        switch (mode) {
+            case LAYOUT_EDITING_CC:
+                return SECTION_CC;
+            case LAYOUT_EDITING_BILLING:
+                return SECTION_BILLING;
+            case LAYOUT_EDITING_CC_BILLING:
+                return SECTION_CC_BILLING;
+            case LAYOUT_EDITING_SHIPPING:
+                return SECTION_SHIPPING;
+            default:
+                assert(false);
+                return AutofillDialogUtils.INVALID_SECTION;
         }
-        for (int i = 0; i < mBottomViewGroup.size(); i++) {
-            mBottomViewGroup.get(i).setAnimation(toBottomAnimation);
-            mBottomViewGroup.get(i).animate();
+    }
+
+    /**
+     * Returns the layout mode for editing the given section.
+     * @param section The section to look up.
+     * @return The layout mode for editing the given section.
+     */
+    public static int getLayoutModeForSection(int section) {
+        assert(section != AutofillDialogUtils.INVALID_SECTION);
+        for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
+            if (getSectionForLayoutMode(i) == section) return i;
         }
+        assert(false);
+        return INVALID_LAYOUT;
     }
 
     private static class AutofillDialogMenuAdapter extends ArrayAdapter<AutofillDialogMenuItem> {

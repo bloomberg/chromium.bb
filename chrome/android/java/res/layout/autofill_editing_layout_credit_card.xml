@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/editing_layout_cc_billing"
+    android:orientation="vertical">
+    <GridLayout
+        android:id="@+id/editing_layout_credit_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="4">
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/card_number"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="fill_horizontal"
+            android:layout_columnSpan="4"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/expiration_month"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/expiration_year"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"/>
+        <Space
+            android:layout_columnSpan="1"
+            android:layout_gravity="fill"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/cvc_code"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="right"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/cardholder_name"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="fill_horizontal"
+            android:layout_columnSpan="4"/>
+    </GridLayout>
+    <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/editing_layout_billing"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="4">
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/billing_street_address_1"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="fill_horizontal"
+            android:layout_columnSpan="4"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/billing_street_address_2"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="fill_horizontal"
+            android:layout_columnSpan="4"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/billing_city"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="fill_horizontal"
+            android:layout_columnSpan="4"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/billing_zip_code"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="fill_horizontal"
+            android:layout_columnSpan="4"/>
+        <EditText
+            android:layout_height="@dimen/autofill_edit_height"
+            android:id="@+id/billing_phone_number"
+            android:layout_margin="@dimen/autofill_edit_margin"
+            android:textSize="@dimen/autofill_edit_text_size"
+            android:layout_gravity="fill_horizontal"
+            android:layout_columnSpan="4"/>
+    </GridLayout>
+</LinearLayout>

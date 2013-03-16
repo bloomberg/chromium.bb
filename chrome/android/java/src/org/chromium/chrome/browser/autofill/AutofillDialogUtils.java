@@ -18,6 +18,7 @@ public class AutofillDialogUtils {
 
     // The default invalid ID to return when no such field/section is present.
     public static final int INVALID_ID = -1;
+    public static final int INVALID_SECTION = -1;
 
     private AutofillDialogUtils() {
     }
@@ -30,13 +31,51 @@ public class AutofillDialogUtils {
      */
     public static int getSpinnerIDForSection(int section) {
         switch (section) {
-            case AutofillDialogConstants.SECTION_CC_BILLING :
+            case AutofillDialogConstants.SECTION_CC :
                 return R.id.cc_spinner;
+            case AutofillDialogConstants.SECTION_CC_BILLING :
+                return R.id.cc_billing_spinner;
             case AutofillDialogConstants.SECTION_SHIPPING :
                 return R.id.address_spinner;
-            case AutofillDialogConstants.SECTION_EMAIL :
-            case AutofillDialogConstants.SECTION_CC :
             case AutofillDialogConstants.SECTION_BILLING :
+                return R.id.billing_spinner;
+            case AutofillDialogConstants.SECTION_EMAIL :
+                return R.id.email_spinner;
+            default:
+                assert(false);
+                return INVALID_ID;
+        }
+    }
+
+    /**
+     * Returns the section that has a spinner with the given id.
+     * @param id The Android ID to look up.
+     * @return The section with a spinner with the given ID.
+     */
+    public static int getSectionForSpinnerID(int id) {
+        for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
+            if (getSpinnerIDForSection(i) == id) return i;
+        }
+        return INVALID_SECTION;
+    }
+
+    /**
+     * Returns the {@link ViewGroup} ID for the given section in the AutofillDialog
+     * layout
+     * @param section The section to return the layout ID for.
+     * @return The Android ID for the edit layout for the given section.
+     */
+    public static int getLayoutIDForSection(int section) {
+        switch (section) {
+            case AutofillDialogConstants.SECTION_CC :
+                return R.id.editing_layout_credit_card;
+            case AutofillDialogConstants.SECTION_CC_BILLING :
+                return R.id.editing_layout_cc_billing;
+            case AutofillDialogConstants.SECTION_SHIPPING :
+                return R.id.editing_layout_shipping;
+            case AutofillDialogConstants.SECTION_BILLING :
+                return R.id.editing_layout_billing;
+            case AutofillDialogConstants.SECTION_EMAIL :
                 return INVALID_ID;
             default:
                 assert(false);

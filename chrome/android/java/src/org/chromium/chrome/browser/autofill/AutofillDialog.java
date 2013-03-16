@@ -76,19 +76,20 @@ public class AutofillDialog extends AlertDialog
     public void onItemSelected(AdapterView<?> spinner, View view, int position,
             long id) {
         if (spinner.getId() == R.id.accounts_spinner) {
-            mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_FETCHING);
+            if (spinner.getItemAtPosition(position).toString().equals(
+                    getContext().getResources().getString(R.string.autofill_use_local))) {
+                mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_STEADY);
+            } else {
+                mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_FETCHING);
+            }
             return;
         }
 
-        if (!mContentView.selectionShouldChangeLayout(spinner, position) ||
-                mContentView.getCurrentLayout() != AutofillDialogContentView.LAYOUT_STEADY) {
-            return;
-        }
+        int section = AutofillDialogUtils.getSectionForSpinnerID(spinner.getId());
 
-        int newLayout = spinner.getId() == R.id.address_spinner ?
-                AutofillDialogContentView.LAYOUT_EDITING_SHIPPING :
-                        AutofillDialogContentView.LAYOUT_EDITING_BILLING;
-        mContentView.changeLayoutTo(newLayout);
+        if (!mContentView.selectionShouldChangeLayout(spinner, section, position)) return;
+
+        mContentView.changeLayoutTo(AutofillDialogContentView.getLayoutModeForSection(section));
         spinner.setSelection(0);
         getButton(BUTTON_POSITIVE).setText(R.string.autofill_positive_button_editing);
     }
@@ -141,6 +142,7 @@ public class AutofillDialog extends AlertDialog
             else currentField.setText(inputValue);
         }
         mAutofillSectionFieldData[section] = dialogInputs;
+        mContentView.setVisibilityForSection(section, visible);
         mContentView.updateMenuItemsForSection(section, menuItems);
         mAutofillSectionMenuData[section] = menuItems;
     }
