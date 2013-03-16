@@ -104,8 +104,7 @@ bool MetricsLogManager::has_staged_log_proto() const {
 }
 
 bool MetricsLogManager::has_staged_log_xml() const {
-  return !staged_log_text().xml.empty() &&
-      staged_log_text().xml != kDiscardedLog;
+  return false;
 }
 
 void MetricsLogManager::DiscardStagedLog() {
