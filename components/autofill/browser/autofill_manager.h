@@ -51,6 +51,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 
 namespace autofill {
 class AutofillManagerDelegate;
+class AutofillManagerTestDelegate;
 class PasswordGenerator;
 }
 
@@ -130,6 +131,9 @@ class AutofillManager : public content::WebContentsObserver,
   autofill::AutofillManagerDelegate* delegate() const {
     return manager_delegate_;
   }
+
+  // Only for testing.
+  void SetTestDelegate(autofill::AutofillManagerTestDelegate* delegate);
 
  protected:
   // Only test code should subclass AutofillManager.
@@ -416,6 +420,9 @@ class AutofillManager : public content::WebContentsObserver,
   // Delegate to perform external processing (display, selection) on
   // our behalf.  Weak.
   AutofillExternalDelegate* external_delegate_;
+
+  // Delegate used in test to get notifications on certain events.
+  autofill::AutofillManagerTestDelegate* test_delegate_;
 
   base::WeakPtrFactory<AutofillManager> weak_ptr_factory_;
 

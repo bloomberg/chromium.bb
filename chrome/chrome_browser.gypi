@@ -2178,6 +2178,7 @@
         '../components/autofill/browser/autofill_manager.cc',
         '../components/autofill/browser/autofill_manager.h',
         '../components/autofill/browser/autofill_manager_delegate.h',
+        '../components/autofill/browser/autofill_manager_test_delegate.h',
         '../components/autofill/browser/autofill_metrics.cc',
         '../components/autofill/browser/autofill_metrics.h',
         '../components/autofill/browser/autofill_popup_delegate.h',

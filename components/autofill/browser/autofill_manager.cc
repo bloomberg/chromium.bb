@@ -20,7 +20,6 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/browser/autocheckout_manager.h"
 #include "components/autofill/browser/autocomplete_history_manager.h"
@@ -28,6 +27,7 @@
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
@@ -47,8 +47,6 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -207,6 +205,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_edit_autofilled_field_(false),
       password_generation_enabled_(false),
       external_delegate_(NULL),
+      test_delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
@@ -216,8 +215,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
                  base::Unretained(this)));
 }
 
-AutofillManager::~AutofillManager() {
-}
+AutofillManager::~AutofillManager() {}
 
 // static
 void AutofillManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
@@ -671,17 +669,13 @@ void AutofillManager::OnShowAutofillDialog() {
 }
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      content::Source<RenderViewHost>(web_contents()->GetRenderViewHost()),
-      content::NotificationService::NoDetails());
+  if (test_delegate_)
+    test_delegate_->DidPreviewFormData();
 }
 
 void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      content::Source<RenderViewHost>(web_contents()->GetRenderViewHost()),
-      content::NotificationService::NoDetails());
+  if (test_delegate_)
+    test_delegate_->DidFillFormData();
 
   metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
   if (!user_did_autofill_) {
@@ -694,10 +688,8 @@ void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
 }
 
 void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-      content::Source<RenderViewHost>(web_contents()->GetRenderViewHost()),
-      content::NotificationService::NoDetails());
+  if (test_delegate_)
+    test_delegate_->DidShowSuggestions();
 
   if (is_new_popup) {
     metric_logger_->LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
@@ -767,6 +759,11 @@ void AutofillManager::ShowRequestAutocompleteDialog(
 
 void AutofillManager::RequestAutocompleteDialogClosed() {
   manager_delegate_->RequestAutocompleteDialogClosed();
+}
+
+void AutofillManager::SetTestDelegate(
+    autofill::AutofillManagerTestDelegate* delegate) {
+  test_delegate_ = delegate;
 }
 
 void AutofillManager::OnAddPasswordFormMapping(
@@ -1007,6 +1004,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_edit_autofilled_field_(false),
       password_generation_enabled_(false),
       external_delegate_(NULL),
+      test_delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(web_contents);
   DCHECK(manager_delegate_);

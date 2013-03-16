@@ -894,16 +894,6 @@ enum NotificationType {
   // GoogleServiceSignoutDetails object.
   NOTIFICATION_GOOGLE_SIGNED_OUT,
 
-  // Autofill Notifications --------------------------------------------------
-
-  // Sent when a popup with Autofill suggestions is shown in the renderer.
-  // The source is the corresponding RenderViewHost. There are not details.
-  NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-
-  // Sent when a form is previewed or filled with Autofill suggestions.
-  // The source is the corresponding RenderViewHost. There are not details.
-  NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-
   // Download Notifications --------------------------------------------------
 
   // Sent when a download is initiated. It is possible that the download will
