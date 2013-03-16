@@ -101,11 +101,22 @@ class CertLibrary {
   // Returns the current list of server CA certificates.
   virtual const CertList& GetCACertificates() const = 0;
 
-  // Encrypts |token| with supplemental user key.
-  virtual std::string EncryptToken(const std::string& token) = 0;
+  // Encrypts |token| with the system salt key (stable for the lifetime
+  // of the device).  Useful to avoid storing plain text in place like
+  // Local State.
+  virtual std::string EncryptWithSystemSalt(const std::string& token) = 0;
 
-  // Decrypts |token| with supplemental user key.
-  virtual std::string DecryptToken(const std::string& encrypted_token) = 0;
+  // Decrypts |token| with the system salt key (stable for the lifetime
+  // of the device).
+  virtual std::string DecryptWithSystemSalt(
+      const std::string& encrypted_token_hex) = 0;
+
+  // Encrypts |token| with supplemental user key (unique for each user).
+  virtual std::string EncryptWithUserKey(const std::string& token) = 0;
+
+  // Decrypts |token| with supplemental user key (unique for each user).
+  virtual std::string DecryptWithUserKey(
+      const std::string& encrypted_token_hex) = 0;
 };
 
 }  // namespace chromeos

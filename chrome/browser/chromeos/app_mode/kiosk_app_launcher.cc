@@ -125,7 +125,7 @@ void KioskAppLauncher::ReportLaunchResult(bool success) {
 
 void KioskAppLauncher::StartMount() {
   const std::string token =
-      CrosLibrary::Get()->GetCertLibrary()->EncryptToken(app_id_);
+      CrosLibrary::Get()->GetCertLibrary()->EncryptWithUserKey(app_id_);
 
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
       app_id_,
