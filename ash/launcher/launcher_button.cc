@@ -42,34 +42,104 @@ bool ShouldHop(int state) {
       state & ash::internal::LauncherButton::STATE_FOCUSED;
 }
 
+// Simple AnimationDelegate that owns a single ThrobAnimation instance to
+// keep all Draw Attention animations in sync.
+class LauncherButtonAnimation : public ui::AnimationDelegate {
+ public:
+  class Observer {
+   public:
+    virtual void AnimationProgressed() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  static LauncherButtonAnimation* GetInstance() {
+    static LauncherButtonAnimation* s_instance = new LauncherButtonAnimation();
+    return s_instance;
+  }
+
+  void AddObserver(Observer* observer) {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
+    if (observers_.size() == 0)
+      animation_.Stop();
+  }
+
+  int GetAlpha() {
+    return GetThrobAnimation().CurrentValueBetween(0, 255);
+  }
+
+  double GetAnimation() {
+    return GetThrobAnimation().GetCurrentValue();
+  }
+
+ private:
+  LauncherButtonAnimation()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
+    animation_.SetThrobDuration(kAttentionThrobDurationMS);
+    animation_.SetTweenType(ui::Tween::SMOOTH_IN_OUT);
+  }
+
+  virtual ~LauncherButtonAnimation() {
+  }
+
+  ui::ThrobAnimation& GetThrobAnimation() {
+    if (!animation_.is_animating()) {
+      animation_.Reset();
+      animation_.StartThrobbing(-1 /*throb indefinitely*/);
+    }
+    return animation_;
+  }
+
+  // ui::AnimationDelegate
+  void AnimationProgressed(const ui::Animation* animation) {
+    if (animation != &animation_)
+      return;
+    if (!animation_.is_animating())
+      return;
+    FOR_EACH_OBSERVER(Observer, observers_, AnimationProgressed());
+  }
+
+  ui::ThrobAnimation animation_;
+  ObserverList<Observer> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherButtonAnimation);
+};
+
 }  // namespace
 
 namespace ash {
-
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LauncherButton::BarView
 
 class LauncherButton::BarView : public views::ImageView,
-                                public ui::AnimationDelegate {
+                                public LauncherButtonAnimation::Observer {
  public:
   BarView(LauncherButton* host)
       : host_(host),
-        ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
-    animation_.SetThrobDuration(kAttentionThrobDurationMS);
-    animation_.SetTweenType(ui::Tween::SMOOTH_IN_OUT);
+        show_attention_(false) {
   }
 
-  // View overrides.
+  ~BarView() {
+    if (show_attention_)
+      LauncherButtonAnimation::GetInstance()->RemoveObserver(this);
+  }
+
+  // View
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
     // Allow Mouse...() messages to go to the parent view.
     return false;
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    if (animation_.is_animating()) {
-      int alpha = animation_.CurrentValueBetween(0, 255);
+    if (show_attention_) {
+      int alpha = LauncherButtonAnimation::GetInstance()->GetAlpha();
       canvas->SaveLayerAlpha(alpha);
       views::ImageView::OnPaint(canvas);
       canvas->Restore();
@@ -78,8 +148,8 @@ class LauncherButton::BarView : public views::ImageView,
     }
   }
 
-  // ui::AnimationDelegate overrides.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  // LauncherButtonAnimation::Observer
+  virtual void AnimationProgressed() OVERRIDE {
     UpdateBounds();
     SchedulePaint();
   }
@@ -90,12 +160,12 @@ class LauncherButton::BarView : public views::ImageView,
   }
 
   void ShowAttention(bool show) {
-    if (show) {
-      // It's less disruptive if we don't start the pulsing at 0.
-      animation_.Reset(0.375);
-      animation_.StartThrobbing(-1);
-    } else {
-      animation_.Reset(0.0);
+    if (show_attention_ != show) {
+      show_attention_ = show;
+      if (show_attention_)
+        LauncherButtonAnimation::GetInstance()->AddObserver(this);
+      else
+        LauncherButtonAnimation::GetInstance()->RemoveObserver(this);
     }
     UpdateBounds();
   }
@@ -103,11 +173,12 @@ class LauncherButton::BarView : public views::ImageView,
  private:
   void UpdateBounds() {
     gfx::Rect bounds = base_bounds_;
-    if (animation_.is_animating()) {
+    if (show_attention_) {
       // Scale from .35 to 1.0 of the total width (which is wider than the
       // visible width of the image, so the animation "rests" briefly at full
       // visible width.
-      double scale = (.35 + .65 * animation_.GetCurrentValue());
+      double animation = LauncherButtonAnimation::GetInstance()->GetAnimation();
+      double scale = (.35 + .65 * animation);
       if (host_->shelf_layout_manager()->GetAlignment() ==
           SHELF_ALIGNMENT_BOTTOM) {
         bounds.set_width(base_bounds_.width() * scale);
@@ -123,7 +194,7 @@ class LauncherButton::BarView : public views::ImageView,
   }
 
   LauncherButton* host_;
-  ui::ThrobAnimation animation_;
+  bool show_attention_;
   gfx::Rect base_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(BarView);
