@@ -103,9 +103,6 @@ class WebKitTestRunner : public RenderViewObserver,
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();
 
-  base::FilePath current_working_directory_;
-  base::FilePath temp_path_;
-
   ::WebTestRunner::WebTestProxyBase* proxy_;
 
   RenderView* focused_view_;

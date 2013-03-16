@@ -226,7 +226,7 @@ WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
 #endif
   if (!path.IsAbsolute()) {
     GURL base_url =
-        net::FilePathToFileURL(current_working_directory_.Append(
+        net::FilePathToFileURL(test_config_.current_working_directory.Append(
             FILE_PATH_LITERAL("foo")));
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
@@ -379,7 +379,7 @@ std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
 #if defined(OS_WIN)
   if (resource.find("/tmp/") == 0) {
     // We want a temp file.
-    GURL base_url = net::FilePathToFileURL(temp_path_);
+    GURL base_url = net::FilePathToFileURL(test_config_.temp_path);
     return base_url.Resolve(resource.substr(strlen("/tmp/"))).spec();
   }
 #endif
