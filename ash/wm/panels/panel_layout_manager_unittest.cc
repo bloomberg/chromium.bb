@@ -208,6 +208,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
                                   aura::Window* window) {
     test::LauncherViewTestAPI test_api(launcher_view);
     test_api.SetAnimationDuration(1);
+    test_api.RunMessageLoopUntilAnimationsDone();
 
     LauncherModel* model =
         test::ShellTestApi(Shell::GetInstance()).launcher_model();
@@ -477,13 +478,13 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
 TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
   // Keep the displays wide so that launchers have enough
   // spaces for launcher buttons.
-  UpdateDisplay("500x400,500x400");
+  UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> p1_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
   scoped_ptr<aura::Window> p2_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
-  scoped_ptr<aura::Window> p1_d2(CreatePanelWindow(gfx::Rect(500, 0, 50, 50)));
-  scoped_ptr<aura::Window> p2_d2(CreatePanelWindow(gfx::Rect(500, 0, 50, 50)));
+  scoped_ptr<aura::Window> p1_d2(CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
+  scoped_ptr<aura::Window> p2_d2(CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
 
   LauncherView* launcher_view_1st =
       Launcher::ForPrimaryDisplay()->GetLauncherViewForTest();

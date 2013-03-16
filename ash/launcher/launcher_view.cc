@@ -432,6 +432,32 @@ gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
                    icon_bounds.width(), icon_bounds.height());
 }
 
+void LauncherView::UpdatePanelIconPosition(LauncherID id,
+                                           const gfx::Point& midpoint) {
+  int current_index = model_->ItemIndexByID(id);
+  int first_panel_index = model_->FirstPanelIndex();
+  if (current_index < first_panel_index)
+    return;
+
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+  int target_index = current_index;
+  while (target_index > first_panel_index &&
+         shelf->PrimaryAxisValue(view_model_->ideal_bounds(target_index).x(),
+                                 view_model_->ideal_bounds(target_index).y()) >
+         shelf->PrimaryAxisValue(midpoint.x(), midpoint.y())) {
+    --target_index;
+  }
+  while (target_index < view_model_->view_size() - 1 &&
+         shelf->PrimaryAxisValue(
+             view_model_->ideal_bounds(target_index).right(),
+             view_model_->ideal_bounds(target_index).bottom()) <
+         shelf->PrimaryAxisValue(midpoint.x(), midpoint.y())) {
+    ++target_index;
+  }
+  if (current_index != target_index)
+    model_->Move(current_index, target_index);
+}
+
 bool LauncherView::IsShowingMenu() const {
 #if !defined(OS_MACOSX)
   return (launcher_menu_runner_.get() &&

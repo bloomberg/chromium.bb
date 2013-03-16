@@ -48,7 +48,7 @@ Launcher::Launcher(LauncherModel* launcher_model,
                    LauncherDelegate* launcher_delegate,
                    ShelfWidget* shelf_widget)
     : launcher_view_(NULL),
-      alignment_(SHELF_ALIGNMENT_BOTTOM),
+      alignment_(shelf_widget->GetAlignment()),
       delegate_(launcher_delegate),
       shelf_widget_(shelf_widget) {
   launcher_view_ = new internal::LauncherView(
@@ -93,6 +93,12 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
                    screen_origin.y() + bounds.y(),
                    bounds.width(),
                    bounds.height());
+}
+
+void Launcher::UpdateIconPositionForWindow(aura::Window* window) {
+  launcher_view_->UpdatePanelIconPosition(
+      delegate_->GetIDByWindow(window),
+      window->bounds().CenterPoint());
 }
 
 void Launcher::ActivateLauncherItem(int index) {
