@@ -38,6 +38,7 @@
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/talk_resource.h"
+#include "ppapi/proxy/truetype_font_resource.h"
 #include "ppapi/proxy/udp_socket_private_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
@@ -141,6 +142,14 @@ PP_Resource ResourceCreationProxy::CreateResourceArray(
   PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
       OBJECT_IS_PROXY, instance, elements, size);
   return object->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateTrueTypeFont(
+    PP_Instance instance,
+    const PP_TrueTypeFontDesc_Dev& desc) {
+  return (new TrueTypeFontResource(GetConnection(),
+                                   instance, desc))->GetReference();
+
 }
 
 PP_Resource ResourceCreationProxy::CreateURLLoader(PP_Instance instance) {

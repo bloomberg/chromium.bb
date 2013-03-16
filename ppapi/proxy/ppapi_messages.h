@@ -22,6 +22,7 @@
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
+#include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_bool.h"
@@ -84,6 +85,11 @@ IPC_ENUM_TRAITS(PP_PrintOutputFormat_Dev)
 IPC_ENUM_TRAITS(PP_PrintScalingOption_Dev)
 IPC_ENUM_TRAITS(PP_PrivateFontCharset)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
+IPC_ENUM_TRAITS(PP_TrueTypeFontFamily_Dev)
+IPC_ENUM_TRAITS(PP_TrueTypeFontStyle_Dev)
+IPC_ENUM_TRAITS(PP_TrueTypeFontWeight_Dev)
+IPC_ENUM_TRAITS(PP_TrueTypeFontWidth_Dev)
+IPC_ENUM_TRAITS(PP_TrueTypeFontCharset_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 
@@ -1413,6 +1419,26 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
                      PP_Resource /* image */,
                      PP_Point /* top_left */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
+
+// TrueTypeFont.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFontSingleton_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFontSingleton_GetFontFamilies)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFontSingleton_GetFontFamiliesReply,
+                     std::vector<std::string> /* font_families */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TrueTypeFont_Create,
+                     ppapi::proxy::SerializedTrueTypeFontDesc /* desc */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFont_Describe)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFont_DescribeReply,
+                     ppapi::proxy::SerializedTrueTypeFontDesc /* desc */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFont_GetTableTags)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFont_GetTableTagsReply,
+                     std::vector<uint32_t> /* tags */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_TrueTypeFont_GetTable,
+                     uint32_t /* table */,
+                     int32_t /* offset */,
+                     int32_t /* max_data_length */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFont_GetTableReply,
+                     std::string /* data */)
 
 // HostResolverPrivate, plugin -> host -> plugin
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_HostResolverPrivate_Create)

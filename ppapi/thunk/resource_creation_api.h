@@ -17,6 +17,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/api_id.h"
@@ -80,6 +81,9 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateResourceArray(PP_Instance instance,
                                           const PP_Resource elements[],
                                           uint32_t size) = 0;
+  virtual PP_Resource CreateTrueTypeFont(
+      PP_Instance instance,
+      const PP_TrueTypeFontDesc_Dev& desc) = 0;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,

@@ -752,6 +752,13 @@
     'browser/renderer_host/pepper/pepper_tcp_server_socket.h',
     'browser/renderer_host/pepper/pepper_tcp_socket.cc',
     'browser/renderer_host/pepper/pepper_tcp_socket.h',
+    'browser/renderer_host/pepper/pepper_truetype_font_list_android.cc',
+    'browser/renderer_host/pepper/pepper_truetype_font_list_host.cc',
+    'browser/renderer_host/pepper/pepper_truetype_font_list_host.h',
+    'browser/renderer_host/pepper/pepper_truetype_font_list_linux.cc',
+    'browser/renderer_host/pepper/pepper_truetype_font_list_mac.mm',
+    'browser/renderer_host/pepper/pepper_truetype_font_list_win.cc',
+    'browser/renderer_host/pepper/pepper_truetype_font_list.h',
     'browser/renderer_host/pepper/pepper_udp_socket_private_message_filter.cc',
     'browser/renderer_host/pepper/pepper_udp_socket_private_message_filter.h',
     'browser/renderer_host/popup_menu_helper_mac.h',
@@ -1124,6 +1131,7 @@
     ['use_x11==1', {
       'dependencies': [
         '../build/linux/system.gyp:x11',
+        '../build/linux/system.gyp:pangocairo',
       ],
     }],
     ['OS=="android"', {

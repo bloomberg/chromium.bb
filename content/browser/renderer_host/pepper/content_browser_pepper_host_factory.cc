@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/pepper/pepper_host_resolver_private_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
+#include "content/browser/renderer_host/pepper/pepper_truetype_font_list_host.h"
 #include "content/browser/renderer_host/pepper/pepper_udp_socket_private_message_filter.h"
 #include "ppapi/host/message_filter_host.h"
 #include "ppapi/host/ppapi_host.h"
@@ -59,6 +60,10 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
          return scoped_ptr<ResourceHost>(new PepperPrintingHost(
              host_->GetPpapiHost(), instance,
              params.pp_resource(), manager.Pass()));
+      }
+      case PpapiHostMsg_TrueTypeFontSingleton_Create::ID: {
+        return scoped_ptr<ResourceHost>(new PepperTrueTypeFontListHost(
+            host_, instance, params.pp_resource()));
       }
     }
   }

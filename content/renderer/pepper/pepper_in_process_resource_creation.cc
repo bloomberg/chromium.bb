@@ -93,6 +93,13 @@ PP_Resource PepperInProcessResourceCreation::CreatePrinting(
       instance))->GetReference();
 }
 
+PP_Resource PepperInProcessResourceCreation::CreateTrueTypeFont(
+    PP_Instance instance,
+    const PP_TrueTypeFontDesc_Dev& desc) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 PP_Resource PepperInProcessResourceCreation::CreateURLRequestInfo(
     PP_Instance instance,
     const ::ppapi::URLRequestInfoData& data) {

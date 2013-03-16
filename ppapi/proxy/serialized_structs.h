@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
@@ -54,6 +55,30 @@ struct PPAPI_PROXY_EXPORT SerializedFontDescription {
   PP_Bool small_caps;
   int32_t letter_spacing;
   int32_t word_spacing;
+};
+
+struct PPAPI_PROXY_EXPORT SerializedTrueTypeFontDesc {
+  SerializedTrueTypeFontDesc();
+  ~SerializedTrueTypeFontDesc();
+
+  // Sets this to correspond to the contents of a PP_TrueTypeFontDesc_Dev.
+  //
+  // The reference count of the desc.family PP_Var will be unchanged and the
+  // caller is responsible for releasing it.
+  void SetFromPPTrueTypeFontDesc(const PP_TrueTypeFontDesc_Dev& desc);
+
+  // Converts this to a PP_FontDescription_Dev.
+  //
+  // The desc.family PP_Var will have one reference assigned to it. The caller
+  // is responsible for releasing it.
+  void CopyToPPTrueTypeFontDesc(PP_TrueTypeFontDesc_Dev* desc) const;
+
+  std::string family;
+  PP_TrueTypeFontFamily_Dev generic_family;
+  PP_TrueTypeFontStyle_Dev style;
+  PP_TrueTypeFontWeight_Dev weight;
+  PP_TrueTypeFontWidth_Dev width;
+  PP_TrueTypeFontCharset_Dev charset;
 };
 
 struct SerializedDirEntry {

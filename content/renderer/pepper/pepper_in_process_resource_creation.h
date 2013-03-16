@@ -56,6 +56,9 @@ class PepperInProcessResourceCreation
       PP_Bool is_always_opaque) OVERRIDE;
   virtual PP_Resource CreatePrinting(
       PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateTrueTypeFont(
+      PP_Instance instance,
+      const struct PP_TrueTypeFontDesc_Dev& desc) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
       const ::ppapi::URLRequestInfoData& data) OVERRIDE;

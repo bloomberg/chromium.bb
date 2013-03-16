@@ -75,6 +75,9 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateResourceArray(PP_Instance instance,
                                           const PP_Resource elements[],
                                           uint32_t size) OVERRIDE;
+  virtual PP_Resource CreateTrueTypeFont(
+      PP_Instance instance,
+      const PP_TrueTypeFontDesc_Dev& desc) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,

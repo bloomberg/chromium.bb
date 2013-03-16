@@ -5,18 +5,22 @@
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_directory_reader_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_file_io_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
+#include "content/renderer/pepper/pepper_truetype_font_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/serialized_structs.h"
 
 using ppapi::host::ResourceHost;
+using ppapi::proxy::SerializedTrueTypeFontDesc;
 
 namespace content {
 
@@ -72,6 +76,21 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_FileChooser_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFileChooserHost(
             host_, instance, params.pp_resource()));
+      case PpapiHostMsg_TrueTypeFont_Create::ID: {
+        PpapiHostMsg_TrueTypeFont_Create::Schema::Param msg_params;
+        if (!PpapiHostMsg_TrueTypeFont_Create::Read(&message, &msg_params)) {
+          NOTREACHED();
+          return scoped_ptr<ResourceHost>();
+        }
+        // Check that the family name is valid UTF-8 before passing it to the
+        // host OS.
+        const SerializedTrueTypeFontDesc& desc = msg_params.a;
+        if (IsStringUTF8(desc.family)) {
+          return scoped_ptr<ResourceHost>(new PepperTrueTypeFontHost(
+              host_, instance, params.pp_resource(), desc));
+        }
+        break;  // Drop through and return null host.
+      }
       case PpapiHostMsg_VideoCapture_Create::ID: {
         PepperVideoCaptureHost* host = new PepperVideoCaptureHost(
             host_, instance, params.pp_resource());

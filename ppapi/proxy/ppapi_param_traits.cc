@@ -560,7 +560,44 @@ void ParamTraits<ppapi::proxy::SerializedFontDescription>::Log(
     const param_type& p,
     std::string* l) {
 }
+#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
+// ppapi::proxy::SerializedTrueTypeFontDesc ------------------------------------
+
+// static
+void ParamTraits<ppapi::proxy::SerializedTrueTypeFontDesc>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<std::string>::Write(m, p.family);
+  ParamTraits<PP_TrueTypeFontFamily_Dev>::Write(m, p.generic_family);
+  ParamTraits<PP_TrueTypeFontStyle_Dev>::Write(m, p.style);
+  ParamTraits<PP_TrueTypeFontWeight_Dev>::Write(m, p.weight);
+  ParamTraits<PP_TrueTypeFontWidth_Dev>::Write(m, p.width);
+  ParamTraits<PP_TrueTypeFontCharset_Dev>::Write(m, p.charset);
+}
+
+// static
+bool ParamTraits<ppapi::proxy::SerializedTrueTypeFontDesc>::Read(
+    const Message* m,
+    PickleIterator* iter,
+    param_type* r) {
+  return
+      ParamTraits<std::string>::Read(m, iter, &r->family) &&
+      ParamTraits<PP_TrueTypeFontFamily_Dev>::Read(m, iter,
+                                                   &r->generic_family) &&
+      ParamTraits<PP_TrueTypeFontStyle_Dev>::Read(m, iter, &r->style) &&
+      ParamTraits<PP_TrueTypeFontWeight_Dev>::Read(m, iter, &r->weight) &&
+      ParamTraits<PP_TrueTypeFontWidth_Dev>::Read(m, iter, &r->width) &&
+      ParamTraits<PP_TrueTypeFontCharset_Dev>::Read(m, iter, &r->charset);
+}
+
+// static
+void ParamTraits<ppapi::proxy::SerializedTrueTypeFontDesc>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
+#if !defined(OS_NACL) && !defined(NACL_WIN64)
 // ppapi::PepperFilePath -------------------------------------------------------
 
 // static

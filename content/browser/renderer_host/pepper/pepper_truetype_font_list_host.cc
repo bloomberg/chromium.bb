@@ -1,0 +1,99 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/renderer_host/pepper/pepper_truetype_font_list_host.h"
+
+#include <algorithm>
+
+#include "base/safe_numerics.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
+#include "content/public/browser/browser_ppapi_host.h"
+#include "content/public/browser/browser_thread.h"
+#include "ppapi/host/dispatch_host_message.h"
+#include "ppapi/host/host_message_context.h"
+#include "ppapi/host/resource_message_filter.h"
+#include "ppapi/proxy/ppapi_messages.h"
+
+namespace content {
+
+namespace {
+
+// Handles the font list request on the blocking pool.
+class FontMessageFilter : public ppapi::host::ResourceMessageFilter {
+ public:
+  FontMessageFilter();
+
+  // ppapi::host::ResourceMessageFilter implementation.
+  virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+      const IPC::Message& msg) OVERRIDE;
+  virtual int32_t OnResourceMessageReceived(
+      const IPC::Message& msg,
+      ppapi::host::HostMessageContext* context) OVERRIDE;
+
+ private:
+  virtual ~FontMessageFilter();
+
+  // Message handler.
+  int32_t OnHostMsgGetFontFamilies(ppapi::host::HostMessageContext* context);
+
+  DISALLOW_COPY_AND_ASSIGN(FontMessageFilter);
+};
+
+FontMessageFilter::FontMessageFilter() {
+}
+
+FontMessageFilter::~FontMessageFilter() {
+}
+
+scoped_refptr<base::TaskRunner> FontMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& msg) {
+  // Use the blocking pool to get the font list (currently the only message
+  // so we can always just return it).
+  return scoped_refptr<base::TaskRunner>(BrowserThread::GetBlockingPool());
+}
+
+int32_t FontMessageFilter::OnResourceMessageReceived(
+    const IPC::Message& msg,
+    ppapi::host::HostMessageContext* context) {
+  IPC_BEGIN_MESSAGE_MAP(FontMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_TrueTypeFontSingleton_GetFontFamilies,
+        OnHostMsgGetFontFamilies)
+  IPC_END_MESSAGE_MAP()
+  return PP_ERROR_FAILED;
+}
+
+int32_t FontMessageFilter::OnHostMsgGetFontFamilies(
+    ppapi::host::HostMessageContext* context) {
+  // OK to use "slow blocking" version since we're on the blocking pool.
+  std::vector<std::string> font_families;
+  GetFontFamilies_SlowBlocking(&font_families);
+  // Sort the names in case the host platform returns them out of order.
+  std::sort(font_families.begin(), font_families.end());
+
+  int32_t result = base::checked_numeric_cast<int32_t>(font_families.size());
+  ppapi::host::ReplyMessageContext reply_context =
+      context->MakeReplyMessageContext();
+  reply_context.params.set_result(result);
+  context->reply_msg =
+      PpapiPluginMsg_TrueTypeFontSingleton_GetFontFamiliesReply(font_families);
+  return result;
+}
+
+}  // namespace
+
+PepperTrueTypeFontListHost::PepperTrueTypeFontListHost(
+    BrowserPpapiHost* host,
+    PP_Instance instance,
+    PP_Resource resource)
+    : ResourceHost(host->GetPpapiHost(), instance, resource) {
+  AddFilter(scoped_refptr<ppapi::host::ResourceMessageFilter>(
+      new FontMessageFilter()));
+}
+
+PepperTrueTypeFontListHost::~PepperTrueTypeFontListHost() {
+}
+
+}  // namespace content
