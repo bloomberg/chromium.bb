@@ -58,9 +58,12 @@ TopControlsManager::~TopControlsManager() {
 void TopControlsManager::EnableHidingTopControls(bool enable) {
   enable_hiding_ = enable;
 
-  if (!enable && controls_top_offset_ != 0) {
-    SetupAnimation(SHOWING_CONTROLS);
-    client_->setNeedsRedraw();
+  if (!enable) {
+    ResetAnimations();
+    if (controls_top_offset_ != 0) {
+      SetupAnimation(SHOWING_CONTROLS);
+      client_->setNeedsRedraw();
+    }
   }
 }
 
