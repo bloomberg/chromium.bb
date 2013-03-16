@@ -285,7 +285,6 @@ MenuItemView* MenuController::Run(Widget* parent,
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
   drag_in_progress_ = false;
-  closing_event_time_ = base::TimeDelta();
 
   bool nested_menu = showing_;
   if (showing_) {
@@ -816,14 +815,6 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
   if (part.type == MenuPart::NONE ||
       (part.type == MenuPart::MENU_ITEM && part.menu &&
        part.menu->GetRootMenuItem() != state_.item->GetRootMenuItem())) {
-    // Remember the time when we repost the event. The owner can then use this
-    // to figure out if this menu was finished with the same click which is
-    // sent to it thereafter. Note that the time stamp front he event cannot be
-    // used since the reposting will set a new timestamp when the event gets
-    // processed. As such it is better to take the current time which will be
-    // closer to the time when it arrives again in the menu handler.
-    closing_event_time_ = ui::EventTimeForNow();
-
     // Mouse wasn't pressed over any menu, or the active menu, cancel.
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -1092,8 +1083,7 @@ MenuController::MenuController(ui::NativeTheme* theme,
       active_mouse_view_(NULL),
       delegate_(delegate),
       message_loop_depth_(0),
-      menu_config_(theme),
-      closing_event_time_(base::TimeDelta()) {
+      menu_config_(theme) {
   active_instance_ = this;
 }
 
