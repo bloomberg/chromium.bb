@@ -30,7 +30,7 @@ MAKE_CHROOT = [os.path.join(constants.SOURCE_ROOT,
 ENTER_CHROOT = [os.path.join(constants.SOURCE_ROOT,
                              'src/scripts/sdk_lib/enter_chroot.sh')]
 
-# We need these tools to run. Very common tools (tar,..) are ommited.
+# We need these tools to run. Very common tools (tar,..) are omitted.
 NEEDED_TOOLS = ('curl', 'xz')
 
 
