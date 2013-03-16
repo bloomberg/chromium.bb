@@ -765,6 +765,18 @@ void BGRAConvolve2D(const unsigned char* source_data,
   // We need to check which is the last line to convolve before we advance 4
   // lines in one iteration.
   int last_filter_offset, last_filter_length;
+
+  // SSE2 can access up to 3 extra pixels past the end of the
+  // buffer. At the bottom of the image, we have to be careful
+  // not to access data past the end of the buffer. Normally
+  // we fall back to the C++ implementation for the last row.
+  // If the last row is less than 3 pixels wide, we may have to fall
+  // back to the C++ version for more rows. Compute how many
+  // rows we need to avoid the SSE implementation for here.
+  filter_x.FilterForValue(filter_x.num_values() - 1, &last_filter_offset,
+                          &last_filter_length);
+  int avoid_sse_rows = 1 + 3/(last_filter_offset + last_filter_length);
+
   filter_y.FilterForValue(num_output_rows - 1, &last_filter_offset,
                           &last_filter_length);
 
@@ -775,7 +787,8 @@ void BGRAConvolve2D(const unsigned char* source_data,
     // Generate output rows until we have enough to run the current filter.
     if (use_sse2) {
       while (next_x_row < filter_offset + filter_length) {
-        if (next_x_row + 3 < last_filter_offset + last_filter_length - 1) {
+        if (next_x_row + 3 < last_filter_offset + last_filter_length -
+            avoid_sse_rows) {
           const unsigned char* src[4];
           unsigned char* out_row[4];
           for (int i = 0; i < 4; ++i) {
@@ -785,9 +798,9 @@ void BGRAConvolve2D(const unsigned char* source_data,
           ConvolveHorizontally4_SSE2(src, filter_x, out_row);
           next_x_row += 4;
         } else {
-          // For the last row, SSE2 load possibly to access data beyond the
-          // image area. therefore we use C version here. 
-          if (next_x_row == last_filter_offset + last_filter_length - 1) {
+          // Check if we need to avoid SSE2 for this row.
+          if (next_x_row >= last_filter_offset + last_filter_length -
+              avoid_sse_rows) {
             if (source_has_alpha) {
               ConvolveHorizontally<true>(
                   &source_data[next_x_row * source_byte_row_stride],

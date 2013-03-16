@@ -215,7 +215,15 @@ TEST(Convolver, SIMDVerification) {
   base::CPU cpu;
   if (!cpu.has_sse2()) return;
 
-  int source_sizes[][2] = { {1920, 1080}, {720, 480}, {1377, 523}, {325, 241} };
+  int source_sizes[][2] = {
+    {1,1}, {1,2}, {1,3}, {1,4}, {1,5},
+    {2,1}, {2,2}, {2,3}, {2,4}, {2,5},
+    {3,1}, {3,2}, {3,3}, {3,4}, {3,5},
+    {4,1}, {4,2}, {4,3}, {4,4}, {4,5},
+    {1920, 1080},
+    {720, 480},
+    {1377, 523},
+    {325, 241} };
   int dest_sizes[][2] = { {1280, 1024}, {480, 270}, {177, 123} };
   float filter[] = { 0.05f, -0.15f, 0.6f, 0.6f, -0.15f, 0.05f };
 
@@ -226,23 +234,26 @@ TEST(Convolver, SIMDVerification) {
     unsigned int source_width = source_sizes[i][0];
     unsigned int source_height = source_sizes[i][1];
     for (unsigned int j = 0; j < arraysize(dest_sizes); ++j) {
-      unsigned int dest_width = source_sizes[j][0];
-      unsigned int dest_height = source_sizes[j][1];
+      unsigned int dest_width = dest_sizes[j][0];
+      unsigned int dest_height = dest_sizes[j][1];
 
       // Preparing convolve coefficients.
       ConvolutionFilter1D x_filter, y_filter;
       for (unsigned int p = 0; p < dest_width; ++p) {
         unsigned int offset = source_width * p / dest_width;
-        if (offset > source_width - arraysize(filter))
-          offset = source_width - arraysize(filter);
-        x_filter.AddFilter(offset, filter, arraysize(filter));
+        EXPECT_LT(offset, source_width);
+        x_filter.AddFilter(offset, filter,
+                           std::min<int>(arraysize(filter),
+                                         source_width - offset));
       }
+      x_filter.PaddingForSIMD(8);
       for (unsigned int p = 0; p < dest_height; ++p) {
         unsigned int offset = source_height * p / dest_height;
-        if (offset > source_height - arraysize(filter))
-          offset = source_height - arraysize(filter);
-        y_filter.AddFilter(offset, filter, arraysize(filter));
+        y_filter.AddFilter(offset, filter,
+                           std::min<int>(arraysize(filter),
+                                         source_height - offset));
       }
+      y_filter.PaddingForSIMD(8);
 
       // Allocate input and output skia bitmap.
       SkBitmap source, result_c, result_sse;
@@ -259,7 +270,7 @@ TEST(Convolver, SIMDVerification) {
       // Randomize source bitmap for testing.
       unsigned char* src_ptr = static_cast<unsigned char*>(source.getPixels());
       for (int y = 0; y < source.height(); y++) {
-        for (int x = 0; x < source.rowBytes(); x++)
+        for (unsigned int x = 0; x < source.rowBytes(); x++)
           src_ptr[x] = rand() % 255;
         src_ptr += source.rowBytes();
       }
