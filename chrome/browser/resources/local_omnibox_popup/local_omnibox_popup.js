@@ -205,8 +205,7 @@ function handleNativeSuggestions() {
   }
 
   var height = getDropdownHeight();
-  // TODO(jered): Remove deprecated "reason" argument.
-  apiHandle.showOverlay(2, height);
+  apiHandle.showOverlay(height);
 }
 
 /**

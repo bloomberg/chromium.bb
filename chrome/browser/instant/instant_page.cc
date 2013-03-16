@@ -225,13 +225,12 @@ void InstantPage::OnInstantSupportDetermined(int page_id,
 }
 
 void InstantPage::OnShowInstantOverlay(int page_id,
-                                       InstantShownReason reason,
                                        int height,
                                        InstantSizeUnits units) {
   if (contents()->IsActiveEntry(page_id)) {
     OnInstantSupportDetermined(page_id, true);
     if (ShouldProcessShowInstantOverlay())
-      delegate_->ShowInstantOverlay(contents(), reason, height, units);
+      delegate_->ShowInstantOverlay(contents(), height, units);
   }
 }
 

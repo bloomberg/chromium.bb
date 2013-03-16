@@ -62,7 +62,6 @@ class InstantPage : public content::WebContentsObserver {
     // Called when the page wants to be shown. Usually in response to Update()
     // or SendAutocompleteResults().
     virtual void ShowInstantOverlay(const content::WebContents* contents,
-                                    InstantShownReason reason,
                                     int height,
                                     InstantSizeUnits units) = 0;
 
@@ -218,7 +217,6 @@ class InstantPage : public content::WebContentsObserver {
                         const std::vector<InstantSuggestion>& suggestions);
   void OnInstantSupportDetermined(int page_id, bool supports_instant);
   void OnShowInstantOverlay(int page_id,
-                            InstantShownReason reason,
                             int height,
                             InstantSizeUnits units);
   void OnFocusOmnibox(int page_id);

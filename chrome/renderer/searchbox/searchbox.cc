@@ -46,12 +46,10 @@ void SearchBox::ClearQuery() {
   query_.clear();
 }
 
-void SearchBox::ShowInstantOverlay(InstantShownReason reason,
-                                   int height,
-                                   InstantSizeUnits units) {
+void SearchBox::ShowInstantOverlay(int height, InstantSizeUnits units) {
   render_view()->Send(new ChromeViewHostMsg_ShowInstantOverlay(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), reason,
-      height, units));
+      render_view()->GetRoutingID(), render_view()->GetPageId(), height,
+      units));
 }
 
 void SearchBox::FocusOmnibox() {

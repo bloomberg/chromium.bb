@@ -36,7 +36,7 @@ function getNewTabPageHandle() {
 function handleNativeSuggestions() {
   onNativeSuggestionsCalls++;
   // Showing the loader at 100% height.
-  apiHandle.show(2 /* QUERY_SUGGESTIONS */);
+  apiHandle.showOverlay();
 }
 
 function handleSubmit() {

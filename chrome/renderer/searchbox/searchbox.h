@@ -35,9 +35,7 @@ class SearchBox : public content::RenderViewObserver,
   void ClearQuery();
 
   // Sends ChromeViewHostMsg_ShowInstantOverlay to the browser.
-  void ShowInstantOverlay(InstantShownReason reason,
-                          int height,
-                          InstantSizeUnits units);
+  void ShowInstantOverlay(int height, InstantSizeUnits units);
 
   // Sends ChromeViewHostMsg_FocusOmnibox to the browser.
   void FocusOmnibox();

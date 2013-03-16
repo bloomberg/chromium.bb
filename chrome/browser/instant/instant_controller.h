@@ -242,7 +242,6 @@ class InstantController : public InstantPage::Delegate,
       const std::vector<InstantSuggestion>& suggestions) OVERRIDE;
   virtual void ShowInstantOverlay(
       const content::WebContents* contents,
-      InstantShownReason reason,
       int height,
       InstantSizeUnits units) OVERRIDE;
   virtual void FocusOmnibox(const content::WebContents* contents) OVERRIDE;
@@ -305,9 +304,7 @@ class InstantController : public InstantPage::Delegate,
 
   // Counterpart to HideOverlay(). Asks the |browser_| to display the overlay
   // with the given |height| in |units|.
-  void ShowOverlay(InstantShownReason reason,
-                   int height,
-                   InstantSizeUnits units);
+  void ShowOverlay(int height, InstantSizeUnits units);
 
   // Send the omnibox popup bounds to the page.
   void SendPopupBoundsToPage();

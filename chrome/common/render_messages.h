@@ -118,7 +118,6 @@ IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(InstantSizeUnits)
 IPC_ENUM_TRAITS(InstantSuggestionType)
-IPC_ENUM_TRAITS(InstantShownReason)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(ThemeBackgroundImageAlignment)
@@ -690,9 +689,8 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_SearchBoxNavigate,
                     WindowOpenDisposition /* disposition */)
 
 // Sent by the Instant overlay asking to show itself with the given height.
-IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantOverlay,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ShowInstantOverlay,
                     int /* page_id */,
-                    InstantShownReason /* reason */,
                     int /* height */,
                     InstantSizeUnits /* units */)
 

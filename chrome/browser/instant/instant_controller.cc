@@ -1128,15 +1128,14 @@ void InstantController::SetSuggestions(
 
   // Extended mode pages will call ShowOverlay() when they are ready.
   if (!extended_enabled_)
-    ShowOverlay(INSTANT_SHOWN_QUERY_SUGGESTIONS, 100, INSTANT_SIZE_PERCENT);
+    ShowOverlay(100, INSTANT_SIZE_PERCENT);
 }
 
 void InstantController::ShowInstantOverlay(const content::WebContents* contents,
-                                           InstantShownReason reason,
                                            int height,
                                            InstantSizeUnits units) {
   if (extended_enabled_ && IsContentsFrom(overlay(), contents))
-    ShowOverlay(reason, height, units);
+    ShowOverlay(height, units);
 }
 
 void InstantController::FocusOmnibox(const content::WebContents* contents) {
@@ -1336,24 +1335,16 @@ void InstantController::HideInternal() {
   first_interaction_time_ = base::Time();
 }
 
-void InstantController::ShowOverlay(InstantShownReason reason,
-                                    int height,
-                                    InstantSizeUnits units) {
+void InstantController::ShowOverlay(int height, InstantSizeUnits units) {
   // If we are on a committed search results page, the |overlay_| is not in use.
   if (instant_tab_)
     return;
 
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "Show: reason=%d height=%d units=%d", reason, height, units));
-
-  // INSTANT_SHOWN_CUSTOM_NTP_CONTENT is no longer supported.
-  // TODO(samarth): remove once the server has been updated.
-  if (reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT)
-    return;
+      "Show: height=%d units=%d", height, units));
 
   // Must have updated omnibox after the last HideOverlay() to show suggestions.
-  if (reason == INSTANT_SHOWN_QUERY_SUGGESTIONS &&
-      !allow_overlay_to_show_search_suggestions_)
+  if (!allow_overlay_to_show_search_suggestions_)
     return;
 
   // The page is trying to hide itself. Hide explicitly (i.e., don't use
@@ -1373,11 +1364,9 @@ void InstantController::ShowOverlay(InstantShownReason reason,
   // Show at 100% height except in the following cases:
   // - The local overlay (omnibox popup) is being loaded.
   // - Instant is disabled. The page needs to be able to show only a dropdown.
-  // - The page wants to show custom NTP content.
   // - The page is over a website other than search or an NTP, and is not
   //   already showing at 100% height.
   if (overlay_->IsUsingLocalOverlay() || !instant_enabled_ ||
-      reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT ||
       (search_mode_.is_origin_default() && !IsFullHeight(model_)))
     model_.SetOverlayState(search_mode_, height, units);
   else

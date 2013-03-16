@@ -949,25 +949,17 @@ v8::Handle<v8::Value>
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::ShowOverlay(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view || args.Length() < 2) return v8::Undefined();
+  if (!render_view || args.Length() < 1) return v8::Undefined();
 
   DVLOG(1) << render_view << " ShowOverlay";
-  InstantShownReason reason = INSTANT_SHOWN_NOT_SPECIFIED;
-  switch (args[0]->Uint32Value()) {
-    case 1: reason = INSTANT_SHOWN_CUSTOM_NTP_CONTENT; break;
-    case 2: reason = INSTANT_SHOWN_QUERY_SUGGESTIONS; break;
-    case 3: reason = INSTANT_SHOWN_ZERO_SUGGESTIONS; break;
-    case 4: reason = INSTANT_SHOWN_CLICKED_QUERY_SUGGESTION; break;
-  }
 
   int height = 100;
   InstantSizeUnits units = INSTANT_SIZE_PERCENT;
-  if (args[1]->IsInt32()) {
-    height = args[1]->Int32Value();
+  if (args[0]->IsInt32()) {
+    height = args[0]->Int32Value();
     units = INSTANT_SIZE_PIXELS;
   }
-
-  SearchBox::Get(render_view)->ShowInstantOverlay(reason, height, units);
+  SearchBox::Get(render_view)->ShowInstantOverlay(height, units);
 
   return v8::Undefined();
 }

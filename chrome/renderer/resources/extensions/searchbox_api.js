@@ -252,12 +252,9 @@ if (!chrome.embeddedSearch) {
       this.setRestrictedValue = function(autocompleteResultId) {
         SetQueryFromAutocompleteResult(autocompleteResultId);
       };
-      // TODO(jered): Remove the deprecated "reason" argument.
-      this.showOverlay = function(reason, height) {
-        ShowOverlay(reason, height);
+      this.showOverlay = function(height) {
+        ShowOverlay(height);
       };
-      // TODO(jered): Remove this when GWS knows about showOverlay().
-      this.show = this.showOverlay;
       this.markDuplicateSuggestions = function(clientSuggestions) {
         return DedupeClientSuggestions(clientSuggestions);
       };
@@ -279,7 +276,6 @@ if (!chrome.embeddedSearch) {
       this.onresize = null;
       this.onkeypress = null;
       this.onkeycapturechange = null;
-      this.oncontextchange = null;
       this.onmarginchange = null;
       this.onnativesuggestions = null;
 
