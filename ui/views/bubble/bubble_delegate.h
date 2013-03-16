@@ -108,9 +108,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect();
 
-  // Show the bubble's widget (and |border_widget_| on Windows).
-  void Show();
-
   // Fade the bubble in or out via Widget transparency.
   // Fade in calls Widget::Show; fade out calls Widget::Close upon completion.
   void StartFade(bool fade_in);

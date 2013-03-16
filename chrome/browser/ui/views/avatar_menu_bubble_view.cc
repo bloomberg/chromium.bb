@@ -407,7 +407,7 @@ void AvatarMenuBubbleView::ShowBubble(
   views::BubbleDelegateView::CreateBubble(avatar_bubble_);
   avatar_bubble_->SetBackgroundColors();
   avatar_bubble_->SetAlignment(border_alignment);
-  avatar_bubble_->Show();
+  avatar_bubble_->GetWidget()->Show();
 }
 
 // static

@@ -30,8 +30,7 @@ void BookmarkPromptView::ShowPrompt(views::View* anchor_view,
   if (bookmark_bubble_)
     return;
   bookmark_bubble_ = new BookmarkPromptView(anchor_view, prefs);
-  views::BubbleDelegateView::CreateBubble(bookmark_bubble_);
-  bookmark_bubble_->Show();
+  views::BubbleDelegateView::CreateBubble(bookmark_bubble_)->Show();
 }
 
 BookmarkPromptView::BookmarkPromptView(views::View* anchor_view,

@@ -334,7 +334,7 @@ void LauncherTooltipManager::CloseSoon() {
 
 void LauncherTooltipManager::ShowInternal() {
   if (view_)
-    view_->Show();
+    view_->GetWidget()->Show();
 
   timer_.reset();
 }

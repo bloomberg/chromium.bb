@@ -488,7 +488,7 @@ void MessageCenterBubble::UpdateBubbleView() {
   const NotificationList::Notifications& notifications =
       message_center()->notification_list()->GetNotifications();
   contents_view_->UpdateAllNotifications(notifications);
-  bubble_view()->Show();
+  bubble_view()->GetWidget()->Show();
   bubble_view()->UpdateBubble();
 }
 

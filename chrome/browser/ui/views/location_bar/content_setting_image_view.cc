@@ -136,5 +136,5 @@ void ContentSettingImageView::OnClick(LocationBarView* parent) {
       views::BubbleBorder::TOP_RIGHT);
   bubble_widget_ = parent->delegate()->CreateViewsBubble(bubble);
   bubble_widget_->AddObserver(this);
-  bubble->Show();
+  bubble->GetWidget()->Show();
 }

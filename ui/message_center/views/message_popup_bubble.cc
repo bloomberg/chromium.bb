@@ -160,7 +160,7 @@ void MessagePopupBubble::UpdateBubbleView() {
   }
 
   contents_view_->Update(popups);
-  bubble_view()->Show();
+  bubble_view()->GetWidget()->Show();
   bubble_view()->UpdateBubble();
 
   std::set<std::string> old_popup_ids;

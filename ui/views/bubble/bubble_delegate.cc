@@ -237,10 +237,6 @@ gfx::Rect BubbleDelegateView::GetAnchorRect() {
   return anchor_bounds;
 }
 
-void BubbleDelegateView::Show() {
-  GetWidget()->Show();
-}
-
 void BubbleDelegateView::StartFade(bool fade_in) {
   fade_animation_.reset(new ui::SlideAnimation(this));
   fade_animation_->SetSlideDuration(kHideFadeDurationMS);
@@ -250,7 +246,7 @@ void BubbleDelegateView::StartFade(bool fade_in) {
     if (border_widget_)
       border_widget_->SetOpacity(original_opacity_);
     GetWidget()->SetOpacity(original_opacity_);
-    Show();
+    GetWidget()->Show();
     fade_animation_->Show();
   } else {
     original_opacity_ = 255;

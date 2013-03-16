@@ -77,7 +77,7 @@ TouchEditingMenuView::TouchEditingMenuView(
   CreateButtons();
   views::BubbleDelegateView::CreateBubble(this);
   GetBubbleFrameView()->set_background(NULL);
-  Show();
+  GetWidget()->Show();
 }
 
 TouchEditingMenuView::~TouchEditingMenuView() {

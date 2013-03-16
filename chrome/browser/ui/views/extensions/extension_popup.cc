@@ -204,7 +204,7 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
 }
 
 void ExtensionPopup::ShowBubble() {
-  Show();
+  GetWidget()->Show();
 
   // Focus on the host contents when the bubble is first shown.
   host()->host_contents()->GetView()->Focus();

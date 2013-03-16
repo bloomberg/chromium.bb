@@ -53,7 +53,7 @@ void OpenPDFInReaderView::ShowBubble() {
   bubble_ = new OpenPDFInReaderBubbleView(this, model_);
   views::BubbleDelegateView::CreateBubble(bubble_);
   bubble_->GetWidget()->AddObserver(this);
-  bubble_->Show();
+  bubble_->GetWidget()->Show();
 }
 
 void OpenPDFInReaderView::GetAccessibleState(ui::AccessibleViewState* state) {

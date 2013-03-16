@@ -85,8 +85,7 @@ void ChromeToMobileBubbleView::ShowBubble(views::View* anchor_view,
   // Show the lit mobile device icon during the bubble's lifetime.
   SetTextButtonIconToId(anchor_view, IDR_MOBILE_LIT);
   bubble_ = new ChromeToMobileBubbleView(anchor_view, browser);
-  views::BubbleDelegateView::CreateBubble(bubble_);
-  bubble_->Show();
+  views::BubbleDelegateView::CreateBubble(bubble_)->Show();
 }
 
 // static

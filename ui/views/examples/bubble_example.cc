@@ -90,7 +90,7 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (config.fade_in)
     bubble_delegate->StartFade(true);
   else
-    bubble_delegate->Show();
+    bubble_delegate->GetWidget()->Show();
 
   if (config.fade_out) {
     bubble_delegate->set_close_on_esc(false);

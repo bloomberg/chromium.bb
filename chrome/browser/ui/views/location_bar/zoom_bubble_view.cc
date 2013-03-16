@@ -80,7 +80,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
     if (is_fullscreen)
       zoom_bubble_->AdjustForFullscreen(browser_view->GetBoundsInScreen());
 
-    zoom_bubble_->Show();
+    zoom_bubble_->GetWidget()->Show();
   }
 }
 

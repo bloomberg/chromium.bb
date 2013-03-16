@@ -40,8 +40,7 @@ void CreatePointyBubble(views::View* anchor_view) {
   config.anchor_view = anchor_view;
   config.arrow = views::BubbleBorder::TOP_LEFT;
   ExampleBubbleDelegateView* bubble = new ExampleBubbleDelegateView(config);
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->Show();
+  views::BubbleDelegateView::CreateBubble(bubble)->Show();
 }
 
 }  // namespace shell

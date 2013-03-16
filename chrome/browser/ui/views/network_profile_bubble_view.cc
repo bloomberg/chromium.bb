@@ -36,8 +36,7 @@ void NetworkProfileBubble::ShowNotification(Browser* browser) {
     anchor = browser_view->GetToolbarView()->app_menu();
   NetworkProfileBubbleView* bubble =
       new NetworkProfileBubbleView(anchor, browser, browser->profile());
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->Show();
+  views::BubbleDelegateView::CreateBubble(bubble)->Show();
   NetworkProfileBubble::SetNotificationShown(true);
 
   // Mark the time of the last bubble and reduce the number of warnings left

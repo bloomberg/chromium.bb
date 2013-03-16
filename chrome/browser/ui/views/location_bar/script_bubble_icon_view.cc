@@ -96,6 +96,5 @@ void ScriptBubbleIconView::ShowScriptBubble(views::View* anchor_view,
                                             WebContents* web_contents) {
   ScriptBubbleView* script_bubble = new ScriptBubbleView(anchor_view,
                                                          web_contents);
-  views::BubbleDelegateView::CreateBubble(script_bubble);
-  script_bubble->Show();
+  views::BubbleDelegateView::CreateBubble(script_bubble)->Show();
 }

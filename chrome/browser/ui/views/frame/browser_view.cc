@@ -2643,7 +2643,7 @@ void BrowserView::ShowPasswordGenerationBubble(
 
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);
-  bubble->Show();
+  bubble->GetWidget()->Show();
 }
 
 void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),

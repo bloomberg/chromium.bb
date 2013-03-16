@@ -382,7 +382,7 @@ void SpeechRecognitionBubbleImpl::Show() {
     views::BubbleDelegateView::CreateBubble(bubble_);
     UpdateLayout();
   }
-  bubble_->Show();
+  bubble_->GetWidget()->Show();
 }
 
 void SpeechRecognitionBubbleImpl::Hide() {

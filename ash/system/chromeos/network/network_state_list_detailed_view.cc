@@ -703,8 +703,7 @@ void NetworkStateListDetailedView::ToggleInfoBubble() {
 
   info_bubble_ = new NonActivatableSettingsBubble(
       info_icon_, CreateNetworkInfoView());
-  views::BubbleDelegateView::CreateBubble(info_bubble_);
-  info_bubble_->Show();
+  views::BubbleDelegateView::CreateBubble(info_bubble_)->Show();
 }
 
 bool NetworkStateListDetailedView::ResetInfoBubble() {

@@ -1196,16 +1196,14 @@ TEST_F(WidgetTest, FocusChangesOnBubble) {
   BubbleDelegateView* bubble_delegate_view =
       new BubbleDelegateView(contents_view, BubbleBorder::TOP_LEFT);
   bubble_delegate_view->set_focusable(true);
-  Widget* bubble_widget =
-      BubbleDelegateView::CreateBubble(bubble_delegate_view);
-  bubble_delegate_view->Show();
+  BubbleDelegateView::CreateBubble(bubble_delegate_view)->Show();
   bubble_delegate_view->RequestFocus();
 
   // |contents_view_| should no longer have focus.
   EXPECT_FALSE(contents_view->HasFocus());
   EXPECT_TRUE(bubble_delegate_view->HasFocus());
 
-  bubble_widget->CloseNow();
+  bubble_delegate_view->GetWidget()->CloseNow();
 
   // Closing the bubble should result in focus going back to the contents view.
   EXPECT_TRUE(contents_view->HasFocus());

@@ -95,7 +95,7 @@ TEST_F(BubbleFrameViewTest, NonClientHitTest) {
   BubbleDelegateView* delegate =
       new SizedBubbleDelegateView(anchor_widget->GetContentsView());
   Widget* widget(BubbleDelegateView::CreateBubble(delegate));
-  delegate->Show();
+  widget->Show();
   gfx::Point kPtInBound(100, 100);
   gfx::Point kPtOutsideBound(1000, 1000);
   BubbleFrameView* bubble_frame_view = delegate->GetBubbleFrameView();

@@ -240,8 +240,7 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
 
-  views::BubbleDelegateView::CreateBubble(this);
-  Show();
+  views::BubbleDelegateView::CreateBubble(this)->Show();
   SizeToContents();
 }
 
@@ -334,8 +333,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   set_margins(gfx::Insets(kPopupMarginTop, kPopupMarginLeft,
                           kPopupMarginBottom, kPopupMarginRight));
 
-  views::BubbleDelegateView::CreateBubble(this);
-  this->Show();
+  views::BubbleDelegateView::CreateBubble(this)->Show();
   SizeToContents();
 
   TabSpecificContentSettings* content_settings =

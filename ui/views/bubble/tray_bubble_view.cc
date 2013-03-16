@@ -295,7 +295,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
   if (get_use_acceleration_when_possible())
     layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
 
-  Show();
+  GetWidget()->Show();
   UpdateBubble();
 }
 

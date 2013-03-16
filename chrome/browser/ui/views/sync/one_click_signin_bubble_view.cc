@@ -204,8 +204,7 @@ void OneClickSigninBubbleView::ShowBubble(
       new OneClickSigninDialogView(toolbar_view->GetWebContents(),
                                    toolbar_view->location_bar(), start_sync);
 
-  views::BubbleDelegateView::CreateBubble(bubble_view_);
-  bubble_view_->Show();
+  views::BubbleDelegateView::CreateBubble(bubble_view_)->Show();
 }
 
 // static

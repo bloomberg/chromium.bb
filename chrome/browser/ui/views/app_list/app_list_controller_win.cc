@@ -511,7 +511,7 @@ void AppListController::ShowAppList(Profile* profile) {
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).
   if (IsAppListVisible() && (profile == profile_)) {
-    current_view_->Show();
+    current_view_->GetWidget()->Show();
     current_view_->GetWidget()->Activate();
     return;
   }
@@ -525,7 +525,7 @@ void AppListController::ShowAppList(Profile* profile) {
   EnsureHaveKeepAliveForView();
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   UpdateArrowPositionAndAnchorPoint(cursor);
-  current_view_->Show();
+  current_view_->GetWidget()->Show();
   current_view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
   current_view_->GetWidget()->Activate();
 }

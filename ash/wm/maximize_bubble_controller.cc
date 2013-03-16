@@ -425,7 +425,7 @@ MaximizeBubbleController::Bubble::Bubble(
   SizeToContents();
 
   if (!appearance_delay_ms_)
-    Show();
+    GetWidget()->Show();
   else
     StartFade(true);
 
