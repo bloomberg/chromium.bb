@@ -51,9 +51,7 @@ class TwoClientAutofillSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillSyncTest);
 };
 
-// Flaky, http://crbug.com/102687
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
-                       DISABLED_WebDataServiceSanity) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, WebDataServiceSanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Client0 adds a key.
