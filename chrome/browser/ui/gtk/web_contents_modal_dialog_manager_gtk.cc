@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
@@ -12,6 +11,9 @@
 
 namespace {
 
+// Web contents modal dialog manager implementation for the GTK port. Unlike the
+// Win32 system, ConstrainedWindowGtk doesn't draw draggable fake windows and
+// instead just centers the dialog. It is thus an order of magnitude simpler.
 class NativeWebContentsModalDialogManagerGtk
     : public NativeWebContentsModalDialogManager {
  public:
@@ -26,6 +28,9 @@ class NativeWebContentsModalDialogManagerGtk
 
   // NativeWebContentsModalDialogManager overrides
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    DCHECK(g_object_is_floating(GetGtkWidget(dialog)));
+    g_object_ref_sink(GetGtkWidget(dialog));
+
     g_signal_connect(GetGtkWidget(dialog), "hierarchy-changed",
                      G_CALLBACK(OnHierarchyChangedThunk), this);
     g_signal_connect(GetGtkWidget(dialog),
@@ -78,14 +83,6 @@ class NativeWebContentsModalDialogManagerGtk
     return GTK_WIDGET(dialog);
   }
 
-  ConstrainedWindowGtk* GetConstrainedWindowGtk(
-      NativeWebContentsModalDialog dialog) {
-    gpointer constrained_window_gtk =
-        g_object_get_data(G_OBJECT(dialog), "ConstrainedWindowGtk");
-    DCHECK(constrained_window_gtk);
-    return static_cast<ConstrainedWindowGtk*>(constrained_window_gtk);
-  }
-
   // Returns the View that we collaborate with to position ourselves.
   TabContentsViewType* ContainingView() const {
     // WebContents may be destroyed already on tab shutdown.
@@ -133,7 +130,7 @@ void NativeWebContentsModalDialogManagerGtk::OnDestroy(
 
   native_delegate_->WillClose(sender);
 
-  delete GetConstrainedWindowGtk(sender);
+  g_object_unref(sender);
 }
 
 }  // namespace

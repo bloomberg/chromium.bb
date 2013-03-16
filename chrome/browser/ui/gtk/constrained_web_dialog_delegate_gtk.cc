@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
+
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_source.h"
@@ -11,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
