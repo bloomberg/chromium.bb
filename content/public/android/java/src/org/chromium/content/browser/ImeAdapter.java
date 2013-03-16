@@ -24,21 +24,26 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 /**
- We have to adapt and plumb android IME service and chrome text input API.
- ImeAdapter provides an interface in both ways native <-> java:
- 1. InputConnectionAdapter notifies native code of text composition state and
-    dispatch key events from java -> WebKit.
- 2. Native ImeAdapter notifies java side to clear composition text.
-
- The basic flow is:
- 1. When InputConnectionAdapter gets called with composition or result text:
-    If we receive a composition text or a result text, then we just need to
-    dispatch a synthetic key event with special keycode 229, and then dispatch
-    the composition or result text.
- 2. Intercept dispatchKeyEvent() method for key events not handled by IME, we
-    need to dispatch them to webkit and check webkit's reply. Then inject a
-    new key event for further processing if webkit didn't handle it.
-*/
+ * Adapts and plumbs android IME service onto the chrome text input API.
+ * ImeAdapter provides an interface in both ways native <-> java:
+ * 1. InputConnectionAdapter notifies native code of text composition state and
+ *    dispatch key events from java -> WebKit.
+ * 2. Native ImeAdapter notifies java side to clear composition text.
+ *
+ * The basic flow is:
+ * 1. When InputConnectionAdapter gets called with composition or result text:
+ *    If we receive a composition text or a result text, then we just need to
+ *    dispatch a synthetic key event with special keycode 229, and then dispatch
+ *    the composition or result text.
+ * 2. Intercept dispatchKeyEvent() method for key events not handled by IME, we
+ *   need to dispatch them to webkit and check webkit's reply. Then inject a
+ *   new key event for further processing if webkit didn't handle it.
+ *
+ * Note that the native peer object does not take any strong reference onto the
+ * instance of this java object, hence it is up to the client of this class (e.g.
+ * the ViewEmbedder implementor) to hold a strong reference to it for the required
+ * lifetime of the object.
+ */
 @JNINamespace("content")
 class ImeAdapter {
     interface ViewEmbedder {

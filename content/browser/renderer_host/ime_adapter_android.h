@@ -7,6 +7,8 @@
 
 #include <jni.h>
 
+#include "base/android/jni_helper.h"
+
 namespace content {
 
 class RenderWidgetHostViewAndroid;
@@ -15,6 +17,8 @@ struct NativeWebKeyboardEvent;
 // This class is in charge of dispatching key events from the java side
 // and forward to renderer along with input method results via
 // corresponding host view.
+// Ownership of these objects remains on the native side (see
+// RenderWidgetHostViewAndroid).
 class ImeAdapterAndroid {
  public:
   explicit ImeAdapterAndroid(RenderWidgetHostViewAndroid* rwhva);
@@ -53,7 +57,7 @@ class ImeAdapterAndroid {
 
  private:
   RenderWidgetHostViewAndroid* rwhva_;
-  jobject java_ime_adapter_;
+  JavaObjectWeakGlobalRef java_ime_adapter_;
 };
 
 bool RegisterImeAdapter(JNIEnv* env);

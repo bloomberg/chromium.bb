@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -87,16 +88,14 @@ bool RegisterImeAdapter(JNIEnv* env) {
 }
 
 ImeAdapterAndroid::ImeAdapterAndroid(RenderWidgetHostViewAndroid* rwhva)
-    : rwhva_(rwhva),
-      java_ime_adapter_(NULL) {
+    : rwhva_(rwhva) {
 }
 
 ImeAdapterAndroid::~ImeAdapterAndroid() {
-  if (java_ime_adapter_) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_ImeAdapter_detach(env, java_ime_adapter_);
-    env->DeleteGlobalRef(java_ime_adapter_);
-  }
+  JNIEnv* env = AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  if (!obj.is_null())
+    Java_ImeAdapter_detach(env, obj.obj());
 }
 
 bool ImeAdapterAndroid::SendSyntheticKeyEvent(JNIEnv*,
@@ -175,11 +174,14 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env, jobject, jstring text) {
 }
 
 void ImeAdapterAndroid::AttachImeAdapter(JNIEnv* env, jobject java_object) {
-  java_ime_adapter_ = AttachCurrentThread()->NewGlobalRef(java_object);
+  java_ime_adapter_ = JavaObjectWeakGlobalRef(env, java_object);
 }
 
 void ImeAdapterAndroid::CancelComposition() {
-  Java_ImeAdapter_cancelComposition(AttachCurrentThread(), java_ime_adapter_);
+  base::android::ScopedJavaLocalRef<jobject> obj =
+      java_ime_adapter_.get(AttachCurrentThread());
+  if (!obj.is_null())
+    Java_ImeAdapter_cancelComposition(AttachCurrentThread(), obj.obj());
 }
 
 void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,
