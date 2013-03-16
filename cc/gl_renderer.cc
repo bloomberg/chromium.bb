@@ -983,8 +983,6 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame& frame,
                            (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
                            alpha));
 
-  GLC(Context(), Context()->uniform2f(uniforms.tex_scale_location, 1.0f, 1.0f));
-
   if (use_aa)
     GLC(Context(), Context()->uniform3fv(uniforms.edge_location, 8, edge));
 
