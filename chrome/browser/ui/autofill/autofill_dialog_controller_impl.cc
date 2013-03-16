@@ -613,53 +613,56 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
 
 scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     DialogSection section) {
-  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-  std::string item_key = model->GetItemKeyForCheckedItem();
-  scoped_ptr<DataModelWrapper> wrapper;
-  if (item_key.empty())
-    return wrapper.Pass();
-
-  if (IsPayingWithWallet()) {
-    // Use |full_wallet_| if it exists as it has unmasked data.
-    if (full_wallet_.get()) {
-      if (section == SECTION_CC_BILLING)
-        wrapper.reset(new FullWalletBillingWrapper(full_wallet_.get()));
-      else
-        wrapper.reset(new FullWalletShippingWrapper(full_wallet_.get()));
-    } else {
-      int index;
-      bool success = base::StringToInt(item_key, &index);
-      DCHECK(success);
-
-      if (section == SECTION_CC_BILLING) {
-        wrapper.reset(
-            new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
-      } else {
-        wrapper.reset(
-            new WalletAddressWrapper(wallet_items_->addresses()[index]));
-      }
+  if (IsPayingWithWallet() && full_wallet_) {
+    if (section == SECTION_CC_BILLING) {
+      return scoped_ptr<DataModelWrapper>(
+          new FullWalletBillingWrapper(full_wallet_.get()));
     }
-  } else if (section == SECTION_CC) {
-    CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
-    DCHECK(card);
-    wrapper.reset(new AutofillCreditCardWrapper(card));
-  } else {
-    // Calculate the variant by looking at how many items come from the same
-    // FormGroup.
-    size_t variant = 0;
-    for (int i = model->checked_item() - 1; i >= 0; --i) {
-      if (model->GetItemKeyAt(i) == item_key)
-        variant++;
-      else
-        break;
+    if (section == SECTION_SHIPPING) {
+      return scoped_ptr<DataModelWrapper>(
+          new FullWalletShippingWrapper(full_wallet_.get()));
     }
-
-    AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
-    DCHECK(profile);
-    wrapper.reset(new AutofillProfileWrapper(profile, variant));
   }
 
-  return wrapper.Pass();
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  std::string item_key = model->GetItemKeyForCheckedItem();
+  if (item_key.empty())
+    return scoped_ptr<DataModelWrapper>();
+
+  if (IsPayingWithWallet()) {
+    int index;
+    bool success = base::StringToInt(item_key, &index);
+    DCHECK(success);
+
+    if (section == SECTION_CC_BILLING) {
+      return scoped_ptr<DataModelWrapper>(
+          new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
+    }
+    // TODO(dbeam): should SECTION_EMAIL get here?
+    return scoped_ptr<DataModelWrapper>(
+        new WalletAddressWrapper(wallet_items_->addresses()[index]));
+  }
+
+  if (section == SECTION_CC) {
+    CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
+    DCHECK(card);
+    return scoped_ptr<DataModelWrapper>(new AutofillCreditCardWrapper(card));
+  }
+
+  // Calculate the variant by looking at how many items come from the same
+  // FormGroup.
+  size_t variant = 0;
+  for (int i = model->checked_item() - 1; i >= 0; --i) {
+    if (model->GetItemKeyAt(i) == item_key)
+      variant++;
+    else
+      break;
+  }
+
+  AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
+  DCHECK(profile);
+  return scoped_ptr<DataModelWrapper>(
+      new AutofillProfileWrapper(profile, variant));
 }
 
 gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
@@ -1368,13 +1371,11 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
   if (!SectionIsActive(section))
     return;
 
-  // Fill the combined credit card and billing section from |full_wallet_| (via
-  // |CreateWrapper()|) as card number and CVC are auto-generated.
-  if (!IsManuallyEditingSection(section) || section == SECTION_CC_BILLING) {
-    scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+  if (wrapper) {
     // Only fill in data that is associated with this section.
     const DetailInputs& inputs = RequestedFieldsForSection(section);
-    model->FillFormStructure(inputs, compare, &form_structure_);
+    wrapper->FillFormStructure(inputs, compare, &form_structure_);
 
     // CVC needs special-casing because the CreditCard class doesn't store or
     // handle them. This isn't necessary when filling the combined CC and
