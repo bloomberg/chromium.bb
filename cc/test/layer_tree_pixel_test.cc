@@ -90,34 +90,6 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
   return layer;
 }
 
-scoped_refptr<SolidColorLayer> LayerTreePixelTest::
-    CreateSolidColorLayerWithBorder(
-        gfx::Rect rect, SkColor color, int border_width, SkColor border_color) {
-  scoped_refptr<SolidColorLayer> layer = CreateSolidColorLayer(rect, color);
-  scoped_refptr<SolidColorLayer> border_top = CreateSolidColorLayer(
-      gfx::Rect(0, 0, rect.width(), border_width), border_color);
-  scoped_refptr<SolidColorLayer> border_left = CreateSolidColorLayer(
-      gfx::Rect(0,
-                border_width,
-                border_width,
-                rect.height() - border_width * 2),
-      border_color);
-  scoped_refptr<SolidColorLayer> border_right = CreateSolidColorLayer(
-      gfx::Rect(rect.width() - border_width,
-                border_width,
-                border_width,
-                rect.height() - border_width * 2),
-      border_color);
-  scoped_refptr<SolidColorLayer> border_bottom = CreateSolidColorLayer(
-      gfx::Rect(0, rect.height() - border_width, rect.width(), border_width),
-      border_color);
-  layer->AddChild(border_top);
-  layer->AddChild(border_left);
-  layer->AddChild(border_right);
-  layer->AddChild(border_bottom);
-  return layer;
-}
-
 void LayerTreePixelTest::RunPixelTest(
     scoped_refptr<Layer> content_root,
     base::FilePath file_name)
