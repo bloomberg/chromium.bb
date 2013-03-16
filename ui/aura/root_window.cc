@@ -264,9 +264,9 @@ void RootWindow::OnMouseEventsEnableStateChanged(bool enabled) {
 }
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
-  gfx::Point location = location_in_dip;
-  layer()->transform().TransformPoint(location);
-  host_->MoveCursorTo(ui::ConvertPointToPixel(layer(), location));
+  gfx::Point3F point_3f(location_in_dip);
+  GetRootTransform().TransformPoint(point_3f);
+  host_->MoveCursorTo(gfx::ToRoundedPoint(point_3f.AsPointF()));
   SetLastMouseLocation(this, location_in_dip);
   client::CursorClient* cursor_client = client::GetCursorClient(this);
   if (cursor_client) {
@@ -384,9 +384,7 @@ void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {
 }
 
 void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
-  // TODO(oshima): Take the root window's transform into account.
-  *point = gfx::ToFlooredPoint(
-      gfx::ScalePoint(*point, ui::GetDeviceScaleFactor(layer())));
+  ConvertPointToHost(point);
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(location.x(), location.y());
 }
@@ -394,8 +392,19 @@ void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
 void RootWindow::ConvertPointFromNativeScreen(gfx::Point* point) const {
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(-location.x(), -location.y());
-  *point = gfx::ToFlooredPoint(
-      gfx::ScalePoint(*point, 1 / ui::GetDeviceScaleFactor(layer())));
+  ConvertPointFromHost(point);
+}
+
+void RootWindow::ConvertPointToHost(gfx::Point* point) const {
+  gfx::Point3F point_3f(*point);
+  GetRootTransform().TransformPoint(point_3f);
+  *point = gfx::ToRoundedPoint(point_3f.AsPointF());
+}
+
+void RootWindow::ConvertPointFromHost(gfx::Point* point) const {
+  gfx::Point3F point_3f(*point);
+  GetRootTransform().TransformPointReverse(point_3f);
+  *point = gfx::ToRoundedPoint(point_3f.AsPointF());
 }
 
 void RootWindow::ProcessedTouchEvent(ui::TouchEvent* event,
@@ -661,11 +670,7 @@ void RootWindow::ClearMouseHandlers() {
 // RootWindow, private:
 
 void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
-  float scale = ui::GetDeviceScaleFactor(layer());
-  gfx::Transform transform;
-  transform.Scale(scale, scale);
-  transform *= layer()->transform();
-  event->UpdateForRootTransform(transform);
+  event->UpdateForRootTransform(GetRootTransform());
 }
 
 void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
@@ -1131,11 +1136,7 @@ void RootWindow::SynthesizeMouseMoveEvent() {
     return;
   synthesize_mouse_move_ = false;
   gfx::Point3F point(GetLastMouseLocationInRoot());
-  float scale = ui::GetDeviceScaleFactor(layer());
-  gfx::Transform transform;
-  transform.Scale(scale, scale);
-  transform *= layer()->transform();
-  transform.TransformPoint(point);
+  GetRootTransform().TransformPoint(point);
   gfx::Point orig_mouse_location = gfx::ToFlooredPoint(point.AsPointF());
 
   // TODO(derat|oshima): Don't use mouse_button_flags_ as it's
@@ -1146,6 +1147,14 @@ void RootWindow::SynthesizeMouseMoveEvent() {
                        ui::EF_IS_SYNTHESIZED);
   event.set_system_location(Env::GetInstance()->last_mouse_location());
   OnHostMouseEvent(&event);
+}
+
+gfx::Transform RootWindow::GetRootTransform() const {
+  float scale = ui::GetDeviceScaleFactor(layer());
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  transform *= layer()->transform();
+  return transform;
 }
 
 }  // namespace aura

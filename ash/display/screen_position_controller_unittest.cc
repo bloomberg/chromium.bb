@@ -17,11 +17,15 @@
 #if defined(OS_WIN)
 // TOD(mazda): UpdateDisplay does not work properly on Win.
 // Fix this and enable tests.
-#define MAYBE_ConvertNativePointToScreen DISABLED_ConvertNativePointToScreen
-#define MAYBE_ConvertNativePointToScreenHiDPI DISABLED_ConvertNativePointToScreenHiDPI
+#define MAYBE_ConvertHostPointToScreen DISABLED_ConvertHostPointToScreen
+#define MAYBE_ConvertHostPointToScreenHiDPI DISABLED_ConvertHostPointToScreenHiDPI
+#define MAYBE_ConvertHostPointToScreenRotate DISABLED_ConvertHostPointToScreenRotate
+#define MAYBE_ConvertHostPointToScreenUIScale DISABLED_ConvertHostPointToScreenUIScale
 #else
-#define MAYBE_ConvertNativePointToScreen ConvertNativePointToScreen
-#define MAYBE_ConvertNativePointToScreenHiDPI ConvertNativePointToScreenHiDPI
+#define MAYBE_ConvertHostPointToScreen ConvertHostPointToScreen
+#define MAYBE_ConvertHostPointToScreenHiDPI ConvertHostPointToScreenHiDPI
+#define MAYBE_ConvertHostPointToScreenRotate ConvertHostPointToScreenRotate
+#define MAYBE_ConvertHostPointToScreenUIScale ConvertHostPointToScreenUIScale
 #endif
 
 namespace ash {
@@ -60,12 +64,12 @@ class ScreenPositionControllerTest : public test::AshTestBase {
     AshTestBase::TearDown();
   }
 
-  // Converts a native point (x, y) to screen and returns its string
-  // representation.
-  std::string ConvertNativePointToScreen(int x, int y) const {
+  // Converts a point (x, y) in host window's coordinate to screen and
+  // returns its string representation.
+  std::string ConvertHostPointToScreen(int x, int y) const {
     gfx::Point point(x, y);
-    GetScreenPositionController()->ConvertNativePointToScreen(
-        window_.get(), &point);
+    GetScreenPositionController()->ConvertHostPointToScreen(
+        window_->GetRootWindow(), &point);
     return point.ToString();
   }
 
@@ -79,7 +83,7 @@ class ScreenPositionControllerTest : public test::AshTestBase {
 
 }  // namespace
 
-TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreen) {
+TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   UpdateDisplay("100+100-200x200,100+500-200x200");
 
   Shell::RootWindowList root_windows =
@@ -95,35 +99,35 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreen) {
       Shell::GetScreen()->GetDisplayNearestPoint(window_pos));
   SetSecondaryDisplayLayout(DisplayLayout::RIGHT);
   // The point is on the primary root window.
-  EXPECT_EQ("150,150", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("350,350", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("250,250", ConvertHostPointToScreen(250, 250));
   // The point is on the secondary display.
-  EXPECT_EQ("350,100", ConvertNativePointToScreen(50, 400));
+  EXPECT_EQ("250,0", ConvertHostPointToScreen(50, 400));
 
   SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
   // The point is on the primary root window.
-  EXPECT_EQ("150,150", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("350,350", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("250,250", ConvertHostPointToScreen(250, 250));
   // The point is on the secondary display.
-  EXPECT_EQ("150,300", ConvertNativePointToScreen(50, 400));
+  EXPECT_EQ("50,200", ConvertHostPointToScreen(50, 400));
 
   SetSecondaryDisplayLayout(DisplayLayout::LEFT);
   // The point is on the primary root window.
-  EXPECT_EQ("150,150", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("350,350", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("250,250", ConvertHostPointToScreen(250, 250));
   // The point is on the secondary display.
-  EXPECT_EQ("-50,100", ConvertNativePointToScreen(50, 400));
+  EXPECT_EQ("-150,0", ConvertHostPointToScreen(50, 400));
 
   SetSecondaryDisplayLayout(DisplayLayout::TOP);
   // The point is on the primary root window.
-  EXPECT_EQ("150,150", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("50,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("350,350", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("250,250", ConvertHostPointToScreen(250, 250));
   // The point is on the secondary display.
-  EXPECT_EQ("150,-100", ConvertNativePointToScreen(50, 400));
+  EXPECT_EQ("50,-200", ConvertHostPointToScreen(50, 400));
 
 
   SetSecondaryDisplayLayout(DisplayLayout::RIGHT);
@@ -132,38 +136,38 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreen) {
       gfx::Rect(window_pos2, gfx::Size(100, 100)),
       Shell::GetScreen()->GetDisplayNearestPoint(window_pos2));
   // The point is on the secondary display.
-  EXPECT_EQ("350,150", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("250,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("550,350", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("450,250", ConvertHostPointToScreen(250, 250));
   // The point is on the primary root window.
-  EXPECT_EQ("150,100", ConvertNativePointToScreen(50, -400));
+  EXPECT_EQ("50,0", ConvertHostPointToScreen(50, -400));
 
   SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
   // The point is on the secondary display.
-  EXPECT_EQ("150,350", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("50,250", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("350,550", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("250,450", ConvertHostPointToScreen(250, 250));
   // The point is on the primary root window.
-  EXPECT_EQ("150,100", ConvertNativePointToScreen(50, -400));
+  EXPECT_EQ("50,0", ConvertHostPointToScreen(50, -400));
 
   SetSecondaryDisplayLayout(DisplayLayout::LEFT);
   // The point is on the secondary display.
-  EXPECT_EQ("-50,150", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("-150,50", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("150,350", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("50,250", ConvertHostPointToScreen(250, 250));
   // The point is on the primary root window.
-  EXPECT_EQ("150,100", ConvertNativePointToScreen(50, -400));
+  EXPECT_EQ("50,0", ConvertHostPointToScreen(50, -400));
 
   SetSecondaryDisplayLayout(DisplayLayout::TOP);
   // The point is on the secondary display.
-  EXPECT_EQ("150,-50", ConvertNativePointToScreen(50, 50));
+  EXPECT_EQ("50,-150", ConvertHostPointToScreen(50, 50));
   // The point is out of the all root windows.
-  EXPECT_EQ("350,150", ConvertNativePointToScreen(250, 250));
+  EXPECT_EQ("250,50", ConvertHostPointToScreen(250, 250));
   // The point is on the primary root window.
-  EXPECT_EQ("150,100", ConvertNativePointToScreen(50, -400));
+  EXPECT_EQ("50,0", ConvertHostPointToScreen(50, -400));
 }
 
-TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreenHiDPI) {
+TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenHiDPI) {
   UpdateDisplay("100+100-200x200*2,100+500-200x200");
 
   Shell::RootWindowList root_windows =
@@ -178,18 +182,91 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreenHiDPI) {
   // Put |window_| to the primary 2x display.
   window_->SetBoundsInScreen(gfx::Rect(20, 20, 50, 50),
                              display_controller->GetPrimaryDisplay());
-  // (30, 30) means the native coordinate, so the point is still on the primary
+  // (30, 30) means the host coordinate, so the point is still on the primary
   // root window.  Since it's 2x, the specified native point was halved.
-  EXPECT_EQ("35,35", ConvertNativePointToScreen(30, 30));
+  EXPECT_EQ("15,15", ConvertHostPointToScreen(30, 30));
   // Similar to above but the point is out of the all root windows.
-  EXPECT_EQ("220,220", ConvertNativePointToScreen(400, 400));
+  EXPECT_EQ("200,200", ConvertHostPointToScreen(400, 400));
   // Similar to above but the point is on the secondary display.
-  EXPECT_EQ("120,35", ConvertNativePointToScreen(200, 30));
+  EXPECT_EQ("100,15", ConvertHostPointToScreen(200, 30));
+
+  // On secondary display. The position on the 2nd host window is (150,50)
+  // so the screen position is (100,0) + (150,50).
+  EXPECT_EQ("250,50", ConvertHostPointToScreen(150, 450));
+
   // At the edge but still in the primary display.  Remaining of the primary
   // display is (50, 50) but adding ~100 since it's 2x-display.
-  EXPECT_EQ("99,99", ConvertNativePointToScreen(159, 159));
+  EXPECT_EQ("79,79", ConvertHostPointToScreen(158, 158));
   // At the edge of the secondary display.
-  EXPECT_EQ("100,100", ConvertNativePointToScreen(160, 160));
+  EXPECT_EQ("80,80", ConvertHostPointToScreen(160, 160));
+}
+
+TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenRotate) {
+  // 1st display is rotated 90 clockise, and 2nd display is rotated
+  // 270 clockwise.
+  UpdateDisplay("100+100-200x200/r,100+500-200x200/l");
+  ash::DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  // Put |window_| to the 1st.
+  window_->SetBoundsInScreen(gfx::Rect(20, 20, 50, 50),
+                             display_controller->GetPrimaryDisplay());
+
+  // The point is on the 1st host.
+  EXPECT_EQ("70,149", ConvertHostPointToScreen(50, 70));
+  // The point is out of the host windows.
+  EXPECT_EQ("250,-51", ConvertHostPointToScreen(250, 250));
+  // The point is on the 2nd host. Point on 2nd host (30,150) -
+  // rotate 270 clockwise -> (149, 30) - layout [+(200,0)] -> (349,30).
+  EXPECT_EQ("349,30", ConvertHostPointToScreen(30, 450));
+
+  // Move |window_| to the 2nd.
+  window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
+                             *display_controller->GetSecondaryDisplay());
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  EXPECT_EQ(root_windows[1], window_->GetRootWindow());
+
+  // The point is on the 2nd host. (50,70) on 2n host -
+  // roatate 270 clockwise -> (129,50) -layout [+(200,0)] -> (329,50)
+  EXPECT_EQ("329,50", ConvertHostPointToScreen(50, 70));
+  // The point is out of the host windows.
+  EXPECT_EQ("449,50", ConvertHostPointToScreen(50, -50));
+  // The point is on the 2nd host. Point on 2nd host (50,50) -
+  // rotate 90 clockwise -> (50, 149)
+  EXPECT_EQ("50,149", ConvertHostPointToScreen(50, -350));
+}
+
+TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenUIScale) {
+  // 1st display is 2x density with 1.5 UI scale.
+  UpdateDisplay("100+100-200x200*2@1.5,100+500-200x200");
+  ash::DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  // Put |window_| to the 1st.
+  window_->SetBoundsInScreen(gfx::Rect(20, 20, 50, 50),
+                             display_controller->GetPrimaryDisplay());
+
+  // The point is on the 1st host.
+  EXPECT_EQ("45,45", ConvertHostPointToScreen(60, 60));
+  // The point is out of the host windows.
+  EXPECT_EQ("45,225", ConvertHostPointToScreen(60, 300));
+  // The point is on the 2nd host. Point on 2nd host (60,150) -
+  // - screen [+(150,0)]
+  EXPECT_EQ("210,51", ConvertHostPointToScreen(60, 450));
+
+  // Move |window_| to the 2nd.
+  window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
+                             *display_controller->GetSecondaryDisplay());
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  EXPECT_EQ(root_windows[1], window_->GetRootWindow());
+
+  // The point is on the 2nd host. (50,70) - ro
+  EXPECT_EQ("210,70", ConvertHostPointToScreen(60, 70));
+  // The point is out of the host windows.
+  EXPECT_EQ("210,-50", ConvertHostPointToScreen(60, -50));
+  // The point is on the 2nd host. Point on 1nd host (60, 60)
+  // 1/2 * 1.5 = (45,45)
+  EXPECT_EQ("45,45", ConvertHostPointToScreen(60, -340));
 }
 
 }  // namespace test

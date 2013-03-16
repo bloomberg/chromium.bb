@@ -1003,16 +1003,20 @@ void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
 
 void RootWindowHostLinux::TranslateAndDispatchMouseEvent(
     ui::MouseEvent* event) {
-  RootWindow* root = GetRootWindow();
+  RootWindow* root_window = GetRootWindow();
   client::ScreenPositionClient* screen_position_client =
-      GetScreenPositionClient(root);
-  if (screen_position_client && !bounds_.Contains(event->location())) {
+      GetScreenPositionClient(root_window);
+  gfx::Rect local(bounds_.size());
+
+  if (screen_position_client && !local.Contains(event->location())) {
     gfx::Point location(event->location());
-    screen_position_client->ConvertNativePointToScreen(root, &location);
-    screen_position_client->ConvertPointFromScreen(root, &location);
-    // |delegate_|'s OnHostMouseEvent expects native coordinates relative to
-    // root.
-    location = ui::ConvertPointToPixel(root->layer(), location);
+    // In order to get the correct point in screen coordinates
+    // during passive grab, we first need to find on which host window
+    // the mouse is on, and find out the screen coordinates on that
+    // host window, then convert it back to this host window's coordinate.
+    screen_position_client->ConvertHostPointToScreen(root_window, &location);
+    screen_position_client->ConvertPointFromScreen(root_window, &location);
+    root_window->ConvertPointToHost(&location);
     event->set_location(location);
     event->set_root_location(location);
   }

@@ -191,6 +191,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Converts |point| from native screen coordinate system to the root window's.
   void ConvertPointFromNativeScreen(gfx::Point* point) const;
 
+  // Converts |point| from the root window's coordinate system to the
+  // host window's.
+  void ConvertPointToHost(gfx::Point* point) const;
+
+  // Converts |point| from the host window's coordinate system to the
+  // root window's.
+  void ConvertPointFromHost(gfx::Point* point) const;
+
   // Gesture Recognition -------------------------------------------------------
 
   // When a touch event is dispatched to a Window, it may want to process the
@@ -390,6 +398,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Creates and dispatches synthesized mouse move event using the
   // current mouse location.
   void SynthesizeMouseMoveEvent();
+
+  gfx::Transform GetRootTransform() const;
 
   scoped_ptr<ui::Compositor> compositor_;
 
