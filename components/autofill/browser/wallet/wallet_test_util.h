@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_BROWSER_WALLET_WALLET_TEST_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/autofill/browser/wallet/wallet_items.h"
 
 namespace autofill {
 namespace wallet {
@@ -13,9 +14,10 @@ namespace wallet {
 class Instrument;
 class Address;
 
-scoped_ptr<Instrument> GetTestInstrument();
-scoped_ptr<Address> GetTestShippingAddress();
 scoped_ptr<Address> GetTestAddress();
+scoped_ptr<Instrument> GetTestInstrument();
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument();
+scoped_ptr<Address> GetTestShippingAddress();
 
 }  // namespace wallet
 }  // namespace autofill

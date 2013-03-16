@@ -1207,6 +1207,7 @@
         'browser/ui/autofill/autofill_dialog_models_unittest.cc',
         'browser/ui/autofill/autofill_popup_controller_unittest.cc',
         'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
+        'browser/ui/autofill/data_model_wrapper_unittest.cc',
         'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',

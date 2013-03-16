@@ -28,6 +28,9 @@ class Image;
 }
 
 namespace autofill {
+
+FORWARD_DECLARE_TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth);
+
 namespace wallet {
 
 class WalletItemsTest;
@@ -99,8 +102,12 @@ class WalletItems {
 
    private:
     friend class WalletItemsTest;
+    friend scoped_ptr<MaskedInstrument> GetTestMaskedInstrument();
+    FRIEND_TEST_ALL_PREFIXES(::autofill::WalletInstrumentWrapperTest,
+                             GetInfoCreditCardExpMonth);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateMaskedInstrument);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
+
     MaskedInstrument(const string16& descriptve_name,
                      const Type& type,
                      const std::vector<string16>& supported_currencies,
