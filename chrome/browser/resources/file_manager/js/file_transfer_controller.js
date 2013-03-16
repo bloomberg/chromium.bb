@@ -238,7 +238,8 @@ FileTransferController.prototype = {
   preloadThumbnailImage_: function(entry) {
     var imageUrl = entry.toURL();
     var metadataTypes = 'thumbnail|filesystem';
-    this.preloadedThumbnailImageNode_ = this.document_.createElement('div');
+    var thumbnailContainer = this.document_.createElement('div');
+    this.preloadedThumbnailImageNode_ = thumbnailContainer;
     this.preloadedThumbnailImageNode_.className = 'img-container';
     this.directoryModel_.getMetadataCache().get(
         imageUrl,
@@ -247,7 +248,7 @@ FileTransferController.prototype = {
           new ThumbnailLoader(imageUrl,
                               ThumbnailLoader.LoaderType.IMAGE,
                               metadata).
-              load(this.preloadedThumbnailImageNode_,
+              load(thumbnailContainer,
                    ThumbnailLoader.FillMode.FILL);
         }.bind(this));
   },
@@ -313,8 +314,6 @@ FileTransferController.prototype = {
     }
 
     var dt = event.dataTransfer;
-    var dragThumbnail = this.renderThumbnail_();
-    dt.setDragImage(dragThumbnail, 1000, 1000);
 
     if (this.canCopyOrDrag_(dt)) {
       if (this.canCutOrDrag_(dt))
@@ -323,7 +322,11 @@ FileTransferController.prototype = {
         this.cutOrCopy_(dt, 'copy');
     } else {
       event.preventDefault();
+      return;
     }
+
+    var dragThumbnail = this.renderThumbnail_();
+    dt.setDragImage(dragThumbnail, 1000, 1000);
 
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
       sourceRoot: this.directoryModel_.getCurrentRootPath()
