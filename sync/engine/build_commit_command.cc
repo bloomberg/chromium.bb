@@ -112,6 +112,8 @@ void BuildCommitCommand::AddClientConfigParamsToMessage(
     int field_number = GetSpecificsFieldNumberFromModelType(iter->first);
     config_params->mutable_enabled_type_ids()->Add(field_number);
   }
+  config_params->set_tabs_datatype_enabled(
+      routing_info.count(syncer::PROXY_TABS) > 0);
 }
 
 namespace {

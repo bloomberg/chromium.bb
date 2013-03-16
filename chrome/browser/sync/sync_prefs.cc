@@ -74,9 +74,13 @@ void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   RegisterDataTypePreferredPref(registry, syncer::BOOKMARKS, true);
   user_types.Remove(syncer::BOOKMARKS);
 
+  // All types are set to off by default, which forces a configuration to
+  // explicitly enable them. GetPreferredTypes() will ensure that any new
+  // implicit types are enabled when their pref group is, or via
+  // KeepEverythingSynced.
   for (syncer::ModelTypeSet::Iterator it = user_types.First();
        it.Good(); it.Inc()) {
-    RegisterDataTypePreferredPref(registry, it.Get(), true);
+    RegisterDataTypePreferredPref(registry, it.Get(), false);
   }
 
   registry->RegisterBooleanPref(prefs::kSyncManaged,
