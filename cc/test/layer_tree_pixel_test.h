@@ -34,6 +34,11 @@ class LayerTreePixelTest : public ThreadedTest {
 
   scoped_refptr<SolidColorLayer> CreateSolidColorLayer(gfx::Rect rect,
                                                        SkColor color);
+  scoped_refptr<SolidColorLayer> CreateSolidColorLayerWithBorder(
+      gfx::Rect rect,
+      SkColor color,
+      int border_width,
+      SkColor border_color);
 
   void RunPixelTest(scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
