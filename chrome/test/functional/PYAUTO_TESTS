@@ -37,7 +37,6 @@
       'autofill',
       'codesign',
       'crash_reporter',
-      'downloads',
       'execute_javascript',
       'extensions',
       'fullscreen_mouselock',
@@ -70,8 +69,6 @@
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       # crbug.com/171828
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
-      # crbug.com/124280
-      '-downloads.DownloadsTest.testPauseAndResume',
       # The source is behind.  Waiting for dev to automate the update.
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
@@ -152,8 +149,6 @@
       # ==================================================
       # crbug.com/105948
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
-      # crbug.com/169512
-      '-downloads.DownloadsTest.testDownloadsPersistence',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
@@ -269,9 +264,6 @@
       # ==================================================
       # crbug.com/132337
       '-autofill.AutofillTest.testTabOrderForEditAddress',
-      # Downloads panel stays even after declining a download.
-      # crosbug.com/14728
-      '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crosbug.com/19556
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
@@ -298,7 +290,6 @@
       '-prefs.PrefsTest.testSessionRestoreURLs',
       '-prefs.PrefsTest.testSessionRestore',
       # Deal with i18n chars.  crosbug.com/12639
-      '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',
       # crosbug.com/16977
       '-chromeos_wifi_sanity.ChromeosWifiSanity.testConnectToHiddenWiFiNonExistent',
