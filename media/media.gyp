@@ -1093,53 +1093,8 @@
     },
   ],
   'conditions': [
-    ['OS != "ios"', {
+    ['OS != "ios" and target_arch != "arm"', {
       'targets': [
-        {
-          # Minimal target for NaCl and other renderer side media clients which
-          # only need to send audio data across the shared memory to the browser
-          # process.
-          'target_name': 'shared_memory_support',
-          'type': '<(component)',
-          'dependencies': [
-            '../base/base.gyp:base',
-          ],
-          'defines': [
-            'MEDIA_IMPLEMENTATION',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'includes': [
-            'shared_memory_support.gypi',
-          ],
-          'sources': [
-            '<@(shared_memory_support_sources)',
-          ],
-        },
-        {
-          'target_name': 'yuv_convert',
-          'type': 'static_library',
-          'include_dirs': [
-            '..',
-          ],
-          'conditions': [
-            [ 'target_arch == "ia32" or target_arch == "x64"', {
-              'dependencies': [
-                'yuv_convert_simd_x86',
-              ],
-            }],
-            [ 'target_arch == "arm" or target_arch == "mipsel"', {
-              'dependencies': [
-                'yuv_convert_simd_c',
-              ],
-            }],
-          ],
-          'sources': [
-            'base/yuv_convert.cc',
-            'base/yuv_convert.h',
-          ],
-        },
         {
           'target_name': 'yuv_convert_simd_x86',
           'type': 'static_library',
@@ -1242,6 +1197,55 @@
           'msvs_2010_disable_uldi_when_referenced': 1,
           'includes': [
             '../third_party/yasm/yasm_compile.gypi',
+          ],
+        },
+      ], # targets
+    }],
+    ['OS != "ios"', {
+      'targets': [
+        {
+          # Minimal target for NaCl and other renderer side media clients which
+          # only need to send audio data across the shared memory to the browser
+          # process.
+          'target_name': 'shared_memory_support',
+          'type': '<(component)',
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'defines': [
+            'MEDIA_IMPLEMENTATION',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'includes': [
+            'shared_memory_support.gypi',
+          ],
+          'sources': [
+            '<@(shared_memory_support_sources)',
+          ],
+        },
+        {
+          'target_name': 'yuv_convert',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'conditions': [
+            [ 'target_arch == "ia32" or target_arch == "x64"', {
+              'dependencies': [
+                'yuv_convert_simd_x86',
+              ],
+            }],
+            [ 'target_arch == "arm" or target_arch == "mipsel"', {
+              'dependencies': [
+                'yuv_convert_simd_c',
+              ],
+            }],
+          ],
+          'sources': [
+            'base/yuv_convert.cc',
+            'base/yuv_convert.h',
           ],
         },
         {
