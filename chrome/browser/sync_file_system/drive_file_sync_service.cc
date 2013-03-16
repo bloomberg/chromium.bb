@@ -100,6 +100,8 @@ FileChange CreateFileChange(bool is_deleted) {
 }  // namespace
 
 const char DriveFileSyncService::kServiceName[] = "syncfs";
+ConflictResolutionPolicy DriveFileSyncService::kDefaultPolicy =
+    CONFLICT_RESOLUTION_LAST_WRITE_WIN;
 
 class DriveFileSyncService::TaskToken {
  public:
@@ -299,7 +301,7 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
       may_have_unfetched_changes_(true),
       remote_change_processor_(NULL),
-      conflict_resolution_(CONFLICT_RESOLUTION_MANUAL),
+      conflict_resolution_(kDefaultPolicy),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   temporary_file_dir_ =
       profile->GetPath().Append(kSyncFileSystemDir).Append(kTempDirName);
@@ -709,7 +711,7 @@ DriveFileSyncService::DriveFileSyncService(
       polling_delay_seconds_(-1),
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
-      conflict_resolution_(CONFLICT_RESOLUTION_MANUAL),
+      conflict_resolution_(kDefaultPolicy),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(profile);
   temporary_file_dir_ = base_dir.Append(kTempDirName);

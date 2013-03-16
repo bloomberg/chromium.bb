@@ -15,7 +15,7 @@
 namespace sync_file_system {
 
 namespace {
-const char kEnableLastWriteWin[] = "enable-syncfs-last-write-win";
+const char kDisableLastWriteWin[] = "disable-syncfs-last-write-win";
 }
 
 // static
@@ -56,9 +56,9 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   else
     remote_file_service.reset(new DriveFileSyncService(profile));
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableLastWriteWin)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableLastWriteWin)) {
     remote_file_service->SetConflictResolutionPolicy(
-        CONFLICT_RESOLUTION_LAST_WRITE_WIN);
+        CONFLICT_RESOLUTION_MANUAL);
   }
 
   service->Initialize(local_file_service.Pass(),

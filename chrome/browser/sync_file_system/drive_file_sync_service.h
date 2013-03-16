@@ -53,6 +53,7 @@ class DriveFileSyncService
                               const std::string& resource_id)>
       ResourceIdCallback;
   static const char kServiceName[];
+  static ConflictResolutionPolicy kDefaultPolicy;
 
   explicit DriveFileSyncService(Profile* profile);
   virtual ~DriveFileSyncService();
