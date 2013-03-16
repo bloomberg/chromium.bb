@@ -276,7 +276,7 @@ void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
   layer_tree_host_->ScheduleComposite();
 }
 
-void SingleThreadProxy::DidUploadVisibleHighResolutionTileOnImplThread() {
+void SingleThreadProxy::DidInitializeVisibleTileOnImplThread() {
   // Impl-side painting only.
   NOTREACHED();
 }

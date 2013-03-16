@@ -67,7 +67,7 @@ public:
         , m_hasPendingTree(false)
         , m_didRequestCommit(false)
         , m_didRequestRedraw(false)
-        , m_didUploadVisibleHighResolutionTile(false)
+        , m_didUploadVisibleTile(false)
         , m_reduceMemoryResult(true)
     {
         media::InitializeMediaLibraryForTesting();
@@ -93,7 +93,7 @@ public:
     virtual void OnCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
     virtual void OnHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE { m_hasPendingTree = hasPendingTree; }
     virtual void SetNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
-    virtual void DidUploadVisibleHighResolutionTileOnImplThread() OVERRIDE { m_didUploadVisibleHighResolutionTile = true; }
+    virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE { m_didUploadVisibleTile = true; }
     virtual void SetNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
     virtual void SetNeedsManageTilesOnImplThread() OVERRIDE { }
     virtual void PostAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
@@ -227,7 +227,7 @@ protected:
     bool m_hasPendingTree;
     bool m_didRequestCommit;
     bool m_didRequestRedraw;
-    bool m_didUploadVisibleHighResolutionTile;
+    bool m_didUploadVisibleTile;
     bool m_reduceMemoryResult;
 };
 

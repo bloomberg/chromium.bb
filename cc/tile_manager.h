@@ -29,7 +29,7 @@ class TileVersion;
 class CC_EXPORT TileManagerClient {
  public:
   virtual void ScheduleManageTiles() = 0;
-  virtual void DidUploadVisibleHighResolutionTile() = 0;
+  virtual void DidInitializeVisibleTile() = 0;
 
  protected:
   virtual ~TileManagerClient() {}

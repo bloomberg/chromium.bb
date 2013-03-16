@@ -15,7 +15,7 @@ class FakeTileManagerClient : public TileManagerClient {
 
   // TileManagerClient implementation.
   virtual void ScheduleManageTiles() OVERRIDE {}
-  virtual void DidUploadVisibleHighResolutionTile() OVERRIDE {}
+  virtual void DidInitializeVisibleTile() OVERRIDE {}
 };
 
 }  // namespace cc

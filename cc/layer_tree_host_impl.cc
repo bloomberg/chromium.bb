@@ -857,9 +857,12 @@ void LayerTreeHostImpl::ScheduleManageTiles() {
     client_->SetNeedsManageTilesOnImplThread();
 }
 
-void LayerTreeHostImpl::DidUploadVisibleHighResolutionTile() {
+void LayerTreeHostImpl::DidInitializeVisibleTile() {
+  // TODO(reveman): Determine tiles that changed and only damage
+  // what's necessary.
+  SetFullRootLayerDamage();
   if (client_)
-    client_->DidUploadVisibleHighResolutionTileOnImplThread();
+    client_->DidInitializeVisibleTileOnImplThread();
 }
 
 bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {

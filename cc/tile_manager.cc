@@ -386,18 +386,16 @@ void TileManager::CheckForCompletedTileUploads() {
       break;
     }
 
-    if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0 &&
-        tile->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION)
-      client_->DidUploadVisibleHighResolutionTile();
-
     // It's now safe to release the pixel buffer.
     resource_pool_->resource_provider()->ReleasePixelBuffer(
         managed_tile_state.drawing_info.resource_->id());
 
-    DidFinishTileInitialization(tile);
+    managed_tile_state.drawing_info.can_be_freed_ = true;
 
     bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
     DidTileRasterStateChange(tile, IDLE_STATE);
+    DidFinishTileInitialization(tile);
+
     tiles_with_pending_upload_.pop();
   }
 
@@ -438,8 +436,8 @@ void TileManager::ForceTileUploadToComplete(Tile* tile) {
     DCHECK(resource);
     resource_pool_->resource_provider()->
         ForceSetPixelsToComplete(resource->id());
-    tile->drawing_info().resource_is_being_initialized_ = false;
     DidTileRasterStateChange(tile, FORCED_UPLOAD_COMPLETION_STATE);
+    DidFinishTileInitialization(tile);
   }
 }
 
@@ -467,13 +465,11 @@ void TileManager::GetMemoryStats(
 }
 
 scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
-    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-    state->SetInteger("tile_count", all_tiles_.size());
-
-    state->Set("global_state", global_state_.AsValue().release());
-
-    state->Set("memory_requirements", GetMemoryRequirementsAsValue().release());
-    return state.PassAs<base::Value>();
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->SetInteger("tile_count", all_tiles_.size());
+  state->Set("global_state", global_state_.AsValue().release());
+  state->Set("memory_requirements", GetMemoryRequirementsAsValue().release());
+  return state.PassAs<base::Value>();
 }
 scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
     scoped_ptr<base::ListValue> state(new base::ListValue());
@@ -726,11 +722,14 @@ void TileManager::AnalyzeTile(Tile* tile) {
         use_color_estimator_;
     managed_tile_state.picture_pile_analyzed = true;
 
-    if (managed_tile_state.picture_pile_analysis.is_solid_color)
+    if (managed_tile_state.picture_pile_analysis.is_solid_color) {
       tile->drawing_info().set_solid_color(
         managed_tile_state.picture_pile_analysis.solid_color);
-    else if (managed_tile_state.picture_pile_analysis.is_transparent)
+      DidFinishTileInitialization(tile);
+    } else if (managed_tile_state.picture_pile_analysis.is_transparent) {
       tile->drawing_info().set_transparent();
+      DidFinishTileInitialization(tile);
+    }
   }
 }
 
@@ -930,9 +929,9 @@ void TileManager::OnRasterTaskCompleted(
 
 void TileManager::DidFinishTileInitialization(Tile* tile) {
   ManagedTileState& managed_state = tile->managed_state();
-  DCHECK(managed_state.drawing_info.resource_);
   managed_state.drawing_info.resource_is_being_initialized_ = false;
-  managed_state.drawing_info.can_be_freed_ = true;
+  if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0)
+    client_->DidInitializeVisibleTile();
 }
 
 void TileManager::DidTileRasterStateChange(Tile* tile, TileRasterState state) {
@@ -1086,7 +1085,7 @@ void TileManager::RecordSolidColorPredictorResults(
   UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.Accuracy", correct_guess);
 
   if (correct_guess)
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid", 
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid",
                           is_predicted_solid);
 
   if (is_predicted_transparent)

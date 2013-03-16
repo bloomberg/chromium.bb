@@ -520,10 +520,9 @@ void ThreadProxy::DidSwapUseIncompleteTileOnImplThread() {
   scheduler_on_impl_thread_->DidSwapUseIncompleteTile();
 }
 
-void ThreadProxy::DidUploadVisibleHighResolutionTileOnImplThread() {
+void ThreadProxy::DidInitializeVisibleTileOnImplThread() {
   DCHECK(IsImplThread());
-  TRACE_EVENT0("cc",
-               "ThreadProxy::DidUploadVisibleHighResolutionTileOnImplThread");
+  TRACE_EVENT0("cc", "ThreadProxy::DidInitializeVisibleTileOnImplThread");
   scheduler_on_impl_thread_->SetNeedsRedraw();
 }
 

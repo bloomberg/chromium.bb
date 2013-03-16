@@ -60,7 +60,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
   virtual void OnHasPendingTreeStateChanged(bool have_pending_tree) OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
-  virtual void DidUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
+  virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
   virtual void PostAnimationEventsToMainThreadOnImplThread(

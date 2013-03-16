@@ -51,7 +51,7 @@ class LayerTreeHostImplClient {
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) = 0;
   virtual void SetNeedsRedrawOnImplThread() = 0;
-  virtual void DidUploadVisibleHighResolutionTileOnImplThread() = 0;
+  virtual void DidInitializeVisibleTileOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsManageTilesOnImplThread() = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
@@ -163,7 +163,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
 
   // TileManagerClient implementation.
   virtual void ScheduleManageTiles() OVERRIDE;
-  virtual void DidUploadVisibleHighResolutionTile() OVERRIDE;
+  virtual void DidInitializeVisibleTile() OVERRIDE;
 
   // OutputSurfaceClient implementation.
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
