@@ -15,8 +15,12 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
@@ -31,6 +35,9 @@ namespace chromeos {
 internal::AppLaunchView* g_instance = NULL;
 
 void ShowAppLaunchSplashScreen() {
+  // Disables the default white rendering from RenderWidgetHostViewAura.
+  aura::Env::GetInstance()->set_render_white_bg(false);
+
   // TODO(zelidrag): Come up with a better UI for this purpose.
   internal::AppLaunchView::ShowAppLaunchSplashScreen();
 }
@@ -41,6 +48,9 @@ void UpdateAppLaunchSplashScreenState(AppLaunchState state) {
 
 void CloseAppLaunchSplashScreen() {
   internal::AppLaunchView::CloseAppLaunchSplashScreen();
+
+  // Re-enables the default white rendering from RenderWidgetHostViewAura.
+  aura::Env::GetInstance()->set_render_white_bg(true);
 }
 
 namespace internal {
@@ -153,6 +163,15 @@ void AppLaunchView::LoadSplashScreen() {
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
+
+  // Use a background with transparency to trigger transparency in Webkit.
+  SkBitmap background;
+  background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+  background.allocPixels();
+  background.eraseARGB(0x00, 0x00, 0x00, 0x00);
+  content::RenderViewHost* host =
+      app_launch_webview_->GetWebContents()->GetRenderViewHost();
+  host->GetView()->SetBackground(background);
 }
 
 void AppLaunchView::InitializeWindow() {
