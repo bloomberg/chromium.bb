@@ -170,6 +170,11 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
   { true, ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE, MEDIA_PREV_TRACK},
 
+  // Debugging shortcuts that need to be available to end-users in
+  // release builds.
+  { true, ui::VKEY_U, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
+    PRINT_UI_HIERARCHIES },
+
   // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
   // VKEY_MEDIA_LAUNCH_MAIL.
 };
@@ -225,6 +230,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
   NEXT_IME,
   PREVIOUS_IME,
+  PRINT_UI_HIERARCHIES,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
@@ -277,6 +283,7 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   POWER_PRESSED,
   POWER_RELEASED,
   PREVIOUS_IME,
+  PRINT_UI_HIERARCHIES,
   SHOW_KEYBOARD_OVERLAY,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,
@@ -303,6 +310,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_LINEAR,
   CYCLE_FORWARD_MRU,
+  PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
   ROTATE_SCREEN,
   ROTATE_WINDOW,
   SCALE_UI_UP,
@@ -333,6 +341,7 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   POWER_PRESSED,
   POWER_RELEASED,
   PREVIOUS_IME,
+  PRINT_UI_HIERARCHIES,
   ROTATE_SCREEN,
   SCALE_UI_UP,
   SCALE_UI_DOWN,

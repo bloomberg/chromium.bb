@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <string>
 
 #include "ash/accelerators/accelerator_table.h"
@@ -274,7 +275,6 @@ bool HandleMediaPrevTrack() {
   return true;
 }
 
-#if !defined(NDEBUG)
 bool HandlePrintLayerHierarchy() {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (size_t i = 0; i < root_windows.size(); ++i) {
@@ -290,38 +290,52 @@ bool HandlePrintViewHierarchy() {
     return true;
   views::Widget* browser_widget =
       views::Widget::GetWidgetForNativeWindow(active_window);
-  if (browser_widget)
-    views::PrintViewHierarchy(browser_widget->GetRootView());
+  if (!browser_widget)
+    return true;
+  views::PrintViewHierarchy(browser_widget->GetRootView());
   return true;
 }
 
-void PrintWindowHierarchy(aura::Window* window, int indent) {
+void PrintWindowHierarchy(aura::Window* window,
+                          int indent,
+                          std::ostringstream* out) {
   std::string indent_str(indent, ' ');
   std::string name(window->name());
   if (name.empty())
     name = "\"\"";
-  DLOG(INFO) << indent_str << name << " (" << window << ")"
-             << " type=" << window->type()
-             << (wm::IsActiveWindow(window) ? " [active] " : " ")
-             << (window->IsVisible() ? " visible " : " ")
-             << window->bounds().ToString();
+  *out << indent_str << name << " (" << window << ")"
+       << " type=" << window->type()
+       << (wm::IsActiveWindow(window) ? " [active] " : " ")
+       << (window->IsVisible() ? " visible " : " ")
+       << window->bounds().ToString()
+       << '\n';
 
   for (size_t i = 0; i < window->children().size(); ++i)
-    PrintWindowHierarchy(window->children()[i], indent + 3);
+    PrintWindowHierarchy(window->children()[i], indent + 3, out);
 }
 
 bool HandlePrintWindowHierarchy() {
-  DLOG(INFO) << "Window hierarchy:";
   Shell::RootWindowControllerList controllers =
       Shell::GetAllRootWindowControllers();
   for (size_t i = 0; i < controllers.size(); ++i) {
-    DLOG(INFO) << "RootWindow " << i << ":";
-    PrintWindowHierarchy(controllers[i]->root_window(), 0);
+    std::ostringstream out;
+    out << "RootWindow " << i << ":\n";
+    PrintWindowHierarchy(controllers[i]->root_window(), 0, &out);
+    // Error so logs can be collected from end-users.
+    LOG(ERROR) << out.str();
   }
   return true;
 }
 
-#endif  // !defined(NDEBUG)
+bool HandlePrintUIHierarchies() {
+  // This is a separate command so the user only has to hit one key to generate
+  // all the logs. Developers use the individual dumps repeatedly, so keep
+  // those as separate commands to avoid spamming their logs.
+  HandlePrintLayerHierarchy();
+  HandlePrintWindowHierarchy();
+  HandlePrintViewHierarchy();
+  return true;
+}
 
 }  // namespace
 
@@ -712,6 +726,8 @@ bool AcceleratorController::PerformAction(int action,
       if (ime_control_delegate_.get())
         return ime_control_delegate_->HandlePreviousIme();
       break;
+    case PRINT_UI_HIERARCHIES:
+      return HandlePrintUIHierarchies();
     case SWITCH_IME:
       if (ime_control_delegate_.get())
         return ime_control_delegate_->HandleSwitchIme(accelerator);

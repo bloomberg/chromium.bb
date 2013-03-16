@@ -11,15 +11,11 @@ namespace views {
 
 class View;
 
-#ifndef NDEBUG
-
 // Log the view hierarchy.
 VIEWS_EXPORT void PrintViewHierarchy(const View* view);
 
 // Log the focus traversal hierarchy.
 VIEWS_EXPORT void PrintFocusHierarchy(const View* view);
-
-#endif  // NDEBUG
 
 }  // namespace views
 

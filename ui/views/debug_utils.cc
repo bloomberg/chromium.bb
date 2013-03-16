@@ -4,72 +4,72 @@
 
 #include "ui/views/debug_utils.h"
 
+#include <iostream>
+
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/views/view.h"
 
-#ifndef NDEBUG
-#include <iostream>
-#endif
-
-#ifndef NDEBUG
-
 namespace views {
 namespace {
-void PrintViewHierarchyImp(const View* view, int indent) {
-  std::wostringstream buf;
+void PrintViewHierarchyImp(const View* view,
+                           int indent,
+                           std::wostringstream* out) {
   int ind = indent;
   while (ind-- > 0)
-    buf << L' ';
-  buf << UTF8ToWide(view->GetClassName());
-  buf << L' ';
-  buf << view->id();
-  buf << L' ';
-  buf << view->x() << L"," << view->y() << L",";
-  buf << view->bounds().right() << L"," << view->bounds().bottom();
-  buf << L' ';
-  buf << view;
-
-  DVLOG(1) << buf.str();
-  std::cout << buf.str() << std::endl;
+    *out << L' ';
+  *out << UTF8ToWide(view->GetClassName());
+  *out << L' ';
+  *out << view->id();
+  *out << L' ';
+  *out << view->x() << L"," << view->y() << L",";
+  *out << view->bounds().right() << L"," << view->bounds().bottom();
+  *out << L' ';
+  *out << view;
+  *out << L'\n';
 
   for (int i = 0, count = view->child_count(); i < count; ++i)
-    PrintViewHierarchyImp(view->child_at(i), indent + 2);
+    PrintViewHierarchyImp(view->child_at(i), indent + 2, out);
 }
 
-void PrintFocusHierarchyImp(const View* view, int indent) {
-  std::wostringstream buf;
+void PrintFocusHierarchyImp(const View* view,
+                            int indent,
+                            std::wostringstream* out) {
   int ind = indent;
   while (ind-- > 0)
-    buf << L' ';
-  buf << UTF8ToWide(view->GetClassName());
-  buf << L' ';
-  buf << view->id();
-  buf << L' ';
-  buf << view->GetClassName().c_str();
-  buf << L' ';
-  buf << view;
-
-  DVLOG(1) << buf.str();
-  std::cout << buf.str() << std::endl;
+    *out << L' ';
+  *out << UTF8ToWide(view->GetClassName());
+  *out << L' ';
+  *out << view->id();
+  *out << L' ';
+  *out << view->GetClassName().c_str();
+  *out << L' ';
+  *out << view;
+  *out << L'\n';
 
   if (view->child_count() > 0)
-    PrintFocusHierarchyImp(view->child_at(0), indent + 2);
+    PrintFocusHierarchyImp(view->child_at(0), indent + 2, out);
 
   const View* next_focusable = view->GetNextFocusableView();
   if (next_focusable)
-    PrintFocusHierarchyImp(next_focusable, indent);
+    PrintFocusHierarchyImp(next_focusable, indent, out);
 }
 }  // namespace
 
 void PrintViewHierarchy(const View* view) {
-  PrintViewHierarchyImp(view, 0);
+  std::wostringstream out;
+  out << L"View hierarchy:\n";
+  PrintViewHierarchyImp(view, 0, &out);
+  // Error so users in the field can generate and upload logs.
+  LOG(ERROR) << out.str();
 }
 
 void PrintFocusHierarchy(const View* view) {
-  PrintFocusHierarchyImp(view, 0);
+  std::wostringstream out;
+  out << L"Focus hierarchy:\n";
+  PrintFocusHierarchyImp(view, 0, &out);
+  // Error so users in the field can generate and upload logs.
+  LOG(ERROR) << out.str();
 }
 
 }  // namespace views
-
-#endif  // NDEBUG

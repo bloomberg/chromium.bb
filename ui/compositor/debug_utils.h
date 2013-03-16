@@ -5,8 +5,6 @@
 #ifndef UI_COMPOSITOR_DEBUG_UTILS_H_
 #define UI_COMPOSITOR_DEBUG_UTILS_H_
 
-#ifndef NDEBUG
-
 #include "ui/compositor/compositor_export.h"
 
 namespace gfx {
@@ -22,7 +20,5 @@ COMPOSITOR_EXPORT void PrintLayerHierarchy(const Layer* layer,
                                            gfx::Point mouse_location);
 
 } // namespace ui
-
-#endif // NDEBUG
 
 #endif  // UI_COMPOSITOR_DEBUG_UTILS_H_
