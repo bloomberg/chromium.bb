@@ -92,6 +92,7 @@ class BASE_EXPORT StatisticsRecorder {
   friend struct DefaultLazyInstanceTraits<StatisticsRecorder>;
   friend class HistogramBaseTest;
   friend class HistogramTest;
+  friend class SparseHistogramTest;
   friend class StatisticsRecorderTest;
 
   // The constructor just initializes static members. Usually client code should

@@ -6,18 +6,42 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/metrics/sample_map.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
+#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
 class SparseHistogramTest : public testing::Test {
  protected:
+  virtual void SetUp() {
+    // Each test will have a clean state (no Histogram / BucketRanges
+    // registered).
+    InitializeStatisticsRecorder();
+  }
+
+  virtual void TearDown() {
+    UninitializeStatisticsRecorder();
+  }
+
+  void InitializeStatisticsRecorder() {
+    statistics_recorder_ = new StatisticsRecorder();
+  }
+
+  void UninitializeStatisticsRecorder() {
+    delete statistics_recorder_;
+    statistics_recorder_ = NULL;
+  }
+
   scoped_ptr<SparseHistogram> NewSparseHistogram(const std::string& name) {
     return scoped_ptr<SparseHistogram>(new SparseHistogram(name));
   }
+
+  StatisticsRecorder* statistics_recorder_;
 };
 
 TEST_F(SparseHistogramTest, BasicTest) {
@@ -37,6 +61,59 @@ TEST_F(SparseHistogramTest, BasicTest) {
   EXPECT_EQ(3, snapshot2->TotalCount());
   EXPECT_EQ(2, snapshot2->GetCount(100));
   EXPECT_EQ(1, snapshot2->GetCount(101));
+}
+
+TEST_F(SparseHistogramTest, MacroBasicTest) {
+  HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
+  HISTOGRAM_SPARSE_SLOWLY("Sparse", 200);
+  HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
+
+  StatisticsRecorder::Histograms histograms;
+  StatisticsRecorder::GetHistograms(&histograms);
+
+  ASSERT_EQ(1U, histograms.size());
+  HistogramBase* sparse_histogram = histograms[0];
+
+  EXPECT_EQ(SPARSE_HISTOGRAM, sparse_histogram->GetHistogramType());
+  EXPECT_EQ("Sparse", sparse_histogram->histogram_name());
+  EXPECT_EQ(HistogramBase::kNoFlags, sparse_histogram->flags());
+
+  scoped_ptr<HistogramSamples> samples = sparse_histogram->SnapshotSamples();
+  EXPECT_EQ(3, samples->TotalCount());
+  EXPECT_EQ(2, samples->GetCount(100));
+  EXPECT_EQ(1, samples->GetCount(200));
+}
+
+TEST_F(SparseHistogramTest, MacroUmaTest) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Uma", 100);
+
+  StatisticsRecorder::Histograms histograms;
+  StatisticsRecorder::GetHistograms(&histograms);
+
+  ASSERT_EQ(1U, histograms.size());
+  HistogramBase* sparse_histogram = histograms[0];
+
+  EXPECT_EQ("Uma", sparse_histogram->histogram_name());
+  EXPECT_EQ(HistogramBase::kUmaTargetedHistogramFlag,
+            sparse_histogram->flags());
+}
+
+TEST_F(SparseHistogramTest, MacroInLoopTest) {
+  // Unlike the macros in histogram.h, SparseHistogram macros can have a
+  // variable as histogram name.
+  for (int i = 0; i < 2; i++) {
+    std::string name = StringPrintf("Sparse%d", i + 1);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(name, 100);
+  }
+
+  StatisticsRecorder::Histograms histograms;
+  StatisticsRecorder::GetHistograms(&histograms);
+  ASSERT_EQ(2U, histograms.size());
+
+  std::string name1 = histograms[0]->histogram_name();
+  std::string name2 = histograms[1]->histogram_name();
+  EXPECT_TRUE(("Sparse1" == name1 && "Sparse2" == name2) ||
+              ("Sparse2" == name1 && "Sparse1" == name2));
 }
 
 TEST_F(SparseHistogramTest, Serialize) {

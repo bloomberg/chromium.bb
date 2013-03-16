@@ -11,12 +11,46 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/sample_map.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
+
+// The common code for different SparseHistogram macros.
+#define HISTOGRAM_SPARSE_COMMON(name, sample, flag) \
+    do { \
+      base::HistogramBase* histogram( \
+          base::SparseHistogram::FactoryGet(name, flag)); \
+      DCHECK_EQ(histogram->histogram_name(), name); \
+      histogram->Add(sample); \
+    } while (0)
+
+#define HISTOGRAM_SPARSE_SLOWLY(name, sample) \
+    HISTOGRAM_SPARSE_COMMON(name, sample, base::HistogramBase::kNoFlags)
+
+#define UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample) \
+    HISTOGRAM_SPARSE_COMMON(name, sample, \
+                            base::HistogramBase::kUmaTargetedHistogramFlag)
+
+//------------------------------------------------------------------------------
+// Define debug only version of macros.
+#ifndef NDEBUG
+
+#define DHISTOGRAM_SPARSE_SLOWLY(name, sample) \
+    HISTOGRAM_SPARSE_SLOWLY(name, sample)
+
+#else  // NDEBUG
+
+#define DHISTOGRAM_SPARSE_SLOWLY(name, sample) \
+    while (0) { \
+      static_cast<void>(name); \
+      static_cast<void>(sample); \
+    }
+
+#endif  // NDEBUG
 
 class HistogramSamples;
 
