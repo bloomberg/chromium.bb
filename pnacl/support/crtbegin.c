@@ -102,6 +102,14 @@ static void __attribute__((destructor)) __do_eh_dtor(void) {
 static void *(*g_nacl_read_tp_func)(void) =
     (void *(*)(void)) NACL_SYSCALL_ADDR(NACL_sys_tls_get);
 
+/*
+ * __nacl_read_tp is defined as a weak symbol because if a pre-translated
+ * object file (which may contain calls to __nacl_read_tp) is linked with
+ * the bitcode libnacl in nonpexe_tests, it will pull in libnacl's definition,
+ * which would then override this one at native link time rather than causing
+ * link failure.
+ */
+__attribute__((weak))
 void *__nacl_read_tp(void) {
   return g_nacl_read_tp_func();
 }
