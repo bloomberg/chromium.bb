@@ -76,6 +76,9 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
 
   download_start_ = base::TimeTicks::Now();
 
+  // Primarily to make reset to zero in restart visible to owner.
+  SendUpdate();
+
   // Initial pull from the straw.
   StreamActive();
 

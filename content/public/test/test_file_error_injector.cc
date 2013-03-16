@@ -139,6 +139,16 @@ void DownloadFileWithErrors::Initialize(
   if (OverwriteError(
           TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
           &error_to_return)) {
+    if (DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
+      // Don't execute a, probably successful, Initialize; just
+      // return the error.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, base::Bind(
+              callback, error_to_return));
+      return;
+    }
+
+    // Otherwise, just wrap the return.
     callback_to_use = base::Bind(&InitializeErrorCallback, callback,
                                  error_to_return);
   }
@@ -163,6 +173,16 @@ void DownloadFileWithErrors::RenameAndUniquify(
   if (OverwriteError(
           TestFileErrorInjector::FILE_OPERATION_RENAME_UNIQUIFY,
           &error_to_return)) {
+    if (DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
+      // Don't execute a, probably successful, RenameAndUniquify; just
+      // return the error.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, base::Bind(
+              callback, error_to_return, base::FilePath()));
+      return;
+    }
+
+    // Otherwise, just wrap the return.
     callback_to_use = base::Bind(&RenameErrorCallback, callback,
                                  error_to_return);
   }
@@ -180,6 +200,16 @@ void DownloadFileWithErrors::RenameAndAnnotate(
   if (OverwriteError(
           TestFileErrorInjector::FILE_OPERATION_RENAME_ANNOTATE,
           &error_to_return)) {
+    if (DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
+      // Don't execute a, probably successful, RenameAndAnnotate; just
+      // return the error.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, base::Bind(
+              callback, error_to_return, base::FilePath()));
+      return;
+    }
+
+    // Otherwise, just wrap the return.
     callback_to_use = base::Bind(&RenameErrorCallback, callback,
                                  error_to_return);
   }

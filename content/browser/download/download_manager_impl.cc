@@ -83,20 +83,26 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
 
   // If we're not at the beginning of the file, retrieve only the remaining
   // portion.
+  bool has_last_modified = !params->last_modified().empty();
+  bool has_etag = !params->etag().empty();
+
+  // If we've asked for a range, we want to make sure that we only
+  // get that range if our current copy of the information is good.
+  // We shouldn't be asked to continue if we don't have a verifier.
+  DCHECK(params->offset() == 0 || has_etag || has_last_modified);
+
   if (params->offset() > 0) {
     request->SetExtraRequestHeaderByName(
         "Range",
         StringPrintf("bytes=%" PRId64 "-", params->offset()),
         true);
 
-    // If we've asked for a range, we want to make sure that we only
-    // get that range if our current copy of the information is good.
-    if (!params->last_modified().empty()) {
+    if (has_last_modified) {
       request->SetExtraRequestHeaderByName("If-Unmodified-Since",
                                            params->last_modified(),
                                            true);
     }
-    if (!params->etag().empty()) {
+    if (has_etag) {
       request->SetExtraRequestHeaderByName("If-Match", params->etag(), true);
     }
   }

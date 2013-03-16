@@ -403,12 +403,8 @@ void ByteStreamReaderImpl::MaybeUpdateInput() {
 
 }  // namespace
 
-// The fraction of the buffer that must be ready to send on the input
-// before we ship data to the output.
-const int ByteStreamWriter::kFractionBufferBeforeSending = 3;
 
-// The fraction of the buffer that must have been consumed on the output
-// before we update the input window.
+const int ByteStreamWriter::kFractionBufferBeforeSending = 3;
 const int ByteStreamReader::kFractionReadBeforeWindowUpdate = 3;
 
 ByteStreamReader::~ByteStreamReader() { }

@@ -121,7 +121,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // paused.
   virtual void Resume() = 0;
 
-  // Resume a download that's been interrupted.
+  // Resume a download that's been interrupted.  No-op if the download
+  // has not been interrupted.
   virtual void ResumeInterruptedDownload() = 0;
 
   // Cancel the download operation. We need to distinguish between cancels at
