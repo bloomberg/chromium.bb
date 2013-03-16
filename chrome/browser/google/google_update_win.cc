@@ -24,6 +24,7 @@
 #include "google_update/google_update_idl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/win/atl_module.h"
 #include "ui/views/widget/widget.h"
 
 using content::BrowserThread;
@@ -258,6 +259,9 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
                    UPGRADE_ERROR, error_code, string16()));
     return;
   }
+
+  // Make sure ATL is initialized in this module.
+  ui::win::CreateATLModuleIfNeeded();
 
   CComObject<GoogleUpdateJobObserver>* job_observer;
   HRESULT hr =

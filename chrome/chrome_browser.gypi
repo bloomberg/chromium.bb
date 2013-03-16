@@ -2553,8 +2553,6 @@
         ['use_aura==1', {
           'sources/': [
             ['exclude', '^browser/automation/testing_automation_provider_win.cc'],
-            ['exclude', '^browser/google/google_update_win.cc'],
-            ['exclude', '^browser/google/google_update_win.h'],
             ['exclude', '^browser/hang_monitor/hung_plugin_action.cc'],
             ['exclude', '^browser/hang_monitor/hung_plugin_action.h'],
             ['exclude', '^browser/hang_monitor/hung_window_detector.cc'],

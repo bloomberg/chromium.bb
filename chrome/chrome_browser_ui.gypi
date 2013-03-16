@@ -2457,7 +2457,6 @@
             ['exclude', '^browser/ui/views/user_data_dir_dialog_view.cc'],
             ['exclude', '^browser/ui/views/tab_contents/web_drag_bookmark_handler_win.cc'],
             ['exclude', '^browser/ui/views/tab_contents/web_drag_bookmark_handler_win.h'],
-            ['exclude', '^browser/ui/webui/help/version_updater_win.cc'],
             ['exclude', '^browser/ui/webui/task_manager/'],
             ['exclude', '^browser/ui/window_sizer/window_sizer_win.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
@@ -2483,8 +2482,6 @@
                 ['exclude', '^browser/ui/webui/certificate_viewer_ui.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
                 ['include', 'browser/ui/browser_win.cc'],
-                ['include', 'browser/ui/webui/help/version_updater_basic.cc'],
-                ['include', 'browser/ui/webui/help/version_updater_basic.h'],
               ],
             }, {
               'sources/': [
