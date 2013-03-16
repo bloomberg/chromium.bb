@@ -800,10 +800,13 @@ DialogType.isModal = function(type) {
     autocompleteList.handleSelectedSuggestion = function(selectedItem) {};
     // Instead, open the suggested item when Enter key is pressed or
     // mouse-clicked.
-    autocompleteList.handleEnterKeydown =
-        this.openAutocompleteSuggestion_.bind(this);
+    autocompleteList.handleEnterKeydown = function(event) {
+      this.openAutocompleteSuggestion_();
+      this.autocompleteList_.suggestions = [];
+    }.bind(this);
     autocompleteList.addEventListener('mousedown', function(event) {
       this.openAutocompleteSuggestion_();
+      this.autocompleteList_.suggestions = [];
     }.bind(this));
     autocompleteList.addEventListener('mouseover', function(event) {
       // Change the selection by a mouse over instead of just changing the
