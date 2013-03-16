@@ -1231,15 +1231,22 @@ bool SpdySession::GetLoadTimingInfo(SpdyStreamId stream_id,
 }
 
 int SpdySession::GetPeerAddress(IPEndPoint* address) const {
-  if (!connection_->socket())
+  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionGetPeerAddressNotConnected",
+                        !connection_->socket());
+
+  if (!connection_->socket()) {
     return ERR_SOCKET_NOT_CONNECTED;
+  }
 
   return connection_->socket()->GetPeerAddress(address);
 }
 
 int SpdySession::GetLocalAddress(IPEndPoint* address) const {
-  if (!connection_->socket())
+  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionGetPeerAddressNotConnected",
+                        !connection_->socket());
+  if (!connection_->socket()) {
     return ERR_SOCKET_NOT_CONNECTED;
+  }
 
   return connection_->socket()->GetLocalAddress(address);
 }
