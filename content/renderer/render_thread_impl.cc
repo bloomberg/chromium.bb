@@ -353,6 +353,7 @@ void RenderThreadImpl::Init() {
   idle_notifications_to_skip_ = 0;
   should_send_focus_ipcs_ = true;
   short_circuit_size_updates_ = false;
+  skip_error_pages_ = false;
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());

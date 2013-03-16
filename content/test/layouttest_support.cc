@@ -91,4 +91,8 @@ void ForceResizeRenderView(RenderView* render_view,
   static_cast<RenderViewImpl*>(render_view)->didAutoResize(new_size);
 }
 
+void DisableNavigationErrorPages() {
+  RenderThreadImpl::current()->set_skip_error_pages(true);
+}
+
 }  // namespace content

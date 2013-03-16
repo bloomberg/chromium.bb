@@ -45,6 +45,7 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   EnableDevToolsFrontendTesting();
   EnableShortCircuitSizeUpdates();
   DoNotSendFocusEvents();
+  DisableNavigationErrorPages();
 }
 
 ShellRenderProcessObserver::~ShellRenderProcessObserver() {

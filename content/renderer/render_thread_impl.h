@@ -203,6 +203,14 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     short_circuit_size_updates_ = short_circuit;
   }
 
+  // True if we should never display error pages in response to a failed load.
+  bool skip_error_pages() const {
+    return skip_error_pages_;
+  }
+  void set_skip_error_pages(bool skip) {
+    skip_error_pages_ = skip;
+  }
+
   IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
     return compositor_output_surface_filter_.get();
   }
@@ -419,6 +427,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // The following flags are used to control layout test specific behavior.
   bool should_send_focus_ipcs_;
   bool short_circuit_size_updates_;
+  bool skip_error_pages_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThreadImpl> idle_timer_;

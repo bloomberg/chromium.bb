@@ -60,6 +60,9 @@ void EnableShortCircuitSizeUpdates();
 void ForceResizeRenderView(RenderView* render_view,
                            const WebKit::WebSize& new_size);
 
+// Never display error pages when a navigation fails.
+void DisableNavigationErrorPages();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

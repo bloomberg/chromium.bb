@@ -3457,6 +3457,9 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   if (error.reason == net::ERR_ABORTED)
     return;
 
+  if (RenderThreadImpl::current()->skip_error_pages())
+    return;
+
   // Make sure we never show errors in view source mode.
   frame->enableViewSourceMode(false);
 
