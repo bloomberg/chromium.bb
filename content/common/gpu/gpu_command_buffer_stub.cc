@@ -91,6 +91,9 @@ void FastSetActiveURL(const GURL& url, size_t url_hash) {
 const int64 kHandleMoreWorkPeriodMs = 2;
 const int64 kHandleMoreWorkPeriodBusyMs = 1;
 
+// Prevents idle work from being starved.
+const int64 kMaxTimeSinceIdleMs = 10;
+
 }  // namespace
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -126,6 +129,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       watchdog_(watchdog),
       sync_point_wait_count_(0),
       delayed_work_scheduled_(false),
+      previous_messages_processed_(0),
       active_url_(active_url),
       total_gpu_memory_(0) {
   active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
@@ -235,8 +239,34 @@ void GpuCommandBufferStub::PollWork() {
   FastSetActiveURL(active_url_, active_url_hash_);
   if (decoder_.get() && !MakeCurrent())
     return;
-  if (scheduler_.get())
-    scheduler_->PollUnscheduleFences();
+
+  if (scheduler_.get()) {
+    bool fences_complete = scheduler_->PollUnscheduleFences();
+    // Perform idle work if all fences are complete.
+    if (fences_complete) {
+      uint64 current_messages_processed =
+          channel()->gpu_channel_manager()->MessagesProcessed();
+      // We're idle when no messages were processed or scheduled.
+      bool is_idle =
+          (previous_messages_processed_ == current_messages_processed) &&
+          !channel()->gpu_channel_manager()->HandleMessagesScheduled();
+      if (!is_idle && !last_idle_time_.is_null()) {
+        base::TimeDelta time_since_idle = base::TimeTicks::Now() -
+            last_idle_time_;
+        base::TimeDelta max_time_since_idle =
+            base::TimeDelta::FromMilliseconds(kMaxTimeSinceIdleMs);
+
+        // Force idle when it's been too long since last time we were idle.
+        if (time_since_idle > max_time_since_idle)
+          is_idle = true;
+      }
+
+      if (is_idle) {
+        last_idle_time_ = base::TimeTicks::Now();
+        scheduler_->PerformIdleWork();
+      }
+    }
+  }
   ScheduleDelayedWork(kHandleMoreWorkPeriodBusyMs);
 }
 
@@ -250,14 +280,39 @@ bool GpuCommandBufferStub::HasUnprocessedCommands() {
 }
 
 void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
-  if (HasMoreWork() && !delayed_work_scheduled_) {
-    delayed_work_scheduled_ = true;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&GpuCommandBufferStub::PollWork,
-                   AsWeakPtr()),
-        base::TimeDelta::FromMilliseconds(delay));
+  if (!HasMoreWork()) {
+    last_idle_time_ = base::TimeTicks();
+    return;
   }
+
+  if (delayed_work_scheduled_)
+    return;
+  delayed_work_scheduled_ = true;
+
+  // Idle when no messages are processed between now and when
+  // PollWork is called.
+  previous_messages_processed_ =
+      channel()->gpu_channel_manager()->MessagesProcessed();
+  if (last_idle_time_.is_null())
+    last_idle_time_ = base::TimeTicks::Now();
+
+  // IsScheduled() returns true after passing all unschedule fences
+  // and this is when we can start performing idle work. Idle work
+  // is done synchronously so we can set delay to 0 and instead poll
+  // for more work at the rate idle work is performed. This also ensures
+  // that idle work is done as efficiently as possible without any
+  // unnecessary delays.
+  if (scheduler_.get() &&
+      scheduler_->IsScheduled() &&
+      scheduler_->HasMoreIdleWork()) {
+    delay = 0;
+  }
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&GpuCommandBufferStub::PollWork,
+                 AsWeakPtr()),
+      base::TimeDelta::FromMilliseconds(delay));
 }
 
 void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {

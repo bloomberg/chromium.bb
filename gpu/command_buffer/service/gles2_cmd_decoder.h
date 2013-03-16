@@ -198,6 +198,11 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Process any pending queries. Returns false if there are no pending queries.
   virtual bool ProcessPendingQueries() = 0;
 
+  // Returns false if there are no idle work to be made.
+  virtual bool HasMoreIdleWork() = 0;
+
+  virtual void PerformIdleWork() = 0;
+
   // Sets a callback which is called when a glResizeCHROMIUM command
   // is processed.
   virtual void SetResizeCallback(

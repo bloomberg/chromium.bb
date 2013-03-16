@@ -52,6 +52,8 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetGLContext, gfx::GLContext*());
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
   MOCK_METHOD0(ProcessPendingQueries, bool());
+  MOCK_METHOD0(HasMoreIdleWork, bool());
+  MOCK_METHOD0(PerformIdleWork, void());
   MOCK_CONST_METHOD0(RestoreState, void());
   MOCK_CONST_METHOD0(RestoreActiveTexture, void());
   MOCK_CONST_METHOD1(RestoreAttribute, void(unsigned index));

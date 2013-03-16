@@ -259,6 +259,25 @@ void GpuChannelManager::OnLoadedShader(std::string program_proto) {
     program_cache()->LoadProgram(program_proto);
 }
 
+bool GpuChannelManager::HandleMessagesScheduled() {
+  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
+       iter != gpu_channels_.end(); ++iter) {
+    if (iter->second->handle_messages_scheduled())
+      return true;
+  }
+  return false;
+}
+
+uint64 GpuChannelManager::MessagesProcessed() {
+  uint64 messages_processed = 0;
+
+  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
+       iter != gpu_channels_.end(); ++iter) {
+    messages_processed += iter->second->messages_processed();
+  }
+  return messages_processed;
+}
+
 void GpuChannelManager::LoseAllContexts() {
   MessageLoop::current()->PostTask(
       FROM_HERE,

@@ -137,6 +137,9 @@ class GpuChannel : public IPC::Listener,
 
   gpu::PreemptionFlag* GetPreemptionFlag();
 
+  bool handle_messages_scheduled() const { return handle_messages_scheduled_; }
+  uint64 messages_processed() const { return messages_processed_; }
+
   // If |preemption_flag->IsSet()|, any stub on this channel
   // should stop issuing GL commands. Setting this to NULL stops deferral.
   void SetPreemptByFlag(

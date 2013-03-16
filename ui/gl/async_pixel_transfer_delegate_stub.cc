@@ -18,7 +18,7 @@ void* GetAddress(SharedMemory* shared_memory,
                  uint32 shm_data_offset,
                  uint32 shm_data_size) {
   // Memory bounds have already been validated, so there
-  // is just DCHECKS here.
+  // are just DCHECKS here.
   DCHECK(shared_memory);
   DCHECK(shared_memory->memory());
   DCHECK_LE(shm_data_offset + shm_data_size, shm_size);
@@ -27,13 +27,6 @@ void* GetAddress(SharedMemory* shared_memory,
 } // namespace
 
 namespace gfx {
-
-#if !defined(OS_ANDROID)
-scoped_ptr<AsyncPixelTransferDelegate>
-    AsyncPixelTransferDelegate::Create(gfx::GLContext* context) {
-  return AsyncPixelTransferDelegateStub::Create(context);
-}
-#endif
 
 scoped_ptr<AsyncPixelTransferDelegate>
       AsyncPixelTransferDelegateStub::Create(gfx::GLContext* context) {
@@ -63,8 +56,7 @@ AsyncPixelTransferState*
     AsyncPixelTransferDelegateStub::CreateRawPixelTransferState(
         GLuint texture_id,
         const AsyncTexImage2DParams& define_params) {
-  return static_cast<AsyncPixelTransferState*>(
-      new AsyncTransferStateStub(texture_id));
+  return new AsyncTransferStateStub(texture_id);
 }
 
 bool AsyncPixelTransferDelegateStub::BindCompletedAsyncTransfers() {
@@ -139,6 +131,14 @@ uint32 AsyncPixelTransferDelegateStub::GetTextureUploadCount() {
 
 base::TimeDelta AsyncPixelTransferDelegateStub::GetTotalTextureUploadTime() {
   return total_texture_upload_time_;
+}
+
+bool AsyncPixelTransferDelegateStub::ProcessMorePendingTransfers() {
+  return false;
+}
+
+bool AsyncPixelTransferDelegateStub::NeedsProcessMorePendingTransfers() {
+  return false;
 }
 
 }  // namespace gfx

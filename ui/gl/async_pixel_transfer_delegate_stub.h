@@ -50,6 +50,8 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
       AsyncPixelTransferState* state) OVERRIDE;
   virtual uint32 GetTextureUploadCount() OVERRIDE;
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual bool ProcessMorePendingTransfers() OVERRIDE;
+  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
  private:
   // implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState*

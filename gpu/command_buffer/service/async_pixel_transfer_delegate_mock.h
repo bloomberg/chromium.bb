@@ -49,6 +49,8 @@ class MockAsyncPixelTransferDelegate : public gfx::AsyncPixelTransferDelegate {
   MOCK_METHOD1(WaitForTransferCompletion, void(gfx::AsyncPixelTransferState*));
   MOCK_METHOD0(GetTextureUploadCount, uint32());
   MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
+  MOCK_METHOD0(ProcessMorePendingTransfers, bool());
+  MOCK_METHOD0(NeedsProcessMorePendingTransfers, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAsyncPixelTransferDelegate);

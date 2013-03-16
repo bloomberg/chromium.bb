@@ -112,6 +112,16 @@ class GL_EXPORT AsyncPixelTransferDelegate {
   virtual uint32 GetTextureUploadCount() = 0;
   virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
 
+  // ProcessMorePendingTransfers() will be called at a good time
+  // to process a small amount of pending transfer work while
+  // NeedsProcessMorePendingTransfers() returns true. Implementations
+  // that can't dispatch work to separate threads should use
+  // this to avoid blocking the caller thread inappropriately.
+  // ProcessMorePendingTransfers() returns true iff a texture was
+  // bound to texture-unit zero.
+  virtual bool ProcessMorePendingTransfers() = 0;
+  virtual bool NeedsProcessMorePendingTransfers() = 0;
+
  protected:
   AsyncPixelTransferDelegate() {}
   // For testing, as returning scoped_ptr wouldn't work with MOCK_METHOD.

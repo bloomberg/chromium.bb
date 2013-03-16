@@ -76,6 +76,9 @@ class GpuChannelManager : public IPC::Listener,
   // Sender overrides.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
+  bool HandleMessagesScheduled();
+  uint64 MessagesProcessed();
+
   void LoseAllContexts();
 
   base::WeakPtrFactory<GpuChannelManager> weak_factory_;

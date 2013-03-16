@@ -41,6 +41,8 @@
       ],
      'sources': [
         'async_pixel_transfer_delegate.h',
+        'async_pixel_transfer_delegate_idle.cc',
+        'async_pixel_transfer_delegate_idle.h',
         'async_pixel_transfer_delegate_stub.cc',
         'async_pixel_transfer_delegate_stub.h',
         'gl_bindings.h',

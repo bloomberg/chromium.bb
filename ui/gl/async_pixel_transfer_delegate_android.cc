@@ -113,7 +113,7 @@ void DoFullTexSubImage2D(const AsyncTexImage2DParams& tex_params, void* data) {
 // Gets the address of the data from shared memory.
 void* GetAddress(SharedMemory* shared_memory, uint32 shm_data_offset) {
   // Memory bounds have already been validated, so there
-  // is just DCHECKS here.
+  // are just DCHECKS here.
   CHECK(shared_memory);
   CHECK(shared_memory->memory());
   return static_cast<int8*>(shared_memory->memory()) + shm_data_offset;
@@ -212,7 +212,6 @@ class TransferStateInternal
 
     // We can only change the active texture and unit 0,
     // as that is all that will be restored.
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
     bind_callback_.Run();
@@ -384,6 +383,8 @@ class AsyncPixelTransferDelegateAndroid
       AsyncPixelTransferState* state) OVERRIDE;
   virtual uint32 GetTextureUploadCount() OVERRIDE;
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual bool ProcessMorePendingTransfers() OVERRIDE;
+  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
   // implement AsyncPixelTransferDelegate:
@@ -483,12 +484,11 @@ AsyncPixelTransferState*
   // we just using image_preservedd=TRUE on Qualcomm as a work-around.
   bool use_image_preserved = is_qualcomm_ || is_imagination_;
 
-  return static_cast<AsyncPixelTransferState*>(
-      new AsyncTransferStateAndroid(texture_id,
-                                    define_params,
-                                    wait_for_uploads,
-                                    wait_for_creation,
-                                    use_image_preserved));
+  return new AsyncTransferStateAndroid(texture_id,
+                                       define_params,
+                                       wait_for_uploads,
+                                       wait_for_creation,
+                                       use_image_preserved);
 }
 
 bool AsyncPixelTransferDelegateAndroid::BindCompletedAsyncTransfers() {
@@ -657,6 +657,15 @@ base::TimeDelta AsyncPixelTransferDelegateAndroid::GetTotalTextureUploadTime() {
   texture_upload_stats_->GetStats(&total_texture_upload_time);
   return total_texture_upload_time;
 }
+
+bool AsyncPixelTransferDelegateAndroid::ProcessMorePendingTransfers() {
+  return false;
+}
+
+bool AsyncPixelTransferDelegateAndroid::NeedsProcessMorePendingTransfers() {
+  return false;
+}
+
 
 namespace {
 void SetGlParametersForEglImageTexture() {

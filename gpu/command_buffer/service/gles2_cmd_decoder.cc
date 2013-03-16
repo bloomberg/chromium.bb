@@ -631,6 +631,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
     return vertex_array_manager_.get();
   }
   virtual bool ProcessPendingQueries() OVERRIDE;
+  virtual bool HasMoreIdleWork() OVERRIDE;
+  virtual void PerformIdleWork() OVERRIDE;
 
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
@@ -2870,6 +2872,8 @@ void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   // from the client, as the client may have recieved an async
   // completion while issuing those commands.
   // "DidFlushStart" would be ideal if we had such a callback.
+  // TODO(reveman): We should avoid using a bool return value to determine
+  // if we need to restore some state. crbug.com/196303
   if (async_pixel_transfer_delegate_->BindCompletedAsyncTransfers())
     RestoreCurrentTexture2DBindings();
 }
@@ -9283,6 +9287,20 @@ bool GLES2DecoderImpl::ProcessPendingQueries() {
     current_decoder_error_ = error::kOutOfBounds;
   }
   return query_manager_->HavePendingQueries();
+}
+
+bool GLES2DecoderImpl::HasMoreIdleWork() {
+  return async_pixel_transfer_delegate_->NeedsProcessMorePendingTransfers();
+}
+
+void GLES2DecoderImpl::PerformIdleWork() {
+  if (!async_pixel_transfer_delegate_->NeedsProcessMorePendingTransfers())
+    return;
+  // TODO(reveman): We should avoid using a bool return value to determine
+  // if we need to restore some state. crbug.com/196303
+  if (async_pixel_transfer_delegate_->ProcessMorePendingTransfers())
+    RestoreCurrentTexture2DBindings();
+  ProcessFinishedAsyncTransfers();
 }
 
 error::Error GLES2DecoderImpl::HandleBeginQueryEXT(

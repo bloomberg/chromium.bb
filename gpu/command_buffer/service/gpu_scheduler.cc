@@ -168,7 +168,8 @@ bool GpuScheduler::IsScheduled() {
 
 bool GpuScheduler::HasMoreWork() {
   return !unschedule_fences_.empty() ||
-         (decoder_ && decoder_->ProcessPendingQueries());
+         (decoder_ && decoder_->ProcessPendingQueries()) ||
+         HasMoreIdleWork();
 }
 
 void GpuScheduler::SetSchedulingChangedCallback(
@@ -267,6 +268,16 @@ bool GpuScheduler::IsPreempted() {
   }
 
   return preemption_flag_->IsSet();
+}
+
+bool GpuScheduler::HasMoreIdleWork() {
+  return (decoder_ && decoder_->HasMoreIdleWork());
+}
+
+void GpuScheduler::PerformIdleWork() {
+  if (!decoder_)
+    return;
+  decoder_->PerformIdleWork();
 }
 
 void GpuScheduler::RescheduleTimeOut() {
