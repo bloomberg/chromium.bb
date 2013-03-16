@@ -229,9 +229,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Merge) {
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 }
 
-// This test is flaky. See bug http://crbug.com/135336
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       DISABLED_SetPassphraseAndThenSetupSync) {
+                       SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
