@@ -1098,15 +1098,21 @@ bool ChromeLauncherControllerPerApp::IsWebContentHandledByApplication(
 
 gfx::Image ChromeLauncherControllerPerApp::GetAppListIcon(
     content::WebContents* web_contents) const {
-  const Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord() && !profile->IsGuestSession()) {
+  if (IsIncognito(web_contents)) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    return rb.GetImageNamed(IDR_AURA_LAUNCHER_INCOGNITO_BROWSER);
+    return rb.GetImageNamed(IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER);
   }
   FaviconTabHelper* favicon_tab_helper =
       FaviconTabHelper::FromWebContents(web_contents);
   return favicon_tab_helper->GetFavicon();
+}
+
+gfx::Image ChromeLauncherControllerPerApp::GetBrowserListIcon(
+    content::WebContents* web_contents) const {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetImageNamed(IsIncognito(web_contents) ?
+      IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER :
+      IDR_AURA_LAUNCHER_LIST_BROWSER);
 }
 
 void ChromeLauncherControllerPerApp::OnBrowserRemoved(Browser* browser) {
@@ -1477,7 +1483,7 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList(
     if (!(event_flags & ui::EF_SHIFT_DOWN)) {
       WebContents* web_contents =
           tab_strip->GetWebContentsAt(tab_strip->active_index());
-      gfx::Image app_icon = GetAppListIcon(web_contents);
+      gfx::Image app_icon = GetBrowserListIcon(web_contents);
       items.push_back(new ChromeLauncherAppMenuItemBrowser(
           web_contents->GetTitle(),
           app_icon.IsEmpty() ? NULL : &app_icon,
@@ -1513,4 +1519,11 @@ bool ChromeLauncherControllerPerApp::IsBrowserRepresentedInBrowserList(
            !browser->is_type_popup() ||
            GetLauncherIDForAppID(web_app::GetExtensionIdFromApplicationName(
                browser->app_name())) <= 0));
+}
+
+bool ChromeLauncherControllerPerApp::IsIncognito(
+    content::WebContents* web_contents) const {
+  const Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return profile->IsOffTheRecord() && !profile->IsGuestSession();
 }

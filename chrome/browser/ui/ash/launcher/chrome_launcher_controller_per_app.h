@@ -308,9 +308,13 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   bool IsWebContentHandledByApplication(content::WebContents* web_contents,
                                         const std::string& app_id);
 
-  // Get the favicon for the application list by giving the |web_content|.
+  // Get the favicon for the application list by giving the |web_contents|.
   // Note that for incognito windows the incognito icon will be returned.
   gfx::Image GetAppListIcon(content::WebContents* web_contents) const;
+
+  // Get the favicon for the browser list by giving the |web_contents|.
+  // Note that for incognito windows the incognito icon will be returned.
+  gfx::Image GetBrowserListIcon(content::WebContents* web_contents) const;
 
   // Overridden from chrome::BrowserListObserver.
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
@@ -408,6 +412,9 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // Returns true when the given |browser| is listed in the browser application
   // list.
   bool IsBrowserRepresentedInBrowserList(Browser* browser);
+
+  // Check if the given |web_contents| is in incognito mode.
+  bool IsIncognito(content::WebContents* web_contents) const;
 
   ash::LauncherModel* model_;
 

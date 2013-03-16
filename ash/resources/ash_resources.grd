@@ -58,6 +58,8 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="common/launcher/launcher_appmenu_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="common/launcher/launcher_incognito_browser.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="common/launcher/launcher_incognito_browser_panel.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_LIST_BROWSER" file="common/launcher/window_switcher_icon_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER" file="common/launcher/window_switcher_icon_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_OVERFLOW" file="common/launcher/launcher_overflow.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="common/launcher/launcher_underline_bottom_active.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="common/launcher/launcher_underline_bottom_hover.png" />
