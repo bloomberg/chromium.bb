@@ -449,9 +449,8 @@
               ],
             }],
             # For now, do not build nacl_helper when disable_nacl=1
-            # or when arm is enabled
             # http://code.google.com/p/gyp/issues/detail?id=239
-            ['disable_nacl==0 and target_arch!="arm" and coverage==0', {
+            ['disable_nacl==0 and coverage==0', {
               'dependencies': [
                 '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
                 'nacl_helper',
