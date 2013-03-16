@@ -443,21 +443,6 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
   return web_input_event_modifiers;
 }
 
-// Given the scrolled amount (|scroll|) and the threshold (|threshold|), returns
-// the amount the window should be translated.
-int GetResistedScrollAmount(int scroll, int threshold) {
-  DCHECK_GE(scroll, 0);
-  if (scroll <= threshold)
-    return scroll / 2;
-
-  // Start resisting after the threshold.
-  int resisted = threshold / 2;
-  float extra = scroll - threshold;
-  while ((extra /= 1.3f) > 1.f)
-    resisted += 1;
-  return resisted;
-}
-
 }  // namespace
 
 // ShadowWindow is used to paint shadows around a content window.
@@ -1077,11 +1062,7 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
   else if (ShouldNavigateBack(controller, current_overscroll_gesture_))
     return gfx::Vector2d(std::min(bounds.width(), delta_x), 0);
 
-  const float threshold = GetOverscrollConfig(
-      OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER);
-  int scroll = GetResistedScrollAmount(abs(delta_x),
-                                       static_cast<int>(threshold));
-  return gfx::Vector2d(delta_x < 0 ? -scroll : scroll, 0);
+  return gfx::Vector2d();
 }
 
 void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
