@@ -10,6 +10,8 @@ cr.define('print_preview', function() {
    * destinations.
    * @param {string} id ID of the destination.
    * @param {!print_preview.Destination.Type} type Type of the destination.
+   * @param {!print_preview.Destination.AuthType} authType Type of the
+   *     authentication used to access the destination.
    * @param {string} displayName Display name of the destination.
    * @param {boolean} isRecent Whether the destination has been used recently.
    * @param {!print_preview.Destination.ConnectionStatus} connectionStatus
@@ -21,8 +23,8 @@ cr.define('print_preview', function() {
    *     destination.
    * @constructor
    */
-  function Destination(id, type, displayName, isRecent, connectionStatus,
-                       opt_params) {
+  function Destination(id, type, authType, displayName, isRecent,
+                       connectionStatus, opt_params) {
     /**
      * ID of the destination.
      * @type {string}
@@ -36,6 +38,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.type_ = type;
+
+    /**
+     * Type of authentication for the destination.
+     * @type {!print_preview.Destination.AuthType}
+     * @private
+     */
+    this.authType_ = authType;
 
     /**
      * Display name of the destination.
@@ -133,6 +142,17 @@ cr.define('print_preview', function() {
   };
 
   /**
+   * Enumeration of the authentication types for cloud destinations.
+   * @enum {string}
+   */
+  Destination.AuthType = {
+    LOCAL: 'local',
+    COOKIES: 'cookies',
+    PROFILE: 'profile',
+    DEVICE: 'device'
+  };
+
+  /**
    * Enumeration of the connection statuses of printer destinations.
    * @enum {string}
    */
@@ -169,6 +189,14 @@ cr.define('print_preview', function() {
     /** @return {!print_preview.Destination.Type} Type of the destination. */
     get type() {
       return this.type_;
+    },
+
+    /**
+     * @return {!print_preview.Destination.AuthType} Type of authentication for
+     *     the destination.
+     */
+    get authType() {
+      return this.authType_;
     },
 
     /** @return {string} Display name of the destination. */

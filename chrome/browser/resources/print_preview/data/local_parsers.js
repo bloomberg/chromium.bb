@@ -18,6 +18,7 @@ cr.define('print_preview', function() {
     return new print_preview.Destination(
         destinationInfo.deviceName,
         print_preview.Destination.Type.LOCAL,
+        print_preview.Destination.AuthType.LOCAL,
         destinationInfo.printerName,
         false /*isRecent*/,
         print_preview.Destination.ConnectionStatus.ONLINE);

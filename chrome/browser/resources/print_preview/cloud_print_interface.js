@@ -339,7 +339,8 @@ cr.define('cloudprint', function() {
         printerListJson.forEach(function(printerJson) {
           try {
             printerList.push(
-                cloudprint.CloudDestinationParser.parse(printerJson));
+                cloudprint.CloudDestinationParser.parse(
+                    printerJson, print_preview.Destination.AuthType.COOKIES));
           } catch (err) {
             console.error('Unable to parse cloud print destination: ' + err);
           }
@@ -388,7 +389,8 @@ cr.define('cloudprint', function() {
         var printerJson = result['printers'][0];
         var printer;
         try {
-          printer = cloudprint.CloudDestinationParser.parse(printerJson);
+          printer = cloudprint.CloudDestinationParser.parse(
+              printerJson, print_preview.Destination.AuthType.COOKIES);
         } catch (err) {
           console.error('Failed to parse cloud print destination: ' +
               JSON.stringify(printerJson));

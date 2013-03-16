@@ -57,9 +57,11 @@ cr.define('cloudprint', function() {
    * response.
    * @param {!Object} json Object that represents a Google Cloud Print search or
    *     printer response.
+   * @param {!print_preview.Destination.AuthType} authType The authentication
+   *     type used to find printer.
    * @return {!print_preview.Destination} Parsed destination.
    */
-  CloudDestinationParser.parse = function(json) {
+  CloudDestinationParser.parse = function(json, authType) {
     if (!json.hasOwnProperty(CloudDestinationParser.Field_.ID) ||
         !json.hasOwnProperty(CloudDestinationParser.Field_.TYPE) ||
         !json.hasOwnProperty(CloudDestinationParser.Field_.DISPLAY_NAME)) {
@@ -82,6 +84,7 @@ cr.define('cloudprint', function() {
         id,
         CloudDestinationParser.parseType_(
             json[CloudDestinationParser.Field_.TYPE]),
+        authType,
         json[CloudDestinationParser.Field_.DISPLAY_NAME],
         arrayContains(tags, CloudDestinationParser.RECENT_TAG_) /*isRecent*/,
         connectionStatus,
