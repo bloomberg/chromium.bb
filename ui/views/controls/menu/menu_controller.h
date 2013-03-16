@@ -98,6 +98,9 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher,
   // the menu is being canceled.
   ExitType exit_type() const { return exit_type_; }
 
+  // Returns the time from the event which closed the menu - or 0.
+  base::TimeDelta closing_event_time() const { return closing_event_time_; }
+
   // Various events, forwarded from the submenu.
   //
   // NOTE: the coordinates of the events are in that of the
@@ -560,6 +563,9 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher,
   int message_loop_depth_;
 
   views::MenuConfig menu_config_;
+
+  // The timestamp of the event which closed the menu - or 0 otherwise.
+  base::TimeDelta closing_event_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

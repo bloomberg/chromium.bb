@@ -1099,6 +1099,7 @@ void RootWindow::DispatchHeldEvents() {
       ui::MouseEvent mouse_event(
           static_cast<const ui::MouseEvent&>(*held_repostable_event_.get()));
       held_repostable_event_.reset(); // must be reset before dispatch
+LOG(ERROR) << "Disptch: " << mouse_event.time_stamp().ToInternalValue();
       DispatchMouseEventRepost(&mouse_event);
     } else {
       DCHECK(held_repostable_event_->type() == ui::ET_GESTURE_TAP_DOWN);

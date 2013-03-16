@@ -374,7 +374,8 @@ LauncherView::LauncherView(LauncherModel* model,
       context_menu_id_(0),
       leading_inset_(kDefaultLeadingInset),
       cancelling_drag_model_changed_(false),
-      last_hidden_index_(0) {
+      last_hidden_index_(0),
+      closing_event_time_(base::TimeDelta()) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -1250,6 +1251,11 @@ void LauncherView::ButtonPressed(views::Button* sender,
   if (view_index == -1)
     return;
 
+  // If the previous menu was closed by the same event as this one, we ignore
+  // the call.
+  if (!IsUsableEvent(event))
+    return;
+
   tooltip_->Close();
 
   {
@@ -1344,6 +1350,7 @@ void LauncherView::ShowMenu(
     views::View* source,
     const gfx::Point& click_point,
     bool context_menu) {
+  closing_event_time_ = base::TimeDelta();
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter->CreateMenu()));
 
@@ -1382,6 +1389,7 @@ void LauncherView::ShowMenu(
           views::MenuRunner::CONTEXT_MENU) == views::MenuRunner::MENU_DELETED)
     return;
 
+  closing_event_time_ = launcher_menu_runner_->closing_event_time();
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
@@ -1392,6 +1400,16 @@ void LauncherView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
 }
 
 void LauncherView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
+}
+
+bool LauncherView::IsUsableEvent(const ui::Event& event) {
+  if (closing_event_time_ == base::TimeDelta())
+    return true;
+
+  base::TimeDelta delta =
+      base::TimeDelta(event.time_stamp() - closing_event_time_);
+  closing_event_time_ = base::TimeDelta();
+  return (delta.InMilliseconds() < 0 || delta.InMilliseconds() > 130);
 }
 
 }  // namespace internal
