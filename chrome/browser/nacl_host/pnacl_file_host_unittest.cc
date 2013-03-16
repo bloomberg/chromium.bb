@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
@@ -16,7 +17,10 @@ using pnacl_file_host::PnaclCanOpenFile;
 
 // Try to pass a few funny filenames with a dummy pnacl directory set.
 TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
-  base::FilePath kDummyPnaclPath(FILE_PATH_LITERAL("dummy_pnacl_path"));
+  base::ScopedTempDir scoped_tmp_dir;
+  ASSERT_TRUE(scoped_tmp_dir.CreateUniqueTempDir());
+
+  base::FilePath kDummyPnaclPath = scoped_tmp_dir.path();
   base::ScopedPathOverride pnach_dir_override(chrome::DIR_PNACL_COMPONENT,
                                               kDummyPnaclPath);
   ASSERT_TRUE(PathService::Get(chrome::DIR_PNACL_COMPONENT,
@@ -66,5 +70,4 @@ TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
   EXPECT_FALSE(PnaclCanOpenFile("$HOME", &out_path));
   EXPECT_FALSE(PnaclCanOpenFile("$HOME/.bashrc", &out_path));
 #endif
-
 }
