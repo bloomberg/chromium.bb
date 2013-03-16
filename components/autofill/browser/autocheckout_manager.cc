@@ -46,8 +46,6 @@ FormFieldData BuildField(const std::string& autocomplete_attribute) {
 // AutofillDialogController to show the Autocheckout specific UI.
 FormData BuildAutocheckoutFormData() {
   FormData formdata;
-  formdata.fields.push_back(BuildField("name"));
-  formdata.fields.push_back(BuildField("tel"));
   formdata.fields.push_back(BuildField("email"));
   formdata.fields.push_back(BuildField("cc-name"));
   formdata.fields.push_back(BuildField("cc-number"));
@@ -59,11 +57,14 @@ FormData BuildAutocheckoutFormData() {
   formdata.fields.push_back(BuildField("billing region"));
   formdata.fields.push_back(BuildField("billing country"));
   formdata.fields.push_back(BuildField("billing postal-code"));
+  formdata.fields.push_back(BuildField("billing tel"));
+  formdata.fields.push_back(BuildField("shipping name"));
   formdata.fields.push_back(BuildField("shipping street-address"));
   formdata.fields.push_back(BuildField("shipping locality"));
   formdata.fields.push_back(BuildField("shipping region"));
   formdata.fields.push_back(BuildField("shipping country"));
   formdata.fields.push_back(BuildField("shipping postal-code"));
+  formdata.fields.push_back(BuildField("shipping tel"));
   return formdata;
 }
 
