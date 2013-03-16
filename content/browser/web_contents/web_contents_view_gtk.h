@@ -97,6 +97,10 @@ class CONTENT_EXPORT WebContentsViewGtk
   // should be taken that the correct one is hidden/shown.
   void InsertIntoContentArea(GtkWidget* widget);
 
+  // Replaces, or updates, the existing WebDragDestGtk with one for |new_host|.
+  // This must be called when swapping in, or creating a swapped in, RVH.
+  void UpdateDragDest(RenderViewHost* new_host);
+
   // Handle focus traversal on the render widget native view. Can be overridden
   // by subclasses.
   CHROMEGTK_CALLBACK_1(WebContentsViewGtk, gboolean, OnFocus, GtkDirectionType);

@@ -223,11 +223,13 @@ RenderWidgetHostView* WebContentsViewGtk::CreateViewForWidget(
                         GDK_POINTER_MOTION_MASK);
   InsertIntoContentArea(content_view);
 
-  // Renderer target DnD.
-  drag_dest_.reset(new WebDragDestGtk(web_contents_, content_view));
-
-  if (delegate_.get())
-    drag_dest_->set_delegate(delegate_->GetDragDestDelegate());
+  // We don't want to change any state in this class for swapped out RVHs
+  // because they will not be visible at this time.
+  if (render_widget_host->IsRenderView()) {
+    RenderViewHost* rvh = RenderViewHost::From(render_widget_host);
+    if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
+      UpdateDragDest(rvh);
+  }
 
   return view;
 }
@@ -263,6 +265,7 @@ void WebContentsViewGtk::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewGtk::RenderViewSwappedIn(RenderViewHost* host) {
+  UpdateDragDest(host);
 }
 
 WebContents* WebContentsViewGtk::web_contents() {
@@ -292,6 +295,24 @@ void WebContentsViewGtk::TakeFocus(bool reverse) {
 
 void WebContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
   gtk_container_add(GTK_CONTAINER(expanded_.get()), widget);
+}
+
+void WebContentsViewGtk::UpdateDragDest(RenderViewHost* host) {
+  gfx::NativeView content_view = host->GetView()->GetNativeView();
+
+  // If the host is already used by the drag_dest_, there's no point in deleting
+  // the old one to create an identical copy.
+  if (drag_dest_.get() && drag_dest_->widget() == content_view)
+    return;
+
+  // Clear the currently connected drag drop signals by deleting the old
+  // drag_dest_ before creating the new one.
+  drag_dest_.reset();
+  // Create the new drag_dest_.
+  drag_dest_.reset(new WebDragDestGtk(web_contents_, content_view));
+
+  if (delegate_.get())
+    drag_dest_->set_delegate(delegate_->GetDragDestDelegate());
 }
 
 // Called when the content view gtk widget is tabbed to, or after the call to

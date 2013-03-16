@@ -41,6 +41,8 @@ class CONTENT_EXPORT WebDragDestGtk {
   WebDragDestDelegate* delegate() const { return delegate_; }
   void set_delegate(WebDragDestDelegate* delegate) { delegate_ = delegate; }
 
+  GtkWidget* widget() const { return widget_; }
+
  private:
   RenderViewHostImpl* GetRenderViewHost() const;
 
@@ -90,11 +92,11 @@ class CONTENT_EXPORT WebDragDestGtk {
   // got from the renderer.
   bool is_drop_target_;
 
-  // Handler ID for the destroy signal handler. We connect to the destroy
-  // signal handler so that we won't call dest_unset on it after it is
-  // destroyed, but we have to cancel the handler if we are destroyed before
-  // |widget_| is.
-  int destroy_handler_;
+  // Stores Handler IDs for the gtk signal handlers. We have to cancel the
+  // signal handlers when this WebDragDestGtk is deleted so that if, later on,
+  // we re-create the drag dest with the same widget, we don't get callbacks to
+  // deleted functions.
+  scoped_array<int> handlers_;
 
   // A delegate that can receive drag information about drag events.
   WebDragDestDelegate* delegate_;
