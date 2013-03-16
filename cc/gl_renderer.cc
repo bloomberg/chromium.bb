@@ -369,7 +369,7 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame& frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   static float gl_matrix[16];
-  const SolidColorProgram* program = GetSolidColorProgram();
+  const DebugBorderProgram* program = GetDebugBorderProgram();
   DCHECK(program && (program->initialized() || IsContextLost()));
   SetUseProgram(program->program());
 
@@ -1977,6 +1977,16 @@ GLRenderer::GetTileCheckerboardProgram() {
   return tile_checkerboard_program_.get();
 }
 
+const GLRenderer::DebugBorderProgram* GLRenderer::GetDebugBorderProgram() {
+  if (!debug_border_program_)
+    debug_border_program_ = make_scoped_ptr(new DebugBorderProgram(context_));
+  if (!debug_border_program_->initialized()) {
+    TRACE_EVENT0("cc", "GLRenderer::debugBorderProgram::initialize");
+    debug_border_program_->Initialize(context_, is_using_bind_uniform_);
+  }
+  return debug_border_program_.get();
+}
+
 const GLRenderer::SolidColorProgram* GLRenderer::GetSolidColorProgram() {
   if (!solid_color_program_)
     solid_color_program_ = make_scoped_ptr(new SolidColorProgram(context_));
@@ -2199,6 +2209,8 @@ void GLRenderer::CleanupSharedObjects() {
   if (video_stream_texture_program_)
     video_stream_texture_program_->Cleanup(context_);
 
+  if (debug_border_program_)
+    debug_border_program_->Cleanup(context_);
   if (solid_color_program_)
     solid_color_program_->Cleanup(context_);
   if (solid_color_program_aa_)

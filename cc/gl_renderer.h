@@ -243,6 +243,8 @@ class CC_EXPORT GLRenderer :
       VideoYUVProgram;
 
   // Special purpose / effects shaders.
+  typedef ProgramBinding<VertexShaderPos, FragmentShaderColor>
+      DebugBorderProgram;
   typedef ProgramBinding<VertexShaderQuad, FragmentShaderColor>
       SolidColorProgram;
   typedef ProgramBinding<VertexShaderQuad, FragmentShaderColorAA>
@@ -268,6 +270,7 @@ class CC_EXPORT GLRenderer :
   const VideoYUVProgram* GetVideoYUVProgram();
   const VideoStreamTextureProgram* GetVideoStreamTextureProgram();
 
+  const DebugBorderProgram* GetDebugBorderProgram();
   const SolidColorProgram* GetSolidColorProgram();
   const SolidColorProgramAA* GetSolidColorProgramAA();
 
@@ -291,6 +294,7 @@ class CC_EXPORT GLRenderer :
   scoped_ptr<VideoYUVProgram> video_yuv_program_;
   scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_;
 
+  scoped_ptr<DebugBorderProgram> debug_border_program_;
   scoped_ptr<SolidColorProgram> solid_color_program_;
   scoped_ptr<SolidColorProgramAA> solid_color_program_aa_;
 
