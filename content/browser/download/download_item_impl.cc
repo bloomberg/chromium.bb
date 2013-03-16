@@ -484,8 +484,7 @@ bool DownloadItemImpl::IsComplete() const {
 }
 
 const GURL& DownloadItemImpl::GetURL() const {
-  return url_chain_.empty() ?
-             GURL::EmptyGURL() : url_chain_.back();
+  return url_chain_.empty() ? GURL::EmptyGURL() : url_chain_.back();
 }
 
 const std::vector<GURL>& DownloadItemImpl::GetUrlChain() const {
@@ -493,7 +492,9 @@ const std::vector<GURL>& DownloadItemImpl::GetUrlChain() const {
 }
 
 const GURL& DownloadItemImpl::GetOriginalUrl() const {
-  return url_chain_.front();
+  // Be careful about taking the front() of possibly-empty vectors!
+  // http://crbug.com/190096
+  return url_chain_.empty() ? GURL::EmptyGURL() : url_chain_.front();
 }
 
 const GURL& DownloadItemImpl::GetReferrerUrl() const {
@@ -731,12 +732,12 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
   if (!url_chain_.empty()) {
     std::vector<GURL>::const_iterator iter = url_chain_.begin();
     std::vector<GURL>::const_iterator last = url_chain_.end();
-    url_list = (*iter).spec();
+    url_list = (*iter).is_valid() ? (*iter).spec() : "<invalid>";
     ++iter;
     for ( ; verbose && (iter != last); ++iter) {
       url_list += " ->\n\t";
       const GURL& next_url = *iter;
-      url_list += next_url.spec();
+      url_list += next_url.is_valid() ? next_url.spec() : "<invalid>";
     }
   }
 

@@ -57,7 +57,8 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   scoped_ptr<net::URLRequest> request(
       params->resource_context()->GetRequestContext()->CreateRequest(
           params->url(), NULL));
-  request->set_referrer(params->referrer().url.spec());
+  if (params->referrer().url.is_valid())
+    request->set_referrer(params->referrer().url.spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(
       request.get(), params->referrer().policy);
   request->set_load_flags(request->load_flags() | params->load_flags());

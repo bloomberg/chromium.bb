@@ -217,7 +217,8 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   base::DictionaryValue* json = new base::DictionaryValue();
   json->SetBoolean(kExistsKey, !download_item->GetFileExternallyRemoved());
   json->SetInteger(kIdKey, download_item->GetId());
-  json->SetString(kUrlKey, download_item->GetOriginalUrl().spec());
+  const GURL& url = download_item->GetOriginalUrl();
+  json->SetString(kUrlKey, (url.is_valid() ? url.spec() : ""));
   json->SetString(
       kFilenameKey, download_item->GetFullPath().LossyDisplayName());
   json->SetString(kDangerKey, DangerString(download_item->GetDangerType()));
