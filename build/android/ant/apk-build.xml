@@ -138,6 +138,59 @@
     <!-- overriding these properties may break the build
          unless the whole file is updated -->
 
+    <target name="-set-release-mode">
+        <!-- record the current build target -->
+        <property name="build.target" value="release" />
+
+        <!-- release mode is only valid if the manifest does not explicitly
+             set debuggable to true. default is false. -->
+        <xpath input="${manifest.abs.file}" expression="/manifest/application/@android:debuggable"
+                output="build.is.packaging.debug" default="false"/>
+
+        <if condition="${build.is.packaging.debug}">
+            <then>
+                <echo>*************************************************</echo>
+                <echo>****  Android Manifest has debuggable=true   ****</echo>
+                <echo>**** Doing DEBUG packaging with RELEASE keys ****</echo>
+                <echo>*************************************************</echo>
+            </then>
+            <else>
+                <!-- property only set in release mode.
+                     Useful for if/unless attributes in target node
+                     when using Ant before 1.8 -->
+                <property name="build.is.mode.release" value="true"/>
+            </else>
+        </if>
+
+        <echo level="info">proguard.config is ${proguard.config}</echo>
+        <condition property="proguard.enabled" value="true" else="false">
+            <and>
+                <isset property="build.is.mode.release" />
+                <isset property="proguard.config" />
+            </and>
+        </condition>
+        <if condition="${proguard.enabled}">
+            <then>
+                <echo level="info">Proguard.config is enabled</echo>
+                <!-- Secondary dx input (jar files) is empty since all the
+                     jar files will be in the obfuscated jar -->
+                <path id="out.dex.jar.input.ref" />
+            </then>
+        </if>
+    </target>
+
+    <target name="-set-debug-mode">
+        <!-- record the current build target -->
+        <property name="build.target" value="debug" />
+
+        <!-- whether the build is a debug build. always set. -->
+        <property name="build.is.packaging.debug" value="true" />
+
+        <!-- proguard is never enabled in debug mode -->
+        <property name="proguard.enabled" value="false"/>
+    </target>
+
+
     <!-- Input directories -->
     <property name="source.dir" value="src" />
     <property name="source.absolute.dir" location="${source.dir}" />
@@ -150,8 +203,6 @@
       <equals arg1="${ASSET_DIR}" arg2=""/>
     </condition>
 
-    <property name="jar.libs.dir" value="libs" />
-    <property name="jar.libs.absolute.dir" location="${jar.libs.dir}" />
     <property-location name="native.libs.absolute.dir" location="${out.dir}/libs"
         check-exists="false"/>
 
@@ -205,13 +256,9 @@
     <!-- ******************** Build Targets ******************** -->
     <!-- ******************************************************* -->
 
-    <!-- Basic Ant + SDK check -->
-    <target name="-check-env">
-        <checkenv />
-    </target>
-
     <!-- generic setup -->
-    <target name="-setup" depends="-check-env">
+    <target name="-setup">
+        <checkenv />
         <echo level="info">Project Name: ${ant.project.name}</echo>
         <gettype projectTypeOut="project.type" />
 
@@ -224,10 +271,6 @@
         <!-- get the project manifest package -->
         <xpath input="${manifest.abs.file}"
                 expression="/manifest/@package" output="project.app.package" />
-    </target>
-
-    <!-- Pre build setup -->
-    <target name="-build-setup" depends="-setup">
 
         <!-- read the previous build mode -->
         <property file="${out.build.prop.file}" />
@@ -245,11 +288,8 @@
 
         <property name="manifest.hasCode" value="true" />
 
-
         <echo level="info">----------</echo>
         <echo level="info">Creating output directories if needed...</echo>
-        <mkdir dir="${resource.absolute.dir}" />
-        <mkdir dir="${jar.libs.absolute.dir}" />
         <mkdir dir="${out.absolute.dir}" />
         <mkdir dir="${out.res.absolute.dir}" />
         <mkdir dir="${gen.absolute.dir}" />
@@ -257,12 +297,8 @@
         <mkdir dir="${out.dexed.absolute.dir}" />
     </target>
 
-    <!-- empty default pre-build target. Create a similar target in
-         your build.xml and it'll be called instead of this one. -->
-    <target name="-pre-build"/>
-
     <!-- Code Generation: compile resources (aapt -> R.java), aidl -->
-    <target name="-code-gen">
+    <target name="-code-gen" depends="-setup">
         <!-- always merge manifest -->
         <mergemanifest
                 appManifest="${manifest.abs.file}"
@@ -289,26 +325,6 @@
             <res path="${resource.absolute.dir}" />
         </aapt>
 
-        <echo level="info">----------</echo>
-        <echo level="info">Handling BuildConfig class...</echo>
-        <buildconfig
-                genFolder="${gen.absolute.dir}"
-                package="${project.app.package}"
-                buildType="${build.is.packaging.debug}"
-                previousBuildType=""/>
-    </target>
-
-    <!-- empty default pre-compile target. Create a similar target in
-         your build.xml and it'll be called instead of this one. -->
-    <target name="-pre-compile">
-      <!--
-        Remove all .class files from the output directory. This prevents inclusion of incorrect .class
-        files in the final apk. For example, if a .java file was deleted, the apk should not contain
-        the .class files for that .java from previous builds.
-      -->
-      <delete>
-        <fileset dir="${out.classes.absolute.dir}" includes="**/*.class"/>
-      </delete>
     </target>
 
     <!--
@@ -318,9 +334,11 @@
       sources: 'javac.custom.sourcepath'.
     -->
     <!-- Compiles this project's .java files into .class files. -->
-    <target
-        name="-compile"
-        depends="-build-setup, -pre-build, -code-gen, -pre-compile">
+    <target name="-compile" depends="-code-gen">
+      <delete>
+        <fileset dir="${out.classes.absolute.dir}" includes="**/*.class"/>
+      </delete>
+
       <javac
           bootclasspathref="project.target.class.path"
           classpathref="javac.custom.classpath"
@@ -354,11 +372,6 @@
           <script language="javascript" src="${create.test.jar.file}"/>
         </then>
       </if>
-    </target>
-
-    <!-- empty default post-compile target. Create a similar target in
-         your build.xml and it'll be called instead of this one. -->
-    <target name="-post-compile">
       <!--
         Copy gdbserver to main libs directory if building a non-instrumentation debug apk.
       -->
@@ -393,7 +406,7 @@
       Override obfuscate target to pass javac.custom.classpath to Proguard. SDK tools do not provide
       any way to pass custom class paths to Proguard.
      -->
-    <target name="-obfuscate">
+    <target name="-obfuscate" depends="-compile">
       <if condition="${proguard.enabled}">
         <then>
           <property name="obfuscate.absolute.dir" location="${out.absolute.dir}/proguard"/>
@@ -469,7 +482,7 @@
     </target>
 
     <!-- Converts this project's .class files into .dex files -->
-    <target name="-dex" depends="-compile, -post-compile, -obfuscate">
+    <target name="-dex" depends="-obfuscate">
         <sequential>
             <!-- sets the primary input for dex. If a pre-dex task sets it to
                  something else this has no effect -->
@@ -488,8 +501,13 @@
         </sequential>
     </target>
 
-    <!-- Updates the pre-processed PNG cache -->
-    <target name="-crunch">
+    <!-- Puts the project's resources into the output package file
+         This actually can create multiple resource package in case
+         Some custom apk with specific configuration have been
+         declared in default.properties.
+         -->
+    <target name="-package-resources" depends="-setup">
+        <!-- Updates the pre-processed PNG cache -->
         <exec executable="${aapt}" taskName="crunch">
             <arg value="crunch" />
             <arg value="-v" />
@@ -498,14 +516,6 @@
             <arg value="-C" />
             <arg path="${out.res.absolute.dir}" />
         </exec>
-    </target>
-
-    <!-- Puts the project's resources into the output package file
-         This actually can create multiple resource package in case
-         Some custom apk with specific configuration have been
-         declared in default.properties.
-         -->
-    <target name="-package-resources" depends="-crunch">
         <aapt executable="${aapt}"
                 command="package"
                 versioncode="${version.code}"
@@ -549,41 +559,8 @@
         </apkbuilder>
     </target>
 
-    <target name="-post-package" />
-    <target name="-post-build" />
-
-    <target name="-set-mode-check">
-    </target>
-
-    <!-- ******************************************************* -->
-    <!-- **************** Debug specific targets *************** -->
-    <!-- ******************************************************* -->
-
-    <target name="-set-debug-files" depends="-set-mode-check">
-    </target>
-
-
-    <target name="-set-debug-mode" depends="-setup">
-        <!-- record the current build target -->
-        <property name="build.target" value="debug" />
-
-        <property name="build.is.instrumented" value="false" />
-
-        <!-- whether the build is a debug build. always set. -->
-        <property name="build.is.packaging.debug" value="true" />
-
-        <!-- signing mode: debug -->
-        <property name="build.is.signing.debug" value="true" />
-    </target>
-
-    <target name="-debug-obfuscation-check">
-        <!-- proguard is never enabled in debug mode -->
-        <property name="proguard.enabled" value="false"/>
-    </target>
-
     <!-- Signs and zipaligns the apk. -->
-    <target name="-do-sign"
-        depends="-package, -post-package">
+    <target name="-do-sign" depends="-package">
       <sequential>
         <echo level="info">Signing final apk...</echo>
         <signapk
@@ -603,76 +580,18 @@
       </sequential>
     </target>
 
-    <target name="-do-debug"
-      depends="-set-debug-mode, -debug-obfuscation-check, -do-sign">
-    </target>
-
     <!-- Builds debug output package -->
-    <target name="debug" depends="-set-debug-files, -do-debug, -post-build"
-                description="Builds the application and signs it with a debug key.">
-    </target>
-
-    <!-- ******************************************************* -->
-    <!-- *************** Release specific targets ************** -->
-    <!-- ******************************************************* -->
-
-    <target name="-release-obfuscation-check">
-        <echo level="info">proguard.config is ${proguard.config}</echo>
-        <condition property="proguard.enabled" value="true" else="false">
-            <and>
-                <isset property="build.is.mode.release" />
-                <isset property="proguard.config" />
-            </and>
-        </condition>
-        <if condition="${proguard.enabled}">
-            <then>
-                <echo level="info">Proguard.config is enabled</echo>
-                <!-- Secondary dx input (jar files) is empty since all the
-                     jar files will be in the obfuscated jar -->
-                <path id="out.dex.jar.input.ref" />
-            </then>
-        </if>
-    </target>
-
-    <target name="-set-release-mode" depends="-set-mode-check">
-        <!-- record the current build target -->
-        <property name="build.target" value="release" />
-
-        <property name="build.is.instrumented" value="false" />
-
-        <!-- release mode is only valid if the manifest does not explicitly
-             set debuggable to true. default is false. -->
-        <xpath input="${manifest.abs.file}" expression="/manifest/application/@android:debuggable"
-                output="build.is.packaging.debug" default="false"/>
-
-        <!-- signing mode: release -->
-        <property name="build.is.signing.debug" value="false" />
-
-        <if condition="${build.is.packaging.debug}">
-            <then>
-                <echo>*************************************************</echo>
-                <echo>****  Android Manifest has debuggable=true   ****</echo>
-                <echo>**** Doing DEBUG packaging with RELEASE keys ****</echo>
-                <echo>*************************************************</echo>
-            </then>
-            <else>
-                <!-- property only set in release mode.
-                     Useful for if/unless attributes in target node
-                     when using Ant before 1.8 -->
-                <property name="build.is.mode.release" value="true"/>
-            </else>
-        </if>
-    </target>
-
-    <target name="-release-sign" depends="-do-sign" >
+    <target name="debug"
+            depends="-set-debug-mode, -do-sign"
+            description="Builds the application and signs it with a debug key.">
     </target>
 
     <!-- This runs -package-release first and then runs
          only if release-sign is true (set in -release-check,
          called by -release-no-sign)-->
     <target name="release"
-                depends="-set-release-mode, -release-obfuscation-check, -package, -post-package, -release-sign, -post-build"
-                description="Builds the application in release mode.">
+            depends="-set-release-mode, -do-sign"
+            description="Builds the application in release mode.">
     </target>
 
 </project>
