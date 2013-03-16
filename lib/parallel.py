@@ -15,12 +15,17 @@ import Queue
 import signal
 import sys
 import tempfile
+import time
 import traceback
 
 from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.lib import osutils
 
 _PRINT_INTERVAL = 1
 _BUFSIZE = 1024
+SIGTERM_TIMEOUT = 30
+SIGKILL_TIMEOUT = 30
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,107 +34,127 @@ class BackgroundFailure(results_lib.StepFailure):
   pass
 
 
-class _BackgroundSteps(multiprocessing.Process):
-  """Run a list of functions in sequence in the background.
+class _BackgroundTask(multiprocessing.Process):
+  """Run a task in the background.
 
-  These functions may be the 'Run' functions from buildbot stages or just plain
-  functions. They will be run in the background. Output from these functions
-  is saved to a temporary file and is printed when the 'WaitForStep' function
-  is called.
+  This task may be the 'Run' function from a buildbot stage or just a plain
+  function. It will be run in the background. Output from this task is saved
+  to a temporary file and is printed when the 'Wait' function is called.
   """
 
-  def __init__(self, semaphore=None):
-    """Create a new _BackgroundSteps object.
+  # The time we give Python to startup and exit.
+  STARTUP_TIMEOUT = 60 * 5
+  EXIT_TIMEOUT = 60 * 10
+
+  def __init__(self, task, semaphore=None):
+    """Create a new _BackgroundTask object.
 
     If semaphore is supplied, it will be acquired for the duration of the
     steps that are run in the background. This can be used to limit the
     number of simultaneous parallel tasks.
     """
     multiprocessing.Process.__init__(self)
-    self._steps = collections.deque()
+    self._task = task
     self._queue = multiprocessing.Queue()
     self._semaphore = semaphore
     self._started = multiprocessing.Event()
+    self._output = None
 
-  def AddStep(self, step):
-    """Add a step to the list of steps to run in the background."""
-    output = tempfile.NamedTemporaryFile(delete=False, bufsize=0)
-    self._steps.append((step, output))
+  def _WaitForStartup(self):
+    # TODO(davidjames): Use python-2.7 syntax to simplify this.
+    self._started.wait(self.STARTUP_TIMEOUT)
+    msg = 'Process failed to start in %d seconds' % self.STARTUP_TIMEOUT
+    assert self._started.is_set(), msg
 
-  def Kill(self):
-    """Kill a running task."""
-    self._started.wait()
-    # Kill the children nicely with a KeyboardInterrupt.
+  def Kill(self, sig):
+    """Kill process with signal, ignoring if the process is dead.
+
+    Args:
+      sig: Signal to send.
+    """
+    self._WaitForStartup()
     try:
-      os.kill(self.pid, signal.SIGINT)
+      os.kill(self.pid, sig)
     except OSError as ex:
       if ex.errno != errno.ESRCH:
         raise
 
-    # Delete output files.
-    for _step, output in self._steps:
-      output_name = output.name
-      if logger.isEnabledFor(logging.DEBUG):
-        with open(output_name, 'r') as f:
+  def Cleanup(self, silent=False):
+    """Wait for a process to exit."""
+    try:
+      # Print output from subprocess.
+      if not silent and logger.isEnabledFor(logging.DEBUG):
+        with open(self._output.name, 'r') as f:
           for line in f:
             logging.debug(line.rstrip('\n'))
-      os.unlink(output_name)
+    finally:
+      # Clean up our temporary file.
+      osutils.SafeUnlink(self._output.name)
+      self._output.close()
+      self._output = None
 
-  def WaitForStep(self):
-    """Wait for the next step to complete.
+  def Wait(self):
+    """Wait for the task to complete.
 
-    Output from the step is printed as the step runs.
+    Output from the task is printed as it runs.
 
     If an exception occurs, return a string containing the traceback.
     """
-    assert not self.Empty()
-    _step, output = self._steps.popleft()
+    try:
+      # Flush stdout and stderr to be sure no output is interleaved.
+      sys.stdout.flush()
+      sys.stderr.flush()
 
-    # Flush stdout and stderr to be sure no output is interleaved.
-    sys.stdout.flush()
-    sys.stderr.flush()
+      # File position pointers are shared across processes, so we must open
+      # our own file descriptor to ensure output is not lost.
+      self._WaitForStartup()
+      with open(self._output.name, 'r') as output:
+        pos = 0
+        more_output = True
+        while more_output:
+          # Check whether the process is finished.
+          try:
+            error, results = self._queue.get(True, _PRINT_INTERVAL)
 
-    # File position pointers are shared across processes, so we must open
-    # our own file descriptor to ensure output is not lost.
-    output_name = output.name
-    with open(output_name, 'r') as output:
-      os.unlink(output_name)
-      pos = 0
-      more_output = True
-      while more_output:
-        # Check whether the process is finished.
-        try:
-          error, results = self._queue.get(True, _PRINT_INTERVAL)
-          more_output = False
-        except Queue.Empty:
-          more_output = True
+            # Wait for the process to actually exit.
+            more_output = False
 
-        # Print output so far.
-        output.seek(pos)
-        buf = output.read(_BUFSIZE)
-        while len(buf) > 0:
-          sys.stdout.write(buf)
-          pos += len(buf)
-          if len(buf) < _BUFSIZE:
-            break
+            # If the child doesn't exit in a timely fashion, kill it.
+            self.join(self.EXIT_TIMEOUT)
+            if self.exitcode is None:
+              _KillChildren([self])
+              msg = '%r hung for %r seconds' % (self, self.EXIT_TIMEOUT)
+              error = (error + '\n%s' % msg) if error else msg
+          except Queue.Empty:
+            more_output = True
+
+          # Print output so far.
+          output.seek(pos)
           buf = output.read(_BUFSIZE)
-        sys.stdout.flush()
+          while len(buf) > 0:
+            sys.stdout.write(buf)
+            pos += len(buf)
+            if len(buf) < _BUFSIZE:
+              break
+            buf = output.read(_BUFSIZE)
+          sys.stdout.flush()
 
-    # Propagate any results.
-    for result in results:
-      results_lib.Results.Record(*result)
+      # Propagate any results.
+      for result in results:
+        results_lib.Results.Record(*result)
+
+    finally:
+      self.Cleanup(silent=True)
 
     # If a traceback occurred, return it.
     return error
-
-  def Empty(self):
-    """Return True if there are any steps left to run."""
-    return len(self._steps) == 0
 
   def start(self):
     """Invoke multiprocessing.Process.start after flushing output/err."""
     sys.stdout.flush()
     sys.stderr.flush()
+    self._output = tempfile.NamedTemporaryFile(delete=False, bufsize=0,
+                                               prefix='chromite-parallel-')
     return multiprocessing.Process.start(self)
 
   def run(self):
@@ -137,12 +162,12 @@ class _BackgroundSteps(multiprocessing.Process):
     if self._semaphore is not None:
       self._semaphore.acquire()
     try:
-      self._RunSteps()
+      self._Run()
     finally:
       if self._semaphore is not None:
         self._semaphore.release()
 
-  def _RunSteps(self):
+  def _Run(self):
     """Internal method for running the list of steps."""
 
     # The default handler for SIGINT sometimes forgets to actually raise the
@@ -154,44 +179,73 @@ class _BackgroundSteps(multiprocessing.Process):
 
     sys.stdout.flush()
     sys.stderr.flush()
-    orig_stdout, orig_stderr = sys.stdout, sys.stderr
-    stdout_fileno = sys.__stdout__.fileno()
-    stderr_fileno = sys.__stderr__.fileno()
-    orig_stdout_fd, orig_stderr_fd = map(os.dup,
-                                         [stdout_fileno, stderr_fileno])
-    cancel = False
-    while self._steps:
-      step, output = self._steps.popleft()
-      # Send all output to a named temporary file.
-      os.dup2(output.fileno(), stdout_fileno)
-      os.dup2(output.fileno(), stderr_fileno)
-      # Replace std[out|err] with unbuffered file objects
+    # Send all output to a named temporary file.
+    with open(self._output.name, 'w', 0) as output:
+      # Back up sys.std{err,out}. These aren't used, but we keep a copy so
+      # that they aren't garbage collected. We intentionally don't restore
+      # the old stdout and stderr at the end, because we want shutdown errors
+      # to also be sent to the same log file.
+      _orig_stdout, _orig_stderr = sys.stdout, sys.stderr
+
+      # Replace std{out,err} with unbuffered file objects.
+      os.dup2(output.fileno(), sys.__stdout__.fileno())
+      os.dup2(output.fileno(), sys.__stderr__.fileno())
       sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
       sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', 0)
+
       error = None
       try:
-        results_lib.Results.Clear()
         self._started.set()
-        if not cancel:
-          step()
+        results_lib.Results.Clear()
+        self._task()
       except results_lib.StepFailure as ex:
         error = str(ex)
       except BaseException as ex:
         error = traceback.format_exc()
-        # If it's a fatal exception, don't run any more steps.
-        if isinstance(ex, (SystemExit, KeyboardInterrupt)):
-          cancel = True
 
       sys.stdout.flush()
       sys.stderr.flush()
-      output.close()
-      if self._steps:
-        sys.stdout, sys.stderr = orig_stdout, orig_stderr
-        os.dup2(orig_stdout_fd, stdout_fileno)
-        os.dup2(orig_stderr_fd, stderr_fileno)
-        map(os.close, [orig_stdout_fd, orig_stderr_fd])
-      results = results_lib.Results.Get()
-      self._queue.put((error, results))
+
+    results = results_lib.Results.Get()
+    self._queue.put((error, results))
+
+
+def _KillChildren(bg_tasks):
+  """Kill a deque of background tasks.
+
+  This is needed to prevent hangs in the case where child processes refuse
+  to exit.
+
+  Arguments:
+    bg_tasks: A deque, filled with _BackgroundTask objects.
+  """
+
+  signals = ((signal.SIGINT, SIGTERM_TIMEOUT),
+             (signal.SIGTERM, SIGKILL_TIMEOUT),
+             (signal.SIGKILL, None))
+  for sig, timeout in signals:
+    # Send signal to all tasks.
+    for task in bg_tasks:
+      task.Kill(sig)
+
+    # Wait for all tasks to exit, if requested.
+    if timeout is None:
+      for task in bg_tasks:
+        task.join()
+        task.Cleanup()
+      break
+
+    # Wait until timeout expires.
+    end_time = time.time() + timeout
+    while bg_tasks:
+      time_left = end_time - time.time()
+      if time_left <= 0:
+        break
+      task = bg_tasks[0]
+      task.join(time_left)
+      if task.exitcode is not None:
+        task.Cleanup()
+        bg_tasks.popleft()
 
 
 @contextlib.contextmanager
@@ -221,28 +275,28 @@ def _ParallelSteps(steps, max_parallel=None, halt_on_error=False):
     semaphore = multiprocessing.Semaphore(max_parallel)
 
   # First, start all the steps.
-  bg_steps = []
+  bg_tasks = collections.deque()
   for step in steps:
-    bg = _BackgroundSteps(semaphore)
-    bg.AddStep(step)
-    bg.start()
-    bg_steps.append(bg)
+    task = _BackgroundTask(step, semaphore)
+    task.start()
+    bg_tasks.append(task)
 
   try:
     yield
   finally:
     # Wait for each step to complete.
     tracebacks = []
-    for bg in bg_steps:
-      while not bg.Empty():
-        if tracebacks and halt_on_error:
-          bg.Kill()
+    while bg_tasks:
+      task = bg_tasks.popleft()
+      error = task.Wait()
+      if error is not None:
+        tracebacks.append(error)
+        if halt_on_error:
           break
-        else:
-          error = bg.WaitForStep()
-          if error is not None:
-            tracebacks.append(error)
-      bg.join()
+
+    # If there are still tasks left, kill them.
+    if bg_tasks:
+      _KillChildren(bg_tasks)
 
     # Propagate any exceptions.
     if tracebacks:

@@ -6,6 +6,7 @@
 import contextlib
 import multiprocessing
 import os
+import signal
 import sys
 import tempfile
 import time
@@ -80,6 +81,15 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
   def setUp(self):
     self.tempfile = None
 
+  def tearDown(self):
+    # Complain if there are any children left over.
+    active_children = multiprocessing.active_children()
+    for child in active_children:
+      child.Kill(signal.SIGKILL)
+      child.join()
+    self.assertEqual(multiprocessing.active_children(), [])
+    self.assertEqual(active_children, [])
+
   def wrapOutputTest(self, func):
     # Set _PRINT_INTERVAL to a smaller number to make it easier to
     # reproduce bugs.
@@ -136,6 +146,10 @@ class TestHelloWorld(TestBackgroundWrapper):
     out = self.wrapOutputTest(self._ParallelHelloWorld)
     self.assertEquals(out, _GREETING)
 
+  def testMultipleHelloWorlds(self):
+    """Test that multiple threads can be created."""
+    parallel.RunParallelSteps([self.testParallelHelloWorld] * 2)
+
 
 class TestFastPrinting(TestBackgroundWrapper):
 
@@ -152,13 +166,17 @@ class TestFastPrinting(TestBackgroundWrapper):
   def _NestedParallelPrinter(self):
     parallel.RunParallelSteps([self._ParallelPrinter])
 
+  def testSimpleParallelPrinter(self):
+    out = self.wrapOutputTest(self._ParallelPrinter)
+    self.assertEquals(len(out), _TOTAL_BYTES)
+
   def testNestedParallelPrinter(self):
     """Verify that no output is lost when lots of output is written."""
     out = self.wrapOutputTest(self._NestedParallelPrinter)
     self.assertEquals(len(out), _TOTAL_BYTES)
 
 
-class TestParallelMock(cros_test_lib.TestCase):
+class TestParallelMock(TestBackgroundWrapper):
   """Test the ParallelMock class."""
 
   def setUp(self):
@@ -197,6 +215,7 @@ class TestExceptions(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
     raise KeyboardInterrupt()
 
   def testExceptionRaising(self):
+    # pylint: disable=E1101
     self.StartPatcher(BackgroundTaskVerifier())
     for fn in (self._SystemExit, self._KeyboardInterrupt):
       for task in (lambda: parallel.RunTasksInProcessPool(fn, [[]]),
@@ -212,7 +231,8 @@ class TestExceptions(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
         self.assertEqual(output_str, _GREETING)
 
 
-class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
+class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase,
+                  TestBackgroundWrapper):
   """Test that child processes are halted when exceptions occur."""
 
   def setUp(self):
@@ -234,7 +254,7 @@ class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
 
   def testExceptionRaising(self):
     """Test that exceptions halt all running steps."""
-    steps = [self._Exit, self._Fail, self._Pass]
+    steps = [self._Exit, self._Fail, self._Pass, self._Fail]
     output_str = None
     with self.OutputCapturer() as capture:
       try:
@@ -256,4 +276,11 @@ class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
 
 
 if __name__ == '__main__':
+  # Set timeouts small so that if the unit test hangs, it won't hang for long.
+  parallel._BackgroundTask.STARTUP_TIMEOUT = 5
+  parallel._BackgroundTask.EXIT_TIMEOUT = 5
+  parallel.TERM_TIMEOUT = 5
+  parallel.KILL_TIMEOUT = 5
+
+  # Run the tests.
   cros_test_lib.main()
