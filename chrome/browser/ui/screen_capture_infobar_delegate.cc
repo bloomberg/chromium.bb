@@ -11,13 +11,30 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+// This is a short-term solution to allow testing of the the Screen Capture API
+// with Google Hangouts in M27.
+// TODO(sergeyu): Remove this whitelist as soon as possible.
+bool IsWhitelistedOrigin(const GURL& origin) {
+#if defined(OFFICIAL_BUILD)
+  return origin.spec() == "https://staging.talkgadget.google.com/" ||
+      origin.spec() == "https://plus.google.com/";
+#else
+  return false;
+#endif
+}
+
+}  // namespace
+
 // static
 void ScreenCaptureInfoBarDelegate::Create(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   bool screen_capture_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableUserMediaScreenCapturing);
+      switches::kEnableUserMediaScreenCapturing) ||
+      IsWhitelistedOrigin(request.security_origin);
   // Deny request automatically in the following cases:
   //  1. Screen capturing is not enabled via command line switch.
   //  2. Audio capture was requested (it's not supported yet).
