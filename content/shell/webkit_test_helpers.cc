@@ -107,6 +107,7 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->accelerated_compositing_for_video_enabled = false;
   prefs->deferred_2d_canvas_enabled = false;
   prefs->mock_scrollbars_enabled = false;
+  prefs->fixed_position_creates_stacking_context = false;
 }
 
 }  // namespace content
