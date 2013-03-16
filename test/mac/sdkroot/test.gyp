@@ -8,7 +8,7 @@
       'type': 'executable',
       'sources': [ 'file.cc', ],
       'xcode_settings': {
-        'SDKROOT': 'macosx10.7',
+        'SDKROOT': 'macosx%s',
       },
       'postbuilds': [
         {
