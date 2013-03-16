@@ -14,14 +14,25 @@
 
 namespace {
 
-const char kDefaultWalletServiceUrl[] = "https://wallet.google.com/";
+const char kProdWalletServiceUrl[] = "https://wallet.google.com/";
+
+// TODO(ahutter): Remove this once production is ready.
+const char kSandboxWalletServiceUrl[] =
+    "https://payments-form-dogfood.sandbox.google.com/";
+
+// TODO(ahutter): Remove this once production is ready.
+const char kSandboxWalletSecureServiceUrl[] =
+    "https://wallet-web.sandbox.google.com/";
 
 GURL GetWalletHostUrl() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string wallet_service_hostname =
       command_line.GetSwitchValueASCII(switches::kWalletServiceUrl);
-  return !wallet_service_hostname.empty() ? GURL(wallet_service_hostname) :
-                                            GURL(kDefaultWalletServiceUrl);
+  if (!wallet_service_hostname.empty())
+    return GURL(wallet_service_hostname);
+  if (command_line.HasSwitch(switches::kWalletServiceUseProd))
+    return GURL(kProdWalletServiceUrl);
+  return GURL(kSandboxWalletServiceUrl);
 }
 
 GURL GetBaseWalletUrl() {
@@ -36,8 +47,11 @@ GURL GetBaseSecureUrl() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string wallet_secure_url =
       command_line.GetSwitchValueASCII(switches::kWalletSecureServiceUrl);
-  return !wallet_secure_url.empty() ? GURL(wallet_secure_url) :
-                                      GURL(kDefaultWalletServiceUrl);
+  if (!wallet_secure_url.empty())
+    return GURL(wallet_secure_url);
+  if (command_line.HasSwitch(switches::kWalletServiceUseProd))
+    return GURL(kProdWalletServiceUrl);
+  return GURL(kSandboxWalletSecureServiceUrl);
 }
 
 }  // anonymous namespace
@@ -74,11 +88,27 @@ GURL GetPassiveAuthUrl() {
 }
 
 GURL GetEncryptionUrl() {
-  return GetWalletHostUrl().Resolve("online-secure/temporarydata/cvv?s7e=cvv");
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  // TODO(ahutter): Stop checking these switches once we switch over to prod.
+  if (command_line.HasSwitch(switches::kWalletServiceUseProd) ||
+      command_line.HasSwitch(switches::kWalletServiceUrl)) {
+    return GetWalletHostUrl().Resolve(
+        "online-secure/temporarydata/cvv?s7e=cvv");
+  } else {
+    return GetBaseSecureUrl().Resolve(
+        "online-secure/temporarydata/cvv?s7e=cvv");
+  }
 }
 
 GURL GetEscrowUrl() {
-  return GetBaseSecureUrl().Resolve("dehEfe?s7e=cardNumber%3Bcvv");
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  // TODO(ahutter): Stop checking these switches once we switch over to prod.
+  if (command_line.HasSwitch(switches::kWalletServiceUseProd) ||
+      command_line.HasSwitch(switches::kWalletServiceUrl)) {
+    return GetBaseSecureUrl().Resolve("dehEfe?s7e=cardNumber%3Bcvv");
+  } else {
+    return GetBaseSecureUrl().Resolve("checkout/dehEfe?s7e=cardNumber%3Bcvv");
+  }
 }
 
 GURL GetSignInUrl() {

@@ -15,6 +15,7 @@ extern const char kEnableExperimentalFormFilling[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kWalletSecureServiceUrl[];
 extern const char kWalletServiceUrl[];
+extern const char kWalletServiceUseProd[];
 
 }  // namespace switches
 

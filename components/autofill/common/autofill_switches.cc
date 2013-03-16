@@ -27,4 +27,8 @@ const char kWalletSecureServiceUrl[]        = "wallet-secure-service-url";
 // API calls.
 const char kWalletServiceUrl[]              = "wallet-service-url";
 
+// Enable production Online Wallet service. If this flag is not set, the sandbox
+// service will be used.
+const char kWalletServiceUseProd[]          = "wallet-service-use-prod";
+
 }  // namespace switches
