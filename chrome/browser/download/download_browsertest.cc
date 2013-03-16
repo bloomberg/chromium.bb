@@ -1807,7 +1807,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PRE_DownloadTest_History) {
   observer.WaitForStored();
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_History) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadTest_History DISABLED_DownloadTest_History
+#else
+#define MAYBE_DownloadTest_History DownloadTest_History
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_History) {
   // This starts up right after PRE_DownloadTest_History and shares the same
   // profile directory.
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
