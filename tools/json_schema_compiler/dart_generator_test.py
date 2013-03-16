@@ -56,14 +56,11 @@ class DartTest(unittest.TestCase):
   def testBasicFunction(self):
     self._RunTest('basic_function')
 
-  def testBasicType(self):
-    self._RunTest('basic_type')
-
   def testComments(self):
     self._RunTest('comments')
 
-  def testComplexType(self):
-    self._RunTest('complex_type')
+  def testDictionaries(self):
+    self._RunTest('dictionaries')
 
   def testEmptyNamespace(self):
     self._RunTest('empty_namespace')
