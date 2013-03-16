@@ -112,6 +112,7 @@ class ReplayServer(object):
         '--ssl_port', str(self._https_port),
         '--use_closest_match',
         '--no-dns_forwarding',
+        '--log_level', 'warning'
         ]
 
   def _CheckPath(self, label, path):
