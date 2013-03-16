@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_CHROME_STYLE_H_
 #define CHROME_BROWSER_UI_CHROME_STYLE_H_
 
-#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -21,11 +20,9 @@ namespace chrome_style {
 int GetCloseButtonSize();  // Size of close button.
 SkColor GetBackgroundColor();  // Dialog background color.
 SkColor GetLinkColor();  // Dialog link color.
-SkColor GetSeparatorColor();  // Dialog separator color.
 
 const int kTitleTopPadding = 15; // Padding above the title.
 const int kHorizontalPadding = 20; // Left and right padding.
-const int kClientTopPadding = 15; // Padding above the client view.
 const int kClientBottomPadding = 20; // Padding below the client view.
 const int kCloseButtonPadding = 7; // Padding around the close button.
 const int kBorderRadius = 2; // Border radius for dialog corners.
@@ -34,9 +31,6 @@ const int kRowPadding = 20; // Padding between rows of text.
 // Font style for dialog text.
 const ui::ResourceBundle::FontStyle kTextFontStyle =
     ui::ResourceBundle::BaseFont;
-// Font style for bold dialog text.
-const ui::ResourceBundle::FontStyle kBoldTextFontStyle =
-    ui::ResourceBundle::BoldFont;
 // Font style for dialog title.
 const ui::ResourceBundle::FontStyle kTitleFontStyle =
     ui::ResourceBundle::MediumFont;
