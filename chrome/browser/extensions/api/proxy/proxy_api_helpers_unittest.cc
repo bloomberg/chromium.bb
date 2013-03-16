@@ -328,6 +328,33 @@ TEST(ExtensionProxyApiHelpers, CreateProxyRulesDict) {
   EXPECT_TRUE(Value::Equals(expected.get(), extension_pref.get()));
 }
 
+// Test multiple proxies per scheme -- expect that only the first is returned.
+TEST(ExtensionProxyApiHelpers, CreateProxyRulesDictMultipleProxies) {
+  scoped_ptr<DictionaryValue> browser_pref(
+      ProxyConfigDictionary::CreateFixedServers(
+          "http=proxy1:80,default://;https=proxy2:80,proxy1:80;ftp=proxy3:80,"
+          "https://proxy5:443;socks=proxy4:80,proxy1:80",
+          "localhost"));
+  ProxyConfigDictionary config(browser_pref.get());
+  scoped_ptr<DictionaryValue> extension_pref(CreateProxyRulesDict(config));
+  ASSERT_TRUE(extension_pref.get());
+
+  scoped_ptr<DictionaryValue> expected(new DictionaryValue);
+  expected->Set("proxyForHttp",
+                CreateTestProxyServerDict("http", "proxy1", 80));
+  expected->Set("proxyForHttps",
+                CreateTestProxyServerDict("http", "proxy2", 80));
+  expected->Set("proxyForFtp",
+                CreateTestProxyServerDict("http", "proxy3", 80));
+  expected->Set("fallbackProxy",
+                CreateTestProxyServerDict("socks4", "proxy4", 80));
+  ListValue* bypass_list = new ListValue;
+  bypass_list->Append(Value::CreateStringValue("localhost"));
+  expected->Set(keys::kProxyConfigBypassList, bypass_list);
+
+  EXPECT_TRUE(Value::Equals(expected.get(), extension_pref.get()));
+}
+
 // Test if a PAC script URL is specified.
 TEST(ExtensionProxyApiHelpers, CreatePacScriptDictWithUrl) {
   scoped_ptr<DictionaryValue> browser_pref(

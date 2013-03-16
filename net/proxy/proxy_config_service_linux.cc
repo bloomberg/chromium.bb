@@ -137,11 +137,11 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
   ProxyServer proxy_server;
   if (GetProxyFromEnvVar("all_proxy", &proxy_server)) {
     config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
-    config->proxy_rules().single_proxy = proxy_server;
+    config->proxy_rules().single_proxies.SetSingleProxyServer(proxy_server);
   } else {
     bool have_http = GetProxyFromEnvVar("http_proxy", &proxy_server);
     if (have_http)
-      config->proxy_rules().proxy_for_http = proxy_server;
+      config->proxy_rules().proxies_for_http.SetSingleProxyServer(proxy_server);
     // It would be tempting to let http_proxy apply for all protocols
     // if https_proxy and ftp_proxy are not defined. Googling turns up
     // several documents that mention only http_proxy. But then the
@@ -149,10 +149,11 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
     // like other apps do this. So we will refrain.
     bool have_https = GetProxyFromEnvVar("https_proxy", &proxy_server);
     if (have_https)
-      config->proxy_rules().proxy_for_https = proxy_server;
+      config->proxy_rules().proxies_for_https.
+          SetSingleProxyServer(proxy_server);
     bool have_ftp = GetProxyFromEnvVar("ftp_proxy", &proxy_server);
     if (have_ftp)
-      config->proxy_rules().proxy_for_ftp = proxy_server;
+      config->proxy_rules().proxies_for_ftp.SetSingleProxyServer(proxy_server);
     if (have_http || have_https || have_ftp) {
       // mustn't change type unless some rules are actually set.
       config->proxy_rules().type =
@@ -170,7 +171,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
       scheme = ProxyServer::SCHEME_SOCKS4;
     if (GetProxyFromEnvVarForScheme("SOCKS_SERVER", scheme, &proxy_server)) {
       config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
-      config->proxy_rules().single_proxy = proxy_server;
+      config->proxy_rules().single_proxies.SetSingleProxyServer(proxy_server);
     }
   }
   // Look for the proxy bypass list.
@@ -1445,21 +1446,23 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromSettings(
     if (proxy_for_http.is_valid()) {
       // Use the http proxy for all schemes.
       config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
-      config->proxy_rules().single_proxy = proxy_for_http;
+      config->proxy_rules().single_proxies.SetSingleProxyServer(proxy_for_http);
     }
   } else if (num_proxies_specified > 0) {
     if (socks_proxy.is_valid() && num_proxies_specified == 1) {
       // If the only proxy specified was for SOCKS, use it for all schemes.
       config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
-      config->proxy_rules().single_proxy = socks_proxy;
+      config->proxy_rules().single_proxies.SetSingleProxyServer(socks_proxy);
     } else {
-      // Otherwise use the indicate proxies per-scheme.
+      // Otherwise use the indicated proxies per-scheme.
       config->proxy_rules().type =
           ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
-      config->proxy_rules().proxy_for_http = proxy_for_http;
-      config->proxy_rules().proxy_for_https = proxy_for_https;
-      config->proxy_rules().proxy_for_ftp = proxy_for_ftp;
-      config->proxy_rules().fallback_proxy = socks_proxy;
+      config->proxy_rules().proxies_for_http.
+          SetSingleProxyServer(proxy_for_http);
+      config->proxy_rules().proxies_for_https.
+          SetSingleProxyServer(proxy_for_https);
+      config->proxy_rules().proxies_for_ftp.SetSingleProxyServer(proxy_for_ftp);
+      config->proxy_rules().fallback_proxies.SetSingleProxyServer(socks_proxy);
     }
   }
 

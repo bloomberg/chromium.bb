@@ -49,6 +49,16 @@ void ProxyInfo::UseProxyServer(const ProxyServer& proxy_server) {
   proxy_list_.SetSingleProxyServer(proxy_server);
 }
 
+void ProxyInfo::UsePacString(const std::string& pac_string) {
+  Reset();
+  proxy_list_.SetFromPacString(pac_string);
+}
+
+void ProxyInfo::UseProxyList(const ProxyList& proxy_list) {
+  Reset();
+  proxy_list_ = proxy_list;
+}
+
 std::string ProxyInfo::ToPacString() const {
   return proxy_list_.ToPacString();
 }

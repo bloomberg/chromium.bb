@@ -202,29 +202,29 @@ bool ProxyConfigServiceImpl::ProxyConfig::FromNetProxyConfig(
       }
       return true;
     case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
-      if (!rules.single_proxy.is_valid())
+      if (rules.single_proxies.IsEmpty())
         return false;
       mode = MODE_SINGLE_PROXY;
-      single_proxy.server = rules.single_proxy;
+      single_proxy.server = rules.single_proxies.Get();
       bypass_rules = rules.bypass_rules;
       return true;
     case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
       // Make sure we have valid server for at least one of the protocols.
-      if (!rules.proxy_for_http.is_valid() &&
-          !rules.proxy_for_https.is_valid() &&
-          !rules.proxy_for_ftp.is_valid() &&
-          !rules.fallback_proxy.is_valid()) {
+      if (rules.proxies_for_http.IsEmpty() &&
+          rules.proxies_for_https.IsEmpty() &&
+          rules.proxies_for_ftp.IsEmpty() &&
+          rules.fallback_proxies.IsEmpty()) {
         return false;
       }
       mode = MODE_PROXY_PER_SCHEME;
-      if (rules.proxy_for_http.is_valid())
-        http_proxy.server = rules.proxy_for_http;
-      if (rules.proxy_for_https.is_valid())
-        https_proxy.server = rules.proxy_for_https;
-      if (rules.proxy_for_ftp.is_valid())
-        ftp_proxy.server = rules.proxy_for_ftp;
-      if (rules.fallback_proxy.is_valid())
-        socks_proxy.server = rules.fallback_proxy;
+      if (!rules.proxies_for_http.IsEmpty())
+        http_proxy.server = rules.proxies_for_http.Get();
+      if (!rules.proxies_for_https.IsEmpty())
+        https_proxy.server = rules.proxies_for_https.Get();
+      if (!rules.proxies_for_ftp.IsEmpty())
+        ftp_proxy.server = rules.proxies_for_ftp.Get();
+      if (!rules.fallback_proxies.IsEmpty())
+        socks_proxy.server = rules.fallback_proxies.Get();
       bypass_rules = rules.bypass_rules;
       return true;
     default:
@@ -306,28 +306,28 @@ bool ProxyConfigServiceImpl::ProxyConfig::DeserializeForDevice(
       case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
         return false;
       case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
-        if (!rules.single_proxy.is_valid())
+        if (rules.single_proxies.IsEmpty())
           return false;
         mode = MODE_SINGLE_PROXY;
-        single_proxy.server = rules.single_proxy;
-        break;
+        single_proxy.server = rules.single_proxies.Get();
+        return true;
       case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
         // Make sure we have valid server for at least one of the protocols.
-        if (!rules.proxy_for_http.is_valid() &&
-            !rules.proxy_for_https.is_valid() &&
-            !rules.proxy_for_ftp.is_valid() &&
-            !rules.fallback_proxy.is_valid()) {
+        if (rules.proxies_for_http.IsEmpty() &&
+            rules.proxies_for_https.IsEmpty() &&
+            rules.proxies_for_ftp.IsEmpty() &&
+            rules.fallback_proxies.IsEmpty()) {
           return false;
         }
         mode = MODE_PROXY_PER_SCHEME;
-        if (rules.proxy_for_http.is_valid())
-          http_proxy.server = rules.proxy_for_http;
-        if (rules.proxy_for_https.is_valid())
-          https_proxy.server = rules.proxy_for_https;
-        if (rules.proxy_for_ftp.is_valid())
-          ftp_proxy.server = rules.proxy_for_ftp;
-        if (rules.fallback_proxy.is_valid())
-          socks_proxy.server = rules.fallback_proxy;
+        if (!rules.proxies_for_http.IsEmpty())
+          http_proxy.server = rules.proxies_for_http.Get();
+        if (!rules.proxies_for_https.IsEmpty())
+          https_proxy.server = rules.proxies_for_https.Get();
+        if (!rules.proxies_for_ftp.IsEmpty())
+          ftp_proxy.server = rules.proxies_for_ftp.Get();
+        if (!rules.fallback_proxies.IsEmpty())
+          socks_proxy.server = rules.fallback_proxies.Get();
         break;
     }
   } else {

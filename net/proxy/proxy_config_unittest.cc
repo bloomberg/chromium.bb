@@ -11,11 +11,11 @@ namespace net {
 namespace {
 
 void ExpectProxyServerEquals(const char* expectation,
-                             const ProxyServer& proxy_server) {
+                             const ProxyList& proxy_servers) {
   if (expectation == NULL) {
-    EXPECT_FALSE(proxy_server.is_valid());
+    EXPECT_TRUE(proxy_servers.IsEmpty());
   } else {
-    EXPECT_EQ(expectation, proxy_server.ToURI());
+    EXPECT_EQ(expectation, proxy_servers.ToPacString());
   }
 }
 
@@ -51,21 +51,21 @@ TEST(ProxyConfigTest, Equals) {
   // Test |ProxyConfig::proxy_rules|.
 
   config2.proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
-  config2.proxy_rules().single_proxy =
-      ProxyServer::FromURI("myproxy:80", ProxyServer::SCHEME_HTTP);
+  config2.proxy_rules().single_proxies.SetSingleProxyServer(
+      ProxyServer::FromURI("myproxy:80", ProxyServer::SCHEME_HTTP));
 
   EXPECT_FALSE(config1.Equals(config2));
   EXPECT_FALSE(config2.Equals(config1));
 
   config1.proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
-  config1.proxy_rules().single_proxy =
-      ProxyServer::FromURI("myproxy:100", ProxyServer::SCHEME_HTTP);
+  config1.proxy_rules().single_proxies.SetSingleProxyServer(
+      ProxyServer::FromURI("myproxy:100", ProxyServer::SCHEME_HTTP));
 
   EXPECT_FALSE(config1.Equals(config2));
   EXPECT_FALSE(config2.Equals(config1));
 
-  config1.proxy_rules().single_proxy =
-      ProxyServer::FromURI("myproxy", ProxyServer::SCHEME_HTTP);
+  config1.proxy_rules().single_proxies.SetSingleProxyServer(
+      ProxyServer::FromURI("myproxy", ProxyServer::SCHEME_HTTP));
 
   EXPECT_TRUE(config1.Equals(config2));
   EXPECT_TRUE(config2.Equals(config1));
@@ -100,6 +100,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     const char* proxy_rules;
 
     ProxyConfig::ProxyRules::Type type;
+    // These will be PAC-stle strings, eg 'PROXY foo.com'
     const char* single_proxy;
     const char* proxy_for_http;
     const char* proxy_for_https;
@@ -111,7 +112,19 @@ TEST(ProxyConfigTest, ParseProxyRules) {
       "myproxy:80",
 
       ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
-      "myproxy:80",
+      "PROXY myproxy:80",
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+    },
+
+    // Multiple HTTP proxies for all schemes.
+    {
+      "myproxy:80,https://myotherproxy",
+
+      ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
+      "PROXY myproxy:80;HTTPS myotherproxy:443",
       NULL,
       NULL,
       NULL,
@@ -124,7 +137,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
       ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
       NULL,
-      "myproxy:80",
+      "PROXY myproxy:80",
       NULL,
       NULL,
       NULL,
@@ -137,8 +150,8 @@ TEST(ProxyConfigTest, ParseProxyRules) {
       ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
       NULL,
       NULL,
-      "socks4://foopy:1080",
-      "ftp-proxy:80",
+      "SOCKS foopy:1080",
+      "PROXY ftp-proxy:80",
       NULL,
     },
 
@@ -149,7 +162,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
       "foopy ; ftp=ftp-proxy",
 
       ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
-      "foopy:80",
+      "PROXY foopy:80",
       NULL,
       NULL,
       NULL,
@@ -166,19 +179,55 @@ TEST(ProxyConfigTest, ParseProxyRules) {
       NULL,
       NULL,
       NULL,
-      "ftp-proxy:80",
+      "PROXY ftp-proxy:80",
       NULL,
     },
 
-    // Include duplicate entries -- last one wins.
+    // Include a list of entries for a single scheme.
     {
-      "ftp=ftp1 ; ftp=ftp2 ; ftp=ftp3",
+      "ftp=ftp1,ftp2,ftp3",
 
       ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
       NULL,
       NULL,
       NULL,
-      "ftp3:80",
+      "PROXY ftp1:80;PROXY ftp2:80;PROXY ftp3:80",
+      NULL,
+    },
+
+    // Include multiple entries for the same scheme -- they accumulate.
+    {
+      "http=http1,http2; http=http3",
+
+      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      NULL,
+      "PROXY http1:80;PROXY http2:80;PROXY http3:80",
+      NULL,
+      NULL,
+      NULL,
+    },
+
+    // Include lists of entries for multiple schemes.
+    {
+      "ftp=ftp1,ftp2,ftp3 ; http=http1,http2; ",
+
+      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      NULL,
+      "PROXY http1:80;PROXY http2:80",
+      NULL,
+      "PROXY ftp1:80;PROXY ftp2:80;PROXY ftp3:80",
+      NULL,
+    },
+
+    // Include non-default proxy schemes.
+    {
+      "http=https://secure_proxy; ftp=socks4://socks_proxy; https=socks://foo",
+
+      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      NULL,
+      "HTTPS secure_proxy:443",
+      "SOCKS5 foo:1080",
+      "SOCKS socks_proxy:1080",
       NULL,
     },
 
@@ -191,7 +240,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
       NULL,
       NULL,
       NULL,
-      "socks4://foopy:1080",
+      "SOCKS foopy:1080",
       },
 
     // SOCKS proxy present along with other proxies too
@@ -200,10 +249,10 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
       ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
       NULL,
-      "httpproxy:80",
-      "httpsproxy:80",
-      "ftpproxy:80",
-      "socks4://foopy:1080",
+      "PROXY httpproxy:80",
+      "PROXY httpsproxy:80",
+      "PROXY ftpproxy:80",
+      "SOCKS foopy:1080",
     },
 
     // SOCKS proxy (with modifier) present along with some proxies
@@ -213,10 +262,10 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
       ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
       NULL,
-      "httpproxy:80",
-      "httpsproxy:80",
+      "PROXY httpproxy:80",
+      "PROXY httpsproxy:80",
       NULL,
-      "socks5://foopy:1080",
+      "SOCKS5 foopy:1080",
       },
 
     // Include unsupported schemes -- they are discarded.
@@ -226,10 +275,35 @@ TEST(ProxyConfigTest, ParseProxyRules) {
       ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
       NULL,
       NULL,
-      "myhttpsproxy:80",
+      "PROXY myhttpsproxy:80",
       NULL,
       NULL,
     },
+
+    // direct:// as first option for a scheme.
+    {
+      "http=direct://,myhttpproxy; https=direct://",
+
+      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      NULL,
+      "DIRECT;PROXY myhttpproxy:80",
+      "DIRECT",
+      NULL,
+      NULL,
+    },
+
+    // direct:// as a second option for a scheme.
+    {
+      "http=myhttpproxy,direct://",
+
+      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      NULL,
+      "PROXY myhttpproxy:80;DIRECT",
+      NULL,
+      NULL,
+      NULL,
+    },
+
   };
 
   ProxyConfig config;
@@ -239,15 +313,15 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
     EXPECT_EQ(tests[i].type, config.proxy_rules().type);
     ExpectProxyServerEquals(tests[i].single_proxy,
-                            config.proxy_rules().single_proxy);
+                            config.proxy_rules().single_proxies);
     ExpectProxyServerEquals(tests[i].proxy_for_http,
-                            config.proxy_rules().proxy_for_http);
+                            config.proxy_rules().proxies_for_http);
     ExpectProxyServerEquals(tests[i].proxy_for_https,
-                            config.proxy_rules().proxy_for_https);
+                            config.proxy_rules().proxies_for_https);
     ExpectProxyServerEquals(tests[i].proxy_for_ftp,
-                            config.proxy_rules().proxy_for_ftp);
+                            config.proxy_rules().proxies_for_ftp);
     ExpectProxyServerEquals(tests[i].fallback_proxy,
-                            config.proxy_rules().fallback_proxy);
+                            config.proxy_rules().fallback_proxies);
   }
 }
 

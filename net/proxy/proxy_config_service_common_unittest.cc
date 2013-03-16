@@ -15,14 +15,37 @@ namespace net {
 
 namespace {
 
-// Helper to verify that |expected_proxy| matches |actual_proxy|. If it does
-// not, then |*did_fail| is set to true, and |*failure_details| is filled with
-// a description of the failure.
+// Helper to verify that |expected_proxy| matches the first proxy conatined in
+// |actual_proxies|, and that |actual_proxies| contains exactly one proxy. If
+// either condition is untrue, then |*did_fail| is set to true, and
+// |*failure_details| is filled with a description of the failure.
 void MatchesProxyServerHelper(const char* failure_message,
                               const char* expected_proxy,
-                              const ProxyServer& actual_proxy,
+                              const ProxyList& actual_proxies,
                               ::testing::AssertionResult* failure_details,
                               bool* did_fail) {
+  // If |expected_proxy| is empty, then we expect |actual_proxies| to be so as
+  // well.
+  if (strlen(expected_proxy) == 0) {
+    if (!actual_proxies.IsEmpty()) {
+      *did_fail = true;
+      *failure_details
+          << failure_message << ". Was expecting no proxies but got "
+          << actual_proxies.size() << ".";
+    }
+    return;
+  }
+
+  // Otherwise we check that |actual_proxies| holds a single matching proxy.
+  if (actual_proxies.size() != 1) {
+    *did_fail = true;
+    *failure_details
+        << failure_message << ". Was expecting exactly one proxy but got "
+        << actual_proxies.size() << ".";
+    return;
+  }
+
+  ProxyServer actual_proxy = actual_proxies.Get();
   std::string actual_proxy_string;
   if (actual_proxy.is_valid())
     actual_proxy_string = actual_proxy.ToURI();
@@ -81,13 +104,15 @@ ProxyRulesExpectation::ProxyRulesExpectation(
   }
 
   MatchesProxyServerHelper("Bad single_proxy", single_proxy,
-                           rules.single_proxy, &failure_details, &failed);
+                           rules.single_proxies, &failure_details, &failed);
   MatchesProxyServerHelper("Bad proxy_for_http", proxy_for_http,
-                           rules.proxy_for_http, &failure_details, &failed);
+                           rules.proxies_for_http, &failure_details,
+                           &failed);
   MatchesProxyServerHelper("Bad proxy_for_https", proxy_for_https,
-                           rules.proxy_for_https, &failure_details, &failed);
+                           rules.proxies_for_https, &failure_details,
+                           &failed);
   MatchesProxyServerHelper("Bad fallback_proxy", fallback_proxy,
-                           rules.fallback_proxy, &failure_details, &failed);
+                           rules.fallback_proxies, &failure_details, &failed);
 
   std::string actual_flattened_bypass = FlattenProxyBypass(rules.bypass_rules);
   if (std::string(flattened_bypass_rules) != actual_flattened_bypass) {

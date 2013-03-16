@@ -146,7 +146,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
   EXPECT_FALSE(actual_config.auto_detect());
   EXPECT_EQ(net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
             actual_config.proxy_rules().type);
-  EXPECT_EQ(actual_config.proxy_rules().single_proxy,
+  EXPECT_EQ(actual_config.proxy_rules().single_proxies.Get(),
             net::ProxyServer::FromURI("http://example.com:3128",
                                       net::ProxyServer::SCHEME_HTTP));
 

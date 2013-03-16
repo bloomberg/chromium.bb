@@ -14,12 +14,23 @@ namespace net {
 
 namespace {
 
-// If |proxy| is valid, sets it in |dict| under the key |name|.
-void AddProxyToValue(const char* name,
-                     const ProxyServer& proxy,
-                     base::DictionaryValue* dict) {
-  if (proxy.is_valid())
-    dict->SetString(name, proxy.ToURI());
+// If |proxies| is non-empty, sets it in |dict| under the key |name|.
+void AddProxyListToValue(const char* name,
+                         const ProxyList& proxies,
+                         base::DictionaryValue* dict) {
+  if (!proxies.IsEmpty())
+    dict->SetString(name, proxies.ToPacString());
+}
+
+// Split the |uri_list| on commas and add each entry to |proxy_list| in turn.
+void AddProxyURIListToProxyList(std::string uri_list,
+                                ProxyList* proxy_list,
+                                ProxyServer::Scheme default_scheme) {
+  base::StringTokenizer proxy_uri_list(uri_list, ",");
+  while (proxy_uri_list.GetNext()) {
+    proxy_list->AddProxyServer(
+        ProxyServer::FromURI(proxy_uri_list.token(), default_scheme));
+  }
 }
 
 }  // namespace
@@ -48,13 +59,13 @@ void ProxyConfig::ProxyRules::Apply(const GURL& url, ProxyInfo* result) const {
 
   switch (type) {
     case ProxyRules::TYPE_SINGLE_PROXY: {
-      result->UseProxyServer(single_proxy);
+      result->UseProxyList(single_proxies);
       return;
     }
     case ProxyRules::TYPE_PROXY_PER_SCHEME: {
-      const ProxyServer* entry = MapUrlSchemeToProxy(url.scheme());
+      const ProxyList* entry = MapUrlSchemeToProxyList(url.scheme());
       if (entry) {
-        result->UseProxyServer(*entry);
+        result->UseProxyList(*entry);
       } else {
         // We failed to find a matching proxy server for the current URL
         // scheme. Default to direct.
@@ -73,11 +84,11 @@ void ProxyConfig::ProxyRules::Apply(const GURL& url, ProxyInfo* result) const {
 void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
   // Reset.
   type = TYPE_NO_RULES;
-  single_proxy = ProxyServer();
-  proxy_for_http = ProxyServer();
-  proxy_for_https = ProxyServer();
-  proxy_for_ftp = ProxyServer();
-  fallback_proxy = ProxyServer();
+  single_proxies = ProxyList();
+  proxies_for_http = ProxyList();
+  proxies_for_https = ProxyList();
+  proxies_for_ftp = ProxyList();
+  fallback_proxies = ProxyList();
 
   base::StringTokenizer proxy_server_list(proxy_rules, ";");
   while (proxy_server_list.GetNext()) {
@@ -93,8 +104,9 @@ void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
       if (!proxy_server_for_scheme.GetNext()) {
         if (type == TYPE_PROXY_PER_SCHEME)
           continue;  // Unexpected.
-        single_proxy = ProxyServer::FromURI(url_scheme,
-                                            ProxyServer::SCHEME_HTTP);
+        AddProxyURIListToProxyList(url_scheme,
+                                   &single_proxies,
+                                   ProxyServer::SCHEME_HTTP);
         type = TYPE_SINGLE_PROXY;
         return;
       }
@@ -104,7 +116,7 @@ void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
 
       // Add it to the per-scheme mappings (if supported scheme).
       type = TYPE_PROXY_PER_SCHEME;
-      ProxyServer* entry = MapUrlSchemeToProxyNoFallback(url_scheme);
+      ProxyList* entry = MapUrlSchemeToProxyListNoFallback(url_scheme);
       ProxyServer::Scheme default_scheme = ProxyServer::SCHEME_HTTP;
 
       // socks=XXX is inconsistent with the other formats, since "socks"
@@ -112,49 +124,52 @@ void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
       // it to the SOCKS proxy server XXX".
       if (url_scheme == "socks") {
         DCHECK(!entry);
-        entry = &fallback_proxy;
+        entry = &fallback_proxies;
+        // Note that here 'socks' is understood to be SOCKS4, even though
+        // 'socks' maps to SOCKS5 in ProxyServer::GetSchemeFromURIInternal.
         default_scheme = ProxyServer::SCHEME_SOCKS4;
       }
 
       if (entry) {
-        *entry = ProxyServer::FromURI(proxy_server_for_scheme.token(),
-                                      default_scheme);
+        AddProxyURIListToProxyList(proxy_server_for_scheme.token(),
+                                   entry,
+                                   default_scheme);
       }
     }
   }
 }
 
-const ProxyServer* ProxyConfig::ProxyRules::MapUrlSchemeToProxy(
+const ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyList(
     const std::string& url_scheme) const {
-  const ProxyServer* proxy_server =
-      const_cast<ProxyRules*>(this)->MapUrlSchemeToProxyNoFallback(url_scheme);
-  if (proxy_server && proxy_server->is_valid())
-    return proxy_server;
-  if (fallback_proxy.is_valid())
-    return &fallback_proxy;
+  const ProxyList* proxy_server_list = const_cast<ProxyRules*>(this)->
+      MapUrlSchemeToProxyListNoFallback(url_scheme);
+  if (proxy_server_list && !proxy_server_list->IsEmpty())
+    return proxy_server_list;
+  if (!fallback_proxies.IsEmpty())
+    return &fallback_proxies;
   return NULL;  // No mapping for this scheme. Use direct.
 }
 
 bool ProxyConfig::ProxyRules::Equals(const ProxyRules& other) const {
   return type == other.type &&
-         single_proxy == other.single_proxy &&
-         proxy_for_http == other.proxy_for_http &&
-         proxy_for_https == other.proxy_for_https &&
-         proxy_for_ftp == other.proxy_for_ftp &&
-         fallback_proxy == other.fallback_proxy &&
+         single_proxies.Equals(other.single_proxies) &&
+         proxies_for_http.Equals(other.proxies_for_http) &&
+         proxies_for_https.Equals(other.proxies_for_https) &&
+         proxies_for_ftp.Equals(other.proxies_for_ftp) &&
+         fallback_proxies.Equals(other.fallback_proxies) &&
          bypass_rules.Equals(other.bypass_rules) &&
          reverse_bypass == other.reverse_bypass;
 }
 
-ProxyServer* ProxyConfig::ProxyRules::MapUrlSchemeToProxyNoFallback(
+ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyListNoFallback(
     const std::string& scheme) {
   DCHECK_EQ(TYPE_PROXY_PER_SCHEME, type);
   if (scheme == "http")
-    return &proxy_for_http;
+    return &proxies_for_http;
   if (scheme == "https")
-    return &proxy_for_https;
+    return &proxies_for_https;
   if (scheme == "ftp")
-    return &proxy_for_ftp;
+    return &proxies_for_ftp;
   return NULL;  // No mapping for this scheme.
 }
 
@@ -219,14 +234,15 @@ base::Value* ProxyConfig::ToValue() const {
   if (proxy_rules_.type != ProxyRules::TYPE_NO_RULES) {
     switch (proxy_rules_.type) {
       case ProxyRules::TYPE_SINGLE_PROXY:
-        AddProxyToValue("single_proxy", proxy_rules_.single_proxy, dict);
+        AddProxyListToValue("single_proxies",
+                            proxy_rules_.single_proxies, dict);
         break;
       case ProxyRules::TYPE_PROXY_PER_SCHEME: {
         base::DictionaryValue* dict2 = new base::DictionaryValue();
-        AddProxyToValue("http", proxy_rules_.proxy_for_http, dict2);
-        AddProxyToValue("https", proxy_rules_.proxy_for_https, dict2);
-        AddProxyToValue("ftp", proxy_rules_.proxy_for_ftp, dict2);
-        AddProxyToValue("fallback", proxy_rules_.fallback_proxy, dict2);
+        AddProxyListToValue("http", proxy_rules_.proxies_for_http, dict2);
+        AddProxyListToValue("https", proxy_rules_.proxies_for_https, dict2);
+        AddProxyListToValue("ftp", proxy_rules_.proxies_for_ftp, dict2);
+        AddProxyListToValue("fallback", proxy_rules_.fallback_proxies, dict2);
         dict->Set("proxy_per_scheme", dict2);
         break;
       }

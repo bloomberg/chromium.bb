@@ -44,9 +44,10 @@ class NET_EXPORT ProxyInfo {
   void UseProxyServer(const ProxyServer& proxy_server);
 
   // Parses from the given PAC result.
-  void UsePacString(const std::string& pac_string) {
-    proxy_list_.SetFromPacString(pac_string);
-  }
+  void UsePacString(const std::string& pac_string);
+
+  // Use the proxies from the given list.
+  void UseProxyList(const ProxyList& proxy_list);
 
   // Returns true if this proxy info specifies a direct connection.
   bool is_direct() const {

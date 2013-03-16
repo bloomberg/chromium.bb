@@ -80,7 +80,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
           ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
-      config->proxy_rules().proxy_for_ftp = proxy_server;
+      config->proxy_rules().proxies_for_ftp.SetSingleProxyServer(proxy_server);
     }
   }
   if (GetBoolFromDictionary(config_dict.get(),
@@ -94,7 +94,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
           ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
-      config->proxy_rules().proxy_for_http = proxy_server;
+      config->proxy_rules().proxies_for_http.SetSingleProxyServer(proxy_server);
     }
   }
   if (GetBoolFromDictionary(config_dict.get(),
@@ -108,7 +108,8 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
           ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
-      config->proxy_rules().proxy_for_https = proxy_server;
+      config->proxy_rules().proxies_for_https.
+          SetSingleProxyServer(proxy_server);
     }
   }
   if (GetBoolFromDictionary(config_dict.get(),
@@ -122,7 +123,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
           ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
-      config->proxy_rules().fallback_proxy = proxy_server;
+      config->proxy_rules().fallback_proxies.SetSingleProxyServer(proxy_server);
     }
   }
 

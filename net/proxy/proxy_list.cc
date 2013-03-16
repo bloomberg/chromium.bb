@@ -35,6 +35,10 @@ void ProxyList::Set(const std::string& proxy_uri_list) {
 
 void ProxyList::SetSingleProxyServer(const ProxyServer& proxy_server) {
   proxies_.clear();
+  AddProxyServer(proxy_server);
+}
+
+void ProxyList::AddProxyServer(const ProxyServer& proxy_server) {
   if (proxy_server.is_valid())
     proxies_.push_back(proxy_server);
 }
@@ -108,6 +112,13 @@ bool ProxyList::IsEmpty() const {
 
 size_t ProxyList::size() const {
   return proxies_.size();
+}
+
+// Returns true if |*this| lists the same proxies as |other|.
+bool ProxyList::Equals(const ProxyList& other) const {
+  if (size() != other.size())
+    return false;
+  return proxies_ == other.proxies_;
 }
 
 const ProxyServer& ProxyList::Get() const {

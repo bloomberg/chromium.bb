@@ -31,6 +31,9 @@ class NET_EXPORT_PRIVATE ProxyList {
   // Set the proxy list to a single entry, |proxy_server|.
   void SetSingleProxyServer(const ProxyServer& proxy_server);
 
+  // Append a single proxy server to the end of the proxy list.
+  void AddProxyServer(const ProxyServer& proxy_server);
+
   // De-prioritizes the proxies that we have cached as not working, by moving
   // them to the end of the fallback list.
   void DeprioritizeBadProxies(const ProxyRetryInfoMap& proxy_retry_info);
@@ -51,6 +54,9 @@ class NET_EXPORT_PRIVATE ProxyList {
 
   // Returns the number of proxy servers in this list.
   size_t size() const;
+
+  // Returns true if |*this| lists the same proxies as |other|.
+  bool Equals(const ProxyList& other) const;
 
   // Returns the first proxy server in the list. It is only valid to call
   // this if !IsEmpty().
