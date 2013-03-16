@@ -192,12 +192,29 @@ class AutofillMetrics {
   enum WalletErrorMetric {
     // Baseline metric: Issued a request to the Wallet server.
     WALLET_ERROR_BASELINE_ISSUED_REQUEST = 0,
-    // A fatal error occured while communicating with the Wallet server.
-    WALLET_FATAL_ERROR,
+    // A fatal error occured while communicating with the Wallet server. This
+    // value has been deprecated.
+    WALLET_FATAL_ERROR_DEPRECATED,
     // Received a malformed response from the Wallet server.
     WALLET_MALFORMED_RESPONSE,
     // A network error occured while communicating with the Wallet server.
     WALLET_NETWORK_ERROR,
+    // The request was malformed.
+    WALLET_BAD_REQUEST,
+    // Risk deny, unsupported country, or account closed.
+    WALLET_BUYER_ACCOUNT_ERROR,
+    // Unknown server side error.
+    WALLET_INTERNAL_ERROR,
+    // API call had missing or invalid parameters.
+    WALLET_INVALID_PARAMS,
+    // Online Wallet is down.
+    WALLET_SERVICE_UNAVAILABLE,
+    // User needs make a cheaper transaction or not use Online Wallet.
+    WALLET_SPENDING_LIMIT_EXCEEDED,
+    // The server API version of the request is no longer supported.
+    WALLET_UNSUPPORTED_API_VERSION,
+    // Catch all error type.
+    WALLET_UNKNOWN_ERROR,
     NUM_WALLET_ERROR_METRICS
   };
 

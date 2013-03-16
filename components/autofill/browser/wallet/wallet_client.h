@@ -73,6 +73,28 @@ class WalletClient
     VERIFY_CVC,
   };
 
+  // The type of error returned by Online Wallet.
+  enum ErrorType {
+    // Errors to display to users.
+    BUYER_ACCOUNT_ERROR,      // Risk deny, unsupported country, or account
+                              // closed.
+    SPENDING_LIMIT_EXCEEDED,  // User needs make a cheaper transaction or not
+                              // use Online Wallet.
+
+    // API errors.
+    BAD_REQUEST,              // Request was very malformed or sent to the
+                              // wrong endpoint.
+    INVALID_PARAMS,           // API call had missing or invalid parameters.
+    UNSUPPORTED_API_VERSION,  // The server API version of the request is no
+                              // longer supported.
+
+    // Server errors.
+    INTERNAL_ERROR,           // Unknown server side error.
+    SERVICE_UNAVAILABLE,      // Online Wallet is down.
+
+    UNKNOWN_ERROR,            // Catch all error type.
+  };
+
   struct FullWalletRequest {
    public:
     FullWalletRequest(const std::string& instrument_id,
@@ -204,7 +226,7 @@ class WalletClient
   // Performs bookkeeping tasks for any invalid requests.
   void HandleMalformedResponse();
   void HandleNetworkError(int response_code);
-  void HandleWalletError();
+  void HandleWalletError(ErrorType error_type);
 
   // Start the next pending request (if any).
   void StartNextPendingRequest();

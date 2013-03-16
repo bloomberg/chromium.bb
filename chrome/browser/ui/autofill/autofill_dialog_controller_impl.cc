@@ -1167,7 +1167,9 @@ void AutofillDialogControllerImpl::OnDidUpdateInstrument(
   // TODO(dbeam): handle required actions.
 }
 
-void AutofillDialogControllerImpl::OnWalletError() {
+void AutofillDialogControllerImpl::OnWalletError(
+    wallet::WalletClient::ErrorType error_type) {
+  // TODO(dbeam): Do something with |error_type|.
   DisableWallet();
 }
 

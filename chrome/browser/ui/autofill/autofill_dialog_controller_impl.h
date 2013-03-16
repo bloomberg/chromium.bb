@@ -179,7 +179,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void OnDidUpdateInstrument(
       const std::string& instrument_id,
       const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
-  virtual void OnWalletError() OVERRIDE;
+  virtual void OnWalletError(
+      wallet::WalletClient::ErrorType error_type) OVERRIDE;
   virtual void OnMalformedResponse() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
 

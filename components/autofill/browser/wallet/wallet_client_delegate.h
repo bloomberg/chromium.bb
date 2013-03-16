@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/browser/wallet/wallet_client.h"
 
 class AutofillMetrics;
 
@@ -85,10 +86,8 @@ class WalletClientDelegate {
       const std::string& instrument_id,
       const std::vector<RequiredAction>& required_actions) = 0;
 
-  // TODO(ahutter): This is going to need more arguments, probably an error
-  // code and a message for the user.
   // Called when a request fails due to an Online Wallet error.
-  virtual void OnWalletError() = 0;
+  virtual void OnWalletError(WalletClient::ErrorType error_type) = 0;
 
   // Called when a request fails due to a malformed response.
   virtual void OnMalformedResponse() = 0;

@@ -225,6 +225,43 @@ const char kAuthenticateInstrumentSuccessResponse[] =
     "  \"auth_result\":\"SUCCESS\""
     "}";
 
+const char kErrorResponse[] =
+    "{"
+    "  \"error_type\":\"APPLICATION_ERROR\","
+    "  \"error_detail\":\"error_detail\","
+    "  \"application_error\":\"application_error\","
+    "  \"debug_data\":"
+    "  {"
+    "    \"debug_message\":\"debug_message\","
+    "    \"stack_trace\":\"stack_trace\""
+    "  },"
+    "  \"application_error_data\":\"application_error_data\","
+    "  \"wallet_error\":"
+    "  {"
+    "    \"error_type\":\"SERVICE_UNAVAILABLE\","
+    "    \"error_detail\":\"error_detail\","
+    "    \"message_for_user\":"
+    "    {"
+    "      \"text\":\"text\","
+    "      \"subtext\":\"subtext\","
+    "      \"details\":\"details\""
+    "    }"
+    "  }"
+    "}";
+
+const char kErrorTypeMissingInResponse[] =
+    "{"
+    "  \"error_type\":\"Not APPLICATION_ERROR\","
+    "  \"error_detail\":\"error_detail\","
+    "  \"application_error\":\"application_error\","
+    "  \"debug_data\":"
+    "  {"
+    "    \"debug_message\":\"debug_message\","
+    "    \"stack_trace\":\"stack_trace\""
+    "  },"
+    "  \"application_error_data\":\"application_error_data\""
+    "}";
+
 // The JSON below is used to test against the request payload being sent to
 // Online Wallet. It's indented differently since JSONWriter creates compact
 // JSON from DictionaryValues.
@@ -530,7 +567,7 @@ class MockWalletClientDelegate : public WalletClientDelegate {
   MOCK_METHOD2(OnDidUpdateInstrument,
                void(const std::string& instrument_id,
                     const std::vector<RequiredAction>& required_actions));
-  MOCK_METHOD0(OnWalletError, void());
+  MOCK_METHOD1(OnWalletError, void(WalletClient::ErrorType error_type));
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
 
@@ -556,39 +593,38 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 // TODO(ahutter): Implement API compatibility tests. See
 // http://crbug.com/164465.
 
-// TODO(ahutter): Improve this when the error body is captured. See
-// http://crbug.com/164410.
-TEST_F(WalletClientTest, WalletErrorOnExpectedVoidResponse) {
+TEST_F(WalletClientTest, WalletError) {
   MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnWalletError()).Times(1);
+  EXPECT_CALL(delegate, OnWalletError(
+      WalletClient::SERVICE_UNAVAILABLE)).Times(1);
 
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
                                        GURL(kMerchantUrl),
-                                       "");
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+                                       "google_transaction_id");
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_INTERNAL_SERVER_ERROR,
+                         kSendAutocheckoutStatusOfSuccessValidRequest,
+                         kErrorResponse);
 }
 
-// TODO(ahutter): Improve this when the error body is captured. See
-// http://crbug.com/164410.
-TEST_F(WalletClientTest, WalletErrorOnExpectedResponse) {
+TEST_F(WalletClientTest, WalletErrorResponseMissing) {
   MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnWalletError()).Times(1);
+  EXPECT_CALL(delegate, OnWalletError(
+      WalletClient::UNKNOWN_ERROR)).Times(1);
 
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl),
-                               std::vector<WalletClient::RiskCapability>());
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
+                                       GURL(kMerchantUrl),
+                                       "google_transaction_id");
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_INTERNAL_SERVER_ERROR,
+                         kSendAutocheckoutStatusOfSuccessValidRequest,
+                         kErrorTypeMissingInResponse);
 }
 
 TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
@@ -624,7 +660,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
 
 TEST_F(WalletClientTest, RequestError) {
   MockWalletClientDelegate delegate;
-  EXPECT_CALL(delegate, OnWalletError()).Times(1);
+  EXPECT_CALL(delegate, OnWalletError(WalletClient::BAD_REQUEST)).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -1523,11 +1559,12 @@ TEST_F(WalletClientTest, PendingRequest) {
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(0U, wallet_client.pending_requests_.size());
 
-  EXPECT_CALL(delegate, OnWalletError()).Times(1);
+  EXPECT_CALL(delegate, OnWalletError(
+      WalletClient::SERVICE_UNAVAILABLE)).Times(1);
   VerifyAndFinishRequest(factory,
                          net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
-                         std::string());
+                         kErrorResponse);
 }
 
 TEST_F(WalletClientTest, CancelPendingRequests) {

@@ -70,6 +70,26 @@ std::string RiskCapabilityToString(
   return "NOT_POSSIBLE";
 }
 
+WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
+  std::string trimmed;
+  TrimWhitespaceASCII(error_type,
+                      TRIM_ALL,
+                      &trimmed);
+  if (LowerCaseEqualsASCII(trimmed, "buyer_account_error"))
+    return WalletClient::BUYER_ACCOUNT_ERROR;
+  if (LowerCaseEqualsASCII(trimmed, "internal_error"))
+    return WalletClient::INTERNAL_ERROR;
+  if (LowerCaseEqualsASCII(trimmed, "invalid_params"))
+    return WalletClient::INVALID_PARAMS;
+  if (LowerCaseEqualsASCII(trimmed, "service_unavailable"))
+    return WalletClient::SERVICE_UNAVAILABLE;
+  if (LowerCaseEqualsASCII(trimmed, "spending_limit_exceeded"))
+    return WalletClient::SPENDING_LIMIT_EXCEEDED;
+  if (LowerCaseEqualsASCII(trimmed, "unsupported_api_version"))
+    return WalletClient::UNSUPPORTED_API_VERSION;
+  return WalletClient::UNKNOWN_ERROR;
+}
+
 // Gets and parses required actions from a SaveToWallet response. Returns
 // false if any unknown required actions are seen and true otherwise.
 void GetRequiredActionsForSaveToWallet(
@@ -92,6 +112,33 @@ void GetRequiredActionsForSaveToWallet(
       required_actions->push_back(action);
     }
   }
+}
+
+// Converts the |error_type| to the corresponding value from the stable UMA
+// metric enumeration.
+AutofillMetrics::WalletErrorMetric ErrorTypeToUmaMetric(
+    WalletClient::ErrorType error_type) {
+  switch (error_type) {
+    case WalletClient::BAD_REQUEST:
+      return AutofillMetrics::WALLET_BAD_REQUEST;
+    case WalletClient::BUYER_ACCOUNT_ERROR:
+      return AutofillMetrics::WALLET_BUYER_ACCOUNT_ERROR;
+    case WalletClient::INTERNAL_ERROR:
+      return AutofillMetrics::WALLET_INTERNAL_ERROR;
+    case WalletClient::INVALID_PARAMS:
+      return AutofillMetrics::WALLET_INVALID_PARAMS;
+    case WalletClient::SERVICE_UNAVAILABLE:
+      return AutofillMetrics::WALLET_SERVICE_UNAVAILABLE;
+    case WalletClient::SPENDING_LIMIT_EXCEEDED:
+      return AutofillMetrics::WALLET_SPENDING_LIMIT_EXCEEDED;
+    case WalletClient::UNSUPPORTED_API_VERSION:
+      return AutofillMetrics::WALLET_UNSUPPORTED_API_VERSION;
+    case WalletClient::UNKNOWN_ERROR:
+      return AutofillMetrics::WALLET_UNKNOWN_ERROR;
+  }
+
+  NOTREACHED();
+  return AutofillMetrics::WALLET_UNKNOWN_ERROR;
 }
 
 // Converts the |required_action| to the corresponding value from the stable UMA
@@ -133,6 +180,7 @@ const char kApiKeyKey[] = "api_key";
 const char kAuthResultKey[] = "auth_result";
 const char kCartKey[] = "cart";
 const char kEncryptedOtpKey[] = "encrypted_otp";
+const char kErrorTypeKey[] = "wallet_error.error_type";
 const char kFeatureKey[] = "feature";
 const char kGoogleTransactionIdKey[] = "google_transaction_id";
 const char kInstrumentIdKey[] = "instrument_id";
@@ -529,7 +577,7 @@ void WalletClient::OnURLFetchComplete(
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
     case net::HTTP_BAD_REQUEST: {
       request_type_ = NO_PENDING_REQUEST;
-      HandleWalletError();
+      HandleWalletError(WalletClient::BAD_REQUEST);
       return;
     }
     // HTTP_OK holds a valid response and HTTP_INTERNAL_SERVER_ERROR holds an
@@ -544,9 +592,14 @@ void WalletClient::OnURLFetchComplete(
       }
       if (response_code == net::HTTP_INTERNAL_SERVER_ERROR) {
         request_type_ = NO_PENDING_REQUEST;
-        // TODO(ahutter): Do something with the response. See
-        // http://crbug.com/164410.
-        HandleWalletError();
+
+        std::string error_type;
+        if (!response_dict->GetString(kErrorTypeKey, &error_type)) {
+          HandleWalletError(WalletClient::UNKNOWN_ERROR);
+          return;
+        }
+
+        HandleWalletError(StringToErrorType(error_type));
         return;
       }
       break;
@@ -712,10 +765,10 @@ void WalletClient::HandleNetworkError(int response_code) {
       delegate_->GetDialogType(), AutofillMetrics::WALLET_NETWORK_ERROR);
 }
 
-void WalletClient::HandleWalletError() {
-  delegate_->OnWalletError();
+void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
+  delegate_->OnWalletError(error_type);
   delegate_->GetMetricLogger().LogWalletErrorMetric(
-      delegate_->GetDialogType(), AutofillMetrics::WALLET_FATAL_ERROR);
+      delegate_->GetDialogType(), ErrorTypeToUmaMetric(error_type));
 }
 
 void WalletClient::OnDidEncryptOneTimePad(
