@@ -93,11 +93,11 @@ void ContentLayer::CreateUpdaterIfNeeded() {
   scoped_ptr<LayerPainter> painter =
       ContentLayerPainter::Create(client_).PassAs<LayerPainter>();
   if (layer_tree_host()->settings().acceleratePainting)
-    updater_ = SkPictureContentLayerUpdater::create(painter.Pass());
+    updater_ = SkPictureContentLayerUpdater::Create(painter.Pass());
   else if (layer_tree_host()->settings().perTilePaintingEnabled)
-    updater_ = BitmapSkPictureContentLayerUpdater::create(painter.Pass());
+    updater_ = BitmapSkPictureContentLayerUpdater::Create(painter.Pass());
   else
-    updater_ = BitmapContentLayerUpdater::create(painter.Pass());
+    updater_ = BitmapContentLayerUpdater::Create(painter.Pass());
   updater_->SetOpaque(contents_opaque());
 
   unsigned texture_format =

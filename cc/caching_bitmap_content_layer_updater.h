@@ -11,8 +11,7 @@
 
 namespace cc {
 
-class CachingBitmapContentLayerUpdater
-    : public BitmapContentLayerUpdater {
+class CachingBitmapContentLayerUpdater : public BitmapContentLayerUpdater {
  public:
   static scoped_refptr<CachingBitmapContentLayerUpdater> Create(
       scoped_ptr<LayerPainter>);
@@ -22,17 +21,20 @@ class CachingBitmapContentLayerUpdater
                                float contents_width_scale,
                                float contents_height_scale,
                                gfx::Rect* resulting_opaque_rect,
-                               RenderingStats*) OVERRIDE;
+                               RenderingStats* stats) OVERRIDE;
 
-  bool pixelsDidChange() const;
+  bool pixels_did_change() const {
+    return pixels_did_change_;
+  }
 
  private:
-  explicit CachingBitmapContentLayerUpdater(
-      scoped_ptr<LayerPainter> painter);
+  explicit CachingBitmapContentLayerUpdater(scoped_ptr<LayerPainter> painter);
   virtual ~CachingBitmapContentLayerUpdater();
 
   bool pixels_did_change_;
   SkBitmap cached_bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachingBitmapContentLayerUpdater);
 };
 
 }  // namespace cc

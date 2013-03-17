@@ -45,7 +45,7 @@ void ImageLayer::Update(ResourceUpdateQueue* queue,
                         RenderingStats* stats) {
   CreateUpdaterIfNeeded();
   if (needs_display_) {
-    updater_->setBitmap(bitmap_);
+    updater_->set_bitmap(bitmap_);
     UpdateTileSizeAndTilingOption();
     InvalidateContentRect(gfx::Rect(content_bounds()));
     needs_display_ = false;
@@ -57,7 +57,7 @@ void ImageLayer::CreateUpdaterIfNeeded() {
   if (updater_)
     return;
 
-  updater_ = ImageLayerUpdater::create();
+  updater_ = ImageLayerUpdater::Create();
   GLenum texture_format =
       layer_tree_host()->GetRendererCapabilities().best_texture_format;
   SetTextureFormat(texture_format);

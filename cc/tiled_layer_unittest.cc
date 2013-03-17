@@ -1592,7 +1592,7 @@ public:
     {
         scoped_ptr<TrackingLayerPainter> trackingLayerPainter(TrackingLayerPainter::Create());
         m_trackingLayerPainter = trackingLayerPainter.get();
-        m_layerUpdater = BitmapContentLayerUpdater::create(trackingLayerPainter.PassAs<LayerPainter>());
+        m_layerUpdater = BitmapContentLayerUpdater::Create(trackingLayerPainter.PassAs<LayerPainter>());
     }
 
     TrackingLayerPainter* trackingLayerPainter() const { return m_trackingLayerPainter; }

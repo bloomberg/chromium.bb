@@ -8,57 +8,53 @@
 
 namespace cc {
 
-ImageLayerUpdater::Resource::Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture)
-    : LayerUpdater::Resource(texture.Pass())
-    , m_updater(updater)
-{
-}
+ImageLayerUpdater::Resource::Resource(ImageLayerUpdater* updater,
+                                      scoped_ptr<PrioritizedResource> texture)
+    : LayerUpdater::Resource(texture.Pass()), updater_(updater) {}
 
-ImageLayerUpdater::Resource::~Resource()
-{
-}
+ImageLayerUpdater::Resource::~Resource() {}
 
-void ImageLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats*)
-{
-    m_updater->updateTexture(*queue, texture(), sourceRect, destOffset, partialUpdate);
+void ImageLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
+                                         gfx::Rect source_rect,
+                                         gfx::Vector2d dest_offset,
+                                         bool partial_update,
+                                         RenderingStats*) {
+  updater_->UpdateTexture(
+      queue, texture(), source_rect, dest_offset, partial_update);
 }
 
 // static
-scoped_refptr<ImageLayerUpdater> ImageLayerUpdater::create()
-{
-    return make_scoped_refptr(new ImageLayerUpdater());
+scoped_refptr<ImageLayerUpdater> ImageLayerUpdater::Create() {
+  return make_scoped_refptr(new ImageLayerUpdater());
 }
 
 scoped_ptr<LayerUpdater::Resource> ImageLayerUpdater::CreateResource(
-    PrioritizedResourceManager* manager)
-{
-    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
+    PrioritizedResourceManager* manager) {
+  return scoped_ptr<LayerUpdater::Resource>(
+      new Resource(this, PrioritizedResource::create(manager)));
 }
 
-void ImageLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
-{
-    // Source rect should never go outside the image pixels, even if this
-    // is requested because the texture extends outside the image.
-    gfx::Rect clippedSourceRect = sourceRect;
-    gfx::Rect imageRect = gfx::Rect(0, 0, m_bitmap.width(), m_bitmap.height());
-    clippedSourceRect.Intersect(imageRect);
+void ImageLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
+                                      PrioritizedResource* texture,
+                                      gfx::Rect source_rect,
+                                      gfx::Vector2d dest_offset,
+                                      bool partial_update) {
+  // Source rect should never go outside the image pixels, even if this
+  // is requested because the texture extends outside the image.
+  gfx::Rect clipped_source_rect = source_rect;
+  gfx::Rect image_rect = gfx::Rect(0, 0, bitmap_.width(), bitmap_.height());
+  clipped_source_rect.Intersect(image_rect);
 
-    gfx::Vector2d clippedDestOffset = destOffset + gfx::Vector2d(clippedSourceRect.origin() - sourceRect.origin());
+  gfx::Vector2d clipped_dest_offset =
+      dest_offset +
+      gfx::Vector2d(clipped_source_rect.origin() - source_rect.origin());
 
-    ResourceUpdate upload = ResourceUpdate::Create(texture,
-                                                   &m_bitmap,
-                                                   imageRect,
-                                                   clippedSourceRect,
-                                                   clippedDestOffset);
-    if (partialUpdate)
-        queue.appendPartialUpload(upload);
-    else
-        queue.appendFullUpload(upload);
-}
-
-void ImageLayerUpdater::setBitmap(const SkBitmap& bitmap)
-{
-    m_bitmap = bitmap;
+  ResourceUpdate upload = ResourceUpdate::Create(
+      texture, &bitmap_, image_rect, clipped_source_rect, clipped_dest_offset);
+  if (partial_update)
+    queue->appendPartialUpload(upload);
+  else
+    queue->appendFullUpload(upload);
 }
 
 }

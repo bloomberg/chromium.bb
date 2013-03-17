@@ -78,13 +78,13 @@ void NinePatchLayer::CreateUpdaterIfNeeded() {
   if (updater_)
     return;
 
-  updater_ = ImageLayerUpdater::create();
+  updater_ = ImageLayerUpdater::Create();
 }
 
 void NinePatchLayer::CreateResource() {
   DCHECK(!bitmap_.isNull());
   CreateUpdaterIfNeeded();
-  updater_->setBitmap(bitmap_);
+  updater_->set_bitmap(bitmap_);
   needs_display_ = false;
 
   if (!resource_) {

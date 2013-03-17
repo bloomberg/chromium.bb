@@ -335,7 +335,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                            contents_scale_y(),
                            &painted_opaque_rect,
                            stats);
-  if (!painter->pixelsDidChange() &&
+  if (!painter->pixels_did_change() &&
       resource->texture()->haveBackingTexture()) {
     TRACE_EVENT_INSTANT0("cc",
                          "ScrollbarLayer::updatePart no texture upload needed");

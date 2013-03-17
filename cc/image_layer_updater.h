@@ -13,32 +13,45 @@ namespace cc {
 class ResourceUpdateQueue;
 
 class ImageLayerUpdater : public LayerUpdater {
-public:
-    class Resource : public LayerUpdater::Resource {
-    public:
-        Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture);
-        virtual ~Resource();
+ public:
+  class Resource : public LayerUpdater::Resource {
+   public:
+    Resource(ImageLayerUpdater* updater,
+             scoped_ptr<PrioritizedResource> texture);
+    virtual ~Resource();
 
-        virtual void Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats* stats) OVERRIDE;
+    virtual void Update(ResourceUpdateQueue* queue,
+                        gfx::Rect source_rect,
+                        gfx::Vector2d dest_offset,
+                        bool partial_update,
+                        RenderingStats* stats) OVERRIDE;
 
-    private:
-        ImageLayerUpdater* m_updater;
-    };
+   private:
+    ImageLayerUpdater* updater_;
 
-    static scoped_refptr<ImageLayerUpdater> create();
+    DISALLOW_COPY_AND_ASSIGN(Resource);
+  };
 
-    virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
-        PrioritizedResourceManager*) OVERRIDE;
+  static scoped_refptr<ImageLayerUpdater> Create();
 
-    void updateTexture(ResourceUpdateQueue&, PrioritizedResource*, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate);
+  virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
+      PrioritizedResourceManager*) OVERRIDE;
 
-    void setBitmap(const SkBitmap&);
+  void UpdateTexture(ResourceUpdateQueue* queue,
+                     PrioritizedResource* texture,
+                     gfx::Rect source_rect,
+                     gfx::Vector2d dest_offset,
+                     bool partial_update);
 
-private:
-    ImageLayerUpdater() { }
-    virtual ~ImageLayerUpdater() { }
+  void set_bitmap(const SkBitmap& bitmap) { bitmap_ = bitmap; }
 
-    SkBitmap m_bitmap;
+ private:
+  ImageLayerUpdater() {}
+  virtual ~ImageLayerUpdater() {}
+
+  SkBitmap bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageLayerUpdater);
 };
 
 }  // namespace cc

@@ -12,67 +12,77 @@
 
 namespace cc {
 
-SkPictureContentLayerUpdater::Resource::Resource(SkPictureContentLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture)
-    : LayerUpdater::Resource(texture.Pass())
-    , m_updater(updater)
-{
+SkPictureContentLayerUpdater::Resource::Resource(
+    SkPictureContentLayerUpdater* updater,
+    scoped_ptr<PrioritizedResource> texture)
+    : LayerUpdater::Resource(texture.Pass()), updater_(updater) {}
+
+SkPictureContentLayerUpdater::Resource::~Resource() {}
+
+void SkPictureContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
+                                                    gfx::Rect source_rect,
+                                                    gfx::Vector2d dest_offset,
+                                                    bool partial_update,
+                                                    RenderingStats*) {
+  updater_->UpdateTexture(
+      queue, texture(), source_rect, dest_offset, partial_update);
 }
 
-SkPictureContentLayerUpdater::Resource::~Resource()
-{
+SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(
+    scoped_ptr<LayerPainter> painter)
+    : ContentLayerUpdater(painter.Pass()), layer_is_opaque_(false) {}
+
+SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
+
+scoped_refptr<SkPictureContentLayerUpdater>
+SkPictureContentLayerUpdater::Create(scoped_ptr<LayerPainter> painter) {
+  return make_scoped_refptr(new SkPictureContentLayerUpdater(painter.Pass()));
 }
 
-void SkPictureContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats*)
-{
-    updater()->updateTexture(*queue, texture(), sourceRect, destOffset, partialUpdate);
+scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::CreateResource(
+    PrioritizedResourceManager* manager) {
+  return scoped_ptr<LayerUpdater::Resource>(
+      new Resource(this, PrioritizedResource::create(manager)));
 }
 
-SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter)
-    : ContentLayerUpdater(painter.Pass())
-    , m_layerIsOpaque(false)
-{
+void SkPictureContentLayerUpdater::PrepareToUpdate(
+    gfx::Rect content_rect,
+    gfx::Size,
+    float contentsWidthScale,
+    float contents_height_scale,
+    gfx::Rect* resultingOpaqueRect,
+    RenderingStats* stats) {
+  SkCanvas* canvas =
+      picture_.beginRecording(content_rect.width(), content_rect.height());
+  PaintContents(canvas,
+                content_rect,
+                contentsWidthScale,
+                contents_height_scale,
+                resultingOpaqueRect,
+                stats);
+  picture_.endRecording();
 }
 
-SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater()
-{
+void SkPictureContentLayerUpdater::DrawPicture(SkCanvas* canvas) {
+  TRACE_EVENT0("cc", "SkPictureContentLayerUpdater::drawPicture");
+  canvas->drawPicture(picture_);
 }
 
-scoped_refptr<SkPictureContentLayerUpdater> SkPictureContentLayerUpdater::create(scoped_ptr<LayerPainter> painter)
-{
-    return make_scoped_refptr(new SkPictureContentLayerUpdater(painter.Pass()));
+void SkPictureContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
+                                                 PrioritizedResource* texture,
+                                                 gfx::Rect source_rect,
+                                                 gfx::Vector2d dest_offset,
+                                                 bool partial_update) {
+  ResourceUpdate upload = ResourceUpdate::CreateFromPicture(
+      texture, &picture_, content_rect(), source_rect, dest_offset);
+  if (partial_update)
+    queue->appendPartialUpload(upload);
+  else
+    queue->appendFullUpload(upload);
 }
 
-scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::CreateResource(PrioritizedResourceManager* manager)
-{
-    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
-}
-
-void SkPictureContentLayerUpdater::PrepareToUpdate(gfx::Rect contentRect, gfx::Size, float contentsWidthScale, float contentsHeightScale, gfx::Rect* resultingOpaqueRect, RenderingStats* stats)
-{
-    SkCanvas* canvas = m_picture.beginRecording(contentRect.width(), contentRect.height());
-    paintContents(canvas, contentRect, contentsWidthScale, contentsHeightScale, *resultingOpaqueRect, stats);
-    m_picture.endRecording();
-}
-
-void SkPictureContentLayerUpdater::drawPicture(SkCanvas* canvas)
-{
-    TRACE_EVENT0("cc", "SkPictureContentLayerUpdater::drawPicture");
-    canvas->drawPicture(m_picture);
-}
-
-void SkPictureContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
-{
-    ResourceUpdate upload = ResourceUpdate::CreateFromPicture(
-        texture, &m_picture, contentRect(), sourceRect, destOffset);
-    if (partialUpdate)
-        queue.appendPartialUpload(upload);
-    else
-        queue.appendFullUpload(upload);
-}
-
-void SkPictureContentLayerUpdater::SetOpaque(bool opaque)
-{
-    m_layerIsOpaque = opaque;
+void SkPictureContentLayerUpdater::SetOpaque(bool opaque) {
+  layer_is_opaque_ = opaque;
 }
 
 }  // namespace cc

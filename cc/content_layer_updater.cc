@@ -18,51 +18,56 @@
 namespace cc {
 
 ContentLayerUpdater::ContentLayerUpdater(scoped_ptr<LayerPainter> painter)
-    : m_painter(painter.Pass())
-{
-}
+    : painter_(painter.Pass()) {}
 
-ContentLayerUpdater::~ContentLayerUpdater()
-{
-}
+ContentLayerUpdater::~ContentLayerUpdater() {}
 
-void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& contentRect, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats* stats)
-{
-    TRACE_EVENT0("cc", "ContentLayerUpdater::paintContents");
-    canvas->save();
-    canvas->translate(SkFloatToScalar(-contentRect.x()), SkFloatToScalar(-contentRect.y()));
+void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
+                                        gfx::Rect content_rect,
+                                        float contents_width_scale,
+                                        float contents_height_scale,
+                                        gfx::Rect* resulting_opaque_rect,
+                                        RenderingStats* stats) {
+  TRACE_EVENT0("cc", "ContentLayerUpdater::paintContents");
+  canvas->save();
+  canvas->translate(SkFloatToScalar(-content_rect.x()),
+                    SkFloatToScalar(-content_rect.y()));
 
-    gfx::Rect layerRect = contentRect;
+  gfx::Rect layer_rect = content_rect;
 
-    if (contentsWidthScale != 1 || contentsHeightScale != 1) {
-        canvas->scale(SkFloatToScalar(contentsWidthScale), SkFloatToScalar(contentsHeightScale));
+  if (contents_width_scale != 1.f || contents_height_scale != 1.f) {
+    canvas->scale(SkFloatToScalar(contents_width_scale),
+                  SkFloatToScalar(contents_height_scale));
 
-        gfx::RectF rect = gfx::ScaleRect(contentRect, 1 / contentsWidthScale, 1 / contentsHeightScale);
-        layerRect = gfx::ToEnclosingRect(rect);
-    }
+    gfx::RectF rect = gfx::ScaleRect(
+        content_rect, 1.f / contents_width_scale, 1.f / contents_height_scale);
+    layer_rect = gfx::ToEnclosingRect(rect);
+  }
 
-    SkPaint paint;
-    paint.setAntiAlias(false);
-    paint.setXfermodeMode(SkXfermode::kClear_Mode);
-    SkRect layerSkRect = SkRect::MakeXYWH(layerRect.x(), layerRect.y(), layerRect.width(), layerRect.height());
-    canvas->drawRect(layerSkRect, paint);
-    canvas->clipRect(layerSkRect);
+  SkPaint paint;
+  paint.setAntiAlias(false);
+  paint.setXfermodeMode(SkXfermode::kClear_Mode);
+  SkRect layer_sk_rect = SkRect::MakeXYWH(
+      layer_rect.x(), layer_rect.y(), layer_rect.width(), layer_rect.height());
+  canvas->drawRect(layer_sk_rect, paint);
+  canvas->clipRect(layer_sk_rect);
 
-    gfx::RectF opaqueLayerRect;
-    base::TimeTicks paintBeginTime;
-    if (stats)
-        paintBeginTime = base::TimeTicks::Now();
-    m_painter->Paint(canvas, layerRect, &opaqueLayerRect);
-    if (stats) {
-        stats->totalPaintTime += base::TimeTicks::Now() - paintBeginTime;
-        stats->totalPixelsPainted += contentRect.width() * contentRect.height();
-    }
-    canvas->restore();
+  gfx::RectF opaque_layer_rect;
+  base::TimeTicks paint_begin_time;
+  if (stats)
+    paint_begin_time = base::TimeTicks::Now();
+  painter_->Paint(canvas, layer_rect, &opaque_layer_rect);
+  if (stats) {
+    stats->totalPaintTime += base::TimeTicks::Now() - paint_begin_time;
+    stats->totalPixelsPainted += content_rect.width() * content_rect.height();
+  }
+  canvas->restore();
 
-    gfx::RectF opaqueContentRect = gfx::ScaleRect(opaqueLayerRect, contentsWidthScale, contentsHeightScale);
-    resultingOpaqueRect = gfx::ToEnclosedRect(opaqueContentRect);
+  gfx::RectF opaque_content_rect = gfx::ScaleRect(
+      opaque_layer_rect, contents_width_scale, contents_height_scale);
+  *resulting_opaque_rect = gfx::ToEnclosedRect(opaque_content_rect);
 
-    m_contentRect = contentRect;
+  content_rect_ = content_rect;
 }
 
 }  // namespace cc

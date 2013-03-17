@@ -19,16 +19,23 @@ class LayerPainter;
 // SkPictureContentLayerUpdater that reduces code duplication between
 // their respective paintContents implementations.
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
-protected:
-    explicit ContentLayerUpdater(scoped_ptr<LayerPainter>);
-    virtual ~ContentLayerUpdater();
+ protected:
+  explicit ContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  virtual ~ContentLayerUpdater();
 
-    void paintContents(SkCanvas*, const gfx::Rect& contentRect, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats*);
-    const gfx::Rect& contentRect() const { return m_contentRect; }
+  void PaintContents(SkCanvas* canvas,
+                     gfx::Rect content_rect,
+                     float contents_width_scale,
+                     float contents_height_scale,
+                     gfx::Rect* resulting_opaque_rect,
+                     RenderingStats* stats);
+  gfx::Rect content_rect() const { return content_rect_; }
 
-private:
-    gfx::Rect m_contentRect;
-    scoped_ptr<LayerPainter> m_painter;
+ private:
+  gfx::Rect content_rect_;
+  scoped_ptr<LayerPainter> painter_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentLayerUpdater);
 };
 
 }  // namespace cc

@@ -39,7 +39,7 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale) {
       opaque_rect_in_layer_space, contents_scale, contents_scale);
   MockContentLayerClient client(opaque_rect_in_layer_space);
   scoped_refptr<BitmapContentLayerUpdater> updater =
-      BitmapContentLayerUpdater::create(ContentLayerPainter::Create(&client).
+      BitmapContentLayerUpdater::Create(ContentLayerPainter::Create(&client).
                                             PassAs<LayerPainter>());
 
   gfx::Rect resulting_opaque_rect;

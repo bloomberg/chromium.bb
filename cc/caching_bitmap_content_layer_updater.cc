@@ -11,22 +11,16 @@
 namespace cc {
 
 scoped_refptr<CachingBitmapContentLayerUpdater>
-CachingBitmapContentLayerUpdater::Create(
-    scoped_ptr<LayerPainter> painter) {
-  return make_scoped_refptr(new CachingBitmapContentLayerUpdater(
-      painter.Pass()));
+CachingBitmapContentLayerUpdater::Create(scoped_ptr<LayerPainter> painter) {
+  return make_scoped_refptr(
+      new CachingBitmapContentLayerUpdater(painter.Pass()));
 }
 
 CachingBitmapContentLayerUpdater::CachingBitmapContentLayerUpdater(
     scoped_ptr<LayerPainter> painter)
-    : BitmapContentLayerUpdater(painter.Pass()),
-      pixels_did_change_(false) {
-}
+    : BitmapContentLayerUpdater(painter.Pass()), pixels_did_change_(false) {}
 
-CachingBitmapContentLayerUpdater::
-  ~CachingBitmapContentLayerUpdater()
-{
-}
+CachingBitmapContentLayerUpdater::~CachingBitmapContentLayerUpdater() {}
 
 void CachingBitmapContentLayerUpdater::PrepareToUpdate(
     gfx::Rect content_rect,
@@ -35,15 +29,14 @@ void CachingBitmapContentLayerUpdater::PrepareToUpdate(
     float contents_height_scale,
     gfx::Rect* resulting_opaque_rect,
     RenderingStats* stats) {
-  BitmapContentLayerUpdater::PrepareToUpdate(
-      content_rect,
-      tile_size,
-      contents_width_scale,
-      contents_height_scale,
-      resulting_opaque_rect,
-      stats);
+  BitmapContentLayerUpdater::PrepareToUpdate(content_rect,
+                                             tile_size,
+                                             contents_width_scale,
+                                             contents_height_scale,
+                                             resulting_opaque_rect,
+                                             stats);
 
-  const SkBitmap& new_bitmap = m_canvas->getDevice()->accessBitmap(false);
+  const SkBitmap& new_bitmap = canvas_->getDevice()->accessBitmap(false);
   SkAutoLockPixels lock(new_bitmap);
   DCHECK(new_bitmap.bytesPerPixel() > 0);
   pixels_did_change_ = new_bitmap.config() != cached_bitmap_.config() ||
@@ -55,11 +48,6 @@ void CachingBitmapContentLayerUpdater::PrepareToUpdate(
 
   if (pixels_did_change_)
     new_bitmap.deepCopyTo(&cached_bitmap_, new_bitmap.config());
-}
-
-bool CachingBitmapContentLayerUpdater::pixelsDidChange() const
-{
-  return pixels_did_change_;
 }
 
 }  // namespace cc

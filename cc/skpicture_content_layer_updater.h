@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef CC_SKPICTURE_CONTENT_LAYER_UPDATER_H_
 #define CC_SKPICTURE_CONTENT_LAYER_UPDATER_H_
 
@@ -15,47 +14,66 @@ namespace cc {
 
 class LayerPainter;
 
-// This class records the contentRect into an SkPicture. Subclasses, provide
+// This class records the content_rect into an SkPicture. Subclasses, provide
 // different implementations of tile updating based on this recorded picture.
 // The BitmapSkPictureContentLayerUpdater and
 // FrameBufferSkPictureContentLayerUpdater are two examples of such
 // implementations.
 class SkPictureContentLayerUpdater : public ContentLayerUpdater {
-public:
-    class Resource : public LayerUpdater::Resource {
-    public:
-        Resource(SkPictureContentLayerUpdater*, scoped_ptr<PrioritizedResource>);
-        virtual ~Resource();
+ public:
+  class Resource : public LayerUpdater::Resource {
+   public:
+    Resource(SkPictureContentLayerUpdater* updater,
+             scoped_ptr<PrioritizedResource> texture);
+    virtual ~Resource();
 
-        virtual void Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats* stats) OVERRIDE;
+    virtual void Update(ResourceUpdateQueue* queue,
+                        gfx::Rect source_rect,
+                        gfx::Vector2d dest_offset,
+                        bool partial_update,
+                        RenderingStats* stats) OVERRIDE;
 
-    private:
-        SkPictureContentLayerUpdater* updater() { return m_updater; }
+   private:
+    SkPictureContentLayerUpdater* updater_;
 
-        SkPictureContentLayerUpdater* m_updater;
-    };
+    DISALLOW_COPY_AND_ASSIGN(Resource);
+  };
 
-    static scoped_refptr<SkPictureContentLayerUpdater> create(scoped_ptr<LayerPainter>);
+  static scoped_refptr<SkPictureContentLayerUpdater> Create(
+      scoped_ptr<LayerPainter> painter);
 
-    virtual scoped_ptr<LayerUpdater::Resource> CreateResource(PrioritizedResourceManager*) OVERRIDE;
-    virtual void SetOpaque(bool) OVERRIDE;
+  virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
+      PrioritizedResourceManager* manager) OVERRIDE;
+  virtual void SetOpaque(bool opaque) OVERRIDE;
 
-protected:
-    explicit SkPictureContentLayerUpdater(scoped_ptr<LayerPainter>);
-    virtual ~SkPictureContentLayerUpdater();
+ protected:
+  explicit SkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  virtual ~SkPictureContentLayerUpdater();
 
-    virtual void PrepareToUpdate(gfx::Rect contentRect, gfx::Size tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect* resultingOpaqueRect, RenderingStats*) OVERRIDE;
-    void drawPicture(SkCanvas*);
-    void updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate);
+  virtual void PrepareToUpdate(gfx::Rect content_rect,
+                               gfx::Size tile_size,
+                               float contents_width_scale,
+                               float contents_height_scale,
+                               gfx::Rect* resulting_opaque_rect,
+                               RenderingStats* stats) OVERRIDE;
+  void DrawPicture(SkCanvas* canvas);
+  void UpdateTexture(ResourceUpdateQueue* queue,
+                     PrioritizedResource* texture,
+                     gfx::Rect source_rect,
+                     gfx::Vector2d dest_offset,
+                     bool partial_update);
 
-    bool layerIsOpaque() const { return m_layerIsOpaque; }
+  bool layer_is_opaque() const { return layer_is_opaque_; }
 
-private:
-    // Recording canvas.
-    SkPicture m_picture;
-    // True when it is known that all output pixels will be opaque.
-    bool m_layerIsOpaque;
+ private:
+  // Recording canvas.
+  SkPicture picture_;
+  // True when it is known that all output pixels will be opaque.
+  bool layer_is_opaque_;
+
+  DISALLOW_COPY_AND_ASSIGN(SkPictureContentLayerUpdater);
 };
 
-} // namespace cc
+}  // namespace cc
+
 #endif  // CC_SKPICTURE_CONTENT_LAYER_UPDATER_H_

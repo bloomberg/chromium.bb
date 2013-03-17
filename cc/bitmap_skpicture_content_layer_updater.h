@@ -10,31 +10,43 @@
 
 namespace cc {
 
-// This class records the contentRect into an SkPicture, then software rasterizes
-// the SkPicture into bitmaps for each tile. This implements Settings::perTilePainting.
+// This class records the contentRect into an SkPicture, then software
+// rasterizes the SkPicture into bitmaps for each tile. This implements
+// Settings::perTilePainting.
 class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
-public:
-    class Resource : public ContentLayerUpdater::Resource {
-    public:
-        Resource(BitmapSkPictureContentLayerUpdater*, scoped_ptr<PrioritizedResource>);
+ public:
+  class Resource : public ContentLayerUpdater::Resource {
+   public:
+    Resource(BitmapSkPictureContentLayerUpdater* updater,
+             scoped_ptr<PrioritizedResource> texture);
 
-        virtual void Update(ResourceUpdateQueue* queue, gfx::Rect sourceRect, gfx::Vector2d destOffset, bool partialUpdate, RenderingStats* stats) OVERRIDE;
+    virtual void Update(ResourceUpdateQueue* queue,
+                        gfx::Rect source_rect,
+                        gfx::Vector2d dest_offset,
+                        bool partial_update,
+                        RenderingStats* stats) OVERRIDE;
 
-    private:
-        BitmapSkPictureContentLayerUpdater* updater() { return m_updater; }
+   private:
+    SkBitmap bitmap_;
+    BitmapSkPictureContentLayerUpdater* updater_;
 
-        SkBitmap m_bitmap;
-        BitmapSkPictureContentLayerUpdater* m_updater;
-    };
+    DISALLOW_COPY_AND_ASSIGN(Resource);
+  };
 
-    static scoped_refptr<BitmapSkPictureContentLayerUpdater> create(scoped_ptr<LayerPainter>);
+  static scoped_refptr<BitmapSkPictureContentLayerUpdater> Create(
+      scoped_ptr<LayerPainter> painter);
 
-    virtual scoped_ptr<LayerUpdater::Resource> CreateResource(PrioritizedResourceManager*) OVERRIDE;
-    void paintContentsRect(SkCanvas*, const gfx::Rect& sourceRect, RenderingStats*);
+  virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
+      PrioritizedResourceManager* manager) OVERRIDE;
+  void PaintContentsRect(SkCanvas* canvas,
+                         gfx::Rect source_rect,
+                         RenderingStats* stats);
 
-private:
-    explicit BitmapSkPictureContentLayerUpdater(scoped_ptr<LayerPainter>);
-    virtual ~BitmapSkPictureContentLayerUpdater();
+ private:
+  explicit BitmapSkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter);
+  virtual ~BitmapSkPictureContentLayerUpdater();
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapSkPictureContentLayerUpdater);
 };
 
 }  // namespace cc
