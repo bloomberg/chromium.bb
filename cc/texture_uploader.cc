@@ -23,357 +23,329 @@
 namespace {
 
 // How many previous uploads to use when predicting future throughput.
-static const size_t uploadHistorySizeMax = 1000;
-static const size_t uploadHistorySizeInitial = 100;
+static const size_t kUploadHistorySizeMax = 1000;
+static const size_t kUploadHistorySizeInitial = 100;
 
 // Global estimated number of textures per second to maintain estimates across
 // subsequent instances of TextureUploader.
-// More than one thread will not access this variable, so we do not need to synchronize access.
-static const double defaultEstimatedTexturesPerSecond = 48.0 * 60.0;
+// More than one thread will not access this variable, so we do not need to
+// synchronize access.
+static const double kDefaultEstimatedTexturesPerSecond = 48.0 * 60.0;
 
 // Flush interval when performing texture uploads.
-const int textureUploadFlushPeriod = 4;
+static const int kTextureUploadFlushPeriod = 4;
 
-} // anonymous namespace
+}  // anonymous namespace
 
 namespace cc {
 
 TextureUploader::Query::Query(WebKit::WebGraphicsContext3D* context)
-    : m_context(context)
-    , m_queryId(0)
-    , m_value(0)
-    , m_hasValue(false)
-    , m_isNonBlocking(false)
-{
-    m_queryId = m_context->createQueryEXT();
+    : context_(context),
+      query_id_(0),
+      value_(0),
+      has_value_(false),
+      is_non_blocking_(false) {
+  query_id_ = context_->createQueryEXT();
 }
 
-TextureUploader::Query::~Query()
-{
-    m_context->deleteQueryEXT(m_queryId);
+TextureUploader::Query::~Query() { context_->deleteQueryEXT(query_id_); }
+
+void TextureUploader::Query::Begin() {
+  has_value_ = false;
+  is_non_blocking_ = false;
+  context_->beginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query_id_);
 }
 
-void TextureUploader::Query::begin()
-{
-    m_hasValue = false;
-    m_isNonBlocking = false;
-    m_context->beginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, m_queryId);
+void TextureUploader::Query::End() {
+  context_->endQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 }
 
-void TextureUploader::Query::end()
-{
-    m_context->endQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+bool TextureUploader::Query::IsPending() {
+  unsigned available = 1;
+  context_->getQueryObjectuivEXT(
+      query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  return !available;
 }
 
-bool TextureUploader::Query::isPending()
-{
-    unsigned available = 1;
-    m_context->getQueryObjectuivEXT(m_queryId, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-    return !available;
+unsigned TextureUploader::Query::Value() {
+  if (!has_value_) {
+    context_->getQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &value_);
+    has_value_ = true;
+  }
+  return value_;
 }
 
-unsigned TextureUploader::Query::value()
-{
-    if (!m_hasValue) {
-        m_context->getQueryObjectuivEXT(m_queryId, GL_QUERY_RESULT_EXT, &m_value);
-        m_hasValue = true;
-    }
-    return m_value;
+TextureUploader::TextureUploader(WebKit::WebGraphicsContext3D* context,
+                                 bool use_map_tex_sub_image,
+                                 bool useShallowFlush)
+    : context_(context),
+      num_blocking_texture_uploads_(0),
+      use_map_tex_sub_image_(use_map_tex_sub_image),
+      sub_image_size_(0),
+      use_shallow_flush_(useShallowFlush),
+      num_texture_uploads_since_last_flush_(0) {
+  for (size_t i = kUploadHistorySizeInitial; i > 0; i--)
+    textures_per_second_history_.insert(kDefaultEstimatedTexturesPerSecond);
 }
 
-void TextureUploader::Query::markAsNonBlocking()
-{
-    m_isNonBlocking = true;
+TextureUploader::~TextureUploader() {}
+
+size_t TextureUploader::NumBlockingUploads() {
+  ProcessQueries();
+  return num_blocking_texture_uploads_;
 }
 
-bool TextureUploader::Query::isNonBlocking()
-{
-    return m_isNonBlocking;
+void TextureUploader::MarkPendingUploadsAsNonBlocking() {
+  for (ScopedPtrDeque<Query>::iterator it = pending_queries_.begin();
+       it != pending_queries_.end();
+       ++it) {
+    if ((*it)->is_non_blocking())
+      continue;
+
+    num_blocking_texture_uploads_--;
+    (*it)->mark_as_non_blocking();
+  }
+
+  DCHECK(!num_blocking_texture_uploads_);
 }
 
-TextureUploader::TextureUploader(
-    WebKit::WebGraphicsContext3D* context,
-    bool useMapTexSubImage,
-    bool useShallowFlush)
-    : m_context(context)
-    , m_numBlockingTextureUploads(0)
-    , m_useMapTexSubImage(useMapTexSubImage)
-    , m_subImageSize(0)
-    , m_useShallowFlush(useShallowFlush)
-    , m_numTextureUploadsSinceLastFlush(0)
-{
-    for (size_t i = uploadHistorySizeInitial; i > 0; i--)
-        m_texturesPerSecondHistory.insert(defaultEstimatedTexturesPerSecond);
+double TextureUploader::EstimatedTexturesPerSecond() {
+  ProcessQueries();
+
+  // Use the median as our estimate.
+  std::multiset<double>::iterator median = textures_per_second_history_.begin();
+  std::advance(median, textures_per_second_history_.size() / 2);
+  TRACE_COUNTER_ID1("cc", "EstimatedTexturesPerSecond", context_, *median);
+  return *median;
 }
 
-TextureUploader::~TextureUploader()
-{
+void TextureUploader::BeginQuery() {
+  if (available_queries_.empty())
+    available_queries_.push_back(Query::Create(context_));
+
+  available_queries_.front()->Begin();
 }
 
-size_t TextureUploader::numBlockingUploads()
-{
-    processQueries();
-    return m_numBlockingTextureUploads;
+void TextureUploader::EndQuery() {
+  available_queries_.front()->End();
+  pending_queries_.push_back(available_queries_.take_front());
+  num_blocking_texture_uploads_++;
 }
 
-void TextureUploader::markPendingUploadsAsNonBlocking()
-{
-    for (ScopedPtrDeque<Query>::iterator it = m_pendingQueries.begin();
-         it != m_pendingQueries.end(); ++it) {
-        if ((*it)->isNonBlocking())
-            continue;
-
-        m_numBlockingTextureUploads--;
-        (*it)->markAsNonBlocking();
-    }
-
-    DCHECK(!m_numBlockingTextureUploads);
-}
-
-double TextureUploader::estimatedTexturesPerSecond()
-{
-    processQueries();
-
-    // Use the median as our estimate.
-    std::multiset<double>::iterator median = m_texturesPerSecondHistory.begin();
-    std::advance(median, m_texturesPerSecondHistory.size() / 2);
-    TRACE_COUNTER_ID1("cc", "EstimatedTexturesPerSecond", m_context, *median);
-    return *median;
-}
-
-void TextureUploader::beginQuery()
-{
-    if (m_availableQueries.empty())
-      m_availableQueries.push_back(Query::create(m_context));
-
-    m_availableQueries.front()->begin();
-}
-
-void TextureUploader::endQuery()
-{
-    m_availableQueries.front()->end();
-    m_pendingQueries.push_back(m_availableQueries.take_front());
-    m_numBlockingTextureUploads++;
-}
-
-void TextureUploader::upload(const uint8* image,
-                             const gfx::Rect& image_rect,
-                             const gfx::Rect& source_rect,
-                             const gfx::Vector2d& dest_offset,
+void TextureUploader::Upload(const uint8* image,
+                             gfx::Rect image_rect,
+                             gfx::Rect source_rect,
+                             gfx::Vector2d dest_offset,
                              GLenum format,
-                             const gfx::Size& size)
-{
-    CHECK(image_rect.Contains(source_rect));
+                             gfx::Size size) {
+  CHECK(image_rect.Contains(source_rect));
 
-    bool isFullUpload = dest_offset.IsZero() && source_rect.size() == size;
+  bool is_full_upload = dest_offset.IsZero() && source_rect.size() == size;
 
-    if (isFullUpload)
-        beginQuery();
+  if (is_full_upload)
+    BeginQuery();
 
-    if (m_useMapTexSubImage) {
-        uploadWithMapTexSubImage(
-            image, image_rect, source_rect, dest_offset, format);
-    } else {
-        uploadWithTexSubImage(
-            image, image_rect, source_rect, dest_offset, format);
-    }
+  if (use_map_tex_sub_image_) {
+    UploadWithMapTexSubImage(
+        image, image_rect, source_rect, dest_offset, format);
+  } else {
+    UploadWithTexSubImage(image, image_rect, source_rect, dest_offset, format);
+  }
 
-    if (isFullUpload)
-        endQuery();
+  if (is_full_upload)
+    EndQuery();
 
-    m_numTextureUploadsSinceLastFlush++;
-    if (m_numTextureUploadsSinceLastFlush >= textureUploadFlushPeriod)
-      flush();
+  num_texture_uploads_since_last_flush_++;
+  if (num_texture_uploads_since_last_flush_ >= kTextureUploadFlushPeriod)
+    Flush();
 }
 
-void TextureUploader::flush() {
-  if (!m_numTextureUploadsSinceLastFlush)
+void TextureUploader::Flush() {
+  if (!num_texture_uploads_since_last_flush_)
     return;
 
-  if (m_useShallowFlush)
-    m_context->shallowFlushCHROMIUM();
+  if (use_shallow_flush_)
+    context_->shallowFlushCHROMIUM();
 
-  m_numTextureUploadsSinceLastFlush = 0;
+  num_texture_uploads_since_last_flush_ = 0;
 }
 
-void TextureUploader::releaseCachedQueries()
-{
-  processQueries();
-  m_availableQueries.clear();
+void TextureUploader::ReleaseCachedQueries() {
+  ProcessQueries();
+  available_queries_.clear();
 }
 
-void TextureUploader::uploadWithTexSubImage(const uint8* image,
-                                            const gfx::Rect& image_rect,
-                                            const gfx::Rect& source_rect,
-                                            const gfx::Vector2d& dest_offset,
-                                            GLenum format)
-{
-    // Instrumentation to debug issue 156107
-    int source_rect_x = source_rect.x();
-    int source_rect_y = source_rect.y();
-    int source_rect_width = source_rect.width();
-    int source_rect_height = source_rect.height();
-    int image_rect_x = image_rect.x();
-    int image_rect_y = image_rect.y();
-    int image_rect_width = image_rect.width();
-    int image_rect_height = image_rect.height();
-    int dest_offset_x = dest_offset.x();
-    int dest_offset_y = dest_offset.y();
-    base::debug::Alias(&image);
-    base::debug::Alias(&source_rect_x);
-    base::debug::Alias(&source_rect_y);
-    base::debug::Alias(&source_rect_width);
-    base::debug::Alias(&source_rect_height);
-    base::debug::Alias(&image_rect_x);
-    base::debug::Alias(&image_rect_y);
-    base::debug::Alias(&image_rect_width);
-    base::debug::Alias(&image_rect_height);
-    base::debug::Alias(&dest_offset_x);
-    base::debug::Alias(&dest_offset_y);
-    TRACE_EVENT0("cc", "TextureUploader::uploadWithTexSubImage");
+void TextureUploader::UploadWithTexSubImage(const uint8* image,
+                                            gfx::Rect image_rect,
+                                            gfx::Rect source_rect,
+                                            gfx::Vector2d dest_offset,
+                                            GLenum format) {
+  // Instrumentation to debug issue 156107
+  int source_rect_x = source_rect.x();
+  int source_rect_y = source_rect.y();
+  int source_rect_width = source_rect.width();
+  int source_rect_height = source_rect.height();
+  int image_rect_x = image_rect.x();
+  int image_rect_y = image_rect.y();
+  int image_rect_width = image_rect.width();
+  int image_rect_height = image_rect.height();
+  int dest_offset_x = dest_offset.x();
+  int dest_offset_y = dest_offset.y();
+  base::debug::Alias(&image);
+  base::debug::Alias(&source_rect_x);
+  base::debug::Alias(&source_rect_y);
+  base::debug::Alias(&source_rect_width);
+  base::debug::Alias(&source_rect_height);
+  base::debug::Alias(&image_rect_x);
+  base::debug::Alias(&image_rect_y);
+  base::debug::Alias(&image_rect_width);
+  base::debug::Alias(&image_rect_height);
+  base::debug::Alias(&dest_offset_x);
+  base::debug::Alias(&dest_offset_y);
+  TRACE_EVENT0("cc", "TextureUploader::uploadWithTexSubImage");
 
-    // Offset from image-rect to source-rect.
-    gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
+  // Offset from image-rect to source-rect.
+  gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
-    const uint8* pixel_source;
-    unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
-    // Use 4-byte row alignment (OpenGL default) for upload performance.
-    // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-    unsigned int upload_image_stride =
-        RoundUp(bytes_per_pixel * source_rect.width(), 4u);
+  const uint8* pixel_source;
+  unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
+  // Use 4-byte row alignment (OpenGL default) for upload performance.
+  // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
+  unsigned int upload_image_stride =
+      RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
-    if (upload_image_stride == image_rect.width() * bytes_per_pixel && !offset.x()) {
-        pixel_source = &image[image_rect.width() * bytes_per_pixel * offset.y()];
-    } else {
-        size_t needed_size = upload_image_stride * source_rect.height();
-        if (m_subImageSize < needed_size) {
-            m_subImage.reset(new uint8[needed_size]);
-            m_subImageSize = needed_size;
-        }
-        // Strides not equal, so do a row-by-row memcpy from the
-        // paint results into a temp buffer for uploading.
-        for (int row = 0; row < source_rect.height(); ++row)
-            memcpy(&m_subImage[upload_image_stride * row],
-                   &image[bytes_per_pixel * (offset.x() +
-                          (offset.y() + row) * image_rect.width())],
-                   source_rect.width() * bytes_per_pixel);
-
-        pixel_source = &m_subImage[0];
+  if (upload_image_stride == image_rect.width() * bytes_per_pixel &&
+      !offset.x()) {
+    pixel_source = &image[image_rect.width() * bytes_per_pixel * offset.y()];
+  } else {
+    size_t needed_size = upload_image_stride * source_rect.height();
+    if (sub_image_size_ < needed_size) {
+      sub_image_.reset(new uint8[needed_size]);
+      sub_image_size_ = needed_size;
     }
+    // Strides not equal, so do a row-by-row memcpy from the
+    // paint results into a temp buffer for uploading.
+    for (int row = 0; row < source_rect.height(); ++row)
+      memcpy(&sub_image_[upload_image_stride * row],
+             &image[bytes_per_pixel *
+                 (offset.x() + (offset.y() + row) * image_rect.width())],
+             source_rect.width() * bytes_per_pixel);
 
-    m_context->texSubImage2D(GL_TEXTURE_2D,
-                             0,
-                             dest_offset.x(),
-                             dest_offset.y(),
-                             source_rect.width(),
-                             source_rect.height(),
-                             format,
-                             GL_UNSIGNED_BYTE,
-                             pixel_source);
+    pixel_source = &sub_image_[0];
+  }
+
+  context_->texSubImage2D(GL_TEXTURE_2D,
+                          0,
+                          dest_offset.x(),
+                          dest_offset.y(),
+                          source_rect.width(),
+                          source_rect.height(),
+                          format,
+                          GL_UNSIGNED_BYTE,
+                          pixel_source);
 }
 
-void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
-                                               const gfx::Rect& image_rect,
-                                               const gfx::Rect& source_rect,
-                                               const gfx::Vector2d& dest_offset,
-                                               GLenum format)
-{
-    // Instrumentation to debug issue 156107
-    int source_rect_x = source_rect.x();
-    int source_rect_y = source_rect.y();
-    int source_rect_width = source_rect.width();
-    int source_rect_height = source_rect.height();
-    int image_rect_x = image_rect.x();
-    int image_rect_y = image_rect.y();
-    int image_rect_width = image_rect.width();
-    int image_rect_height = image_rect.height();
-    int dest_offset_x = dest_offset.x();
-    int dest_offset_y = dest_offset.y();
-    base::debug::Alias(&image);
-    base::debug::Alias(&source_rect_x);
-    base::debug::Alias(&source_rect_y);
-    base::debug::Alias(&source_rect_width);
-    base::debug::Alias(&source_rect_height);
-    base::debug::Alias(&image_rect_x);
-    base::debug::Alias(&image_rect_y);
-    base::debug::Alias(&image_rect_width);
-    base::debug::Alias(&image_rect_height);
-    base::debug::Alias(&dest_offset_x);
-    base::debug::Alias(&dest_offset_y);
+void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
+                                               gfx::Rect image_rect,
+                                               gfx::Rect source_rect,
+                                               gfx::Vector2d dest_offset,
+                                               GLenum format) {
+  // Instrumentation to debug issue 156107
+  int source_rect_x = source_rect.x();
+  int source_rect_y = source_rect.y();
+  int source_rect_width = source_rect.width();
+  int source_rect_height = source_rect.height();
+  int image_rect_x = image_rect.x();
+  int image_rect_y = image_rect.y();
+  int image_rect_width = image_rect.width();
+  int image_rect_height = image_rect.height();
+  int dest_offset_x = dest_offset.x();
+  int dest_offset_y = dest_offset.y();
+  base::debug::Alias(&image);
+  base::debug::Alias(&source_rect_x);
+  base::debug::Alias(&source_rect_y);
+  base::debug::Alias(&source_rect_width);
+  base::debug::Alias(&source_rect_height);
+  base::debug::Alias(&image_rect_x);
+  base::debug::Alias(&image_rect_y);
+  base::debug::Alias(&image_rect_width);
+  base::debug::Alias(&image_rect_height);
+  base::debug::Alias(&dest_offset_x);
+  base::debug::Alias(&dest_offset_y);
 
-    TRACE_EVENT0("cc", "TextureUploader::uploadWithMapTexSubImage");
+  TRACE_EVENT0("cc", "TextureUploader::uploadWithMapTexSubImage");
 
-    // Offset from image-rect to source-rect.
-    gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
+  // Offset from image-rect to source-rect.
+  gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
-    unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
-    // Use 4-byte row alignment (OpenGL default) for upload performance.
-    // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-    unsigned int upload_image_stride =
-        RoundUp(bytes_per_pixel * source_rect.width(), 4u);
+  unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
+  // Use 4-byte row alignment (OpenGL default) for upload performance.
+  // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
+  unsigned int upload_image_stride =
+      RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
-    // Upload tile data via a mapped transfer buffer
-    uint8* pixel_dest = static_cast<uint8*>(
-        m_context->mapTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
-                                            0,
-                                            dest_offset.x(),
-                                            dest_offset.y(),
-                                            source_rect.width(),
-                                            source_rect.height(),
-                                            format,
-                                            GL_UNSIGNED_BYTE,
-                                            GL_WRITE_ONLY));
+  // Upload tile data via a mapped transfer buffer
+  uint8* pixel_dest = static_cast<uint8*>(
+      context_->mapTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
+                                         0,
+                                         dest_offset.x(),
+                                         dest_offset.y(),
+                                         source_rect.width(),
+                                         source_rect.height(),
+                                         format,
+                                         GL_UNSIGNED_BYTE,
+                                         GL_WRITE_ONLY));
 
-    if (!pixel_dest) {
-        uploadWithTexSubImage(
-            image, image_rect, source_rect, dest_offset, format);
-        return;
+  if (!pixel_dest) {
+    UploadWithTexSubImage(image, image_rect, source_rect, dest_offset, format);
+    return;
+  }
+
+  if (upload_image_stride == image_rect.width() * bytes_per_pixel &&
+      !offset.x()) {
+    memcpy(pixel_dest,
+           &image[image_rect.width() * bytes_per_pixel * offset.y()],
+           source_rect.height() * image_rect.width() * bytes_per_pixel);
+  } else {
+    // Strides not equal, so do a row-by-row memcpy from the
+    // paint results into the pixelDest
+    for (int row = 0; row < source_rect.height(); ++row) {
+      memcpy(&pixel_dest[upload_image_stride * row],
+             &image[bytes_per_pixel *
+                 (offset.x() + (offset.y() + row) * image_rect.width())],
+             source_rect.width() * bytes_per_pixel);
     }
+  }
 
-    if (upload_image_stride == image_rect.width() * bytes_per_pixel && !offset.x()) {
-        memcpy(pixel_dest,
-               &image[image_rect.width() * bytes_per_pixel * offset.y()],
-               source_rect.height() * image_rect.width() * bytes_per_pixel);
-    } else {
-        // Strides not equal, so do a row-by-row memcpy from the
-        // paint results into the pixelDest
-        for (int row = 0; row < source_rect.height(); ++row)
-            memcpy(&pixel_dest[upload_image_stride * row],
-                   &image[bytes_per_pixel * (offset.x() +
-                          (offset.y() + row) * image_rect.width())],
-                   source_rect.width() * bytes_per_pixel);
-    }
-
-    m_context->unmapTexSubImage2DCHROMIUM(pixel_dest);
+  context_->unmapTexSubImage2DCHROMIUM(pixel_dest);
 }
 
-void TextureUploader::processQueries()
-{
-    while (!m_pendingQueries.empty()) {
-        if (m_pendingQueries.front()->isPending())
-            break;
+void TextureUploader::ProcessQueries() {
+  while (!pending_queries_.empty()) {
+    if (pending_queries_.front()->IsPending())
+      break;
 
-        unsigned usElapsed = m_pendingQueries.front()->value();
-        UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.TextureGpuUploadTimeUS",
-                                    usElapsed, 0, 100000, 50);
+    unsigned us_elapsed = pending_queries_.front()->Value();
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Renderer4.TextureGpuUploadTimeUS", us_elapsed, 0, 100000, 50);
 
-        // Clamp the queries to saner values in case the queries fail.
-        usElapsed = std::max(1u, usElapsed);
-        usElapsed = std::min(15000u, usElapsed);
+    // Clamp the queries to saner values in case the queries fail.
+    us_elapsed = std::max(1u, us_elapsed);
+    us_elapsed = std::min(15000u, us_elapsed);
 
-        if (!m_pendingQueries.front()->isNonBlocking())
-            m_numBlockingTextureUploads--;
+    if (!pending_queries_.front()->is_non_blocking())
+      num_blocking_texture_uploads_--;
 
-        // Remove the min and max value from our history and insert the new one.
-        double texturesPerSecond = 1.0 / (usElapsed * 1e-6);
-        if (m_texturesPerSecondHistory.size() >= uploadHistorySizeMax) {
-            m_texturesPerSecondHistory.erase(m_texturesPerSecondHistory.begin());
-            m_texturesPerSecondHistory.erase(--m_texturesPerSecondHistory.end());
-        }
-        m_texturesPerSecondHistory.insert(texturesPerSecond);
-
-        m_availableQueries.push_back(m_pendingQueries.take_front());
+    // Remove the min and max value from our history and insert the new one.
+    double textures_per_second = 1.0 / (us_elapsed * 1e-6);
+    if (textures_per_second_history_.size() >= kUploadHistorySizeMax) {
+      textures_per_second_history_.erase(textures_per_second_history_.begin());
+      textures_per_second_history_.erase(--textures_per_second_history_.end());
     }
+    textures_per_second_history_.insert(textures_per_second);
+
+    available_queries_.push_back(pending_queries_.take_front());
+  }
 }
 
 }  // namespace cc

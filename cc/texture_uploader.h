@@ -13,9 +13,7 @@
 #include "cc/scoped_ptr_deque.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-namespace WebKit {
-class WebGraphicsContext3D;
-}
+namespace WebKit { class WebGraphicsContext3D; }
 
 namespace gfx {
 class Rect;
@@ -26,93 +24,100 @@ class Vector2d;
 namespace cc {
 
 class CC_EXPORT TextureUploader {
-public:
-    static scoped_ptr<TextureUploader> create(
-        WebKit::WebGraphicsContext3D* context,
-        bool useMapTexSubImage,
-        bool useShallowFlush)
-    {
-        return make_scoped_ptr(
-            new TextureUploader(context, useMapTexSubImage, useShallowFlush));
+ public:
+  static scoped_ptr<TextureUploader> Create(
+      WebKit::WebGraphicsContext3D* context,
+      bool use_map_tex_sub_image,
+      bool use_shallow_flush) {
+    return make_scoped_ptr(
+        new TextureUploader(context, use_map_tex_sub_image, use_shallow_flush));
+  }
+  ~TextureUploader();
+
+  size_t NumBlockingUploads();
+  void MarkPendingUploadsAsNonBlocking();
+  double EstimatedTexturesPerSecond();
+
+  // Let content_rect be a rectangle, and let content_rect be a sub-rectangle of
+  // content_rect, expressed in the same coordinate system as content_rect. Let
+  // image be a buffer for content_rect. This function will copy the region
+  // corresponding to sourceRect to destOffset in this sub-image.
+  void Upload(const uint8* image,
+              gfx::Rect content_rect,
+              gfx::Rect source_rect,
+              gfx::Vector2d dest_offset,
+              GLenum format,
+              gfx::Size size);
+
+  void Flush();
+  void ReleaseCachedQueries();
+
+ private:
+  class Query {
+   public:
+    static scoped_ptr<Query> Create(WebKit::WebGraphicsContext3D* context) {
+      return make_scoped_ptr(new Query(context));
     }
-    ~TextureUploader();
 
-    size_t numBlockingUploads();
-    void markPendingUploadsAsNonBlocking();
-    double estimatedTexturesPerSecond();
+    virtual ~Query();
 
-    // Let imageRect be a rectangle, and let sourceRect be a sub-rectangle of
-    // imageRect, expressed in the same coordinate system as imageRect. Let 
-    // image be a buffer for imageRect. This function will copy the region
-    // corresponding to sourceRect to destOffset in this sub-image.
-    void upload(const uint8* image,
-                const gfx::Rect& content_rect,
-                const gfx::Rect& source_rect,
-                const gfx::Vector2d& dest_offset,
-                GLenum format,
-                const gfx::Size& size);
+    void Begin();
+    void End();
+    bool IsPending();
+    unsigned Value();
+    size_t TexturesUploaded();
+    void mark_as_non_blocking() {
+      is_non_blocking_ = true;
+    }
+    bool is_non_blocking() const {
+      return is_non_blocking_;
+    }
 
-    void flush();
-    void releaseCachedQueries();
+   private:
+    explicit Query(WebKit::WebGraphicsContext3D* context);
 
-private:
-    class Query {
-    public:
-        static scoped_ptr<Query> create(WebKit::WebGraphicsContext3D* context) { return make_scoped_ptr(new Query(context)); }
+    WebKit::WebGraphicsContext3D* context_;
+    unsigned query_id_;
+    unsigned value_;
+    bool has_value_;
+    bool is_non_blocking_;
 
-        virtual ~Query();
+    DISALLOW_COPY_AND_ASSIGN(Query);
+  };
 
-        void begin();
-        void end();
-        bool isPending();
-        unsigned value();
-        size_t texturesUploaded();
-        void markAsNonBlocking();
-        bool isNonBlocking();
+  TextureUploader(WebKit::WebGraphicsContext3D* context,
+                  bool use_map_tex_sub_image,
+                  bool use_shallow_flush);
 
-    private:
-        explicit Query(WebKit::WebGraphicsContext3D*);
+  void BeginQuery();
+  void EndQuery();
+  void ProcessQueries();
 
-        WebKit::WebGraphicsContext3D* m_context;
-        unsigned m_queryId;
-        unsigned m_value;
-        bool m_hasValue;
-        bool m_isNonBlocking;
-    };
+  void UploadWithTexSubImage(const uint8* image,
+                             gfx::Rect image_rect,
+                             gfx::Rect source_rect,
+                             gfx::Vector2d dest_offset,
+                             GLenum format);
+  void UploadWithMapTexSubImage(const uint8* image,
+                                gfx::Rect image_rect,
+                                gfx::Rect source_rect,
+                                gfx::Vector2d dest_offset,
+                                GLenum format);
 
-    TextureUploader(WebKit::WebGraphicsContext3D*,
-                    bool useMapTexSubImage,
-                    bool useShallowFlush);
+  WebKit::WebGraphicsContext3D* context_;
+  ScopedPtrDeque<Query> pending_queries_;
+  ScopedPtrDeque<Query> available_queries_;
+  std::multiset<double> textures_per_second_history_;
+  size_t num_blocking_texture_uploads_;
 
-    void beginQuery();
-    void endQuery();
-    void processQueries();
+  bool use_map_tex_sub_image_;
+  size_t sub_image_size_;
+  scoped_array<uint8> sub_image_;
 
-    void uploadWithTexSubImage(const uint8* image,
-                               const gfx::Rect& image_rect,
-                               const gfx::Rect& source_rect,
-                               const gfx::Vector2d& dest_offset,
-                               GLenum format);
-    void uploadWithMapTexSubImage(const uint8* image,
-                                  const gfx::Rect& image_rect,
-                                  const gfx::Rect& source_rect,
-                                  const gfx::Vector2d& dest_offset,
-                                  GLenum format);
+  bool use_shallow_flush_;
+  size_t num_texture_uploads_since_last_flush_;
 
-    WebKit::WebGraphicsContext3D* m_context;
-    ScopedPtrDeque<Query> m_pendingQueries;
-    ScopedPtrDeque<Query> m_availableQueries;
-    std::multiset<double> m_texturesPerSecondHistory;
-    size_t m_numBlockingTextureUploads;
-
-    bool m_useMapTexSubImage;
-    size_t m_subImageSize;
-    scoped_array<uint8> m_subImage;
-
-    bool m_useShallowFlush;
-    size_t m_numTextureUploadsSinceLastFlush;
-
-    DISALLOW_COPY_AND_ASSIGN(TextureUploader);
+  DISALLOW_COPY_AND_ASSIGN(TextureUploader);
 };
 
 }  // namespace cc

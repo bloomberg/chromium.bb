@@ -354,7 +354,7 @@ void ResourceProvider::SetPixels(ResourceId id,
     DCHECK(context3d);
     DCHECK(texture_uploader_.get());
     context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id);
-    texture_uploader_->upload(image,
+    texture_uploader_->Upload(image,
                               image_rect,
                               source_rect,
                               dest_offset,
@@ -387,35 +387,35 @@ size_t ResourceProvider::NumBlockingUploads() {
   if (!texture_uploader_)
     return 0;
 
-  return texture_uploader_->numBlockingUploads();
+  return texture_uploader_->NumBlockingUploads();
 }
 
 void ResourceProvider::MarkPendingUploadsAsNonBlocking() {
   if (!texture_uploader_)
     return;
 
-  texture_uploader_->markPendingUploadsAsNonBlocking();
+  texture_uploader_->MarkPendingUploadsAsNonBlocking();
 }
 
 double ResourceProvider::EstimatedUploadsPerSecond() {
   if (!texture_uploader_)
     return 0.0;
 
-  return texture_uploader_->estimatedTexturesPerSecond();
+  return texture_uploader_->EstimatedTexturesPerSecond();
 }
 
 void ResourceProvider::FlushUploads() {
   if (!texture_uploader_)
     return;
 
-  texture_uploader_->flush();
+  texture_uploader_->Flush();
 }
 
 void ResourceProvider::ReleaseCachedData() {
   if (!texture_uploader_)
     return;
 
-  texture_uploader_->releaseCachedQueries();
+  texture_uploader_->ReleaseCachedQueries();
 }
 
 void ResourceProvider::Flush() {
@@ -635,7 +635,7 @@ bool ResourceProvider::Initialize() {
       AcceleratedTextureCopier::Create(context3d, use_bind_uniform);
 
   texture_uploader_ =
-      TextureUploader::create(context3d, use_map_sub, use_shallow_flush_);
+      TextureUploader::Create(context3d, use_map_sub, use_shallow_flush_);
   GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE,
                                         &max_texture_size_));
   best_texture_format_ =
