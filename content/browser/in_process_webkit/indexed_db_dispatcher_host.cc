@@ -672,9 +672,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
-  if (parent_->Context()->WouldBeOverQuota(
-          transaction_url_map_[host_transaction_id],
-          transaction_size_map_[host_transaction_id])) {
+  int64 transaction_size = transaction_size_map_[host_transaction_id];
+  if (transaction_size && parent_->Context()->WouldBeOverQuota(
+      transaction_url_map_[host_transaction_id], transaction_size)) {
     database->abort(host_transaction_id, WebIDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionQuotaError));
     return;

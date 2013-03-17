@@ -36,7 +36,7 @@ namespace content {
 // the actual implementation that lives in the browser side (in_process_webkit).
 class IndexedDBBrowserTest : public ContentBrowserTest {
  public:
-  IndexedDBBrowserTest() {}
+  IndexedDBBrowserTest() : disk_usage_(-1) {}
 
   void SimpleTest(const GURL& test_url, bool incognito = false) {
     // The test page will perform tests on IndexedDB, then navigate to either
@@ -77,6 +77,52 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
             shell()->web_contents()->GetBrowserContext());
     return partition->GetIndexedDBContext();
   };
+
+  void SetQuota(int quotaKilobytes) {
+    const int kTemporaryStorageQuotaSize = quotaKilobytes
+        * 1024 * QuotaManager::kPerHostTemporaryPortion;
+    SetTempQuota(kTemporaryStorageQuotaSize,
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext())->GetQuotaManager());
+  }
+
+  static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&IndexedDBBrowserTest::SetTempQuota, bytes, qm));
+      return;
+    }
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
+    // Don't return until the quota has been set.
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+    ASSERT_TRUE(helper->Run());
+  }
+
+  virtual int64 RequestDiskUsage() {
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+        base::Bind(&IndexedDBContext::GetOriginDiskUsage, GetContext(),
+            GURL("file:///")), base::Bind(
+                &IndexedDBBrowserTest::DidGetDiskUsage, this));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
+            BrowserThread::WEBKIT_DEPRECATED)));
+    EXPECT_TRUE(helper->Run());
+    // Wait for DidGetDiskUsage to be called.
+    MessageLoop::current()->RunUntilIdle();
+    return disk_usage_;
+  }
+ private:
+  virtual void DidGetDiskUsage(int64 bytes) {
+    EXPECT_GT(bytes, 0);
+    disk_usage_ = bytes;
+  }
+
+  int64 disk_usage_;
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
@@ -155,31 +201,8 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {
     const int kInitialQuotaKilobytes = 5000;
-    const int kTemporaryStorageQuotaMaxSize = kInitialQuotaKilobytes
-        * 1024 * QuotaManager::kPerHostTemporaryPortion;
-    SetTempQuota(
-        kTemporaryStorageQuotaMaxSize,
-        BrowserContext::GetDefaultStoragePartition(
-            shell()->web_contents()->GetBrowserContext())->GetQuotaManager());
+    SetQuota(kInitialQuotaKilobytes);
   }
-
-  static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&IndexedDBBrowserTestWithLowQuota::SetTempQuota, bytes,
-                     qm));
-      return;
-    }
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
-    // Don't return until the quota has been set.
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-    ASSERT_TRUE(helper->Run());
-  }
-
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
@@ -220,8 +243,6 @@ static void CopyLevelDBToProfile(Shell* shell,
 
 class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
  public:
-  IndexedDBBrowserTestWithPreexistingLevelDB() : disk_usage_(-1) { }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     scoped_refptr<IndexedDBContext> context = GetContext();
     BrowserThread::PostTask(
@@ -236,29 +257,6 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
 
   virtual std::string EnclosingLevelDBDir() = 0;
 
- protected:
-  virtual int64 RequestDiskUsage() {
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&IndexedDBContext::GetOriginDiskUsage, GetContext(),
-            GURL("file:///")), base::Bind(
-                &IndexedDBBrowserTestWithPreexistingLevelDB::DidGetDiskUsage,
-                this));
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
-            BrowserThread::WEBKIT_DEPRECATED)));
-    EXPECT_TRUE(helper->Run());
-    // Wait for DidGetDiskUsage to be called.
-    MessageLoop::current()->RunUntilIdle();
-    return disk_usage_;
-  }
- private:
-  virtual void DidGetDiskUsage(int64 bytes) {
-    EXPECT_GT(bytes, 0);
-    disk_usage_ = bytes;
-  }
-
-  int64 disk_usage_;
 };
 
 class IndexedDBBrowserTestWithVersion0Schema : public
@@ -352,6 +350,15 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   int64 size;
   EXPECT_TRUE(file_util::GetFileSize(log_file_path, &size));
   EXPECT_GT(size, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
+  SimpleTest(GetTestUrl("indexeddb", "fill_up_5k.html"));
+  int64 size = RequestDiskUsage();
+  const int kQuotaKilobytes = 2;
+  EXPECT_GT(size, kQuotaKilobytes * 1024);
+  SetQuota(kQuotaKilobytes);
+  SimpleTest(GetTestUrl("indexeddb", "delete_over_quota.html"));
 }
 
 // Complex multi-step (converted from pyauto) tests begin here.

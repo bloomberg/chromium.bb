@@ -32,6 +32,11 @@ function getLog()
   return "" + document.getElementById('status').innerHTML;
 }
 
+function unexpectedUpgradeNeededCallback()
+{
+  fail('unexpectedUpgradeNeededCallback');
+}
+
 function unexpectedAbortCallback()
 {
   fail('unexpectedAbortCallback');
