@@ -170,22 +170,22 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
 
   TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
-  texture_layer->setFlipped(flipped_);
-  texture_layer->setUVTopLeft(uv_top_left_);
-  texture_layer->setUVBottomRight(uv_bottom_right_);
-  texture_layer->setVertexOpacity(vertex_opacity_);
-  texture_layer->setPremultipliedAlpha(premultiplied_alpha_);
+  texture_layer->set_flipped(flipped_);
+  texture_layer->set_uv_top_left(uv_top_left_);
+  texture_layer->set_uv_bottom_right(uv_bottom_right_);
+  texture_layer->set_vertex_opacity(vertex_opacity_);
+  texture_layer->set_premultiplied_alpha(premultiplied_alpha_);
   if (uses_mailbox_ && own_mailbox_) {
     Thread* main_thread = layer_tree_host()->proxy()->MainThread();
     TextureMailbox::ReleaseCallback callback;
     if (!texture_mailbox_.IsEmpty())
       callback = base::Bind(
           &PostCallbackToMainThread, main_thread, texture_mailbox_.callback());
-    texture_layer->setTextureMailbox(TextureMailbox(
+    texture_layer->SetTextureMailbox(TextureMailbox(
         texture_mailbox_.name(), callback, texture_mailbox_.sync_point()));
     own_mailbox_ = false;
   } else {
-    texture_layer->setTextureId(texture_id_);
+    texture_layer->set_texture_id(texture_id_);
   }
   content_committed_ = DrawsContent();
 }

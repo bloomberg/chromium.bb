@@ -395,13 +395,13 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
       pending_layer->CreateLayerImpl(host_impl_.active_tree()));
   ASSERT_TRUE(activeLayer);
 
-  pending_layer->setTextureMailbox(test_data_.mailbox1_);
+  pending_layer->SetTextureMailbox(test_data_.mailbox1_);
 
   // Test multiple commits without an activation.
   EXPECT_CALL(test_data_.mock_callback_,
               Release(test_data_.mailbox_name1_, test_data_.sync_point1_))
       .Times(1);
-  pending_layer->setTextureMailbox(test_data_.mailbox2_);
+  pending_layer->SetTextureMailbox(test_data_.mailbox2_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // Test callback after activation.
@@ -409,7 +409,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
   activeLayer->DidBecomeActive();
 
   EXPECT_CALL(test_data_.mock_callback_, Release(_, _)).Times(0);
-  pending_layer->setTextureMailbox(test_data_.mailbox1_);
+  pending_layer->SetTextureMailbox(test_data_.mailbox1_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name2_, _))
@@ -421,7 +421,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
   // Test resetting the mailbox.
   EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name1_, _))
       .Times(1);
-  pending_layer->setTextureMailbox(TextureMailbox());
+  pending_layer->SetTextureMailbox(TextureMailbox());
   pending_layer->PushPropertiesTo(activeLayer.get());
   activeLayer->DidBecomeActive();
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
@@ -430,7 +430,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
   EXPECT_CALL(test_data_.mock_callback_,
               Release(test_data_.mailbox_name1_, test_data_.sync_point1_))
       .Times(1);
-  pending_layer->setTextureMailbox(test_data_.mailbox1_);
+  pending_layer->SetTextureMailbox(test_data_.mailbox1_);
 }
 
 TEST_F(TextureLayerImplWithMailboxTest,
@@ -441,10 +441,10 @@ TEST_F(TextureLayerImplWithMailboxTest,
 
   EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name1_, _))
       .Times(1);
-  impl_layer->setTextureMailbox(test_data_.mailbox1_);
+  impl_layer->SetTextureMailbox(test_data_.mailbox1_);
   impl_layer->WillDraw(host_impl_.active_tree()->resource_provider());
   impl_layer->DidDraw(host_impl_.active_tree()->resource_provider());
-  impl_layer->setTextureMailbox(TextureMailbox());
+  impl_layer->SetTextureMailbox(TextureMailbox());
 }
 
 TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {

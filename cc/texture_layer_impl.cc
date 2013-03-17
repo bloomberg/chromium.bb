@@ -12,155 +12,152 @@
 
 namespace cc {
 
-TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* treeImpl, int id, bool usesMailbox)
-    : LayerImpl(treeImpl, id)
-    , m_textureId(0)
-    , m_externalTextureResource(0)
-    , m_premultipliedAlpha(true)
-    , m_flipped(true)
-    , m_uvTopLeft(0.f, 0.f)
-    , m_uvBottomRight(1.f, 1.f)
-    , m_usesMailbox(usesMailbox)
-    , m_ownMailbox(false)
-{
-  m_vertexOpacity[0] = 1.0f;
-  m_vertexOpacity[1] = 1.0f;
-  m_vertexOpacity[2] = 1.0f;
-  m_vertexOpacity[3] = 1.0f;
+TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* tree_impl,
+                                   int id,
+                                   bool uses_mailbox)
+    : LayerImpl(tree_impl, id),
+      texture_id_(0),
+      external_texture_resource_(0),
+      premultiplied_alpha_(true),
+      flipped_(true),
+      uv_top_left_(0.f, 0.f),
+      uv_bottom_right_(1.f, 1.f),
+      uses_mailbox_(uses_mailbox),
+      own_mailbox_(false) {
+  vertex_opacity_[0] = 1.0f;
+  vertex_opacity_[1] = 1.0f;
+  vertex_opacity_[2] = 1.0f;
+  vertex_opacity_[3] = 1.0f;
 }
 
-TextureLayerImpl::~TextureLayerImpl()
-{
-    freeTextureMailbox();
+TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
+
+void TextureLayerImpl::SetTextureMailbox(const TextureMailbox& mailbox) {
+  DCHECK(uses_mailbox_);
+  DCHECK(mailbox.IsEmpty() || !mailbox.Equals(texture_mailbox_));
+  FreeTextureMailbox();
+  texture_mailbox_ = mailbox;
+  own_mailbox_ = true;
 }
 
-void TextureLayerImpl::setTextureMailbox(const TextureMailbox& mailbox)
-{
-    DCHECK(m_usesMailbox);
-    DCHECK(mailbox.IsEmpty() || !mailbox.Equals(m_textureMailbox));
-    freeTextureMailbox();
-    m_textureMailbox = mailbox;
-    m_ownMailbox = true;
+scoped_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return TextureLayerImpl::Create(tree_impl, id(), uses_mailbox_).
+      PassAs<LayerImpl>();
 }
 
-scoped_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return TextureLayerImpl::Create(treeImpl, id(), m_usesMailbox).PassAs<LayerImpl>();
+void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+  LayerImpl::PushPropertiesTo(layer);
+
+  TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
+  texture_layer->set_flipped(flipped_);
+  texture_layer->set_uv_top_left(uv_top_left_);
+  texture_layer->set_uv_bottom_right(uv_bottom_right_);
+  texture_layer->set_vertex_opacity(vertex_opacity_);
+  texture_layer->set_premultiplied_alpha(premultiplied_alpha_);
+  if (uses_mailbox_ && own_mailbox_) {
+    texture_layer->SetTextureMailbox(texture_mailbox_);
+    own_mailbox_ = false;
+  } else {
+    texture_layer->set_texture_id(texture_id_);
+  }
 }
 
-void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer)
-{
-    LayerImpl::PushPropertiesTo(layer);
-
-    TextureLayerImpl* textureLayer = static_cast<TextureLayerImpl*>(layer);
-    textureLayer->setFlipped(m_flipped);
-    textureLayer->setUVTopLeft(m_uvTopLeft);
-    textureLayer->setUVBottomRight(m_uvBottomRight);
-    textureLayer->setVertexOpacity(m_vertexOpacity);
-    textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
-    if (m_usesMailbox && m_ownMailbox) {
-        textureLayer->setTextureMailbox(m_textureMailbox);
-        m_ownMailbox = false;
-    } else {
-        textureLayer->setTextureId(m_textureId);
-    }
+void TextureLayerImpl::WillDraw(ResourceProvider* resource_provider) {
+  if (uses_mailbox_ || !texture_id_)
+    return;
+  DCHECK(!external_texture_resource_);
+  external_texture_resource_ =
+      resource_provider->CreateResourceFromExternalTexture(texture_id_);
 }
 
+void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
+                                   AppendQuadsData* append_quads_data) {
+  if (!external_texture_resource_)
+    return;
 
-void TextureLayerImpl::WillDraw(ResourceProvider* resourceProvider)
-{
-    if (m_usesMailbox || !m_textureId)
-        return;
-    DCHECK(!m_externalTextureResource);
-    m_externalTextureResource = resourceProvider->CreateResourceFromExternalTexture(m_textureId);
+  SharedQuadState* shared_quad_state =
+      quad_sink->useSharedQuadState(CreateSharedQuadState());
+  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
+
+  gfx::Rect quad_rect(content_bounds());
+  gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
+  scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+  quad->SetNew(shared_quad_state,
+               quad_rect,
+               opaque_rect,
+               external_texture_resource_,
+               premultiplied_alpha_,
+               uv_top_left_,
+               uv_bottom_right_,
+               vertex_opacity_,
+               flipped_);
+
+  // Perform explicit clipping on a quad to avoid setting a scissor later.
+  if (shared_quad_state->is_clipped && quad->PerformClipping())
+    shared_quad_state->is_clipped = false;
+  if (!quad->rect.IsEmpty())
+    quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
-void TextureLayerImpl::AppendQuads(QuadSink* quadSink, AppendQuadsData* appendQuadsData)
-{
-    if (!m_externalTextureResource)
-        return;
-
-    SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
-    AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
-
-    gfx::Rect quadRect(content_bounds());
-    gfx::Rect opaqueRect(contents_opaque() ? quadRect : gfx::Rect());
-    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvTopLeft, m_uvBottomRight, m_vertexOpacity, m_flipped);
-
-    // Perform explicit clipping on a quad to avoid setting a scissor later.
-    if (sharedQuadState->is_clipped && quad->PerformClipping())
-        sharedQuadState->is_clipped = false;
-    if (!quad->rect.IsEmpty())
-        quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {
+  if (uses_mailbox_ || !external_texture_resource_)
+    return;
+  // FIXME: the following assert will not be true when sending resources to a
+  // parent compositor. A synchronization scheme (double-buffering or
+  // pipelining of updates) for the client will need to exist to solve this.
+  DCHECK(!resource_provider->InUseByConsumer(external_texture_resource_));
+  resource_provider->DeleteResource(external_texture_resource_);
+  external_texture_resource_ = 0;
 }
 
-void TextureLayerImpl::DidDraw(ResourceProvider* resourceProvider)
-{
-    if (m_usesMailbox || !m_externalTextureResource)
-        return;
-    // FIXME: the following assert will not be true when sending resources to a
-    // parent compositor. A synchronization scheme (double-buffering or
-    // pipelining of updates) for the client will need to exist to solve this.
-    DCHECK(!resourceProvider->InUseByConsumer(m_externalTextureResource));
-    resourceProvider->DeleteResource(m_externalTextureResource);
-    m_externalTextureResource = 0;
+void TextureLayerImpl::DumpLayerProperties(std::string* str, int indent) const {
+  str->append(IndentString(indent));
+  base::StringAppendF(str,
+                      "texture layer texture id: %u premultiplied: %d\n",
+                      texture_id_,
+                      premultiplied_alpha_);
+  LayerImpl::DumpLayerProperties(str, indent);
 }
 
-void TextureLayerImpl::DumpLayerProperties(std::string* str, int indent) const
-{
-    str->append(IndentString(indent));
-    base::StringAppendF(str, "texture layer texture id: %u premultiplied: %d\n", m_textureId, m_premultipliedAlpha);
-    LayerImpl::DumpLayerProperties(str, indent);
+void TextureLayerImpl::DidLoseOutputSurface() {
+  texture_id_ = 0;
+  external_texture_resource_ = 0;
 }
 
-void TextureLayerImpl::setVertexOpacity(const float vertexOpacity[4]) {
-    m_vertexOpacity[0] = vertexOpacity[0];
-    m_vertexOpacity[1] = vertexOpacity[1];
-    m_vertexOpacity[2] = vertexOpacity[2];
-    m_vertexOpacity[3] = vertexOpacity[3];
+const char* TextureLayerImpl::LayerTypeAsString() const {
+  return "TextureLayer";
 }
 
-void TextureLayerImpl::DidLoseOutputSurface()
-{
-    m_textureId = 0;
-    m_externalTextureResource = 0;
+bool TextureLayerImpl::CanClipSelf() const {
+  return true;
 }
 
-const char* TextureLayerImpl::LayerTypeAsString() const
-{
-    return "TextureLayer";
+void TextureLayerImpl::DidBecomeActive() {
+  if (!own_mailbox_)
+    return;
+  DCHECK(!external_texture_resource_);
+  ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
+  if (!texture_mailbox_.IsEmpty()) {
+    external_texture_resource_ =
+        resource_provider->CreateResourceFromTextureMailbox(texture_mailbox_);
+  }
+  own_mailbox_ = false;
 }
 
-bool TextureLayerImpl::CanClipSelf() const
-{
-    return true;
-}
-
-void TextureLayerImpl::DidBecomeActive()
-{
-    if (!m_ownMailbox)
-        return;
-    DCHECK(!m_externalTextureResource);
-    ResourceProvider* resourceProvider = layer_tree_impl()->resource_provider();
-    if (!m_textureMailbox.IsEmpty())
-        m_externalTextureResource = resourceProvider->CreateResourceFromTextureMailbox(m_textureMailbox);
-    m_ownMailbox = false;
-}
-
-void TextureLayerImpl::freeTextureMailbox()
-{
-    if (!m_usesMailbox)
-        return;
-    if (m_ownMailbox) {
-        DCHECK(!m_externalTextureResource);
-        m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
-    } else if (m_externalTextureResource) {
-        DCHECK(!m_ownMailbox);
-        ResourceProvider* resourceProvider = layer_tree_impl()->resource_provider();
-        resourceProvider->DeleteResource(m_externalTextureResource);
-        m_externalTextureResource = 0;
-    }
+void TextureLayerImpl::FreeTextureMailbox() {
+  if (!uses_mailbox_)
+    return;
+  if (own_mailbox_) {
+    DCHECK(!external_texture_resource_);
+    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
+  } else if (external_texture_resource_) {
+    DCHECK(!own_mailbox_);
+    ResourceProvider* resource_provider =
+        layer_tree_impl()->resource_provider();
+    resource_provider->DeleteResource(external_texture_resource_);
+    external_texture_resource_ = 0;
+  }
 }
 
 }  // namespace cc
