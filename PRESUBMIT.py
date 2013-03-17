@@ -96,6 +96,7 @@ def CheckChangeOnUpload(input_api, output_api):
       r'^checkout_test\.py$',
       r'^gclient_smoketest\.py$',
       r'^scm_unittest\.py$',
+      r'^subprocess2_test\.py$',
     ]
   return CommonChecks(input_api, output_api, tests_to_black_list)
 
