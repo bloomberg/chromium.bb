@@ -16,6 +16,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -218,10 +219,7 @@ class ObserverListThreadSafe
   };
 
   ~ObserverListThreadSafe() {
-    typename ObserversListMap::const_iterator it;
-    for (it = observer_lists_.begin(); it != observer_lists_.end(); ++it)
-      delete (*it).second;
-    observer_lists_.clear();
+    STLDeleteValues(&observer_lists_);
   }
 
   template <class Method, class Params>
