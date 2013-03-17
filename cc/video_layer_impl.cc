@@ -207,9 +207,9 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
   gfx::Size coded_size = frame_->coded_size();
 
   // pixels for macroblocked formats.
-  const float tex_width_scale =
+  float tex_width_scale =
       static_cast<float>(visible_rect.width()) / coded_size.width();
-  const float tex_height_scale =
+  float tex_height_scale =
       static_cast<float>(visible_rect.height()) / coded_size.height();
 
 #if defined(GOOGLE_TV)
@@ -258,7 +258,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       bool premultiplied_alpha = true;
       gfx::PointF uv_top_left(0.f, 0.f);
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
-      const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+      float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       scoped_ptr<TextureDrawQuad> texture_quad = TextureDrawQuad::Create();
       texture_quad->SetNew(shared_quad_state,
@@ -278,7 +278,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       bool premultiplied_alpha = true;
       gfx::PointF uv_top_left(0.f, 0.f);
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
-      const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+      float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       scoped_ptr<TextureDrawQuad> texture_quad = TextureDrawQuad::Create();
       texture_quad->SetNew(shared_quad_state,
@@ -388,9 +388,9 @@ void VideoLayerImpl::FramePlane::FreeData(ResourceProvider* resource_provider) {
 }
 
 bool VideoLayerImpl::AllocatePlaneData(ResourceProvider* resource_provider) {
-  const int max_texture_size = resource_provider->max_texture_size();
-  const size_t plane_count = NumPlanes();
-  for (unsigned plane_index = 0; plane_index < plane_count; ++plane_index) {
+  int max_texture_size = resource_provider->max_texture_size();
+  size_t plane_count = NumPlanes();
+  for (size_t plane_index = 0; plane_index < plane_count; ++plane_index) {
     VideoLayerImpl::FramePlane* plane = &frame_planes_[plane_index];
 
     gfx::Size required_texture_size = VideoFrameDimension(frame_, plane_index);
@@ -414,7 +414,7 @@ bool VideoLayerImpl::AllocatePlaneData(ResourceProvider* resource_provider) {
 }
 
 bool VideoLayerImpl::CopyPlaneData(ResourceProvider* resource_provider) {
-  const size_t plane_count = NumPlanes();
+  size_t plane_count = NumPlanes();
   if (!plane_count)
     return true;
 
@@ -432,17 +432,20 @@ bool VideoLayerImpl::CopyPlaneData(ResourceProvider* resource_provider) {
     return true;
   }
 
-  for (size_t planeIndex = 0; planeIndex < plane_count; ++planeIndex) {
-    const VideoLayerImpl::FramePlane& plane = frame_planes_[planeIndex];
+  for (size_t plane_index = 0; plane_index < plane_count; ++plane_index) {
+    const VideoLayerImpl::FramePlane& plane = frame_planes_[plane_index];
     // Only non-FormatNativeTexture planes should need upload.
     DCHECK_EQ(plane.format, GL_LUMINANCE);
-    const uint8_t* software_plane_pixels = frame_->data(planeIndex);
-    gfx::Rect imageRect(0, 0, frame_->stride(planeIndex), plane.size.height());
-    gfx::Rect sourceRect(gfx::Point(), plane.size);
+    const uint8_t* software_plane_pixels = frame_->data(plane_index);
+    gfx::Rect image_rect(0,
+                         0,
+                         frame_->stride(plane_index),
+                         plane.size.height());
+    gfx::Rect source_rect(plane.size);
     resource_provider->SetPixels(plane.resource_id,
                                  software_plane_pixels,
-                                 imageRect,
-                                 sourceRect,
+                                 image_rect,
+                                 source_rect,
                                  gfx::Vector2d());
   }
   return true;
@@ -454,7 +457,7 @@ void VideoLayerImpl::FreePlaneData(ResourceProvider* resource_provider) {
 }
 
 void VideoLayerImpl::FreeUnusedPlaneData(ResourceProvider* resource_provider) {
-  const size_t first_unused_plane = NumPlanes();
+  size_t first_unused_plane = NumPlanes();
   for (size_t i = first_unused_plane; i < media::VideoFrame::kMaxPlanes; ++i)
     frame_planes_[i].FreeData(resource_provider);
 }
