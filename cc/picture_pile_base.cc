@@ -20,11 +20,47 @@ namespace cc {
 PicturePileBase::PicturePileBase()
     : min_contents_scale_(0),
       background_color_(SkColorSetARGBInline(0, 0, 0, 0)),
-      slow_down_raster_scale_factor_for_debug_(0) {
+      slow_down_raster_scale_factor_for_debug_(0),
+      num_raster_threads_(0) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
   tile_grid_info_.fMargin.setEmpty();
   tile_grid_info_.fOffset.setZero();
+}
+
+PicturePileBase::PicturePileBase(const PicturePileBase* other)
+    : picture_list_map_(other->picture_list_map_),
+      tiling_(other->tiling_),
+      recorded_region_(other->recorded_region_),
+      min_contents_scale_(other->min_contents_scale_),
+      tile_grid_info_(other->tile_grid_info_),
+      background_color_(other->background_color_),
+      slow_down_raster_scale_factor_for_debug_(
+          other->slow_down_raster_scale_factor_for_debug_),
+      num_raster_threads_(other->num_raster_threads_) {
+}
+
+PicturePileBase::PicturePileBase(
+    const PicturePileBase* other, unsigned thread_index)
+    : tiling_(other->tiling_),
+      recorded_region_(other->recorded_region_),
+      min_contents_scale_(other->min_contents_scale_),
+      tile_grid_info_(other->tile_grid_info_),
+      background_color_(other->background_color_),
+      slow_down_raster_scale_factor_for_debug_(
+          other->slow_down_raster_scale_factor_for_debug_),
+      num_raster_threads_(other->num_raster_threads_) {
+  const PictureListMap& other_pic_list_map = other->picture_list_map_;
+  for (PictureListMap::const_iterator map_iter = other_pic_list_map.begin();
+       map_iter != other_pic_list_map.end(); ++map_iter) {
+    PictureList& pic_list = picture_list_map_[map_iter->first];
+    const PictureList& other_pic_list = map_iter->second;
+    for (PictureList::const_iterator pic_iter = other_pic_list.begin();
+         pic_iter != other_pic_list.end(); ++pic_iter) {
+      pic_list.push_back(
+          (*pic_iter)->GetCloneForDrawingOnThread(thread_index));
+    }
+  }
 }
 
 PicturePileBase::~PicturePileBase() {
@@ -100,19 +136,6 @@ void PicturePileBase::SetBufferPixels(int new_buffer_pixels) {
 
 void PicturePileBase::Clear() {
   picture_list_map_.clear();
-}
-
-void PicturePileBase::PushPropertiesTo(PicturePileBase* other) {
-  // NOTE: If you push more values here, add them to
-  // PicturePileImpl::CloneForDrawing too.
-  other->picture_list_map_ = picture_list_map_;
-  other->tiling_ = tiling_;
-  other->recorded_region_ = recorded_region_;
-  other->min_contents_scale_ = min_contents_scale_;
-  other->tile_grid_info_ = tile_grid_info_;
-  other->background_color_ = background_color_;
-  other->slow_down_raster_scale_factor_for_debug_ =
-      slow_down_raster_scale_factor_for_debug_;
 }
 
 void PicturePileBase::UpdateRecordedRegion() {

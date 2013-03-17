@@ -19,12 +19,11 @@ struct RenderingStats;
 class CC_EXPORT PicturePileImpl : public PicturePileBase {
  public:
   static scoped_refptr<PicturePileImpl> Create();
+  static scoped_refptr<PicturePileImpl> CreateFromOther(
+      const PicturePileBase* other);
 
   // Get paint-safe version of this picture for a specific thread.
   PicturePileImpl* GetCloneForDrawingOnThread(unsigned thread_index) const;
-
-  // Make paint-safe versions of this picture pile.
-  void CloneForDrawing(int num_threads);
 
   // Raster a subrect of this PicturePileImpl into the given canvas.
   // It's only safe to call paint on a cloned version.
@@ -39,8 +38,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       gfx::Rect content_rect,
       float contents_scale,
       std::list<skia::LazyPixelRef*>& pixel_refs);
-
-  void PushPropertiesTo(PicturePileImpl* other);
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
@@ -61,10 +58,28 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   friend class PicturePile;
 
   PicturePileImpl();
+  PicturePileImpl(const PicturePileBase* other);
   virtual ~PicturePileImpl();
 
-  typedef std::vector<scoped_refptr<PicturePileImpl> > PicturePileVector;
-  PicturePileVector clones_;
+ private:
+  class ClonesForDrawing {
+   public:
+    ClonesForDrawing(const PicturePileImpl* pile, int num_threads);
+    ~ClonesForDrawing();
+
+    typedef std::vector<scoped_refptr<PicturePileImpl> > PicturePileVector;
+    PicturePileVector clones_;
+  };
+
+  static scoped_refptr<PicturePileImpl> CreateCloneForDrawing(
+      const PicturePileImpl* other, unsigned thread_index);
+
+  PicturePileImpl(const PicturePileImpl* other, unsigned thread_index);
+
+  // Once instantiated, |clones_for_drawing_| can't be modified.
+  // This guarantees thread-safe access during the life
+  // time of a PicturePileImpl instance.
+  const ClonesForDrawing clones_for_drawing_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);
 };

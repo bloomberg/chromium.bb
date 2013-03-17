@@ -21,12 +21,12 @@ namespace cc {
 class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
  public:
   PicturePileBase();
+  PicturePileBase(const PicturePileBase* other);
+  PicturePileBase(const PicturePileBase* other, unsigned thread_index);
 
   void Resize(gfx::Size size);
   gfx::Size size() const { return tiling_.total_size(); }
   void SetMinContentsScale(float min_contents_scale);
-
-  void PushPropertiesTo(PicturePileBase* other);
 
   void UpdateRecordedRegion();
   const Region& recorded_region() const { return recorded_region_; }
@@ -42,6 +42,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
  protected:
   virtual ~PicturePileBase();
 
+  int num_raster_threads() { return num_raster_threads_; }
   int buffer_pixels() const { return tiling_.border_texels(); }
   void Clear();
 
@@ -58,6 +59,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   SkTileGridPicture::TileGridInfo tile_grid_info_;
   SkColor background_color_;
   int slow_down_raster_scale_factor_for_debug_;
+  int num_raster_threads_;
 
  private:
   void SetBufferPixels(int buffer_pixels);

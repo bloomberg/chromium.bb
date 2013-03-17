@@ -16,46 +16,54 @@
 
 namespace cc {
 
+PicturePileImpl::ClonesForDrawing::ClonesForDrawing(
+    const PicturePileImpl* pile, int num_threads) {
+  for (int i = 0; i < num_threads; i++) {
+    scoped_refptr<PicturePileImpl> clone =
+        PicturePileImpl::CreateCloneForDrawing(pile, i);
+    clones_.push_back(clone);
+  }
+}
+
+PicturePileImpl::ClonesForDrawing::~ClonesForDrawing() {
+}
+
 scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
   return make_scoped_refptr(new PicturePileImpl());
 }
 
-PicturePileImpl::PicturePileImpl() {}
+scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromOther(
+    const PicturePileBase* other) {
+  return make_scoped_refptr(new PicturePileImpl(other));
+}
+
+scoped_refptr<PicturePileImpl> PicturePileImpl::CreateCloneForDrawing(
+    const PicturePileImpl* other, unsigned thread_index) {
+  return make_scoped_refptr(new PicturePileImpl(other, thread_index));
+}
+
+PicturePileImpl::PicturePileImpl()
+    : clones_for_drawing_(ClonesForDrawing(this, 0)) {
+}
+
+PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
+    : PicturePileBase(other),
+      clones_for_drawing_(ClonesForDrawing(this, num_raster_threads())) {
+}
+
+PicturePileImpl::PicturePileImpl(
+    const PicturePileImpl* other, unsigned thread_index)
+    : PicturePileBase(other, thread_index),
+      clones_for_drawing_(ClonesForDrawing(this, 0)) {
+}
 
 PicturePileImpl::~PicturePileImpl() {
 }
 
 PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
     unsigned thread_index) const {
-  CHECK_GT(clones_.size(), thread_index);
-  return clones_[thread_index];
-}
-
-void PicturePileImpl::CloneForDrawing(int num_threads) {
-  clones_.clear();
-  for (int i = 0; i < num_threads; i++) {
-    scoped_refptr<PicturePileImpl> clone = Create();
-
-    // PicturePileBase::pushPropertiesTo, minus picture_list_map_ (handled
-    // below) and recorded_region_ (an optimization; it's unneeded to raster).
-    clone->tiling_ = tiling_;
-    clone->min_contents_scale_ = min_contents_scale_;
-    clone->tile_grid_info_ = tile_grid_info_;
-    clone->background_color_ = background_color_;
-    clone->slow_down_raster_scale_factor_for_debug_ =
-        slow_down_raster_scale_factor_for_debug_;
-
-    for (PictureListMap::const_iterator map_iter = picture_list_map_.begin();
-         map_iter != picture_list_map_.end(); ++map_iter) {
-      const PictureList& this_pic_list = map_iter->second;
-      PictureList& clone_pic_list = clone->picture_list_map_[map_iter->first];
-      for (PictureList::const_iterator pic_iter = this_pic_list.begin();
-           pic_iter != this_pic_list.end(); ++pic_iter) {
-        clone_pic_list.push_back((*pic_iter)->GetCloneForDrawingOnThread(i));
-      }
-    }
-    clones_.push_back(clone);
-  }
+  CHECK_GT(clones_for_drawing_.clones_.size(), thread_index);
+  return clones_for_drawing_.clones_[thread_index];
 }
 
 void PicturePileImpl::Raster(
@@ -189,12 +197,6 @@ void PicturePileImpl::GatherPixelRefs(
       pixel_refs.splice(pixel_refs.end(), result);
     }
   }
-}
-
-void PicturePileImpl::PushPropertiesTo(PicturePileImpl* other) {
-  // NOTE: If you push more values here, add them to CloneForDrawing too.
-  PicturePileBase::PushPropertiesTo(other);
-  other->clones_ = clones_;
 }
 
 skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {

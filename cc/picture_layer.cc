@@ -41,7 +41,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->CreateTilingSet();
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(pile_invalidation_);
-  pile_->PushPropertiesTo(layer_impl->pile_);
+  layer_impl->pile_ = PicturePileImpl::CreateFromOther(pile_);
 
   layer_impl->SyncFromActiveLayer();
 }
