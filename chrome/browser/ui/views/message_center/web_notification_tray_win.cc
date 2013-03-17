@@ -98,11 +98,7 @@ WebNotificationTrayWin::WebNotificationTrayWin()
   status_icon_->AddObserver(this);
 
   UpdateStatusIcon();
-#if !defined(USE_AURA)
-  // TODO(dewittj): Create quiet mode menu here once crash is figured out on
-  // Aura.  See http://crbug.com/181027.
   AddQuietModeMenu(status_icon_);
-#endif
 }
 
 WebNotificationTrayWin::~WebNotificationTrayWin() {
