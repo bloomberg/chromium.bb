@@ -4,13 +4,11 @@
 
 #include "cc/gl_renderer_draw_cache.h"
 
+namespace cc {
 
 TexturedQuadDrawCache::TexturedQuadDrawCache()
-    : program_id(0)
-{
-}
+    : program_id(0) {}
 
-TexturedQuadDrawCache::~TexturedQuadDrawCache()
-{
-}
+TexturedQuadDrawCache::~TexturedQuadDrawCache() {}
 
+}  // namespace cc
