@@ -29,12 +29,12 @@ void FakeThread::runPendingTask()
     task->Run();
 }
 
-void FakeThread::postTask(base::Closure cb)
+void FakeThread::PostTask(base::Closure cb)
 {
-    postDelayedTask(cb, 0);
+    PostDelayedTask(cb, 0);
 }
 
-void FakeThread::postDelayedTask(base::Closure cb, long long delay)
+void FakeThread::PostDelayedTask(base::Closure cb, long long delay)
 {
     if (m_runPendingTaskOnOverwrite && hasPendingTask())
         runPendingTask();
@@ -44,7 +44,7 @@ void FakeThread::postDelayedTask(base::Closure cb, long long delay)
     m_pendingTaskDelay = delay;
 }
 
-bool FakeThread::belongsToCurrentThread() const
+bool FakeThread::BelongsToCurrentThread() const
 {
     return true;
 }

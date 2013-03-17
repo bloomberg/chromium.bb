@@ -672,7 +672,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures :
 
   void PostEvictTextures() {
     if (ImplThread()) {
-      ImplThread()->postTask(
+      ImplThread()->PostTask(
           base::Bind(
               &LayerTreeHostContextTestLostContextAndEvictTextures::
               EvictTexturesOnImplThread,

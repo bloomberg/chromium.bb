@@ -15,26 +15,29 @@ namespace cc {
 
 // Implements cc::Thread in terms of base::MessageLoopProxy.
 class CC_EXPORT ThreadImpl : public Thread {
-public:
-    // Creates a ThreadImpl wrapping the current thread.
-    static scoped_ptr<cc::Thread> createForCurrentThread();
+ public:
+  // Creates a ThreadImpl wrapping the current thread.
+  static scoped_ptr<cc::Thread> CreateForCurrentThread();
 
-    // Creates a Thread wrapping a non-current thread.
-    static scoped_ptr<cc::Thread> createForDifferentThread(scoped_refptr<base::MessageLoopProxy> thread);
+  // Creates a Thread wrapping a non-current thread.
+  static scoped_ptr<cc::Thread> CreateForDifferentThread(
+      scoped_refptr<base::MessageLoopProxy> thread);
 
-    virtual ~ThreadImpl();
+  virtual ~ThreadImpl();
 
-    // cc::Thread implementation
-    virtual void postTask(base::Closure cb) OVERRIDE;
-    virtual void postDelayedTask(base::Closure cb, long long delayMs) OVERRIDE;
-    virtual bool belongsToCurrentThread() const OVERRIDE;
+  // Thread implementation
+  virtual void PostTask(base::Closure cb) OVERRIDE;
+  virtual void PostDelayedTask(base::Closure cb, long long delay_ms) OVERRIDE;
+  virtual bool BelongsToCurrentThread() const OVERRIDE;
 
-private:
-    explicit ThreadImpl(scoped_refptr<base::MessageLoopProxy> thread);
+ private:
+  explicit ThreadImpl(scoped_refptr<base::MessageLoopProxy> thread);
 
-    scoped_refptr<base::MessageLoopProxy> m_thread;
+  scoped_refptr<base::MessageLoopProxy> thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadImpl);
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_THREAD_IMPL_H_

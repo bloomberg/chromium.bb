@@ -98,7 +98,7 @@ void ResourceUpdateController::PerformMoreUpdates(
   // ReadyToFinalizeTextureUpdates() will be called.
   if (!UpdateMoreTexturesIfEnoughTimeRemaining()) {
     task_posted_ = true;
-    thread_->postTask(
+    thread_->PostTask(
         base::Bind(&ResourceUpdateController::OnTimerFired,
                    weak_factory_.GetWeakPtr()));
   }
@@ -252,7 +252,7 @@ bool ResourceUpdateController::UpdateMoreTexturesIfEnoughTimeRemaining() {
   }
 
   task_posted_ = true;
-  thread_->postDelayedTask(
+  thread_->PostDelayedTask(
       base::Bind(&ResourceUpdateController::OnTimerFired,
                  weak_factory_.GetWeakPtr()),
       kUploaderBusyTickRate * 1000);

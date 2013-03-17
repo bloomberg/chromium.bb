@@ -66,7 +66,7 @@ void DelayBasedTimeSource::setActive(bool active)
         // it runs, we use that to establish the timebase, become truly active, and
         // fire the first tick.
         m_state = STATE_STARTING;
-        m_thread->postTask(base::Bind(&DelayBasedTimeSource::onTimerFired, m_weakFactory.GetWeakPtr()));
+        m_thread->PostTask(base::Bind(&DelayBasedTimeSource::onTimerFired, m_weakFactory.GetWeakPtr()));
         return;
     }
 
@@ -223,7 +223,7 @@ void DelayBasedTimeSource::postNextTickTask(base::TimeTicks now)
     base::TimeDelta delay = newTickTarget - now;
     DCHECK(delay.InMillisecondsF() <=
            m_nextParameters.interval.InMillisecondsF() * (1.0 + doubleTickThreshold));
-    m_thread->postDelayedTask(base::Bind(&DelayBasedTimeSource::onTimerFired,
+    m_thread->PostDelayedTask(base::Bind(&DelayBasedTimeSource::onTimerFired,
                                          m_weakFactory.GetWeakPtr()),
                               delay.InMilliseconds());
 

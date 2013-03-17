@@ -431,7 +431,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
 
   scoped_ptr<cc::Thread> thread;
   if (g_compositor_thread) {
-    thread = cc::ThreadImpl::createForDifferentThread(
+    thread = cc::ThreadImpl::CreateForDifferentThread(
         g_compositor_thread->message_loop_proxy());
   }
 

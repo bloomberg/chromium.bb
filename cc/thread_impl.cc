@@ -8,38 +8,32 @@
 
 namespace cc {
 
-scoped_ptr<Thread> ThreadImpl::createForCurrentThread()
-{
-    return scoped_ptr<Thread>(new ThreadImpl(base::MessageLoopProxy::current())).Pass();
+scoped_ptr<Thread> ThreadImpl::CreateForCurrentThread() {
+  return scoped_ptr<Thread>(
+      new ThreadImpl(base::MessageLoopProxy::current())).Pass();
 }
 
-scoped_ptr<Thread> ThreadImpl::createForDifferentThread(scoped_refptr<base::MessageLoopProxy> thread)
-{
-    return scoped_ptr<Thread>(new ThreadImpl(thread)).Pass();
+scoped_ptr<Thread> ThreadImpl::CreateForDifferentThread(
+    scoped_refptr<base::MessageLoopProxy> thread) {
+  return scoped_ptr<Thread>(new ThreadImpl(thread)).Pass();
 }
 
-ThreadImpl::~ThreadImpl()
-{
+ThreadImpl::~ThreadImpl() {}
+
+void ThreadImpl::PostTask(base::Closure cb) {
+  thread_->PostTask(FROM_HERE, cb);
 }
 
-void ThreadImpl::postTask(base::Closure cb)
-{
-    m_thread->PostTask(FROM_HERE, cb);
+void ThreadImpl::PostDelayedTask(base::Closure cb, long long delay_ms) {
+  thread_->PostDelayedTask(
+      FROM_HERE, cb, base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
-void ThreadImpl::postDelayedTask(base::Closure cb, long long delayMs)
-{
-    m_thread->PostDelayedTask(FROM_HERE, cb, base::TimeDelta::FromMilliseconds(delayMs));
-}
-
-bool ThreadImpl::belongsToCurrentThread() const
-{
-  return m_thread->BelongsToCurrentThread();
+bool ThreadImpl::BelongsToCurrentThread() const {
+  return thread_->BelongsToCurrentThread();
 }
 
 ThreadImpl::ThreadImpl(scoped_refptr<base::MessageLoopProxy> thread)
-    : m_thread(thread)
-{
-}
+    : thread_(thread) {}
 
 }  // namespace cc

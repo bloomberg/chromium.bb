@@ -321,42 +321,42 @@ void ThreadedTest::endTest()
     if (m_beginning)
         m_endWhenBeginReturns = true;
     else
-        proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::realEndTest, m_mainThreadWeakPtr));
+        proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::realEndTest, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::endTestAfterDelay(int delayMilliseconds)
 {
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::endTest, m_mainThreadWeakPtr));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::endTest, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postAddAnimationToMainThread(Layer* layerToReceiveAnimation)
 {
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::dispatchAddAnimation, m_mainThreadWeakPtr, base::Unretained(layerToReceiveAnimation)));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::dispatchAddAnimation, m_mainThreadWeakPtr, base::Unretained(layerToReceiveAnimation)));
 }
 
 void ThreadedTest::postAddInstantAnimationToMainThread()
 {
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::dispatchAddInstantAnimation, m_mainThreadWeakPtr));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::dispatchAddInstantAnimation, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postSetNeedsCommitToMainThread()
 {
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::dispatchSetNeedsCommit, m_mainThreadWeakPtr));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::dispatchSetNeedsCommit, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postAcquireLayerTextures()
 {
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::dispatchAcquireLayerTextures, m_mainThreadWeakPtr));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::dispatchAcquireLayerTextures, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postSetNeedsRedrawToMainThread()
 {
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::dispatchSetNeedsRedraw, m_mainThreadWeakPtr));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::dispatchSetNeedsRedraw, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postSetVisibleToMainThread(bool visible)
 {
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::dispatchSetVisible, m_mainThreadWeakPtr, visible));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::dispatchSetVisible, m_mainThreadWeakPtr, visible));
 }
 
 void ThreadedTest::doBeginTest()
@@ -365,7 +365,7 @@ void ThreadedTest::doBeginTest()
 
     scoped_ptr<cc::Thread> implCCThread(NULL);
     if (m_implThread)
-        implCCThread = cc::ThreadImpl::createForDifferentThread(m_implThread->message_loop_proxy());
+        implCCThread = cc::ThreadImpl::CreateForDifferentThread(m_implThread->message_loop_proxy());
     m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), m_settings, implCCThread.Pass());
     ASSERT_TRUE(m_layerTreeHost);
 
@@ -409,7 +409,7 @@ void ThreadedTest::scheduleComposite()
     if (!m_started || m_scheduled)
         return;
     m_scheduled = true;
-    proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::dispatchComposite, m_mainThreadWeakPtr));
+    proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::dispatchComposite, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::realEndTest()
@@ -417,7 +417,7 @@ void ThreadedTest::realEndTest()
     m_ended = true;
 
     if (m_layerTreeHost && proxy()->CommitPendingForTesting()) {
-        proxy()->MainThread()->postTask(base::Bind(&ThreadedTest::realEndTest, m_mainThreadWeakPtr));
+        proxy()->MainThread()->PostTask(base::Bind(&ThreadedTest::realEndTest, m_mainThreadWeakPtr));
         return;
     }
         
@@ -504,13 +504,13 @@ void ThreadedTest::runTest(bool threaded)
         ASSERT_TRUE(m_implThread->Start());
     }
 
-    m_mainCCThread = cc::ThreadImpl::createForCurrentThread();
+    m_mainCCThread = cc::ThreadImpl::CreateForCurrentThread();
 
     initializeSettings(m_settings);
 
-    m_mainCCThread->postTask(base::Bind(&ThreadedTest::doBeginTest, base::Unretained(this)));
+    m_mainCCThread->PostTask(base::Bind(&ThreadedTest::doBeginTest, base::Unretained(this)));
     m_timeout.Reset(base::Bind(&ThreadedTest::timeout, base::Unretained(this)));
-    m_mainCCThread->postDelayedTask(m_timeout.callback(), 5000);
+    m_mainCCThread->PostDelayedTask(m_timeout.callback(), 5000);
     MessageLoop::current()->Run();
     if (m_layerTreeHost.get() && m_layerTreeHost->root_layer())
         m_layerTreeHost->root_layer()->SetLayerTreeHost(NULL);

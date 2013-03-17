@@ -35,7 +35,7 @@ void RateLimiter::Start() {
 
   TRACE_EVENT0("cc", "RateLimiter::Start");
   active_ = true;
-  thread_->postTask(base::Bind(&RateLimiter::RateLimitContext, this));
+  thread_->PostTask(base::Bind(&RateLimiter::RateLimitContext, this));
 }
 
 void RateLimiter::Stop() {

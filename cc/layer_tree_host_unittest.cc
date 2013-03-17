@@ -694,7 +694,7 @@ public:
 
         // We request animation only once.
         if (!m_animationRequested) {
-            impl->proxy()->MainThread()->postTask(base::Bind(&LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, base::Unretained(this)));
+            impl->proxy()->MainThread()->PostTask(base::Bind(&LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, base::Unretained(this)));
             m_animationRequested = true;
         }
     }
@@ -1595,7 +1595,7 @@ public:
     void postEvictTextures()
     {
         DCHECK(ImplThread());
-        ImplThread()->postTask(base::Bind(&LayerTreeHostTestEvictTextures::evictTexturesOnImplThread,
+        ImplThread()->PostTask(base::Bind(&LayerTreeHostTestEvictTextures::evictTexturesOnImplThread,
                                base::Unretained(this)));
     }
 

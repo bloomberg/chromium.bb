@@ -534,7 +534,7 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
     WebKit::WebThread* thread) {
   scoped_ptr<cc::Thread> compositor_thread;
   if (thread)
-    compositor_thread = cc::ThreadImpl::createForDifferentThread(
+    compositor_thread = cc::ThreadImpl::CreateForDifferentThread(
         static_cast<webkit_glue::WebThreadImpl*>(thread)->
         message_loop()->message_loop_proxy());
 

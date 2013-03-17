@@ -293,7 +293,7 @@ bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
       RenderThreadImpl::current()->compositor_message_loop_proxy();
   threaded_ = !!compositor_message_loop_proxy;
   if (threaded_) {
-    impl_thread = cc::ThreadImpl::createForDifferentThread(
+    impl_thread = cc::ThreadImpl::CreateForDifferentThread(
         compositor_message_loop_proxy);
   }
   layer_tree_host_ = cc::LayerTreeHost::Create(this,

@@ -16,9 +16,9 @@ bool Proxy::HasImplThread() const { return impl_thread_; }
 Thread* Proxy::ImplThread() const { return impl_thread_.get(); }
 
 Thread* Proxy::CurrentThread() const {
-  if (MainThread() && MainThread()->belongsToCurrentThread())
+  if (MainThread() && MainThread()->BelongsToCurrentThread())
     return MainThread();
-  if (ImplThread() && ImplThread()->belongsToCurrentThread())
+  if (ImplThread() && ImplThread()->BelongsToCurrentThread())
     return ImplThread();
   return NULL;
 }
@@ -28,7 +28,7 @@ bool Proxy::IsMainThread() const {
   DCHECK(MainThread());
   if (impl_thread_is_overridden_)
     return false;
-  return MainThread()->belongsToCurrentThread();
+  return MainThread()->BelongsToCurrentThread();
 #else
   return true;
 #endif
@@ -38,7 +38,7 @@ bool Proxy::IsImplThread() const {
 #ifndef NDEBUG
   if (impl_thread_is_overridden_)
     return true;
-  return ImplThread() && ImplThread()->belongsToCurrentThread();
+  return ImplThread() && ImplThread()->BelongsToCurrentThread();
 #else
   return true;
 #endif
@@ -65,7 +65,7 @@ void Proxy::SetMainThreadBlocked(bool is_main_thread_blocked) {
 #endif
 
 Proxy::Proxy(scoped_ptr<Thread> impl_thread)
-    : main_thread_(ThreadImpl::createForCurrentThread()),
+    : main_thread_(ThreadImpl::CreateForCurrentThread()),
 #ifdef NDEBUG
       impl_thread_(impl_thread.Pass()) {}
 #else

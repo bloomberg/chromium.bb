@@ -197,7 +197,7 @@ void CompositorImpl::SetVisible(bool visible) {
 
     scoped_ptr<cc::Thread> impl_thread;
     if (g_impl_thread)
-      impl_thread = cc::ThreadImpl::createForDifferentThread(
+      impl_thread = cc::ThreadImpl::CreateForDifferentThread(
           g_impl_thread->message_loop()->message_loop_proxy());
 
     host_ = cc::LayerTreeHost::Create(this, settings, impl_thread.Pass());

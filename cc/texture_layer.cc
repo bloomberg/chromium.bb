@@ -22,7 +22,7 @@ static void PostCallbackToMainThread(
     Thread* main_thread,
     const TextureMailbox::ReleaseCallback& callback,
     unsigned sync_point) {
-  main_thread->postTask(
+  main_thread->PostTask(
       base::Bind(&RunCallbackOnMainThread, callback, sync_point));
 }
 

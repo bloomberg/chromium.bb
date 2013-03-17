@@ -51,9 +51,9 @@ public:
         return m_pendingTaskDelay;
     }
 
-    virtual void postTask(base::Closure cb) OVERRIDE;
-    virtual void postDelayedTask(base::Closure cb, long long delay) OVERRIDE;
-    virtual bool belongsToCurrentThread() const OVERRIDE;
+    virtual void PostTask(base::Closure cb) OVERRIDE;
+    virtual void PostDelayedTask(base::Closure cb, long long delay_ms) OVERRIDE;
+    virtual bool BelongsToCurrentThread() const OVERRIDE;
 
 protected:
     scoped_ptr<base::Closure> m_pendingTask;

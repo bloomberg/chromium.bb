@@ -115,7 +115,7 @@ void FrameRateController::onTimerTick()
 void FrameRateController::postManualTick()
 {
     if (m_active)
-        m_thread->postTask(base::Bind(&FrameRateController::manualTick, m_weakFactory.GetWeakPtr()));
+        m_thread->PostTask(base::Bind(&FrameRateController::manualTick, m_weakFactory.GetWeakPtr()));
 }
 
 void FrameRateController::manualTick()
