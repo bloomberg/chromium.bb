@@ -22,6 +22,7 @@
 
 namespace cc {
 
+class GLRendererShaderTest;
 class OutputSurface;
 class ScopedResource;
 class StreamVideoDrawQuad;
@@ -110,6 +111,8 @@ class CC_EXPORT GLRenderer :
   virtual void FinishDrawingQuadList() OVERRIDE;
 
  private:
+  friend class GLRendererShaderTest;
+
   static void ToGLMatrix(float* gl_matrix, const gfx::Transform& transform);
   static ManagedMemoryPolicy::PriorityCutoff PriorityCutoff(
       WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priority_cutoff);
@@ -197,7 +200,7 @@ class CC_EXPORT GLRenderer :
   gfx::QuadF shared_geometry_quad_;
 
   // This block of bindings defines all of the programs used by the compositor
-  // itself.
+  // itself.  Add any new programs here to GLRendererShaderTest.
 
   // Tiled layer shaders.
   typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexAlpha>

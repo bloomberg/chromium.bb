@@ -57,6 +57,8 @@ void ProgramBindingBase::Init(WebGraphicsContext3D* context,
 void ProgramBindingBase::Link(WebGraphicsContext3D* context) {
   GLC(context, context->linkProgram(program_));
   CleanupShaders(context);
+  if (!program_)
+    return;
 #ifndef NDEBUG
   int linked = 0;
   GLC(context, context->getProgramiv(program_, GL_LINK_STATUS, &linked));

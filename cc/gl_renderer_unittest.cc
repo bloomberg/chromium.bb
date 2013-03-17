@@ -11,6 +11,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/pixel_test.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -31,7 +32,52 @@ using testing::Return;
 using testing::StrictMock;
 
 namespace cc {
+
+#define EXPECT_PROGRAM_VALID(program_binding) \
+  do { \
+    EXPECT_TRUE(program_binding->program()); \
+    EXPECT_TRUE(program_binding->initialized()); \
+  } while (false)
+
+// Explicitly named to be a friend in GLRenderer for shader access.
+class GLRendererShaderTest : public PixelTest {
+ public:
+  void TestShaders() {
+    ASSERT_FALSE(renderer_->IsContextLost());
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramOpaque());
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramAA());
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzle());
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleOpaque());
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleAA());
+    EXPECT_PROGRAM_VALID(renderer_->GetTileCheckerboardProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgramAA());
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgramAA());
+    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgramFlip());
+    EXPECT_PROGRAM_VALID(renderer_->GetTextureIOSurfaceProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetVideoYUVProgram());
+    // This is unlikely to be ever true in tests due to usage of osmesa.
+    if (renderer_->Capabilities().using_egl_image)
+      EXPECT_PROGRAM_VALID(renderer_->GetVideoStreamTextureProgram());
+    else
+      EXPECT_FALSE(renderer_->GetVideoStreamTextureProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetDebugBorderProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgram());
+    EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgramAA());
+    ASSERT_FALSE(renderer_->IsContextLost());
+  }
+};
+
 namespace {
+
+#if !defined(OS_ANDROID)
+TEST_F(GLRendererShaderTest, AllShadersCompile) {
+  TestShaders();
+}
+#endif
 
 class FrameCountingMemoryAllocationSettingContext : public TestWebGraphicsContext3D {
 public:

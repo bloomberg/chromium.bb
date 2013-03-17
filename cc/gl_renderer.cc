@@ -2158,6 +2158,8 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram() {
 
 const GLRenderer::VideoStreamTextureProgram*
 GLRenderer::GetVideoStreamTextureProgram() {
+  if (!Capabilities().using_egl_image)
+    return NULL;
   if (!video_stream_texture_program_)
     video_stream_texture_program_ =
         make_scoped_ptr(new VideoStreamTextureProgram(context_));
