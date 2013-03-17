@@ -12,37 +12,40 @@
 namespace cc {
 
 class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
-public:
-    static scoped_ptr<IOSurfaceLayerImpl> Create(LayerTreeImpl* treeImpl, int id)
-    {
-        return make_scoped_ptr(new IOSurfaceLayerImpl(treeImpl, id));
-    }
-    virtual ~IOSurfaceLayerImpl();
+ public:
+  static scoped_ptr<IOSurfaceLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                               int id) {
+    return make_scoped_ptr(new IOSurfaceLayerImpl(tree_impl, id));
+  }
+  virtual ~IOSurfaceLayerImpl();
 
-    void setIOSurfaceProperties(unsigned ioSurfaceId, const gfx::Size&);
+  void SetIOSurfaceProperties(unsigned io_surface_id, gfx::Size size);
 
-    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
-    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer_tree_impl) OVERRIDE;
 
-    virtual void AppendQuads(QuadSink* quad_sink,
-                             AppendQuadsData* append_quads_data) OVERRIDE;
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
 
-    virtual void WillDraw(ResourceProvider*) OVERRIDE;
-    virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void WillDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
 
-    virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
+  virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
 
-private:
-    IOSurfaceLayerImpl(LayerTreeImpl* treeImpl, int id);
+ private:
+  IOSurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-    virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const OVERRIDE;
 
-    unsigned m_ioSurfaceId;
-    gfx::Size m_ioSurfaceSize;
-    bool m_ioSurfaceChanged;
-    unsigned m_ioSurfaceTextureId;
+  unsigned io_surface_id_;
+  gfx::Size io_surface_size_;
+  bool io_surface_changed_;
+  unsigned io_surface_texture_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(IOSurfaceLayerImpl);
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_IO_SURFACE_LAYER_IMPL_H_

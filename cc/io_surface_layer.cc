@@ -37,7 +37,7 @@ void IOSurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
 
   IOSurfaceLayerImpl* io_surface_layer =
       static_cast<IOSurfaceLayerImpl*>(layer);
-  io_surface_layer->setIOSurfaceProperties(io_surface_id_, io_surface_size_);
+  io_surface_layer->SetIOSurfaceProperties(io_surface_id_, io_surface_size_);
 }
 
 }  // namespace cc

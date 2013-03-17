@@ -5,7 +5,7 @@
 #include "cc/io_surface_layer_impl.h"
 
 #include "base/stringprintf.h"
-#include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/gl_renderer.h"  // For the GLC() macro.
 #include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
@@ -17,114 +17,129 @@
 
 namespace cc {
 
-IOSurfaceLayerImpl::IOSurfaceLayerImpl(LayerTreeImpl* treeImpl, int id)
-    : LayerImpl(treeImpl, id)
-    , m_ioSurfaceId(0)
-    , m_ioSurfaceChanged(false)
-    , m_ioSurfaceTextureId(0)
-{
+IOSurfaceLayerImpl::IOSurfaceLayerImpl(LayerTreeImpl* tree_impl, int id)
+    : LayerImpl(tree_impl, id),
+      io_surface_id_(0),
+      io_surface_changed_(false),
+      io_surface_texture_id_(0) {}
+
+IOSurfaceLayerImpl::~IOSurfaceLayerImpl() {
+  if (!io_surface_texture_id_)
+    return;
+
+  OutputSurface* output_surface = layer_tree_impl()->output_surface();
+  // FIXME: Implement this path for software compositing.
+  WebKit::WebGraphicsContext3D* context3d = output_surface->context3d();
+  if (context3d)
+    context3d->deleteTexture(io_surface_texture_id_);
 }
 
-IOSurfaceLayerImpl::~IOSurfaceLayerImpl()
-{
-    if (!m_ioSurfaceTextureId)
-        return;
-
-    OutputSurface* outputSurface = layer_tree_impl()->output_surface();
-    // FIXME: Implement this path for software compositing.
-    WebKit::WebGraphicsContext3D* context3d = outputSurface->context3d();
-    if (context3d)
-        context3d->deleteTexture(m_ioSurfaceTextureId);
+scoped_ptr<LayerImpl> IOSurfaceLayerImpl::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return IOSurfaceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-scoped_ptr<LayerImpl> IOSurfaceLayerImpl::CreateLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return IOSurfaceLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
+void IOSurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+  LayerImpl::PushPropertiesTo(layer);
+
+  IOSurfaceLayerImpl* io_surface_layer =
+      static_cast<IOSurfaceLayerImpl*>(layer);
+  io_surface_layer->SetIOSurfaceProperties(io_surface_id_, io_surface_size_);
 }
 
-void IOSurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer)
-{
-    LayerImpl::PushPropertiesTo(layer);
+void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
+  LayerImpl::WillDraw(resource_provider);
 
-    IOSurfaceLayerImpl* ioSurfaceLayer = static_cast<IOSurfaceLayerImpl*>(layer);
-    ioSurfaceLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
-}
-
-void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resourceProvider)
-{
-    LayerImpl::WillDraw(resourceProvider);
-
-    if (m_ioSurfaceChanged) {
-        WebKit::WebGraphicsContext3D* context3d = resourceProvider->GraphicsContext3D();
-        if (!context3d) {
-            // FIXME: Implement this path for software compositing.
-            return;
-        }
-
-        // FIXME: Do this in a way that we can track memory usage.
-        if (!m_ioSurfaceTextureId)
-            m_ioSurfaceTextureId = context3d->createTexture();
-
-        GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
-        GLC(context3d, context3d->bindTexture(GL_TEXTURE_RECTANGLE_ARB, m_ioSurfaceTextureId));
-        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-        context3d->texImageIOSurface2DCHROMIUM(GL_TEXTURE_RECTANGLE_ARB,
-                                               m_ioSurfaceSize.width(),
-                                               m_ioSurfaceSize.height(),
-                                               m_ioSurfaceId,
-                                               0);
-        // Do not check for error conditions. texImageIOSurface2DCHROMIUM is supposed to hold on to
-        // the last good IOSurface if the new one is already closed. This is only a possibility
-        // during live resizing of plugins. However, it seems that this is not sufficient to
-        // completely guard against garbage being drawn. If this is found to be a significant issue,
-        // it may be necessary to explicitly tell the embedder when to free the surfaces it has
-        // allocated.
-        m_ioSurfaceChanged = false;
+  if (io_surface_changed_) {
+    WebKit::WebGraphicsContext3D* context3d =
+        resource_provider->GraphicsContext3D();
+    if (!context3d) {
+      // FIXME: Implement this path for software compositing.
+      return;
     }
+
+    // FIXME: Do this in a way that we can track memory usage.
+    if (!io_surface_texture_id_)
+      io_surface_texture_id_ = context3d->createTexture();
+
+    GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
+    GLC(context3d,
+        context3d->bindTexture(GL_TEXTURE_RECTANGLE_ARB,
+                               io_surface_texture_id_));
+    GLC(context3d,
+        context3d->texParameteri(
+            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLC(context3d,
+        context3d->texParameteri(
+            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLC(context3d,
+        context3d->texParameteri(
+            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLC(context3d,
+        context3d->texParameteri(
+            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    context3d->texImageIOSurface2DCHROMIUM(GL_TEXTURE_RECTANGLE_ARB,
+                                           io_surface_size_.width(),
+                                           io_surface_size_.height(),
+                                           io_surface_id_,
+                                           0);
+    // Do not check for error conditions. texImageIOSurface2DCHROMIUM is
+    // supposed to hold on to the last good IOSurface if the new one is already
+    // closed. This is only a possibility during live resizing of plugins.
+    // However, it seems that this is not sufficient to completely guard against
+    // garbage being drawn. If this is found to be a significant issue, it may
+    // be necessary to explicitly tell the embedder when to free the surfaces it
+    // has allocated.
+    io_surface_changed_ = false;
+  }
 }
 
-void IOSurfaceLayerImpl::AppendQuads(QuadSink* quadSink, AppendQuadsData* appendQuadsData)
-{
-    SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
-    AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
+void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
+                                     AppendQuadsData* append_quads_data) {
+  SharedQuadState* shared_quad_state =
+      quad_sink->useSharedQuadState(CreateSharedQuadState());
+  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-    gfx::Rect quadRect(gfx::Point(), content_bounds());
-    gfx::Rect opaqueRect(contents_opaque() ? quadRect : gfx::Rect());
-    scoped_ptr<IOSurfaceDrawQuad> quad = IOSurfaceDrawQuad::Create();
-    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_ioSurfaceSize, m_ioSurfaceTextureId, IOSurfaceDrawQuad::FLIPPED);
-    quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+  gfx::Rect quad_rect(gfx::Point(), content_bounds());
+  gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
+  scoped_ptr<IOSurfaceDrawQuad> quad = IOSurfaceDrawQuad::Create();
+  quad->SetNew(shared_quad_state,
+               quad_rect,
+               opaque_rect,
+               io_surface_size_,
+               io_surface_texture_id_,
+               IOSurfaceDrawQuad::FLIPPED);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
-void IOSurfaceLayerImpl::DumpLayerProperties(std::string* str, int indent) const
-{
-    str->append(IndentString(indent));
-    base::StringAppendF(str, "iosurface id: %u texture id: %u\n", m_ioSurfaceId, m_ioSurfaceTextureId);
-    LayerImpl::DumpLayerProperties(str, indent);
+void IOSurfaceLayerImpl::DumpLayerProperties(std::string* str,
+                                             int indent) const {
+  str->append(IndentString(indent));
+  base::StringAppendF(str,
+                      "iosurface id: %u texture id: %u\n",
+                      io_surface_id_,
+                      io_surface_texture_id_);
+  LayerImpl::DumpLayerProperties(str, indent);
 }
 
-void IOSurfaceLayerImpl::DidLoseOutputSurface()
-{
-    // We don't have a valid texture ID in the new context; however,
-    // the IOSurface is still valid.
-    m_ioSurfaceTextureId = 0;
-    m_ioSurfaceChanged = true;
+void IOSurfaceLayerImpl::DidLoseOutputSurface() {
+  // We don't have a valid texture ID in the new context; however,
+  // the IOSurface is still valid.
+  io_surface_texture_id_ = 0;
+  io_surface_changed_ = true;
 }
 
-void IOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const gfx::Size& size)
-{
-    if (m_ioSurfaceId != ioSurfaceId)
-        m_ioSurfaceChanged = true;
+void IOSurfaceLayerImpl::SetIOSurfaceProperties(unsigned io_surface_id,
+                                                gfx::Size size) {
+  if (io_surface_id_ != io_surface_id)
+    io_surface_changed_ = true;
 
-    m_ioSurfaceId = ioSurfaceId;
-    m_ioSurfaceSize = size;
+  io_surface_id_ = io_surface_id;
+  io_surface_size_ = size;
 }
 
-const char* IOSurfaceLayerImpl::LayerTypeAsString() const
-{
-    return "IOSurfaceLayer";
+const char* IOSurfaceLayerImpl::LayerTypeAsString() const {
+  return "IOSurfaceLayer";
 }
 
 }  // namespace cc

@@ -2635,7 +2635,7 @@ TEST_F(LayerTreeHostImplTest, layersFreeTextures)
     ioSurfaceLayer->SetAnchorPoint(gfx::PointF(0, 0));
     ioSurfaceLayer->SetContentBounds(gfx::Size(10, 10));
     ioSurfaceLayer->SetDrawsContent(true);
-    ioSurfaceLayer->setIOSurfaceProperties(1, gfx::Size(10, 10));
+    ioSurfaceLayer->SetIOSurfaceProperties(1, gfx::Size(10, 10));
     rootLayer->AddChild(ioSurfaceLayer.PassAs<LayerImpl>());
 
     m_hostImpl->active_tree()->SetRootLayer(rootLayer.Pass());
