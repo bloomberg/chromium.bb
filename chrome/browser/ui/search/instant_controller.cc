@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/ui/search/instant_controller.h"
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -13,17 +13,17 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/instant/instant_ntp.h"
-#include "chrome/browser/instant/instant_overlay.h"
 #include "chrome/browser/instant/instant_service.h"
 #include "chrome/browser/instant/instant_service_factory.h"
-#include "chrome/browser/instant/instant_tab.h"
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/instant_ntp.h"
+#include "chrome/browser/ui/search/instant_overlay.h"
+#include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"

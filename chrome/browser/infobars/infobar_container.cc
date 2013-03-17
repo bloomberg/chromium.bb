@@ -15,7 +15,7 @@
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/instant/instant_overlay_model.h"
+#include "chrome/browser/ui/search/instant_overlay_model.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/frame/instant_overlay_controller_views.h"
 
-#include "chrome/browser/instant/instant_overlay_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/search/instant_overlay_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"

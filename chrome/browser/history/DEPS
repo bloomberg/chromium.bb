@@ -25,7 +25,6 @@ include_rules = [
   "!chrome/browser/content_settings/cookie_settings.h",
   "!chrome/browser/diagnostics/sqlite_diagnostics.h",
   "!chrome/browser/favicon/favicon_service.h",
-  "!chrome/browser/instant/instant_overlay.h",
   "!chrome/browser/omnibox/omnibox_field_trial.h",
   "!chrome/browser/prefs/scoped_user_pref_update.h",
   "!chrome/browser/prerender/prerender_contents.h",
@@ -48,6 +47,7 @@ include_rules = [
   "!chrome/browser/ui/browser_finder.h",
   "!chrome/browser/search_engines/template_url_id.h",
   "!chrome/browser/ui/profile_error_dialog.h",
+  "!chrome/browser/ui/search/instant_overlay.h",
   "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
   "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
 ]

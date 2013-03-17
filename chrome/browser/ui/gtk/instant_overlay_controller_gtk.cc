@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/gtk/instant_overlay_controller_gtk.h"
 
-#include "chrome/browser/instant/instant_overlay_model.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
+#include "chrome/browser/ui/search/instant_overlay_model.h"
 
 InstantOverlayControllerGtk::InstantOverlayControllerGtk(
     BrowserWindowGtk* window,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_CONTROLLER_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_CONTROLLER_H_
 
 #include <list>
 #include <map>
@@ -18,10 +18,10 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/instant/instant_commit_type.h"
-#include "chrome/browser/instant/instant_overlay_model.h"
-#include "chrome/browser/instant/instant_page.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
+#include "chrome/browser/ui/search/instant_commit_type.h"
+#include "chrome/browser/ui/search/instant_overlay_model.h"
+#include "chrome/browser/ui/search/instant_page.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/search_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -465,4 +465,4 @@ class InstantController : public InstantPage::Delegate,
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_CONTROLLER_H_

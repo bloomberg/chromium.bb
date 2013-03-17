@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
-#include "chrome/browser/instant/instant_overlay_model.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
+#include "chrome/browser/ui/search/instant_overlay_model.h"
 
 InstantOverlayControllerMac::InstantOverlayControllerMac(
     Browser* browser,

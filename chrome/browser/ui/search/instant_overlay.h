@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_H_
 
 #include <string>
 
@@ -12,9 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/instant/instant_loader.h"
-#include "chrome/browser/instant/instant_page.h"
+#include "chrome/browser/ui/search/instant_controller.h"
+#include "chrome/browser/ui/search/instant_loader.h"
+#include "chrome/browser/ui/search/instant_page.h"
 
 class Profile;
 
@@ -115,4 +115,4 @@ class InstantOverlay : public InstantPage,
   DISALLOW_COPY_AND_ASSIGN(InstantOverlay);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_H_

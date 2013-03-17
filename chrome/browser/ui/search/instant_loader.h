@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_LOADER_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_LOADER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -134,4 +134,4 @@ class InstantLoader : public content::NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_LOADER_H_

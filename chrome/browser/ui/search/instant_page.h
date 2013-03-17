@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_PAGE_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_PAGE_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_PAGE_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_PAGE_H_
 
 #include <vector>
 
@@ -236,4 +236,4 @@ class InstantPage : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(InstantPage);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_PAGE_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_PAGE_H_

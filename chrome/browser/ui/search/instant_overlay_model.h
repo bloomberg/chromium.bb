@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_MODEL_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_MODEL_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_MODEL_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_MODEL_H_
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
@@ -61,4 +61,4 @@ class InstantOverlayModel {
   DISALLOW_COPY_AND_ASSIGN(InstantOverlayModel);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_MODEL_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_MODEL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_MODEL_OBSERVER_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_MODEL_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_MODEL_OBSERVER_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_MODEL_OBSERVER_H_
 
 class InstantOverlayModel;
 
@@ -18,4 +18,4 @@ class InstantOverlayModelObserver {
   ~InstantOverlayModelObserver() {}
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_OVERLAY_MODEL_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_OVERLAY_MODEL_OBSERVER_H_

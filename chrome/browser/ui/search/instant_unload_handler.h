@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_UNLOAD_HANDLER_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_UNLOAD_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_UNLOAD_HANDLER_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_UNLOAD_HANDLER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -62,4 +62,4 @@ class InstantUnloadHandler {
   DISALLOW_COPY_AND_ASSIGN(InstantUnloadHandler);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_UNLOAD_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_UNLOAD_HANDLER_H_

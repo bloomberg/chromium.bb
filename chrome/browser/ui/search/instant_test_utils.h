@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_TEST_UTILS_H_
-#define CHROME_BROWSER_INSTANT_INSTANT_TEST_UTILS_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_TEST_UTILS_H_
+#define CHROME_BROWSER_UI_SEARCH_INSTANT_TEST_UTILS_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
-#include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/instant/instant_overlay_model_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/search/instant_controller.h"
+#include "chrome/browser/ui/search/instant_overlay_model_observer.h"
 #include "chrome/common/search_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/test/test_server.h"
@@ -122,4 +122,4 @@ class InstantTestBase {
   DISALLOW_COPY_AND_ASSIGN(InstantTestBase);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_TEST_UTILS_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_INSTANT_TEST_UTILS_H_

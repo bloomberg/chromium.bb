@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/time.h"
-#include "chrome/browser/instant/instant_overlay_model_observer.h"
+#include "chrome/browser/ui/search/instant_overlay_model_observer.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/search_types.h"
 #include "content/public/browser/notification_observer.h"

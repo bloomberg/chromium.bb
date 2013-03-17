@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
-#include "chrome/browser/instant/instant_overlay.h"
-#include "chrome/browser/instant/instant_test_utils.h"
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -12,6 +10,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/instant_overlay.h"
+#include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"

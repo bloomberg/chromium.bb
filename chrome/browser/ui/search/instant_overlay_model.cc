@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/instant/instant_overlay_model.h"
+#include "chrome/browser/ui/search/instant_overlay_model.h"
 
-#include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/instant/instant_overlay_model_observer.h"
+#include "chrome/browser/ui/search/instant_controller.h"
+#include "chrome/browser/ui/search/instant_overlay_model_observer.h"
 
 InstantOverlayModel::InstantOverlayModel(InstantController* controller)
   : height_(0),

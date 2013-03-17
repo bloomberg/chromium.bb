@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/instant/instant_overlay_controller.h"
+#include "chrome/browser/ui/search/instant_overlay_controller.h"
 
 class Browser;
 class ContentsContainer;
