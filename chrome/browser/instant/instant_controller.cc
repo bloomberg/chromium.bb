@@ -631,9 +631,10 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     if (type == INSTANT_COMMIT_PRESSED_ENTER &&
         (last_match_was_search_ ||
          last_suggestion_.behavior == INSTANT_COMPLETE_NEVER)) {
-      EnsureSearchTermsAreSet(instant_tab_->contents(), last_omnibox_text_);
+      last_suggestion_.text.clear();
       instant_tab_->Submit(last_omnibox_text_);
       instant_tab_->contents()->GetView()->Focus();
+      EnsureSearchTermsAreSet(instant_tab_->contents(), last_omnibox_text_);
       return true;
     }
     return false;
