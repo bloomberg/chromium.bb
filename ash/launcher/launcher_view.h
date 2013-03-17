@@ -233,6 +233,10 @@ class ASH_EXPORT LauncherView : public views::View,
       views::BoundsAnimator* animator) OVERRIDE;
   virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
 
+  // Returns false if the click which closed the previous menu is the click
+  // which triggered this event.
+  bool IsUsableEvent(const ui::Event& event);
+
   // The model; owned by Launcher.
   LauncherModel* model_;
 
@@ -297,6 +301,9 @@ class ASH_EXPORT LauncherView : public views::View,
   // Index of the last hidden launcher item. If there are no hidden items this
   // will be equal to last_visible_index_ + 1.
   int last_hidden_index_;
+
+  // The timestamp of the event which closed the last menu - or 0.
+  base::TimeDelta closing_event_time_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

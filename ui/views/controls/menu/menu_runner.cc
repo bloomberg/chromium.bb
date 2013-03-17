@@ -75,6 +75,9 @@ class MenuRunnerImpl : public internal::MenuControllerDelegate {
 
   void Cancel();
 
+  // Returns the time from the event which closed the menu - or 0.
+  base::TimeDelta closing_event_time() const;
+
   // MenuControllerDelegate:
   virtual void DropMenuClosed(NotifyType type, MenuItemView* menu) OVERRIDE;
   virtual void SiblingMenuCreated(MenuItemView* menu) OVERRIDE;
@@ -117,6 +120,9 @@ class MenuRunnerImpl : public internal::MenuControllerDelegate {
   // Do we own the controller?
   bool owns_controller_;
 
+  // The timestamp of the event which closed the menu - or 0.
+  base::TimeDelta closing_event_time_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerImpl);
 };
 
@@ -126,7 +132,8 @@ MenuRunnerImpl::MenuRunnerImpl(MenuItemView* menu)
       delete_after_run_(false),
       for_drop_(false),
       controller_(NULL),
-      owns_controller_(false) {
+      owns_controller_(false),
+      closing_event_time_(base::TimeDelta()) {
 }
 
 void MenuRunnerImpl::Release() {
@@ -162,6 +169,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
     const gfx::Rect& bounds,
     MenuItemView::AnchorPosition anchor,
     int32 types) {
+  closing_event_time_ = base::TimeDelta();
   if (running_) {
     // Ignore requests to show the menu while it's already showing. MenuItemView
     // doesn't handle this very well (meaning it crashes).
@@ -213,7 +221,8 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
   MenuItemView* result = controller->Run(parent, button, menu_, bounds, anchor,
                                         (types & MenuRunner::CONTEXT_MENU) != 0,
                                          &mouse_event_flags);
-
+  // Get the time of the event which closed this menu.
+  closing_event_time_ = controller->closing_event_time();
   if (for_drop_) {
     // Drop menus return immediately. We finish processing in DropMenuClosed.
     return MenuRunner::NORMAL_EXIT;
@@ -225,6 +234,10 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
 void MenuRunnerImpl::Cancel() {
   if (running_)
     controller_->Cancel(MenuController::EXIT_ALL);
+}
+
+base::TimeDelta MenuRunnerImpl::closing_event_time() const {
+  return closing_event_time_;
 }
 
 void MenuRunnerImpl::DropMenuClosed(NotifyType type, MenuItemView* menu) {
@@ -337,6 +350,10 @@ bool MenuRunner::IsRunning() const {
 
 void MenuRunner::Cancel() {
   holder_->Cancel();
+}
+
+base::TimeDelta MenuRunner::closing_event_time() const {
+  return holder_->closing_event_time();
 }
 
 }  // namespace views

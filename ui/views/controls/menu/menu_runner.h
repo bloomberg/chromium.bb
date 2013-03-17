@@ -96,6 +96,9 @@ class VIEWS_EXPORT MenuRunner {
   // Hides and cancels the menu. This does nothing if the menu is not open.
   void Cancel();
 
+  // Returns the time from the event which closed the menu - or 0.
+  base::TimeDelta closing_event_time() const;
+
  private:
   internal::MenuRunnerImpl* holder_;
 
