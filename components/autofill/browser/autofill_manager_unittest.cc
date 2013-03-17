@@ -474,6 +474,14 @@ class TestAutofillManager : public AutofillManager {
     autofill_enabled_ = autofill_enabled;
   }
 
+  void set_autocheckout_url_prefix(std::string autocheckout_url_prefix) {
+    autocheckout_url_prefix_ = autocheckout_url_prefix;
+  }
+
+  virtual std::string GetAutocheckoutURLPrefix() const OVERRIDE {
+    return autocheckout_url_prefix_;
+  }
+
   const std::vector<std::pair<WebFormElement::AutocompleteResult, FormData> >&
       request_autocomplete_results() const {
     return request_autocomplete_results_;
@@ -601,6 +609,7 @@ class TestAutofillManager : public AutofillManager {
   bool did_finish_async_form_submit_;
   bool message_loop_is_running_;
 
+  std::string autocheckout_url_prefix_;
   std::string submitted_form_signature_;
   std::vector<FieldTypeSet> expected_submitted_field_types_;
   std::vector<bool> sent_states_;
@@ -680,7 +689,11 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(), false);
+  }
+
+  void PartialFormsSeen(const std::vector<FormData>& forms) {
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(), true);
   }
 
   void FormSubmitted(const FormData& form) {
@@ -726,6 +739,13 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_manager_->autocomplete_history_manager_.CancelPendingQuery();
     process()->sink().ClearMessages();
     return true;
+  }
+
+  bool HasSeenAutofillGetAllFormsMessage() {
+    const uint32 kMsgID = AutofillMsg_GetAllForms::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    return message != NULL;
   }
 
   bool GetAutofillFormDataFilledMessage(int* page_id, FormData* results) {
@@ -799,6 +819,19 @@ class TestFormStructure : public FormStructure {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFormStructure);
 };
+
+// Test that browser asks for all forms when Autocheckout is enabled.
+TEST_F(AutofillManagerTest, GetAllForms) {
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  // Enable autocheckout.
+  autofill_manager_->set_autocheckout_url_prefix("test-prefix");
+
+  PartialFormsSeen(forms);
+
+  ASSERT_TRUE(HasSeenAutofillGetAllFormsMessage());
+}
 
 // Test that we return all address profile suggestions when all form fields are
 // empty.

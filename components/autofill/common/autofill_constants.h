@@ -7,11 +7,19 @@
 #ifndef COMPONENTS_AUTOFILL_COMMON_AUTOFILL_CONSTANTS_H_
 #define COMPONENTS_AUTOFILL_COMMON_AUTOFILL_CONSTANTS_H_
 
+#include <stddef.h>         // For size_t
+
 namespace components {
 namespace autofill {
 
 // Help URL for the Autofill dialog.
 extern const char kHelpURL[];
+
+// The number of fields required by Autofill.  Ideally we could send the forms
+// to Autofill no matter how many fields are in the forms; however, finding the
+// label for each field is a costly operation and we can't spare the cycles if
+// it's not necessary.
+extern const size_t kRequiredAutofillFields;
 
 }  // namespace autofill
 }  // namespace components

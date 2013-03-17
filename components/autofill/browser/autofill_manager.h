@@ -238,7 +238,8 @@ class AutofillManager : public content::WebContentsObserver,
                                      bool new_renderer);
 
   void OnFormsSeen(const std::vector<FormData>& forms,
-                   const base::TimeTicks& timestamp);
+                   const base::TimeTicks& timestamp,
+                   bool has_more_forms);
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
                             const base::TimeTicks& timestamp);
@@ -283,7 +284,7 @@ class AutofillManager : public content::WebContentsObserver,
                                      const gfx::RectF& bounding_box);
 
   // Returns the matched whitelist URL prefix for the current tab's url.
-  std::string GetAutocheckoutURLPrefix() const;
+  virtual std::string GetAutocheckoutURLPrefix() const;
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.

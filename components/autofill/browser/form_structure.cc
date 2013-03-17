@@ -22,11 +22,14 @@
 #include "components/autofill/browser/autofill_xml_parser.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_field.h"
+#include "components/autofill/common/autofill_constants.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_data_predictions.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/form_field_data_predictions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+
+using components::autofill::kRequiredAutofillFields;
 
 namespace {
 
@@ -49,9 +52,6 @@ const char kXMLElementAutofillQuery[] = "autofillquery";
 const char kXMLElementAutofillUpload[] = "autofillupload";
 const char kXMLElementForm[] = "form";
 const char kXMLElementField[] = "field";
-
-// The number of fillable fields necessary for a form to be fillable.
-const size_t kRequiredFillableFields = 3;
 
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
@@ -588,7 +588,7 @@ bool FormStructure::IsAutocheckoutEnabled() const {
 }
 
 size_t FormStructure::RequiredFillableFields() const {
-  return IsAutocheckoutEnabled() ? 0 : kRequiredFillableFields;
+  return IsAutocheckoutEnabled() ? 0 : kRequiredAutofillFields;
 }
 
 bool FormStructure::IsAutofillable(bool require_method_post) const {

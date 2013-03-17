@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "components/autofill/renderer/form_cache.h"
 #include "components/autofill/renderer/page_click_listener.h"
@@ -120,6 +121,7 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnSetNodeText(const string16& value);
   void OnAcceptDataListSuggestion(const string16& value);
   void OnAcceptPasswordAutofillSuggestion(const string16& value);
+  void OnGetAllForms();
 
   // Called when interactive autocomplete finishes.
   void OnRequestAutocompleteResult(
@@ -252,6 +254,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // a composition when we are defocusing the WebView and we don't want to
   // trigger an autofill popup to show.
   bool ignore_text_changes_;
+
+  // Timestamp of first time forms are seen.
+  base::TimeTicks forms_seen_timestamp_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 

@@ -84,6 +84,9 @@ IPC_ENUM_TRAITS(WebKit::WebFormElement::AutocompleteResult)
 
 // Autofill messages sent from the browser to the renderer.
 
+// Request to parse all the forms without field count limit.
+IPC_MESSAGE_ROUTED0(AutofillMsg_GetAllForms)
+
 // Reply to the AutofillHostMsg_QueryFormFieldAutofill message with the
 // Autofill suggestions.
 IPC_MESSAGE_ROUTED5(AutofillMsg_SuggestionsReturned,
@@ -169,9 +172,10 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_FillFormsAndClick,
 
 // Notification that forms have been seen that are candidates for
 // filling/submitting by the AutofillManager.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormsSeen,
+IPC_MESSAGE_ROUTED3(AutofillHostMsg_FormsSeen,
                     std::vector<FormData> /* forms */,
-                    base::TimeTicks /* timestamp */)
+                    base::TimeTicks /* timestamp */,
+                    bool /* has_more_forms */)
 
 // Notification that password forms have been seen that are candidates for
 // filling/submitting by the password manager.

@@ -139,7 +139,11 @@ TEST_F(ChromeRenderViewTest, FillFormElement) {
   // Verify that "FormsSeen" isn't sent, as there are too few fields.
   const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
-  ASSERT_EQ(static_cast<IPC::Message*>(NULL), message);
+  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  AutofillHostMsg_FormsSeen::Param params;
+  AutofillHostMsg_FormsSeen::Read(message, &params);
+  const std::vector<FormData>& forms = params.a;
+  ASSERT_EQ(0UL, forms.size());
 
   // Verify that |didAcceptAutofillSuggestion()| sets the value of the expected
   // field.

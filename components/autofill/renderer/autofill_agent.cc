@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/common/autocheckout_status.h"
+#include "components/autofill/common/autofill_constants.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/autofill_switches.h"
 #include "components/autofill/common/form_data.h"
@@ -40,6 +41,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using components::autofill::kRequiredAutofillFields;
 using WebKit::WebAutofillClient;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
@@ -160,6 +162,7 @@ AutofillAgent::~AutofillAgent() {}
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
+    IPC_MESSAGE_HANDLER(AutofillMsg_GetAllForms, OnGetAllForms)
     IPC_MESSAGE_HANDLER(AutofillMsg_SuggestionsReturned, OnSuggestionsReturned)
     IPC_MESSAGE_HANDLER(AutofillMsg_FormDataFilled, OnFormDataFilled)
     IPC_MESSAGE_HANDLER(AutofillMsg_FieldTypePredictionsAvailable,
@@ -188,21 +191,28 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
+  // Record timestamp on document load. This is used to record overhead of
+  // Autofill feature.
+  forms_seen_timestamp_ = base::TimeTicks::Now();
+
   // The document has now been fully loaded.  Scan for forms to be sent up to
   // the browser.
   std::vector<FormData> forms;
-
+  bool has_more_forms = false;
   if (!frame->parent()) {
     topmost_frame_ = frame;
     form_elements_.clear();
-    form_cache_.ExtractFormsAndFormElements(*frame, &forms, &form_elements_);
+    has_more_forms = form_cache_.ExtractFormsAndFormElements(
+        *frame, kRequiredAutofillFields, &forms, &form_elements_);
   } else {
     form_cache_.ExtractForms(*frame, &forms);
   }
 
-  if (!forms.empty()) {
+  // Always communicate to browser process for topmost frame.
+  if (!forms.empty() || !frame->parent()) {
     Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
-                                       base::TimeTicks::Now()));
+                                       forms_seen_timestamp_,
+                                       has_more_forms));
   }
 }
 
@@ -703,6 +713,23 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
       element_,
       value);
   DCHECK(handled);
+}
+
+void AutofillAgent::OnGetAllForms() {
+  form_elements_.clear();
+
+  // Force fetch all non empty forms.
+  std::vector<FormData> forms;
+  form_cache_.ExtractFormsAndFormElements(
+      *topmost_frame_, 0, &forms, &form_elements_);
+
+  // OnGetAllForms should only be called if AutofillAgent reported to
+  // AutofillManager that there are more forms
+  DCHECK(!forms.empty());
+
+  // Report to AutofillManager that all forms are being sent.
+  Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
+                                     forms_seen_timestamp_, false));
 }
 
 void AutofillAgent::OnRequestAutocompleteResult(

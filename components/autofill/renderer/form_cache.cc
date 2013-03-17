@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "components/autofill/common/autofill_constants.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_data_predictions.h"
 #include "components/autofill/common/form_field_data.h"
@@ -22,6 +23,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using components::autofill::kRequiredAutofillFields;
 using WebKit::WebDocument;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
@@ -30,16 +32,6 @@ using WebKit::WebInputElement;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
-
-namespace {
-
-// The number of fields required by Autofill.  Ideally we could send the forms
-// to Autofill no matter how many fields are in the forms; however, finding the
-// label for each field is a costly operation and we can't spare the cycles if
-// it's not necessary.
-const size_t kRequiredAutofillFields = 3;
-
-}  // namespace
 
 namespace autofill {
 
@@ -77,11 +69,12 @@ FormCache::~FormCache() {
 
 void FormCache::ExtractForms(const WebFrame& frame,
                              std::vector<FormData>* forms) {
-  ExtractFormsAndFormElements(frame, forms, NULL);
+  ExtractFormsAndFormElements(frame, kRequiredAutofillFields, forms, NULL);
 }
 
-void FormCache::ExtractFormsAndFormElements(
+bool FormCache::ExtractFormsAndFormElements(
     const WebFrame& frame,
+    size_t minimum_required_fields,
     std::vector<FormData>* forms,
     std::vector<WebFormElement>* web_form_elements) {
   // Reset the cache for this frame.
@@ -89,7 +82,7 @@ void FormCache::ExtractFormsAndFormElements(
 
   WebDocument document = frame.document();
   if (document.isNull())
-    return;
+    return false;
 
   web_documents_.insert(document);
 
@@ -97,6 +90,7 @@ void FormCache::ExtractFormsAndFormElements(
   document.forms(web_forms);
 
   size_t num_fields_seen = 0;
+  bool has_skipped_forms = false;
   for (size_t i = 0; i < web_forms.size(); ++i) {
     WebFormElement form_element = web_forms[i];
 
@@ -131,8 +125,10 @@ void FormCache::ExtractFormsAndFormElements(
     // To avoid overly expensive computation, we impose a minimum number of
     // allowable fields.  The corresponding maximum number of allowable fields
     // is imposed by WebFormElementToFormData().
-    if (num_editable_elements < kRequiredAutofillFields)
+    if (num_editable_elements < minimum_required_fields) {
+      has_skipped_forms = true;
       continue;
+    }
 
     FormData form;
     ExtractMask extract_mask =
@@ -147,12 +143,17 @@ void FormCache::ExtractFormsAndFormElements(
     if (num_fields_seen > kMaxParseableFields)
       break;
 
-    if (form.fields.size() >= kRequiredAutofillFields) {
+    if (form.fields.size() >= minimum_required_fields) {
       forms->push_back(form);
       if (web_form_elements)
         web_form_elements->push_back(form_element);
+    } else {
+      has_skipped_forms = true;
     }
   }
+
+  // Return true if there are any WebFormElements skipped, else false.
+  return has_skipped_forms;
 }
 
 void FormCache::ResetFrame(const WebFrame& frame) {

@@ -441,7 +441,18 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
 }
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
-                                  const TimeTicks& timestamp) {
+                                  const TimeTicks& timestamp,
+                                  bool has_more_forms) {
+  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  if (!host)
+    return;
+
+  // If whitelisted URL, fetch all the forms.
+  if (has_more_forms && !GetAutocheckoutURLPrefix().empty()) {
+    host->Send(new AutofillMsg_GetAllForms(host->GetRoutingID()));
+    return;
+  }
+
   autocheckout_manager_.OnFormsSeen();
   bool enabled = IsAutofillEnabled();
   if (!has_logged_autofill_enabled_) {

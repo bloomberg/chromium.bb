@@ -31,15 +31,17 @@ class FormCache {
   ~FormCache();
 
   // Scans the DOM in |frame| extracting and storing forms.
-  // Returns a vector of the extracted forms.
+  // Fills |forms| with extracted forms.
   void ExtractForms(const WebKit::WebFrame& frame,
                     std::vector<FormData>* forms);
 
   // Scans the DOM in |frame| extracting and storing forms.
-  // Returns a vector of the extracted forms and vector of associated web
-  // form elements.
-  void ExtractFormsAndFormElements(
+  // Fills |forms| with extracted forms and |web_form_elements| with associated
+  // web form elements. Returns true if there are unextracted forms due to
+  // |minimum_required_fields| limit, else false.
+  bool ExtractFormsAndFormElements(
       const WebKit::WebFrame& frame,
+      size_t minimum_required_fields,
       std::vector<FormData>* forms,
       std::vector<WebKit::WebFormElement>* web_form_elements);
 
