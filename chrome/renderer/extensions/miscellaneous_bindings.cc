@@ -164,22 +164,24 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
                          v8::Persistent<v8::Value> object,
                          void* parameter) {
     v8::HandleScope handle_scope;
-    GCCallbackArgs* args = reinterpret_cast<GCCallbackArgs*>(parameter);
+    GCCallbackArgs* args = static_cast<GCCallbackArgs*>(parameter);
+    v8::Handle<v8::Context> context = args->callback->CreationContext();
+    v8::Context::Scope context_scope(context);
     WebKit::WebScopedMicrotaskSuppression suppression;
-    args->callback->Call(args->callback->CreationContext()->Global(), 0, NULL);
+    // Wrap in try/catch here so that we don't call into any message/exception
+    // handlers during GC. That is a recipe for pain.
+    v8::TryCatch trycatch;
+    args->callback->Call(context->Global(), 0, NULL);
     delete args;
   }
 
   // Binds a callback to be invoked when the given object is garbage collected.
   v8::Handle<v8::Value> BindToGC(const v8::Arguments& args) {
-    if (args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction()) {
-      GCCallbackArgs* context = new GCCallbackArgs(
-          v8::Handle<v8::Object>::Cast(args[0]),
-          v8::Handle<v8::Function>::Cast(args[1]));
-      context->object.MakeWeak(context, GCCallback);
-    } else {
-      NOTREACHED();
-    }
+    CHECK(args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction());
+    GCCallbackArgs* context = new GCCallbackArgs(
+        v8::Handle<v8::Object>::Cast(args[0]),
+        v8::Handle<v8::Function>::Cast(args[1]));
+    context->object.MakeWeak(context, GCCallback);
     return v8::Undefined();
   }
 };

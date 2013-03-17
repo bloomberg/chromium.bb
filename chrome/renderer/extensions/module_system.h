@@ -168,7 +168,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
 
   // Return the named source file stored in the source map.
   // |args[0]| - the name of a source file in source_map_.
-  v8::Handle<v8::Value> GetSource(v8::Handle<v8::String> source_name);
+  v8::Handle<v8::Value> GetSource(const std::string& module_name);
 
   // Return an object that contains the native methods defined by the named
   // NativeHandler.
@@ -178,9 +178,6 @@ class ModuleSystem : public ObjectBackedNativeHandler {
 
   // Wraps |source| in a (function(require, requireNative, exports) {...}).
   v8::Handle<v8::String> WrapSource(v8::Handle<v8::String> source);
-
-  // Throws an exception in the calling JS context.
-  v8::Handle<v8::Value> ThrowException(const std::string& message);
 
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.

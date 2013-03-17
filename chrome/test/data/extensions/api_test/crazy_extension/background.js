@@ -32,17 +32,12 @@ chrome.test.runTests([
           break;
         }
         case 2: {
-          // Third test is that calling frame-dependent methods doesn't crash
-          // the renderer if the frame doesn't exist anymore.
+          // Third test is that accessing API methods doesn't crash the
+          // renderer if the frame doesn't exist anymore.
+          // TODO(kalman): this fails. Fix.
           var iframeChromeApp = iframe.contentWindow.chrome.app;
           document.body.removeChild(iframe);
-          var exception = null;
-          try {
-            iframeChromeApp.getDetails();
-          } catch (e) {
-            exception = e;
-          }
-          chrome.test.assertEq("Extension view no longer exists", exception);
+          chrome.test.assertEq(undefined, iframeChromeApp.getDetails);
           chrome.test.succeed();
           break;
         }

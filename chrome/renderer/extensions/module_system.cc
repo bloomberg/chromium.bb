@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "chrome/renderer/extensions/console.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
 
@@ -145,25 +146,25 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   // background page keeps reference to chrome object in a closed popup).
   v8::Handle<v8::Value> modules_value =
       global->GetHiddenValue(v8::String::New(kModulesField));
-  if (modules_value.IsEmpty() || modules_value->IsUndefined())
-    return ThrowException("Extension view no longer exists");
+  if (modules_value.IsEmpty() || modules_value->IsUndefined()) {
+    console::Error(v8::Context::GetCalling(),
+                   "Extension view no longer exists");
+  }
 
   v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(modules_value));
   v8::Handle<v8::Value> exports(modules->Get(module_name));
   if (!exports->IsUndefined())
     return handle_scope.Close(exports);
 
-  v8::Handle<v8::Value> source(GetSource(module_name));
+  std::string module_name_str = *v8::String::AsciiValue(module_name);
+  v8::Handle<v8::Value> source(GetSource(module_name_str));
   if (source->IsUndefined())
     return handle_scope.Close(v8::Undefined());
   v8::Handle<v8::String> wrapped_source(WrapSource(
       v8::Handle<v8::String>::Cast(source)));
   v8::Handle<v8::Function> func =
       v8::Handle<v8::Function>::Cast(RunString(wrapped_source, module_name));
-  if (func.IsEmpty()) {
-    return ThrowException(std::string(*v8::String::AsciiValue(module_name)) +
-        ": Bad source");
-  }
+  CHECK(!func.IsEmpty()) << "Bad source code for " << module_name_str;
 
   exports = v8::Object::New();
   v8::Handle<v8::Object> natives(NewInstance());
@@ -372,10 +373,8 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   return handle_scope.Close(result);
 }
 
-v8::Handle<v8::Value> ModuleSystem::GetSource(
-    v8::Handle<v8::String> source_name) {
+v8::Handle<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
   v8::HandleScope handle_scope;
-  std::string module_name = *v8::String::AsciiValue(source_name);
   if (!source_map_->Contains(module_name))
     return v8::Undefined();
   return handle_scope.Close(source_map_->GetSource(module_name));
@@ -390,7 +389,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireNative(const v8::Arguments& args) {
 v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
     const std::string& native_name) {
   if (natives_enabled_ == 0)
-    return ThrowException("Natives disabled");
+    return v8::ThrowException(v8::String::New("Natives disabled"));
   if (overridden_native_handlers_.count(native_name) > 0u)
     return RequireForJsInner(v8::String::New(native_name.c_str()));
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
@@ -406,10 +405,6 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   v8::Handle<v8::String> right = v8::String::New("\n})");
   return handle_scope.Close(
       v8::String::Concat(left, v8::String::Concat(source, right)));
-}
-
-v8::Handle<v8::Value> ModuleSystem::ThrowException(const std::string& message) {
-  return v8::ThrowException(v8::String::New(message.c_str()));
 }
 
 }  // extensions

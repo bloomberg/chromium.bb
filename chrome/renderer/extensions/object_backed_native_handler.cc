@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/renderer/extensions/console.h"
 #include "chrome/renderer/extensions/module_system.h"
 #include "v8/include/v8.h"
 
@@ -41,8 +42,9 @@ v8::Handle<v8::Value> ObjectBackedNativeHandler::Router(
   // See comment in header file for why we do this.
   if (handler_function_value.IsEmpty() ||
       handler_function_value->IsUndefined()) {
-    return v8::ThrowException(v8::String::New(
-        "Extension view no longer exists"));
+    console::Error(v8::Context::GetCalling(),
+                   "Extension view no longer exists");
+    return v8::Undefined();
   }
   DCHECK(handler_function_value->IsExternal());
   return handle_scope.Close(static_cast<HandlerFunction*>(

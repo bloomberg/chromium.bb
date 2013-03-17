@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "chrome/renderer/extensions/console.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/user_script_scheduler.h"
@@ -364,7 +365,7 @@ void ExtensionHelper::OnUpdateBrowserWindowId(int window_id) {
 
 void ExtensionHelper::OnAddMessageToConsole(ConsoleMessageLevel level,
                                             const std::string& message) {
-  AddMessageToRootConsole(level, UTF8ToUTF16(message));
+  console::AddMessage(render_view(), level, message);
 }
 
 void ExtensionHelper::OnAppWindowClosed() {
@@ -376,34 +377,6 @@ void ExtensionHelper::OnAppWindowClosed() {
   if (!chrome_v8_context)
     return;
   chrome_v8_context->CallChromeHiddenMethod("OnAppWindowClosed", 0, NULL, NULL);
-}
-
-void ExtensionHelper::AddMessageToRootConsole(ConsoleMessageLevel level,
-                                              const std::string& message) {
-  AddMessageToRootConsole(level, ASCIIToUTF16(message));
-}
-
-void ExtensionHelper::AddMessageToRootConsole(ConsoleMessageLevel level,
-                                              const string16& message) {
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    WebConsoleMessage::Level target_level = WebConsoleMessage::LevelLog;
-    switch (level) {
-      case content::CONSOLE_MESSAGE_LEVEL_DEBUG:
-        target_level = WebConsoleMessage::LevelDebug;
-        break;
-      case content::CONSOLE_MESSAGE_LEVEL_LOG:
-        target_level = WebConsoleMessage::LevelLog;
-        break;
-      case content::CONSOLE_MESSAGE_LEVEL_WARNING:
-        target_level = WebConsoleMessage::LevelWarning;
-        break;
-      case content::CONSOLE_MESSAGE_LEVEL_ERROR:
-        target_level = WebConsoleMessage::LevelError;
-        break;
-    }
-    render_view()->GetWebView()->mainFrame()->addMessageToConsole(
-        WebConsoleMessage(target_level, message));
-  }
 }
 
 }  // namespace extensions

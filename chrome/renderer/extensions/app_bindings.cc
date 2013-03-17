@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "chrome/renderer/extensions/console.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -106,8 +107,9 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrame(
 
   WebFrame* target_frame = WebFrame::frameForContext(context);
   if (!target_frame) {
-    return v8::ThrowException(
-        v8::String::New("Could not find frame for specified object."));
+    console::Error(v8::Context::GetCalling(),
+                   "Could not find frame for specified object.");
+    return v8::Undefined();
   }
 
   return GetDetailsForFrameImpl(target_frame);

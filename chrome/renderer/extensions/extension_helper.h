@@ -56,10 +56,7 @@ class ExtensionHelper
   int tab_id() const { return tab_id_; }
   int browser_window_id() const { return browser_window_id_; }
   chrome::ViewType view_type() const { return view_type_; }
-
-  // Helper to add a logging message to the root frame's console.
-  void AddMessageToRootConsole(content::ConsoleMessageLevel level,
-                               const std::string& message);
+  Dispatcher* dispatcher() const { return dispatcher_; }
 
  private:
   // RenderViewObserver implementation.
@@ -98,10 +95,6 @@ class ExtensionHelper
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
   void OnAppWindowClosed();
-
-  // Helper to add a logging message to the root frame's console.
-  void AddMessageToRootConsole(content::ConsoleMessageLevel level,
-                               const string16& message);
 
   Dispatcher* dispatcher_;
 

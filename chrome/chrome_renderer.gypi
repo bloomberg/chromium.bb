@@ -63,6 +63,8 @@
         'renderer/extensions/chrome_v8_extension.h',
         'renderer/extensions/chrome_v8_extension_handler.cc',
         'renderer/extensions/chrome_v8_extension_handler.h',
+        'renderer/extensions/console.cc',
+        'renderer/extensions/console.h',
         'renderer/extensions/content_watcher.cc',
         'renderer/extensions/content_watcher.h',
         'renderer/extensions/context_menus_custom_bindings.cc',
