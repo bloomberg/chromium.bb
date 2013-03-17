@@ -597,14 +597,15 @@ void WorkerPool::RunCheapTasks() {
 
     bool is_idle = inner_->RunCheapTasksUntilTimeLimit(time_limit);
 
-    if (base::TimeTicks::Now() >= run_cheap_tasks_time_limit_) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    if (now >= run_cheap_tasks_time_limit_) {
       TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks out of time");
       break;
     }
 
     // We must be out of cheap tasks if this happens.
     if (check_for_completed_tasks_time_.is_null() ||
-        base::TimeTicks::Now() < run_cheap_tasks_time_limit_)
+        now < check_for_completed_tasks_time_)
       break;
 
     TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks check time");
