@@ -962,7 +962,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   // contents of its texture are updated as the last thing before the frame is
   // drawn.
   if (active_tree_->hud_layer())
-    active_tree_->hud_layer()->updateHudTexture(resource_provider_.get());
+    active_tree_->hud_layer()->UpdateHudTexture(resource_provider_.get());
 
   renderer_->DrawFrame(frame->render_passes);
   // The render passes should be consumed by the renderer.
@@ -971,7 +971,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   // The next frame should start by assuming nothing has changed, and changes
   // are noted as they occur.
-  for (unsigned int i = 0; i < frame->render_surface_layer_list->size(); i++) {
+  for (size_t i = 0; i < frame->render_surface_layer_list->size(); i++) {
     (*frame->render_surface_layer_list)[i]->render_surface()->damage_tracker()->
         DidDrawDamagedArea();
   }
