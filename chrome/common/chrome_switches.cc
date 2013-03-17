@@ -1371,6 +1371,9 @@ const char kUserDataDir[]                   = "user-data-dir";
 // Uses the ClientLogin signin flow instead of the web-based signin flow.
 const char kUseClientLoginSigninFlow[]      = "use-client-login-signin-flow";
 
+// Uses experimental simple cache backend if possible.
+const char kUseSimpleCacheBackend[]         = "use-simple-cache-backend";
+
 // Specifies a custom URL for the server which reports variation data to the
 // client. Specifying this switch enables the Variations service on
 // unofficial builds. See variations_service.cc.

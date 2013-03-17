@@ -360,6 +360,7 @@ extern const char kTrackActiveVisitTime[];
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
+extern const char kUseSimpleCacheBackend[];
 extern const char kUseSpdy[];
 extern const char kUseSpellingSuggestions[];
 extern const char kMaxSpdySessionsPerDomain[];

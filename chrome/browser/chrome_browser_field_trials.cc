@@ -59,6 +59,7 @@ ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 void ChromeBrowserFieldTrials::SetupFieldTrials(
     const base::Time& install_time) {
   chrome_variations::SetupUniformityFieldTrials(install_time);
+  SetUpSimpleCacheFieldTrial();
 #if !defined(OS_ANDROID)
   SetupDesktopFieldTrials();
 #endif  // defined(OS_ANDROID)
@@ -188,6 +189,38 @@ void ChromeBrowserFieldTrials::DisableShowProfileSwitcherTrialIfNecessary() {
   if (trial && (!ProfileManager::IsMultipleProfilesEnabled() ||
                 avatar_menu_always_hidden)) {
     trial->Disable();
+  }
+}
+
+// Sets up the experiment. The actual cache backend choice is made in the net/
+// internals by looking at the experiment state.
+void ChromeBrowserFieldTrials::SetUpSimpleCacheFieldTrial() {
+  if (parsed_command_line_.HasSwitch(switches::kUseSimpleCacheBackend)) {
+    const std::string opt_value = parsed_command_line_.GetSwitchValueASCII(
+        switches::kUseSimpleCacheBackend);
+    if (LowerCaseEqualsASCII(opt_value, "off")) {
+      // This is the default.
+      return;
+    }
+    const base::FieldTrial::Probability kDivisor = 100;
+    scoped_refptr<base::FieldTrial> trial(
+        base::FieldTrialList::FactoryGetFieldTrial("SimpleCacheTrial", kDivisor,
+                                                   "No", 2013, 12, 31, NULL));
+    trial->UseOneTimeRandomization();
+    if (LowerCaseEqualsASCII(opt_value, "on")) {
+      trial->AppendGroup("Yes", 100);
+      return;
+    }
+#if defined(OS_ANDROID)
+    if (LowerCaseEqualsASCII(opt_value, "experiment")) {
+      // TODO(pasko): Make this the default on Android when the simple cache
+      // adds a few more necessary features. Also adjust the probability.
+      const base::FieldTrial::Probability kSimpleCacheProbability = 1;
+      trial->AppendGroup("Yes", kSimpleCacheProbability);
+      trial->AppendGroup("Control", kSimpleCacheProbability);
+      trial->group();
+    }
+#endif
   }
 }
 

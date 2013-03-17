@@ -65,6 +65,9 @@ class ChromeBrowserFieldTrials {
   // TCP sockets on Windows instead of overlapped I/O.
   void WindowsOverlappedTCPReadsFieldTrial();
 
+  // A field trial to check the simple cache performance.
+  void SetUpSimpleCacheFieldTrial();
+
   // Instantiates dynamic trials by querying their state, to ensure they get
   // reported as used.
   void InstantiateDynamicTrials();
