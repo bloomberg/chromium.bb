@@ -6,96 +6,110 @@
 
 #include "base/debug/trace_event.h"
 #include "build/build_config.h"
-#include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/gl_renderer.h"  // For the GLC() macro.
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
-AcceleratedTextureCopier::AcceleratedTextureCopier(WebKit::WebGraphicsContext3D* context, bool usingBindUniforms)
-    : m_context(context)
-    , m_usingBindUniforms(usingBindUniforms)
-{
-    DCHECK(m_context);
-    GLC(m_context, m_fbo = m_context->createFramebuffer());
-    GLC(m_context, m_positionBuffer = m_context->createBuffer());
+AcceleratedTextureCopier::AcceleratedTextureCopier(
+    WebKit::WebGraphicsContext3D* context,
+    bool using_bind_uniforms)
+    : context_(context), using_bind_uniforms_(using_bind_uniforms) {
+  DCHECK(context_);
+  GLC(context_, fbo_ = context_->createFramebuffer());
+  GLC(context_, position_buffer_ = context_->createBuffer());
 
-    static const float kPositions[4][4] = {
-        {-1, -1, 0, 1},
-        { 1, -1, 0, 1},
-        { 1, 1, 0, 1},
-        {-1, 1, 0, 1}
-    };
+  static const float kPositions[4][4] = { { -1, -1, 0, 1 }, { 1, -1, 0, 1 },
+                                          { 1, 1, 0, 1 }, { -1, 1, 0, 1 } };
 
-    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, m_positionBuffer));
-    GLC(m_context, m_context->bufferData(GL_ARRAY_BUFFER, sizeof(kPositions), kPositions, GL_STATIC_DRAW));
-    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, 0));
+  GLC(context_, context_->bindBuffer(GL_ARRAY_BUFFER, position_buffer_));
+  GLC(context_,
+      context_->bufferData(
+          GL_ARRAY_BUFFER, sizeof(kPositions), kPositions, GL_STATIC_DRAW));
+  GLC(context_, context_->bindBuffer(GL_ARRAY_BUFFER, 0));
 
-    m_blitProgram.reset(new BlitProgram(m_context));
+  blit_program_.reset(new BlitProgram(context_));
 }
 
-AcceleratedTextureCopier::~AcceleratedTextureCopier()
-{
-    if (m_blitProgram)
-        m_blitProgram->Cleanup(m_context);
-    if (m_positionBuffer)
-        GLC(m_context, m_context->deleteBuffer(m_positionBuffer));
-    if (m_fbo)
-        GLC(m_context, m_context->deleteFramebuffer(m_fbo));
+AcceleratedTextureCopier::~AcceleratedTextureCopier() {
+  if (blit_program_)
+    blit_program_->Cleanup(context_);
+  if (position_buffer_)
+    GLC(context_, context_->deleteBuffer(position_buffer_));
+  if (fbo_)
+    GLC(context_, context_->deleteFramebuffer(fbo_));
 }
 
-void AcceleratedTextureCopier::copyTexture(Parameters parameters)
-{
-    TRACE_EVENT0("cc", "TextureCopier::copyTexture");
+void AcceleratedTextureCopier::CopyTexture(Parameters parameters) {
+  TRACE_EVENT0("cc", "TextureCopier::CopyTexture");
 
-    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
+  GLC(context_, context_->disable(GL_SCISSOR_TEST));
 
-    // Note: this code does not restore the viewport, bound program, 2D texture, framebuffer, buffer or blend enable.
-    GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo));
-    GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, parameters.destTexture, 0));
+  // Note: this code does not restore the viewport, bound program, 2D texture,
+  // framebuffer, buffer or blend enable.
+  GLC(context_, context_->bindFramebuffer(GL_FRAMEBUFFER, fbo_));
+  GLC(context_,
+      context_->framebufferTexture2D(GL_FRAMEBUFFER,
+                                     GL_COLOR_ATTACHMENT0,
+                                     GL_TEXTURE_2D,
+                                     parameters.dest_texture,
+                                     0));
 
 #if defined(OS_ANDROID)
-    // Clear destination to improve performance on tiling GPUs.
-    // TODO: Use EXT_discard_framebuffer or skip clearing if it isn't available.
-    GLC(m_context, m_context->clear(GL_COLOR_BUFFER_BIT));
+  // Clear destination to improve performance on tiling GPUs.
+  // TODO: Use EXT_discard_framebuffer or skip clearing if it isn't available.
+  GLC(context_, context_->clear(GL_COLOR_BUFFER_BIT));
 #endif
 
-    GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, parameters.sourceTexture));
-    GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+  GLC(context_,
+      context_->bindTexture(GL_TEXTURE_2D, parameters.source_texture));
+  GLC(context_,
+      context_->texParameteri(
+          GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+  GLC(context_,
+      context_->texParameteri(
+          GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
-    if (!m_blitProgram->initialized())
-        m_blitProgram->Initialize(m_context, m_usingBindUniforms);
+  if (!blit_program_->initialized())
+    blit_program_->Initialize(context_, using_bind_uniforms_);
 
-    // TODO: Use EXT_framebuffer_blit if available.
-    GLC(m_context, m_context->useProgram(m_blitProgram->program()));
+  // TODO: Use EXT_framebuffer_blit if available.
+  GLC(context_, context_->useProgram(blit_program_->program()));
 
-    const int kPositionAttribute = 0;
-    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, m_positionBuffer));
-    GLC(m_context, m_context->vertexAttribPointer(kPositionAttribute, 4, GL_FLOAT, false, 0, 0));
-    GLC(m_context, m_context->enableVertexAttribArray(kPositionAttribute));
-    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, 0));
+  const int kPositionAttribute = 0;
+  GLC(context_, context_->bindBuffer(GL_ARRAY_BUFFER, position_buffer_));
+  GLC(context_,
+      context_->vertexAttribPointer(
+          kPositionAttribute, 4, GL_FLOAT, false, 0, 0));
+  GLC(context_, context_->enableVertexAttribArray(kPositionAttribute));
+  GLC(context_, context_->bindBuffer(GL_ARRAY_BUFFER, 0));
 
-    GLC(m_context, m_context->viewport(0, 0, parameters.size.width(), parameters.size.height()));
-    GLC(m_context, m_context->disable(GL_BLEND));
-    GLC(m_context, m_context->drawArrays(GL_TRIANGLE_FAN, 0, 4));
+  GLC(context_,
+      context_->viewport(
+          0, 0, parameters.size.width(), parameters.size.height()));
+  GLC(context_, context_->disable(GL_BLEND));
+  GLC(context_, context_->drawArrays(GL_TRIANGLE_FAN, 0, 4));
 
-    GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(m_context, m_context->disableVertexAttribArray(kPositionAttribute));
+  GLC(context_,
+      context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+  GLC(context_,
+      context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+  GLC(context_, context_->disableVertexAttribArray(kPositionAttribute));
 
-    GLC(m_context, m_context->useProgram(0));
+  GLC(context_, context_->useProgram(0));
 
-    GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0));
-    GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
-    GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, 0));
+  GLC(context_,
+      context_->framebufferTexture2D(
+          GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0));
+  GLC(context_, context_->bindFramebuffer(GL_FRAMEBUFFER, 0));
+  GLC(context_, context_->bindTexture(GL_TEXTURE_2D, 0));
 
-    GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
+  GLC(context_, context_->enable(GL_SCISSOR_TEST));
 }
 
-void AcceleratedTextureCopier::flush()
-{
-    GLC(m_context, m_context->flush());
+void AcceleratedTextureCopier::Flush() {
+  GLC(context_, context_->flush());
 }
 
 }  // namespace cc

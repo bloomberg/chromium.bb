@@ -615,7 +615,7 @@ bool ResourceProvider::Initialize() {
   base::SplitString(extensions_string, ' ', &extensions);
   bool use_map_sub = false;
   bool use_bind_uniform = false;
-  bool use_b_g_r_a = false;
+  bool use_bgra = false;
   for (size_t i = 0; i < extensions.size(); ++i) {
     if (extensions[i] == "GL_EXT_texture_storage")
       use_texture_storage_ext_ = true;
@@ -628,18 +628,18 @@ bool ResourceProvider::Initialize() {
     else if (extensions[i] == "GL_CHROMIUM_bind_uniform_location")
       use_bind_uniform = true;
     else if (extensions[i] == "GL_EXT_texture_format_BGRA8888")
-      use_b_g_r_a = true;
+      use_bgra = true;
   }
 
   texture_copier_ =
-      AcceleratedTextureCopier::create(context3d, use_bind_uniform);
+      AcceleratedTextureCopier::Create(context3d, use_bind_uniform);
 
   texture_uploader_ =
       TextureUploader::create(context3d, use_map_sub, use_shallow_flush_);
   GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE,
                                         &max_texture_size_));
   best_texture_format_ =
-      PlatformColor::BestTextureFormat(context3d, use_b_g_r_a);
+      PlatformColor::BestTextureFormat(context3d, use_bgra);
   return true;
 }
 

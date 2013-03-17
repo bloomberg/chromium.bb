@@ -194,13 +194,13 @@ void ResourceUpdateController::Finalize() {
   if (queue_->copySize()) {
     TextureCopier* copier = resource_provider_->texture_copier();
     while (queue_->copySize())
-      copier->copyTexture(queue_->takeFirstCopy());
+      copier->CopyTexture(queue_->takeFirstCopy());
 
     // If we've performed any texture copies, we need to insert a flush
     // here into the compositor context before letting the main thread
     // proceed as it may make draw calls to the source texture of one of
     // our copy operations.
-    copier->flush();
+    copier->Flush();
   }
 }
 
