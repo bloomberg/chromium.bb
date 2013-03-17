@@ -183,8 +183,8 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
 
   TiledLayerImpl* tiled_layer = static_cast<TiledLayerImpl*>(layer);
 
-  tiled_layer->setSkipsDraw(skips_draw_);
-  tiled_layer->setTilingData(*tiler_);
+  tiled_layer->set_skips_draw(skips_draw_);
+  tiled_layer->SetTilingData(*tiler_);
   std::vector<UpdatableTile*> invalid_tiles;
 
   for (LayerTilingData::TileMap::const_iterator iter = tiler_->tiles().begin();
@@ -205,11 +205,11 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
 
     if (!tile->valid_for_frame) {
       // Invalidated tiles are set so they can get different debug colors.
-      tiled_layer->pushInvalidTile(i, j);
+      tiled_layer->PushInvalidTile(i, j);
       continue;
     }
 
-    tiled_layer->pushTileProperties(
+    tiled_layer->PushTileProperties(
         i,
         j,
         tile->managed_resource()->resourceId(),

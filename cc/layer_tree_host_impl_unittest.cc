@@ -892,12 +892,12 @@ protected:
         SetBounds(gfx::Size(10, 10));
         SetContentBounds(gfx::Size(10, 10));
         SetDrawsContent(true);
-        setSkipsDraw(false);
+        set_skips_draw(false);
         draw_properties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
 
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::HasBorderTexels);
         tiler->setBounds(content_bounds());
-        setTilingData(*tiler.get());
+        SetTilingData(*tiler.get());
     }
 
 private:
@@ -1029,12 +1029,12 @@ private:
     {
         scoped_ptr<LayerTilingData> tilingData = LayerTilingData::create(gfx::Size(10, 10), LayerTilingData::NoBorderTexels);
         tilingData->setBounds(bounds());
-        setTilingData(*tilingData.get());
-        setSkipsDraw(skipsDraw);
+        SetTilingData(*tilingData.get());
+        set_skips_draw(skipsDraw);
         if (!tileMissing) {
             ResourceProvider::ResourceId resource = resourceProvider->CreateResource(gfx::Size(), GL_RGBA, ResourceProvider::TextureUsageAny);
             resourceProvider->AllocateForTesting(resource);
-            pushTileProperties(0, 0, resource, gfx::Rect(), false);
+            PushTileProperties(0, 0, resource, gfx::Rect(), false);
         }
         if (animating)
             addAnimatedTransformToLayer(*this, 10, 3, 0);
@@ -3296,12 +3296,12 @@ TEST_F(LayerTreeHostImplTest, textureCachingWithScissor)
     child->SetBounds(gfx::Size(childRect.width(), childRect.height()));
     child->SetContentBounds(child->bounds());
     child->SetDrawsContent(true);
-    child->setSkipsDraw(false);
+    child->set_skips_draw(false);
 
     // child layer has 10x10 tiles.
     scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(10, 10), LayerTilingData::HasBorderTexels);
     tiler->setBounds(child->content_bounds());
-    child->setTilingData(*tiler.get());
+    child->SetTilingData(*tiler.get());
 
     grandChild->SetAnchorPoint(gfx::PointF(0, 0));
     grandChild->SetPosition(gfx::Point(grandChildRect.x(), grandChildRect.y()));

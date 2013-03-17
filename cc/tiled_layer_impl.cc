@@ -22,263 +22,286 @@
 namespace cc {
 
 // Temporary diagnostic.
-static bool safeToDeleteDrawableTile = false;
+static bool s_safe_to_delete_drawable_tile = false;
 
 class DrawableTile : public LayerTilingData::Tile {
-public:
-    static scoped_ptr<DrawableTile> Create() { return make_scoped_ptr(new DrawableTile()); }
+ public:
+  static scoped_ptr<DrawableTile> Create() {
+    return make_scoped_ptr(new DrawableTile());
+  }
 
-    virtual ~DrawableTile() { CHECK(safeToDeleteDrawableTile); }
+  virtual ~DrawableTile() { CHECK(s_safe_to_delete_drawable_tile); }
 
-    ResourceProvider::ResourceId resourceId() const { return m_resourceId; }
-    void setResourceId(ResourceProvider::ResourceId resourceId) { m_resourceId = resourceId; }
-    bool contentsSwizzled() { return m_contentsSwizzled; }
-    void setContentsSwizzled(bool contentsSwizzled) { m_contentsSwizzled = contentsSwizzled; }
+  ResourceProvider::ResourceId resource_id() const { return resource_id_; }
+  void set_resource_id(ResourceProvider::ResourceId resource_id) {
+    resource_id_ = resource_id;
+  }
+  bool contents_swizzled() { return contents_swizzled_; }
+  void set_contents_swizzled(bool contents_swizzled) {
+    contents_swizzled_ = contents_swizzled;
+  }
 
-private:
-    DrawableTile()
-        : m_resourceId(0)
-        , m_contentsSwizzled(false) { }
+ private:
+  DrawableTile() : resource_id_(0), contents_swizzled_(false) {}
 
-    ResourceProvider::ResourceId m_resourceId;
-    bool m_contentsSwizzled;
+  ResourceProvider::ResourceId resource_id_;
+  bool contents_swizzled_;
 
-    DISALLOW_COPY_AND_ASSIGN(DrawableTile);
+  DISALLOW_COPY_AND_ASSIGN(DrawableTile);
 };
 
-TiledLayerImpl::TiledLayerImpl(LayerTreeImpl* treeImpl, int id)
-    : LayerImpl(treeImpl, id)
-    , m_skipsDraw(true)
-{
+TiledLayerImpl::TiledLayerImpl(LayerTreeImpl* tree_impl, int id)
+    : LayerImpl(tree_impl, id), skips_draw_(true) {}
+
+TiledLayerImpl::~TiledLayerImpl() {
+  s_safe_to_delete_drawable_tile = true;
+  if (tiler_)
+    tiler_->reset();
+  s_safe_to_delete_drawable_tile = false;
 }
 
-TiledLayerImpl::~TiledLayerImpl()
-{
-    safeToDeleteDrawableTile = true;
-    if (m_tiler)
-      m_tiler->reset();
-    safeToDeleteDrawableTile = false;
+ResourceProvider::ResourceId TiledLayerImpl::ContentsResourceId() const {
+  // This function is only valid for single texture layers, e.g. masks.
+  DCHECK(tiler_);
+  DCHECK(tiler_->numTilesX() == 1);
+  DCHECK(tiler_->numTilesY() == 1);
+
+  DrawableTile* tile = TileAt(0, 0);
+  ResourceProvider::ResourceId resource_id = tile ? tile->resource_id() : 0;
+  return resource_id;
 }
 
-ResourceProvider::ResourceId TiledLayerImpl::ContentsResourceId() const
-{
-    // This function is only valid for single texture layers, e.g. masks.
-    DCHECK(m_tiler);
-    DCHECK(m_tiler->numTilesX() == 1);
-    DCHECK(m_tiler->numTilesY() == 1);
-
-    DrawableTile* tile = tileAt(0, 0);
-    ResourceProvider::ResourceId resourceId = tile ? tile->resourceId() : 0;
-    return resourceId;
+void TiledLayerImpl::DumpLayerProperties(std::string* str, int indent) const {
+  str->append(IndentString(indent));
+  base::StringAppendF(str, "skipsDraw: %d\n", (!tiler_ || skips_draw_));
+  LayerImpl::DumpLayerProperties(str, indent);
 }
 
-void TiledLayerImpl::DumpLayerProperties(std::string* str, int indent) const
-{
-    str->append(IndentString(indent));
-    base::StringAppendF(str, "skipsDraw: %d\n", (!m_tiler || m_skipsDraw));
-    LayerImpl::DumpLayerProperties(str, indent);
+bool TiledLayerImpl::HasTileAt(int i, int j) const {
+  return tiler_->tileAt(i, j);
 }
 
-bool TiledLayerImpl::hasTileAt(int i, int j) const
-{
-    return m_tiler->tileAt(i, j);
+bool TiledLayerImpl::HasResourceIdForTileAt(int i, int j) const {
+  return HasTileAt(i, j) && TileAt(i, j)->resource_id();
 }
 
-bool TiledLayerImpl::hasResourceIdForTileAt(int i, int j) const
-{
-    return hasTileAt(i, j) && tileAt(i, j)->resourceId();
+DrawableTile* TiledLayerImpl::TileAt(int i, int j) const {
+  return static_cast<DrawableTile*>(tiler_->tileAt(i, j));
 }
 
-DrawableTile* TiledLayerImpl::tileAt(int i, int j) const
-{
-    return static_cast<DrawableTile*>(m_tiler->tileAt(i, j));
+DrawableTile* TiledLayerImpl::CreateTile(int i, int j) {
+  scoped_ptr<DrawableTile> tile(DrawableTile::Create());
+  DrawableTile* added_tile = tile.get();
+  tiler_->addTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
+
+  // Temporary diagnostic checks.
+  CHECK(added_tile);
+  CHECK(TileAt(i, j));
+
+  return added_tile;
 }
 
-DrawableTile* TiledLayerImpl::createTile(int i, int j)
-{
-    scoped_ptr<DrawableTile> tile(DrawableTile::Create());
-    DrawableTile* addedTile = tile.get();
-    m_tiler->addTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
-
-    // Temporary diagnostic checks.
-    CHECK(addedTile);
-    CHECK(tileAt(i, j));
-
-    return addedTile;
+void TiledLayerImpl::GetDebugBorderProperties(SkColor* color,
+                                              float* width) const {
+  *color = DebugColors::TiledContentLayerBorderColor();
+  *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
 }
 
-void TiledLayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const
-{
-    *color = DebugColors::TiledContentLayerBorderColor();
-    *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
+scoped_ptr<LayerImpl> TiledLayerImpl::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return TiledLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-scoped_ptr<LayerImpl> TiledLayerImpl::CreateLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return TiledLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
+void TiledLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+  LayerImpl::PushPropertiesTo(layer);
+
+  TiledLayerImpl* tiled_layer = static_cast<TiledLayerImpl*>(layer);
+
+  tiled_layer->set_skips_draw(skips_draw_);
+  tiled_layer->SetTilingData(*tiler_);
+
+  for (LayerTilingData::TileMap::const_iterator iter = tiler_->tiles().begin();
+       iter != tiler_->tiles().end();
+       ++iter) {
+    int i = iter->first.first;
+    int j = iter->first.second;
+    DrawableTile* tile = static_cast<DrawableTile*>(iter->second);
+
+    tiled_layer->PushTileProperties(i,
+                                    j,
+                                    tile->resource_id(),
+                                    tile->opaqueRect(),
+                                    tile->contents_swizzled());
+  }
 }
 
-void TiledLayerImpl::PushPropertiesTo(LayerImpl* layer)
-{
-    LayerImpl::PushPropertiesTo(layer);
+void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
+                                 AppendQuadsData* append_quads_data) {
+  gfx::Rect content_rect = visible_content_rect();
 
-    TiledLayerImpl* tiledLayer = static_cast<TiledLayerImpl*>(layer);
+  if (!tiler_ || tiler_->hasEmptyBounds() || content_rect.IsEmpty())
+    return;
 
-    tiledLayer->setSkipsDraw(m_skipsDraw);
-    tiledLayer->setTilingData(*m_tiler);
+  SharedQuadState* shared_quad_state =
+      quad_sink->useSharedQuadState(CreateSharedQuadState());
+  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-    for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
-        int i = iter->first.first;
-        int j = iter->first.second;
-        DrawableTile* tile = static_cast<DrawableTile*>(iter->second);
+  int left, top, right, bottom;
+  tiler_->contentRectToTileIndices(content_rect, left, top, right, bottom);
 
-        tiledLayer->pushTileProperties(i, j, tile->resourceId(), tile->opaqueRect(), tile->contentsSwizzled());
-    }
-}
-
-void TiledLayerImpl::AppendQuads(QuadSink* quadSink, AppendQuadsData* appendQuadsData)
-{
-    const gfx::Rect& contentRect = visible_content_rect();
-
-    if (!m_tiler || m_tiler->hasEmptyBounds() || contentRect.IsEmpty())
-        return;
-
-    SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
-    AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
-
-    int left, top, right, bottom;
-    m_tiler->contentRectToTileIndices(contentRect, left, top, right, bottom);
-
-    if (ShowDebugBorders()) {
-        for (int j = top; j <= bottom; ++j) {
-            for (int i = left; i <= right; ++i) {
-                DrawableTile* tile = tileAt(i, j);
-                gfx::Rect tileRect = m_tiler->tileBounds(i, j);
-                SkColor borderColor;
-                float borderWidth;
-
-                if (m_skipsDraw || !tile || !tile->resourceId()) {
-                    borderColor = DebugColors::MissingTileBorderColor();
-                    borderWidth = DebugColors::MissingTileBorderWidth(layer_tree_impl());
-                } else {
-                    borderColor = DebugColors::HighResTileBorderColor();
-                    borderWidth = DebugColors::HighResTileBorderWidth(layer_tree_impl());
-                }
-                scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
-                debugBorderQuad->SetNew(sharedQuadState, tileRect, borderColor, borderWidth);
-                quadSink->append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
-            }
-        }
-    }
-
-    if (m_skipsDraw)
-        return;
-
+  if (ShowDebugBorders()) {
     for (int j = top; j <= bottom; ++j) {
-        for (int i = left; i <= right; ++i) {
-            DrawableTile* tile = tileAt(i, j);
-            gfx::Rect tileRect = m_tiler->tileBounds(i, j);
-            gfx::Rect displayRect = tileRect;
-            tileRect.Intersect(contentRect);
+      for (int i = left; i <= right; ++i) {
+        DrawableTile* tile = TileAt(i, j);
+        gfx::Rect tile_rect = tiler_->tileBounds(i, j);
+        SkColor border_color;
+        float border_width;
 
-            // Skip empty tiles.
-            if (tileRect.IsEmpty())
-                continue;
-
-            if (!tile || !tile->resourceId()) {
-                if (DrawCheckerboardForMissingTiles()) {
-                    SkColor checkerColor;
-                    if (ShowDebugBorders())
-                        checkerColor = tile ? DebugColors::InvalidatedTileCheckerboardColor() : DebugColors::EvictedTileCheckerboardColor();
-                    else
-                        checkerColor = DebugColors::DefaultCheckerboardColor();
-
-                    scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();
-                    checkerboardQuad->SetNew(sharedQuadState, tileRect, checkerColor);
-                    if (quadSink->append(checkerboardQuad.PassAs<DrawQuad>(), appendQuadsData))
-                        appendQuadsData->numMissingTiles++;
-                } else {
-                    scoped_ptr<SolidColorDrawQuad> solidColorQuad = SolidColorDrawQuad::Create();
-                    solidColorQuad->SetNew(sharedQuadState, tileRect, background_color());
-                    if (quadSink->append(solidColorQuad.PassAs<DrawQuad>(), appendQuadsData))
-                        appendQuadsData->numMissingTiles++;
-                }
-                continue;
-            }
-
-            gfx::Rect tileOpaqueRect = contents_opaque() ? tileRect : gfx::IntersectRects(tile->opaqueRect(), contentRect);
-
-            // Keep track of how the top left has moved, so the texture can be
-            // offset the same amount.
-            gfx::Vector2d displayOffset = tileRect.origin() - displayRect.origin();
-            gfx::Vector2d textureOffset = m_tiler->textureOffset(i, j) + displayOffset;
-            gfx::RectF texCoordRect = gfx::RectF(tileRect.size()) + textureOffset;
-
-            float tileWidth = static_cast<float>(m_tiler->tileSize().width());
-            float tileHeight = static_cast<float>(m_tiler->tileSize().height());
-            gfx::Size textureSize(tileWidth, tileHeight);
-
-            scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
-            quad->SetNew(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), texCoordRect, textureSize, tile->contentsSwizzled());
-            quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        if (skips_draw_ || !tile || !tile->resource_id()) {
+          border_color = DebugColors::MissingTileBorderColor();
+          border_width = DebugColors::MissingTileBorderWidth(layer_tree_impl());
+        } else {
+          border_color = DebugColors::HighResTileBorderColor();
+          border_width = DebugColors::HighResTileBorderWidth(layer_tree_impl());
         }
+        scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
+            DebugBorderDrawQuad::Create();
+        debug_border_quad->SetNew(
+            shared_quad_state, tile_rect, border_color, border_width);
+        quad_sink->append(debug_border_quad.PassAs<DrawQuad>(),
+                          append_quads_data);
+      }
     }
+  }
+
+  if (skips_draw_)
+    return;
+
+  for (int j = top; j <= bottom; ++j) {
+    for (int i = left; i <= right; ++i) {
+      DrawableTile* tile = TileAt(i, j);
+      gfx::Rect tile_rect = tiler_->tileBounds(i, j);
+      gfx::Rect display_rect = tile_rect;
+      tile_rect.Intersect(content_rect);
+
+      // Skip empty tiles.
+      if (tile_rect.IsEmpty())
+        continue;
+
+      if (!tile || !tile->resource_id()) {
+        if (DrawCheckerboardForMissingTiles()) {
+          SkColor checker_color;
+          if (ShowDebugBorders()) {
+            checker_color =
+                tile ? DebugColors::InvalidatedTileCheckerboardColor()
+                     : DebugColors::EvictedTileCheckerboardColor();
+          } else {
+            checker_color = DebugColors::DefaultCheckerboardColor();
+          }
+
+          scoped_ptr<CheckerboardDrawQuad> checkerboard_quad =
+              CheckerboardDrawQuad::Create();
+          checkerboard_quad->SetNew(
+              shared_quad_state, tile_rect, checker_color);
+          if (quad_sink->append(checkerboard_quad.PassAs<DrawQuad>(),
+                                append_quads_data))
+            append_quads_data->numMissingTiles++;
+        } else {
+          scoped_ptr<SolidColorDrawQuad> solid_color_quad =
+              SolidColorDrawQuad::Create();
+          solid_color_quad->SetNew(
+              shared_quad_state, tile_rect, background_color());
+          if (quad_sink->append(solid_color_quad.PassAs<DrawQuad>(),
+                                append_quads_data))
+            append_quads_data->numMissingTiles++;
+        }
+        continue;
+      }
+
+      gfx::Rect tile_opaque_rect = contents_opaque() ? tile_rect :
+        gfx::IntersectRects(tile->opaqueRect(), content_rect);
+
+      // Keep track of how the top left has moved, so the texture can be
+      // offset the same amount.
+      gfx::Vector2d display_offset = tile_rect.origin() - display_rect.origin();
+      gfx::Vector2d texture_offset =
+          tiler_->textureOffset(i, j) + display_offset;
+      gfx::RectF tex_coord_rect = gfx::RectF(tile_rect.size()) + texture_offset;
+
+      float tile_width = static_cast<float>(tiler_->tileSize().width());
+      float tile_height = static_cast<float>(tiler_->tileSize().height());
+      gfx::Size texture_size(tile_width, tile_height);
+
+      scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
+      quad->SetNew(shared_quad_state,
+                   tile_rect,
+                   tile_opaque_rect,
+                   tile->resource_id(),
+                   tex_coord_rect,
+                   texture_size,
+                   tile->contents_swizzled());
+      quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+    }
+  }
 }
 
-void TiledLayerImpl::setTilingData(const LayerTilingData& tiler)
-{
-    safeToDeleteDrawableTile = true;
+void TiledLayerImpl::SetTilingData(const LayerTilingData& tiler) {
+  s_safe_to_delete_drawable_tile = true;
 
-    if (m_tiler)
-        m_tiler->reset();
-    else
-        m_tiler = LayerTilingData::create(tiler.tileSize(), tiler.hasBorderTexels() ? LayerTilingData::HasBorderTexels : LayerTilingData::NoBorderTexels);
-    *m_tiler = tiler;
+  if (tiler_) {
+    tiler_->reset();
+  } else {
+    tiler_ = LayerTilingData::create(tiler.tileSize(),
+                                     tiler.hasBorderTexels()
+                                         ? LayerTilingData::HasBorderTexels
+                                         : LayerTilingData::NoBorderTexels);
+  }
+  *tiler_ = tiler;
 
-    safeToDeleteDrawableTile = false;
+  s_safe_to_delete_drawable_tile = false;
 }
 
-void TiledLayerImpl::pushTileProperties(int i, int j, ResourceProvider::ResourceId resourceId, const gfx::Rect& opaqueRect, bool contentsSwizzled)
-{
-    DrawableTile* tile = tileAt(i, j);
-    if (!tile)
-        tile = createTile(i, j);
-    tile->setResourceId(resourceId);
-    tile->setOpaqueRect(opaqueRect);
-    tile->setContentsSwizzled(contentsSwizzled);
+void TiledLayerImpl::PushTileProperties(
+    int i,
+    int j,
+    ResourceProvider::ResourceId resource_id,
+    gfx::Rect opaque_rect,
+    bool contents_swizzled) {
+  DrawableTile* tile = TileAt(i, j);
+  if (!tile)
+    tile = CreateTile(i, j);
+  tile->set_resource_id(resource_id);
+  tile->setOpaqueRect(opaque_rect);
+  tile->set_contents_swizzled(contents_swizzled);
 }
 
-void TiledLayerImpl::pushInvalidTile(int i, int j)
-{
-    DrawableTile* tile = tileAt(i, j);
-    if (!tile)
-        tile = createTile(i, j);
-    tile->setResourceId(0);
-    tile->setOpaqueRect(gfx::Rect());
-    tile->setContentsSwizzled(false);
+void TiledLayerImpl::PushInvalidTile(int i, int j) {
+  DrawableTile* tile = TileAt(i, j);
+  if (!tile)
+    tile = CreateTile(i, j);
+  tile->set_resource_id(0);
+  tile->setOpaqueRect(gfx::Rect());
+  tile->set_contents_swizzled(false);
 }
 
-Region TiledLayerImpl::VisibleContentOpaqueRegion() const
-{
-    if (m_skipsDraw)
-        return Region();
-    if (contents_opaque())
-        return visible_content_rect();
-    return m_tiler->opaqueRegionInContentRect(visible_content_rect());
+Region TiledLayerImpl::VisibleContentOpaqueRegion() const {
+  if (skips_draw_)
+    return Region();
+  if (contents_opaque())
+    return visible_content_rect();
+  return tiler_->opaqueRegionInContentRect(visible_content_rect());
 }
 
-void TiledLayerImpl::DidLoseOutputSurface()
-{
-    safeToDeleteDrawableTile = true;
-    // Temporary diagnostic check.
-    CHECK(m_tiler);
-    m_tiler->reset();
-    safeToDeleteDrawableTile = false;
+void TiledLayerImpl::DidLoseOutputSurface() {
+  s_safe_to_delete_drawable_tile = true;
+  // Temporary diagnostic check.
+  CHECK(tiler_);
+  tiler_->reset();
+  s_safe_to_delete_drawable_tile = false;
 }
 
-const char* TiledLayerImpl::LayerTypeAsString() const
-{
-    return "ContentLayer";
+const char* TiledLayerImpl::LayerTypeAsString() const {
+  return "ContentLayer";
 }
 
 }  // namespace cc

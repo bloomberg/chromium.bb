@@ -14,7 +14,7 @@ FakeContentLayerImpl::FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id)
 FakeContentLayerImpl::~FakeContentLayerImpl() {}
 
 bool FakeContentLayerImpl::HaveResourceForTileAt(int i, int j) {
-  return hasResourceIdForTileAt(i, j);
+  return HasResourceIdForTileAt(i, j);
 }
 
 void FakeContentLayerImpl::DidLoseOutputSurface() {

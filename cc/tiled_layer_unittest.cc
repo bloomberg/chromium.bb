@@ -204,8 +204,8 @@ TEST_F(TiledLayerTest, pushDirtyTiles)
     updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 1));
 
     // Invalidates both tiles, but then only update one of them.
     layer->InvalidateContentRect(gfx::Rect(0, 0, 100, 200));
@@ -213,8 +213,8 @@ TEST_F(TiledLayerTest, pushDirtyTiles)
     updateAndPush(layer, layerImpl);
 
     // We should only have the first tile since the other tile was invalidated but not painted.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
@@ -235,8 +235,8 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 1));
 
     // Invalidates part of the top tile...
     layer->InvalidateContentRect(gfx::Rect(0, 0, 50, 50));
@@ -250,8 +250,8 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // We should still have both tiles, as part of the top tile is still unoccluded.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerTest, pushDeletedTiles)
@@ -265,8 +265,8 @@ TEST_F(TiledLayerTest, pushDeletedTiles)
     updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 1));
 
     m_resourceManager->clearPriorities();
     resourceManagerClearAllMemory(m_resourceManager.get(), m_resourceProvider.get());
@@ -276,16 +276,16 @@ TEST_F(TiledLayerTest, pushDeletedTiles)
     layerPushPropertiesTo(layer.get(), layerImpl.get());
 
     // We should now have no textures on the impl thread.
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 1));
 
     // This should recreate and update one of the deleted textures.
     layer->draw_properties().visible_content_rect = gfx::Rect(0, 0, 100, 100);
     updateAndPush(layer, layerImpl);
 
     // We should have one tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerTest, pushIdlePaintTiles)
@@ -303,7 +303,7 @@ TEST_F(TiledLayerTest, pushIdlePaintTiles)
     EXPECT_TRUE(needsUpdate);
 
     // We should have one tile on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(2, 2));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(2, 2));
 
     // For the next four updates, we should detect we still need idle painting.
     for (int i = 0; i < 4; i++) {
@@ -318,7 +318,7 @@ TEST_F(TiledLayerTest, pushIdlePaintTiles)
     // We should have pre-painted all of the surrounding tiles.
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++)
-            EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(i, j));
+            EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(i, j));
     }
 
     EXPECT_FALSE(needsUpdate);
@@ -373,7 +373,7 @@ TEST_F(TiledLayerTest, predictivePainting)
         needsUpdate = updateAndPush(layer, layerImpl);
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++)
-                EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), pushedVisibleTiles[k].Contains(i, j));
+                EXPECT_EQ(layerImpl->HasResourceIdForTileAt(i, j), pushedVisibleTiles[k].Contains(i, j));
         }
 
         // Move the transform in the same direction without invalidating.
@@ -384,7 +384,7 @@ TEST_F(TiledLayerTest, predictivePainting)
             needsUpdate = updateAndPush(layer, layerImpl);
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++)
-                    EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), pushedPrepaintTiles[k].Contains(i, j));
+                    EXPECT_EQ(layerImpl->HasResourceIdForTileAt(i, j), pushedPrepaintTiles[k].Contains(i, j));
             }
         }
 
@@ -436,18 +436,18 @@ TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
     }
 
     // Sanity check, we should have textures for the big layer.
-    EXPECT_TRUE(layerImpl1->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl1->hasResourceIdForTileAt(0, 23));
+    EXPECT_TRUE(layerImpl1->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl1->HasResourceIdForTileAt(0, 23));
 
     // We should only have the first two tiles from layer2 since
     // it failed to idle update the last tile.
-    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 1));
-    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl2->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl2->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl2->HasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl2->HasResourceIdForTileAt(0, 1));
 
     EXPECT_FALSE(needsUpdate);
-    EXPECT_FALSE(layerImpl2->hasResourceIdForTileAt(0, 2));
+    EXPECT_FALSE(layerImpl2->HasResourceIdForTileAt(0, 2));
 }
 
 TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
@@ -466,7 +466,7 @@ TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
     updateAndPush(layer, layerImpl);
 
     // We should have the prepainted tile on the impl side, but culled it during paint.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
     EXPECT_EQ(1, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
@@ -485,8 +485,8 @@ TEST_F(TiledLayerTest, pushTilesMarkedDirtyDuringPaint)
     updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
@@ -507,10 +507,10 @@ TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
                   layer2, layer2Impl);
 
     // We should have both tiles on the impl side for all layers.
-    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 1));
-    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layer1Impl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer1Impl->HasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layer2Impl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer2Impl->HasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer)
@@ -530,10 +530,10 @@ TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer)
                   layer2, layer2Impl);
 
     // We should have both tiles on the impl side for all layers.
-    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 1));
-    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layer1Impl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer1Impl->HasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layer2Impl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer2Impl->HasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
@@ -585,12 +585,12 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
         if (!runOutOfMemory[i]) {
             for (int i = 0; i < 5; ++i) {
                 for (int j = 0; j < 5; ++j)
-                    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(i, j));
+                    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(i, j));
             }
         } else {
             for (int i = 0; i < 10; ++i) {
                 for (int j = 0; j < 5; ++j)
-                    EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), i < 5);
+                    EXPECT_EQ(layerImpl->HasResourceIdForTileAt(i, j), i < 5);
             }
         }
     }
@@ -617,7 +617,7 @@ TEST_F(TiledLayerTest, idlePaintOutOfMemory)
     EXPECT_FALSE(needsUpdate);
 
     // We should have one tile on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(1, 1));
 }
 
 TEST_F(TiledLayerTest, idlePaintZeroSizedLayer)
@@ -644,7 +644,7 @@ TEST_F(TiledLayerTest, idlePaintZeroSizedLayer)
         EXPECT_FALSE(needsUpdate);
 
         // Empty layers don't have tiles.
-        EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 0));
+        EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 0));
     }
 }
 
@@ -675,7 +675,7 @@ TEST_F(TiledLayerTest, idlePaintNonVisibleLayers)
         // We should never signal idle paint, as we painted the entire layer
         // or the layer was not visible.
         EXPECT_FALSE(needsUpdate);
-        EXPECT_EQ(layerImpl->hasResourceIdForTileAt(0, 0), haveTile[i]);
+        EXPECT_EQ(layerImpl->HasResourceIdForTileAt(0, 0), haveTile[i]);
     }
 }
 
@@ -691,8 +691,8 @@ TEST_F(TiledLayerTest, invalidateFromPrepare)
     updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 1));
 
     layer->fakeLayerUpdater()->clearPrepareCount();
     // Invoke update again. As the layer is valid update shouldn't be invoked on
@@ -770,10 +770,10 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
     layer->Update(m_queue.get(), 0, NULL);
     updateTextures();
     layerPushPropertiesTo(layer.get(), layerImpl.get());
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 0));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 1));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(1, 0));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(1, 1));
 
     layer->SetNeedsDisplayRect(gfx::Rect());
     EXPECT_FLOAT_RECT_EQ(gfx::RectF(), layer->lastNeedsDisplayRect());
@@ -788,10 +788,10 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
     layer->Update(m_queue.get(), 0, NULL);
     updateTextures();
     layerPushPropertiesTo(layer.get(), layerImpl.get());
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 0));
-    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(1, 0));
+    EXPECT_TRUE(layerImpl->HasResourceIdForTileAt(1, 1));
 
     // Verify that changing the contents scale caused invalidation, and
     // that the layer-space rectangle requiring painting is not scaled.
@@ -804,10 +804,10 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
     m_resourceManager->prioritizeTextures();
 
     layerPushPropertiesTo(layer.get(), layerImpl.get());
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 0));
-    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 1));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(0, 1));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(1, 0));
+    EXPECT_FALSE(layerImpl->HasResourceIdForTileAt(1, 1));
 }
 
 TEST_F(TiledLayerTest, skipsDrawGetsReset)
@@ -1487,9 +1487,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
 
         for (unsigned i = 0; i < 3; ++i) {
             for (unsigned j = 0; j < 2; ++j)
-                EXPECT_TRUE(rootImpl->hasResourceIdForTileAt(i, j));
-            EXPECT_TRUE(childImpl->hasResourceIdForTileAt(i, 0));
-            EXPECT_TRUE(child2Impl->hasResourceIdForTileAt(i, 0));
+                EXPECT_TRUE(rootImpl->HasResourceIdForTileAt(i, j));
+            EXPECT_TRUE(childImpl->HasResourceIdForTileAt(i, 0));
+            EXPECT_TRUE(child2Impl->HasResourceIdForTileAt(i, 0));
         }
     }
     layer_tree_host_->CommitComplete();
@@ -1521,9 +1521,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
 
         for (unsigned i = 0; i < 3; ++i) {
             for (unsigned j = 0; j < 2; ++j)
-                EXPECT_TRUE(rootImpl->hasResourceIdForTileAt(i, j));
-            EXPECT_FALSE(childImpl->hasResourceIdForTileAt(i, 0));
-            EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
+                EXPECT_TRUE(rootImpl->HasResourceIdForTileAt(i, j));
+            EXPECT_FALSE(childImpl->HasResourceIdForTileAt(i, 0));
+            EXPECT_FALSE(child2Impl->HasResourceIdForTileAt(i, 0));
         }
     }
     layer_tree_host_->CommitComplete();
@@ -1556,9 +1556,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
 
         for (unsigned i = 0; i < 3; ++i) {
             for (unsigned j = 0; j < 2; ++j)
-                EXPECT_FALSE(rootImpl->hasResourceIdForTileAt(i, j));
-            EXPECT_FALSE(childImpl->hasResourceIdForTileAt(i, 0));
-            EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
+                EXPECT_FALSE(rootImpl->HasResourceIdForTileAt(i, j));
+            EXPECT_FALSE(childImpl->HasResourceIdForTileAt(i, 0));
+            EXPECT_FALSE(child2Impl->HasResourceIdForTileAt(i, 0));
         }
     }
     layer_tree_host_->CommitComplete();

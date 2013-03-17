@@ -74,8 +74,8 @@ public:
     FakeTiledLayerImpl(LayerTreeImpl* treeImpl, int id);
     virtual ~FakeTiledLayerImpl();
 
-    using cc::TiledLayerImpl::hasTileAt;
-    using cc::TiledLayerImpl::hasResourceIdForTileAt;
+    using cc::TiledLayerImpl::HasTileAt;
+    using cc::TiledLayerImpl::HasResourceIdForTileAt;
 };
 
 class FakeTiledLayer : public cc::TiledLayer {

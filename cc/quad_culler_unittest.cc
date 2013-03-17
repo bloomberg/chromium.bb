@@ -52,8 +52,8 @@ public:
         scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::Create(m_hostImpl.active_tree(), layer_id_++);
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::NoBorderTexels);
         tiler->setBounds(layerRect.size());
-        layer->setTilingData(*tiler);
-        layer->setSkipsDraw(false);
+        layer->SetTilingData(*tiler);
+        layer->set_skips_draw(false);
         layer->draw_properties().target_space_transform = drawTransform;
         layer->draw_properties().screen_space_transform = drawTransform;
         layer->draw_properties().visible_content_rect = layerRect;
@@ -66,7 +66,7 @@ public:
         for (int i = 0; i < tiler->numTilesX(); ++i)
             for (int j = 0; j < tiler->numTilesY(); ++j) {
               gfx::Rect tileOpaqueRect = opaque ? tiler->tileBounds(i, j) : gfx::IntersectRects(tiler->tileBounds(i, j), layerOpaqueRect);
-                layer->pushTileProperties(i, j, resourceId++, tileOpaqueRect, false);
+                layer->PushTileProperties(i, j, resourceId++, tileOpaqueRect, false);
             }
 
         gfx::Rect rectInTarget = MathUtil::mapClippedRect(layer->draw_transform(), layer->visible_content_rect());
