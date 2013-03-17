@@ -16,7 +16,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/webview/webview.h"
@@ -131,7 +131,8 @@ class ShellWindowDelegateView : public WidgetDelegateView,
       ColumnSet* toolbar_column_set =
           toolbar_layout->AddColumnSet(0);
       // Back button
-      back_button_ = new NativeTextButton(this, ASCIIToUTF16("Back"));
+      back_button_ = new LabelButton(this, ASCIIToUTF16("Back"));
+      back_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size back_button_size = back_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(GridLayout::CENTER,
                                     GridLayout::CENTER, 0,
@@ -139,7 +140,8 @@ class ShellWindowDelegateView : public WidgetDelegateView,
                                     back_button_size.width(),
                                     back_button_size.width() / 2);
       // Forward button
-      forward_button_ = new NativeTextButton(this, ASCIIToUTF16("Forward"));
+      forward_button_ = new LabelButton(this, ASCIIToUTF16("Forward"));
+      forward_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size forward_button_size = forward_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(GridLayout::CENTER,
                                     GridLayout::CENTER, 0,
@@ -147,7 +149,8 @@ class ShellWindowDelegateView : public WidgetDelegateView,
                                     forward_button_size.width(),
                                     forward_button_size.width() / 2);
       // Refresh button
-      refresh_button_ = new NativeTextButton(this, ASCIIToUTF16("Refresh"));
+      refresh_button_ = new LabelButton(this, ASCIIToUTF16("Refresh"));
+      refresh_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size refresh_button_size = refresh_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(GridLayout::CENTER,
                                     GridLayout::CENTER, 0,
@@ -155,7 +158,8 @@ class ShellWindowDelegateView : public WidgetDelegateView,
                                     refresh_button_size.width(),
                                     refresh_button_size.width() / 2);
       // Stop button
-      stop_button_ = new NativeTextButton(this, ASCIIToUTF16("Stop"));
+      stop_button_ = new LabelButton(this, ASCIIToUTF16("Stop"));
+      stop_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size stop_button_size = stop_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(GridLayout::CENTER,
                                     GridLayout::CENTER, 0,
@@ -254,10 +258,10 @@ class ShellWindowDelegateView : public WidgetDelegateView,
 
   // Toolbar view contains forward/backward/reload button and URL entry
   View* toolbar_view_;
-  NativeTextButton* back_button_;
-  NativeTextButton* forward_button_;
-  NativeTextButton* refresh_button_;
-  NativeTextButton* stop_button_;
+  LabelButton* back_button_;
+  LabelButton* forward_button_;
+  LabelButton* refresh_button_;
+  LabelButton* stop_button_;
   Textfield* url_entry_;
 
   // Contents view contains the web contents view
