@@ -18,6 +18,7 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/message_simple_view.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
@@ -340,6 +341,9 @@ NotificationView::NotificationView(const Notification& notification,
                                    NotificationChangeObserver* observer,
                                    bool expanded)
     : MessageView(notification, observer, expanded) {
+  // As we build the view, we'll see if any part of it is expandable.
+  bool expandable = false;
+
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
   background_view_->set_background(
@@ -353,13 +357,9 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the title view if appropriate.
   title_view_ = NULL;
   if (!notification.title().empty()) {
-    title_view_ = new views::Label(notification.title());
+    gfx::Font font = views::Label().font().DeriveFont(4);
+    title_view_ = new BoundedLabel(notification.title(), font, 1);
     title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (is_expanded())
-      title_view_->SetMultiLine(true);
-    else
-      title_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    title_view_->SetFont(title_view_->font().DeriveFont(4));
     title_view_->SetEnabledColor(kTitleColor);
     title_view_->SetBackgroundColor(kTitleBackgroundColor);
     title_view_->set_border(MakeBorder(kTextTopPadding, 3));
@@ -369,18 +369,16 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the message view if appropriate.
   message_view_ = NULL;
   if (!notification.message().empty()) {
-    message_view_ = new views::Label(notification.message());
+    size_t lines = (is_expanded() && notification.image().IsEmpty()) ? 7 : 2;
+    message_view_ = new BoundedLabel(notification.message(), lines);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
     message_view_->set_collapse_when_hidden(true);
     message_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (is_expanded())
-      message_view_->SetMultiLine(true);
-    else
-      message_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
     message_view_->SetEnabledColor(kMessageColor);
     message_view_->SetBackgroundColor(kMessageBackgroundColor);
     message_view_->set_border(MakeBorder(0, 3));
     top_view_->AddChildView(message_view_);
+    expandable = (message_view_->GetPreferredLines() > lines);
   }
 
   // Create the list item views (up to a maximum).
@@ -391,6 +389,7 @@ NotificationView::NotificationView(const Notification& notification,
     item_view->set_border(MakeBorder(0, 4));
     item_views_.push_back(item_view);
     top_view_->AddChildView(item_view);
+    expandable = true;
   }
 
   // Create the notification icon view.
@@ -408,6 +407,7 @@ NotificationView::NotificationView(const Notification& notification,
     image_view_ = new ProportionalImageView(notification.image().AsImageSkia());
     image_view_->SetVisible(is_expanded());
     bottom_view_->AddChildView(image_view_);
+    expandable = true;
   }
 
   // Create action buttons if appropriate.
@@ -425,7 +425,6 @@ NotificationView::NotificationView(const Notification& notification,
   }
 
   // Hide the expand button if appropriate.
-  bool expandable = item_views_.size() || image_view_;
   expand_button()->SetVisible(expandable && !is_expanded());
 
   // Put together the different content and control views. Layering those allows
@@ -502,8 +501,10 @@ void NotificationView::ButtonPressed(views::Button* sender,
 
   // Show and hide subviews appropriately on expansion.
   if (sender == expand_button()) {
-    if (message_view_)
-      message_view_->SetVisible(!item_views_.size());
+    if (message_view_ && !item_views_.size() && !image_view_)
+      message_view_->SetMaxLines(7);
+    else if (message_view_ && item_views_.size())
+      message_view_->SetVisible(false);
     for (size_t i = 0; i < item_views_.size(); ++i)
       item_views_[i]->SetVisible(true);
     if (image_view_)
