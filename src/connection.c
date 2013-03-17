@@ -324,7 +324,7 @@ wl_connection_read(struct wl_connection *connection)
 	msg.msg_flags = 0;
 
 	do {
-		len = wl_os_recvmsg_cloexec(connection->fd, &msg, 0);
+		len = wl_os_recvmsg_cloexec(connection->fd, &msg, MSG_DONTWAIT);
 	} while (len < 0 && errno == EINTR);
 
 	if (len <= 0)

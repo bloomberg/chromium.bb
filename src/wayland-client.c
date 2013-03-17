@@ -21,6 +21,8 @@
  * OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -83,6 +85,10 @@ struct wl_display {
 	struct wl_event_queue queue;
 	struct wl_list event_queue_list;
 	pthread_mutex_t mutex;
+
+	int reader_count;
+	uint32_t read_serial;
+	pthread_cond_t reader_cond;
 };
 
 /** \endcond */
@@ -521,6 +527,8 @@ wl_display_connect_to_fd(int fd)
 	wl_event_queue_init(&display->queue, display);
 	wl_list_init(&display->event_queue_list);
 	pthread_mutex_init(&display->mutex, NULL);
+	pthread_cond_init(&display->reader_cond, NULL);
+	display->reader_count = 0;
 
 	wl_map_insert_new(&display->objects, 0, NULL);
 
@@ -535,14 +543,19 @@ wl_display_connect_to_fd(int fd)
 	display->proxy.refcount = 1;
 
 	display->connection = wl_connection_create(display->fd);
-	if (display->connection == NULL) {
-		wl_map_release(&display->objects);
-		close(display->fd);
-		free(display);
-		return NULL;
-	}
+	if (display->connection == NULL)
+		goto err_connection;
 
 	return display;
+
+ err_connection:
+	pthread_mutex_destroy(&display->mutex);
+	pthread_cond_destroy(&display->reader_cond);
+	wl_map_release(&display->objects);
+	close(display->fd);
+	free(display);
+
+	return NULL;
 }
 
 /** Connect to a Wayland display
@@ -597,6 +610,7 @@ wl_display_disconnect(struct wl_display *display)
 	wl_map_release(&display->objects);
 	wl_event_queue_release(&display->queue);
 	pthread_mutex_destroy(&display->mutex);
+	pthread_cond_destroy(&display->reader_cond);
 	if (display->fd > 0)
 		close(display->fd);
 
@@ -849,63 +863,205 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 }
 
 static int
-dispatch_queue(struct wl_display *display,
-	       struct wl_event_queue *queue, int block)
+read_events(struct wl_display *display)
 {
-	int len, size, count, ret;
+	int total, rem, size;
+	uint32_t serial;
 
-	pthread_mutex_lock(&display->mutex);
-
-	if (display->last_error)
-		goto err_unlock;
-
-	ret = wl_connection_flush(display->connection);
-	if (ret < 0 && errno != EAGAIN) {
-		display_fatal_error(display, errno);
-		goto err_unlock;
-	}
-
-	if (block && wl_list_empty(&queue->event_list) &&
-	    pthread_equal(display->display_thread, pthread_self())) {
-		len = wl_connection_read(display->connection);
-		if (len == -1) {
-			display_fatal_error(display, errno);
-			goto err_unlock;
-		} else if (len == 0) {
-			display_fatal_error(display, EPIPE);
-			goto err_unlock;
+	display->reader_count--;
+	if (display->reader_count == 0) {
+		total = wl_connection_read(display->connection);
+		if (total == -1) {
+			if (errno != EAGAIN)
+				display_fatal_error(display, errno);
+			return -1;
 		}
-		while (len >= 8) {
-			size = queue_event(display, len);
+		for (rem = total; rem >= 8; rem -= size) {
+			size = queue_event(display, rem);
 			if (size == -1) {
 				display_fatal_error(display, errno);
-				goto err_unlock;
+				return -1;
 			} else if (size == 0) {
 				break;
 			}
-			len -= size;
 		}
-	} else if (block && wl_list_empty(&queue->event_list)) {
-		pthread_cond_wait(&queue->cond, &display->mutex);
-		if (display->last_error)
-			goto err_unlock;
+
+		display->read_serial++;
+		pthread_cond_broadcast(&display->reader_cond);
+	} else {
+		serial = display->read_serial;
+		while (display->read_serial == serial)
+			pthread_cond_wait(&display->reader_cond,
+					  &display->mutex);
 	}
+
+	return 0;
+}
+
+/** Read events from display file descriptor
+ *
+ * \param display The display context object
+ * \return 0 on success or -1 on error.  In case of error errno will
+ * be set accordingly
+ *
+ * This will read events from the file descriptor for the display.
+ * This function does not dispatch events, it only reads and queues
+ * events into their corresponding event queues.  If no data is
+ * avilable on the file descriptor, wl_display_read_events() returns
+ * immediately.  To dispatch events that may have been queued, call
+ * wl_display_dispatch_pending() or
+ * wl_display_dispatch_queue_pending().
+ *
+ * Before calling this function, wl_display_prepare_read() must be
+ * called first.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT int
+wl_display_read_events(struct wl_display *display)
+{
+	int ret;
+
+	pthread_mutex_lock(&display->mutex);
+
+	ret = read_events(display);
+
+	pthread_mutex_unlock(&display->mutex);
+
+	return ret;
+}
+
+static int
+dispatch_queue(struct wl_display *display, struct wl_event_queue *queue)
+{
+	int count;
+
+	if (display->last_error)
+		goto err;
 
 	for (count = 0; !wl_list_empty(&queue->event_list); count++) {
 		dispatch_event(display, queue);
 		if (display->last_error)
-			goto err_unlock;
+			goto err;
+	}
+
+	return count;
+
+err:
+	errno = display->last_error;
+
+	return -1;
+}
+
+WL_EXPORT int
+wl_display_prepare_read_queue(struct wl_display *display,
+			      struct wl_event_queue *queue)
+{
+	int ret;
+
+	pthread_mutex_lock(&display->mutex);
+
+	if (!wl_list_empty(&queue->event_list)) {
+		errno = EAGAIN;
+		ret = -1;
+	} else {
+		display->reader_count++;
+		ret = 0;
 	}
 
 	pthread_mutex_unlock(&display->mutex);
 
-	return count;
+	return ret;
+}
 
-err_unlock:
-	errno = display->last_error;
+/** Prepare to read events after polling file descriptor
+ *
+ * \param display The display context object
+ * \return 0 on success or -1 if event queue was not empty
+ *
+ * This function must be called before reading from the file
+ * descriptor using wl_display_read_events().  Calling
+ * wl_display_prepare_read() announces the calling threads intention
+ * to read and ensures that until the thread is ready to read and
+ * calls wl_display_read_events(), no other thread will read from the
+ * file descriptor.  This only succeeds if the event queue is empty
+ * though, and if there are undispatched events in the queue, -1 is
+ * returned and errno set to EBUSY.
+ *
+ * If a thread successfully calls wl_display_prepare_read(), it must
+ * either call wl_display_read_events() when it's ready or cancel the
+ * read intention by calling wl_display_cancel_read().
+ *
+ * Use this function before polling on the display fd or to integrate
+ * the fd into a toolkit event loop in a race-free way.  Typically, a
+ * toolkit will call wl_display_dispatch_pending() before sleeping, to
+ * make sure it doesn't block with unhandled events.  Upon waking up,
+ * it will assume the file descriptor is readable and read events from
+ * the fd by calling wl_display_dispatch().  Simplified, we have:
+ *
+ *   wl_display_dispatch_pending(display);
+ *   wl_display_flush(display);
+ *   poll(fds, nfds, -1);
+ *   wl_display_dispatch(display);
+ *
+ * There are two races here: first, before blocking in poll(), the fd
+ * could become readable and another thread reads the events.  Some of
+ * these events may be for the main queue and the other thread will
+ * queue them there and then the main thread will go to sleep in
+ * poll().  This will stall the application, which could be waiting
+ * for a event to kick of the next animation frame, for example.
+ *
+ * The other race is immediately after poll(), where another thread
+ * could preempt and read events before the main thread calls
+ * wl_display_dispatch().  This call now blocks and starves the other
+ * fds in the event loop.
+ *
+ * A correct sequence would be:
+ *
+ *   while (wl_display_prepare_read(display) != 0)
+ *           wl_display_dispatch_pending(display);
+ *   wl_display_flush(display);
+ *   poll(fds, nfds, -1);
+ *   wl_display_read_events(display);
+ *   wl_display_dispatch_pending(display);
+ *
+ * Here we call wl_display_prepare_read(), which ensures that between
+ * returning from that call and eventually calling
+ * wl_display_read_events(), no other thread will read from the fd and
+ * queue events in our queue.  If the call to
+ * wl_display_prepare_read() fails, we dispatch the pending events and
+ * try again until we're successful.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT int
+wl_display_prepare_read(struct wl_display *display)
+{
+	return wl_display_prepare_read_queue(display, &display->queue);
+}
+
+/** Release exclusive access to display file descriptor
+ *
+ * \param display The display context object
+ *
+ * This releases the exclusive access.  Useful for canceling the lock
+ * when a timed out poll returns fd not readable and we're not going
+ * to read from the fd anytime soon.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT void
+wl_display_cancel_read(struct wl_display *display)
+{
+	pthread_mutex_lock(&display->mutex);
+
+	display->reader_count--;
+	if (display->reader_count == 0) {
+		display->read_serial++;
+		pthread_cond_broadcast(&display->reader_cond);
+	}
+
 	pthread_mutex_unlock(&display->mutex);
-
-	return -1;
 }
 
 /** Dispatch events in an event queue
@@ -928,7 +1084,50 @@ WL_EXPORT int
 wl_display_dispatch_queue(struct wl_display *display,
 			  struct wl_event_queue *queue)
 {
-	return dispatch_queue(display, queue, 1);
+	struct pollfd pfd[2];
+	int ret;
+
+	pthread_mutex_lock(&display->mutex);
+
+	ret = dispatch_queue(display, queue);
+	if (ret == -1)
+		goto err_unlock;
+	if (ret > 0) {
+		pthread_mutex_unlock(&display->mutex);
+		return ret;
+	}
+
+	ret = wl_connection_flush(display->connection);
+	if (ret < 0 && errno != EAGAIN) {
+		display_fatal_error(display, errno);
+		goto err_unlock;
+	}
+
+	display->reader_count++;
+
+	pthread_mutex_unlock(&display->mutex);
+
+	pfd[0].fd = display->fd;
+	pfd[0].events = POLLIN;
+	if (poll(pfd, 1, -1) == -1)
+		return -1;
+
+	pthread_mutex_lock(&display->mutex);
+
+	if (read_events(display) == -1)
+		goto err_unlock;
+
+	ret = dispatch_queue(display, queue);
+	if (ret == -1)
+		goto err_unlock;
+
+	pthread_mutex_unlock(&display->mutex);
+
+	return ret;
+
+ err_unlock:
+	pthread_mutex_unlock(&display->mutex);
+	return -1;
 }
 
 /** Dispatch pending events in an event queue
@@ -948,7 +1147,18 @@ WL_EXPORT int
 wl_display_dispatch_queue_pending(struct wl_display *display,
 				  struct wl_event_queue *queue)
 {
-	return dispatch_queue(display, queue, 0);
+	pthread_mutex_lock(&display->mutex);
+
+	if (dispatch_queue(display, queue) == -1)
+		goto err_unlock;
+
+	pthread_mutex_unlock(&display->mutex);
+
+	return 0;
+
+ err_unlock:
+	pthread_mutex_unlock(&display->mutex);
+	return -1;
 }
 
 /** Process incoming events
@@ -967,7 +1177,8 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
  * or not. For dispatching main queue events without blocking, see \ref
  * wl_display_dispatch_pending().
  *
- * \note Calling this makes the current thread the main one.
+ * \note Calling this will release the display file descriptor if this
+ * thread acquired it using wl_display_acquire_fd().
  *
  * \sa wl_display_dispatch_pending(), wl_display_dispatch_queue()
  *
@@ -976,9 +1187,7 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
 WL_EXPORT int
 wl_display_dispatch(struct wl_display *display)
 {
-	display->display_thread = pthread_self();
-
-	return dispatch_queue(display, &display->queue, 1);
+	return wl_display_dispatch_queue(display, &display->queue);
 }
 
 /** Dispatch main queue events without reading from the display fd
@@ -1022,9 +1231,7 @@ wl_display_dispatch(struct wl_display *display)
 WL_EXPORT int
 wl_display_dispatch_pending(struct wl_display *display)
 {
-	display->display_thread = pthread_self();
-
-	return dispatch_queue(display, &display->queue, 0);
+	return wl_display_dispatch_queue_pending(display, &display->queue);
 }
 
 /** Retrieve the last error occurred on a display

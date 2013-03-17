@@ -152,6 +152,12 @@ int wl_display_flush(struct wl_display *display);
 int wl_display_roundtrip(struct wl_display *display);
 struct wl_event_queue *wl_display_create_queue(struct wl_display *display);
 
+int wl_display_prepare_read_queue(struct wl_display *display,
+				  struct wl_event_queue *queue);
+int wl_display_prepare_read(struct wl_display *display);
+void wl_display_cancel_read(struct wl_display *display);
+int wl_display_read_events(struct wl_display *display);
+
 void wl_log_set_handler_client(wl_log_func_t handler);
 
 #ifdef  __cplusplus
