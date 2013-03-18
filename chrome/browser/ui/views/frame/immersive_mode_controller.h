@@ -12,7 +12,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class BrowserView;
-class RevealView;
 
 namespace views {
 class MouseWatcher;
@@ -25,6 +24,20 @@ class View;
 // rectangles.
 class ImmersiveModeController : public ui::EventHandler {
  public:
+  // Lock which keeps the top-of-window views revealed for the duration of its
+  // lifetime. See GetRevealedLock() for more details.
+  class RevealedLock {
+   public:
+    explicit RevealedLock(
+        const base::WeakPtr<ImmersiveModeController>& controller);
+    ~RevealedLock();
+
+   private:
+    base::WeakPtr<ImmersiveModeController> controller_;
+
+    DISALLOW_COPY_AND_ASSIGN(RevealedLock);
+  };
+
   ImmersiveModeController();
   virtual ~ImmersiveModeController();
 
@@ -61,9 +74,15 @@ class ImmersiveModeController : public ui::EventHandler {
   // Immediately hides the reveal view, without animating.
   void CancelReveal();
 
-  // If |reveal| performs a reveal and holds the view open until called again
-  // with |reveal| false. Immersive mode must be enabled.
-  void RevealAndLock(bool reveal);
+  // Returns a lock which will keep the top-of-window views revealed for its
+  // lifetime. Several locks can be obtained. When all of the locks are
+  // destroyed, if immersive mode is enabled and there is nothing else keeping
+  // the top-of-window views revealed, the top-of-window views will be closed.
+  // This method always returns a valid lock regardless of whether immersive
+  // mode is enabled. The lock's lifetime can span immersive mode being
+  // enabled / disabled.
+  // The caller takes ownership of the returned lock.
+  RevealedLock* GetRevealedLock() WARN_UNUSED_RESULT;
 
   // Called when the reveal view's children lose focus, may end the reveal.
   void OnRevealViewLostFocus();
@@ -92,6 +111,16 @@ class ImmersiveModeController : public ui::EventHandler {
   // Enables or disables observers for mouse move and window restore.
   void EnableWindowObservers(bool enable);
 
+  // These methods are used to increment and decrement |revealed_lock_count_|.
+  // If immersive mode is enabled, a transition from 1 to 0 in
+  // |revealed_lock_count_| closes the top-of-window views and a transition
+  // from 0 to 1 in |revealed_lock_count_| reveals the top-of-window views.
+  void LockRevealedState();
+  void UnlockRevealedState();
+
+  // Returns true if a child of |browser_view_|->top_container() has focus.
+  bool TopContainerChildHasFocus() const;
+
   // Temporarily reveals the top-of-window views while in immersive mode,
   // hiding them when the cursor exits the area of the top views. If |animate|
   // is not ANIMATE_NO, slides in the view, otherwise shows it immediately.
@@ -107,6 +136,10 @@ class ImmersiveModeController : public ui::EventHandler {
 
   // Called when the mouse exits the reveal view area, may end the reveal.
   void OnRevealViewLostMouse();
+
+  // Hides the top-of-window views if immersive mode is enabled and nothing is
+  // keeping them revealed. Optionally animates.
+  void MaybeEndReveal(Animate animate);
 
   // Hides the top-of-window views. Optionally animates.
   void EndReveal(Animate animate);
@@ -124,9 +157,7 @@ class ImmersiveModeController : public ui::EventHandler {
   // State machine for the revealed/closed animations.
   RevealState reveal_state_;
 
-  // If true, reveal will not be canceled when the mouse moves outside the
-  // top view.
-  bool reveal_locked_;
+  int revealed_lock_count_;
 
   // True if the miniature "tab indicators" should be hidden in the main browser
   // view when immersive mode is enabled.
@@ -153,6 +184,8 @@ class ImmersiveModeController : public ui::EventHandler {
   class AnimationObserver;
   scoped_ptr<AnimationObserver> slide_open_observer_;
   scoped_ptr<AnimationObserver> slide_closed_observer_;
+
+  base::WeakPtrFactory<ImmersiveModeController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);
 };

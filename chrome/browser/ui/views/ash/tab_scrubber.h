@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 
 #include "base/timer.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -68,7 +69,6 @@ class TabScrubber : public ui::EventHandler,
 
   Browser* GetActiveBrowser();
   void FinishScrub(bool activate);
-  void CancelImmersiveReveal();
 
   // Are we currently scrubbing?.
   bool scrubbing_;
@@ -89,9 +89,8 @@ class TabScrubber : public ui::EventHandler,
   int activation_delay_;
   // Set if activation_delay had been explicitly set.
   bool use_default_activation_delay_;
-  // Indicates if we were in immersive mode and forced the tabs to be
-  // revealed.
-  bool should_cancel_immersive_reveal_;
+  // Forces the tabs to be revealed if we are in immersive fullscreen.
+  scoped_ptr<ImmersiveModeController::RevealedLock> immersive_reveal_lock_;
 
   content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<TabScrubber> weak_ptr_factory_;
