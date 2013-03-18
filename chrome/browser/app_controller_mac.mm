@@ -184,8 +184,6 @@ void RecordLastRunAppBundlePath() {
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
 - (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event;
-- (void)launchPlatformApp:(NSAppleEventDescriptor*)event
-                withReply:(NSAppleEventDescriptor*)reply;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
 - (void)windowChangedToProfile:(Profile*)profile;
 - (void)checkForAnyKeyWindows;
@@ -216,11 +214,6 @@ void RecordLastRunAppBundlePath() {
           andSelector:@selector(getUrl:withReply:)
         forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
            andEventID:'OURL'];  // back to the Spyglass days.
-
-  [em setEventHandler:self
-          andSelector:@selector(launchPlatformApp:withReply:)
-        forEventClass:app_mode::kAEChromeAppClass
-           andEventID:app_mode::kAEChromeAppLaunch];
 
   // Register for various window layering changes. We use these to update
   // various UI elements (command-key equivalents, etc) when the frontmost
@@ -1144,38 +1137,6 @@ void RecordLastRunAppBundlePath() {
   gurlVector.push_back(gurl);
 
   [self openUrls:gurlVector];
-}
-
-- (void)launchPlatformApp:(NSAppleEventDescriptor*)event
-                withReply:(NSAppleEventDescriptor*)reply {
-  NSString* appId =
-      [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-  NSString* profileDir =
-      [[event paramDescriptorForKeyword:app_mode::kAEProfileDirKey]
-          stringValue];
-
-  ProfileManager* profileManager = g_browser_process->profile_manager();
-  base::FilePath path = base::FilePath(base::SysNSStringToUTF8(profileDir));
-  path = profileManager->user_data_dir().Append(path);
-  Profile* profile = profileManager->GetProfile(path);
-  if (!profile) {
-    LOG(ERROR) << "Unable to locate a suitable profile for profile directory '"
-               << profileDir << "' while trying to load app with id '"
-               << appId << "'.";
-    return;
-  }
-  ExtensionServiceInterface* extensionService =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  const extensions::Extension* extension =
-      extensionService->GetExtensionById(
-          base::SysNSStringToUTF8(appId), false);
-  if (!extension) {
-    LOG(ERROR) << "Shortcut attempted to launch nonexistent app with id '"
-               << base::SysNSStringToUTF8(appId) << "'.";
-    return;
-  }
-  chrome::OpenApplication(chrome::AppLaunchParams(
-      profile, extension, extension_misc::LAUNCH_NONE, NEW_WINDOW));
 }
 
 // Apple Event handler that receives print event from service

@@ -1,4 +1,5 @@
 include_rules = [
+  "+apps/app_shim",  # For app shim messages.
   "+breakpad",  # For Breakpad constants.
   "+chrome/plugin",  # For checking whether we're a plugin process.
   "+components/autofill/common",

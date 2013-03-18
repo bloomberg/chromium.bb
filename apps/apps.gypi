@@ -22,6 +22,10 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
+        'app_shim/app_shim_host_mac.cc',
+        'app_shim/app_shim_host_mac.h',
+        'app_shim/app_shim_host_manager_mac.h',
+        'app_shim/app_shim_host_manager_mac.mm',
         'app_launcher.cc',
         'app_launcher.h',
         'app_restore_service.cc',

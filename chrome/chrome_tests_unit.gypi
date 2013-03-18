@@ -454,6 +454,7 @@
         },
       },
       'sources': [
+        '../apps/app_shim/app_shim_host_mac_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',
         '../extensions/common/matcher/regex_set_matcher_unittest.cc',
         '../extensions/common/matcher/string_pattern_unittest.cc',

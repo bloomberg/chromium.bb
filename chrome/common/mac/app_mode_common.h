@@ -15,12 +15,16 @@
 
 namespace app_mode {
 
-// Keys for a custom 'launch platform app' Apple event. When Chrome receives
-// this event, it should launch the app specified by the direct key in the
-// event, in the profile specified by the 'pdir' key.
+// These are keys for an Apple Event ping that the app shim process sends to
+// Chrome to get confirmation that Chrome is alive. The main Chrome process
+// doesn't need to register any handlers for them -- the event is just sent for
+// the empty reply that's automatically returned by the system.
 const AEEventClass kAEChromeAppClass = 'cApp';
-const AEEventID kAEChromeAppLaunch = 'lnch';
-const AEKeyword kAEProfileDirKey = 'pdir';
+const AEEventID kAEChromeAppPing = 'ping';
+
+// The IPC socket used to communicate between app shims and Chrome will be
+// created under the user data directory with this name.
+extern const char kAppShimSocketName[];
 
 // The key under which the browser's bundle ID will be stored in the
 // app mode launcher bundle's Info.plist.
