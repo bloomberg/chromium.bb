@@ -18,7 +18,7 @@ void r(void) {
 }
 
 void l(void) {
-  printf("d");
+  printf("l");
 }
 
 void d(void) {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
    * than one call to printf, so that the optimization passes do not
    * specialize printf or inline it instead, and skip the puts() optimization.
    */
-  printf("Hello\n");
+  printf("Hello ");
   wo();
   /* It could also be printf -> putchar. */
   r();

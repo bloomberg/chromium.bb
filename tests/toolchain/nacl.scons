@@ -330,7 +330,9 @@ if env.Bit('bitcode'):
   # It currently does allow the optimizaton that converts printf -> puts,
   # even though the pexe did not link in puts.
   # https://code.google.com/p/nativeclient/issues/detail?id=3340
-  # nexe = opt_env.ComponentProgram('printf_to_puts', obj)
+  # nexe = opt_env.ComponentProgram('printf_to_puts',
+  #                                 obj,
+  #                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
   # node = env.CommandSelLdrTestNacl('printf_to_puts.out', nexe)
   # env.AddNodeToTestSuite(node,
   #                        ['toolchain_tests', 'small_tests'],
