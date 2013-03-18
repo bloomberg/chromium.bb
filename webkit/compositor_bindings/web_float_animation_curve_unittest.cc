@@ -7,8 +7,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
 
-using namespace WebKit;
+using WebKit::WebAnimationCurve;
+using WebKit::WebFloatAnimationCurve;
+using WebKit::WebFloatKeyframe;
 
+namespace webkit {
 namespace {
 
 // Tests that a float animation with one keyframe works as expected.
@@ -227,3 +230,4 @@ TEST(WebFloatAnimationCurveTest, DefaultTimingFunction) {
 }
 
 }  // namespace
+}  // namespace webkit

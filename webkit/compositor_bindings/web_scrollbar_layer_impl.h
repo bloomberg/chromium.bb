@@ -2,36 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebScrollbarLayerImpl_h
-#define WebScrollbarLayerImpl_h
+#ifndef WEBKIT_COMPOSITOR_BINDINGS_WEB_SCROLLBAR_LAYER_IMPL_H_
+#define WEBKIT_COMPOSITOR_BINDINGS_WEB_SCROLLBAR_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarLayer.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
-
-class WebLayerImpl;
 class WebScrollbar;
 class WebScrollbarThemeGeometry;
 class WebScrollbarThemePainter;
+}
 
-class WebScrollbarLayerImpl : public WebScrollbarLayer {
+namespace webkit {
+
+class WebLayerImpl;
+
+class WebScrollbarLayerImpl : public WebKit::WebScrollbarLayer {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
-      WebScrollbar*,
-      WebScrollbarThemePainter,
-      WebScrollbarThemeGeometry*);
+      WebKit::WebScrollbar* scrollbar,
+      WebKit::WebScrollbarThemePainter painter,
+      WebKit::WebScrollbarThemeGeometry* geometry);
   virtual ~WebScrollbarLayerImpl();
 
-  // WebScrollbarLayer implementation.
-  virtual WebLayer* layer();
-  virtual void setScrollLayer(WebLayer*);
+  // WebKit::WebScrollbarLayer implementation.
+  virtual WebKit::WebLayer* layer();
+  virtual void setScrollLayer(WebKit::WebLayer* layer);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebScrollbarLayerImpl);
 };
 
-}
+}  // namespace webkit
 
-#endif  // WebScrollbarLayerImpl_h
+#endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_SCROLLBAR_LAYER_IMPL_H_

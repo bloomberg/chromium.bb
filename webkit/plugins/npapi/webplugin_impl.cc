@@ -783,7 +783,7 @@ void WebPluginImpl::AcceleratedPluginSwappedIOSurface() {
     if (next_io_surface_id_) {
       if (!io_surface_layer_.get()) {
         io_surface_layer_ = cc::IOSurfaceLayer::Create();
-        web_layer_.reset(new WebKit::WebLayerImpl(io_surface_layer_));
+        web_layer_.reset(new webkit::WebLayerImpl(io_surface_layer_));
         container_->setWebLayer(web_layer_.get());
       }
       io_surface_layer_->SetIOSurfaceProperties(

@@ -15,7 +15,9 @@
 using cc::Animation;
 using cc::AnimationIdProvider;
 
-namespace WebKit {
+using WebKit::WebAnimationCurve;
+
+namespace webkit {
 
 WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& web_curve,
                                    TargetProperty target_property,
@@ -32,13 +34,13 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& web_curve,
     case WebAnimationCurve::AnimationCurveTypeFloat: {
       const WebFloatAnimationCurveImpl* float_curve_impl =
           static_cast<const WebFloatAnimationCurveImpl*>(&web_curve);
-      curve = float_curve_impl->cloneToAnimationCurve();
+      curve = float_curve_impl->CloneToAnimationCurve();
       break;
     }
     case WebAnimationCurve::AnimationCurveTypeTransform: {
       const WebTransformAnimationCurveImpl* transform_curve_impl =
           static_cast<const WebTransformAnimationCurveImpl*>(&web_curve);
-      curve = transform_curve_impl->cloneToAnimationCurve();
+      curve = transform_curve_impl->CloneToAnimationCurve();
       break;
     }
   }
@@ -53,7 +55,7 @@ WebAnimationImpl::~WebAnimationImpl() {}
 
 int WebAnimationImpl::id() { return animation_->id(); }
 
-WebAnimation::TargetProperty WebAnimationImpl::targetProperty() const {
+WebKit::WebAnimation::TargetProperty WebAnimationImpl::targetProperty() const {
   return static_cast<WebAnimationImpl::TargetProperty>(
       animation_->target_property());
 }
@@ -84,11 +86,11 @@ void WebAnimationImpl::setAlternatesDirection(bool alternates) {
   animation_->set_alternates_direction(alternates);
 }
 
-scoped_ptr<cc::Animation> WebAnimationImpl::cloneToAnimation() {
+scoped_ptr<cc::Animation> WebAnimationImpl::CloneToAnimation() {
   scoped_ptr<cc::Animation> to_return(
       animation_->Clone(cc::Animation::NonControllingInstance));
   to_return->set_needs_synchronized_start_time(true);
   return to_return.Pass();
 }
 
-}  // namespace WebKit
+}  // namespace webkit

@@ -7,7 +7,14 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemePainter.h"
 
-namespace WebKit {
+using WebKit::WebScrollbarThemePainter;
+
+namespace webkit {
+
+WebToCCScrollbarThemePainterAdapter::
+WebToCCScrollbarThemePainterAdapter(
+    scoped_ptr<WebScrollbarThemePainter> web_painter)
+    : painter_(web_painter.Pass()) {}
 
 WebToCCScrollbarThemePainterAdapter::~WebToCCScrollbarThemePainterAdapter() {}
 
@@ -70,4 +77,4 @@ void WebToCCScrollbarThemePainterAdapter::PaintThumb(SkCanvas* canvas,
   painter_->paintThumb(canvas, rect);
 }
 
-}  // namespace WebKit
+}  // namespace webkit

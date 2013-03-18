@@ -6,8 +6,9 @@
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandlerClient.h"
 
-#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, cc_name)                     \
-  COMPILE_ASSERT(int(WebKit::webkit_name) == int(cc::cc_name),                 \
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, cc_name) \
+  COMPILE_ASSERT(static_cast<int>(WebKit::webkit_name) ==  \
+                 static_cast<int>(cc::cc_name),            \
                  mismatching_enums)
 
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusOnMainThread,
@@ -37,7 +38,7 @@ WebToCCInputHandlerAdapter::~WebToCCInputHandlerAdapter() {}
 
 class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
  public:
-  ClientAdapter(cc::InputHandlerClient* client) : client_(client) {}
+  explicit ClientAdapter(cc::InputHandlerClient* client) : client_(client) {}
 
   virtual ~ClientAdapter() {}
 

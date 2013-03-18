@@ -1717,7 +1717,7 @@ void PluginInstance::UpdateLayer() {
   if (want_layer) {
     DCHECK(bound_graphics_3d_.get());
     texture_layer_ = cc::TextureLayer::Create(this);
-    web_layer_.reset(new WebKit::WebLayerImpl(texture_layer_));
+    web_layer_.reset(new webkit::WebLayerImpl(texture_layer_));
     if (fullscreen_container_)
       fullscreen_container_->SetLayer(web_layer_.get());
     else

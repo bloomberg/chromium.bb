@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
 #include "cc/layers/picture_image_layer.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -12,7 +13,11 @@
 #include "ui/gfx/point3_f.h"
 #include "webkit/compositor_bindings/web_layer_impl_fixed_bounds.h"
 
-using namespace WebKit;
+using WebKit::WebFloatPoint;
+using WebKit::WebSize;
+
+namespace webkit {
+namespace {
 
 TEST(WebLayerImplFixedBoundsTest, IdentityBounds) {
   scoped_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
@@ -187,3 +192,6 @@ TEST(WebLayerImplFixedBoundsTest, CompareToWebLayerImplComplex) {
                                         transform,
                                         sublayer_transform);
 }
+
+}  // namespace
+}  // namespace webkit

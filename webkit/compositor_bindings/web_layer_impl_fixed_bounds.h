@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebLayerImplFixedBounds_h
-#define WebLayerImplFixedBounds_h
+#ifndef WEBKIT_COMPOSITOR_BINDINGS_WEB_LAYER_IMPL_FIXED_BOUNDS_H_
+#define WEBKIT_COMPOSITOR_BINDINGS_WEB_LAYER_IMPL_FIXED_BOUNDS_H_
 
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 
-namespace WebKit {
+namespace webkit {
 
 // A special implementation of WebLayerImpl for layers that its contents
 // need to be automatically scaled when the bounds changes. The compositor
@@ -24,28 +24,31 @@ class WebLayerImplFixedBounds : public WebLayerImpl {
   virtual ~WebLayerImplFixedBounds();
 
   // WebLayerImpl overrides.
-  virtual void invalidateRect(const WebFloatRect&);
-  virtual void setAnchorPoint(const WebFloatPoint&);
-  virtual void setBounds(const WebSize&);
-  virtual WebSize bounds() const;
-  virtual void setSublayerTransform(const SkMatrix44&);
+  virtual void invalidateRect(const WebKit::WebFloatRect& rect);
+  virtual void setAnchorPoint(const WebKit::WebFloatPoint& anchor_point);
+  virtual void setBounds(const WebKit::WebSize& bounds);
+  virtual WebKit::WebSize bounds() const;
+  virtual void setSublayerTransform(const SkMatrix44& transform);
   virtual SkMatrix44 sublayerTransform() const;
-  virtual void setTransform(const SkMatrix44&);
+  virtual void setTransform(const SkMatrix44& transform);
   virtual SkMatrix44 transform() const;
 
-  WEBKIT_COMPOSITOR_BINDINGS_EXPORT void SetFixedBounds(const gfx::Size&);
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT void SetFixedBounds(gfx::Size bounds);
 
  protected:
-  void SetTransformInternal(const gfx::Transform&);
-  void SetSublayerTransformInternal(const gfx::Transform&);
+  void SetTransformInternal(const gfx::Transform& transform);
+  void SetSublayerTransformInternal(const gfx::Transform& transform);
   void UpdateLayerBoundsAndTransform();
 
   gfx::Transform original_sublayer_transform_;
   gfx::Transform original_transform_;
   gfx::Size original_bounds_;
   gfx::Size fixed_bounds_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebLayerImplFixedBounds);
 };
 
-} // namespace WebKit
+}  // namespace webkit
 
-#endif // WebLayerImplFixedBounds_h
+#endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_LAYER_IMPL_FIXED_BOUNDS_H_

@@ -10,13 +10,14 @@
 
 using cc::ScrollbarLayer;
 using cc::ScrollbarThemePainter;
+using WebKit::WebScrollbarThemePainter;
 
-namespace WebKit {
+namespace webkit {
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
-    WebScrollbar* scrollbar,
-    WebScrollbarThemePainter painter,
-    WebScrollbarThemeGeometry* geometry)
+    WebKit::WebScrollbar* scrollbar,
+    WebKit::WebScrollbarThemePainter painter,
+    WebKit::WebScrollbarThemeGeometry* geometry)
     : layer_(new WebLayerImpl(ScrollbarLayer::Create(
           make_scoped_ptr(scrollbar),
           WebToCCScrollbarThemePainterAdapter::Create(
@@ -27,11 +28,11 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {}
 
-WebLayer* WebScrollbarLayerImpl::layer() { return layer_.get(); }
+WebKit::WebLayer* WebScrollbarLayerImpl::layer() { return layer_.get(); }
 
-void WebScrollbarLayerImpl::setScrollLayer(WebLayer* layer) {
+void WebScrollbarLayerImpl::setScrollLayer(WebKit::WebLayer* layer) {
   int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
   static_cast<ScrollbarLayer*>(layer_->layer())->SetScrollLayerId(id);
 }
 
-}  // namespace WebKit
+}  // namespace webkit

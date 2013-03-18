@@ -31,9 +31,9 @@ class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
   virtual bool isIdentity() const;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebTransformOperationsImpl);
-
   cc::TransformOperations transform_operations_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebTransformOperationsImpl);
 };
 
 }  // namespace webkit

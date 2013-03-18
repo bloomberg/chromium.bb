@@ -10,14 +10,16 @@
 #include "webkit/compositor_bindings/web_animation_curve_common.h"
 #include "webkit/compositor_bindings/web_transform_operations_impl.h"
 
-namespace WebKit {
+using WebKit::WebTransformKeyframe;
+
+namespace webkit {
 
 WebTransformAnimationCurveImpl::WebTransformAnimationCurveImpl()
     : curve_(cc::KeyframedTransformAnimationCurve::Create()) {}
 
 WebTransformAnimationCurveImpl::~WebTransformAnimationCurveImpl() {}
 
-WebAnimationCurve::AnimationCurveType
+WebKit::WebAnimationCurve::AnimationCurveType
 WebTransformAnimationCurveImpl::type() const {
   return WebAnimationCurve::AnimationCurveTypeTransform;
 }
@@ -32,7 +34,7 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
       static_cast<const webkit::WebTransformOperationsImpl&>(keyframe.value())
       .AsTransformOperations();
   curve_->AddKeyframe(cc::TransformKeyframe::Create(
-      keyframe.time(), transform_operations, createTimingFunction(type)));
+      keyframe.time(), transform_operations, CreateTimingFunction(type)));
 }
 
 void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
@@ -51,8 +53,8 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
 }
 
 scoped_ptr<cc::AnimationCurve>
-WebTransformAnimationCurveImpl::cloneToAnimationCurve() const {
+WebTransformAnimationCurveImpl::CloneToAnimationCurve() const {
   return curve_->Clone();
 }
 
-}  // namespace WebKit
+}  // namespace webkit

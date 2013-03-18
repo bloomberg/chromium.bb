@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebAnimationCurveCommon_h
-#define WebAnimationCurveCommon_h
+#ifndef WEBKIT_COMPOSITOR_BINDINGS_WEB_ANIMATION_CURVE_COMMON_H_
+#define WEBKIT_COMPOSITOR_BINDINGS_WEB_ANIMATION_CURVE_COMMON_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 
 namespace cc { class TimingFunction; }
 
-namespace WebKit {
-scoped_ptr<cc::TimingFunction> createTimingFunction(
-    WebAnimationCurve::TimingFunctionType);
+namespace webkit {
+scoped_ptr<cc::TimingFunction> CreateTimingFunction(
+    WebKit::WebAnimationCurve::TimingFunctionType);
 }
 
-#endif  // WebAnimationCurveCommon_h
+#endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_ANIMATION_CURVE_COMMON_H_

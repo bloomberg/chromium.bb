@@ -49,7 +49,7 @@ void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
     background_layer_->SetBackgroundColor(
         SkColorSetARGBInline(255, 255, 255, 255));
     background_layer_->AddChild(texture_layer_);
-    web_layer_.reset(new WebKit::WebLayerImpl(background_layer_));
+    web_layer_.reset(new webkit::WebLayerImpl(background_layer_));
   }
 
   container_->setWebLayer(enable ? web_layer_.get() : NULL);

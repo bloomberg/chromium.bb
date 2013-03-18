@@ -15,7 +15,7 @@ static bool usingPictureLayer() {
   return cc::switches::IsImplSidePaintingEnabled();
 }
 
-namespace WebKit {
+namespace webkit {
 
 WebImageLayerImpl::WebImageLayerImpl() {
   if (usingPictureLayer())
@@ -26,14 +26,16 @@ WebImageLayerImpl::WebImageLayerImpl() {
 
 WebImageLayerImpl::~WebImageLayerImpl() {}
 
-WebLayer* WebImageLayerImpl::layer() { return layer_.get(); }
+WebKit::WebLayer* WebImageLayerImpl::layer() { return layer_.get(); }
 
 void WebImageLayerImpl::setBitmap(SkBitmap bitmap) {
   if (usingPictureLayer()) {
     static_cast<cc::PictureImageLayer*>(layer_->layer())->SetBitmap(bitmap);
-    static_cast<WebLayerImplFixedBounds*>(layer_.get())->SetFixedBounds(gfx::Size(bitmap.width(), bitmap.height()));
-  } else
+    static_cast<WebLayerImplFixedBounds*>(layer_.get())->SetFixedBounds(
+        gfx::Size(bitmap.width(), bitmap.height()));
+  } else {
     static_cast<cc::ImageLayer*>(layer_->layer())->SetBitmap(bitmap);
+  }
 }
 
-}  // namespace WebKit
+}  // namespace webkit

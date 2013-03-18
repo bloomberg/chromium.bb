@@ -23,7 +23,7 @@ class WebToCCVideoFrameProvider : public cc::VideoFrameProvider {
   virtual ~WebToCCVideoFrameProvider();
 
   // cc::VideoFrameProvider implementation.
-  virtual void SetVideoFrameProviderClient(Client*) OVERRIDE;
+  virtual void SetVideoFrameProviderClient(Client* client) OVERRIDE;
   virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
   virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE;
@@ -35,6 +35,8 @@ class WebToCCVideoFrameProvider : public cc::VideoFrameProvider {
   scoped_ptr<ClientAdapter> client_adapter_;
   WebKit::WebVideoFrameProvider* web_provider_;
   WebKit::WebVideoFrame* web_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebToCCVideoFrameProvider);
 };
 
 }  // namespace webkit

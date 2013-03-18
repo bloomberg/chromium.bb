@@ -25,8 +25,8 @@ WebToCCVideoFrameProvider::WebToCCVideoFrameProvider(
 
 WebToCCVideoFrameProvider::~WebToCCVideoFrameProvider() {}
 
-class WebToCCVideoFrameProvider::ClientAdapter :
-    public WebVideoFrameProvider::Client {
+class WebToCCVideoFrameProvider::ClientAdapter
+    : public WebVideoFrameProvider::Client {
  public:
   explicit ClientAdapter(cc::VideoFrameProvider::Client* cc_client)
       : cc_client_(cc_client) {}

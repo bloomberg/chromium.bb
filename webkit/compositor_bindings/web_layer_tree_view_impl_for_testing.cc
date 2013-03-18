@@ -31,7 +31,14 @@
 #include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/support/test_webkit_platform_support.h"
 
-namespace WebKit {
+using WebKit::WebColor;
+using WebKit::WebGraphicsContext3D;
+using WebKit::WebRect;
+using WebKit::WebRenderingStats;
+using WebKit::WebSize;
+
+namespace webkit {
+
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
     webkit_support::LayerTreeViewType type,
     webkit_support::DRTLayerTreeViewClient* client)
@@ -57,7 +64,8 @@ void WebLayerTreeViewImplForTesting::setSurfaceReady() {
   layer_tree_host_->SetSurfaceReady();
 }
 
-void WebLayerTreeViewImplForTesting::setRootLayer(const WebLayer& root) {
+void WebLayerTreeViewImplForTesting::setRootLayer(
+    const WebKit::WebLayer& root) {
   layer_tree_host_->SetRootLayer(
       static_cast<const WebLayerImpl*>(&root)->layer());
 }
@@ -111,7 +119,7 @@ void WebLayerTreeViewImplForTesting::setPageScaleFactorAndLimits(
 }
 
 void WebLayerTreeViewImplForTesting::startPageScaleAnimation(
-    const WebPoint& scroll,
+    const WebKit::WebPoint& scroll,
     bool use_anchor,
     float new_page_scale,
     double duration_sec) {}
@@ -233,4 +241,4 @@ WebLayerTreeViewImplForTesting::OffscreenContextProviderForCompositorThread() {
       OffscreenContextProviderForCompositorThread();
 }
 
-}  // namespace WebKit
+}  // namespace webkit

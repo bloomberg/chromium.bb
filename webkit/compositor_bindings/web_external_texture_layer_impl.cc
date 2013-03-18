@@ -11,12 +11,13 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 
-using namespace cc;
+using cc::TextureLayer;
+using cc::ResourceUpdateQueue;
 
-namespace WebKit {
+namespace webkit {
 
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
-    WebExternalTextureLayerClient* client)
+    WebKit::WebExternalTextureLayerClient* client)
     : client_(client) {
   scoped_refptr<TextureLayer> layer;
   if (client_)
@@ -31,7 +32,7 @@ WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl() {
   static_cast<TextureLayer*>(layer_->layer())->ClearClient();
 }
 
-WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
+WebKit::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
 
 void WebExternalTextureLayerImpl::setTextureId(unsigned id) {
   static_cast<TextureLayer*>(layer_->layer())->SetTextureId(id);
@@ -41,7 +42,7 @@ void WebExternalTextureLayerImpl::setFlipped(bool flipped) {
   static_cast<TextureLayer*>(layer_->layer())->SetFlipped(flipped);
 }
 
-void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect) {
+void WebExternalTextureLayerImpl::setUVRect(const WebKit::WebFloatRect& rect) {
   static_cast<TextureLayer*>(layer_->layer())->SetUV(
       gfx::PointF(rect.x, rect.y),
       gfx::PointF(rect.x + rect.width, rect.y + rect.height));
@@ -65,32 +66,32 @@ void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
   static_cast<TextureLayer*>(layer_->layer())->SetRateLimitContext(rate_limit);
 }
 
-class WebTextureUpdaterImpl : public WebTextureUpdater {
+class WebTextureUpdaterImpl : public WebKit::WebTextureUpdater {
  public:
-  explicit WebTextureUpdaterImpl(ResourceUpdateQueue& queue) : queue_(queue) {}
+  explicit WebTextureUpdaterImpl(ResourceUpdateQueue* queue) : queue_(queue) {}
 
   virtual void appendCopy(unsigned source_texture,
                           unsigned destination_texture,
-                          WebSize size) OVERRIDE {
-    TextureCopier::Parameters copy = { source_texture, destination_texture,
-                                       size };
-    queue_.appendCopy(copy);
+                          WebKit::WebSize size) OVERRIDE {
+    cc::TextureCopier::Parameters copy = { source_texture, destination_texture,
+                                           size };
+    queue_->appendCopy(copy);
   }
 
  private:
-  ResourceUpdateQueue& queue_;
+  ResourceUpdateQueue* queue_;
 };
 
 unsigned WebExternalTextureLayerImpl::prepareTexture(
     ResourceUpdateQueue& queue) {
   DCHECK(client_);
-  WebTextureUpdaterImpl updater_impl(queue);
+  WebTextureUpdaterImpl updater_impl(&queue);
   return client_->prepareTexture(updater_impl);
 }
 
-WebGraphicsContext3D* WebExternalTextureLayerImpl::context() {
+WebKit::WebGraphicsContext3D* WebExternalTextureLayerImpl::context() {
   DCHECK(client_);
   return client_->context();
 }
 
-}  // namespace WebKit
+}  // namespace webkit

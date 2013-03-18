@@ -9,7 +9,7 @@
 
 using cc::SolidColorLayer;
 
-namespace WebKit {
+namespace webkit {
 
 WebSolidColorLayerImpl::WebSolidColorLayerImpl()
     : layer_(new WebLayerImpl(SolidColorLayer::Create())) {
@@ -18,10 +18,10 @@ WebSolidColorLayerImpl::WebSolidColorLayerImpl()
 
 WebSolidColorLayerImpl::~WebSolidColorLayerImpl() {}
 
-WebLayer* WebSolidColorLayerImpl::layer() { return layer_.get(); }
+WebKit::WebLayer* WebSolidColorLayerImpl::layer() { return layer_.get(); }
 
-void WebSolidColorLayerImpl::setBackgroundColor(WebColor color) {
+void WebSolidColorLayerImpl::setBackgroundColor(WebKit::WebColor color) {
   layer_->setBackgroundColor(color);
 }
 
-}  // namespace WebKit
+}  // namespace webkit

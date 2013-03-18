@@ -16,8 +16,15 @@
 
 using cc::Animation;
 using cc::Layer;
+using WebKit::WebLayer;
+using WebKit::WebFloatPoint;
+using WebKit::WebVector;
+using WebKit::WebRect;
+using WebKit::WebSize;
+using WebKit::WebColor;
+using WebKit::WebFilterOperations;
 
-namespace WebKit {
+namespace webkit {
 
 WebLayerImpl::WebLayerImpl() : layer_(Layer::Create()) {}
 
@@ -30,7 +37,7 @@ WebLayerImpl::~WebLayerImpl() {
 
 int WebLayerImpl::id() const { return layer_->id(); }
 
-void WebLayerImpl::invalidateRect(const WebFloatRect& rect) {
+void WebLayerImpl::invalidateRect(const WebKit::WebFloatRect& rect) {
   layer_->SetNeedsDisplayRect(rect);
 }
 
@@ -157,17 +164,18 @@ void WebLayerImpl::setFilter(SkImageFilter* filter) {
   layer_->SetFilter(skia::AdoptRef(filter));
 }
 
-void WebLayerImpl::setDebugName(WebString name) {
+void WebLayerImpl::setDebugName(WebKit::WebString name) {
   layer_->SetDebugName(UTF16ToASCII(string16(name.data(), name.length())));
 }
 
-void WebLayerImpl::setAnimationDelegate(WebAnimationDelegate* delegate) {
+void WebLayerImpl::setAnimationDelegate(
+      WebKit::WebAnimationDelegate* delegate) {
   layer_->set_layer_animation_delegate(delegate);
 }
 
-bool WebLayerImpl::addAnimation(WebAnimation* animation) {
+bool WebLayerImpl::addAnimation(WebKit::WebAnimation* animation) {
   return layer_->AddAnimation(
-      static_cast<WebAnimationImpl*>(animation)->cloneToAnimation());
+      static_cast<WebAnimationImpl*>(animation)->CloneToAnimation());
 }
 
 void WebLayerImpl::removeAnimation(int animation_id) {
@@ -176,7 +184,7 @@ void WebLayerImpl::removeAnimation(int animation_id) {
 
 void WebLayerImpl::removeAnimation(
     int animation_id,
-    WebAnimation::TargetProperty target_property) {
+    WebKit::WebAnimation::TargetProperty target_property) {
   layer_->layer_animation_controller()->RemoveAnimation(
       animation_id,
       static_cast<Animation::TargetProperty>(target_property));
@@ -206,11 +214,11 @@ void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {
   layer_->SetForceRenderSurface(force_render_surface);
 }
 
-void WebLayerImpl::setScrollPosition(WebPoint position) {
+void WebLayerImpl::setScrollPosition(WebKit::WebPoint position) {
   layer_->SetScrollOffset(gfx::Point(position).OffsetFromOrigin());
 }
 
-WebPoint WebLayerImpl::scrollPosition() const {
+WebKit::WebPoint WebLayerImpl::scrollPosition() const {
   return gfx::PointAtOffsetFromOrigin(layer_->scroll_offset());
 }
 
@@ -311,7 +319,8 @@ bool WebLayerImpl::fixedToContainerLayer() const {
   return layer_->fixed_to_container_layer();
 }
 
-void WebLayerImpl::setScrollClient(WebLayerScrollClient* scroll_client) {
+void WebLayerImpl::setScrollClient(
+    WebKit::WebLayerScrollClient* scroll_client) {
   layer_->set_layer_scroll_client(scroll_client);
 }
 

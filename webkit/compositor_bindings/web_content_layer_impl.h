@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebContentLayerImpl_h
-#define WebContentLayerImpl_h
+#ifndef WEBKIT_COMPOSITOR_BINDINGS_WEB_CONTENT_LAYER_IMPL_H_
+#define WEBKIT_COMPOSITOR_BINDINGS_WEB_CONTENT_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/content_layer_client.h"
@@ -16,23 +16,24 @@ class IntRect;
 class FloatRect;
 }
 
-namespace WebKit {
-class WebContentLayerClient;
+namespace WebKit { class WebContentLayerClient; }
 
-class WebContentLayerImpl : public WebContentLayer,
+namespace webkit {
+
+class WebContentLayerImpl : public WebKit::WebContentLayer,
                             public cc::ContentLayerClient {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebContentLayerImpl(
-      WebContentLayerClient*);
+      WebKit::WebContentLayerClient*);
 
   // WebContentLayer implementation.
-  virtual WebLayer* layer();
-  virtual void setDoubleSided(bool);
-  virtual void setBoundsContainPageScale(bool);
+  virtual WebKit::WebLayer* layer();
+  virtual void setDoubleSided(bool double_sided);
+  virtual void setBoundsContainPageScale(bool contains);
   virtual bool boundsContainPageScale() const;
-  virtual void setUseLCDText(bool);
-  virtual void setDrawCheckerboardForMissingTiles(bool);
-  virtual void setAutomaticallyComputeRasterScale(bool);
+  virtual void setUseLCDText(bool use_lcd_text);
+  virtual void setDrawCheckerboardForMissingTiles(bool checkerboard);
+  virtual void setAutomaticallyComputeRasterScale(bool compute_raster);
 
  protected:
   virtual ~WebContentLayerImpl();
@@ -43,10 +44,13 @@ class WebContentLayerImpl : public WebContentLayer,
                              gfx::RectF* opaque) OVERRIDE;
 
   scoped_ptr<WebLayerImpl> layer_;
-  WebContentLayerClient* client_;
+  WebKit::WebContentLayerClient* client_;
   bool draws_content_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebContentLayerImpl);
 };
 
-}  // namespace WebKit
+}  // namespace webkit
 
-#endif  // WebContentLayerImpl_h
+#endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_CONTENT_LAYER_IMPL_H_

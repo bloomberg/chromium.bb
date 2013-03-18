@@ -6,20 +6,20 @@
 
 #include "cc/animation/timing_function.h"
 
-namespace WebKit {
+namespace webkit {
 
-scoped_ptr<cc::TimingFunction> createTimingFunction(
-    WebAnimationCurve::TimingFunctionType type) {
+scoped_ptr<cc::TimingFunction> CreateTimingFunction(
+    WebKit::WebAnimationCurve::TimingFunctionType type) {
   switch (type) {
-    case WebAnimationCurve::TimingFunctionTypeEase:
+    case WebKit::WebAnimationCurve::TimingFunctionTypeEase:
       return cc::EaseTimingFunction::create();
-    case WebAnimationCurve::TimingFunctionTypeEaseIn:
+    case WebKit::WebAnimationCurve::TimingFunctionTypeEaseIn:
       return cc::EaseInTimingFunction::create();
-    case WebAnimationCurve::TimingFunctionTypeEaseOut:
+    case WebKit::WebAnimationCurve::TimingFunctionTypeEaseOut:
       return cc::EaseOutTimingFunction::create();
-    case WebAnimationCurve::TimingFunctionTypeEaseInOut:
+    case WebKit::WebAnimationCurve::TimingFunctionTypeEaseInOut:
       return cc::EaseInOutTimingFunction::create();
-    case WebAnimationCurve::TimingFunctionTypeLinear:
+    case WebKit::WebAnimationCurve::TimingFunctionTypeLinear:
       return scoped_ptr<cc::TimingFunction>();
   }
   return scoped_ptr<cc::TimingFunction>();

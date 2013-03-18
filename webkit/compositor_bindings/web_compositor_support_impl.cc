@@ -32,7 +32,6 @@ using WebKit::WebExternalTextureLayer;
 using WebKit::WebExternalTextureLayerClient;
 using WebKit::WebFloatAnimationCurve;
 using WebKit::WebImageLayer;
-using WebKit::WebImageLayer;
 using WebKit::WebLayer;
 using WebKit::WebScrollbar;
 using WebKit::WebScrollbarLayer;
@@ -51,53 +50,53 @@ WebCompositorSupportImpl::WebCompositorSupportImpl() {}
 WebCompositorSupportImpl::~WebCompositorSupportImpl() {}
 
 WebLayer* WebCompositorSupportImpl::createLayer() {
-  return new WebKit::WebLayerImpl();
+  return new WebLayerImpl();
 }
 
 WebContentLayer* WebCompositorSupportImpl::createContentLayer(
     WebContentLayerClient* client) {
-  return new WebKit::WebContentLayerImpl(client);
+  return new WebContentLayerImpl(client);
 }
 
 WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(
     WebExternalTextureLayerClient* client) {
-  return new WebKit::WebExternalTextureLayerImpl(client);
+  return new WebExternalTextureLayerImpl(client);
 }
 
 WebKit::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {
-  return new WebKit::WebImageLayerImpl();
+  return new WebImageLayerImpl();
 }
 
 WebSolidColorLayer* WebCompositorSupportImpl::createSolidColorLayer() {
-  return new WebKit::WebSolidColorLayerImpl();
+  return new WebSolidColorLayerImpl();
 }
 
 WebVideoLayer* WebCompositorSupportImpl::createVideoLayer(
     WebKit::WebVideoFrameProvider* provider) {
-  return new WebKit::WebVideoLayerImpl(provider);
+  return new WebVideoLayerImpl(provider);
 }
 
 WebScrollbarLayer* WebCompositorSupportImpl::createScrollbarLayer(
     WebScrollbar* scrollbar,
     WebScrollbarThemePainter painter,
     WebScrollbarThemeGeometry* geometry) {
-  return new WebKit::WebScrollbarLayerImpl(scrollbar, painter, geometry);
+  return new WebScrollbarLayerImpl(scrollbar, painter, geometry);
 }
 
 WebAnimation* WebCompositorSupportImpl::createAnimation(
     const WebKit::WebAnimationCurve& curve,
     WebKit::WebAnimation::TargetProperty target,
     int animation_id) {
-  return new WebKit::WebAnimationImpl(curve, target, animation_id);
+  return new WebAnimationImpl(curve, target, animation_id, 0);
 }
 
 WebFloatAnimationCurve* WebCompositorSupportImpl::createFloatAnimationCurve() {
-  return new WebKit::WebFloatAnimationCurveImpl();
+  return new WebFloatAnimationCurveImpl();
 }
 
 WebTransformAnimationCurve*
 WebCompositorSupportImpl::createTransformAnimationCurve() {
-  return new WebKit::WebTransformAnimationCurveImpl();
+  return new WebTransformAnimationCurveImpl();
 }
 
 WebTransformOperations* WebCompositorSupportImpl::createTransformOperations() {

@@ -15,15 +15,16 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 
-using namespace cc;
+using cc::ContentLayer;
+using cc::PictureLayer;
 
-namespace WebKit {
+namespace webkit {
 
 static bool usingPictureLayer() {
   return cc::switches::IsImplSidePaintingEnabled();
 }
 
-WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
+WebContentLayerImpl::WebContentLayerImpl(WebKit::WebContentLayerClient* client)
     : client_(client) {
   if (usingPictureLayer())
     layer_ = make_scoped_ptr(new WebLayerImpl(PictureLayer::Create(this)));
@@ -39,7 +40,7 @@ WebContentLayerImpl::~WebContentLayerImpl() {
     static_cast<ContentLayer*>(layer_->layer())->ClearClient();
 }
 
-WebLayer* WebContentLayerImpl::layer() { return layer_.get(); }
+WebKit::WebLayer* WebContentLayerImpl::layer() { return layer_.get(); }
 
 void WebContentLayerImpl::setDoubleSided(bool double_sided) {
   layer_->layer()->SetDoubleSided(double_sided);
@@ -71,10 +72,10 @@ void WebContentLayerImpl::PaintContents(SkCanvas* canvas,
   if (!client_)
     return;
 
-  WebFloatRect web_opaque;
+  WebKit::WebFloatRect web_opaque;
   client_->paintContents(
       canvas, clip, layer_->layer()->can_use_lcd_text(), web_opaque);
   *opaque = web_opaque;
 }
 
-}  // namespace WebKit
+}  // namespace webkit

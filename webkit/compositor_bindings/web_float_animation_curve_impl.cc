@@ -9,15 +9,18 @@
 #include "cc/animation/timing_function.h"
 #include "webkit/compositor_bindings/web_animation_curve_common.h"
 
-namespace WebKit {
+using WebKit::WebFloatKeyframe;
+
+namespace webkit {
 
 WebFloatAnimationCurveImpl::WebFloatAnimationCurveImpl()
     : curve_(cc::KeyframedFloatAnimationCurve::Create()) {}
 
 WebFloatAnimationCurveImpl::~WebFloatAnimationCurveImpl() {}
 
-WebAnimationCurve::AnimationCurveType WebFloatAnimationCurveImpl::type() const {
-  return WebAnimationCurve::AnimationCurveTypeFloat;
+WebKit::WebAnimationCurve::AnimationCurveType
+WebFloatAnimationCurveImpl::type() const {
+  return WebKit::WebAnimationCurve::AnimationCurveTypeFloat;
 }
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe) {
@@ -27,7 +30,7 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe) {
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
                                      TimingFunctionType type) {
   curve_->AddKeyframe(cc::FloatKeyframe::Create(
-      keyframe.time, keyframe.value, createTimingFunction(type)));
+      keyframe.time, keyframe.value, CreateTimingFunction(type)));
 }
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
@@ -47,8 +50,8 @@ float WebFloatAnimationCurveImpl::getValue(double time) const {
 }
 
 scoped_ptr<cc::AnimationCurve>
-WebFloatAnimationCurveImpl::cloneToAnimationCurve() const {
+WebFloatAnimationCurveImpl::CloneToAnimationCurve() const {
   return curve_->Clone();
 }
 
-}  // namespace WebKit
+}  // namespace webkit

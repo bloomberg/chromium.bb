@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEB_RENDERING_STATS_IMPL_H_
-#define WEB_RENDERING_STATS_IMPL_H_
+#ifndef WEBKIT_COMPOSITOR_BINDINGS_WEB_RENDERING_STATS_IMPL_H_
+#define WEBKIT_COMPOSITOR_BINDINGS_WEB_RENDERING_STATS_IMPL_H_
 
 #include "cc/debug/rendering_stats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
@@ -18,4 +18,4 @@ struct WebRenderingStatsImpl : public WebRenderingStats {
 
 }  // namespace WebKit
 
-#endif  // WEB_RENDERING_STATS_IMPL_H_
+#endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_RENDERING_STATS_IMPL_H_

@@ -66,8 +66,8 @@
 #include "base/mac/mac_util.h"
 #endif
 
-using WebKit::WebLayerTreeViewImplForTesting;
 using WebKit::WebScriptController;
+using webkit::WebLayerTreeViewImplForTesting;
 
 TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
     WebKit::Platform* shadow_platform_delegate)

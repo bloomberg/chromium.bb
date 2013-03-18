@@ -538,8 +538,8 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
         static_cast<webkit_glue::WebThreadImpl*>(thread)->
         message_loop()->message_loop_proxy());
 
-  scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
-      new WebKit::WebLayerTreeViewImplForTesting(type, client));
+  scoped_ptr<webkit::WebLayerTreeViewImplForTesting> view(
+      new webkit::WebLayerTreeViewImplForTesting(type, client));
 
   if (!view->initialize(compositor_thread.Pass()))
     return NULL;

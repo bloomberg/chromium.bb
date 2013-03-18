@@ -2,45 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebExternalTextureLayerImpl_h
-#define WebExternalTextureLayerImpl_h
+#ifndef WEBKIT_COMPOSITOR_BINDINGS_WEB_EXTERNAL_TEXTURE_LAYER_IMPL_H_
+#define WEBKIT_COMPOSITOR_BINDINGS_WEB_EXTERNAL_TEXTURE_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/texture_layer_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
-namespace WebKit {
+namespace WebKit { struct WebFloatRect; }
+
+namespace webkit {
 
 class WebLayerImpl;
-struct WebFloatRect;
 
-class WebExternalTextureLayerImpl : public WebExternalTextureLayer,
+class WebExternalTextureLayerImpl : public WebKit::WebExternalTextureLayer,
                                     public cc::TextureLayerClient {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebExternalTextureLayerImpl(
-      WebExternalTextureLayerClient*);
+      WebKit::WebExternalTextureLayerClient*);
   virtual ~WebExternalTextureLayerImpl();
 
-  // WebExternalTextureLayer implementation.
-  virtual WebLayer* layer();
-  virtual void setTextureId(unsigned);
-  virtual void setFlipped(bool);
-  virtual void setUVRect(const WebFloatRect&);
-  virtual void setOpaque(bool);
-  virtual void setPremultipliedAlpha(bool);
+  // WebKit::WebExternalTextureLayer implementation.
+  virtual WebKit::WebLayer* layer();
+  virtual void setTextureId(unsigned texture_id);
+  virtual void setFlipped(bool flipped);
+  virtual void setUVRect(const WebKit::WebFloatRect& uv_rect);
+  virtual void setOpaque(bool opaque);
+  virtual void setPremultipliedAlpha(bool premultiplied);
   virtual void willModifyTexture();
-  virtual void setRateLimitContext(bool);
+  virtual void setRateLimitContext(bool rate_limit);
 
   // TextureLayerClient implementation.
   virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
-  virtual WebGraphicsContext3D* context() OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
 
  private:
-  WebExternalTextureLayerClient* client_;
+  WebKit::WebExternalTextureLayerClient* client_;
   scoped_ptr<WebLayerImpl> layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebExternalTextureLayerImpl);
 };
 
-}
+}  // namespace webkit
 
-#endif  // WebExternalTextureLayerImpl_h
+#endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_EXTERNAL_TEXTURE_LAYER_IMPL_H_
