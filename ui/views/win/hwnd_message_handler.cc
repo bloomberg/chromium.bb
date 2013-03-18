@@ -1817,21 +1817,38 @@ LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,
 LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
                                         WPARAM w_param,
                                         LPARAM l_param) {
-  LRESULT result = 0;
-  // Use a ScopedRedrawLock to avoid weird non-client painting for windows with
-  // custom frames when glass is not enabled. Otherwise, default handling is
-  // sufficient and does not produce the weird non-client painting artifacts.
-  if (delegate_->IsUsingCustomFrame() && !ui::win::IsAeroGlassEnabled() &&
-      LOWORD(l_param) >= HTLEFT && LOWORD(l_param) <= HTBOTTOMRIGHT) {
-    // Prevent classic theme custom frame artifacts on these WM_SETCUROR calls.
-    result = DefWindowProcWithRedrawLock(message, w_param, l_param);
-    // Invalidate the window to paint over any outdated window regions asap, as
-    // using a RedrawLock for WM_SETCURSOR may show content through this window.
-    InvalidateRect(hwnd(), NULL, FALSE);
-  } else {
-    SetMsgHandled(FALSE);
+  // Reimplement the necessary default behavior here. Calling DefWindowProc can
+  // trigger weird non-client painting for non-glass windows with custom frames.
+  // Using a ScopedRedrawLock to prevent caption rendering artifacts may allow
+  // content behind this window to incorrectly paint in front of this window.
+  // Invalidating the window to paint over either set of artifacts is not ideal.
+  wchar_t* cursor = IDC_ARROW;
+  switch (LOWORD(l_param)) {
+    case HTSIZE:
+      cursor = IDC_SIZENWSE;
+      break;
+    case HTLEFT:
+    case HTRIGHT:
+      cursor = IDC_SIZEWE;
+      break;
+    case HTTOP:
+    case HTBOTTOM:
+      cursor = IDC_SIZENS;
+      break;
+    case HTTOPLEFT:
+    case HTBOTTOMRIGHT:
+      cursor = IDC_SIZENWSE;
+      break;
+    case HTTOPRIGHT:
+    case HTBOTTOMLEFT:
+      cursor = IDC_SIZENESW;
+      break;
+    default:
+      // Use the default value, IDC_ARROW.
+      break;
   }
-  return result;
+  SetCursor(LoadCursor(NULL, cursor));
+  return 0;
 }
 
 void HWNDMessageHandler::OnSetFocus(HWND last_focused_window) {
