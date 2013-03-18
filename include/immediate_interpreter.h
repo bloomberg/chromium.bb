@@ -93,8 +93,9 @@ class ScrollEventBuffer {
   size_t Size() const { return size_; }
   // 0 is newest, 1 is next newest, ..., size_ - 1 is oldest.
   const ScrollEvent& Get(size_t offset) const;
-  // For efficiency, returns dist_sq and time, from which speed can be computed.
-  void GetSpeedSq(float* dist_sq, float* dt) const;
+  // For efficiency, returns dist_sq and time of the last num_events events in
+  // the buffer, from which speed can be computed.
+  void GetSpeedSq(size_t num_events, float* dist_sq, float* dt) const;
 
  private:
   scoped_array<ScrollEvent> buf_;

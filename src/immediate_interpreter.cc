@@ -279,11 +279,12 @@ const ScrollEvent& ScrollEventBuffer::Get(size_t offset) const {
   return buf_[(head_ + offset) % max_size_];
 }
 
-void ScrollEventBuffer::GetSpeedSq(float* dist_sq, float* dt) const {
+void ScrollEventBuffer::GetSpeedSq(size_t num_events, float* dist_sq,
+                                   float* dt) const {
   float dx = 0.0;
   float dy = 0.0;
   *dt = 0.0;
-  for (size_t i = 0; i < Size(); i++) {
+  for (size_t i = 0; i < Size() && i < num_events; i++) {
     const ScrollEvent& evt = Get(i);
     dx += evt.dx;
     dy += evt.dy;
@@ -310,7 +311,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       last_swipe_timestamp_(0.0),
       swipe_is_vertical_(false),
       current_gesture_type_(kGestureTypeNull),
-      scroll_buffer_(15),
+      scroll_buffer_(20),
       prev_result_high_pressure_change_(false),
       finger_metrics_(finger_metrics),
       pinch_guess_start_(-1.0),
@@ -391,7 +392,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       pinch_certain_min_movement_(prop_reg,
                                   "Pinch Certain Minimal Movement", 8.0),
       pinch_enable_(prop_reg, "Pinch Enable", 1.0),
-      fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 7),
+      fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 10),
       fling_buffer_suppress_zero_length_scrolls_(
           prop_reg, "Fling Buffer Suppress Zero Length Scrolls", 0),
       fling_buffer_min_avg_speed_(prop_reg,
@@ -1814,7 +1815,7 @@ void ImmediateInterpreter::ComputeFling(ScrollEvent* out) const {
   // Make sure fling buffer met the minimum average speed for a fling.
   float buf_dist_sq = 0.0;
   float buf_dt = 0.0;
-  scroll_buffer_.GetSpeedSq(&buf_dist_sq, &buf_dt);
+  scroll_buffer_.GetSpeedSq(fling_buffer_depth_.val_, &buf_dist_sq, &buf_dt);
   if (fling_buffer_min_avg_speed_.val_ * fling_buffer_min_avg_speed_.val_ *
       buf_dt * buf_dt > buf_dist_sq) {
     *out = zero;
