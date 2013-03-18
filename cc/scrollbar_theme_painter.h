@@ -5,7 +5,7 @@
 #ifndef CC_SCROLLBAR_THEME_PAINTER_H_
 #define CC_SCROLLBAR_THEME_PAINTER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 class SkCanvas;
 

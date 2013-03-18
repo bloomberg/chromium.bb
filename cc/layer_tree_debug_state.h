@@ -5,7 +5,7 @@
 #ifndef CC_LAYER_TREE_DEBUG_STATE_H_
 #define CC_LAYER_TREE_DEBUG_STATE_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
 

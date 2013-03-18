@@ -6,9 +6,9 @@
 #define CC_OCCLUSION_TRACKER_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/region.h"
 #include "cc/layer_iterator.h"
-#include "cc/region.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {

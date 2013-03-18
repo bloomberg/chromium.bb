@@ -5,7 +5,7 @@
 #ifndef CC_SCHEDULER_SETTINGS_H_
 #define CC_SCHEDULER_SETTINGS_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
 

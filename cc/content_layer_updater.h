@@ -5,7 +5,7 @@
 #ifndef CC_CONTENT_LAYER_UPDATER_H_
 #define CC_CONTENT_LAYER_UPDATER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_updater.h"
 #include "ui/gfx/rect.h"
 

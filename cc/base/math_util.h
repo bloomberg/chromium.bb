@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_MATH_UTIL_H_
-#define CC_MATH_UTIL_H_
+#ifndef CC_BASE_MATH_UTIL_H_
+#define CC_BASE_MATH_UTIL_H_
 
 #include <cmath>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
-#include "ui/gfx/point_f.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/point3_f.h"
+#include "ui/gfx/point_f.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
 
@@ -157,4 +157,4 @@ class CC_EXPORT MathUtil {
 
 }  // namespace cc
 
-#endif  // CC_MATH_UTIL_H_
+#endif  // CC_BASE_MATH_UTIL_H_

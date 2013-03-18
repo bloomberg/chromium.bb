@@ -5,7 +5,7 @@
 #ifndef CC_CONTENTS_SCALING_LAYER_H_
 #define CC_CONTENTS_SCALING_LAYER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer.h"
 
 namespace cc {

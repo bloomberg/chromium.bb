@@ -5,9 +5,9 @@
 #include "cc/video_layer_impl.h"
 
 #include "base/logging.h"
+#include "cc/base/math_util.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_impl.h"
-#include "cc/math_util.h"
 #include "cc/quad_sink.h"
 #include "cc/renderer.h"
 #include "cc/resource_provider.h"

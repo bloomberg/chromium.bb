@@ -6,7 +6,7 @@
 #define CC_RENDERER_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_tree_host.h"
 #include "cc/managed_memory_policy.h"
 #include "cc/render_pass.h"

@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 

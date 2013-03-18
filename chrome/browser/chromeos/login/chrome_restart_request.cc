@@ -19,7 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/timer.h"
 #include "base/values.h"
-#include "cc/switches.h"
+#include "cc/base/switches.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_constants.h"

@@ -12,9 +12,9 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layer_animation_event_observer.h"
-#include "cc/scoped_ptr_vector.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx { class Transform; }

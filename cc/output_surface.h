@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/software_output_device.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 

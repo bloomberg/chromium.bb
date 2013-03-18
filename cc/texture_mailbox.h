@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 
 namespace cc {

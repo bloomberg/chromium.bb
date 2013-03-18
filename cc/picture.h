@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPixelRef.h"

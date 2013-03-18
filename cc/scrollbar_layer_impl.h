@@ -5,7 +5,7 @@
 #ifndef CC_SCROLLBAR_LAYER_IMPL_H_
 #define CC_SCROLLBAR_LAYER_IMPL_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/scrollbar_geometry_fixed_thumb.h"
 #include "cc/scrollbar_layer_impl_base.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"

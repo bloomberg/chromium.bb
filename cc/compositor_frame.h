@@ -6,7 +6,7 @@
 #define CC_COMPOSITOR_FRAME_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/compositor_frame_metadata.h"
 #include "cc/delegated_frame_data.h"
 #include "cc/gl_frame_data.h"

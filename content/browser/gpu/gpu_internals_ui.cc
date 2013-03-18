@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "cc/switches.h"
+#include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/compositor_util.h"

@@ -27,7 +27,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "cc/thread_impl.h"
+#include "cc/base/thread_impl.h"
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"

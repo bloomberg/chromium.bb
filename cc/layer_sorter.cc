@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "cc/math_util.h"
+#include "cc/base/math_util.h"
 #include "cc/render_surface_impl.h"
 #include "ui/gfx/transform.h"
 

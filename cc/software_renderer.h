@@ -6,7 +6,7 @@
 #define CC_SOFTWARE_RENDERER_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/compositor_frame.h"
 #include "cc/direct_renderer.h"
 

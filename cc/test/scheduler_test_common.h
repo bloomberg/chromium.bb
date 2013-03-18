@@ -6,9 +6,9 @@
 #define CC_TEST_SCHEDULER_TEST_COMMON_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/base/thread.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/frame_rate_controller.h"
-#include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

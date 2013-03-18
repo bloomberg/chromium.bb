@@ -5,7 +5,7 @@
 #ifndef CC_SCROLLBAR_GEOMETRY_FIXED_THUMB_H_
 #define CC_SCROLLBAR_GEOMETRY_FIXED_THUMB_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/scrollbar_geometry_stub.h"
 #include "ui/gfx/size.h"
 

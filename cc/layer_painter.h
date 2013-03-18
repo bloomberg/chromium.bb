@@ -5,7 +5,7 @@
 #ifndef CC_LAYER_PAINTER_H_
 #define CC_LAYER_PAINTER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 class SkCanvas;
 

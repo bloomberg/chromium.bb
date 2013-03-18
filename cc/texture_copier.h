@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/program_binding.h"
 #include "cc/shader.h"
 #include "third_party/khronos/GLES2/gl2.h"

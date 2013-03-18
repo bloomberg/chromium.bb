@@ -6,7 +6,7 @@
 #define CC_DELAY_BASED_TIME_SOURCE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/time_source.h"
 
 namespace cc {

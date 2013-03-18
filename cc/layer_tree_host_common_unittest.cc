@@ -4,6 +4,8 @@
 
 #include "cc/layer_tree_host_common.h"
 
+#include "cc/base/math_util.h"
+#include "cc/base/thread.h"
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
 #include "cc/heads_up_display_layer_impl.h"
@@ -11,14 +13,12 @@
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_impl.h"
-#include "cc/math_util.h"
 #include "cc/proxy.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/quad_f.h"

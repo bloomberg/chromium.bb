@@ -4,8 +4,8 @@
 
 #include "cc/layer_sorter.h"
 
+#include "cc/base/math_util.h"
 #include "cc/layer_impl.h"
-#include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

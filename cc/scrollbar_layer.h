@@ -5,7 +5,7 @@
 #ifndef CC_SCROLLBAR_LAYER_H_
 #define CC_SCROLLBAR_LAYER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/contents_scaling_layer.h"
 #include "cc/layer_updater.h"
 #include "cc/scrollbar_theme_painter.h"

@@ -5,7 +5,7 @@
 #ifndef CC_GL_RENDERER_H_
 #define CC_GL_RENDERER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/checkerboard_draw_quad.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/direct_renderer.h"

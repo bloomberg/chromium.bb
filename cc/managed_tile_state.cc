@@ -4,7 +4,7 @@
 
 #include "cc/managed_tile_state.h"
 
-#include "cc/math_util.h"
+#include "cc/base/math_util.h"
 
 namespace cc {
 

@@ -6,7 +6,7 @@
 #define CC_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/scrollbar_animation_controller.h"
 
 namespace cc {

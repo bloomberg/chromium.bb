@@ -6,7 +6,7 @@
 #define CC_SCROLLBAR_ANIMATION_CONTROLLER_H_
 
 #include "base/time.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace cc {

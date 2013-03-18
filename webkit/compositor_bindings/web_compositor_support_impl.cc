@@ -6,9 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "cc/base/thread_impl.h"
 #include "cc/output_surface.h"
 #include "cc/software_output_device.h"
-#include "cc/thread_impl.h"
 #include "cc/transform_operations.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
 #include "webkit/compositor_bindings/web_content_layer_impl.h"

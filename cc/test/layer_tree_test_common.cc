@@ -6,6 +6,7 @@
 
 #include "cc/animation.h"
 #include "cc/animation_registrar.h"
+#include "cc/base/thread_impl.h"
 #include "cc/content_layer.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
@@ -13,7 +14,6 @@
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/single_thread_proxy.h"
-#include "cc/thread_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"

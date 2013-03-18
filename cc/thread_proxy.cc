@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "cc/base/thread.h"
 #include "cc/context_provider.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/draw_quad.h"
@@ -17,7 +18,6 @@
 #include "cc/output_surface.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/scheduler.h"
-#include "cc/thread.h"
 
 namespace {
 

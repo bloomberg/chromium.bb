@@ -5,9 +5,9 @@
 #ifndef CC_PICTURE_LAYER_TILING_SET_H_
 #define CC_PICTURE_LAYER_TILING_SET_H_
 
+#include "cc/base/region.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/picture_layer_tiling.h"
-#include "cc/region.h"
-#include "cc/scoped_ptr_vector.h"
 #include "ui/gfx/size.h"
 
 namespace cc {

@@ -5,7 +5,7 @@
 #ifndef CC_SCROLLBAR_LAYER_IMPL_BASE_H_
 #define CC_SCROLLBAR_LAYER_IMPL_BASE_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 

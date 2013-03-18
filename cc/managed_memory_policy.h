@@ -6,7 +6,7 @@
 #define CC_MANAGED_MEMORY_POLICY_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/tile_priority.h"
 
 namespace cc {

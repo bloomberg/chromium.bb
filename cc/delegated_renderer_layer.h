@@ -5,7 +5,7 @@
 #ifndef CC_DELEGATED_RENDERER_LAYER_H_
 #define CC_DELEGATED_RENDERER_LAYER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer.h"
 #include "cc/transferable_resource.h"
 

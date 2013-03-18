@@ -13,12 +13,12 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "cc/base/worker_pool.h"
 #include "cc/memory_history.h"
 #include "cc/picture_pile_impl.h"
 #include "cc/rendering_stats.h"
 #include "cc/resource_pool.h"
 #include "cc/tile_priority.h"
-#include "cc/worker_pool.h"
 
 namespace cc {
 class RasterWorkerPool;

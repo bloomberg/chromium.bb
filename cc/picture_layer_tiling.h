@@ -8,12 +8,12 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
-#include "cc/hash_pair.h"
-#include "cc/region.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/hash_pair.h"
+#include "cc/base/region.h"
+#include "cc/base/tiling_data.h"
 #include "cc/tile.h"
 #include "cc/tile_priority.h"
-#include "cc/tiling_data.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {

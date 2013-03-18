@@ -15,7 +15,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/context_provider.h"
 #include "cc/output_surface.h"
 #include "cc/texture_copier.h"

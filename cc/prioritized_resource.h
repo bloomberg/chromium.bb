@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/priority_calculator.h"
 #include "cc/resource.h"
 #include "cc/resource_provider.h"

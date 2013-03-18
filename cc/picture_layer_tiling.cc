@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/debug/trace_event.h"
-#include "cc/math_util.h"
+#include "cc/base/math_util.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/safe_integer_conversions.h"

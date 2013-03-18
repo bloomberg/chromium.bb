@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/thread_impl.h"
+#include "cc/base/thread_impl.h"
 
 #include "base/message_loop.h"
 

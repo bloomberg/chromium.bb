@@ -4,8 +4,8 @@
 
 #include "cc/proxy.h"
 
-#include "cc/thread.h"
-#include "cc/thread_impl.h"
+#include "cc/base/thread.h"
+#include "cc/base/thread_impl.h"
 
 namespace cc {
 

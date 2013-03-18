@@ -5,7 +5,7 @@
 #ifndef CC_ANIMATION_ID_PROVIDER
 #define CC_ANIMATION_ID_PROVIDER
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
 

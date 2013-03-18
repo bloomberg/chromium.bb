@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/transform_operation.h"
 #include "ui/gfx/transform.h"
 

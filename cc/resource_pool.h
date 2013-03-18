@@ -8,7 +8,7 @@
 #include <list>
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/renderer.h"
 #include "cc/resource.h"
 

@@ -4,8 +4,8 @@
 //
 // Defines methods for hashing a pair of integers.
 
-#ifndef CC_HASH_PAIR_H_
-#define CC_HASH_PAIR_H_
+#ifndef CC_BASE_HASH_PAIR_H_
+#define CC_BASE_HASH_PAIR_H_
 
 #include "base/hash_tables.h"
 
@@ -147,4 +147,4 @@ DEFINE_64BIT_PAIR_HASH(uint64, uint64);
 #undef DEFINE_PAIR_HASH_FUNCTION_START
 #undef DEFINE_PAIR_HASH_FUNCTION_END
 
-#endif  // CC_HASH_PAIR_H_
+#endif  // CC_BASE_HASH_PAIR_H_

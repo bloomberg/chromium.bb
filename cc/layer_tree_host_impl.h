@@ -10,7 +10,7 @@
 #include "base/time.h"
 #include "cc/animation_events.h"
 #include "cc/animation_registrar.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/output_surface_client.h"
 #include "cc/render_pass.h"

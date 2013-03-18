@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer.h"
 #include "cc/texture_mailbox.h"
 

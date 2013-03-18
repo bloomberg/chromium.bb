@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCOPED_PTR_ALGORITHM_H_
-#define CC_SCOPED_PTR_ALGORITHM_H_
+#ifndef CC_BASE_SCOPED_PTR_ALGORITHM_H_
+#define CC_BASE_SCOPED_PTR_ALGORITHM_H_
 
 namespace cc {
 
@@ -27,4 +27,4 @@ ForwardIterator remove_if(
 
 }  // namespace cc
 
-#endif  // CC_SCOPED_PTR_ALGORITHM_H_
+#endif  // CC_BASE_SCOPED_PTR_ALGORITHM_H_

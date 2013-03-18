@@ -6,7 +6,7 @@
 #define CC_VIDEO_LAYER_H_
 
 #include "base/callback.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer.h"
 
 namespace media { class VideoFrame; }

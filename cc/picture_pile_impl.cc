@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/debug/trace_event.h"
+#include "cc/base/region.h"
 #include "cc/debug_colors.h"
 #include "cc/picture_pile_impl.h"
-#include "cc/region.h"
 #include "cc/rendering_stats.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"

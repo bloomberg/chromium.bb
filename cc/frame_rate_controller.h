@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
 

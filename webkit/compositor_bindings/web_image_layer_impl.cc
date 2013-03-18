@@ -5,9 +5,9 @@
 #include "webkit/compositor_bindings/web_image_layer_impl.h"
 
 #include "base/command_line.h"
+#include "cc/base/switches.h"
 #include "cc/image_layer.h"
 #include "cc/picture_image_layer.h"
-#include "cc/switches.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_layer_impl_fixed_bounds.h"
 

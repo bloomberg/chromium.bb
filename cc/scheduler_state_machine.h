@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/scheduler_settings.h"
 
 namespace cc {

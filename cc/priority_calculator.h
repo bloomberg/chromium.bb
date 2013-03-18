@@ -5,7 +5,7 @@
 #ifndef CC_PRIORITY_CALCULATOR_H_
 #define CC_PRIORITY_CALCULATOR_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 namespace gfx { class Rect; }
 

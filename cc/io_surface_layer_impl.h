@@ -5,7 +5,7 @@
 #ifndef CC_IO_SURFACE_LAYER_IMPL_H_
 #define CC_IO_SURFACE_LAYER_IMPL_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
 #include "ui/gfx/size.h"
 

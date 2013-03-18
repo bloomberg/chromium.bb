@@ -4,10 +4,10 @@
 
 #include "content/browser/android/content_startup_flags.h"
 
-#include "base/string_number_conversions.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "cc/switches.h"
+#include "base/string_number_conversions.h"
+#include "cc/base/switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"

@@ -15,7 +15,7 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "cc/switches.h"
+#include "cc/base/switches.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"

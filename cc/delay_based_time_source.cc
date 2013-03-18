@@ -10,7 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "cc/thread.h"
+#include "cc/base/thread.h"
 
 namespace cc {
 

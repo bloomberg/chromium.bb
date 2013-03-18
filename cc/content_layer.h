@@ -6,7 +6,7 @@
 #define CC_CONTENT_LAYER_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_painter.h"
 #include "cc/tiled_layer.h"
 

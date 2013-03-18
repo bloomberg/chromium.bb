@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_UTIL_H_
-#define CC_UTIL_H_
+#ifndef CC_BASE_UTIL_H_
+#define CC_BASE_UTIL_H_
 
 namespace cc {
 
@@ -13,4 +13,4 @@ template <typename T> T RoundUp(T n, T mul) {
 
 }  // namespace cc
 
-#endif  // CC_UTIL_H_
+#endif  // CC_BASE_UTIL_H_

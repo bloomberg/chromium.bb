@@ -5,11 +5,11 @@
 #ifndef CC_NINE_PATCH_LAYER_IMPL_H_
 #define CC_NINE_PATCH_LAYER_IMPL_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
 #include "cc/resource_provider.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace base {
 class DictionaryValue;

@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"

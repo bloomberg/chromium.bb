@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCOPED_PTR_DEQUE_H_
-#define CC_SCOPED_PTR_DEQUE_H_
+#ifndef CC_BASE_SCOPED_PTR_DEQUE_H_
+#define CC_BASE_SCOPED_PTR_DEQUE_H_
 
+#include <deque>
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include <deque>
 
 namespace cc {
 
@@ -132,4 +132,4 @@ class ScopedPtrDeque {
 
 }  // namespace cc
 
-#endif  // CC_SCOPED_PTR_DEQUE_H_
+#endif  // CC_BASE_SCOPED_PTR_DEQUE_H_

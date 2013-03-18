@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TILING_DATA_H_
-#define CC_TILING_DATA_H_
+#ifndef CC_BASE_TILING_DATA_H_
+#define CC_BASE_TILING_DATA_H_
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -140,4 +140,4 @@ class CC_EXPORT TilingData {
 
 }  // namespace cc
 
-#endif  // CC_TILING_DATA_H_
+#endif  // CC_BASE_TILING_DATA_H_

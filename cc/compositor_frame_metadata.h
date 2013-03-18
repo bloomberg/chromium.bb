@@ -5,7 +5,7 @@
 #ifndef CC_COMPOSITOR_FRAME_METADATA_H_
 #define CC_COMPOSITOR_FRAME_METADATA_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/size_f.h"
 #include "ui/gfx/vector2d_f.h"
 

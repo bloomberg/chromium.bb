@@ -11,7 +11,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
-#include "cc/switches.h"
+#include "cc/base/switches.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/android/device_display_info.h"
 

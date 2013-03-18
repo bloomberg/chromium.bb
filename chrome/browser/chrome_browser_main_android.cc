@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "cc/switches.h"
+#include "cc/base/switches.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/android/crash_dump_manager.h"
 #include "chrome/common/chrome_switches.h"

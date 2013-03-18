@@ -6,7 +6,7 @@
 #define CC_DIRECT_RENDERER_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/renderer.h"
 #include "cc/resource_provider.h"
 #include "cc/scoped_resource.h"

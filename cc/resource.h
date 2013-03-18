@@ -5,7 +5,7 @@
 #ifndef CC_RESOURCE_H_
 #define CC_RESOURCE_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/resource_provider.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size.h"

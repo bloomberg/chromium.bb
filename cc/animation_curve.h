@@ -6,7 +6,7 @@
 #define CC_ANIMATION_CURVE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

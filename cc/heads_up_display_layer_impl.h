@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
 #include "cc/memory_history.h"
 #include "cc/scoped_resource.h"

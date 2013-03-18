@@ -5,7 +5,7 @@
 #ifndef CC_BITMAP_CONTENT_LAYER_UPDATER_H_
 #define CC_BITMAP_CONTENT_LAYER_UPDATER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/content_layer_updater.h"
 
 class SkCanvas;

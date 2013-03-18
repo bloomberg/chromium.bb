@@ -8,11 +8,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
-#include "cc/hash_pair.h"
-#include "cc/region.h"
-#include "cc/scoped_ptr_hash_map.h"
-#include "cc/tiling_data.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/hash_pair.h"
+#include "cc/base/region.h"
+#include "cc/base/scoped_ptr_hash_map.h"
+#include "cc/base/tiling_data.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {

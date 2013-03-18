@@ -5,7 +5,7 @@
 #ifndef CC_VSYNC_TIME_SOURCE_H_
 #define CC_VSYNC_TIME_SOURCE_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/time_source.h"
 
 namespace cc {

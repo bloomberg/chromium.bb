@@ -8,9 +8,9 @@
 
 #include "cc/animation.h"
 #include "cc/animation_registrar.h"
+#include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/keyframed_animation_curve.h"
 #include "cc/layer_animation_value_observer.h"
-#include "cc/scoped_ptr_algorithm.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

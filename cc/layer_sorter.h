@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/quad_f.h"

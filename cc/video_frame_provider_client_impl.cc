@@ -4,7 +4,7 @@
 
 #include "cc/video_frame_provider_client_impl.h"
 
-#include "cc/math_util.h"
+#include "cc/base/math_util.h"
 #include "cc/video_layer_impl.h"
 
 namespace cc {

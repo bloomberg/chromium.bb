@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_WORKER_POOL_H_
-#define CC_WORKER_POOL_H_
+#ifndef CC_BASE_WORKER_POOL_H_
+#define CC_BASE_WORKER_POOL_H_
 
 #include <string>
 
@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "cc/cc_export.h"
-#include "cc/scoped_ptr_deque.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_deque.h"
 
 namespace cc {
 struct RenderingStats;
@@ -128,4 +128,4 @@ class WorkerPool {
 
 }  // namespace cc
 
-#endif  // CC_WORKER_POOL_H_
+#endif  // CC_BASE_WORKER_POOL_H_

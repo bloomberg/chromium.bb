@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
-#include "cc/hash_pair.h"
-#include "cc/scoped_ptr_hash_map.h"
-#include "cc/scoped_ptr_vector.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/hash_pair.h"
+#include "cc/base/scoped_ptr_hash_map.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkColor.h"

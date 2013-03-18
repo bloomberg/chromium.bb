@@ -5,9 +5,9 @@
 #ifndef CC_TEST_TILED_LAYER_TEST_COMMON_H_
 #define CC_TEST_TILED_LAYER_TEST_COMMON_H_
 
+#include "cc/base/region.h"
 #include "cc/layer_updater.h"
 #include "cc/prioritized_resource.h"
-#include "cc/region.h"
 #include "cc/resource_provider.h"
 #include "cc/resource_update_queue.h"
 #include "cc/texture_copier.h"

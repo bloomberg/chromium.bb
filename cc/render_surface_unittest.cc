@@ -5,9 +5,9 @@
 #include "cc/render_surface_impl.h"
 
 #include "cc/append_quads_data.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layer_impl.h"
 #include "cc/render_pass_sink.h"
-#include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"

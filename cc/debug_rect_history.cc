@@ -4,10 +4,10 @@
 
 #include "cc/debug_rect_history.h"
 
+#include "cc/base/math_util.h"
 #include "cc/damage_tracker.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
-#include "cc/math_util.h"
 
 namespace cc {
 

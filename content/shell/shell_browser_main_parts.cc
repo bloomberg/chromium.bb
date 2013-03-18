@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "cc/switches.h"
+#include "cc/base/switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"

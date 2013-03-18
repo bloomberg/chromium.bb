@@ -5,7 +5,7 @@
 #ifndef CC_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
 #define CC_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
 
 using WebKit::WebScrollbar;

@@ -6,7 +6,7 @@
 #define CC_DRAW_QUAD_H_
 
 #include "base/callback.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/resource_provider.h"
 #include "cc/shared_quad_state.h"
 

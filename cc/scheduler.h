@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/frame_rate_controller.h"
 #include "cc/layer_tree_host.h"
 #include "cc/scheduler_settings.h"

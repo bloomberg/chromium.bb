@@ -6,9 +6,9 @@
 #define CC_DELEGATED_RENDERER_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layer_impl.h"
-#include "cc/scoped_ptr_vector.h"
 
 namespace cc {
 class DelegatedFrameData;

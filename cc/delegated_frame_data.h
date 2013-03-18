@@ -5,9 +5,9 @@
 #ifndef CC_DELEGATED_FRAME_DATA_H_
 #define CC_DELEGATED_FRAME_DATA_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/render_pass.h"
-#include "cc/scoped_ptr_vector.h"
 #include "cc/transferable_resource.h"
 #include "ui/gfx/size.h"
 

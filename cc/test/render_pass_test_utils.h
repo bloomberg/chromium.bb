@@ -5,8 +5,8 @@
 #ifndef CC_TEST_RENDER_PASS_TEST_UTILS_H_
 #define CC_TEST_RENDER_PASS_TEST_UTILS_H_
 
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/render_pass.h"
-#include "cc/scoped_ptr_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {

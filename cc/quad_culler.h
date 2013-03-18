@@ -5,7 +5,7 @@
 #ifndef CC_QUAD_CULLER_H_
 #define CC_QUAD_CULLER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/quad_sink.h"
 #include "cc/render_pass.h"
 

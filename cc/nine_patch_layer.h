@@ -6,11 +6,11 @@
 #define CC_NINE_PATCH_LAYER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
-#include "cc/layer.h"
+#include "cc/base/cc_export.h"
 #include "cc/image_layer_updater.h"
-#include "ui/gfx/rect.h"
+#include "cc/layer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/rect.h"
 
 namespace cc {
 

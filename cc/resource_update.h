@@ -5,9 +5,9 @@
 #ifndef CC_RESOURCE_UPDATE_H_
 #define CC_RESOURCE_UPDATE_H_
 
+#include "cc/base/cc_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
-#include "cc/cc_export.h"
 
 class SkBitmap;
 class SkPicture;

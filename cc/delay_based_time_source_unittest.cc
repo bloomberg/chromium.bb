@@ -4,8 +4,8 @@
 
 #include "cc/delay_based_time_source.h"
 
+#include "cc/base/thread.h"
 #include "cc/test/scheduler_test_common.h"
-#include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

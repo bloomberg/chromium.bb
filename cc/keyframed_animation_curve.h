@@ -6,8 +6,8 @@
 #define CC_KEYFRAMED_ANIMATION_CURVE_H_
 
 #include "cc/animation_curve.h"
-#include "cc/cc_export.h"
-#include "cc/scoped_ptr_vector.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/timing_function.h"
 #include "cc/transform_operations.h"
 

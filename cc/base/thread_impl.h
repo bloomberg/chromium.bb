@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_THREAD_IMPL_H_
-#define CC_THREAD_IMPL_H_
+#ifndef CC_BASE_THREAD_IMPL_H_
+#define CC_BASE_THREAD_IMPL_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "cc/cc_export.h"
-#include "cc/thread.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/thread.h"
 
 namespace cc {
 
@@ -40,4 +40,4 @@ class CC_EXPORT ThreadImpl : public Thread {
 
 }  // namespace cc
 
-#endif  // CC_THREAD_IMPL_H_
+#endif  // CC_BASE_THREAD_IMPL_H_

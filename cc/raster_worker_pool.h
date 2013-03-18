@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "cc/worker_pool.h"
+#include "cc/base/worker_pool.h"
 
 namespace cc {
 class PicturePileImpl;

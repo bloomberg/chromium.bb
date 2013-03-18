@@ -5,7 +5,7 @@
 #include "cc/rate_limiter.h"
 
 #include "base/debug/trace_event.h"
-#include "cc/thread.h"
+#include "cc/base/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 namespace cc {

@@ -8,7 +8,7 @@
 #include <list>
 #include <map>
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/picture_pile_base.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"

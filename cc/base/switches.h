@@ -4,10 +4,10 @@
 
 // Defines all the "cc" command-line switches.
 
-#ifndef CC_SWITCHES_H_
-#define CC_SWITCHES_H_
+#ifndef CC_BASE_SWITCHES_H_
+#define CC_BASE_SWITCHES_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 // Since cc is used from the render process, anything that goes here also needs
 // to be added to render_process_host_impl.cc.
@@ -49,4 +49,4 @@ CC_EXPORT bool IsImplSidePaintingEnabled();
 }  // namespace switches
 }  // namespace cc
 
-#endif  // CC_SWITCHES_H_
+#endif  // CC_BASE_SWITCHES_H_

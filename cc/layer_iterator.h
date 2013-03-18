@@ -6,7 +6,7 @@
 #define CC_LAYER_ITERATOR_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_tree_host_common.h"
 
 namespace cc {

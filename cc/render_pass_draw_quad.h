@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/draw_quad.h"
 #include "cc/render_pass.h"
 #include "cc/resource_provider.h"

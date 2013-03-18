@@ -9,11 +9,11 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
-#include "cc/hash_pair.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/hash_pair.h"
+#include "cc/base/region.h"
+#include "cc/base/tiling_data.h"
 #include "cc/picture.h"
-#include "cc/region.h"
-#include "cc/tiling_data.h"
 #include "ui/gfx/size.h"
 
 namespace cc {

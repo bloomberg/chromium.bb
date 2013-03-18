@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_REGION_H_
-#define CC_REGION_H_
+#ifndef CC_BASE_REGION_H_
+#define CC_BASE_REGION_H_
 
 #include <string>
 
 #include "base/logging.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -125,4 +125,4 @@ inline Region UnionRegions(const Region& a, gfx::Rect b) {
 
 }  // namespace cc
 
-#endif  // CC_REGION_H_
+#endif  // CC_BASE_REGION_H_

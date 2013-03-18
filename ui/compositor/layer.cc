@@ -10,10 +10,10 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/content_layer.h"
 #include "cc/delegated_frame_data.h"
 #include "cc/delegated_renderer_layer.h"
-#include "cc/scoped_ptr_algorithm.h"
 #include "cc/solid_color_layer.h"
 #include "cc/texture_layer.h"
 #include "cc/transferable_resource.h"
@@ -26,8 +26,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/point3_f.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace {

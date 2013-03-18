@@ -7,7 +7,7 @@
 #define CC_LAYER_QUAD_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/point_f.h"
 
 namespace gfx {

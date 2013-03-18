@@ -6,7 +6,7 @@
 #define CC_HEADS_UP_DISPLAY_LAYER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer.h"
 
 namespace cc {

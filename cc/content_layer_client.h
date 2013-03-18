@@ -5,7 +5,7 @@
 #ifndef CC_CONTENT_LAYER_CLIENT_H_
 #define CC_CONTENT_LAYER_CLIENT_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 class SkCanvas;
 

@@ -6,7 +6,7 @@
 #define CC_SOFTWARE_OUTPUT_DEVICE_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

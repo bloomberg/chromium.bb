@@ -5,7 +5,7 @@
 #ifndef CC_PICTURE_IMAGE_LAYER_H_
 #define CC_PICTURE_IMAGE_LAYER_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/content_layer_client.h"
 #include "cc/picture_layer.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -5,7 +5,7 @@
 #include "cc/tile_priority.h"
 
 #include "base/values.h"
-#include "cc/math_util.h"
+#include "cc/base/math_util.h"
 
 namespace {
 

@@ -4,9 +4,9 @@
 
 #include <algorithm>
 
+#include "cc/base/region.h"
 #include "cc/picture_pile.h"
 #include "cc/picture_pile_impl.h"
-#include "cc/region.h"
 
 namespace {
 // Maximum number of pictures that can overlap before we collapse them into

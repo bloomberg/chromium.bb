@@ -6,7 +6,7 @@
 #define CC_SOFTWARE_FRAME_DATA_H_
 
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 

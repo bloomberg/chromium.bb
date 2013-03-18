@@ -6,7 +6,7 @@
 #ifndef CC_RENDER_SURFACE_FILTERS_H_
 #define CC_RENDER_SURFACE_FILTERS_H_
 
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 
 class GrContext;
 class SkBitmap;

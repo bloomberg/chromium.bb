@@ -5,11 +5,11 @@
 #include "cc/delegated_renderer_layer_impl.h"
 
 #include "cc/append_quads_data.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/quad_sink.h"
 #include "cc/render_pass_draw_quad.h"
-#include "cc/scoped_ptr_vector.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer_impl.h"

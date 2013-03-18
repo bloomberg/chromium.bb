@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_THREAD_H_
-#define CC_THREAD_H_
+#ifndef CC_BASE_THREAD_H_
+#define CC_BASE_THREAD_H_
 
-#include "base/callback.h"
 #include "base/basictypes.h"
-#include "cc/cc_export.h"
+#include "base/callback.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
 
@@ -28,4 +28,4 @@ class CC_EXPORT Thread {
 
 }  // namespace cc
 
-#endif  // CC_THREAD_H_
+#endif  // CC_BASE_THREAD_H_

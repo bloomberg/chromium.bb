@@ -6,9 +6,9 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "cc/base/thread.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/time_source.h"
-#include "cc/thread.h"
 
 namespace cc {
 

@@ -6,7 +6,7 @@
 #define CC_COMPOSITOR_FRAME_ACK_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/gl_frame_data.h"
 #include "cc/transferable_resource.h"
 #include "ui/surface/transport_dib.h"

@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
-#include "cc/cc_export.h"
+#include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
 #include "cc/video_frame_provider.h"
 #include "media/base/video_frame.h"

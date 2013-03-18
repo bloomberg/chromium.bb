@@ -6,8 +6,8 @@
 #define CC_LAYER_TREE_HOST_COMMON_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
-#include "cc/scoped_ptr_vector.h"
+#include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d.h"
