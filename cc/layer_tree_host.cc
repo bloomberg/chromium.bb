@@ -720,7 +720,7 @@ void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {
   surface_memory_placeholder_->setTextureManager(
       contents_texture_manager_.get());
   surface_memory_placeholder_->setRequestPriority(
-      PriorityCalculator::renderSurfacePriority());
+      PriorityCalculator::RenderSurfacePriority());
   surface_memory_placeholder_->setToSelfManagedMemoryPlaceholder(
       surface_memory_bytes);
 }

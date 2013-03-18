@@ -377,12 +377,12 @@ void ScrollbarLayer::SetTexturePriorities(
   if (back_track_) {
     back_track_->texture()->setDimensions(content_bounds(), texture_format_);
     back_track_->texture()->setRequestPriority(
-        PriorityCalculator::uiPriority(draws_to_root));
+        PriorityCalculator::UIPriority(draws_to_root));
   }
   if (fore_track_) {
     fore_track_->texture()->setDimensions(content_bounds(), texture_format_);
     fore_track_->texture()->setRequestPriority(
-        PriorityCalculator::uiPriority(draws_to_root));
+        PriorityCalculator::UIPriority(draws_to_root));
   }
   if (thumb_) {
     gfx::Rect thumb_layer_rect = geometry_->thumbRect(scrollbar_.get());
@@ -390,7 +390,7 @@ void ScrollbarLayer::SetTexturePriorities(
         ScrollbarLayerRectToContentRect(thumb_layer_rect).size();
     thumb_->texture()->setDimensions(thumb_size, texture_format_);
     thumb_->texture()->setRequestPriority(
-        PriorityCalculator::uiPriority(draws_to_root));
+        PriorityCalculator::UIPriority(draws_to_root));
   }
 }
 

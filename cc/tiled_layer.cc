@@ -585,18 +585,18 @@ void SetPriorityForTexture(gfx::Rect visible_rect,
                            bool draws_to_root,
                            bool is_small_animated_layer,
                            PrioritizedResource* texture) {
-  int priority = PriorityCalculator::lowestPriority();
+  int priority = PriorityCalculator::LowestPriority();
   if (!visible_rect.IsEmpty()) {
-    priority = PriorityCalculator::priorityFromDistance(
+    priority = PriorityCalculator::PriorityFromDistance(
         visible_rect, tile_rect, draws_to_root);
   }
 
   if (is_small_animated_layer) {
-    priority = PriorityCalculator::maxPriority(
-        priority, PriorityCalculator::smallAnimatedLayerMinPriority());
+    priority = PriorityCalculator::max_priority(
+        priority, PriorityCalculator::SmallAnimatedLayerMinPriority());
   }
 
-  if (priority != PriorityCalculator::lowestPriority())
+  if (priority != PriorityCalculator::LowestPriority())
     texture->setRequestPriority(priority);
 }
 }  // namespace

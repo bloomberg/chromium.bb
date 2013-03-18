@@ -7,31 +7,33 @@
 
 #include "cc/cc_export.h"
 
-namespace gfx {
-class Rect;
-}
+namespace gfx { class Rect; }
 
 namespace cc {
 
 class CC_EXPORT PriorityCalculator {
-public:
-    static int uiPriority(bool drawsToRootSurface);
-    static int visiblePriority(bool drawsToRootSurface);
-    static int renderSurfacePriority();
-    static int lingeringPriority(int previousPriority);
-    static int priorityFromDistance(const gfx::Rect& visibleRect, const gfx::Rect& textureRect, bool drawsToRootSurface);
-    static int smallAnimatedLayerMinPriority();
+ public:
+  static int UIPriority(bool draws_to_root_surface);
+  static int VisiblePriority(bool draws_to_root_surface);
+  static int RenderSurfacePriority();
+  static int LingeringPriority(int previous_priority);
+  static int PriorityFromDistance(gfx::Rect visible_rect,
+                                  gfx::Rect texture_rect,
+                                  bool draws_to_root_surface);
+  static int SmallAnimatedLayerMinPriority();
 
-    static int highestPriority();
-    static int lowestPriority();
-    static inline bool priorityIsLower(int a, int b) { return a > b; }
-    static inline bool priorityIsHigher(int a, int b) { return a < b; }
-    static inline int maxPriority(int a, int b) { return priorityIsHigher(a, b) ? a : b; }
+  static int HighestPriority();
+  static int LowestPriority();
+  static inline bool priority_is_lower(int a, int b) { return a > b; }
+  static inline bool priority_is_higher(int a, int b) { return a < b; }
+  static inline int max_priority(int a, int b) {
+    return priority_is_higher(a, b) ? a : b;
+  }
 
-    static int allowNothingCutoff();
-    static int allowVisibleOnlyCutoff();
-    static int allowVisibleAndNearbyCutoff();
-    static int allowEverythingCutoff();
+  static int AllowNothingCutoff();
+  static int AllowVisibleOnlyCutoff();
+  static int AllowVisibleAndNearbyCutoff();
+  static int AllowEverythingCutoff();
 };
 
 }

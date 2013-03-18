@@ -8,125 +8,117 @@
 
 namespace cc {
 
-static const int nothingPriorityCutoff = -3;
+static const int kNothingPriorityCutoff = -3;
 
-static const int mostHighPriority = -2;
+static const int kMostHighPriority = -2;
 
-static const int uiDrawsToRootSurfacePriority = -1;
-static const int visibleDrawsToRootSurfacePriority = 0;
-static const int renderSurfacesPriority = 1;
-static const int uiDoesNotDrawToRootSurfacePriority = 2;
-static const int visibleDoesNotDrawToRootSurfacePriority = 3;
+static const int kUIDrawsToRootSurfacePriority = -1;
+static const int kVisibleDrawsToRootSurfacePriority = 0;
+static const int kRenderSurfacesPriority = 1;
+static const int kUIDoesNotDrawToRootSurfacePriority = 2;
+static const int kVisibleDoesNotDrawToRootSurfacePriority = 3;
 
-static const int visibleOnlyPriorityCutoff = 4;
+static const int kVisibleOnlyPriorityCutoff = 4;
 
 // The lower digits are how far from being visible the texture is,
 // in pixels.
-static const int notVisibleBasePriority = 1000000;
-static const int notVisibleLimitPriority = 1900000;
+static const int kNotVisibleBasePriority = 1000000;
+static const int kNotVisibleLimitPriority = 1900000;
 
 // Arbitrarily define "nearby" to be 2000 pixels. A better estimate
 // would be percent-of-viewport or percent-of-screen.
-static const int visibleAndNearbyPriorityCutoff = notVisibleBasePriority + 2000;
+static const int kVisibleAndNearbyPriorityCutoff =
+    kNotVisibleBasePriority + 2000;
 
 // Small animated layers are treated as though they are 512 pixels
 // from being visible.
-static const int smallAnimatedLayerPriority = notVisibleBasePriority + 512;
+static const int kSmallAnimatedLayerPriority = kNotVisibleBasePriority + 512;
 
-static const int lingeringBasePriority = 2000000;
-static const int lingeringLimitPriority = 2900000;
+static const int kLingeringBasePriority = 2000000;
+static const int kLingeringLimitPriority = 2900000;
 
-static const int mostLowPriority = 3000000;
+static const int kMostLowPriority = 3000000;
 
-static const int everythingPriorityCutoff = 3000001;
+static const int kEverythingPriorityCutoff = 3000001;
 
 // static
-int PriorityCalculator::uiPriority(bool drawsToRootSurface)
-{
-    return drawsToRootSurface ? uiDrawsToRootSurfacePriority : uiDoesNotDrawToRootSurfacePriority;
+int PriorityCalculator::UIPriority(bool draws_to_root_surface) {
+  return draws_to_root_surface ? kUIDrawsToRootSurfacePriority
+                               : kUIDoesNotDrawToRootSurfacePriority;
 }
 
 // static
-int PriorityCalculator::visiblePriority(bool drawsToRootSurface)
-{
-    return drawsToRootSurface ? visibleDrawsToRootSurfacePriority : visibleDoesNotDrawToRootSurfacePriority;
+int PriorityCalculator::VisiblePriority(bool draws_to_root_surface) {
+  return draws_to_root_surface ? kVisibleDrawsToRootSurfacePriority
+                               : kVisibleDoesNotDrawToRootSurfacePriority;
 }
 
 // static
-int PriorityCalculator::renderSurfacePriority()
-{
-    return renderSurfacesPriority;
+int PriorityCalculator::RenderSurfacePriority() {
+  return kRenderSurfacesPriority;
 }
 
 // static
-int PriorityCalculator::lingeringPriority(int previousPriority)
-{
-    // FIXME: We should remove this once we have priorities for all
-    //        textures (we can't currently calculate distances for
-    //        off-screen textures).
-    return std::min(lingeringLimitPriority,
-                    std::max(lingeringBasePriority, previousPriority + 1));
+int PriorityCalculator::LingeringPriority(int previous_priority) {
+  // FIXME: We should remove this once we have priorities for all
+  //        textures (we can't currently calculate distances for
+  //        off-screen textures).
+  return std::min(kLingeringLimitPriority,
+                  std::max(kLingeringBasePriority, previous_priority + 1));
 }
 
 namespace {
-int manhattanDistance(const gfx::Rect& a, const gfx::Rect& b)
-{
-    gfx::Rect c = gfx::UnionRects(a, b);
-    int x = std::max(0, c.width() - a.width() - b.width() + 1);
-    int y = std::max(0, c.height() - a.height() - b.height() + 1);
-    return (x + y);
+int ManhattanDistance(gfx::Rect a, gfx::Rect b) {
+  gfx::Rect c = gfx::UnionRects(a, b);
+  int x = std::max(0, c.width() - a.width() - b.width() + 1);
+  int y = std::max(0, c.height() - a.height() - b.height() + 1);
+  return (x + y);
 }
 }
 
 // static
-int PriorityCalculator::priorityFromDistance(const gfx::Rect& visibleRect, const gfx::Rect& textureRect, bool drawsToRootSurface)
-{
-    int distance = manhattanDistance(visibleRect, textureRect);
-    if (!distance)
-        return visiblePriority(drawsToRootSurface);
-    return std::min(notVisibleLimitPriority, notVisibleBasePriority + distance);
+int PriorityCalculator::PriorityFromDistance(gfx::Rect visible_rect,
+                                             gfx::Rect texture_rect,
+                                             bool draws_to_root_surface) {
+  int distance = ManhattanDistance(visible_rect, texture_rect);
+  if (!distance)
+    return VisiblePriority(draws_to_root_surface);
+  return std::min(kNotVisibleLimitPriority, kNotVisibleBasePriority + distance);
 }
 
 // static
-int PriorityCalculator::smallAnimatedLayerMinPriority()
-{
-    return smallAnimatedLayerPriority;
+int PriorityCalculator::SmallAnimatedLayerMinPriority() {
+  return kSmallAnimatedLayerPriority;
 }
 
 // static
-int PriorityCalculator::highestPriority()
-{
-    return mostHighPriority;
+int PriorityCalculator::HighestPriority() {
+  return kMostHighPriority;
 }
 
 // static
-int PriorityCalculator::lowestPriority()
-{
-    return mostLowPriority;
+int PriorityCalculator::LowestPriority() {
+  return kMostLowPriority;
 }
 
 // static
-int PriorityCalculator::allowNothingCutoff()
-{
-    return nothingPriorityCutoff;
+int PriorityCalculator::AllowNothingCutoff() {
+  return kNothingPriorityCutoff;
 }
 
 // static
-int PriorityCalculator::allowVisibleOnlyCutoff()
-{
-    return visibleOnlyPriorityCutoff;
+int PriorityCalculator::AllowVisibleOnlyCutoff() {
+  return kVisibleOnlyPriorityCutoff;
 }
 
 // static
-int PriorityCalculator::allowVisibleAndNearbyCutoff()
-{
-    return visibleAndNearbyPriorityCutoff;
+int PriorityCalculator::AllowVisibleAndNearbyCutoff() {
+  return kVisibleAndNearbyPriorityCutoff;
 }
 
 // static
-int PriorityCalculator::allowEverythingCutoff()
-{
-    return everythingPriorityCutoff;
+int PriorityCalculator::AllowEverythingCutoff() {
+  return kEverythingPriorityCutoff;
 }
 
 }  // namespace cc

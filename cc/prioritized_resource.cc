@@ -18,7 +18,7 @@ PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager, gf
     , m_format(format)
     , m_bytes(0)
     , m_contentsSwizzled(false)
-    , m_priority(PriorityCalculator::lowestPriority())
+    , m_priority(PriorityCalculator::LowestPriority())
     , m_isAbovePriorityCutoff(false)
     , m_isSelfManaged(false)
     , m_backing(0)
@@ -132,7 +132,7 @@ void PrioritizedResource::setToSelfManagedMemoryPlaceholder(size_t bytes)
 PrioritizedResource::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, gfx::Size size, GLenum format)
     : Resource(id, size, format)
     , m_owner(0)
-    , m_priorityAtLastPriorityUpdate(PriorityCalculator::lowestPriority())
+    , m_priorityAtLastPriorityUpdate(PriorityCalculator::LowestPriority())
     , m_wasAbovePriorityCutoffAtLastPriorityUpdate(false)
     , m_inDrawingImplTree(false)
     , m_resourceHasBeenDeleted(false)
@@ -180,7 +180,7 @@ void PrioritizedResource::Backing::updatePriority()
         m_priorityAtLastPriorityUpdate = m_owner->requestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = m_owner->isAbovePriorityCutoff();
     } else {
-        m_priorityAtLastPriorityUpdate = PriorityCalculator::lowestPriority();
+        m_priorityAtLastPriorityUpdate = PriorityCalculator::LowestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = false;
     }
 }
@@ -190,7 +190,7 @@ void PrioritizedResource::Backing::updateInDrawingImplTree()
     DCHECK(!proxy() || proxy()->IsImplThread() && proxy()->IsMainThreadBlocked());
     m_inDrawingImplTree = !!owner();
     if (!m_inDrawingImplTree)
-        DCHECK(m_priorityAtLastPriorityUpdate == PriorityCalculator::lowestPriority());
+        DCHECK_EQ(m_priorityAtLastPriorityUpdate, PriorityCalculator::LowestPriority());
 }
 
 void PrioritizedResource::returnBackingTexture()

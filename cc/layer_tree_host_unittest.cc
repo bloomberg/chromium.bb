@@ -1544,7 +1544,7 @@ void EvictionTestLayer::SetTexturePriorities(const PriorityCalculator&)
     createTextureIfNeeded();
     if (!m_texture.get())
         return;
-    m_texture->setRequestPriority(PriorityCalculator::uiPriority(true));
+    m_texture->setRequestPriority(PriorityCalculator::UIPriority(true));
 }
 
 void EvictionTestLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracker*, RenderingStats*)

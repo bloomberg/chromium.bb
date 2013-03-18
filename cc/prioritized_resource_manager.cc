@@ -17,7 +17,7 @@ namespace cc {
 PrioritizedResourceManager::PrioritizedResourceManager(const Proxy* proxy)
     : m_proxy(proxy)
     , m_maxMemoryLimitBytes(defaultMemoryAllocationLimit())
-    , m_externalPriorityCutoff(PriorityCalculator::allowEverythingCutoff())
+    , m_externalPriorityCutoff(PriorityCalculator::AllowEverythingCutoff())
     , m_memoryUseBytes(0)
     , m_memoryAboveCutoffBytes(0)
     , m_memoryAvailableBytes(0)
@@ -71,9 +71,9 @@ void PrioritizedResourceManager::prioritizeTextures()
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
         PrioritizedResource* texture = (*it);
         sortedTextures.push_back(texture);
-        if (PriorityCalculator::priorityIsHigher(texture->requestPriority(), PriorityCalculator::allowVisibleOnlyCutoff()))
+        if (PriorityCalculator::priority_is_higher(texture->requestPriority(), PriorityCalculator::AllowVisibleOnlyCutoff()))
             m_memoryVisibleBytes += texture->bytes();
-        if (PriorityCalculator::priorityIsHigher(texture->requestPriority(), PriorityCalculator::allowVisibleAndNearbyCutoff()))
+        if (PriorityCalculator::priority_is_higher(texture->requestPriority(), PriorityCalculator::AllowVisibleAndNearbyCutoff()))
             m_memoryVisibleAndNearbyBytes += texture->bytes();
     }
     std::sort(sortedTextures.begin(), sortedTextures.end(), compareTextures);
@@ -106,7 +106,7 @@ void PrioritizedResourceManager::prioritizeTextures()
     // Disallow any textures with priority below the external cutoff to have backings.
     for (TextureVector::iterator it = sortedTextures.begin(); it != sortedTextures.end(); ++it) {
         PrioritizedResource* texture = (*it);
-        if (!PriorityCalculator::priorityIsHigher(texture->requestPriority(), m_externalPriorityCutoff) &&
+        if (!PriorityCalculator::priority_is_higher(texture->requestPriority(), m_externalPriorityCutoff) &&
             texture->haveBackingTexture())
             texture->unlink();
     }
@@ -116,7 +116,7 @@ void PrioritizedResourceManager::prioritizeTextures()
     // being partially allowed randomly.
     m_memoryAboveCutoffBytes = 0;
     for (TextureVector::iterator it = sortedTextures.begin(); it != sortedTextures.end(); ++it) {
-        bool isAbovePriorityCutoff = PriorityCalculator::priorityIsHigher((*it)->requestPriority(), m_priorityCutoff);
+        bool isAbovePriorityCutoff = PriorityCalculator::priority_is_higher((*it)->requestPriority(), m_priorityCutoff);
         (*it)->setAbovePriorityCutoff(isAbovePriorityCutoff);
         if (isAbovePriorityCutoff && !(*it)->isSelfManaged())
             m_memoryAboveCutoffBytes += (*it)->bytes();
@@ -175,7 +175,7 @@ void PrioritizedResourceManager::clearPriorities()
         //        PriorityCalculator::lowestPriority() once we have priorities
         //        for all textures (we can't currently calculate distances for
         //        off-screen textures).
-        (*it)->setRequestPriority(PriorityCalculator::lingeringPriority((*it)->requestPriority()));
+        (*it)->setRequestPriority(PriorityCalculator::LingeringPriority((*it)->requestPriority()));
     }
 }
 
@@ -188,11 +188,11 @@ bool PrioritizedResourceManager::requestLate(PrioritizedResource* texture)
         return true;
 
     // Allow textures that have priority equal to the cutoff, but not strictly lower.
-    if (PriorityCalculator::priorityIsLower(texture->requestPriority(), m_priorityCutoff))
+    if (PriorityCalculator::priority_is_lower(texture->requestPriority(), m_priorityCutoff))
         return false;
 
     // Disallow textures that do not have a priority strictly higher than the external cutoff.
-    if (!PriorityCalculator::priorityIsHigher(texture->requestPriority(), m_externalPriorityCutoff))
+    if (!PriorityCalculator::priority_is_higher(texture->requestPriority(), m_externalPriorityCutoff))
         return false;
 
     size_t newMemoryBytes = m_memoryAboveCutoffBytes + texture->bytes();
@@ -231,7 +231,7 @@ void PrioritizedResourceManager::acquireBackingTextureIfNeeded(PrioritizedResour
     // Otherwise reduce memory and just allocate a new backing texures.
     if (!backing) {
         evictBackingsToReduceMemory(m_memoryAvailableBytes - texture->bytes(),
-                                    PriorityCalculator::allowEverythingCutoff(),
+                                    PriorityCalculator::AllowEverythingCutoff(),
                                     EvictOnlyRecyclable,
                                     DoNotUnlinkBackings,
                                     resourceProvider);
@@ -259,15 +259,15 @@ bool PrioritizedResourceManager::evictBackingsToReduceMemory(size_t limitBytes,
     DCHECK(m_proxy->IsImplThread());
     if (unlinkPolicy == UnlinkBackings)
         DCHECK(m_proxy->IsMainThreadBlocked());
-    if (memoryUseBytes() <= limitBytes && PriorityCalculator::allowEverythingCutoff() == priorityCutoff)
+    if (memoryUseBytes() <= limitBytes && PriorityCalculator::AllowEverythingCutoff() == priorityCutoff)
         return false;
 
     // Destroy backings until we are below the limit,
     // or until all backings remaining are above the cutoff.
     while (m_backings.size() > 0) {
         PrioritizedResource::Backing* backing = m_backings.front();
-        if (memoryUseBytes() <= limitBytes && 
-            PriorityCalculator::priorityIsHigher(backing->requestPriorityAtLastPriorityUpdate(), priorityCutoff))
+        if (memoryUseBytes() <= limitBytes &&
+            PriorityCalculator::priority_is_higher(backing->requestPriorityAtLastPriorityUpdate(), priorityCutoff))
             break;
         if (evictionPolicy == EvictOnlyRecyclable && !backing->canBeRecycled())
             break;
@@ -294,7 +294,7 @@ void PrioritizedResourceManager::reduceWastedMemory(ResourceProvider* resourcePr
     size_t tenPercentOfMemory = m_memoryAvailableBytes / 10;
     if (wastedMemory > tenPercentOfMemory)
         evictBackingsToReduceMemory(memoryUseBytes() - (wastedMemory - tenPercentOfMemory),
-                                    PriorityCalculator::allowEverythingCutoff(),
+                                    PriorityCalculator::AllowEverythingCutoff(),
                                     EvictOnlyRecyclable,
                                     DoNotUnlinkBackings,
                                     resourceProvider);
@@ -304,7 +304,7 @@ void PrioritizedResourceManager::reduceMemory(ResourceProvider* resourceProvider
 {
     DCHECK(m_proxy->IsImplThread() && m_proxy->IsMainThreadBlocked());
     evictBackingsToReduceMemory(m_memoryAvailableBytes,
-                                PriorityCalculator::allowEverythingCutoff(),
+                                PriorityCalculator::AllowEverythingCutoff(),
                                 EvictAnything,
                                 UnlinkBackings,
                                 resourceProvider);
@@ -321,7 +321,7 @@ void PrioritizedResourceManager::clearAllMemory(ResourceProvider* resourceProvid
         return;
     }
     evictBackingsToReduceMemory(0,
-                                PriorityCalculator::allowEverythingCutoff(),
+                                PriorityCalculator::AllowEverythingCutoff(),
                                 EvictAnything,
                                 DoNotUnlinkBackings,
                                 resourceProvider);

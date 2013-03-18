@@ -136,7 +136,7 @@ private:
     {
         if (a->requestPriority() == b->requestPriority())
             return a < b;
-        return PriorityCalculator::priorityIsHigher(a->requestPriority(), b->requestPriority());
+        return PriorityCalculator::priority_is_higher(a->requestPriority(), b->requestPriority());
     }
     // Compare backings. Lowest priority first.
     static inline bool compareBackings(PrioritizedResource::Backing* a, PrioritizedResource::Backing* b)
@@ -150,7 +150,7 @@ private:
         // Then sort by priority (note that backings that no longer have owners will
         // always have the lowest priority)
         if (a->requestPriorityAtLastPriorityUpdate() != b->requestPriorityAtLastPriorityUpdate())
-            return PriorityCalculator::priorityIsLower(a->requestPriorityAtLastPriorityUpdate(), b->requestPriorityAtLastPriorityUpdate());
+            return PriorityCalculator::priority_is_lower(a->requestPriorityAtLastPriorityUpdate(), b->requestPriorityAtLastPriorityUpdate());
         // Finally sort by being in the impl tree versus being completely unreferenced
         if (a->inDrawingImplTree() != b->inDrawingImplTree())
             return (a->inDrawingImplTree() < b->inDrawingImplTree());

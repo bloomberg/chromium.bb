@@ -46,16 +46,16 @@ int ManagedMemoryPolicy::priorityCutoffToValue(PriorityCutoff priorityCutoff)
 {
     switch (priorityCutoff) {
     case CUTOFF_ALLOW_NOTHING:
-        return PriorityCalculator::allowNothingCutoff();
+        return PriorityCalculator::AllowNothingCutoff();
     case CUTOFF_ALLOW_REQUIRED_ONLY:
-        return PriorityCalculator::allowVisibleOnlyCutoff();
+        return PriorityCalculator::AllowVisibleOnlyCutoff();
     case CUTOFF_ALLOW_NICE_TO_HAVE:
-        return PriorityCalculator::allowVisibleAndNearbyCutoff();
+        return PriorityCalculator::AllowVisibleAndNearbyCutoff();
     case CUTOFF_ALLOW_EVERYTHING:
-        return PriorityCalculator::allowEverythingCutoff();
+        return PriorityCalculator::AllowEverythingCutoff();
     }
     NOTREACHED();
-    return PriorityCalculator::allowNothingCutoff();
+    return PriorityCalculator::AllowNothingCutoff();
 }
 
 // static

@@ -129,7 +129,7 @@ protected:
             m_textures[i] = PrioritizedResource::create(
                 m_resourceManager.get(), gfx::Size(300, 150), GL_RGBA);
             m_textures[i]->setRequestPriority(
-                PriorityCalculator::visiblePriority(true));
+                PriorityCalculator::VisiblePriority(true));
         }
         m_resourceManager->prioritizeTextures();
 
