@@ -100,7 +100,7 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
   if (!render_view) return v8::Undefined();
 
   GURL osd_url(name);
-  if (!osd_url.is_empty()) {
+  if (!osd_url.is_empty() && osd_url.is_valid()) {
     render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
         render_view->GetRoutingID(), render_view->GetPageId(), osd_url,
         search_provider::EXPLICIT_PROVIDER));
