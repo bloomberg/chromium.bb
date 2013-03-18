@@ -11,10 +11,11 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop_views.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
@@ -267,9 +268,8 @@ int BookmarkMenuDelegate::OnPerformDrop(
       break;
   }
 
-  int result = bookmark_utils::PerformBookmarkDrop(
-      profile_, drop_data_, drop_parent, index_to_drop_at);
-  return result;
+  return chrome::DropBookmarks(profile_, drop_data_,
+                               drop_parent, index_to_drop_at);
 }
 
 bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,

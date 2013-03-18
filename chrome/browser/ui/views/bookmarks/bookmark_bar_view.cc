@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
+#include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,7 +36,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop_views.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -896,8 +897,7 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
   const BookmarkNodeData data = drop_info_->data;
   DCHECK(data.is_valid());
   drop_info_.reset();
-  return bookmark_utils::PerformBookmarkDrop(browser_->profile(), data,
-                                             parent_node, index);
+  return chrome::DropBookmarks(browser_->profile(), data, parent_node, index);
 }
 
 void BookmarkBarView::ShowContextMenu(const gfx::Point& p,

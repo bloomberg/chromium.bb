@@ -16,14 +16,12 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/events/event.h"
 #include "ui/base/models/tree_node_iterator.h"
 
@@ -113,29 +111,6 @@ const BookmarkNode* CreateNewNode(BookmarkModel* model,
 }  // namespace
 
 namespace bookmark_utils {
-
-int PerformBookmarkDrop(Profile* profile,
-                        const BookmarkNodeData& data,
-                        const BookmarkNode* parent_node,
-                        int index) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  if (data.IsFromProfile(profile)) {
-    const std::vector<const BookmarkNode*> dragged_nodes =
-        data.GetNodes(profile);
-    if (!dragged_nodes.empty()) {
-      // Drag from same profile. Move nodes.
-      for (size_t i = 0; i < dragged_nodes.size(); ++i) {
-        model->Move(dragged_nodes[i], parent_node, index);
-        index = parent_node->GetIndexOf(dragged_nodes[i]) + 1;
-      }
-      return ui::DragDropTypes::DRAG_MOVE;
-    }
-    return ui::DragDropTypes::DRAG_NONE;
-  }
-  // Dropping a folder from different profile. Always accept.
-  CloneBookmarkNode(model, data.elements, parent_node, index);
-  return ui::DragDropTypes::DRAG_COPY;
-}
 
 void CloneBookmarkNode(BookmarkModel* model,
                        const std::vector<BookmarkNodeData::Element>& elements,

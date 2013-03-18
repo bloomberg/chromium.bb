@@ -12,31 +12,14 @@
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/snippet.h"
-#include "ui/gfx/native_widget_types.h"
 
 class BookmarkModel;
 class BookmarkNode;
 class PrefRegistrySyncable;
-class Profile;
-
-namespace content {
-class BrowserContext;
-}
-
-namespace ui {
-class DropTargetEvent;
-}
 
 // A collection of bookmark utility functions used by various parts of the UI
 // that show bookmarks: bookmark manager, bookmark bar view ...
 namespace bookmark_utils {
-
-// Performs a drop of bookmark data onto |parent_node| at |index|. Returns the
-// type of drop the resulted.
-int PerformBookmarkDrop(Profile* profile,
-                        const BookmarkNodeData& data,
-                        const BookmarkNode* parent_node,
-                        int index);
 
 // Clones bookmark node, adding newly created nodes to |parent| starting at
 // |index_to_add_at|.
