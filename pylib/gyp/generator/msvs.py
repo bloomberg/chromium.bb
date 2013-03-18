@@ -64,6 +64,7 @@ generator_additional_path_sections = [
 generator_additional_non_configuration_keys = [
     'msvs_cygwin_dirs',
     'msvs_cygwin_shell',
+    'msvs_large_pdb',
     'msvs_shard',
 ]
 
@@ -1767,6 +1768,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   # Optionally shard targets marked with 'msvs_shard': SHARD_COUNT.
   (target_list, target_dicts) = MSVSUtil.ShardTargets(target_list, target_dicts)
+
+  # Optionally use the large PDB workaround for targets marked with
+  # 'msvs_large_pdb': 1.
+  (target_list, target_dicts) = MSVSUtil.InsertLargePdbShims(
+        target_list, target_dicts, generator_default_variables)
 
   # Prepare the set of configurations.
   configs = set()

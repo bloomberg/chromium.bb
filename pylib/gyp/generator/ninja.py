@@ -1784,6 +1784,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
   user_config = params.get('generator_flags', {}).get('config', None)
   if gyp.common.GetFlavor(params) == 'win':
     target_list, target_dicts = MSVSUtil.ShardTargets(target_list, target_dicts)
+    target_list, target_dicts = MSVSUtil.InsertLargePdbShims(
+        target_list, target_dicts, generator_default_variables)
+
   if user_config:
     GenerateOutputForConfig(target_list, target_dicts, data, params,
                             user_config)
