@@ -45,33 +45,7 @@ enum OperandFormat {
 
   /* See VPERMIL2Px instruction for description of 2-bit operand type. */
   OPERAND_FORMAT_2_BIT = OPERAND_FORMATS_REGISTER_MAX,
-  /*
-   * SIMD memory access operands.  Note: 3D Now! and MMX instructions use
-   * OPERAND_FORMAT_64_BIT operands which are used for GP registers, too.
-   * This overloading is not good and it may be good idea to separate them
-   * but sadly AMD/Intel manuals conflate them and it was deemed that it's
-   * too much work to separate them.
-   */
-  OPERAND_FORMAT_128_BIT,
-  OPERAND_FORMAT_256_BIT,
-
-  /* OPERAND_X87_SIZE_*_BIT are signed integers in memory.*/
-  OPERAND_FORMAT_X87_16_BIT,
-  OPERAND_FORMAT_X87_32_BIT,
-  OPERAND_FORMAT_X87_64_BIT,
-
-  /* OPERAND_FLOAT_SIZE_*_BIT are used for in-memory operands. */
-  OPERAND_FORMAT_FLOAT_32_BIT,
-  OPERAND_FORMAT_FLOAT_64_BIT,
-  OPERAND_FORMAT_FLOAT_80_BIT,
-
-  /* Miscellaneous structures in memory.  */
-  OPERAND_FORMAT_X87_BCD,           /* 10-byte packed BCD value.              */
-  OPERAND_FORMAT_X87_ENV,           /* A 14-byte or 28-byte x87 environment.  */
-  OPERAND_FORMAT_X87_STATE,         /* A 94-byte or 108-byte x87 state.       */
-  OPERAND_FORMAT_X87_MMX_XMM_STATE, /* A 512-byte extended x87/MMX/XMM state. */
-  OPERAND_FORMAT_SELECTOR,          /* Operand is 6/10 bytes selector.        */
-  OPERAND_FORMAT_FAR_PTR            /* Operand is 6/10 bytes far pointer.     */
+  OPERAND_FORMAT_MEMORY
 };
 
 enum OperandName {

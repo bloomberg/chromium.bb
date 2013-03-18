@@ -359,7 +359,7 @@ class TestInstructionPrinter(unittest.TestCase):
          @instruction_mov
          @operands_count_is_2
          @operand0_32bit
-         @operand1_32bit
+         @operand1_memory
          @operand0_from_modrm_reg
          @operand1_rm
          any* &
@@ -465,7 +465,7 @@ class TestInstructionPrinter(unittest.TestCase):
         0xbf
         @instruction_pavgusb
         @operands_count_is_2
-        @operand0_64bit
+        @operand0_memory
         @operand1_mmx
         @CPUFeature_3DNOW
         """.split())

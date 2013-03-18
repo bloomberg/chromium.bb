@@ -402,47 +402,18 @@
   action operand0_8bit       { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
   action operand0_32bit      { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
   action operand0_64bit      { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
-  action operand0_128bit     { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_128_BIT); }
-  action operand0_256bit     { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_256_BIT); }
+  action operand0_memory     { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_MEMORY); }
   action operand0_creg {
     SET_OPERAND_FORMAT(0, OPERAND_FORMAT_CONTROL_REGISTER);
   }
   action operand0_dreg {
     SET_OPERAND_FORMAT(0, OPERAND_FORMAT_DEBUG_REGISTER);
   }
-  action operand0_farptr     { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_FAR_PTR); }
-  action operand0_float32bit {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_FLOAT_32_BIT);
-  }
-  action operand0_float64bit {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_FLOAT_64_BIT);
-  }
-  action operand0_float80bit {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_FLOAT_80_BIT);
-  }
   action operand0_mmx        { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_MMX); }
   action operand0_segreg {
     SET_OPERAND_FORMAT(0, OPERAND_FORMAT_SEGMENT_REGISTER);
   }
-  action operand0_selector {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_SELECTOR);
-  }
   action operand0_x87        { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_ST); }
-  action operand0_x87_16bit {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_X87_16_BIT);
-  }
-  action operand0_x87_32bit {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_X87_32_BIT);
-  }
-  action operand0_x87_64bit {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_X87_64_BIT);
-  }
-  action operand0_x87_bcd    { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_X87_BCD); }
-  action operand0_x87_env    { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_X87_ENV); }
-  action operand0_x87_mmx_xmm_state {
-    SET_OPERAND_FORMAT(0, OPERAND_FORMAT_X87_MMX_XMM_STATE);
-  }
-  action operand0_x87_state  { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_X87_STATE);}
   action operand0_xmm        { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_XMM); }
   action operand0_ymm        { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_YMM); }
 
@@ -450,20 +421,12 @@
   action operand1_16bit      { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT); }
   action operand1_32bit      { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT); }
   action operand1_64bit      { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT); }
-  action operand1_128bit     { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_128_BIT); }
-  action operand1_256bit     { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_256_BIT); }
+  action operand1_memory     { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_MEMORY); }
   action operand1_creg {
     SET_OPERAND_FORMAT(1, OPERAND_FORMAT_CONTROL_REGISTER);
   }
   action operand1_dreg {
     SET_OPERAND_FORMAT(1, OPERAND_FORMAT_DEBUG_REGISTER);
-  }
-  action operand1_farptr     { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_FAR_PTR); }
-  action operand1_float32bit {
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_FLOAT_32_BIT);
-  }
-  action operand1_float64bit {
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_FLOAT_64_BIT);
   }
   action operand1_mmx        { SET_OPERAND_FORMAT(1, OPERAND_FORMAT_MMX); }
   action operand1_segreg {
@@ -477,26 +440,12 @@
   action operand2_16bit      { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_16_BIT); }
   action operand2_32bit      { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_32_BIT); }
   action operand2_64bit      { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_64_BIT); }
-  action operand2_128bit     { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_128_BIT); }
-  action operand2_256bit     { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_256_BIT); }
-  action operand2_float32bit {
-    SET_OPERAND_FORMAT(2, OPERAND_FORMAT_FLOAT_32_BIT);
-  }
-  action operand2_float64bit {
-    SET_OPERAND_FORMAT(2, OPERAND_FORMAT_FLOAT_64_BIT);
-  }
+  action operand2_memory     { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_MEMORY); }
   action operand2_xmm        { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_XMM); }
   action operand2_ymm        { SET_OPERAND_FORMAT(2, OPERAND_FORMAT_YMM); }
 
   action operand3_8bit       { SET_OPERAND_FORMAT(3, OPERAND_FORMAT_8_BIT); }
-  action operand3_128bit     { SET_OPERAND_FORMAT(3, OPERAND_FORMAT_128_BIT); }
-  action operand3_256bit     { SET_OPERAND_FORMAT(3, OPERAND_FORMAT_256_BIT); }
-  action operand3_float32bit {
-    SET_OPERAND_FORMAT(3, OPERAND_FORMAT_FLOAT_32_BIT);
-  }
-  action operand3_float64bit {
-    SET_OPERAND_FORMAT(3, OPERAND_FORMAT_FLOAT_64_BIT);
-  }
+  action operand3_memory     { SET_OPERAND_FORMAT(3, OPERAND_FORMAT_MEMORY); }
   action operand3_xmm        { SET_OPERAND_FORMAT(3, OPERAND_FORMAT_XMM); }
   action operand3_ymm        { SET_OPERAND_FORMAT(3, OPERAND_FORMAT_YMM); }
 

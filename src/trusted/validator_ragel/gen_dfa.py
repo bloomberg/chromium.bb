@@ -106,6 +106,9 @@ class Operand(object):
     Returns:
       String like '8bit', '32bit', 'xmm', 'mmx', etc.
     """
+    if self.arg_type == def_format.OperandType.MEMORY:
+      return 'memory'
+
     if self.arg_type == def_format.OperandType.SEGMENT_REGISTER_IN_REG:
       return 'segreg'
 
@@ -139,14 +142,9 @@ class Operand(object):
       return '32bit'
     if self.size == 'q':
       return '64bit'
-    if self.size == 'o':
-      return '128bit'
 
     if self.size == 'r':
       return {32: '32bit', 64: '64bit'}[bitness]
-
-    if self.size == 'p':
-      return 'farptr'
 
     if self.size == '7':
       return 'x87'
@@ -155,12 +153,6 @@ class Operand(object):
       assert self.arg_type == def_format.OperandType.IMMEDIATE
       return '2bit'
 
-    if self.arg_type == def_format.OperandType.MEMORY:
-      # TODO(shcherabina): introduce proper 'memory' format and get rid of
-      # redundant formats.
-      return '8bit'
-
-    # TODO(shcherbina): support other formats.
     raise NotImplementedError(self)
 
   def __str__(self):
