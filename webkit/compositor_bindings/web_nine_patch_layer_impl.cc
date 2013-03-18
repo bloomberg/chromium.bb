@@ -4,7 +4,7 @@
 
 #include "webkit/compositor_bindings/web_nine_patch_layer_impl.h"
 
-#include "cc/nine_patch_layer.h"
+#include "cc/layers/nine_patch_layer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"

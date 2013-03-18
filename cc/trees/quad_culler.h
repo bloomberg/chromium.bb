@@ -6,7 +6,7 @@
 #define CC_TREES_QUAD_CULLER_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/quad_sink.h"
+#include "cc/layers/quad_sink.h"
 #include "cc/quads/render_pass.h"
 
 namespace cc {

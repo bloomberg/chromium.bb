@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "cc/base/switches.h"
-#include "cc/image_layer.h"
-#include "cc/picture_image_layer.h"
+#include "cc/layers/image_layer.h"
+#include "cc/layers/picture_image_layer.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_layer_impl_fixed_bounds.h"
 

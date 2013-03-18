@@ -4,7 +4,7 @@
 
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 
-#include "cc/scrollbar_layer_impl.h"
+#include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"

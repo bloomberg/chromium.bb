@@ -5,7 +5,7 @@
 #ifndef CC_TEST_FAKE_DELEGATED_RENDERER_LAYER_H_
 #define CC_TEST_FAKE_DELEGATED_RENDERER_LAYER_H_
 
-#include "cc/delegated_renderer_layer.h"
+#include "cc/layers/delegated_renderer_layer.h"
 
 namespace cc {
 

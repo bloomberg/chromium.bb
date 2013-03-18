@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "cc/content_layer_client.h"
+#include "cc/layers/content_layer_client.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {

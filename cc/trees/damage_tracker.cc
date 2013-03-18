@@ -5,8 +5,8 @@
 #include "cc/trees/damage_tracker.h"
 
 #include "cc/base/math_util.h"
-#include "cc/layer_impl.h"
-#include "cc/render_surface_impl.h"
+#include "cc/layers/layer_impl.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 

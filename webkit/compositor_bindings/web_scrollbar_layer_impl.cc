@@ -4,7 +4,7 @@
 
 #include "webkit/compositor_bindings/web_scrollbar_layer_impl.h"
 
-#include "cc/scrollbar_layer.h"
+#include "cc/layers/scrollbar_layer.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_to_ccscrollbar_theme_painter_adapter.h"
 

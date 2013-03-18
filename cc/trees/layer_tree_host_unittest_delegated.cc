@@ -4,8 +4,8 @@
 
 #include "cc/trees/layer_tree_host.h"
 
-#include "cc/delegated_renderer_layer.h"
-#include "cc/delegated_renderer_layer_impl.h"
+#include "cc/layers/delegated_renderer_layer.h"
+#include "cc/layers/delegated_renderer_layer_impl.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/texture_draw_quad.h"

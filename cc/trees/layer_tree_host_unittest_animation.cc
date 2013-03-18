@@ -6,8 +6,8 @@
 
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
-#include "cc/layer.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/layer.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_test_common.h"

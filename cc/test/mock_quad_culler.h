@@ -6,7 +6,7 @@
 #define CC_TEST_MOCK_QUAD_CULLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/quad_sink.h"
+#include "cc/layers/quad_sink.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 

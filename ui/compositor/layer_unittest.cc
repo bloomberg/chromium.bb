@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "cc/layer.h"
+#include "cc/layers/layer.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

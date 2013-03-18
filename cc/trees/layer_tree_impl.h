@@ -7,7 +7,7 @@
 
 #include "base/hash_tables.h"
 #include "base/values.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/layer_impl.h"
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {

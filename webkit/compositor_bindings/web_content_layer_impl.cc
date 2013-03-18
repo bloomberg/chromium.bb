@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "cc/base/switches.h"
-#include "cc/content_layer.h"
-#include "cc/picture_layer.h"
+#include "cc/layers/content_layer.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"

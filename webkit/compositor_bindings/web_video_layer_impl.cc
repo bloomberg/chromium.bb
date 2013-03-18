@@ -5,7 +5,7 @@
 #include "webkit/compositor_bindings/web_video_layer_impl.h"
 
 #include "base/bind.h"
-#include "cc/video_layer.h"
+#include "cc/layers/video_layer.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_to_ccvideo_frame_provider.h"
 #include "webkit/media/webvideoframe_impl.h"

@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/input/top_controls_manager_client.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"

@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_CONTENT_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/tiled_layer_impl.h"
+#include "cc/layers/tiled_layer_impl.h"
 
 namespace cc {
 

@@ -6,7 +6,7 @@
 #define WebExternalTextureLayerImpl_h
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/texture_layer_client.h"
+#include "cc/layers/texture_layer_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 

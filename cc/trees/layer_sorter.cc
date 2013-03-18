@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "cc/base/math_util.h"
-#include "cc/render_surface_impl.h"
+#include "cc/layers/render_surface_impl.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

@@ -7,7 +7,7 @@
 #include <android/native_window_jni.h>
 
 #include "base/bind.h"
-#include "cc/video_layer.h"
+#include "cc/layers/video_layer.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"

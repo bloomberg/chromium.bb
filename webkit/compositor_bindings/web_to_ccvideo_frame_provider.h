@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/video_frame_provider.h"
+#include "cc/layers/video_frame_provider.h"
 
 namespace WebKit {
 class WebVideoFrame;

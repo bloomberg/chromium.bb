@@ -6,8 +6,8 @@
 
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
-#include "cc/layer.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/layer.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/transform_operations.h"
 
 using cc::Animation;

@@ -4,7 +4,7 @@
 
 #include "cc/trees/layer_tree_host.h"
 
-#include "cc/layer.h"
+#include "cc/layers/layer.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 

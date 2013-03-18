@@ -7,10 +7,10 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "cc/animation/scrollbar_animation_controller.h"
-#include "cc/layer.h"
-#include "cc/layer_impl.h"
-#include "cc/scrollbar_layer.h"
-#include "cc/scrollbar_layer_impl.h"
+#include "cc/layers/layer.h"
+#include "cc/layers/layer_impl.h"
+#include "cc/layers/scrollbar_layer.h"
+#include "cc/layers/scrollbar_layer_impl.h"
 
 namespace cc {
 

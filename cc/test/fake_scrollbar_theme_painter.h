@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_SCROLLBAR_THEME_PAINTER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/scrollbar_theme_painter.h"
+#include "cc/layers/scrollbar_theme_painter.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {

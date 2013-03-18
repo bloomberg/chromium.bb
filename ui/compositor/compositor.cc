@@ -16,7 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/thread_impl.h"
 #include "cc/input/input_handler.h"
-#include "cc/layer.h"
+#include "cc/layers/layer.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"

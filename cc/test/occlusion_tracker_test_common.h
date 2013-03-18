@@ -5,8 +5,8 @@
 #ifndef CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_
 #define CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_
 
-#include "cc/render_surface.h"
-#include "cc/render_surface_impl.h"
+#include "cc/layers/render_surface.h"
+#include "cc/layers/render_surface_impl.h"
 #include "cc/trees/occlusion_tracker.h"
 
 namespace cc {

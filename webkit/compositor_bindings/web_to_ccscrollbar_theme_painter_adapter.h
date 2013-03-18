@@ -6,7 +6,7 @@
 #define WEBKIT_COMPOSITOR_BINDINGS_WEB_TO_CCSCROLLBAR_THEME_PAINTER_ADAPTER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/scrollbar_theme_painter.h"
+#include "cc/layers/scrollbar_theme_painter.h"
 
 namespace WebKit {
 

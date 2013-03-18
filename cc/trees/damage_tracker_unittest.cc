@@ -5,7 +5,7 @@
 #include "cc/trees/damage_tracker.h"
 
 #include "cc/base/math_util.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"

@@ -6,7 +6,7 @@
 #define WebContentLayerImpl_h
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/content_layer_client.h"
+#include "cc/layers/content_layer_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"

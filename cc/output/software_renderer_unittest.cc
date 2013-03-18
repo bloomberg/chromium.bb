@@ -4,9 +4,9 @@
 
 #include "cc/output/software_renderer.h"
 
+#include "cc/layers/quad_sink.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/software_output_device.h"
-#include "cc/quad_sink.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"

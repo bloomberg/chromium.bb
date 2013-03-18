@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "cc/animation/layer_animation_controller.h"
-#include "cc/layer.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/layer.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

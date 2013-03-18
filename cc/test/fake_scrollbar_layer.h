@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_SCROLLBAR_LAYER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/scrollbar_layer.h"
+#include "cc/layers/scrollbar_layer.h"
 
 namespace cc {
 

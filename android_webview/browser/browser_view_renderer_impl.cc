@@ -12,7 +12,7 @@
 #include "base/android/jni_android.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "cc/layer.h"
+#include "cc/layers/layer.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"

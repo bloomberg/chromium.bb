@@ -6,10 +6,10 @@
 
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "cc/content_layer.h"
-#include "cc/layer.h"
-#include "cc/nine_patch_layer.h"
-#include "cc/solid_color_layer.h"
+#include "cc/layers/content_layer.h"
+#include "cc/layers/layer.h"
+#include "cc/layers/nine_patch_layer.h"
+#include "cc/layers/solid_color_layer.h"
 
 namespace cc {
 

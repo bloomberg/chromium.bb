@@ -4,7 +4,7 @@
 
 #include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 
-#include "cc/solid_color_layer.h"
+#include "cc/layers/solid_color_layer.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 
 using cc::SolidColorLayer;

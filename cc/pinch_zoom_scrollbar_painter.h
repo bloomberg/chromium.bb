@@ -6,7 +6,7 @@
 #define CC_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
 
 #include "base/compiler_specific.h"
-#include "cc/scrollbar_theme_painter.h"
+#include "cc/layers/scrollbar_theme_painter.h"
 
 namespace cc {
 

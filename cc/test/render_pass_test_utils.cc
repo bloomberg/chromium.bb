@@ -4,8 +4,8 @@
 
 #include "cc/test/render_pass_test_utils.h"
 
-#include "cc/append_quads_data.h"
-#include "cc/quad_sink.h"
+#include "cc/layers/append_quads_data.h"
+#include "cc/layers/quad_sink.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"

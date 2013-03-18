@@ -4,9 +4,9 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 
+#include "cc/layers/solid_color_layer.h"
+#include "cc/layers/texture_layer.h"
 #include "cc/output/context_provider.h"
-#include "cc/solid_color_layer.h"
-#include "cc/texture_layer.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"

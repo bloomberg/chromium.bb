@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
-#include "cc/layer.h"
+#include "cc/layers/layer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"

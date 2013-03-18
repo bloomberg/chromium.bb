@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "cc/solid_color_layer.h"
+#include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_test_common.h"
 
 #ifndef CC_TEST_LAYER_TREE_PIXEL_TEST_H_

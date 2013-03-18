@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/video_frame_provider.h"
+#include "cc/layers/video_frame_provider.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 

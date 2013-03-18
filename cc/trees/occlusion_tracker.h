@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
-#include "cc/layer_iterator.h"
+#include "cc/layers/layer_iterator.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {

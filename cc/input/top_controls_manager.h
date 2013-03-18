@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/layer_impl.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d_f.h"
 

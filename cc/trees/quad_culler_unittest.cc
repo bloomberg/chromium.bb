@@ -4,14 +4,14 @@
 
 #include "cc/trees/quad_culler.h"
 
-#include "cc/append_quads_data.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/overdraw_metrics.h"
+#include "cc/layers/append_quads_data.h"
+#include "cc/layers/tiled_layer_impl.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/tiled_layer_impl.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"

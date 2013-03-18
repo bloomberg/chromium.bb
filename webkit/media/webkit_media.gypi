@@ -81,7 +81,7 @@
         'simple_video_frame_provider.cc',
         'simple_video_frame_provider.h',
         'video_frame_provider.cc',
-        'video_frame_provider.h',
+        'layers/video_frame_provider.h',
         'webaudiosourceprovider_impl.cc',
         'webaudiosourceprovider_impl.h',
         'webmediaplayer_delegate.h',

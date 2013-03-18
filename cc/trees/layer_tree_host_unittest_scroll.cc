@@ -4,9 +4,9 @@
 
 #include "cc/trees/layer_tree_host.h"
 
-#include "cc/content_layer.h"
-#include "cc/layer.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/content_layer.h"
+#include "cc/layers/layer.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"

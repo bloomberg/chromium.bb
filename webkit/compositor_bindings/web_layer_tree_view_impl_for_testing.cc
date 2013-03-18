@@ -12,7 +12,7 @@
 #include "cc/base/thread_impl.h"
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "cc/input/input_handler.h"
-#include "cc/layer.h"
+#include "cc/layers/layer.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"

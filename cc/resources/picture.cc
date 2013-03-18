@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/debug/trace_event.h"
-#include "cc/content_layer_client.h"
 #include "cc/debug/rendering_stats.h"
+#include "cc/layers/content_layer_client.h"
 #include "cc/resources/picture.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"

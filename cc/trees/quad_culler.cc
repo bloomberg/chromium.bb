@@ -4,10 +4,10 @@
 
 #include "cc/trees/quad_culler.h"
 
-#include "cc/append_quads_data.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/overdraw_metrics.h"
-#include "cc/layer_impl.h"
+#include "cc/layers/append_quads_data.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/trees/occlusion_tracker.h"
