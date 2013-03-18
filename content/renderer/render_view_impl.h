@@ -105,7 +105,6 @@ class WebMediaPlayerManagerAndroid;
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebCompositorOutputSurface;
 class WebDOMMessageEvent;
 class WebDataSource;
 class WebDateTimeChooserCompletion;

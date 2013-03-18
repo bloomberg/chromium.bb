@@ -46,47 +46,9 @@ using WebKit::WebVideoLayer;
 
 namespace webkit {
 
-WebCompositorSupportImpl::WebCompositorSupportImpl() : initialized_(false) {}
+WebCompositorSupportImpl::WebCompositorSupportImpl() {}
 
 WebCompositorSupportImpl::~WebCompositorSupportImpl() {}
-
-void WebCompositorSupportImpl::initialize(
-    WebKit::WebThread* compositor_thread) {
-  DCHECK(!initialized_);
-  initialized_ = true;
-  if (compositor_thread) {
-    webkit_glue::WebThreadImpl* compositor_thread_impl =
-        static_cast<webkit_glue::WebThreadImpl*>(compositor_thread);
-    compositor_thread_message_loop_proxy_ =
-        compositor_thread_impl->message_loop()->message_loop_proxy();
-  } else {
-    compositor_thread_message_loop_proxy_ = NULL;
-  }
-}
-
-bool WebCompositorSupportImpl::isThreadingEnabled() {
-  return compositor_thread_message_loop_proxy_;
-}
-
-void WebCompositorSupportImpl::shutdown() {
-  DCHECK(initialized_);
-  initialized_ = false;
-  compositor_thread_message_loop_proxy_ = NULL;
-}
-
-WebKit::WebCompositorOutputSurface*
-WebCompositorSupportImpl::createOutputSurfaceFor3D(
-    WebKit::WebGraphicsContext3D* context) {
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3d = make_scoped_ptr(context);
-  return new cc::OutputSurface(context3d.Pass());
-}
-
-WebKit::WebCompositorOutputSurface*
-WebCompositorSupportImpl::createOutputSurfaceForSoftware() {
-  scoped_ptr<cc::SoftwareOutputDevice> software_device =
-      make_scoped_ptr(new cc::SoftwareOutputDevice);
-  return new cc::OutputSurface(software_device.Pass());
-}
 
 WebLayer* WebCompositorSupportImpl::createLayer() {
   return new WebKit::WebLayerImpl();

@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/software_output_device.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 namespace gfx {
@@ -31,7 +30,7 @@ class OutputSurfaceClient;
 //      From here on, it will only be used on the compositor thread.
 //   3. If the 3D context is lost, then the compositor will delete the output
 //      surface (on the compositor thread) and go back to step 1.
-class CC_EXPORT OutputSurface : public WebKit::WebCompositorOutputSurface {
+class CC_EXPORT OutputSurface {
  public:
   OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
 

@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
 
 namespace WebKit {
-class WebCompositorOutputSurface;
 class WebGraphicsContext3D;
 }
 
@@ -23,12 +22,6 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   WebCompositorSupportImpl();
   virtual ~WebCompositorSupportImpl();
 
-  virtual void initialize(WebKit::WebThread* compositor_thread);
-  virtual bool isThreadingEnabled();
-  virtual void shutdown();
-  virtual WebKit::WebCompositorOutputSurface* createOutputSurfaceFor3D(
-      WebKit::WebGraphicsContext3D* context);
-  virtual WebKit::WebCompositorOutputSurface* createOutputSurfaceForSoftware();
   virtual WebKit::WebLayer* createLayer();
   virtual WebKit::WebContentLayer* createContentLayer(
       WebKit::WebContentLayerClient* client);
@@ -49,13 +42,6 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual WebKit::WebFloatAnimationCurve* createFloatAnimationCurve();
   virtual WebKit::WebTransformAnimationCurve* createTransformAnimationCurve();
   virtual WebKit::WebTransformOperations* createTransformOperations();
-
-  scoped_refptr<base::MessageLoopProxy> compositor_thread_message_loop_proxy() {
-    return compositor_thread_message_loop_proxy_;
-  }
- private:
-  scoped_refptr<base::MessageLoopProxy> compositor_thread_message_loop_proxy_;
-  bool initialized_;
 };
 
 }  // namespace webkit
