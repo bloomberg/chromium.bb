@@ -30,6 +30,7 @@ namespace {
 
 // Dimensions.
 const int kIconColumnWidth = message_center::kNotificationIconSize;
+const int kLegacyIconSize = 40;
 const int kIconToTextPadding = 16;
 const int kTextTopPadding = 6;
 const int kTextLeftPadding = kIconColumnWidth + kIconToTextPadding;
@@ -47,11 +48,17 @@ const int kButtonTitleTopPadding = 0;
 // view::Label from modifying the text color and will not actually be drawn.
 // See view::Label's SetEnabledColor() and SetBackgroundColor() for details.
 const SkColor kBackgroundColor = SkColorSetRGB(255, 255, 255);
-const SkColor kTitleColor = SkColorSetRGB(68, 68, 68);
-const SkColor kTitleBackgroundColor = SK_ColorWHITE;
-const SkColor kMessageColor = SkColorSetRGB(136, 136, 136);
-const SkColor kMessageBackgroundColor = SK_ColorBLACK;
+const SkColor kLegacyIconBackgroundColor = SkColorSetRGB(230, 230, 230);
+const SkColor kRegularTextColor = SkColorSetRGB(68, 68, 68);
+const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
+const SkColor kDimTextColor = SkColorSetRGB(136, 136, 136);
+const SkColor kDimTextBackgroundColor = SK_ColorBLACK;
 const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
+
+// Static.
+views::Background* MakeBackground(SkColor color = kBackgroundColor) {
+  return views::Background::CreateSolidBackground(color);
+}
 
 // Static.
 views::Border* MakeBorder(int top,
@@ -119,16 +126,16 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetElideBehavior(views::Label::ELIDE_AT_END);
-  title->SetEnabledColor(kTitleColor);
-  title->SetBackgroundColor(kTitleBackgroundColor);
+  title->SetEnabledColor(kRegularTextColor);
+  title->SetBackgroundColor(kRegularTextBackgroundColor);
   AddChildView(title);
 
   views::Label* message = new views::Label(item.message);
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetElideBehavior(views::Label::ELIDE_AT_END);
-  message->SetEnabledColor(kMessageColor);
-  message->SetBackgroundColor(kMessageBackgroundColor);
+  message->SetEnabledColor(kDimTextColor);
+  message->SetBackgroundColor(kDimTextBackgroundColor);
   AddChildView(message);
 
   PreferredSizeChanged();
@@ -280,8 +287,8 @@ void NotificationButton::SetTitle(const string16& title) {
     title_ = new views::Label(title);
     title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    title_->SetEnabledColor(kTitleColor);
-    title_->SetBackgroundColor(kTitleBackgroundColor);
+    title_->SetEnabledColor(kRegularTextColor);
+    title_->SetBackgroundColor(kRegularTextBackgroundColor);
     title_->set_border(MakeBorder(kButtonTitleTopPadding, 0, 0, 0));
     AddChildView(title_);
   }
@@ -342,8 +349,7 @@ NotificationView::NotificationView(const Notification& notification,
     : MessageView(notification, observer, expanded) {
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
-  background_view_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
+  background_view_->set_background(MakeBackground());
 
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
@@ -360,8 +366,8 @@ NotificationView::NotificationView(const Notification& notification,
     else
       title_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
     title_view_->SetFont(title_view_->font().DeriveFont(4));
-    title_view_->SetEnabledColor(kTitleColor);
-    title_view_->SetBackgroundColor(kTitleBackgroundColor);
+    title_view_->SetEnabledColor(kRegularTextColor);
+    title_view_->SetBackgroundColor(kRegularTextBackgroundColor);
     title_view_->set_border(MakeBorder(kTextTopPadding, 3));
     top_view_->AddChildView(title_view_);
   }
@@ -377,8 +383,8 @@ NotificationView::NotificationView(const Notification& notification,
       message_view_->SetMultiLine(true);
     else
       message_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    message_view_->SetEnabledColor(kMessageColor);
-    message_view_->SetBackgroundColor(kMessageBackgroundColor);
+    message_view_->SetEnabledColor(kRegularTextColor);
+    message_view_->SetBackgroundColor(kRegularTextBackgroundColor);
     message_view_->set_border(MakeBorder(0, 3));
     top_view_->AddChildView(message_view_);
   }
@@ -394,13 +400,21 @@ NotificationView::NotificationView(const Notification& notification,
   }
 
   // Create the notification icon view.
-  icon_view_ = new ProportionalImageView(notification.icon().AsImageSkia());
+  if (notification.type() == NOTIFICATION_TYPE_SIMPLE) {
+    views::ImageView* icon_view = new views::ImageView();
+    icon_view->SetImage(notification.icon().AsImageSkia());
+    icon_view->SetImageSize(gfx::Size(kLegacyIconSize, kLegacyIconSize));
+    icon_view->SetHorizontalAlignment(views::ImageView::CENTER);
+    icon_view->SetVerticalAlignment(views::ImageView::CENTER);
+    icon_view->set_background(MakeBackground(kLegacyIconBackgroundColor));
+    icon_view_ = icon_view;
+  } else {
+    icon_view_ = new ProportionalImageView(notification.icon().AsImageSkia());
+  }
 
   // Create the bottom_view_, which collects into a vertical box all content
   // below the notification icon except for the expand button.
   bottom_view_ = new ContainerView();
-  bottom_view_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
 
   // Create the image view if appropriate.
   image_view_ = NULL;
@@ -502,8 +516,8 @@ void NotificationView::ButtonPressed(views::Button* sender,
 
   // Show and hide subviews appropriately on expansion.
   if (sender == expand_button()) {
-    if (message_view_)
-      message_view_->SetVisible(!item_views_.size());
+    if (message_view_ && item_views_.size())
+      message_view_->SetVisible(false);
     for (size_t i = 0; i < item_views_.size(); ++i)
       item_views_[i]->SetVisible(true);
     if (image_view_)

@@ -22,25 +22,50 @@
     "notificationType": "webkit",
     "notificationOptions": [
       {
-        "iconUrl": "/images/man1-80x80.jpg",
+        "iconUrl": "/images/man1-40x40.jpg",
         "title": "Althe Frazon",
         "message": "Lorem ipsum"
       },
       {
-        "iconUrl": "/images/woman1-80x80.jpg",
+        "iconUrl": "/images/woman1-40x40.jpg",
         "title": "Kathrine Doiss",
         "message": "Dolor sit amet"
       },
       {
-        "iconUrl": "/images/woman2-80x80.jpg",
+        "iconUrl": "/images/woman2-40x40.jpg",
         "title": "Jamie Haynig",
         "message": "Consectetur adipisicing elit"
       },
       {
-        "iconUrl": "/images/woman3-80x80.jpg",
+        "iconUrl": "/images/woman3-40x40.jpg",
         "title": "Maricia Rilari",
         "message": "Sed do eiusmod tempor incididunt"
-      }
+      },
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit1-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Pears!",                                                                                                                      
+        "message": "Pyrus"                                                                            
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit2-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Oranges!",                                                                                                                    
+        "message": "Citrus sinensis"
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit3-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Strawberries!",                                                                                  
+        "message": "Fragaria ananassa"                                                                                                                           
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit4-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Raspberries!",                                                                                   
+        "message": "Rubus idaeus"                                                                     
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit5-360x360.jpg",                                                                                                                    
+        "title": "Notification #$#: Blueberries!",
+        "message": "Vaccinium cyanococcus"
+      }                                                                                                                                                           
     ]
   },
   {
@@ -48,25 +73,50 @@
     "notificationType": "simple",
     "notificationOptions": [
       {
-        "iconUrl": "/images/man1-80x80.jpg",
+        "iconUrl": "/images/man1-40x40.jpg",
         "title": "Althe Frazon",
         "message": "Lorem ipsum"
       },
       {
-        "iconUrl": "/images/woman1-80x80.jpg",
+        "iconUrl": "/images/woman1-40x40.jpg",
         "title": "Kathrine Doiss",
         "message": "Dolor sit amet"
       },
       {
-        "iconUrl": "/images/woman2-80x80.jpg",
+        "iconUrl": "/images/woman2-40x40.jpg",
         "title": "Jamie Haynig",
         "message": "Consectetur adipisicing elit"
       },
       {
-        "iconUrl": "/images/woman3-80x80.jpg",
+        "iconUrl": "/images/woman3-40x40.jpg",
         "title": "Maricia Rilari",
         "message": "Sed do eiusmod tempor incididunt"
-      }
+      },
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit1-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Pears!",                                                                                                                      
+        "message": "Pyrus"                                                                            
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit2-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Oranges!",                                                                                                                    
+        "message": "Citrus sinensis"
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit3-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Strawberries!",                                                                                  
+        "message": "Fragaria ananassa"                                                                                                                           
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit4-40x40.jpg",                                                                                                                    
+        "title": "Notification #$#: Raspberries!",                                                                                   
+        "message": "Rubus idaeus"                                                                     
+      },                                                                                                                                                          
+      {                                                                                                                                                           
+        "iconUrl": "/images/fruit5-360x360.jpg",                                                                                                                    
+        "title": "Notification #$#: Blueberries!",
+        "message": "Vaccinium cyanococcus"
+      }                                                                                                                                                           
     ]
   },
   {
@@ -118,7 +168,7 @@
         "message": "Rubus idaeus"
       },
       {
-        "iconUrl": "/images/fruit5-80x80.jpg",
+        "iconUrl": "/images/fruit5-360x360.jpg",
         "title": "Notification #$#: Blueberries!",
         "message": "Vaccinium cyanococcus"
       }
