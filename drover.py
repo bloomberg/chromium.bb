@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
 import optparse
 import os
 import re
@@ -72,15 +73,13 @@ def gclUpload(revision, author):
 
 def getSVNInfo(url, revision):
   info = {}
-  try:
-    svn_info = subprocess2.check_output(
-        ['svn', 'info', '%s@%s' % (url, revision)]).splitlines()
-    for line in svn_info:
-      match = re.search(r"(.*?):(.*)", line)
-      if match:
-        info[match.group(1).strip()] = match.group(2).strip()
-  except subprocess2.CalledProcessError:
-    pass
+  svn_info = subprocess2.capture(
+      ['svn', 'info', '--non-interactive', '%s@%s' % (url, revision)],
+      stderr=subprocess2.VOID).splitlines()
+  for line in svn_info:
+    match = re.search(r"(.*?):(.*)", line)
+    if match:
+      info[match.group(1).strip()] = match.group(2).strip()
   return info
 
 def isSVNDirty():
@@ -491,6 +490,8 @@ def drover(options, args):
   # Initialize some variables used below. They can be overwritten by
   # the drover.properties file.
   BASE_URL = "svn://svn.chromium.org/chrome"
+  REVERT_ALT_URLS = ['svn://svn.chromium.org/chrome-internal',
+                     'svn://svn.chromium.org/native_client']
   TRUNK_URL = BASE_URL + "/trunk/src"
   BRANCH_URL = BASE_URL + "/branches/$branch/src"
   SKIP_CHECK_WORKING = True
@@ -521,11 +522,12 @@ def drover(options, args):
       file_pattern_ = FILE_PATTERN
 
   if options.revert and options.branch:
+    print 'Note: --branch is usually not needed for reverts.'
     url = BRANCH_URL.replace("$branch", options.branch)
   elif options.merge and options.sbranch:
     url = BRANCH_URL.replace("$branch", options.sbranch)
-  elif options.revert and options.url:
-    url = options.url
+  elif options.revert:
+    url = options.url or BASE_URL
     file_pattern_ = r"[ ]+([MADUC])[ ]+((/.*)/(.*))"
   else:
     url = TRUNK_URL
@@ -541,6 +543,20 @@ def drover(options, args):
         prompt("Working copy contains uncommitted files. Continue?")):
       return 1
 
+  if options.revert and not options.no_alt_urls:
+    for cur_url in [url] + REVERT_ALT_URLS:
+      try:
+        commit_date_str = getSVNInfo(
+            cur_url, options.revert).get('Last Changed Date', 'x').split()[0]
+        commit_date = datetime.datetime.strptime(commit_date_str, '%Y-%m-%d')
+        if (datetime.datetime.now() - commit_date).days < 120:
+          if cur_url != url:
+            print 'Guessing svn repo: %s.' % cur_url,
+            print 'Use --no-alt-urls to disable heuristic.'
+            url = cur_url
+          break
+      except ValueError:
+        pass
   command = 'svn log ' + url + " -r "+str(revision) + " -v"
   os.system(command)
 
@@ -572,8 +588,6 @@ def drover(options, args):
     deleteRevision(url, revision)
   elif options.revert:
     action = "Revert"
-    if options.branch:
-      url = BRANCH_URL.replace("$branch", options.branch)
     pop_em = not options.url
     checkoutRevision(url, revision, url, True, pop_em)
     revertRevision(url, revision)
@@ -672,11 +686,13 @@ def main():
                            help='svn url to use for the revert')
   option_parser.add_option('-a', '--auditor',
                            help='overrides the author for reviewer')
-  option_parser.add_option('', '--revertbot', action='store_true',
+  option_parser.add_option('--revertbot', action='store_true',
                            default=False)
-  option_parser.add_option('', '--revertbot-commit', action='store_true',
+  option_parser.add_option('--no-alt-urls', action='store_true',
+                           help='Disable heuristics used to determine svn url')
+  option_parser.add_option('--revertbot-commit', action='store_true',
                            default=False)
-  option_parser.add_option('', '--revertbot-reviewers')
+  option_parser.add_option('--revertbot-reviewers')
   options, args = option_parser.parse_args()
 
   if not options.merge and not options.revert:
