@@ -32,9 +32,13 @@
 <li>Background script: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/main.js">main.js</a>
 <pre>
 chrome.app.runtime.onLaunched.addListener(function() {
-    chrome.app.window.create(&#39;index.html&#39;,
-      {width: 500, height: 309});
+  chrome.app.window.create(&#39;index.html&#39;, {
+    bounds: {
+      width: 500,
+      height: 309
+    }
   });
+});
 </pre></li>
 <li>User interface: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/index.html">index.html</a>
 <pre>

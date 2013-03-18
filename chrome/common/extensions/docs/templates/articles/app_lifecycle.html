@@ -98,12 +98,14 @@ not associated with any Chrome browser windows.
 <pre>
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('main.html', {
-    width: 800,
-    height: 600,
+    bounds: {
+      width: 800,
+      height: 600,
+      left: 100,
+      top: 100
+    },
     minWidth: 800,
-    minHeight: 600,
-    left: 100,
-    top: 100
+    minHeight: 600
   });
 });
 </pre>

@@ -27,7 +27,7 @@ There are two important lifecycle events, $ref:app.runtime.onLaunched and $ref:a
 <pre><code><pre>
 chrome.app.runtime.onLaunched.addListener(function() {
     chrome.app.window.create(&#39;index.html&#39;,
-      {id: &#39;mainwindow&#39;, width: 500, height: 309});
+      {id: &#39;mainwindow&#39;, bounds: {width: 500, height: 309} });
   });
 </pre></code></pre>
 
@@ -65,7 +65,7 @@ chrome.app.runtime.onRestarted.addListener(function() {
 
 function runApp(readInitialState) {
   chrome.app.window.create(&#39;index.html&#39;,
-    {id: &#39;mainwindow&#39;, width: 500, height: 309},
+    {id: &#39;mainwindow&#39;, bounds: {width: 500, height: 309} },
     // the create callback gets a reference to the AppWindow obj 
     function(win) {
       // when the callback is executed, the DOM is loaded but no script was

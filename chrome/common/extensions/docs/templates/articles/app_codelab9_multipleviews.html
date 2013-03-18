@@ -31,7 +31,7 @@ function DropCtrl($scope) {
 <li><p>In the existing <code>controller.js</code>, add the call to create a new window:
 <pre>
 chrome.app.window.create(&#39;droparea.html&#39;,
-  {id: &#39;dropArea&#39;, width: 200, height: 200 },
+  {id: &#39;dropArea&#39;, bounds: {width: 200, height: 200} },
   function(dropWin) {
     dropWin.contentWindow.$parentScope = $scope; 
   });
