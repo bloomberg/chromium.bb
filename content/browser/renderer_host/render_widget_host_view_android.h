@@ -182,7 +182,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
  private:
   void BuffersSwapped(const gpu::Mailbox& mailbox,
-                      const gfx::Size size,
+                      const gfx::Size texture_size,
+                      const gfx::SizeF content_size,
                       const base::Closure& ack_callback);
 
   // The model object.

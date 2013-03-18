@@ -494,8 +494,20 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
                                       texture_size_in_layer_);
   ImageTransportFactoryAndroid::GetInstance()->WaitSyncPoint(
       frame->gl_frame_data->sync_point);
-  BuffersSwapped(
-      frame->gl_frame_data->mailbox, frame->gl_frame_data->size, callback);
+  const gfx::Size& texture_size = frame->gl_frame_data->size;
+
+  // Calculate the content size.  This should be 0 if the texture_size is 0.
+  float dp2px = frame->metadata.device_scale_factor;
+  gfx::Vector2dF offset;
+  if (texture_size.GetArea() > 0)
+    offset = frame->metadata.location_bar_content_translation;
+  gfx::SizeF content_size(texture_size.width() - offset.x() * dp2px,
+                          texture_size.height() - offset.y() * dp2px);
+
+  BuffersSwapped(frame->gl_frame_data->mailbox,
+                 texture_size,
+                 content_size,
+                 callback);
 
 }
 
@@ -523,12 +535,13 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
             params.mailbox_name.data() + params.mailbox_name.length(),
             reinterpret_cast<char*>(mailbox.name));
 
-  BuffersSwapped(mailbox, params.size, callback);
+  BuffersSwapped(mailbox, params.size, params.size, callback);
 }
 
 void RenderWidgetHostViewAndroid::BuffersSwapped(
     const gpu::Mailbox& mailbox,
-    const gfx::Size size,
+    const gfx::Size texture_size,
+    const gfx::SizeF content_size,
     const base::Closure& ack_callback) {
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
@@ -557,8 +570,18 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
     content_view_core_->DidProduceRendererFrame();
 
   texture_layer_->SetNeedsDisplay();
-  texture_layer_->SetBounds(size);
-  texture_size_in_layer_ = size;
+  texture_layer_->SetBounds(gfx::Size(content_size.width(),
+                                      content_size.height()));
+
+  // Calculate the uv_max based on the content size relative to the texture
+  // size.
+  gfx::PointF uv_max;
+  if (texture_size.GetArea() > 0) {
+    uv_max.SetPoint(content_size.width() / texture_size.width(),
+                    content_size.height() / texture_size.height());
+  }
+  texture_layer_->SetUV(gfx::PointF(0, 0), uv_max);
+  texture_size_in_layer_ = texture_size;
   current_mailbox_ = mailbox;
   ack_callback.Run();
 }
