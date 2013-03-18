@@ -95,9 +95,14 @@ def ask_for_data(prompt):
 
 def git_set_branch_value(key, value):
   branch = Changelist().GetBranch()
-  if branch:
-    git_key = 'branch.%s.%s' % (branch, key)
-    RunGit(['config', '--int', git_key, "%d" % value])
+  if not branch:
+    return
+
+  cmd = ['config']
+  if isinstance(value, int):
+    cmd.append('--int')
+  git_key = 'branch.%s.%s' % (branch, key)
+  RunGit(cmd + [git_key, str(value)])
 
 
 def git_get_branch_default(key, default):
@@ -1288,7 +1293,11 @@ def CMDupload(parser, args):
   print_stats(options.similarity, options.find_copies, args)
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)
-  return RietveldUpload(options, args, cl)
+  ret = RietveldUpload(options, args, cl)
+  if not ret:
+    git_set_branch_value('last-upload-hash', RunGit(['rev-parse', 'HEAD']))
+
+  return ret
 
 
 def IsSubmoduleMergeCommit(ref):

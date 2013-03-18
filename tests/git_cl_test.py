@@ -166,6 +166,9 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.rietveldserver',
           'https://codereview.example.com'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset', '2'],), ''),
+      ((['git', 'rev-parse', 'HEAD'],), 'hash'),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'hash'),
+      ((['git', 'config', 'branch.hash.last-upload-hash', 'hash'],), ''),
     ]
 
   @staticmethod
