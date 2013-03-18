@@ -5,6 +5,7 @@ viettrungluu@chromium.org
 # new sandbox escapes.
 per-file *_messages.h=set noparent
 per-file *_messages.h=cdn@chromium.org
+per-file *_messages.h=cevans@chromium.org
 per-file *_messages.h=jln@chromium.org
 per-file *_messages.h=jschuh@chromium.org
 per-file *_messages.h=palmer@chromium.org

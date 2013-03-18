@@ -12,6 +12,7 @@ dmichael@chromium.org
 # new sandbox escapes.
 per-file ipc_message_start.h=set noparent
 per-file ipc_message_start.h=cdn@chromium.org
+per-file ipc_message_start.h=cevans@chromium.org
 per-file ipc_message_start.h=jln@chromium.org
 per-file ipc_message_start.h=jschuh@chromium.org
 per-file ipc_message_start.h=palmer@chromium.org

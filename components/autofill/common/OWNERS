@@ -2,6 +2,7 @@
 # new sandbox escapes.
 per-file autofill_messages.h=set noparent
 per-file autofill_messages.h=cdn@chromium.org
+per-file autofill_messages.h=cevans@chromium.org
 per-file autofill_messages.h=jln@chromium.org
 per-file autofill_messages.h=jschuh@chromium.org
 per-file autofill_messages.h=palmer@chromium.org
