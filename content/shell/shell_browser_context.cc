@@ -92,7 +92,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   CHECK(PathService::Get(base::DIR_APP_DATA, &path_));
   path_ = path_.Append("Chromium Content Shell");
 #elif defined(OS_ANDROID)
-  DCHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
+  CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
   path_ = path_.Append(FILE_PATH_LITERAL("content_shell"));
 #else
   NOTIMPLEMENTED();
