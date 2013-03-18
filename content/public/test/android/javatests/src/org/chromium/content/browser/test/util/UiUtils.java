@@ -6,13 +6,11 @@ package org.chromium.content.browser.test.util;
 
 import android.app.Activity;
 import android.app.Instrumentation;
-import android.view.View;
-
-import java.lang.reflect.Field;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
+
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Collection of UI utilities.
@@ -52,42 +50,5 @@ public class UiUtils {
     public static void settleDownUI(Instrumentation instrumentation) throws InterruptedException {
         instrumentation.waitForIdleSync();
         Thread.sleep(1000);
-    }
-
-    /**
-     * Find the parent View for the Id across all activities, as dialogs
-     * will be displayed in a separate activity. Note that in the case
-     * of several views sharing the same ID across activities, this will
-     * return the first view found.
-     *
-     * @param viewId The Id of the view.
-     * @return the view which contains the given id or null if no view with the given id exists.
-     */
-    public static View findParentViewForIdAcrossActivities(int viewId) {
-        View[] availableViews = null;
-        try {
-            Class<?> windowManager = Class.forName("android.view.WindowManagerImpl");
-
-            Field viewsField = windowManager.getDeclaredField("mViews");
-            Field instanceField = windowManager.getDeclaredField("sWindowManager");
-            viewsField.setAccessible(true);
-            instanceField.setAccessible(true);
-            Object instance = instanceField.get(null);
-            availableViews = (View[]) viewsField.get(instance);
-        } catch(Exception e) {
-            Assert.fail("Could not fetch the available views.");
-        }
-
-        if (availableViews == null || availableViews.length == 0) {
-            return null;
-        }
-
-        for (View view : availableViews) {
-            if (view.findViewById(viewId) != null) {
-                return view;
-            }
-        }
-
-        return null;
     }
 }
