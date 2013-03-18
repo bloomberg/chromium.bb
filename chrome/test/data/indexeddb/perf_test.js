@@ -105,6 +105,10 @@ var tests = [
 // Walk through many cursors into the same object store, round-robin, until
 // you've reached the end of each of them.
   [testWalkingMultipleCursors, 50],
+// Open an object store cursor, then continue(key) to the last value.
+  [testCursorSeeks, 2000, 10, 4, kDontUseIndex],
+// Open an index key cursor, then continue(key) to the last value.
+  [testCursorSeeks, 2000, 10, 4, kUseIndex],
 ];
 
 var currentTest = 0;
@@ -604,3 +608,68 @@ function testWalkingMultipleCursors(numCursors, onTestComplete) {
   }
 }
 
+function testCursorSeeks(
+    numKeys, numSeeksPerTransaction, numTransactions, useIndexForReads,
+    onTestComplete) {
+  var testName = getDisplayName(arguments);
+  var objectStoreNames = ["store"];
+  var getKey = useIndexForReads ? getForwardIndexKey : getSimpleKey;
+  var indexName;
+  if (useIndexForReads) {
+    indexName = "index";
+  }
+
+  automation.setStatus("Creating database.");
+  var options;
+  if (useIndexForReads) {
+    options = [{
+      indexName: indexName,
+      indexKeyPath: "firstName",
+      indexIsUnique: true,
+      indexIsMultiEntry: false,
+    }];
+  }
+  createDatabase(testName, objectStoreNames, onCreated, onError, options);
+
+  function onCreated(db) {
+    automation.setStatus("Setting up test database.");
+    var transaction = getTransaction(db, objectStoreNames, "readwrite",
+        function() { onSetupComplete(db); });
+    putLinearValues(transaction, objectStoreNames, numKeys, getSimpleKey,
+        getObjectValue);
+  }
+
+  function onSetupComplete(db) {
+    automation.setStatus("Setup complete.");
+    var completionFunc =
+          getCompletionFunc(db, testName, Date.now(), onTestComplete);
+    var mode = "readonly";
+    runTransactionBatch(db, numTransactions, batchFunc, objectStoreNames, mode,
+        completionFunc);
+  }
+
+  function batchFunc(transaction) {
+    for (var i in objectStoreNames) {
+      var source = transaction.objectStore(objectStoreNames[i]);
+      if (useIndexForReads)
+        source = source.index(indexName);
+      for (var j = 0; j < numSeeksPerTransaction; ++j) {
+        randomSeek(source);
+      }
+    }
+  }
+
+  function randomSeek(source) {
+    var request = useIndexForReads ? source.openKeyCursor()
+          : source.openCursor();
+    var first = true;
+    request.onerror = onError;
+    request.onsuccess = function() {
+      var cursor = request.result;
+      if (cursor && first) {
+        first = false;
+        cursor.continue(getKey(numKeys - 1));
+      }
+    };
+  }
+}
