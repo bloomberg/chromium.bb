@@ -22,7 +22,7 @@ class BookmarksTest : public InProcessBrowserTest {
 
   void OpenBookmarksManager() {
     content::TestNavigationObserver navigation_observer(
-        content::NotificationService::AllSources(), NULL, 2);
+        content::NotificationService::AllSources(), 2);
 
     // Bring up the bookmarks manager tab.
     chrome::ShowBookmarkManager(browser());

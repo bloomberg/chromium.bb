@@ -193,7 +193,7 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations) {
   content::TestNavigationObserver observer(
-      content::Source<NavigationController>(controller), NULL,
+      content::Source<NavigationController>(controller),
       number_of_navigations);
   base::RunLoop run_loop;
   observer.WaitForObservation(
@@ -226,7 +226,7 @@ Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 
 void NavigateToURL(chrome::NavigateParams* params) {
   content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), NULL, 1);
+      content::NotificationService::AllSources(), 1);
   chrome::Navigate(params);
   base::RunLoop run_loop;
   observer.WaitForObservation(
@@ -257,7 +257,6 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       &tab_strip->GetActiveWebContents()->GetController() : NULL;
   content::TestNavigationObserver same_tab_observer(
       content::Source<NavigationController>(controller),
-      NULL,
       number_of_navigations);
 
   std::set<Browser*> initial_browsers;

@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
   content::TestNavigationObserver observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()),
-      NULL, 2);
+      2);
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), first_url, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);

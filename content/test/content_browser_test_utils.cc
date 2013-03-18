@@ -39,7 +39,6 @@ void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
   NavigationController* controller = &window->web_contents()->GetController();
   TestNavigationObserver same_tab_observer(
       Source<NavigationController>(controller),
-      NULL,
       number_of_navigations);
 
   window->LoadURL(url);

@@ -219,7 +219,7 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
     const GURL& url,
     content::PageTransition transition) {
   content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), NULL, 1);
+      content::NotificationService::AllSources(), 1);
 
   chrome::NavigateParams params(browser, url, transition);
   params.tabstrip_index = index;

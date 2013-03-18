@@ -612,7 +612,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
   // 3. The app's URL.
   content::TestNavigationObserver test_navigation_observer(
       content::NotificationService::AllSources(),
-      NULL,
       3);
 
   // Load the launcher extension, which should launch the app.

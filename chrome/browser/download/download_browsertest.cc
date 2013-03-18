@@ -1177,7 +1177,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   content::TestNavigationObserver observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()),
-      NULL,
       1);
   bool download_assempted;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(

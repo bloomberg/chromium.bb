@@ -1930,7 +1930,6 @@ class ClickModifierTest : public InProcessBrowserTest {
           web_contents ? &web_contents->GetController() : NULL;
       content::TestNavigationObserver same_tab_observer(
           content::Source<NavigationController>(controller),
-          NULL,
           1);
       SimulateMouseClick(web_contents, modifiers, button);
       base::RunLoop run_loop;

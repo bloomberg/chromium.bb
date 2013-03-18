@@ -86,7 +86,7 @@ void FullscreenControllerTest::DenyCurrentFullscreenOrMouseLockRequest() {
 
 void FullscreenControllerTest::GoBack() {
   content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), NULL, 1);
+      content::NotificationService::AllSources(), 1);
 
   chrome::GoBack(browser(), CURRENT_TAB);
 
@@ -95,7 +95,7 @@ void FullscreenControllerTest::GoBack() {
 
 void FullscreenControllerTest::Reload() {
   content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), NULL, 1);
+      content::NotificationService::AllSources(), 1);
 
   chrome::Reload(browser(), CURRENT_TAB);
 

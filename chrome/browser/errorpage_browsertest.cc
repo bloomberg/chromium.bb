@@ -94,7 +94,6 @@ class ErrorPageTest : public InProcessBrowserTest {
         content::Source<NavigationController>(
               &browser()->tab_strip_model()->GetActiveWebContents()->
                   GetController()),
-        NULL,
         num_navigations);
     if (direction == HISTORY_NAVIGATE_BACK) {
       chrome::GoBack(browser(), CURRENT_TAB);
