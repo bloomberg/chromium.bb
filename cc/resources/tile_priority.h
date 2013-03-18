@@ -98,7 +98,8 @@ struct CC_EXPORT TilePriority {
   static const float kMaxDistanceInContentSpace;
   static const int64 kNumTilesToCoverWithInflatedViewportRectForPrioritization;
 
-  static inline float manhattanDistance(const gfx::RectF& a, const gfx::RectF& b) {
+  static inline float manhattanDistance(const gfx::RectF& a,
+                                        const gfx::RectF& b) {
     // Compute the union explicitly.
     gfx::RectF c = gfx::RectF(
         std::min(a.x(), b.x()),
@@ -127,7 +128,7 @@ struct CC_EXPORT TilePriority {
   float time_to_visible_in_seconds;
   float distance_to_visible_in_pixels;
 
-private:
+ private:
   gfx::QuadF current_screen_quad;
 };
 

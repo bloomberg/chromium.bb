@@ -76,8 +76,7 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
   return EVENTUALLY_BIN;
 }
 
-std::string ValueToString(scoped_ptr<base::Value> value)
-{
+std::string ValueToString(scoped_ptr<base::Value> value) {
   std::string str;
   base::JSONWriter::Write(value.get(), &str);
   return str;
@@ -241,7 +240,7 @@ void TileManager::UnregisterTile(Tile* tile) {
 }
 
 class BinComparator {
-public:
+ public:
   bool operator() (const Tile* a, const Tile* b) const {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
@@ -257,8 +256,11 @@ public:
     if (ams.time_to_needed_in_seconds !=  bms.time_to_needed_in_seconds)
       return ams.time_to_needed_in_seconds < bms.time_to_needed_in_seconds;
 
-    if (ams.distance_to_visible_in_pixels != bms.distance_to_visible_in_pixels)
-      return ams.distance_to_visible_in_pixels < bms.distance_to_visible_in_pixels;
+    if (ams.distance_to_visible_in_pixels !=
+        bms.distance_to_visible_in_pixels) {
+      return ams.distance_to_visible_in_pixels <
+             bms.distance_to_visible_in_pixels;
+    }
 
     gfx::Rect a_rect = a->content_rect();
     gfx::Rect b_rect = b->content_rect();
@@ -270,7 +272,8 @@ public:
 
 void TileManager::SortTiles() {
   TRACE_EVENT0("cc", "TileManager::SortTiles");
-  TRACE_COUNTER_ID1("cc", "LiveTileCount", this, live_or_allocated_tiles_.size());
+  TRACE_COUNTER_ID1(
+      "cc", "LiveTileCount", this, live_or_allocated_tiles_.size());
 
   // Sort by bin, resolution and time until needed.
   std::sort(live_or_allocated_tiles_.begin(),
@@ -442,12 +445,12 @@ void TileManager::ForceTileUploadToComplete(Tile* tile) {
 }
 
 void TileManager::GetMemoryStats(
-    size_t* memoryRequiredBytes,
-    size_t* memoryNiceToHaveBytes,
-    size_t* memoryUsedBytes) const {
-  *memoryRequiredBytes = 0;
-  *memoryNiceToHaveBytes = 0;
-  *memoryUsedBytes = 0;
+    size_t* memory_required_bytes,
+    size_t* memory_nice_to_have_bytes,
+    size_t* memory_used_bytes) const {
+  *memory_required_bytes = 0;
+  *memory_nice_to_have_bytes = 0;
+  *memory_used_bytes = 0;
   for (size_t i = 0; i < live_or_allocated_tiles_.size(); i++) {
     const Tile* tile = live_or_allocated_tiles_[i];
     const ManagedTileState& mts = tile->managed_state();
@@ -456,11 +459,11 @@ void TileManager::GetMemoryStats(
 
     size_t tile_bytes = tile->bytes_consumed_if_allocated();
     if (mts.gpu_memmgr_stats_bin == NOW_BIN)
-      *memoryRequiredBytes += tile_bytes;
+      *memory_required_bytes += tile_bytes;
     if (mts.gpu_memmgr_stats_bin != NEVER_BIN)
-      *memoryNiceToHaveBytes += tile_bytes;
+      *memory_nice_to_have_bytes += tile_bytes;
     if (mts.can_use_gpu_memory)
-      *memoryUsedBytes += tile_bytes;
+      *memory_used_bytes += tile_bytes;
   }
 }
 
@@ -484,15 +487,16 @@ scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
   scoped_ptr<base::DictionaryValue> requirements(
       new base::DictionaryValue());
 
-  size_t memoryRequiredBytes;
-  size_t memoryNiceToHaveBytes;
-  size_t memoryUsedBytes;
-  GetMemoryStats(&memoryRequiredBytes,
-                 &memoryNiceToHaveBytes,
-                 &memoryUsedBytes);
-  requirements->SetInteger("memory_required_bytes", memoryRequiredBytes);
-  requirements->SetInteger("memory_nice_to_have_bytes", memoryNiceToHaveBytes);
-  requirements->SetInteger("memory_used_bytes", memoryUsedBytes);
+  size_t memory_required_bytes;
+  size_t memory_nice_to_have_bytes;
+  size_t memory_used_bytes;
+  GetMemoryStats(&memory_required_bytes,
+                 &memory_nice_to_have_bytes,
+                 &memory_used_bytes);
+  requirements->SetInteger("memory_required_bytes", memory_required_bytes);
+  requirements->SetInteger("memory_nice_to_have_bytes",
+                           memory_nice_to_have_bytes);
+  requirements->SetInteger("memory_used_bytes", memory_used_bytes);
   return requirements.PassAs<base::Value>();
 }
 
@@ -583,10 +587,13 @@ void TileManager::AssignGpuMemoryToTiles() {
       DidTileRasterStateChange(tile, IDLE_STATE);
   }
 
-  size_t bytes_allocatable = global_state_.memory_limit_in_bytes - unreleasable_bytes;
+  size_t bytes_allocatable =
+      global_state_.memory_limit_in_bytes - unreleasable_bytes;
   size_t bytes_that_exceeded_memory_budget_in_now_bin = 0;
   size_t bytes_left = bytes_allocatable;
-  for (TileVector::iterator it = live_or_allocated_tiles_.begin(); it != live_or_allocated_tiles_.end(); ++it) {
+  for (TileVector::iterator it = live_or_allocated_tiles_.begin();
+       it != live_or_allocated_tiles_.end();
+       ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
     if (!tile->drawing_info().requires_resource())
