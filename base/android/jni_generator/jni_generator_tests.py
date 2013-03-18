@@ -796,6 +796,9 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 
     @CalledByNative
     public byte[][] returnArrayOfByteArray();
+
+    @CalledByNative
+    public Bitmap.CompressFormat getCompressFormat();
     """
     jni_generator.JniParams.SetFullyQualifiedClass('org/chromium/Foo')
     jni_generator.JniParams.ExtractImportsAndInnerClasses(test_data)
@@ -987,6 +990,17 @@ static bool RegisterNativesImpl(JNIEnv* env) {
             static=False,
             name='returnArrayOfByteArray',
             method_id_var_name='returnArrayOfByteArray',
+            java_class_name='',
+            params=[],
+            env_call=('Void', ''),
+            unchecked=False,
+        ),
+        CalledByNative(
+            return_type='Bitmap.CompressFormat',
+            system_class=False,
+            static=False,
+            name='getCompressFormat',
+            method_id_var_name='getCompressFormat',
             java_class_name='',
             params=[],
             env_call=('Void', ''),
@@ -1423,6 +1437,29 @@ Java_TestJni_returnArrayOfByteArray(JNIEnv* env, jobject obj) {
       method_id));
   base::android::CheckException(env);
   return ScopedJavaLocalRef<jobjectArray>(env, ret);
+}
+
+static base::subtle::AtomicWord g_TestJni_getCompressFormat = 0;
+static ScopedJavaLocalRef<jobject> Java_TestJni_getCompressFormat(JNIEnv* env,
+    jobject obj) {
+  /* Must call RegisterNativesImpl()  */
+  DCHECK(g_TestJni_clazz);
+  jmethodID method_id =
+      base::android::MethodID::LazyGet<
+      base::android::MethodID::TYPE_INSTANCE>(
+      env, g_TestJni_clazz,
+      "getCompressFormat",
+
+"("
+")"
+"Landroid/graphics/Bitmap$CompressFormat;",
+      &g_TestJni_getCompressFormat);
+
+  jobject ret =
+    env->CallObjectMethod(obj,
+      method_id);
+  base::android::CheckException(env);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 // Step 3: RegisterNatives.
