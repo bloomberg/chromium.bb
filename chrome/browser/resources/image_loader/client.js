@@ -79,6 +79,19 @@ ImageLoader.Client.recordPercentage = function(name, value) {
 };
 
 /**
+ * Sends a message to the Image Loader extension.
+ * @param {Object} request Hash array with request data.
+ * @param {function(Object)=} opt_callback Response handling callback.
+ *     The response is passed as a hash array.
+ * @private
+ */
+ImageLoader.Client.sendMessage_ = function(request, opt_callback) {
+  var sendMessage = chrome.runtime ? chrome.runtime.sendMessage :
+                                     chrome.extension.sendMessage;
+  sendMessage(ImageLoader.EXTENSION_ID, request, opt_callback);
+};
+
+/**
  * Handles a message from the remote image loader and calls the registered
  * callback to pass the response back to the requester.
  *
@@ -148,7 +161,7 @@ ImageLoader.Client.prototype.load = function(
     var cachedData = this.cache_.loadImage(cacheKey, opt_options.timestamp);
     if (cachedData) {
       ImageLoader.Client.recordBinary('Cache.HitMiss', 1);
-      callback({ status: 'success', data: cachedData });
+      callback({status: 'success', data: cachedData});
       return null;
     } else {
       ImageLoader.Client.recordBinary('Cache.HitMiss', 0);
@@ -162,14 +175,13 @@ ImageLoader.Client.prototype.load = function(
   // Not available in cache, performing a request to a remote extension.
   var request = opt_options;
   this.lastTaskId_++;
-  var task = { isValid: opt_isValid };
+  var task = {isValid: opt_isValid};
   this.tasks_[this.lastTaskId_] = task;
 
   request.url = url;
   request.taskId = this.lastTaskId_;
 
-  chrome.extension.sendMessage(
-      ImageLoader.EXTENSION_ID,
+  ImageLoader.Client.sendMessage_(
       request,
       function(result) {
         // Save to cache.
@@ -185,9 +197,7 @@ ImageLoader.Client.prototype.load = function(
  * @param {number} taskId Task id returned by ImageLoader.Client.load().
  */
 ImageLoader.Client.prototype.cancel = function(taskId) {
-  chrome.extension.sendMessage(
-      ImageLoader.EXTENSION_ID,
-      { taskId: taskId, cancel: true });
+  ImageLoader.Client.sendMessage_({taskId: taskId, cancel: true});
 };
 
 /**
