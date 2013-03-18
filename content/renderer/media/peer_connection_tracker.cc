@@ -428,6 +428,18 @@ void PeerConnectionTracker::TrackSessionDescriptionCallback(
   SendPeerConnectionUpdate(pc_handler, update_type, value);
 }
 
+void PeerConnectionTracker::TrackOnRenegotiationNeeded(
+    RTCPeerConnectionHandler* pc_handler) {
+  SendPeerConnectionUpdate(pc_handler, "onRenegotiationNeeded", "");
+}
+
+void PeerConnectionTracker::TrackCreateDTMFSender(
+    RTCPeerConnectionHandler* pc_handler,
+    const WebKit::WebMediaStreamTrack& track) {
+  SendPeerConnectionUpdate(pc_handler, "createDTMFSender",
+                           UTF16ToUTF8(track.id()));
+}
+
 int PeerConnectionTracker::GetNextLocalID() {
   return next_lid_++;
 }

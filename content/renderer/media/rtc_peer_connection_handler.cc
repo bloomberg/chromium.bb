@@ -615,6 +615,9 @@ WebKit::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
     DLOG(ERROR) << "Could not create native DTMF sender.";
     return NULL;
   }
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackCreateDTMFSender(this, track);
+
   return new RtcDtmfSenderHandler(sender);
 }
 
@@ -734,6 +737,8 @@ void RTCPeerConnectionHandler::OnDataChannel(
 }
 
 void RTCPeerConnectionHandler::OnRenegotiationNeeded() {
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackOnRenegotiationNeeded(this);
   client_->negotiationNeeded();
 }
 

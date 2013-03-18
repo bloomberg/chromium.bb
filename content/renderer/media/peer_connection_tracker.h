@@ -138,6 +138,14 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
       RTCPeerConnectionHandler* pc_handler, Action action,
       const std::string& type, const std::string& value);
 
+  // Sends an update when onRenegotiationNeeded is called.
+  virtual void TrackOnRenegotiationNeeded(RTCPeerConnectionHandler* pc_handler);
+
+  // Sends an update when a DTMFSender is created.
+  virtual void TrackCreateDTMFSender(
+      RTCPeerConnectionHandler* pc_handler,
+      const WebKit::WebMediaStreamTrack& track);
+
  private:
   // Assign a local ID to a peer connection so that the browser process can
   // uniquely identify a peer connection in the renderer process.
