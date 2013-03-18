@@ -399,89 +399,113 @@ class DriveFileSystemTest : public testing::Test {
     USE_SERVER_TIMESTAMP,
   };
 
-  // Creates a proto file representing a filesystem with directories:
+  // Saves a file representing a filesystem with directories:
   // drive, drive/Dir1, drive/Dir1/SubDir2
   // and files
   // drive/File1, drive/Dir1/File2, drive/Dir1/SubDir2/File3.
   // If |use_up_to_date_timestamp| is true, sets the changestamp to 654321,
   // equal to that of "account_metadata.json" test data, indicating the cache is
   // holding the latest file system info.
-  void SaveTestFileSystem(SaveTestFileSystemParam param) {
-    DriveRootDirectoryProto root;
-    root.set_version(kProtoVersion);
-    root.set_largest_changestamp(param == USE_SERVER_TIMESTAMP ? 654321 : 1);
-    DriveDirectoryProto* root_dir = root.mutable_drive_directory();
-    DriveEntryProto* dir_base = root_dir->mutable_drive_entry();
-    PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
-    dir_base->set_title("drive");
-    dir_base->set_resource_id(fake_drive_service_->GetRootResourceId());
-    dir_base->set_upload_url("http://resumable-create-media/1");
-    platform_info->set_is_directory(true);
+  bool SaveTestFileSystem(SaveTestFileSystemParam param) {
+    const std::string root_resource_id =
+        fake_drive_service_->GetRootResourceId();
+    DriveResourceMetadata resource_metadata(root_resource_id,
+                                            blocking_task_runner_);
+
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    resource_metadata.SetLargestChangestamp(
+        param == USE_SERVER_TIMESTAMP ? 654321 : 1,
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
 
     // drive/File1
-    DriveEntryProto* file = root_dir->add_child_files();
-    file->set_title("File1");
-    file->set_resource_id("resource_id:File1");
-    file->set_parent_resource_id(root_dir->drive_entry().resource_id());
-    file->set_upload_url("http://resumable-edit-media/1");
-    file->mutable_file_specific_info()->set_file_md5("md5");
-    platform_info = file->mutable_file_info();
-    platform_info->set_is_directory(false);
-    platform_info->set_size(1048576);
+    DriveEntryProto file1;
+    file1.set_title("File1");
+    file1.set_resource_id("resource_id:File1");
+    file1.set_parent_resource_id(root_resource_id);
+    file1.set_upload_url("http://resumable-edit-media/1");
+    file1.mutable_file_specific_info()->set_file_md5("md5");
+    file1.mutable_file_info()->set_is_directory(false);
+    file1.mutable_file_info()->set_size(1048576);
+    base::FilePath file_path;
+    resource_metadata.AddEntry(
+        file1,
+        google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
 
     // drive/Dir1
-    DriveDirectoryProto* dir1 = root_dir->add_child_directories();
-    dir_base = dir1->mutable_drive_entry();
-    dir_base->set_title("Dir1");
-    dir_base->set_resource_id("resource_id:Dir1");
-    dir_base->set_parent_resource_id(root_dir->drive_entry().resource_id());
-    dir_base->set_upload_url("http://resumable-create-media/2");
-    platform_info = dir_base->mutable_file_info();
-    platform_info->set_is_directory(true);
+    DriveEntryProto dir1;
+    dir1.set_title("Dir1");
+    dir1.set_resource_id("resource_id:Dir1");
+    dir1.set_parent_resource_id(root_resource_id);
+    dir1.set_upload_url("http://resumable-create-media/2");
+    dir1.mutable_file_info()->set_is_directory(true);
+    resource_metadata.AddEntry(
+        dir1,
+        google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
 
     // drive/Dir1/File2
-    file = dir1->add_child_files();
-    file->set_title("File2");
-    file->set_resource_id("resource_id:File2");
-    file->set_parent_resource_id(dir1->drive_entry().resource_id());
-    file->set_upload_url("http://resumable-edit-media/2");
-    file->mutable_file_specific_info()->set_file_md5("md5");
-    platform_info = file->mutable_file_info();
-    platform_info->set_is_directory(false);
-    platform_info->set_size(555);
+    DriveEntryProto file2;
+    file2.set_title("File2");
+    file2.set_resource_id("resource_id:File2");
+    file2.set_parent_resource_id(dir1.resource_id());
+    file2.set_upload_url("http://resumable-edit-media/2");
+    file2.mutable_file_specific_info()->set_file_md5("md5");
+    file2.mutable_file_info()->set_is_directory(false);
+    file2.mutable_file_info()->set_size(555);
+    resource_metadata.AddEntry(
+        file2,
+        google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
 
     // drive/Dir1/SubDir2
-    DriveDirectoryProto* dir2 = dir1->add_child_directories();
-    dir_base = dir2->mutable_drive_entry();
-    dir_base->set_title("SubDir2");
-    dir_base->set_resource_id("resource_id:SubDir2");
-    dir_base->set_parent_resource_id(dir1->drive_entry().resource_id());
-    dir_base->set_upload_url("http://resumable-create-media/3");
-    platform_info = dir_base->mutable_file_info();
-    platform_info->set_is_directory(true);
+    DriveEntryProto dir2;
+    dir2.set_title("SubDir2");
+    dir2.set_resource_id("resource_id:SubDir2");
+    dir2.set_parent_resource_id(dir1.resource_id());
+    dir2.set_upload_url("http://resumable-create-media/3");
+    dir2.mutable_file_info()->set_is_directory(true);
+    resource_metadata.AddEntry(
+        dir2,
+        google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
 
     // drive/Dir1/SubDir2/File3
-    file = dir2->add_child_files();
-    file->set_title("File3");
-    file->set_resource_id("resource_id:File3");
-    file->set_parent_resource_id(dir2->drive_entry().resource_id());
-    file->set_upload_url("http://resumable-edit-media/3");
-    file->mutable_file_specific_info()->set_file_md5("md5");
-    platform_info = file->mutable_file_info();
-    platform_info->set_is_directory(false);
-    platform_info->set_size(12345);
+    DriveEntryProto file3;
+    file3.set_title("File3");
+    file3.set_resource_id("resource_id:File3");
+    file3.set_parent_resource_id(dir2.resource_id());
+    file3.set_upload_url("http://resumable-edit-media/3");
+    file3.mutable_file_specific_info()->set_file_md5("md5");
+    file3.mutable_file_info()->set_is_directory(false);
+    file3.mutable_file_info()->set_size(12345);
+    resource_metadata.AddEntry(
+        file3,
+        google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
 
-    // Write this proto out to GCache/vi/meta/file_system.pb
-    std::string serialized_proto;
-    ASSERT_TRUE(root.SerializeToString(&serialized_proto));
-    ASSERT_TRUE(!serialized_proto.empty());
+    // Write resource metadata.
+    base::FilePath cache_dir_path =
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
+    if (!file_util::CreateDirectory(cache_dir_path))
+      return false;
+    resource_metadata.MaybeSave(cache_dir_path);
+    google_apis::test_util::RunBlockingPoolTask();
 
-    base::FilePath cache_dir_path = profile_->GetPath().Append(
-        FILE_PATH_LITERAL("GCache/v1/meta/"));
-    ASSERT_TRUE(file_util::CreateDirectory(cache_dir_path));
-    const int file_size = static_cast<int>(serialized_proto.length());
-    ASSERT_EQ(file_util::WriteFile(cache_dir_path.AppendASCII("file_system.pb"),
-        serialized_proto.data(), file_size), file_size);
+    return true;
   }
 
   // Verifies that |file_path| is a valid JSON file for the hosted document
@@ -933,7 +957,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
 }
 
 TEST_F(DriveFileSystemTest, CachedFeedLoading) {
-  SaveTestFileSystem(USE_OLD_TIMESTAMP);
+  ASSERT_TRUE(SaveTestFileSystem(USE_OLD_TIMESTAMP));
   ASSERT_TRUE(TestLoadMetadataFromCache());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
@@ -947,7 +971,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoading) {
 }
 
 TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
-  SaveTestFileSystem(USE_SERVER_TIMESTAMP);
+  ASSERT_TRUE(SaveTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
@@ -967,7 +991,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
 }
 
 TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
-  SaveTestFileSystem(USE_OLD_TIMESTAMP);
+  ASSERT_TRUE(SaveTestFileSystem(USE_OLD_TIMESTAMP));
 
   // Make GetResourceList fail for simulating offline situation. This will leave
   // the file system "loaded from cache, but not synced with server" state.
@@ -2161,7 +2185,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
 // TODO(satorux): Testing if WebAppsRegistry is loaded here is awkward. We
 // should move this to change_list_loader_unittest.cc. crbug.com/161703
 TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
-  SaveTestFileSystem(USE_SERVER_TIMESTAMP);
+  ASSERT_TRUE(SaveTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // No apps should be found as the webapps registry is empty.
   ScopedVector<DriveWebAppInfo> apps;
