@@ -10,6 +10,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture_pile_base.h"
+#include "skia/ext/analysis_canvas.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -43,11 +44,14 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   struct Analysis {
     Analysis();
+    ~Analysis();
 
     bool is_solid_color;
     bool is_transparent;
     bool is_cheap_to_raster;
     SkColor solid_color;
+
+    skia::AnalysisCanvas::LazyPixelRefList lazy_pixel_refs;
   };
 
   void AnalyzeInRect(const gfx::Rect& content_rect,

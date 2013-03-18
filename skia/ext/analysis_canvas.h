@@ -5,6 +5,11 @@
 #ifndef SKIA_EXT_ANALYSIS_CANVAS_H_
 #define SKIA_EXT_ANALYSIS_CANVAS_H_
 
+#include <list>
+#include <set>
+
+#include "base/hash_tables.h"
+#include "skia/ext/lazy_pixel_ref.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
@@ -20,6 +25,8 @@ class AnalysisDevice;
 // Play a picture into the canvas, and then check isCheap().
 class SK_API AnalysisCanvas : public SkCanvas {
  public:
+  typedef std::list<skia::LazyPixelRef*> LazyPixelRefList;
+
   AnalysisCanvas(AnalysisDevice*);
   virtual ~AnalysisCanvas();
 
@@ -28,6 +35,7 @@ class SK_API AnalysisCanvas : public SkCanvas {
   bool isCheap() const;
   bool getColorIfSolid(SkColor* color) const;
   bool isTransparent() const;
+  void consumeLazyPixelRefs(LazyPixelRefList* pixelRefs);
 
   // Returns the estimated cost of drawing, in arbitrary units.
   int getEstimatedCost() const;
@@ -59,12 +67,16 @@ class SK_API AnalysisCanvas : public SkCanvas {
 
 class SK_API AnalysisDevice : public SkDevice {
  public:
+  typedef std::list<skia::LazyPixelRef*> LazyPixelRefList;
+  typedef base::hash_set<uint32_t> IdSet;
+
   AnalysisDevice(const SkBitmap& bm);
   virtual ~AnalysisDevice();
 
   int getEstimatedCost() const;
   bool getColorIfSolid(SkColor* color) const;
   bool isTransparent() const;
+  void consumeLazyPixelRefs(LazyPixelRefList* pixelRefs);
 
   void setForceNotSolid(bool flag);
   void setForceNotTransparent(bool flag);
@@ -120,13 +132,20 @@ class SK_API AnalysisDevice : public SkDevice {
   int estimatedCost_;
 
  private:
+
   typedef SkDevice INHERITED;
+
+  void addPixelRefIfLazy(SkPixelRef* pixelRef);
+  void addBitmap(const SkBitmap& bitmap);
+  void addBitmapFromPaint(const SkPaint& paint);
 
   bool isForcedNotSolid_;
   bool isForcedNotTransparent_;
   bool isSolidColor_;
   SkColor color_;
   bool isTransparent_;
+  IdSet existingPixelRefIDs_;
+  LazyPixelRefList lazyPixelRefs_;
 };
 
 }  // namespace skia

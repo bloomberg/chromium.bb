@@ -4,8 +4,8 @@
 
 #include "base/compiler_specific.h"
 #include "skia/ext/analysis_canvas.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkShader.h"
 
 namespace {
 
@@ -19,6 +19,45 @@ void transparentFill(skia::AnalysisCanvas& canvas) {
 
 } // namespace
 namespace skia {
+
+class TestPixelRef : public SkPixelRef {
+ public:
+  // Pure virtual implementation.
+  SkFlattenable::Factory getFactory() { return NULL; }
+  void* onLockPixels(SkColorTable**) { return NULL; }
+  void onUnlockPixels() {}
+};
+
+class TestLazyPixelRef : public LazyPixelRef {
+ public:
+  // Pure virtual implementation.
+  SkFlattenable::Factory getFactory() { return NULL; }
+  void* onLockPixels(SkColorTable**) { return NULL; }
+  void onUnlockPixels() {}
+  bool PrepareToDecode(const PrepareParams& params) { return true; }
+  void Decode() {}
+};
+
+class TestShader : public SkShader {
+ public:
+  TestShader(SkBitmap* bitmap)
+    : bitmap_(bitmap) {
+  }
+
+  SkShader::BitmapType asABitmap(SkBitmap* bitmap,
+                                 SkMatrix*, TileMode xy[2]) const {
+    *bitmap = *bitmap_;
+    return SkShader::kDefault_BitmapType;
+  }
+
+  // Pure virtual implementation.
+  void shadeSpan(int x, int y, SkPMColor[], int count) {}
+  SkFlattenable::Factory getFactory() { return NULL; }
+
+ private:
+
+  SkBitmap* bitmap_;
+};
 
 TEST(AnalysisCanvasTest, EmptyCanvas) {
   SkBitmap emptyBitmap;
@@ -308,6 +347,106 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
   solidColorFill(canvas);
   EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
+}
+
+TEST(AnalysisCanvasTest, LazyPixelRefs) {
+  // Set up two lazy and two non-lazy pixel refs and the corresponding bitmaps.
+  TestLazyPixelRef firstLazyPixelRef;
+  firstLazyPixelRef.setURI("lazy");
+  TestLazyPixelRef secondLazyPixelRef;
+  secondLazyPixelRef.setURI("lazy");
+
+  TestPixelRef firstNonLazyPixelRef;
+  TestPixelRef secondNonLazyPixelRef;
+  secondNonLazyPixelRef.setURI("notsolazy");
+
+  SkBitmap firstLazyBitmap;
+  firstLazyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  firstLazyBitmap.setPixelRef(&firstLazyPixelRef);
+  SkBitmap secondLazyBitmap;
+  secondLazyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  secondLazyBitmap.setPixelRef(&secondLazyPixelRef);
+
+  SkBitmap firstNonLazyBitmap;
+  firstNonLazyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  SkBitmap secondNonLazyBitmap;
+  secondNonLazyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  secondNonLazyBitmap.setPixelRef(&secondNonLazyPixelRef);
+
+  // The testcase starts here.
+  SkBitmap emptyBitmap;
+  emptyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  skia::AnalysisDevice device(emptyBitmap);
+  skia::AnalysisCanvas canvas(&device);
+  
+  // This should be the first ref.
+  canvas.drawBitmap(firstLazyBitmap, 0, 0);
+  // The following will be ignored (non-lazy).
+  canvas.drawBitmap(firstNonLazyBitmap, 0, 0);
+  canvas.drawBitmap(firstNonLazyBitmap, 0, 0);
+  canvas.drawBitmap(secondNonLazyBitmap, 0, 0);
+  canvas.drawBitmap(secondNonLazyBitmap, 0, 0);
+  // This one will be ignored (already exists).
+  canvas.drawBitmap(firstLazyBitmap, 0, 0);
+  // This should be the second ref.
+  canvas.drawBitmap(secondLazyBitmap, 0, 0);
+
+  std::list<skia::LazyPixelRef*> pixelRefs;
+  canvas.consumeLazyPixelRefs(&pixelRefs);
+
+  // We expect to get only lazy pixel refs and only unique results.
+  EXPECT_EQ(pixelRefs.size(), 2u);
+  if (!pixelRefs.empty()) {
+    EXPECT_EQ(pixelRefs.front(),
+              static_cast<LazyPixelRef*>(&firstLazyPixelRef));
+    EXPECT_EQ(pixelRefs.back(),
+              static_cast<LazyPixelRef*>(&secondLazyPixelRef));
+  }
+}
+
+TEST(AnalysisCanvasTest, PixelRefsFromPaint) {
+  TestLazyPixelRef lazyPixelRef;
+  lazyPixelRef.setURI("lazy");
+
+  TestPixelRef nonLazyPixelRef;
+  nonLazyPixelRef.setURI("notsolazy");
+
+  SkBitmap lazyBitmap;
+  lazyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  lazyBitmap.setPixelRef(&lazyPixelRef);
+
+  SkBitmap nonLazyBitmap;
+  nonLazyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  nonLazyBitmap.setPixelRef(&nonLazyPixelRef);
+
+  TestShader lazyShader(&lazyBitmap);
+  TestShader nonLazyShader(&nonLazyBitmap);
+
+  SkPaint lazyPaint;
+  lazyPaint.setShader(&lazyShader);
+  SkPaint nonLazyPaint;
+  nonLazyPaint.setShader(&nonLazyShader);
+
+  SkBitmap emptyBitmap;
+  emptyBitmap.setConfig(SkBitmap::kNo_Config, 255, 255);
+  skia::AnalysisDevice device(emptyBitmap);
+  skia::AnalysisCanvas canvas(&device);
+
+  canvas.drawRect(SkRect::MakeWH(255, 255), lazyPaint);
+  canvas.drawRect(SkRect::MakeWH(255, 255), lazyPaint);
+  canvas.drawRect(SkRect::MakeWH(255, 255), lazyPaint);
+  canvas.drawRect(SkRect::MakeWH(255, 255), nonLazyPaint);
+  canvas.drawRect(SkRect::MakeWH(255, 255), nonLazyPaint);
+  canvas.drawRect(SkRect::MakeWH(255, 255), nonLazyPaint);
+
+  std::list<skia::LazyPixelRef*> pixelRefs;
+  canvas.consumeLazyPixelRefs(&pixelRefs);
+
+  // We expect to get only lazy pixel refs and only unique results.
+  EXPECT_EQ(pixelRefs.size(), 1u);
+  if (!pixelRefs.empty()) {
+    EXPECT_EQ(pixelRefs.front(), static_cast<LazyPixelRef*>(&lazyPixelRef));
+  }
 }
 
 }  // namespace skia

@@ -728,6 +728,9 @@ void TileManager::AnalyzeTile(Tile* tile) {
     managed_tile_state.picture_pile_analysis.is_transparent &=
         use_color_estimator_;
     managed_tile_state.picture_pile_analyzed = true;
+    managed_tile_state.need_to_gather_pixel_refs = false;
+    managed_tile_state.pending_pixel_refs.swap(
+        managed_tile_state.picture_pile_analysis.lazy_pixel_refs);
 
     if (managed_tile_state.picture_pile_analysis.is_solid_color) {
       tile->drawing_info().set_solid_color(
