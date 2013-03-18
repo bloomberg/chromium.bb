@@ -38,15 +38,19 @@ def OutputAnnotationStepStart(name):
   Args:
     name: The name of the step.
   """
+  print
   print '@@@SEED_STEP %s@@@' % name
   print '@@@STEP_CURSOR %s@@@' % name
   print '@@@STEP_STARTED@@@'
+  print
 
 
 def OutputAnnotationStepClosed():
   """Outputs appropriate annotation to signal the closing of a step to
   a trybot."""
+  print
   print '@@@STEP_CLOSED@@@'
+  print
 
 
 def CreateAndChangeToSourceDirectory(working_directory):
@@ -99,18 +103,27 @@ def RunGClientAndCreateConfig():
   return return_code
 
 
-def RunGClientAndSync():
+def RunGClientAndSync(reset):
   """Runs gclient and does a normal sync.
+
+  Args:
+    reset: Whether to reset any changes to the depot.
 
   Returns:
     The return code of the call.
   """
-  return RunGClient(['sync'])
+  params = ['sync', '--verbose']
+  if reset:
+    params.extend(['--reset', '--force', '--delete_unversioned_trees'])
+  return RunGClient(params)
 
 
-def SetupGitDepot(output_buildbot_annotations):
+def SetupGitDepot(output_buildbot_annotations, reset):
   """Sets up the depot for the bisection. The depot will be located in a
   subdirectory called 'bisect'.
+
+  Args:
+    reset: Whether to reset any changes to the depot.
 
   Returns:
     True if gclient successfully created the config file and did a sync, False
@@ -124,7 +137,7 @@ def SetupGitDepot(output_buildbot_annotations):
   passed = False
 
   if not RunGClientAndCreateConfig():
-    if not RunGClientAndSync():
+    if not RunGClientAndSync(reset):
       passed = True
 
   if output_buildbot_annotations:
@@ -134,12 +147,13 @@ def SetupGitDepot(output_buildbot_annotations):
   return passed
 
 
-def CreateBisectDirectoryAndSetupDepot(opts):
+def CreateBisectDirectoryAndSetupDepot(opts, reset=False):
   """Sets up a subdirectory 'bisect' and then retrieves a copy of the depot
   there using gclient.
 
   Args:
     opts: The options parsed from the command line through parse_args().
+    reset: Whether to reset any changes to the depot.
 
   Returns:
     Returns 0 on success, otherwise 1.
@@ -149,7 +163,7 @@ def CreateBisectDirectoryAndSetupDepot(opts):
     print
     return 1
 
-  if not SetupGitDepot(opts.output_buildbot_annotations):
+  if not SetupGitDepot(opts.output_buildbot_annotations, reset):
     print 'Error: Failed to grab source.'
     print
     return 1

@@ -289,7 +289,8 @@ class SourceControl(object):
     Returns:
       The return code of the call.
     """
-    return bisect_utils.RunGClient(['sync', '--revision', revision])
+    return bisect_utils.RunGClient(['sync', '--revision',
+        revision, '--verbose'])
 
 
 class GitSourceControl(SourceControl):

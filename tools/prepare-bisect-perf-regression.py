@@ -49,7 +49,7 @@ def main():
     parser.print_help()
     return 1
 
-  return bisect_utils.CreateBisectDirectoryAndSetupDepot(opts)
+  return bisect_utils.CreateBisectDirectoryAndSetupDepot(opts, True)
 
 
 if __name__ == '__main__':

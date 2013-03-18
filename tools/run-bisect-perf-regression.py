@@ -91,6 +91,11 @@ def RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
 
     cmd.append('--use_goma')
 
+    # Sometimes goma is lingering around if something went bad on a previous
+    # run. Stop it before starting a new process. Can ignore the return code
+    # since it will return an error if it wasn't running.
+    subprocess.call([goma_file, 'stop'])
+
     return_code = subprocess.call([goma_file, 'start'])
     if return_code:
       print 'Error: goma failed to start.'
