@@ -235,7 +235,7 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   // resolution.
   if (local_resolution.IsEmpty()) {
     local_resolution.dimensions_.set(kDefaultRdpScreenWidth,
-                                     kDefaultRdpScreenWidth);
+                                     kDefaultRdpScreenHeight);
     local_resolution.dpi_.set(kDefaultRdpDpi, kDefaultRdpDpi);
   }
 
