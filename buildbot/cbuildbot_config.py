@@ -829,9 +829,15 @@ chrome_info.add_config('lumpy-tot-chrome-pfq-informational',
   boards=['lumpy'],
 )
 
-chromium_info_x86.add_config('x86-webrtc-chrome-pfq-informational',)
-chromium_info_amd64.add_config('amd64-webrtc-chrome-pfq-informational',)
-chromium_info_daisy.add_config('daisy-webrtc-chrome-pfq-informational',)
+chromium_info_x86.add_config('x86-webrtc-chrome-pfq-informational',
+  archive_build_debug=True,
+)
+chromium_info_amd64.add_config('amd64-webrtc-chrome-pfq-informational',
+  archive_build_debug=True,
+)
+chromium_info_daisy.add_config('daisy-webrtc-chrome-pfq-informational',
+  archive_build_debug=True,
+)
 
 arm_generic_full = \
 full.add_config('arm-generic-full', arm,
