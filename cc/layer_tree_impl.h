@@ -199,7 +199,7 @@ class CC_EXPORT LayerTreeImpl {
   void DidUpdateScroll();
   void DidEndScroll();
 
-protected:
+ protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
   void UpdateSolidColorScrollbars();

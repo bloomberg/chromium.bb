@@ -47,21 +47,20 @@ LayerTreeImpl::~LayerTreeImpl() {
   root_layer_.reset();
 }
 
-static LayerImpl* findRootScrollLayer(LayerImpl* layer)
-{
-    if (!layer)
-        return 0;
+static LayerImpl* FindRootScrollLayerRecursive(LayerImpl* layer) {
+  if (!layer)
+    return NULL;
 
-    if (layer->scrollable())
-        return layer;
+  if (layer->scrollable())
+    return layer;
 
-    for (size_t i = 0; i < layer->children().size(); ++i) {
-        LayerImpl* found = findRootScrollLayer(layer->children()[i]);
-        if (found)
-            return found;
-    }
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    LayerImpl* found = FindRootScrollLayerRecursive(layer->children()[i]);
+    if (found)
+      return found;
+  }
 
-    return 0;
+  return NULL;
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
@@ -73,7 +72,7 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
 }
 
 void LayerTreeImpl::FindRootScrollLayer() {
-  root_scroll_layer_ = findRootScrollLayer(root_layer_.get());
+  root_scroll_layer_ = FindRootScrollLayerRecursive(root_layer_.get());
 
   if (root_layer_ && scrolling_layer_id_from_previous_tree_) {
     currently_scrolling_layer_ = LayerTreeHostCommon::findLayerInSubtree(
@@ -152,8 +151,7 @@ void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
 }
 
 void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
-    float min_page_scale_factor, float max_page_scale_factor)
-{
+    float min_page_scale_factor, float max_page_scale_factor) {
   if (!page_scale_factor)
     return;
 
@@ -162,8 +160,7 @@ void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
   page_scale_factor_ = page_scale_factor;
 }
 
-void LayerTreeImpl::SetPageScaleDelta(float delta)
-{
+void LayerTreeImpl::SetPageScaleDelta(float delta) {
   // Clamp to the current min/max limits.
   float total = page_scale_factor_ * delta;
   if (min_page_scale_factor_ && total < min_page_scale_factor_)
@@ -306,12 +303,11 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
       "calcDrawProperties should not set_needs_update_draw_properties()";
 }
 
-static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)
-{
-    DCHECK(current);
-    for (size_t i = 0; i < current->children().size(); ++i)
-        ClearRenderSurfacesOnLayerImplRecursive(current->children()[i]);
-    current->ClearRenderSurface();
+static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current) {
+  DCHECK(current);
+  for (size_t i = 0; i < current->children().size(); ++i)
+    ClearRenderSurfacesOnLayerImplRecursive(current->children()[i]);
+  current->ClearRenderSurface();
 }
 
 void LayerTreeImpl::ClearRenderSurfaces() {

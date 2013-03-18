@@ -352,32 +352,30 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   commit_number_++;
 }
 
-void LayerTreeHost::SetPinchZoomScrollbarsBoundsAndPosition()
-{
-    if (!pinch_zoom_scrollbar_horizontal_ || !pinch_zoom_scrollbar_vertical_)
-        return;
+void LayerTreeHost::SetPinchZoomScrollbarsBoundsAndPosition() {
+  if (!pinch_zoom_scrollbar_horizontal_ || !pinch_zoom_scrollbar_vertical_)
+    return;
 
-    gfx::Size size = layout_viewport_size();
-    int track_width = PinchZoomScrollbarGeometry::kTrackWidth;
+  gfx::Size size = layout_viewport_size();
+  int track_width = PinchZoomScrollbarGeometry::kTrackWidth;
 
-    pinch_zoom_scrollbar_horizontal_->SetBounds(
-        gfx::Size(size.width() - track_width, track_width));
-    pinch_zoom_scrollbar_horizontal_->SetPosition(
-        gfx::PointF(0, size.height() - track_width));
+  pinch_zoom_scrollbar_horizontal_->SetBounds(
+      gfx::Size(size.width() - track_width, track_width));
+  pinch_zoom_scrollbar_horizontal_->SetPosition(
+      gfx::PointF(0, size.height() - track_width));
 
-    pinch_zoom_scrollbar_vertical_->SetBounds(
-        gfx::Size(track_width, size.height() - track_width));
-    pinch_zoom_scrollbar_vertical_->SetPosition(
-        gfx::PointF(size.width() - track_width, 0));
+  pinch_zoom_scrollbar_vertical_->SetBounds(
+      gfx::Size(track_width, size.height() - track_width));
+  pinch_zoom_scrollbar_vertical_->SetPosition(
+      gfx::PointF(size.width() - track_width, 0));
 }
 
 static scoped_refptr<ScrollbarLayer> CreatePinchZoomScrollbar(
-    WebKit::WebScrollbar::Orientation orientation, LayerTreeHost* owner)
-{
+    WebKit::WebScrollbar::Orientation orientation,
+    LayerTreeHost* owner) {
   scoped_refptr<ScrollbarLayer> scrollbar_layer = ScrollbarLayer::Create(
-      make_scoped_ptr(
-          new PinchZoomScrollbar(orientation, owner))
-            .PassAs<WebKit::WebScrollbar>(),
+      make_scoped_ptr(new PinchZoomScrollbar(orientation, owner)).
+          PassAs<WebKit::WebScrollbar>(),
       scoped_ptr<ScrollbarThemePainter>(new PinchZoomScrollbarPainter).Pass(),
       scoped_ptr<WebKit::WebScrollbarThemeGeometry>(
           new PinchZoomScrollbarGeometry).Pass(),
@@ -387,28 +385,27 @@ static scoped_refptr<ScrollbarLayer> CreatePinchZoomScrollbar(
   return scrollbar_layer;
 }
 
-void LayerTreeHost::CreateAndAddPinchZoomScrollbars()
-{
+void LayerTreeHost::CreateAndAddPinchZoomScrollbars() {
   bool needs_properties_updated = false;
 
   if (!pinch_zoom_scrollbar_horizontal_ || !pinch_zoom_scrollbar_vertical_) {
     pinch_zoom_scrollbar_horizontal_ =
         CreatePinchZoomScrollbar(WebKit::WebScrollbar::Horizontal, this);
     pinch_zoom_scrollbar_vertical_ =
-        CreatePinchZoomScrollbar( WebKit::WebScrollbar::Vertical, this);
+        CreatePinchZoomScrollbar(WebKit::WebScrollbar::Vertical, this);
     needs_properties_updated = true;
   }
 
   DCHECK(pinch_zoom_scrollbar_horizontal_ && pinch_zoom_scrollbar_vertical_);
 
   if (!pinch_zoom_scrollbar_horizontal_->parent())
-      root_layer_->AddChild(pinch_zoom_scrollbar_horizontal_);
+    root_layer_->AddChild(pinch_zoom_scrollbar_horizontal_);
 
   if (!pinch_zoom_scrollbar_vertical_->parent())
-      root_layer_->AddChild(pinch_zoom_scrollbar_vertical_);
+    root_layer_->AddChild(pinch_zoom_scrollbar_vertical_);
 
   if (needs_properties_updated)
-      SetPinchZoomScrollbarsBoundsAndPosition();
+    SetPinchZoomScrollbarsBoundsAndPosition();
 }
 
 void LayerTreeHost::WillCommit() {
