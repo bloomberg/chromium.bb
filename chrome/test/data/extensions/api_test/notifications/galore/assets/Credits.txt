@@ -5,12 +5,11 @@ Public domain images and their origins:
   Flower2.jpg: http://www.publicdomainpictures.net/view-image.php?image=8828
   Flower3.jpg: http://www.publicdomainpictures.net/view-image.php?image=416
   Flower4.jpg: http://www.publicdomainpictures.net/view-image.php?image=38
-  Fruit1.jpg: http://www.publicdomainpictures.net/view-image.php?image=292
-  Fruit2.jpg: http://www.publicdomainpictures.net/view-image.php?image=29048
-  Fruit3.jpg: http://www.publicdomainpictures.net/view-image.php?image=3429
-  Fruit4.jpg: http://www.publicdomainpictures.net/view-image.php?image=8117
-  Fruit5.jpg: http://www.publicdomainpictures.net/view-image.php?image=3418
-  Fruit6.jpg: http://www.publicdomainpictures.net/view-image.php?image=3419
+  Fruit1.jpg: http://www.publicdomainpictures.net/view-image.php?image=3429
+  Fruit2.jpg: http://www.publicdomainpictures.net/view-image.php?image=292
+  Fruit3.jpg: http://www.publicdomainpictures.net/view-image.php?image=8117
+  Fruit4.jpg: http://www.publicdomainpictures.net/view-image.php?image=3418
+  Fruit5.jpg: http://www.publicdomainpictures.net/view-image.php?image=3419
   Image1.jpg: http://pixabay.com/en/daffodils-daffodil-field-6207/
   Image2.jpg: http://www.publicdomainpictures.net/view-image.php?image=1004
   Image3.jpg: http://www.publicdomainpictures.net/view-image.php?image=12844
