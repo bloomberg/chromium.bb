@@ -18,13 +18,7 @@ function FileListBannerController(
   this.showOffers_ = showOffers;
   this.driveEnabled_ = false;
 
-  if (!util.boardIs('x86-mario') &&
-      !util.boardIs('x86-zgb') &&
-      !util.boardIs('x86-alex')) {
-    this.checkPromoAvailable_();
-  } else {
-    this.newWelcome_ = false;
-  }
+  this.initializeBanner_();
 
   var handler = this.checkSpaceAndShowBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
@@ -95,6 +89,18 @@ var DOWNLOADS_FAQ_URL =
  */
 var GOOGLE_DRIVE_ERROR_HELP_URL =
     'https://support.google.com/chromeos/?p=filemanager_driveerror';
+
+/**
+ * Initializes the banner to promote DRIVE.
+ * This method must be called before any of showing banner functions, and
+ * also before registering them as callbacks.
+ * @private
+ */
+FileListBannerController.prototype.initializeBanner_ = function() {
+  this.useNewWelcomeBanner_ = (!util.boardIs('x86-mario') &&
+                               !util.boardIs('x86-zgb') &&
+                               !util.boardIs('x86-alex'));
+};
 
 /**
  * @param {number} value How many times the Drive Welcome header banner
@@ -170,7 +176,7 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
   var links = util.createChild(message, 'drive-welcome-links');
 
   var more;
-  if (this.newWelcome_) {
+  if (this.useNewWelcomeBanner_) {
     var welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE');
     if (util.boardIs('link'))
       welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE_1TB');
@@ -188,7 +194,7 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
   more.target = '_blank';
 
   var dismiss;
-  if (this.newWelcome_)
+  if (this.useNewWelcomeBanner_)
     dismiss = util.createChild(links, 'drive-welcome-button');
   else
     dismiss = util.createChild(links, 'plain-link');
@@ -222,13 +228,14 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
     // The timeout below is required because sometimes another
     // 'rescan-completed' event arrives shortly with non-empty file list.
     var self = this;
-    setTimeout(this.preparePromo_.bind(this, function() {
-      var container = self.document_.querySelector('.dialog-container');
-      if (self.isOnDrive() &&
-          self.welcomeHeaderCounter_ == 0) {
-        self.showBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
-      }
-    }, 2000));
+    setTimeout(
+        function() {
+          var container = self.document_.querySelector('.dialog-container');
+          if (self.isOnDrive() && self.welcomeHeaderCounter_ == 0) {
+            self.showBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
+          }
+        },
+        2000);
   } else if (this.welcomeHeaderCounter_ < WELCOME_HEADER_COUNTER_LIMIT) {
     // We do not want to increment the counter when the user navigates
     // between different directories on Drive, but we increment the counter
@@ -236,9 +243,7 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
      if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
        var self = this;
        this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
-       this.preparePromo_(function() {
-         self.showBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
-       });
+       self.showBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
      }
    } else {
      this.closeBanner_();
@@ -390,29 +395,26 @@ FileListBannerController.prototype.closeBanner_ = function() {
 };
 
 /**
- * Shows or hides the Low Disk Space banner.
+ * Shows or hides the welcome banner for drive.
  * @private
  */
 FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
   var self = this;
-  this.preparePromo_(function() {
-    if (self.newWelcome_ && self.isOnDrive()) {
-      chrome.fileBrowserPrivate.getSizeStats(
-          util.makeFilesystemUrl(self.directoryModel_.getCurrentRootPath()),
-          function(result) {
-            var offerSpaceKb = 100 * 1024 * 1024;  // 100GB.
-            if (util.boardIs('link'))
-              offerSpaceKb = 1024 * 1024 * 1024;  // 1TB.
-            if (result && result.totalSizeKB >= offerSpaceKb)
-              self.newWelcome_ = false;
-            if (!self.showOffers_)
-              self.newWelcome_ = false;
-            self.maybeShowBanner_();
-          });
-    } else {
-      self.maybeShowBanner_();
-    }
-  });
+  if (self.useNewWelcomeBanner_ && self.isOnDrive()) {
+    chrome.fileBrowserPrivate.getSizeStats(
+        util.makeFilesystemUrl(self.directoryModel_.getCurrentRootPath()),
+        function(result) {
+          var offerSpaceKb = 100 * 1024 * 1024;  // 100GB.
+          if (util.boardIs('link'))
+            offerSpaceKb = 1024 * 1024 * 1024;  // 1TB.
+          if ((result && result.totalSizeKB >= offerSpaceKb) ||
+              !self.showOffers_)
+            self.useNewWelcomeBanner_ = false;
+          self.maybeShowBanner_();
+        });
+  } else {
+    self.maybeShowBanner_();
+  }
 };
 
 /**
@@ -567,29 +569,4 @@ FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
   } else {
     node.removeAttribute('drive');
   }
-};
-
-/**
- * Detects what type of promo should be shown.
- * @private
- */
-FileListBannerController.prototype.checkPromoAvailable_ = function() {
-  this.newWelcome_ = true;
-  if (this.promoCallbacks_) {
-    for (var i = 0; i < this.promoCallbacks_.length; i++)
-      this.promoCallbacks_[i]();
-    this.promoCallbacks_ = undefined;
-  }
-};
-
-/**
- * @param {function} completeCallback To be called (may be directly) when
- *                                    this.newWelcome_ get ready.
- * @private
- */
-FileListBannerController.prototype.preparePromo_ = function(completeCallback) {
-  if (this.newWelcome_ !== undefined)
-    completeCallback();
-  else
-    (this.promoCallbacks_ = this.promoCallbacks_ || []).push(completeCallback);
 };
