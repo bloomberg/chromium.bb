@@ -1331,8 +1331,8 @@ bool LauncherView::ShowListMenuForView(const LauncherItem& item,
   menu_model.reset(delegate_->CreateApplicationMenu(item, event_flags));
 
   // Make sure we have a menu and it has at least two items in addition to the
-  // application title and the 2 spacing separators.
-  if (!menu_model.get() || menu_model->GetItemCount() <= 4)
+  // application title and the 3 spacing separators.
+  if (!menu_model.get() || menu_model->GetItemCount() <= 5)
     return false;
 
   ShowMenu(scoped_ptr<views::MenuModelAdapter>(
