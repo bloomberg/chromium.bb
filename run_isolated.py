@@ -515,7 +515,13 @@ class ThreadPool(object):
         finally:
           self._outputs_exceptions_cond.release()
       finally:
-        self.tasks.task_done()
+        try:
+          self.tasks.task_done()
+        except Exception as e:
+          # We need to catch and log this error here because this is the root
+          # function for the thread, nothing higher will catch the error.
+          logging.exception('Caught exception while marking task as done: %s',
+                            e)
 
   def join(self):
     """Extracts all the results from each threads unordered.
