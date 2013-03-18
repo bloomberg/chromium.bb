@@ -11,8 +11,7 @@
 
 namespace cc {
 
-class CC_EXPORT CompositorFrameMetadata
-{
+class CC_EXPORT CompositorFrameMetadata {
  public:
   CompositorFrameMetadata();
   ~CompositorFrameMetadata();
