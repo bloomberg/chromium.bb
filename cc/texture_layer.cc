@@ -5,9 +5,9 @@
 #include "cc/texture_layer.h"
 
 #include "cc/base/thread.h"
-#include "cc/layer_tree_host.h"
 #include "cc/texture_layer_client.h"
 #include "cc/texture_layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 namespace cc {

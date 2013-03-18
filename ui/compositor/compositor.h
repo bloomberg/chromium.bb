@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "cc/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"

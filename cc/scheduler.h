@@ -10,9 +10,9 @@
 #include "base/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/frame_rate_controller.h"
-#include "cc/layer_tree_host.h"
 #include "cc/scheduler_settings.h"
 #include "cc/scheduler_state_machine.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 

@@ -7,8 +7,8 @@
 
 #include "base/time.h"
 #include "cc/debug/rendering_stats.h"
-#include "cc/layer_tree_host_client.h"
-#include "cc/layer_tree_settings.h"
+#include "cc/trees/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 

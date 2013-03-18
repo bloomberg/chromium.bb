@@ -6,8 +6,8 @@
 #define CC_TEST_FAKE_PROXY_H_
 
 #include "cc/base/thread.h"
-#include "cc/layer_tree_host.h"
-#include "cc/proxy.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/proxy.h"
 
 namespace cc {
 

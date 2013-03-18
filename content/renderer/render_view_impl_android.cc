@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "cc/layer_tree_host.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 
 namespace content {

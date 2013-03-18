@@ -15,7 +15,7 @@
 #include "cc/base/thread_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/layer.h"
-#include "cc/layer_tree_host.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/input_handler_manager.h"

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layer_tree_host_common.h"
 #include "cc/picture_image_layer.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"

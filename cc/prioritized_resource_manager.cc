@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "cc/prioritized_resource.h"
 #include "cc/priority_calculator.h"
-#include "cc/proxy.h"
+#include "cc/trees/proxy.h"
 
 namespace cc {
 

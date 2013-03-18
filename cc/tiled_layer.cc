@@ -9,11 +9,11 @@
 #include "build/build_config.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/layer_impl.h"
-#include "cc/layer_tree_host.h"
 #include "cc/layer_updater.h"
 #include "cc/prioritized_resource.h"
 #include "cc/priority_calculator.h"
 #include "cc/tiled_layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/rect_conversions.h"
 

@@ -8,14 +8,14 @@
 
 #include "base/callback.h"
 #include "cc/base/thread.h"
-#include "cc/layer_tree_host.h"
-#include "cc/layer_tree_impl.h"
-#include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/texture_layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

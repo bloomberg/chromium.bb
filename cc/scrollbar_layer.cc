@@ -8,10 +8,10 @@
 #include "base/debug/trace_event.h"
 #include "cc/caching_bitmap_content_layer_updater.h"
 #include "cc/layer_painter.h"
-#include "cc/layer_tree_host.h"
 #include "cc/prioritized_resource.h"
 #include "cc/resource_update_queue.h"
 #include "cc/scrollbar_layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "ui/gfx/rect_conversions.h"
 

@@ -9,7 +9,6 @@
 #include "cc/layer_painter.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_update_controller.h"
-#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -17,6 +16,7 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/trees/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"

@@ -6,11 +6,11 @@
 
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layer.h"
-#include "cc/layer_tree_impl.h"
-#include "cc/layer_tree_settings.h"
 #include "cc/quad_sink.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "ui/gfx/rect_conversions.h"
 
 using WebKit::WebRect;

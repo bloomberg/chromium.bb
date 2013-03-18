@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "cc/append_quads_data.h"
 #include "cc/base/math_util.h"
-#include "cc/layer_tree_impl.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quad_sink.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/render_pass_sink.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 

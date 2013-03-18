@@ -5,11 +5,11 @@
 #include "cc/io_surface_layer_impl.h"
 
 #include "base/stringprintf.h"
-#include "cc/layer_tree_impl.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/output/output_surface.h"
 #include "cc/quad_sink.h"
 #include "cc/quads/io_surface_draw_quad.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"

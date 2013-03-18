@@ -5,7 +5,7 @@
 #include "cc/picture_image_layer_impl.h"
 
 #include "cc/debug/debug_colors.h"
-#include "cc/layer_tree_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 

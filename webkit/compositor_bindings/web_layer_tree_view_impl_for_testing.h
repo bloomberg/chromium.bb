@@ -6,7 +6,7 @@
 #define WEBKIT_COMPOSITOR_BINDINGS_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 #include "webkit/support/webkit_support.h"

@@ -5,12 +5,12 @@
 #include "cc/resource_update_controller.h"
 
 #include "cc/prioritized_resource_manager.h"
-#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/trees/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 

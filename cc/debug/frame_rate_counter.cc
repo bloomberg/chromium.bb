@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/metrics/histogram.h"
-#include "cc/proxy.h"
+#include "cc/trees/proxy.h"
 
 namespace cc {
 

@@ -9,7 +9,7 @@
 #include "cc/platform_color.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/priority_calculator.h"
-#include "cc/proxy.h"
+#include "cc/trees/proxy.h"
 
 namespace cc {
 

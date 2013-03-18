@@ -8,10 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "cc/layer_tree_host_impl.h"
 #include "cc/managed_tile_state.h"
 #include "cc/picture_pile_impl.h"
 #include "cc/tile_priority.h"
+#include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 

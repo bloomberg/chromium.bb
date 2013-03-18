@@ -5,10 +5,10 @@
 #include "cc/texture_layer_impl.h"
 
 #include "base/stringprintf.h"
-#include "cc/layer_tree_impl.h"
 #include "cc/output/renderer.h"
 #include "cc/quad_sink.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 

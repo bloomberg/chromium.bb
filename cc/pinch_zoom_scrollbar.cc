@@ -5,8 +5,8 @@
 #include "cc/pinch_zoom_scrollbar.h"
 
 #include "cc/layer.h"
-#include "cc/layer_tree_host.h"
 #include "cc/pinch_zoom_scrollbar_geometry.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 

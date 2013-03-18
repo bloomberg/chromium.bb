@@ -8,12 +8,12 @@
 
 #include "cc/append_quads_data.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_quad_culler.h"
+#include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"

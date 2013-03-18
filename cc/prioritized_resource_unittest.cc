@@ -6,10 +6,10 @@
 
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource.h"
-#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/trees/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

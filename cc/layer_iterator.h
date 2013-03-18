@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
-#include "cc/layer_tree_host_common.h"
+#include "cc/trees/layer_tree_host_common.h"
 
 namespace cc {
 

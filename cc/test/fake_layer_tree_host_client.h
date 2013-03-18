@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/input_handler.h"
-#include "cc/layer_tree_host.h"
 #include "cc/test/fake_context_provider.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 

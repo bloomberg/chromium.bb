@@ -4,12 +4,12 @@
 
 #include "cc/picture_layer_impl.h"
 
-#include "cc/layer_tree_impl.h"
 #include "cc/picture_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/rect_conversions.h"

@@ -11,7 +11,7 @@
 #include "cc/bitmap_skpicture_content_layer_updater.h"
 #include "cc/content_layer_client.h"
 #include "cc/layer_painter.h"
-#include "cc/layer_tree_host.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 

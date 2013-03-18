@@ -4,8 +4,8 @@
 
 #include "cc/heads_up_display_layer.h"
 #include "cc/layer.h"
-#include "cc/layer_tree_host.h"
 #include "cc/test/layer_tree_test_common.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 namespace {

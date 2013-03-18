@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/browser/android/compositor.h"

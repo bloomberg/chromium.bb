@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "cc/base/thread.h"
-#include "cc/layer_tree_host.h"
-#include "cc/layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
 

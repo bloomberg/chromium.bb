@@ -15,8 +15,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/prioritized_resource.h"
 #include "cc/priority_calculator.h"
-#include "cc/proxy.h"
 #include "cc/resource.h"
+#include "cc/trees/proxy.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size.h"
 
