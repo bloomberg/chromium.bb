@@ -14,9 +14,11 @@ namespace cc {
 
 class CC_EXPORT Resource {
  public:
-  Resource() : id_(0) { }
+  Resource() : id_(0) {}
   Resource(unsigned id, gfx::Size size, GLenum format)
-      : id_(id), size_(size), format_(format) { }
+      : id_(id),
+        size_(size),
+        format_(format) {}
 
   ResourceProvider::ResourceId id() const { return id_; }
   const gfx::Size& size() const { return size_; }
