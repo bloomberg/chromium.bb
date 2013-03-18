@@ -4,11 +4,11 @@
 
 #include "cc/tiled_layer.h"
 
-#include "cc/bitmap_content_layer_updater.h"
 #include "cc/debug/overdraw_metrics.h"
-#include "cc/layer_painter.h"
-#include "cc/prioritized_resource_manager.h"
-#include "cc/resource_update_controller.h"
+#include "cc/resources/bitmap_content_layer_updater.h"
+#include "cc/resources/layer_painter.h"
+#include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/resource_update_controller.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

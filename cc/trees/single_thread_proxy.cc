@@ -9,9 +9,9 @@
 #include "cc/base/thread.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
-#include "cc/prioritized_resource_manager.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/resource_update_controller.h"
+#include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/resource_update_controller.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 

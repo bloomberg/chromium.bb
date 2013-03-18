@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/image_layer_updater.h"
 #include "cc/layer.h"
+#include "cc/resources/image_layer_updater.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 

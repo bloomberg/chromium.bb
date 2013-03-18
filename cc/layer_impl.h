@@ -20,7 +20,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/render_surface_impl.h"
-#include "cc/resource_provider.h"
+#include "cc/resources/resource_provider.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkColor.h"

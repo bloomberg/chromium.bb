@@ -8,7 +8,7 @@
 #include "cc/base/math_util.h"
 #include "cc/base/thread.h"
 #include "cc/layer_impl.h"
-#include "cc/layer_painter.h"
+#include "cc/resources/layer_painter.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"

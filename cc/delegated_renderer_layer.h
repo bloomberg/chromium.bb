@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layer.h"
-#include "cc/transferable_resource.h"
+#include "cc/resources/transferable_resource.h"
 
 namespace cc {
 class DelegatedFrameData;

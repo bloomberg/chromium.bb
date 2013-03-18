@@ -5,7 +5,7 @@
 #include "cc/texture_uploader.h"
 
 #include "cc/base/util.h"
-#include "cc/prioritized_resource.h"
+#include "cc/resources/prioritized_resource.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

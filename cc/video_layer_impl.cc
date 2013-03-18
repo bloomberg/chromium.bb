@@ -12,7 +12,7 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
-#include "cc/resource_provider.h"
+#include "cc/resources/resource_provider.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/video_frame_provider_client_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"

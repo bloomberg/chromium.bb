@@ -5,9 +5,9 @@
 #include "cc/nine_patch_layer.h"
 
 #include "cc/nine_patch_layer_impl.h"
-#include "cc/prioritized_resource.h"
-#include "cc/resource_update.h"
-#include "cc/resource_update_queue.h"
+#include "cc/resources/prioritized_resource.h"
+#include "cc/resources/resource_update.h"
+#include "cc/resources/resource_update_queue.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {

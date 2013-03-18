@@ -7,9 +7,9 @@
 
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/layer_impl.h"
-#include "cc/picture_layer_tiling.h"
-#include "cc/picture_layer_tiling_set.h"
-#include "cc/picture_pile_impl.h"
+#include "cc/resources/picture_layer_tiling.h"
+#include "cc/resources/picture_layer_tiling_set.h"
+#include "cc/resources/picture_pile_impl.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 

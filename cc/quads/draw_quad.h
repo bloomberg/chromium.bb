@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "cc/base/cc_export.h"
 #include "cc/quads/shared_quad_state.h"
-#include "cc/resource_provider.h"
+#include "cc/resources/resource_provider.h"
 
 namespace cc {
 

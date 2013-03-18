@@ -6,11 +6,11 @@
 #define CC_TEST_TILED_LAYER_TEST_COMMON_H_
 
 #include "cc/base/region.h"
-#include "cc/layer_updater.h"
 #include "cc/output/texture_copier.h"
-#include "cc/prioritized_resource.h"
-#include "cc/resource_provider.h"
-#include "cc/resource_update_queue.h"
+#include "cc/resources/layer_updater.h"
+#include "cc/resources/prioritized_resource.h"
+#include "cc/resources/resource_provider.h"
+#include "cc/resources/resource_update_queue.h"
 #include "cc/texture_uploader.h"
 #include "cc/tiled_layer.h"
 #include "cc/tiled_layer_impl.h"

@@ -8,7 +8,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/quads/render_pass.h"
-#include "cc/transferable_resource.h"
+#include "cc/resources/transferable_resource.h"
 #include "ui/gfx/size.h"
 
 namespace cc {

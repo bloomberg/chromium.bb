@@ -1,0 +1,48 @@
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CC_RESOURCES_RESOURCE_UPDATE_QUEUE_H_
+#define CC_RESOURCES_RESOURCE_UPDATE_QUEUE_H_
+
+#include <deque>
+#include "base/basictypes.h"
+#include "cc/base/cc_export.h"
+#include "cc/output/texture_copier.h"
+#include "cc/resources/resource_update.h"
+
+namespace cc {
+
+class CC_EXPORT ResourceUpdateQueue {
+public:
+    ResourceUpdateQueue();
+    virtual ~ResourceUpdateQueue();
+
+    void appendFullUpload(const ResourceUpdate&);
+    void appendPartialUpload(const ResourceUpdate&);
+    void appendCopy(TextureCopier::Parameters);
+
+    void clearUploadsToEvictedResources();
+
+    ResourceUpdate takeFirstFullUpload();
+    ResourceUpdate takeFirstPartialUpload();
+    TextureCopier::Parameters takeFirstCopy();
+
+    size_t fullUploadSize() const { return m_fullEntries.size(); }
+    size_t partialUploadSize() const { return m_partialEntries.size(); }
+    size_t copySize() const { return m_copyEntries.size(); }
+
+    bool hasMoreUpdates() const;
+
+private:
+    void clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue);
+    std::deque<ResourceUpdate> m_fullEntries;
+    std::deque<ResourceUpdate> m_partialEntries;
+    std::deque<TextureCopier::Parameters> m_copyEntries;
+
+    DISALLOW_COPY_AND_ASSIGN(ResourceUpdateQueue);
+};
+
+}
+
+#endif  // CC_RESOURCES_RESOURCE_UPDATE_QUEUE_H_

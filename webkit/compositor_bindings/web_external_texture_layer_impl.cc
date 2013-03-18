@@ -4,7 +4,7 @@
 
 #include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
 
-#include "cc/resource_update_queue.h"
+#include "cc/resources/resource_update_queue.h"
 #include "cc/texture_layer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"

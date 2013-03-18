@@ -10,7 +10,7 @@
 #include "base/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/base/completion_event.h"
-#include "cc/resource_update_controller.h"
+#include "cc/resources/resource_update_controller.h"
 #include "cc/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"

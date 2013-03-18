@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/gl_frame_data.h"
-#include "cc/transferable_resource.h"
+#include "cc/resources/transferable_resource.h"
 #include "ui/surface/transport_dib.h"
 
 namespace cc {

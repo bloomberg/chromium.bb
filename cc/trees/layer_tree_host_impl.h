@@ -17,7 +17,7 @@
 #include "cc/output/renderer.h"
 #include "cc/quads/render_pass.h"
 #include "cc/render_pass_sink.h"
-#include "cc/tile_manager.h"
+#include "cc/resources/tile_manager.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"

@@ -4,7 +4,7 @@
 
 #include "cc/test/fake_content_layer.h"
 
-#include "cc/prioritized_resource.h"
+#include "cc/resources/prioritized_resource.h"
 #include "cc/test/fake_content_layer_impl.h"
 
 namespace cc {

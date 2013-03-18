@@ -5,9 +5,9 @@
 #include "cc/nine_patch_layer.h"
 
 #include "cc/debug/overdraw_metrics.h"
-#include "cc/prioritized_resource_manager.h"
-#include "cc/resource_provider.h"
-#include "cc/resource_update_queue.h"
+#include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/resource_provider.h"
+#include "cc/resources/resource_update_queue.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"

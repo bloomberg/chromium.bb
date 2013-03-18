@@ -24,7 +24,7 @@
 #include "cc/pinch_zoom_scrollbar.h"
 #include "cc/pinch_zoom_scrollbar_geometry.h"
 #include "cc/pinch_zoom_scrollbar_painter.h"
-#include "cc/prioritized_resource_manager.h"
+#include "cc/resources/prioritized_resource_manager.h"
 #include "cc/scrollbar_layer.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"

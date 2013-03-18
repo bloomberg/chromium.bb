@@ -4,7 +4,7 @@
 
 #include "cc/test/fake_scrollbar_layer.h"
 
-#include "cc/resource_update_queue.h"
+#include "cc/resources/resource_update_queue.h"
 #include "cc/test/fake_scrollbar_theme_painter.h"
 #include "cc/test/fake_web_scrollbar.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"

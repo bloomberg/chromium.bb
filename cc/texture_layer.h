@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "cc/base/cc_export.h"
 #include "cc/layer.h"
-#include "cc/texture_mailbox.h"
+#include "cc/resources/texture_mailbox.h"
 
 namespace WebKit { class WebGraphicsContext3D; }
 

@@ -4,8 +4,8 @@
 
 #include "cc/content_layer.h"
 
-#include "cc/bitmap_content_layer_updater.h"
 #include "cc/content_layer_client.h"
+#include "cc/resources/bitmap_content_layer_updater.h"
 #include "cc/test/geometry_test_utils.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"

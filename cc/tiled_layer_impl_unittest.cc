@@ -5,8 +5,8 @@
 #include "cc/tiled_layer_impl.h"
 
 #include "cc/append_quads_data.h"
-#include "cc/layer_tiling_data.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/layer_tiling_data.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/layer_test_common.h"

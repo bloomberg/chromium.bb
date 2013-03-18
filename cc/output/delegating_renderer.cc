@@ -21,7 +21,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
-#include "cc/resource_provider.h"
+#include "cc/resources/resource_provider.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using WebKit::WebGraphicsContext3D;

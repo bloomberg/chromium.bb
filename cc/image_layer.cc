@@ -5,10 +5,10 @@
 #include "cc/image_layer.h"
 
 #include "base/compiler_specific.h"
-#include "cc/image_layer_updater.h"
-#include "cc/layer_updater.h"
-#include "cc/prioritized_resource.h"
-#include "cc/resource_update_queue.h"
+#include "cc/resources/image_layer_updater.h"
+#include "cc/resources/layer_updater.h"
+#include "cc/resources/prioritized_resource.h"
+#include "cc/resources/resource_update_queue.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {

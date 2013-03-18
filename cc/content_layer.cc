@@ -7,10 +7,10 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "cc/bitmap_content_layer_updater.h"
-#include "cc/bitmap_skpicture_content_layer_updater.h"
 #include "cc/content_layer_client.h"
-#include "cc/layer_painter.h"
+#include "cc/resources/bitmap_content_layer_updater.h"
+#include "cc/resources/bitmap_skpicture_content_layer_updater.h"
+#include "cc/resources/layer_painter.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {

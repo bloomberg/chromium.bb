@@ -5,9 +5,9 @@
 #include "cc/output/gl_renderer.h"
 
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/prioritized_resource_manager.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/resource_provider.h"
+#include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/resource_provider.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"

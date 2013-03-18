@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
-#include "cc/resource_provider.h"
+#include "cc/resources/resource_provider.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 

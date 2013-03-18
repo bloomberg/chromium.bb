@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/managed_memory_policy.h"
 #include "cc/quads/render_pass.h"
+#include "cc/resources/managed_memory_policy.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {

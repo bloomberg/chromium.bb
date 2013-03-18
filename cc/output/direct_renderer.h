@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer.h"
-#include "cc/resource_provider.h"
-#include "cc/scoped_resource.h"
+#include "cc/resources/resource_provider.h"
+#include "cc/resources/scoped_resource.h"
 
 namespace cc {
 

@@ -8,7 +8,7 @@
 #include "cc/contents_scaling_layer.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/layer.h"
-#include "cc/picture_pile.h"
+#include "cc/resources/picture_pile.h"
 #include "cc/trees/occlusion_tracker.h"
 
 namespace cc {

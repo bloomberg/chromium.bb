@@ -7,7 +7,7 @@
 
 #include <queue>
 
-#include "cc/transferable_resource.h"
+#include "cc/resources/transferable_resource.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "ui/gfx/size.h"
 

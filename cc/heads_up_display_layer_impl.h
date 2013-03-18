@@ -9,8 +9,8 @@
 #include "base/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/layer_impl.h"
-#include "cc/memory_history.h"
-#include "cc/scoped_resource.h"
+#include "cc/resources/memory_history.h"
+#include "cc/resources/scoped_resource.h"
 
 class SkCanvas;
 class SkPaint;

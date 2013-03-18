@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/layer_painter.h"
+#include "cc/resources/layer_painter.h"
 #include "cc/tiled_layer.h"
 
 class SkCanvas;

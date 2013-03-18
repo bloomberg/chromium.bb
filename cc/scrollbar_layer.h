@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/contents_scaling_layer.h"
-#include "cc/layer_updater.h"
+#include "cc/resources/layer_updater.h"
 #include "cc/scrollbar_theme_painter.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"

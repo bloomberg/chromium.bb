@@ -8,9 +8,9 @@
 #include <list>
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/resource_pool.h"
-#include "cc/resource_provider.h"
-#include "cc/tile_manager.h"
+#include "cc/resources/resource_pool.h"
+#include "cc/resources/resource_provider.h"
+#include "cc/resources/tile_manager.h"
 
 namespace cc {
 
