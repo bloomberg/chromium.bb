@@ -24,7 +24,7 @@ MockQuadCuller::~MockQuadCuller()
 {
 }
 
-bool MockQuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData*)
+bool MockQuadCuller::Append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData*)
 {
     if (!drawQuad->rect.IsEmpty()) {
         m_activeQuadList.push_back(drawQuad.Pass());
@@ -33,7 +33,7 @@ bool MockQuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData*)
     return false;
 }
 
-SharedQuadState* MockQuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> sharedQuadState)
+SharedQuadState* MockQuadCuller::UseSharedQuadState(scoped_ptr<SharedQuadState> sharedQuadState)
 {
     SharedQuadState* rawPtr = sharedQuadState.get();
     m_activeSharedQuadStateList.push_back(sharedQuadState.Pass());

@@ -77,7 +77,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
     return;
 
   SharedQuadState* shared_quad_state =
-      quad_sink->useSharedQuadState(CreateSharedQuadState());
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   gfx::Rect quad_rect(content_bounds());
@@ -97,7 +97,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
   if (shared_quad_state->is_clipped && quad->PerformClipping())
     shared_quad_state->is_clipped = false;
   if (!quad->rect.IsEmpty())
-    quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+    quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
 void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {

@@ -143,7 +143,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
     return;
 
   SharedQuadState* shared_quad_state =
-      quad_sink->useSharedQuadState(CreateSharedQuadState());
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   int left, top, right, bottom;
@@ -168,7 +168,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
             DebugBorderDrawQuad::Create();
         debug_border_quad->SetNew(
             shared_quad_state, tile_rect, border_color, border_width);
-        quad_sink->append(debug_border_quad.PassAs<DrawQuad>(),
+        quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(),
                           append_quads_data);
       }
     }
@@ -203,7 +203,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
               CheckerboardDrawQuad::Create();
           checkerboard_quad->SetNew(
               shared_quad_state, tile_rect, checker_color);
-          if (quad_sink->append(checkerboard_quad.PassAs<DrawQuad>(),
+          if (quad_sink->Append(checkerboard_quad.PassAs<DrawQuad>(),
                                 append_quads_data))
             append_quads_data->numMissingTiles++;
         } else {
@@ -211,7 +211,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
               SolidColorDrawQuad::Create();
           solid_color_quad->SetNew(
               shared_quad_state, tile_rect, background_color());
-          if (quad_sink->append(solid_color_quad.PassAs<DrawQuad>(),
+          if (quad_sink->Append(solid_color_quad.PassAs<DrawQuad>(),
                                 append_quads_data))
             append_quads_data->numMissingTiles++;
         }
@@ -240,7 +240,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
                    tex_coord_rect,
                    texture_size,
                    tile->contents_swizzled());
-      quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
     }
   }
 }

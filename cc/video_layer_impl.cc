@@ -195,7 +195,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
     return;
 
   SharedQuadState* shared_quad_state =
-      quad_sink->useSharedQuadState(CreateSharedQuadState());
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   // TODO: When we pass quads out of process, we need to double-buffer, or
@@ -228,7 +228,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
     solid_color_draw_quad->SetAll(
         shared_quad_state, quad_rect, quad_rect, quad_rect, false,
         SK_ColorTRANSPARENT);
-    quad_sink->append(solid_color_draw_quad.PassAs<DrawQuad>(),
+    quad_sink->Append(solid_color_draw_quad.PassAs<DrawQuad>(),
                       append_quads_data);
     return;
   }
@@ -249,7 +249,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                              y_plane,
                              u_plane,
                              v_plane);
-      quad_sink->append(yuv_video_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }
     case GL_RGBA: {
@@ -270,7 +270,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            uv_bottom_right,
                            opacity,
                            flipped);
-      quad_sink->append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }
     case GL_TEXTURE_2D: {
@@ -290,7 +290,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            uv_bottom_right,
                            opacity,
                            flipped);
-      quad_sink->append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }
     case GL_TEXTURE_RECTANGLE_ARB: {
@@ -303,7 +303,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                               visible_size,
                               frame_->texture_id(),
                               IOSurfaceDrawQuad::UNFLIPPED);
-      quad_sink->append(io_surface_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(io_surface_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }
     case GL_TEXTURE_EXTERNAL_OES: {
@@ -317,7 +317,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                                 opaque_rect,
                                 frame_->texture_id(),
                                 transform);
-      quad_sink->append(stream_video_quad.PassAs<DrawQuad>(),
+      quad_sink->Append(stream_video_quad.PassAs<DrawQuad>(),
                         append_quads_data);
       break;
     }

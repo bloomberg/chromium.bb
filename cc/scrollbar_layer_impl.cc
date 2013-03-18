@@ -155,7 +155,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
   gfx::Rect contentBoundsRect(content_bounds());
 
   SharedQuadState* shared_quad_state =
-      quad_sink->useSharedQuadState(CreateSharedQuadState());
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   if (layer_tree_impl()->settings().solidColorScrollbars) {
@@ -187,7 +187,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
     quad->SetNew(shared_quad_state,
                  quad_rect,
                  layer_tree_impl()->settings().solidColorScrollbarColor);
-    quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+    quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
     return;
   }
 
@@ -214,7 +214,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                  uv_bottom_right,
                  opacity,
                  flipped);
-    quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+    quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
   }
 
   if (!back_track_resource_id_)
@@ -238,7 +238,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                  uv_rect.bottom_right(),
                  opacity,
                  flipped);
-    quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+    quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
   }
 
   // Order matters here: since the back track texture is being drawn to the
@@ -258,7 +258,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                  uv_bottom_right,
                  opacity,
                  flipped);
-    quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+    quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
   }
 }
 

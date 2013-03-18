@@ -268,7 +268,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
 
     if (delegated_quad->shared_quad_state != delegated_shared_quad_state) {
       delegated_shared_quad_state = delegated_quad->shared_quad_state;
-      output_shared_quad_state = quad_sink->useSharedQuadState(
+      output_shared_quad_state = quad_sink->UseSharedQuadState(
           delegated_shared_quad_state->Copy());
 
       bool is_root_delegated_render_pass =
@@ -322,7 +322,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     }
     DCHECK(output_quad.get());
 
-    quad_sink->append(output_quad.Pass(), append_quads_data);
+    quad_sink->Append(output_quad.Pass(), append_quads_data);
   }
 }
 

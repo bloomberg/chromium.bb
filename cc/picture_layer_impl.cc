@@ -88,7 +88,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
   gfx::Rect content_rect(content_bounds());
 
   SharedQuadState* sharedQuadState =
-      quadSink->useSharedQuadState(CreateSharedQuadState());
+      quadSink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
   bool clipped = false;
@@ -142,7 +142,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
           DebugBorderDrawQuad::Create();
       gfx::Rect geometry_rect = iter.geometry_rect();
       debugBorderQuad->SetNew(sharedQuadState, geometry_rect, color, width);
-      quadSink->append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
+      quadSink->Append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
     }
   }
 
@@ -165,12 +165,12 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(sharedQuadState, geometry_rect, color);
-        if (quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData))
+        if (quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData))
           appendQuadsData->numMissingTiles++;
       } else {
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
         quad->SetNew(sharedQuadState, geometry_rect, background_color());
-        if (quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData))
+        if (quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData))
           appendQuadsData->numMissingTiles++;
       }
 
@@ -196,7 +196,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
                      texture_rect,
                      iter.texture_size(),
                      drawing_info.contents_swizzled());
-        quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData);
         break;
       }
       case ManagedTileState::DrawingInfo::SOLID_COLOR_MODE: {
@@ -204,7 +204,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
         quad->SetNew(sharedQuadState,
                      geometry_rect,
                      drawing_info.get_solid_color());
-        quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->Append(quad.PassAs<DrawQuad>(), appendQuadsData);
         break;
       }
       case ManagedTileState::DrawingInfo::TRANSPARENT_MODE:

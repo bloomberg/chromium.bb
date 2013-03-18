@@ -172,7 +172,7 @@ void LayerImpl::AppendDebugBorderQuad(
   scoped_ptr<DebugBorderDrawQuad> debugBorderQuad =
       DebugBorderDrawQuad::Create();
   debugBorderQuad->SetNew(shared_quad_state, content_rect, color, width);
-  quad_sink->append(debugBorderQuad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->Append(debugBorderQuad.PassAs<DrawQuad>(), append_quads_data);
 }
 
 bool LayerImpl::HasDelegatedContent() const {

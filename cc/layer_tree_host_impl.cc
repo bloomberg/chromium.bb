@@ -383,8 +383,8 @@ static void AppendQuadsForLayer(RenderPass* target_render_pass,
                                 const OcclusionTrackerImpl& occlusion_tracker,
                                 AppendQuadsData* append_quads_data) {
   bool for_surface = false;
-  QuadCuller quad_culler(target_render_pass->quad_list,
-                         target_render_pass->shared_quad_state_list,
+  QuadCuller quad_culler(&target_render_pass->quad_list,
+                         &target_render_pass->shared_quad_state_list,
                          layer,
                          occlusion_tracker,
                          layer->ShowDebugBorders(),
@@ -399,8 +399,8 @@ static void AppendQuadsForRenderSurfaceLayer(
     const OcclusionTrackerImpl& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
   bool for_surface = true;
-  QuadCuller quad_culler(target_render_pass->quad_list,
-                         target_render_pass->shared_quad_state_list,
+  QuadCuller quad_culler(&target_render_pass->quad_list,
+                         &target_render_pass->shared_quad_state_list,
                          layer,
                          occlusion_tracker,
                          layer->ShowDebugBorders(),
@@ -435,8 +435,8 @@ static void AppendQuadsToFillScreen(
     return;
 
   bool for_surface = false;
-  QuadCuller quad_culler(target_render_pass->quad_list,
-                         target_render_pass->shared_quad_state_list,
+  QuadCuller quad_culler(&target_render_pass->quad_list,
+                         &target_render_pass->shared_quad_state_list,
                          root_layer,
                          occlusion_tracker,
                          root_layer->ShowDebugBorders(),
@@ -450,7 +450,7 @@ static void AppendQuadsToFillScreen(
   gfx::Rect root_target_rect = root_layer->render_surface()->content_rect();
   float opacity = 1.f;
   SharedQuadState* shared_quad_state =
-      quad_culler.useSharedQuadState(SharedQuadState::Create());
+      quad_culler.UseSharedQuadState(SharedQuadState::Create());
   shared_quad_state->SetAll(root_layer->draw_transform(),
                             root_target_rect.size(),
                             root_target_rect,
@@ -475,7 +475,7 @@ static void AppendQuadsToFillScreen(
     // occlusion checks.
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
     quad->SetNew(shared_quad_state, layer_rect, screen_background_color);
-    quad_culler.append(quad.PassAs<DrawQuad>(), &append_quads_data);
+    quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
   }
 }
 

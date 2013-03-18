@@ -16,16 +16,21 @@ class SharedQuadState;
 struct AppendQuadsData;
 
 class CC_EXPORT QuadSink {
-public:
-    virtual ~QuadSink() { }
+ public:
+  virtual ~QuadSink() {}
 
-    // Call this to add a SharedQuadState before appending quads that refer to it. Returns a pointer
-    // to the given SharedQuadState for convenience, that can be set on the quads to append.
-    virtual SharedQuadState* useSharedQuadState(scoped_ptr<SharedQuadState>) = 0;
+  // Call this to add a SharedQuadState before appending quads that refer to it.
+  // Returns a pointer to the given SharedQuadState for convenience, that can be
+  // set on the quads to append.
+  virtual SharedQuadState* UseSharedQuadState(
+      scoped_ptr<SharedQuadState> shared_quad_state) = 0;
 
-    // Returns true if the quad is added to the list, and false if the quad is entirely culled.
-    virtual bool append(scoped_ptr<DrawQuad> passDrawQuad, AppendQuadsData*) = 0;
+  // Returns true if the quad is added to the list, and false if the quad is
+  // entirely culled.
+  virtual bool Append(scoped_ptr<DrawQuad> draw_quad,
+                      AppendQuadsData* append_quads_data) = 0;
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_QUAD_SINK_H_

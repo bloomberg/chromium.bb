@@ -23,7 +23,7 @@ scoped_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
 void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
                                       AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
-      quad_sink->useSharedQuadState(CreateSharedQuadState());
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   // We create a series of smaller quads instead of just one large one so that
@@ -38,7 +38,7 @@ void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
                               std::min(height - y, tile_size_));
       scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
       quad->SetNew(shared_quad_state, solidTileRect, background_color());
-      quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
     }
   }
 }

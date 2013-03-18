@@ -1748,13 +1748,13 @@ public:
         else
             opaqueRect = m_opaqueContentRect;
 
-        SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
+        SharedQuadState* sharedQuadState = quadSink->UseSharedQuadState(CreateSharedQuadState());
         scoped_ptr<TileDrawQuad> testBlendingDrawQuad = TileDrawQuad::Create();
         testBlendingDrawQuad->SetNew(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, gfx::RectF(0, 0, 1, 1), gfx::Size(1, 1), false);
         testBlendingDrawQuad->visible_rect = m_quadVisibleRect;
         EXPECT_EQ(m_blend, testBlendingDrawQuad->ShouldDrawWithBlending());
         EXPECT_EQ(m_hasRenderSurface, !!render_surface());
-        quadSink->append(testBlendingDrawQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->Append(testBlendingDrawQuad.PassAs<DrawQuad>(), appendQuadsData);
     }
 
     void setExpectation(bool blend, bool hasRenderSurface)
@@ -2247,13 +2247,13 @@ public:
 
     virtual void AppendQuads(QuadSink* quadSink, AppendQuadsData* appendQuadsData) OVERRIDE
     {
-        SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
+        SharedQuadState* sharedQuadState = quadSink->UseSharedQuadState(CreateSharedQuadState());
 
         SkColor gray = SkColorSetRGB(100, 100, 100);
         gfx::Rect quadRect(gfx::Point(0, 0), content_bounds());
         scoped_ptr<SolidColorDrawQuad> myQuad = SolidColorDrawQuad::Create();
         myQuad->SetNew(sharedQuadState, quadRect, gray);
-        quadSink->append(myQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->Append(myQuad.PassAs<DrawQuad>(), appendQuadsData);
     }
 
 private:

@@ -97,7 +97,7 @@ void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
 void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
                                      AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
-      quad_sink->useSharedQuadState(CreateSharedQuadState());
+      quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   gfx::Rect quad_rect(gfx::Point(), content_bounds());
@@ -109,7 +109,7 @@ void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
                io_surface_size_,
                io_surface_texture_id_,
                IOSurfaceDrawQuad::FLIPPED);
-  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
 void IOSurfaceLayerImpl::DumpLayerProperties(std::string* str,

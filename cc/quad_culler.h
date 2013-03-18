@@ -12,28 +12,38 @@
 namespace cc {
 class LayerImpl;
 class RenderSurfaceImpl;
-template<typename LayerType, typename SurfaceType>
-class OcclusionTrackerBase;
+template <typename LayerType, typename SurfaceType> class OcclusionTrackerBase;
 
 class CC_EXPORT QuadCuller : public QuadSink {
-public:
-    QuadCuller(QuadList&, SharedQuadStateList&, const LayerImpl*, const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>&, bool showCullingWithDebugBorderQuads, bool forSurface);
-    virtual ~QuadCuller() { }
+ public:
+  QuadCuller(QuadList* quad_list,
+             SharedQuadStateList* shared_quad_state_list,
+             const LayerImpl* layer,
+             const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>&
+                 occlusion_tracker,
+             bool show_culling_with_debug_border_quads,
+             bool for_surface);
+  virtual ~QuadCuller() {}
 
-    // QuadSink implementation.
-    virtual SharedQuadState* useSharedQuadState(scoped_ptr<SharedQuadState>) OVERRIDE;
-    virtual bool append(scoped_ptr<DrawQuad>, AppendQuadsData*) OVERRIDE;
+  // QuadSink implementation.
+  virtual SharedQuadState* UseSharedQuadState(
+      scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
+  virtual bool Append(scoped_ptr<DrawQuad> draw_quad,
+                      AppendQuadsData* append_quads_data) OVERRIDE;
 
-private:
-    QuadList& m_quadList;
-    SharedQuadStateList& m_sharedQuadStateList;
-    const LayerImpl* m_layer;
-    const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>& m_occlusionTracker;
+ private:
+  QuadList* quad_list_;
+  SharedQuadStateList* shared_quad_state_list_;
+  const LayerImpl* layer_;
+  const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>& occlusion_tracker_;
 
-    SharedQuadState* m_currentSharedQuadState;
-    bool m_showCullingWithDebugBorderQuads;
-    bool m_forSurface;
+  SharedQuadState* current_shared_quad_state_;
+  bool show_culling_with_debug_border_quads_;
+  bool for_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuadCuller);
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_QUAD_CULLER_H_

@@ -19,9 +19,9 @@ public:
 
     MockQuadCuller(QuadList& externalQuadList, SharedQuadStateList& externalSharedQuadStateList);
 
-    virtual bool append(scoped_ptr<DrawQuad> newQuad, AppendQuadsData*) OVERRIDE;
+    virtual bool Append(scoped_ptr<DrawQuad> draw_quad, AppendQuadsData* append_quads_data) OVERRIDE;
 
-    virtual SharedQuadState* useSharedQuadState(scoped_ptr<SharedQuadState> passSharedQuadState) OVERRIDE;
+    virtual SharedQuadState* UseSharedQuadState(scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
 
     const QuadList& quadList() const { return m_activeQuadList; };
     const SharedQuadStateList& sharedQuadStateList() const { return m_activeSharedQuadStateList; };

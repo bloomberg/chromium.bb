@@ -203,7 +203,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
   const gfx::Transform& draw_transform =
       for_replica ? replica_draw_transform_ : draw_transform_;
   SharedQuadState* shared_quad_state =
-      quad_sink->useSharedQuadState(SharedQuadState::Create());
+      quad_sink->UseSharedQuadState(SharedQuadState::Create());
   shared_quad_state->SetAll(draw_transform,
                             content_rect_.size(),
                             content_rect_,
@@ -223,7 +223,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
     scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
         DebugBorderDrawQuad::Create();
     debug_border_quad->SetNew(shared_quad_state, content_rect_, color, width);
-    quad_sink->append(debug_border_quad.PassAs<DrawQuad>(), append_quads_data);
+    quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(), append_quads_data);
   }
 
   // FIXME: By using the same RenderSurfaceImpl for both the content and its
@@ -284,7 +284,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                owning_layer_->filters(),
                owning_layer_->filter(),
                owning_layer_->background_filters());
-  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
 }  // namespace cc
