@@ -246,6 +246,8 @@ class QueueWithProgress(Queue.PriorityQueue):
     self.all_tasks_done.acquire()
     try:
       while self.unfinished_tasks:
+        logging.debug('Looping in join() with %s unfinished tasks',
+                      self.unfinished_tasks)
         self.progress.print_update()
         self.all_tasks_done.wait()
       self.progress.print_update()
@@ -681,6 +683,9 @@ class Runner(object):
     if '--gtest_print_time' not in cmd:
       cmd.append('--gtest_print_time')
 
+    if self.verbose > 1:
+      self.progress.update_item('Starting command %s' % cmd, False, False)
+
     # TODO(maruel): Use a distribution model.
     timeout = self.timeout * len(test_cases)
     start = time.time()
@@ -691,6 +696,12 @@ class Runner(object):
         stderr=subprocess.STDOUT,
         env=self.env)
     duration = time.time() - start
+
+    if self.verbose > 1:
+      self.progress.update_item('Command[%s] finished after %ss' % (cmd,
+                                                                    duration),
+
+                                False, False)
 
     # It needs to be valid utf-8 otherwise it can't be stored.
     # TODO(maruel): Be more intelligent than decoding to ascii.
@@ -1030,12 +1041,14 @@ def run_test_cases(
     # Retry any failed tests serially.
     if not serial_tasks.empty():
       progress.update_item('\n'.join(running_serial_warning()), index=False,
-                                      size=False)
+                           size=False)
+      progress.print_update()
 
       while not serial_tasks.empty():
         _priority, func, args, kwargs = serial_tasks.get()
         results.append(func(*args, **kwargs))
         serial_tasks.task_done()
+        progress.print_update()
 
       # Call join since that is a standard call once a queue has been emptied.
       serial_tasks.join()
