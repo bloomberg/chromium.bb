@@ -11,6 +11,7 @@ import collections
 import contextlib
 import cStringIO
 import exceptions
+import logging
 import mox
 import os
 import re
@@ -818,14 +819,17 @@ def FindTests(directory, module_namespace=''):
 
 
 @contextlib.contextmanager
-def DisableLogging():
-  """Temporarily disable chromite logging."""
-  backup = cros_build_lib.logger.disabled
-  try:
-    cros_build_lib.logger.disabled = True
+def DisableLogger(logger=None):
+  """Temporarily disable logging in the specified logger.
+
+  Arguments:
+    logger: Logger to disable logging in. By default, the cros_build_lib
+            logger is disabled.
+  """
+  if logger is None:
+    logger = cros_build_lib.logger
+  with mock.patch.multiple(logger, disabled=True):
     yield
-  finally:
-    cros_build_lib.logger.disabled = backup
 
 
 def main(**kwds):
@@ -838,7 +842,7 @@ def main(**kwds):
   # to trigger sys.exit on its own.  Unfortunately, the exit keyword is only
   # available in 2.7- as such, handle it ourselves.
   allow_exit = kwds.pop('exit', True)
-  cros_build_lib.SetupBasicLogging()
+  cros_build_lib.SetupBasicLogging(kwds.pop('level', logging.DEBUG))
   try:
     unittest.main(**kwds)
     raise SystemExit(0)

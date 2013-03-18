@@ -54,7 +54,7 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
       m.AddCmdResult(cmd, returncode=returncode, side_effect=WriteError)
       with mock.patch.object(git, 'ReinterpretPathForChroot',
                              side_effect=lambda x: x):
-        with cros_test_lib.DisableLogging():
+        with cros_test_lib.DisableLogger():
           # If the script failed, the exception should be raised and printed.
           if raises:
             self.assertRaises(raises, commands._RunBuildScript, buildroot,

@@ -1225,11 +1225,11 @@ def RunCurl(args, **kwargs):
         Die("Curl failed w/ exit code %i", code)
 
 
-def SetupBasicLogging():
+def SetupBasicLogging(level=logging.DEBUG):
   """Sets up basic logging to use format from constants."""
   logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
   date_format = constants.LOGGER_DATE_FMT
-  logging.basicConfig(level=logging.DEBUG, format=logging_format,
+  logging.basicConfig(level=level, format=logging_format,
                       datefmt=date_format)
 
 
