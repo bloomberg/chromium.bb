@@ -141,6 +141,17 @@ def CalculateTruncatedMean(data_set, truncate_percent):
   return truncated_mean
 
 
+def CalculateStandardDeviation(v):
+  mean = CalculateTruncatedMean(v, 0.0)
+
+  variances = [float(x) - mean for x in v]
+  variances = [x * x for x in variances]
+  variance = reduce(lambda x, y: float(x) + float(y), variances) / (len(v) - 1)
+  std_dev = math.sqrt(variance)
+
+  return std_dev
+
+
 def IsStringFloat(string_to_check):
   """Checks whether or not the given string can be converted to a floating
   point number.
@@ -594,11 +605,7 @@ class BisectPerformanceMetrics(object):
       text: The text to parse the metric values from.
 
     Returns:
-      A dict of lists of floating point numbers found.
-
-      {
-        'list_name':[values]
-      }
+      A list of floating point numbers found.
     """
     # Format is: RESULT <graph>: <trace>= <value> <units>
     metric_formatted = 'RESULT %s: %s=' % (metric[0], metric[1])
@@ -628,41 +635,15 @@ class BisectPerformanceMetrics(object):
           values_list += metric_values.split(',')
 
     values_list = [float(v) for v in values_list if IsStringFloat(v)]
-    values_dict = {}
 
-    # If the metric is times/t, we need to group the timings by page or the
-    # results aren't very useful.
-    # Will make the assumption that if pages are supplied, and the metric
-    # is "times/t", that the results needs to be grouped.
-    metric_re = "Pages:(\s)*\[(\s)*(?P<values>[a-zA-Z0-9-_,.]+)\]"
-    metric_re = re.compile(metric_re)
+    # If the metric is times/t, we need to sum the timings in order to get
+    # similar regression results as the try-bots.
 
-    regex_results = metric_re.search(text)
-    page_names = []
+    if metric == ['times', 't']:
+      if values_list:
+        values_list = [reduce(lambda x, y: float(x) + float(y), values_list)]
 
-    if regex_results:
-      page_names = regex_results.group('values')
-      page_names = page_names.split(',')
-
-    if not metric == ['times', 't'] or not page_names:
-      values_dict['%s: %s' % (metric[0], metric[1])] = values_list
-    else:
-      if not (len(values_list) % len(page_names)):
-        values_dict = dict([(k, []) for k in page_names])
-
-        # In the case of times/t, values_list is an array of times in the
-        # order of page_names, repeated X number of times.
-        # ie.
-        # page_names = ['www.chromium.org', 'dev.chromium.org']
-        # values_list = [1, 2, 1, 2, 1, 2]
-        num_pages = len(page_names)
-
-        for i in xrange(len(values_list)):
-          page_index = i % num_pages
-
-          values_dict[page_names[page_index]].append(values_list[i])
-
-    return values_dict
+    return values_list
 
   def RunPerformanceTestAndParseResults(self, command_to_run, metric):
     """Runs a performance test on the current revision by executing the
@@ -678,7 +659,7 @@ class BisectPerformanceMetrics(object):
     """
 
     if self.opts.debug_ignore_perf_test:
-      return ({'debug' : 0.0}, 0)
+      return ({'mean': 0.0, 'std_dev': 0.0}, 0)
 
     if IsWindows():
       command_to_run = command_to_run.replace('/', r'\\')
@@ -688,35 +669,31 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
 
-    metric_values = {}
+    metric_values = []
     for i in xrange(self.opts.repeat_test_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
       (output, return_code) = RunProcess(args,
           self.opts.output_buildbot_annotations)
 
-      cur_metric_values = self.ParseMetricValuesFromOutput(metric, output)
-
-      for k, v in cur_metric_values.iteritems():
-        if not v:
-          return ('No values returned from performance test.', -1)
-
-        if metric_values.has_key(k):
-          metric_values[k].extend(v)
-        else:
-          metric_values[k] = v
+      metric_values += self.ParseMetricValuesFromOutput(metric, output)
 
     os.chdir(cwd)
 
     # Need to get the average value if there were multiple values.
     if metric_values:
-      for k, v in metric_values.iteritems():
-        truncated_mean = CalculateTruncatedMean(v, self.opts.truncate_percent)
+      truncated_mean = CalculateTruncatedMean(metric_values,
+          self.opts.truncate_percent)
+      standard_dev = CalculateStandardDeviation(metric_values)
 
-        metric_values[k] = truncated_mean
+      values = {
+        'mean': truncated_mean,
+        'std_dev': standard_dev,
+      }
 
-      print 'Results of performance test: %s' % str(metric_values)
+      print 'Results of performance test: %12f %12f' % (
+          truncated_mean, standard_dev)
       print
-      return (metric_values, 0)
+      return (values, 0)
     else:
       return ('No values returned from performance test.', -1)
 
@@ -852,19 +829,10 @@ class BisectPerformanceMetrics(object):
       True if the current_value is closer to the known_good_value than the
       known_bad_value.
     """
-    passes = 0
-    fails = 0
+    dist_to_good_value = abs(current_value['mean'] - known_good_value['mean'])
+    dist_to_bad_value = abs(current_value['mean'] - known_bad_value['mean'])
 
-    for k in current_value.keys():
-      dist_to_good_value = abs(current_value[k] - known_good_value[k])
-      dist_to_bad_value = abs(current_value[k] - known_bad_value[k])
-
-      if dist_to_good_value < dist_to_bad_value:
-        passes += 1
-      else:
-        fails += 1
-
-    return passes > fails
+    return dist_to_good_value < dist_to_bad_value
 
   def ChangeToDepotWorkingDirectory(self, depot_name):
     """Given a depot, changes to the appropriate working directory.
@@ -1291,8 +1259,9 @@ class BisectPerformanceMetrics(object):
     print 'Tested commits:'
     for current_id, current_data in revision_data_sorted:
       if current_data['value']:
-        print '  %8s  %s  %s' % (
-            current_data['depot'], current_id, current_data['value'])
+        print '  %8s  %s  %12f %12f' % (
+            current_data['depot'], current_id,
+            current_data['value']['mean'], current_data['value']['std_dev'])
     print
 
     # Find range where it possibly broke.
@@ -1329,6 +1298,84 @@ class BisectPerformanceMetrics(object):
       print 'Subject : %s' % info['subject']
       print
       os.chdir(cwd)
+
+      # Give a warning if the values were very close together
+      good_std_dev = revision_data[first_working_revision]['value']['std_dev']
+      good_mean = revision_data[first_working_revision]['value']['mean']
+      bad_mean = revision_data[last_broken_revision]['value']['mean']
+
+      # A standard deviation of 0 could indicate either insufficient runs
+      # or a test that consistently returns the same value.
+      if good_std_dev > 0:
+        deviations = math.fabs(bad_mean - good_mean) / good_std_dev
+
+        if deviations < 1.5:
+          print 'Warning: Regression was less than 1.5 standard deviations '\
+                'from "good" value. Results may not be accurate.'
+          print
+      elif self.opts.repeat_test_count == 1:
+        print 'Warning: Tests were only set to run once. This may be '\
+              'insufficient to get meaningful results.'
+        print
+
+      # Check for any other possible regression ranges
+      prev_revision_data = revision_data_sorted[0][1]
+      prev_revision_id = revision_data_sorted[0][0]
+      possible_regressions = []
+      for current_id, current_data in revision_data_sorted:
+        if current_data['value']:
+          prev_mean = prev_revision_data['value']['mean']
+          cur_mean = current_data['value']['mean']
+
+          if good_std_dev:
+            deviations = math.fabs(prev_mean - cur_mean) / good_std_dev
+          else:
+            deviations = None
+
+          if good_mean:
+            percent_change = (prev_mean - cur_mean) / good_mean
+
+            # If the "good" valuse are supposed to be higher than the "bad"
+            # values (ie. scores), flip the sign of the percent change so that
+            # a positive value always represents a regression.
+            if bad_mean < good_mean:
+              percent_change *= -1.0
+          else:
+            percent_change = None
+
+          if deviations >= 1.5 or percent_change > 0.01:
+            if current_id != first_working_revision:
+              possible_regressions.append(
+                  [current_id, prev_revision_id, percent_change, deviations])
+          prev_revision_data = current_data
+          prev_revision_id = current_id
+
+      if possible_regressions:
+        print
+        print 'Other regressions may have occurred:'
+        print
+        for p in possible_regressions:
+          current_id = p[0]
+          percent_change = p[2]
+          deviations = p[3]
+          current_data = revision_data[current_id]
+          previous_id = p[1]
+          previous_data = revision_data[previous_id]
+
+          if deviations is None:
+            deviations = 'N/A'
+          else:
+            deviations = '%.2f' % deviations
+
+          if percent_change is None:
+            percent_change = 0
+
+          print '  %8s  %s  [%.2f%%, %s x std.dev]' % (
+              previous_data['depot'], previous_id, 100 * percent_change,
+              deviations)
+          print '  %8s  %s' % (
+              current_data['depot'], current_id)
+          print
 
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
