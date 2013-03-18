@@ -26,7 +26,8 @@ class HistogramMeasurement(object):
       return
     new_histogram = histogram_module.SubtractHistogram(
         data, self._start_values[page.url + self.name])
-    results.Add(self.name, self.units, new_histogram, data_type='histogram')
+    results.Add(self.name, self.units, new_histogram,
+                data_type='unimportant-histogram')
 
   @property
   def histogram_function(self):
