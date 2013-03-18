@@ -7,7 +7,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "cc/quad_sink.h"
-#include "cc/texture_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "ui/gfx/rect_f.h"
 
 namespace cc {

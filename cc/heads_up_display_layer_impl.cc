@@ -14,7 +14,7 @@
 #include "cc/memory_history.h"
 #include "cc/output/renderer.h"
 #include "cc/quad_sink.h"
-#include "cc/texture_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/tile_manager.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_canvas.h"

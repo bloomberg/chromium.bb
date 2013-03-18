@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IO_SURFACE_DRAW_QUAD_H_
-#define CC_IO_SURFACE_DRAW_QUAD_H_
+#ifndef CC_QUADS_IO_SURFACE_DRAW_QUAD_H_
+#define CC_QUADS_IO_SURFACE_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/draw_quad.h"
+#include "cc/quads/draw_quad.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
@@ -51,4 +51,4 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
 
 }
 
-#endif  // CC_IO_SURFACE_DRAW_QUAD_H_
+#endif  // CC_QUADS_IO_SURFACE_DRAW_QUAD_H_

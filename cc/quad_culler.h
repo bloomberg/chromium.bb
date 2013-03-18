@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/quad_sink.h"
-#include "cc/render_pass.h"
+#include "cc/quads/render_pass.h"
 
 namespace cc {
 class LayerImpl;

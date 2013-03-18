@@ -6,9 +6,9 @@
 
 #include "cc/append_quads_data.h"
 #include "cc/quad_sink.h"
-#include "cc/render_pass_draw_quad.h"
-#include "cc/shared_quad_state.h"
-#include "cc/solid_color_draw_quad.h"
+#include "cc/quads/render_pass_draw_quad.h"
+#include "cc/quads/shared_quad_state.h"
+#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/render_pass_test_common.h"
 #include "ui/gfx/rect.h"

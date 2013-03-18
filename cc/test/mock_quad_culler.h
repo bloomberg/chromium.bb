@@ -6,9 +6,9 @@
 #define CC_TEST_MOCK_QUAD_CULLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/draw_quad.h"
 #include "cc/quad_sink.h"
-#include "cc/render_pass.h"
+#include "cc/quads/draw_quad.h"
+#include "cc/quads/render_pass.h"
 
 namespace cc {
 

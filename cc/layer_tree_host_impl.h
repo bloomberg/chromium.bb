@@ -15,7 +15,7 @@
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
-#include "cc/render_pass.h"
+#include "cc/quads/render_pass.h"
 #include "cc/render_pass_sink.h"
 #include "cc/tile_manager.h"
 #include "skia/ext/refptr.h"

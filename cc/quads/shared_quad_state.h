@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SHARED_QUAD_STATE_H_
-#define CC_SHARED_QUAD_STATE_H_
+#ifndef CC_QUADS_SHARED_QUAD_STATE_H_
+#define CC_QUADS_SHARED_QUAD_STATE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
@@ -41,4 +41,4 @@ class CC_EXPORT SharedQuadState {
 
 }
 
-#endif  // CC_SHARED_QUAD_STATE_H_
+#endif  // CC_QUADS_SHARED_QUAD_STATE_H_

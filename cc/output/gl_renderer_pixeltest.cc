@@ -4,7 +4,7 @@
 
 #include "cc/output/gl_renderer.h"
 
-#include "cc/draw_quad.h"
+#include "cc/quads/draw_quad.h"
 #include "cc/test/pixel_test.h"
 
 namespace cc {

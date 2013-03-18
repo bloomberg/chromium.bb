@@ -5,7 +5,7 @@
 #include "cc/solid_color_layer_impl.h"
 
 #include "cc/quad_sink.h"
-#include "cc/solid_color_draw_quad.h"
+#include "cc/quads/solid_color_draw_quad.h"
 
 namespace cc {
 

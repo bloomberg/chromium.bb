@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/shared_quad_state.h"
+#include "cc/quads/shared_quad_state.h"
 
 namespace cc {
 

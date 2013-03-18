@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/tile_draw_quad.h"
+#include "cc/quads/tile_draw_quad.h"
 
 #include "base/logging.h"
 #include "third_party/khronos/GLES2/gl2.h"

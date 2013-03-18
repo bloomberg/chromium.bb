@@ -8,11 +8,11 @@
 #include "cc/delegated_renderer_layer_impl.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/output/delegated_frame_data.h"
-#include "cc/shared_quad_state.h"
+#include "cc/quads/shared_quad_state.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/test/fake_delegated_renderer_layer.h"
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/layer_tree_test_common.h"
-#include "cc/texture_draw_quad.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {

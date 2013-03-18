@@ -10,7 +10,7 @@
 #include "cc/layer_tree_impl.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quad_sink.h"
-#include "cc/render_pass_draw_quad.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/render_pass_sink.h"
 
 namespace cc {

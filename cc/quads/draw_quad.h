@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DRAW_QUAD_H_
-#define CC_DRAW_QUAD_H_
+#ifndef CC_QUADS_DRAW_QUAD_H_
+#define CC_QUADS_DRAW_QUAD_H_
 
 #include "base/callback.h"
 #include "cc/base/cc_export.h"
+#include "cc/quads/shared_quad_state.h"
 #include "cc/resource_provider.h"
-#include "cc/shared_quad_state.h"
 
 namespace cc {
 
@@ -116,4 +116,4 @@ class CC_EXPORT DrawQuad {
 
 }
 
-#endif  // CC_DRAW_QUAD_H_
+#endif  // CC_QUADS_DRAW_QUAD_H_

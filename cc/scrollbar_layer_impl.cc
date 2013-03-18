@@ -9,8 +9,8 @@
 #include "cc/layer_tree_impl.h"
 #include "cc/layer_tree_settings.h"
 #include "cc/quad_sink.h"
-#include "cc/solid_color_draw_quad.h"
-#include "cc/texture_draw_quad.h"
+#include "cc/quads/solid_color_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "ui/gfx/rect_conversions.h"
 
 using WebKit::WebRect;

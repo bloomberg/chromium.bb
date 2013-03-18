@@ -6,7 +6,7 @@
 #define CC_APPEND_QUADS_DATA_H_
 
 #include "base/basictypes.h"
-#include "cc/render_pass.h"
+#include "cc/quads/render_pass.h"
 
 namespace cc {
 

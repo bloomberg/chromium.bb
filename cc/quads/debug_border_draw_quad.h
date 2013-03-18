@@ -2,45 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_STREAM_VIDEO_DRAW_QUAD_H_
-#define CC_STREAM_VIDEO_DRAW_QUAD_H_
+#ifndef CC_QUADS_DEBUG_BORDER_DRAW_QUAD_H_
+#define CC_QUADS_DEBUG_BORDER_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/draw_quad.h"
-#include "ui/gfx/transform.h"
+#include "cc/quads/draw_quad.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 
-class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
+class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
  public:
-  static scoped_ptr<StreamVideoDrawQuad> Create();
+  static scoped_ptr<DebugBorderDrawQuad> Create();
 
   void SetNew(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
-              gfx::Rect opaque_rect,
-              unsigned texture_id,
-              const gfx::Transform& matrix);
+              SkColor color,
+              int width);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
               gfx::Rect opaque_rect,
               gfx::Rect visible_rect,
               bool needs_blending,
-              unsigned texture_id,
-              const gfx::Transform& matrix);
+              SkColor color,
+              int width);
 
-  unsigned texture_id;
-  gfx::Transform matrix;
+  SkColor color;
+  int width;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;
 
-  static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
+  static const DebugBorderDrawQuad* MaterialCast(const DrawQuad*);
  private:
-  StreamVideoDrawQuad();
+  DebugBorderDrawQuad();
 };
 
 }
 
-#endif  // CC_STREAM_VIDEO_DRAW_QUAD_H_
+#endif  // CC_QUADS_DEBUG_BORDER_DRAW_QUAD_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/render_pass_draw_quad.h"
+#include "cc/quads/render_pass_draw_quad.h"
 
 namespace cc {
 

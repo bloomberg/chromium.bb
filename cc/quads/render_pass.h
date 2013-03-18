@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RENDER_PASS_H_
-#define CC_RENDER_PASS_H_
+#ifndef CC_QUADS_RENDER_PASS_H_
+#define CC_QUADS_RENDER_PASS_H_
 
 #include <vector>
 
@@ -132,4 +132,4 @@ typedef ScopedPtrVector<RenderPass> RenderPassList;
 typedef base::hash_map<RenderPass::Id, RenderPass*> RenderPassIdHashMap;
 } // namespace cc
 
-#endif  // CC_RENDER_PASS_H_
+#endif  // CC_QUADS_RENDER_PASS_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SOLID_COLOR_DRAW_QUAD_H_
-#define CC_SOLID_COLOR_DRAW_QUAD_H_
+#ifndef CC_QUADS_SOLID_COLOR_DRAW_QUAD_H_
+#define CC_QUADS_SOLID_COLOR_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/draw_quad.h"
+#include "cc/quads/draw_quad.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -39,4 +39,4 @@ class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
 
 }
 
-#endif  // CC_SOLID_COLOR_DRAW_QUAD_H_
+#endif  // CC_QUADS_SOLID_COLOR_DRAW_QUAD_H_

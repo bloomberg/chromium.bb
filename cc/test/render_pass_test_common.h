@@ -5,7 +5,7 @@
 #ifndef CC_TEST_RENDER_PASS_TEST_COMMON_H_
 #define CC_TEST_RENDER_PASS_TEST_COMMON_H_
 
-#include "cc/render_pass.h"
+#include "cc/quads/render_pass.h"
 
 namespace cc {
 class ResourceProvider;

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/render_pass.h"
+#include "cc/quads/render_pass.h"
 
 #include "cc/base/math_util.h"
-#include "cc/checkerboard_draw_quad.h"
+#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"

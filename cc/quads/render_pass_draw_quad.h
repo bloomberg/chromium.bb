@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RENDER_PASS_DRAW_QUAD_H_
-#define CC_RENDER_PASS_DRAW_QUAD_H_
+#ifndef CC_QUADS_RENDER_PASS_DRAW_QUAD_H_
+#define CC_QUADS_RENDER_PASS_DRAW_QUAD_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/draw_quad.h"
-#include "cc/render_pass.h"
+#include "cc/quads/draw_quad.h"
+#include "cc/quads/render_pass.h"
 #include "cc/resource_provider.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 
@@ -76,4 +76,4 @@ private:
 
 }
 
-#endif  // CC_RENDER_PASS_DRAW_QUAD_H_
+#endif  // CC_QUADS_RENDER_PASS_DRAW_QUAD_H_

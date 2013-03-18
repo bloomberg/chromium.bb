@@ -6,22 +6,22 @@
 
 #include "base/logging.h"
 #include "cc/base/math_util.h"
-#include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/output/renderer.h"
 #include "cc/quad_sink.h"
+#include "cc/quads/io_surface_draw_quad.h"
+#include "cc/quads/stream_video_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
+#include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resource_provider.h"
-#include "cc/stream_video_draw_quad.h"
-#include "cc/texture_draw_quad.h"
 #include "cc/video_frame_provider_client_impl.h"
-#include "cc/yuv_video_draw_quad.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 #if defined(GOOGLE_TV)
-#include "cc/solid_color_draw_quad.h"
+#include "cc/quads/solid_color_draw_quad.h"
 #endif
 
 namespace cc {

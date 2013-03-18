@@ -5,8 +5,8 @@
 #include "cc/solid_color_layer_impl.h"
 
 #include "cc/append_quads_data.h"
+#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/single_thread_proxy.h"
-#include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

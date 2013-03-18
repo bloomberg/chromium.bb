@@ -9,7 +9,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/layer_tree_host.h"
 #include "cc/managed_memory_policy.h"
-#include "cc/render_pass.h"
+#include "cc/quads/render_pass.h"
 
 namespace cc {
 

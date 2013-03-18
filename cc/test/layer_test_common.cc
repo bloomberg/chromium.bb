@@ -6,8 +6,8 @@
 
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
-#include "cc/draw_quad.h"
-#include "cc/render_pass.h"
+#include "cc/quads/draw_quad.h"
+#include "cc/quads/render_pass.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
