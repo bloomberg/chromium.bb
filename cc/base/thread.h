@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/time.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -21,7 +22,7 @@ class CC_EXPORT Thread {
   virtual void PostTask(base::Closure cb) = 0;
 
   // Executes the task after the specified delay.
-  virtual void PostDelayedTask(base::Closure cb, long long delay_ms) = 0;
+  virtual void PostDelayedTask(base::Closure cb, base::TimeDelta delay) = 0;
 
   virtual bool BelongsToCurrentThread() const = 0;
 };

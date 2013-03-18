@@ -102,6 +102,7 @@ public:
     virtual void SendManagedMemoryStats() OVERRIDE { }
     virtual bool IsInsideDraw() OVERRIDE { return false; }
     virtual void RenewTreePriority() OVERRIDE { }
+    virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) OVERRIDE { }
 
     void setReduceMemoryResult(bool reduceMemoryResult) { m_reduceMemoryResult = reduceMemoryResult; }
 

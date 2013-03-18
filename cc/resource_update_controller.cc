@@ -255,7 +255,7 @@ bool ResourceUpdateController::UpdateMoreTexturesIfEnoughTimeRemaining() {
   thread_->PostDelayedTask(
       base::Bind(&ResourceUpdateController::OnTimerFired,
                  weak_factory_.GetWeakPtr()),
-      kUploaderBusyTickRate * 1000);
+      base::TimeDelta::FromMilliseconds(kUploaderBusyTickRate * 1000));
   return true;
 }
 

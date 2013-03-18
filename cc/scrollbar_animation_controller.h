@@ -17,10 +17,14 @@ class CC_EXPORT ScrollbarAnimationController {
 public:
     virtual ~ScrollbarAnimationController() {}
 
+    virtual bool isScrollGestureInProgress() const = 0;
+    virtual bool isAnimating() const = 0;
+    virtual base::TimeDelta delayBeforeStart(base::TimeTicks now) const = 0;
+
     virtual bool animate(base::TimeTicks) = 0;
-    virtual void didPinchGestureUpdate(base::TimeTicks) = 0;
-    virtual void didPinchGestureEnd(base::TimeTicks) = 0;
-    virtual void didUpdateScrollOffset(base::TimeTicks) = 0;
+    virtual void didScrollGestureBegin() = 0;
+    virtual void didScrollGestureEnd(base::TimeTicks now) = 0;
+    virtual void didProgrammaticallyUpdateScroll(base::TimeTicks now) = 0;
 };
 
 } // namespace cc

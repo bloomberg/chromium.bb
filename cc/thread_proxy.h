@@ -86,6 +86,8 @@ class ThreadProxy : public Proxy,
   virtual void SendManagedMemoryStats() OVERRIDE;
   virtual bool IsInsideDraw() OVERRIDE;
   virtual void RenewTreePriority() OVERRIDE;
+  virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
+      OVERRIDE;
 
   // SchedulerClient implementation
   virtual void ScheduledActionBeginFrame() OVERRIDE;
@@ -186,6 +188,7 @@ class ThreadProxy : public Proxy,
                            base::DictionaryValue* state) const;
   void RenewTreePriorityOnImplThread();
   void DidSwapUseIncompleteTileOnImplThread();
+  void StartScrollbarAnimationOnImplThread();
 
   // Accessed on main thread only.
 

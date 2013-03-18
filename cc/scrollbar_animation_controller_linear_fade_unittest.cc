@@ -32,7 +32,7 @@ protected:
         m_scrollLayer->SetBounds(gfx::Size(50, 50));
         m_scrollLayer->SetHorizontalScrollbarLayer(m_scrollbarLayer.get());
 
-        m_scrollbarController = ScrollbarAnimationControllerLinearFade::create(m_scrollLayer.get(), 2, 3);
+        m_scrollbarController = ScrollbarAnimationControllerLinearFade::create(m_scrollLayer.get(), base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(3));
     }
 
     FakeImplProxy m_proxy;
@@ -49,18 +49,23 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyHiddenInBegin)
     EXPECT_FLOAT_EQ(0, m_scrollbarLayer->opacity());
 }
 
-TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyAwakenByScroll)
+TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyAwakenByScrollGesture)
 {
     base::TimeTicks time;
     time += base::TimeDelta::FromSeconds(1);
-    m_scrollbarController->didUpdateScrollOffset(time);
-    m_scrollbarController->animate(time);
+    m_scrollbarController->didScrollGestureBegin();
+    EXPECT_TRUE(m_scrollbarController->isScrollGestureInProgress());
+    EXPECT_FALSE(m_scrollbarController->isAnimating());
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
 
-    time += base::TimeDelta::FromSeconds(1);
+    time += base::TimeDelta::FromSeconds(100);
     m_scrollbarController->animate(time);
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
-    m_scrollbarController->didUpdateScrollOffset(time);
+    m_scrollbarController->didScrollGestureEnd(time);
+
+    EXPECT_FALSE(m_scrollbarController->isScrollGestureInProgress());
+    EXPECT_TRUE(m_scrollbarController->isAnimating());
+    EXPECT_EQ(2, m_scrollbarController->delayBeforeStart(time).InSeconds());
 
     time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
@@ -79,7 +84,10 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyAwakenByScroll)
     EXPECT_FLOAT_EQ(1.0f / 3.0f, m_scrollbarLayer->opacity());
 
     time += base::TimeDelta::FromSeconds(1);
-    m_scrollbarController->didUpdateScrollOffset(time);
+
+    m_scrollbarController->didScrollGestureBegin();
+    m_scrollbarController->didScrollGestureEnd(time);
+
     time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
@@ -101,30 +109,21 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyAwakenByScroll)
     EXPECT_FLOAT_EQ(0, m_scrollbarLayer->opacity());
 }
 
-TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyForceAwakenByPinch)
+TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyAwakenByProgrammaticScroll)
 {
     base::TimeTicks time;
-    m_scrollbarController->didPinchGestureUpdate(time);
+    time += base::TimeDelta::FromSeconds(1);
+    m_scrollbarController->didProgrammaticallyUpdateScroll(time);
+    EXPECT_FALSE(m_scrollbarController->isScrollGestureInProgress());
+    EXPECT_TRUE(m_scrollbarController->isAnimating());
+    EXPECT_EQ(2, m_scrollbarController->delayBeforeStart(time).InSeconds());
     m_scrollbarController->animate(time);
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
 
     time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
-
-    time += base::TimeDelta::FromSeconds(1);
-    m_scrollbarController->animate(time);
-    m_scrollbarController->didUpdateScrollOffset(time);
-    m_scrollbarController->animate(time);
-    EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
-
-    time += base::TimeDelta::FromSeconds(1);
-    m_scrollbarController->animate(time);
-    EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
-
-    time += base::TimeDelta::FromSeconds(1);
-    m_scrollbarController->animate(time);
-    EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
+    m_scrollbarController->didProgrammaticallyUpdateScroll(time);
 
     time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
@@ -135,7 +134,16 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyForceAwakenByPinch)
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
 
     time += base::TimeDelta::FromSeconds(1);
-    m_scrollbarController->didPinchGestureEnd(time);
+    m_scrollbarController->animate(time);
+    EXPECT_FLOAT_EQ(2.0f / 3.0f, m_scrollbarLayer->opacity());
+
+    time += base::TimeDelta::FromSeconds(1);
+    m_scrollbarController->animate(time);
+    EXPECT_FLOAT_EQ(1.0f / 3.0f, m_scrollbarLayer->opacity());
+
+    time += base::TimeDelta::FromSeconds(1);
+    m_scrollbarController->didProgrammaticallyUpdateScroll(time);
+    time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
 
@@ -143,18 +151,17 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyForceAwakenByPinch)
     m_scrollbarController->animate(time);
     EXPECT_FLOAT_EQ(1, m_scrollbarLayer->opacity());
 
-    time += base::TimeDelta::FromSeconds(2);
+    time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
-    EXPECT_FLOAT_EQ(2 / 3.0f, m_scrollbarLayer->opacity());
+    EXPECT_FLOAT_EQ(2.0f / 3.0f, m_scrollbarLayer->opacity());
 
     time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
-    EXPECT_FLOAT_EQ(1 / 3.0f, m_scrollbarLayer->opacity());
+    EXPECT_FLOAT_EQ(1.0f / 3.0f, m_scrollbarLayer->opacity());
 
     time += base::TimeDelta::FromSeconds(1);
     m_scrollbarController->animate(time);
     EXPECT_FLOAT_EQ(0, m_scrollbarLayer->opacity());
-
 }
 
 }  // namespace

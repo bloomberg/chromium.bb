@@ -33,6 +33,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void SendManagedMemoryStats() OVERRIDE {}
   virtual bool IsInsideDraw() OVERRIDE;
   virtual void RenewTreePriority() OVERRIDE {}
+  virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta)
+      OVERRIDE {}
 };
 
 }  // namespace cc

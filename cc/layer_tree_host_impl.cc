@@ -1392,7 +1392,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   }
 
   if (potentially_scrolling_layer_impl) {
-    active_tree_->set_currently_scrolling_layer(
+    active_tree_->SetCurrentlyScrollingLayer(
         potentially_scrolling_layer_impl);
     should_bubble_scrolls_ = (type != NonBubblingGesture);
     wheel_scrolling_ = (type == Wheel);
@@ -1534,7 +1534,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     did_scroll = true;
     did_lock_scrolling_layer_ = true;
     if (!should_bubble_scrolls_) {
-      active_tree_->set_currently_scrolling_layer(layer_impl);
+      active_tree_->SetCurrentlyScrollingLayer(layer_impl);
       break;
     }
 
@@ -1576,6 +1576,7 @@ void LayerTreeHostImpl::ScrollEnd() {
     top_controls_manager_->ScrollEnd();
   ClearCurrentlyScrollingLayer();
   active_tree()->DidEndScroll();
+  StartScrollbarAnimation(base::TimeTicks::Now());
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {
@@ -1608,11 +1609,6 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
 
   RootScrollLayer()->ScrollBy(move);
 
-  if (RootScrollLayer()->scrollbar_animation_controller()) {
-    RootScrollLayer()->scrollbar_animation_controller()->
-        didPinchGestureUpdate(base::TimeTicks::Now());
-  }
-
   client_->SetNeedsCommitOnImplThread();
   client_->SetNeedsRedrawOnImplThread();
   client_->RenewTreePriority();
@@ -1620,13 +1616,6 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
 
 void LayerTreeHostImpl::PinchGestureEnd() {
   pinch_gesture_active_ = false;
-
-  if (RootScrollLayer() &&
-      RootScrollLayer()->scrollbar_animation_controller()) {
-    RootScrollLayer()->scrollbar_animation_controller()->
-        didPinchGestureEnd(base::TimeTicks::Now());
-  }
-
   client_->SetNeedsCommitOnImplThread();
 }
 
@@ -1855,11 +1844,38 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
 
   ScrollbarAnimationController* scrollbar_controller =
       layer->scrollbar_animation_controller();
-  if (scrollbar_controller && scrollbar_controller->animate(time))
+  if (scrollbar_controller && scrollbar_controller->animate(time)) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "LayerTreeHostImpl::SetNeedsRedraw due to AnimateScrollbars");
     client_->SetNeedsRedrawOnImplThread();
+  }
 
   for (size_t i = 0; i < layer->children().size(); ++i)
     AnimateScrollbarsRecursive(layer->children()[i], time);
+}
+
+void LayerTreeHostImpl::StartScrollbarAnimation(base::TimeTicks time) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::StartScrollbarAnimation");
+  StartScrollbarAnimationRecursive(RootLayer(), time);
+}
+
+void LayerTreeHostImpl::StartScrollbarAnimationRecursive(LayerImpl* layer,
+                                                         base::TimeTicks time) {
+  if (!layer)
+    return;
+
+  ScrollbarAnimationController* scrollbar_controller =
+      layer->scrollbar_animation_controller();
+  if (scrollbar_controller && scrollbar_controller->isAnimating()) {
+    base::TimeDelta delay = scrollbar_controller->delayBeforeStart(time);
+    if (delay > base::TimeDelta())
+      client_->RequestScrollbarAnimationOnImplThread(delay);
+    else if (scrollbar_controller->animate(time))
+      client_->SetNeedsRedrawOnImplThread();
+  }
+
+  for (size_t i = 0; i < layer->children().size(); ++i)
+    StartScrollbarAnimationRecursive(layer->children()[i], time);
 }
 
 void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {

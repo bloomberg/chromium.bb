@@ -1315,7 +1315,7 @@ void ThreadProxy::RenewTreePriority() {
   Proxy::ImplThread()->PostDelayedTask(
       base::Bind(&ThreadProxy::RenewTreePriorityOnImplThread,
                  weak_factory_on_impl_thread_.GetWeakPtr()),
-      delay.InMilliseconds());
+      delay);
 
   renew_tree_priority_on_impl_thread_pending_ = true;
 }
@@ -1325,6 +1325,17 @@ void ThreadProxy::RenewTreePriorityOnImplThread() {
   renew_tree_priority_on_impl_thread_pending_ = false;
 
   RenewTreePriority();
+}
+
+void ThreadProxy::RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) {
+  Proxy::ImplThread()->PostDelayedTask(
+      base::Bind(&ThreadProxy::StartScrollbarAnimationOnImplThread,
+                 impl_thread_weak_ptr_),
+      delay);
+}
+
+void ThreadProxy::StartScrollbarAnimationOnImplThread() {
+  layer_tree_host_impl_->StartScrollbarAnimation(base::TimeTicks::Now());
 }
 
 }  // namespace cc

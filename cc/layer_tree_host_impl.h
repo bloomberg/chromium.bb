@@ -65,6 +65,7 @@ class LayerTreeHostImplClient {
   virtual void SendManagedMemoryStats() = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
+  virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) = 0;
 };
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering
@@ -106,6 +107,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   virtual void setActiveTreeNeedsUpdateDrawProperties() OVERRIDE;
   virtual void setNeedsRedraw() OVERRIDE;
   virtual bool haveRootScrollLayer() const OVERRIDE;
+
+  void StartScrollbarAnimation(base::TimeTicks now);
 
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
@@ -380,6 +383,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                           const LayerImpl* layer) const;
 
   static LayerImpl* GetNonCompositedContentLayerRecursive(LayerImpl* layer);
+
+  void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
 
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;

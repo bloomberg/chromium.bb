@@ -31,17 +31,17 @@ void FakeThread::runPendingTask()
 
 void FakeThread::PostTask(base::Closure cb)
 {
-    PostDelayedTask(cb, 0);
+    PostDelayedTask(cb, base::TimeDelta());
 }
 
-void FakeThread::PostDelayedTask(base::Closure cb, long long delay)
+void FakeThread::PostDelayedTask(base::Closure cb, base::TimeDelta delay)
 {
     if (m_runPendingTaskOnOverwrite && hasPendingTask())
         runPendingTask();
 
     ASSERT_FALSE(hasPendingTask());
     m_pendingTask.reset(new base::Closure(cb));
-    m_pendingTaskDelay = delay;
+    m_pendingTaskDelay = delay.InMilliseconds();
 }
 
 bool FakeThread::BelongsToCurrentThread() const

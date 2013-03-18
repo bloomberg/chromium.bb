@@ -25,9 +25,9 @@ class CC_EXPORT ThreadImpl : public Thread {
 
   virtual ~ThreadImpl();
 
-  // Thread implementation
   virtual void PostTask(base::Closure cb) OVERRIDE;
-  virtual void PostDelayedTask(base::Closure cb, long long delay_ms) OVERRIDE;
+  virtual void PostDelayedTask(base::Closure cb, base::TimeDelta delay)
+      OVERRIDE;
   virtual bool BelongsToCurrentThread() const OVERRIDE;
 
  private:

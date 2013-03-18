@@ -13,6 +13,7 @@
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/pinch_zoom_scrollbar.h"
+#include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer_impl.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -145,8 +146,21 @@ LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   return currently_scrolling_layer_;
 }
 
+void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
+  if (currently_scrolling_layer_ == layer)
+    return;
+
+  if (currently_scrolling_layer_ &&
+      currently_scrolling_layer_->scrollbar_animation_controller())
+    currently_scrolling_layer_->scrollbar_animation_controller()
+        ->didScrollGestureEnd(base::TimeTicks::Now());
+  currently_scrolling_layer_ = layer;
+  if (layer && layer->scrollbar_animation_controller())
+    layer->scrollbar_animation_controller()->didScrollGestureBegin();
+}
+
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
-  currently_scrolling_layer_ = NULL;
+  SetCurrentlyScrollingLayer(NULL);
   scrolling_layer_id_from_previous_tree_ = 0;
 }
 
@@ -362,7 +376,7 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 
 void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pendingTree) {
   int id = currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
-  pendingTree->set_currently_scrolling_layer(
+  pendingTree->SetCurrentlyScrollingLayer(
       LayerTreeHostCommon::findLayerInSubtree(pendingTree->root_layer(), id));
 }
 

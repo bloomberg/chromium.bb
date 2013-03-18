@@ -24,9 +24,8 @@ void ThreadImpl::PostTask(base::Closure cb) {
   thread_->PostTask(FROM_HERE, cb);
 }
 
-void ThreadImpl::PostDelayedTask(base::Closure cb, long long delay_ms) {
-  thread_->PostDelayedTask(
-      FROM_HERE, cb, base::TimeDelta::FromMilliseconds(delay_ms));
+void ThreadImpl::PostDelayedTask(base::Closure cb, base::TimeDelta delay) {
+  thread_->PostDelayedTask(FROM_HERE, cb, delay);
 }
 
 bool ThreadImpl::BelongsToCurrentThread() const {

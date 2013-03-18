@@ -510,7 +510,7 @@ void ThreadedTest::runTest(bool threaded)
 
     m_mainCCThread->PostTask(base::Bind(&ThreadedTest::doBeginTest, base::Unretained(this)));
     m_timeout.Reset(base::Bind(&ThreadedTest::timeout, base::Unretained(this)));
-    m_mainCCThread->PostDelayedTask(m_timeout.callback(), 5000);
+    m_mainCCThread->PostDelayedTask(m_timeout.callback(), base::TimeDelta::FromSeconds(5));
     MessageLoop::current()->Run();
     if (m_layerTreeHost.get() && m_layerTreeHost->root_layer())
         m_layerTreeHost->root_layer()->SetLayerTreeHost(NULL);

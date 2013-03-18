@@ -102,10 +102,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* RootScrollLayer() const;
   LayerImpl* RootClipLayer() const;
   LayerImpl* CurrentlyScrollingLayer() const;
-  void set_currently_scrolling_layer(LayerImpl* layer) {
-    currently_scrolling_layer_ = layer;
-  }
-
+  void SetCurrentlyScrollingLayer(LayerImpl* layer);
   void ClearCurrentlyScrollingLayer();
 
   void FindRootScrollLayer();

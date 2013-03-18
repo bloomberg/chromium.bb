@@ -6,6 +6,7 @@
 #define CC_TEST_SCHEDULER_TEST_COMMON_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "cc/base/thread.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/frame_rate_controller.h"
@@ -52,7 +53,8 @@ public:
     }
 
     virtual void PostTask(base::Closure cb) OVERRIDE;
-    virtual void PostDelayedTask(base::Closure cb, long long delay_ms) OVERRIDE;
+    virtual void PostDelayedTask(base::Closure cb, base::TimeDelta delay)
+        OVERRIDE;
     virtual bool BelongsToCurrentThread() const OVERRIDE;
 
 protected:

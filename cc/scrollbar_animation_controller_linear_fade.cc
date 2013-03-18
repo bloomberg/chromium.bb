@@ -9,15 +9,15 @@
 
 namespace cc {
 
-scoped_ptr<ScrollbarAnimationControllerLinearFade> ScrollbarAnimationControllerLinearFade::create(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
+scoped_ptr<ScrollbarAnimationControllerLinearFade> ScrollbarAnimationControllerLinearFade::create(LayerImpl* scrollLayer, base::TimeDelta fadeoutDelay, base::TimeDelta fadeoutLength)
 {
     return make_scoped_ptr(new ScrollbarAnimationControllerLinearFade(scrollLayer, fadeoutDelay, fadeoutLength));
 }
 
-ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
+ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(LayerImpl* scrollLayer, base::TimeDelta fadeoutDelay, base::TimeDelta fadeoutLength)
     : ScrollbarAnimationController()
     , m_scrollLayer(scrollLayer)
-    , m_pinchGestureInEffect(false)
+    , m_scrollGestureInProgress(false)
     , m_fadeoutDelay(fadeoutDelay)
     , m_fadeoutLength(fadeoutLength)
 {
@@ -27,43 +27,67 @@ ScrollbarAnimationControllerLinearFade::~ScrollbarAnimationControllerLinearFade(
 {
 }
 
+bool ScrollbarAnimationControllerLinearFade::isScrollGestureInProgress() const
+{
+    return m_scrollGestureInProgress;
+}
+
+bool ScrollbarAnimationControllerLinearFade::isAnimating() const
+{
+    return !m_lastAwakenTime.is_null();
+}
+
+base::TimeDelta ScrollbarAnimationControllerLinearFade::delayBeforeStart(base::TimeTicks now) const
+{
+    if (now > m_lastAwakenTime + m_fadeoutDelay)
+        return base::TimeDelta();
+    return m_fadeoutDelay - (now - m_lastAwakenTime);
+}
+
 bool ScrollbarAnimationControllerLinearFade::animate(base::TimeTicks now)
 {
     float opacity = opacityAtTime(now);
     m_scrollLayer->SetScrollbarOpacity(opacity);
-    return opacity;
+    if (!opacity)
+       m_lastAwakenTime = base::TimeTicks();
+    return isAnimating() && delayBeforeStart(now) == base::TimeDelta();
 }
 
-void ScrollbarAnimationControllerLinearFade::didPinchGestureUpdate(base::TimeTicks now)
+void ScrollbarAnimationControllerLinearFade::didScrollGestureBegin()
 {
-    m_pinchGestureInEffect = true;
+    m_scrollLayer->SetScrollbarOpacity(1);
+    m_scrollGestureInProgress = true;
+    m_lastAwakenTime = base::TimeTicks();
 }
 
-void ScrollbarAnimationControllerLinearFade::didPinchGestureEnd(base::TimeTicks now)
+void ScrollbarAnimationControllerLinearFade::didScrollGestureEnd(base::TimeTicks now)
 {
-    m_pinchGestureInEffect = false;
+    m_scrollGestureInProgress = false;
     m_lastAwakenTime = now;
 }
 
-void ScrollbarAnimationControllerLinearFade::didUpdateScrollOffset(base::TimeTicks now)
+void ScrollbarAnimationControllerLinearFade::didProgrammaticallyUpdateScroll(base::TimeTicks now)
 {
+    // Don't set m_scrollGestureInProgress as this scroll is not from a gesture
+    // and we won't receive ScrollEnd.
+    m_scrollLayer->SetScrollbarOpacity(1);
     m_lastAwakenTime = now;
 }
 
 float ScrollbarAnimationControllerLinearFade::opacityAtTime(base::TimeTicks now)
 {
-    if (m_pinchGestureInEffect)
+    if (m_scrollGestureInProgress)
         return 1;
 
     if (m_lastAwakenTime.is_null())
         return 0;
 
-    double delta = (now - m_lastAwakenTime).InSecondsF();
+    base::TimeDelta delta = now - m_lastAwakenTime;
 
     if (delta <= m_fadeoutDelay)
         return 1;
     if (delta < m_fadeoutDelay + m_fadeoutLength)
-        return (m_fadeoutDelay + m_fadeoutLength - delta) / m_fadeoutLength;
+        return (m_fadeoutDelay + m_fadeoutLength - delta).InSecondsF() / m_fadeoutLength.InSecondsF();
     return 0;
 }
 

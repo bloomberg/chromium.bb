@@ -225,7 +225,7 @@ void DelayBasedTimeSource::postNextTickTask(base::TimeTicks now)
            m_nextParameters.interval.InMillisecondsF() * (1.0 + doubleTickThreshold));
     m_thread->PostDelayedTask(base::Bind(&DelayBasedTimeSource::onTimerFired,
                                          m_weakFactory.GetWeakPtr()),
-                              delay.InMilliseconds());
+                              delay);
 
     m_nextParameters.tickTarget = newTickTarget;
     m_currentParameters = m_nextParameters;
