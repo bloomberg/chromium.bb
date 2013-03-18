@@ -108,6 +108,7 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->deferred_2d_canvas_enabled = false;
   prefs->mock_scrollbars_enabled = false;
   prefs->fixed_position_creates_stacking_context = false;
+  prefs->apply_page_scale_factor_in_compositor = false;
 }
 
 }  // namespace content
