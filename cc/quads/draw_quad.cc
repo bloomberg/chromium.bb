@@ -52,8 +52,7 @@ DrawQuad::~DrawQuad() {
 }
 
 scoped_ptr<DrawQuad> DrawQuad::Copy(
-    const SharedQuadState* copied_shared_quad_state) const
-{
+    const SharedQuadState* copied_shared_quad_state) const {
   scoped_ptr<DrawQuad> copy_quad;
   switch (material) {
     case CHECKERBOARD:
