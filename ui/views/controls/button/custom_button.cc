@@ -283,6 +283,12 @@ void CustomButton::GetAccessibleState(ui::AccessibleViewState* state) {
   }
 }
 
+void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
+  if (state_ == STATE_DISABLED)
+    return;
+  SetState(visible && IsMouseHovered() ? STATE_HOVERED : STATE_NORMAL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, ui::AnimationDelegate implementation:
 

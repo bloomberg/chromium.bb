@@ -87,6 +87,7 @@ class VIEWS_EXPORT CustomButton : public Button,
                                bool is_mouse_gesture) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

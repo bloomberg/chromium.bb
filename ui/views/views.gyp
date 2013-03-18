@@ -665,6 +665,7 @@
         'bubble/bubble_border_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
+        'controls/button/custom_button_unittest.cc',
         'controls/button/image_button_unittest.cc',
         'controls/button/label_button_unittest.cc',
         'controls/combobox/native_combobox_views_unittest.cc',
