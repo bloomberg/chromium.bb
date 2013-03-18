@@ -1997,6 +1997,8 @@
         'browser/task_manager/task_manager.cc',
         'browser/task_manager/task_manager.h',
         'browser/task_manager/task_manager_notification_resource_provider.cc',
+        'browser/task_manager/task_manager_os_resources_win.cc',
+        'browser/task_manager/task_manager_os_resources_win.h',
         'browser/task_manager/task_manager_resource_providers.cc',
         'browser/task_manager/task_manager_resource_providers.h',
         'browser/task_manager/task_manager_worker_resource_provider.cc',

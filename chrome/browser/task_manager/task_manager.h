@@ -322,6 +322,8 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   string16 GetResourceSharedMemory(int index) const;
   string16 GetResourcePhysicalMemory(int index) const;
   string16 GetResourceProcessId(int index) const;
+  string16 GetResourceGDIHandles(int index) const;
+  string16 GetResourceUSERHandles(int index) const;
   string16 GetResourceWebCoreImageCacheSize(int index) const;
   string16 GetResourceWebCoreScriptsCacheSize(int index) const;
   string16 GetResourceWebCoreCSSCacheSize(int index) const;
@@ -344,6 +346,12 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Gets the physical memory (in bytes) that should be displayed for the passed
   // resource index.
   bool GetPhysicalMemory(int index, size_t* result) const;
+
+  // On Windows, get the current and peak number of GDI handles in use.
+  void GetGDIHandles(int index, size_t* current, size_t* peak) const;
+
+  // On Windows, get the current and peak number of USER handles in use.
+  void GetUSERHandles(int index, size_t* current, size_t* peak) const;
 
   // Gets the statuses of webkit. Return false if the resource for the given row
   // isn't a renderer.
@@ -530,6 +538,14 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
     bool is_video_memory_valid;
     size_t video_memory;
     bool video_memory_has_duplicates;
+
+    bool is_gdi_handles_valid;
+    size_t gdi_handles;
+    size_t gdi_handles_peak;
+
+    bool is_user_handles_valid;
+    size_t user_handles;
+    size_t user_handles_peak;
   };
 
   typedef std::vector<TaskManager::Resource*> ResourceList;
