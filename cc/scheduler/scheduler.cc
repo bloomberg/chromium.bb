@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler.h"
+#include "cc/scheduler/scheduler.h"
 
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"

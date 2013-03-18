@@ -11,7 +11,7 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_update_queue.h"
-#include "cc/texture_uploader.h"
+#include "cc/scheduler/texture_uploader.h"
 #include "cc/tiled_layer.h"
 #include "cc/tiled_layer_impl.h"
 #include "ui/gfx/rect.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TIME_SOURCE_H_
-#define CC_TIME_SOURCE_H_
+#ifndef CC_SCHEDULER_TIME_SOURCE_H_
+#define CC_SCHEDULER_TIME_SOURCE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
@@ -43,4 +43,4 @@ class CC_EXPORT TimeSource : public base::RefCounted<TimeSource> {
 
 }  // namespace cc
 
-#endif  // CC_TIME_SOURCE_H_
+#endif  // CC_SCHEDULER_TIME_SOURCE_H_

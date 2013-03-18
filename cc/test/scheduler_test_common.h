@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/base/thread.h"
-#include "cc/delay_based_time_source.h"
-#include "cc/frame_rate_controller.h"
+#include "cc/scheduler/delay_based_time_source.h"
+#include "cc/scheduler/frame_rate_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

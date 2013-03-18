@@ -19,7 +19,7 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/debug/rendering_stats.h"
 #include "cc/output/output_surface.h"
-#include "cc/rate_limiter.h"
+#include "cc/scheduler/rate_limiter.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"

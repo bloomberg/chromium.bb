@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEXTURE_UPLOADER_H_
-#define CC_TEXTURE_UPLOADER_H_
+#ifndef CC_SCHEDULER_TEXTURE_UPLOADER_H_
+#define CC_SCHEDULER_TEXTURE_UPLOADER_H_
 
 #include <set>
 
@@ -122,4 +122,4 @@ class CC_EXPORT TextureUploader {
 
 }  // namespace cc
 
-#endif  // CC_TEXTURE_UPLOADER_H_
+#endif  // CC_SCHEDULER_TEXTURE_UPLOADER_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCHEDULER_H_
-#define CC_SCHEDULER_H_
+#ifndef CC_SCHEDULER_SCHEDULER_H_
+#define CC_SCHEDULER_SCHEDULER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
-#include "cc/frame_rate_controller.h"
-#include "cc/scheduler_settings.h"
-#include "cc/scheduler_state_machine.h"
+#include "cc/scheduler/frame_rate_controller.h"
+#include "cc/scheduler/scheduler_settings.h"
+#include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -124,4 +124,4 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
 
 }  // namespace cc
 
-#endif  // CC_SCHEDULER_H_
+#endif  // CC_SCHEDULER_SCHEDULER_H_

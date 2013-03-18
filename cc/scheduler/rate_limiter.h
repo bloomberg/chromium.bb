@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RATE_LIMITER_H_
-#define CC_RATE_LIMITER_H_
+#ifndef CC_SCHEDULER_RATE_LIMITER_H_
+#define CC_SCHEDULER_RATE_LIMITER_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -54,4 +54,4 @@ class RateLimiter : public base::RefCounted<RateLimiter> {
 };
 
 }
-#endif  // CC_RATE_LIMITER_H_
+#endif  // CC_SCHEDULER_RATE_LIMITER_H_

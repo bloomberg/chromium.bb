@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/delay_based_time_source.h"
+#include "cc/scheduler/delay_based_time_source.h"
 
 #include "cc/base/thread.h"
 #include "cc/test/scheduler_test_common.h"

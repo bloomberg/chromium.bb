@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/frame_rate_controller.h"
+#include "cc/scheduler/frame_rate_controller.h"
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "cc/base/thread.h"
-#include "cc/delay_based_time_source.h"
-#include "cc/time_source.h"
+#include "cc/scheduler/delay_based_time_source.h"
+#include "cc/scheduler/time_source.h"
 
 namespace cc {
 

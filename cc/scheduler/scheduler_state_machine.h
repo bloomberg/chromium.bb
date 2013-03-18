@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCHEDULER_STATE_MACHINE_H_
-#define CC_SCHEDULER_STATE_MACHINE_H_
+#ifndef CC_SCHEDULER_SCHEDULER_STATE_MACHINE_H_
+#define CC_SCHEDULER_SCHEDULER_STATE_MACHINE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/scheduler_settings.h"
+#include "cc/scheduler/scheduler_settings.h"
 
 namespace cc {
 
@@ -190,4 +190,4 @@ class CC_EXPORT SchedulerStateMachine {
 
 }  // namespace cc
 
-#endif  // CC_SCHEDULER_STATE_MACHINE_H_
+#endif  // CC_SCHEDULER_SCHEDULER_STATE_MACHINE_H_

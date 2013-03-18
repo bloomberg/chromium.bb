@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DELAY_BASED_TIME_SOURCE_H_
-#define CC_DELAY_BASED_TIME_SOURCE_H_
+#ifndef CC_SCHEDULER_DELAY_BASED_TIME_SOURCE_H_
+#define CC_SCHEDULER_DELAY_BASED_TIME_SOURCE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/time_source.h"
+#include "cc/scheduler/time_source.h"
 
 namespace cc {
 
@@ -78,4 +78,4 @@ protected:
 
 }  // namespace cc
 
-#endif  // CC_DELAY_BASED_TIME_SOURCE_H_
+#endif  // CC_SCHEDULER_DELAY_BASED_TIME_SOURCE_H_

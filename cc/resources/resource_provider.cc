@@ -14,7 +14,7 @@
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/resources/platform_color.h"
 #include "cc/resources/transferable_resource.h"
-#include "cc/texture_uploader.h"
+#include "cc/scheduler/texture_uploader.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCHEDULER_SETTINGS_H_
-#define CC_SCHEDULER_SETTINGS_H_
+#ifndef CC_SCHEDULER_SCHEDULER_SETTINGS_H_
+#define CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 
 #include "cc/base/cc_export.h"
 
@@ -19,4 +19,4 @@ class CC_EXPORT SchedulerSettings {
 
 }  // namespace cc
 
-#endif  // CC_SCHEDULER_SETTINGS_H_
+#endif  // CC_SCHEDULER_SCHEDULER_SETTINGS_H_
