@@ -70,7 +70,6 @@
       'variables': {
         'jni_gen_package': 'android_webview',
         'input_java_class': 'java/io/InputStream.class',
-        'input_jar_file': '<(android_sdk)/android.jar',
       },
       'includes': [ '../../build/jar_file_jni_generator.gypi' ],
     },

@@ -506,7 +506,6 @@
           'variables': {
             'jni_gen_package': 'webkit',
             'input_java_class': 'android/widget/OverScroller.class',
-            'input_jar_file': '<(android_sdk)/android.jar',
           },
           'includes': [ '../../build/jar_file_jni_generator.gypi' ],
         },

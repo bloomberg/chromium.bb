@@ -47,8 +47,7 @@
     '<(DEPTH)/build/build_output_dirs_android.gyp:build_output_dirs'
   ],
   'variables': {
-    'android_jar': '<(android_sdk)/android.jar',
-    'input_jars_paths': [ '<(android_jar)' ],
+    'input_jars_paths': [ '<(android_sdk_jar)' ],
     'additional_src_dirs': [],
     'javac_includes': [],
     'jar_name': '<(_target_name).jar',

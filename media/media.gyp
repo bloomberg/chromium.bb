@@ -1399,7 +1399,6 @@
           'variables': {
             'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaPlayer.class',
-            'input_jar_file': '<(android_sdk)/android.jar',
           },
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
@@ -1435,7 +1434,6 @@
           'variables': {
             'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaCodec.class',
-            'input_jar_file': '<(android_sdk)/android.jar',
           },
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
@@ -1445,7 +1443,6 @@
           'variables': {
             'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaFormat.class',
-            'input_jar_file': '<(android_sdk)/android.jar',
           },
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },

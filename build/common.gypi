@@ -1122,13 +1122,15 @@
              'android_ndk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/ndk/',
              'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/sdk/',
              'android_host_arch%': '<!(uname -m)',
+             # Android API-level of the SDK used for compilation.
+             'android_sdk_version%': '17',
           },
           # Copy conditionally-set variables out one scope.
           'android_ndk_root%': '<(android_ndk_root)',
           'android_sdk_root%': '<(android_sdk_root)',
+          'android_sdk_version%': '<(android_sdk_version)',
 
-          # Android API-level of the SDK used for compilation.
-          'android_sdk_version%': '17',
+          'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
 
           # Android API level 14 is ICS (Android 4.0) which is the minimum
           # platform requirement for Chrome on Android, we use it for native
@@ -1166,7 +1168,8 @@
         'android_ndk_include': '<(android_ndk_sysroot)/usr/include',
         'android_ndk_lib': '<(android_ndk_sysroot)/usr/lib',
         'android_sdk_tools%': '<(android_sdk_root)/platform-tools',
-        'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
+        'android_sdk%': '<(android_sdk)',
+        'android_sdk_jar%': '<(android_sdk)/android.jar',
 
         # Location of the "strip" binary, used by both gyp and scripts.
         'android_strip%' : '<!(/bin/echo -n <(android_toolchain)/*-strip)',
