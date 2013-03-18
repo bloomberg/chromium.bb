@@ -773,7 +773,7 @@ void RenderWidgetHostViewGtk::Blur() {
 }
 
 bool RenderWidgetHostViewGtk::HasFocus() const {
-  return gtk_widget_is_focus(view_.get());
+  return gtk_widget_has_focus(view_.get());
 }
 
 void RenderWidgetHostViewGtk::ActiveWindowChanged(GdkWindow* window) {

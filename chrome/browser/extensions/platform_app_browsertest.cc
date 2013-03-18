@@ -793,10 +793,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
 #define MAYBE_WebContentsHasFocus WebContentsHasFocus
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
-  const Extension* extension = LoadAndLaunchPlatformApp("minimal");
-  ShellWindow* window = CreateShellWindow(extension);
-  EXPECT_TRUE(window->web_contents()->GetRenderWidgetHostView()->HasFocus());
-  CloseShellWindow(window);
+  ExtensionTestMessageListener launched_listener("Launched", true);
+  LoadAndLaunchPlatformApp("minimal");
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  EXPECT_EQ(1LU, GetShellWindowCount());
+  ShellWindowRegistry::ShellWindowSet shell_windows = ShellWindowRegistry::Get(
+      browser()->profile())->shell_windows();
+  EXPECT_TRUE((*shell_windows.begin())->web_contents()->
+      GetRenderWidgetHostView()->HasFocus());
 }
 
 }  // namespace extensions
