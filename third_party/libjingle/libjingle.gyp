@@ -8,6 +8,7 @@
   ],
   'variables': {
     'enabled_libjingle_device_manager%': 0,
+    'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
     'libpeer_target_type%': 'static_library',
@@ -490,6 +491,7 @@
       'dependencies': [
         '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
         'libjingle_p2p_constants',
+        '<@(libjingle_additional_deps)',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
