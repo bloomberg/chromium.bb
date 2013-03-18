@@ -166,6 +166,7 @@
         'shared_impl/time_conversion_unittest.cc',
         'shared_impl/tracked_callback_unittest.cc',
         'shared_impl/var_tracker_unittest.cc',
+        'shared_impl/var_value_conversions_unittest.cc',
       ],
       'conditions': [
         [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {

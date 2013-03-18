@@ -90,7 +90,7 @@ bool VarTracker::AddRefVar(const PP_Var& var) {
   ProxyLock::AssertAcquired();
 
   if (!IsVarTypeRefcounted(var.type))
-    return false;
+    return true;
   return AddRefVar(static_cast<int32>(var.value.as_id));
 }
 

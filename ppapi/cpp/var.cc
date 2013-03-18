@@ -241,10 +241,16 @@ std::string Var::DebugString() const {
       str.append("...");
     }
     snprintf(buf, sizeof(buf), format, str.c_str());
-  } else if (is_array_buffer()) {
-    snprintf(buf, sizeof(buf), "Var(ARRAY_BUFFER)");
   } else if (is_object()) {
     snprintf(buf, sizeof(buf), "Var(OBJECT)");
+  } else if (is_array()) {
+    snprintf(buf, sizeof(buf), "Var(ARRAY)");
+  } else if (is_dictionary()) {
+    snprintf(buf, sizeof(buf), "Var(DICTIONARY)");
+  } else if (is_array_buffer()) {
+    snprintf(buf, sizeof(buf), "Var(ARRAY_BUFFER)");
+  } else {
+    buf[0] = '\0';
   }
   return buf;
 }

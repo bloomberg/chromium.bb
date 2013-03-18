@@ -122,8 +122,18 @@ class Var {
 
   /// This function determines if this <code>Var</code> is an object.
   ///
-  /// @return true if this  <code>Var</code> is an object, otherwise false.
+  /// @return true if this <code>Var</code> is an object, otherwise false.
   bool is_object() const { return var_.type == PP_VARTYPE_OBJECT; }
+
+  /// This function determines if this <code>Var</code> is an array.
+  ///
+  /// @return true if this <code>Var</code> is an array, otherwise false.
+  bool is_array() const { return var_.type == PP_VARTYPE_ARRAY; }
+
+  /// This function determines if this <code>Var</code> is a dictionary.
+  ///
+  /// @return true if this <code>Var</code> is a dictinoary, otherwise false.
+  bool is_dictionary() const { return var_.type == PP_VARTYPE_DICTIONARY; }
 
   /// This function determines if this <code>Var</code> is an integer value.
   /// The <code>is_int</code> function returns the internal representation.

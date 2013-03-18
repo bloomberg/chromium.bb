@@ -47,4 +47,10 @@ ScopedPPVar& ScopedPPVar::operator=(const PP_Var& v) {
   return *this;
 }
 
+PP_Var ScopedPPVar::Release() {
+  PP_Var result = var_;
+  var_ = PP_MakeUndefined();
+  return result;
+}
+
 }  // namespace ppapi

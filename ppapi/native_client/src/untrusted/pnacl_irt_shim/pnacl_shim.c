@@ -28,6 +28,7 @@
 #include "ppapi/c/dev/ppb_trace_event_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
+#include "ppapi/c/dev/ppb_var_dictionary_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppb_view_dev.h"
@@ -209,6 +210,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Trace_Event_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
@@ -2084,6 +2086,46 @@ struct PP_Var Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL(PP_Instance instanc
 }
 
 /* End wrapper methods for PPB_URLUtil_Dev_0_6 */
+
+/* Begin wrapper methods for PPB_VarDictionary_Dev_0_1 */
+
+static __attribute__((pnaclcall))
+struct PP_Var Pnacl_M27_PPB_VarDictionary_Dev_Create(void) {
+  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
+  return iface->Create();
+}
+
+static __attribute__((pnaclcall))
+struct PP_Var Pnacl_M27_PPB_VarDictionary_Dev_Get(struct PP_Var dict, struct PP_Var key) {
+  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
+  return iface->Get(dict, key);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M27_PPB_VarDictionary_Dev_Set(struct PP_Var dict, struct PP_Var key, struct PP_Var value) {
+  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
+  return iface->Set(dict, key, value);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_VarDictionary_Dev_Delete(struct PP_Var dict, struct PP_Var key) {
+  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
+  iface->Delete(dict, key);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M27_PPB_VarDictionary_Dev_HasKey(struct PP_Var dict, struct PP_Var key) {
+  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
+  return iface->HasKey(dict, key);
+}
+
+static __attribute__((pnaclcall))
+struct PP_Var Pnacl_M27_PPB_VarDictionary_Dev_GetKeys(struct PP_Var dict) {
+  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
+  return iface->GetKeys(dict);
+}
+
+/* End wrapper methods for PPB_VarDictionary_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_VideoCapture_Dev_0_2 */
 
@@ -4180,6 +4222,15 @@ struct PPB_URLUtil_Dev_0_6 Pnacl_Wrappers_PPB_URLUtil_Dev_0_6 = {
     .GetPluginInstanceURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL
 };
 
+struct PPB_VarDictionary_Dev_0_1 Pnacl_Wrappers_PPB_VarDictionary_Dev_0_1 = {
+    .Create = (struct PP_Var (*)(void))&Pnacl_M27_PPB_VarDictionary_Dev_Create,
+    .Get = (struct PP_Var (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M27_PPB_VarDictionary_Dev_Get,
+    .Set = (PP_Bool (*)(struct PP_Var dict, struct PP_Var key, struct PP_Var value))&Pnacl_M27_PPB_VarDictionary_Dev_Set,
+    .Delete = (void (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M27_PPB_VarDictionary_Dev_Delete,
+    .HasKey = (PP_Bool (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M27_PPB_VarDictionary_Dev_HasKey,
+    .GetKeys = (struct PP_Var (*)(struct PP_Var dict))&Pnacl_M27_PPB_VarDictionary_Dev_GetKeys
+};
+
 struct PPB_VideoCapture_Dev_0_2 Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_VideoCapture_Dev_Create,
     .IsVideoCapture = (PP_Bool (*)(PP_Resource video_capture))&Pnacl_M19_PPB_VideoCapture_Dev_IsVideoCapture,
@@ -5054,6 +5105,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1 = {
+  .iface_macro = PPB_VAR_DICTIONARY_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarDictionary_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2 = {
   .iface_macro = PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2,
@@ -5489,6 +5546,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Trace_Event_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
+  &Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,

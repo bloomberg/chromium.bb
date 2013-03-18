@@ -56,6 +56,12 @@ std::string Var::PPVarToLogString(PP_Var var) {
     }
     case PP_VARTYPE_OBJECT:
       return "[Object]";
+    case PP_VARTYPE_ARRAY:
+      return "[Array]";
+    case PP_VARTYPE_DICTIONARY:
+      return "[Dictionary]";
+    case PP_VARTYPE_ARRAY_BUFFER:
+      return "[Array buffer]";
     default:
       return "[Invalid var]";
   }
@@ -74,6 +80,10 @@ NPObjectVar* Var::AsNPObjectVar() {
 }
 
 ProxyObjectVar* Var::AsProxyObjectVar() {
+  return NULL;
+}
+
+DictionaryVar* Var::AsDictionaryVar() {
   return NULL;
 }
 
