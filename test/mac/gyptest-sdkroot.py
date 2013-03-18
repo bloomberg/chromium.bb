@@ -21,7 +21,7 @@ if sys.platform == 'darwin':
   # dev machines, who usually don't have the 10.6 sdk.
   sdk = '10.6'
   DEVNULL = open(os.devnull, 'wb')
-  proc = subprocess.Popen(['xcodebuild', '-version', '-sdk', sdk],
+  proc = subprocess.Popen(['xcodebuild', '-version', '-sdk', 'macosx' + sdk],
                           stdout=DEVNULL, stderr=DEVNULL)
   proc.communicate()
   DEVNULL.close()
