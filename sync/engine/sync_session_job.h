@@ -31,13 +31,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
     CONFIGURATION,
   };
 
-  // This class exists to inform an interested party about the destruction of
-  // a SyncSessionJob.
-  class SYNC_EXPORT_PRIVATE DestructionObserver {
-   public:
-    virtual void OnJobDestroyed(SyncSessionJob* job) = 0;
-  };
-
   SyncSessionJob(Purpose purpose,
                  base::TimeTicks start,
                  scoped_ptr<sessions::SyncSession> session,
@@ -84,8 +77,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   SyncerStep end_step() const;
   ConfigurationParams config_params() const;
 
-  void set_destruction_observer(
-      const base::WeakPtr<DestructionObserver>& observer);
  private:
   // A SyncSessionJob can be in one of these three states, controlled by the
   // Finish() function, see method comments.
@@ -110,8 +101,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   // a SyncShare operation took place with |session_| and it cycled through
   // all requisite steps given |purpose_| without being preempted.
   FinishedState finished_;
-
-  base::WeakPtr<DestructionObserver> destruction_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionJob);
 };

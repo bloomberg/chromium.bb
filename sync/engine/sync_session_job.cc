@@ -8,8 +8,6 @@
 namespace syncer {
 
 SyncSessionJob::~SyncSessionJob() {
-  if (destruction_observer_)
-    destruction_observer_->OnJobDestroyed(this);
 }
 
 SyncSessionJob::SyncSessionJob(
@@ -22,11 +20,6 @@ SyncSessionJob::SyncSessionJob(
       session_(session.Pass()),
       config_params_(config_params),
       finished_(NOT_FINISHED) {
-}
-
-void SyncSessionJob::set_destruction_observer(
-    const base::WeakPtr<DestructionObserver>& destruction_observer) {
-  destruction_observer_ = destruction_observer;
 }
 
 #define ENUM_CASE(x) case x: return #x; break;
