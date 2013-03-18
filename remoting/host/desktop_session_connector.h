@@ -35,6 +35,11 @@ class DesktopSessionConnector {
   virtual void DisconnectTerminal(
       DesktopSessionProxy* desktop_session_proxy) = 0;
 
+  // Changes the screen resolution of the desktop session.
+  virtual void SetScreenResolution(
+      DesktopSessionProxy* desktop_session_proxy,
+      const ScreenResolution& resolution) = 0;
+
   // Notifies the network process that |terminal_id| is now attached to
   // a desktop integration process. |desktop_process| specifies the process
   // handle. |desktop_pipe| is the client end of the pipe opened by the desktop

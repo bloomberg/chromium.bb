@@ -19,7 +19,7 @@ IpcSessionController::~IpcSessionController() {
 
 void IpcSessionController::SetScreenResolution(
     const ScreenResolution& resolution) {
-  NOTIMPLEMENTED();
+  desktop_session_proxy_->SetScreenResolution(resolution);
 }
 
 }  // namespace remoting

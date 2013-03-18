@@ -22,6 +22,7 @@
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_mock_objects.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -305,7 +306,7 @@ void DesktopProcessTest::SendStartSessionAgent() {
   // function call" warnings printed when DisconnectWindow::Show() and
   // DisconnectWindow::Hide() are called.
   network_channel_->Send(new ChromotingNetworkDesktopMsg_StartSessionAgent(
-      "user@domain/rest-of-jid"));
+      "user@domain/rest-of-jid", ScreenResolution()));
 }
 
 // Launches the desktop process and waits when it connects back.

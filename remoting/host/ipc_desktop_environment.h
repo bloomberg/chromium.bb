@@ -97,6 +97,9 @@ class IpcDesktopEnvironmentFactory
       bool virtual_terminal) OVERRIDE;
   virtual void DisconnectTerminal(
       DesktopSessionProxy* desktop_session_proxy) OVERRIDE;
+  virtual void SetScreenResolution(
+      DesktopSessionProxy* desktop_session_proxy,
+      const ScreenResolution& resolution) OVERRIDE;
   virtual void OnDesktopSessionAgentAttached(
       int terminal_id,
       base::ProcessHandle desktop_process,

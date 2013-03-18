@@ -19,6 +19,8 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/remote_input_filter.h"
+#include "remoting/host/screen_resolution.h"
+#include "remoting/host/session_controller.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -93,6 +95,8 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
                           OnInjectKeyEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectMouseEvent,
                           OnInjectMouseEvent)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SetScreenResolution,
+                          SetScreenResolution)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   } else {
@@ -169,7 +173,8 @@ void DesktopSessionAgent::ReleaseSharedBuffer(
 }
 
 void DesktopSessionAgent::OnStartSessionAgent(
-    const std::string& authenticated_jid) {
+    const std::string& authenticated_jid,
+    const ScreenResolution& resolution) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
   DCHECK(!started_);
   DCHECK(!audio_capturer_);
@@ -184,6 +189,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
   scoped_ptr<DesktopEnvironment> desktop_environment =
       delegate_->desktop_environment_factory().Create(authenticated_jid,
                                                       disconnect_session);
+
+  // Create the session controller and set the initial screen resolution.
+  session_controller_ = desktop_environment->CreateSessionController();
+  SetScreenResolution(resolution);
 
   // Create the event executor.
   event_executor_ =
@@ -328,6 +337,7 @@ void DesktopSessionAgent::Stop() {
     input_tracker_.reset();
 
     event_executor_.reset();
+    session_controller_.reset();
 
     // Stop the audio capturer.
     audio_capture_task_runner()->PostTask(
@@ -447,6 +457,14 @@ void DesktopSessionAgent::OnInjectMouseEvent(
   // InputStub implementations must verify events themselves, so we don't need
   // verification here. This matches HostEventDispatcher.
   remote_input_filter_->InjectMouseEvent(event);
+}
+
+void DesktopSessionAgent::SetScreenResolution(
+    const ScreenResolution& resolution) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  if (session_controller_ && resolution.IsValid())
+    session_controller_->SetScreenResolution(resolution);
 }
 
 void DesktopSessionAgent::DisconnectSession() {

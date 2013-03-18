@@ -81,6 +81,11 @@ IPC_MESSAGE_CONTROL3(ChromotingNetworkHostMsg_ConnectTerminal,
 IPC_MESSAGE_CONTROL1(ChromotingNetworkHostMsg_DisconnectTerminal,
                      int /* terminal_id */)
 
+// Changes the screen resolution in the given desktop session.
+IPC_MESSAGE_CONTROL2(ChromotingNetworkDaemonMsg_SetScreenResolution,
+                     int /* terminal_id */,
+                     remoting::ScreenResolution /* resolution */)
+
 // Serialized remoting::protocol::TransportRoute structure.
 IPC_STRUCT_BEGIN(SerializedTransportRoute)
   IPC_STRUCT_MEMBER(int, type)
@@ -218,8 +223,9 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_AudioPacket,
 
 // Passes the client session data to the desktop session agent and starts it.
 // This must be the first message received from the host.
-IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_StartSessionAgent,
-                     std::string /* authenticated_jid */ )
+IPC_MESSAGE_CONTROL2(ChromotingNetworkDesktopMsg_StartSessionAgent,
+                     std::string /* authenticated_jid */,
+                     remoting::ScreenResolution /* resolution */)
 
 // Notifies the desktop process that the shared memory buffer has been mapped to
 // the memory of the network process and so it can be safely dropped by
@@ -246,3 +252,7 @@ IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectKeyEvent,
 // |serialized_event| is a serialized protocol::MouseEvent.
 IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectMouseEvent,
                      std::string /* serialized_event */ )
+
+// Changes the screen resolution in the desktop session.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_SetScreenResolution,
+                     remoting::ScreenResolution /* resolution */)

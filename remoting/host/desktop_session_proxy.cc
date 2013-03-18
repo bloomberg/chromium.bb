@@ -19,7 +19,6 @@
 #include "remoting/host/ipc_event_executor.h"
 #include "remoting/host/ipc_session_controller.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
-#include "remoting/host/screen_resolution.h"
 #include "remoting/host/session_controller.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
@@ -156,7 +155,9 @@ bool DesktopSessionProxy::AttachToDesktop(
 
   // Pass ID of the client (which is authenticated at this point) to the desktop
   // session agent and start the agent.
-  SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(client_jid_));
+  SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(
+      client_jid_, screen_resolution_));
+
   return true;
 }
 
@@ -278,6 +279,24 @@ void DesktopSessionProxy::StartEventExecutor(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   client_clipboard_ = client_clipboard.Pass();
+}
+
+void DesktopSessionProxy::SetScreenResolution(
+    const ScreenResolution& resolution) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  screen_resolution_ = resolution;
+  if (!screen_resolution_.IsValid())
+    return;
+
+  // Pass the client's resolution to both daemon and desktop session agent.
+  // Depending on the session kind the screen resolution ccan be set by either
+  // the daemon (for example RDP sessions on Windows) or by the desktop session
+  // agent (when sharing the physical console).
+  if (desktop_session_connector_)
+    desktop_session_connector_->SetScreenResolution(this, resolution);
+  SendToDesktop(
+      new ChromotingNetworkDesktopMsg_SetScreenResolution(resolution));
 }
 
 void DesktopSessionProxy::ConnectToDesktopSession(

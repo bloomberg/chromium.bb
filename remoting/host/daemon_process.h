@@ -97,15 +97,19 @@ class DaemonProcess
                             const ScreenResolution& resolution,
                             bool virtual_terminal);
 
+  // Changes the screen resolution of the desktop session identified by
+  // |terminal_id|.
+  void SetScreenResolution(int terminal_id, const ScreenResolution& resolution);
+
   // Requests the network process to crash.
   void CrashNetworkProcess(const tracked_objects::Location& location);
 
   // Reads the host configuration and launches the network process.
   void Initialize();
 
-  // Returns true if |terminal_id| is considered to be known. I.e. it is
+  // Returns true if |terminal_id| is in the range of allocated IDs. I.e. it is
   // less or equal to the highest ID we have seen so far.
-  bool IsTerminalIdKnown(int terminal_id);
+  bool WasTerminalIdAllocated(int terminal_id);
 
   // Handlers for the host status notifications received from the network
   // process.

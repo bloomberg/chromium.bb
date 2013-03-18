@@ -11,12 +11,16 @@
 namespace remoting {
 
 class DaemonProcess;
+class ScreenResolution;
 
 // Represents the desktop session for a connected terminal. Each desktop session
 // has a unique identifier used by cross-platform code to refer to it.
 class DesktopSession {
  public:
   virtual ~DesktopSession();
+
+  // Changes the screen resolution of the desktop session.
+  virtual void SetScreenResolution(const ScreenResolution& resolution) = 0;
 
   int id() const { return id_; }
 

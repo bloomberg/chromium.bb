@@ -42,6 +42,9 @@ class FakeDesktopSession : public DesktopSession {
   FakeDesktopSession(DaemonProcess* daemon_process, int id);
   virtual ~FakeDesktopSession();
 
+  virtual void SetScreenResolution(
+      const ScreenResolution& resolution) OVERRIDE {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopSession);
 };

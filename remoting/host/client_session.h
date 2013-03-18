@@ -215,6 +215,7 @@ class ClientSession
 
   scoped_ptr<EventExecutor> event_executor_;
 
+  // Used to apply client-requested changes in screen resolution.
   scoped_ptr<SessionController> session_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);

@@ -38,6 +38,8 @@ class DisconnectWindow;
 class EventExecutor;
 class LocalInputMonitor;
 class RemoteInputFilter;
+class ScreenResolution;
+class SessionController;
 
 namespace protocol {
 class InputEventTracker;
@@ -122,7 +124,8 @@ class DesktopSessionAgent
       scoped_ptr<IPC::ChannelProxy>* server_out) = 0;
 
   // Handles StartSessionAgent request from the client.
-  void OnStartSessionAgent(const std::string& authenticated_jid);
+  void OnStartSessionAgent(const std::string& authenticated_jid,
+                           const ScreenResolution& resolution);
 
   // Handles CaptureFrame requests from the client.
   void OnCaptureFrame();
@@ -137,6 +140,10 @@ class DesktopSessionAgent
   void OnInjectClipboardEvent(const std::string& serialized_event);
   void OnInjectKeyEvent(const std::string& serialized_event);
   void OnInjectMouseEvent(const std::string& serialized_event);
+
+  // Handles ChromotingNetworkDesktopMsg_SetScreenResolution request from
+  // the client.
+  void SetScreenResolution(const ScreenResolution& resolution);
 
   // Sends DisconnectSession request to the host.
   void DisconnectSession();
@@ -221,6 +228,9 @@ class DesktopSessionAgent
 
   // Filter used to disable remote inputs during local input activity.
   scoped_ptr<RemoteInputFilter> remote_input_filter_;
+
+  // Used to apply client-requested changes in screen resolution.
+  scoped_ptr<SessionController> session_controller_;
 
   // IPC channel connecting the desktop process with the network process.
   scoped_ptr<IPC::ChannelProxy> network_channel_;

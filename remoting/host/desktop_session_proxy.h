@@ -19,6 +19,7 @@
 #include "media/video/capture/screen/shared_buffer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -121,6 +122,9 @@ class DesktopSessionProxy
   void InjectMouseEvent(const protocol::MouseEvent& event);
   void StartEventExecutor(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
+  // API used to implement the SessionController interface.
+  void SetScreenResolution(const ScreenResolution& resolution);
+
  private:
   friend class base::DeleteHelper<DesktopSessionProxy>;
   friend struct DesktopSessionProxyTraits;
@@ -202,6 +206,10 @@ class DesktopSessionProxy
 
   typedef std::map<int, scoped_refptr<media::SharedBuffer> > SharedBuffers;
   SharedBuffers shared_buffers_;
+
+  // Keeps the desired screen resolution so it can be passed to a newly attached
+  // desktop session agent.
+  ScreenResolution screen_resolution_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionProxy);
 };

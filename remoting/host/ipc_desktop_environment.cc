@@ -148,6 +148,23 @@ void IpcDesktopEnvironmentFactory::DisconnectTerminal(
   }
 }
 
+void IpcDesktopEnvironmentFactory::SetScreenResolution(
+    DesktopSessionProxy* desktop_session_proxy,
+    const ScreenResolution& resolution) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  ActiveConnectionsList::iterator i;
+  for (i = active_connections_.begin(); i != active_connections_.end(); ++i) {
+    if (i->second == desktop_session_proxy)
+      break;
+  }
+
+  if (i != active_connections_.end()) {
+    daemon_channel_->Send(new ChromotingNetworkDaemonMsg_SetScreenResolution(
+        i->first, resolution));
+  }
+}
+
 void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
     int terminal_id,
     base::ProcessHandle desktop_process,

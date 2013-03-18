@@ -88,6 +88,9 @@ class ConsoleSession : public DesktopSessionWin {
   virtual ~ConsoleSession();
 
  protected:
+  // DesktopSession overrides.
+  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
+
   // DesktopSessionWin overrides.
   virtual void InjectSas() OVERRIDE;
 
@@ -120,6 +123,9 @@ class RdpSession : public DesktopSessionWin {
   void OnRdpClosed();
 
  protected:
+  // DesktopSession overrides.
+  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
+
   // DesktopSessionWin overrides.
   virtual void InjectSas() OVERRIDE;
 
@@ -172,6 +178,12 @@ ConsoleSession::ConsoleSession(
 }
 
 ConsoleSession::~ConsoleSession() {
+}
+
+void ConsoleSession::SetScreenResolution(const ScreenResolution& resolution) {
+  // Do nothing. The screen resolution of the console session is controlled by
+  // the DesktopSessionAgent instance running in that session.
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
 }
 
 void ConsoleSession::InjectSas() {
@@ -248,6 +260,14 @@ void RdpSession::OnRdpClosed() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   OnPermanentError();
+}
+
+void RdpSession::SetScreenResolution(const ScreenResolution& resolution) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // TODO(alexeypa): implement resize-to-client for RDP sessions here.
+  // See http://crbug.com/137696.
+  NOTIMPLEMENTED();
 }
 
 void RdpSession::InjectSas() {
