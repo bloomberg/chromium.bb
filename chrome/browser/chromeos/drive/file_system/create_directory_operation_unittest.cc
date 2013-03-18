@@ -47,7 +47,8 @@ class CreateDirectoryOperationTest
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
     metadata_.reset(
-        new DriveResourceMetadata(fake_drive_service_->GetRootResourceId()));
+        new DriveResourceMetadata(fake_drive_service_->GetRootResourceId(),
+                                  blocking_task_runner_));
 
     scheduler_.reset(
         new DriveScheduler(profile_.get(), fake_drive_service_.get(), NULL));
@@ -63,7 +64,7 @@ class CreateDirectoryOperationTest
 
     change_list_loader_.reset(new ChangeListLoader(
         metadata_.get(), scheduler_.get(), drive_web_apps_registry_.get(),
-        cache_, blocking_task_runner_));
+        cache_));
 
     DriveFileError error = DRIVE_FILE_OK;
     change_list_loader_->LoadFromServerIfNeeded(

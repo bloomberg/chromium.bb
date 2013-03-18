@@ -262,12 +262,12 @@ void DriveFileSystem::Initialize() {
 
 void DriveFileSystem::ResetResourceMetadata() {
   resource_metadata_.reset(
-      new DriveResourceMetadata(drive_service_->GetRootResourceId()));
+      new DriveResourceMetadata(drive_service_->GetRootResourceId(),
+                                blocking_task_runner_));
   change_list_loader_.reset(new ChangeListLoader(resource_metadata_.get(),
-                                         scheduler_.get(),
-                                         webapps_registry_,
-                                         cache_,
-                                         blocking_task_runner_));
+                                                 scheduler_.get(),
+                                                 webapps_registry_,
+                                                 cache_));
   change_list_loader_->AddObserver(this);
 
   // Allocate the drive operation handlers.

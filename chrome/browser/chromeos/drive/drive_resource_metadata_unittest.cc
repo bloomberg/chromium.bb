@@ -62,7 +62,9 @@ std::vector<std::string> GetSortedBaseNames(
 
 class DriveResourceMetadataTest : public testing::Test {
  protected:
-  DriveResourceMetadataTest();
+  DriveResourceMetadataTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  }
 
   // Creates the following files/directories
   // drive/dir1/
@@ -88,6 +90,18 @@ class DriveResourceMetadataTest : public testing::Test {
                                  int sequence_id,
                                  bool is_directory,
                                  const std::string& parent_resource_id);
+
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    scoped_refptr<base::SequencedWorkerPool> pool =
+        content::BrowserThread::GetBlockingPool();
+    blocking_task_runner_ =
+        pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+    resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId,
+                                                       blocking_task_runner_));
+    Init(resource_metadata_.get());
+  }
 
   // Gets the entry info by path synchronously. Returns NULL on failure.
   scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
@@ -118,19 +132,14 @@ class DriveResourceMetadataTest : public testing::Test {
     return entries.Pass();
   }
 
+  base::ScopedTempDir temp_dir_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<DriveResourceMetadata> resource_metadata_;
 
  private:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 };
-
-DriveResourceMetadataTest::DriveResourceMetadataTest()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId));
-
-  Init(resource_metadata_.get());
-}
 
 // static
 void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
@@ -226,7 +235,8 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   mutable_entry->set_title("drive");
 
-  DriveResourceMetadata resource_metadata(kTestRootResourceId);
+  DriveResourceMetadata resource_metadata(kTestRootResourceId,
+                                          blocking_task_runner_);
 
   std::string serialized_proto;
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
@@ -253,7 +263,8 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
 }
 
 TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
-  DriveResourceMetadata resource_metadata(kTestRootResourceId);
+  DriveResourceMetadata resource_metadata(kTestRootResourceId,
+                                          blocking_task_runner_);
 
   int64 in_changestamp = 123456;
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
@@ -273,7 +284,8 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
 }
 
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
-  DriveResourceMetadata resource_metadata(kTestRootResourceId);
+  DriveResourceMetadata resource_metadata(kTestRootResourceId,
+                                          blocking_task_runner_);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
@@ -1193,7 +1205,8 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   // At this point, both the root and the sub directory do not contain the
   // per-directory changestamp.
 
-  DriveResourceMetadata resource_metadata(kTestRootResourceId);
+  DriveResourceMetadata resource_metadata(kTestRootResourceId,
+                                          blocking_task_runner_);
 
   // Load the proto. This should propagate the largest changestamp to every
   // directory.
@@ -1241,6 +1254,30 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   EXPECT_EQ(kNewChangestamp,
             dir_proto.drive_entry().directory_specific_info().changestamp());
 
+}
+
+TEST_F(DriveResourceMetadataTest, SaveAndLoad) {
+  // Save metadata and reset.
+  resource_metadata_->MaybeSave(temp_dir_.path());
+
+  resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId,
+                                                     blocking_task_runner_));
+
+  // Load metadata.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata_->Load(
+      temp_dir_.path(),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+
+  // Try to get some data.
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"));
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file9", entry->base_name());
+  ASSERT_TRUE(!entry->file_info().is_directory());
+  EXPECT_EQ("md5:file9", entry->file_specific_info().file_md5());
 }
 
 }  // namespace drive

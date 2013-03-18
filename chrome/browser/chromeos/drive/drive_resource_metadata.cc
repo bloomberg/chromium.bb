@@ -8,6 +8,7 @@
 #include <stack>
 #include <utility>
 
+#include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +21,71 @@ using content::BrowserThread;
 
 namespace drive {
 namespace {
+
+const base::FilePath::CharType kProtoFileName[] =
+    FILE_PATH_LITERAL("file_system.pb");
+
+// Schedule for dumping root file system proto buffers to disk depending its
+// total protobuffer size in MB.
+struct SerializationTimetable {
+  double size;
+  int timeout;
+};
+
+SerializationTimetable kSerializeTimetable[] = {
+#ifndef NDEBUG
+    {0.5, 0},    // Less than 0.5MB, dump immediately.
+    {-1,  1},    // Any size, dump if older than 1 minute.
+#else
+    {0.5, 0},    // Less than 0.5MB, dump immediately.
+    {1.0, 15},   // Less than 1.0MB, dump after 15 minutes.
+    {2.0, 30},
+    {4.0, 60},
+    {-1,  120},  // Any size, dump if older than 120 minutes.
+#endif
+};
+
+// Returns true if file system is due to be serialized on disk based on it
+// |serialized_size| and |last_serialized| timestamp.
+bool ShouldSerializeFileSystemNow(size_t serialized_size,
+                                  const base::Time& last_serialized) {
+  const double size_in_mb = serialized_size / 1048576.0;
+  const int last_proto_dump_in_min =
+      (base::Time::Now() - last_serialized).InMinutes();
+  for (size_t i = 0; i < arraysize(kSerializeTimetable); i++) {
+    if ((size_in_mb < kSerializeTimetable[i].size ||
+         kSerializeTimetable[i].size == -1) &&
+        last_proto_dump_in_min >= kSerializeTimetable[i].timeout) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Writes the string to the file.
+void WriteStringToFile(const base::FilePath& path,
+                       scoped_ptr<std::string> string) {
+  const int size = static_cast<int>(string->length());
+  if (file_util::WriteFile(path, string->data(), size) != size) {
+    LOG(WARNING) << "Drive proto file can't be stored at " << path.value();
+    if (!file_util::Delete(path, true))
+      LOG(WARNING) << "Drive proto file can't be deleted at " << path.value();
+  }
+}
+
+// Reads the file into the string and gets the last modified date.
+bool ReadFileToString(const base::FilePath& path,
+                      base::Time* last_modified,
+                      std::string* string) {
+  base::PlatformFileInfo info;
+  if (!file_util::GetFileInfo(path, &info) ||
+      !file_util::ReadFileToString(path, string)) {
+    LOG(WARNING) << "Failed to read file: " << path.value();
+    return false;
+  }
+  *last_modified = info.last_modified;
+  return true;
+}
 
 // Posts |error| to |callback| asynchronously. |callback| must not be null.
 void PostFileMoveCallbackError(const FileMoveCallback& callback,
@@ -87,8 +153,9 @@ EntryInfoPairResult::~EntryInfoPairResult() {
 // DriveResourceMetadata class implementation.
 
 DriveResourceMetadata::DriveResourceMetadata(
-    const std::string& root_resource_id)
-    : blocking_task_runner_(NULL),
+    const std::string& root_resource_id,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+    : blocking_task_runner_(blocking_task_runner),
       storage_(new DriveResourceMetadataStorageMemory),
       root_resource_id_(root_resource_id),
       serialized_size_(0),
@@ -576,6 +643,40 @@ bool DriveResourceMetadata::ParseFromString(
   return true;
 }
 
+void DriveResourceMetadata::MaybeSave(const base::FilePath& directory_path) {
+  if (!ShouldSerializeFileSystemNow(serialized_size_, last_serialized_))
+    return;
+
+  const base::FilePath path = directory_path.Append(kProtoFileName);
+  scoped_ptr<std::string> serialized_proto(new std::string());
+  SerializeToString(serialized_proto.get());
+
+  last_serialized_ = base::Time::Now();
+  serialized_size_ = serialized_proto->size();
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WriteStringToFile, path, base::Passed(&serialized_proto)));
+}
+
+void DriveResourceMetadata::Load(const base::FilePath& directory_path,
+                                 const FileOperationCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  const base::FilePath path = directory_path.Append(kProtoFileName);
+  base::Time* last_modified = new base::Time;
+  std::string* serialized_proto = new std::string;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ReadFileToString, path, last_modified, serialized_proto),
+      base::Bind(&DriveResourceMetadata::OnProtoLoaded,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(last_modified),
+                 base::Owned(serialized_proto)));
+
+}
+
 void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst(
     const base::FilePath& first_path,
     const base::FilePath& second_path,
@@ -755,6 +856,24 @@ DriveResourceMetadata::DirectoryChildrenToProtoVector(
     entries->push_back(*child);
   }
   return entries.Pass();
+}
+
+void DriveResourceMetadata::OnProtoLoaded(const FileOperationCallback& callback,
+                                          base::Time* last_modified,
+                                          std::string* serialized_proto,
+                                          bool read_succeeded) {
+  DCHECK(!callback.is_null());
+
+  DriveFileError error = DRIVE_FILE_OK;
+  if (read_succeeded &&
+      ParseFromString(*serialized_proto)) {
+    last_serialized_ = *last_modified;
+    serialized_size_ = serialized_proto->size();
+  } else {
+    error = DRIVE_FILE_ERROR_FAILED;
+    LOG(WARNING) << "Proto loading failed.";
+  }
+  callback.Run(error);
 }
 
 }  // namespace drive

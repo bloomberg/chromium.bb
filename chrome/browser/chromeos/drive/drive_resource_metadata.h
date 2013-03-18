@@ -134,16 +134,10 @@ typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
 class DriveResourceMetadata {
  public:
   // |root_resource_id| is the resource id for the root directory.
-  explicit DriveResourceMetadata(const std::string& root_resource_id);
+  DriveResourceMetadata(
+      const std::string& root_resource_id,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   virtual ~DriveResourceMetadata();
-
-  // Last time when we dumped serialized file system to disk.
-  const base::Time& last_serialized() const { return last_serialized_; }
-  void set_last_serialized(const base::Time& time) { last_serialized_ = time; }
-
-  // Size of serialized file system on disk in bytes.
-  size_t serialized_size() const { return serialized_size_; }
-  void set_serialized_size(size_t size) { serialized_size_ = size; }
 
   // True if the file system feed is loaded from the cache or from the server.
   bool loaded() const { return loaded_; }
@@ -234,6 +228,13 @@ class DriveResourceMetadata {
   void SerializeToString(std::string* serialized_proto);
   bool ParseFromString(const std::string& serialized_proto);
 
+  // Saves metadata to the specified directory when appropriate.
+  void MaybeSave(const base::FilePath& directory_path);
+
+  // Loads metadata from the specified directory.
+  void Load(const base::FilePath& directory_path,
+            const FileOperationCallback& callback);
+
  private:
   // Clears root_ and the resource map.
   void ClearRoot();
@@ -298,6 +299,12 @@ class DriveResourceMetadata {
   // Converts the children as a vector of DriveEntryProto.
   scoped_ptr<DriveEntryProtoVector> DirectoryChildrenToProtoVector(
       const std::string& directory_resource_id);
+
+  // Used to implement Load().
+  void OnProtoLoaded(const FileOperationCallback& callback,
+                     base::Time* last_modified,
+                     std::string* serialized_proto,
+                     bool read_succeeded);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

@@ -43,12 +43,10 @@ typedef base::Callback<
 // Documents List API) and load the cached proto file.
 class ChangeListLoader {
  public:
-  ChangeListLoader(
-      DriveResourceMetadata* resource_metadata,
-      DriveScheduler* scheduler,
-      DriveWebAppsRegistry* webapps_registry,
-      DriveCache* cache,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  ChangeListLoader(DriveResourceMetadata* resource_metadata,
+                   DriveScheduler* scheduler,
+                   DriveWebAppsRegistry* webapps_registry,
+                   DriveCache* cache);
   ~ChangeListLoader();
 
   // Adds and removes the observer.
@@ -135,7 +133,6 @@ class ChangeListLoader {
  private:
   struct GetResourceListUiState;
   struct LoadFeedParams;
-  struct LoadRootFeedParams;
 
   // Part of Load(). Called after loading from the cache is complete.
   void LoadAfterLoadFromCache(
@@ -186,10 +183,6 @@ class ChangeListLoader {
       const FileOperationCallback& callback,
       DriveFileError error,
       const base::FilePath& directory_path);
-
-  // Part of LoadFromCache(). Called after reading of proto is complete.
-  void LoadFromCacheAfterReadProto(LoadRootFeedParams* params,
-                                   DriveFileError error);
 
   // Part of LoadFromServerIfNeeded() Callled when
   // DriveScheduler::GetAboutResource() is complete. This method calls
@@ -263,7 +256,6 @@ class ChangeListLoader {
   DriveScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ObserverList<ChangeListLoaderObserver> observers_;
   scoped_ptr<ChangeListProcessor> change_list_processor_;
   typedef std::pair<DirectoryFetchInfo,

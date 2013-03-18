@@ -31,79 +31,8 @@ namespace drive {
 
 namespace {
 
-const base::FilePath::CharType kFilesystemProtoFile[] =
-    FILE_PATH_LITERAL("file_system.pb");
-
 // Update the fetch progress UI per every this number of feeds.
 const int kFetchUiUpdateStep = 10;
-
-// Schedule for dumping root file system proto buffers to disk depending its
-// total protobuffer size in MB.
-typedef struct {
-  double size;
-  int timeout;
-} SerializationTimetable;
-
-SerializationTimetable kSerializeTimetable[] = {
-#ifndef NDEBUG
-    {0.5, 0},    // Less than 0.5MB, dump immediately.
-    {-1,  1},    // Any size, dump if older than 1 minute.
-#else
-    {0.5, 0},    // Less than 0.5MB, dump immediately.
-    {1.0, 15},   // Less than 1.0MB, dump after 15 minutes.
-    {2.0, 30},
-    {4.0, 60},
-    {-1,  120},  // Any size, dump if older than 120 minutes.
-#endif
-};
-
-// Loads the file at |path| into the string |serialized_proto| on a blocking
-// thread.
-DriveFileError LoadProtoOnBlockingPool(const base::FilePath& path,
-                                       base::Time* last_modified,
-                                       std::string* serialized_proto) {
-  base::PlatformFileInfo info;
-  if (!file_util::GetFileInfo(path, &info))
-    return DRIVE_FILE_ERROR_NOT_FOUND;
-  *last_modified = info.last_modified;
-  if (!file_util::ReadFileToString(path, serialized_proto)) {
-    LOG(WARNING) << "Proto file not found at " << path.value();
-    return DRIVE_FILE_ERROR_NOT_FOUND;
-  }
-  return DRIVE_FILE_OK;
-}
-
-// Returns true if file system is due to be serialized on disk based on it
-// |serialized_size| and |last_serialized| timestamp.
-bool ShouldSerializeFileSystemNow(size_t serialized_size,
-                                  const base::Time& last_serialized) {
-  const double size_in_mb = serialized_size / 1048576.0;
-  const int last_proto_dump_in_min =
-      (base::Time::Now() - last_serialized).InMinutes();
-  for (size_t i = 0; i < arraysize(kSerializeTimetable); i++) {
-    if ((size_in_mb < kSerializeTimetable[i].size ||
-         kSerializeTimetable[i].size == -1) &&
-        last_proto_dump_in_min >= kSerializeTimetable[i].timeout) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Saves the string |serialized_proto| to a file at |path| on a blocking thread.
-void SaveProtoOnBlockingPool(const base::FilePath& path,
-                             scoped_ptr<std::string> serialized_proto) {
-  const int file_size = static_cast<int>(serialized_proto->length());
-  if (file_util::WriteFile(path, serialized_proto->data(), file_size) !=
-      file_size) {
-    LOG(WARNING) << "Drive proto file can't be stored at "
-                 << path.value();
-    if (!file_util::Delete(path, true)) {
-      LOG(WARNING) << "Drive proto file can't be deleted at "
-                   << path.value();
-    }
-  }
-}
 
 // Parses a google_apis::ResourceList from |data|.
 scoped_ptr<google_apis::ResourceList> ParseFeedOnBlockingPool(
@@ -147,19 +76,6 @@ struct ChangeListLoader::LoadFeedParams {
   scoped_ptr<GetResourceListUiState> ui_state;
 };
 
-// Defines set of parameters sent to callback OnProtoLoaded().
-struct ChangeListLoader::LoadRootFeedParams {
-  explicit LoadRootFeedParams(const FileOperationCallback& callback)
-      : load_start_time(base::Time::Now()),
-        callback(callback) {}
-
-  std::string proto;
-  base::Time last_modified;
-  // Time when filesystem began to be loaded from disk.
-  base::Time load_start_time;
-  const FileOperationCallback callback;
-};
-
 // Defines set of parameters sent to callback OnNotifyResourceListFetched().
 // This is a trick to update the number of fetched documents frequently on
 // UI. Due to performance reason, we need to fetch a number of files at
@@ -194,13 +110,11 @@ ChangeListLoader::ChangeListLoader(
     DriveResourceMetadata* resource_metadata,
     DriveScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry,
-    DriveCache* cache,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+    DriveCache* cache)
     : resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       webapps_registry_(webapps_registry),
       cache_(cache),
-      blocking_task_runner_(blocking_task_runner),
       refreshing_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -672,64 +586,16 @@ void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
   // loading from the server is complete.
   refreshing_ = true;
 
-  LoadRootFeedParams* params = new LoadRootFeedParams(callback);
-  base::FilePath path =
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
-          kFilesystemProtoFile);
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&LoadProtoOnBlockingPool,
-                 path, &params->last_modified, &params->proto),
-      base::Bind(&ChangeListLoader::LoadFromCacheAfterReadProto,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(params)));
-}
-
-void ChangeListLoader::LoadFromCacheAfterReadProto(LoadRootFeedParams* params,
-                                                   DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params->callback.is_null());
-  DCHECK(refreshing_);
-
-  // Update directory structure only if everything is OK and we haven't yet
-  // received the feed from the server yet.
-  if (error == DRIVE_FILE_OK) {
-    DVLOG(1) << "ParseFromString";
-    if (resource_metadata_->ParseFromString(params->proto)) {
-      resource_metadata_->set_last_serialized(params->last_modified);
-      resource_metadata_->set_serialized_size(params->proto.size());
-      base::TimeDelta elapsed = (base::Time::Now() - params->load_start_time);
-      DVLOG(1) << "Time for loading from the cache: "
-               << elapsed.InMilliseconds() << " milliseconds";
-    } else {
-      error = DRIVE_FILE_ERROR_FAILED;
-      LOG(WARNING) << "Parse of cached proto file failed";
-    }
-  }
-
-  params->callback.Run(error);
+  resource_metadata_->Load(
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+      callback);
 }
 
 void ChangeListLoader::SaveFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!ShouldSerializeFileSystemNow(resource_metadata_->serialized_size(),
-                                    resource_metadata_->last_serialized())) {
-    return;
-  }
-
-  const base::FilePath path =
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
-          kFilesystemProtoFile);
-  scoped_ptr<std::string> serialized_proto(new std::string());
-  resource_metadata_->SerializeToString(serialized_proto.get());
-  resource_metadata_->set_last_serialized(base::Time::Now());
-  resource_metadata_->set_serialized_size(serialized_proto->size());
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SaveProtoOnBlockingPool, path,
-                 base::Passed(&serialized_proto)));
+  resource_metadata_->MaybeSave(
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META));
 }
 
 void ChangeListLoader::UpdateFromFeed(
