@@ -148,6 +148,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool supports_multiple_windows;
   bool viewport_enabled;
   bool initialize_at_minimum_page_scale;
+  bool smart_insert_delete_enabled;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly

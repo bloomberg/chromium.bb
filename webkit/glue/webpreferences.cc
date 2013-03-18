@@ -134,6 +134,11 @@ WebPreferences::WebPreferences()
       supports_multiple_windows(true),
       viewport_enabled(false),
       initialize_at_minimum_page_scale(true),
+#if defined(OS_MACOSX)
+      smart_insert_delete_enabled(true),
+#else
+      smart_insert_delete_enabled(false),
+#endif
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
@@ -452,6 +457,8 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setViewportEnabled(viewport_enabled);
   settings->setInitializeAtMinimumPageScale(initialize_at_minimum_page_scale);
+
+  settings->setSmartInsertDeleteEnabled(smart_insert_delete_enabled);
 
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);
