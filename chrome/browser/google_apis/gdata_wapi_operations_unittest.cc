@@ -540,8 +540,9 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                 &result_code),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code)),
       "file:2_file_resource_id",
       "");
 
@@ -565,8 +566,9 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperationWithETag) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                 &result_code),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code)),
       "file:2_file_resource_id",
       "etag");
 
@@ -661,8 +663,9 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                 &result_code),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code)),
       "file:2_file_resource_id",
       "New File");
 
@@ -766,8 +769,9 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                     &result_code),
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&result_code)),
           "folder:root",
           "file:2_file_resource_id");
 
@@ -800,8 +804,9 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                     &result_code),
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&result_code)),
           "folder:root",
           "file:2_file_resource_id");
 

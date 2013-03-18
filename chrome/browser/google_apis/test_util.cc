@@ -101,12 +101,6 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   return value.Pass();
 }
 
-void CopyResultFromEntryActionCallbackAndQuit(GDataErrorCode* error_out,
-                                              GDataErrorCode error_in) {
-  *error_out = error_in;
-  MessageLoop::current()->Quit();
-}
-
 void CopyResultsFromGetResourceListCallback(
     GDataErrorCode* error_out,
     scoped_ptr<ResourceList>* resource_list_out,

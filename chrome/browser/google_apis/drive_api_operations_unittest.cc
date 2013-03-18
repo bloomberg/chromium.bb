@@ -416,8 +416,9 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
           *url_generator_,
           "resource_id",
           "new name",
-          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                     &error));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -480,8 +481,9 @@ TEST_F(DriveApiOperationsTest, TrashResourceOperation) {
           request_context_getter_.get(),
           *url_generator_,
           "resource_id",
-          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                     &error));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -509,8 +511,9 @@ TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
           *url_generator_,
           "parent_resource_id",
           "resource_id",
-          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                     &error));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -537,8 +540,9 @@ TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
           *url_generator_,
           "parent_resource_id",
           "resource_id",
-          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
-                     &error));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
