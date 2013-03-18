@@ -8,8 +8,8 @@
 #include <deque>
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/texture_copier.h"
 #include "cc/resource_update.h"
-#include "cc/texture_copier.h"
 
 namespace cc {
 

@@ -5,8 +5,8 @@
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
 
 #include "base/bind.h"
-#include "cc/delegated_frame_data.h"
 #include "cc/draw_quad.h"
+#include "cc/output/delegated_frame_data.h"
 
 namespace cc {
 

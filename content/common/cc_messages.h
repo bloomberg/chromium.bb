@@ -5,11 +5,11 @@
 // IPC Messages sent between compositor instances.
 
 #include "cc/checkerboard_draw_quad.h"
-#include "cc/compositor_frame.h"
-#include "cc/compositor_frame_ack.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/draw_quad.h"
 #include "cc/io_surface_draw_quad.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_ack.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/shared_quad_state.h"

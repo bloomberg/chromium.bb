@@ -4,7 +4,7 @@
 
 #include "cc/scoped_resource.h"
 
-#include "cc/renderer.h"
+#include "cc/output/renderer.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"

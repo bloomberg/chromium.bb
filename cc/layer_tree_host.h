@@ -22,7 +22,7 @@
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_settings.h"
 #include "cc/occlusion_tracker.h"
-#include "cc/output_surface.h"
+#include "cc/output/output_surface.h"
 #include "cc/proxy.h"
 #include "cc/rate_limiter.h"
 #include "skia/ext/refptr.h"

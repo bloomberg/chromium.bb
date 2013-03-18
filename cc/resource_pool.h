@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/renderer.h"
+#include "cc/output/renderer.h"
 #include "cc/resource.h"
 
 namespace cc {

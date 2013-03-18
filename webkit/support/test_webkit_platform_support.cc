@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "cc/base/thread_impl.h"
-#include "cc/context_provider.h"
+#include "cc/output/context_provider.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"

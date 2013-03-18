@@ -5,7 +5,7 @@
 #include "webkit/gpu/test_context_provider_factory.h"
 
 #include "base/logging.h"
-#include "cc/context_provider.h"
+#include "cc/output/context_provider.h"
 #include "webkit/gpu/context_provider_in_process.h"
 
 namespace webkit {

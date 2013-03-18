@@ -12,7 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
-#include "cc/output_surface.h"
+#include "cc/output/output_surface.h"
 
 namespace base {
 class TaskRunner;

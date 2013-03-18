@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
-#include "cc/gl_renderer.h"  // For the GLC() macro.
+#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/platform_color.h"
 #include "cc/texture_uploader.h"
 #include "cc/transferable_resource.h"

@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "cc/context_provider.h"
+#include "cc/output/context_provider.h"
 
 namespace cc {
 class TestWebGraphicsContext3D;

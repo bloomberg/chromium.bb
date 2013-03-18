@@ -8,10 +8,10 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/base/thread.h"
-#include "cc/context_provider.h"
+#include "cc/output/context_provider.h"
+#include "cc/output/texture_copier.h"
 #include "cc/prioritized_resource.h"
 #include "cc/resource_provider.h"
-#include "cc/texture_copier.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"

@@ -11,7 +11,7 @@
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/layer_tree_impl.h"
-#include "cc/output_surface.h"
+#include "cc/output/output_surface.h"
 #include "cc/picture_layer.h"
 #include "cc/prioritized_resource.h"
 #include "cc/prioritized_resource_manager.h"

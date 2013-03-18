@@ -4,8 +4,8 @@
 
 #include "cc/delegated_renderer_layer.h"
 
-#include "cc/delegated_frame_data.h"
 #include "cc/delegated_renderer_layer_impl.h"
+#include "cc/output/delegated_frame_data.h"
 
 namespace cc {
 

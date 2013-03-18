@@ -5,9 +5,9 @@
 #include "cc/test/pixel_test.h"
 
 #include "base/path_service.h"
-#include "cc/compositor_frame_metadata.h"
-#include "cc/gl_renderer.h"
-#include "cc/output_surface.h"
+#include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/gl_renderer.h"
+#include "cc/output/output_surface.h"
 #include "cc/resource_provider.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_test_utils.h"

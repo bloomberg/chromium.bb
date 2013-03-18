@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
-#include "cc/compositor_frame.h"
-#include "cc/compositor_frame_ack.h"
-#include "cc/output_surface_client.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_ack.h"
+#include "cc/output/output_surface_client.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_thread_impl.h"

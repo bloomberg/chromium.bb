@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "cc/context_provider.h"
+#include "cc/output/context_provider.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 
 namespace webkit {

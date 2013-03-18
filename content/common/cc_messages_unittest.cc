@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#include "cc/compositor_frame.h"
+#include "cc/output/compositor_frame.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

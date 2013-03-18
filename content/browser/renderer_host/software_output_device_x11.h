@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_OUTPUT_DEVICE_X11_H_
 #define CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_OUTPUT_DEVICE_X11_H_
 
-#include "cc/software_output_device.h"
+#include "cc/output/software_output_device.h"
 #include "ui/base/x/x11_util.h"
 
 namespace ui {

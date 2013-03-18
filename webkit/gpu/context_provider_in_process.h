@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "cc/context_provider.h"
+#include "cc/output/context_provider.h"
 #include "webkit/gpu/webkit_gpu_export.h"
 
 namespace webkit {

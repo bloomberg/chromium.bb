@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/base/scoped_ptr_hash_map.h"
-#include "cc/output_surface.h"
+#include "cc/output/output_surface.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"

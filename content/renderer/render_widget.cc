@@ -18,7 +18,7 @@
 #include "cc/base/thread.h"
 #include "cc/base/thread_impl.h"
 #include "cc/layer_tree_host.h"
-#include "cc/output_surface.h"
+#include "cc/output/output_surface.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"

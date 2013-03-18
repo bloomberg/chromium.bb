@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "cc/compositor_frame.h"
+#include "cc/output/compositor_frame.h"
 #include "content/common/content_export.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_widget_host_view.h"
