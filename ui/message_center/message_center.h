@@ -171,6 +171,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationChangeObserver,
   virtual ~MessageCenter();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest,
+                           ManyMessageCenterNotifications);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, ManyPopupNotifications);
   // Calls OnMessageCenterChanged on each observer.
   void NotifyMessageCenterChanged(bool new_notification);
 

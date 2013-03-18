@@ -25,7 +25,7 @@
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/views/message_bubble_base.h"
 #include "ui/message_center/views/message_center_bubble.h"
-#include "ui/message_center/views/message_popup_bubble.h"
+#include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -116,17 +116,13 @@ message_center::MessageCenter* WebNotificationTrayWin::message_center() {
 }
 
 bool WebNotificationTrayWin::ShowPopups() {
-  scoped_ptr<message_center::MessagePopupBubble> bubble(
-      new message_center::MessagePopupBubble(message_center()));
-  popup_bubble_.reset(new internal::NotificationBubbleWrapperWin(
-      this,
-      bubble.Pass(),
-      internal::NotificationBubbleWrapperWin::BUBBLE_TYPE_POPUP));
+  popup_collection_.reset(
+      new message_center::MessagePopupCollection(NULL, message_center()));
   return true;
 }
 
 void WebNotificationTrayWin::HidePopups() {
-  popup_bubble_.reset();
+  popup_collection_.reset();
 }
 
 bool WebNotificationTrayWin::ShowMessageCenter() {
@@ -173,8 +169,8 @@ void WebNotificationTrayWin::UpdateMessageCenter() {
 }
 
 void WebNotificationTrayWin::UpdatePopups() {
-  if (popup_bubble_.get())
-    popup_bubble_->bubble()->ScheduleUpdate();
+  if (popup_collection_.get())
+    popup_collection_->UpdatePopups();
 };
 
 void WebNotificationTrayWin::OnMessageCenterTrayChanged() {
@@ -240,9 +236,6 @@ void WebNotificationTrayWin::HideBubbleWithView(
   if (message_center_bubble_.get() &&
       bubble_view == message_center_bubble_->bubble_view()) {
     message_center_tray_->HideMessageCenterBubble();
-  } else if (popup_bubble_.get() &&
-      bubble_view == popup_bubble_->bubble_view()) {
-    message_center_tray_->HidePopupBubble();
   }
 }
 
@@ -257,14 +250,6 @@ WebNotificationTrayWin::GetMessageCenterBubbleForTest() {
     return NULL;
   return static_cast<message_center::MessageCenterBubble*>(
       message_center_bubble_->bubble());
-}
-
-message_center::MessagePopupBubble*
-WebNotificationTrayWin::GetPopupBubbleForTest() {
-  if (!popup_bubble_.get())
-    return NULL;
-  return static_cast<message_center::MessagePopupBubble*>(
-      popup_bubble_->bubble());
 }
 
 }  // namespace message_center

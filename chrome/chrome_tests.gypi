@@ -241,6 +241,7 @@
         'browser/ui/views/location_bar/star_view_browsertest.cc',
         'browser/ui/views/menu_item_view_test.cc',
         'browser/ui/views/menu_model_adapter_test.cc',
+        'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
         'browser/ui/views/panels/panel_view_browsertest.cc',
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
@@ -452,8 +453,14 @@
         }, { # else: OS != "win"
           'sources!': [
             'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
+            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
           ],
         }],  # OS != "win"
+        ['enable_message_center==0', {
+          'sources!': [
+            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
+          ],
+        }],  # enable_message_center
       ],  # conditions
     },
     {
@@ -1474,7 +1481,6 @@
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/frame/immersive_mode_controller_browsertest.cc',
-        'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/views/toolbar_view_browsertest.cc',
@@ -1820,7 +1826,6 @@
             'app/chrome_version.rc.version',
             # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_browsertest.cc',
-            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
             'browser/ui/views/app_list/app_list_controller_win_browsertest.cc',
           ],
         }],
@@ -1918,7 +1923,6 @@
         ['enable_message_center==0', {
           'sources!': [
             'browser/notifications/message_center_notifications_browsertest.cc',
-            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
           ],
         }],
       ],  # conditions

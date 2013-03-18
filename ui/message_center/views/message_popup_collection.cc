@@ -47,7 +47,10 @@ class ToastContentsView : public views::WidgetDelegateView {
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.keep_on_top = true;
-    params.context = context;
+    if (context)
+      params.context = context;
+    else
+      params.top_level = true;
     params.transparent = true;
     // The origin of the initial bounds are set to (0, 0). It'll then moved by
     // MessagePopupCollection.
@@ -147,8 +150,17 @@ void MessagePopupCollection::UpdatePopups() {
     return;
   }
 
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(context_);
-  gfx::Rect work_area = screen->GetDisplayNearestWindow(context_).work_area();
+  gfx::Rect work_area;
+  if (!context_) {
+    // On Win+Aura, we don't have a context since the popups currently show up
+    // on the Windows desktop, not in the Aura/Ash desktop.  This code will
+    // display the popups on the primary display.
+    gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+    work_area = screen->GetPrimaryDisplay().work_area();
+  } else {
+    gfx::Screen* screen = gfx::Screen::GetScreenFor(context_);
+    work_area = screen->GetDisplayNearestWindow(context_).work_area();
+  }
 
   std::set<std::string> old_toast_ids;
   for (ToastContainer::iterator iter = toasts_.begin(); iter != toasts_.end();
