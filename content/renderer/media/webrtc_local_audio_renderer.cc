@@ -177,19 +177,23 @@ void WebRtcLocalAudioRenderer::Start() {
 void WebRtcLocalAudioRenderer::Stop() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Stop()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(thread_lock_);
 
   if (!sink_)
     return;
 
+  {
+    base::AutoLock auto_lock(thread_lock_);
+    playing_ = false;
+
+    if (loopback_fifo_.get() != NULL) {
+      loopback_fifo_->Clear();
+      loopback_fifo_.reset();
+    }
+  }
+
   // Stop the output audio stream, i.e, stop asking for data to render.
   sink_->Stop();
   sink_ = NULL;
-
-  if (loopback_fifo_.get() != NULL) {
-    loopback_fifo_->Clear();
-    loopback_fifo_.reset();
-  }
 
   // Ensure that the capturer stops feeding us with captured audio.
   // Note that, we do not stop the capturer here since it may still be used by
