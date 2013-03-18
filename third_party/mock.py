@@ -227,7 +227,7 @@ def _copy_func_details(func, funcopy):
 
 
 def _callable(obj):
-    if isinstance(obj, ClassTypes):
+    if isinstance(obj, (ClassTypes, staticmethod, classmethod)):
         return True
     if getattr(obj, '__call__', None) is not None:
         return True
