@@ -279,9 +279,12 @@ struct CompareLanguageCodesByLanguageName
   icu::Collator* collator_;
 };
 
-}  // namespace
-
-const ExtraLanguage kExtraLanguages[] = {
+// The list of language that do not have associated input methods in IBus.
+// For these languages, we associate input methods here.
+const struct ExtraLanguage {
+  const char* language_code;
+  const char* input_method_id;
+} kExtraLanguages[] = {
   // Language Code  Input Method ID
   { "en-AU", "xkb:us::eng" },  // For Austrailia, use US keyboard layout.
   { "id", "xkb:us::eng" },  // For Indonesian, use US keyboard layout.
@@ -299,6 +302,8 @@ const ExtraLanguage kExtraLanguages[] = {
   // blacklist in src/ui/base/l10n/l10n_util_posix.cc.
 };
 const size_t kExtraLanguagesLength = arraysize(kExtraLanguages);
+
+}  // namespace
 
 InputMethodUtil::InputMethodUtil(
     InputMethodDelegate* delegate,
@@ -516,6 +521,23 @@ string16 InputMethodUtil::GetLanguageDisplayNameFromCode(
 string16 InputMethodUtil::GetLanguageNativeDisplayNameFromCode(
     const std::string& language_code) {
   return l10n_util::GetDisplayNameForLocale(language_code, language_code, true);
+}
+
+std::vector<std::string> InputMethodUtil::GetExtraLanguageCodesFromId(
+    const std::string& input_method_id) const {
+  std::vector<std::string> result;
+  for (size_t i = 0; i < kExtraLanguagesLength; ++i) {
+    if (input_method_id == kExtraLanguages[i].input_method_id)
+      result.push_back(kExtraLanguages[i].language_code);
+  }
+  return result;
+}
+
+std::vector<std::string> InputMethodUtil::GetExtraLanguageCodeList() const {
+  std::vector<std::string> result;
+  for (size_t i = 0; i < kExtraLanguagesLength; ++i)
+    result.push_back(kExtraLanguages[i].language_code);
+  return result;
 }
 
 void InputMethodUtil::SortLanguageCodesByNames(

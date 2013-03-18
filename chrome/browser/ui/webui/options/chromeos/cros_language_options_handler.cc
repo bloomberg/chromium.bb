@@ -116,7 +116,6 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const std::string display_name =
         manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
             descriptor.id());
-
     DictionaryValue* dictionary = new DictionaryValue();
     dictionary->SetString("id", descriptor.id());
     dictionary->SetString("displayName", display_name);
@@ -125,17 +124,13 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     // we use a dictionary here.
     DictionaryValue* language_codes = new DictionaryValue();
     language_codes->SetBoolean(language_code, true);
-    // Check kExtraLanguages to see if there are languages associated with
+    // Check extra languages to see if there are languages associated with
     // this input method. If these are present, add these.
-    for (size_t j = 0; j < input_method::kExtraLanguagesLength; ++j) {
-      const std::string extra_input_method_id =
-          input_method::kExtraLanguages[j].input_method_id;
-      const std::string extra_language_code =
-          input_method::kExtraLanguages[j].language_code;
-      if (extra_input_method_id == descriptor.id()) {
-        language_codes->SetBoolean(extra_language_code, true);
-      }
-    }
+    const std::vector<std::string> extra_language_codes =
+        manager->GetInputMethodUtil()->GetExtraLanguageCodesFromId(
+            descriptor.id());
+    for (size_t j = 0; j < extra_language_codes.size(); ++j)
+      language_codes->SetBoolean(extra_language_codes[j], true);
     dictionary->Set("languageCodeSet", language_codes);
 
     input_method_list->Append(dictionary);
@@ -153,12 +148,12 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
     const std::string language_code = descriptor.language_code();
     language_codes.insert(language_code);
   }
-  // Collect the language codes from kExtraLanguages.
-  for (size_t i = 0; i < input_method::kExtraLanguagesLength; ++i) {
-    const char* language_code =
-        input_method::kExtraLanguages[i].language_code;
-    language_codes.insert(language_code);
-  }
+  // Collect the language codes from extra languages.
+  const std::vector<std::string> extra_language_codes =
+      input_method::GetInputMethodManager()->GetInputMethodUtil()
+          ->GetExtraLanguageCodeList();
+  for (size_t i = 0; i < extra_language_codes.size(); ++i)
+    language_codes.insert(extra_language_codes[i]);
 
   // Map of display name -> {language code, native_display_name}.
   // In theory, we should be able to create a map that is sorted by

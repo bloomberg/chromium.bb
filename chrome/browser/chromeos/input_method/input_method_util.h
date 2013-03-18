@@ -20,15 +20,6 @@ namespace input_method {
 
 class InputMethodDelegate;
 
-// The list of language that do not have associated input methods in IBus.
-// For these languages, we associate input methods here.
-struct ExtraLanguage {
-  const char* language_code;
-  const char* input_method_id;
-};
-extern const ExtraLanguage kExtraLanguages[];
-extern const size_t kExtraLanguagesLength;
-
 enum InputMethodType {
   kKeyboardLayoutsOnly,
   kAllInputMethods,
@@ -154,6 +145,14 @@ class InputMethodUtil {
   //           "en-US" => "English (United States)"
   static string16 GetLanguageNativeDisplayNameFromCode(
       const std::string& language_code);
+
+  // Returns extra language code list associated with |input_method_id|. If
+  // there is no associated langauge code, this function returns empty list.
+  std::vector<std::string> GetExtraLanguageCodesFromId(
+      const std::string& input_method_id) const;
+
+  // Returns all extra language code list.
+  std::vector<std::string> GetExtraLanguageCodeList() const;
 
  protected:
   // This method is ONLY for unit testing. Returns true if the given string is
