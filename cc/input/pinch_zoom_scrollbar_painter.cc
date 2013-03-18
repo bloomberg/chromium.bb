@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/pinch_zoom_scrollbar_painter.h"
+#include "cc/input/pinch_zoom_scrollbar_painter.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect.h"

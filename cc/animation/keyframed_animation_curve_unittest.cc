@@ -4,7 +4,7 @@
 
 #include "cc/animation/keyframed_animation_curve.h"
 
-#include "cc/transform_operations.h"
+#include "cc/animation/transform_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

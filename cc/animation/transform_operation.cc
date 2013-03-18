@@ -5,7 +5,7 @@
 #include <cmath>
 #include <limits>
 
-#include "cc/transform_operation.h"
+#include "cc/animation/transform_operation.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace {

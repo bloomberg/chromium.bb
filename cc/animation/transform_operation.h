@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TRANSFORM_OPERATION_H_
-#define CC_TRANSFORM_OPERATION_H
+#ifndef CC_ANIMATION_TRANSFORM_OPERATION_H_
+#define CC_ANIMATION_TRANSFORM_OPERATION_H_
 
 #include "ui/gfx/transform.h"
 
@@ -60,4 +60,4 @@ struct TransformOperation {
 
 }  // namespace cc
 
-#endif  // CC_TRANSFORM_OPERATION_H_
+#endif  // CC_ANIMATION_TRANSFORM_OPERATION_H_

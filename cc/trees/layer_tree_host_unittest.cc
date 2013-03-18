@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/synchronization/lock.h"
+#include "cc/animation/timing_function.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_impl.h"
@@ -24,7 +25,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/test/occlusion_tracker_test_common.h"
-#include "cc/timing_function.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"

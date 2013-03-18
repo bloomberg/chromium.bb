@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TRANSFORM_OPERATIONS_H_
-#define CC_TRANSFORM_OPERATIONS_H_
+#ifndef CC_ANIMATION_TRANSFORM_OPERATIONS_H_
+#define CC_ANIMATION_TRANSFORM_OPERATIONS_H_
 
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation/transform_operation.h"
 #include "cc/base/cc_export.h"
-#include "cc/transform_operation.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -78,4 +78,4 @@ class CC_EXPORT TransformOperations {
 
 }  // namespace cc
 
-#endif  // CC_TRANSFORM_OPERATIONS_H_
+#endif  // CC_ANIMATION_TRANSFORM_OPERATIONS_H_

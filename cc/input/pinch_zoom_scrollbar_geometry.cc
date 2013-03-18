@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/pinch_zoom_scrollbar_geometry.h"
+#include "cc/input/pinch_zoom_scrollbar_geometry.h"
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 

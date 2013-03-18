@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
-#define CC_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
+#ifndef CC_INPUT_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
+#define CC_INPUT_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
 
 #include "base/compiler_specific.h"
 #include "cc/layers/scrollbar_theme_painter.h"
@@ -38,4 +38,4 @@ class PinchZoomScrollbarPainter : public ScrollbarThemePainter {
 
 }  // namespace cc
 
-#endif  // CC_PINCH_ZOOM_SCROLLBAR_PAINTER_H_
+#endif  // CC_INPUT_PINCH_ZOOM_SCROLLBAR_PAINTER_H_

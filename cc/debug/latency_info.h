@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_LATENCY_INFO_H_
-#define CC_LATENCY_INFO_H_
+#ifndef CC_DEBUG_LATENCY_INFO_H_
+#define CC_DEBUG_LATENCY_INFO_H_
 
 #include "base/time.h"
 
@@ -27,5 +27,5 @@ struct LatencyInfo {
 
 }  // namespace cc
 
-#endif  // CC_LATENCY_INFO_H_
+#endif  // CC_DEBUG_LATENCY_INFO_H_
 

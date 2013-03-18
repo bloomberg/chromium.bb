@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_MANAGED_TILE_STATE_H_
-#define CC_MANAGED_TILE_STATE_H_
+#ifndef CC_RESOURCES_MANAGED_TILE_STATE_H_
+#define CC_RESOURCES_MANAGED_TILE_STATE_H_
 
 #include <list>
 
@@ -114,4 +114,4 @@ class CC_EXPORT ManagedTileState {
 
 }  // namespace cc
 
-#endif
+#endif  // CC_RESOURCES_MANAGED_TILE_STATE_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/pinch_zoom_scrollbar.h"
+#include "cc/input/pinch_zoom_scrollbar.h"
 
+#include "cc/input/pinch_zoom_scrollbar_geometry.h"
 #include "cc/layers/layer.h"
-#include "cc/pinch_zoom_scrollbar_geometry.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {

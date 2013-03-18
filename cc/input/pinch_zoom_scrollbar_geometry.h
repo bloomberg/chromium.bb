@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
-#define CC_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
+#ifndef CC_INPUT_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
+#define CC_INPUT_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
 
 #include "cc/base/cc_export.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
@@ -47,4 +47,4 @@ class PinchZoomScrollbarGeometry : public WebScrollbarThemeGeometry {
 };
 
 } // namespace WebKit
-#endif  // CC_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_
+#endif  // CC_INPUT_PINCH_ZOOM_SCROLLBAR_GEOMETRY_H_

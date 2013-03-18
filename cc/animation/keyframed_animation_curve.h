@@ -6,10 +6,10 @@
 #define CC_ANIMATION_KEYFRAMED_ANIMATION_CURVE_H_
 
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/timing_function.h"
+#include "cc/animation/transform_operations.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
-#include "cc/timing_function.h"
-#include "cc/transform_operations.h"
 
 namespace cc {
 
