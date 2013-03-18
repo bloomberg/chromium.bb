@@ -169,8 +169,9 @@ void TreeView::StartEditing(TreeModelNode* node) {
   if (focus_manager_)
     focus_manager_->AddFocusChangeListener(this);
 
-  // Accelerate the return key to commit the pending edit.
+  // Accelerators to commit/cancel edit.
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 void TreeView::CancelEdit() {
@@ -187,8 +188,8 @@ void TreeView::CancelEdit() {
   editor_->SetVisible(false);
   SchedulePaint();
 
-  // Remove the return key accelerator when there is no pending edit.
   RemoveAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  RemoveAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 void TreeView::CommitEdit() {
@@ -326,8 +327,13 @@ gfx::Size TreeView::GetPreferredSize() {
 }
 
 bool TreeView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  DCHECK_EQ(accelerator.key_code(), ui::VKEY_RETURN);
-  CommitEdit();
+  if (accelerator.key_code() == ui::VKEY_RETURN) {
+    CommitEdit();
+  } else {
+    DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
+    CancelEdit();
+    RequestFocus();
+  }
   return true;
 }
 
@@ -558,11 +564,13 @@ void TreeView::OnBlur() {
 }
 
 bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
+  CommitEdit();
+  RequestFocus();
+
   int row = (event.y() - kVerticalInset) / row_height_;
   int depth;
   InternalNode* node = GetNodeByRow(row, &depth);
   if (node) {
-    RequestFocus();
     gfx::Rect bounds(GetBoundsForNodeImpl(node, row, depth));
     if (bounds.Contains(event.location())) {
       int relative_x = event.x() - bounds.x();
