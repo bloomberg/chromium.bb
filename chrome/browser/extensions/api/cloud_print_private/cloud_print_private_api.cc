@@ -49,6 +49,8 @@ bool CloudPrintPrivateSetupConnectorFunction::RunImpl() {
         params->connect_new_printers,
         params->printer_blacklist);
   } else {
+    if (!CloudPrintProxyServiceFactory::GetForProfile(profile_))
+      return false;
     CloudPrintProxyServiceFactory::GetForProfile(profile_)->
         EnableForUserWithRobot(params->credentials,
                                params->robot_email,
