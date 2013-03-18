@@ -18,7 +18,8 @@ class BluetoothAdapterWin;
 
 class BluetoothDeviceWin : public BluetoothDevice {
  public:
-  BluetoothDeviceWin(const BluetoothTaskManagerWin::DeviceState& state);
+  explicit BluetoothDeviceWin(
+      const BluetoothTaskManagerWin::DeviceState& state);
   virtual ~BluetoothDeviceWin();
 
   void SetVisible(bool visible);

@@ -77,7 +77,7 @@ class BluetoothAdapterWin : public BluetoothAdapter,
     DISCOVERY_STOPPING
   };
 
-  BluetoothAdapterWin(const InitCallback& init_callback);
+  explicit BluetoothAdapterWin(const InitCallback& init_callback);
   virtual ~BluetoothAdapterWin();
 
   void TrackDefaultAdapter();

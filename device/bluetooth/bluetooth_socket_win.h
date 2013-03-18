@@ -39,7 +39,7 @@ class BluetoothSocketWin : public BluetoothSocket {
   virtual ~BluetoothSocketWin();
 
  private:
-  BluetoothSocketWin(SOCKET fd);
+  explicit BluetoothSocketWin(SOCKET fd);
 
   const SOCKET fd_;
   std::string error_message_;

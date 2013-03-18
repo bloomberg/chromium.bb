@@ -51,6 +51,8 @@
         'bluetooth/bluetooth_socket.h',
         'bluetooth/bluetooth_socket_chromeos.cc',
         'bluetooth/bluetooth_socket_chromeos.h',
+        'bluetooth/bluetooth_socket_mac.h',
+        'bluetooth/bluetooth_socket_mac.mm',
         'bluetooth/bluetooth_socket_win.cc',
         'bluetooth/bluetooth_socket_win.h',
         'bluetooth/bluetooth_task_manager_win.cc',

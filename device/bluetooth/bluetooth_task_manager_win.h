@@ -67,7 +67,7 @@ class BluetoothTaskManagerWin
      virtual void DevicesDiscovered(const ScopedVector<DeviceState>& devices) {}
   };
 
-  BluetoothTaskManagerWin(
+  explicit BluetoothTaskManagerWin(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
 
   void AddObserver(Observer* observer);
