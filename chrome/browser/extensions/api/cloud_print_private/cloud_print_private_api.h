@@ -77,7 +77,6 @@ class CloudPrintPrivateGetPrintersFunction : public AsyncExtensionFunction {
   virtual ~CloudPrintPrivateGetPrintersFunction();
 
   void CollectPrinters();
-  void ReturnResult(const base::ListValue* printers);
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

@@ -12,9 +12,6 @@
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/net_util.h"
-#include "printing/backend/print_backend.h"
-
-
 
 namespace extensions {
 
@@ -42,7 +39,7 @@ CloudPrintPrivateSetupConnectorFunction::
 
 
 bool CloudPrintPrivateSetupConnectorFunction::RunImpl() {
-  using extensions::api::cloud_print_private::SetupConnector::Params;
+  using api::cloud_print_private::SetupConnector::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   if (CloudPrintTestsDelegate::instance()) {
     CloudPrintTestsDelegate::instance()->SetupConnector(
@@ -84,31 +81,17 @@ CloudPrintPrivateGetPrintersFunction::CloudPrintPrivateGetPrintersFunction() {
 CloudPrintPrivateGetPrintersFunction::~CloudPrintPrivateGetPrintersFunction() {
 }
 
-void CloudPrintPrivateGetPrintersFunction::ReturnResult(
-    const base::ListValue* printers) {
-  SetResult(printers->DeepCopy());
-  SendResponse(true);
-}
-
 void CloudPrintPrivateGetPrintersFunction::CollectPrinters() {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::vector<std::string> result;
   if (CloudPrintTestsDelegate::instance()) {
-    std::vector<std::string> printers =
-        CloudPrintTestsDelegate::instance()->GetPrinters();
-    for (size_t i = 0; i < printers.size(); ++i)
-      result->Append(Value::CreateStringValue(printers[i]));
+    result = CloudPrintTestsDelegate::instance()->GetPrinters();
   } else {
-    printing::PrinterList printers;
-    scoped_refptr<printing::PrintBackend> backend(
-      printing::PrintBackend::CreateInstance(NULL));
-    if (backend)
-      backend->EnumeratePrinters(&printers);
-    for (size_t i = 0; i < printers.size(); ++i)
-      result->Append(Value::CreateStringValue(printers[i].printer_name));
+    CloudPrintProxyService::GetPrintersAvalibleForRegistration(&result);
   }
+  results_ = api::cloud_print_private::GetPrinters::Results::Create(result);
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&CloudPrintPrivateGetPrintersFunction::ReturnResult, this,
-                 base::Owned(result.release())));
+      base::Bind(&CloudPrintPrivateGetPrintersFunction::SendResponse,
+                 this, true));
 }
 
 

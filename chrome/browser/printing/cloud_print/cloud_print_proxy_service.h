@@ -60,6 +60,10 @@ class CloudPrintProxyService
   // CloudPrintSetupHandler::Delegate implementation.
   virtual void OnCloudPrintSetupClosed() OVERRIDE;
 
+  // Returns list of printer names available for registration.
+  static void GetPrintersAvalibleForRegistration(
+      std::vector<std::string>* printers);
+
  private:
   // NotificationDelegate implementation for the token expired notification.
   class TokenExpiredNotificationDelegate;

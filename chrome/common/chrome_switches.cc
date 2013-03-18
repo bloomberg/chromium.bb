@@ -174,6 +174,11 @@ const char kCloudPrintPrintTicket[]         = "cloud-print-print-ticket";
 // Used with kCloudPrintFile to specify a title for the resulting print job.
 const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
 
+// Setup cloud print proxy for for provided printers. This does not start
+// service or register proxy for autostart.
+const char kCloudPrintConnectoEnablePrinters[] =
+    "cloud-print-connector-enable-printers";
+
 // The URL of the cloud print service to use, overrides any value stored in
 // preferences, and the default. Only used if the cloud print service has been
 // enabled (see enable-cloud-print).

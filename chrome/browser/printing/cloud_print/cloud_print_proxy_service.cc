@@ -9,6 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
@@ -21,11 +24,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "printing/backend/print_backend.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -126,6 +131,34 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
 void CloudPrintProxyService::OnCloudPrintSetupClosed() {
   MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(&chrome::EndKeepAlive));
+}
+
+void CloudPrintProxyService::GetPrintersAvalibleForRegistration(
+      std::vector<std::string>* printers) {
+  base::FilePath list_path(
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kCloudPrintConnectoEnablePrinters));
+  if (!list_path.empty()) {
+    std::string printers_json;
+    file_util::ReadFileToString(list_path, &printers_json);
+    scoped_ptr<Value> value(base::JSONReader::Read(printers_json));
+    base::ListValue* list = NULL;
+    if (value && value->GetAsList(&list) && list) {
+      for (size_t i = 0; i < list->GetSize(); ++i) {
+        std::string printer;
+        if (list->GetString(i, &printer))
+          printers->push_back(printer);
+      }
+    }
+  } else {
+    printing::PrinterList printer_list;
+    scoped_refptr<printing::PrintBackend> backend(
+        printing::PrintBackend::CreateInstance(NULL));
+    if (backend)
+      backend->EnumeratePrinters(&printer_list);
+    for (size_t i = 0; i < printer_list.size(); ++i)
+      printers->push_back(printer_list[i].printer_name);
+  }
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
