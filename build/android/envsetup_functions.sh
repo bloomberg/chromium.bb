@@ -288,7 +288,8 @@ ${ANDROID_SDK_VERSION}
   # temporary until all uses of android_build_type are gone (crbug.com/184431)
   DEFINES+=" android_build_type=1"
   DEFINES+=" android_src=\$(GYP_ABS_ANDROID_TOP_DIR)"
-  DEFINES+=" android_sdk=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK}"
+  DEFINES+=" android_sdk=NOT_USED_ON_WEBVIEW"
+  DEFINES+=" android_sdk_jar=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK}/android.jar"
   DEFINES+=" android_sdk_root=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK}"
   DEFINES+=" android_sdk_tools=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK_TOOLS}"
   DEFINES+=" android_sdk_version=${ANDROID_SDK_VERSION}"
