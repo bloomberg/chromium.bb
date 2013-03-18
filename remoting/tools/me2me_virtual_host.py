@@ -318,12 +318,16 @@ class Desktop:
 
     logging.info("Starting %s on display :%d" % (xvfb, display))
     screen_option = "%dx%dx24" % (max_width, max_height)
-    self.x_proc = subprocess.Popen([xvfb, ":%d" % display,
-                                    "-noreset",
-                                    "-auth", x_auth_file,
-                                    "-nolisten", "tcp",
-                                    "-screen", "0", screen_option
-                                    ] + extra_x_args)
+    self.x_proc = subprocess.Popen(
+        [xvfb, ":%d" % display,
+         "-auth", x_auth_file,
+         # Disable compositing, since metacity seems to miss delivering some
+         # DAMAGE notifications otherwise. See crbug.com/166468.
+         "-extension", "Composite",
+         "-nolisten", "tcp",
+         "-noreset",
+         "-screen", "0", screen_option
+        ] + extra_x_args)
     if not self.x_proc.pid:
       raise Exception("Could not start Xvfb.")
 
