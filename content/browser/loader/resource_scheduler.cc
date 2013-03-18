@@ -16,9 +16,6 @@
 
 namespace content {
 
-// TODO(simonjam): This is arbitrary. Experiment.
-static const int kMaxNumNavigationsToTrack = 5;
-
 class ResourceScheduler::ScheduledResourceRequest
     : public ResourceMessageDelegate,
       public ResourceThrottle {
@@ -83,8 +80,7 @@ class ResourceScheduler::ScheduledResourceRequest
   DISALLOW_COPY_AND_ASSIGN(ScheduledResourceRequest);
 };
 
-ResourceScheduler::ResourceScheduler()
-    : client_map_(kMaxNumNavigationsToTrack) {
+ResourceScheduler::ResourceScheduler() {
 }
 
 ResourceScheduler::~ResourceScheduler() {
@@ -94,6 +90,7 @@ ResourceScheduler::~ResourceScheduler() {
     DCHECK(it->second->in_flight_requests.empty());
   }
   DCHECK(unowned_requests_.empty());
+  DCHECK(client_map_.empty());
 }
 
 scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
@@ -105,13 +102,12 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
   scoped_ptr<ScheduledResourceRequest> request(
       new ScheduledResourceRequest(client_id, url_request, this));
 
-  ClientMap::iterator it = client_map_.Get(client_id);
+  ClientMap::iterator it = client_map_.find(client_id);
   if (it == client_map_.end()) {
     // There are several ways this could happen:
     // 1. <a ping> requests don't have a route_id.
     // 2. Most unittests don't send the IPCs needed to register Clients.
     // 3. The tab is closed while a RequestResource IPC is in flight.
-    // 4. The tab hasn't navigated recently.
     unowned_requests_.insert(request.get());
     request->Start();
     return request.PassAs<ResourceThrottle>();
@@ -140,7 +136,7 @@ void ResourceScheduler::RemoveRequest(ScheduledResourceRequest* request) {
     return;
   }
 
-  ClientMap::iterator client_it = client_map_.Get(request->client_id());
+  ClientMap::iterator client_it = client_map_.find(request->client_id());
   if (client_it == client_map_.end()) {
     return;
   }
@@ -172,13 +168,42 @@ void ResourceScheduler::RemoveRequest(ScheduledResourceRequest* request) {
   }
 }
 
+void ResourceScheduler::OnClientCreated(int child_id, int route_id) {
+  DCHECK(CalledOnValidThread());
+  ClientId client_id = MakeClientId(child_id, route_id);
+  DCHECK(!ContainsKey(client_map_, client_id));
+
+  client_map_[client_id] = new Client;
+}
+
+void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
+  DCHECK(CalledOnValidThread());
+  ClientId client_id = MakeClientId(child_id, route_id);
+  DCHECK(ContainsKey(client_map_, client_id));
+  ClientMap::iterator it = client_map_.find(client_id);
+  Client* client = it->second;
+
+  // FYI, ResourceDispatcherHost cancels all of the requests after this function
+  // is called. It should end up canceling all of the requests except for a
+  // cross-renderer navigation.
+  for (RequestSet::iterator it = client->in_flight_requests.begin();
+       it != client->in_flight_requests.end(); ++it) {
+    unowned_requests_.insert(*it);
+  }
+  client->in_flight_requests.clear();
+
+  delete client;
+  client_map_.erase(it);
+}
+
 void ResourceScheduler::OnNavigate(int child_id, int route_id) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
 
-  ClientMap::iterator it = client_map_.Get(client_id);
+  ClientMap::iterator it = client_map_.find(client_id);
   if (it == client_map_.end()) {
-    it = client_map_.Put(client_id, new Client(this));
+    // The client was likely deleted shortly before we received this IPC.
+    return;
   }
 
   Client* client = it->second;
@@ -188,12 +213,15 @@ void ResourceScheduler::OnNavigate(int child_id, int route_id) {
 void ResourceScheduler::OnWillInsertBody(int child_id, int route_id) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
-  ClientMap::iterator it = client_map_.Get(client_id);
+
+  ClientMap::iterator it = client_map_.find(client_id);
   if (it == client_map_.end()) {
+    // The client was likely deleted shortly before we received this IPC.
     return;
   }
 
   Client* client = it->second;
+  client->has_body = false;
   if (!client->has_body) {
     client->has_body = true;
     LoadPendingRequests(client);
@@ -214,29 +242,16 @@ void ResourceScheduler::LoadPendingRequests(Client* client) {
   }
 }
 
-void ResourceScheduler::RemoveClient(Client* client) {
-  LoadPendingRequests(client);
-  for (RequestSet::iterator it = client->in_flight_requests.begin();
-       it != client->in_flight_requests.end(); ++it) {
-    unowned_requests_.insert(*it);
-  }
-  client->in_flight_requests.clear();
-}
-
 ResourceScheduler::ClientId ResourceScheduler::MakeClientId(
     int child_id, int route_id) {
   return (static_cast<ResourceScheduler::ClientId>(child_id) << 32) | route_id;
 }
 
-ResourceScheduler::Client::Client(ResourceScheduler* scheduler)
-    : has_body(false),
-      scheduler_(scheduler) {
+ResourceScheduler::Client::Client()
+    : has_body(false) {
 }
 
 ResourceScheduler::Client::~Client() {
-  scheduler_->RemoveClient(this);
-  DCHECK(in_flight_requests.empty());
-  DCHECK(pending_requests.empty());
 }
 
 }  // namespace content

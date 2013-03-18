@@ -125,7 +125,6 @@ class RenderWidgetHelper
   // These three functions provide the backend implementation of the
   // corresponding functions in RenderProcessHost. See those declarations
   // for documentation.
-  void CancelResourceRequests(int render_widget_id);
   void SimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
   bool WaitForBackingStoreMsg(int render_widget_id,
                               const base::TimeDelta& max_delay,
@@ -209,9 +208,6 @@ class RenderWidgetHelper
 
   // Called on the UI thread to create a fullscreen widget.
   void OnCreateFullscreenWidgetOnUI(int opener_id, int route_id);
-
-  // Called on the IO thread to cancel resource requests for the render widget.
-  void OnCancelResourceRequests(int render_widget_id);
 
   // Called on the IO thread to resume a cross-site response, if the ack is
   // not received as expected.

@@ -52,9 +52,6 @@ int MockRenderProcessHost::GetNextRoutingID() {
   return ++prev_routing_id;
 }
 
-void MockRenderProcessHost::CancelResourceRequests(int render_widget_id) {
-}
-
 void MockRenderProcessHost::SimulateSwapOutACK(
     const ViewMsg_SwapOut_Params& params) {
 }

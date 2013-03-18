@@ -25,6 +25,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/loader/render_view_host_tracker.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_scheduler.h"
@@ -167,12 +168,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                         const std::string& mime_type,
                                         ResourceType::Type resource_type);
 
+  // Called when a RenderViewHost is created.
+  void OnRenderViewHostCreated(int child_id, int route_id);
+
+  // Called when a RenderViewHost is deleted.
+  void OnRenderViewHostDeleted(int child_id, int route_id);
+
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int child_id);
-
-  // Force cancels any pending requests for the given route id.  This method
-  // acts like CancelRequestsForProcess when route_id is -1.
-  void CancelRequestsForRoute(int child_id, int route_id);
 
   void OnUserGesture(WebContentsImpl* contents);
 
@@ -289,6 +292,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Estimate how much heap space |request| will consume to run.
   static int CalculateApproximateMemoryCost(net::URLRequest* request);
+
+  // Force cancels any pending requests for the given route id.  This method
+  // acts like CancelRequestsForProcess when route_id is -1.
+  void CancelRequestsForRoute(int child_id, int route_id);
 
   // The list of all requests that we have pending. This list is not really
   // optimized, and assumes that we have relatively few requests pending at once
@@ -436,6 +443,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   DelegateMap delegate_map_;
 
   scoped_ptr<ResourceScheduler> scheduler_;
+
+  RenderViewHostTracker tracker_;  // Lives on UI thread.
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

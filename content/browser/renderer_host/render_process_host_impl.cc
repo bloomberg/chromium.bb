@@ -645,10 +645,6 @@ int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
 
-void RenderProcessHostImpl::CancelResourceRequests(int render_widget_id) {
-  widget_helper_->CancelResourceRequests(render_widget_id);
-}
-
 void RenderProcessHostImpl::SimulateSwapOutACK(
     const ViewMsg_SwapOut_Params& params) {
   widget_helper_->SimulateSwapOutACK(params);
@@ -1178,9 +1174,6 @@ void RenderProcessHostImpl::Attach(RenderWidgetHost* host,
 void RenderProcessHostImpl::Release(int routing_id) {
   DCHECK(render_widget_hosts_.Lookup(routing_id) != NULL);
   render_widget_hosts_.Remove(routing_id);
-
-  // Make sure that all associated resource requests are stopped.
-  CancelResourceRequests(routing_id);
 
 #if defined(OS_WIN)
   // Dump the handle table if handle auditing is enabled.

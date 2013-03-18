@@ -36,7 +36,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void EnableSendQueue() OVERRIDE;
   virtual bool Init() OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
-  virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
   virtual void SimulateSwapOutACK(
       const ViewMsg_SwapOut_Params& params) OVERRIDE;
   virtual bool WaitForBackingStoreMsg(int render_widget_id,

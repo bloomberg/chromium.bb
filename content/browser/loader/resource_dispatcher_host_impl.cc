@@ -1174,6 +1174,19 @@ void ResourceDispatcherHostImpl::OnDidLoadResourceFromMemoryCache(
       GetCache()->OnExternalCacheHit(url, http_method);
 }
 
+void ResourceDispatcherHostImpl::OnRenderViewHostCreated(
+    int child_id,
+    int route_id) {
+  scheduler_->OnClientCreated(child_id, route_id);
+}
+
+void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(
+    int child_id,
+    int route_id) {
+  scheduler_->OnClientDeleted(child_id, route_id);
+  CancelRequestsForRoute(child_id, route_id);
+}
+
 // This function is only used for saving feature.
 void ResourceDispatcherHostImpl::BeginSaveFile(
     const GURL& url,

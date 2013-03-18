@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/containers/mru_cache.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -30,7 +29,8 @@ class ResourceThrottle;
 //
 // There are two types of input to the scheduler:
 // 1. Requests to start, cancel, or finish fetching a resource.
-// 2. Notifications for renderer events, such as navigation and painting.
+// 2. Notifications for renderer events, such as new tabs, navigation and
+//    painting.
 //
 // The ResourceScheduler tracks many Clients, which should correlate with tabs.
 // A client is uniquely identified by its child_id and route_id.
@@ -45,10 +45,6 @@ class ResourceThrottle;
 // The scheduler may defer issuing the request via the ResourceThrottle
 // interface or it may alter the request's priority by calling set_priority() on
 // the URLRequest.
-//
-// The scheduler only tracks the most recently used Clients. If a tab hasn't
-// navigated or fetched a resource for some time, its state may be forgotten
-// until its next navigation. In such situations, no request throttling occurs.
 class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
  public:
   ResourceScheduler();
@@ -59,6 +55,12 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // when the load completes or is canceled.
   scoped_ptr<ResourceThrottle> ScheduleRequest(
       int child_id, int route_id, net::URLRequest* url_request);
+
+  // Called when a renderer is created.
+  void OnClientCreated(int child_id, int route_id);
+
+  // Called when a renderer is destroyed.
+  void OnClientDeleted(int child_id, int route_id);
 
   // Called when a client navigates to a new main document.
   void OnNavigate(int child_id, int route_id);
@@ -73,20 +75,17 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   struct Client;
 
   typedef int64 ClientId;
-  typedef base::OwningMRUCache<ClientId, Client*> ClientMap;
+  typedef std::map<ClientId, Client*> ClientMap;
   typedef std::vector<ScheduledResourceRequest*> RequestQueue;
   typedef std::set<ScheduledResourceRequest*> RequestSet;
 
   struct Client {
-    Client(ResourceScheduler* scheduler);
+    Client();
     ~Client();
 
     bool has_body;
     RequestQueue pending_requests;
     RequestSet in_flight_requests;
-
-   private:
-    ResourceScheduler* scheduler_;
   };
 
   // Called when a ScheduledResourceRequest is destroyed.
@@ -97,9 +96,6 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
 
   // Calls StartRequest on all pending requests for |client|.
   void LoadPendingRequests(Client* client);
-
-  // Called when a Client is evicted from the MRUCache.
-  void RemoveClient(Client* client);
 
   // Returns the client ID for the given |child_id| and |route_id| combo.
   ClientId MakeClientId(int child_id, int route_id);

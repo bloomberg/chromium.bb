@@ -80,10 +80,11 @@ class ResourceSchedulerTest : public testing::Test {
   ResourceSchedulerTest()
       : message_loop_(MessageLoop::TYPE_IO),
         ui_thread_(BrowserThread::UI, &message_loop_) {
-    scheduler_.OnNavigate(kChildId, kRouteId);
+    scheduler_.OnClientCreated(kChildId, kRouteId);
   }
 
   virtual ~ResourceSchedulerTest() {
+    scheduler_.OnClientDeleted(kChildId, kRouteId);
   }
 
   scoped_ptr<net::URLRequest> NewURLRequest(const char* url,
@@ -166,20 +167,6 @@ TEST_F(ResourceSchedulerTest, StartRequestsWhenIdle) {
   EXPECT_FALSE(low->started());
   high2.reset();
   EXPECT_TRUE(low->started());
-}
-
-TEST_F(ResourceSchedulerTest, EvictedClientsIssuePendingRequests) {
-  ScopedVector<TestRequest> low_requests;
-  ScopedVector<TestRequest> high_requests;
-  for (int i = 0; i < 6; i++) {
-    scheduler_.OnNavigate(kChildId, kRouteId + i);
-    high_requests.push_back(
-        NewRequest("http://host/i", net::HIGHEST, kRouteId + i));
-    low_requests.push_back(
-        NewRequest("http://host/i", net::LOWEST, kRouteId + i));
-    EXPECT_FALSE(low_requests[i]->started());
-  }
-  EXPECT_TRUE(low_requests[0]->started());
 }
 
 TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
