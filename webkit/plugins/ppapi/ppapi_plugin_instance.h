@@ -47,6 +47,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureToken.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
@@ -329,6 +330,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Returns true if the plugin is processing a user gesture.
   bool IsProcessingUserGesture();
+
+  // Returns the user gesture token to use for creating a WebScopedUserGesture,
+  // if IsProcessingUserGesture returned true.
+  WebKit::WebUserGestureToken CurrentUserGestureToken();
 
   // A mouse lock request was pending and this reports success or failure.
   void OnLockMouseACK(bool succeeded);
@@ -763,6 +768,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Track pending user gestures so out-of-process plugins can respond to
   // a user gesture after it has been processed.
   PP_TimeTicks pending_user_gesture_;
+  WebKit::WebUserGestureToken pending_user_gesture_token_;
 
   // We store the arguments so we can re-send them if we are reset to talk to
   // NaCl via the IPC NaCl proxy.

@@ -136,6 +136,7 @@ using WebKit::WebScopedUserGesture;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 using WebKit::WebUserGestureIndicator;
+using WebKit::WebUserGestureToken;
 using WebKit::WebView;
 
 namespace webkit {
@@ -781,6 +782,8 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
       if (WebUserGestureIndicator::isProcessingUserGesture()) {
         pending_user_gesture_ =
             ::ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
+        pending_user_gesture_token_ =
+            WebUserGestureIndicator::currentUserGestureToken();
       }
 
       // Each input event may generate more than one PP_InputEvent.
@@ -1442,7 +1445,7 @@ bool PluginInstance::SetFullscreen(bool fullscreen) {
 
   if (fullscreen) {
     // Create the user gesture in case we're processing one that's pending.
-    WebScopedUserGesture user_gesture;
+    WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     // WebKit does not resize the plugin to fill the screen in fullscreen mode,
     // so we will tweak plugin's attributes to support the expected behavior.
     KeepSizeAttributesBeforeFullscreen();
@@ -1515,7 +1518,7 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
     } else {
       // Open a user gesture here so the Webkit user gesture checks will succeed
       // for out-of-process plugins.
-      WebScopedUserGesture user_gesture;
+      WebScopedUserGesture user_gesture(CurrentUserGestureToken());
       if (!delegate()->LockMouse(this))
         lock_mouse_callback_->Run(PP_ERROR_FAILED);
     }
@@ -1749,7 +1752,14 @@ bool PluginInstance::IsProcessingUserGesture() {
       ::ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
   // Give a lot of slack so tests won't be flaky.
   const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
-  return (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
+  return pending_user_gesture_token_.hasGestures() &&
+         (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
+}
+
+WebUserGestureToken PluginInstance::CurrentUserGestureToken() {
+  if (!IsProcessingUserGesture())
+    pending_user_gesture_token_ = WebUserGestureToken();
+  return pending_user_gesture_token_;
 }
 
 void PluginInstance::OnLockMouseACK(bool succeeded) {
@@ -1967,7 +1977,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   NPVariant result;
   bool ok = false;
   if (IsProcessingUserGesture()) {
-    WebKit::WebScopedUserGesture user_gesture;
+    WebKit::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
                                &result);
   } else {
@@ -2239,7 +2249,7 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
   if (!FlashIsFullscreenOrPending() || flash_fullscreen()) {
     // Open a user gesture here so the Webkit user gesture checks will succeed
     // for out-of-process plugins.
-    WebScopedUserGesture user_gesture;
+    WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     if (!delegate()->LockMouse(this))
       return PP_ERROR_FAILED;
   }
