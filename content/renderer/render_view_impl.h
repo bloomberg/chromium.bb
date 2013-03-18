@@ -399,6 +399,9 @@ class CONTENT_EXPORT RenderViewImpl
   // synchronously from the renderer.
   void SetFocusAndActivateForTesting(bool enable);
 
+  // Change the device scale factor and force the compositor to resize.
+  void SetDeviceScaleFactorForTesting(float factor);
+
   // IPC::Listener implementation ----------------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

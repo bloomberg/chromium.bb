@@ -6031,7 +6031,8 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
         ShouldUseFixedPositionCompositing(device_scale_factor_));
   }
-  AutoResizeCompositor();
+  if (auto_resize_mode_)
+    AutoResizeCompositor();
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
@@ -6579,6 +6580,12 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
     OnSetFocus(false);
     OnSetActive(false);
   }
+}
+
+void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
+  SetDeviceScaleFactor(factor);
+  if (!auto_resize_mode_)
+    AutoResizeCompositor();
 }
 
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(

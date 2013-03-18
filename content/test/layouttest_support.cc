@@ -95,4 +95,9 @@ void DisableNavigationErrorPages() {
   RenderThreadImpl::current()->set_skip_error_pages(true);
 }
 
+void SetDeviceScaleFactor(RenderView* render_view, float factor) {
+  static_cast<RenderViewImpl*>(render_view)
+      ->SetDeviceScaleFactorForTesting(factor);
+}
+
 }  // namespace content

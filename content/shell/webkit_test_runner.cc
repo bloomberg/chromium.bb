@@ -343,7 +343,7 @@ void WebKitTestRunner::setDatabaseQuota(int quota) {
 }
 
 void WebKitTestRunner::setDeviceScaleFactor(float factor) {
-  render_view()->GetWebView()->setDeviceScaleFactor(factor);
+  SetDeviceScaleFactor(render_view(), factor);
 }
 
 void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {

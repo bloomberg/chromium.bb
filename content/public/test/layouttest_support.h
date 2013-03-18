@@ -63,6 +63,9 @@ void ForceResizeRenderView(RenderView* render_view,
 // Never display error pages when a navigation fails.
 void DisableNavigationErrorPages();
 
+// Set the device scale factor and force the compositor to resize.
+void SetDeviceScaleFactor(RenderView* render_view, float factor);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

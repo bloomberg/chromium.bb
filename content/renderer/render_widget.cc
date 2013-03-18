@@ -1362,7 +1362,8 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
     // with invalid damage rects.
     paint_aggregator_.ClearPendingUpdate();
 
-    AutoResizeCompositor();
+    if (auto_resize_mode_)
+      AutoResizeCompositor();
 
     if (RenderThreadImpl::current()->short_circuit_size_updates()) {
       setWindowRect(WebRect(rootWindowRect().x,
@@ -1375,10 +1376,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
   }
 }
 
-void RenderWidget::AutoResizeCompositor() {
-  if (!auto_resize_mode_)
-    return;
-
+void RenderWidget::AutoResizeCompositor()  {
   physical_backing_size_ = gfx::ToCeiledSize(gfx::ScaleSize(size_,
       device_scale_factor_));
   if (compositor_)
