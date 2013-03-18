@@ -70,7 +70,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
 
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 
-private:
+ private:
   RenderPassDrawQuad();
 };
 
