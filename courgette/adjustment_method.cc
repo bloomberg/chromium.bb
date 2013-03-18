@@ -169,7 +169,7 @@ static std::string ToString(Node* node) {
     prefix.pop_back();
   }
 
-  s += StringPrintf("%u", node->count_);
+  s += base::StringPrintf("%u", node->count_);
   s += " @";
   s += base::Uint64ToString(node->edges_in_frequency_order.size());
   s += "}";

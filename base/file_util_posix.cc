@@ -140,7 +140,7 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
 
 static std::string TempFileName() {
 #if defined(OS_MACOSX)
-  return StringPrintf(".%s.XXXXXX", base::mac::BaseBundleID());
+  return base::StringPrintf(".%s.XXXXXX", base::mac::BaseBundleID());
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)

@@ -26,7 +26,7 @@ AwDevToolsDelegate::AwDevToolsDelegate(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
       new net::UnixDomainSocketWithAbstractNamespaceFactory(
-          StringPrintf(kSocketNameFormat, getpid()),
+          base::StringPrintf(kSocketNameFormat, getpid()),
           base::Bind(&content::CanUserConnectToDevTools)),
       "",
       this);

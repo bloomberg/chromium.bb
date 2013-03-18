@@ -73,7 +73,7 @@ class UrlFetchTest : public UIPerfTest {
       ASSERT_TRUE(completed);
     }
     if (var_to_fetch) {
-      std::string script = StringPrintf(
+      std::string script = base::StringPrintf(
           "window.domAutomationController.send(%s);", var_to_fetch);
 
       std::wstring value;

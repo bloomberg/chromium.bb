@@ -1793,7 +1793,7 @@ void LogErrorEventDescription(Display* dpy,
       int ext_code, first_event, first_error;
       XQueryExtension(dpy, ext_list[i], &ext_code, &first_event, &first_error);
       if (error_event.request_code == ext_code) {
-        std::string msg = StringPrintf(
+        std::string msg = base::StringPrintf(
             "%s.%d", ext_list[i], error_event.minor_code);
         XGetErrorDatabaseText(
             dpy, "XRequest", msg.c_str(), "Unknown", request_str,

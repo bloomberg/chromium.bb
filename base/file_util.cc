@@ -278,7 +278,8 @@ int GetUniquePathNumber(
 
   FilePath new_path;
   for (int count = 1; count <= kMaxUniqueFiles; ++count) {
-    new_path = path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", count));
+    new_path =
+        path.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", count));
     if (!PathExists(new_path) &&
         (!have_suffix || !PathExists(FilePath(new_path.value() + suffix)))) {
       return count;

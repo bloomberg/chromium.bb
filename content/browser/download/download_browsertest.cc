@@ -957,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL(
-      StringPrintf("rangereset?size=%d&rst_boundary=%d",
+      base::StringPrintf("rangereset?size=%d&rst_boundary=%d",
                    GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
 
   DownloadItem* download(StartDownloadAndReturnItem(url));
@@ -1018,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownloadNoRange) {
 
   // Auto-restart if server doesn't handle ranges.
   GURL url = test_server()->GetURL(
-      StringPrintf(
+      base::StringPrintf(
           // First download hits an RST, rest don't, no ranges.
           "rangereset?size=%d&rst_boundary=%d&"
           "token=NoRange&rst_limit=1&bounce_range",
@@ -1066,7 +1066,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL(
-      StringPrintf(
+      base::StringPrintf(
           // First download hits an RST, rest don't, precondition fail.
           "rangereset?size=%d&rst_boundary=%d&"
           "token=NoRange&rst_limit=1&fail_precondition=2",
@@ -1116,7 +1116,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL(
-      StringPrintf(
+      base::StringPrintf(
           // First download hits an RST, rest don't, no verifiers.
           "rangereset?size=%d&rst_boundary=%d&"
           "token=NoRange&rst_limit=1&no_verifiers",
@@ -1160,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithDeletedFile) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL(
-      StringPrintf(
+      base::StringPrintf(
           // First download hits an RST, rest don't
           "rangereset?size=%d&rst_boundary=%d&"
           "token=NoRange&rst_limit=1",

@@ -83,7 +83,7 @@ TEST(CloudPrintHelpersTest, GetHashOfPrinterTags) {
   printer_tags["tag2"] = std::string("value2");
 
   chrome::VersionInfo version_info;
-  std::string expected_list_string = StringPrintf(
+  std::string expected_list_string = base::StringPrintf(
       "chrome_version%ssystem_name%ssystem_version%stag1value1tag2value2",
       version_info.CreateVersionString().c_str(),
       base::SysInfo::OperatingSystemName().c_str(),

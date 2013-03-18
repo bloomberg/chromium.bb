@@ -330,8 +330,8 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
 
   UMA_HISTOGRAM_BOOLEAN(
-      StringPrintf("Prerender.OmniboxNavigationsCouldPrerender%s",
-                   prerender::PrerenderManager::GetModeString()).c_str(),
+      base::StringPrintf("Prerender.OmniboxNavigationsCouldPrerender%s",
+                         prerender::PrerenderManager::GetModeString()).c_str(),
       prerender::IsOmniboxEnabled(profile_));
 
   const GURL& opened_url = match.destination_url;

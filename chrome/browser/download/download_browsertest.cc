@@ -2723,8 +2723,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
     ASSERT_TRUE(item);
     ASSERT_TRUE(item->IsComplete());
     base::FilePath full_path(item->GetFullPath());
-    EXPECT_EQ(std::string("a_zip_file") + (index == 0 ? std::string(".zip") :
-                                           StringPrintf(" (%d).zip", index)),
+    EXPECT_EQ(std::string("a_zip_file") +
+        (index == 0 ? std::string(".zip") :
+                      base::StringPrintf(" (%d).zip", index)),
               full_path.BaseName().AsUTF8Unsafe());
     ASSERT_TRUE(file_util::PathExists(full_path));
     ASSERT_TRUE(VerifyFile(full_path, origin_contents, origin_contents.size()));

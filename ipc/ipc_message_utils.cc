@@ -39,11 +39,12 @@ void LogBytes(const std::vector<CharType>& data, std::string* out) {
     if (isprint(data[i]))
       out->push_back(data[i]);
     else
-      out->append(StringPrintf("[%02X]", static_cast<unsigned char>(data[i])));
+      out->append(
+          base::StringPrintf("[%02X]", static_cast<unsigned char>(data[i])));
   }
   if (data.size() > kMaxBytesToLog) {
     out->append(
-        StringPrintf(" and %u more bytes",
+        base::StringPrintf(" and %u more bytes",
                      static_cast<unsigned>(data.size() - kMaxBytesToLog)));
   }
 #endif
@@ -309,7 +310,7 @@ bool ParamTraits<float>::Read(const Message* m, PickleIterator* iter,
 }
 
 void ParamTraits<float>::Log(const param_type& p, std::string* l) {
-  l->append(StringPrintf("%e", p));
+  l->append(base::StringPrintf("%e", p));
 }
 
 void ParamTraits<double>::Write(Message* m, const param_type& p) {
@@ -330,7 +331,7 @@ bool ParamTraits<double>::Read(const Message* m, PickleIterator* iter,
 }
 
 void ParamTraits<double>::Log(const param_type& p, std::string* l) {
-  l->append(StringPrintf("%e", p));
+  l->append(base::StringPrintf("%e", p));
 }
 
 
@@ -481,9 +482,9 @@ bool ParamTraits<base::FileDescriptor>::Read(const Message* m,
 void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
                                             std::string* l) {
   if (p.auto_close) {
-    l->append(StringPrintf("FD(%d auto-close)", p.fd));
+    l->append(base::StringPrintf("FD(%d auto-close)", p.fd));
   } else {
-    l->append(StringPrintf("FD(%d)", p.fd));
+    l->append(base::StringPrintf("FD(%d)", p.fd));
   }
 }
 #endif  // defined(OS_POSIX)
@@ -668,7 +669,7 @@ bool ParamTraits<IPC::ChannelHandle>::Read(const Message* m,
 
 void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
                                           std::string* l) {
-  l->append(StringPrintf("ChannelHandle(%s", p.name.c_str()));
+  l->append(base::StringPrintf("ChannelHandle(%s", p.name.c_str()));
 #if defined(OS_POSIX)
   l->append(", ");
   ParamTraits<base::FileDescriptor>::Log(p.socket, l);
@@ -768,7 +769,7 @@ bool ParamTraits<HANDLE>::Read(const Message* m, PickleIterator* iter,
 }
 
 void ParamTraits<HANDLE>::Log(const param_type& p, std::string* l) {
-  l->append(StringPrintf("0x%X", p));
+  l->append(base::StringPrintf("0x%X", p));
 }
 
 void ParamTraits<LOGFONT>::Write(Message* m, const param_type& p) {
@@ -792,7 +793,7 @@ bool ParamTraits<LOGFONT>::Read(const Message* m, PickleIterator* iter,
 }
 
 void ParamTraits<LOGFONT>::Log(const param_type& p, std::string* l) {
-  l->append(StringPrintf("<LOGFONT>"));
+  l->append(base::StringPrintf("<LOGFONT>"));
 }
 
 void ParamTraits<MSG>::Write(Message* m, const param_type& p) {

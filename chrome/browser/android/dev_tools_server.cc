@@ -129,7 +129,8 @@ void DevToolsServer::Start() {
           socket_name_,
           base::Bind(&content::CanUserConnectToDevTools)),
       use_bundled_frontend_resources_ ?
-          "" : StringPrintf(kFrontEndURL, version_info.Version().c_str()),
+          "" :
+          base::StringPrintf(kFrontEndURL, version_info.Version().c_str()),
       new DevToolsServerDelegate(use_bundled_frontend_resources_));
 }
 

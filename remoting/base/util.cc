@@ -25,9 +25,9 @@ std::string GetTimestampString() {
   base::Time t = base::Time::NowFromSystemTime();
   base::Time::Exploded tex;
   t.LocalExplode(&tex);
-  return StringPrintf("%02d%02d/%02d%02d%02d:",
-                      tex.month, tex.day_of_month,
-                      tex.hour, tex.minute, tex.second);
+  return base::StringPrintf("%02d%02d/%02d%02d%02d:",
+                            tex.month, tex.day_of_month,
+                            tex.hour, tex.minute, tex.second);
 }
 
 int CalculateRGBOffset(int x, int y, int stride) {

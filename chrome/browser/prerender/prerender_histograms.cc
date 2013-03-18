@@ -162,8 +162,8 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
 void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_ENUMERATION(
-        StringPrintf("Prerender.OmniboxPrerenderCount%s",
-                     PrerenderManager::GetModeString()), 1, 2);
+        base::StringPrintf("Prerender.OmniboxPrerenderCount%s",
+                           PrerenderManager::GetModeString()), 1, 2);
   }
 }
 
@@ -171,16 +171,16 @@ void PrerenderHistograms::RecordConcurrency(size_t prerender_count) const {
   static const size_t kMaxRecordableConcurrency = 20;
   DCHECK_GE(kMaxRecordableConcurrency, Config().max_link_concurrency);
   UMA_HISTOGRAM_ENUMERATION(
-      StringPrintf("Prerender.PrerenderCountOf%" PRIuS "Max",
-                   kMaxRecordableConcurrency),
+      base::StringPrintf("Prerender.PrerenderCountOf%" PRIuS "Max",
+                         kMaxRecordableConcurrency),
       prerender_count, kMaxRecordableConcurrency + 1);
 }
 
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_ENUMERATION(
-        StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount%s",
-                     PrerenderManager::GetModeString()), 1, 2);
+        base::StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount%s",
+                           PrerenderManager::GetModeString()), 1, 2);
   }
 }
 

@@ -130,7 +130,8 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("History");
-    data_path = data_path.AppendASCII(StringPrintf("history.%d.sql", version));
+    data_path =
+          data_path.AppendASCII(base::StringPrintf("history.%d.sql", version));
     ASSERT_NO_FATAL_FAILURE(
         ExecuteSQLScript(data_path, history_dir_.Append(
             chrome::kHistoryFilename)));

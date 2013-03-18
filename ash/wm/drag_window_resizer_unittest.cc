@@ -37,7 +37,7 @@ class DragWindowResizerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    UpdateDisplay(StringPrintf("800x%d", kRootHeight));
+    UpdateDisplay(base::StringPrintf("800x%d", kRootHeight));
 
     aura::RootWindow* root = Shell::GetPrimaryRootWindow();
     gfx::Rect root_bounds(root->bounds());

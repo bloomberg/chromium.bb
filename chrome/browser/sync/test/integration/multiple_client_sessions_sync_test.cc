@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, MAYBE_AllChanged) {
   for (int i = 0; i < num_clients(); ++i) {
     SessionWindowMap windows;
     ASSERT_TRUE(OpenTabAndGetLocalWindows(
-        i, GURL(StringPrintf("http://127.0.0.1/bubba%i", i)), &windows));
+        i, GURL(base::StringPrintf("http://127.0.0.1/bubba%i", i)), &windows));
     client_windows[i].Reset(&windows);
   }
 
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
   for (int i = 0; i < num_clients(); ++i) {
     SessionWindowMap windows;
     ASSERT_TRUE(OpenTabAndGetLocalWindows(
-        i, GURL(StringPrintf("http://127.0.0.1/bubba%i", i)), &windows));
+        i, GURL(base::StringPrintf("http://127.0.0.1/bubba%i", i)), &windows));
     client_windows[i].Reset(&windows);
   }
 

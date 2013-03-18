@@ -93,7 +93,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
     const std::string& refresh_token = sync_setup_helper_->refresh_token();
 
     // Construct a JS string to pass in the parameters and start the test.
-    std::string script_string = StringPrintf(
+    std::string script_string = base::StringPrintf(
         "startTestWithCredentials('%s', '%s', '%s');",
         client_id.c_str(), client_secret.c_str(), refresh_token.c_str());
     string16 script16 = UTF8ToUTF16(script_string);

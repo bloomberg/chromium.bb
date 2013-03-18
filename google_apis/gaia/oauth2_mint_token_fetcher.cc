@@ -163,7 +163,7 @@ GURL OAuth2MintTokenFetcher::MakeMintTokenUrl() {
 // static
 std::string OAuth2MintTokenFetcher::MakeMintTokenHeader(
     const std::string& access_token) {
-  return StringPrintf(kAuthorizationHeaderFormat, access_token.c_str());
+  return base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str());
 }
 
 // static
@@ -171,7 +171,7 @@ std::string OAuth2MintTokenFetcher::MakeMintTokenBody(
     const std::string& client_id,
     const std::vector<std::string>& scopes,
     const std::string& origin) {
-  return StringPrintf(
+  return base::StringPrintf(
       kOAuth2IssueTokenBodyFormat,
       net::EscapeUrlEncodedData(JoinString(scopes, ','), true).c_str(),
       net::EscapeUrlEncodedData(client_id, true).c_str(),

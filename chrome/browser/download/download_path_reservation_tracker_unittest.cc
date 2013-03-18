@@ -340,10 +340,12 @@ TEST_F(DownloadPathReservationTrackerTest, UnresolvedConflicts) {
     base::FilePath reserved_path;
     base::FilePath expected_path;
     bool verified = false;
-    if (i > 0)
-      expected_path = path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", i));
-    else
+    if (i > 0) {
+      expected_path =
+          path.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", i));
+    } else {
       expected_path = path;
+    }
     items[i].reset(CreateDownloadItem(i));
     EXPECT_FALSE(IsPathInUse(expected_path));
     CallGetReservedPath(*items[i], path, true, &reserved_path, &verified);

@@ -34,7 +34,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   html_source->AddLocalizedString("settings", IDS_FIRSTRUN_SETTINGS_LINK);
 
   std::string locale = g_browser_process->GetApplicationLocale();
-  std::string product_tour_url = StringPrintf(
+  std::string product_tour_url = base::StringPrintf(
       kProductTourBaseURL, locale.c_str());
   html_source->AddString("productTourUrl", product_tour_url);
 

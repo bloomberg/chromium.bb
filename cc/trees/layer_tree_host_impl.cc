@@ -1909,7 +1909,7 @@ scoped_ptr<base::Value> LayerTreeHostImpl::AsValue() const {
 
 scoped_ptr<base::Value> LayerTreeHostImpl::ActivationStateAsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetString("lthi_id", StringPrintf("%p", this));
+  state->SetString("lthi_id", base::StringPrintf("%p", this));
   state->SetBoolean("visible_resources_ready",
                     pending_tree_->AreVisibleResourcesReady());
   state->Set("tile_manager", tile_manager_->BasicStateAsValue().release());
@@ -1918,7 +1918,7 @@ scoped_ptr<base::Value> LayerTreeHostImpl::ActivationStateAsValue() const {
 
 scoped_ptr<base::Value> LayerTreeHostImpl::FrameStateAsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetString("lthi_id", StringPrintf("%p", this));
+  state->SetString("lthi_id", base::StringPrintf("%p", this));
   state->Set("device_viewport_size",
              MathUtil::AsValue(device_viewport_size_).release());
   if (tile_manager_)

@@ -90,7 +90,7 @@ GURL CloudPrintURL::GetCloudPrintServiceEnableURL(
       "/enable_chrome_connector/enable.html");
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
-  std::string query = StringPrintf("proxy=%s", proxy_id.c_str());
+  std::string query = base::StringPrintf("proxy=%s", proxy_id.c_str());
   replacements.SetQueryStr(query);
   GURL cloud_print_enable_url = cloud_print_service_url.ReplaceComponents(
       replacements);

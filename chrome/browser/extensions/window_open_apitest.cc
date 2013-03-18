@@ -63,8 +63,8 @@ bool WaitForTabsAndPopups(Browser* browser,
                           int num_popups,
                           int num_panels) {
   SCOPED_TRACE(
-      StringPrintf("WaitForTabsAndPopups tabs:%d, popups:%d, panels:%d",
-                   num_tabs, num_popups, num_panels));
+      base::StringPrintf("WaitForTabsAndPopups tabs:%d, popups:%d, panels:%d",
+                         num_tabs, num_popups, num_panels));
   // We start with one tab and one browser already open.
   ++num_tabs;
   size_t num_browsers = static_cast<size_t>(num_popups) + 1;

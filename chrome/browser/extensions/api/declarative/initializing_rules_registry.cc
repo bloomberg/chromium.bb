@@ -10,7 +10,7 @@
 
 namespace {
 std::string ToId(int identifier) {
-  return StringPrintf("_%d_", identifier);
+  return base::StringPrintf("_%d_", identifier);
 }
 }  // namespace
 

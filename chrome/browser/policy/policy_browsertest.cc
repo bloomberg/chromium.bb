@@ -1274,7 +1274,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   // Setting the forcelist extension should install "good.crx".
   base::ListValue forcelist;
-  forcelist.Append(base::Value::CreateStringValue(StringPrintf(
+  forcelist.Append(base::Value::CreateStringValue(base::StringPrintf(
       "%s;%s", kGoodCrxId, url.spec().c_str())));
   PolicyMap policies;
   policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,

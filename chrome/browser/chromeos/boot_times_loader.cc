@@ -359,7 +359,7 @@ void BootTimesLoader::WriteTimes(
       name = tm.name();
     }
     output +=
-        StringPrintf(
+        base::StringPrintf(
             "\n%.2f +%.4f %s",
             since_first.InSecondsF(),
             since_prev.InSecondsF(),

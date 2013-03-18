@@ -526,7 +526,8 @@ void DisplayManager::CycleDisplayImpl() {
     gfx::Rect host_bounds =
         gfx::Rect(primary->GetHostOrigin(),  primary->GetHostSize());
     new_display_info_list.push_back(DisplayInfo::CreateFromSpec(
-        StringPrintf("%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
+        base::StringPrintf(
+            "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
   }
   UpdateDisplays(new_display_info_list);
 }

@@ -112,7 +112,7 @@ class HttpPipelinedNetworkTransactionTest : public testing::Test {
 
   HttpRequestInfo* GetRequestInfo(
       const char* filename, RequestInfoOptions options = REQUEST_DEFAULT) {
-    std::string url = StringPrintf("http://localhost/%s", filename);
+    std::string url = base::StringPrintf("http://localhost/%s", filename);
     HttpRequestInfo* request_info = new HttpRequestInfo;
     request_info->url = GURL(url);
     request_info->method = "GET";

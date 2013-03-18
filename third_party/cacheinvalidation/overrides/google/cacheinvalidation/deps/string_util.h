@@ -11,6 +11,7 @@
 namespace invalidation {
 
 using base::StringAppendV;
+using base::StringPrintf;
 
 inline std::string SimpleItoa(int v) {
   return base::IntToString(v);

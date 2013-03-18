@@ -606,7 +606,7 @@ std::string ProfileIOData::GetSSLSessionCacheShard() {
   // new profile, we'll get a fresh SSL session cache which is separate from
   // the other profiles.
   static unsigned ssl_session_cache_instance = 0;
-  return StringPrintf("profile/%u", ssl_session_cache_instance++);
+  return base::StringPrintf("profile/%u", ssl_session_cache_instance++);
 }
 
 void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {

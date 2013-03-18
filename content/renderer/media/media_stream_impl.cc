@@ -84,9 +84,9 @@ void CreateWebKitSourceVector(
   for (size_t i = 0; i < devices.size(); ++i) {
     const char* track_type =
         (type == WebKit::WebMediaStreamSource::TypeAudio) ? "a" : "v";
-    std::string source_id = StringPrintf("%s%s%u", label.c_str(),
-                                         track_type,
-                                         static_cast<unsigned int>(i));
+    std::string source_id = base::StringPrintf("%s%s%u", label.c_str(),
+                                               track_type,
+                                               static_cast<unsigned int>(i));
     webkit_sources[i].initialize(
           UTF8ToUTF16(source_id),
           type,

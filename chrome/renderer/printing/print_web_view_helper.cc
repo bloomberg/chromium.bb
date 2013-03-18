@@ -63,7 +63,7 @@ void ExecuteScript(WebKit::WebFrame* frame,
                    const base::Value& parameters) {
   std::string json;
   base::JSONWriter::Write(&parameters, &json);
-  std::string script = StringPrintf(script_format, json.c_str());
+  std::string script = base::StringPrintf(script_format, json.c_str());
   frame->executeScript(WebKit::WebString(UTF8ToUTF16(script)));
 }
 
@@ -438,7 +438,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   options->SetDouble("topMargin", page_layout.margin_top);
   options->SetDouble("bottomMargin", page_layout.margin_bottom);
   options->SetString("pageNumber",
-                     StringPrintf("%d/%d", page_number, total_pages));
+                     base::StringPrintf("%d/%d", page_number, total_pages));
 
   ExecuteScript(frame, kPageSetupScriptFormat, *options);
 

@@ -498,13 +498,13 @@ bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
                         &pixel_shader_minor_version)) {
     gpu_info->can_lose_context = direct3d_version == "9";
     gpu_info->vertex_shader_version =
-        StringPrintf("%d.%d",
-                     vertex_shader_major_version,
-                     vertex_shader_minor_version);
+        base::StringPrintf("%d.%d",
+                           vertex_shader_major_version,
+                           vertex_shader_minor_version);
     gpu_info->pixel_shader_version =
-        StringPrintf("%d.%d",
-                     pixel_shader_major_version,
-                     pixel_shader_minor_version);
+        base::StringPrintf("%d.%d",
+                           pixel_shader_major_version,
+                           pixel_shader_minor_version);
 
     // DirectX diagnostics are collected asynchronously because it takes a
     // couple of seconds. Do not mark gpu_info as complete until that is done.

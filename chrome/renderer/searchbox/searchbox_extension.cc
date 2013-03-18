@@ -66,14 +66,14 @@ void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
 
 v8::Handle<v8::String> GenerateThumbnailURL(uint64 most_visited_item_id) {
   return UTF8ToV8String(
-      StringPrintf("chrome-search://thumb/%s",
-                   base::Uint64ToString(most_visited_item_id).c_str()));
+      base::StringPrintf("chrome-search://thumb/%s",
+                         base::Uint64ToString(most_visited_item_id).c_str()));
 }
 
 v8::Handle<v8::String> GenerateFaviconURL(uint64 most_visited_item_id) {
   return UTF8ToV8String(
-      StringPrintf("chrome-search://favicon/%s",
-                   base::Uint64ToString(most_visited_item_id).c_str()));
+      base::StringPrintf("chrome-search://favicon/%s",
+                         base::Uint64ToString(most_visited_item_id).c_str()));
 }
 
 const GURL MostVisitedItemIDToURL(

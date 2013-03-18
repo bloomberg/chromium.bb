@@ -41,7 +41,7 @@ std::string RulesRegistryWithCache::AddRules(
     const RuleId& rule_id = *((*i)->id);
     RulesDictionaryKey key(extension_id, rule_id);
     if (rules_.find(key) != rules_.end())
-      return StringPrintf(kDuplicateRuleId, rule_id.c_str());
+      return base::StringPrintf(kDuplicateRuleId, rule_id.c_str());
   }
 
   std::string error = AddRulesImpl(extension_id, rules);

@@ -91,12 +91,13 @@ const char* GetChannelString() {
 namespace chrome {
 
 std::string OmahaQueryParams::Get(ProdId prod) {
-  return StringPrintf("os=%s&arch=%s&prod=%s&prodchannel=%s&prodversion=%s",
-                      kOs,
-                      kArch,
-                      GetProdIdString(prod),
-                      GetChannelString(),
-                      chrome::VersionInfo().Version().c_str());
+  return base::StringPrintf(
+      "os=%s&arch=%s&prod=%s&prodchannel=%s&prodversion=%s",
+      kOs,
+      kArch,
+      GetProdIdString(prod),
+      GetChannelString(),
+      chrome::VersionInfo().Version().c_str());
 }
 
 }  // namespace chrome

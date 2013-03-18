@@ -42,8 +42,10 @@ struct CGroups {
   base::FilePath background_file;
 
   CGroups() {
-    foreground_file = base::FilePath(StringPrintf(kControlPath, kForeground));
-    background_file = base::FilePath(StringPrintf(kControlPath, kBackground));
+    foreground_file =
+        base::FilePath(base::StringPrintf(kControlPath, kForeground));
+    background_file =
+        base::FilePath(base::StringPrintf(kControlPath, kBackground));
     file_util::FileSystemType foreground_type;
     file_util::FileSystemType background_type;
     enabled =

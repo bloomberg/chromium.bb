@@ -38,6 +38,8 @@ namespace cloud_print {
 
 namespace {
 
+using base::StringPrintf;
+
 const char kExampleCloudPrintServerURL[] = "https://www.google.com/cloudprint/";
 
 const char kExamplePrintTicket[] = "{\"MediaType\":\"plain\","

@@ -135,7 +135,7 @@ const std::string AutofillSyncPerfTest::NextGUID() {
 }
 
 const std::string AutofillSyncPerfTest::IntToGUID(int n) {
-  return StringPrintf("00000000-0000-0000-0000-%012X", n);
+  return base::StringPrintf("00000000-0000-0000-0000-%012X", n);
 }
 
 const std::string AutofillSyncPerfTest::NextName() {
@@ -143,7 +143,7 @@ const std::string AutofillSyncPerfTest::NextName() {
 }
 
 const std::string AutofillSyncPerfTest::IntToName(int n) {
-  return StringPrintf("Name%d", n);
+  return base::StringPrintf("Name%d", n);
 }
 
 const std::string AutofillSyncPerfTest::NextValue() {
@@ -151,7 +151,7 @@ const std::string AutofillSyncPerfTest::NextValue() {
 }
 
 const std::string AutofillSyncPerfTest::IntToValue(int n) {
-  return StringPrintf("Value%d", n);
+  return base::StringPrintf("Value%d", n);
 }
 
 void ForceSync(int profile) {

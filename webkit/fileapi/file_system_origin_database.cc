@@ -229,7 +229,7 @@ bool FileSystemOriginDatabase::GetPathForOrigin(
     int last_path_number;
     if (!GetLastPathNumber(&last_path_number))
       return false;
-    path_string = StringPrintf("%03u", last_path_number + 1);
+    path_string = base::StringPrintf("%03u", last_path_number + 1);
     // store both back as a single transaction
     leveldb::WriteBatch batch;
     batch.Put(LastPathKey(), path_string);

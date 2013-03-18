@@ -450,7 +450,7 @@ void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              int value) {
-  RecordAdditionalInfo(property, StringPrintf("%d", value));
+  RecordAdditionalInfo(property, base::StringPrintf("%d", value));
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,

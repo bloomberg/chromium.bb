@@ -704,7 +704,7 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
   std::string response;
   std::string mime_type = "application/json; charset=UTF-8";
 
-  response = StringPrintf("%s%s", json_value.c_str(), message.c_str());
+  response = base::StringPrintf("%s%s", json_value.c_str(), message.c_str());
 
   thread_->message_loop()->PostTask(
       FROM_HERE,

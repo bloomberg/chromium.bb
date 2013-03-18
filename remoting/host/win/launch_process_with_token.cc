@@ -87,7 +87,7 @@ bool ConnectToExecutionServer(uint32 session_id,
   // Use the default pipe name if we couldn't query its name.
   if (pipe_name.empty()) {
     pipe_name = UTF8ToUTF16(
-        StringPrintf(kCreateProcessDefaultPipeNameFormat, session_id));
+        base::StringPrintf(kCreateProcessDefaultPipeNameFormat, session_id));
   }
 
   // Try to connect to the named pipe.

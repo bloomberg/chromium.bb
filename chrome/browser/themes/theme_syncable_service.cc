@@ -76,8 +76,8 @@ syncer::SyncMergeResult ThemeSyncableService::MergeDataAndStartSyncing(
   if (initial_sync_data.size() > 1) {
     sync_error_handler_->CreateAndUploadError(
         FROM_HERE,
-        StringPrintf("Received %d theme specifics.",
-                     static_cast<int>(initial_sync_data.size())));
+        base::StringPrintf("Received %d theme specifics.",
+                           static_cast<int>(initial_sync_data.size())));
   }
 
   sync_pb::ThemeSpecifics current_specifics;

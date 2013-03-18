@@ -147,7 +147,8 @@ bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
   // Turn the verified site (which may be a bare domain, or have a port and/or a
   // path) into a URL that can be parsed by URLPattern.
   std::string verified_site_url =
-      StringPrintf("http://*.%s%s",
+      base::StringPrintf(
+          "http://*.%s%s",
           verified_site.c_str(),
           verified_site.find('/') == std::string::npos ? "/*" : "*");
 

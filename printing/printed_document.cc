@@ -179,7 +179,7 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   string16 filename;
   filename += name();
   filename += ASCIIToUTF16("_");
-  filename += ASCIIToUTF16(StringPrintf("%02d", page.page_number()));
+  filename += ASCIIToUTF16(base::StringPrintf("%02d", page.page_number()));
 #if defined(OS_WIN)
   filename += ASCIIToUTF16("_.emf");
   page.metafile()->SaveTo(

@@ -67,9 +67,9 @@ std::string GetFontNamePrefPath(fonts::GenericFamily generic_family_enum,
   if (script.empty())
     script = prefs::kWebKitCommonScript;
   std::string generic_family = fonts::ToString(generic_family_enum);
-  return StringPrintf(kWebKitFontPrefFormat,
-                      generic_family.c_str(),
-                      script.c_str());
+  return base::StringPrintf(kWebKitFontPrefFormat,
+                            generic_family.c_str(),
+                            script.c_str());
 }
 
 // Returns the localized name of a font so that it can be matched within the

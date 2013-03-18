@@ -126,8 +126,10 @@ void GetDownloadFilePath(
       directory.AppendASCII(id + "_" + random_number + ".crx");
 
   int uniquifier = file_util::GetUniquePathNumber(file, FILE_PATH_LITERAL(""));
-  if (uniquifier > 0)
-    file = file.InsertBeforeExtensionASCII(StringPrintf(" (%d)", uniquifier));
+  if (uniquifier > 0) {
+    file = file.InsertBeforeExtensionASCII(
+        base::StringPrintf(" (%d)", uniquifier));
+  }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, file));

@@ -736,23 +736,23 @@ gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
 }
 
 std::string IndexedURL(int i) {
-  return StringPrintf("http://www.host.ext:1234/path/filename/%d", i);
+  return base::StringPrintf("http://www.host.ext:1234/path/filename/%d", i);
 }
 
 std::wstring IndexedURLTitle(int i) {
-  return StringPrintf(L"URL Title %d", i);
+  return base::StringPrintf(L"URL Title %d", i);
 }
 
 std::wstring IndexedFolderName(int i) {
-  return StringPrintf(L"Folder Name %d", i);
+  return base::StringPrintf(L"Folder Name %d", i);
 }
 
 std::wstring IndexedSubfolderName(int i) {
-  return StringPrintf(L"Subfolder Name %d", i);
+  return base::StringPrintf(L"Subfolder Name %d", i);
 }
 
 std::wstring IndexedSubsubfolderName(int i) {
-  return StringPrintf(L"Subsubfolder Name %d", i);
+  return base::StringPrintf(L"Subsubfolder Name %d", i);
 }
 
 }  // namespace bookmarks_helper

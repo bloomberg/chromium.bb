@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, GetUserMediaTest) {
   int render_process_id = rvh->GetProcess()->GetID();
   int routing_id = rvh->GetRoutingID();
 
-  listener.Reply(StringPrintf("%i:%i", render_process_id, routing_id));
+  listener.Reply(base::StringPrintf("%i:%i", render_process_id, routing_id));
 
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());

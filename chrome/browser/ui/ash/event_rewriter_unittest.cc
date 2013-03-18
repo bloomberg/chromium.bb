@@ -52,7 +52,7 @@ std::string GetRewrittenEventAsString(EventRewriter* rewriter,
   InitXKeyEvent(ui_keycode, ui_flags, ui_type, x_keycode, x_state, &xev);
   ui::KeyEvent keyevent(&xev, false /* is_char */);
   rewriter->RewriteForTesting(&keyevent);
-  return StringPrintf(
+  return base::StringPrintf(
       "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
       keyevent.key_code(), keyevent.flags(), keyevent.type(),
       xev.xkey.keycode, xev.xkey.state, xev.xkey.type);
@@ -64,7 +64,7 @@ std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
                                       KeyCode x_keycode,
                                       unsigned int x_state,
                                       int x_type) {
-  return StringPrintf(
+  return base::StringPrintf(
       "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
       ui_keycode, ui_flags, ui_type, x_keycode, x_state, x_type);
 }
@@ -2354,7 +2354,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
     xev.xkey.send_event = True;  // XSendEvent() always does this.
     ui::KeyEvent keyevent(&xev, false /* is_char */);
     rewriter.RewriteForTesting(&keyevent);
-    rewritten_event = StringPrintf(
+    rewritten_event = base::StringPrintf(
         "ui_keycode=%d ui_flags=%d ui_type=%d "
         "x_keycode=%u x_state=%u x_type=%d",
         keyevent.key_code(), keyevent.flags(), keyevent.type(),

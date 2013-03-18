@@ -305,7 +305,7 @@ void ExpectSuggestions(int page_id,
   ASSERT_EQ(expected_num_suggestions, icons.size());
   ASSERT_EQ(expected_num_suggestions, unique_ids.size());
   for (size_t i = 0; i < expected_num_suggestions; ++i) {
-    SCOPED_TRACE(StringPrintf("i: %" PRIuS, i));
+    SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
     EXPECT_EQ(expected_values[i], values[i]);
     EXPECT_EQ(expected_labels[i], labels[i]);
     EXPECT_EQ(expected_icons[i], icons[i]);
@@ -511,8 +511,9 @@ class TestAutofillManager : public AutofillManager {
                 submitted_form->field_count());
       for (size_t i = 0; i < expected_submitted_field_types_.size(); ++i) {
         SCOPED_TRACE(
-            StringPrintf("Field %d with value %s", static_cast<int>(i),
-                         UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
+            base::StringPrintf(
+                "Field %d with value %s", static_cast<int>(i),
+                UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
         const FieldTypeSet& possible_types =
             submitted_form->field(i)->possible_types();
         EXPECT_EQ(expected_submitted_field_types_[i].size(),

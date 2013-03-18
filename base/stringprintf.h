@@ -59,10 +59,4 @@ BASE_EXPORT void StringAppendV(std::wstring* dst,
 
 }  // namespace base
 
-// Don't require the namespace for legacy code. New code should use "base::" or
-// have its own using decl.
-//
-// TODO(brettw) remove these when calling code is converted.
-using base::StringPrintf;
-
 #endif  // BASE_STRINGPRINTF_H_

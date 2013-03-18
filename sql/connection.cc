@@ -240,7 +240,8 @@ bool Connection::Raze() {
         << " page_size_ " << page_size_ << " is not a power of two.";
     const int kSqliteMaxPageSize = 32768;  // from sqliteLimit.h
     DCHECK_LE(page_size_, kSqliteMaxPageSize);
-    const std::string sql = StringPrintf("PRAGMA page_size=%d", page_size_);
+    const std::string sql =
+        base::StringPrintf("PRAGMA page_size=%d", page_size_);
     if (!null_db.Execute(sql.c_str()))
       return false;
   }
@@ -666,13 +667,15 @@ bool Connection::OpenInternal(const std::string& file_name) {
         << " page_size_ " << page_size_ << " is not a power of two.";
     const int kSqliteMaxPageSize = 32768;  // from sqliteLimit.h
     DCHECK_LE(page_size_, kSqliteMaxPageSize);
-    const std::string sql = StringPrintf("PRAGMA page_size=%d", page_size_);
+    const std::string sql =
+        base::StringPrintf("PRAGMA page_size=%d", page_size_);
     if (!ExecuteWithTimeout(sql.c_str(), kBusyTimeout))
       DLOG(FATAL) << "Could not set page size: " << GetErrorMessage();
   }
 
   if (cache_size_ != 0) {
-    const std::string sql = StringPrintf("PRAGMA cache_size=%d", cache_size_);
+    const std::string sql =
+        base::StringPrintf("PRAGMA cache_size=%d", cache_size_);
     if (!ExecuteWithTimeout(sql.c_str(), kBusyTimeout))
       DLOG(FATAL) << "Could not set cache size: " << GetErrorMessage();
   }

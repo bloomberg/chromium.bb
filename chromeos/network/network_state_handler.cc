@@ -57,11 +57,11 @@ std::string ValueAsString(const base::Value& value) {
   } else if (value.GetType() == base::Value::TYPE_INTEGER) {
     int intval = 0;
     value.GetAsInteger(&intval);
-    return StringPrintf("%d", intval);
+    return base::StringPrintf("%d", intval);
   } else if (value.GetType() == base::Value::TYPE_DOUBLE) {
     double dval = 0;
     value.GetAsDouble(&dval);
-    return StringPrintf("%g", dval);
+    return base::StringPrintf("%g", dval);
   } else if (value.GetType() == base::Value::TYPE_STRING) {
     std::string vstr;
     value.GetAsString(&vstr);
@@ -380,7 +380,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
   }
   network_event_log::AddEntry(
       kLogModule, "PropertiesReceived",
-      StringPrintf("%s (%s)", path.c_str(), managed->name().c_str()));
+      base::StringPrintf("%s (%s)", path.c_str(), managed->name().c_str()));
 }
 
 void NetworkStateHandler::UpdateNetworkServiceProperty(
@@ -447,7 +447,7 @@ void NetworkStateHandler::ManagedStateListChanged(
     // Notify observers that the list of networks has changed.
     network_event_log::AddEntry(
         kLogModule, "NetworkListChanged",
-        StringPrintf("Size: %"PRIuS, network_list_.size()));
+        base::StringPrintf("Size: %"PRIuS, network_list_.size()));
     FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                       NetworkListChanged());
     // The list order may have changed, so check if the default network changed.
@@ -456,7 +456,7 @@ void NetworkStateHandler::ManagedStateListChanged(
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     network_event_log::AddEntry(
         kLogModule, "DeviceListChanged",
-        StringPrintf("Size: %"PRIuS, device_list_.size()));
+        base::StringPrintf("Size: %"PRIuS, device_list_.size()));
     FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                       DeviceListChanged());
   } else {
@@ -511,7 +511,7 @@ NetworkStateHandler::ManagedStateList* NetworkStateHandler::GetManagedList(
 void NetworkStateHandler::OnNetworkConnectionStateChanged(
     NetworkState* network) {
   DCHECK(network);
-  std::string desc = StringPrintf(
+  std::string desc = base::StringPrintf(
       "%s: %s", network->path().c_str(), network->connection_state().c_str());
   network_event_log::AddEntry(
       kLogModule, "NetworkConnectionStateChanged", desc);

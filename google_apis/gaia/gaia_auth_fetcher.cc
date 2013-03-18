@@ -306,9 +306,9 @@ std::string GaiaAuthFetcher::MakeGetAuthCodeBody() {
       GaiaUrls::GetInstance()->oauth1_login_scope(), true);
   std::string encoded_client_id = net::EscapeUrlEncodedData(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
-  return StringPrintf(kClientLoginToOAuth2BodyFormat,
-                      encoded_scope.c_str(),
-                      encoded_client_id.c_str());
+  return base::StringPrintf(kClientLoginToOAuth2BodyFormat,
+                            encoded_scope.c_str(),
+                            encoded_client_id.c_str());
 }
 
 // static
@@ -321,11 +321,11 @@ std::string GaiaAuthFetcher::MakeGetTokenPairBody(
   std::string encoded_client_secret = net::EscapeUrlEncodedData(
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(), true);
   std::string encoded_auth_code = net::EscapeUrlEncodedData(auth_code, true);
-  return StringPrintf(kOAuth2CodeToTokenPairBodyFormat,
-                      encoded_scope.c_str(),
-                      encoded_client_id.c_str(),
-                      encoded_client_secret.c_str(),
-                      encoded_auth_code.c_str());
+  return base::StringPrintf(kOAuth2CodeToTokenPairBodyFormat,
+                            encoded_scope.c_str(),
+                            encoded_client_id.c_str(),
+                            encoded_client_secret.c_str(),
+                            encoded_auth_code.c_str());
 }
 
 // static
@@ -352,7 +352,7 @@ std::string GaiaAuthFetcher::MakeMergeSessionBody(
 // static
 std::string GaiaAuthFetcher::MakeGetAuthCodeHeader(
     const std::string& auth_token) {
-  return StringPrintf(kAuthHeaderFormat, auth_token.c_str());
+  return base::StringPrintf(kAuthHeaderFormat, auth_token.c_str());
 }
 
 // Helper method that extracts tokens from a successful reply.
@@ -450,9 +450,9 @@ std::string GaiaAuthFetcher::MakeOAuthLoginBody(const std::string& service,
                                                 const std::string& source) {
   std::string encoded_service = net::EscapeUrlEncodedData(service, true);
   std::string encoded_source = net::EscapeUrlEncodedData(source, true);
-  return StringPrintf(kOAuthLoginFormat,
-                      encoded_service.c_str(),
-                      encoded_source.c_str());
+  return base::StringPrintf(kOAuthLoginFormat,
+                            encoded_service.c_str(),
+                            encoded_source.c_str());
 }
 
 // static

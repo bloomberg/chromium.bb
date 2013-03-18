@@ -79,12 +79,12 @@ const std::string SignatureMethodName(
 std::string BuildBaseString(const GURL& request_base_url,
                             OAuthRequestSigner::HttpMethod http_method,
                             const std::string& base_parameters) {
-  return StringPrintf("%s&%s&%s",
-                      HttpMethodName(http_method).c_str(),
-                      OAuthRequestSigner::Encode(
-                          request_base_url.spec()).c_str(),
-                      OAuthRequestSigner::Encode(
-                          base_parameters).c_str());
+  return base::StringPrintf("%s&%s&%s",
+                            HttpMethodName(http_method).c_str(),
+                            OAuthRequestSigner::Encode(
+                                request_base_url.spec()).c_str(),
+                            OAuthRequestSigner::Encode(
+                                base_parameters).c_str());
 }
 
 std::string BuildBaseStringParameters(
@@ -448,9 +448,10 @@ bool OAuthRequestSigner::SignAuthHeader(
       else
         signed_text += ", ";
       signed_text +=
-          StringPrintf("%s=\"%s\"",
-                       OAuthRequestSigner::Encode(param->first).c_str(),
-                       OAuthRequestSigner::Encode(param->second).c_str());
+          base::StringPrintf(
+              "%s=\"%s\"",
+              OAuthRequestSigner::Encode(param->first).c_str(),
+              OAuthRequestSigner::Encode(param->second).c_str());
     }
     *signed_text_return = signed_text;
   }

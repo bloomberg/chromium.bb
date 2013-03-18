@@ -139,7 +139,7 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
       (parameters_.mode == MODE_MINT_TOKEN_NO_FORCE ||
        parameters_.mode == MODE_MINT_TOKEN_FORCE)
           ? kResponseTypeValueToken : kResponseTypeValueNone;
-  return StringPrintf(
+  return base::StringPrintf(
       kOAuth2IssueTokenBodyFormat,
       net::EscapeUrlEncodedData(force_value, true).c_str(),
       net::EscapeUrlEncodedData(response_type_value, true).c_str(),

@@ -76,7 +76,8 @@ GURL SimDialogDelegate::GetDialogContentURL() const {
       mode_value = kSimDialogSetLockOnMode;
     else
       mode_value = kSimDialogSetLockOffMode;
-    return GURL(StringPrintf(kSimDialogSpecialModeURL, mode_value.c_str()));
+    return GURL(
+        base::StringPrintf(kSimDialogSpecialModeURL, mode_value.c_str()));
   }
 }
 

@@ -119,8 +119,9 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (uint32 i = 0; i < 4; ++i) {
-    base::FilePath profile_path = GetProfilePath(StringPrintf("path_%ud", i));
-    string16 profile_name = ASCIIToUTF16(StringPrintf("name_%ud", i));
+    base::FilePath profile_path =
+        GetProfilePath(base::StringPrintf("path_%ud", i));
+    string16 profile_name = ASCIIToUTF16(base::StringPrintf("name_%ud", i));
     const SkBitmap* icon = rb.GetImageNamed(
         ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
@@ -128,7 +129,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     GetCache()->AddProfileToCache(profile_path, profile_name, string16(), i,
                                   false);
     GetCache()->SetBackgroundStatusOfProfileAtIndex(i, true);
-    string16 gaia_name = ASCIIToUTF16(StringPrintf("gaia_%ud", i));
+    string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     GetCache()->SetGAIANameOfProfileAtIndex(i, gaia_name);
 
     EXPECT_EQ(i + 1, GetCache()->GetNumberOfProfiles());
@@ -145,13 +146,14 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
 
   EXPECT_EQ(4u, GetCache()->GetNumberOfProfiles());
   for (uint32 i = 0; i < 4; ++i) {
-    base::FilePath profile_path = GetProfilePath(StringPrintf("path_%ud", i));
+    base::FilePath profile_path =
+          GetProfilePath(base::StringPrintf("path_%ud", i));
     EXPECT_EQ(i, GetCache()->GetIndexOfProfileWithPath(profile_path));
-    string16 profile_name = ASCIIToUTF16(StringPrintf("name_%ud", i));
+    string16 profile_name = ASCIIToUTF16(base::StringPrintf("name_%ud", i));
     EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(i));
     EXPECT_EQ(i, GetCache()->GetAvatarIconIndexOfProfileAtIndex(i));
     EXPECT_EQ(true, GetCache()->GetBackgroundStatusOfProfileAtIndex(i));
-    string16 gaia_name = ASCIIToUTF16(StringPrintf("gaia_%ud", i));
+    string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(i));
   }
 }

@@ -511,7 +511,7 @@ void ProfileState::CheckGalleries(
   registry->GetMediaFileSystemsForExtension(
       rvh, no_permissions_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
-                 StringPrintf("%s (no permission)", test.c_str()),
+                 base::StringPrintf("%s (no permission)", test.c_str()),
                  base::ConstRef(empty_expectation)));
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
@@ -520,7 +520,7 @@ void ProfileState::CheckGalleries(
   registry->GetMediaFileSystemsForExtension(
       rvh, regular_permission_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
-                 StringPrintf("%s (regular permission)", test.c_str()),
+                 base::StringPrintf("%s (regular permission)", test.c_str()),
                  base::ConstRef(regular_extension_galleries)));
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
@@ -529,7 +529,7 @@ void ProfileState::CheckGalleries(
   registry->GetMediaFileSystemsForExtension(
       rvh, all_permission_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
-                 StringPrintf("%s (all permission)", test.c_str()),
+                 base::StringPrintf("%s (all permission)", test.c_str()),
                  base::ConstRef(all_extension_galleries)));
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());

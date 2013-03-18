@@ -196,8 +196,9 @@ void SendTaskPortToParentProcess() {
   base::MachPortSender child_sender(mach_port_name.c_str());
   kern_return_t err = child_sender.SendMessage(child_message, kTimeoutMs);
   if (err != KERN_SUCCESS) {
-    LOG(ERROR) << StringPrintf("child SendMessage() failed: 0x%x %s", err,
-                               mach_error_string(err));
+    LOG(ERROR) <<
+        base::StringPrintf("child SendMessage() failed: 0x%x %s", err,
+                           mach_error_string(err));
   }
 }
 

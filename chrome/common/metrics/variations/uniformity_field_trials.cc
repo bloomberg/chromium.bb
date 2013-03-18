@@ -28,8 +28,8 @@ void SetupSingleUniformityFieldTrial(
 
   DCHECK_EQ(100 % num_trial_groups, 0);
   const int group_percent = 100 / num_trial_groups;
-  const std::string trial_name = StringPrintf(trial_name_string.c_str(),
-                                              group_percent);
+  const std::string trial_name = base::StringPrintf(trial_name_string.c_str(),
+                                                    group_percent);
 
   DVLOG(1) << "Trial name = " << trial_name;
 
@@ -48,7 +48,8 @@ void SetupSingleUniformityFieldTrial(
   // Loop starts with group 1 because the field trial automatically creates a
   // default group, which would be group 0.
   for (int group_number = 1; group_number < num_trial_groups; ++group_number) {
-    const std::string group_name = StringPrintf("group_%02d", group_number);
+    const std::string group_name =
+          base::StringPrintf("group_%02d", group_number);
     DVLOG(1) << "    Group name = " << group_name;
     trial->AppendGroup(group_name, kProbabilityPerGroup);
     chrome_variations::AssociateGoogleVariationID(

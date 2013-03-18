@@ -180,12 +180,13 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
                                   LPWSTR* additional_headers) {
     std::string new_headers;
     new_headers =
-        StringPrintf("Content-Length: %s\r\n"
-                     "Content-Type: %s\r\n"
-                     "%s\r\n",
-                     base::Int64ToString(upload_data_size_).c_str(),
-                     mime_type_.c_str(),
-                     http_utils::GetDefaultUserAgentHeaderWithCFTag().c_str());
+        base::StringPrintf(
+            "Content-Length: %s\r\n"
+            "Content-Type: %s\r\n"
+            "%s\r\n",
+            base::Int64ToString(upload_data_size_).c_str(),
+            mime_type_.c_str(),
+            http_utils::GetDefaultUserAgentHeaderWithCFTag().c_str());
 
     *additional_headers = reinterpret_cast<wchar_t*>(
         CoTaskMemAlloc((new_headers.size() + 1) * sizeof(wchar_t)));

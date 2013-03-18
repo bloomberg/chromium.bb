@@ -97,7 +97,7 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
                                              base::DictionaryValue* output) {
   int i = 0;
   for (; it != end; ++it, ++i) {
-    std::string item_prefix(prefix + StringPrintf(".item_%d", i));
+    std::string item_prefix(prefix + base::StringPrintf(".item_%d", i));
     if (it->provider != NULL) {
       output->SetString(item_prefix + ".provider_name",
                         it->provider->GetName());

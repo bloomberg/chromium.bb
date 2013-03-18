@@ -65,7 +65,8 @@ void ExecuteScript(int argc, ...) {
 void SetPointerSensitivity(const char* script, int value) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(value > 0 && value < 6);
-  ExecuteScript(3, script, "sensitivity", StringPrintf("%d", value).c_str());
+  ExecuteScript(
+      3, script, "sensitivity", base::StringPrintf("%d", value).c_str());
 }
 
 void SetTPControl(const char* control, bool enabled) {

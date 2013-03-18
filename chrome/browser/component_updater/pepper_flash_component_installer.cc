@@ -150,7 +150,7 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
   plugin_info->permissions = kPepperFlashPermissions;
 
   // The description is like "Shockwave Flash 10.2 r154".
-  plugin_info->description = StringPrintf("%s %d.%d r%d",
+  plugin_info->description = base::StringPrintf("%s %d.%d r%d",
       kFlashPluginName, ver_nums[0], ver_nums[1], ver_nums[2]);
 
   plugin_info->version = flash_version.GetString();

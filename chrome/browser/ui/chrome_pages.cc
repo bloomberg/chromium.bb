@@ -42,8 +42,8 @@ void OpenBookmarkManagerWithHash(Browser* browser,
   NavigateParams params(GetSingletonTabNavigateParams(
       browser,
       GURL(kChromeUIBookmarksURL).Resolve(
-      StringPrintf("/#%s%s", action.c_str(),
-      base::Int64ToString(node_id).c_str()))));
+          base::StringPrintf("/#%s%s", action.c_str(),
+              base::Int64ToString(node_id).c_str()))));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }

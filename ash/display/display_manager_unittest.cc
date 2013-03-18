@@ -23,6 +23,8 @@ namespace internal {
 using std::vector;
 using std::string;
 
+using base::StringPrintf;
+
 class DisplayManagerTest : public test::AshTestBase,
                            public gfx::DisplayObserver,
                            public aura::WindowObserver {

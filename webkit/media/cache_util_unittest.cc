@@ -85,10 +85,10 @@ TEST(CacheUtilTest, GetReasonsForUncacheability) {
     },
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    SCOPED_TRACE(StringPrintf("case: %" PRIuS
-                              ", version: %d, code: %d, headers: %s",
-                              i, tests[i].version, tests[i].status_code,
-                              tests[i].headers));
+    SCOPED_TRACE(base::StringPrintf("case: %" PRIuS
+                                    ", version: %d, code: %d, headers: %s",
+                                    i, tests[i].version, tests[i].status_code,
+                                    tests[i].headers));
     EXPECT_EQ(GetReasonsForUncacheability(CreateResponse(tests[i])),
               tests[i].expected_reasons);
   }

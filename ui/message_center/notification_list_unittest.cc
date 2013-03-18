@@ -59,8 +59,8 @@ class NotificationListTest : public testing::Test {
     std::string new_id = base::StringPrintf(kIdFormat, counter_);
     notification_list_->AddNotification(
         message_center::NOTIFICATION_TYPE_SIMPLE, new_id,
-        UTF8ToUTF16(StringPrintf(kTitleFormat, counter_)),
-        UTF8ToUTF16(StringPrintf(kMessageFormat, counter_)),
+        UTF8ToUTF16(base::StringPrintf(kTitleFormat, counter_)),
+        UTF8ToUTF16(base::StringPrintf(kMessageFormat, counter_)),
         UTF8ToUTF16(kDisplaySource), kExtensionId,
         optional_fields);
     counter_++;

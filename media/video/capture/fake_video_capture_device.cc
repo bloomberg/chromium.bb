@@ -28,8 +28,8 @@ void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
 
   for (int n = 0; n < kNumberOfFakeDevices; n++) {
     Name name;
-    name.unique_id = StringPrintf("/dev/video%d", n);
-    name.device_name = StringPrintf("fake_device_%d", n);
+    name.unique_id = base::StringPrintf("/dev/video%d", n);
+    name.device_name = base::StringPrintf("fake_device_%d", n);
     device_names->push_back(name);
   }
 }
@@ -40,7 +40,7 @@ VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
     return NULL;
   }
   for (int n = 0; n < kNumberOfFakeDevices; ++n) {
-    std::string possible_id = StringPrintf("/dev/video%d", n);
+    std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.unique_id.compare(possible_id) == 0) {
       return new FakeVideoCaptureDevice(device_name);
     }

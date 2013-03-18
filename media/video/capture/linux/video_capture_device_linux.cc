@@ -126,7 +126,7 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
       // This is a V4L2 video capture device
       if (HasUsableFormats(fd)) {
-        name.device_name = StringPrintf("%s", cap.card);
+        name.device_name = base::StringPrintf("%s", cap.card);
         device_names->push_back(name);
       } else {
         DVLOG(1) << "No usable formats reported by " << info.filename;
@@ -418,8 +418,8 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
 
       // Enqueue the buffer again.
       if (ioctl(device_fd_, VIDIOC_QBUF, &buffer) == -1) {
-        SetErrorState(
-            StringPrintf("Failed to enqueue capture buffer errno %d", errno));
+        SetErrorState(base::StringPrintf(
+            "Failed to enqueue capture buffer errno %d", errno));
       }
     }  // Else wait for next event.
   }

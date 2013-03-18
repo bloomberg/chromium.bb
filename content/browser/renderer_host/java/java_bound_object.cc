@@ -271,9 +271,9 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
       result.l = coerce_to_string ?
           ConvertUTF8ToJavaString(
               AttachCurrentThread(),
-              is_double ? StringPrintf("%.6lg", NPVARIANT_TO_DOUBLE(variant)) :
-                          base::Int64ToString(NPVARIANT_TO_INT32(variant))).
-                              Release() :
+              is_double ?
+                  base::StringPrintf("%.6lg", NPVARIANT_TO_DOUBLE(variant)) :
+                  base::Int64ToString(NPVARIANT_TO_INT32(variant))).Release() :
           NULL;
       break;
     case JavaType::TypeBoolean:

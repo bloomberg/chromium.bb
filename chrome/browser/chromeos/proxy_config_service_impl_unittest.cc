@@ -345,7 +345,7 @@ class ProxyConfigServiceImplTest
 
 TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                               tests[i].description.c_str()));
 
     ProxyConfigServiceImpl::ProxyConfig test_config;
@@ -363,7 +363,7 @@ TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {
 
 TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                               tests[i].description.c_str()));
 
     // Init with direct.
@@ -484,7 +484,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     const TestParams& recommended_params = tests[proxies[i][1]];
     const TestParams& network_params = tests[proxies[i][2]];
 
-    SCOPED_TRACE(StringPrintf(
+    SCOPED_TRACE(base::StringPrintf(
         "Test[%" PRIuS "] managed=[%s], recommended=[%s], network=[%s]", i,
         managed_params.description.c_str(),
         recommended_params.description.c_str(),

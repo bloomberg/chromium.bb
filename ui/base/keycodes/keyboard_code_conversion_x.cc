@@ -424,7 +424,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
 
     // TODO(sad): some keycodes are still missing.
   }
-  DLOG(WARNING) << "Unknown keysym: " << StringPrintf("0x%x", keysym);
+  DLOG(WARNING) << "Unknown keysym: " << base::StringPrintf("0x%x", keysym);
   return VKEY_UNKNOWN;
 }
 

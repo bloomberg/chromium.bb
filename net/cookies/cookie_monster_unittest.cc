@@ -357,7 +357,7 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
   CookieMonster* CreateMonsterForGC(int num_cookies) {
     CookieMonster* cm(new CookieMonster(NULL, NULL));
     for (int i = 0; i < num_cookies; i++) {
-      SetCookie(cm, GURL(StringPrintf("http://h%05d.izzle", i)), "a=1");
+      SetCookie(cm, GURL(base::StringPrintf("http://h%05d.izzle", i)), "a=1");
     }
     return cm;
   }

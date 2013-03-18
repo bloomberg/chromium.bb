@@ -200,7 +200,7 @@ void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
   uint16_t port = ssl_server.host_port_pair().port();
   RunTestURL(GetTestURL(http_server,
                         test_case,
-                        StringPrintf("ssl_server_port=%d", port)));
+                        base::StringPrintf("ssl_server_port=%d", port)));
 }
 
 void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
@@ -223,9 +223,10 @@ void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   uint16_t port = ws_server.host_port_pair().port();
   RunTestURL(GetTestURL(http_server,
                         test_case,
-                        StringPrintf("websocket_host=%s&websocket_port=%d",
-                                     host.c_str(),
-                                     port)));
+                        base::StringPrintf(
+                            "websocket_host=%s&websocket_port=%d",
+                            host.c_str(),
+                            port)));
 }
 
 void PPAPITestBase::RunTestIfAudioOutputAvailable(
@@ -270,7 +271,7 @@ GURL PPAPITestBase::GetTestURL(
     const std::string& extra_params) {
   std::string query = BuildQuery("files/test_case.html?", test_case);
   if (!extra_params.empty())
-    query = StringPrintf("%s&%s", query.c_str(), extra_params.c_str());
+    query = base::StringPrintf("%s&%s", query.c_str(), extra_params.c_str());
 
   return http_server.GetURL(query);
 }
@@ -301,7 +302,7 @@ void PPAPITest::SetUpCommandLine(CommandLine* command_line) {
 
 std::string PPAPITest::BuildQuery(const std::string& base,
                                   const std::string& test_case){
-  return StringPrintf("%stestcase=%s", base.c_str(), test_case.c_str());
+  return base::StringPrintf("%stestcase=%s", base.c_str(), test_case.c_str());
 }
 
 OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
@@ -328,22 +329,22 @@ void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
 // Append the correct mode and testcase string
 std::string PPAPINaClNewlibTest::BuildQuery(const std::string& base,
                                             const std::string& test_case) {
-  return StringPrintf("%smode=nacl_newlib&testcase=%s", base.c_str(),
-                      test_case.c_str());
+  return base::StringPrintf("%smode=nacl_newlib&testcase=%s", base.c_str(),
+                            test_case.c_str());
 }
 
 // Append the correct mode and testcase string
 std::string PPAPINaClGLibcTest::BuildQuery(const std::string& base,
                                            const std::string& test_case) {
-  return StringPrintf("%smode=nacl_glibc&testcase=%s", base.c_str(),
-                      test_case.c_str());
+  return base::StringPrintf("%smode=nacl_glibc&testcase=%s", base.c_str(),
+                            test_case.c_str());
 }
 
 // Append the correct mode and testcase string
 std::string PPAPINaClPNaClTest::BuildQuery(const std::string& base,
                                            const std::string& test_case) {
-  return StringPrintf("%smode=nacl_pnacl&testcase=%s", base.c_str(),
-                      test_case.c_str());
+  return base::StringPrintf("%smode=nacl_pnacl&testcase=%s", base.c_str(),
+                            test_case.c_str());
 }
 
 void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
@@ -363,8 +364,8 @@ void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
 std::string PPAPINaClTestDisallowedSockets::BuildQuery(
     const std::string& base,
     const std::string& test_case) {
-  return StringPrintf("%smode=nacl_newlib&testcase=%s", base.c_str(),
-                      test_case.c_str());
+  return base::StringPrintf("%smode=nacl_newlib&testcase=%s", base.c_str(),
+                            test_case.c_str());
 }
 
 void PPAPIBrokerInfoBarTest::SetUpOnMainThread() {

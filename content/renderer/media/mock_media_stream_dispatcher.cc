@@ -26,7 +26,7 @@ void MockMediaStreamDispatcher::GenerateStream(
     const GURL& url) {
   request_id_ = request_id;
 
-  stream_label_ = StringPrintf("%s%d","local_stream",request_id);
+  stream_label_ = base::StringPrintf("%s%d","local_stream",request_id);
   audio_array_.clear();
   video_array_.clear();
 

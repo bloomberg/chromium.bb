@@ -70,15 +70,16 @@ bool ThumbnailScore::Equals(const ThumbnailScore& rhs) const {
 }
 
 std::string ThumbnailScore::ToString() const {
-  return StringPrintf("boring_score: %f, at_top %d, good_clipping %d, "
-                      "load_completed: %d, "
-                      "time_at_snapshot: %f, redirect_hops_from_dest: %d",
-                      boring_score,
-                      at_top,
-                      good_clipping,
-                      load_completed,
-                      time_at_snapshot.ToDoubleT(),
-                      redirect_hops_from_dest);
+  return base::StringPrintf(
+      "boring_score: %f, at_top %d, good_clipping %d, "
+      "load_completed: %d, "
+      "time_at_snapshot: %f, redirect_hops_from_dest: %d",
+      boring_score,
+      at_top,
+      good_clipping,
+      load_completed,
+      time_at_snapshot.ToDoubleT(),
+      redirect_hops_from_dest);
 }
 
 bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,

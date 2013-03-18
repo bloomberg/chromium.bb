@@ -515,7 +515,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
     } else {
       for (int i = ordinal_number; i < kMaxFileOrdinalNumber; ++i) {
         base::FilePath::StringType new_name = base_file_name +
-            StringPrintf(FILE_PATH_LITERAL("(%d)"), i) + file_name_ext;
+            base::StringPrintf(FILE_PATH_LITERAL("(%d)"), i) + file_name_ext;
         if (file_name_set_.find(new_name) == file_name_set_.end()) {
           // Resolved name conflict.
           file_name = new_name;

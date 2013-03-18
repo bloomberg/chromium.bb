@@ -52,14 +52,14 @@ GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
   std::string query =
-      StringPrintf("jobid=%s&status=%s&code=%d&message=%s"
-                   "&numpages=%d&pagesprinted=%d",
-                   job_id.c_str(),
-                   status_string.c_str(),
-                   details.platform_status_flags,
-                   details.status_message.c_str(),
-                   details.total_pages,
-                   details.pages_printed);
+      base::StringPrintf("jobid=%s&status=%s&code=%d&message=%s"
+                         "&numpages=%d&pagesprinted=%d",
+                         job_id.c_str(),
+                         status_string.c_str(),
+                         details.platform_status_flags,
+                         details.status_message.c_str(),
+                         details.total_pages,
+                         details.pages_printed);
   replacements.SetQueryStr(query);
   return cloud_print_server_url.ReplaceComponents(replacements);
 }

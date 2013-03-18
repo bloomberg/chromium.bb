@@ -881,7 +881,7 @@ class HttpHeaderTest : public MockIEEventSinkTest, public testing::Test {
         "Connection: close\r\n"
         "Content-Type: %s\r\n"
         "X-UA-Compatible: chrome=1\r\n";
-    std::string header = StringPrintf(kHeaderFormat, content_type);
+    std::string header = base::StringPrintf(kHeaderFormat, content_type);
     std::wstring url = server_mock_.Resolve(relative_url);
     EXPECT_CALL(server_mock_, Get(_, StrEq(relative_url), _))
         .WillRepeatedly(SendFast(header, data));

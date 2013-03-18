@@ -210,7 +210,7 @@ void DidEnablePlugin(base::WeakPtr<AutomationProvider> automation,
   } else {
     if (automation) {
       AutomationJSONReply(automation.get(), reply_message).SendError(
-          StringPrintf(error_msg.c_str(), path.c_str()));
+          base::StringPrintf(error_msg.c_str(), path.c_str()));
     }
   }
 }
@@ -1160,7 +1160,7 @@ void TestingAutomationProvider::OpenProfileWindow(
   Profile* profile = profile_manager->GetProfileByPath(base::FilePath(path));
   if (!profile) {
     AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Invalid profile path: %s", path.c_str()));
+        base::StringPrintf("Invalid profile path: %s", path.c_str()));
     return;
   }
   int num_loads;
@@ -1991,8 +1991,8 @@ void TestingAutomationProvider::SendJSONRequestWithBrowserIndex(
     IPC::Message* reply_message) {
   Browser* browser = index < 0 ? NULL : automation_util::GetBrowserAt(index);
   if (!browser && index >= 0) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Browser window with index=%d does not exist.", index));
+    AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
+        "Browser window with index=%d does not exist.", index));
   } else {
     SendJSONRequest(browser, json_request, reply_message);
   }
@@ -2022,8 +2022,8 @@ void TestingAutomationProvider::SendJSONRequest(Browser* browser,
     (this->*handler_map_[command])(dict_value.get(), reply_message);
   // Command has no handler.
   } else {
-    error_string = StringPrintf("Unknown command '%s'. Options: ",
-                                command.c_str());
+    error_string = base::StringPrintf("Unknown command '%s'. Options: ",
+                                      command.c_str());
     for (std::map<std::string, JsonHandler>::const_iterator it =
          handler_map_.begin(); it != handler_map_.end(); ++it) {
       error_string += it->first + ", ";
@@ -2151,7 +2151,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
   WebContents* web_contents =
       browser->tab_strip_model()->GetWebContentsAt(tab_index);
   if (!web_contents) {
-    reply.SendError(StringPrintf("No such tab at index %d", tab_index));
+    reply.SendError(base::StringPrintf("No such tab at index %d", tab_index));
     return;
   }
   InfoBarService* infobar_service =
@@ -2160,8 +2160,8 @@ void TestingAutomationProvider::PerformActionOnInfobar(
   InfoBarDelegate* infobar = NULL;
   size_t infobar_index = static_cast<size_t>(infobar_index_int);
   if (infobar_index >= infobar_service->GetInfoBarCount()) {
-    reply.SendError(StringPrintf("No such infobar at index %" PRIuS,
-                                 infobar_index));
+    reply.SendError(base::StringPrintf("No such infobar at index %" PRIuS,
+                                       infobar_index));
     return;
   }
   infobar = infobar_service->GetInfoBarDelegateAt(infobar_index);
@@ -2560,7 +2560,8 @@ void TestingAutomationProvider::WaitForAllDownloadsToComplete(
 
   if (!args->GetList("pre_download_ids", &pre_download_ids)) {
     AutomationJSONReply(this, reply_message)
-        .SendError(StringPrintf("List of IDs of previous downloads required."));
+        .SendError(
+            base::StringPrintf("List of IDs of previous downloads required."));
     return;
   }
 
@@ -2605,7 +2606,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
   DownloadItem* selected_item = download_manager->GetDownload(id);
   if (!selected_item) {
     AutomationJSONReply(this, reply_message)
-        .SendError(StringPrintf("No download with an id of %d\n", id));
+        .SendError(base::StringPrintf("No download with an id of %d\n", id));
     return;
   }
 
@@ -2680,7 +2681,8 @@ void TestingAutomationProvider::PerformActionOnDownload(
     selected_item->Cancel(true);
   } else {
     AutomationJSONReply(this, reply_message)
-        .SendError(StringPrintf("Invalid action '%s' given.", action.c_str()));
+        .SendError(
+            base::StringPrintf("Invalid action '%s' given.", action.c_str()));
   }
 }
 
@@ -3457,7 +3459,7 @@ WebContents* GetWebContentsFromDict(const Browser* browser,
   WebContents* web_contents =
       browser->tab_strip_model()->GetWebContentsAt(tab_index);
   if (!web_contents) {
-    *error_message = StringPrintf("No tab at index %d.", tab_index);
+    *error_message = base::StringPrintf("No tab at index %d.", tab_index);
     return NULL;
   }
   return web_contents;
@@ -3904,7 +3906,7 @@ void TestingAutomationProvider::TriggerBrowserActionById(
   // TODO(kkania): Implement the platform-specific GetExtensionId() in
   // BrowserActionTestUtil.
   if (num_browser_actions != 1) {
-    AutomationJSONReply(this, reply_message).SendError(StringPrintf(
+    AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
         "Found %d browser actions. Only one browser action must be active.",
         num_browser_actions));
     return;
@@ -4150,7 +4152,7 @@ void TestingAutomationProvider::CloseNotification(
   int balloon_count = static_cast<int>(balloons.size());
   if (index < 0 || index >= balloon_count) {
     AutomationJSONReply(this, reply_message)
-        .SendError(StringPrintf("No notification at index %d", index));
+        .SendError(base::StringPrintf("No notification at index %d", index));
     return;
   }
   std::vector<const Notification*> queued_notes;
@@ -4600,8 +4602,9 @@ void TestingAutomationProvider::LaunchApp(
       id, false  /* do not include disabled extensions */);
   if (!extension) {
     AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Extension with ID '%s' doesn't exist or is disabled.",
-                     id.c_str()));
+        base::StringPrintf(
+            "Extension with ID '%s' doesn't exist or is disabled.",
+            id.c_str()));
     return;
   }
 
@@ -4652,8 +4655,8 @@ void TestingAutomationProvider::SetAppLaunchType(
   const Extension* extension = service->GetExtensionById(
       id, true  /* include disabled extensions */);
   if (!extension) {
-    reply.SendError(
-        StringPrintf("Extension with ID '%s' doesn't exist.", id.c_str()));
+    reply.SendError(base::StringPrintf(
+        "Extension with ID '%s' doesn't exist.", id.c_str()));
     return;
   }
 
@@ -4667,8 +4670,8 @@ void TestingAutomationProvider::SetAppLaunchType(
   } else if (launch_type_str == "window") {
     launch_type = extensions::ExtensionPrefs::LAUNCH_WINDOW;
   } else {
-    reply.SendError(
-        StringPrintf("Unexpected launch type '%s'.", launch_type_str.c_str()));
+    reply.SendError(base::StringPrintf(
+        "Unexpected launch type '%s'.", launch_type_str.c_str()));
     return;
   }
 
@@ -4696,8 +4699,8 @@ void TestingAutomationProvider::GetV8HeapStats(
 
   web_contents = browser->tab_strip_model()->GetWebContentsAt(tab_index);
   if (!web_contents) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Could not get WebContents at tab index %d", tab_index));
+    AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
+        "Could not get WebContents at tab index %d", tab_index));
     return;
   }
 
@@ -4730,8 +4733,8 @@ void TestingAutomationProvider::GetFPS(
 
   web_contents = browser->tab_strip_model()->GetWebContentsAt(tab_index);
   if (!web_contents) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Could not get WebContents at tab index %d", tab_index));
+    AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
+        "Could not get WebContents at tab index %d", tab_index));
     return;
   }
 
@@ -5262,12 +5265,13 @@ void TestingAutomationProvider::ExecuteBrowserCommandAsyncJSON(
     return;
   }
   if (!chrome::SupportsCommand(browser, command)) {
-    reply.SendError(StringPrintf("Browser does not support command=%d.",
-                                 command));
+    reply.SendError(base::StringPrintf("Browser does not support command=%d.",
+                                       command));
     return;
   }
   if (!chrome::IsCommandEnabled(browser, command)) {
-    reply.SendError(StringPrintf("Browser command=%d not enabled.", command));
+    reply.SendError(base::StringPrintf(
+        "Browser command=%d not enabled.", command));
     return;
   }
   chrome::ExecuteCommand(browser, command);
@@ -5291,12 +5295,12 @@ void TestingAutomationProvider::ExecuteBrowserCommandJSON(
   }
   if (!chrome::SupportsCommand(browser, command)) {
     AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Browser does not support command=%d.", command));
+        base::StringPrintf("Browser does not support command=%d.", command));
     return;
   }
   if (!chrome::IsCommandEnabled(browser, command)) {
     AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Browser command=%d not enabled.", command));
+        base::StringPrintf("Browser command=%d not enabled.", command));
     return;
   }
   // First check if we can handle the command without using an observer.
@@ -5313,9 +5317,8 @@ void TestingAutomationProvider::ExecuteBrowserCommandJSON(
     chrome::ExecuteCommand(browser, command);
     return;
   }
-  AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Unable to register observer for browser command=%d.",
-                     command));
+  AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
+      "Unable to register observer for browser command=%d.", command));
 }
 
 void TestingAutomationProvider::IsMenuCommandEnabledJSON(
@@ -5494,8 +5497,8 @@ void TestingAutomationProvider::GetCookiesInBrowserContext(
   automation_util::GetCookies(url, web_contents, &value_size, &value);
   if (value_size == -1) {
     reply.SendError(
-        StringPrintf("Unable to retrieve cookies for url=%s.",
-                     url_string.c_str()));
+        base::StringPrintf("Unable to retrieve cookies for url=%s.",
+                           url_string.c_str()));
     return;
   }
   DictionaryValue dict;
@@ -5536,8 +5539,8 @@ void TestingAutomationProvider::DeleteCookieInBrowserContext(
   automation_util::DeleteCookie(url, cookie_name, web_contents, &success);
   if (!success) {
     reply.SendError(
-        StringPrintf("Failed to delete cookie with name=%s for url=%s.",
-                     cookie_name.c_str(), url_string.c_str()));
+        base::StringPrintf("Failed to delete cookie with name=%s for url=%s.",
+                           cookie_name.c_str(), url_string.c_str()));
     return;
   }
   reply.SendSuccess(NULL);
@@ -5574,8 +5577,8 @@ void TestingAutomationProvider::SetCookieInBrowserContext(
   }
   automation_util::SetCookie(url, value, web_contents, &response_value);
   if (response_value != 1) {
-    reply.SendError(
-        StringPrintf("Unable set cookie for url=%s.", url_string.c_str()));
+    reply.SendError(base::StringPrintf(
+        "Unable set cookie for url=%s.", url_string.c_str()));
     return;
   }
   reply.SendSuccess(NULL);

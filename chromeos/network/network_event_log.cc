@@ -49,7 +49,7 @@ std::string LogEntry::ToString() const {
   if (!description.empty())
     line += ": " + description;
   if (count > 1)
-    line += StringPrintf(" (%d)", count);
+    line += base::StringPrintf(" (%d)", count);
   line += "\n";
   return line;
 }

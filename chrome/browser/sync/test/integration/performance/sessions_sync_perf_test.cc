@@ -112,7 +112,7 @@ GURL SessionsSyncPerfTest::NextURL() {
 }
 
 GURL SessionsSyncPerfTest::IntToURL(int n) {
-  return GURL(StringPrintf("http://localhost/%d", n));
+  return GURL(base::StringPrintf("http://localhost/%d", n));
 }
 
 // TODO(lipalani): Re-enable after crbug.com/96921 is fixed.

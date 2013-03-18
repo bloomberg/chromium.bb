@@ -91,7 +91,7 @@ GURL TypedUrlsSyncPerfTest::NextURL() {
 }
 
 GURL TypedUrlsSyncPerfTest::IntToURL(int n) {
-  return GURL(StringPrintf("http://history%d.google.com/", n));
+  return GURL(base::StringPrintf("http://history%d.google.com/", n));
 }
 
 IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, P0) {

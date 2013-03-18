@@ -576,11 +576,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestWSSInvalidCertAndClose) {
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
   // Create GURLs to test pages.
-  std::string masterUrlPath = StringPrintf("%s?%d",
+  std::string masterUrlPath = base::StringPrintf("%s?%d",
       test_server()->GetURL("files/ssl/wss_close.html").spec().c_str(),
       wss_server_expired_.host_port_pair().port());
   GURL masterUrl(masterUrlPath);
-  std::string slaveUrlPath = StringPrintf("%s?%d",
+  std::string slaveUrlPath = base::StringPrintf("%s?%d",
       test_server()->GetURL("files/ssl/wss_close_slave.html").spec().c_str(),
       wss_server_expired_.host_port_pair().port());
   GURL slaveUrl(slaveUrlPath);

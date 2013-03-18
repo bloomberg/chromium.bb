@@ -108,8 +108,8 @@ const char kStringsJsPath[] = "strings.js";
 // redirect solves the problem by eliminating the process transition during the
 // time that about memory is being computed.
 std::string GetAboutMemoryRedirectResponse(Profile* profile) {
-  return StringPrintf("<meta http-equiv=\"refresh\" content=\"0;%s\">",
-                      chrome::kChromeUIMemoryRedirectURL);
+  return base::StringPrintf("<meta http-equiv=\"refresh\" content=\"0;%s\">",
+                            chrome::kChromeUIMemoryRedirectURL);
 }
 
 // Handling about:memory is complicated enough to encapsulate its related
@@ -183,10 +183,10 @@ class ChromeOSTermsHandler
       }
     } else {
       std::string file_path =
-          StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
+          base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
       if (!file_util::ReadFileToString(base::FilePath(file_path), &contents_)) {
         // No EULA for given language - try en-US as default.
-        file_path = StringPrintf(chrome::kEULAPathFormat, "en-US");
+        file_path = base::StringPrintf(chrome::kEULAPathFormat, "en-US");
         if (!file_util::ReadFileToString(base::FilePath(file_path),
                                          &contents_)) {
           // File with EULA not found, ResponseOnUIThread will load EULA from
@@ -315,8 +315,9 @@ std::string AddStringRow(const std::string& name, const std::string& value) {
 std::string AboutDiscardsRun() {
   std::string output;
   AppendHeader(&output, 0, "About discards");
-  output.append(StringPrintf("<meta http-equiv=\"refresh\" content=\"2;%s\">",
-                             chrome::kChromeUIDiscardsURL));
+  output.append(
+      base::StringPrintf("<meta http-equiv=\"refresh\" content=\"2;%s\">",
+      chrome::kChromeUIDiscardsURL));
   output.append(WrapWithTag("p", "Discarding a tab..."));
   g_browser_process->oom_priority_manager()->LogMemoryAndDiscardTab();
   AppendFooter(&output);
@@ -348,11 +349,11 @@ std::string AboutDiscards(const std::string& path) {
   } else {
     output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
   }
-  output.append(StringPrintf("%d discards this session. ",
+  output.append(base::StringPrintf("%d discards this session. ",
                              oom->discard_count()));
-  output.append(StringPrintf("<a href='%s%s'>Discard tab now</a>",
-                             chrome::kChromeUIDiscardsURL,
-                             kRunCommand));
+  output.append(base::StringPrintf("<a href='%s%s'>Discard tab now</a>",
+                                   chrome::kChromeUIDiscardsURL,
+                                   kRunCommand));
 
   base::SystemMemoryInfoKB meminfo;
   base::GetSystemMemoryInfo(&meminfo);
@@ -404,7 +405,7 @@ std::string AboutDiscards(const std::string& path) {
 std::string TransparencyLink(const std::string& label,
                              int value,
                              const std::string& key) {
-  return StringPrintf("<p>%s</p>"
+  return base::StringPrintf("<p>%s</p>"
       "<p>"
       "<a href='%s%s=%d'>--</a> "
       "<a href='%s%s=%d'>-</a> "
@@ -473,7 +474,7 @@ std::string AboutTransparency(const std::string& path) {
   output.append(TransparencyLink("Solo window:",
       TransparencyFromOpacity(ash::FramePainter::kSoloWindowOpacity),
       kSolo));
-  output.append(StringPrintf(
+  output.append(base::StringPrintf(
       "<p>Share: %s%s=%d&%s=%d&%s=%d</p>",
       chrome::kChromeUITransparencyURL,
       kActive,
@@ -688,7 +689,7 @@ std::string AboutStats(const std::string& query) {
   } else if (query == "raw") {
     // Dump the raw counters which have changed in text format.
     data = "<pre>";
-    data.append(StringPrintf("Counter changes in the last %ldms\n",
+    data.append(base::StringPrintf("Counter changes in the last %ldms\n",
         static_cast<long int>(time_since_last_sample.InMilliseconds())));
     for (size_t i = 0; i < counters->GetSize(); ++i) {
       Value* entry = NULL;

@@ -183,7 +183,7 @@ WorkerPool::Inner::Inner(WorkerPool* worker_pool,
         new base::DelegateSimpleThread(
           this,
           thread_name_prefix +
-          StringPrintf("Worker%lu", workers_.size() + 1).c_str()));
+          base::StringPrintf("Worker%lu", workers_.size() + 1).c_str()));
     worker->Start();
     workers_.push_back(worker.Pass());
   }

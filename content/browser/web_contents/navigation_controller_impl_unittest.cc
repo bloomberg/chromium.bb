@@ -1985,7 +1985,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
   int url_index;
   // Load up to the max count, all entries should be there.
   for (url_index = 0; url_index < kMaxEntryCount; url_index++) {
-    GURL url(StringPrintf("http://www.a.com/%d", url_index));
+    GURL url(base::StringPrintf("http://www.a.com/%d", url_index));
     controller.LoadURL(
         url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
     test_rvh()->SendNavigate(url_index, url);
@@ -1997,7 +1997,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
   PrunedListener listener(&controller);
 
   // Navigate some more.
-  GURL url(StringPrintf("http://www.a.com/%d", url_index));
+  GURL url(base::StringPrintf("http://www.a.com/%d", url_index));
   controller.LoadURL(
       url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(url_index, url);
@@ -2015,7 +2015,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
 
   // More navigations.
   for (int i = 0; i < 3; i++) {
-    url = GURL(StringPrintf("http:////www.a.com/%d", url_index));
+    url = GURL(base::StringPrintf("http:////www.a.com/%d", url_index));
     controller.LoadURL(
         url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
     test_rvh()->SendNavigate(url_index, url);

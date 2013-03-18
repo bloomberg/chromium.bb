@@ -142,9 +142,9 @@ static void RunTests(JNIEnv* env,
     dup2(STDOUT_FILENO, STDERR_FILENO);
 
   if (command_line.HasSwitch(switches::kWaitForDebugger)) {
-    std::string msg = StringPrintf("Native test waiting for GDB because "
-                                   "flag %s was supplied",
-                                   switches::kWaitForDebugger);
+    std::string msg = base::StringPrintf("Native test waiting for GDB because "
+                                         "flag %s was supplied",
+                                         switches::kWaitForDebugger);
     __android_log_write(ANDROID_LOG_VERBOSE, kLogTag, msg.c_str());
     base::debug::WaitForDebugger(24 * 60 * 60, false);
   }

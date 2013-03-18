@@ -124,7 +124,8 @@ class AcceleratedSurfaceTransformerTest : public testing::TestWithParam<int> {
     EXPECT_HRESULT_SUCCEEDED(device()->GetDirect3D(d3d.Receive()));
     D3DADAPTER_IDENTIFIER9 info;
     EXPECT_HRESULT_SUCCEEDED(d3d->GetAdapterIdentifier(0, 0, &info));
-    return StringPrintf("Running on graphics hardware: %s", info.Description);
+    return base::StringPrintf(
+        "Running on graphics hardware: %s", info.Description);
   }
 
   void SeedRandom(const char* seed) {
@@ -228,9 +229,9 @@ class AcceleratedSurfaceTransformerTest : public testing::TestWithParam<int> {
       return true;
 
     std::string expected_color =
-        StringPrintf("%3d, %3d, %3d, %3d", a[0], a[1], a[2], a[3]);
+        base::StringPrintf("%3d, %3d, %3d, %3d", a[0], a[1], a[2], a[3]);
     std::string actual_color =
-        StringPrintf("%3d, %3d, %3d, %3d", b[0], b[1], b[2], b[3]);
+        base::StringPrintf("%3d, %3d, %3d, %3d", b[0], b[1], b[2], b[3]);
     EXPECT_EQ(expected_color, actual_color)
         << "Componentwise color difference was "
         << max_error << "; max allowed is " << color_error_tolerance();
@@ -244,8 +245,9 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
     int max_error = std::abs((int) color_a - (int) color_b);
     if (max_error <= color_error_tolerance())
       return true;
-    ADD_FAILURE() << "Colors not equal: " << StringPrintf("0x%x", color_a)
-                  << " vs. " << StringPrintf("0x%x", color_b);
+    ADD_FAILURE() << "Colors not equal: "
+                  << base::StringPrintf("0x%x", color_a)
+                  << " vs. " << base::StringPrintf("0x%x", color_b);
     return false;
   }
 
@@ -338,10 +340,11 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
                             int checkerboard_size) {
 
     SCOPED_TRACE(
-        StringPrintf("Resizing %dx%d -> %dx%d at checkerboard size of %d",
-                     src_size.width(), src_size.height(),
-                     dst_size.width(), dst_size.height(),
-                     checkerboard_size));
+        base::StringPrintf(
+            "Resizing %dx%d -> %dx%d at checkerboard size of %d",
+            src_size.width(), src_size.height(),
+            dst_size.width(), dst_size.height(),
+            checkerboard_size));
 
     set_color_error_tolerance(4);
 
@@ -400,8 +403,8 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
   void DoCopyInvertedTest(AcceleratedSurfaceTransformer* gpu_ops,
                           const gfx::Size& size) {
 
-    SCOPED_TRACE(
-        StringPrintf("CopyInverted @ %dx%d", size.width(), size.height()));
+    SCOPED_TRACE(base::StringPrintf(
+        "CopyInverted @ %dx%d", size.width(), size.height()));
 
     set_color_error_tolerance(0);
 
@@ -459,10 +462,11 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
                            int checkerboard_size,
                            boolean use_multi_render_targets) {
     SCOPED_TRACE(
-        StringPrintf("YUV Converting %dx%d at checkerboard size of %d; MRT %s",
-                     src_size.width(), src_size.height(),
-                     checkerboard_size,
-                     use_multi_render_targets ? "enabled" : "disabled"));
+        base::StringPrintf(
+            "YUV Converting %dx%d at checkerboard size of %d; MRT %s",
+            src_size.width(), src_size.height(),
+            checkerboard_size,
+            use_multi_render_targets ? "enabled" : "disabled"));
 
 
     base::win::ScopedComPtr<IDirect3DTexture9> src;
@@ -686,7 +690,8 @@ TEST_P(AcceleratedSurfaceTransformerTest, LargeSurfaces) {
   ASSERT_HRESULT_SUCCEEDED(
       device()->GetDeviceCaps(&caps));
 
-  SCOPED_TRACE(StringPrintf("max texture size: %dx%d, max texture aspect: %d",
+  SCOPED_TRACE(base::StringPrintf(
+     "max texture size: %dx%d, max texture aspect: %d",
       caps.MaxTextureWidth, caps.MaxTextureHeight, caps.MaxTextureAspectRatio));
 
   const int w = caps.MaxTextureWidth;

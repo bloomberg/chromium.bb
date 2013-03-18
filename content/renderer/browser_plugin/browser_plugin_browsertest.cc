@@ -47,8 +47,8 @@ const char kHTMLForPartitionedPersistedPluginObject[] =
     "  src='foo' type='%s' partition='persist:someid'>";
 
 std::string GetHTMLForBrowserPluginObject() {
-  return StringPrintf(kHTMLForBrowserPluginObject,
-                      content::kBrowserPluginMimeType);
+  return base::StringPrintf(kHTMLForBrowserPluginObject,
+                            content::kBrowserPluginMimeType);
 }
 
 }  // namespace
@@ -198,8 +198,8 @@ TEST_F(BrowserPluginTest, InitialResize) {
 // parsed on initialization. However, this test does minimal checking of
 // correct behavior.
 TEST_F(BrowserPluginTest, ParseAllAttributes) {
-  std::string html = StringPrintf(kHTMLForBrowserPluginWithAllAttributes,
-                                  content::kBrowserPluginMimeType);
+  std::string html = base::StringPrintf(kHTMLForBrowserPluginWithAllAttributes,
+                                        content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   bool result;
   bool has_value = ExecuteScriptAndReturnBool(
@@ -448,8 +448,8 @@ TEST_F(BrowserPluginTest, RemovePlugin) {
 // This test verifies that PluginDestroyed messages do not get sent from a
 // BrowserPlugin that has never navigated.
 TEST_F(BrowserPluginTest, RemovePluginBeforeNavigation) {
-  std::string html = StringPrintf(kHTMLForSourcelessPluginObject,
-                                  content::kBrowserPluginMimeType);
+  std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
+                                        content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
       BrowserPluginHostMsg_PluginDestroyed::ID));
@@ -544,15 +544,15 @@ TEST_F(BrowserPluginTest, ReloadMethod) {
 // Verify that the 'partition' attribute on the browser plugin is parsed
 // correctly.
 TEST_F(BrowserPluginTest, PartitionAttribute) {
-  std::string html = StringPrintf(kHTMLForPartitionedPluginObject,
-                                  content::kBrowserPluginMimeType);
+  std::string html = base::StringPrintf(kHTMLForPartitionedPluginObject,
+                                        content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   std::string partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
   EXPECT_STREQ("someid", partition_value.c_str());
 
-  html = StringPrintf(kHTMLForPartitionedPersistedPluginObject,
-                      content::kBrowserPluginMimeType);
+  html = base::StringPrintf(kHTMLForPartitionedPersistedPluginObject,
+                            content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
@@ -571,8 +571,8 @@ TEST_F(BrowserPluginTest, PartitionAttribute) {
       title.c_str());
 
   // Load a browser tag without 'src' defined.
-  html = StringPrintf(kHTMLForSourcelessPluginObject,
-                      content::kBrowserPluginMimeType);
+  html = base::StringPrintf(kHTMLForSourcelessPluginObject,
+                            content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
 
   // Ensure we don't parse just "persist:" string and return exception.
@@ -588,8 +588,8 @@ TEST_F(BrowserPluginTest, PartitionAttribute) {
 // This test verifies that BrowserPlugin enters an error state when the
 // partition attribute is invalid.
 TEST_F(BrowserPluginTest, InvalidPartition) {
-  std::string html = StringPrintf(kHTMLForInvalidPartitionedPluginObject,
-                                  content::kBrowserPluginMimeType);
+  std::string html = base::StringPrintf(kHTMLForInvalidPartitionedPluginObject,
+                                        content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   // Attempt to navigate with an invalid partition.
   {
@@ -634,8 +634,8 @@ TEST_F(BrowserPluginTest, InvalidPartition) {
 // Test to verify that after the first navigation, the partition attribute
 // cannot be modified.
 TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
-  std::string html = StringPrintf(kHTMLForSourcelessPluginObject,
-                                  content::kBrowserPluginMimeType);
+  std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
+                                        content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
 
   ExecuteJavaScript(
@@ -828,8 +828,8 @@ TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
 }
 
 TEST_F(BrowserPluginTest, AutoSizeAttributes) {
-  std::string html = StringPrintf(kHTMLForSourcelessPluginObject,
-                                  content::kBrowserPluginMimeType);
+  std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
+                                        content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   const char* kSetAutoSizeParametersAndNavigate =
     "var browserplugin = document.getElementById('browserplugin');"

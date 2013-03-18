@@ -182,10 +182,10 @@ void EventCountDelegate::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 std::string EventCountDelegate::GetMouseMotionCountsAndReset() {
-  std::string result = StringPrintf("%d %d %d",
-                                    mouse_enter_count_,
-                                    mouse_move_count_,
-                                    mouse_leave_count_);
+  std::string result = base::StringPrintf("%d %d %d",
+                                          mouse_enter_count_,
+                                          mouse_move_count_,
+                                          mouse_leave_count_);
   mouse_enter_count_ = 0;
   mouse_move_count_ = 0;
   mouse_leave_count_ = 0;
@@ -193,9 +193,9 @@ std::string EventCountDelegate::GetMouseMotionCountsAndReset() {
 }
 
 std::string EventCountDelegate::GetMouseButtonCountsAndReset() {
-  std::string result = StringPrintf("%d %d",
-                                    mouse_press_count_,
-                                    mouse_release_count_);
+  std::string result = base::StringPrintf("%d %d",
+                                          mouse_press_count_,
+                                          mouse_release_count_);
   mouse_press_count_ = 0;
   mouse_release_count_ = 0;
   return result;
@@ -203,9 +203,9 @@ std::string EventCountDelegate::GetMouseButtonCountsAndReset() {
 
 
 std::string EventCountDelegate::GetKeyCountsAndReset() {
-  std::string result = StringPrintf("%d %d",
-                                    key_press_count_,
-                                    key_release_count_);
+  std::string result = base::StringPrintf("%d %d",
+                                          key_press_count_,
+                                          key_release_count_);
   key_press_count_ = 0;
   key_release_count_ = 0;
   return result;

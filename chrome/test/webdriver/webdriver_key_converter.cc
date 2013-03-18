@@ -251,7 +251,7 @@ bool ConvertKeysToWebKeyEvents(const string16& client_keys,
       if (should_skip)
         continue;
       if (key_code == ui::VKEY_UNKNOWN) {
-        *error_msg = StringPrintf(
+        *error_msg = base::StringPrintf(
             "Unknown WebDriver key(%d) at string index (%" PRIuS ")",
             static_cast<int>(key),
             i);

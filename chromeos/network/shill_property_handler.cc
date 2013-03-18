@@ -320,7 +320,7 @@ void ShillPropertyHandler::UpdateAvailableTechnologies(
   available_technologies_.clear();
   network_event_log::AddEntry(
       kLogModule, "AvailableTechnologiesChanged",
-      StringPrintf("Size: %"PRIuS, technologies.GetSize()));
+      base::StringPrintf("Size: %"PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
@@ -335,7 +335,7 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
   enabled_technologies_.clear();
   network_event_log::AddEntry(
       kLogModule, "EnabledTechnologiesChanged",
-      StringPrintf("Size: %"PRIuS, technologies.GetSize()));
+      base::StringPrintf("Size: %"PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
@@ -350,7 +350,7 @@ void ShillPropertyHandler::UpdateUninitializedTechnologies(
   uninitialized_technologies_.clear();
   network_event_log::AddEntry(
       kLogModule, "UninitializedTechnologiesChanged",
-      StringPrintf("Size: %"PRIuS, technologies.GetSize()));
+      base::StringPrintf("Size: %"PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;

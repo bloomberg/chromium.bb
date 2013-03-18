@@ -249,7 +249,7 @@ bool DisplayLayout::ConvertToValue(const DisplayLayout& layout,
 
 std::string DisplayLayout::ToString() const {
   const std::string position_str = GetStringFromPosition(position);
-  return StringPrintf("%s, %d", position_str.c_str(), offset);
+  return base::StringPrintf("%s, %d", position_str.c_str(), offset);
 }
 
 // static
@@ -768,7 +768,8 @@ aura::RootWindow* DisplayController::CreateRootWindowForDisplay(
   params.initial_insets = display_info.GetOverscanInsetsInPixel();
   params.initial_root_window_scale = display_info.ui_scale();
   aura::RootWindow* root_window = new aura::RootWindow(params);
-  root_window->SetName(StringPrintf("RootWindow-%d", root_window_count++));
+  root_window->SetName(
+      base::StringPrintf("RootWindow-%d", root_window_count++));
 
   // No need to remove RootWindowObserver because
   // the DisplayManager object outlives RootWindow objects.

@@ -41,12 +41,12 @@ namespace {
 
 std::string GetFilenameForKeyAndIndex(const std::string& key, int index) {
   const std::string sha_hash = base::SHA1HashString(key);
-  return StringPrintf("%02x%02x%02x%02x%02x_%1d",
-                      implicit_cast<unsigned char>(sha_hash[0]),
-                      implicit_cast<unsigned char>(sha_hash[1]),
-                      implicit_cast<unsigned char>(sha_hash[2]),
-                      implicit_cast<unsigned char>(sha_hash[3]),
-                      implicit_cast<unsigned char>(sha_hash[4]), index);
+  return base::StringPrintf("%02x%02x%02x%02x%02x_%1d",
+                            implicit_cast<unsigned char>(sha_hash[0]),
+                            implicit_cast<unsigned char>(sha_hash[1]),
+                            implicit_cast<unsigned char>(sha_hash[2]),
+                            implicit_cast<unsigned char>(sha_hash[3]),
+                            implicit_cast<unsigned char>(sha_hash[4]), index);
 }
 
 int32 DataSizeFromKeyAndFileSize(size_t key_size, int64 file_size) {

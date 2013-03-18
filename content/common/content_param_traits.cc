@@ -129,7 +129,8 @@ bool ParamTraits<NPVariant_Param>::Read(const Message* m,
 }
 
 void ParamTraits<NPVariant_Param>::Log(const param_type& p, std::string* l) {
-  l->append(StringPrintf("NPVariant_Param(%d, ", static_cast<int>(p.type)));
+  l->append(
+      base::StringPrintf("NPVariant_Param(%d, ", static_cast<int>(p.type)));
   if (p.type == content::NPVARIANT_PARAM_BOOL) {
     LogParam(p.bool_value, l);
   } else if (p.type == content::NPVARIANT_PARAM_INT) {

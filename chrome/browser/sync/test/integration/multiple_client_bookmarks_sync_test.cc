@@ -24,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientBookmarksSyncTest, Sanity) {
   DisableVerifier();
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(AddURL(i, base::StringPrintf(L"Google URL %d", i),
-        GURL(StringPrintf("http://www.google.com/%d", i))) != NULL);
+        GURL(base::StringPrintf("http://www.google.com/%d", i))) != NULL);
   }
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());

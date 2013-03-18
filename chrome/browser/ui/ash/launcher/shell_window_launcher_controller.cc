@@ -17,7 +17,7 @@ namespace {
 
 std::string GetAppLauncherId(ShellWindow* shell_window) {
   if (shell_window->window_type_is_panel())
-    return StringPrintf("panel:%d", shell_window->session_id().id());
+    return base::StringPrintf("panel:%d", shell_window->session_id().id());
   return shell_window->extension()->id();
 }
 

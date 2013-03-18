@@ -49,8 +49,8 @@ class GeolocationHandlerTest : public testing::Test {
     std::string mac_address =
         base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
                            idx, 0, 0, 0, 0, 0);
-    std::string channel = StringPrintf("%d", idx);
-    std::string strength = StringPrintf("%d", idx * 10);
+    std::string channel = base::StringPrintf("%d", idx);
+    std::string strength = base::StringPrintf("%d", idx * 10);
     properties.SetStringWithoutPathExpansion(
         shill::kGeoMacAddressProperty, mac_address);
     properties.SetStringWithoutPathExpansion(

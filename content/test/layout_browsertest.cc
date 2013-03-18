@@ -140,7 +140,7 @@ void InProcessBrowserLayoutTest::RunLayoutTest(
 void InProcessBrowserLayoutTest::RunHttpLayoutTest(
     const std::string& test_case_file_name) {
   DCHECK(test_http_server_.get());
-  GURL url(StringPrintf(
+  GURL url(base::StringPrintf(
       "http://127.0.0.1:%d/%s/%s", port_, test_case_dir_.MaybeAsASCII().c_str(),
       test_case_file_name.c_str()));
   RunLayoutTestInternal(test_case_file_name, url);
@@ -205,9 +205,9 @@ std::string InProcessBrowserLayoutTest::SaveResults(const std::string& expected,
   EXPECT_NE(-1, file_util::WriteFile(actual_filename,
                                      actual.c_str(),
                                      actual.size()));
-  return StringPrintf("Wrote %"PRFilePath" %"PRFilePath,
-                      expected_filename.value().c_str(),
-                      actual_filename.value().c_str());
+  return base::StringPrintf("Wrote %"PRFilePath" %"PRFilePath,
+                            expected_filename.value().c_str(),
+                            actual_filename.value().c_str());
 }
 
 }  // namespace content

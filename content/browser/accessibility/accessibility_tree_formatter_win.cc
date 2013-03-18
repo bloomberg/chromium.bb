@@ -90,13 +90,13 @@ string16 AccessibilityTreeFormatter::ToString(
   Add(false, L"role_name='" + acc_obj->role_name() + L"'");
   VARIANT currentValue;
   if (acc_obj->get_currentValue(&currentValue) == S_OK)
-    Add(false, StringPrintf(L"currentValue=%.2f", V_R8(&currentValue)));
+    Add(false, base::StringPrintf(L"currentValue=%.2f", V_R8(&currentValue)));
   VARIANT minimumValue;
   if (acc_obj->get_minimumValue(&minimumValue) == S_OK)
-    Add(false, StringPrintf(L"minimumValue=%.2f", V_R8(&minimumValue)));
+    Add(false, base::StringPrintf(L"minimumValue=%.2f", V_R8(&minimumValue)));
   VARIANT maximumValue;
   if (acc_obj->get_maximumValue(&maximumValue) == S_OK)
-    Add(false, StringPrintf(L"maximumValue=%.2f", V_R8(&maximumValue)));
+    Add(false, base::StringPrintf(L"maximumValue=%.2f", V_R8(&maximumValue)));
   Add(false, L"description='" + description + L"'");
   Add(false, L"default_action='" + default_action + L"'");
   Add(false, L"keyboard_shortcut='" + keyboard_shortcut + L"'");
@@ -107,51 +107,51 @@ string16 AccessibilityTreeFormatter::ToString(
           &left, &top, &width, &height, variant_self) &&
       S_FALSE != root->ToBrowserAccessibilityWin()->accLocation(
           &root_left, &root_top, &root_width, &root_height, variant_self)) {
-    Add(false, StringPrintf(L"location=(%d, %d)",
+    Add(false, base::StringPrintf(L"location=(%d, %d)",
             left - root_left, top - root_top));
-    Add(false, StringPrintf(L"size=(%d, %d)", width, height));
+    Add(false, base::StringPrintf(L"size=(%d, %d)", width, height));
   }
   LONG index_in_parent;
   if (acc_obj->get_indexInParent(&index_in_parent) == S_OK)
-    Add(false, StringPrintf(L"index_in_parent=%d", index_in_parent));
+    Add(false, base::StringPrintf(L"index_in_parent=%d", index_in_parent));
   LONG n_relations;
   if (acc_obj->get_nRelations(&n_relations) == S_OK)
-    Add(false, StringPrintf(L"n_relations=%d", n_relations));
+    Add(false, base::StringPrintf(L"n_relations=%d", n_relations));
   LONG group_level, similar_items_in_group, position_in_group;
   if (acc_obj->get_groupPosition(&group_level,
                                  &similar_items_in_group,
                                  &position_in_group) == S_OK) {
-    Add(false, StringPrintf(L"group_level=%d", group_level));
-    Add(false, StringPrintf(L"similar_items_in_group=%d",
+    Add(false, base::StringPrintf(L"group_level=%d", group_level));
+    Add(false, base::StringPrintf(L"similar_items_in_group=%d",
                             similar_items_in_group));
-    Add(false, StringPrintf(L"position_in_group=%d", position_in_group));
+    Add(false, base::StringPrintf(L"position_in_group=%d", position_in_group));
   }
   LONG table_rows;
   if (acc_obj->get_nRows(&table_rows) == S_OK)
-    Add(false, StringPrintf(L"table_rows=%d", table_rows));
+    Add(false, base::StringPrintf(L"table_rows=%d", table_rows));
   LONG table_columns;
   if (acc_obj->get_nRows(&table_columns) == S_OK)
-    Add(false, StringPrintf(L"table_columns=%d", table_columns));
+    Add(false, base::StringPrintf(L"table_columns=%d", table_columns));
   LONG row_index;
   if (acc_obj->get_rowIndex(&row_index) == S_OK)
-    Add(false, StringPrintf(L"row_index=%d", row_index));
+    Add(false, base::StringPrintf(L"row_index=%d", row_index));
   LONG column_index;
   if (acc_obj->get_columnIndex(&column_index) == S_OK)
-    Add(false, StringPrintf(L"column_index=%d", column_index));
+    Add(false, base::StringPrintf(L"column_index=%d", column_index));
   LONG n_characters;
   if (acc_obj->get_nCharacters(&n_characters) == S_OK)
-    Add(false, StringPrintf(L"n_characters=%d", n_characters));
+    Add(false, base::StringPrintf(L"n_characters=%d", n_characters));
   LONG caret_offset;
   if (acc_obj->get_caretOffset(&caret_offset) == S_OK)
-    Add(false, StringPrintf(L"caret_offset=%d", caret_offset));
+    Add(false, base::StringPrintf(L"caret_offset=%d", caret_offset));
   LONG n_selections;
   if (acc_obj->get_nSelections(&n_selections) == S_OK) {
-    Add(false, StringPrintf(L"n_selections=%d", n_selections));
+    Add(false, base::StringPrintf(L"n_selections=%d", n_selections));
     if (n_selections > 0) {
       LONG start, end;
       if (acc_obj->get_selection(0, &start, &end) == S_OK) {
-        Add(false, StringPrintf(L"selection_start=%d", start));
-        Add(false, StringPrintf(L"selection_end=%d", end));
+        Add(false, base::StringPrintf(L"selection_start=%d", start));
+        Add(false, base::StringPrintf(L"selection_end=%d", end));
       }
     }
   }

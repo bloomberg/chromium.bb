@@ -112,7 +112,7 @@ void DownloadFileImpl::RenameAndUniquify(
       file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
   if (uniquifier > 0) {
     new_path = new_path.InsertBeforeExtensionASCII(
-        StringPrintf(" (%d)", uniquifier));
+        base::StringPrintf(" (%d)", uniquifier));
   }
 
   DownloadInterruptReason reason = file_.Rename(new_path);

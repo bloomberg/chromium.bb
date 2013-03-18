@@ -695,7 +695,7 @@ std::string NativeBackendGnome::GetProfileSpecificAppString() const {
   // Originally, the application string was always just "chrome" and used only
   // so that we had *something* to search for since GNOME Keyring won't search
   // for nothing. Now we use it to distinguish passwords for different profiles.
-  return StringPrintf("%s-%d", kGnomeKeyringAppString, profile_id_);
+  return base::StringPrintf("%s-%d", kGnomeKeyringAppString, profile_id_);
 }
 
 void NativeBackendGnome::MigrateToProfileSpecificLogins() {

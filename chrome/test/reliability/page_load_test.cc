@@ -458,7 +458,7 @@ class PageLoadTest : public UITest {
         const char* server = g_server_url.empty() ? kDefaultServerUrl :
             g_server_url.c_str();
         std::string test_page_url(
-            StringPrintf("%s/page?id=%d", server, i));
+            base::StringPrintf("%s/page?id=%d", server, i));
         NavigateToURLLogResult(
             test_page_url, log_file, NULL, g_continuous_load, false);
       }

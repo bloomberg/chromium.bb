@@ -220,34 +220,35 @@ std::string GetAsString(ShowInString show, FormatString format) {
       if (show >= SHOW_METHOD)
         line += "." + stat->method;
     }
-    line += StringPrintf(":");
+    line += base::StringPrintf(":");
     if (sent_blocking) {
-      line += StringPrintf(" Sent (BLOCKING):");
+      line += base::StringPrintf(" Sent (BLOCKING):");
       if (format == FORMAT_TOTALS)
-        line += StringPrintf(" %d", sent_blocking);
+        line += base::StringPrintf(" %d", sent_blocking);
       else if (format == FORMAT_PER_MINUTE)
-        line += StringPrintf(" %d/min", sent_blocking / dminutes);
+        line += base::StringPrintf(" %d/min", sent_blocking / dminutes);
       else if (format == FORMAT_ALL)
-        line += StringPrintf(" %d (%d/min)",
-                             sent_blocking, sent_blocking / dminutes);
+        line += base::StringPrintf(" %d (%d/min)",
+                                   sent_blocking, sent_blocking / dminutes);
     }
     if (sent) {
-      line += StringPrintf(" Sent:");
+      line += base::StringPrintf(" Sent:");
       if (format == FORMAT_TOTALS)
-        line += StringPrintf(" %d", sent);
+        line += base::StringPrintf(" %d", sent);
       else if (format == FORMAT_PER_MINUTE)
-        line += StringPrintf(" %d/min", sent / dminutes);
+        line += base::StringPrintf(" %d/min", sent / dminutes);
       else if (format == FORMAT_ALL)
-        line += StringPrintf(" %d (%d/min)", sent, sent / dminutes);
+        line += base::StringPrintf(" %d (%d/min)", sent, sent / dminutes);
     }
     if (received) {
-      line += StringPrintf(" Received:");
+      line += base::StringPrintf(" Received:");
       if (format == FORMAT_TOTALS)
-        line += StringPrintf(" %d", received);
+        line += base::StringPrintf(" %d", received);
       else if (format == FORMAT_PER_MINUTE)
-        line += StringPrintf(" %d/min", received / dminutes);
+        line += base::StringPrintf(" %d/min", received / dminutes);
       else if (format == FORMAT_ALL)
-        line += StringPrintf(" %d (%d/min)", received, received / dminutes);
+        line += base::StringPrintf(
+            " %d (%d/min)", received, received / dminutes);
     }
     result += line + "\n";
     sent = 0;

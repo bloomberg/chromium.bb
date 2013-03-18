@@ -1067,8 +1067,8 @@ void TestingAutomationProvider::ConnectToPrivateNetwork(
   chromeos::VirtualNetwork* network =
       network_library->FindVirtualNetworkByPath(service_path);
   if (!network) {
-    reply.SendError(StringPrintf("No virtual network found: %s",
-                                 service_path.c_str()));
+    reply.SendError(base::StringPrintf("No virtual network found: %s",
+                                       service_path.c_str()));
     return;
   }
   if (network->NeedMoreInfoToConnect()) {

@@ -188,14 +188,14 @@ std::string OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
   std::string enc_refresh_token =
       net::EscapeUrlEncodedData(refresh_token, true);
   if (scopes.empty()) {
-    return StringPrintf(
+    return base::StringPrintf(
         kGetAccessTokenBodyFormat,
         enc_client_id.c_str(),
         enc_client_secret.c_str(),
         enc_refresh_token.c_str());
   } else {
     std::string scopes_string = JoinString(scopes, ' ');
-    return StringPrintf(
+    return base::StringPrintf(
         kGetAccessTokenBodyWithScopeFormat,
         enc_client_id.c_str(),
         enc_client_secret.c_str(),

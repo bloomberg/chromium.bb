@@ -43,7 +43,7 @@ std::string PrefixLengthToNetmask(int32 prefix_length) {
       netmask += ".";
     int value = remainder == 0 ? 0 :
         ((2L << (remainder - 1)) - 1) << (8 - remainder);
-    netmask += StringPrintf("%d", value);
+    netmask += base::StringPrintf("%d", value);
   }
   return netmask;
 }

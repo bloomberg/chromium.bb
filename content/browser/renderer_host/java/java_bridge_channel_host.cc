@@ -39,7 +39,7 @@ JavaBridgeChannelHost::~JavaBridgeChannelHost() {
 JavaBridgeChannelHost* JavaBridgeChannelHost::GetJavaBridgeChannelHost(
     int renderer_id,
     base::MessageLoopProxy* ipc_message_loop) {
-  std::string channel_name(StringPrintf("r%d.javabridge", renderer_id));
+  std::string channel_name(base::StringPrintf("r%d.javabridge", renderer_id));
   // There's no need for a shutdown event here. If the browser is terminated
   // while the JavaBridgeChannelHost is blocked on a synchronous IPC call, the
   // renderer's shutdown event will cause the underlying channel to shut down,

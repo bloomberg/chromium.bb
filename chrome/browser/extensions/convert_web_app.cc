@@ -122,9 +122,9 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   DictionaryValue* icons = new DictionaryValue();
   root->Set(keys::kIcons, icons);
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
-    std::string size = StringPrintf("%i", web_app.icons[i].width);
-    std::string icon_path = StringPrintf("%s/%s.png", kIconsDirName,
-                                         size.c_str());
+    std::string size = base::StringPrintf("%i", web_app.icons[i].width);
+    std::string icon_path = base::StringPrintf("%s/%s.png", kIconsDirName,
+                                               size.c_str());
     icons->SetString(size, icon_path);
   }
 
@@ -163,7 +163,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
       continue;
 
     base::FilePath icon_file = icons_dir.AppendASCII(
-        StringPrintf("%i.png", web_app.icons[i].width));
+        base::StringPrintf("%i.png", web_app.icons[i].width));
     std::vector<unsigned char> image_data;
     if (!gfx::PNGCodec::EncodeBGRASkBitmap(web_app.icons[i].data,
                                            false,

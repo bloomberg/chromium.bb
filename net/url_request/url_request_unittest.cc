@@ -4253,8 +4253,8 @@ TEST_F(HTTPSRequestTest, HTTPSPreloadedHSTSTest) {
   context.Init();
 
   TestDelegate d;
-  URLRequest r(GURL(StringPrintf("https://www.google.com:%d",
-                                 test_server.host_port_pair().port())),
+  URLRequest r(GURL(base::StringPrintf("https://www.google.com:%d",
+                                       test_server.host_port_pair().port())),
                &d,
                &context);
 
@@ -4300,8 +4300,8 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   context.Init();
 
   TestDelegate d;
-  URLRequest r(GURL(StringPrintf("https://www.google.com:%d",
-                                 test_server.host_port_pair().port())),
+  URLRequest r(GURL(base::StringPrintf("https://www.google.com:%d",
+                                       test_server.host_port_pair().port())),
                &d,
                &context);
 
@@ -4366,8 +4366,8 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   // cause a certificate error.  Ignore the error.
   d.set_allow_certificate_errors(true);
 
-  URLRequest req(GURL(StringPrintf("http://www.somewhere.com:%d/echo",
-                                   test_server.host_port_pair().port())),
+  URLRequest req(GURL(base::StringPrintf("http://www.somewhere.com:%d/echo",
+                                         test_server.host_port_pair().port())),
                  &d,
                  &context);
   req.set_method("POST");

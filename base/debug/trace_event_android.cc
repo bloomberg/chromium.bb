@@ -25,7 +25,7 @@ void WriteEvent(char phase,
                 const unsigned char* arg_types,
                 const unsigned long long* arg_values,
                 unsigned char flags) {
-  std::string out = StringPrintf("%c|%d|%s", phase, getpid(), name);
+  std::string out = base::StringPrintf("%c|%d|%s", phase, getpid(), name);
   if (flags & TRACE_EVENT_FLAG_HAS_ID)
     base::StringAppendF(&out, "-%" PRIx64, static_cast<uint64>(id));
   out += '|';
@@ -109,7 +109,7 @@ void TraceLog::SendToATrace(char phase,
     case TRACE_EVENT_PHASE_COUNTER:
       for (int i = 0; i < num_args; ++i) {
         DCHECK(arg_types[i] == TRACE_VALUE_TYPE_INT);
-        std::string out = StringPrintf("C|%d|%s-%s",
+        std::string out = base::StringPrintf("C|%d|%s-%s",
                                        getpid(), name, arg_names[i]);
         if (flags & TRACE_EVENT_FLAG_HAS_ID)
           StringAppendF(&out, "-%" PRIx64, static_cast<uint64>(id));

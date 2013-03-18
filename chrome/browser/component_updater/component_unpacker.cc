@@ -136,7 +136,8 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
   }
   // We want the temporary directory to be unique and yet predictable, so
   // we can easily find the package in a end user machine.
-  std::string dir(StringPrintf("CRX_%s", base::HexEncode(hash, 6).c_str()));
+  std::string dir(
+      base::StringPrintf("CRX_%s", base::HexEncode(hash, 6).c_str()));
   unpack_path_ = path.DirName().AppendASCII(dir.c_str());
   if (file_util::DirectoryExists(unpack_path_)) {
     if (!file_util::Delete(unpack_path_, true)) {

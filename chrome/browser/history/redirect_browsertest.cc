@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
   // test server.
   GURL final_url = test_server()->GetURL(std::string());
   ASSERT_TRUE(final_url.is_valid());
-  std::string file_redirect_contents = StringPrintf(
+  std::string file_redirect_contents = base::StringPrintf(
       "<html>"
       "<head></head>"
       "<body onload=\"document.location='%s'\"></body>"

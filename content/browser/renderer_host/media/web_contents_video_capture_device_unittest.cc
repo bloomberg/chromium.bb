@@ -490,8 +490,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
 
   bool use_video_frames = false;
   for (int i = 0; i < 4; i++, use_video_frames = !use_video_frames) {
-    SCOPED_TRACE(StringPrintf("Using %s copy path, iteration #%d",
-                              use_video_frames ? "VideoFrame" : "SkBitmap", i));
+    SCOPED_TRACE(base::StringPrintf(
+        "Using %s copy path, iteration #%d",
+        use_video_frames ? "VideoFrame" : "SkBitmap", i));
     source()->SetCanCopyToVideoFrame(use_video_frames);
     source()->SetSolidColor(SK_ColorRED);
     ASSERT_NO_FATAL_FAILURE(source()->WaitForNextBackingStoreCopy());

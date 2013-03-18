@@ -206,7 +206,7 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
   // correctly, the extractor has to process the entire string of text.
   string16 page_text(ASCIIToUTF16("one "));
   for (int i = 0; i < 28; ++i) {
-    page_text.append(ASCIIToUTF16(StringPrintf("%d ", i)));
+    page_text.append(ASCIIToUTF16(base::StringPrintf("%d ", i)));
   }
   page_text.append(ASCIIToUTF16("two"));
 
@@ -274,7 +274,7 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
 TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
   scoped_ptr<string16> page_text(new string16(ASCIIToUTF16("one ")));
   for (int i = 0; i < 28; ++i) {
-    page_text->append(ASCIIToUTF16(StringPrintf("%d ", i)));
+    page_text->append(ASCIIToUTF16(base::StringPrintf("%d ", i)));
   }
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -295,7 +295,7 @@ TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
 
   page_text.reset(new string16());
   for (int i = 30; i < 58; ++i) {
-    page_text->append(ASCIIToUTF16(StringPrintf("%d ", i)));
+    page_text->append(ASCIIToUTF16(base::StringPrintf("%d ", i)));
   }
   page_text->append(ASCIIToUTF16("multi word test "));
   features.Clear();

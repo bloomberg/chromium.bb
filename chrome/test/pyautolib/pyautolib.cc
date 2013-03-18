@@ -134,8 +134,8 @@ void PyUITestBase::ErrorResponse(
     bool is_timeout,
     std::string* response) {
   base::DictionaryValue error_dict;
-  std::string error_msg = StringPrintf("%s for %s", error_string.c_str(),
-                                       request.c_str());
+  std::string error_msg = base::StringPrintf("%s for %s", error_string.c_str(),
+                                             request.c_str());
   LOG(ERROR) << "Error during automation: " << error_msg;
   error_dict.SetString("error", error_msg);
   error_dict.SetBoolean("is_interface_error", true);
@@ -151,8 +151,8 @@ void PyUITestBase::RequestFailureResponse(
   // TODO(craigdh): Determine timeout directly from IPC's Send().
   if (duration >= timeout) {
     ErrorResponse(
-        StringPrintf("Chrome automation timed out after %d seconds",
-                     static_cast<int>(duration.InSeconds())),
+        base::StringPrintf("Chrome automation timed out after %d seconds",
+                           static_cast<int>(duration.InSeconds())),
         request, true, response);
   } else {
     // TODO(craigdh): Determine specific cause.

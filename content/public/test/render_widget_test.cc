@@ -74,7 +74,7 @@ void RenderWidgetTest::ResizeAndPaint(const gfx::Size& page_size,
 void RenderWidgetTest::TestResizeAndPaint() {
   // Hello World message is only visible if the view size is at least
   // kTextPositionX x kTextPositionY
-  LoadHTML(StringPrintf(
+  LoadHTML(base::StringPrintf(
       "<html><body><div style='position: absolute; top: %d; left: "
       "%d; background-color: red;'>Hello World</div></body></html>",
       kTextPositionY, kTextPositionX).c_str());

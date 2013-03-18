@@ -28,7 +28,7 @@ class MagnificationControllerTest: public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    UpdateDisplay(StringPrintf("%dx%d", kRootWidth, kRootHeight));
+    UpdateDisplay(base::StringPrintf("%dx%d", kRootWidth, kRootHeight));
 
     aura::RootWindow* root = GetRootWindow();
     gfx::Rect root_bounds(root->bounds());

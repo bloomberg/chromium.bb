@@ -649,7 +649,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionTrim) {
 
   disk_cache::Entry* entry;
   for (int i = 0; i < 100; i++) {
-    std::string name(StringPrintf("Key %d", i));
+    std::string name(base::StringPrintf("Key %d", i));
     ASSERT_EQ(net::OK, CreateEntry(name, &entry));
     entry->Close();
     if (i < 90) {
@@ -2652,7 +2652,7 @@ TEST_F(DiskCacheBackendTest, UpdateRankForExternalCacheHit) {
   disk_cache::Entry* entry;
 
   for (int i = 0; i < 2; ++i) {
-    std::string key = StringPrintf("key%d", i);
+    std::string key = base::StringPrintf("key%d", i);
     ASSERT_EQ(net::OK, CreateEntry(key, &entry));
     entry->Close();
   }
@@ -2676,7 +2676,7 @@ TEST_F(DiskCacheBackendTest, ShaderCacheUpdateRankForExternalCacheHit) {
   disk_cache::Entry* entry;
 
   for (int i = 0; i < 2; ++i) {
-    std::string key = StringPrintf("key%d", i);
+    std::string key = base::StringPrintf("key%d", i);
     ASSERT_EQ(net::OK, CreateEntry(key, &entry));
     entry->Close();
   }

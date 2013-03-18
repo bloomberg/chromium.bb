@@ -74,8 +74,8 @@ class MockErrorObserver : public ProxyResolverErrorObserver {
                                 const string16& error) OVERRIDE {
     {
       base::AutoLock l(lock_);
-      output += StringPrintf("Error: line %d: %s\n", line_number,
-                             UTF16ToASCII(error).c_str());
+      output += base::StringPrintf("Error: line %d: %s\n", line_number,
+                                   UTF16ToASCII(error).c_str());
     }
     event_.Signal();
   }

@@ -95,7 +95,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   if (params->offset() > 0) {
     request->SetExtraRequestHeaderByName(
         "Range",
-        StringPrintf("bytes=%" PRId64 "-", params->offset()),
+        base::StringPrintf("bytes=%" PRId64 "-", params->offset()),
         true);
 
     if (has_last_modified) {

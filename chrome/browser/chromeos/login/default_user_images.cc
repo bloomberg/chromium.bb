@@ -76,7 +76,7 @@ std::string GetDefaultImageString(int index, const std::string& prefix) {
     NOTREACHED();
     return std::string();
   }
-  return StringPrintf("%s%d", prefix.c_str(), index);
+  return base::StringPrintf("%s%d", prefix.c_str(), index);
 }
 
 // Returns true if the string specified consists of the prefix and one of

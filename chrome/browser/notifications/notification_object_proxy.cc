@@ -46,8 +46,8 @@ void NotificationObjectProxy::Click() {
 }
 
 std::string NotificationObjectProxy::id() const {
-  return StringPrintf("%d:%d:%d:%d", process_id_, route_id_,
-                      notification_id_, worker_);
+  return base::StringPrintf("%d:%d:%d:%d", process_id_, route_id_,
+                            notification_id_, worker_);
 }
 
 RenderViewHost* NotificationObjectProxy::GetRenderViewHost() const {

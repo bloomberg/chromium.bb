@@ -1018,7 +1018,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
     virtual bool GetCustomHeaders(std::string* headers) const {
       if (!is_post_)
         return false;
-      *headers = StringPrintf(
+      *headers = base::StringPrintf(
           "HTTP/1.1 200 OK\r\n"
           "Content-Disposition: attachment;filename=\"test.txt\"\r\n"
           "Content-Type: application/text\r\n"

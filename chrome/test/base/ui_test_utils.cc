@@ -158,7 +158,7 @@ base::FilePath GetSnapshotFileName(const base::FilePath& snapshot_directory) {
   base::Time::Exploded the_time;
 
   base::Time::Now().LocalExplode(&the_time);
-  std::string filename(StringPrintf("%s%04d%02d%02d%02d%02d%02d%s",
+  std::string filename(base::StringPrintf("%s%04d%02d%02d%02d%02d%02d%s",
       kSnapshotBaseName, the_time.year, the_time.month, the_time.day_of_month,
       the_time.hour, the_time.minute, the_time.second, kSnapshotExtension));
 
@@ -168,7 +168,7 @@ base::FilePath GetSnapshotFileName(const base::FilePath& snapshot_directory) {
     std::string suffix;
     base::FilePath trial_file;
     do {
-      suffix = StringPrintf(" (%d)", ++index);
+      suffix = base::StringPrintf(" (%d)", ++index);
       trial_file = snapshot_file.InsertBeforeExtensionASCII(suffix);
     } while (file_util::PathExists(trial_file));
     snapshot_file = trial_file;

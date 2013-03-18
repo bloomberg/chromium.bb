@@ -60,7 +60,7 @@ void EncryptionEscrowClient::EncryptOneTimePad(
 
   request_type_ = ENCRYPT_ONE_TIME_PAD;
 
-  std::string post_body = StringPrintf(
+  std::string post_body = base::StringPrintf(
       kEncryptOtpBodyFormat,
       base::HexEncode(&num_bits, 1).c_str(),
       base::HexEncode(&(one_time_pad[0]), one_time_pad.size()).c_str());
@@ -81,7 +81,7 @@ void EncryptionEscrowClient::EscrowInstrumentInformation(
       net::EscapeUrlEncodedData(
           UTF16ToUTF8(new_instrument.card_verification_number()), true);
 
-  std::string post_body = StringPrintf(
+  std::string post_body = base::StringPrintf(
       kEscrowInstrumentInformationFormat,
       obfuscated_gaia_id.c_str(),
       primary_account_number.c_str(),
@@ -96,7 +96,7 @@ void EncryptionEscrowClient::EscrowCardVerificationNumber(
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ESCROW_CARD_VERIFICATION_NUMBER;
 
-  std::string post_body = StringPrintf(
+  std::string post_body = base::StringPrintf(
       kEscrowCardVerficationNumberFormat,
       obfuscated_gaia_id.c_str(),
       card_verification_number.c_str());

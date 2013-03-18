@@ -95,7 +95,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
       expected.value = values[i];
       expected.form_control_type = control_types[i];
       expected.max_length = max_length;
-      SCOPED_TRACE(StringPrintf("i: %" PRIuS, i));
+      SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
       EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[i]);
     }
   }

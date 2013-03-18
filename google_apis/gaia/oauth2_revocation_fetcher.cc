@@ -154,7 +154,7 @@ GURL OAuth2RevocationFetcher::MakeRevocationUrl() {
 // static
 std::string OAuth2RevocationFetcher::MakeRevocationHeader(
     const std::string& access_token) {
-  return StringPrintf(kAuthorizationHeaderFormat, access_token.c_str());
+  return base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str());
 }
 
 // static
@@ -163,7 +163,7 @@ std::string OAuth2RevocationFetcher::MakeRevocationBody(
     const std::string& origin) {
   std::string enc_client_id = net::EscapeUrlEncodedData(client_id, true);
   std::string enc_origin = net::EscapeUrlEncodedData(origin, true);
-  return StringPrintf(
+  return base::StringPrintf(
       kRevocationBodyFormat,
       enc_client_id.c_str(),
       enc_origin.c_str());

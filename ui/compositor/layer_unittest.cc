@@ -169,7 +169,7 @@ class TestLayerDelegate : public LayerDelegate {
   int color_index() const { return color_index_; }
 
   std::string ToScaleString() const {
-    return StringPrintf("%.1f %.1f", scale_x_, scale_y_);
+    return base::StringPrintf("%.1f %.1f", scale_x_, scale_y_);
   }
 
   float device_scale_factor() const {

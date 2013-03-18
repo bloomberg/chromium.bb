@@ -710,7 +710,7 @@ int ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
 // static
 std::string ProfileInfoCache::GetDefaultAvatarIconUrl(size_t index) {
   DCHECK(IsDefaultAvatarIconIndex(index));
-  return StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
+  return base::StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
 }
 
 // static

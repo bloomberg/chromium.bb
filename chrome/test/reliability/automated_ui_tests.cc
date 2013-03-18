@@ -259,7 +259,7 @@ void AutomatedUITest::RunReproduction() {
     LogSuccessResult();
   }
 
-  AppendToTestLog(StringPrintf("total_duration_seconds=%f",
+  AppendToTestLog(base::StringPrintf("total_duration_seconds=%f",
                   CalculateTestDuration(test_start_time_)));
   WriteReportToFile();
 }
@@ -360,7 +360,7 @@ void AutomatedUITest::RunAutomatedUITest() {
     }
   }
 
-  AppendToTestLog(StringPrintf("total_duration_seconds=%f",
+  AppendToTestLog(base::StringPrintf("total_duration_seconds=%f",
                   CalculateTestDuration(test_start_time_)));
 
   // The test is finished so write our report.

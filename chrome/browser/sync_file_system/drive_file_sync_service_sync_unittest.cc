@@ -188,13 +188,15 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     typedef ResourceIdByTitle::iterator iterator;
     std::pair<iterator, bool> inserted =
         resources_.insert(std::make_pair(title, std::string()));
-    if (inserted.second)
-      inserted.first->second = StringPrintf("%" PRId64, ++resource_count_);
+    if (inserted.second) {
+      inserted.first->second =
+          base::StringPrintf("%" PRId64, ++resource_count_);
+    }
     std::string resource_id = inserted.first->second;
 
     fake_sync_client_->PushRemoteChange(
         kParentResourceId, kAppId, title, resource_id,
-        StringPrintf("%" PRIx64, base::RandUint64()),
+        base::StringPrintf("%" PRIx64, base::RandUint64()),
         false /* deleted */);
     message_loop_.RunUntilIdle();
   }

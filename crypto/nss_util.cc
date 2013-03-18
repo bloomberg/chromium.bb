@@ -73,7 +73,7 @@ std::string GetNSSErrorMessage() {
     PRInt32 copied = PR_GetErrorText(error_text.get());
     result = std::string(error_text.get(), copied);
   } else {
-    result = StringPrintf("NSS error code: %d", PR_GetError());
+    result = base::StringPrintf("NSS error code: %d", PR_GetError());
   }
   return result;
 }
@@ -482,7 +482,7 @@ class NSSInitSingleton {
         // Initialize with a persistent database (likely, ~/.pki/nssdb).
         // Use "sql:" which can be shared by multiple processes safely.
         std::string nss_config_dir =
-            StringPrintf("sql:%s", database_dir.value().c_str());
+            base::StringPrintf("sql:%s", database_dir.value().c_str());
 #if defined(OS_CHROMEOS)
         status = NSS_Init(nss_config_dir.c_str());
 #else
@@ -586,7 +586,7 @@ class NSSInitSingleton {
   SECMODModule* LoadModule(const char* name,
                            const char* library_path,
                            const char* params) {
-    std::string modparams = StringPrintf(
+    std::string modparams = base::StringPrintf(
         "name=\"%s\" library=\"%s\" %s",
         name, library_path, params ? params : "");
 
@@ -608,8 +608,8 @@ class NSSInitSingleton {
   static PK11SlotInfo* OpenUserDB(const base::FilePath& path,
                                   const char* description) {
     const std::string modspec =
-        StringPrintf("configDir='sql:%s' tokenDescription='%s'",
-                     path.value().c_str(), description);
+        base::StringPrintf("configDir='sql:%s' tokenDescription='%s'",
+                           path.value().c_str(), description);
     PK11SlotInfo* db_slot = SECMOD_OpenUserDB(modspec.c_str());
     if (db_slot) {
       if (PK11_NeedUserInit(db_slot))

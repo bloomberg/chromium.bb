@@ -1083,7 +1083,7 @@ void UrlmonUrlRequestManager::StartRequestHelper(
     for (size_t i = 0; i < elements->size(); ++i) {
       net::UploadElement* element = (*elements)[i];
       DCHECK(element->type() == net::UploadElement::TYPE_BYTES);
-      std::string chunk_length = StringPrintf(
+      std::string chunk_length = base::StringPrintf(
           "%X\r\n", static_cast<unsigned int>(element->bytes_length()));
       std::vector<char> bytes;
       bytes.insert(bytes.end(), chunk_length.data(),

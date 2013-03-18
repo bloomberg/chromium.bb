@@ -16,17 +16,17 @@ struct H {
     int i = 0;
     for (M::iterator p = m_.begin(); p != m_.end(); ++p, ++i) {
       size_t s = p->first;
-      LOG(INFO) << StringPrintf("%3d %8u: %8u %8u %8u %8u", i, s,
+      LOG(INFO) << base::StringPrintf("%3d %8u: %8u %8u %8u %8u", i, s,
              m_[s], c_[s], h_[s], h_[s] * s);
     }
     LOG(INFO) << "Peak " << fmt(high_);
   }
 
   std::string fmt(size_t s) {
-    if (s > 1000000000) return StringPrintf("%.3gG", s/(1000000000.0));
-    if (s > 1000000) return StringPrintf("%.3gM", s/(1000000.));
-    if (s > 9999) return StringPrintf("%.3gk", s/(1000.));
-    return StringPrintf("%d", (int)s);
+    if (s > 1000000000) return base::StringPrintf("%.3gG", s/(1000000000.0));
+    if (s > 1000000) return base::StringPrintf("%.3gM", s/(1000000.));
+    if (s > 9999) return base::StringPrintf("%.3gk", s/(1000.));
+    return base::StringPrintf("%d", (int)s);
   }
 
   void tick(size_t w, char sign) {

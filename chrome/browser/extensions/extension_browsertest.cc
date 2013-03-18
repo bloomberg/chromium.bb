@@ -137,7 +137,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     const std::vector<extensions::InstallWarning>& install_warnings =
         extension->install_warnings();
     if (!install_warnings.empty()) {
-      std::string install_warnings_message = StringPrintf(
+      std::string install_warnings_message = base::StringPrintf(
           "Unexpected warnings when loading test extension %s:\n",
           path.AsUTF8Unsafe().c_str());
 

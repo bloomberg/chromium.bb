@@ -59,10 +59,10 @@ static void AddNavigationFeatures(
   NavigationEntry* entry = controller.GetEntryAtIndex(index);
   bool is_secure_referrer = entry->GetReferrer().url.SchemeIsSecure();
   if (!is_secure_referrer) {
-    AddFeature(StringPrintf("%s%s=%s",
-                            feature_prefix.c_str(),
-                            features::kReferrer,
-                            entry->GetReferrer().url.spec().c_str()),
+    AddFeature(base::StringPrintf("%s%s=%s",
+                                  feature_prefix.c_str(),
+                                  features::kReferrer,
+                                  entry->GetReferrer().url.spec().c_str()),
                1.0,
                request);
   }
@@ -102,11 +102,11 @@ static void AddNavigationFeatures(
     if (redirect_chain[i].SchemeIsSecure()) {
       printable_redirect = features::kSecureRedirectValue;
     }
-    AddFeature(StringPrintf("%s%s[%"PRIuS"]=%s",
-                            feature_prefix.c_str(),
-                            features::kRedirect,
-                            i,
-                            printable_redirect.c_str()),
+    AddFeature(base::StringPrintf("%s%s[%"PRIuS"]=%s",
+                                  feature_prefix.c_str(),
+                                  features::kRedirect,
+                                  i,
+                                  printable_redirect.c_str()),
                1.0,
                request);
   }

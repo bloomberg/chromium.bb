@@ -154,7 +154,7 @@ std::vector<base::FilePath> MatchingShortcutsForProfileAndExtension(
     base::FilePath shortcut_file = base_path;
     if (i) {
       shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
-          StringPrintf(" (%d)", i));
+          base::StringPrintf(" (%d)", i));
     }
     if (file_util::PathExists(shortcut_file) &&
         ShortcutIsForProfile(shortcut_file, profile_path)) {
@@ -281,7 +281,7 @@ bool CreatePlatformShortcuts(
       continue;
     } else if (unique_number > 0) {
       shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
-          StringPrintf(" (%d)", unique_number));
+          base::StringPrintf(" (%d)", unique_number));
     }
 
     base::win::ShortcutProperties shortcut_properties;

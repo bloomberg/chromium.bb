@@ -98,7 +98,8 @@ TEST_F(NetworkEventLogTest, TestMaxNetworkEvents) {
   const size_t entries_to_add =
       network_event_log::kMaxNetworkEventLogEntries + 3;
   for (size_t i = 0; i < entries_to_add; ++i)
-    network_event_log::AddEntry("test", StringPrintf("event_%"PRIuS, i), "");
+    network_event_log::AddEntry("test",
+                                base::StringPrintf("event_%"PRIuS, i), "");
 
   std::string output = GetAsString(network_event_log::OLDEST_FIRST, 0);
   size_t output_lines = CountLines(output);

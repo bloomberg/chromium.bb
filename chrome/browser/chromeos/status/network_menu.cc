@@ -938,7 +938,7 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
     network_name = l10n_util::GetStringUTF8(
         IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
   }
-  std::string page = StringPrintf(
+  std::string page = base::StringPrintf(
       "%s?servicePath=%s&networkType=%d&networkName=%s",
       chrome::kInternetOptionsSubPage,
       net::EscapeUrlEncodedData(network->service_path(), true).c_str(),

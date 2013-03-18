@@ -95,7 +95,7 @@ const char kHTMLForGuestWithSize[] =
     "</html>";
 
 std::string GetHTMLForGuestWithTitle(const std::string& title) {
-  return StringPrintf(kHTMLForGuestWithTitle, title.c_str());
+  return base::StringPrintf(kHTMLForGuestWithTitle, title.c_str());
 }
 
 }  // namespace
@@ -327,10 +327,10 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     if (!is_guest_data_url) {
       test_url = test_server()->GetURL(guest_url);
       ExecuteSyncJSFunction(
-          rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
+          rvh, base::StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     } else {
       ExecuteSyncJSFunction(
-          rvh, StringPrintf("SetSrc('%s');", guest_url.c_str()));
+          rvh, base::StringPrintf("SetSrc('%s');", guest_url.c_str()));
     }
 
     // Wait to make sure embedder is created/attached to WebContents.
@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
     int spin_time = 10 * TestTimeouts::tiny_timeout().InMilliseconds();
     ExecuteSyncJSFunction(
         test_guest()->web_contents()->GetRenderViewHost(),
-        StringPrintf("StartPauseMs(%d);", spin_time).c_str());
+        base::StringPrintf("StartPauseMs(%d);", spin_time).c_str());
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -439,8 +439,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
 // sample guest. In the end we verify that the correct size has been set.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, NavigateAfterResize) {
   const gfx::Size nxt_size = gfx::Size(100, 200);
-  const std::string embedder_code =
-      StringPrintf("SetSize(%d, %d);", nxt_size.width(), nxt_size.height());
+  const std::string embedder_code = base::StringPrintf(
+      "SetSize(%d, %d);", nxt_size.width(), nxt_size.height());
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, embedder_code);
 
@@ -626,7 +626,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
 
     ExecuteSyncJSFunction(
         rvh,
-        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P2").c_str()));
+        base::StringPrintf(
+            "SetSrc('%s');", GetHTMLForGuestWithTitle("P2").c_str()));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -640,7 +641,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
 
     ExecuteSyncJSFunction(
         rvh,
-        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P3").c_str()));
+        base::StringPrintf(
+            "SetSrc('%s');", GetHTMLForGuestWithTitle("P3").c_str()));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -719,7 +721,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, StringPrintf("SetTitle('%s');", "modified"));
+    ExecuteSyncJSFunction(rvh,
+                          base::StringPrintf("SetTitle('%s');", "modified"));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -738,7 +741,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
 
     ExecuteSyncJSFunction(
         test_embedder()->web_contents()->GetRenderViewHost(),
-        StringPrintf("SetSrc('%s');", kHTMLForGuest));
+        base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
     test_guest_manager()->WaitForGuestAdded();
 
     const TestBrowserPluginGuestManager::GuestInstanceMap& instance_map =
@@ -784,7 +787,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BackAfterTerminateGuest) {
 
     ExecuteSyncJSFunction(
         rvh,
-        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P2").c_str()));
+        base::StringPrintf(
+            "SetSrc('%s');", GetHTMLForGuestWithTitle("P2").c_str()));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -821,7 +825,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStart) {
   // Renavigate the guest to |kHTMLForGuest|.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, StringPrintf("SetSrc('%s');", kHTMLForGuest));
+  ExecuteSyncJSFunction(rvh,
+                        base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -840,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
         test_embedder()->web_contents()->GetRenderViewHost());
     GURL test_url = test_server()->GetURL("close-socket");
     ExecuteSyncJSFunction(
-        rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
+        rvh, base::StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
@@ -854,7 +859,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
         test_embedder()->web_contents()->GetRenderViewHost());
     GURL test_url("chrome://newtab");
     ExecuteSyncJSFunction(
-        rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
+        rvh, base::StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
@@ -868,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
         test_embedder()->web_contents()->GetRenderViewHost());
     GURL test_url("file://foo");
     ExecuteSyncJSFunction(
-        rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
+        rvh, base::StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
@@ -888,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   ExecuteSyncJSFunction(
-      rvh, StringPrintf("SetSrc('%s');", redirect_url.spec().c_str()));
+      rvh, base::StringPrintf("SetSrc('%s');", redirect_url.spec().c_str()));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -983,7 +988,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
     // By the time we get here 'contentWindow' should be ready because the
     // guest has completed loading.
     ExecuteSyncJSFunction(
-        rvh, StringPrintf("PostMessage('%s, false');", kTesting));
+        rvh, base::StringPrintf("PostMessage('%s, false');", kTesting));
 
     // The title will be updated to "main guest" at the last stage of the
     // process described above.
@@ -1009,7 +1014,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
                                         expected_title);
 
     ExecuteSyncJSFunction(
-        rvh, StringPrintf("PostMessage('%s, false');", kTesting));
+        rvh, base::StringPrintf("PostMessage('%s, false');", kTesting));
 
     // The title will be updated to "main guest" at the last stage of the
     // process described above.
@@ -1026,7 +1031,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
         "files/browser_plugin_post_message_guest.html");
     ExecuteSyncJSFunction(
         guest_rvh,
-        StringPrintf("CreateChildFrame('%s');", test_url.spec().c_str()));
+        base::StringPrintf(
+            "CreateChildFrame('%s');", test_url.spec().c_str()));
 
     string16 actual_title = ready_watcher.WaitAndGetTitle();
     EXPECT_EQ(ASCIIToUTF16("ready"), actual_title);
@@ -1034,7 +1040,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
     content::TitleWatcher iframe_watcher(test_embedder()->web_contents(),
                                         ASCIIToUTF16("iframe"));
     ExecuteSyncJSFunction(
-        rvh, StringPrintf("PostMessage('%s', true);", kTesting));
+        rvh, base::StringPrintf("PostMessage('%s', true);", kTesting));
 
     // The title will be updated to "iframe" at the last stage of the
     // process described above.
@@ -1053,7 +1059,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStop) {
   // Renavigate the guest to |kHTMLForGuest|.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, StringPrintf("SetSrc('%s');", kHTMLForGuest));
+  ExecuteSyncJSFunction(rvh,
+                        base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -1064,13 +1071,14 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadCommit) {
   StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
 
   const string16 expected_title = ASCIIToUTF16(
-      StringPrintf("loadCommit:%s", kHTMLForGuest));
+      base::StringPrintf("loadCommit:%s", kHTMLForGuest));
   content::TitleWatcher title_watcher(
       test_embedder()->web_contents(), expected_title);
   // Renavigate the guest to |kHTMLForGuest|.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, StringPrintf("SetSrc('%s');", kHTMLForGuest));
+  ExecuteSyncJSFunction(rvh,
+                        base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -1259,7 +1267,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeAfterNavigation) {
 // Test for regression http://crbug.com/162961.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GetRenderViewHostAtPositionTest) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  const std::string embedder_code = StringPrintf("SetSize(%d, %d);", 100, 100);
+  const std::string embedder_code =
+      base::StringPrintf("SetSize(%d, %d);", 100, 100);
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestWithSize, true,
                          embedder_code);
   // Check for render view host at position (150, 150) that is outside the

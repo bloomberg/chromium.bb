@@ -44,7 +44,7 @@ const int g_test_count = 1000;
 
 // Returns a test URL for index |i|
 GURL TestURL(int i) {
-  return GURL(StringPrintf("%s%d", g_test_prefix, i));
+  return GURL(base::StringPrintf("%s%d", g_test_prefix, i));
 }
 
 std::vector<VisitedLinkSlave*> g_slaves;

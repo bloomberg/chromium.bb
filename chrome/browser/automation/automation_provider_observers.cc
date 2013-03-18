@@ -357,8 +357,8 @@ void NavigationNotificationObserver::ConditionMet(
             &dict);
       } else {
         AutomationJSONReply(automation_, reply_message_.release()).SendError(
-            StringPrintf("Navigation failed with error code=%d.",
-                         navigation_result));
+            base::StringPrintf("Navigation failed with error code=%d.",
+                               navigation_result));
       }
     } else {
       IPC::ParamTraits<int>::Write(

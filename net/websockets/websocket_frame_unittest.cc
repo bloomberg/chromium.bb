@@ -402,8 +402,8 @@ class WebSocketFrameTestMaskBenchmark : public testing::Test {
         1000 * (TimeTicks::HighResNow() - start).InMillisecondsF() /
         iterations_;
     LOG(INFO) << "Payload size " << size
-              << StringPrintf(" took %.03f microseconds per iteration",
-                              total_time_ms);
+              << base::StringPrintf(" took %.03f microseconds per iteration",
+                                    total_time_ms);
   }
 
  private:

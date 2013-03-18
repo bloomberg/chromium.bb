@@ -1323,14 +1323,15 @@ PlatformFileError ObfuscatedFileUtil::GenerateNewLocalPath(
   // We use the third- and fourth-to-last digits as the directory.
   int64 directory_number = number % 10000 / 100;
   new_local_path = new_local_path.AppendASCII(
-      StringPrintf("%02" PRId64, directory_number));
+      base::StringPrintf("%02" PRId64, directory_number));
 
   error = NativeFileUtil::CreateDirectory(
       new_local_path, false /* exclusive */, false /* recursive */);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
-  *local_path = new_local_path.AppendASCII(StringPrintf("%08" PRId64, number));
+  *local_path =
+      new_local_path.AppendASCII(base::StringPrintf("%08" PRId64, number));
   return base::PLATFORM_FILE_OK;
 }
 

@@ -52,7 +52,7 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
         Java_ChromiumCameraInfo_getAt(env, camera_id);
 
     Name name;
-    name.unique_id = StringPrintf(
+    name.unique_id = base::StringPrintf(
         "%d", Java_ChromiumCameraInfo_getId(env, ci.obj()));
     name.device_name = base::android::ConvertJavaStringToUTF8(
         Java_ChromiumCameraInfo_getDeviceName(env, ci.obj()));

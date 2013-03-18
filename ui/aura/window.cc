@@ -628,7 +628,7 @@ void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
 
 #ifndef NDEBUG
 std::string Window::GetDebugInfo() const {
-  return StringPrintf(
+  return base::StringPrintf(
       "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f",
       name().empty() ? "Unknown" : name().c_str(), id(),
       bounds().x(), bounds().y(), bounds().width(), bounds().height(),

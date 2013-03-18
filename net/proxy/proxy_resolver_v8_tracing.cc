@@ -953,7 +953,7 @@ HostResolver::RequestInfo ProxyResolverV8Tracing::Job::MakeDnsRequestInfo(
 
 std::string ProxyResolverV8Tracing::Job::MakeDnsCacheKey(
     const std::string& host, ResolveDnsOperation op) {
-  return StringPrintf("%d:%s", op, host.c_str());
+  return base::StringPrintf("%d:%s", op, host.c_str());
 }
 
 void ProxyResolverV8Tracing::Job::HandleAlertOrError(bool is_alert,

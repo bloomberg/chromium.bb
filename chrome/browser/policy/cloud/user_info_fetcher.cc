@@ -22,7 +22,7 @@ static const char kAuthorizationHeaderFormat[] =
     "Authorization: Bearer %s";
 
 static std::string MakeAuthorizationHeader(const std::string& auth_token) {
-  return StringPrintf(kAuthorizationHeaderFormat, auth_token.c_str());
+  return base::StringPrintf(kAuthorizationHeaderFormat, auth_token.c_str());
 }
 
 }  // namespace

@@ -174,46 +174,46 @@ void KeyBuilder::PopulateKeyMaps() {
 }
 
 std::string KeyBuilder::CreateActiveIntervalKey(const base::Time& time) {
-    return StringPrintf("%016" PRId64, time.ToInternalValue());
+    return base::StringPrintf("%016" PRId64, time.ToInternalValue());
 }
 
 std::string KeyBuilder::CreateMetricKey(const base::Time& time,
                                           const MetricType type,
                                           const std::string& activity) {
-  return StringPrintf("%c%c%016" PRId64 "%c%s",
-                      metric_type_to_metric_key_char_[type],
-                      kDelimiter, time.ToInternalValue(),
-                      kDelimiter, activity.c_str());
+  return base::StringPrintf("%c%c%016" PRId64 "%c%s",
+                            metric_type_to_metric_key_char_[type],
+                            kDelimiter, time.ToInternalValue(),
+                            kDelimiter, activity.c_str());
 }
 
 std::string KeyBuilder::CreateEventKey(const base::Time& time,
                                          const EventType type) {
-  return StringPrintf("%016" PRId64 "%c%c",
-                      time.ToInternalValue(), kDelimiter,
-                      event_type_to_event_key_char_[type]);
+  return base::StringPrintf("%016" PRId64 "%c%c",
+                            time.ToInternalValue(), kDelimiter,
+                            event_type_to_event_key_char_[type]);
 }
 
 std::string KeyBuilder::CreateRecentKey(const base::Time& time,
                                           const MetricType type,
                                           const std::string& activity) {
-  return StringPrintf("%016" PRId64 "%c%c%c%s",
-                      time.ToInternalValue(),
-                      kDelimiter, metric_type_to_metric_key_char_[type],
-                      kDelimiter, activity.c_str());
+  return base::StringPrintf("%016" PRId64 "%c%c%c%s",
+                            time.ToInternalValue(),
+                            kDelimiter, metric_type_to_metric_key_char_[type],
+                            kDelimiter, activity.c_str());
 }
 
 std::string KeyBuilder::CreateRecentMapKey(const MetricType type,
                                              const std::string& activity) {
-  return StringPrintf("%s%c%c",
-                      activity.c_str(),
-                      kDelimiter, metric_type_to_metric_key_char_[type]);
+  return base::StringPrintf("%s%c%c",
+                            activity.c_str(),
+                            kDelimiter, metric_type_to_metric_key_char_[type]);
 }
 
 std::string KeyBuilder::CreateMaxValueKey(const MetricType type,
                                             const std::string& activity) {
-  return StringPrintf("%c%c%s",
-                      metric_type_to_metric_key_char_[type],
-                      kDelimiter, activity.c_str());
+  return base::StringPrintf("%c%c%s",
+                            metric_type_to_metric_key_char_[type],
+                            kDelimiter, activity.c_str());
 }
 
 EventType KeyBuilder::EventKeyToEventType(const std::string& event_key) {

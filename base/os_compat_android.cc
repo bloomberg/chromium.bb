@@ -18,7 +18,7 @@
 extern "C" {
 
 int futimes(int fd, const struct timeval tv[2]) {
-  const std::string fd_path = StringPrintf("/proc/self/fd/%d", fd);
+  const std::string fd_path = base::StringPrintf("/proc/self/fd/%d", fd);
   return utimes(fd_path.c_str(), tv);
 }
 
