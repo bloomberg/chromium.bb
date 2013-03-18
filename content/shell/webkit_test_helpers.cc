@@ -110,6 +110,7 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->fixed_position_creates_stacking_context = false;
   prefs->apply_page_scale_factor_in_compositor = false;
   prefs->smart_insert_delete_enabled = true;
+  prefs->minimum_accelerated_2d_canvas_size = 0;
 }
 
 }  // namespace content

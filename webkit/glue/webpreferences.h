@@ -117,6 +117,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool accelerated_compositing_for_animation_enabled;
   bool accelerated_compositing_for_video_enabled;
   bool accelerated_2d_canvas_enabled;
+  int minimum_accelerated_2d_canvas_size;
   bool deferred_2d_canvas_enabled;
   bool antialiased_2d_canvas_disabled;
   bool accelerated_filters_enabled;
