@@ -20,7 +20,9 @@ Step 1: Have a Chromium OS checkout (refer to http://dev.chromium.org)
   repo init ...
   repo sync
 
-Step 2: Check out deps/third_party/ffmpeg inside Chromium OS (or symlink it in).
+Step 2: Check out deps/third_party/ffmpeg inside Chromium OS (or cp -fpr it over
+from an existing checkout; symlinks and mount --bind no longer appear to enable
+access from within chroot)
   cd path/to/chromeos
   mkdir deps
   cd deps
@@ -28,7 +30,7 @@ Step 2: Check out deps/third_party/ffmpeg inside Chromium OS (or symlink it in).
 
 Step 3: Build for ia32 platform outside chroot (will need yasm in path)
   cd path/to/chromeos/deps/ffmpeg
-  ./chromium/scripts/build_ffmpeg.sh linux ia32 path/to/chromeos/deps
+  ./chromium/scripts/build_ffmpeg.sh linux ia32 path/to/chromeos/deps/ffmpeg
 
 Step 4: Build and enter Chromium OS chroot:
   cd path/to/chromeos/src/scripts
@@ -38,8 +40,8 @@ Step 5: Setup build environment for ARM:
   ./setup_board --board arm-generic
 
 Step 6: Build for arm/arm-neon platforms inside chroot
-  ./chromium/scripts/build_ffmpeg.sh linux arm path/to/chromeos/deps
-  ./chromium/scripts/build_ffmpeg.sh linux arm-neon path/to/chromeos/deps
+  ./chromium/scripts/build_ffmpeg.sh linux arm path/to/chromeos/deps/ffmpeg
+  ./chromium/scripts/build_ffmpeg.sh linux arm-neon path/to/chromeos/deps/ffmpeg
 
 Step 7: Build for Windows platform; you will need a MinGW shell started from
 inside a Visual Studio Command Prompt to run build_ffmpeg.sh:
@@ -506,8 +508,8 @@ def main():
     fd.write(s.GenerateGypStanza())
   fd.write(GYP_CONDITIONAL_END)
 
-  # Generate full list of .h files in source tree and write headers stanza.
-  fd.write(GYP_HEADERS_STANZA_BEGIN)
+  # Generate sorted list of .h files in source tree and write headers stanza.
+  header_files = []
   for root, dirnames, filenames in os.walk('.'):
     # Strip './' and other cruft from path.
     root = os.path.normpath(root)
@@ -516,7 +518,10 @@ def main():
     if not root.startswith(('libavcodec', 'libavutil', 'libavformat')):
       continue
     for fn in fnmatch.filter(filenames, '*.h'):
-      fd.write(GYP_HEADERS_STANZA_ITEM % os.path.join(root, fn))
+      header_files.append(os.path.join(root,fn))
+  fd.write(GYP_HEADERS_STANZA_BEGIN)
+  for header in sorted(header_files):
+    fd.write(GYP_HEADERS_STANZA_ITEM % header)
   fd.write(GYP_HEADERS_STANZA_END)
 
   fd.write(GYP_FOOTER)

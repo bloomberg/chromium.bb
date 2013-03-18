@@ -246,24 +246,35 @@ Here is a list of gotchas that have shown up.
      It's not necessary to build the statically linked version, but it's nice to
      only have a single binary checked in.
 
+  8) On various platforms, ffmpeg configure may detect external iconv library
+     and include it by default.  FFmpeg used by chromium does not depend on this
+     library, and the lib may not exist on target despite existing in the build
+     environment.  Hence, we need to change CONFIG_ICONV to 0 in the config.h
+     (and config.asm where appropriate.)  See munge_config_iconv.sh, which
+     is used by build_ffmpeg.sh to automate this.
+
 
 Short Directions:
 =================
   1) Create config.h and config.asm as needed.
      On Linux run
-       ./chromium/scripts/build_ffmpeg.sh linux ia32 <absolute path to ..>
-       ./chromium/scripts/build_ffmpeg.sh linux x64 <absolute path to ..>
+       ./chromium/scripts/build_ffmpeg.sh linux ia32 <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.sh linux x64 <absolute path to .>
+
+     On Linux with MIPS cross-toolchain in $PATH
+       ./chromium/scripts/build_ffmpeg.sh linux mipsel <absolute path to .>
 
      On Linux chroot run
-       ./chromium/scripts/build_ffmpeg.sh linux arm <absolute path to ..>
-       ./chromium/scripts/build_ffmpeg.sh linux arm-neon <absolute path to ..>
+       ./chromium/scripts/build_ffmpeg.sh linux arm <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.sh linux arm-neon <absolute path to .>
 
      On Mac run
-       ./chromium/scripts/build_ffmpeg.sh mac ia32 <absolute path to ..>
-       ./chromium/scripts/build_ffmpeg.sh mac x64 <absolute path to ..>
+       ./chromium/scripts/build_ffmpeg.sh mac ia32 <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.sh mac x64 <absolute path to .>
 
      On Windows run
-       ./chromium/scripts/build_ffmpeg.sh win ia32 <absolute path to ..>
+       ./chromium/scripts/build_ffmpeg.sh win ia32 <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.sh win x64 <absolute path to .>
 
   2) Finally, collect all these directories and copy all config files
      into the source tree using
@@ -312,7 +323,13 @@ Detailed Directions:
      on config.h files for other platforms (in particular, for x64) will
      likely result in unecessarily slow code, or compile failures.
 
-  4) Next, capture all the output from a build of libavcodec.so and
+  4) Handle gotcha #8 by munging the generated config.h (and config.asm)
+     file(s) to disable inclusion of external iconv library.  Call the
+     munge_config_iconv.sh script on the config.h (and on the config.asm)
+     for each variant. (This has been implemented in build_ffmpeg.sh.)
+     This is necessary on all variants.
+
+  5) Next, capture all the output from a build of libavcodec.so and
      libavformat.so.  We will use the build log as a reference for making
      the ffmpeg.gyp file.
 
@@ -326,11 +343,11 @@ Detailed Directions:
        #$(foreach VAR,$(BRIEF), \
        #    $(eval override $(VAR) = $($(VAR))))
 
-  5) Check ffmpeg_build_err to see if there are any significant
+  6) Check ffmpeg_build_err to see if there are any significant
      anomalies.  FFmpeg source generates a lot of compiler warnings; it
      is safe to ignore those.
 
-  6) Examine all non-gcc commands to see if we're missing anything
+  7) Examine all non-gcc commands to see if we're missing anything
      interesting:
 
        grep -v '^gcc' ffmpeg_build_log
@@ -342,7 +359,7 @@ Detailed Directions:
 
      should generate nothing beyond "cd" and "ln" commands.
 
-  7) Verify that the all the gcc commands have the same compiler flags.
+  8) Verify that the all the gcc commands have the same compiler flags.
      Do that with the following "one-liner":
 
        grep - '^gcc' ffmpeg_build_log |
@@ -357,14 +374,14 @@ Detailed Directions:
      of output.  If there is more than one, figure out if the differences
      in compiler flags are significant, and then use your best judgment.
 
-  8) Examine the output from step 6 and update the compiler flags in
+  9) Examine the output from step 7 and update the compiler flags in
      ffmpeg.gyp. For easier cut/paste, append the following to the previous
      command line to isolate each flag on its own line and add
      single-quotes:
 
        tr -s ' ' | tr ' ' '\n' | sed -e "s/\(.*\)/'\1',/" | sort -u
 
-  9) Next, examine the link flags to see if anything interesting appears.
+ 10) Next, examine the link flags to see if anything interesting appears.
 
         grep ' -shared ' ffmpeg_build_log  |
         tr ' ' '\n' |
@@ -381,7 +398,7 @@ Detailed Directions:
      The most interesting will likely be the -Wl,.* lines. Update the
      ldflags section in ffmpeg.gyp accordingly.
 
- 10) Lastly, Find all the build .c files and update the sources line (this is
+ 11) Lastly, Find all the build .c files and update the sources line (this is
      very similar to step 7):
 
        grep -E '^gcc' ffmpeg_build_log |
@@ -390,9 +407,9 @@ Detailed Directions:
        sed -e "s|.* -o .* \(.*\)$|'source/patched-ffmpeg/\1',|" |
        sort
 
- 11) Attempt to build. :)
+ 12) Attempt to build. :)
 
-*12) Update the the sources! clause to exclude files that should only be built
+*13) Update the the sources! clause to exclude files that should only be built
      for Chromium.  For this, you basically need to do the steps above once
      with the configure options for Chrome, then once with the options for
      Chromium and diff the list of .c and .asm source files.

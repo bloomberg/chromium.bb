@@ -1,4 +1,4 @@
-Current Status as of Feb 11, 2013
+Current Status as of Mar 22, 2013
 
 
 Upstream cherry-picks:
@@ -22,6 +22,8 @@ Upstream cherry-picks:
   See also http://crbug.com/174160#c15
 <upstream in progress> - Fix Heap-buffer-overflow in matroska_parse_block.
   See also http://crbug.com/167069#c16
+<upstream in progress> - Fix pthread cond and mutex memory leaks in vp8.c.
+  See also http://crbug.com/223173
 
 Current patches:
 
@@ -47,3 +49,9 @@ ugly/
   moved inside the FFmpeg code base, they added a "symbolic link" version which
   our build chain doesn't like.  Remove it until the next major version bump.
   (If FF_SYMVER is no longer present, this ugly patch can be removed.)
+
+compile_with_no_iconv.patch
+  wolenetz: When CONFIG_ICONV is 0, the original code path did not return a
+  value, causing compile failure on Windows.  It also aborted via an assert.
+  This patch enables compiling by returning an appropriate error code and also
+  removes the assert and abort.

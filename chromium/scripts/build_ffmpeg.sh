@@ -205,6 +205,14 @@ function build {
     fi
   fi
 
+  # Disable inclusion of external iconv library
+  echo "Forcing CONFIG_ICONV to 0 in config.h"
+  $FFMPEG_PATH/chromium/scripts/munge_config_iconv.sh config.h
+  if [[ "$TARGET_ARCH" = "ia32" || "$TARGET_ARCH" = "x64" ]]; then
+    echo "Forcing CONFIG_ICONV to 0 in config.asm"
+    $FFMPEG_PATH/chromium/scripts/munge_config_iconv.sh config.asm
+  fi
+
   if [[ "$HOST_OS" = "$TARGET_OS" && "$CONFIG_ONLY" = "" ]]; then
     # Build!
     LIBS="libavcodec/$(dso_name avcodec $LIBAVCODEC_VERSION_MAJOR)"
@@ -310,14 +318,14 @@ if [ "$TARGET_OS" = "linux" ]; then
     # CrOS settings.
     add_flag_common --enable-armv6
     add_flag_common --enable-armv6t2
-    add_flag_common --enable-armvfp
+    add_flag_common --enable-vfp
     add_flag_common --enable-thumb
     add_flag_common --disable-neon
     add_flag_common --extra-cflags=-march=armv7-a
     add_flag_common --extra-cflags=-mtune=cortex-a8
     add_flag_common --extra-cflags=-mfpu=vfpv3-d16
     # NOTE: softfp/hardfp selected at gyp time.
-    add_flag_common --extra-cflags=-mfloat-abi=softfp
+    add_flag_common --extra-cflags=-mfloat-abi=hard
   elif [ "$TARGET_ARCH" = "arm-neon" ]; then
     # This if-statement is for chroot arm-generic.
     add_flag_common --enable-cross-compile
@@ -326,14 +334,14 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --arch=arm
     add_flag_common --enable-armv6
     add_flag_common --enable-armv6t2
-    add_flag_common --enable-armvfp
+    add_flag_common --enable-vfp
     add_flag_common --enable-thumb
     add_flag_common --enable-neon
     add_flag_common --extra-cflags=-march=armv7-a
     add_flag_common --extra-cflags=-mtune=cortex-a8
     add_flag_common --extra-cflags=-mfpu=neon
     # NOTE: softfp/hardfp selected at gyp time.
-    add_flag_common --extra-cflags=-mfloat-abi=softfp
+    add_flag_common --extra-cflags=-mfloat-abi=hard
   elif [ "$TARGET_ARCH" = "mipsel" ]; then
     add_flag_common --enable-cross-compile
     add_flag_common --cross-prefix=mips-linux-gnu-

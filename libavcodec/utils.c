@@ -1941,7 +1941,9 @@ end:
         iconv_close(cd);
     return ret;
 #else
-    av_assert0(!"requesting subtitles recoding without iconv");
+    // ICONV is not on all platforms.  Unblock compile by returning a
+    // value.  Assert with abort() is removed here, too.
+    return AVERROR(EINVAL);
 #endif
 }
 
