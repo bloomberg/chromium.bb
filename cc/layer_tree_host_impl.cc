@@ -162,7 +162,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings,
           0,
           ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING),
       pinch_gesture_active_(false),
-      fps_counter_(FrameRateCounter::create(proxy_->HasImplThread())),
+      fps_counter_(FrameRateCounter::Create(proxy_->HasImplThread())),
       paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
@@ -937,7 +937,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   DCHECK(CanDraw());
   DCHECK(!frame->render_passes.empty());
 
-  fps_counter_->saveTimeStamp(frame_begin_time);
+  fps_counter_->SaveTimeStamp(frame_begin_time);
 
   if (tile_manager_) {
     memory_history_->SaveEntry(
@@ -1800,12 +1800,12 @@ void LayerTreeHostImpl::DumpRenderSurfaces(std::string* str,
 }
 
 int LayerTreeHostImpl::SourceAnimationFrameNumber() const {
-  return fps_counter_->currentFrameNumber();
+  return fps_counter_->current_frame_number();
 }
 
 void LayerTreeHostImpl::CollectRenderingStats(RenderingStats* stats) const {
-  stats->numFramesSentToScreen = fps_counter_->currentFrameNumber();
-  stats->droppedFrameCount = fps_counter_->droppedFrameCount();
+  stats->numFramesSentToScreen = fps_counter_->current_frame_number();
+  stats->droppedFrameCount = fps_counter_->dropped_frame_count();
   stats->numImplThreadScrolls = num_impl_thread_scrolls_;
   stats->numMainThreadScrolls = num_main_thread_scrolls_;
   stats->numLayersDrawn = cumulative_num_layers_drawn_;

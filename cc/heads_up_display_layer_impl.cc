@@ -194,8 +194,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
 
     if (debug_state.showFPSCounter) {
       FrameRateCounter* fps_counter = layer_tree_impl()->frame_rate_counter();
-      fps_graph_.value = fps_counter->getAverageFPS();
-      fps_counter->getMinAndMaxFPS(fps_graph_.min, fps_graph_.max);
+      fps_graph_.value = fps_counter->GetAverageFPS();
+      fps_counter->GetMinAndMaxFPS(&fps_graph_.min, &fps_graph_.max);
     }
 
     if (debug_state.continuousPainting) {
@@ -349,7 +349,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
 
   const int kFontHeight = 15;
 
-  const int kGraphWidth = fps_counter->timeStampHistorySize() - 2;
+  const int kGraphWidth = fps_counter->time_stamp_history_size() - 2;
   const int kGraphHeight = 40;
 
   const int kHistogramWidth = 37;
@@ -408,12 +408,11 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
 
   for (FrameRateCounter::RingBufferType::Iterator it = --fps_counter->end(); it;
        --it) {
-    base::TimeDelta delta = fps_counter->recentFrameInterval(it.index() + 1);
+    base::TimeDelta delta = fps_counter->RecentFrameInterval(it.index() + 1);
 
     // Skip this particular instantaneous frame rate if it is not likely to have
     // been valid.
-    if (!fps_counter->isBadFrameInterval(delta)) {
-
+    if (!fps_counter->IsBadFrameInterval(delta)) {
       double fps = 1.0 / delta.InSecondsF();
 
       // Clamp the FPS to the range we want to plot visually.
