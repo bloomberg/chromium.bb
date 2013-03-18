@@ -8,12 +8,15 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/zip.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/image_burner_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_fetcher.h"
@@ -45,6 +48,17 @@ void CreateDirectory(const base::FilePath& path,
   const bool success = file_util::CreateDirectory(path);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, success));
+}
+
+// Unzips |source_zip_file| and sets the filename of the unzipped image to
+// |source_image_file|.
+void UnzipImage(const base::FilePath& source_zip_file,
+                const std::string& image_name,
+                scoped_refptr<base::RefCountedString> source_image_file) {
+  if (zip::Unzip(source_zip_file, source_zip_file.DirName())) {
+    source_image_file->data() =
+        source_zip_file.DirName().Append(image_name).value();
+  }
 }
 
 }  // namespace
@@ -200,25 +214,33 @@ void StateMachine::OnSuccess() {
 
 BurnManager::BurnManager()
     : device_handler_(disks::DiskMountManager::GetInstance()),
+      unzipping_(false),
+      cancelled_(false),
+      burning_(false),
+      block_burn_signals_(false),
       config_file_url_(kConfigFileUrl),
       config_file_fetched_(false),
       state_machine_(new StateMachine()),
       bytes_image_download_progress_last_reported_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
-  CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
   base::WeakPtr<BurnManager> weak_ptr(weak_ptr_factory_.GetWeakPtr());
   device_handler_.SetCallbacks(
       base::Bind(&BurnManager::NotifyDeviceAdded, weak_ptr),
       base::Bind(&BurnManager::NotifyDeviceRemoved, weak_ptr));
+  DBusThreadManager::Get()->GetImageBurnerClient()->SetEventHandlers(
+      base::Bind(&BurnManager::OnBurnFinished,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BurnManager::OnBurnProgressUpdate,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 BurnManager::~BurnManager() {
   if (!image_dir_.empty()) {
     file_util::Delete(image_dir_, true);
   }
-  CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
   ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
+  DBusThreadManager::Get()->GetImageBurnerClient()->ResetEventHandlers();
 }
 
 // static
@@ -284,7 +306,7 @@ void BurnManager::OnError(int message_id) {
   // Note: the cancellation of this class looks not handled correctly.
   // In particular, there seems no clean-up code for creating a temporary
   // directory, or fetching config files. Also, there seems an issue
-  // about the cancellation of BurnLibrary.
+  // about the cancellation of burning.
   // TODO(hidehiko): Fix the issue.
   if (state  == StateMachine::DOWNLOADING) {
     CancelImageFetch();
@@ -358,14 +380,38 @@ void BurnManager::CancelImageFetch() {
 }
 
 void BurnManager::DoBurn() {
-  CrosLibrary::Get()->GetBurnLibrary()->DoBurn(
-      zip_image_file_path_, image_file_name_,
-      target_file_path(), target_device_path());
+  if (unzipping_) {
+    // We have unzip in progress, maybe it was "cancelled" before and did not
+    // finish yet. In that case, let's pretend cancel did not happen.
+    cancelled_ = false;
+    UpdateBurnStatus(UNZIP_STARTED, ImageBurnStatus());
+    return;
+  }
+
+  source_image_path_.clear();
+
+  unzipping_ = true;
+  cancelled_ = false;
+  UpdateBurnStatus(UNZIP_STARTED, ImageBurnStatus());
+
+  const bool task_is_slow = true;
+  scoped_refptr<base::RefCountedString> result(new base::RefCountedString);
+  base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(UnzipImage, zip_image_file_path_, image_file_name_, result),
+      base::Bind(&BurnManager::OnImageUnzipped,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 result),
+      task_is_slow);
   state_machine_->OnBurnStarted();
 }
 
 void BurnManager::CancelBurnImage() {
-  CrosLibrary::Get()->GetBurnLibrary()->CancelBurnImage();
+  // At the moment, we cannot really stop uzipping or burning. Instead we
+  // prevent events from being sent to listeners.
+  if (burning_)
+    block_burn_signals_ = true;
+  cancelled_ = true;
 }
 
 void BurnManager::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -405,20 +451,6 @@ void BurnManager::OnURLFetchDownloadProgress(const net::URLFetcher* source,
   }
 }
 
-void BurnManager::BurnProgressUpdated(BurnLibrary* object,
-                                      BurnEvent event,
-                                      const ImageBurnStatus& status) {
-  if (event == BURN_SUCCESS) {
-    // The burning task is successfully done.
-    // Update the state.
-    state_machine_->OnSuccess();
-  }
-
-  // Proxy the BurnLibrary callback to observers.
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OnBurnProgressUpdated(event, status));
-}
-
 void BurnManager::NetworkManagerChanged() {
   // TODO(hidehiko): Split this into a class to write tests.
   if (state_machine_->state() == StateMachine::INITIAL && IsNetworkConnected())
@@ -427,6 +459,32 @@ void BurnManager::NetworkManagerChanged() {
   if (state_machine_->state() == StateMachine::DOWNLOADING &&
       !IsNetworkConnected())
     OnError(IDS_IMAGEBURN_NETWORK_ERROR);
+}
+
+void BurnManager::UpdateBurnStatus(BurnEvent evt,
+                                   const ImageBurnStatus& status) {
+  if (cancelled_)
+    return;
+
+  if (evt == BURN_FAIL || evt == BURN_SUCCESS) {
+    burning_ = false;
+    if (block_burn_signals_) {
+      block_burn_signals_ = false;
+      return;
+    }
+  }
+
+  if (block_burn_signals_ && evt == BURN_UPDATE)
+    return;
+
+  if (evt == BURN_SUCCESS) {
+    // The burning task is successfully done.
+    // Update the state.
+    state_machine_->OnSuccess();
+  }
+
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnBurnProgressUpdated(evt, status));
 }
 
 void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
@@ -452,6 +510,59 @@ void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnConfigFileFetched(fetched));
+}
+
+void BurnManager::OnImageUnzipped(
+    scoped_refptr<base::RefCountedString> source_image_file) {
+  source_image_path_ = base::FilePath(source_image_file->data());
+
+  bool success = !source_image_path_.empty();
+  UpdateBurnStatus(success ? UNZIP_COMPLETE : UNZIP_FAIL, ImageBurnStatus());
+
+  unzipping_ = false;
+  if (cancelled_) {
+    cancelled_ = false;
+    return;
+  }
+
+  if (!success)
+    return;
+
+  burning_ = true;
+
+  chromeos::disks::DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      target_device_path_.value(),
+      base::Bind(&BurnManager::OnDevicesUnmounted,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BurnManager::OnDevicesUnmounted(bool success) {
+  if (!success) {
+    UpdateBurnStatus(BURN_FAIL, ImageBurnStatus(0, 0));
+    return;
+  }
+
+  DBusThreadManager::Get()->GetImageBurnerClient()->BurnImage(
+      source_image_path_.value(),
+      target_file_path_.value(),
+      base::Bind(&BurnManager::OnBurnImageFail,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BurnManager::OnBurnImageFail() {
+  UpdateBurnStatus(BURN_FAIL, ImageBurnStatus(0, 0));
+}
+
+void BurnManager::OnBurnFinished(const std::string& target_path,
+                                 bool success,
+                                 const std::string& error) {
+  UpdateBurnStatus(success ? BURN_SUCCESS : BURN_FAIL, ImageBurnStatus(0, 0));
+}
+
+void BurnManager::OnBurnProgressUpdate(const std::string& target_path,
+                                       int64 amount_burnt,
+                                       int64 total_size) {
+  UpdateBurnStatus(BURN_UPDATE, ImageBurnStatus(amount_burnt, total_size));
 }
 
 void BurnManager::NotifyDeviceAdded(

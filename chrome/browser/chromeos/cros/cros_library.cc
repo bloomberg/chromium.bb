@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
-#include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -53,7 +52,6 @@ CrosLibrary* CrosLibrary::Get() {
   return g_cros_library;
 }
 
-DEFINE_GET_LIBRARY_METHOD(Burn, burn);
 DEFINE_GET_LIBRARY_METHOD(Cert, cert);
 DEFINE_GET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_GET_LIBRARY_METHOD(Network, network);
@@ -65,7 +63,6 @@ CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
 }
 
 DEFINE_SET_LIBRARY_METHOD(Cert, cert);
-DEFINE_SET_LIBRARY_METHOD(Burn, burn);
 DEFINE_SET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_SET_LIBRARY_METHOD(Network, network);
 
