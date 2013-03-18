@@ -25,7 +25,7 @@ IPC_STRUCT_TRAITS_MEMBER(expected_pixel_hash)
 IPC_STRUCT_TRAITS_END()
 
 // Tells the renderer to reset all test runners.
-IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
+IPC_MESSAGE_ROUTED0(ShellViewMsg_Reset)
 
 // Sets the path to the WebKit checkout.
 IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
@@ -64,6 +64,8 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_AudioDump,
 
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TestFinished,
                     bool /* did_timeout */)
+
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ResetDone)
 
 // WebTestDelegate related.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,

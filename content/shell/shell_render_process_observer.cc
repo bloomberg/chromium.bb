@@ -80,7 +80,6 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ShellRenderProcessObserver, message)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_ResetAll, OnResetAll)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetWebKitSourceDir, OnSetWebKitSourceDir)
     IPC_MESSAGE_HANDLER(ShellViewMsg_LoadHyphenDictionary,
                         OnLoadHyphenDictionary)
@@ -88,12 +87,6 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void ShellRenderProcessObserver::OnResetAll() {
-  test_interfaces_->resetAll();
-  if (main_test_runner_)
-    main_test_runner_->Reset();
 }
 
 void ShellRenderProcessObserver::OnSetWebKitSourceDir(

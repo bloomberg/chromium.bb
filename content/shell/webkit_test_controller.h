@@ -106,9 +106,6 @@ class WebKitTestController : public base::NonThreadSafe,
                              base::ProcessId plugin_pid) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
-  virtual void DidNavigateMainFrame(
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   // NotificationObserver implementation.
@@ -140,6 +137,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
   void OnCaptureSessionHistory();
   void OnCloseRemainingWindows();
+  void OnResetDone();
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
@@ -150,10 +148,6 @@ class WebKitTestController : public base::NonThreadSafe,
 
   // The PID of the render process of the render view host of main_window_.
   int current_pid_;
-
-  // True if we should prune all but the active navigation entry of main_window_
-  // on the next commit of a main frame navigation.
-  bool prune_history_;
 
   // True if we should set the test configuration to the next RenderViewHost
   // created.

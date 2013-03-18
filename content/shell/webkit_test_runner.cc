@@ -35,6 +35,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBufferView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -73,6 +74,7 @@ using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
+using WebKit::WebURLRequest;
 using WebKit::WebTestingSupport;
 using WebKit::WebVector;
 using WebKit::WebView;
@@ -499,6 +501,7 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetTestConfiguration,
                         OnSetTestConfiguration)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -587,6 +590,8 @@ void WebKitTestRunner::CaptureDump() {
     }
   }
 
+  render_view()->GetWebView()->mainFrame()
+      ->loadRequest(WebURLRequest(GURL("about:blank")));
   Send(new ShellViewHostMsg_TestFinished(routing_id(), false));
 }
 
@@ -612,6 +617,12 @@ void WebKitTestRunner::OnSessionHistory(
   session_histories_ = session_histories;
   current_entry_indexes_ = current_entry_indexes;
   CaptureDump();
+}
+
+void WebKitTestRunner::OnReset() {
+  ShellRenderProcessObserver::GetInstance()->test_interfaces()->resetAll();
+  Reset();
+  Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 
 }  // namespace content
