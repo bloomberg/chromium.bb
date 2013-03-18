@@ -25,34 +25,6 @@ M C CSM: Shouldn't use synchronized method, please narrow down the synchronizati
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At HttpAuthDatabase.java
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At SimpleSynchronizedThis.java
 M C RCN: Nullcheck of GestureDetector.mVelocityTracker at line 630 of value previously dereferenced in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent)  At GestureDetector.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$10.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$11.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$11.method(int) defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$11.method(int, int) defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$14$1.method(int) defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$14.getInnerObject() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$15.getInnerObject() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$17.captureThreadId() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$19.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$1Base.method(int) defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$1InnerObject.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$1Test.safe() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$1Test.unsafe() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$1TestObject.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$1TestReturner.getTest() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$20.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$24.allowed() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$25.allowed() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$25.disallowed() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$2Test.checkJavascriptInterfaceFoo() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$2Test.checkTestAnnotationFoo() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$3Base.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$3Test.allowed() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$3Test.blocked() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$4Base.base() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$7.method() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$8.method2() defined in anonymous class  At JavaBridgeBasicsTest.java
-M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$9.method() defined in anonymous class  At JavaBridgeBasicsTest.java
 M C USELESS_STRING: Invocation of toString on certChain in org.chromium.net.X509Util.verifyServerCertificates(byte[][], String)  At X509Util.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testAutoBadPath()  At ArchiveTest.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
@@ -64,19 +36,6 @@ M D SF: Switch statement found in org.chromium.content.browser.HandleView.onTouc
 M D SF: Switch statement found in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent) where default case is missing  At GestureDetector.java
 M D ST: Write to static field org.chromium.content.app.SandboxedProcessService.sContext from instance method org.chromium.content.app.SandboxedProcessService.onCreate()  At SandboxedProcessService.java
 M D ST: Write to static field org.chromium.content.browser.ContentSettings.sAppCachePathIsSet from instance method org.chromium.content.browser.ContentSettings.setAppCachePath(String)  At ContentSettings.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeBasicsTest$21.field  At JavaBridgeBasicsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.booleanField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.byteField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.charField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.customTypeField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.doubleField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.floatField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.intField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.longField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.objectField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.shortField  At JavaBridgeFieldsTest.java
-M D UrF: Unread public/protected field: org.chromium.content.browser.JavaBridgeFieldsTest$TestObject.stringField  At JavaBridgeFieldsTest.java
-M D UuF: Unused public or protected field: org.chromium.content.browser.JavaBridgeBasicsTest$19.field  In JavaBridgeBasicsTest.java
 M M IS: Inconsistent synchronization of org.chromium.content.browser.SandboxedProcessConnection.mPID; locked 66% of time  Unsynchronized access at SandboxedProcessConnection.java
 M M IS: Inconsistent synchronization of org.chromium.content.browser.SandboxedProcessConnection.mService; locked 55% of time  Unsynchronized access at SandboxedProcessConnection.java
 M M IS: Inconsistent synchronization of org.chromium.content.browser.SandboxedProcessConnection.mServiceConnectComplete; locked 60% of time  Unsynchronized access at SandboxedProcessConnection.java
@@ -84,8 +43,6 @@ M M LI: Incorrect lazy initialization and update of static field org.chromium.ba
 M M LI: Incorrect lazy initialization and update of static field org.chromium.content.browser.ContentVideoView.sContentVideoView in org.chromium.content.browser.ContentVideoView.createContentVideoView(int)  At ContentVideoView.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getBooleanValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setBooleanValue(boolean) is synchronized  At JavaBridgeReturnValuesTest.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getStringValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setStringValue(String) is synchronized  At JavaBridgeReturnValuesTest.java
-M P UuF: Unused field: org.chromium.content.browser.JavaBridgeBasicsTest$19.privateField  In JavaBridgeBasicsTest.java
-M P UuF: Unused field: org.chromium.content.browser.JavaBridgeBasicsTest$23.field  In JavaBridgeBasicsTest.java
 M V EI2: new org.chromium.chrome.browser.FindMatchRectsDetails(int, RectF[], RectF) may expose internal representation by storing an externally mutable object into FindMatchRectsDetails.rects  At FindMatchRectsDetails.java
 M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setFavicon(byte[]) may expose internal representation by storing an externally mutable object into ChromeBrowserProvider$BookmarkNode.mFavicon  At ChromeBrowserProvider.java
 M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setThumbnail(byte[]) may expose internal representation by storing an externally mutable object into ChromeBrowserProvider$BookmarkNode.mThumbnail  At ChromeBrowserProvider.java
