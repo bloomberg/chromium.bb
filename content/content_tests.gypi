@@ -197,7 +197,6 @@
             '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:audio_device',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
-            '../third_party/webrtc/test/test.gyp:test_support',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
