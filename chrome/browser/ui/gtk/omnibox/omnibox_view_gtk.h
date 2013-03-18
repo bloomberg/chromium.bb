@@ -52,9 +52,14 @@ class OmniboxViewGtk : public OmniboxView,
     int cp_max;  // For a selection: Represents the end (insert position).
   };
 
+  // profile parameter is introduced for unittests which can not instantiate
+  // browser object and pass NULL to the browser parameter.
+  // In other use case, you should pass browser->profile() object as
+  // profile parameter.
   OmniboxViewGtk(OmniboxEditController* controller,
                  ToolbarModel* toolbar_model,
                  Browser* browser,
+                 Profile* profile,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,
                  GtkWidget* location_bar);
@@ -118,6 +123,8 @@ class OmniboxViewGtk : public OmniboxView,
   }
 
  private:
+  friend class OmniboxViewGtkTest;
+
   CHROMEG_CALLBACK_0(OmniboxViewGtk, void, HandleBeginUserAction,
                      GtkTextBuffer*);
   CHROMEG_CALLBACK_0(OmniboxViewGtk, void, HandleEndUserAction, GtkTextBuffer*);

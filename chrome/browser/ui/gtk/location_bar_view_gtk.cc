@@ -388,7 +388,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // Now initialize the OmniboxViewGtk.
   location_entry_.reset(new OmniboxViewGtk(this, toolbar_model_, browser_,
-      command_updater_, popup_window_mode_, hbox_.get()));
+      browser_->profile(), command_updater_, popup_window_mode_, hbox_.get()));
   location_entry_->Init();
 
   g_signal_connect(hbox_.get(), "expose-event",

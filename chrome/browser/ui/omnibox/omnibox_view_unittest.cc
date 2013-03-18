@@ -58,6 +58,16 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   }
   EXPECT_EQ(kPlainText, OmniboxView::GetClipboardText());
 
+  // Can we pull a string consists of white-space?
+  const string16 kSpace6(ASCIIToUTF16("      "));
+  const string16 kSpace1(ASCIIToUTF16(" "));
+  {
+    ui::ScopedClipboardWriter clipboard_writer(clipboard,
+                                               ui::Clipboard::BUFFER_STANDARD);
+    clipboard_writer.WriteText(kSpace6);
+  }
+  EXPECT_EQ(kSpace1, OmniboxView::GetClipboardText());
+
   // TODO(shess): Aura hits a DCHECK() at CommitToClipboard() if
   // ObjectMap is empty.  http://crbug.com/133848
 #if !defined(USE_AURA)
