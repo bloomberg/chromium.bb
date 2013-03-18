@@ -25,24 +25,23 @@ class SoftwareFrameData;
 // OutputSurface, such as to a platform-provided window framebuffer.
 class CC_EXPORT SoftwareOutputDevice {
  public:
-
   SoftwareOutputDevice();
   virtual ~SoftwareOutputDevice();
 
-  // SoftwareOutputDevice implementation
-  virtual void Resize(const gfx::Size& size);
+  // SoftwareOutputDevice implementation.
+  virtual void Resize(gfx::Size size);
 
-  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect);
-  virtual void EndPaint(SoftwareFrameData* frame_data=NULL);
+  virtual SkCanvas* BeginPaint(gfx::Rect damage_rect);
+  virtual void EndPaint(SoftwareFrameData* frame_data);
 
-  virtual void CopyToBitmap(const gfx::Rect& rect, SkBitmap* output);
-  virtual void Scroll(const gfx::Vector2d& delta,
-                      const gfx::Rect& clip_rect);
+  virtual void CopyToBitmap(gfx::Rect rect, SkBitmap* output);
+  virtual void Scroll(gfx::Vector2d delta,
+                      gfx::Rect clip_rect);
 
   // TODO(skaslev) Remove this after UberCompositor lands.
   virtual void ReclaimDIB(TransportDIB::Handle handle);
 
-protected:
+ protected:
   gfx::Size viewport_size_;
   gfx::Rect damage_rect_;
   skia::RefPtr<SkDevice> device_;

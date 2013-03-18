@@ -40,7 +40,7 @@ CompositorSoftwareOutputDeviceGLAdapter::
 }
 
 void CompositorSoftwareOutputDeviceGLAdapter::Resize(
-    const gfx::Size& viewport_size) {
+    gfx::Size viewport_size) {
   if (!device_)
     InitShaders();
 

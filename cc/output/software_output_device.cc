@@ -15,7 +15,7 @@ SoftwareOutputDevice::SoftwareOutputDevice() {}
 
 SoftwareOutputDevice::~SoftwareOutputDevice() {}
 
-void SoftwareOutputDevice::Resize(const gfx::Size& viewport_size) {
+void SoftwareOutputDevice::Resize(gfx::Size viewport_size) {
   if (viewport_size_ == viewport_size)
     return;
 
@@ -25,7 +25,7 @@ void SoftwareOutputDevice::Resize(const gfx::Size& viewport_size) {
   canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
 }
 
-SkCanvas* SoftwareOutputDevice::BeginPaint(const gfx::Rect& damage_rect) {
+SkCanvas* SoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
   DCHECK(device_);
   damage_rect_ = damage_rect;
   return canvas_.get();
@@ -40,7 +40,7 @@ void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
 }
 
 void SoftwareOutputDevice::CopyToBitmap(
-    const gfx::Rect& rect, SkBitmap* output) {
+    gfx::Rect rect, SkBitmap* output) {
   DCHECK(device_);
   SkIRect invertRect = SkIRect::MakeXYWH(
       rect.x(), viewport_size_.height() - rect.bottom(),
@@ -50,7 +50,7 @@ void SoftwareOutputDevice::CopyToBitmap(
 }
 
 void SoftwareOutputDevice::Scroll(
-    const gfx::Vector2d& delta, const gfx::Rect& clip_rect) {
+    gfx::Vector2d delta, gfx::Rect clip_rect) {
   NOTIMPLEMENTED();
 }
 

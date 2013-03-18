@@ -20,7 +20,7 @@ class SoftwareOutputDeviceX11 : public cc::SoftwareOutputDevice {
 
   virtual ~SoftwareOutputDeviceX11();
 
-  virtual void Resize(const gfx::Size& viewport_size) OVERRIDE;
+  virtual void Resize(gfx::Size viewport_size) OVERRIDE;
 
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
 

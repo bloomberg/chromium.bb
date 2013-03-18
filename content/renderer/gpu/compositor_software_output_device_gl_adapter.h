@@ -17,15 +17,15 @@ namespace content {
 class CompositorSoftwareOutputDeviceGLAdapter
     : NON_EXPORTED_BASE(public cc::SoftwareOutputDevice),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
-public:
+ public:
   CompositorSoftwareOutputDeviceGLAdapter(
       WebKit::WebGraphicsContext3D* context3d);
   virtual ~CompositorSoftwareOutputDeviceGLAdapter();
 
-  virtual void Resize(const gfx::Size& size) OVERRIDE;
+  virtual void Resize(gfx::Size size) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
 
-private:
+ private:
   void InitShaders();
 
   unsigned program_;

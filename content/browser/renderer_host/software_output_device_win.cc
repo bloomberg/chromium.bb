@@ -26,7 +26,7 @@ SoftwareOutputDeviceWin::~SoftwareOutputDeviceWin() {
   ::ReleaseDC(compositor_->widget(), hdc_);
 }
 
-void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_size) {
+void SoftwareOutputDeviceWin::Resize(gfx::Size viewport_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   cc::SoftwareOutputDevice::Resize(viewport_size);

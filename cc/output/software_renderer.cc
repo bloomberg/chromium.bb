@@ -110,7 +110,7 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame& frame) {
     compositor_frame_.metadata = client_->MakeCompositorFrameMetadata();
     output_device_->EndPaint(compositor_frame_.software_frame_data.get());
   } else {
-    output_device_->EndPaint();
+    output_device_->EndPaint(NULL);
   }
 }
 

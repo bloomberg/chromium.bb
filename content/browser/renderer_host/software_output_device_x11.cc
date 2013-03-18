@@ -44,7 +44,7 @@ void SoftwareOutputDeviceX11::ClearImage() {
   }
 }
 
-void SoftwareOutputDeviceX11::Resize(const gfx::Size& viewport_size) {
+void SoftwareOutputDeviceX11::Resize(gfx::Size viewport_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   cc::SoftwareOutputDevice::Resize(viewport_size);
