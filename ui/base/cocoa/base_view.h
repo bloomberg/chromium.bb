@@ -22,8 +22,6 @@
   scoped_nsobject<NSEvent> pendingExitEvent_;
 }
 
-- (id)initWithFrame:(NSRect)frame;
-
 // Override these methods in a subclass.
 - (void)mouseEvent:(NSEvent *)theEvent;
 - (void)keyEvent:(NSEvent *)theEvent;
