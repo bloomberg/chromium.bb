@@ -65,7 +65,7 @@ bool MockDownloadManager::CreateDownloadItemAdapter::operator==(
           state == rhs.state &&
           danger_type == rhs.danger_type &&
           interrupt_reason == rhs.interrupt_reason &&
-          opened == opened);
+          opened == rhs.opened);
 }
 
 MockDownloadManager::MockDownloadManager() {}
