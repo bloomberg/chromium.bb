@@ -37,6 +37,10 @@ using namespace net::test_spdy3;
 
 namespace net {
 
+namespace {
+const char kRequestUrl[] = "http://www.google.com/";
+}  // namespace
+
 enum SpdyNetworkTransactionSpdy3TestTypes {
   SPDYNPN,
   SPDYNOSSL,
@@ -1507,7 +1511,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Put) {
     ":version", "HTTP/1.1",
     "content-length", "0"
   };
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPacket(kSynStartHeader, NULL, 0,
+  scoped_ptr<SpdyFrame> req(ConstructSpdyFrame(kSynStartHeader, NULL, 0,
     kPutHeaders, arraysize(kPutHeaders) / 2));
   MockWrite writes[] = {
     CreateMockWrite(*req)
@@ -1532,7 +1536,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Put) {
     ":version", "HTTP/1.1"
     "content-length", "1234"
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyPacket(kSynReplyHeader,
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyFrame(kSynReplyHeader,
       NULL, 0, kStandardRespHeaders, arraysize(kStandardRespHeaders) / 2));
   MockRead reads[] = {
     CreateMockRead(*resp),
@@ -1579,7 +1583,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Head) {
     ":version", "HTTP/1.1",
     "content-length", "0"
   };
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPacket(kSynStartHeader, NULL, 0,
+  scoped_ptr<SpdyFrame> req(ConstructSpdyFrame(kSynStartHeader, NULL, 0,
     kHeadHeaders, arraysize(kHeadHeaders) / 2));
   MockWrite writes[] = {
     CreateMockWrite(*req)
@@ -1604,7 +1608,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Head) {
     ":version", "HTTP/1.1"
     "content-length", "1234"
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyPacket(kSynReplyHeader,
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyFrame(kSynReplyHeader,
       NULL, 0, kStandardRespHeaders, arraysize(kStandardRespHeaders) / 2));
   MockRead reads[] = {
     CreateMockRead(*resp),
@@ -1625,7 +1629,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Head) {
 
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionSpdy3Test, Post) {
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kUploadDataSize, NULL, 0));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -1652,7 +1657,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, Post) {
 
 // Test that a POST with a file works.
 TEST_P(SpdyNetworkTransactionSpdy3Test, FilePost) {
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kUploadDataSize, NULL, 0));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -1680,7 +1686,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FilePost) {
 
 // Test that a complex POST works.
 TEST_P(SpdyNetworkTransactionSpdy3Test, ComplexPost) {
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kUploadDataSize, NULL, 0));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -1801,13 +1808,14 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, NullPost) {
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL("http://www.google.com/");
+  request.url = GURL(kRequestUrl);
   // Create an empty UploadData.
   request.upload_data_stream = NULL;
 
   // When request.upload_data_stream is NULL for post, content-length is
   // expected to be 0.
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPost(0, NULL, 0));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kRequestUrl, 1, 0, LOWEST, NULL, 0));
   // Set the FIN bit since there will be no body.
   test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, kSpdyVersion3);
   MockWrite writes[] = {
@@ -1847,7 +1855,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, EmptyPost) {
   request.upload_data_stream = &stream;
 
   const uint64 kContentLength = 0;
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kContentLength, NULL, 0));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kRequestUrl, 1, kContentLength, LOWEST, NULL, 0));
   // Set the FIN bit since there will be no body.
   test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, kSpdyVersion3);
   MockWrite writes[] = {
@@ -1893,7 +1902,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, PostWithEarlySynReply) {
     MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kUploadDataSize, NULL, 0));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
@@ -2046,7 +2056,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
   scoped_ptr<std::string> content(
       new std::string(kMaxSpdyFrameChunkSize, 'a'));
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(
-      kMaxSpdyFrameChunkSize * kFrameCount, NULL, 0));
+      kRequestUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(
       ConstructSpdyBodyFrame(1, content->c_str(), content->size(), false));
   scoped_ptr<SpdyFrame> body_end(
@@ -2216,7 +2226,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateOverflow) {
   scoped_ptr<std::string> content(
       new std::string(kMaxSpdyFrameChunkSize, 'a'));
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(
-      kMaxSpdyFrameChunkSize * kFrameCount, NULL, 0));
+      kRequestUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(
       ConstructSpdyBodyFrame(1, content->c_str(), content->size(), false));
   scoped_ptr<SpdyFrame> rst(
@@ -2301,7 +2311,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResume) {
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(
-      kSpdyStreamInitialWindowSize + kUploadDataSize, NULL, 0));
+      kRequestUrl, 1, kSpdyStreamInitialWindowSize + kUploadDataSize,
+      LOWEST, NULL, 0));
 
   // Full frames.
   scoped_ptr<SpdyFrame> body1(
@@ -2397,7 +2408,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResumeAfterSettings) {
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(
-      kSpdyStreamInitialWindowSize + kUploadDataSize, NULL, 0));
+      kRequestUrl, 1, kSpdyStreamInitialWindowSize + kUploadDataSize,
+      LOWEST, NULL, 0));
 
   // Full frames.
   scoped_ptr<SpdyFrame> body1(
@@ -2499,7 +2511,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlNegativeSendWindowSize) {
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(
-      kSpdyStreamInitialWindowSize + kUploadDataSize, NULL, 0));
+      kRequestUrl, 1, kSpdyStreamInitialWindowSize + kUploadDataSize,
+      LOWEST, NULL, 0));
 
   // Full frames.
   scoped_ptr<SpdyFrame> body1(
@@ -2748,8 +2761,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, StartTransactionOnReadCallback) {
   MockWrite writes[] = { CreateMockWrite(*req) };
   MockWrite writes2[] = { CreateMockWrite(*req) };
 
-  // The indicated length of this packet is longer than its actual length. When
-  // the session receives an empty packet after this one, it shuts down the
+  // The indicated length of this frame is longer than its actual length. When
+  // the session receives an empty frame after this one, it shuts down the
   // session, and calls the read callback with the incomplete data.
   const uint8 kGetBodyFrame2[] = {
     0x00, 0x00, 0x00, 0x01,
@@ -2887,10 +2900,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RedirectGetRequest) {
   };
 
   // Setup writes/reads to www.google.com
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPacket(
+  scoped_ptr<SpdyFrame> req(ConstructSpdyFrame(
       kSynStartHeader, kExtraHeaders, arraysize(kExtraHeaders) / 2,
       kStandardGetHeaders, arraysize(kStandardGetHeaders) / 2));
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyPacket(
+  scoped_ptr<SpdyFrame> req2(ConstructSpdyFrame(
       kSynStartHeader, kExtraHeaders, arraysize(kExtraHeaders) / 2,
       kStandardGetHeaders2, arraysize(kStandardGetHeaders2) / 2));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReplyRedirect(1));
@@ -3102,11 +3115,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RedirectServerPush) {
 
   // Setup writes/reads to www.google.com
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPacket(kSynStartHeader,
-                          kExtraHeaders,
-                          arraysize(kExtraHeaders) / 2,
-                          kStandardGetHeaders,
-                          arraysize(kStandardGetHeaders) / 2));
+      ConstructSpdyFrame(kSynStartHeader,
+                         kExtraHeaders,
+                         arraysize(kExtraHeaders) / 2,
+                         kStandardGetHeaders,
+                         arraysize(kStandardGetHeaders) / 2));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> rep(
       ConstructSpdyPush(NULL,
@@ -3146,11 +3159,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, RedirectServerPush) {
     "HTTP/1.1"
   };
   scoped_ptr<SpdyFrame> req2(
-      ConstructSpdyPacket(kSynStartHeader,
-                          kExtraHeaders,
-                          arraysize(kExtraHeaders) / 2,
-                          kStandardGetHeaders2,
-                          arraysize(kStandardGetHeaders2) / 2));
+      ConstructSpdyFrame(kSynStartHeader,
+                         kExtraHeaders,
+                         arraysize(kExtraHeaders) / 2,
+                         kStandardGetHeaders2,
+                         arraysize(kStandardGetHeaders2) / 2));
   scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(1, true));
   MockWrite writes2[] = {
@@ -3965,11 +3978,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SynReplyHeadersVary) {
 
     // Construct the reply.
     scoped_ptr<SpdyFrame> frame_reply(
-      ConstructSpdyPacket(*test_cases[i].syn_reply,
-                          test_cases[i].extra_headers[1],
-                          test_cases[i].num_headers[1],
-                          NULL,
-                          0));
+      ConstructSpdyFrame(*test_cases[i].syn_reply,
+                         test_cases[i].extra_headers[1],
+                         test_cases[i].num_headers[1],
+                         NULL,
+                         0));
 
     scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
     MockRead reads[] = {
@@ -4082,10 +4095,10 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, InvalidSynReply) {
     };
 
     scoped_ptr<SpdyFrame> resp(
-        ConstructSpdyPacket(kSynStartHeader,
-                            NULL, 0,
-                            test_cases[i].headers,
-                            test_cases[i].num_headers));
+        ConstructSpdyFrame(kSynStartHeader,
+                           NULL, 0,
+                           test_cases[i].headers,
+                           test_cases[i].num_headers));
     scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
     MockRead reads[] = {
       CreateMockRead(*resp),
@@ -4784,11 +4797,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SettingsSaved) {
 
   // Construct the reply.
   scoped_ptr<SpdyFrame> reply(
-    ConstructSpdyPacket(kSynReplyInfo,
-                        kExtraHeaders,
-                        arraysize(kExtraHeaders) / 2,
-                        NULL,
-                        0));
+    ConstructSpdyFrame(kSynReplyInfo,
+                       kExtraHeaders,
+                       arraysize(kExtraHeaders) / 2,
+                       NULL,
+                       0));
 
   const SpdySettingsIds kSampleId1 = SETTINGS_UPLOAD_BANDWIDTH;
   unsigned int kSampleValue1 = 0x0a0a0a0a;
@@ -4923,11 +4936,11 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SettingsPlayback) {
 
   // Construct the reply.
   scoped_ptr<SpdyFrame> reply(
-    ConstructSpdyPacket(kSynReplyInfo,
-                        kExtraHeaders,
-                        arraysize(kExtraHeaders) / 2,
-                        NULL,
-                        0));
+    ConstructSpdyFrame(kSynReplyInfo,
+                       kExtraHeaders,
+                       arraysize(kExtraHeaders) / 2,
+                       NULL,
+                       0));
 
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {

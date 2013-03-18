@@ -6,6 +6,8 @@
 #define NET_SPDY_SPDY_TEST_UTIL_SPDY2_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/mock_host_resolver.h"
@@ -75,9 +77,16 @@ MockRead* ChopReadFrame(const SpdyFrame& frame, int num_chunks);
 // where the even entries are the header names, and the odd entries are the
 // header values.
 // |headers| gets filled in from |extra_headers|.
-void AppendHeadersToSpdyFrame(const char* const extra_headers[],
-                              int extra_header_count,
-                              SpdyHeaderBlock* headers);
+void AppendToHeaderBlock(const char* const extra_headers[],
+                         int extra_header_count,
+                         SpdyHeaderBlock* headers);
+
+// Constructs a HeaderBlock for a GET request for the given URL.
+scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(base::StringPiece url);
+
+// Constructs a HeaderBlock for a POST request for the given URL.
+scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(base::StringPiece url,
+                                                     int64 content_length);
 
 // Writes |str| of the given |len| to the buffer pointed to by |buffer_handle|.
 // Uses a template so buffer_handle can be a char* or an unsigned char*.
@@ -109,19 +118,20 @@ int AppendToBuffer(int val,
                    unsigned char** buffer_handle,
                    int* buffer_len_remaining);
 
-// Construct a SPDY packet.
-// |head| is the start of the packet, up to but not including
-// the header value pairs.
+// Construct a SPDY frame.
+SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
+                              scoped_ptr<SpdyHeaderBlock> headers);
+
+// Construct a SPDY frame.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // |tail| is any (relatively constant) header-value pairs to add.
-// |buffer| is the buffer we're filling in.
 // Returns a SpdyFrame.
-SpdyFrame* ConstructSpdyPacket(const SpdyHeaderInfo& header_info,
-                               const char* const extra_headers[],
-                               int extra_header_count,
-                               const char* const tail[],
-                               int tail_header_count);
+SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
+                              const char* const extra_headers[],
+                              int extra_header_count,
+                              const char* const tail[],
+                              int tail_header_count);
 
 // Construct a generic SpdyControlFrame.
 SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
@@ -192,7 +202,7 @@ int ConstructSpdyHeader(const char* const extra_headers[],
                         int buffer_length,
                         int index);
 
-// Constructs a standard SPDY GET SYN packet, optionally compressed
+// Constructs a standard SPDY GET SYN frame, optionally compressed
 // for the url |url|.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -202,7 +212,7 @@ SpdyFrame* ConstructSpdyGet(const char* const url,
                             SpdyStreamId stream_id,
                             RequestPriority request_priority);
 
-// Constructs a standard SPDY GET SYN packet, optionally compressed.
+// Constructs a standard SPDY GET SYN frame, optionally compressed.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
@@ -212,7 +222,7 @@ SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                             int stream_id,
                             RequestPriority request_priority);
 
-// Constructs a standard SPDY GET SYN packet, optionally compressed.
+// Constructs a standard SPDY GET SYN frame, optionally compressed.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.  If |direct| is false, the
 // the full url will be used instead of simply the path.
@@ -229,7 +239,7 @@ SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
                                 int extra_header_count,
                                 int stream_id);
 
-// Constructs a standard SPDY push SYN packet.
+// Constructs a standard SPDY push SYN frame.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
@@ -257,7 +267,7 @@ SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
                                     const char* const extra_headers[],
                                     int extra_header_count);
 
-// Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
+// Constructs a standard SPDY SYN_REPLY frame to match the SPDY GET.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
@@ -265,40 +275,41 @@ SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
                                     int extra_header_count,
                                     int stream_id);
 
-// Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
+// Constructs a standard SPDY SYN_REPLY frame to match the SPDY GET.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id);
 
-// Constructs a standard SPDY SYN_REPLY packet with an Internal Server
+// Constructs a standard SPDY SYN_REPLY frame with an Internal Server
 // Error status code.
 // Returns a SpdyFrame.
 SpdyFrame* ConstructSpdySynReplyError(int stream_id);
 
-// Constructs a standard SPDY SYN_REPLY packet with the specified status code.
+// Constructs a standard SPDY SYN_REPLY frame with the specified status code.
 // Returns a SpdyFrame.
 SpdyFrame* ConstructSpdySynReplyError(const char* const status,
                                       const char* const* const extra_headers,
                                       int extra_header_count,
                                       int stream_id);
 
-// Constructs a standard SPDY POST SYN packet.
+// Constructs a standard SPDY POST SYN frame.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
-SpdyFrame* ConstructSpdyPost(int64 content_length,
+SpdyFrame* ConstructSpdyPost(const char* url,
+                             int64 content_length,
                              const char* const extra_headers[],
                              int extra_header_count);
 
-// Constructs a chunked transfer SPDY POST SYN packet.
+// Constructs a chunked transfer SPDY POST SYN frame.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
 SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
                                     int extra_header_count);
 
-// Constructs a standard SPDY SYN_REPLY packet to match the SPDY POST.
+// Constructs a standard SPDY SYN_REPLY frame to match the SPDY POST.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.

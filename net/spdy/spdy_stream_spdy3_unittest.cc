@@ -28,57 +28,9 @@ namespace test {
 
 namespace {
 
-const SpdyHeaderInfo kSynStartHeader = {
-  SYN_STREAM,
-  1,
-  0,
-  ConvertRequestPriorityToSpdyPriority(LOWEST, 3),
-  0,
-  CONTROL_FLAG_NONE,
-  false,
-  RST_STREAM_INVALID,
-  NULL,
-  0,
-  DATA_FLAG_NONE
-};
-
-const char* const kGetHeaders[] = {
-  ":method",
-  "GET",
-  ":scheme",
-  "http",
-  ":host",
-  "www.google.com",
-  ":path",
-  "/",
-  ":version",
-  "HTTP/1.1",
-};
-
-// TODO(akalin): Factor out the two functions below (duplicated in
-// spdy_stream_spdy2_unittest.cc). The main sticking point is the
-// different definitions of the SpdyHeaderInfo struct in
-// spdy_test_util_spdy{2,3}.h.
-
-scoped_ptr<SpdyFrame> ConstructSpdyGetRequest() {
-  return scoped_ptr<SpdyFrame>(
-      ConstructSpdyPacket(
-          kSynStartHeader, NULL, 0, kGetHeaders, arraysize(kGetHeaders) / 2));
-}
-
-scoped_ptr<SpdyHeaderBlock> ConstructSpdyGetHeaderBlock() {
-  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
-  for (size_t i = 0; i < arraysize(kGetHeaders) / 2; ++i) {
-    (*headers)[kGetHeaders[2*i]] = kGetHeaders[2*i+1];
-  }
-  return headers.Pass();
-}
-
-scoped_ptr<SpdyFrame> ConstructSpdyBodyFrame(const char* data, int length) {
-  BufferedSpdyFramer framer(kSpdyVersion3, false);
-  return scoped_ptr<SpdyFrame>(
-      framer.CreateDataFrame(1, data, length, DATA_FLAG_NONE));
-}
+const char kStreamUrl[] = "http://www.google.com/";
+const char kPostBody[] = "\0hello!\xff";
+const size_t kPostBodyLength = arraysize(kPostBody);
 
 class SpdyStreamSpdy3Test : public testing::Test {
  protected:
@@ -117,10 +69,13 @@ class SpdyStreamSpdy3Test : public testing::Test {
 };
 
 TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
+  GURL url(kStreamUrl);
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
-  scoped_ptr<SpdyFrame> req = ConstructSpdyGetRequest();
-  scoped_ptr<SpdyFrame> msg = ConstructSpdyBodyFrame("\0hello!\xff", 8);
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
+  scoped_ptr<SpdyFrame> msg(
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockWrite writes[] = {
     CreateMockWrite(*req),
     CreateMockWrite(*msg),
@@ -129,7 +84,8 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
   writes[1].sequence_number = 2;
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> echo = ConstructSpdyBodyFrame("\0hello!\xff", 8);
+  scoped_ptr<SpdyFrame> echo(
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockRead reads[] = {
     CreateMockRead(*resp),
     CreateMockRead(*echo),
@@ -147,16 +103,14 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   scoped_refptr<SpdySession> session(CreateSpdySession());
-  const char kStreamUrl[] = "http://www.google.com/";
-  GURL url(kStreamUrl);
 
   InitializeSpdySession(session, host_port_pair_);
 
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(8));
-  memcpy(buf->data(), "\0hello!\xff", 8);
+  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
+  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
   StreamDelegateSendImmediate delegate(
       stream.get(), scoped_ptr<SpdyHeaderBlock>(), buf.get());
@@ -164,7 +118,8 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(ConstructSpdyGetHeaderBlock());
+  stream->set_spdy_headers(
+      ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -175,8 +130,8 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string("\0hello!\xff", 8), delegate.received_data());
-  EXPECT_EQ(8, delegate.data_sent());
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
 }
 
 TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
@@ -189,7 +144,8 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
       "http://example.com"));
   scoped_ptr<SpdyFrame> expected_headers(ConstructSpdyWebSocketHeadersFrame(
       1, "6", true));
-  scoped_ptr<SpdyFrame> expected_message = ConstructSpdyBodyFrame("hello!", 6);
+  scoped_ptr<SpdyFrame> expected_message(
+      ConstructSpdyBodyFrame(1, "hello!", 6, false));
   MockWrite writes[] = {
     CreateMockWrite(*expected_request),
     CreateMockWrite(*expected_headers),
@@ -216,8 +172,7 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   scoped_refptr<SpdySession> session(CreateSpdySession());
-  const char kStreamUrl[] = "ws://server.example.com/chat";
-  GURL url(kStreamUrl);
+  GURL url("ws://server.example.com/chat");
 
   HostPortPair host_port_pair("server.example.com", 80);
   InitializeSpdySession(session, host_port_pair);
@@ -260,8 +215,6 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
 }
 
 TEST_F(SpdyStreamSpdy3Test, PushedStream) {
-  const char kStreamUrl[] = "http://www.google.com/";
-
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   scoped_refptr<SpdySession> spdy_session(CreateSpdySession());
 
@@ -307,10 +260,14 @@ TEST_F(SpdyStreamSpdy3Test, PushedStream) {
 }
 
 TEST_F(SpdyStreamSpdy3Test, StreamError) {
+  GURL url(kStreamUrl);
+
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
-  scoped_ptr<SpdyFrame> req = ConstructSpdyGetRequest();
-  scoped_ptr<SpdyFrame> msg = ConstructSpdyBodyFrame("\0hello!\xff", 8);
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
+  scoped_ptr<SpdyFrame> msg(
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockWrite writes[] = {
     CreateMockWrite(*req),
     CreateMockWrite(*msg),
@@ -319,7 +276,8 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   writes[1].sequence_number = 2;
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> echo = ConstructSpdyBodyFrame("\0hello!\xff", 8);
+  scoped_ptr<SpdyFrame> echo(
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockRead reads[] = {
     CreateMockRead(*resp),
     CreateMockRead(*echo),
@@ -339,16 +297,14 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   scoped_refptr<SpdySession> session(CreateSpdySession());
-  const char kStreamUrl[] = "http://www.google.com/";
-  GURL url(kStreamUrl);
 
   InitializeSpdySession(session, host_port_pair_);
 
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(8));
-  memcpy(buf->data(), "\0hello!\xff", 8);
+  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
+  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
   StreamDelegateSendImmediate delegate(
       stream.get(), scoped_ptr<SpdyHeaderBlock>(), buf.get());
@@ -356,7 +312,8 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(ConstructSpdyGetHeaderBlock());
+  stream->set_spdy_headers(
+      ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -369,8 +326,8 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string("\0hello!\xff", 8), delegate.received_data());
-  EXPECT_EQ(8, delegate.data_sent());
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
 
   // Check that the NetLog was filled reasonably.
   net::CapturingNetLog::CapturedEntryList entries;
@@ -416,7 +373,6 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   scoped_refptr<SpdySession> session(CreateSpdySession());
-  const char kStreamUrl[] = "http://www.google.com/";
   GURL url(kStreamUrl);
 
   InitializeSpdySession(session, host_port_pair_);
@@ -428,7 +384,7 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   scoped_ptr<StreamDelegateSendImmediate> delegate(
       new StreamDelegateSendImmediate(
           stream.get(), scoped_ptr<SpdyHeaderBlock>(),
-          new IOBufferWithSize(8)));
+          new IOBufferWithSize(kPostBodyLength)));
   stream->SetDelegate(delegate.get());
 
   EXPECT_FALSE(stream->HasUrl());
@@ -444,99 +400,18 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate->WaitForClose());
 }
 
-// Cause a stall by reducing the flow control recv window to 0. The
+// Cause a stall by reducing the flow control send window to 0. The
 // stream should resume when that window is then increased.
-TEST_F(SpdyStreamSpdy3Test, ResumeAfterRecvWindowSizeIncrease) {
-  session_ =
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-
-  const char kBodyData[] = "Body data";
-  const size_t kBodyDataSize = arraysize(kBodyData);
-  scoped_ptr<SpdyFrame> req = ConstructSpdyGetRequest();
-  scoped_ptr<SpdyFrame> msg = ConstructSpdyBodyFrame(kBodyData, kBodyDataSize);
-  MockWrite writes[] = {
-    CreateMockWrite(*req, 0),
-    CreateMockWrite(*msg, 2),
-  };
-
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> echo = ConstructSpdyBodyFrame(kBodyData, kBodyDataSize);
-  MockRead reads[] = {
-    CreateMockRead(*resp, 1),
-    CreateMockRead(*echo, 3),
-    MockRead(ASYNC, 0, 0, 4), // EOF
-  };
-
-  DeterministicSocketData data(reads, arraysize(reads),
-                               writes, arraysize(writes));
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  data.set_connect_data(connect_data);
-
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
-
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-  const char kStreamUrl[] = "http://www.google.com/";
+TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
   GURL url(kStreamUrl);
 
-  InitializeSpdySession(session, host_port_pair_);
-
-  scoped_refptr<SpdyStream> stream =
-      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kBodyDataSize));
-  memcpy(buf->data(), kBodyData, kBodyDataSize);
-
-  StreamDelegateWithBody delegate(stream.get(), buf);
-  stream->SetDelegate(&delegate);
-
-  EXPECT_FALSE(stream->HasUrl());
-
-  stream->set_spdy_headers(ConstructSpdyGetHeaderBlock());
-  EXPECT_TRUE(stream->HasUrl());
-  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
-
-  data.RunFor(2);
-
-  EXPECT_FALSE(stream->stalled_by_flow_control());
-
-  // Reduce the send window size to 0 to stall.
-  while (stream->send_window_size() > 0) {
-    stream->DecreaseSendWindowSize(
-        std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
-  }
-
-  stream->QueueStreamData(buf.get(), buf->size(), DATA_FLAG_NONE);
-
-  EXPECT_TRUE(stream->stalled_by_flow_control());
-
-  stream->IncreaseSendWindowSize(kBodyDataSize);
-
-  EXPECT_FALSE(stream->stalled_by_flow_control());
-
-  data.RunFor(3);
-
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
-
-  EXPECT_TRUE(delegate.send_headers_completed());
-  EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
-  EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string(kBodyData, kBodyDataSize), delegate.received_data());
-  EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate.body_data_sent());
-}
-
-// Cause a stall by reducing the flow control recv window to 0. The
-// stream should resume when that window is then adjusted positively.
-TEST_F(SpdyStreamSpdy3Test, ResumeAfterRecvWindowSizeAdjust) {
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
-  const char kBodyData[] = "Body data";
-  const size_t kBodyDataSize = arraysize(kBodyData);
-  scoped_ptr<SpdyFrame> req = ConstructSpdyGetRequest();
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> msg(
-      ConstructSpdyBodyFrame(kBodyData, kBodyDataSize));
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
     CreateMockWrite(*msg, 2),
@@ -544,7 +419,7 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterRecvWindowSizeAdjust) {
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> echo(
-      ConstructSpdyBodyFrame(kBodyData, kBodyDataSize));
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockRead reads[] = {
     CreateMockRead(*resp, 1),
     CreateMockRead(*echo, 3),
@@ -559,23 +434,22 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterRecvWindowSizeAdjust) {
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   scoped_refptr<SpdySession> session(CreateSpdySession());
-  const char kStreamUrl[] = "http://www.google.com/";
-  GURL url(kStreamUrl);
 
   InitializeSpdySession(session, host_port_pair_);
 
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kBodyDataSize));
-  memcpy(buf->data(), kBodyData, kBodyDataSize);
+  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
+  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
   StreamDelegateWithBody delegate(stream.get(), buf);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(ConstructSpdyGetHeaderBlock());
+  stream->set_spdy_headers(
+      ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -595,15 +469,7 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterRecvWindowSizeAdjust) {
 
   EXPECT_TRUE(stream->stalled_by_flow_control());
 
-  stream->AdjustSendWindowSize(-static_cast<int>(kBodyDataSize));
-
-  EXPECT_TRUE(stream->stalled_by_flow_control());
-
-  stream->AdjustSendWindowSize(kBodyDataSize);
-
-  EXPECT_TRUE(stream->stalled_by_flow_control());
-
-  stream->AdjustSendWindowSize(kBodyDataSize);
+  stream->IncreaseSendWindowSize(kPostBodyLength);
 
   EXPECT_FALSE(stream->stalled_by_flow_control());
 
@@ -614,8 +480,100 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterRecvWindowSizeAdjust) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string(kBodyData, kBodyDataSize), delegate.received_data());
-  EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate.body_data_sent());
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
+}
+
+// Cause a stall by reducing the flow control send window to 0. The
+// stream should resume when that window is then adjusted positively.
+TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
+  GURL url(kStreamUrl);
+
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
+  scoped_ptr<SpdyFrame> msg(
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
+  MockWrite writes[] = {
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*msg, 2),
+  };
+
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> echo(
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 1),
+    CreateMockRead(*echo, 3),
+    MockRead(ASYNC, 0, 0, 4), // EOF
+  };
+
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+
+  InitializeSpdySession(session, host_port_pair_);
+
+  scoped_refptr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
+  memcpy(buf->data(), kPostBody, kPostBodyLength);
+
+  StreamDelegateWithBody delegate(stream.get(), buf);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrl());
+
+  stream->set_spdy_headers(
+      ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
+
+  data.RunFor(2);
+
+  EXPECT_FALSE(stream->stalled_by_flow_control());
+
+  // Reduce the send window size to 0 to stall.
+  while (stream->send_window_size() > 0) {
+    stream->DecreaseSendWindowSize(
+        std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
+  }
+
+  stream->QueueStreamData(buf.get(), buf->size(), DATA_FLAG_NONE);
+
+  EXPECT_TRUE(stream->stalled_by_flow_control());
+
+  stream->AdjustSendWindowSize(-static_cast<int>(kPostBodyLength));
+
+  EXPECT_TRUE(stream->stalled_by_flow_control());
+
+  stream->AdjustSendWindowSize(kPostBodyLength);
+
+  EXPECT_TRUE(stream->stalled_by_flow_control());
+
+  stream->AdjustSendWindowSize(kPostBodyLength);
+
+  EXPECT_FALSE(stream->stalled_by_flow_control());
+
+  data.RunFor(3);
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+
+  EXPECT_TRUE(delegate.send_headers_completed());
+  EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
+  EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
 }
 
 }  // namespace

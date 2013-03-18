@@ -717,7 +717,7 @@ SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
     ":version",
     "HTTP/1.1"
   };
-  return ConstructSpdyPacket(
+  return ConstructSpdyFrame(
       syn_headers, NULL, 0, headers, arraysize(headers)/2);
 }
 

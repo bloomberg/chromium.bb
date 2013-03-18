@@ -337,7 +337,7 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectRequestFrame() {
     "user-agent", kUserAgent,
     "version", "HTTP/1.1",
   };
-  return ConstructSpdyPacket(
+  return ConstructSpdyFrame(
       kSynStartHeader, NULL, 0, kConnectHeaders, arraysize(kConnectHeaders)/2);
 }
 
@@ -365,7 +365,7 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectAuthRequestFrame() {
     "version", "HTTP/1.1",
     "proxy-authorization", "Basic Zm9vOmJhcg==",
   };
-  return ConstructSpdyPacket(
+  return ConstructSpdyFrame(
       kSynStartHeader, NULL, 0, kConnectHeaders, arraysize(kConnectHeaders)/2);
 }
 

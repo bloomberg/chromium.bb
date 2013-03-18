@@ -459,6 +459,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
                            SessionFlowControlInactiveStream31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
+                           ResumeAfterSendWindowSizeIncrease31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
+                           ResumeByPriorityAfterSendWindowSizeIncrease31);
 
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
   typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;

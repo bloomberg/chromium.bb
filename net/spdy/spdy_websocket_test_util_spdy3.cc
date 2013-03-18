@@ -85,7 +85,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
   };
 
   // Construct SPDY SYN_STREAM control frame.
-  return ConstructSpdyPacket(
+  return ConstructSpdyFrame(
       kSynStreamHeader,
       kDefaultExtraHeaders,
       kDefaultExtraHeaderCount,
@@ -115,7 +115,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeResponseFrame(
   };
 
   // Construct SPDY SYN_REPLY control frame.
-  return ConstructSpdyPacket(
+  return ConstructSpdyFrame(
       kSynReplyHeader,
       kDefaultExtraHeaders,
       kDefaultExtraHeaderCount,
