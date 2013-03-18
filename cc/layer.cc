@@ -4,9 +4,9 @@
 
 #include "cc/layer.h"
 
-#include "cc/animation.h"
-#include "cc/animation_events.h"
-#include "cc/layer_animation_controller.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_events.h"
+#include "cc/animation/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
 #include "cc/layer_tree_impl.h"

@@ -5,7 +5,7 @@
 #ifndef CC_TIMING_FUNCTION_H_
 #define CC_TIMING_FUNCTION_H_
 
-#include "cc/animation_curve.h"
+#include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkScalar.h"
 

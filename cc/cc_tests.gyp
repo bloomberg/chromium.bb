@@ -6,7 +6,7 @@
   'variables': {
     'chromium_code': 0,
     'cc_unit_tests_source_files': [
-      'animation_unittest.cc',
+      'animation/animation_unittest.cc',
       'content_layer_unittest.cc',
       'contents_scaling_layer_unittest.cc',
       'damage_tracker_unittest.cc',
@@ -20,8 +20,8 @@
       'gl_renderer_pixeltest.cc',
       'base/hash_pair_unittest.cc',
       'heads_up_display_unittest.cc',
-      'keyframed_animation_curve_unittest.cc',
-      'layer_animation_controller_unittest.cc',
+      'animation/keyframed_animation_curve_unittest.cc',
+      'animation/layer_animation_controller_unittest.cc',
       'layer_impl_unittest.cc',
       'layer_iterator_unittest.cc',
       'layer_quad_unittest.cc',
@@ -54,7 +54,7 @@
       'scheduler_state_machine_unittest.cc',
       'scheduler_unittest.cc',
       'scoped_resource_unittest.cc',
-      'scrollbar_animation_controller_linear_fade_unittest.cc',
+      'animation/scrollbar_animation_controller_linear_fade_unittest.cc',
       'scrollbar_layer_unittest.cc',
       'software_renderer_unittest.cc',
       'solid_color_layer_impl_unittest.cc',

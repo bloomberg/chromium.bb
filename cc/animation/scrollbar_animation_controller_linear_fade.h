@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
-#define CC_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
+#ifndef CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
+#define CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/base/cc_export.h"
-#include "cc/scrollbar_animation_controller.h"
 
 namespace cc {
 class LayerImpl;
@@ -47,4 +47,4 @@ private:
 
 } // namespace cc
 
-#endif  // CC_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
+#endif  // CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_

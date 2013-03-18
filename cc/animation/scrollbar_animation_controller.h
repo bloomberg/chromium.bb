@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCROLLBAR_ANIMATION_CONTROLLER_H_
-#define CC_SCROLLBAR_ANIMATION_CONTROLLER_H_
+#ifndef CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_
+#define CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_
 
 #include "base/time.h"
 #include "cc/base/cc_export.h"
@@ -29,4 +29,4 @@ public:
 
 } // namespace cc
 
-#endif  // CC_SCROLLBAR_ANIMATION_CONTROLLER_H_
+#endif  // CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_

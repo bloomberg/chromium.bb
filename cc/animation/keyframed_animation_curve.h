@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_KEYFRAMED_ANIMATION_CURVE_H_
-#define CC_KEYFRAMED_ANIMATION_CURVE_H_
+#ifndef CC_ANIMATION_KEYFRAMED_ANIMATION_CURVE_H_
+#define CC_ANIMATION_KEYFRAMED_ANIMATION_CURVE_H_
 
-#include "cc/animation_curve.h"
+#include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/timing_function.h"
@@ -126,4 +126,4 @@ class CC_EXPORT KeyframedTransformAnimationCurve : public TransformAnimationCurv
 
 }  // namespace cc
 
-#endif  // CC_KEYFRAMED_ANIMATION_CURVE_H_
+#endif  // CC_ANIMATION_KEYFRAMED_ANIMATION_CURVE_H_

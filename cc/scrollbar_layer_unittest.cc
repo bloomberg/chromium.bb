@@ -4,12 +4,12 @@
 
 #include "cc/scrollbar_layer.h"
 
+#include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/append_quads_data.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/priority_calculator.h"
 #include "cc/resource_update_queue.h"
-#include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"

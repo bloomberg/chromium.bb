@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation_registrar.h"
+#include "cc/animation/animation_registrar.h"
 
-#include "cc/layer_animation_controller.h"
+#include "cc/animation/layer_animation_controller.h"
 
 namespace cc {
 

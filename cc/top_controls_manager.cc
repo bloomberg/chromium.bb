@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time.h"
-#include "cc/keyframed_animation_curve.h"
+#include "cc/animation/keyframed_animation_curve.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/timing_function.h"
 #include "cc/top_controls_manager_client.h"

@@ -6,7 +6,7 @@
 #define UI_COMPOSITOR_LAYER_ANIMATION_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/animation.h"
+#include "cc/animation/animation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/rect.h"

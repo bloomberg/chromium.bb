@@ -4,13 +4,13 @@
 
 #include "cc/test/layer_tree_test_common.h"
 
-#include "cc/animation.h"
-#include "cc/animation_registrar.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_registrar.h"
+#include "cc/animation/layer_animation_controller.h"
 #include "cc/base/thread_impl.h"
 #include "cc/content_layer.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
-#include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/single_thread_proxy.h"

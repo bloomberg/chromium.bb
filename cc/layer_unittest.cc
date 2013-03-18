@@ -4,9 +4,9 @@
 
 #include "cc/layer.h"
 
+#include "cc/animation/keyframed_animation_curve.h"
 #include "cc/base/math_util.h"
 #include "cc/base/thread.h"
-#include "cc/keyframed_animation_curve.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_painter.h"
 #include "cc/layer_tree_host.h"

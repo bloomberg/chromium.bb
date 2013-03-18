@@ -7,7 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/animation_id_provider.h"
+#include "cc/animation/animation_id_provider.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"

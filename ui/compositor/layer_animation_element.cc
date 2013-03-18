@@ -5,8 +5,8 @@
 #include "ui/compositor/layer_animation_element.h"
 
 #include "base/compiler_specific.h"
-#include "cc/animation.h"
-#include "cc/animation_id_provider.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_id_provider.h"
 #include "ui/base/animation/tween.h"
 #include "ui/compositor/float_animation_curve_adapter.h"
 #include "ui/compositor/layer.h"

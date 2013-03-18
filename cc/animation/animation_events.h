@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_EVENTS_H_
-#define CC_ANIMATION_EVENTS_H_
+#ifndef CC_ANIMATION_ANIMATION_EVENTS_H_
+#define CC_ANIMATION_ANIMATION_EVENTS_H_
 
 #include <vector>
 
-#include "cc/animation.h"
+#include "cc/animation/animation.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -40,4 +40,4 @@ typedef std::vector<AnimationEvent> AnimationEventsVector;
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_EVENTS_H_
+#endif  // CC_ANIMATION_ANIMATION_EVENTS_H_

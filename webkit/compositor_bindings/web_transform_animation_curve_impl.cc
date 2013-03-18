@@ -4,7 +4,7 @@
 
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 
-#include "cc/keyframed_animation_curve.h"
+#include "cc/animation/keyframed_animation_curve.h"
 #include "cc/timing_function.h"
 #include "cc/transform_operations.h"
 #include "webkit/compositor_bindings/web_animation_curve_common.h"

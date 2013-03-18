@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_ID_PROVIDER
-#define CC_ANIMATION_ID_PROVIDER
+#ifndef CC_ANIMATION_ANIMATION_ID_PROVIDER_H_
+#define CC_ANIMATION_ANIMATION_ID_PROVIDER_H_
 
 #include "cc/base/cc_export.h"
 
@@ -18,4 +18,4 @@ class CC_EXPORT AnimationIdProvider {
 
 }
 
-#endif  // CC_ANIMATION_ID_PROVIDER
+#endif  // CC_ANIMATION_ANIMATION_ID_PROVIDER_H_

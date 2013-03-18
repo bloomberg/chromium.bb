@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "base/time.h"
-#include "cc/animation_events.h"
+#include "cc/animation/animation_events.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/proxy.h"
 

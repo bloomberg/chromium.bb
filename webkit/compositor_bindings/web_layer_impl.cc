@@ -5,7 +5,7 @@
 #include "webkit/compositor_bindings/web_layer_impl.h"
 
 #include "base/string_util.h"
-#include "cc/animation.h"
+#include "cc/animation/animation.h"
 #include "cc/base/region.h"
 #include "cc/layer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"

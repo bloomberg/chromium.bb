@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/time.h"
-#include "cc/animation.h"
-#include "cc/animation_events.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_events.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/tween.h"
 #include "ui/compositor/compositor_export.h"

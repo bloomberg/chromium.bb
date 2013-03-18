@@ -6,9 +6,9 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
-#include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer.h"
 #include "cc/scrollbar_layer_impl.h"
 

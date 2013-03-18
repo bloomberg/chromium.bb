@@ -6,7 +6,7 @@
 #define UI_COMPOSITOR_FLOAT_ANIMATION_CURVE_ADAPTER_H_
 
 #include "base/time.h"
-#include "cc/animation_curve.h"
+#include "cc/animation/animation_curve.h"
 #include "ui/base/animation/tween.h"
 
 namespace ui {

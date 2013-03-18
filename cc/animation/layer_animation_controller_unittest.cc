@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layer_animation_controller.h"
+#include "cc/animation/layer_animation_controller.h"
 
-#include "cc/animation.h"
-#include "cc/animation_curve.h"
-#include "cc/keyframed_animation_curve.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_curve.h"
+#include "cc/animation/keyframed_animation_curve.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/transform_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"

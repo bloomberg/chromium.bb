@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_LAYER_ANIMATION_CONTROLLER_H_
-#define CC_LAYER_ANIMATION_CONTROLLER_H_
+#ifndef CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
+#define CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "cc/animation_events.h"
+#include "cc/animation/animation_events.h"
+#include "cc/animation/layer_animation_event_observer.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
-#include "cc/layer_animation_event_observer.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx { class Transform; }
@@ -151,4 +151,4 @@ class CC_EXPORT LayerAnimationController
 
 }  // namespace cc
 
-#endif  // CC_LAYER_ANIMATION_CONTROLLER_H_
+#endif  // CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_

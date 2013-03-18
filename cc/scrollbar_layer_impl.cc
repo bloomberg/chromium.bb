@@ -4,11 +4,11 @@
 
 #include "cc/scrollbar_layer_impl.h"
 
+#include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/layer_tree_settings.h"
 #include "cc/quad_sink.h"
-#include "cc/scrollbar_animation_controller.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "ui/gfx/rect_conversions.h"

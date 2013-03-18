@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scrollbar_animation_controller_linear_fade.h"
+#include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 
 #include "base/time.h"
 #include "cc/layer_impl.h"

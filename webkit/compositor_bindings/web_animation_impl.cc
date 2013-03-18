@@ -4,11 +4,11 @@
 
 #include "webkit/compositor_bindings/web_animation_impl.h"
 
-#include "cc/animation.h"
-#include "cc/animation_curve.h"
-#include "cc/animation_id_provider.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_curve.h"
+#include "cc/animation/animation_id_provider.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 #include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 

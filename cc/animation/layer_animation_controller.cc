@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layer_animation_controller.h"
+#include "cc/animation/layer_animation_controller.h"
 
 #include <algorithm>
 
-#include "cc/animation.h"
-#include "cc/animation_registrar.h"
+#include "cc/animation/animation.h"
+#include "cc/animation/animation_registrar.h"
+#include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/layer_animation_value_observer.h"
 #include "cc/base/scoped_ptr_algorithm.h"
-#include "cc/keyframed_animation_curve.h"
-#include "cc/layer_animation_value_observer.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

@@ -4,9 +4,9 @@
 
 #include "cc/test/animation_test_common.h"
 
-#include "cc/keyframed_animation_curve.h"
+#include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/layer_animation_controller.h"
 #include "cc/layer.h"
-#include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/transform_operations.h"
 

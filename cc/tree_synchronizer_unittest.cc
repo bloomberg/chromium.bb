@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
+#include "cc/animation/layer_animation_controller.h"
 #include "cc/layer.h"
-#include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/proxy.h"
 #include "cc/single_thread_proxy.h"
