@@ -61,9 +61,9 @@ class QuadCullerTest : public testing::Test {
       std::vector<LayerImpl*>& surface_layer_list) {
     scoped_ptr<TiledLayerImpl> layer =
         TiledLayerImpl::Create(host_impl_.active_tree(), layer_id_++);
-    scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(
-        gfx::Size(100, 100), LayerTilingData::NoBorderTexels);
-    tiler->setBounds(layer_rect.size());
+    scoped_ptr<LayerTilingData> tiler = LayerTilingData::Create(
+        gfx::Size(100, 100), LayerTilingData::NO_BORDER_TEXELS);
+    tiler->SetBounds(layer_rect.size());
     layer->SetTilingData(*tiler);
     layer->set_skips_draw(false);
     layer->draw_properties().target_space_transform = draw_transform;
@@ -75,12 +75,12 @@ class QuadCullerTest : public testing::Test {
     layer->SetContentBounds(layer_rect.size());
 
     ResourceProvider::ResourceId resource_id = 1;
-    for (int i = 0; i < tiler->numTilesX(); ++i) {
-      for (int j = 0; j < tiler->numTilesY(); ++j) {
+    for (int i = 0; i < tiler->num_tiles_x(); ++i) {
+      for (int j = 0; j < tiler->num_tiles_y(); ++j) {
         gfx::Rect tile_opaque_rect =
             opaque
-            ? tiler->tileBounds(i, j)
-            : gfx::IntersectRects(tiler->tileBounds(i, j), layer_opaque_rect);
+            ? tiler->tile_bounds(i, j)
+            : gfx::IntersectRects(tiler->tile_bounds(i, j), layer_opaque_rect);
         layer->PushTileProperties(i, j, resource_id++, tile_opaque_rect, false);
       }
     }

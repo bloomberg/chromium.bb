@@ -895,8 +895,8 @@ protected:
         set_skips_draw(false);
         draw_properties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
 
-        scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::HasBorderTexels);
-        tiler->setBounds(content_bounds());
+        scoped_ptr<LayerTilingData> tiler = LayerTilingData::Create(gfx::Size(100, 100), LayerTilingData::HAS_BORDER_TEXELS);
+        tiler->SetBounds(content_bounds());
         SetTilingData(*tiler.get());
     }
 
@@ -1027,8 +1027,8 @@ private:
     MissingTextureAnimatingLayer(LayerTreeImpl* treeImpl, int id, bool tileMissing, bool skipsDraw, bool animating, ResourceProvider* resourceProvider)
         : DidDrawCheckLayer(treeImpl, id)
     {
-        scoped_ptr<LayerTilingData> tilingData = LayerTilingData::create(gfx::Size(10, 10), LayerTilingData::NoBorderTexels);
-        tilingData->setBounds(bounds());
+        scoped_ptr<LayerTilingData> tilingData = LayerTilingData::Create(gfx::Size(10, 10), LayerTilingData::NO_BORDER_TEXELS);
+        tilingData->SetBounds(bounds());
         SetTilingData(*tilingData.get());
         set_skips_draw(skipsDraw);
         if (!tileMissing) {
@@ -3299,8 +3299,8 @@ TEST_F(LayerTreeHostImplTest, textureCachingWithScissor)
     child->set_skips_draw(false);
 
     // child layer has 10x10 tiles.
-    scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(10, 10), LayerTilingData::HasBorderTexels);
-    tiler->setBounds(child->content_bounds());
+    scoped_ptr<LayerTilingData> tiler = LayerTilingData::Create(gfx::Size(10, 10), LayerTilingData::HAS_BORDER_TEXELS);
+    tiler->SetBounds(child->content_bounds());
     child->SetTilingData(*tiler.get());
 
     grandChild->SetAnchorPoint(gfx::PointF(0, 0));

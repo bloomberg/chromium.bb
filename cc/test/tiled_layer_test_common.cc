@@ -89,7 +89,7 @@ FakeTiledLayer::FakeTiledLayer(PrioritizedResourceManager* resourceManager)
 {
     SetTileSize(tileSize());
     SetTextureFormat(GL_RGBA);
-    SetBorderTexelOption(LayerTilingData::NoBorderTexels);
+    SetBorderTexelOption(LayerTilingData::NO_BORDER_TEXELS);
     SetIsDrawable(true); // So that we don't get false positives if any of these tests expect to return false from DrawsContent() for other reasons.
 }
 

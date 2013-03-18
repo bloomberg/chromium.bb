@@ -8,139 +8,126 @@
 
 namespace cc {
 
-scoped_ptr<LayerTilingData> LayerTilingData::create(const gfx::Size& tileSize, BorderTexelOption border)
-{
-    return make_scoped_ptr(new LayerTilingData(tileSize, border));
+scoped_ptr<LayerTilingData> LayerTilingData::Create(gfx::Size tile_size,
+                                                    BorderTexelOption border) {
+  return make_scoped_ptr(new LayerTilingData(tile_size, border));
 }
 
-LayerTilingData::LayerTilingData(const gfx::Size& tileSize, BorderTexelOption border)
-    : m_tilingData(tileSize, gfx::Size(), border == HasBorderTexels)
-{
-    setTileSize(tileSize);
+LayerTilingData::LayerTilingData(gfx::Size tile_size, BorderTexelOption border)
+    : tiling_data_(tile_size, gfx::Size(), border == HAS_BORDER_TEXELS) {
+  SetTileSize(tile_size);
 }
 
-LayerTilingData::~LayerTilingData()
-{
+LayerTilingData::~LayerTilingData() {}
+
+void LayerTilingData::SetTileSize(gfx::Size size) {
+  if (tile_size() == size)
+    return;
+
+  reset();
+
+  tiling_data_.SetMaxTextureSize(size);
 }
 
-void LayerTilingData::setTileSize(const gfx::Size& size)
-{
-    if (tileSize() == size)
-        return;
-
-    reset();
-
-    m_tilingData.SetMaxTextureSize(size);
+gfx::Size LayerTilingData::tile_size() const {
+  return tiling_data_.max_texture_size();
 }
 
-gfx::Size LayerTilingData::tileSize() const
-{
-    return m_tilingData.max_texture_size();
+void LayerTilingData::SetBorderTexelOption(
+    BorderTexelOption border_texel_option) {
+  bool border_texels = border_texel_option == HAS_BORDER_TEXELS;
+  if (has_border_texels() == border_texels)
+    return;
+
+  reset();
+  tiling_data_.SetHasBorderTexels(border_texels);
 }
 
-void LayerTilingData::setBorderTexelOption(BorderTexelOption borderTexelOption)
-{
-    bool borderTexels = borderTexelOption == HasBorderTexels;
-    if (hasBorderTexels() == borderTexels)
-        return;
+const LayerTilingData& LayerTilingData::operator=
+    (const LayerTilingData & tiler) {
+  tiling_data_ = tiler.tiling_data_;
 
-    reset();
-    m_tilingData.SetHasBorderTexels(borderTexels);
+  return *this;
 }
 
-const LayerTilingData& LayerTilingData::operator=(const LayerTilingData& tiler)
-{
-    m_tilingData = tiler.m_tilingData;
-
-    return *this;
+void LayerTilingData::AddTile(scoped_ptr<Tile> tile, int i, int j) {
+  DCHECK(!TileAt(i, j));
+  tile->move_to(i, j);
+  tiles_.add(std::make_pair(i, j), tile.Pass());
 }
 
-void LayerTilingData::addTile(scoped_ptr<Tile> tile, int i, int j)
-{
-    DCHECK(!tileAt(i, j));
-    tile->moveTo(i, j);
-    m_tiles.add(std::make_pair(i, j), tile.Pass());
+scoped_ptr<LayerTilingData::Tile> LayerTilingData::TakeTile(int i, int j) {
+  return tiles_.take_and_erase(std::make_pair(i, j));
 }
 
-scoped_ptr<LayerTilingData::Tile> LayerTilingData::takeTile(int i, int j)
-{
-    return m_tiles.take_and_erase(std::make_pair(i, j));
+LayerTilingData::Tile* LayerTilingData::TileAt(int i, int j) const {
+  return tiles_.get(std::make_pair(i, j));
 }
 
-LayerTilingData::Tile* LayerTilingData::tileAt(int i, int j) const
-{
-    return m_tiles.get(std::make_pair(i, j));
+void LayerTilingData::ContentRectToTileIndices(gfx::Rect content_rect,
+                                               int* left,
+                                               int* top,
+                                               int* right,
+                                               int* bottom) const {
+  // An empty rect doesn't result in an empty set of tiles, so don't pass an
+  // empty rect.
+  // FIXME: Possibly we should fill a vector of tiles instead,
+  //        since the normal use of this function is to enumerate some tiles.
+  DCHECK(!content_rect.IsEmpty());
+
+  *left = tiling_data_.TileXIndexFromSrcCoord(content_rect.x());
+  *top = tiling_data_.TileYIndexFromSrcCoord(content_rect.y());
+  *right = tiling_data_.TileXIndexFromSrcCoord(content_rect.right() - 1);
+  *bottom = tiling_data_.TileYIndexFromSrcCoord(content_rect.bottom() - 1);
 }
 
-void LayerTilingData::reset()
-{
-    m_tiles.clear();
+gfx::Rect LayerTilingData::TileRect(const Tile* tile) const {
+  gfx::Rect tile_rect = tiling_data_.TileBoundsWithBorder(tile->i(), tile->j());
+  tile_rect.set_size(tile_size());
+  return tile_rect;
 }
 
-void LayerTilingData::contentRectToTileIndices(const gfx::Rect& contentRect, int& left, int& top, int& right, int& bottom) const
-{
-    // An empty rect doesn't result in an empty set of tiles, so don't pass an empty rect.
-    // FIXME: Possibly we should fill a vector of tiles instead,
-    //        since the normal use of this function is to enumerate some tiles.
-    DCHECK(!contentRect.IsEmpty());
+Region LayerTilingData::OpaqueRegionInContentRect(
+    gfx::Rect content_rect) const {
+  if (content_rect.IsEmpty())
+    return Region();
 
-    left = m_tilingData.TileXIndexFromSrcCoord(contentRect.x());
-    top = m_tilingData.TileYIndexFromSrcCoord(contentRect.y());
-    right = m_tilingData.TileXIndexFromSrcCoord(contentRect.right() - 1);
-    bottom = m_tilingData.TileYIndexFromSrcCoord(contentRect.bottom() - 1);
-}
+  Region opaque_region;
+  int left, top, right, bottom;
+  ContentRectToTileIndices(content_rect, &left, &top, &right, &bottom);
+  for (int j = top; j <= bottom; ++j) {
+    for (int i = left; i <= right; ++i) {
+      Tile* tile = TileAt(i, j);
+      if (!tile)
+        continue;
 
-gfx::Rect LayerTilingData::tileRect(const Tile* tile) const
-{
-    gfx::Rect tileRect = m_tilingData.TileBoundsWithBorder(tile->i(), tile->j());
-    tileRect.set_size(tileSize());
-    return tileRect;
-}
-
-Region LayerTilingData::opaqueRegionInContentRect(const gfx::Rect& contentRect) const
-{
-    if (contentRect.IsEmpty())
-        return Region();
-
-    Region opaqueRegion;
-    int left, top, right, bottom;
-    contentRectToTileIndices(contentRect, left, top, right, bottom);
-    for (int j = top; j <= bottom; ++j) {
-        for (int i = left; i <= right; ++i) {
-            Tile* tile = tileAt(i, j);
-            if (!tile)
-                continue;
-
-            gfx::Rect tileOpaqueRect = gfx::IntersectRects(contentRect, tile->opaqueRect());
-            opaqueRegion.Union(tileOpaqueRect);
-        }
+      gfx::Rect tile_opaque_rect =
+          gfx::IntersectRects(content_rect, tile->opaque_rect());
+      opaque_region.Union(tile_opaque_rect);
     }
-    return opaqueRegion;
+  }
+  return opaque_region;
 }
 
-void LayerTilingData::setBounds(const gfx::Size& size)
-{
-    m_tilingData.SetTotalSize(size);
-    if (size.IsEmpty()) {
-        m_tiles.clear();
-        return;
-    }
+void LayerTilingData::SetBounds(gfx::Size size) {
+  tiling_data_.SetTotalSize(size);
+  if (size.IsEmpty()) {
+    tiles_.clear();
+    return;
+  }
 
-    // Any tiles completely outside our new bounds are invalid and should be dropped.
-    int left, top, right, bottom;
-    contentRectToTileIndices(gfx::Rect(gfx::Point(), size), left, top, right, bottom);
-    std::vector<TileMapKey> invalidTileKeys;
-    for (TileMap::const_iterator it = m_tiles.begin(); it != m_tiles.end(); ++it) {
-        if (it->first.first > right || it->first.second > bottom)
-            invalidTileKeys.push_back(it->first);
-    }
-    for (size_t i = 0; i < invalidTileKeys.size(); ++i)
-        m_tiles.erase(invalidTileKeys[i]);
-}
-
-gfx::Size LayerTilingData::bounds() const
-{
-    return m_tilingData.total_size();
+  // Any tiles completely outside our new bounds are invalid and should be
+  // dropped.
+  int left, top, right, bottom;
+  ContentRectToTileIndices(
+      gfx::Rect(gfx::Point(), size), &left, &top, &right, &bottom);
+  std::vector<TileMapKey> invalid_tile_keys;
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    if (it->first.first > right || it->first.second > bottom)
+      invalid_tile_keys.push_back(it->first);
+  }
+  for (size_t i = 0; i < invalid_tile_keys.size(); ++i)
+    tiles_.erase(invalid_tile_keys[i]);
 }
 
 }  // namespace cc

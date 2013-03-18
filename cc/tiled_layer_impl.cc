@@ -63,8 +63,8 @@ TiledLayerImpl::~TiledLayerImpl() {
 ResourceProvider::ResourceId TiledLayerImpl::ContentsResourceId() const {
   // This function is only valid for single texture layers, e.g. masks.
   DCHECK(tiler_);
-  DCHECK(tiler_->numTilesX() == 1);
-  DCHECK(tiler_->numTilesY() == 1);
+  DCHECK_EQ(tiler_->num_tiles_x(), 1);
+  DCHECK_EQ(tiler_->num_tiles_y(), 1);
 
   DrawableTile* tile = TileAt(0, 0);
   ResourceProvider::ResourceId resource_id = tile ? tile->resource_id() : 0;
@@ -78,7 +78,7 @@ void TiledLayerImpl::DumpLayerProperties(std::string* str, int indent) const {
 }
 
 bool TiledLayerImpl::HasTileAt(int i, int j) const {
-  return tiler_->tileAt(i, j);
+  return tiler_->TileAt(i, j);
 }
 
 bool TiledLayerImpl::HasResourceIdForTileAt(int i, int j) const {
@@ -86,13 +86,13 @@ bool TiledLayerImpl::HasResourceIdForTileAt(int i, int j) const {
 }
 
 DrawableTile* TiledLayerImpl::TileAt(int i, int j) const {
-  return static_cast<DrawableTile*>(tiler_->tileAt(i, j));
+  return static_cast<DrawableTile*>(tiler_->TileAt(i, j));
 }
 
 DrawableTile* TiledLayerImpl::CreateTile(int i, int j) {
   scoped_ptr<DrawableTile> tile(DrawableTile::Create());
   DrawableTile* added_tile = tile.get();
-  tiler_->addTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
+  tiler_->AddTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
 
   // Temporary diagnostic checks.
   CHECK(added_tile);
@@ -130,7 +130,7 @@ void TiledLayerImpl::PushPropertiesTo(LayerImpl* layer) {
     tiled_layer->PushTileProperties(i,
                                     j,
                                     tile->resource_id(),
-                                    tile->opaqueRect(),
+                                    tile->opaque_rect(),
                                     tile->contents_swizzled());
   }
 }
@@ -139,7 +139,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
                                  AppendQuadsData* append_quads_data) {
   gfx::Rect content_rect = visible_content_rect();
 
-  if (!tiler_ || tiler_->hasEmptyBounds() || content_rect.IsEmpty())
+  if (!tiler_ || tiler_->has_empty_bounds() || content_rect.IsEmpty())
     return;
 
   SharedQuadState* shared_quad_state =
@@ -147,13 +147,13 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   int left, top, right, bottom;
-  tiler_->contentRectToTileIndices(content_rect, left, top, right, bottom);
+  tiler_->ContentRectToTileIndices(content_rect, &left, &top, &right, &bottom);
 
   if (ShowDebugBorders()) {
     for (int j = top; j <= bottom; ++j) {
       for (int i = left; i <= right; ++i) {
         DrawableTile* tile = TileAt(i, j);
-        gfx::Rect tile_rect = tiler_->tileBounds(i, j);
+        gfx::Rect tile_rect = tiler_->tile_bounds(i, j);
         SkColor border_color;
         float border_width;
 
@@ -180,7 +180,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       DrawableTile* tile = TileAt(i, j);
-      gfx::Rect tile_rect = tiler_->tileBounds(i, j);
+      gfx::Rect tile_rect = tiler_->tile_bounds(i, j);
       gfx::Rect display_rect = tile_rect;
       tile_rect.Intersect(content_rect);
 
@@ -219,17 +219,17 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
       }
 
       gfx::Rect tile_opaque_rect = contents_opaque() ? tile_rect :
-        gfx::IntersectRects(tile->opaqueRect(), content_rect);
+        gfx::IntersectRects(tile->opaque_rect(), content_rect);
 
       // Keep track of how the top left has moved, so the texture can be
       // offset the same amount.
       gfx::Vector2d display_offset = tile_rect.origin() - display_rect.origin();
       gfx::Vector2d texture_offset =
-          tiler_->textureOffset(i, j) + display_offset;
+          tiler_->texture_offset(i, j) + display_offset;
       gfx::RectF tex_coord_rect = gfx::RectF(tile_rect.size()) + texture_offset;
 
-      float tile_width = static_cast<float>(tiler_->tileSize().width());
-      float tile_height = static_cast<float>(tiler_->tileSize().height());
+      float tile_width = static_cast<float>(tiler_->tile_size().width());
+      float tile_height = static_cast<float>(tiler_->tile_size().height());
       gfx::Size texture_size(tile_width, tile_height);
 
       scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
@@ -251,10 +251,10 @@ void TiledLayerImpl::SetTilingData(const LayerTilingData& tiler) {
   if (tiler_) {
     tiler_->reset();
   } else {
-    tiler_ = LayerTilingData::create(tiler.tileSize(),
-                                     tiler.hasBorderTexels()
-                                         ? LayerTilingData::HasBorderTexels
-                                         : LayerTilingData::NoBorderTexels);
+    tiler_ = LayerTilingData::Create(tiler.tile_size(),
+                                     tiler.has_border_texels()
+                                         ? LayerTilingData::HAS_BORDER_TEXELS
+                                         : LayerTilingData::NO_BORDER_TEXELS);
   }
   *tiler_ = tiler;
 
@@ -271,7 +271,7 @@ void TiledLayerImpl::PushTileProperties(
   if (!tile)
     tile = CreateTile(i, j);
   tile->set_resource_id(resource_id);
-  tile->setOpaqueRect(opaque_rect);
+  tile->set_opaque_rect(opaque_rect);
   tile->set_contents_swizzled(contents_swizzled);
 }
 
@@ -280,7 +280,7 @@ void TiledLayerImpl::PushInvalidTile(int i, int j) {
   if (!tile)
     tile = CreateTile(i, j);
   tile->set_resource_id(0);
-  tile->setOpaqueRect(gfx::Rect());
+  tile->set_opaque_rect(gfx::Rect());
   tile->set_contents_swizzled(false);
 }
 
@@ -289,7 +289,7 @@ Region TiledLayerImpl::VisibleContentOpaqueRegion() const {
     return Region();
   if (contents_opaque())
     return visible_content_rect();
-  return tiler_->opaqueRegionInContentRect(visible_content_rect());
+  return tiler_->OpaqueRegionInContentRect(visible_content_rect());
 }
 
 void TiledLayerImpl::DidLoseOutputSurface() {

@@ -88,7 +88,7 @@ TiledLayer::TiledLayer()
       failed_update_(false),
       tiling_option_(AUTO_TILE) {
   tiler_ =
-      LayerTilingData::create(gfx::Size(), LayerTilingData::HasBorderTexels);
+      LayerTilingData::Create(gfx::Size(), LayerTilingData::HAS_BORDER_TEXELS);
 }
 
 TiledLayer::~TiledLayer() {}
@@ -143,7 +143,7 @@ void TiledLayer::UpdateBounds() {
   gfx::Size new_bounds = content_bounds();
   if (old_bounds == new_bounds)
     return;
-  tiler_->setBounds(new_bounds);
+  tiler_->SetBounds(new_bounds);
 
   // Invalidate any areas that the new bounds exposes.
   Region old_region = gfx::Rect(gfx::Point(), old_bounds);
@@ -155,11 +155,11 @@ void TiledLayer::UpdateBounds() {
     InvalidateContentRect(new_rects.rect());
 }
 
-void TiledLayer::SetTileSize(gfx::Size size) { tiler_->setTileSize(size); }
+void TiledLayer::SetTileSize(gfx::Size size) { tiler_->SetTileSize(size); }
 
 void TiledLayer::SetBorderTexelOption(
     LayerTilingData::BorderTexelOption border_texel_option) {
-  tiler_->setBorderTexelOption(border_texel_option);
+  tiler_->SetBorderTexelOption(border_texel_option);
 }
 
 bool TiledLayer::DrawsContent() const {
@@ -167,7 +167,7 @@ bool TiledLayer::DrawsContent() const {
     return false;
 
   bool has_more_than_one_tile =
-      tiler_->numTilesX() > 1 || tiler_->numTilesY() > 1;
+      tiler_->num_tiles_x() > 1 || tiler_->num_tiles_y() > 1;
   if (tiling_option_ == NEVER_TILE && has_more_than_one_tile)
     return false;
 
@@ -213,13 +213,13 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
         i,
         j,
         tile->managed_resource()->resourceId(),
-        tile->opaqueRect(),
+        tile->opaque_rect(),
         tile->managed_resource()->contentsSwizzled());
   }
   for (std::vector<UpdatableTile*>::const_iterator iter = invalid_tiles.begin();
        iter != invalid_tiles.end();
        ++iter)
-    tiler_->takeTile((*iter)->i(), (*iter)->j());
+    tiler_->TakeTile((*iter)->i(), (*iter)->j());
 }
 
 bool TiledLayer::BlocksPendingCommit() const { return true; }
@@ -256,7 +256,7 @@ void TiledLayer::SetLayerTreeHost(LayerTreeHost* host) {
 }
 
 UpdatableTile* TiledLayer::TileAt(int i, int j) const {
-  return static_cast<UpdatableTile*>(tiler_->tileAt(i, j));
+  return static_cast<UpdatableTile*>(tiler_->TileAt(i, j));
 }
 
 UpdatableTile* TiledLayer::CreateTile(int i, int j) {
@@ -264,12 +264,12 @@ UpdatableTile* TiledLayer::CreateTile(int i, int j) {
 
   scoped_ptr<UpdatableTile> tile(
       UpdatableTile::Create(Updater()->CreateResource(ResourceManager())));
-  tile->managed_resource()->setDimensions(tiler_->tileSize(), texture_format_);
+  tile->managed_resource()->setDimensions(tiler_->tile_size(), texture_format_);
 
   UpdatableTile* added_tile = tile.get();
-  tiler_->addTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
+  tiler_->AddTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
 
-  added_tile->dirty_rect = tiler_->tileRect(added_tile);
+  added_tile->dirty_rect = tiler_->TileRect(added_tile);
 
   // Temporary diagnostic crash.
   CHECK(added_tile);
@@ -285,7 +285,7 @@ void TiledLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
 
 void TiledLayer::InvalidateContentRect(gfx::Rect content_rect) {
   UpdateBounds();
-  if (tiler_->isEmpty() || content_rect.IsEmpty() || skips_draw_)
+  if (tiler_->is_empty() || content_rect.IsEmpty() || skips_draw_)
     return;
 
   for (LayerTilingData::TileMap::const_iterator iter = tiler_->tiles().begin();
@@ -296,7 +296,7 @@ void TiledLayer::InvalidateContentRect(gfx::Rect content_rect) {
     // FIXME: This should not ever be null.
     if (!tile)
       continue;
-    gfx::Rect bound = tiler_->tileRect(tile);
+    gfx::Rect bound = tiler_->TileRect(tile);
     bound.Intersect(content_rect);
     tile->dirty_rect.Union(bound);
   }
@@ -304,7 +304,7 @@ void TiledLayer::InvalidateContentRect(gfx::Rect content_rect) {
 
 // Returns true if tile is dirty and only part of it needs to be updated.
 bool TiledLayer::TileOnlyNeedsPartialUpdate(UpdatableTile* tile) {
-  return !tile->dirty_rect.Contains(tiler_->tileRect(tile)) &&
+  return !tile->dirty_rect.Contains(tiler_->TileRect(tile)) &&
          tile->managed_resource()->haveBackingTexture();
 }
 
@@ -364,8 +364,8 @@ void TiledLayer::MarkOcclusionsAndRequestTextures(
       // Did ResetUpdateState get skipped? Are we doing more than one occlusion
       // pass?
       DCHECK(!tile->occluded);
-      gfx::Rect visible_tile_rect =
-          gfx::IntersectRects(tiler_->tileBounds(i, j), visible_content_rect());
+      gfx::Rect visible_tile_rect = gfx::IntersectRects(
+          tiler_->tile_bounds(i, j), visible_content_rect());
       if (occlusion && occlusion->Occluded(render_target(),
                                            visible_tile_rect,
                                            draw_transform(),
@@ -402,7 +402,7 @@ bool TiledLayer::HaveTexturesForTiles(int left,
 
       // Ensure the entire tile is dirty if we don't have the texture.
       if (!tile->managed_resource()->haveBackingTexture())
-        tile->dirty_rect = tiler_->tileRect(tile);
+        tile->dirty_rect = tiler_->TileRect(tile);
 
       // If using occlusion and the visible region of the tile is occluded,
       // don't reserve a texture or update the tile.
@@ -444,7 +444,7 @@ gfx::Rect TiledLayer::MarkTilesForUpdate(int left,
             layer_tree_host()->RequestPartialTextureUpdate()) {
           tile->partial_update = true;
         } else {
-          tile->dirty_rect = tiler_->tileRect(tile);
+          tile->dirty_rect = tiler_->TileRect(tile);
           tile->managed_resource()->returnBackingTexture();
         }
       }
@@ -480,7 +480,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
   scoped_refptr<LayerUpdater> protector(Updater());
   gfx::Rect painted_opaque_rect;
   Updater()->PrepareToUpdate(paint_rect,
-                             tiler_->tileSize(),
+                             tiler_->tile_size(),
                              1.f / width_scale,
                              1.f / height_scale,
                              &painted_opaque_rect,
@@ -494,7 +494,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
       if (!tile)
         continue;
 
-      gfx::Rect tile_rect = tiler_->tileBounds(i, j);
+      gfx::Rect tile_rect = tiler_->tile_bounds(i, j);
 
       // Use update_rect as the above loop copied the dirty rect for this frame
       // to update_rect.
@@ -510,20 +510,20 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
           gfx::IntersectRects(tile_rect, painted_opaque_rect);
       if (!tile_painted_rect.IsEmpty()) {
         gfx::Rect paint_inside_tile_opaque_rect =
-            gfx::IntersectRects(tile->opaqueRect(), tile_painted_rect);
+            gfx::IntersectRects(tile->opaque_rect(), tile_painted_rect);
         bool paint_inside_tile_opaque_rect_is_non_opaque =
             !tile_painted_opaque_rect.Contains(paint_inside_tile_opaque_rect);
         bool opaque_paint_not_inside_tile_opaque_rect =
             !tile_painted_opaque_rect.IsEmpty() &&
-            !tile->opaqueRect().Contains(tile_painted_opaque_rect);
+            !tile->opaque_rect().Contains(tile_painted_opaque_rect);
 
         if (paint_inside_tile_opaque_rect_is_non_opaque ||
             opaque_paint_not_inside_tile_opaque_rect)
-          tile->setOpaqueRect(tile_painted_opaque_rect);
+          tile->set_opaque_rect(tile_painted_opaque_rect);
       }
 
       // source_rect starts as a full-sized tile with border texels included.
-      gfx::Rect source_rect = tiler_->tileRect(tile);
+      gfx::Rect source_rect = tiler_->TileRect(tile);
       source_rect.Intersect(dirty_rect);
       // Paint rect not guaranteed to line up on tile boundaries, so
       // make sure that source_rect doesn't extend outside of it.
@@ -534,7 +534,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
       if (source_rect.IsEmpty())
         continue;
 
-      const gfx::Point anchor = tiler_->tileRect(tile).origin();
+      const gfx::Point anchor = tiler_->TileRect(tile).origin();
 
       // Calculate tile-space rectangle to upload into.
       gfx::Vector2d dest_offset = source_rect.origin() - anchor;
@@ -552,7 +552,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
           queue, source_rect, dest_offset, tile->partial_update, stats);
       if (occlusion) {
         occlusion->overdraw_metrics()->
-            DidUpload(gfx::Transform(), source_rect, tile->opaqueRect());
+            DidUpload(gfx::Transform(), source_rect, tile->opaque_rect());
       }
 
     }
@@ -571,9 +571,9 @@ bool TiledLayer::IsSmallAnimatedLayer() const {
                         : gfx::Size();
   gfx::Rect content_rect(gfx::Point(), content_bounds());
   return content_rect.width() <=
-         viewport_size.width() + tiler_->tileSize().width() &&
+         viewport_size.width() + tiler_->tile_size().width() &&
          content_rect.height() <=
-         viewport_size.height() + tiler_->tileSize().height();
+         viewport_size.height() + tiler_->tile_size().height();
 }
 
 namespace {
@@ -606,7 +606,7 @@ void TiledLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
   ResetUpdateState();
   UpdateScrollPrediction();
 
-  if (tiler_->hasEmptyBounds())
+  if (tiler_->has_empty_bounds())
     return;
 
   bool draws_to_root = !render_target()->parent();
@@ -618,8 +618,8 @@ void TiledLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
     create_tiles_rect = gfx::Rect(gfx::Point(), content_bounds());
   if (!create_tiles_rect.IsEmpty()) {
     int left, top, right, bottom;
-    tiler_->contentRectToTileIndices(
-        create_tiles_rect, left, top, right, bottom);
+    tiler_->ContentRectToTileIndices(
+        create_tiles_rect, &left, &top, &right, &bottom);
     for (int j = top; j <= bottom; ++j) {
       for (int i = left; i <= right; ++i) {
         if (!TileAt(i, j))
@@ -637,7 +637,7 @@ void TiledLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
     // FIXME: This should not ever be null.
     if (!tile)
       continue;
-    gfx::Rect tile_rect = tiler_->tileRect(tile);
+    gfx::Rect tile_rect = tiler_->TileRect(tile);
     SetPriorityForTexture(predicted_visible_rect_,
                           tile_rect,
                           draws_to_root,
@@ -651,7 +651,7 @@ Region TiledLayer::VisibleContentOpaqueRegion() const {
     return Region();
   if (contents_opaque())
     return visible_content_rect();
-  return tiler_->opaqueRegionInContentRect(visible_content_rect());
+  return tiler_->OpaqueRegionInContentRect(visible_content_rect());
 }
 
 void TiledLayer::ResetUpdateState() {
@@ -707,8 +707,8 @@ void TiledLayer::UpdateScrollPrediction() {
     // Bound the prediction to prevent unbounded paints, and clamp to content
     // bounds.
     gfx::Rect bound = visible_content_rect();
-    bound.Inset(-tiler_->tileSize().width() * kMaxPredictiveTilesCount,
-                -tiler_->tileSize().height() * kMaxPredictiveTilesCount);
+    bound.Inset(-tiler_->tile_size().width() * kMaxPredictiveTilesCount,
+                -tiler_->tile_size().height() * kMaxPredictiveTilesCount);
     bound.Intersect(gfx::Rect(gfx::Point(), content_bounds()));
     predicted_visible_rect_.Intersect(bound);
   }
@@ -728,7 +728,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
     UpdateBounds();
   }
 
-  if (tiler_->hasEmptyBounds() || !DrawsContent())
+  if (tiler_->has_empty_bounds() || !DrawsContent())
     return;
 
   bool did_paint = false;
@@ -738,8 +738,11 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
   // hiccups while it is animating.
   if (IsSmallAnimatedLayer()) {
     int left, top, right, bottom;
-    tiler_->contentRectToTileIndices(
-        gfx::Rect(gfx::Point(), content_bounds()), left, top, right, bottom);
+    tiler_->ContentRectToTileIndices(gfx::Rect(gfx::Point(), content_bounds()),
+                                     &left,
+                                     &top,
+                                     &right,
+                                     &bottom);
     UpdateTiles(left, top, right, bottom, queue, NULL, stats, &did_paint);
     if (did_paint)
       return;
@@ -754,8 +757,8 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
   // Visible painting. First occlude visible tiles and paint the non-occluded
   // tiles.
   int left, top, right, bottom;
-  tiler_->contentRectToTileIndices(
-      predicted_visible_rect_, left, top, right, bottom);
+  tiler_->ContentRectToTileIndices(
+      predicted_visible_rect_, &left, &top, &right, &bottom);
   MarkOcclusionsAndRequestTextures(left, top, right, bottom, occlusion);
   skips_draw_ = !UpdateTiles(
       left, top, right, bottom, queue, occlusion, stats, &did_paint);
@@ -776,11 +779,11 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
     return;
 
   int prepaint_left, prepaint_top, prepaint_right, prepaint_bottom;
-  tiler_->contentRectToTileIndices(idle_paint_content_rect,
-                                   prepaint_left,
-                                   prepaint_top,
-                                   prepaint_right,
-                                   prepaint_bottom);
+  tiler_->ContentRectToTileIndices(idle_paint_content_rect,
+                                   &prepaint_left,
+                                   &prepaint_top,
+                                   &prepaint_right,
+                                   &prepaint_bottom);
 
   // Then expand outwards one row/column at a time until we find a dirty
   // row/column to update. Increment along the major and minor scroll directions
@@ -839,7 +842,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
 bool TiledLayer::NeedsIdlePaint() {
   // Don't trigger more paints if we failed (as we'll just fail again).
   if (failed_update_ || visible_content_rect().IsEmpty() ||
-      tiler_->hasEmptyBounds() || !DrawsContent())
+      tiler_->has_empty_bounds() || !DrawsContent())
     return false;
 
   gfx::Rect idle_paint_content_rect = IdlePaintRect();
@@ -847,8 +850,8 @@ bool TiledLayer::NeedsIdlePaint() {
     return false;
 
   int left, top, right, bottom;
-  tiler_->contentRectToTileIndices(
-      idle_paint_content_rect, left, top, right, bottom);
+  tiler_->ContentRectToTileIndices(
+      idle_paint_content_rect, &left, &top, &right, &bottom);
 
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
@@ -874,8 +877,8 @@ gfx::Rect TiledLayer::IdlePaintRect() {
     return gfx::Rect();
 
   gfx::Rect prepaint_rect = visible_content_rect();
-  prepaint_rect.Inset(-tiler_->tileSize().width() * kPrepaintColumns,
-                      -tiler_->tileSize().height() * kPrepaintRows);
+  prepaint_rect.Inset(-tiler_->tile_size().width() * kPrepaintColumns,
+                      -tiler_->tile_size().height() * kPrepaintRows);
   gfx::Rect content_rect(content_bounds());
   prepaint_rect.Intersect(content_rect);
 

@@ -31,8 +31,8 @@ class TiledLayerImplTest : public testing::Test {
     scoped_ptr<TiledLayerImpl> layer =
         TiledLayerImpl::Create(host_impl_.active_tree(), 1);
     scoped_ptr<LayerTilingData> tiler =
-        LayerTilingData::create(tile_size, border_texels);
-    tiler->setBounds(layer_size);
+        LayerTilingData::Create(tile_size, border_texels);
+    tiler->SetBounds(layer_size);
     layer->SetTilingData(*tiler);
     layer->set_skips_draw(false);
     layer->draw_properties().visible_content_rect =
@@ -44,8 +44,8 @@ class TiledLayerImplTest : public testing::Test {
     layer->draw_properties().render_target = layer.get();
 
     ResourceProvider::ResourceId resource_id = 1;
-    for (int i = 0; i < tiler->numTilesX(); ++i) {
-      for (int j = 0; j < tiler->numTilesY(); ++j) {
+    for (int i = 0; i < tiler->num_tiles_x(); ++i) {
+      for (int j = 0; j < tiler->num_tiles_y(); ++j) {
         layer->PushTileProperties(
             i, j, resource_id++, gfx::Rect(0, 0, 1, 1), false);
       }
@@ -85,7 +85,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
   // Verify default layer does creates quads
   {
     scoped_ptr<TiledLayerImpl> layer =
-        CreateLayer(tile_size, layer_size, LayerTilingData::NoBorderTexels);
+        CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
     MockQuadCuller quad_culler;
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
@@ -96,7 +96,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
   // Layer with empty visible layer rect produces no quads
   {
     scoped_ptr<TiledLayerImpl> layer =
-        CreateLayer(tile_size, layer_size, LayerTilingData::NoBorderTexels);
+        CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
     layer->draw_properties().visible_content_rect = gfx::Rect();
 
     MockQuadCuller quad_culler;
@@ -108,7 +108,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
   // Layer with non-intersecting visible layer rect produces no quads
   {
     scoped_ptr<TiledLayerImpl> layer =
-        CreateLayer(tile_size, layer_size, LayerTilingData::NoBorderTexels);
+        CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
 
     gfx::Rect outsideBounds(gfx::Point(-100, -100), gfx::Size(50, 50));
     layer->draw_properties().visible_content_rect = outsideBounds;
@@ -122,7 +122,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
   // Layer with skips draw produces no quads
   {
     scoped_ptr<TiledLayerImpl> layer =
-        CreateLayer(tile_size, layer_size, LayerTilingData::NoBorderTexels);
+        CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
     layer->set_skips_draw(true);
 
     MockQuadCuller quad_culler;
@@ -140,7 +140,7 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
                        tile_size.height() * num_tiles_y);
 
   scoped_ptr<TiledLayerImpl> layer =
-      CreateLayer(tile_size, layer_size, LayerTilingData::NoBorderTexels);
+      CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
 
   // No checkerboarding
   {
@@ -173,10 +173,10 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
 // Test with both border texels and without.
 #define WITH_AND_WITHOUT_BORDER_TEST(text_fixture_name)                        \
   TEST_F(TiledLayerImplBorderTest, text_fixture_name##NoBorders) {             \
-    text_fixture_name(LayerTilingData::NoBorderTexels);                        \
+    text_fixture_name(LayerTilingData::NO_BORDER_TEXELS);                      \
   }                                                                            \
   TEST_F(TiledLayerImplBorderTest, text_fixture_name##HasBorders) {            \
-    text_fixture_name(LayerTilingData::HasBorderTexels);                       \
+    text_fixture_name(LayerTilingData::HAS_BORDER_TEXELS);                     \
   }
 
 class TiledLayerImplBorderTest : public TiledLayerImplTest {
@@ -210,7 +210,7 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
              &shared_states,
              gfx::Size(50, 50),
              gfx::Size(250, 250),
-             LayerTilingData::NoBorderTexels,
+             LayerTilingData::NO_BORDER_TEXELS,
              visible_content_rect);
     LayerTestCommon::verifyQuadsExactlyCoverRect(quads, visible_content_rect);
   }
@@ -225,7 +225,7 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
              &shared_states,
              gfx::Size(100, 100),
              layer_size,
-             LayerTilingData::NoBorderTexels,
+             LayerTilingData::NO_BORDER_TEXELS,
              visible_content_rect);
     LayerTestCommon::verifyQuadsExactlyCoverRect(quads, visible_content_rect);
   }
@@ -245,7 +245,7 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
            &shared_states,
            tile_size,
            layer_size,
-           LayerTilingData::NoBorderTexels,
+           LayerTilingData::NO_BORDER_TEXELS,
            gfx::Rect(gfx::Point(), layer_size));
 
   for (size_t i = 0; i < quads.size(); ++i) {
