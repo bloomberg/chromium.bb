@@ -97,13 +97,6 @@ std::string GetDriveUserAgent() {
 
 }  // namespace
 
-void DriveSystemService::DriveCacheDeleter::operator()(
-    DriveCache* cache) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (cache)
-    cache->Destroy();
-}
-
 DriveSystemService::DriveSystemService(
     Profile* profile,
     google_apis::DriveServiceInterface* test_drive_service,

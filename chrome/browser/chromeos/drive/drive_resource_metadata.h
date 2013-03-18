@@ -137,7 +137,10 @@ class DriveResourceMetadata {
   DriveResourceMetadata(
       const std::string& root_resource_id,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
-  virtual ~DriveResourceMetadata();
+
+  // Destroys this object.  This method posts a task to |blocking_task_runner_|
+  // to safely delete this object.
+  void Destroy();
 
   // True if the file system feed is loaded from the cache or from the server.
   bool loaded() const { return loaded_; }
@@ -233,6 +236,12 @@ class DriveResourceMetadata {
 
  private:
   friend class DriveResourceMetadataTest;
+
+  // Note: Use Destroy() to delete this object.
+  virtual ~DriveResourceMetadata();
+
+  // Used to implement Destroy().
+  void DestroyOnBlockingPool();
 
   // Clears root_ and the resource map.
   void ClearRoot();

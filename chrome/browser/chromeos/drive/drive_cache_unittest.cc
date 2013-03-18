@@ -110,10 +110,9 @@ class DriveCacheTest : public testing::Test {
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-    cache_ = new DriveCache(
-        DriveCache::GetCacheRootPath(profile_.get()),
-        blocking_task_runner_,
-        fake_free_disk_space_getter_.get());
+    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+                                blocking_task_runner_,
+                                fake_free_disk_space_getter_.get()));
 
     mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
@@ -127,7 +126,7 @@ class DriveCacheTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    test_util::DeleteDriveCache(cache_);
+    cache_.reset();
     profile_.reset(NULL);
   }
 
@@ -643,7 +642,7 @@ class DriveCacheTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
-  DriveCache* cache_;
+  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
 
@@ -1344,18 +1343,16 @@ TEST(DriveCacheExtraTest, InitializationFailure) {
       content::BrowserThread::GetBlockingPool();
 
   // Set the cache root to a non existent path, so the initialization fails.
-  DriveCache* cache = new DriveCache(
+  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache(new DriveCache(
       base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent/blah/blah"),
       pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
-      NULL /* free_disk_space_getter */);
+      NULL /* free_disk_space_getter */));
 
   bool success = false;
   cache->RequestInitialize(
       base::Bind(&test_util::CopyResultFromInitializeCacheCallback, &success));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_FALSE(success);
-
-  test_util::DeleteDriveCache(cache);
 }
 
 }   // namespace drive

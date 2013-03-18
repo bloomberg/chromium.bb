@@ -73,16 +73,15 @@ class StaleCacheFilesRemoverTest : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     // Likewise, this will be owned by DriveFileSystem.
-    cache_ = new DriveCache(
-        DriveCache::GetCacheRootPath(profile_.get()),
-        blocking_task_runner_,
-        fake_free_disk_space_getter_.get());
+    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+                                blocking_task_runner_,
+                                fake_free_disk_space_getter_.get()));
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new DriveFileSystem(profile_.get(),
-                                       cache_,
+                                       cache_.get(),
                                        fake_drive_service_.get(),
                                        NULL,  // drive_uploader
                                        drive_webapps_registry_.get(),
@@ -98,7 +97,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     cache_->RequestInitializeForTesting();
 
     stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system_,
-                                                                cache_));
+                                                                cache_.get()));
 
     google_apis::test_util::RunBlockingPoolTask();
   }
@@ -108,7 +107,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     stale_cache_files_remover_.reset();
     delete file_system_;
     file_system_ = NULL;
-    test_util::DeleteDriveCache(cache_);
+    cache_.reset();
     profile_.reset(NULL);
   }
 
@@ -118,7 +117,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
-  DriveCache* cache_;
+  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   DriveFileSystem* file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;

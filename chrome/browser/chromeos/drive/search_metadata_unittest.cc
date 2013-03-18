@@ -48,15 +48,15 @@ class SearchMetadataTest : public testing::Test {
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
-    drive_cache_ = new DriveCache(
+    drive_cache_.reset(new DriveCache(
         DriveCache::GetCacheRootPath(profile_.get()),
         blocking_task_runner_,
-        fake_free_disk_space_getter_.get());
+        fake_free_disk_space_getter_.get()));
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     file_system_.reset(new DriveFileSystem(profile_.get(),
-                                           drive_cache_,
+                                           drive_cache_.get(),
                                            fake_drive_service_.get(),
                                            NULL,  // uploader
                                            drive_webapps_registry_.get(),
@@ -72,7 +72,7 @@ class SearchMetadataTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    test_util::DeleteDriveCache(drive_cache_);
+    drive_cache_.reset();
   }
 
  protected:
@@ -82,7 +82,7 @@ class SearchMetadataTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  DriveCache* drive_cache_;
+  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> drive_cache_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<DriveFileSystem> file_system_;
 };

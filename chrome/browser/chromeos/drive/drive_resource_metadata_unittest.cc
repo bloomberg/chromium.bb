@@ -103,6 +103,10 @@ class DriveResourceMetadataTest : public testing::Test {
     Init(resource_metadata_.get());
   }
 
+  virtual void TearDown() OVERRIDE {
+    resource_metadata_.reset();
+  }
+
   // Gets the entry info by path synchronously. Returns NULL on failure.
   scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
       const base::FilePath& file_path) {
@@ -139,7 +143,8 @@ class DriveResourceMetadataTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<DriveResourceMetadata> resource_metadata_;
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata_;
 
  private:
   MessageLoopForUI message_loop_;
@@ -240,40 +245,46 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   mutable_entry->set_title("drive");
 
-  DriveResourceMetadata resource_metadata(kTestRootResourceId,
-                                          blocking_task_runner_);
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  blocking_task_runner_));
 
   std::string serialized_proto;
   EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is empty.
-  EXPECT_FALSE(ParseMetadataFromString(&resource_metadata, serialized_proto));
+  EXPECT_FALSE(ParseMetadataFromString(resource_metadata.get(),
+                                       serialized_proto));
 
   // Set an older version, and serialize.
   proto.set_version(kProtoVersion - 1);
   EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is older.
-  EXPECT_FALSE(ParseMetadataFromString(&resource_metadata, serialized_proto));
+  EXPECT_FALSE(ParseMetadataFromString(resource_metadata.get(),
+                                       serialized_proto));
 
   // Set the current version, and serialize.
   proto.set_version(kProtoVersion);
   EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should succeed as the version matches the current number.
-  EXPECT_TRUE(ParseMetadataFromString(&resource_metadata, serialized_proto));
+  EXPECT_TRUE(ParseMetadataFromString(resource_metadata.get(),
+                                      serialized_proto));
 
   // Set a newer version, and serialize.
   proto.set_version(kProtoVersion + 1);
   EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is newer.
-  EXPECT_FALSE(ParseMetadataFromString(&resource_metadata, serialized_proto));
+  EXPECT_FALSE(ParseMetadataFromString(resource_metadata.get(),
+                                       serialized_proto));
 }
 
 TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
-  DriveResourceMetadata resource_metadata(kTestRootResourceId,
-                                          blocking_task_runner_);
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  blocking_task_runner_));
 
   int64 in_changestamp = 123456;
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  resource_metadata.SetLargestChangestamp(
+  resource_metadata->SetLargestChangestamp(
       in_changestamp,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
                  &error));
@@ -281,7 +292,7 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
   int64 out_changestamp = 0;
-  resource_metadata.GetLargestChangestamp(
+  resource_metadata->GetLargestChangestamp(
       base::Bind(&CopyResultFromGetChangestampCallback,
                  &out_changestamp));
   google_apis::test_util::RunBlockingPoolTask();
@@ -289,15 +300,16 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
 }
 
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
-  DriveResourceMetadata resource_metadata(kTestRootResourceId,
-                                          blocking_task_runner_);
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  blocking_task_runner_));
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Look up the root directory by its resource ID.
-  resource_metadata.GetEntryInfoByResourceId(
+  resource_metadata->GetEntryInfoByResourceId(
       kTestRootResourceId,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -1190,10 +1202,12 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   const int kNewChangestamp = kTestChangestamp + 1;
   const char kSubDirectoryResourceId[] = "sub-directory-id";
 
-  DriveResourceMetadata resource_metadata_original(kTestRootResourceId,
-                                                   blocking_task_runner_);
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata_original(new DriveResourceMetadata(
+          kTestRootResourceId, blocking_task_runner_));
+
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  resource_metadata_original.SetLargestChangestamp(
+  resource_metadata_original->SetLargestChangestamp(
       kNewChangestamp,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -1206,19 +1220,20 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   directory_entry.set_parent_resource_id(kTestRootResourceId);
   directory_entry.set_title("directory");
   base::FilePath file_path;
-  resource_metadata_original.AddEntry(
+  resource_metadata_original->AddEntry(
       directory_entry,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   // At this point, both the root and the sub directory do not contain the
   // per-directory changestamp.
-  resource_metadata_original.MaybeSave(temp_dir_.path());
+  resource_metadata_original->MaybeSave(temp_dir_.path());
   google_apis::test_util::RunBlockingPoolTask();
 
-  DriveResourceMetadata resource_metadata(kTestRootResourceId,
-                                          blocking_task_runner_);
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  blocking_task_runner_));
 
   // Load. This should propagate the largest changestamp to every directory.
-  resource_metadata.Load(
+  resource_metadata->Load(
       temp_dir_.path(),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -1226,7 +1241,7 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
 
   // Confirm that the root directory contains the changestamp.
   scoped_ptr<DriveEntryProto> entry_proto;
-  resource_metadata.GetEntryInfoByPath(
+  resource_metadata->GetEntryInfoByPath(
       base::FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -1236,7 +1251,7 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
             entry_proto->directory_specific_info().changestamp());
 
   // Confirm that the sub directory contains the changestamp.
-  resource_metadata.GetEntryInfoByPath(
+  resource_metadata->GetEntryInfoByPath(
       base::FilePath::FromUTF8Unsafe("drive/directory"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));

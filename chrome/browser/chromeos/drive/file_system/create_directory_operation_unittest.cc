@@ -57,14 +57,13 @@ class CreateDirectoryOperationTest
     drive_web_apps_registry_.reset(new DriveWebAppsRegistry);
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
-    cache_ = new DriveCache(
-        DriveCache::GetCacheRootPath(profile_.get()),
-        blocking_task_runner_,
-        fake_free_disk_space_getter_.get());
+    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+                                blocking_task_runner_,
+                                fake_free_disk_space_getter_.get()));
 
     change_list_loader_.reset(new ChangeListLoader(
         metadata_.get(), scheduler_.get(), drive_web_apps_registry_.get(),
-        cache_));
+        cache_.get()));
 
     DriveFileError error = DRIVE_FILE_OK;
     change_list_loader_->LoadFromServerIfNeeded(
@@ -81,7 +80,7 @@ class CreateDirectoryOperationTest
   virtual void TearDown() OVERRIDE {
     operation_.reset();
     change_list_loader_.reset();
-    test_util::DeleteDriveCache(cache_);
+    cache_.reset();
     fake_free_disk_space_getter_.reset();
     drive_web_apps_registry_.reset();
     scheduler_.reset();
@@ -128,14 +127,12 @@ class CreateDirectoryOperationTest
   scoped_ptr<TestingProfile> profile_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
-  scoped_ptr<DriveResourceMetadata> metadata_;
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> drive_web_apps_registry_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
 
-  // The way to delete the DriveCache instance is a bit tricky, so here we use
-  // a raw point. See TearDown method for how to delete it.
-  DriveCache* cache_;
+  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<ChangeListLoader> change_list_loader_;
 
   scoped_ptr<CreateDirectoryOperation> operation_;

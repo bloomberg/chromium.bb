@@ -162,6 +162,8 @@ DriveResourceMetadata::DriveResourceMetadata(
       largest_changestamp_(0),
       loaded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DriveEntryProto root;
   root.mutable_file_info()->set_is_directory(true);
   root.set_resource_id(root_resource_id);
@@ -169,8 +171,24 @@ DriveResourceMetadata::DriveResourceMetadata(
   storage_->PutEntry(CreateEntryWithProperBaseName(root));
 }
 
-DriveResourceMetadata::~DriveResourceMetadata() {
+void DriveResourceMetadata::Destroy() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   ClearRoot();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DriveResourceMetadata::DestroyOnBlockingPool,
+                 base::Unretained(this)));
+}
+
+DriveResourceMetadata::~DriveResourceMetadata() {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+}
+
+void DriveResourceMetadata::DestroyOnBlockingPool() {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  delete this;
 }
 
 void DriveResourceMetadata::ClearRoot() {

@@ -229,12 +229,5 @@ bool LoadChangeFeed(const std::string& relative_path,
   return true;
 }
 
-void DeleteDriveCache(DriveCache* drive_cache) {
-  DCHECK(drive_cache);
-  drive_cache->Destroy();
-  // The cache destruction requires to post a task to the blocking pool.
-  google_apis::test_util::RunBlockingPoolTask();
-}
-
 }  // namespace test_util
 }  // namespace drive

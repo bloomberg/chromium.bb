@@ -80,10 +80,10 @@ class DriveSyncClientTest : public testing::Test {
     // Initialize the cache.
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
-    cache_ = new DriveCache(
+    cache_.reset(new DriveCache(
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
-        NULL /* free_disk_space_getter */);
+        NULL /* free_disk_space_getter */));
     bool cache_initialization_success = false;
     cache_->RequestInitialize(
         base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
@@ -95,7 +95,7 @@ class DriveSyncClientTest : public testing::Test {
     // Initialize the sync client.
     sync_client_.reset(new DriveSyncClient(profile_.get(),
                                            mock_file_system_.get(),
-                                           cache_));
+                                           cache_.get()));
 
     EXPECT_CALL(*mock_file_system_, AddObserver(sync_client_.get())).Times(1);
     EXPECT_CALL(*mock_file_system_,
@@ -110,7 +110,7 @@ class DriveSyncClientTest : public testing::Test {
     // The sync client should be deleted before NetworkLibrary, as the sync
     // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
-    test_util::DeleteDriveCache(cache_);
+    cache_.reset();
     mock_network_change_notifier_.reset();
   }
 
@@ -254,7 +254,7 @@ class DriveSyncClientTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
-  DriveCache* cache_;
+  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<DriveSyncClient> sync_client_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 };

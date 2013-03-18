@@ -216,17 +216,16 @@ class DriveFileSystemTest : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     // Likewise, this will be owned by DriveFileSystem.
-    cache_ = new DriveCache(
-        DriveCache::GetCacheRootPath(profile_.get()),
-        blocking_task_runner_,
-        fake_free_disk_space_getter_.get());
+    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+                                blocking_task_runner_,
+                                fake_free_disk_space_getter_.get()));
 
     fake_uploader_.reset(new FakeDriveUploader);
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new DriveFileSystem(profile_.get(),
-                                       cache_,
+                                       cache_.get(),
                                        fake_drive_service_,
                                        fake_uploader_.get(),
                                        drive_webapps_registry_.get(),
@@ -249,7 +248,7 @@ class DriveFileSystemTest : public testing::Test {
     file_system_ = NULL;
     delete fake_drive_service_;
     fake_drive_service_ = NULL;
-    test_util::DeleteDriveCache(cache_);
+    cache_.reset();
     profile_.reset(NULL);
   }
 
@@ -409,11 +408,12 @@ class DriveFileSystemTest : public testing::Test {
   bool SaveTestFileSystem(SaveTestFileSystemParam param) {
     const std::string root_resource_id =
         fake_drive_service_->GetRootResourceId();
-    DriveResourceMetadata resource_metadata(root_resource_id,
-                                            blocking_task_runner_);
+    scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+        resource_metadata(new DriveResourceMetadata(root_resource_id,
+                                                    blocking_task_runner_));
 
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-    resource_metadata.SetLargestChangestamp(
+    resource_metadata->SetLargestChangestamp(
         param == USE_SERVER_TIMESTAMP ? 654321 : 1,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -430,7 +430,7 @@ class DriveFileSystemTest : public testing::Test {
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
     base::FilePath file_path;
-    resource_metadata.AddEntry(
+    resource_metadata->AddEntry(
         file1,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -444,7 +444,7 @@ class DriveFileSystemTest : public testing::Test {
     dir1.set_parent_resource_id(root_resource_id);
     dir1.set_upload_url("http://resumable-create-media/2");
     dir1.mutable_file_info()->set_is_directory(true);
-    resource_metadata.AddEntry(
+    resource_metadata->AddEntry(
         dir1,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -460,7 +460,7 @@ class DriveFileSystemTest : public testing::Test {
     file2.mutable_file_specific_info()->set_file_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
-    resource_metadata.AddEntry(
+    resource_metadata->AddEntry(
         file2,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -474,7 +474,7 @@ class DriveFileSystemTest : public testing::Test {
     dir2.set_parent_resource_id(dir1.resource_id());
     dir2.set_upload_url("http://resumable-create-media/3");
     dir2.mutable_file_info()->set_is_directory(true);
-    resource_metadata.AddEntry(
+    resource_metadata->AddEntry(
         dir2,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -490,7 +490,7 @@ class DriveFileSystemTest : public testing::Test {
     file3.mutable_file_specific_info()->set_file_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);
-    resource_metadata.AddEntry(
+    resource_metadata->AddEntry(
         file3,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -502,7 +502,7 @@ class DriveFileSystemTest : public testing::Test {
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
     if (!file_util::CreateDirectory(cache_dir_path))
       return false;
-    resource_metadata.MaybeSave(cache_dir_path);
+    resource_metadata->MaybeSave(cache_dir_path);
     google_apis::test_util::RunBlockingPoolTask();
 
     return true;
@@ -535,7 +535,7 @@ class DriveFileSystemTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
-  DriveCache* cache_;
+  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FakeDriveUploader> fake_uploader_;
   DriveFileSystem* file_system_;
   google_apis::FakeDriveService* fake_drive_service_;

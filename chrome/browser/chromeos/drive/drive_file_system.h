@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -459,7 +460,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
 
-  scoped_ptr<DriveResourceMetadata> resource_metadata_;
+  scoped_ptr<DriveResourceMetadata, util::DestroyHelper> resource_metadata_;
 
   // The profile hosts the DriveFileSystem via DriveSystemService.
   Profile* profile_;

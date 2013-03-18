@@ -169,9 +169,18 @@ bool LoadChangeFeed(const std::string& relative_path,
                     bool is_delta_feed,
                     int64 root_feed_changestamp);
 
-// DriveCache has private destructor, so it is impossible to delete the
-// instance directly. This method delete it correctly.
-void DeleteDriveCache(DriveCache* drive_cache);
+// Helper to destroy objects which needs Destroy() to be called on destruction.
+// Note: When using this helper, you should destruct objects before
+// BrowserThread.
+struct DestroyHelperForTests {
+  template<typename T>
+  void operator()(T* object) const {
+    if (object) {
+      object->Destroy();
+      google_apis::test_util::RunBlockingPoolTask();  // Finish destruction.
+    }
+  }
+};
 
 }  // namespace test_util
 }  // namespace drive

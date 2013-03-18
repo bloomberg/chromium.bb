@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -138,6 +139,15 @@ void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
 
 // Does nothing with |error|. Used with functions taking FileOperationCallback.
 void EmptyFileOperationCallback(DriveFileError error);
+
+// Helper to destroy objects which needs Destroy() to be called on destruction.
+struct DestroyHelper {
+  template<typename T>
+  void operator()(T* object) const {
+    if (object)
+      object->Destroy();
+  }
+};
 
 }  // namespace util
 }  // namespace drive
