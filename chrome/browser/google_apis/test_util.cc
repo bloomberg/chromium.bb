@@ -107,23 +107,6 @@ void CopyResultFromEntryActionCallbackAndQuit(GDataErrorCode* error_out,
   MessageLoop::current()->Quit();
 }
 
-void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
-                                    scoped_ptr<base::Value>* value_out,
-                                    GDataErrorCode error_in,
-                                    scoped_ptr<base::Value> value_in) {
-  value_out->swap(value_in);
-  *error_out = error_in;
-}
-
-void CopyResultsFromGetDataCallbackAndQuit(GDataErrorCode* error_out,
-                                           scoped_ptr<base::Value>* value_out,
-                                           GDataErrorCode error_in,
-                                           scoped_ptr<base::Value> value_in) {
-  *error_out = error_in;
-  *value_out = value_in.Pass();
-  MessageLoop::current()->Quit();
-}
-
 void CopyResultsFromGetResourceListCallback(
     GDataErrorCode* error_out,
     scoped_ptr<ResourceList>* resource_list_out,

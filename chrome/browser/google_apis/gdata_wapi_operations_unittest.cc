@@ -328,9 +328,9 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
       "",  // search string
       false,  // shared with me
       "",  // directory resource ID
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data));
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -359,9 +359,9 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
       "",  // search string
       false,  // shared with me
       "",  // directory resource ID
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data));
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -392,9 +392,9 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
       "",  // search string
       false,  // shared with me
       "",  // directory resource ID
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data));
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -417,9 +417,9 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
       request_context_getter_.get(),
       *url_generator_,
       "file:2_file_resource_id",  // resource ID
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data));
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -443,9 +443,9 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
       request_context_getter_.get(),
       *url_generator_,
       "<invalid>",  // resource ID
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data));
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -592,9 +592,9 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)),
       "folder:root",
       "new directory");
 
@@ -628,9 +628,9 @@ TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)),
       "document:5_document_resource_id",  // source resource ID
       "New Document");
 
@@ -695,9 +695,9 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)),
       test_server_.GetURL(
           "/feeds/default/private/full/file:2_file_resource_id"),
       "APP_ID");
@@ -731,9 +731,9 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)),
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       "APP_ID");
 
