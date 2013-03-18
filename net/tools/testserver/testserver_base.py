@@ -232,16 +232,11 @@ class TestServerRunner(object):
   def _notify_startup_complete(self, server_data):
     # Notify the parent that we've started. (BaseServer subclasses
     # bind their sockets on construction.)
-    if self.options.startup_pipe is None:
-      # TODO(phajdan.jr): Remove after debugging http://crbug.com/96594 .
-      sys.stdout.write('will not send server_data (not requested)\n')
-      sys.stdout.flush()
-    else:
+    if self.options.startup_pipe is not None:
       server_data_json = json.dumps(server_data)
       server_data_len = len(server_data_json)
-      sys.stdout.write('sending server_data: %s (%d bytes)\n' % (
-        server_data_json, server_data_len))
-      sys.stdout.flush()
+      print 'sending server_data: %s (%d bytes)' % (
+        server_data_json, server_data_len)
       if sys.platform == 'win32':
         fd = msvcrt.open_osfhandle(self.options.startup_pipe, 0)
       else:
@@ -252,5 +247,4 @@ class TestServerRunner(object):
       # pipe is on the same machine.
       startup_pipe.write(struct.pack('=L', server_data_len))
       startup_pipe.write(server_data_json)
-      startup_pipe.flush()
       startup_pipe.close()

@@ -25,9 +25,7 @@ class ServerRunner(testserver_base.TestServerRunner):
     server = safebrowsing_test_server.SetupServer(
         self.options.data_file, self.options.host, self.options.port,
         opt_enforce_caching=False, opt_validate_database=True)
-    sys.stdout.write('Safebrowsing HTTP server started on port %d...\n' %
-                     server.server_port)
-    sys.stdout.flush()
+    print 'Safebrowsing HTTP server started on port %d...' % server.server_port
     server_data['port'] = server.server_port
 
     return server

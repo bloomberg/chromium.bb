@@ -34,10 +34,6 @@ import urllib
 import urlparse
 import zlib
 
-# TODO(phajdan.jr): Remove after debugging http://crbug.com/96594 .
-sys.stdout.write('testserver.py right after std imports!\n')
-sys.stdout.flush()
-
 import echo_message
 import pyftpdlib.ftpserver
 import testserver_base
@@ -175,8 +171,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       # Ignore abrupt close.
       return True
     except tlslite.api.TLSError, error:
-      sys.stdout.write("Handshake failure: %s" % str(error))
-      sys.stdout.flush()
+      print "Handshake failure:", str(error)
       return False
 
 
@@ -773,9 +768,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       file_path = os.path.join(file_path, 'index.html')
 
     if not os.path.isfile(file_path):
-      sys.stdout.write("File not found " + sub_path +
-                       " full path:" + file_path + "\n")
-      sys.stdout.flush()
+      print "File not found " + sub_path + " full path:" + file_path
       self.send_error(404)
       return True
 
@@ -859,9 +852,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       file_path = os.path.join(file_path, 'index.html')
 
     if not os.path.isfile(file_path):
-      sys.stdout.write("File not found " + sub_path +
-                       " full path:" + file_path + "\n")
-      sys.stdout.flush()
+      print "File not found " + sub_path + " full path:" + file_path
       self.send_error(404)
       return True
 
@@ -1893,9 +1884,8 @@ class ServerRunner(testserver_base.TestServerRunner):
         else:
           # generate a new certificate and run an OCSP server for it.
           self.__ocsp_server = OCSPServer((host, 0), OCSPHandler)
-          sys.stdout.write('OCSP server started on %s:%d...\n' %
+          print ('OCSP server started on %s:%d...' %
               (host, self.__ocsp_server.server_port))
-          sys.stdout.flush()
 
           ocsp_der = None
           ocsp_state = None
@@ -1933,14 +1923,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                              self.options.ssl_bulk_cipher,
                              self.options.record_resume,
                              self.options.tls_intolerant)
-        sys.stdout.write('HTTPS server started on %s:%d...\n' %
-                         (host, server.server_port))
-        sys.stdout.flush()
+        print 'HTTPS server started on %s:%d...' % (host, server.server_port)
       else:
         server = HTTPServer((host, port), TestPageHandler)
-        sys.stdout.write('HTTP server started on %s:%d...\n' %
-                         (host, server.server_port))
-        sys.stdout.flush()
+        print 'HTTP server started on %s:%d...' % (host, server.server_port)
 
       server.data_dir = self.__make_data_dir()
       server.file_root_url = self.options.file_root_url
@@ -1968,33 +1954,25 @@ class ServerRunner(testserver_base.TestServerRunner):
               self.options.ssl_client_ca[0] + ' exiting...')
         websocket_options.tls_client_ca = self.options.ssl_client_ca[0]
       server = WebSocketServer(websocket_options)
-      sys.stdout.write('WebSocket server started on %s:%d...\n'
-                       % (host, server.server_port))
-      sys.stdout.flush()
+      print 'WebSocket server started on %s:%d...' % (host, server.server_port)
       server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_TCP_ECHO:
       # Used for generating the key (randomly) that encodes the "echo request"
       # message.
       random.seed()
       server = TCPEchoServer((host, port), TCPEchoHandler)
-      sys.stdout.write('Echo TCP server started on port %d...\n'
-                       % server.server_port)
-      sys.stdout.flush()
+      print 'Echo TCP server started on port %d...' % server.server_port
       server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_UDP_ECHO:
       # Used for generating the key (randomly) that encodes the "echo request"
       # message.
       random.seed()
       server = UDPEchoServer((host, port), UDPEchoHandler)
-      sys.stdout.write('Echo UDP server started on port %d...\n' %
-                       server.server_port)
-      sys.stdout.flush()
+      print 'Echo UDP server started on port %d...' % server.server_port
       server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_BASIC_AUTH_PROXY:
       server = HTTPServer((host, port), BasicAuthProxyRequestHandler)
-      sys.stdout.write('BasicAuthProxy server started on port %d...\n' %
-                       server.server_port)
-      sys.stdout.flush()
+      print 'BasicAuthProxy server started on port %d...' % server.server_port
       server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_FTP:
       my_data_dir = self.__make_data_dir()
@@ -2019,9 +1997,7 @@ class ServerRunner(testserver_base.TestServerRunner):
       # Instantiate FTP server class and listen to address:port
       server = pyftpdlib.ftpserver.FTPServer((host, port), ftp_handler)
       server_data['port'] = server.socket.getsockname()[1]
-      sys.stdout.write('FTP server started on port %d...\n' %
-                       server_data['port'])
-      sys.stdout.flush()
+      print 'FTP server started on port %d...' % server_data['port']
     else:
       raise testserver_base.OptionError('unknown server type' +
           self.options.server_type)
@@ -2110,8 +2086,4 @@ class ServerRunner(testserver_base.TestServerRunner):
 
 
 if __name__ == '__main__':
-  # TODO(phajdan.jr): Remove after debugging http://crbug.com/96594 .
-  sys.stdout.write('testserver.py running!\n')
-  sys.stdout.flush()
-
   sys.exit(ServerRunner().main())
