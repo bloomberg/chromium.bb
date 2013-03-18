@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/search/search_model.h"
 
-#include "chrome/browser/instant/search.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 
 namespace chrome {

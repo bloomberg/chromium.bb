@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_INSTANT_IO_CONTEXT_
-#define CHROME_BROWSER_INSTANT_INSTANT_IO_CONTEXT_
+#ifndef CHROME_BROWSER_SEARCH_INSTANT_IO_CONTEXT_H_
+#define CHROME_BROWSER_SEARCH_INSTANT_IO_CONTEXT_H_
 
 #include <map>
 #include <set>
@@ -97,4 +97,4 @@ class InstantIOContext : public base::RefCountedThreadSafe<InstantIOContext> {
   DISALLOW_COPY_AND_ASSIGN(InstantIOContext);
 };
 
-#endif  // CHROME_BROWSER_INSTANT_INSTANT_IO_CONTEXT_
+#endif  // CHROME_BROWSER_SEARCH_INSTANT_IO_CONTEXT_H_

@@ -6,7 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/instant/search.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 

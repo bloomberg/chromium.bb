@@ -4,9 +4,9 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/instant/instant_service.h"
-#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/task_manager/task_manager.h"

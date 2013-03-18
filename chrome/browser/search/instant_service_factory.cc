@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/instant/instant_service_factory.h"
+#include "chrome/browser/search/instant_service_factory.h"
 
-#include "chrome/browser/instant/instant_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/search/instant_service.h"
 
 // static
 InstantService* InstantServiceFactory::GetForProfile(Profile* profile) {

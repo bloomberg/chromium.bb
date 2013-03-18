@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/instant/search.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/session_types_test_helper.h"
 #include "content/public/browser/favicon_status.h"

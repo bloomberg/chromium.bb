@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/instant/search.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/favicon_status.h"

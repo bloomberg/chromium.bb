@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INSTANT_SEARCH_H_
-#define CHROME_BROWSER_INSTANT_SEARCH_H_
+#ifndef CHROME_BROWSER_SEARCH_SEARCH_H_
+#define CHROME_BROWSER_SEARCH_SEARCH_H_
 
 #include <string>
 #include <utility>
@@ -156,4 +156,4 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
 }  // namespace search
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_INSTANT_SEARCH_H_
+#endif  // CHROME_BROWSER_SEARCH_SEARCH_H_
