@@ -83,6 +83,10 @@ static const int kMaxSyncNavigationCount = 6;
 // stale and becomes a candidate for garbage collection.
 static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
 
+// Maximum number of favicons to sync.
+// TODO(zea): pull this from the server.
+static const int kMaxSyncFavicons = 200;
+
 }  // namespace
 
 SessionModelAssociator::SessionModelAssociator(
@@ -97,7 +101,7 @@ SessionModelAssociator::SessionModelAssociator(
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
       error_handler_(error_handler),
-      favicon_cache_(profile_) {
+      favicon_cache_(profile_, kMaxSyncFavicons) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
@@ -117,7 +121,7 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
       error_handler_(NULL),
-      favicon_cache_(profile_) {
+      favicon_cache_(profile_, kMaxSyncFavicons) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
