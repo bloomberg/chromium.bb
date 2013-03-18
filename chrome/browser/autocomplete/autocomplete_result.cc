@@ -135,12 +135,11 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
 
   // Set the alternate nav URL.
   alternate_nav_url_ = GURL();
-  if (((input.type() == AutocompleteInput::UNKNOWN) ||
-       (input.type() == AutocompleteInput::REQUESTED_URL)) &&
-      (default_match_ != end()) &&
+  if (input.type() == AutocompleteInput::UNKNOWN &&
+      default_match_ != end() &&
       AutocompleteMatch::IsSearchType(default_match_->type) &&
-      (default_match_->transition != content::PAGE_TRANSITION_KEYWORD) &&
-      (input.canonicalized_url() != default_match_->destination_url))
+      default_match_->transition != content::PAGE_TRANSITION_KEYWORD &&
+      input.canonicalized_url() != default_match_->destination_url)
     alternate_nav_url_ = input.canonicalized_url();
 }
 

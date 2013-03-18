@@ -90,8 +90,6 @@ OmniboxEventProto::InputType AsOmniboxEventInputType(
       return OmniboxEventProto::INVALID;
     case AutocompleteInput::UNKNOWN:
       return OmniboxEventProto::UNKNOWN;
-    case AutocompleteInput::REQUESTED_URL:
-      return OmniboxEventProto::REQUESTED_URL;
     case AutocompleteInput::URL:
       return OmniboxEventProto::URL;
     case AutocompleteInput::QUERY:

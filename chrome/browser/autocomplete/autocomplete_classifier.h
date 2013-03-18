@@ -32,8 +32,7 @@ class AutocompleteClassifier : public ProfileKeyedService {
   virtual ~AutocompleteClassifier();
 
   // Given some string |text| that the user wants to use for navigation,
-  // determines how it should be interpreted.  |desired_tld| is the user's
-  // desired TLD, if any; see AutocompleteInput::desired_tld().
+  // determines how it should be interpreted.
   // |prefer_keyword| should be true the when keyword UI is onscreen; see
   // comments on AutocompleteController::Start().
   // |allow_exact_keyword_match| should be true when treating the string as a
@@ -46,7 +45,6 @@ class AutocompleteClassifier : public ProfileKeyedService {
   // accidental search; see comments on
   // AutocompleteResult::alternate_nav_url_ in autocomplete.h.
   void Classify(const string16& text,
-                const string16& desired_tld,
                 bool prefer_keyword,
                 bool allow_exact_keyword_match,
                 AutocompleteMatch* match,

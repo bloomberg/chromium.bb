@@ -45,7 +45,6 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
   // matches can score high enough to qualify.
   if (input.text().empty() ||
       ((input.type() != AutocompleteInput::UNKNOWN) &&
-       (input.type() != AutocompleteInput::REQUESTED_URL) &&
        (input.type() != AutocompleteInput::QUERY)) ||
       ((input.matches_requested() == AutocompleteInput::BEST_MATCH) &&
        input.prevent_inline_autocomplete()))

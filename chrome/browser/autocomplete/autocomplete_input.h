@@ -22,8 +22,6 @@ class AutocompleteInput {
   enum Type {
     INVALID,        // Empty input
     UNKNOWN,        // Valid input whose type cannot be determined
-    REQUESTED_URL,  // Input autodetected as UNKNOWN, which the user wants to
-                    // treat as an URL by specifying a desired_tld
     URL,            // Input autodetected as a URL
     QUERY,          // Input autodetected as a query
     FORCED_QUERY,   // Input forced to be a query by an initial '?'
@@ -52,7 +50,10 @@ class AutocompleteInput {
   // string16::npos if the input |text| doesn't come directly from the user's
   // typing.
   //
-  // See AutocompleteInput::desired_tld() for meaning of |desired_tld|.
+  // |desired_tld| is the user's desired TLD, if one is not already present in
+  // the text to autocomplete.  When this is non-empty, it also implies that
+  // "www." should be prepended to the domain where possible. The |desired_tld|
+  // should not contain a leading '.' (use "com" instead of ".com").
   //
   // |prevent_inline_autocomplete| is true if the generated result set should
   // not require inline autocomplete for the default match.  This is difficult
@@ -104,7 +105,6 @@ class AutocompleteInput {
   // is view-source, this function returns the positions of scheme and host
   // in the URL qualified by "view-source:" prefix.
   static void ParseForEmphasizeComponents(const string16& text,
-                                          const string16& desired_tld,
                                           url_parse::Component* scheme,
                                           url_parse::Component* host);
 
@@ -134,12 +134,6 @@ class AutocompleteInput {
   void UpdateText(const string16& text,
                   size_t cursor_position,
                   const url_parse::Parsed& parts);
-
-  // User's desired TLD, if one is not already present in the text to
-  // autocomplete.  When this is non-empty, it also implies that "www." should
-  // be prepended to the domain where possible.  This should not have a leading
-  // '.' (use "com" instead of ".com").
-  const string16& desired_tld() const { return desired_tld_; }
 
   // The type of input supplied.
   Type type() const { return type_; }
@@ -179,7 +173,6 @@ class AutocompleteInput {
   // method.
   string16 text_;
   size_t cursor_position_;
-  string16 desired_tld_;
   Type type_;
   url_parse::Parsed parts_;
   string16 scheme_;

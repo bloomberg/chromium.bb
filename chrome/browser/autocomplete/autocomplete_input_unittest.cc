@@ -131,11 +131,19 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
   struct test_data {
     const string16 input;
     const AutocompleteInput::Type type;
+    const std::string spec;  // Unused if not a URL.
   } input_cases[] = {
-    { ASCIIToUTF16("401k"), AutocompleteInput::REQUESTED_URL },
-    { ASCIIToUTF16("999999999999999"), AutocompleteInput::REQUESTED_URL },
-    { ASCIIToUTF16("x@y"), AutocompleteInput::REQUESTED_URL },
-    { ASCIIToUTF16("y/z z"), AutocompleteInput::REQUESTED_URL },
+    { ASCIIToUTF16("401k"), AutocompleteInput::URL,
+        std::string("http://www.401k.com/") },
+    { ASCIIToUTF16("999999999999999"), AutocompleteInput::URL,
+        std::string("http://www.999999999999999.com/") },
+    { ASCIIToUTF16("x@y"), AutocompleteInput::URL,
+        std::string("http://x@www.y.com/") },
+    { ASCIIToUTF16("y/z z"), AutocompleteInput::URL,
+        std::string("http://www.y.com/z%20z") },
+    { ASCIIToUTF16("abc.com"), AutocompleteInput::URL,
+        std::string("http://abc.com/") },
+    { ASCIIToUTF16("foo bar"), AutocompleteInput::QUERY, std::string() },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
@@ -144,6 +152,8 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
                             ASCIIToUTF16("com"), true, false, true,
                             AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].type, input.type());
+    if (input_cases[i].type == AutocompleteInput::URL)
+      EXPECT_EQ(input_cases[i].spec, input.canonicalized_url().spec());
   }
 }
 
@@ -190,7 +200,6 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
     SCOPED_TRACE(input_cases[i].input);
     Component scheme, host;
     AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input,
-                                                   string16(),
                                                    &scheme,
                                                    &host);
     AutocompleteInput input(input_cases[i].input, string16::npos, string16(),

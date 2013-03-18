@@ -117,12 +117,6 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // of the edit.
   bool UseVerbatimInstant();
 
-  // If the user presses ctrl-enter, it means "add .com to the the end".  The
-  // desired TLD is the TLD the user desires to add to the end of the current
-  // input, if any, based on their control key state and any other actions
-  // they've taken.
-  string16 GetDesiredTLD() const;
-
   // Returns true if the current edit contents will be treated as a
   // URL/navigation, as opposed to a search.
   bool CurrentTextIsURL() const;

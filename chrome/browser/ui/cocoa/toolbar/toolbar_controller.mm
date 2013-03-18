@@ -783,7 +783,7 @@ class NotificationBridge
   // If the input is plain text, classify the input and make the URL.
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(browser_->profile())->Classify(
-      base::SysNSStringToUTF16(text), string16(), false, false, &match, NULL);
+      base::SysNSStringToUTF16(text), false, false, &match, NULL);
   GURL url(match.destination_url);
 
   OpenURLParams params(

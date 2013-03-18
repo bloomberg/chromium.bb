@@ -46,7 +46,6 @@ AutocompleteClassifier::~AutocompleteClassifier() {
 }
 
 void AutocompleteClassifier::Classify(const string16& text,
-                                      const string16& desired_tld,
                                       bool prefer_keyword,
                                       bool allow_exact_keyword_match,
                                       AutocompleteMatch* match,
@@ -54,7 +53,7 @@ void AutocompleteClassifier::Classify(const string16& text,
   DCHECK(!inside_classify_);
   base::AutoReset<bool> reset(&inside_classify_, true);
   controller_->Start(AutocompleteInput(
-      text, string16::npos, desired_tld, true, prefer_keyword,
+      text, string16::npos, string16(), true, prefer_keyword,
       allow_exact_keyword_match, AutocompleteInput::BEST_MATCH));
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();

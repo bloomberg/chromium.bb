@@ -24,7 +24,6 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
-#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_service.h"
@@ -552,16 +551,16 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   if (input_.type() == AutocompleteInput::FORCED_QUERY)
     return true;
 
-  // Next we check the scheme.  If this is UNKNOWN/REQUESTED_URL/URL with a
-  // scheme that isn't http/https/ftp, we shouldn't send it.  Sending things
-  // like file: and data: is both a waste of time and a disclosure of
-  // potentially private, local data.  Other "schemes" may actually be
-  // usernames, and we don't want to send passwords.  If the scheme is OK, we
-  // still need to check other cases below.  If this is QUERY, then the presence
-  // of these schemes means the user explicitly typed one, and thus this is
-  // probably a URL that's being entered and happens to currently be invalid --
-  // in which case we again want to run our checks below.  Other QUERY cases are
-  // less likely to be URLs and thus we assume we're OK.
+  // Next we check the scheme.  If this is UNKNOWN/URL with a scheme that isn't
+  // http/https/ftp, we shouldn't send it.  Sending things like file: and data:
+  // is both a waste of time and a disclosure of potentially private, local
+  // data.  Other "schemes" may actually be usernames, and we don't want to send
+  // passwords.  If the scheme is OK, we still need to check other cases below.
+  // If this is QUERY, then the presence of these schemes means the user
+  // explicitly typed one, and thus this is probably a URL that's being entered
+  // and happens to currently be invalid -- in which case we again want to run
+  // our checks below.  Other QUERY cases are less likely to be URLs and thus we
+  // assume we're OK.
   if (!LowerCaseEqualsASCII(input_.scheme(), chrome::kHttpScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), chrome::kHttpsScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), chrome::kFtpScheme))
@@ -915,24 +914,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       matches_.begin() + std::min(max_total_matches, matches_.size()),
       matches_.end(), &AutocompleteMatch::MoreRelevant);
 
-  // If the top match is effectively 'verbatim' but exceeds the calculated
-  // verbatim relevance, and REQUESTED_URL |input_| has a |desired_tld|
-  // (for example ".com" when the CTRL key is pressed for REQUESTED_URL input),
-  // promote a URL_WHAT_YOU_TYPED match to the top. Otherwise, these matches can
-  // stomp the HistoryURLProvider's similar transient URL_WHAT_YOU_TYPED match,
-  // and CTRL+ENTER will invoke the search instead of the expected navigation.
-  if ((has_default_suggested_relevance_ || default_verbatim_relevance_ >= 0 ||
-       has_keyword_suggested_relevance_ || keyword_verbatim_relevance_ >= 0) &&
-      input_.type() == AutocompleteInput::REQUESTED_URL &&
-      !input_.desired_tld().empty() && !matches_.empty() &&
-      matches_.front().relevance > CalculateRelevanceForVerbatim() &&
-      matches_.front().fill_into_edit == input_.text()) {
-    AutocompleteMatch match = HistoryURLProvider::SuggestExactInput(
-        this, input_, !HasHTTPScheme(input_.text()));
-    match.relevance = matches_.front().relevance + 1;
-    matches_.insert(matches_.begin(), match);
-  }
-
   if (matches_.size() > max_total_matches)
     matches_.resize(max_total_matches);
 }
@@ -1113,7 +1094,7 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     //    anything special.
     if (!prevent_inline_autocomplete && classifier && (i->term != input_text)) {
       AutocompleteMatch match;
-      classifier->Classify(i->term, string16(), false, false, &match, NULL);
+      classifier->Classify(i->term, false, false, &match, NULL);
       prevent_inline_autocomplete =
           !AutocompleteMatch::IsSearchType(match.type);
     }
@@ -1184,9 +1165,6 @@ int SearchProvider::
     case AutocompleteInput::QUERY:
     case AutocompleteInput::FORCED_QUERY:
       return kNonURLVerbatimRelevance;
-
-    case AutocompleteInput::REQUESTED_URL:
-      return 1150;
 
     case AutocompleteInput::URL:
       return 850;

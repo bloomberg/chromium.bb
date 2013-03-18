@@ -1635,8 +1635,7 @@ void OmniboxViewGtk::EmphasizeURLComponents() {
   // And Go system uses.
   url_parse::Component scheme, host;
   string16 text(GetText());
-  AutocompleteInput::ParseForEmphasizeComponents(
-      text, model()->GetDesiredTLD(), &scheme, &host);
+  AutocompleteInput::ParseForEmphasizeComponents(text, &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
   // Set the baseline emphasis.

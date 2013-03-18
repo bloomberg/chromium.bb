@@ -449,7 +449,7 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
 
   url_parse::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
-      display_text, model()->GetDesiredTLD(), &scheme, &host);
+      display_text, &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
   if (emphasize) {
     [as addAttribute:NSForegroundColorAttributeName value:BaseTextColor()

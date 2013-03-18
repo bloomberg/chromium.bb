@@ -63,32 +63,6 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
 //
-// REQUESTED_URL input type:
-// --------------------------------------------------------------------|-----
-// Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
-// Extension App (exact match)                                         | 1425
-// HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
-// HistoryURL (intranet url never visited match, some inexact matches) | 1400++
-// Search Primary Provider (past query in history within 2 days)       | 1399**
-// HistoryURL (what you typed, some inexact matches)                   | 1200++
-// Extension App (inexact match)                                       | 1175*~
-// Search Primary Provider (what you typed)                            | 1150
-// Keyword (substituting, exact match)                                 | 1100
-// Search Primary Provider (past query in history older than 2 days)   | 1050--
-// HistoryContents (any match in title of starred page)                | 1000++
-// HistoryURL (some inexact matches)                                   |  900++
-// Search Primary Provider (navigational suggestion)                   |  800++
-// HistoryContents (any match in title of nonstarred page)             |  700++
-// Search Primary Provider (suggestion)                                |  600++
-// Built-in                                                            |  575++
-// HistoryContents (any match in body of starred page)                 |  550++
-// HistoryContents (any match in body of nonstarred page)              |  500++
-// Keyword (inexact match)                                             |  450
-// Search Secondary Provider (what you typed)                          |  250
-// Search Secondary Provider (past query in history)                   |  200--
-// Search Secondary Provider (navigational suggestion)                 |  150++
-// Search Secondary Provider (suggestion)                              |  100++
-//
 // URL input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500

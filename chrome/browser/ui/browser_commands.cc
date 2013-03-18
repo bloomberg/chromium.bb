@@ -405,15 +405,22 @@ void OpenCurrentURL(Browser* browser) {
   if (!location_bar)
     return;
 
+  content::PageTransition page_transition = location_bar->GetPageTransition();
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
-  if (browser->instant_controller() &&
+  // A PAGE_TRANSITION_TYPED means the user has typed a URL. We do not want to
+  // open URLs with instant_controller since in some cases it disregards it
+  // and performs a search instead. For example, when using CTRL-Enter, the
+  // location_bar is aware of the URL but instant is not.
+  if (PageTransitionStripQualifier(page_transition) !=
+          content::PAGE_TRANSITION_TYPED &&
+      browser->instant_controller() &&
       browser->instant_controller()->OpenInstant(open_disposition))
     return;
 
   GURL url(location_bar->GetInputString());
 
-  NavigateParams params(browser, url, location_bar->GetPageTransition());
+  NavigateParams params(browser, url, page_transition);
   params.disposition = open_disposition;
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
   // inherit the opener. In some cases the tabstrip will determine the group

@@ -859,7 +859,7 @@ bool URLFromPrimarySelection(Profile* profile, GURL* url) {
   // a search query if necessary.
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(profile)->Classify(
-      UTF8ToUTF16(selection_text), string16(), false, false, &match, NULL);
+      UTF8ToUTF16(selection_text), false, false, &match, NULL);
   g_free(selection_text);
   if (!match.destination_url.is_valid())
     return false;

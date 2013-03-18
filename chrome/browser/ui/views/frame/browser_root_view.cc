@@ -176,8 +176,8 @@ bool BrowserRootView::GetPasteAndGoURL(const ui::OSExchangeData& data,
 
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(
-      browser_view_->browser()->profile())->Classify(text, string16(), false,
-                                                     false, &match, NULL);
+      browser_view_->browser()->profile())->Classify(text, false, false, &match,
+                                                     NULL);
   if (!match.destination_url.is_valid())
     return false;
 

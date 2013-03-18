@@ -257,7 +257,7 @@ string16 ToolbarModelImpl::GetSearchTerms() const {
     Profile* profile =
         Profile::FromBrowserContext(contents->GetBrowserContext());
     AutocompleteClassifierFactory::GetForProfile(profile)->Classify(
-        search_terms, string16(), false, false, &match, NULL);
+        search_terms, false, false, &match, NULL);
     if (!AutocompleteMatch::IsSearchType(match.type))
       search_terms.clear();
   }

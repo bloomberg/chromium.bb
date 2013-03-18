@@ -45,7 +45,6 @@ AutocompleteInput::AutocompleteInput(const string16& text,
                                      bool allow_exact_keyword_match,
                                      MatchesRequested matches_requested)
     : cursor_position_(cursor_position),
-      desired_tld_(desired_tld),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
@@ -64,7 +63,7 @@ AutocompleteInput::AutocompleteInput(const string16& text,
   if (type_ == INVALID)
     return;
 
-  if (((type_ == UNKNOWN) || (type_ == REQUESTED_URL) || (type_ == URL)) &&
+  if (((type_ == UNKNOWN) || (type_ == URL)) &&
       canonicalized_url.is_valid() &&
       (!canonicalized_url.IsStandard() || canonicalized_url.SchemeIsFile() ||
        canonicalized_url.SchemeIsFileSystem() ||
@@ -103,7 +102,6 @@ std::string AutocompleteInput::TypeToString(Type type) {
   switch (type) {
     case INVALID:       return "invalid";
     case UNKNOWN:       return "unknown";
-    case REQUESTED_URL: return "requested-url";
     case URL:           return "url";
     case QUERY:         return "query";
     case FORCED_QUERY:  return "forced-query";
@@ -214,7 +212,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
                                &http_canonicalized_url);
         DCHECK_EQ(std::string(chrome::kHttpScheme), UTF16ToUTF8(http_scheme));
 
-        if ((http_type == URL || http_type == REQUESTED_URL) &&
+        if (http_type == URL &&
             http_parts.username.is_nonempty() &&
             http_parts.password.is_nonempty()) {
           // Manually re-jigger the parsed parts to match |text| (without the
@@ -277,9 +275,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
       host_with_tld += desired_tld;
       if (net::RegistryControlledDomainService::GetRegistryLength(
           UTF16ToUTF8(host_with_tld), false) != std::string::npos)
-        return REQUESTED_URL;  // Something like "99999999999" that looks like a
-                               // bad IP address, but becomes valid on attaching
-                               // a TLD.
+        return URL;  // Something like "99999999999" that looks like a bad IP
+                     // address, but becomes valid on attaching a TLD.
     }
     return QUERY;  // Could be a broken IP address, etc.
   }
@@ -389,7 +386,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // the user wishes to add a desired_tld, the fixup code will oblige; thus this
   // is a URL.
   if (!desired_tld.empty())
-    return REQUESTED_URL;
+    return URL;
 
   // No scheme, password, port, path, and no known TLD on the host.
   // This could be:
@@ -414,12 +411,11 @@ AutocompleteInput::Type AutocompleteInput::Parse(
 // static
 void AutocompleteInput::ParseForEmphasizeComponents(
     const string16& text,
-    const string16& desired_tld,
     url_parse::Component* scheme,
     url_parse::Component* host) {
   url_parse::Parsed parts;
   string16 scheme_str;
-  Parse(text, desired_tld, &parts, &scheme_str, NULL);
+  Parse(text, string16(), &parts, &scheme_str, NULL);
 
   *scheme = parts.scheme;
   *host = parts.host;
@@ -432,8 +428,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     // Obtain the URL prefixed by view-source and parse it.
     string16 real_url(text.substr(after_scheme_and_colon));
     url_parse::Parsed real_parts;
-    AutocompleteInput::Parse(real_url, desired_tld, &real_parts, NULL,
-                             NULL);
+    AutocompleteInput::Parse(real_url, string16(), &real_parts, NULL, NULL);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
         *scheme = url_parse::Component(
@@ -503,7 +498,6 @@ void AutocompleteInput::UpdateText(const string16& text,
 void AutocompleteInput::Clear() {
   text_.clear();
   cursor_position_ = string16::npos;
-  desired_tld_.clear();
   type_ = INVALID;
   parts_ = url_parse::Parsed();
   scheme_.clear();

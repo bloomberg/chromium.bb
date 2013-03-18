@@ -81,12 +81,11 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
   }
 
   // TODO(pkasting): http://b/888148 We disallow URL input and "URL-like" input
-  // (REQUESTED_URL or UNKNOWN with dots) because we get poor results for it,
-  // but we could get better results if we did better tokenizing instead.
-  if ((input.type() == AutocompleteInput::URL) ||
-      (((input.type() == AutocompleteInput::REQUESTED_URL) ||
-        (input.type() == AutocompleteInput::UNKNOWN)) &&
-       (input.text().find('.') != string16::npos))) {
+  // (UNKNOWN with dots) because we get poor results for it, but we could get
+  // better results if we did better tokenizing instead.
+  if (input.type() == AutocompleteInput::URL ||
+      (input.type() == AutocompleteInput::UNKNOWN &&
+       input.text().find('.') != string16::npos)) {
     Stop(false);
     return;
   }
