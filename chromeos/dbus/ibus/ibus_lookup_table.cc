@@ -118,8 +118,12 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
                << "5th argument should be int32.";
     return false;
   }
+
+  // Original IBus spec has third orientation IBUS_ORIENTATION_SYSTEM but it
+  // was not supported in Chrome OS. Thus do not cast from integer to enum.
   table->set_orientation(
-      static_cast<IBusLookupTable::Orientation>(orientation));
+      orientation == IBusLookupTable::HORIZONTAL ?
+      IBusLookupTable::HORIZONTAL : IBusLookupTable::VERTICAL);
 
   dbus::MessageReader text_array_reader(NULL);
   if (!ibus_object_reader.PopArray(&text_array_reader)) {
