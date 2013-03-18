@@ -354,10 +354,6 @@ def _FixPermissions(dest_base):
       ['find', dest_base, '-perm', '/110', '-exec', 'chmod', 'a+x', '{}', '+'])
 
 
-class StagingError(results_lib.StepFailure):
-  """An error occurred during StageChromeFromBuildDir."""
-
-
 def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
                             sloppy=False, gyp_defines=None, staging_flags=None,
                             strip_flags=None):
@@ -382,11 +378,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
       STAGING_FLAGS.
     strip_flags: A list of flags to pass to the tool used to strip binaries.
   """
-  if os.path.exists(staging_dir) and os.listdir(staging_dir):
-    raise StagingError('Staging directory %s must be empty.' % staging_dir)
-
-  osutils.SafeMakedirs(os.path.join(staging_dir, 'plugins'))
-  cros_build_lib.DebugRunCommand(['chmod', '-R', '0755', staging_dir])
+  os.mkdir(os.path.join(staging_dir, 'plugins'), 0755)
 
   if gyp_defines is None:
     gyp_defines = {}

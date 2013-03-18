@@ -411,6 +411,8 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
   to the device.  Only the necessary Chrome build artifacts are put into the
   staging directory.
   """
+  osutils.SafeMakedirs(staging_dir)
+  os.chmod(staging_dir, 0755)
   if options.build_dir:
     with _StripBinContext(options) as strip_bin:
       strip_flags = (None if options.strip_flags is None else
@@ -428,9 +430,12 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
 
     assert pkg_path
     logging.info('Extracting %s...', pkg_path)
-    osutils.SafeMakedirs(staging_dir)
-    cros_build_lib.DebugRunCommand(['tar', '-xpf', pkg_path], cwd=staging_dir)
-
+    # Extract only the ./opt/google/chrome contents, directly into the staging
+    # dir, collapsing the directory hierarchy.
+    cros_build_lib.DebugRunCommand(
+        ['tar', '--strip-components', '4', '--extract',
+         '--preserve-permissions', '--file', pkg_path, '.%s' % _CHROME_DIR],
+        cwd=staging_dir)
 
 def main(argv):
   options, args = _ParseCommandLine(argv)
@@ -446,6 +451,9 @@ def main(argv):
     staging_dir = options.staging_dir
     if not staging_dir:
       staging_dir = os.path.join(tempdir, 'chrome')
+    else:
+      if os.path.exists(staging_dir) and os.listdir(staging_dir):
+        cros_build_lib.Die('Staging directory %s must be empty.' % staging_dir)
 
     deploy = DeployChrome(options, tempdir, staging_dir)
     try:
