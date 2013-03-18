@@ -16,30 +16,23 @@ IndexedDBBrowserTest.VersionChangeCrashResilience
 IndexedDBBrowserTest.ValueSizeTest
 IndexedDBBrowserTest.ConnectionsClosedOnTabClose
 CrossPlatformAccessibilityBrowserTest.*
-GpuCrashTest.MANUAL_WebkitLoseContext
 DatabaseTest.*
 
 # Failures
 WorkerLayoutTest.*
 MediaLayoutTest.*
 IndexedDBLayoutTest.*
-ContentBrowserTest.MANUAL_ShouldntRun
 RenderViewHostTest.BaseURLParam
 OffTheRecordClipboardTest.ClearContentData
 FileSystemLayoutTest.*
-GpuPixelTestCanvas2DSD.MANUAL_Canvas2DRedBoxSD
 GpuPixelBrowserTest.*
 BlobLayoutTest.XhrResponseBlob
 FileSystemBrowserTestWithLowQuota.QuotaTest
 BlobLayoutTest.*
 ChildProcessSecurityPolicyInProcessBrowserTest.NoLeak
 
-# Failure, see crbug/189186
-GpuPixelTestBrowserPlugin.MANUAL_BrowserPluginBlueBox
-
 # Crashes
 WorkerXHRHttpLayoutTest.Tests
-GpuCrashTest.MANUAL_Kill
 
 # Needs to start the test server before
 # BrowserTestBase::SetUpCommandLine is called, but on Android

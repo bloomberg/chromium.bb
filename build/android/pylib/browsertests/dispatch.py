@@ -55,8 +55,9 @@ def Dispatch(options):
   if options.gtest_filter:
     all_tests = [t for t in options.gtest_filter.split(':') if t]
   else:
-    all_tests = gtest_dispatch.GetAllEnabledTests(RunnerFactory,
-                                                  attached_devices)
+    all_enabled = gtest_dispatch.GetAllEnabledTests(RunnerFactory,
+                                                    attached_devices)
+    all_tests = _FilterTests(all_enabled)
 
   # Run tests.
   test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices,
@@ -67,3 +68,18 @@ def Dispatch(options):
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
   test_results.PrintAnnotation()
+
+def _FilterTests(all_enabled_tests):
+  """Filters out tests and fixtures starting with PRE_ and MANUAL_."""
+  return [t for t in all_enabled_tests if _ShouldRunOnBot(t)]
+
+def _ShouldRunOnBot(test):
+  fixture, case = test.split('.', 1)
+  if _StartsWith(fixture, case, "PRE_"):
+    return False
+  if _StartsWith(fixture, case, "MANUAL_"):
+    return False
+  return True
+
+def _StartsWith(a, b, prefix):
+  return a.startswith(prefix) or b.startswith(prefix)
