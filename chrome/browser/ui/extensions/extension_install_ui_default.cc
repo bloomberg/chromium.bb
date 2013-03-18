@@ -102,27 +102,43 @@ void ErrorInfobarDelegate::Create(InfoBarService* infobar_service,
       new ErrorInfobarDelegate(infobar_service, browser, error)));
 }
 
+Browser* FindOrCreateVisibleBrowser(Profile* profile) {
+  Browser* browser =
+      chrome::FindOrCreateTabbedBrowser(profile, chrome::GetActiveDesktop());
+  if (browser->tab_strip_model()->count() == 0)
+    chrome::AddBlankTabAt(browser, -1, true);
+  browser->window()->Show();
+  return browser;
+}
+
+void ShowExtensionInstalledBubble(const extensions::Extension* extension,
+                                  Profile* profile,
+                                  const SkBitmap& icon) {
+  Browser* browser = FindOrCreateVisibleBrowser(profile);
+  chrome::ShowExtensionInstalledBubble(extension, browser, icon);
+}
+
 void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
-                                   Browser* browser,
+                                   Profile* profile,
                                    SkBitmap* icon,
                                    bool use_bubble,
                                    bool use_launcher) {
   if (use_launcher) {
-    AppListService::Get()->ShowAppList(browser->profile());
+    AppListService::Get()->ShowAppList(profile);
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-        content::Source<Profile>(browser->profile()),
+        content::Source<Profile>(profile),
         content::Details<const std::string>(&extension->id()));
     return;
   }
 
   if (use_bubble) {
-    chrome::ShowExtensionInstalledBubble(extension, browser, *icon);
+    ShowExtensionInstalledBubble(extension, profile, *icon);
     return;
   }
 
-  ExtensionInstallUI::OpenAppInstalledUI(browser, extension->id());
+  ExtensionInstallUI::OpenAppInstalledUI(profile, extension->id());
 }
 
 }  // namespace
@@ -169,9 +185,6 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
   // Extensions aren't enabled by default in incognito so we confirm
   // the install in a normal window.
   Profile* current_profile = profile_->GetOriginalProfile();
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(current_profile,
-                                        chrome::GetActiveDesktop());
   if (extension->is_app()) {
     bool use_bubble = false;
 
@@ -182,12 +195,12 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 #endif
 
     apps::GetIsAppLauncherEnabled(
-        base::Bind(&OnAppLauncherEnabledCompleted, extension, browser, icon,
-                   use_bubble));
+        base::Bind(&OnAppLauncherEnabledCompleted, extension, current_profile,
+                   icon, use_bubble));
     return;
   }
 
-  chrome::ShowExtensionInstalledBubble(extension, browser, *icon);
+  ShowExtensionInstalledBubble(extension, current_profile, *icon);
 }
 
 void ExtensionInstallUIDefault::OnInstallFailure(
@@ -222,20 +235,17 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 }
 
 // static
-void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
+void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
                                             const std::string& app_id) {
 #if defined(OS_CHROMEOS)
-  AppListService::Get()->ShowAppList(browser->profile());
+  AppListService::Get()->ShowAppList(profile);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-      content::Source<Profile>(browser->profile()),
+      content::Source<Profile>(profile),
       content::Details<const std::string>(&app_id));
 #else
-  if (browser->tab_strip_model()->count() == 0)
-    chrome::AddBlankTabAt(browser, -1, true);
-  browser->window()->Show();
-
+  Browser* browser = FindOrCreateVisibleBrowser(profile);
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser, GURL(chrome::kChromeUINewTabURL)));
   chrome::Navigate(&params);

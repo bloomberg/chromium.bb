@@ -31,7 +31,7 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 
 // static
 void ExtensionInstallUI::OpenAppInstalledUI(
-    Browser* browser, const std::string& app_id) {
+    Profile* profile, const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 

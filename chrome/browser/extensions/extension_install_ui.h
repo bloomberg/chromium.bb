@@ -49,7 +49,7 @@ class ExtensionInstallUI {
   virtual void SetUseAppInstalledBubble(bool use_bubble) = 0;
 
   // Opens apps UI and animates the app icon for the app with id |app_id|.
-  static void OpenAppInstalledUI(Browser* browser, const std::string& app_id);
+  static void OpenAppInstalledUI(Profile* profile, const std::string& app_id);
 
   // Disables showing UI (ErrorBox, etc.) for install failures. To be used only
   // in tests.

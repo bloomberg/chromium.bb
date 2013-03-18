@@ -695,7 +695,7 @@ class ExtensionLoadedNotificationObserver
 }
 
 - (IBAction)onAppShortcutClicked:(id)sender {
-  ExtensionInstallUI::OpenAppInstalledUI(browser_, extension_->id());
+  ExtensionInstallUI::OpenAppInstalledUI(browser_->profile(), extension_->id());
 }
 
 - (void)awakeFromNib {
