@@ -355,7 +355,7 @@ TEST_F(DamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
     // otherwise this test is not actually testing the intended scenario.
     gfx::QuadF testQuad(gfx::RectF(gfx::PointF(), gfx::SizeF(100, 100)));
     bool clipped = false;
-    MathUtil::mapQuad(transform, testQuad, clipped);
+    MathUtil::MapQuad(transform, testQuad, &clipped);
     EXPECT_TRUE(clipped);
 
     // Damage the child without moving it.

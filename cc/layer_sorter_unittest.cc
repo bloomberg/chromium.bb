@@ -186,7 +186,7 @@ TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform) {
   // where part of layer B go behind the w = 0 plane.
   gfx::QuadF test_quad = gfx::QuadF(gfx::RectF(-0.5f, -0.5f, 1.f, 1.f));
   bool clipped = false;
-  MathUtil::mapQuad(perspective_matrix * transform_b, test_quad, clipped);
+  MathUtil::MapQuad(perspective_matrix * transform_b, test_quad, &clipped);
   ASSERT_TRUE(clipped);
 
   overlap_result =

@@ -190,7 +190,7 @@ LayerShape::LayerShape(float width,
 
   gfx::PointF clippedQuad[8];
   int num_vertices_in_clipped_quad;
-  MathUtil::mapClippedQuad(draw_transform,
+  MathUtil::MapClippedQuad(draw_transform,
                            layer_quad,
                            clippedQuad,
                            num_vertices_in_clipped_quad);
@@ -201,7 +201,7 @@ LayerShape::LayerShape(float width,
   }
 
   projected_bounds =
-      MathUtil::computeEnclosingRectOfVertices(clippedQuad,
+      MathUtil::ComputeEnclosingRectOfVertices(clippedQuad,
                                                num_vertices_in_clipped_quad);
 
   // NOTE: it will require very significant refactoring and overhead to deal
@@ -222,11 +222,11 @@ LayerShape::LayerShape(float width,
   // Compute the normal of the layer's plane.
   bool clipped = false;
   gfx::Point3F c1 =
-      MathUtil::mapPoint(draw_transform, gfx::Point3F(0.f, 0.f, 0.f), clipped);
+      MathUtil::MapPoint(draw_transform, gfx::Point3F(0.f, 0.f, 0.f), &clipped);
   gfx::Point3F c2 =
-      MathUtil::mapPoint(draw_transform, gfx::Point3F(0.f, 1.f, 0.f), clipped);
+      MathUtil::MapPoint(draw_transform, gfx::Point3F(0.f, 1.f, 0.f), &clipped);
   gfx::Point3F c3 =
-      MathUtil::mapPoint(draw_transform, gfx::Point3F(1.f, 0.f, 0.f), clipped);
+      MathUtil::MapPoint(draw_transform, gfx::Point3F(1.f, 0.f, 0.f), &clipped);
   // FIXME: Deal with clipping.
   gfx::Vector3dF c12 = c2 - c1;
   gfx::Vector3dF c13 = c3 - c1;

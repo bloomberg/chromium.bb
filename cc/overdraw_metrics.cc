@@ -48,7 +48,7 @@ static inline float AreaOfMappedQuad(const gfx::Transform& transform,
                                      const gfx::QuadF& quad) {
   gfx::PointF clippedQuad[8];
   int num_vertices_in_clipped_quad = 0;
-  MathUtil::mapClippedQuad(transform,
+  MathUtil::MapClippedQuad(transform,
                            quad,
                            clippedQuad,
                            num_vertices_in_clipped_quad);

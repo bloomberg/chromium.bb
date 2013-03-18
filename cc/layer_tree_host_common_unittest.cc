@@ -420,7 +420,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
 
     gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
             * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
-    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.0f);
+    gfx::Vector2dF parentCompositeScale = MathUtil::ComputeTransform2dScaleComponents(parentCompositeTransform, 1.0f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
     gfx::Transform surfaceSublayerCompositeTransform = parentCompositeTransform * inverse(surfaceSublayerTransform);
@@ -593,7 +593,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
             * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
     gfx::Transform replicaLayerTransform;
     replicaLayerTransform.Scale3d(3, 3, 1);
-    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.f);
+    gfx::Vector2dF parentCompositeScale = MathUtil::ComputeTransform2dScaleComponents(parentCompositeTransform, 1.f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
     gfx::Transform replicaCompositeTransform = parentCompositeTransform * replicaLayerTransform * inverse(surfaceSublayerTransform);
@@ -676,7 +676,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     gfx::Transform B = translationToAnchor * sublayerTransform * inverse(translationToAnchor);
     gfx::Transform R = A * translationToAnchor * replicaLayerTransform * inverse(translationToAnchor);
 
-    gfx::Vector2dF surface1ParentTransformScale = MathUtil::computeTransform2dScaleComponents(A * B, 1.f);
+    gfx::Vector2dF surface1ParentTransformScale = MathUtil::ComputeTransform2dScaleComponents(A * B, 1.f);
     gfx::Transform surface1SublayerTransform;
     surface1SublayerTransform.Scale(surface1ParentTransformScale.x(), surface1ParentTransformScale.y());
 
@@ -685,7 +685,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     // S1 = transform to move from renderSurface1 pixels to the layer space of the owning layer
     gfx::Transform S1 = inverse(surface1SublayerTransform);
 
-    gfx::Vector2dF surface2ParentTransformScale = MathUtil::computeTransform2dScaleComponents(SS1 * A * B, 1.f);
+    gfx::Vector2dF surface2ParentTransformScale = MathUtil::ComputeTransform2dScaleComponents(SS1 * A * B, 1.f);
     gfx::Transform surface2SublayerTransform;
     surface2SublayerTransform.Scale(surface2ParentTransformScale.x(), surface2ParentTransformScale.y());
 
@@ -2226,7 +2226,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveWhenClippedByW)
     // Sanity check that this transform does indeed cause w < 0 when applying the
     // transform, otherwise this code is not testing the intended scenario.
     bool clipped = false;
-    MathUtil::mapQuad(layerToSurfaceTransform, gfx::QuadF(gfx::RectF(layerContentRect)), clipped);
+    MathUtil::MapQuad(layerToSurfaceTransform, gfx::QuadF(gfx::RectF(layerContentRect)), &clipped);
     ASSERT_TRUE(clipped);
 
     int expectedXPosition = 0;
@@ -2256,8 +2256,8 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
     // Sanity check that un-projection does indeed cause w < 0, otherwise this code is not
     // testing the intended scenario.
     bool clipped = false;
-    gfx::RectF clippedRect = MathUtil::mapClippedRect(layerToSurfaceTransform, layerContentRect);
-    MathUtil::projectQuad(inverse(layerToSurfaceTransform), gfx::QuadF(clippedRect), clipped);
+    gfx::RectF clippedRect = MathUtil::MapClippedRect(layerToSurfaceTransform, layerContentRect);
+    MathUtil::ProjectQuad(inverse(layerToSurfaceTransform), gfx::QuadF(clippedRect), &clipped);
     ASSERT_TRUE(clipped);
 
     // Only the corner of the layer is not visible on the surface because of being
@@ -4287,8 +4287,8 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     // Verify results of transformed parent rects
     gfx::RectF parentContentBounds(gfx::PointF(), gfx::SizeF(parent->content_bounds()));
 
-    gfx::RectF parentDrawRect = MathUtil::mapClippedRect(parent->draw_transform(), parentContentBounds);
-    gfx::RectF parentScreenSpaceRect = MathUtil::mapClippedRect(parent->screen_space_transform(), parentContentBounds);
+    gfx::RectF parentDrawRect = MathUtil::MapClippedRect(parent->draw_transform(), parentContentBounds);
+    gfx::RectF parentScreenSpaceRect = MathUtil::MapClippedRect(parent->screen_space_transform(), parentContentBounds);
 
     gfx::RectF expectedParentDrawRect(gfx::PointF(), parent->bounds());
     expectedParentDrawRect.Scale(deviceScaleFactor);
@@ -4306,11 +4306,11 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     // Verify results of transformed child and childEmpty rects. They should match.
     gfx::RectF childContentBounds(gfx::PointF(), gfx::SizeF(child->content_bounds()));
 
-    gfx::RectF childDrawRect = MathUtil::mapClippedRect(child->draw_transform(), childContentBounds);
-    gfx::RectF childScreenSpaceRect = MathUtil::mapClippedRect(child->screen_space_transform(), childContentBounds);
+    gfx::RectF childDrawRect = MathUtil::MapClippedRect(child->draw_transform(), childContentBounds);
+    gfx::RectF childScreenSpaceRect = MathUtil::MapClippedRect(child->screen_space_transform(), childContentBounds);
 
-    gfx::RectF childEmptyDrawRect = MathUtil::mapClippedRect(childEmpty->draw_transform(), childContentBounds);
-    gfx::RectF childEmptyScreenSpaceRect = MathUtil::mapClippedRect(childEmpty->screen_space_transform(), childContentBounds);
+    gfx::RectF childEmptyDrawRect = MathUtil::MapClippedRect(childEmpty->draw_transform(), childContentBounds);
+    gfx::RectF childEmptyScreenSpaceRect = MathUtil::MapClippedRect(childEmpty->screen_space_transform(), childContentBounds);
 
     gfx::RectF expectedChildDrawRect(child->position(), child->bounds());
     expectedChildDrawRect.Scale(deviceScaleFactor);
@@ -4440,8 +4440,8 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
     // Verify results of transformed parent rects
     gfx::RectF parentContentBounds(gfx::PointF(), gfx::SizeF(parent->content_bounds()));
 
-    gfx::RectF parentDrawRect = MathUtil::mapClippedRect(parent->draw_transform(), parentContentBounds);
-    gfx::RectF parentScreenSpaceRect = MathUtil::mapClippedRect(parent->screen_space_transform(), parentContentBounds);
+    gfx::RectF parentDrawRect = MathUtil::MapClippedRect(parent->draw_transform(), parentContentBounds);
+    gfx::RectF parentScreenSpaceRect = MathUtil::MapClippedRect(parent->screen_space_transform(), parentContentBounds);
 
     gfx::RectF expectedParentDrawRect(gfx::PointF(), parent->bounds());
     expectedParentDrawRect.Scale(deviceScaleFactor);
@@ -4458,8 +4458,8 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
     // Verify results of transformed child rects
     gfx::RectF childContentBounds(gfx::PointF(), gfx::SizeF(child->content_bounds()));
 
-    gfx::RectF childDrawRect = MathUtil::mapClippedRect(child->draw_transform(), childContentBounds);
-    gfx::RectF childScreenSpaceRect = MathUtil::mapClippedRect(child->screen_space_transform(), childContentBounds);
+    gfx::RectF childDrawRect = MathUtil::MapClippedRect(child->draw_transform(), childContentBounds);
+    gfx::RectF childScreenSpaceRect = MathUtil::MapClippedRect(child->screen_space_transform(), childContentBounds);
 
     gfx::RectF expectedChildDrawRect(gfx::PointF(), child->bounds());
     expectedChildDrawRect.Scale(deviceScaleFactor);

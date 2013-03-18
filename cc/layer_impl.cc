@@ -244,9 +244,9 @@ InputHandlerClient::ScrollStatus LayerImpl::TryScroll(
     }
 
     gfx::PointF hit_test_point_in_content_space =
-        MathUtil::projectPoint(inverse_screen_space_transform,
+        MathUtil::ProjectPoint(inverse_screen_space_transform,
                                screen_space_point,
-                               clipped);
+                               &clipped);
     gfx::PointF hit_test_point_in_layer_space =
         gfx::ScalePoint(hit_test_point_in_content_space,
                         1.f / contents_scale_x(),
@@ -944,15 +944,15 @@ void LayerImpl::SetVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbar_layer) {
 
 void LayerImpl::AsValueInto(base::DictionaryValue* dict) const {
   dict->SetInteger("id", id());
-  dict->Set("bounds", MathUtil::asValue(bounds()).release());
+  dict->Set("bounds", MathUtil::AsValue(bounds()).release());
   dict->SetInteger("draws_content", DrawsContent());
 
   bool clipped;
-  gfx::QuadF layer_quad = MathUtil::mapQuad(
+  gfx::QuadF layer_quad = MathUtil::MapQuad(
       screen_space_transform(),
       gfx::QuadF(gfx::Rect(content_bounds())),
-      clipped);
-  dict->Set("layer_quad", MathUtil::asValue(layer_quad).release());
+      &clipped);
+  dict->Set("layer_quad", MathUtil::AsValue(layer_quad).release());
 
 }
 

@@ -452,13 +452,13 @@ void PictureLayerTiling::UpdateTilePriorities(
           tile_bounds,
           current_scale,
           current_scale);
-      gfx::RectF current_screen_rect = MathUtil::mapClippedRect(
+      gfx::RectF current_screen_rect = MathUtil::MapClippedRect(
           current_screen_transform, current_layer_content_rect);
       gfx::RectF last_layer_content_rect = gfx::ScaleRect(
           tile_bounds,
           last_scale,
           last_scale);
-      gfx::RectF last_screen_rect  = MathUtil::mapClippedRect(
+      gfx::RectF last_screen_rect  = MathUtil::MapClippedRect(
           last_screen_transform, last_layer_content_rect);
 
       float distance_to_visible_in_pixels =
@@ -475,9 +475,9 @@ void PictureLayerTiling::UpdateTilePriorities(
       if (store_screen_space_quads_on_tiles) {
           bool clipped;
           priority.set_current_screen_quad(
-            MathUtil::mapQuad(current_screen_transform,
+            MathUtil::MapQuad(current_screen_transform,
                               gfx::QuadF(current_layer_content_rect),
-                              clipped));
+                              &clipped));
       }
       tile->SetPriority(tree, priority);
     }
@@ -507,7 +507,7 @@ scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
   state->SetInteger("num_tiles", tiles_.size());
   state->SetDouble("content_scale", contents_scale_);
   state->Set("content_bounds",
-             MathUtil::asValue(ContentRect().size()).release());
+             MathUtil::AsValue(ContentRect().size()).release());
   return state.PassAs<base::Value>();
 }
 

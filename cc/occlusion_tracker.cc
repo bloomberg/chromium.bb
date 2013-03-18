@@ -59,7 +59,7 @@ static gfx::Rect ScreenSpaceClipRectInTargetSurface(
           &inverse_screen_space_transform))
     return target_surface->content_rect();
 
-  return gfx::ToEnclosingRect(MathUtil::projectClippedRect(
+  return gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
       inverse_screen_space_transform, screen_space_clip_rect));
 }
 
@@ -77,7 +77,7 @@ static Region TransformSurfaceOpaqueRegion(const Region& region,
 
   bool clipped;
   gfx::QuadF transformed_bounds_quad =
-      MathUtil::mapQuad(transform, gfx::QuadF(region.bounds()), clipped);
+      MathUtil::MapQuad(transform, gfx::QuadF(region.bounds()), &clipped);
   // FIXME: Find a rect interior to each transformed quad.
   if (clipped || !transformed_bounds_quad.IsRectilinear())
     return Region();
@@ -87,7 +87,7 @@ static Region TransformSurfaceOpaqueRegion(const Region& region,
   Region transformed_region;
   for (Region::Iterator rects(region); rects.has_rect(); rects.next()) {
     gfx::QuadF transformed_quad =
-        MathUtil::mapQuad(transform, gfx::QuadF(rects.rect()), clipped);
+        MathUtil::MapQuad(transform, gfx::QuadF(rects.rect()), &clipped);
     gfx::Rect transformed_rect =
         gfx::ToEnclosedRect(transformed_quad.BoundingBox());
     DCHECK(!clipped);  // We only map if the transform preserves axis alignment.
@@ -241,7 +241,7 @@ static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
     return;
 
   gfx::Rect affected_area_in_target = gfx::ToEnclosingRect(
-      MathUtil::mapClippedRect(surface_transform, gfx::RectF(surface_rect)));
+      MathUtil::MapClippedRect(surface_transform, gfx::RectF(surface_rect)));
   if (contributing_layer->render_surface()->is_clipped()) {
     affected_area_in_target.Intersect(
         contributing_layer->render_surface()->clip_rect());
@@ -415,8 +415,8 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   DCHECK(layer->visible_content_rect().Contains(opaque_contents.bounds()));
 
   bool clipped;
-  gfx::QuadF visible_transformed_quad = MathUtil::mapQuad(
-      layer->draw_transform(), gfx::QuadF(opaque_contents.bounds()), clipped);
+  gfx::QuadF visible_transformed_quad = MathUtil::MapQuad(
+      layer->draw_transform(), gfx::QuadF(opaque_contents.bounds()), &clipped);
   // FIXME: Find a rect interior to each transformed quad.
   if (clipped || !visible_transformed_quad.IsRectilinear())
     return;
@@ -429,10 +429,10 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   for (Region::Iterator opaqueContentRects(opaque_contents);
        opaqueContentRects.has_rect();
        opaqueContentRects.next()) {
-    gfx::QuadF transformed_quad = MathUtil::mapQuad(
+    gfx::QuadF transformed_quad = MathUtil::MapQuad(
         layer->draw_transform(),
         gfx::QuadF(opaqueContentRects.rect()),
-        clipped);
+        &clipped);
     gfx::Rect transformed_rect =
         gfx::ToEnclosedRect(transformed_quad.BoundingBox());
     DCHECK(!clipped);  // We only map if the transform preserves axis alignment.
@@ -446,9 +446,9 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
       continue;
 
     // Save the occluding area in screen space for debug visualization.
-    gfx::QuadF screen_space_quad = MathUtil::mapQuad(
+    gfx::QuadF screen_space_quad = MathUtil::MapQuad(
         layer->render_target()->render_surface()->screen_space_transform(),
-        gfx::QuadF(transformed_rect), clipped);
+        gfx::QuadF(transformed_rect), &clipped);
     // TODO(danakj): Store the quad in the debug info instead of the bounding
     // box.
     gfx::Rect screen_space_rect =
@@ -467,16 +467,16 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     // We've already checked for clipping in the mapQuad call above, these calls
     // should not clip anything further.
     gfx::Rect transformed_rect = gfx::ToEnclosedRect(
-        MathUtil::mapClippedRect(layer->draw_transform(),
+        MathUtil::MapClippedRect(layer->draw_transform(),
                                  gfx::RectF(nonOpaqueContentRects.rect())));
     transformed_rect.Intersect(clip_rect_in_target);
     if (transformed_rect.IsEmpty())
       continue;
 
-    gfx::QuadF screen_space_quad = MathUtil::mapQuad(
+    gfx::QuadF screen_space_quad = MathUtil::MapQuad(
         layer->render_target()->render_surface()->screen_space_transform(),
         gfx::QuadF(transformed_rect),
-        clipped);
+        &clipped);
     // TODO(danakj): Store the quad in the debug info instead of the bounding
     // box.
     gfx::Rect screen_space_rect =
@@ -520,7 +520,7 @@ bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::Occluded(
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
   Region unoccluded_region_in_target_surface = gfx::ToEnclosingRect(
-      MathUtil::mapClippedRect(draw_transform, gfx::RectF(content_rect)));
+      MathUtil::MapClippedRect(draw_transform, gfx::RectF(content_rect)));
   // Layers can't clip across surfaces, so count this as internal occlusion.
   if (is_clipped)
     unoccluded_region_in_target_surface.Intersect(clip_rect_in_target);
@@ -588,7 +588,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
   Region unoccluded_region_in_target_surface = gfx::ToEnclosingRect(
-      MathUtil::mapClippedRect(draw_transform, gfx::RectF(content_rect)));
+      MathUtil::MapClippedRect(draw_transform, gfx::RectF(content_rect)));
   // Layers can't clip across surfaces, so count this as internal occlusion.
   if (is_clipped)
     unoccluded_region_in_target_surface.Intersect(clip_rect_in_target);
@@ -610,7 +610,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   gfx::RectF unoccluded_rect_in_target_surface =
       unoccluded_region_in_target_surface.bounds();
   gfx::Rect unoccluded_rect = gfx::ToEnclosingRect(
-      MathUtil::projectClippedRect(inverse_draw_transform,
+      MathUtil::ProjectClippedRect(inverse_draw_transform,
                                    unoccluded_rect_in_target_surface));
   unoccluded_rect.Intersect(content_rect);
 
@@ -669,7 +669,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
   Region unoccluded_region_in_target_surface = gfx::ToEnclosingRect(
-      MathUtil::mapClippedRect(draw_transform, gfx::RectF(content_rect)));
+      MathUtil::MapClippedRect(draw_transform, gfx::RectF(content_rect)));
   // Layers can't clip across surfaces, so count this as internal occlusion.
   if (surface->is_clipped())
     unoccluded_region_in_target_surface.Intersect(surface->clip_rect());
@@ -697,7 +697,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   gfx::RectF unoccluded_rect_in_target_surface =
       unoccluded_region_in_target_surface.bounds();
   gfx::Rect unoccluded_rect = gfx::ToEnclosingRect(
-      MathUtil::projectClippedRect(inverse_draw_transform,
+      MathUtil::ProjectClippedRect(inverse_draw_transform,
                                    unoccluded_rect_in_target_surface));
   unoccluded_rect.Intersect(content_rect);
 

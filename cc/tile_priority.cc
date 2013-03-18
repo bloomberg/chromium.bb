@@ -98,9 +98,9 @@ scoped_ptr<base::Value> TilePriority::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetBoolean("is_live", is_live);
   state->Set("resolution", TileResolutionAsValue(resolution).release());
-  state->Set("time_to_visible_in_seconds", MathUtil::asValueSafely(time_to_visible_in_seconds).release());
-  state->Set("distance_to_visible_in_pixels", MathUtil::asValueSafely(distance_to_visible_in_pixels).release());
-  state->Set("current_screen_quad", MathUtil::asValue(current_screen_quad).release());
+  state->Set("time_to_visible_in_seconds", MathUtil::AsValueSafely(time_to_visible_in_seconds).release());
+  state->Set("distance_to_visible_in_pixels", MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
+  state->Set("current_screen_quad", MathUtil::AsValue(current_screen_quad).release());
   return state.PassAs<base::Value>();
 }
 

@@ -64,7 +64,7 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
         gfx::ScaleRect(layer->update_rect(), width_scale, height_scale);
     debug_rects_.push_back(
         DebugRect(PAINT_RECT_TYPE,
-                  MathUtil::mapClippedRect(layer->screen_space_transform(),
+                  MathUtil::MapClippedRect(layer->screen_space_transform(),
                                            update_content_rect)));
   }
 
@@ -98,7 +98,7 @@ void DebugRectHistory::SavePropertyChangedRects(
           layer->LayerSurfacePropertyChanged()) {
         debug_rects_.push_back(
             DebugRect(PROPERTY_CHANGED_RECT_TYPE,
-                      MathUtil::mapClippedRect(
+                      MathUtil::MapClippedRect(
                           layer->screen_space_transform(),
                           gfx::RectF(gfx::PointF(), layer->content_bounds()))));
       }
@@ -117,7 +117,7 @@ void DebugRectHistory::SaveSurfaceDamageRects(
 
     debug_rects_.push_back(DebugRect(
         SURFACE_DAMAGE_RECT_TYPE,
-        MathUtil::mapClippedRect(
+        MathUtil::MapClippedRect(
             render_surface->screen_space_transform(),
             render_surface->damage_tracker()->current_damage_rect())));
   }
@@ -134,13 +134,13 @@ void DebugRectHistory::SaveScreenSpaceRects(
 
     debug_rects_.push_back(DebugRect(
         SCREEN_SPACE_RECT_TYPE,
-        MathUtil::mapClippedRect(render_surface->screen_space_transform(),
+        MathUtil::MapClippedRect(render_surface->screen_space_transform(),
                                  render_surface->content_rect())));
 
     if (render_surface_layer->replica_layer()) {
       debug_rects_.push_back(
           DebugRect(REPLICA_SCREEN_SPACE_RECT_TYPE,
-                    MathUtil::mapClippedRect(
+                    MathUtil::MapClippedRect(
                         render_surface->replica_screen_space_transform(),
                         render_surface->content_rect())));
     }

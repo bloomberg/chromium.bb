@@ -859,7 +859,7 @@ protected:
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
 
-        gfx::Rect clippedLayerInChild = MathUtil::mapClippedRect(layerTransform, layer->visible_content_rect());
+        gfx::Rect clippedLayerInChild = MathUtil::MapClippedRect(layerTransform, layer->visible_content_rect());
 
         this->visitLayer(layer, occlusion);
         this->enterContributingSurface(child, occlusion);

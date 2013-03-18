@@ -271,7 +271,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   gfx::RectF old_rect_in_target_space =
       RemoveRectFromCurrentFrame(layer->id(), &layer_is_new);
 
-  gfx::RectF rect_in_target_space = MathUtil::mapClippedRect(
+  gfx::RectF rect_in_target_space = MathUtil::MapClippedRect(
       layer->draw_transform(),
       gfx::RectF(gfx::PointF(), layer->content_bounds()));
   SaveRectForNextFrame(layer->id(), rect_in_target_space);
@@ -290,7 +290,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
     gfx::RectF update_content_rect =
         layer->LayerRectToContentRect(layer->update_rect());
     gfx::RectF update_rect_in_target_space =
-        MathUtil::mapClippedRect(layer->draw_transform(), update_content_rect);
+        MathUtil::MapClippedRect(layer->draw_transform(), update_content_rect);
     target_damage_rect->Union(update_rect_in_target_space);
   }
 }
@@ -343,13 +343,13 @@ void DamageTracker::ExtendDamageForRenderSurface(
   if (!damage_rect_in_local_space.IsEmpty()) {
     const gfx::Transform& draw_transform = render_surface->draw_transform();
     gfx::RectF damage_rect_in_target_space =
-        MathUtil::mapClippedRect(draw_transform, damage_rect_in_local_space);
+        MathUtil::MapClippedRect(draw_transform, damage_rect_in_local_space);
     target_damage_rect->Union(damage_rect_in_target_space);
 
     if (layer->replica_layer()) {
       const gfx::Transform& replica_draw_transform =
           render_surface->replica_draw_transform();
-      target_damage_rect->Union(MathUtil::mapClippedRect(
+      target_damage_rect->Union(MathUtil::MapClippedRect(
           replica_draw_transform, damage_rect_in_local_space));
     }
   }
@@ -364,7 +364,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
 
     const gfx::Transform& replica_draw_transform =
         render_surface->replica_draw_transform();
-    gfx::RectF replica_mask_layer_rect = MathUtil::mapClippedRect(
+    gfx::RectF replica_mask_layer_rect = MathUtil::MapClippedRect(
         replica_draw_transform,
         gfx::RectF(gfx::PointF(), replica_mask_layer->bounds()));
     SaveRectForNextFrame(replica_mask_layer->id(), replica_mask_layer_rect);

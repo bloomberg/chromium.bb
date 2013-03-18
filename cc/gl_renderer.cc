@@ -566,7 +566,7 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
 
   // FIXME: Do a single readback for both the surface and replica and cache the
   // filtered results (once filter textures are not reused).
-  gfx::Rect device_rect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(
+  gfx::Rect device_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
       contents_device_transform, SharedGeometryQuad().BoundingBox()));
 
   int top, right, bottom, left;
@@ -677,8 +677,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
   }
 
   bool clipped = false;
-  gfx::QuadF device_quad = MathUtil::mapQuad(
-      contents_device_transform, SharedGeometryQuad(), clipped);
+  gfx::QuadF device_quad = MathUtil::MapQuad(
+      contents_device_transform, SharedGeometryQuad(), &clipped);
   DCHECK(!clipped);
   LayerQuad deviceLayerBounds(gfx::QuadF(device_quad.BoundingBox()));
   LayerQuad device_layer_edges(device_quad);
@@ -829,8 +829,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
 
   // Map device space quad to surface space. contents_device_transform has no 3d
   // component since it was flattened, so we don't need to project.
-  gfx::QuadF surface_quad = MathUtil::mapQuad(
-      contents_device_transform_inverse, device_layer_edges.ToQuadF(), clipped);
+  gfx::QuadF surface_quad = MathUtil::MapQuad(contents_device_transform_inverse,
+                                              device_layer_edges.ToQuadF(),
+                                              &clipped);
   DCHECK(!clipped);
 
   SetShaderOpacity(quad->opacity(), shader_alpha_location);
@@ -872,8 +873,8 @@ bool GLRenderer::SetupQuadForAntialiasing(
   gfx::Rect tile_rect = quad->visible_rect;
 
   bool clipped = false;
-  gfx::QuadF device_layer_quad = MathUtil::mapQuad(
-      device_transform, gfx::QuadF(quad->visibleContentRect()), clipped);
+  gfx::QuadF device_layer_quad = MathUtil::MapQuad(
+      device_transform, gfx::QuadF(quad->visibleContentRect()), &clipped);
   DCHECK(!clipped);
 
   // TODO(reveman): Axis-aligned is not enough to avoid anti-aliasing.
@@ -900,13 +901,13 @@ bool GLRenderer::SetupQuadForAntialiasing(
   gfx::PointF top_right = tile_rect.top_right();
 
   // Map points to device space.
-  bottom_right = MathUtil::mapPoint(device_transform, bottom_right, clipped);
+  bottom_right = MathUtil::MapPoint(device_transform, bottom_right, &clipped);
   DCHECK(!clipped);
-  bottom_left = MathUtil::mapPoint(device_transform, bottom_left, clipped);
+  bottom_left = MathUtil::MapPoint(device_transform, bottom_left, &clipped);
   DCHECK(!clipped);
-  top_left = MathUtil::mapPoint(device_transform, top_left, clipped);
+  top_left = MathUtil::MapPoint(device_transform, top_left, &clipped);
   DCHECK(!clipped);
-  top_right = MathUtil::mapPoint(device_transform, top_right, clipped);
+  top_right = MathUtil::MapPoint(device_transform, top_right, &clipped);
   DCHECK(!clipped);
 
   LayerQuad::Edge bottom_edge(bottom_right, bottom_left);
@@ -940,8 +941,8 @@ bool GLRenderer::SetupQuadForAntialiasing(
       gfx::Transform::kSkipInitialization);
   bool did_invert = device_transform.GetInverse(&inverse_device_transform);
   DCHECK(did_invert);
-  *local_quad = MathUtil::mapQuad(
-      inverse_device_transform, device_quad.ToQuadF(), clipped);
+  *local_quad = MathUtil::MapQuad(
+      inverse_device_transform, device_quad.ToQuadF(), &clipped);
   // We should not DCHECK(!clipped) here, because anti-aliasing inflation may
   // cause deviceQuad to become clipped. To our knowledge this scenario does
   // not need to be handled differently than the unclipped case.

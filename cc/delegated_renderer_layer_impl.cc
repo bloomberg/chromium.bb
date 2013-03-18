@@ -76,7 +76,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
     // will be in layer space.
     if (!frame_data->render_pass_list.empty()) {
       RenderPass* new_root_pass = frame_data->render_pass_list.back();
-      gfx::RectF damage_in_layer = MathUtil::mapClippedRect(
+      gfx::RectF damage_in_layer = MathUtil::MapClippedRect(
           DelegatedFrameToLayerSpaceTransform(
               new_root_pass->output_rect.size()),
           damage_in_frame);
@@ -286,13 +286,13 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         if (render_target() == this) {
           DCHECK(!is_clipped());
           DCHECK(render_surface());
-          output_shared_quad_state->clip_rect = MathUtil::mapClippedRect(
+          output_shared_quad_state->clip_rect = MathUtil::MapClippedRect(
               delegated_frame_to_target_transform,
               output_shared_quad_state->clip_rect);
         } else {
           gfx::Rect clip_rect = drawable_content_rect();
           if (output_shared_quad_state->is_clipped) {
-            clip_rect.Intersect(MathUtil::mapClippedRect(
+            clip_rect.Intersect(MathUtil::MapClippedRect(
                 delegated_frame_to_target_transform,
                 output_shared_quad_state->clip_rect));
           }

@@ -68,9 +68,9 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
       TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
   state->Set("time_to_needed_in_seconds",
-      MathUtil::asValueSafely(time_to_needed_in_seconds).release());
+      MathUtil::AsValueSafely(time_to_needed_in_seconds).release());
   state->Set("distance_to_visible_in_pixels",
-      MathUtil::asValueSafely(distance_to_visible_in_pixels).release());
+      MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
   state->SetBoolean("is_picture_pile_analyzed", picture_pile_analyzed);
   state->SetBoolean("is_cheap_to_raster",
       picture_pile_analysis.is_cheap_to_raster);

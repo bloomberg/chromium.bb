@@ -23,10 +23,10 @@ RenderSurface::~RenderSurface() {}
 
 gfx::RectF RenderSurface::DrawableContentRect() const {
   gfx::RectF drawable_content_rect =
-      MathUtil::mapClippedRect(draw_transform_, content_rect_);
+      MathUtil::MapClippedRect(draw_transform_, content_rect_);
   if (owning_layer_->has_replica())
     drawable_content_rect.Union(
-        MathUtil::mapClippedRect(replica_draw_transform_, content_rect_));
+        MathUtil::MapClippedRect(replica_draw_transform_, content_rect_));
   return drawable_content_rect;
 }
 

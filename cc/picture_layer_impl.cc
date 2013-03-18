@@ -92,10 +92,10 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
   AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
   bool clipped = false;
-  gfx::QuadF target_quad = MathUtil::mapQuad(
+  gfx::QuadF target_quad = MathUtil::MapQuad(
       draw_transform(),
       gfx::QuadF(rect),
-      clipped);
+      &clipped);
   bool is_axis_aligned_in_target = !clipped && target_quad.IsRectilinear();
 
   bool is_pixel_aligned = is_axis_aligned_in_target &&
@@ -242,7 +242,7 @@ void PictureLayerImpl::UpdateTilePriorities() {
   if (screen_space_transform().GetInverse(&screen_to_layer)) {
     gfx::Rect device_viewport(layer_tree_impl()->device_viewport_size());
     viewport_in_content_space = gfx::ToEnclosingRect(
-        MathUtil::projectClippedRect(screen_to_layer, device_viewport));
+        MathUtil::ProjectClippedRect(screen_to_layer, device_viewport));
   }
 
   WhichTree tree =

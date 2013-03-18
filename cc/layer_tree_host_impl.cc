@@ -470,7 +470,7 @@ static void AppendQuadsToFillScreen(
     // The root layer transform is composed of translations and scales only,
     // no perspective, so mapping is sufficient (as opposed to projecting).
     gfx::Rect layer_rect =
-        MathUtil::mapClippedRect(transform_to_layer_space, fill_rects.rect());
+        MathUtil::MapClippedRect(transform_to_layer_space, fill_rects.rect());
     // Skip the quad culler and just append the quads directly to avoid
     // occlusion checks.
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
@@ -1432,13 +1432,13 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   bool start_clipped, end_clipped;
   gfx::PointF screen_space_end_point = screen_space_point + screen_space_delta;
   gfx::PointF local_start_point =
-      MathUtil::projectPoint(inverse_screen_space_transform,
+      MathUtil::ProjectPoint(inverse_screen_space_transform,
                              screen_space_point,
-                             start_clipped);
+                             &start_clipped);
   gfx::PointF local_end_point =
-      MathUtil::projectPoint(inverse_screen_space_transform,
+      MathUtil::ProjectPoint(inverse_screen_space_transform,
                              screen_space_end_point,
-                             end_clipped);
+                             &end_clipped);
 
   // In general scroll point coordinates should not get clipped.
   DCHECK(!start_clipped);
@@ -1469,9 +1469,9 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
 
   // Calculate the applied scroll delta in viewport space coordinates.
   gfx::PointF actual_screen_space_end_point =
-      MathUtil::mapPoint(layer_impl->screen_space_transform(),
+      MathUtil::MapPoint(layer_impl->screen_space_transform(),
                          actual_local_content_end_point,
-                         end_clipped);
+                         &end_clipped);
   DCHECK(!end_clipped);
   if (end_clipped)
     return gfx::Vector2dF();
@@ -1542,7 +1542,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     // make it easier to scroll just one layer in one direction without
     // affecting any of its parents.
     float angle_threshold = 45;
-    if (MathUtil::smallestAngleBetweenVectors(
+    if (MathUtil::SmallestAngleBetweenVectors(
             applied_delta, pending_delta) < angle_threshold) {
       pending_delta = gfx::Vector2d();
       break;
@@ -1551,7 +1551,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     // Allow further movement only on an axis perpendicular to the direction in
     // which the layer moved.
     gfx::Vector2dF perpendicular_axis(-applied_delta.y(), applied_delta.x());
-    pending_delta = MathUtil::projectVector(pending_delta, perpendicular_axis);
+    pending_delta = MathUtil::ProjectVector(pending_delta, perpendicular_axis);
 
     if (gfx::ToFlooredVector2d(pending_delta).IsZero())
       break;
@@ -1904,7 +1904,7 @@ scoped_ptr<base::Value> LayerTreeHostImpl::FrameStateAsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetString("lthi_id", StringPrintf("%p", this));
   state->Set("device_viewport_size",
-             MathUtil::asValue(device_viewport_size_).release());
+             MathUtil::AsValue(device_viewport_size_).release());
   if (tile_manager_)
     state->Set("tiles", tile_manager_->AllTilesAsValue().release());
   state->Set("active_tree", active_tree_->AsValue().release());

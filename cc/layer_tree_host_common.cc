@@ -64,14 +64,14 @@ inline gfx::Rect calculateVisibleRectWithCachedLayerRect(const gfx::Rect& target
         // TODO(shawnsingh): Either we need to handle uninvertible transforms
         // here, or DCHECK that the transform is invertible.
     }
-    gfx::Rect layerRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(surfaceToLayer, gfx::RectF(minimalSurfaceRect)));
+    gfx::Rect layerRect = gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(surfaceToLayer, gfx::RectF(minimalSurfaceRect)));
     layerRect.Intersect(layerBoundRect);
     return layerRect;
 }
 
 gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform& transform)
 {
-    gfx::Rect layerInSurfaceSpace = MathUtil::mapClippedRect(transform, layerBoundRect);
+    gfx::Rect layerInSurfaceSpace = MathUtil::MapClippedRect(transform, layerBoundRect);
     return calculateVisibleRectWithCachedLayerRect(targetSurfaceRect, layerBoundRect, layerInSurfaceSpace, transform);
 }
 
@@ -445,7 +445,7 @@ static inline void CalculateContentsScale(LayerType* layer, float contentsScale,
 
 static inline void updateLayerContentsScale(LayerImpl* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animating_transform_to_screen)
 {
-    gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, deviceScaleFactor * pageScaleFactor);
+    gfx::Vector2dF transformScale = MathUtil::ComputeTransform2dScaleComponents(combinedTransform, deviceScaleFactor * pageScaleFactor);
     float contentsScale = std::max(transformScale.x(), transformScale.y());
     CalculateContentsScale(layer, contentsScale, animating_transform_to_screen);
 }
@@ -455,7 +455,7 @@ static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& 
     float rasterScale = layer->raster_scale();
 
     if (layer->automatically_compute_raster_scale()) {
-        gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, 0.f);
+        gfx::Vector2dF transformScale = MathUtil::ComputeTransform2dScaleComponents(combinedTransform, 0.f);
         float combinedScale = std::max(transformScale.x(), transformScale.y());
         float idealRasterScale = combinedScale / deviceScaleFactor;
         if (!layer->bounds_contain_page_scale())
@@ -743,7 +743,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     gfx::Transform nextHierarchyMatrix = fullHierarchyMatrix;
     gfx::Transform sublayerMatrix;
 
-    gfx::Vector2dF renderSurfaceSublayerScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, deviceScaleFactor * pageScaleFactor);
+    gfx::Vector2dF renderSurfaceSublayerScale = MathUtil::ComputeTransform2dScaleComponents(combinedTransform, deviceScaleFactor * pageScaleFactor);
 
     if (subtreeShouldRenderToSeparateSurface(layer, combinedTransform.IsScaleOrTranslation())) {
         // Check back-face visibility before continuing with this surface and its subtree
@@ -825,7 +825,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
                 // TODO(shawnsingh): Either we need to handle uninvertible transforms
                 // here, or DCHECK that the transform is invertible.
             }
-            clipRectForSubtreeInDescendantSpace = gfx::ToEnclosingRect(MathUtil::projectClippedRect(inverseSurfaceDrawTransform, renderSurface->clip_rect()));
+            clipRectForSubtreeInDescendantSpace = gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(inverseSurfaceDrawTransform, renderSurface->clip_rect()));
         } else {
             renderSurface->SetClipRect(gfx::Rect());
             clipRectForSubtreeInDescendantSpace = clipRectFromAncestorInDescendantSpace;
@@ -867,7 +867,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     if (adjustTextAA)
         layerDrawProperties.can_use_lcd_text = layerCanUseLCDText;
 
-    gfx::Rect rectInTargetSpace = ToEnclosingRect(MathUtil::mapClippedRect(layer->draw_transform(), contentRect));
+    gfx::Rect rectInTargetSpace = ToEnclosingRect(MathUtil::MapClippedRect(layer->draw_transform(), contentRect));
 
     if (layerClipsSubtree(layer)) {
         subtreeShouldBeClipped = true;
@@ -1097,7 +1097,7 @@ static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const gfx::Transf
 
     // Transform the hit test point from screen space to the local space of the given rect.
     bool clipped = false;
-    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(inverseLocalSpaceToScreenSpace, screenSpacePoint, clipped);
+    gfx::PointF hitTestPointInLocalSpace = MathUtil::ProjectPoint(inverseLocalSpaceToScreenSpace, screenSpacePoint, &clipped);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this rect.
     if (clipped)
@@ -1115,7 +1115,7 @@ static bool pointHitsRegion(gfx::PointF screenSpacePoint, const gfx::Transform& 
 
     // Transform the hit test point from screen space to the local space of the given region.
     bool clipped = false;
-    gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpacePoint, clipped);
+    gfx::PointF hitTestPointInContentSpace = MathUtil::ProjectPoint(inverseScreenSpaceTransform, screenSpacePoint, &clipped);
     gfx::PointF hitTestPointInLayerSpace = gfx::ScalePoint(hitTestPointInContentSpace, 1 / layerContentScaleX, 1 / layerContentScaleY);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this region.

@@ -43,10 +43,10 @@ RenderSurfaceImpl::~RenderSurfaceImpl() {}
 
 gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   gfx::RectF drawable_content_rect =
-      MathUtil::mapClippedRect(draw_transform_, content_rect_);
+      MathUtil::MapClippedRect(draw_transform_, content_rect_);
   if (owning_layer_->has_replica()) {
     drawable_content_rect.Union(
-        MathUtil::mapClippedRect(replica_draw_transform_, content_rect_));
+        MathUtil::MapClippedRect(replica_draw_transform_, content_rect_));
   }
 
   return drawable_content_rect;
@@ -248,7 +248,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
   gfx::RectF mask_uv_rect(0.f, 0.f, 1.f, 1.f);
   if (mask_layer) {
     gfx::Vector2dF owning_layer_draw_scale =
-        MathUtil::computeTransform2dScaleComponents(
+        MathUtil::ComputeTransform2dScaleComponents(
             owning_layer_->draw_transform(), 1.f);
     gfx::SizeF unclipped_surface_size = gfx::ScaleSize(
         owning_layer_->content_bounds(),

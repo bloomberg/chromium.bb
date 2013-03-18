@@ -211,7 +211,7 @@ gfx::RectF DirectRenderer::ComputeScissorRectForRenderPass(
           &inverseTransform)) {
     // Only intersect inverse-projected damage if the transform is invertible.
     gfx::RectF damage_rect_in_render_pass_space =
-        MathUtil::projectClippedRect(inverseTransform, frame.root_damage_rect);
+        MathUtil::ProjectClippedRect(inverseTransform, frame.root_damage_rect);
     render_pass_scissor.Intersect(damage_rect_in_render_pass_space);
   }
 
