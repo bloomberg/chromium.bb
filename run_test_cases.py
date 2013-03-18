@@ -1319,7 +1319,7 @@ class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
     self.add_option(
         '-t', '--timeout',
         type='int',
-        default=120,
+        default=75,
         help='Timeout for a single test case, in seconds default:%default')
     self.add_option(
         '--clusters',
