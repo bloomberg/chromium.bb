@@ -236,6 +236,8 @@ class QueueWithProgress(Queue.PriorityQueue):
         raise ValueError('task_done() called too many times')
       self.unfinished_tasks = unfinished
       # This is less efficient, because we want the Progress to be updated.
+      logging.debug('all_tasks_done.notify_all() at %s', time.time())
+      logging.debug('%s unfinished tasks', unfinished)
       self.all_tasks_done.notify_all()
     finally:
       self.all_tasks_done.release()
@@ -249,6 +251,7 @@ class QueueWithProgress(Queue.PriorityQueue):
         logging.debug('Looping in join() with %s unfinished tasks',
                       self.unfinished_tasks)
         self.progress.print_update()
+        logging.debug('Calling all_tasks_done.wait() at %s', time.time())
         self.all_tasks_done.wait()
       self.progress.print_update()
     finally:
