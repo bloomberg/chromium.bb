@@ -313,6 +313,7 @@ enum WindowManagerName {
   WM_ICE_WM,
   WM_KWIN,
   WM_METACITY,
+  WM_MUFFIN,
   WM_MUTTER,
   WM_OPENBOX,
   WM_XFWM4,

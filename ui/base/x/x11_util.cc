@@ -1527,26 +1527,28 @@ WindowManagerName GuessWindowManager() {
   std::string name;
   if (GetWindowManagerName(&name)) {
     // These names are taken from the WMs' source code.
-    if (name == "Compiz" || name == "compiz")
-      return WM_COMPIZ;
-    if (name == "KWin")
-      return WM_KWIN;
-    if (name == "Metacity")
-      return WM_METACITY;
-    if (name == "Mutter")
-      return WM_MUTTER;
-    if (name == "Xfwm4")
-      return WM_XFWM4;
-    if (name == "chromeos-wm")
-      return WM_CHROME_OS;
     if (name == "Blackbox")
       return WM_BLACKBOX;
+    if (name == "chromeos-wm")
+      return WM_CHROME_OS;
+    if (name == "Compiz" || name == "compiz")
+      return WM_COMPIZ;
     if (name == "e16")
       return WM_ENLIGHTENMENT;
     if (StartsWithASCII(name, "IceWM", true))
       return WM_ICE_WM;
+    if (name == "KWin")
+      return WM_KWIN;
+    if (name == "Metacity")
+      return WM_METACITY;
+    if (name == "Mutter (Muffin)")
+      return WM_MUFFIN;
+    if (name == "Mutter")
+      return WM_MUTTER;
     if (name == "Openbox")
       return WM_OPENBOX;
+    if (name == "Xfwm4")
+      return WM_XFWM4;
   }
   return WM_UNKNOWN;
 }

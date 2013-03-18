@@ -122,6 +122,7 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
       wm_type != ui::WM_ICE_WM &&
       wm_type != ui::WM_KWIN &&
       wm_type != ui::WM_METACITY &&
+      wm_type != ui::WM_MUFFIN &&
       wm_type != ui::WM_MUTTER &&
       wm_type != ui::WM_XFWM4) {
     return false;

@@ -2371,6 +2371,7 @@ bool BrowserWindowGtk::GetCustomFramePrefDefault() {
           wm_type == ui::WM_COMPIZ ||
           wm_type == ui::WM_ENLIGHTENMENT ||
           wm_type == ui::WM_METACITY ||
+          wm_type == ui::WM_MUFFIN ||
           wm_type == ui::WM_MUTTER ||
           wm_type == ui::WM_OPENBOX ||
           wm_type == ui::WM_XFWM4);
