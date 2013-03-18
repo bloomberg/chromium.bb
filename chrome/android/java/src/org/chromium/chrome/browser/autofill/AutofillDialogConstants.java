@@ -8,7 +8,6 @@ package org.chromium.chrome.browser.autofill;
  * Constants required for AutofillDialog.
  */
 public class AutofillDialogConstants {
-
     // Section ID constants. This list should be kept in sync with enum DialogSection in
     // autofill_dialog_types.h
 

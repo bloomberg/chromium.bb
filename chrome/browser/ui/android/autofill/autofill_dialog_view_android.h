@@ -23,9 +23,9 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   // AutofillDialogView implementation:
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
-  virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
@@ -39,6 +39,15 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   virtual void ModelChanged() OVERRIDE;
   virtual void SubmitForTesting() OVERRIDE;
   virtual void CancelForTesting() OVERRIDE;
+
+  // Java to C++ calls
+  void ItemSelected(JNIEnv* env, jobject obj, jint section, jint index);
+  void AccountSelected(JNIEnv* env, jobject obj, jint index);
+  void EditingStart(JNIEnv* env, jobject obj, jint section);
+  void EditingComplete(JNIEnv* env, jobject obj, jint section);
+  void EditingCancel(JNIEnv* env, jobject obj, jint section);
+  void DialogSubmit(JNIEnv* env, jobject obj);
+  void DialogCancel(JNIEnv* env, jobject obj);
 
   static bool RegisterAutofillDialogViewAndroid(JNIEnv* env);
 

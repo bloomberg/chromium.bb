@@ -36,6 +36,57 @@ public class AutofillDialog extends AlertDialog
             new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
     private boolean mWillDismiss = false;
 
+    /**
+     * An interface to handle the interaction with an AutofillDialog object.
+     */
+    public interface AutofillDialogDelegate {
+
+        /**
+         * Informs AutofillDialog controller that a menu item was selected.
+         * @param section Section in which a menu item was selected. Should match one of the values
+         *                in {@link AutofillDialogConstants}.
+         * @param index Index of the selected menu item.
+         */
+        public void itemSelected(int section, int index);
+
+        /**
+         * Informs AutofillDialog controller that an account was selected.
+         * @param index Index of the selected account.
+         */
+        public void accountSelected(int index);
+
+        /**
+         * Informs AutofillDialog controller that the view is starting editing.
+         * @param section Section that is being edited. Should match one of the values in
+         *                {@link AutofillDialogConstants}.
+         */
+        public void editingStart(int section);
+
+        /**
+         * Informs AutofillDialog controller that the view has completed editing.
+         * @param section Section that was being edited. Should match one of the values in
+         *                {@link AutofillDialogConstants}.
+         */
+        public void editingComplete(int section);
+
+        /**
+         * Informs AutofillDialog controller that the view has cancelled editing.
+         * @param section Section that was being edited. Should match one of the values in
+         *                {@link AutofillDialogConstants}.
+         */
+        public void editingCancel(int section);
+
+        /**
+         * Informs AutofillDialog controller that the user clicked on the submit button.
+         */
+        public void dialogSubmit();
+
+        /**
+         * Informs AutofillDialog controller that the user clicked on the cancel button.
+         */
+        public void dialogCancel();
+    }
+
     protected AutofillDialog(Context context) {
         super(context);
 

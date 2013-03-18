@@ -46,11 +46,11 @@ void AutofillDialogViewAndroid::Hide() {
   NOTIMPLEMENTED();
 }
 
-void AutofillDialogViewAndroid::UpdateAccountChooser() {
+void AutofillDialogViewAndroid::UpdateNotificationArea() {
   NOTIMPLEMENTED();
 }
 
-void AutofillDialogViewAndroid::UpdateNotificationArea() {
+void AutofillDialogViewAndroid::UpdateAccountChooser() {
   NOTIMPLEMENTED();
 }
 
@@ -190,11 +190,53 @@ void AutofillDialogViewAndroid::ModelChanged() {
 }
 
 void AutofillDialogViewAndroid::SubmitForTesting() {
-  NOTIMPLEMENTED();
+  controller_->OnSubmit();
 }
 
 void AutofillDialogViewAndroid::CancelForTesting() {
+  controller_->OnCancel();
+}
+
+// Calls from Java to C++
+
+void AutofillDialogViewAndroid::ItemSelected(JNIEnv* env, jobject obj,
+                                             jint section, jint index) {
+  ui::MenuModel* menuModel =
+      controller_->MenuModelForSection(static_cast<DialogSection>(section));
+  menuModel->ActivatedAt(index);
+}
+
+void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,
+                                                jint index) {
+  // TODO(aruslan): start using this call.
   NOTIMPLEMENTED();
+}
+
+void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
+                                             jint section) {
+  // TODO(aruslan): start using this call.
+  NOTIMPLEMENTED();
+}
+
+void AutofillDialogViewAndroid::EditingComplete(JNIEnv* env, jobject obj,
+                                           jint section) {
+  // TODO(aruslan): start using this call.
+  NOTIMPLEMENTED();
+}
+
+void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env, jobject obj,
+                                              jint section) {
+  // TODO(aruslan): start using this call.
+  NOTIMPLEMENTED();
+}
+
+void AutofillDialogViewAndroid::DialogSubmit(JNIEnv* env, jobject obj) {
+  // TODO(aurimas): add validation step.
+  controller_->OnSubmit();
+}
+
+void AutofillDialogViewAndroid::DialogCancel(JNIEnv* env, jobject obj) {
+  controller_->OnCancel();
 }
 
 // static

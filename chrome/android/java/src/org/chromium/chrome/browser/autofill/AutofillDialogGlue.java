@@ -8,13 +8,14 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.chrome.browser.autofill.AutofillDialog.AutofillDialogDelegate;
 import org.chromium.ui.gfx.NativeWindow;
 
 /**
 * JNI call glue for AutofillDialog C++ and Java objects.
 */
 @JNINamespace("autofill")
-public class AutofillDialogGlue {
+public class AutofillDialogGlue implements AutofillDialogDelegate {
     @SuppressWarnings("unused")
     private final int mNativeDialogPopup;
     private AutofillDialog mAutofillDialog;
@@ -77,6 +78,43 @@ public class AutofillDialogGlue {
         mAutofillDialog.updateProgressBar(value);
     }
 
+    // AutofillDialogDelegate implementation ------------------------------------------------------
+
+    @Override
+    public void itemSelected(int section, int index) {
+        nativeItemSelected(mNativeDialogPopup, section, index);
+    }
+
+    @Override
+    public void accountSelected(int index) {
+        nativeAccountSelected(mNativeDialogPopup, index);
+    }
+
+    @Override
+    public void editingStart(int section) {
+        nativeEditingStart(mNativeDialogPopup, section);
+    }
+
+    @Override
+    public void editingComplete(int section) {
+        nativeEditingComplete(mNativeDialogPopup, section);
+    }
+
+    @Override
+    public void editingCancel(int section) {
+        nativeEditingCancel(mNativeDialogPopup, section);
+    }
+
+    @Override
+    public void dialogSubmit() {
+        nativeDialogCancel(mNativeDialogPopup);
+    }
+
+    @Override
+    public void dialogCancel() {
+        nativeDialogCancel(mNativeDialogPopup);
+    }
+
     // Helper methods for AutofillDialogField and AutofillDialogItem ------------------------------
 
     @CalledByNative
@@ -119,4 +157,15 @@ public class AutofillDialogGlue {
             String line1, String line2, Bitmap icon) {
         array[index] = new AutofillDialogMenuItem(index, line1, line2, icon);
     }
+
+    // Calls from Java to C++ AutofillDialogViewAndroid --------------------------------------------
+
+    private native void nativeItemSelected(int nativeAutofillDialogViewAndroid, int section,
+            int index);
+    private native void nativeAccountSelected(int nativeAutofillDialogViewAndroid, int index);
+    private native void nativeEditingStart(int nativeAutofillDialogViewAndroid, int section);
+    private native void nativeEditingComplete(int nativeAutofillDialogViewAndroid, int section);
+    private native void nativeEditingCancel(int nativeAutofillDialogViewAndroid, int section);
+    private native void nativeDialogSubmit(int nativeAutofillDialogViewAndroid);
+    private native void nativeDialogCancel(int nativeAutofillDialogViewAndroid);
 }
