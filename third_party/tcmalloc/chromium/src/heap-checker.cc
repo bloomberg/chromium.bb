@@ -2209,7 +2209,8 @@ void HeapLeakChecker::BeforeConstructorsLocked() {
   Allocator::Init();
   RAW_CHECK(heap_profile == NULL, "");
   heap_profile = new(Allocator::Allocate(sizeof(HeapProfileTable)))
-                   HeapProfileTable(&Allocator::Allocate, &Allocator::Free);
+      HeapProfileTable(&Allocator::Allocate, &Allocator::Free,
+                       /* profile_mmap */ false);
   RAW_VLOG(10, "Starting tracking the heap");
   heap_checker_on = true;
 }
