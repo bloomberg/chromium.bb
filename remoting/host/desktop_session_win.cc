@@ -58,6 +58,10 @@ const wchar_t kDaemonIpcSecurityDescriptor[] =
 // line to the host process.
 const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
 
+// The default screen dimensions for an RDP session.
+const int kDefaultRdpScreenWidth = 1024;
+const int kDefaultRdpScreenHeight = 768;
+
 // RDC 6.1 (W2K8) supports dimensions of up to 4096x2048.
 const int kMaxRdpScreenWidth = 4096;
 const int kMaxRdpScreenHeight = 2048;
@@ -223,8 +227,18 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   // valid.
   DCHECK(resolution.IsValid());
 
+  ScreenResolution local_resolution = resolution;
+
+  // If the screen resolution is not specified, use the default screen
+  // resolution.
+  if (local_resolution.IsEmpty()) {
+    local_resolution.dimensions_.set(kDefaultRdpScreenWidth,
+                                     kDefaultRdpScreenWidth);
+    local_resolution.dpi_.set(kDefaultRdpDpi, kDefaultRdpDpi);
+  }
+
   // Get the screen dimensions assuming the default DPI.
-  SkISize host_size = resolution.ScaleDimensionsToDpi(
+  SkISize host_size = local_resolution.ScaleDimensionsToDpi(
       SkIPoint::Make(kDefaultRdpDpi, kDefaultRdpDpi));
 
   // Make sure that the host resolution is within the limits supported by RDP.
