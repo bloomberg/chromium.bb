@@ -14,51 +14,47 @@ namespace cc {
 // Used for making blocking calls from one thread to another. Use only when
 // absolutely certain that doing-so will not lead to a deadlock.
 //
-// It is safe to destroy this object as soon as wait() returns.
+// It is safe to destroy this object as soon as Wait() returns.
 class CompletionEvent {
-public:
-    CompletionEvent()
-        : m_event(false /* manual_reset */, false /* initially_signaled */)
-    {
+ public:
+  CompletionEvent()
+      : event_(false /* manual_reset */, false /* initially_signaled */) {
 #ifndef NDEBUG
-        m_waited = false;
-        m_signaled = false;
+    waited_ = false;
+    signaled_ = false;
 #endif
-    }
+  }
 
-    ~CompletionEvent()
-    {
+  ~CompletionEvent() {
 #ifndef NDEBUG
-        DCHECK(m_waited);
-        DCHECK(m_signaled);
+    DCHECK(waited_);
+    DCHECK(signaled_);
 #endif
-    }
+  }
 
-    void wait()
-    {
+  void Wait() {
 #ifndef NDEBUG
-        DCHECK(!m_waited);
-        m_waited = true;
+    DCHECK(!waited_);
+    waited_ = true;
 #endif
-        base::ThreadRestrictions::ScopedAllowWait allow_wait;
-        m_event.Wait();
-    }
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    event_.Wait();
+  }
 
-    void signal()
-    {
+  void Signal() {
 #ifndef NDEBUG
-        DCHECK(!m_signaled);
-        m_signaled = true;
+    DCHECK(!signaled_);
+    signaled_ = true;
 #endif
-        m_event.Signal();
-    }
+    event_.Signal();
+  }
 
-private:
-    base::WaitableEvent m_event;
+ private:
+  base::WaitableEvent event_;
 #ifndef NDEBUG
-    // Used to assert that wait() and signal() are each called exactly once.
-    bool m_waited;
-    bool m_signaled;
+  // Used to assert that Wait() and Signal() are each called exactly once.
+  bool waited_;
+  bool signaled_;
 #endif
 };
 
