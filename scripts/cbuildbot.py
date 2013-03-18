@@ -19,6 +19,7 @@ import os
 import pprint
 import sys
 import time
+import traceback
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_config
@@ -308,15 +309,15 @@ class Builder(object):
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
         self.RunStages()
-    except results_lib.StepFailure:
-      # StepFailure exceptions are already recorded in the report, so there
-      # is no need to print these tracebacks twice.
+    except Exception as ex:
+      # If the build is marked as successful, but threw exceptions, that's a
+      # problem.
       exception_thrown = True
-      if not print_report:
+      if results_lib.Results.BuildSucceededSoFar():
+        traceback.print_exc(file=sys.stdout)
         raise
-    except Exception:
-      exception_thrown = True
-      raise
+      if not (print_report and isinstance(ex, results_lib.StepFailure)):
+        raise
     finally:
       if print_report:
         results_lib.WriteCheckpoint(self.options.buildroot)
