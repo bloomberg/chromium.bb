@@ -349,9 +349,6 @@
   opcode_7 = b_xx_111_xxx;
   # Used for segment operations: there only 6 segment registers.
   opcode_s = (any - b_xx_110_xxx - b_xx_111_xxx);
-  # This is used to move operand name detection after first byte of ModRM.
-  opcode_m = (any - b_11_xxx_xxx);
-  opcode_r = b_11_xxx_xxx;
 }%%
 
 %%{
@@ -383,9 +380,6 @@
   opcode_7 = b_xx_111_xxx;
   # Used for segment operations: there only 6 segment registers.
   opcode_s = (any - b_xx_110_xxx - b_xx_111_xxx);
-  # This is used to move operand name detection after first byte of ModRM.
-  opcode_m = (any - b_11_xxx_xxx);
-  opcode_r = b_11_xxx_xxx;
 }%%
 
 %%{
