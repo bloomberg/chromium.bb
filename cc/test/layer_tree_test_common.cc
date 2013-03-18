@@ -9,7 +9,7 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/thread_impl.h"
 #include "cc/content_layer.h"
-#include "cc/input_handler.h"
+#include "cc/input/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"

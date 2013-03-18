@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/thread_impl.h"
-#include "cc/input_handler.h"
+#include "cc/input/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
 #include "cc/output/context_provider.h"

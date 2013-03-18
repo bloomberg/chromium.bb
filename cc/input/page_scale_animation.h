@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PAGE_SCALE_ANIMATION_H_
-#define CC_PAGE_SCALE_ANIMATION_H_
+#ifndef CC_INPUT_PAGE_SCALE_ANIMATION_H_
+#define CC_INPUT_PAGE_SCALE_ANIMATION_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -101,4 +101,4 @@ class PageScaleAnimation {
 
 }  // namespace cc
 
-#endif  // CC_PAGE_SCALE_ANIMATION_H_
+#endif  // CC_INPUT_PAGE_SCALE_ANIMATION_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TOP_CONTROLS_MANAGER_H_
-#define CC_TOP_CONTROLS_MANAGER_H_
+#ifndef CC_INPUT_TOP_CONTROLS_MANAGER_H_
+#define CC_INPUT_TOP_CONTROLS_MANAGER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -93,4 +93,4 @@ class CC_EXPORT TopControlsManager
 
 }  // namespace cc
 
-#endif  // CC_TOP_CONTROLS_MANAGER_H_
+#endif  // CC_INPUT_TOP_CONTROLS_MANAGER_H_

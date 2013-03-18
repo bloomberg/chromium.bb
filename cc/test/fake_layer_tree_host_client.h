@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/input_handler.h"
+#include "cc/input/input_handler.h"
 #include "cc/layer_tree_host.h"
 #include "cc/test/fake_context_provider.h"
 #include "cc/test/fake_output_surface.h"

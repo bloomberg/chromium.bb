@@ -11,7 +11,7 @@
 #include "cc/delay_based_time_source.h"
 #include "cc/draw_quad.h"
 #include "cc/frame_rate_controller.h"
-#include "cc/input_handler.h"
+#include "cc/input/input_handler.h"
 #include "cc/layer_tree_host.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/output/context_provider.h"

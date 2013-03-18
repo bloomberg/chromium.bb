@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_INPUT_HANDLER_H_
-#define CC_INPUT_HANDLER_H_
+#ifndef CC_INPUT_INPUT_HANDLER_H_
+#define CC_INPUT_INPUT_HANDLER_H_
 
 #include "base/basictypes.h"
 #include "base/time.h"
@@ -95,4 +95,4 @@ class CC_EXPORT InputHandler {
 
 }  // namespace cc
 
-#endif  // CC_INPUT_HANDLER_H_
+#endif  // CC_INPUT_INPUT_HANDLER_H_

@@ -65,7 +65,7 @@
       'tiled_layer_impl_unittest.cc',
       'tiled_layer_unittest.cc',
       'base/tiling_data_unittest.cc',
-      'top_controls_manager_unittest.cc',
+      'input/top_controls_manager_unittest.cc',
       'transform_operations_unittest.cc',
       'tree_synchronizer_unittest.cc',
       'timing_function_unittest.cc',

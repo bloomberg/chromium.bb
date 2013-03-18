@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TOP_CONTROLS_MANAGER_CLIENT_H_
-#define CC_TOP_CONTROLS_MANAGER_CLIENT_H_
+#ifndef CC_INPUT_TOP_CONTROLS_MANAGER_CLIENT_H_
+#define CC_INPUT_TOP_CONTROLS_MANAGER_CLIENT_H_
 
 namespace cc {
 
@@ -21,4 +21,4 @@ class CC_EXPORT TopControlsManagerClient {
 
 }  // namespace cc
 
-#endif  // CC_TOP_CONTROLS_MANAGER_CLIENT_H_
+#endif  // CC_INPUT_TOP_CONTROLS_MANAGER_CLIENT_H_

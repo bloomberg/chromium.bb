@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/top_controls_manager.h"
+#include "cc/input/top_controls_manager.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/time.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "cc/input/top_controls_manager_client.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/timing_function.h"
-#include "cc/top_controls_manager_client.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_f.h"
 

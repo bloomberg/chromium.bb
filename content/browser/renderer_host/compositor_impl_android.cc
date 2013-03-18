@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "cc/base/thread_impl.h"
-#include "cc/input_handler.h"
+#include "cc/input/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
 #include "cc/output/context_provider.h"

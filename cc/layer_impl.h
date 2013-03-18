@@ -16,7 +16,7 @@
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/draw_properties.h"
-#include "cc/input_handler.h"
+#include "cc/input/input_handler.h"
 #include "cc/render_pass.h"
 #include "cc/render_surface_impl.h"
 #include "cc/resource_provider.h"

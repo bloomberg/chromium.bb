@@ -6,7 +6,7 @@
 #define WebToCCInputHandlerAdapter_h
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/input_handler.h"
+#include "cc/input/input_handler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 

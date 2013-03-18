@@ -18,6 +18,7 @@
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/heads_up_display_layer_impl.h"
+#include "cc/input/top_controls_manager.h"
 #include "cc/layer.h"
 #include "cc/layer_iterator.h"
 #include "cc/layer_tree_host_client.h"
@@ -32,7 +33,6 @@
 #include "cc/scrollbar_layer.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/thread_proxy.h"
-#include "cc/top_controls_manager.h"
 #include "cc/tree_synchronizer.h"
 
 namespace {
