@@ -689,8 +689,6 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {22, true, "\003www\014moneybookers\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {17, false, "\013ledgerscope\003net", true, kNoPins, DOMAIN_NOT_PINNED },
   {21, false, "\003www\013ledgerscope\003net", true, kNoPins, DOMAIN_NOT_PINNED },
-  {10, false, "\004kyps\003net", true, kNoPins, DOMAIN_NOT_PINNED },
-  {14, false, "\003www\004kyps\003net", true, kNoPins, DOMAIN_NOT_PINNED },
   {17, true, "\003app\007recurly\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {17, true, "\003api\007recurly\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, false, "\007greplin\003com", true, kNoPins, DOMAIN_NOT_PINNED },
@@ -787,6 +785,8 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {30, false, "\007members\020nearlyfreespeech\003net", true, kNoPins, DOMAIN_NOT_PINNED },
   {19, false, "\003ssl\011panoramio\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, false, "\007kiwiirc\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {17, true, "\003pay\010gigahost\002dk", true, kNoPins, DOMAIN_NOT_PINNED },
+  {27, true, "\015controlcenter\010gigahost\002dk", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 

@@ -483,8 +483,6 @@
     { "name": "www.moneybookers.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ledgerscope.net", "mode": "force-https" },
     { "name": "www.ledgerscope.net", "mode": "force-https" },
-    { "name": "kyps.net", "mode": "force-https" },
-    { "name": "www.kyps.net", "mode": "force-https" },
     { "name": "app.recurly.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "api.recurly.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "greplin.com", "mode": "force-https" },

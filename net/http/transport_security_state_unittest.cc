@@ -421,10 +421,6 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(ShouldRedirect("www.ledgerscope.net"));
   EXPECT_FALSE(HasState("status.ledgerscope.net"));
 
-  EXPECT_TRUE(ShouldRedirect("kyps.net"));
-  EXPECT_TRUE(ShouldRedirect("www.kyps.net"));
-  EXPECT_FALSE(HasState("foo.kyps.net"));
-
   EXPECT_TRUE(ShouldRedirect("foo.app.recurly.com"));
   EXPECT_TRUE(ShouldRedirect("foo.api.recurly.com"));
 
