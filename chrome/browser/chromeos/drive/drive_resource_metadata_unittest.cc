@@ -132,6 +132,11 @@ class DriveResourceMetadataTest : public testing::Test {
     return entries.Pass();
   }
 
+  bool ParseMetadataFromString(DriveResourceMetadata* resource_metadata,
+                               const std::string& serialized_proto) {
+    return resource_metadata->ParseFromString(serialized_proto);
+  }
+
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<DriveResourceMetadata> resource_metadata_;
@@ -239,27 +244,27 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
                                           blocking_task_runner_);
 
   std::string serialized_proto;
-  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is empty.
-  ASSERT_FALSE(resource_metadata.ParseFromString(serialized_proto));
+  EXPECT_FALSE(ParseMetadataFromString(&resource_metadata, serialized_proto));
 
   // Set an older version, and serialize.
   proto.set_version(kProtoVersion - 1);
-  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is older.
-  ASSERT_FALSE(resource_metadata.ParseFromString(serialized_proto));
+  EXPECT_FALSE(ParseMetadataFromString(&resource_metadata, serialized_proto));
 
   // Set the current version, and serialize.
   proto.set_version(kProtoVersion);
-  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should succeed as the version matches the current number.
-  ASSERT_TRUE(resource_metadata.ParseFromString(serialized_proto));
+  EXPECT_TRUE(ParseMetadataFromString(&resource_metadata, serialized_proto));
 
   // Set a newer version, and serialize.
   proto.set_version(kProtoVersion + 1);
-  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is newer.
-  ASSERT_FALSE(resource_metadata.ParseFromString(serialized_proto));
+  EXPECT_FALSE(ParseMetadataFromString(&resource_metadata, serialized_proto));
 }
 
 TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
@@ -1185,37 +1190,41 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   const int kNewChangestamp = kTestChangestamp + 1;
   const char kSubDirectoryResourceId[] = "sub-directory-id";
 
-  DriveRootDirectoryProto proto;
-  proto.set_version(kProtoVersion);
-  proto.set_largest_changestamp(kNewChangestamp);
+  DriveResourceMetadata resource_metadata_original(kTestRootResourceId,
+                                                   blocking_task_runner_);
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata_original.SetLargestChangestamp(
+      kNewChangestamp,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
-  // Set up the root directory.
-  DriveDirectoryProto* root = proto.mutable_drive_directory();
-  DriveEntryProto* root_entry = root->mutable_drive_entry();
-  root_entry->mutable_file_info()->set_is_directory(true);
-  root_entry->set_resource_id(kTestRootResourceId);
-  root_entry->set_title("drive");
   // Add a sub directory.
-  DriveDirectoryProto* directory = root->add_child_directories();
-  DriveEntryProto* directory_entry = directory->mutable_drive_entry();
-  directory_entry->mutable_file_info()->set_is_directory(true);
-  directory_entry->set_resource_id(kSubDirectoryResourceId);
-  directory_entry->set_parent_resource_id(kTestRootResourceId);
-  directory_entry->set_title("directory");
+  DriveEntryProto directory_entry;
+  directory_entry.mutable_file_info()->set_is_directory(true);
+  directory_entry.set_resource_id(kSubDirectoryResourceId);
+  directory_entry.set_parent_resource_id(kTestRootResourceId);
+  directory_entry.set_title("directory");
+  base::FilePath file_path;
+  resource_metadata_original.AddEntry(
+      directory_entry,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   // At this point, both the root and the sub directory do not contain the
   // per-directory changestamp.
+  resource_metadata_original.MaybeSave(temp_dir_.path());
+  google_apis::test_util::RunBlockingPoolTask();
 
   DriveResourceMetadata resource_metadata(kTestRootResourceId,
                                           blocking_task_runner_);
 
-  // Load the proto. This should propagate the largest changestamp to every
-  // directory.
-  std::string serialized_proto;
-  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
-  ASSERT_TRUE(resource_metadata.ParseFromString(serialized_proto));
+  // Load. This should propagate the largest changestamp to every directory.
+  resource_metadata.Load(
+      temp_dir_.path(),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Confirm that the root directory contains the changestamp.
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
   resource_metadata.GetEntryInfoByPath(
       base::FilePath::FromUTF8Unsafe("drive"),
@@ -1235,25 +1244,6 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   ASSERT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(kNewChangestamp,
             entry_proto->directory_specific_info().changestamp());
-
-  // Save the current metadata to a string as serialized proto.
-  std::string new_serialized_proto;
-  resource_metadata.SerializeToString(&new_serialized_proto);
-  // Read the proto to see if per-directory changestamps were properly saved.
-  DriveRootDirectoryProto new_proto;
-  ASSERT_TRUE(new_proto.ParseFromString(new_serialized_proto));
-
-  // Confirm that the root directory contains the changestamp.
-  const DriveDirectoryProto& root_proto = new_proto.drive_directory();
-  EXPECT_EQ(kNewChangestamp,
-            root_proto.drive_entry().directory_specific_info().changestamp());
-
-  // Confirm that the sub directory contains the changestamp.
-  ASSERT_EQ(1, new_proto.drive_directory().child_directories_size());
-  const DriveDirectoryProto& dir_proto = root_proto.child_directories(0);
-  EXPECT_EQ(kNewChangestamp,
-            dir_proto.drive_entry().directory_specific_info().changestamp());
-
 }
 
 TEST_F(DriveResourceMetadataTest, SaveAndLoad) {

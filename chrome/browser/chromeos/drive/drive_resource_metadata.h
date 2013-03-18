@@ -224,10 +224,6 @@ class DriveResourceMetadata {
   // Removes all files/directories under root (not including root).
   void RemoveAll(const base::Closure& callback);
 
-  // Serializes/Parses to/from string via proto classes.
-  void SerializeToString(std::string* serialized_proto);
-  bool ParseFromString(const std::string& serialized_proto);
-
   // Saves metadata to the specified directory when appropriate.
   void MaybeSave(const base::FilePath& directory_path);
 
@@ -236,6 +232,8 @@ class DriveResourceMetadata {
             const FileOperationCallback& callback);
 
  private:
+  friend class DriveResourceMetadataTest;
+
   // Clears root_ and the resource map.
   void ClearRoot();
 
@@ -305,6 +303,9 @@ class DriveResourceMetadata {
                      base::Time* last_modified,
                      std::string* serialized_proto,
                      bool read_succeeded);
+
+  // Parses metadata from string and set up directory structure.
+  bool ParseFromString(const std::string& serialized_proto);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

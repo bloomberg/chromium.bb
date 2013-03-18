@@ -596,60 +596,20 @@ void DriveResourceMetadata::RemoveAll(const base::Closure& callback) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
 }
 
-void DriveResourceMetadata::SerializeToString(std::string* serialized_proto) {
-  DriveRootDirectoryProto proto;
-  DirectoryToProto(root_resource_id_, proto.mutable_drive_directory());
-  proto.set_largest_changestamp(largest_changestamp_);
-  proto.set_version(kProtoVersion);
-
-  const bool ok = proto.SerializeToString(serialized_proto);
-  DCHECK(ok);
-}
-
-bool DriveResourceMetadata::ParseFromString(
-    const std::string& serialized_proto) {
-  DriveRootDirectoryProto proto;
-  if (!proto.ParseFromString(serialized_proto))
-    return false;
-
-  if (proto.version() != kProtoVersion) {
-    LOG(ERROR) << "Incompatible proto detected (incompatible version): "
-               << proto.version();
-    return false;
-  }
-
-  // An old proto file might not have per-directory changestamps. Add them if
-  // needed.
-  const DriveDirectoryProto& root = proto.drive_directory();
-  if (!root.drive_entry().directory_specific_info().has_changestamp()) {
-    AddPerDirectoryChangestamps(proto.mutable_drive_directory(),
-                                proto.largest_changestamp());
-  }
-
-  if (proto.drive_directory().drive_entry().resource_id() !=
-      root_resource_id_) {
-    LOG(ERROR) << "Incompatible proto detected (incompatible root ID): "
-               << proto.drive_directory().drive_entry().resource_id();
-    return false;
-  }
-
-  storage_->PutEntry(
-      CreateEntryWithProperBaseName(proto.drive_directory().drive_entry()));
-  AddDescendantsFromProto(proto.drive_directory());
-
-  loaded_ = true;
-  largest_changestamp_ = proto.largest_changestamp();
-
-  return true;
-}
-
 void DriveResourceMetadata::MaybeSave(const base::FilePath& directory_path) {
   if (!ShouldSerializeFileSystemNow(serialized_size_, last_serialized_))
     return;
 
   const base::FilePath path = directory_path.Append(kProtoFileName);
+
+  DriveRootDirectoryProto proto;
+  DirectoryToProto(root_resource_id_, proto.mutable_drive_directory());
+  proto.set_largest_changestamp(largest_changestamp_);
+  proto.set_version(kProtoVersion);
+
   scoped_ptr<std::string> serialized_proto(new std::string());
-  SerializeToString(serialized_proto.get());
+  const bool ok = proto.SerializeToString(serialized_proto.get());
+  DCHECK(ok);
 
   last_serialized_ = base::Time::Now();
   serialized_size_ = serialized_proto->size();
@@ -874,6 +834,43 @@ void DriveResourceMetadata::OnProtoLoaded(const FileOperationCallback& callback,
     LOG(WARNING) << "Proto loading failed.";
   }
   callback.Run(error);
+}
+
+bool DriveResourceMetadata::ParseFromString(
+    const std::string& serialized_proto) {
+  DriveRootDirectoryProto proto;
+  if (!proto.ParseFromString(serialized_proto))
+    return false;
+
+  if (proto.version() != kProtoVersion) {
+    LOG(ERROR) << "Incompatible proto detected (incompatible version): "
+               << proto.version();
+    return false;
+  }
+
+  // An old proto file might not have per-directory changestamps. Add them if
+  // needed.
+  const DriveDirectoryProto& root = proto.drive_directory();
+  if (!root.drive_entry().directory_specific_info().has_changestamp()) {
+    AddPerDirectoryChangestamps(proto.mutable_drive_directory(),
+                                proto.largest_changestamp());
+  }
+
+  if (proto.drive_directory().drive_entry().resource_id() !=
+      root_resource_id_) {
+    LOG(ERROR) << "Incompatible proto detected (incompatible root ID): "
+               << proto.drive_directory().drive_entry().resource_id();
+    return false;
+  }
+
+  storage_->PutEntry(
+      CreateEntryWithProperBaseName(proto.drive_directory().drive_entry()));
+  AddDescendantsFromProto(proto.drive_directory());
+
+  loaded_ = true;
+  largest_changestamp_ = proto.largest_changestamp();
+
+  return true;
 }
 
 }  // namespace drive
