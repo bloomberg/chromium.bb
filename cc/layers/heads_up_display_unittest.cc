@@ -15,7 +15,7 @@ protected:
     virtual void initializeSettings(LayerTreeSettings& settings) OVERRIDE
     {
         // Enable the HUD without requiring text.
-        settings.initialDebugState.showPropertyChangedRects = true;
+        settings.initialDebugState.show_property_changed_rects = true;
     }
 };
 

@@ -30,22 +30,22 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
   // store all debug rects for a history of many frames.
   debug_rects_.clear();
 
-  if (debug_state.showPaintRects)
+  if (debug_state.show_paint_rects)
     SavePaintRects(root_layer);
 
-  if (debug_state.showPropertyChangedRects)
+  if (debug_state.show_property_changed_rects)
     SavePropertyChangedRects(render_surface_layer_list);
 
-  if (debug_state.showSurfaceDamageRects)
+  if (debug_state.show_surface_damage_rects)
     SaveSurfaceDamageRects(render_surface_layer_list);
 
-  if (debug_state.showScreenSpaceRects)
+  if (debug_state.show_screen_space_rects)
     SaveScreenSpaceRects(render_surface_layer_list);
 
-  if (debug_state.showOccludingRects)
+  if (debug_state.show_occluding_rects)
     SaveOccludingRects(occluding_screen_space_rects);
 
-  if (debug_state.showNonOccludingRects)
+  if (debug_state.show_non_occluding_rects)
     SaveNonOccludingRects(non_occluding_screen_space_rects);
 }
 

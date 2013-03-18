@@ -416,13 +416,13 @@ Compositor::Compositor(CompositorDelegate* delegate,
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
-  settings.initialDebugState.showFPSCounter =
+  settings.initialDebugState.show_fps_counter =
       command_line->HasSwitch(switches::kUIShowFPSCounter);
-  settings.initialDebugState.showPlatformLayerTree =
+  settings.initialDebugState.show_platform_layer_tree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
   settings.refreshRate =
       g_test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
-  settings.initialDebugState.showDebugBorders =
+  settings.initialDebugState.show_debug_borders =
       command_line->HasSwitch(switches::kUIShowLayerBorders);
   settings.partialSwapEnabled =
       command_line->HasSwitch(switches::kUIEnablePartialSwap);

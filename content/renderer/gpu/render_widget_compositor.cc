@@ -178,38 +178,41 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.showOverdrawInTracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
 
-  settings.initialDebugState.showFPSCounter =
+  settings.initialDebugState.show_fps_counter =
       cmd->HasSwitch(switches::kShowFPSCounter);
-  settings.initialDebugState.showPaintRects =
+  settings.initialDebugState.show_paint_rects =
       cmd->HasSwitch(switches::kShowPaintRects);
-  settings.initialDebugState.showDebugBorders =
+  settings.initialDebugState.show_debug_borders =
       cmd->HasSwitch(switches::kShowCompositedLayerBorders);
-  settings.initialDebugState.showPlatformLayerTree =
+  settings.initialDebugState.show_platform_layer_tree =
       cmd->HasSwitch(switches::kShowCompositedLayerTree);
 
-  settings.initialDebugState.showPropertyChangedRects =
+  settings.initialDebugState.show_property_changed_rects =
       cmd->HasSwitch(cc::switches::kShowPropertyChangedRects);
-  settings.initialDebugState.showSurfaceDamageRects =
+  settings.initialDebugState.show_surface_damage_rects =
       cmd->HasSwitch(cc::switches::kShowSurfaceDamageRects);
-  settings.initialDebugState.showScreenSpaceRects =
+  settings.initialDebugState.show_screen_space_rects =
       cmd->HasSwitch(cc::switches::kShowScreenSpaceRects);
-  settings.initialDebugState.showReplicaScreenSpaceRects =
+  settings.initialDebugState.show_replica_screen_space_rects =
       cmd->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
-  settings.initialDebugState.showOccludingRects =
+  settings.initialDebugState.show_occluding_rects =
       cmd->HasSwitch(cc::switches::kShowOccludingRects);
-  settings.initialDebugState.showNonOccludingRects =
+  settings.initialDebugState.show_non_occluding_rects =
       cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
-  settings.initialDebugState.setRecordRenderingStats(
+  settings.initialDebugState.SetRecordRenderingStats(
       cmd->HasSwitch(switches::kEnableGpuBenchmarking));
-  settings.initialDebugState.traceAllRenderedFrames =
+  settings.initialDebugState.trace_all_rendered_frames =
       cmd->HasSwitch(cc::switches::kTraceAllRenderedFrames);
 
   if (cmd->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
     const int kMinSlowDownScaleFactor = 0;
     const int kMaxSlowDownScaleFactor = INT_MAX;
-    GetSwitchValueAsInt(*cmd, cc::switches::kSlowDownRasterScaleFactor,
-                        kMinSlowDownScaleFactor, kMaxSlowDownScaleFactor,
-                        &settings.initialDebugState.slowDownRasterScaleFactor);
+    GetSwitchValueAsInt(
+        *cmd,
+        cc::switches::kSlowDownRasterScaleFactor,
+        kMinSlowDownScaleFactor,
+        kMaxSlowDownScaleFactor,
+        &settings.initialDebugState.slow_down_raster_scale_factor);
   }
 
   if (cmd->HasSwitch(cc::switches::kNumRasterThreads)) {
@@ -415,25 +418,25 @@ void RenderWidgetCompositor::setDeferCommits(bool defer_commits) {
 
 void RenderWidgetCompositor::setShowFPSCounter(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
-  debug_state.showFPSCounter = show;
+  debug_state.show_fps_counter = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setShowPaintRects(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
-  debug_state.showPaintRects = show;
+  debug_state.show_paint_rects = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setShowDebugBorders(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
-  debug_state.showDebugBorders = show;
+  debug_state.show_debug_borders = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
-  debug_state.continuousPainting = enabled;
+  debug_state.continuous_painting = enabled;
   layer_tree_host_->SetDebugState(debug_state);
 }
 

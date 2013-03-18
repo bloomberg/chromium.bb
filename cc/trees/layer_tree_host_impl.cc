@@ -513,11 +513,11 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   occlusion_tracker.set_minimum_tracking_size(
       settings_.minimumOcclusionTrackingSize);
 
-  if (debug_state_.showOccludingRects) {
+  if (debug_state_.show_occluding_rects) {
     occlusion_tracker.set_occluding_screen_space_rects_container(
         &frame->occluding_screen_space_rects);
   }
-  if (debug_state_.showNonOccludingRects) {
+  if (debug_state_.show_non_occluding_rects) {
     occlusion_tracker.set_non_occluding_screen_space_rects_container(
         &frame->non_occluding_screen_space_rects);
   }
@@ -944,7 +944,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         tile_manager_->memory_stats_from_last_assign());
   }
 
-  if (debug_state_.showHudRects()) {
+  if (debug_state_.ShowHudRects()) {
     debug_rect_history_->SaveDebugRectsForCurrentFrame(
         active_tree_->root_layer(),
         *frame->render_surface_layer_list,
@@ -953,7 +953,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         debug_state_);
   }
 
-  if (debug_state_.traceAllRenderedFrames) {
+  if (debug_state_.trace_all_rendered_frames) {
     TRACE_EVENT_INSTANT1("cc.debug", "Frame",
                          "frame", ValueToString(FrameStateAsValue()));
   }
@@ -1170,7 +1170,7 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   client_->SetNeedsRedrawOnImplThread();
   client_->RenewTreePriority();
 
-  if (tile_manager_ && debug_state_.continuousPainting) {
+  if (tile_manager_ && debug_state_.continuous_painting) {
     RenderingStats stats;
     tile_manager_->GetRenderingStats(&stats);
     paint_time_counter_->SaveRasterizeTime(
@@ -1233,7 +1233,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                         settings_.useCheapnessEstimator,
                                         settings_.useColorEstimator,
                                         settings_.predictionBenchmarking));
-    tile_manager_->SetRecordRenderingStats(debug_state_.recordRenderingStats());
+    tile_manager_->SetRecordRenderingStats(debug_state_.RecordRenderingStats());
   }
 
   if (output_surface->capabilities().has_parent_compositor) {
@@ -1954,18 +1954,18 @@ skia::RefPtr<SkPicture> LayerTreeHostImpl::CapturePicture() {
 }
 
 void LayerTreeHostImpl::SetDebugState(const LayerTreeDebugState& debug_state) {
-  if (debug_state_.continuousPainting != debug_state.continuousPainting)
+  if (debug_state_.continuous_painting != debug_state.continuous_painting)
     paint_time_counter_->ClearHistory();
 
   debug_state_ = debug_state;
 
   if (tile_manager_)
-    tile_manager_->SetRecordRenderingStats(debug_state_.recordRenderingStats());
+    tile_manager_->SetRecordRenderingStats(debug_state_.RecordRenderingStats());
 }
 
 void LayerTreeHostImpl::SavePaintTime(const base::TimeDelta& total_paint_time,
                                       int commit_number) {
-  DCHECK(debug_state_.continuousPainting);
+  DCHECK(debug_state_.continuous_painting);
   paint_time_counter_->SavePaintTime(total_paint_time, commit_number);
 }
 

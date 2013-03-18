@@ -192,13 +192,13 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   if (base::TimeDelta(now - time_of_last_graph_update_).InSecondsF() > 0.25f) {
     time_of_last_graph_update_ = now;
 
-    if (debug_state.showFPSCounter) {
+    if (debug_state.show_fps_counter) {
       FrameRateCounter* fps_counter = layer_tree_impl()->frame_rate_counter();
       fps_graph_.value = fps_counter->GetAverageFPS();
       fps_counter->GetMinAndMaxFPS(&fps_graph_.min, &fps_graph_.max);
     }
 
-    if (debug_state.continuousPainting) {
+    if (debug_state.continuous_painting) {
       PaintTimeCounter* paint_time_counter =
           layer_tree_impl()->paint_time_counter();
       base::TimeDelta latest, min, max;
@@ -212,7 +212,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
       paint_time_graph_.max = max.InMillisecondsF();
     }
 
-    if (debug_state.showMemoryStats()) {
+    if (debug_state.ShowMemoryStats()) {
       MemoryHistory* memory_history = layer_tree_impl()->memory_history();
       if (memory_history->End())
         memory_entry_ = **memory_history->End();
@@ -228,24 +228,24 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
 void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) const {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 
-  if (debug_state.showHudRects())
+  if (debug_state.ShowHudRects())
     DrawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
 
-  if (debug_state.showPlatformLayerTree)
+  if (debug_state.show_platform_layer_tree)
     DrawPlatformLayerTree(canvas);
 
   SkRect area = SkRect::MakeEmpty();
-  if (debug_state.continuousPainting) {
+  if (debug_state.continuous_painting) {
     // Don't show the FPS display when continuous painting is enabled, because
     // it would show misleading numbers.
     area = DrawPaintTimeDisplay(
         canvas, layer_tree_impl()->paint_time_counter(), 0, 0);
-  } else if (debug_state.showFPSCounter) {
+  } else if (debug_state.show_fps_counter) {
     area =
         DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
   }
 
-  if (debug_state.showMemoryStats())
+  if (debug_state.ShowMemoryStats())
     DrawMemoryDisplay(canvas, 0, area.bottom(), SkMaxScalar(area.width(), 150));
 }
 

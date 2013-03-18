@@ -5,6 +5,7 @@
 #ifndef CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
 #define CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
 
+#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -14,35 +15,36 @@ class CC_EXPORT LayerTreeDebugState {
   LayerTreeDebugState();
   ~LayerTreeDebugState();
 
-  bool showFPSCounter;
-  bool showPlatformLayerTree;
-  bool showDebugBorders;
-  bool continuousPainting;
+  bool show_fps_counter;
+  bool show_platform_layer_tree;
+  bool show_debug_borders;
+  bool continuous_painting;
 
-  bool showPaintRects;
-  bool showPropertyChangedRects;
-  bool showSurfaceDamageRects;
-  bool showScreenSpaceRects;
-  bool showReplicaScreenSpaceRects;
-  bool showOccludingRects;
-  bool showNonOccludingRects;
+  bool show_paint_rects;
+  bool show_property_changed_rects;
+  bool show_surface_damage_rects;
+  bool show_screen_space_rects;
+  bool show_replica_screen_space_rects;
+  bool show_occluding_rects;
+  bool show_non_occluding_rects;
 
-  int slowDownRasterScaleFactor;
+  int slow_down_raster_scale_factor;
 
-  void setRecordRenderingStats(bool);
-  bool recordRenderingStats() const;
+  void SetRecordRenderingStats(bool enabled);
+  bool RecordRenderingStats() const;
 
-  bool traceAllRenderedFrames;
+  bool trace_all_rendered_frames;
 
-  bool showHudInfo() const;
-  bool showHudRects() const;
-  bool showMemoryStats() const;
+  bool ShowHudInfo() const;
+  bool ShowHudRects() const;
+  bool ShowMemoryStats() const;
 
-  static bool equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
-  static LayerTreeDebugState unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
+  static bool Equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
+  static LayerTreeDebugState Unite(const LayerTreeDebugState& a,
+                                   const LayerTreeDebugState& b);
 
-private:
-  bool m_recordRenderingStats;
+ private:
+  bool record_rendering_stats_;
 };
 
 }  // namespace cc

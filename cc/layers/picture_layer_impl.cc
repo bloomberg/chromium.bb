@@ -248,7 +248,7 @@ void PictureLayerImpl::UpdateTilePriorities() {
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
   bool store_screen_space_quads_on_tiles =
-      layer_tree_impl()->debug_state().traceAllRenderedFrames;
+      layer_tree_impl()->debug_state().trace_all_rendered_frames;
   tilings_->UpdateTilePriorities(
       tree,
       layer_tree_impl()->device_viewport_size(),

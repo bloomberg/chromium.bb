@@ -964,7 +964,7 @@ class LayerTreeHostContextTestDontUseLostResources :
 
     // Enable the hud.
     LayerTreeDebugState debug_state;
-    debug_state.showPropertyChangedRects = true;
+    debug_state.show_property_changed_rects = true;
     m_layerTreeHost->SetDebugState(debug_state);
 
     bool paint_scrollbar = true;

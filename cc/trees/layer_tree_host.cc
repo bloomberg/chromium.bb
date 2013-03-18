@@ -346,7 +346,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->DidBecomeActive();
   }
 
-  if (debug_state_.continuousPainting)
+  if (debug_state_.continuous_painting)
     host_impl->SavePaintTime(rendering_stats_.totalPaintTime, commit_number());
 
   commit_number_++;
@@ -416,7 +416,7 @@ void LayerTreeHost::WillCommit() {
 }
 
 void LayerTreeHost::UpdateHudLayer() {
-  if (debug_state_.showHudInfo()) {
+  if (debug_state_.ShowHudInfo()) {
     if (!hud_layer_)
       hud_layer_ = HeadsUpDisplayLayer::Create();
 
@@ -482,7 +482,7 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
 void LayerTreeHost::DidDeferCommit() {}
 
 void LayerTreeHost::CollectRenderingStats(RenderingStats* stats) const {
-  CHECK(debug_state_.recordRenderingStats());
+  CHECK(debug_state_.RecordRenderingStats());
   *stats = rendering_stats_;
   proxy_->CollectRenderingStats(stats);
 }
@@ -552,9 +552,9 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
 
 void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
   LayerTreeDebugState new_debug_state =
-      LayerTreeDebugState::unite(settings_.initialDebugState, debug_state);
+      LayerTreeDebugState::Unite(settings_.initialDebugState, debug_state);
 
-  if (LayerTreeDebugState::equal(debug_state_, new_debug_state))
+  if (LayerTreeDebugState::Equal(debug_state_, new_debug_state))
     return;
 
   debug_state_ = new_debug_state;
@@ -804,7 +804,7 @@ bool LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
   // painted.
 
   RenderingStats* stats =
-      debug_state_.recordRenderingStats() ? &rendering_stats_ : NULL;
+      debug_state_.RecordRenderingStats() ? &rendering_stats_ : NULL;
 
   bool need_more_updates = false;
   Layer* mask_layer = render_surface_layer->mask_layer();
@@ -845,7 +845,7 @@ bool LayerTreeHost::PaintLayerContents(
   PrioritizeTextures(render_surface_layer_list,
                      occlusion_tracker.overdraw_metrics());
 
-  RenderingStats* stats = debug_state_.recordRenderingStats() ?
+  RenderingStats* stats = debug_state_.RecordRenderingStats() ?
                           &rendering_stats_ : NULL;
 
   LayerIteratorType end = LayerIteratorType::end(&render_surface_layer_list);

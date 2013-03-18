@@ -137,7 +137,7 @@ void LayerImpl::DidDraw(ResourceProvider* resource_provider) {
 }
 
 bool LayerImpl::ShowDebugBorders() const {
-  return layer_tree_impl()->debug_state().showDebugBorders;
+  return layer_tree_impl()->debug_state().show_debug_borders;
 }
 
 void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {

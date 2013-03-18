@@ -8,86 +8,92 @@
 
 namespace cc {
 
-// IMPORTANT: new fields must be added to equal() and unite()
+// IMPORTANT: new fields must be added to Equal() and Unite()
 LayerTreeDebugState::LayerTreeDebugState()
-  : showFPSCounter(false)
-  , showPlatformLayerTree(false)
-  , showDebugBorders(false)
-  , continuousPainting(false)
-  , showPaintRects(false)
-  , showPropertyChangedRects(false)
-  , showSurfaceDamageRects(false)
-  , showScreenSpaceRects(false)
-  , showReplicaScreenSpaceRects(false)
-  , showOccludingRects(false)
-  , showNonOccludingRects(false)
-  , slowDownRasterScaleFactor(0)
-  , m_recordRenderingStats(false)
-  , traceAllRenderedFrames(false) { }
+    : show_fps_counter(false),
+      show_platform_layer_tree(false),
+      show_debug_borders(false),
+      continuous_painting(false),
+      show_paint_rects(false),
+      show_property_changed_rects(false),
+      show_surface_damage_rects(false),
+      show_screen_space_rects(false),
+      show_replica_screen_space_rects(false),
+      show_occluding_rects(false),
+      show_non_occluding_rects(false),
+      slow_down_raster_scale_factor(0),
+      record_rendering_stats_(false),
+      trace_all_rendered_frames(false) {}
 
-LayerTreeDebugState::~LayerTreeDebugState() {
+LayerTreeDebugState::~LayerTreeDebugState() {}
+
+void LayerTreeDebugState::SetRecordRenderingStats(bool enabled) {
+  record_rendering_stats_ = enabled;
 }
 
-void LayerTreeDebugState::setRecordRenderingStats(bool enabled) {
-    m_recordRenderingStats = enabled;
+bool LayerTreeDebugState::RecordRenderingStats() const {
+  return record_rendering_stats_ || continuous_painting;
 }
 
-bool LayerTreeDebugState::recordRenderingStats() const {
-    return m_recordRenderingStats || continuousPainting;
+bool LayerTreeDebugState::ShowHudInfo() const {
+  return show_fps_counter || show_platform_layer_tree || continuous_painting ||
+         ShowHudRects();
 }
 
-bool LayerTreeDebugState::showHudInfo() const {
-    return showFPSCounter || showPlatformLayerTree || continuousPainting || showHudRects();
+bool LayerTreeDebugState::ShowHudRects() const {
+  return show_paint_rects || show_property_changed_rects ||
+         show_surface_damage_rects || show_screen_space_rects ||
+         show_replica_screen_space_rects || show_occluding_rects ||
+         show_non_occluding_rects;
 }
 
-bool LayerTreeDebugState::showHudRects() const {
-    return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects || showNonOccludingRects;
+bool LayerTreeDebugState::ShowMemoryStats() const {
+  return show_fps_counter || continuous_painting;
 }
 
-bool LayerTreeDebugState::showMemoryStats() const {
-    return showFPSCounter || continuousPainting;
+bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
+                                const LayerTreeDebugState& b) {
+  return (a.show_fps_counter == b.show_fps_counter &&
+          a.show_platform_layer_tree == b.show_platform_layer_tree &&
+          a.show_debug_borders == b.show_debug_borders &&
+          a.continuous_painting == b.continuous_painting &&
+          a.show_paint_rects == b.show_paint_rects &&
+          a.show_property_changed_rects == b.show_property_changed_rects &&
+          a.show_surface_damage_rects == b.show_surface_damage_rects &&
+          a.show_screen_space_rects == b.show_screen_space_rects &&
+          a.show_replica_screen_space_rects ==
+          b.show_replica_screen_space_rects &&
+          a.show_occluding_rects == b.show_occluding_rects &&
+          a.show_non_occluding_rects == b.show_non_occluding_rects &&
+          a.slow_down_raster_scale_factor == b.slow_down_raster_scale_factor &&
+          a.record_rendering_stats_ == b.record_rendering_stats_ &&
+          a.trace_all_rendered_frames == b.trace_all_rendered_frames);
 }
 
-bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
-    return (a.showFPSCounter == b.showFPSCounter &&
-            a.showPlatformLayerTree == b.showPlatformLayerTree &&
-            a.showDebugBorders == b.showDebugBorders &&
-            a.continuousPainting == b.continuousPainting &&
-            a.showPaintRects == b.showPaintRects &&
-            a.showPropertyChangedRects == b.showPropertyChangedRects &&
-            a.showSurfaceDamageRects == b.showSurfaceDamageRects &&
-            a.showScreenSpaceRects == b.showScreenSpaceRects &&
-            a.showReplicaScreenSpaceRects == b.showReplicaScreenSpaceRects &&
-            a.showOccludingRects == b.showOccludingRects &&
-            a.showNonOccludingRects == b.showNonOccludingRects &&
-            a.slowDownRasterScaleFactor == b.slowDownRasterScaleFactor &&
-            a.m_recordRenderingStats == b.m_recordRenderingStats &&
-            a.traceAllRenderedFrames == b.traceAllRenderedFrames);
-}
+LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
+                                               const LayerTreeDebugState& b) {
+  LayerTreeDebugState r(a);
 
-LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
-    LayerTreeDebugState r(a);
+  r.show_fps_counter |= b.show_fps_counter;
+  r.show_platform_layer_tree |= b.show_platform_layer_tree;
+  r.show_debug_borders |= b.show_debug_borders;
+  r.continuous_painting |= b.continuous_painting;
 
-    r.showFPSCounter |= b.showFPSCounter;
-    r.showPlatformLayerTree |= b.showPlatformLayerTree;
-    r.showDebugBorders |= b.showDebugBorders;
-    r.continuousPainting |= b.continuousPainting;
+  r.show_paint_rects |= b.show_paint_rects;
+  r.show_property_changed_rects |= b.show_property_changed_rects;
+  r.show_surface_damage_rects |= b.show_surface_damage_rects;
+  r.show_screen_space_rects |= b.show_screen_space_rects;
+  r.show_replica_screen_space_rects |= b.show_replica_screen_space_rects;
+  r.show_occluding_rects |= b.show_occluding_rects;
+  r.show_non_occluding_rects |= b.show_non_occluding_rects;
 
-    r.showPaintRects |= b.showPaintRects;
-    r.showPropertyChangedRects |= b.showPropertyChangedRects;
-    r.showSurfaceDamageRects |= b.showSurfaceDamageRects;
-    r.showScreenSpaceRects |= b.showScreenSpaceRects;
-    r.showReplicaScreenSpaceRects |= b.showReplicaScreenSpaceRects;
-    r.showOccludingRects |= b.showOccludingRects;
-    r.showNonOccludingRects |= b.showNonOccludingRects;
+  if (b.slow_down_raster_scale_factor)
+    r.slow_down_raster_scale_factor = b.slow_down_raster_scale_factor;
 
-    if (b.slowDownRasterScaleFactor)
-      r.slowDownRasterScaleFactor = b.slowDownRasterScaleFactor;
+  r.record_rendering_stats_ |= b.record_rendering_stats_;
+  r.trace_all_rendered_frames |= b.trace_all_rendered_frames;
 
-    r.m_recordRenderingStats |= b.m_recordRenderingStats;
-    r.traceAllRenderedFrames |= b.traceAllRenderedFrames;
-
-    return r;
+  return r;
 }
 
 }  // namespace cc
