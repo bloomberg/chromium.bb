@@ -12,7 +12,7 @@
 namespace remoting {
 
 class DesktopSessionProxy;
-struct DesktopSessionParams;
+class ScreenResolution;
 
 // Provides a way to connect a terminal (i.e. a remote client) with a desktop
 // session (i.e. the screen, keyboard and the rest).
@@ -27,7 +27,7 @@ class DesktopSessionConnector {
   // can be deleted.
   virtual void ConnectTerminal(
       DesktopSessionProxy* desktop_session_proxy,
-      const DesktopSessionParams& params,
+      const ScreenResolution& resolution,
       bool virtual_terminal) = 0;
 
   // Requests the daemon process disconnect |desktop_session_proxy| from

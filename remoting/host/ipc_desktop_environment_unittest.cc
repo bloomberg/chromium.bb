@@ -51,7 +51,7 @@ class FakeDaemonSender : public IPC::Sender {
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
-  MOCK_METHOD3(ConnectTerminal, void(int, const DesktopSessionParams&, bool));
+  MOCK_METHOD3(ConnectTerminal, void(int, const ScreenResolution&, bool));
   MOCK_METHOD1(DisconnectTerminal, void(int));
 
  private:
@@ -117,7 +117,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
 
   void ConnectTerminal(int terminal_id,
-                       const DesktopSessionParams& params,
+                       const ScreenResolution& resolution,
                        bool virtual_terminal);
   void DisconnectTerminal(int terminal_id);
 
@@ -264,7 +264,7 @@ void IpcDesktopEnvironmentTest::SetUp() {
 
 void IpcDesktopEnvironmentTest::ConnectTerminal(
     int terminal_id,
-    const DesktopSessionParams& params,
+    const ScreenResolution& resolution,
     bool virtual_terminal) {
   EXPECT_NE(terminal_id_, terminal_id);
 

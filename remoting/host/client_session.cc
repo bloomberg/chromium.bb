@@ -19,6 +19,7 @@
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/host/session_controller.h"
 #include "remoting/host/video_scheduler.h"
 #include "remoting/proto/control.pb.h"
@@ -26,12 +27,10 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_thread_proxy.h"
 
-namespace remoting {
-
-namespace {
 // Default DPI to assume for old clients that use notifyClientDimensions.
 const int kDefaultDPI = 96;
-} // namespace
+
+namespace remoting {
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
@@ -96,16 +95,23 @@ ClientSession::~ClientSession() {
 
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
-  if (resolution.has_dips_width() && resolution.has_dips_height()) {
-    VLOG(1) << "Received ClientResolution (dips_width="
-            << resolution.dips_width() << ", dips_height="
-            << resolution.dips_height() << ")";
-    if (session_controller_) {
-      session_controller_->OnClientResolutionChanged(
-          SkIPoint::Make(kDefaultDPI, kDefaultDPI),
-          SkISize::Make(resolution.dips_width(), resolution.dips_height()));
-    }
-  }
+  if (!resolution.has_dips_width() || !resolution.has_dips_height())
+    return;
+
+  VLOG(1) << "Received ClientResolution (dips_width="
+          << resolution.dips_width() << ", dips_height="
+          << resolution.dips_height() << ")";
+
+  if (!session_controller_)
+    return;
+
+  ScreenResolution client_resolution(
+      SkISize::Make(resolution.dips_width(), resolution.dips_height()),
+      SkIPoint::Make(kDefaultDPI, kDefaultDPI));
+
+  // Try to match the client's resolution.
+  if (client_resolution.IsValid())
+    session_controller_->SetScreenResolution(client_resolution);
 }
 
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {

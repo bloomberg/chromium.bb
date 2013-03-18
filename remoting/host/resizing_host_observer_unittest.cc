@@ -8,12 +8,15 @@
 #include "base/logging.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/resizing_host_observer.h"
+#include "remoting/host/screen_resolution.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 std::ostream& operator<<(std::ostream& os, const SkISize& size) {
   return os << size.width() << "x" << size.height();
 }
+
+const int kDefaultDPI = 96;
 
 namespace remoting {
 
@@ -79,7 +82,8 @@ class ResizingHostObserverTest : public testing::Test {
   }
 
   SkISize GetBestSize(const SkISize& client_size) {
-    resizing_host_observer_->OnClientResolutionChanged(SkIPoint(), client_size);
+    resizing_host_observer_->SetScreenResolution(ScreenResolution(
+        client_size, SkIPoint::Make(kDefaultDPI, kDefaultDPI)));
     return desktop_resizer_->GetCurrentSize();
   }
 

@@ -56,7 +56,7 @@ class MockDaemonProcess : public DaemonProcess {
 
   virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id,
-      const DesktopSessionParams& params,
+      const ScreenResolution& resolution,
       bool virtual_terminal) OVERRIDE;
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -95,7 +95,7 @@ MockDaemonProcess::~MockDaemonProcess() {
 
 scoped_ptr<DesktopSession> MockDaemonProcess::DoCreateDesktopSession(
     int terminal_id,
-    const DesktopSessionParams& params,
+    const ScreenResolution& resolution,
     bool virtual_terminal) {
   return scoped_ptr<DesktopSession>(DoCreateDesktopSessionPtr(terminal_id));
 }
@@ -229,10 +229,10 @@ TEST_F(DaemonProcessTest, OpenClose) {
   StartDaemonProcess();
 
   int id = terminal_id_++;
-  DesktopSessionParams params;
+  ScreenResolution resolution;
 
   EXPECT_TRUE(daemon_process_->OnMessageReceived(
-      ChromotingNetworkHostMsg_ConnectTerminal(id, params, false)));
+      ChromotingNetworkHostMsg_ConnectTerminal(id, resolution, false)));
   EXPECT_EQ(1u, desktop_sessions().size());
   EXPECT_EQ(id, desktop_sessions().front()->id());
 
@@ -250,10 +250,10 @@ TEST_F(DaemonProcessTest, CallCloseDesktopSession) {
   StartDaemonProcess();
 
   int id = terminal_id_++;
-  DesktopSessionParams params;
+  ScreenResolution resolution;
 
   EXPECT_TRUE(daemon_process_->OnMessageReceived(
-      ChromotingNetworkHostMsg_ConnectTerminal(id, params, false)));
+      ChromotingNetworkHostMsg_ConnectTerminal(id, resolution, false)));
   EXPECT_EQ(1u, desktop_sessions().size());
   EXPECT_EQ(id, desktop_sessions().front()->id());
 
@@ -274,10 +274,10 @@ TEST_F(DaemonProcessTest, DoubleDisconnectTerminal) {
   StartDaemonProcess();
 
   int id = terminal_id_++;
-  DesktopSessionParams params;
+  ScreenResolution resolution;
 
   EXPECT_TRUE(daemon_process_->OnMessageReceived(
-      ChromotingNetworkHostMsg_ConnectTerminal(id, params, false)));
+      ChromotingNetworkHostMsg_ConnectTerminal(id, resolution, false)));
   EXPECT_EQ(1u, desktop_sessions().size());
   EXPECT_EQ(id, desktop_sessions().front()->id());
 
@@ -326,15 +326,15 @@ TEST_F(DaemonProcessTest, InvalidConnectTerminal) {
   StartDaemonProcess();
 
   int id = terminal_id_++;
-  DesktopSessionParams params;
+  ScreenResolution resolution;
 
   EXPECT_TRUE(daemon_process_->OnMessageReceived(
-      ChromotingNetworkHostMsg_ConnectTerminal(id, params, false)));
+      ChromotingNetworkHostMsg_ConnectTerminal(id, resolution, false)));
   EXPECT_EQ(1u, desktop_sessions().size());
   EXPECT_EQ(id, desktop_sessions().front()->id());
 
   EXPECT_TRUE(daemon_process_->OnMessageReceived(
-      ChromotingNetworkHostMsg_ConnectTerminal(id, params, false)));
+      ChromotingNetworkHostMsg_ConnectTerminal(id, resolution, false)));
   EXPECT_TRUE(desktop_sessions().empty());
   EXPECT_EQ(0, terminal_id_);
 }

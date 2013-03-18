@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "remoting/host/desktop_resizer.h"
+#include "remoting/host/screen_resolution.h"
 
 namespace {
 
@@ -108,24 +109,22 @@ ResizingHostObserver::~ResizingHostObserver() {
     desktop_resizer_->RestoreSize(original_size_);
 }
 
-void ResizingHostObserver::OnClientResolutionChanged(
-    const SkIPoint& client_dpi,
-    const SkISize& client_size) {
-  if (client_size.isEmpty()) {
+void ResizingHostObserver::SetScreenResolution(
+    const ScreenResolution& resolution) {
+  if (resolution.IsEmpty())
     return;
-  }
 
   // If the implementation returns any sizes, pick the best one according to
   // the algorithm described in CandidateSize::IsBetterThen.
   std::list<SkISize> sizes =
-      desktop_resizer_->GetSupportedSizes(client_size);
+      desktop_resizer_->GetSupportedSizes(resolution.dimensions_);
   if (sizes.empty()) {
     return;
   }
-  CandidateSize best_size(sizes.front(), client_size);
+  CandidateSize best_size(sizes.front(), resolution.dimensions_);
   for (std::list<SkISize>::const_iterator i = ++sizes.begin();
        i != sizes.end(); ++i) {
-    CandidateSize candidate_size(*i, client_size);
+    CandidateSize candidate_size(*i, resolution.dimensions_);
     if (candidate_size.IsBetterThan(best_size)) {
       best_size = candidate_size;
     }

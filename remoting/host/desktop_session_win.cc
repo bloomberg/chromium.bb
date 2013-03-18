@@ -31,6 +31,7 @@
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/host/win/host_service.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_session_process_delegate.h"
@@ -65,9 +66,8 @@ const int kMaxRdpScreenHeight = 2048;
 const int kMinRdpScreenWidth = 800;
 const int kMinRdpScreenHeight = 600;
 
-// Default dots per inch is 96 DPI.
-const int kDefaultDpiX = 96;
-const int kDefaultDpiY = 96;
+// Default dots per inch used by RDP is 96 DPI.
+const int kDefaultRdpDpi = 96;
 
 // The session attach notification should arrive within 30 seconds.
 const int kSessionAttachTimeoutSeconds = 30;
@@ -113,7 +113,7 @@ class RdpSession : public DesktopSessionWin {
   virtual ~RdpSession();
 
   // Performs the part of initialization that can fail.
-  bool Initialize(const DesktopSessionParams& params);
+  bool Initialize(const ScreenResolution& resolution);
 
   // Mirrors IRdpDesktopSessionEventHandler.
   void OnRdpConnected(const net::IPEndPoint& client_endpoint);
@@ -195,7 +195,7 @@ RdpSession::RdpSession(
 RdpSession::~RdpSession() {
 }
 
-bool RdpSession::Initialize(const DesktopSessionParams& params) {
+bool RdpSession::Initialize(const ScreenResolution& resolution) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   // Create the RDP wrapper object.
@@ -207,30 +207,13 @@ bool RdpSession::Initialize(const DesktopSessionParams& params) {
     return false;
   }
 
-  // DaemonProcess::CreateDesktopSession() varifies that |client_dpi_| and
-  // |client_size_| are positive.
-  DCHECK(params.client_dpi_.x() >= 0 && params.client_dpi_.y() >= 0);
-  DCHECK(params.client_size_.width() >= 0 && params.client_size_.height() >= 0);
+  // DaemonProcess::CreateDesktopSession() verifies that the resolution is
+  // valid.
+  DCHECK(resolution.IsValid());
 
-  // Handle the default DPI.
-  SkIPoint client_dpi = params.client_dpi_;
-  if (!client_dpi.x())
-    client_dpi.setX(kDefaultDpiX);
-  if (!client_dpi.y())
-    client_dpi.setY(kDefaultDpiY);
-
-  // Make sure there will be no integer overflow while scaling the client
-  // resolution.
-  SkISize client_size = SkISize::Make(
-      std::min(params.client_size_.width(),
-               std::numeric_limits<int32_t>::max() / kDefaultDpiX),
-      std::min(params.client_size_.height(),
-               std::numeric_limits<int32_t>::max() / kDefaultDpiY));
-
-  // Scale the client resolution assiming RDP gives us the default 96 DPI.
-  SkISize host_size = SkISize::Make(
-      client_size.width() * kDefaultDpiX / client_dpi.x(),
-      client_size.height() * kDefaultDpiY / client_dpi.y());
+  // Get the screen dimensions assuming the default DPI.
+  SkISize host_size = resolution.ScaleDimensionsToDpi(
+      SkIPoint::Make(kDefaultRdpDpi, kDefaultRdpDpi));
 
   // Make sure that the host resolution is within the limits supported by RDP.
   host_size = SkISize::Make(
@@ -357,7 +340,7 @@ scoped_ptr<DesktopSession> DesktopSessionWin::CreateForConsole(
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
-    const DesktopSessionParams& params) {
+    const ScreenResolution& resolution) {
   scoped_ptr<ConsoleSession> session(new ConsoleSession(
       caller_task_runner, io_task_runner, daemon_process, id,
       HostService::GetInstance()));
@@ -371,11 +354,11 @@ scoped_ptr<DesktopSession> DesktopSessionWin::CreateForVirtualTerminal(
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
-    const DesktopSessionParams& params) {
+    const ScreenResolution& resolution) {
   scoped_ptr<RdpSession> session(new RdpSession(
       caller_task_runner, io_task_runner, daemon_process, id,
       HostService::GetInstance()));
-  if (!session->Initialize(params))
+  if (!session->Initialize(resolution))
     return scoped_ptr<DesktopSession>();
 
   return session.PassAs<DesktopSession>();

@@ -114,7 +114,7 @@ bool IpcDesktopEnvironmentFactory::SupportsAudioCapture() const {
 
 void IpcDesktopEnvironmentFactory::ConnectTerminal(
     DesktopSessionProxy* desktop_session_proxy,
-    const DesktopSessionParams& params,
+    const ScreenResolution& resolution,
     bool virtual_terminal) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -126,7 +126,7 @@ void IpcDesktopEnvironmentFactory::ConnectTerminal(
   VLOG(1) << "Network: registered desktop environment " << id;
 
   daemon_channel_->Send(new ChromotingNetworkHostMsg_ConnectTerminal(
-      id, params, virtual_terminal));
+      id, resolution, virtual_terminal));
 }
 
 void IpcDesktopEnvironmentFactory::DisconnectTerminal(

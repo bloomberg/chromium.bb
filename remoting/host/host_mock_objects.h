@@ -14,6 +14,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/local_input_monitor.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/host/session_controller.h"
 #include "remoting/proto/control.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -158,8 +159,7 @@ class MockSessionController : public SessionController {
   MockSessionController();
   virtual ~MockSessionController();
 
-  MOCK_METHOD2(OnClientResolutionChanged,
-               void(const SkIPoint&, const SkISize&));
+  MOCK_METHOD1(SetScreenResolution, void(const ScreenResolution&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSessionController);

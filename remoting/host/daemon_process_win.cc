@@ -25,6 +25,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
 #include "remoting/host/win/worker_process_launcher.h"
@@ -65,7 +66,7 @@ class DaemonProcessWin : public DaemonProcess {
   // DaemonProcess implementation.
   virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id,
-      const DesktopSessionParams& params,
+      const ScreenResolution& resolution,
       bool virtual_terminal) OVERRIDE;
   virtual void DoCrashNetworkProcess(
       const tracked_objects::Location& location) OVERRIDE;
@@ -146,16 +147,16 @@ void DaemonProcessWin::DoStop() {
 
 scoped_ptr<DesktopSession> DaemonProcessWin::DoCreateDesktopSession(
     int terminal_id,
-    const DesktopSessionParams& params,
+    const ScreenResolution& resolution,
     bool virtual_terminal) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   if (virtual_terminal) {
     return DesktopSessionWin::CreateForVirtualTerminal(
-        caller_task_runner(), io_task_runner(), this, terminal_id, params);
+        caller_task_runner(), io_task_runner(), this, terminal_id, resolution);
   } else {
     return DesktopSessionWin::CreateForConsole(
-        caller_task_runner(), io_task_runner(), this, terminal_id, params);
+        caller_task_runner(), io_task_runner(), this, terminal_id, resolution);
   }
 }
 

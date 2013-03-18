@@ -18,24 +18,23 @@
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/transport.h"
-
-namespace {
-
-std::ostream& operator<<(std::ostream& os, const SkIPoint& point) {
-  return os << "(" << point.x() << ", " << point.y() << ")";
-}
-
-std::ostream& operator<<(std::ostream& os, const SkISize& size) {
-  return os << size.width() << "x" << size.height();
-}
-
-}  // namespace
 
 namespace remoting {
 
+namespace {
+
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
+
+std::ostream& operator<<(std::ostream& os, const ScreenResolution& resolution) {
+  return os << resolution.dimensions_.width() << "x"
+            << resolution.dimensions_.height() << " at "
+            << resolution.dpi_.x() << "x" << resolution.dpi_.y() << " DPI";
+}
+
+}  // namespace
 
 DaemonProcess::~DaemonProcess() {
   DCHECK(!config_watcher_.get());
@@ -171,7 +170,7 @@ DaemonProcess::DaemonProcess(
 }
 
 void DaemonProcess::CreateDesktopSession(int terminal_id,
-                                         const DesktopSessionParams& params,
+                                         const ScreenResolution& resolution,
                                          bool virtual_terminal) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
@@ -187,17 +186,9 @@ void DaemonProcess::CreateDesktopSession(int terminal_id,
   // Terminal IDs cannot be reused. Update the expected next terminal ID.
   next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
 
-  // Validate |params|.
-  if (params.client_dpi_.x() < 0 || params.client_dpi_.y() < 0) {
-    LOG(ERROR) << "Invalid DPI of the remote screen specified: "
-               << params.client_dpi_;
-    SendToNetwork(
-        new ChromotingDaemonNetworkMsg_TerminalDisconnected(terminal_id));
-    return;
-  }
-  if (params.client_size_.width() < 0 || params.client_size_.height() < 0) {
-    LOG(ERROR) << "Invalid resolution of the remote screen specified: "
-               << params.client_size_;
+  // Validate |resolution|.
+  if (!resolution.IsValid()) {
+    LOG(ERROR) << "Invalid resolution specified: " << resolution;
     SendToNetwork(
         new ChromotingDaemonNetworkMsg_TerminalDisconnected(terminal_id));
     return;
@@ -205,7 +196,7 @@ void DaemonProcess::CreateDesktopSession(int terminal_id,
 
   // Create the desktop session.
   scoped_ptr<DesktopSession> session = DoCreateDesktopSession(
-      terminal_id, params, virtual_terminal);
+      terminal_id, resolution, virtual_terminal);
   if (!session) {
     LOG(ERROR) << "Failed to create a desktop session.";
     SendToNetwork(

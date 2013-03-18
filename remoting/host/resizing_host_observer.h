@@ -14,6 +14,7 @@
 namespace remoting {
 
 class DesktopResizer;
+class ScreenResolution;
 
 // TODO(alexeypa): Rename this class to reflect that it is not
 // HostStatusObserver any more.
@@ -27,8 +28,7 @@ class ResizingHostObserver : public SessionController {
   virtual ~ResizingHostObserver();
 
   // SessionController interface.
-  virtual void OnClientResolutionChanged(const SkIPoint& client_dpi,
-                                         const SkISize& client_size) OVERRIDE;
+  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
 
  private:
   scoped_ptr<DesktopResizer> desktop_resizer_;

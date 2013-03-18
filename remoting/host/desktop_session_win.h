@@ -27,7 +27,7 @@ namespace remoting {
 class AutoThreadTaskRunner;
 class DaemonProcess;
 class DesktopSession;
-struct DesktopSessionParams;
+class ScreenResolution;
 class WorkerProcessLauncher;
 class WtsTerminalMonitor;
 
@@ -46,7 +46,7 @@ class DesktopSessionWin
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       DaemonProcess* daemon_process,
       int id,
-      const DesktopSessionParams& params);
+      const ScreenResolution& resolution);
 
   // Creates a desktop session instance that attaches to a virtual console.
   static scoped_ptr<DesktopSession> CreateForVirtualTerminal(
@@ -54,7 +54,7 @@ class DesktopSessionWin
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       DaemonProcess* daemon_process,
       int id,
-      const DesktopSessionParams& params);
+      const ScreenResolution& resolution);
 
  protected:
   // Passes the owning |daemon_process|, a unique identifier of the desktop

@@ -17,9 +17,8 @@ IpcSessionController::IpcSessionController(
 IpcSessionController::~IpcSessionController() {
 }
 
-void IpcSessionController::OnClientResolutionChanged(
-    const SkIPoint& client_dpi,
-    const SkISize& client_size) {
+void IpcSessionController::SetScreenResolution(
+    const ScreenResolution& resolution) {
   NOTIMPLEMENTED();
 }
 

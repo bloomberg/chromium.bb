@@ -39,7 +39,6 @@ namespace remoting {
 class AudioPacket;
 class ClientSession;
 class DesktopSessionConnector;
-struct DesktopSessionParams;
 struct DesktopSessionProxyTraits;
 class IpcAudioCapturer;
 class IpcVideoFrameCapturer;

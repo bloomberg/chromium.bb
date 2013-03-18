@@ -9,11 +9,6 @@
 
 namespace remoting {
 
-DesktopSessionParams::DesktopSessionParams()
-    : client_dpi_(SkIPoint::Make(0, 0)),
-      client_size_(SkISize::Make(0, 0)) {
-}
-
 DesktopSession::~DesktopSession() {
 }
 

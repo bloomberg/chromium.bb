@@ -19,6 +19,7 @@
 #include "remoting/host/ipc_event_executor.h"
 #include "remoting/host/ipc_session_controller.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/host/session_controller.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
@@ -288,7 +289,7 @@ void DesktopSessionProxy::ConnectToDesktopSession(
 
   desktop_session_connector_ = desktop_session_connector;
   desktop_session_connector_->ConnectTerminal(
-      this, DesktopSessionParams(), virtual_terminal);
+      this, ScreenResolution(), virtual_terminal);
 }
 
 DesktopSessionProxy::~DesktopSessionProxy() {

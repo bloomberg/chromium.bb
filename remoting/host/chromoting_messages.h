@@ -8,7 +8,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
 #include "net/base/ip_endpoint.h"
-#include "remoting/host/desktop_session.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -64,16 +64,16 @@ IPC_MESSAGE_CONTROL3(ChromotingDaemonNetworkMsg_DesktopAttached,
 // console session.
 IPC_MESSAGE_CONTROL0(ChromotingNetworkDaemonMsg_SendSasToConsole)
 
-IPC_STRUCT_TRAITS_BEGIN(remoting::DesktopSessionParams)
-  IPC_STRUCT_TRAITS_MEMBER(client_dpi_)
-  IPC_STRUCT_TRAITS_MEMBER(client_size_)
+IPC_STRUCT_TRAITS_BEGIN(remoting::ScreenResolution)
+  IPC_STRUCT_TRAITS_MEMBER(dimensions_)
+  IPC_STRUCT_TRAITS_MEMBER(dpi_)
 IPC_STRUCT_TRAITS_END()
 
 // Connects the terminal |terminal_id| (i.e. a remote client) to a desktop
 // session.
 IPC_MESSAGE_CONTROL3(ChromotingNetworkHostMsg_ConnectTerminal,
                      int /* terminal_id */,
-                     remoting::DesktopSessionParams /* params */,
+                     remoting::ScreenResolution /* resolution */,
                      bool /* virtual_terminal */)
 
 // Disconnects the terminal |terminal_id| from the desktop session it was
@@ -179,7 +179,7 @@ IPC_STRUCT_BEGIN(SerializedCapturedData)
   // Captured region.
   IPC_STRUCT_MEMBER(std::vector<SkIRect>, dirty_region)
 
-  // Dimentions of the buffer in pixels.
+  // Dimensions of the buffer in pixels.
   IPC_STRUCT_MEMBER(SkISize, dimensions)
 
   // Time spent in capture. Unit is in milliseconds.

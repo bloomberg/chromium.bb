@@ -12,6 +12,7 @@
 namespace remoting {
 
 class DesktopSessionProxy;
+class ScreenResolution;
 
 class IpcSessionController : public SessionController {
  public:
@@ -20,8 +21,7 @@ class IpcSessionController : public SessionController {
   virtual ~IpcSessionController();
 
   // SessionController interface.
-  virtual void OnClientResolutionChanged(const SkIPoint& client_dpi,
-                                         const SkISize& client_size) OVERRIDE;
+  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
 
  private:
   // Wraps the IPC channel to the desktop session agent.

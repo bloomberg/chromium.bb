@@ -11,13 +11,14 @@
 
 namespace remoting {
 
+class ScreenResolution;
+
 class SessionController {
  public:
   virtual ~SessionController() {}
 
-  // Called when the client view size or pixel density change.
-  virtual void OnClientResolutionChanged(const SkIPoint& client_dpi,
-                                         const SkISize& client_size) = 0;
+  // Attempts to set new screen resolution in the session.
+  virtual void SetScreenResolution(const ScreenResolution& resolution) = 0;
 };
 
 }  // namespace remoting
