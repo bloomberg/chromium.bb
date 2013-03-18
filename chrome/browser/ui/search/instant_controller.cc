@@ -1081,7 +1081,8 @@ void InstantController::SetSuggestions(
   if (!suggestions.empty())
     suggestion = suggestions[0];
 
-  if (instant_tab_ && search_mode_.is_search_results() &&
+  if (instant_tab_ &&
+      (search_mode_.is_search_results() || search_mode_.is_ntp()) &&
       suggestion.behavior == INSTANT_COMPLETE_REPLACE) {
     // Update |last_omnibox_text_| so that the controller commits the proper
     // query if the user focuses the omnibox and presses Enter.
