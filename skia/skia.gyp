@@ -87,6 +87,10 @@
         '../third_party/skia/src/pdf/SkPDFUtils.cpp',
         '../third_party/skia/src/pdf/SkPDFUtils.h',
 
+        #'../third_party/skia/src/ports/SkPurgeableMemoryBlock_android.cpp',
+        #'../third_party/skia/src/ports/SkPurgeableMemoryBlock_mac.cpp',
+        '../third_party/skia/src/ports/SkPurgeableMemoryBlock_none.cpp',
+
         '../third_party/skia/src/ports/FontHostConfiguration_android.cpp',
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
@@ -215,6 +219,7 @@
         '../third_party/skia/src/image',
         '../third_party/skia/src/sfnt',
         '../third_party/skia/src/utils',
+        '../third_party/skia/src/lazy',
       ],
       'msvs_disabled_warnings': [4244, 4267, 4341, 4345, 4390, 4554, 4748, 4800],
       'defines': [
