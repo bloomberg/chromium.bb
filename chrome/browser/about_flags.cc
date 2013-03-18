@@ -1206,7 +1206,7 @@ const Experiment kExperiments[] = {
     "impl-side-painting",
     IDS_FLAGS_IMPL_SIDE_PAINTING_NAME,
     IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION,
-    kOsAndroid,
+    kOsAndroid | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kImplSidePaintingChoices)
   },
   // TODO(sky): ifdef needed until focus sorted out in DesktopNativeWidgetAura.
