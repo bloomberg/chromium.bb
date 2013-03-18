@@ -56,14 +56,14 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
   }
 
   const float scroll_divisors[] = { 0.0, // unused
-                                    150, 75.0, 56.25, 37.5 };  // used
+                                    150, 75.0, 70.0, 65.0 };  // used
   // Our scrolling curves are the following.
   // x = input speed of movement (mm/s, always >= 0), y = output speed (mm/s)
   // 1: y = x (No acceleration)
   // 2: y = 75x/150   (x < 75), x^2/150   (x < 600), linear (initial slope).
   // 3: y = 75x/75    (x < 75), x^2/75    (x < 600), linear (initial slope).
-  // 4: y = 75x/56.25 (x < 75), x^2/56.25 (x < 600), linear (initial slope).
-  // 5: y = 75x/37.5  (x < 75), x^2/37.5  (x < 600), linear (initial slope).
+  // 4: y = 75x/70    (x < 75), x^2/70    (x < 600), linear (initial slope).
+  // 5: y = 75x/65    (x < 75), x^2/65    (x < 600), linear (initial slope).
   // i starts as 1 b/c we skip the first slot, since the default is fine for it.
   for (size_t i = 1; i < kMaxAccelCurves; ++i) {
     const float divisor = scroll_divisors[i];
