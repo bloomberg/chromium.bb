@@ -269,6 +269,13 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // Called when a mousewheel event was not processed by the renderer.
   virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
 
+  // Called prior to forwarding input event messages to the renderer, giving
+  // the view a chance to perform in-process event filtering or processing.
+  // Return values of |NOT_CONSUMED| or |UNKNOWN| will result in |input_event|
+  // being forwarded.
+  virtual InputEventAckState FilterInputEvent(
+      const WebKit::WebInputEvent& input_event) = 0;
+
   virtual void SetPopupType(WebKit::WebPopupType popup_type) = 0;
   virtual WebKit::WebPopupType GetPopupType() = 0;
 

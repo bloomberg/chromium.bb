@@ -26,6 +26,10 @@ namespace ui {
 class WindowAndroid;
 }
 
+namespace WebKit {
+class WebCompositorInputHandler;
+}
+
 namespace content {
 class WebContents;
 
@@ -52,6 +56,8 @@ class CONTENT_EXPORT ContentViewCore {
       float scale,
       gfx::Size* out_size) = 0;
   virtual float GetDpiScale() const = 0;
+  virtual void SetInputHandler(
+      WebKit::WebCompositorInputHandler* input_handler) = 0;
 
   // Observer callback for frame metadata updates.
   typedef base::Callback<void(

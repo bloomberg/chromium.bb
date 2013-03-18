@@ -2594,6 +2594,9 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 #endif
 
   RenderWidget::didActivateCompositor(input_handler_identifier);
+
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidActivateCompositor(input_handler_identifier));
 }
 
 void RenderViewImpl::didHandleGestureEvent(

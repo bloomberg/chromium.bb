@@ -410,6 +410,12 @@ void RenderWidgetHostViewBase::UnhandledWheelEvent(
   // Most implementations don't need to do anything here.
 }
 
+InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
+    const WebKit::WebInputEvent& input_event) {
+  // By default, input events are simply forwarded to the renderer.
+  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
 void RenderWidgetHostViewBase::SetPopupType(WebKit::WebPopupType popup_type) {
   popup_type_ = popup_type;
 }

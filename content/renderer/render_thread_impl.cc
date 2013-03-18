@@ -644,9 +644,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
           compositor_thread_->message_loop_proxy();
     }
 
-    input_handler_manager_.reset(
-        new InputHandlerManager(this, compositor_message_loop_proxy_));
-    AddFilter(input_handler_manager_->GetMessageFilter());
+    if (GetContentClient()->renderer()->ShouldCreateCompositorInputHandler()) {
+      input_handler_manager_.reset(
+          new InputHandlerManager(this, compositor_message_loop_proxy_));
+      AddFilter(input_handler_manager_->GetMessageFilter());
+    }
   }
 
   scoped_refptr<base::MessageLoopProxy> output_surface_loop;

@@ -40,6 +40,11 @@ bool ViewRenderer::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void ViewRenderer::DidActivateCompositor(int input_handler_identifier) {
+  Send(new AwViewHostMsg_DidActivateAcceleratedCompositing(
+           routing_id(), input_handler_identifier));
+}
+
 void ViewRenderer::DidCommitCompositorFrame() {
   if (!capture_picture_enabled_)
     return;

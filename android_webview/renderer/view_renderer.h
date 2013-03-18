@@ -24,6 +24,7 @@ class ViewRenderer : public content::RenderViewObserver {
 
   // content::RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidActivateCompositor(int input_handler_identifier) OVERRIDE;
   virtual void DidCommitCompositorFrame() OVERRIDE;
 
   void OnEnableCapturePictureCallback(bool enable);

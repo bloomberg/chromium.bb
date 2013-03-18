@@ -1187,6 +1187,27 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
     coalesced_mouse_wheel_events_.clear();
   }
 
+  if (view_) {
+    // Perform optional, synchronous event handling, sending ACK messages for
+    // processed events, or proceeding as usual.
+    InputEventAckState filter_ack = view_->FilterInputEvent(input_event);
+    switch (filter_ack) {
+      // Send the ACK and early exit.
+      case INPUT_EVENT_ACK_STATE_CONSUMED:
+      case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
+        next_mouse_move_.reset();
+        OnInputEventAck(input_event.type, filter_ack);
+        // WARNING: |this| may be deleted at this point.
+        return;
+
+      // Proceed as normal.
+      case INPUT_EVENT_ACK_STATE_UNKNOWN:
+      case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
+      default:
+        break;
+    };
+  }
+
   SendInputEvent(input_event, event_size, is_keyboard_shortcut);
 
   // Any input event cancels a pending mouse move event. Note that
@@ -1977,8 +1998,7 @@ void RenderWidgetHostImpl::OnImeCancelComposition() {
     view_->ImeCancelComposition();
 }
 
-void RenderWidgetHostImpl::OnDidActivateAcceleratedCompositing(
-    bool activated) {
+void RenderWidgetHostImpl::OnDidActivateAcceleratedCompositing(bool activated) {
   TRACE_EVENT1("renderer_host",
                "RenderWidgetHostImpl::OnDidActivateAcceleratedCompositing",
                "activated", activated);

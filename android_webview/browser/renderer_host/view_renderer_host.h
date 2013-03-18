@@ -42,6 +42,8 @@ class ViewRendererHost : public content::WebContentsObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnPictureUpdated();
+  void OnDidActivateAcceleratedCompositing(int input_handler_id);
+
   bool IsRenderViewReady() const;
 
   Client* client_;

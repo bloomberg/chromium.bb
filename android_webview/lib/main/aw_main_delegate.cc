@@ -76,10 +76,13 @@ content::ContentBrowserClient*
 }
 
 namespace {
+bool UIAndRendererCompositorThreadsMerged() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kMergeUIAndRendererCompositorThreads);
+}
+
 MessageLoop* GetRendererCompositorThreadOverrideLoop() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(
-      switches::kMergeUIAndRendererCompositorThreads))
+  if (!UIAndRendererCompositorThreadsMerged())
     return NULL;
 
   MessageLoop* rv = content::BrowserThread::UnsafeGetMessageLoopForThread(
@@ -91,8 +94,14 @@ MessageLoop* GetRendererCompositorThreadOverrideLoop() {
 
 content::ContentRendererClient*
     AwMainDelegate::CreateContentRendererClient() {
+  // Compositor input handling will be performed by the renderer host
+  // when UI and compositor threads are merged, so we disable client compositor
+  // input handling in this case.
+  const bool enable_client_compositor_input_handling =
+      !UIAndRendererCompositorThreadsMerged();
   content_renderer_client_.reset(
-      new AwContentRendererClient(&GetRendererCompositorThreadOverrideLoop));
+      new AwContentRendererClient(&GetRendererCompositorThreadOverrideLoop,
+                                  enable_client_compositor_input_handling));
   return content_renderer_client_.get();
 }
 

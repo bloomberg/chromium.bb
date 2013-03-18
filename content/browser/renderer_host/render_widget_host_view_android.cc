@@ -631,6 +631,14 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
   // intentionally empty, like RenderWidgetHostViewViews
 }
 
+InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
+    const WebKit::WebInputEvent& input_event) {
+  if (!content_view_core_)
+    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+
+  return content_view_core_->FilterInputEvent(input_event);
+}
+
 void RenderWidgetHostViewAndroid::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
 }

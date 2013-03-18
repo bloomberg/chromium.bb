@@ -243,6 +243,8 @@
     'browser/android/sandboxed_process_launcher.h',
     'browser/android/surface_texture_peer_browser_impl.cc',
     'browser/android/surface_texture_peer_browser_impl.h',
+    'browser/android/sync_input_event_filter.h',
+    'browser/android/sync_input_event_filter.cc',
     'browser/android/touch_point.cc',
     'browser/android/touch_point.h',
     'browser/android/tracing_intent_handler.cc',

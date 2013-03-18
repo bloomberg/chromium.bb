@@ -227,6 +227,9 @@ class CONTENT_EXPORT ContentRendererClient {
   // If not NULL, the returned MessageLoop must be valid for the lifetime of
   // RenderThreadImpl. If NULL, then a new thread will be created.
   virtual MessageLoop* OverrideCompositorMessageLoop() const;
+
+  // Allow the embedder to disable input event filtering by the compositor.
+  virtual bool ShouldCreateCompositorInputHandler() const;
 };
 
 }  // namespace content

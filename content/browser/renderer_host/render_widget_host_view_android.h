@@ -133,6 +133,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual InputEventAckState FilterInputEvent(
+      const WebKit::WebInputEvent& input_event) OVERRIDE;
   virtual void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>&
           params) OVERRIDE;

@@ -58,6 +58,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual bool IsMouseLocked() OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual InputEventAckState FilterInputEvent(
+      const WebKit::WebInputEvent& input_event) OVERRIDE;
   virtual void SetPopupType(WebKit::WebPopupType popup_type) OVERRIDE;
   virtual WebKit::WebPopupType GetPopupType() OVERRIDE;
   virtual BrowserAccessibilityManager*

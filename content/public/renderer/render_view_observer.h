@@ -85,6 +85,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidRequestShowContextMenu(
       WebKit::WebFrame* frame,
       const WebKit::WebContextMenuData& data) {}
+  virtual void DidActivateCompositor(int input_handler_id) {}
   virtual void DidCommitCompositorFrame() {}
 
   // These match the RenderView methods.

@@ -30,6 +30,7 @@ class WindowAndroid;
 
 namespace content {
 class RenderWidgetHostViewAndroid;
+class SyncInputEventFilter;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
@@ -58,6 +59,8 @@ class ContentViewCoreImpl : public ContentViewCore,
       float scale,
       gfx::Size* out_size) OVERRIDE;
   virtual float GetDpiScale() const OVERRIDE;
+  virtual void SetInputHandler(
+      WebKit::WebCompositorInputHandler* input_handler) OVERRIDE;
   virtual void AddFrameInfoCallback(
       const UpdateFrameInfoCallback& callback) OVERRIDE;
   virtual void RemoveFrameInfoCallback(
@@ -262,6 +265,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetViewportSizeDip() const;
 
+  InputEventAckState FilterInputEvent(const WebKit::WebInputEvent& input_event);
+
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
   void DidProduceRendererFrame();
@@ -328,6 +333,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   ui::WindowAndroid* window_android_;
 
   std::vector<UpdateFrameInfoCallback> update_frame_info_callbacks_;
+
+  // Optional browser-side input event filtering.
+  scoped_ptr<SyncInputEventFilter> input_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };
