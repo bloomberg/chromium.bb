@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import sys
 
+from perf_tools import histogram_measurement
 from telemetry.core import util
 from telemetry.page import page_benchmark
 
@@ -12,6 +13,14 @@ MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb'}]
 
 class PageCycler(page_benchmark.PageBenchmark):
+  def WillNavigateToPage(self, page, tab):
+    # pylint: disable=W0201
+    self.histograms = [histogram_measurement.HistogramMeasurement(
+                           h, histogram_measurement.RENDERER_HISTOGRAM)
+                       for h in MEMORY_HISTOGRAMS]
+    for h in self.histograms:
+      h.Start(page, tab)
+
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--dom-automation')
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
@@ -127,7 +136,7 @@ class PageCycler(page_benchmark.PageBenchmark):
     results.Add('w_r', 'kb', io_stats['Renderer']['WriteOperationCount'],
                 chart_name='write_byte_r', data_type='unimportant')
 
-  def MeasurePage(self, _, tab, results):
+  def MeasurePage(self, page, tab, results):
     def _IsDone():
       return tab.GetCookieByName('__pc_done') == '1'
     util.WaitFor(_IsDone, 1200, poll_interval=5)
@@ -136,11 +145,8 @@ class PageCycler(page_benchmark.PageBenchmark):
     self.MeasureMemory(tab, results)
     self.MeasureIO(tab, results)
 
-    for histogram in MEMORY_HISTOGRAMS:
-      name = histogram['name']
-      data = tab.EvaluateJavaScript(
-          'window.domAutomationController.getHistogram("%s")' % name)
-      results.Add(name, histogram['units'], data, data_type='histogram')
+    for h in self.histograms:
+      h.GetValue(page, tab, results)
 
     def _IsNavigatedToReport():
       return tab.GetCookieByName('__navigated_to_report') == '1'
