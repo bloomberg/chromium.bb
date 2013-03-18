@@ -300,14 +300,6 @@ bool TestWebViewDelegate::shouldApplyStyle(const WebString& style,
   return shell_->AcceptsEditing();
 }
 
-bool TestWebViewDelegate::isSmartInsertDeleteEnabled() {
-  return smart_insert_delete_enabled_;
-}
-
-bool TestWebViewDelegate::isSelectTrailingWhitespaceEnabled() {
-  return select_trailing_whitespace_enabled_;
-}
-
 void TestWebViewDelegate::didBeginEditing() {
 }
 
@@ -845,12 +837,6 @@ TestWebViewDelegate::TestWebViewDelegate(TestShell* shell)
 #if defined(TOOLKIT_GTK)
       cursor_type_(GDK_X_CURSOR),
 #endif
-      smart_insert_delete_enabled_(true),
-#if defined(OS_WIN)
-      select_trailing_whitespace_enabled_(true),
-#else
-      select_trailing_whitespace_enabled_(false),
-#endif
       block_redirects_(false),
       request_return_null_(false) {
 }
@@ -863,20 +849,6 @@ void TestWebViewDelegate::Reset() {
   TestShell* shell = shell_;
   this->~TestWebViewDelegate();
   new (this) TestWebViewDelegate(shell);
-}
-
-void TestWebViewDelegate::SetSmartInsertDeleteEnabled(bool enabled) {
-  smart_insert_delete_enabled_ = enabled;
-  // In upstream WebKit, smart insert/delete is mutually exclusive with select
-  // trailing whitespace, however, we allow both because Chromium on Windows
-  // allows both.
-}
-
-void TestWebViewDelegate::SetSelectTrailingWhitespaceEnabled(bool enabled) {
-  select_trailing_whitespace_enabled_ = enabled;
-  // In upstream WebKit, smart insert/delete is mutually exclusive with select
-  // trailing whitespace, however, we allow both because Chromium on Windows
-  // allows both.
 }
 
 void TestWebViewDelegate::RegisterDragDrop() {

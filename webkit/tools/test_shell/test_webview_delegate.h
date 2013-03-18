@@ -107,8 +107,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual bool shouldDeleteRange(const WebKit::WebRange& range);
   virtual bool shouldApplyStyle(
       const WebKit::WebString& style, const WebKit::WebRange& range);
-  virtual bool isSmartInsertDeleteEnabled();
-  virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void didBeginEditing();
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didChangeContents();
@@ -253,9 +251,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   explicit TestWebViewDelegate(TestShell* shell);
   virtual ~TestWebViewDelegate();
   void Reset();
-
-  void SetSmartInsertDeleteEnabled(bool enabled);
-  void SetSelectTrailingWhitespaceEnabled(bool enabled);
 
   // Additional accessors
   WebKit::WebFrame* top_loading_frame() { return top_loading_frame_; }
@@ -417,12 +412,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   scoped_ptr<WebKit::WebPopupMenuInfo> popup_menu_info_;
   WebKit::WebRect popup_bounds_;
 #endif
-
-  // true if we want to enable smart insert/delete.
-  bool smart_insert_delete_enabled_;
-
-  // true if we want to enable selection of trailing whitespaces
-  bool select_trailing_whitespace_enabled_;
 
   // Set of headers to clear in willSendRequest.
   std::set<std::string> clear_headers_;

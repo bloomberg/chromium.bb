@@ -447,8 +447,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(WebKit::WebFrame* frame,
                                      double load_progress);
-  virtual bool isSmartInsertDeleteEnabled();
-  virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void didCancelCompositionOnSelectionChange();
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didExecuteCommand(const WebKit::WebString& command_name);

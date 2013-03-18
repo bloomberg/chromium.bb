@@ -2117,22 +2117,6 @@ void RenderViewImpl::didChangeLoadProgress(WebFrame* frame,
     load_progress_tracker_->DidChangeLoadProgress(frame, load_progress);
 }
 
-bool RenderViewImpl::isSmartInsertDeleteEnabled() {
-#if defined(OS_MACOSX)
-  return true;
-#else
-  return false;
-#endif
-}
-
-bool RenderViewImpl::isSelectTrailingWhitespaceEnabled() {
-#if defined(OS_WIN)
-  return true;
-#else
-  return false;
-#endif
-}
-
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
   Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
 }
