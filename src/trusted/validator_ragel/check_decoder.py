@@ -164,11 +164,6 @@ class WorkerState(object):
           decoder_proc.stdout,
           fillvalue=None):
 
-        # TODO(shcherbina): remove this exception once
-        # http://code.google.com/p/nativeclient/issues/detail?id=3165 is fixed.
-        if 'extrq' in line1 or 'insertq' in line1:
-          continue
-
         if not RoughlyEqual(line1, line2):
           print 'objdump: %r' % line1
           print 'decoder: %r' % line2
