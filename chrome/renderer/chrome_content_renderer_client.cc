@@ -1105,6 +1105,10 @@ void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
 
 bool ChromeContentRendererClient::AllowBrowserPlugin(
     WebKit::WebPluginContainer* container) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginForAllViewTypes))
+    return true;
+
   // If this |BrowserPlugin| <object> in the |container| is not inside a
   // <webview> shadowHost, we disable instantiating this plugin. This is to
   // discourage and prevent developers from accidentally attaching <object>
@@ -1120,13 +1124,8 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
   if (container->element().shadowHost().isNull())
     return false;
 
-  if (container->element().shadowHost().tagName().equals(
-          WebKit::WebString::fromUTF8(kWebViewTagName))) {
-    return true;
-  } else {
-    return CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserPluginForAllViewTypes);
-  }
+  return container->element().shadowHost().tagName().equals(
+      WebString::fromUTF8(kWebViewTagName));
 }
 
 }  // namespace chrome
