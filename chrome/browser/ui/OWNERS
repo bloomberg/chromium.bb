@@ -7,3 +7,7 @@ sky@chromium.org
 # that touch all the platforms.
 
 per-file browser_tab_contents.*=avi@chromium.org
+
+# Instant/Search files.
+per-file browser_instant_controller.*=sreeram@chromium.org
+per-file browser_instant_controller.*=samarth@chromium.org
