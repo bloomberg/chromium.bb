@@ -40,7 +40,6 @@ GpuPixelTestBrowserPlugin.MANUAL_BrowserPluginBlueBox
 # Crashes
 WorkerXHRHttpLayoutTest.Tests
 GpuCrashTest.MANUAL_Kill
-DownloadContentTest.ResumeInterruptedDownload
 
 # Needs to start the test server before
 # BrowserTestBase::SetUpCommandLine is called, but on Android
@@ -65,3 +64,10 @@ RenderWidgetTest.OnMsgPaintAtSize
 
 # Multiple test servers support: http://crbug/187570
 RenderViewHostManagerTest.*
+
+# http://crbug.com/215894
+DownloadContentTest.ResumeInterruptedDownload
+DownloadContentTest.ResumeInterruptedDownloadNoRange
+DownloadContentTest.ResumeInterruptedDownloadNoVerifiers
+DownloadContentTest.ResumeInterruptedDownloadBadPrecondition
+DownloadContentTest.ResumeWithDeletedFile
