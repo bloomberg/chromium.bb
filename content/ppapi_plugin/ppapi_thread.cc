@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
@@ -227,6 +228,10 @@ void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
 
 void PpapiThread::OnLoadPlugin(const base::FilePath& path,
                                const ppapi::PpapiPermissions& permissions) {
+  // In case of crashes, the crash dump doesn't indicate which plugin
+  // it came from.
+  base::debug::SetCrashKeyValue("ppapi_path", path.MaybeAsASCII());
+
   SavePluginName(path);
 
   // This must be set before calling into the plugin so it can get the

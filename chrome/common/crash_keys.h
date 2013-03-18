@@ -15,6 +15,7 @@ size_t RegisterChromeCrashKeys();
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
+#if defined(OS_MACOSX)
 namespace mac {
 
 // Used to report the first Cocoa/Mac NSException and its backtrace.
@@ -38,6 +39,7 @@ extern const char kZombie[];
 extern const char kZombieTrace[];
 
 }  // namespace mac
+#endif
 
 }  // namespace crash_keys
 
