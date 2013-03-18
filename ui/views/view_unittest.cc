@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ui_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -1207,8 +1208,6 @@ TEST_F(ViewTest, Textfield) {
   widget->CloseNow();
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-
 // Tests that the Textfield view respond appropiately to cut/copy/paste.
 TEST_F(ViewTest, TextfieldCutCopyPaste) {
   const string16 kNormalText = ASCIIToUTF16("Normal");
@@ -1239,26 +1238,23 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   //
   // Test cut.
   //
-  ASSERT_TRUE(normal->GetTestingHandle());
-  normal->SelectAll(false);
-  ::SendMessage(normal->GetTestingHandle(), WM_CUT, 0, 0);
 
+  normal->SelectAll(false);
+  normal->ExecuteCommand(IDS_APP_CUT);
   string16 result;
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
-  ASSERT_TRUE(read_only->GetTestingHandle());
   read_only->SelectAll(false);
-  ::SendMessage(read_only->GetTestingHandle(), WM_CUT, 0, 0);
+  read_only->ExecuteCommand(IDS_APP_CUT);
   result.clear();
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
-  ASSERT_TRUE(password->GetTestingHandle());
   password->SelectAll(false);
-  ::SendMessage(password->GetTestingHandle(), WM_CUT, 0, 0);
+  password->ExecuteCommand(IDS_APP_CUT);
   result.clear();
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
@@ -1268,58 +1264,47 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   // Test copy.
   //
 
-  // Let's start with read_only as the clipboard already contains the content
-  // of normal.
+  // Start with |read_only| to observe a change in clipboard text.
   read_only->SelectAll(false);
-  ::SendMessage(read_only->GetTestingHandle(), WM_COPY, 0, 0);
+  read_only->ExecuteCommand(IDS_APP_COPY);
   result.clear();
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kReadOnlyText, result);
 
   normal->SelectAll(false);
-  ::SendMessage(normal->GetTestingHandle(), WM_COPY, 0, 0);
+  normal->ExecuteCommand(IDS_APP_COPY);
   result.clear();
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
-  ::SendMessage(password->GetTestingHandle(), WM_COPY, 0, 0);
+  password->ExecuteCommand(IDS_APP_COPY);
   result.clear();
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
-  // We don't let you copy from an obscured field, clipboard should not have
-  // changed.
+  // Text cannot be copied from an obscured field; the clipboard won't change.
   EXPECT_EQ(kNormalText, result);
 
   //
-  // Test Paste.
+  // Test paste.
   //
-  // Note that we use GetWindowText instead of Textfield::GetText below as the
-  // text in the Textfield class is synced to the text of the HWND on
-  // WM_KEYDOWN messages that we are not simulating here.
 
-  // Attempting to copy kNormalText in a read-only text-field should fail.
+  // Attempting to paste kNormalText in a read-only text-field should fail.
   read_only->SelectAll(false);
-  ::SendMessage(read_only->GetTestingHandle(), WM_KEYDOWN, 0, 0);
-  wchar_t buffer[1024] = { 0 };
-  ::GetWindowText(read_only->GetTestingHandle(), buffer, 1024);
-  EXPECT_EQ(kReadOnlyText, string16(buffer));
+  read_only->ExecuteCommand(IDS_APP_PASTE);
+  EXPECT_EQ(kReadOnlyText, read_only->text());
 
   password->SelectAll(false);
-  ::SendMessage(password->GetTestingHandle(), WM_PASTE, 0, 0);
-  ::GetWindowText(password->GetTestingHandle(), buffer, 1024);
-  EXPECT_EQ(kNormalText, string16(buffer));
+  password->ExecuteCommand(IDS_APP_PASTE);
+  EXPECT_EQ(kNormalText, password->text());
 
-  // Copy from read_only so the string we are pasting is not the same as the
-  // current one.
+  // Copy from |read_only| to observe a change in the normal textfield text.
   read_only->SelectAll(false);
-  ::SendMessage(read_only->GetTestingHandle(), WM_COPY, 0, 0);
+  read_only->ExecuteCommand(IDS_APP_COPY);
   normal->SelectAll(false);
-  ::SendMessage(normal->GetTestingHandle(), WM_PASTE, 0, 0);
-  ::GetWindowText(normal->GetTestingHandle(), buffer, 1024);
-  EXPECT_EQ(kReadOnlyText, string16(buffer));
+  normal->ExecuteCommand(IDS_APP_PASTE);
+  EXPECT_EQ(kReadOnlyText, normal->text());
   widget->CloseNow();
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Accelerators
