@@ -1797,8 +1797,6 @@
         'browser/ui/views/task_manager_view.cc',
         'browser/ui/views/theme_background.cc',
         'browser/ui/views/theme_background.h',
-        'browser/ui/views/theme_helpers.cc',
-        'browser/ui/views/theme_helpers.h',
         'browser/ui/views/theme_image_mapper.cc',
         'browser/ui/views/theme_image_mapper.h',
         'browser/ui/views/theme_image_mapper_aura_win.cc',
@@ -2805,8 +2803,6 @@
               'sources/': [
                 ['exclude', '^browser/ui/views/frame/app_panel_browser_frame_view.cc'],
                 ['exclude', '^browser/ui/views/frame/app_panel_browser_frame_view.h'],
-                ['exclude', '^browser/ui/views/theme_helpers.cc'],
-                ['exclude', '^browser/ui/views/theme_helpers.h'],
                 ['exclude', '^browser/ui/views/uninstall_view.cc'],
                 ['exclude', '^browser/ui/views/uninstall_view.h'],
                 ['include', '^browser/ui/tabs/dock_info.cc'],
