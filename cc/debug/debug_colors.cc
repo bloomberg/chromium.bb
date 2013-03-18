@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug_colors.h"
+#include "cc/debug/debug_colors.h"
 
 #include "cc/layer_tree_impl.h"
 

@@ -5,11 +5,11 @@
 #include "cc/quad_culler.h"
 
 #include "cc/append_quads_data.h"
+#include "cc/debug/debug_colors.h"
+#include "cc/debug/overdraw_metrics.h"
 #include "cc/debug_border_draw_quad.h"
-#include "cc/debug_colors.h"
 #include "cc/layer_impl.h"
 #include "cc/occlusion_tracker.h"
-#include "cc/overdraw_metrics.h"
 #include "cc/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/transform.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/rendering_stats.h"
+#include "cc/debug/rendering_stats.h"
 
 namespace cc {
 

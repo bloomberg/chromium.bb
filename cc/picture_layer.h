@@ -6,10 +6,10 @@
 #define CC_PICTURE_LAYER_H_
 
 #include "cc/contents_scaling_layer.h"
-#include "cc/devtools_instrumentation.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/layer.h"
-#include "cc/picture_pile.h"
 #include "cc/occlusion_tracker.h"
+#include "cc/picture_pile.h"
 
 namespace cc {
 

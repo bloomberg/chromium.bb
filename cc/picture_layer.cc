@@ -4,7 +4,7 @@
 
 #include "cc/picture_layer.h"
 
-#include "cc/devtools_instrumentation.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/picture_layer_impl.h"
 #include "ui/gfx/rect_conversions.h"

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/layer_tree_debug_state.h"
+#include "cc/debug/layer_tree_debug_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 

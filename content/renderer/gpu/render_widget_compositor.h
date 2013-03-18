@@ -6,9 +6,9 @@
 #define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
 
 #include "base/time.h"
+#include "cc/debug/rendering_stats.h"
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_settings.h"
-#include "cc/rendering_stats.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 

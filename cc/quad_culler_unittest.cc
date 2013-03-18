@@ -6,9 +6,9 @@
 
 #include "cc/append_quads_data.h"
 #include "cc/base/math_util.h"
+#include "cc/debug/overdraw_metrics.h"
 #include "cc/layer_tiling_data.h"
 #include "cc/occlusion_tracker.h"
-#include "cc/overdraw_metrics.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

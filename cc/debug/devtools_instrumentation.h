@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEVTOOLS_INSTRUMENTATION_H_
-#define CC_DEVTOOLS_INSTRUMENTATION_H_
+#ifndef CC_DEBUG_DEVTOOLS_INSTRUMENTATION_H_
+#define CC_DEBUG_DEVTOOLS_INSTRUMENTATION_H_
 
 #include "base/debug/trace_event.h"
 
@@ -56,5 +56,5 @@ struct ScopedLayerObjectTracker
 }  // namespace devtools_instrumentation
 }  // namespace cc
 
-#endif
+#endif  // CC_DEBUG_DEVTOOLS_INSTRUMENTATION_H_
 

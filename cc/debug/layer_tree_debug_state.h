@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_LAYER_TREE_DEBUG_STATE_H_
-#define CC_LAYER_TREE_DEBUG_STATE_H_
+#ifndef CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
+#define CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
 
 #include "cc/base/cc_export.h"
 
@@ -47,4 +47,4 @@ private:
 
 }  // namespace cc
 
-#endif  // CC_LAYER_TREE_DEBUG_STATE_H_
+#endif  // CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_

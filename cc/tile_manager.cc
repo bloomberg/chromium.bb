@@ -11,7 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "cc/devtools_instrumentation.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/platform_color.h"
 #include "cc/raster_worker_pool.h"
 #include "cc/resource_pool.h"

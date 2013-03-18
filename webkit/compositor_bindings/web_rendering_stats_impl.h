@@ -5,7 +5,7 @@
 #ifndef WEB_RENDERING_STATS_IMPL_H_
 #define WEB_RENDERING_STATS_IMPL_H_
 
-#include "cc/rendering_stats.h"
+#include "cc/debug/rendering_stats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 
 namespace WebKit {

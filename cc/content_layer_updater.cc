@@ -6,8 +6,8 @@
 
 #include "base/debug/trace_event.h"
 #include "base/time.h"
+#include "cc/debug/rendering_stats.h"
 #include "cc/layer_painter.h"
-#include "cc/rendering_stats.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_RECT_HISTORY_H_
-#define CC_DEBUG_RECT_HISTORY_H_
+#ifndef CC_DEBUG_DEBUG_RECT_HISTORY_H_
+#define CC_DEBUG_DEBUG_RECT_HISTORY_H_
 
+#include <vector>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
-#include <vector>
 
 namespace cc {
 
@@ -101,4 +101,4 @@ class DebugRectHistory {
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_RECT_HISTORY_H_
+#endif  // CC_DEBUG_DEBUG_RECT_HISTORY_H_

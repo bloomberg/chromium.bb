@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "cc/rendering_stats.h"
+#include "cc/debug/rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/paint_aggregator.h"

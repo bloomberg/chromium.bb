@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
-#define CC_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#ifndef CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#define CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
 #include "base/compiler_specific.h"
 #include "cc/base/cc_export.h"
@@ -589,4 +589,4 @@ class CC_EXPORT FakeWebGraphicsContext3D :
 
 }  // namespace cc
 
-#endif  // CC_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#endif  // CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_

@@ -11,7 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "cc/fake_web_graphics_context_3d.h"
+#include "cc/debug/fake_web_graphics_context_3d.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {

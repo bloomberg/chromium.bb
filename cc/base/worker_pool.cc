@@ -9,7 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/simple_thread.h"
-#include "cc/rendering_stats.h"
+#include "cc/debug/rendering_stats.h"
 
 #if defined(OS_ANDROID)
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)

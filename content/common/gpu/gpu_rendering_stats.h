@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_GPU_GPU_RENDERING_STATS_H_
 
 #include "base/time.h"
-#include "cc/rendering_stats.h"
+#include "cc/debug/rendering_stats.h"
 #include "content/common/content_export.h"
 
 namespace content {

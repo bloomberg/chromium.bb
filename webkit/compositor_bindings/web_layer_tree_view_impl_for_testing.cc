@@ -11,7 +11,7 @@
 #include "cc/base/thread.h"
 #include "cc/base/thread_impl.h"
 #include "cc/context_provider.h"
-#include "cc/fake_web_graphics_context_3d.h"
+#include "cc/debug/fake_web_graphics_context_3d.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"

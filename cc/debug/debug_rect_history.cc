@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug_rect_history.h"
+#include "cc/debug/debug_rect_history.h"
 
 #include "cc/base/math_util.h"
 #include "cc/damage_tracker.h"

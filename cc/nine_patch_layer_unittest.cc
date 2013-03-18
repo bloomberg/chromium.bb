@@ -4,9 +4,9 @@
 
 #include "cc/nine_patch_layer.h"
 
+#include "cc/debug/overdraw_metrics.h"
 #include "cc/layer_tree_host.h"
 #include "cc/occlusion_tracker.h"
-#include "cc/overdraw_metrics.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
 #include "cc/resource_update_queue.h"

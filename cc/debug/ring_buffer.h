@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RING_BUFFER_H_
-#define CC_RING_BUFFER_H_
+#ifndef CC_DEBUG_RING_BUFFER_H_
+#define CC_DEBUG_RING_BUFFER_H_
 
 #include "base/logging.h"
 
@@ -117,4 +117,4 @@ class RingBuffer {
 
 }  // namespace cc
 
-#endif  // CC_RING_BUFFER_H_
+#endif  // CC_DEBUG_RING_BUFFER_H_

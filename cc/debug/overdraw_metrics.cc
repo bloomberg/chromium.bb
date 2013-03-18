@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/overdraw_metrics.h"
+#include "cc/debug/overdraw_metrics.h"
 
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"

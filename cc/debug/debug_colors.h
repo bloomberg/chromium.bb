@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_COLORS_H_
-#define CC_DEBUG_COLORS_H_
+#ifndef CC_DEBUG_DEBUG_COLORS_H_
+#define CC_DEBUG_DEBUG_COLORS_H_
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -105,4 +105,4 @@ class DebugColors {
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_COLORS_H_
+#endif  // CC_DEBUG_DEBUG_COLORS_H_
