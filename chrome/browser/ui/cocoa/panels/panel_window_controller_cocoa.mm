@@ -605,7 +605,6 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 // processing required to get us to the closing state and (by watching for
 // the web content going away) will again call to close the window when it's
 // finally ready.
-// This callback is only called if the standard Close button is enabled in XIB.
 - (BOOL)windowShouldClose:(id)sender {
   Panel* panel = windowShim_->panel();
   // Give beforeunload handlers the chance to cancel the close before we hide

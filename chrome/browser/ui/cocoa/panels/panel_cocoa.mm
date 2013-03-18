@@ -115,7 +115,15 @@ void PanelCocoa::ClosePanel() {
       return;
 
   NSWindow* window = [controller_ window];
-  [window performClose:controller_];
+  // performClose: contains a nested message loop which can cause reentrancy
+  // if the browser is terminating and closing all the windows.
+  // Use this version that corresponds to protocol of performClose: but does not
+  // spin a nested loop.
+  // TODO(dimich): refactor similar method from BWC and reuse here.
+  if ([controller_ windowShouldClose:window]) {
+    [window orderOut:nil];
+    [window close];
+  }
 }
 
 void PanelCocoa::ActivatePanel() {
