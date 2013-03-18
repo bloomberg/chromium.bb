@@ -40,12 +40,37 @@ E.g. window.open(someUrl). --></dd>
     (<a href="http://www.html5rocks.com/tutorials/appcache/beginner/">tutorial</a>) </li>
   <li> canvas
     (<a href="http://www.html5rocks.com/en/tutorials/#canvas">articles</a>) </li>
+{{?is_apps}}
+  <li> fullscreen
+    (<a href="http://updates.html5rocks.com/2011/10/Let-Your-Content-Do-the-Talking-Fullscreen-API">article</a>)
+    <ul>
+      <li>In packaged apps, fullscreen is entered without
+        prompting the user or providing exit instructions.
+        Also, there is no default exit behavior. In normal webpages,
+        the browser intercepts the ESC key to exit fullscreen.
+        This behavior is not present in packaged apps.</li>
+    </ul>
+  </li>
+{{/is_apps}}
   <li> geolocation
     (<a href="http://www.html5rocks.com/tutorials/geolocation/trip_meter/">tutorial</a>) </li>
   <li> local storage
     (<a href="http://www.html5rocks.com/en/tutorials/offline/storage/">tutorial</a>) </li>
   <li> notifications
     (<a href="http://www.html5rocks.com/tutorials/notifications/quick/">tutorial</a>) </li>
+{{?is_apps}}
+  <li> pointer lock
+    (<a href="http://www.html5rocks.com/en/tutorials/pointerlock/intro/">tutorial</a>)
+    <ul>
+      <li>In packaged apps, pointer lock is entered without
+        requiring a user gesture,
+        prompting the user, or providing exit instructions.
+        Also, there is no default exit behavior. In normal webpages,
+        the browser intercepts the ESC key to exit pointer lock.
+        This behavior is not present in packaged apps.</li>
+    </ul>
+  </li>
+{{/is_apps}}
   <li> video
     (<a href="http://www.html5rocks.com/en/tutorials/video/basics/">tutorial</a>) </li>
   <li> web database
