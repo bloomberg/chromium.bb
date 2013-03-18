@@ -1459,9 +1459,6 @@ void SigninScreenHandler::HandleAccountPickerReady(
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
   }
-
-  if (delegate_)
-    delegate_->OnSigninScreenReady();
 }
 
 void SigninScreenHandler::HandleWallpaperReady(

@@ -66,7 +66,6 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
   virtual void LoadWallpaper(const std::string& username) OVERRIDE;
   virtual void LoadSigninWallpaper() OVERRIDE;
-  virtual void OnSigninScreenReady() OVERRIDE;
   virtual void RemoveUser(const std::string& username) OVERRIDE;
   virtual void ResyncUserData() OVERRIDE;
   virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
