@@ -39,23 +39,23 @@
   include byte_machine "byte_machines.rl";
 
   include prefixes_parsing_validator
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include vex_actions_ia32
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include vex_parsing_ia32
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include displacement_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include modrm_parsing_ia32_validator
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include immediate_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include relative_fields_validator_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include relative_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include cpuid_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
 
   # Action which marks last byte as not immediate.  Most 3DNow! instructions,
   # some AVX and XOP instructions have this property.   It's referenced by

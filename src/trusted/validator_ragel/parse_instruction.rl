@@ -88,10 +88,10 @@
 %%{
   machine set_spurious_prefixes;
 
-  action set_spurious_rex_b         { SET_SPURIOUS_REX_B();                }
-  action set_spurious_rex_x         { SET_SPURIOUS_REX_X();                }
-  action set_spurious_rex_r         { SET_SPURIOUS_REX_R();                }
-  action set_spurious_rex_w         { SET_SPURIOUS_REX_W();                }
+  action set_spurious_rex_b { SET_SPURIOUS_REX_B(); }
+  action set_spurious_rex_x { SET_SPURIOUS_REX_X(); }
+  action set_spurious_rex_r { SET_SPURIOUS_REX_R(); }
+  action set_spurious_rex_w { SET_SPURIOUS_REX_W(); }
 }%%
 
 %%{
@@ -168,6 +168,29 @@
 %%{
   machine vex_actions_amd64;
 
+  # VEX/XOP three-byte form (used as internal representation) structure:
+  # first byte:
+  #   0xc4 or 0x8f
+  # second byte:
+  #   bits 0-4: opcode map (defaults to 00001 in the short form)
+  #   bit 5: negated B (defaults to 1)
+  #   bit 6: negated X (defaults to 1)
+  #   bit 7: negated R
+  # third byte:
+  #   bits 0-1: pp
+  #   bit 2: L
+  #   bits 3-6: negated vvvv (register number)
+  #   bit 7: W (defaults to 0)
+  #
+  # VEX two-byte (short) form:
+  # first byte:
+  #   0xc5
+  # second byte:
+  #   bits 0-1: pp
+  #   bit 2: L
+  #   bits 3-6: negated vvvv (register number)
+  #   bit 7: negated R
+
   # VEX/XOP prefix - byte 2.
   action vex_prefix2 {
     SET_VEX_PREFIX2(*current_position);
@@ -178,22 +201,6 @@
   }
   # VEX/XOP short prefix
   action vex_prefix_short {
-    /*
-     * VEX shortened prefix 2nd byte format (first byte is 0xc5):
-     *     7       6       5       4       3       2       1       0
-     * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
-     * │  ¬R   │    ¬vvvv (register number)    │   L   │       pp      ┃
-     * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
-     *
-     * It's converted to equivalent long (3 byte) form here (as in 0xc4):
-     *     7       6       5       4       3       2       1       0
-     * ┌───────┬═══════╤═══════╤═══════╤═══════╤═══════╤═══════╤═══════┒
-     * │  ¬R   │ ¬X==1 │ ¬B==1 │         opcode map 1 == 00001         ┃ 2nd
-     * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛ byte
-     * ┌═══════┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
-     * │  W==0 │    ¬vvvv (register number)    │   L   │       pp      ┃ 3rd
-     * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛ byte
-     */
     SET_VEX_PREFIX2(((*current_position) & VEX_R) | (VEX_X | VEX_B | VEX_MAP1));
     SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }

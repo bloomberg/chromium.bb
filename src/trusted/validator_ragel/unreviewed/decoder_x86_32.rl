@@ -33,33 +33,33 @@
   include byte_machine "byte_machines.rl";
 
   include prefixes_parsing_decoder
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include vex_actions_ia32
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include vex_parsing_ia32
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include att_suffix_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include set_spurious_prefixes
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include displacement_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include modrm_actions_ia32
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include modrm_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include operand_format_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include operand_source_actions_ia32
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include immediate_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include relative_fields_decoder_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include relative_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include cpuid_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
 
   include decode_x86_32 "decoder_x86_32_instruction.rl";
 

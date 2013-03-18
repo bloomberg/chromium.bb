@@ -33,33 +33,33 @@
   include byte_machine "byte_machines.rl";
 
   include prefixes_parsing_validator
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include rex_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include rex_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include vex_actions_amd64
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include vex_parsing_amd64
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include displacement_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include modrm_actions_amd64
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include modrm_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include operand_format_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include operand_source_actions_amd64
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include immediate_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include relative_fields_validator_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include relative_fields_parsing
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
   include cpuid_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+    "native_client/src/trusted/validator_ragel/parse_instruction.rl";
 
   action check_access {
     CheckAccess(instruction_begin - data, base, index, restricted_register,
