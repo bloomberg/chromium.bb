@@ -15,9 +15,9 @@ const int kTrackingOptions = NSTrackingMouseMoved |
 @implementation BaseView
 
 - (void)dealloc {
-  if (trackingArea_)
-    [self removeTrackingArea:trackingArea_];
-  [trackingArea_ release];
+  if (trackingArea_.get())
+    [self removeTrackingArea:trackingArea_.get()];
+  trackingArea_.reset(nil);
 
   [super dealloc];
 }
@@ -136,16 +136,15 @@ const int kTrackingOptions = NSTrackingMouseMoved |
   [super updateTrackingAreas];
 
   // NSTrackingInVisibleRect doesn't work correctly with Lion's window resizing,
-  // http://crbug.com/176725 /  http://openradar.appspot.com/radar?id=2773401 .
+  // http://crbug.com/176725 / http://openradar.appspot.com/radar?id=2773401 .
   // Tear down old tracking area and create a new one as workaround.
-  if (trackingArea_)
-    [self removeTrackingArea:trackingArea_];
-  [trackingArea_ release];
-  trackingArea_ = [[NSTrackingArea alloc] initWithRect:[self frame]
-                                               options:kTrackingOptions
-                                                 owner:self
-                                              userInfo:nil];
-  [self addTrackingArea:trackingArea_];
+  if (trackingArea_.get())
+    [self removeTrackingArea:trackingArea_.get()];
+  trackingArea_.reset([[CrTrackingArea alloc] initWithRect:[self frame]
+                                                   options:kTrackingOptions
+                                                     owner:self
+                                                  userInfo:nil]);
+  [self addTrackingArea:trackingArea_.get()];
 }
 
 @end

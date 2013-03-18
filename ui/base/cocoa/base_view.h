@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#import "ui/base/cocoa/tracking_area.h"
 #include "ui/gfx/rect.h"
 
 // A view that provides common functionality that many views will need:
@@ -17,7 +18,7 @@
 
 @interface BaseView : NSView {
  @private
-  NSTrackingArea *trackingArea_;
+  ui::ScopedCrTrackingArea trackingArea_;
   BOOL dragging_;
   scoped_nsobject<NSEvent> pendingExitEvent_;
 }
