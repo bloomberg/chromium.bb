@@ -182,7 +182,7 @@
         '--stamp=<(compile_stamp)',
 
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo >(_inputs) | md5sum)',
+        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
     {
@@ -203,7 +203,7 @@
         '--excluded-classes=<(excluded_classes)',
 
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo >(_inputs) | md5sum)',
+        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
   ],
