@@ -21,7 +21,8 @@ LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
                                                    Tracer* tracer)
     : FilterInterpreter(prop_reg, next, tracer, true),
       logging_notify_(prop_reg, "Logging Notify", 0, this),
-      logging_reset_(prop_reg, "Logging Reset", 0, this) {
+      logging_reset_(prop_reg, "Logging Reset", 0, this),
+      integrated_touchpad_(prop_reg, "Integrated Touchpad", 0) {
   InitName();
   if (prop_reg && log_.get())
     prop_reg->set_activity_log(log_.get());
