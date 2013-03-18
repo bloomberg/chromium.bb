@@ -13,7 +13,7 @@
       'sources': [ 'check-version-min.c', ],
       'defines': [ 'GYPTEST_IOS_VERSION_MIN=40300', ],
       'xcode_settings': {
-        'CC': 'clang',
+        'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
         'ARCHS': [ 'armv7' ],
         'SDKROOT': 'iphoneos',
         'IPHONEOS_DEPLOYMENT_TARGET': '4.3',
@@ -25,7 +25,7 @@
       'sources': [ 'check-version-min.c', ],
       'defines': [ 'GYPTEST_IOS_VERSION_MIN=50000', ],
       'xcode_settings': {
-        'CC': 'clang',
+        'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
         'ARCHS': [ 'armv7' ],
         'SDKROOT': 'iphoneos',
         'IPHONEOS_DEPLOYMENT_TARGET': '5.0',
@@ -37,7 +37,7 @@
       'sources': [ 'check-version-min.c', ],
       'defines': [ 'GYPTEST_IOS_VERSION_MIN=40300', ],
       'xcode_settings': {
-        'CC': 'clang',
+        'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
         'SDKROOT': 'iphonesimulator',
         'IPHONEOS_DEPLOYMENT_TARGET': '4.3',
       },
@@ -48,7 +48,7 @@
       'sources': [ 'check-version-min.c', ],
       'defines': [ 'GYPTEST_IOS_VERSION_MIN=50000', ],
       'xcode_settings': {
-        'CC': 'clang',
+        'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
         'SDKROOT': 'iphonesimulator',
         'IPHONEOS_DEPLOYMENT_TARGET': '5.0',
       },

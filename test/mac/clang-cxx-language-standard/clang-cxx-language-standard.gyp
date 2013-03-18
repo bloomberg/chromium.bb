@@ -12,7 +12,7 @@
       'type': 'executable',
       'sources': [ 'c++98.cc', ],
       'xcode_settings': {
-        'CC': 'clang',
+        'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
         'CLANG_CXX_LANGUAGE_STANDARD': 'c++98',
       },
     },
@@ -21,7 +21,7 @@
       'type': 'executable',
       'sources': [ 'c++11.cc', ],
       'xcode_settings': {
-        'CC': 'clang',
+        'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
         'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
       },
     },
