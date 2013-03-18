@@ -46,8 +46,6 @@
         'notification_types.h',
         'notifier_settings.cc',
         'notifier_settings.h',
-        'views/bounded_label.cc',
-        'views/bounded_label.h',
         'views/message_bubble_base.cc',
         'views/message_bubble_base.h',
         'views/message_center_bubble.cc',
@@ -78,35 +76,23 @@
           ],
         }],
       ],
-    },  # target_name: message_center
+    },
     {
       'target_name': 'message_center_unittests',
       'type': 'executable',
       'dependencies': [
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:run_all_unittests',
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../ui.gyp:ui',
         'message_center',
       ],
       'sources': [
         'message_center_tray_unittest.cc',
         'notification_list_unittest.cc',
-        'run_all_unittests.cc',
       ],
-      'conditions': [
-        ['toolkit_views==1', {
-          'dependencies': [
-            # The BoundedLabel unit tests use fonts, and fonts require the
-            # compositor and its test support.
-            '../compositor/compositor.gyp:compositor',
-            '../compositor/compositor.gyp:compositor_test_support',
-            '../views/views.gyp:views',
-          ],
-          'sources': [
-            'views/bounded_label_unittest.cc',
-          ],
-        }],
-      ],
-    },  # target_name: message_center_unittests
+    },
   ],
 }
