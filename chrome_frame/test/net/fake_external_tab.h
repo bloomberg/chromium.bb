@@ -18,7 +18,7 @@
 #include "chrome_frame/test_utils.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/net_test_suite.h"
+#include "net/test/net_test_suite.h"
 
 class CommandLine;
 class FakeBrowserProcessImpl;

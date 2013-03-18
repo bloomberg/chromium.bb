@@ -5,10 +5,10 @@
 #include "base/metrics/statistics_recorder.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
-#include "net/base/net_test_suite.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/spdy/spdy_session.h"
+#include "net/test/net_test_suite.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"

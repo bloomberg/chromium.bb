@@ -58,3 +58,6 @@ M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_DEFAULT should be p
 M V MS: org.chromium.content.browser.LoadUrlParams.UA_OVERRIDE_INHERIT should be package protected  In LoadUrlParams.java
 M V MS: org.chromium.content.browser.LoadUrlParams.UA_OVERRIDE_TRUE should be package protected  In LoadUrlParams.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.sync.ProfileSyncService.sSyncSetupManager in org.chromium.chrome.browser.sync.ProfileSyncService.get(Context)  At ProfileSyncService.java
+H D ST: Write to static field org.chromium.net.test.util.TestWebServer.sInstance from instance method org.chromium.net.test.util.TestWebServer.shutdown()  At TestWebServer.java
+M D DLS: Dead store to time in org.chromium.net.test.util.TestWebServer.setDateHeaders(HttpResponse)  At TestWebServer.java
+M D ST: Write to static field org.chromium.net.test.util.TestWebServer.sInstance from instance method new org.chromium.net.test.util.TestWebServer(boolean)  At TestWebServer.java

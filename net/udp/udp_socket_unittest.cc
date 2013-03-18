@@ -13,9 +13,9 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log_unittest.h"
-#include "net/base/net_test_suite.h"
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
+#include "net/test/net_test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

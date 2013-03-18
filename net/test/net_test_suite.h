@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NET_TEST_SUITE_H_
-#define NET_BASE_NET_TEST_SUITE_H_
+#ifndef NET_TEST_NET_TEST_SUITE_H_
+#define NET_TEST_NET_TEST_SUITE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/test/test_suite.h"
@@ -50,4 +50,4 @@ class NetTestSuite : public base::TestSuite {
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };
 
-#endif  // NET_BASE_NET_TEST_SUITE_H_
+#endif  // NET_TEST_NET_TEST_SUITE_H_

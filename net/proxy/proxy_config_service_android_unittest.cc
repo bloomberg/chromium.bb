@@ -50,7 +50,7 @@ typedef std::map<std::string, std::string> StringMap;
 class ProxyConfigServiceAndroidTestBase : public testing::Test {
  protected:
   // Note that the current thread's message loop is initialized by the test
-  // suite (see net/base/net_test_suite.cc).
+  // suite (see net/test/net_test_suite.cc).
   ProxyConfigServiceAndroidTestBase(const StringMap& initial_configuration)
       : configuration_(initial_configuration),
         message_loop_(MessageLoop::current()),

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_test_suite.h"
+#include "net/test/net_test_suite.h"
 
 #include "base/message_loop.h"
 #include "net/base/network_change_notifier.h"
