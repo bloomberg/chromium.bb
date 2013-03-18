@@ -510,6 +510,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   MediaInternals* media_internals = MediaInternals::GetInstance();;
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
+  // TODO(fsamuel): Call out to the ContentBrowserClient to decide whether or
+  // not to install the BrowserPluginMessageFilter.
   scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
       new BrowserPluginMessageFilter(GetID(), IsGuest()));
   channel_->AddFilter(bp_message_filter);

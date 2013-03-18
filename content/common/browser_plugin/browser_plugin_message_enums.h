@@ -9,6 +9,12 @@ enum BrowserPluginPermissionType {
   // Unknown type of permission request.
   BrowserPluginPermissionTypeUnknown,
 
+  // New window requests.
+  // Note: Even though new windows don't use the permission API, the new window
+  // API is sufficiently similar that it's convenient to consider it a
+  // permission type for code reuse.
+  BrowserPluginPermissionTypeNewWindow,
+
   // Media access (audio/video) permission request type.
   BrowserPluginPermissionTypeMedia,
 

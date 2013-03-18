@@ -22,6 +22,7 @@ extern const char kMethodStop[];
 extern const char kMethodTerminate[];
 
 // Internal method bindings.
+extern const char kMethodInternalAttachWindowTo[];
 extern const char kMethodInternalPersistObject[];
 extern const char kMethodInternalSetPermission[];
 
@@ -43,14 +44,18 @@ extern const char kEventLoadCommit[];
 extern const char kEventLoadRedirect[];
 extern const char kEventLoadStart[];
 extern const char kEventLoadStop[];
+extern const char kEventNewWindow[];
 extern const char kEventRequestPermission[];
 extern const char kEventResponsive[];
 extern const char kEventSizeChanged[];
 extern const char kEventUnresponsive[];
 
 // Parameters/properties on events.
+extern const char kInitialHeight[];
+extern const char kInitialWidth[];
 extern const char kIsTopLevel[];
 extern const char kLastUnlockedBySelf[];
+extern const char kName[];
 extern const char kNewURL[];
 extern const char kNewHeight[];
 extern const char kNewWidth[];
@@ -60,13 +65,17 @@ extern const char kOldWidth[];
 extern const char kPermission[];
 extern const char kPermissionTypeGeolocation[];
 extern const char kPermissionTypeMedia[];
+extern const char kPermissionTypeNewWindow[];
 extern const char kPermissionTypePointerLock[];
 extern const char kPersistPrefix[];
 extern const char kProcessId[];
 extern const char kReason[];
 extern const char kRequestId[];
+extern const char kTargetURL[];
 extern const char kURL[];
 extern const char kUserGesture[];
+extern const char kWindowID[];
+extern const char kWindowOpenDisposition[];
 
 // Error messages.
 extern const char kErrorAlreadyNavigated[];

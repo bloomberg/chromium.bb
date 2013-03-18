@@ -29,7 +29,6 @@
 #include "ui/gfx/size.h"
 #include "webkit/glue/resource_type.h"
 
-struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewHostMsg_DateTimeDialogValue_Params;
 struct ViewMsg_PostMessage_Params;
@@ -91,8 +90,7 @@ class CONTENT_EXPORT WebContentsImpl
       content::SiteInstance* site_instance,
       int routing_id,
       WebContentsImpl* opener_web_contents,
-      int guest_instance_id,
-      const BrowserPluginHostMsg_CreateGuest_Params& params);
+      int guest_instance_id);
 
   // Returns the content specific prefs for the given RVH.
   static webkit_glue::WebPreferences GetWebkitPrefs(
@@ -572,8 +570,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnRequestPpapiBrokerPermission(int request_id,
                                       const GURL& url,
                                       const base::FilePath& plugin_path);
-  void OnBrowserPluginAllocateInstanceID(const IPC::Message& message,
-                                         int request_id);
+  void OnBrowserPluginMessage(const IPC::Message& message);
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             int requested_size,

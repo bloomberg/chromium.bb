@@ -41,7 +41,7 @@ void MockBrowserPluginManager::AllocateInstanceID(
 void MockBrowserPluginManager::AllocateInstanceIDACK(
     BrowserPlugin* browser_plugin,
     int instance_id) {
-  browser_plugin->SetInstanceID(instance_id);
+  browser_plugin->SetInstanceID(instance_id, true);
 }
 
 bool MockBrowserPluginManager::Send(IPC::Message* msg) {

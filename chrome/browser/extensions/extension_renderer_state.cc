@@ -135,6 +135,8 @@ void ExtensionRendererState::TabObserver::Observe(
 
       WebContents* embedder_web_contents =
           web_contents->GetEmbedderWebContents();
+      if (!embedder_web_contents)
+        return;
       WebViewInfo web_view_info;
       web_view_info.embedder_process_id =
           embedder_web_contents->GetRenderProcessHost()->GetID();

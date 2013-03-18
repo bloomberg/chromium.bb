@@ -375,19 +375,14 @@ BrowserPluginGuest* WebContentsImpl::CreateGuest(
     SiteInstance* site_instance,
     int routing_id,
     WebContentsImpl* opener_web_contents,
-    int guest_instance_id,
-    const BrowserPluginHostMsg_CreateGuest_Params& params) {
-
+    int guest_instance_id) {
   WebContentsImpl* new_contents = new WebContentsImpl(browser_context,
                                                       opener_web_contents);
 
   // This makes |new_contents| act as a guest.
   // For more info, see comment above class BrowserPluginGuest.
   new_contents->browser_plugin_guest_.reset(
-    BrowserPluginGuest::Create(
-        guest_instance_id,
-        new_contents,
-        params));
+      BrowserPluginGuest::Create(guest_instance_id, new_contents));
 
   WebContents::CreateParams create_params(browser_context, site_instance);
   create_params.routing_id = routing_id;
@@ -710,8 +705,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_AllocateInstanceID,
-                        OnBrowserPluginAllocateInstanceID)
+    IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_AllocateInstanceID,
+                                OnBrowserPluginMessage(message))
+    IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_Attach,
+                                OnBrowserPluginMessage(message))
     IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
     IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
 #if defined(OS_ANDROID)
@@ -1376,10 +1373,12 @@ void WebContentsImpl::CreateNewWindow(
 
   // We usually create the new window in the same BrowsingInstance (group of
   // script-related windows), by passing in the current SiteInstance.  However,
-  // if the opener is being suppressed, we create a new SiteInstance in its own
-  // BrowsingInstance.
+  // if the opener is being suppressed (in a non-guest), we create a new
+  // SiteInstance in its own BrowsingInstance.
+  bool is_guest = GetRenderProcessHost()->IsGuest();
+
   scoped_refptr<SiteInstance> site_instance =
-      params.opener_suppressed ?
+      params.opener_suppressed && !is_guest ?
       SiteInstance::CreateForURL(GetBrowserContext(), params.target_url) :
       GetSiteInstance();
 
@@ -1409,13 +1408,26 @@ void WebContentsImpl::CreateNewWindow(
       session_storage_namespace);
   CreateParams create_params(GetBrowserContext(), site_instance);
   create_params.routing_id = route_id;
-  create_params.initial_size = view_->GetContainerSize();
-  create_params.context = view_->GetNativeView();
+  if (!is_guest) {
+    create_params.context = view_->GetNativeView();
+    create_params.initial_size = view_->GetContainerSize();
+  } else {
+    // This makes |new_contents| act as a guest.
+    // For more info, see comment above class BrowserPluginGuest.
+    int instance_id = GetBrowserPluginGuestManager()->get_next_instance_id();
+    WebContentsImpl* new_contents_impl =
+        static_cast<WebContentsImpl*>(new_contents);
+    new_contents_impl->browser_plugin_guest_.reset(
+        BrowserPluginGuest::Create(instance_id, new_contents_impl));
+  }
   new_contents->Init(create_params);
 
   new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());
 
-  if (!params.opener_suppressed) {
+  // Save the window for later if we're not suppressing the opener (since it
+  // will be shown immediately) and if it's not a guest (since we separately
+  // track when to show guests).
+  if (!params.opener_suppressed && !is_guest) {
     WebContentsViewPort* new_view = new_contents->view_.get();
 
     // TODO(brettw): It seems bogus that we have to call this function on the
@@ -2435,18 +2447,12 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
                                                     result));
 }
 
-void WebContentsImpl::OnBrowserPluginAllocateInstanceID(
-    const IPC::Message& message, int request_id) {
+void WebContentsImpl::OnBrowserPluginMessage(const IPC::Message& message) {
   // This creates a BrowserPluginEmbedder, which handles all the BrowserPlugin
   // specific messages for this WebContents. This means that any message from
-  // a BrowserPlugin prior to AllocateInstanceID will be ignored.
+  // a BrowserPlugin prior to this will be ignored.
   // For more info, see comment above classes BrowserPluginEmbedder and
   // BrowserPluginGuest.
-  // The first BrowserPluginHostMsg_AllocateInstanceID message from this
-  // WebContents' embedder render process is handled here. Once
-  // BrowserPluginEmbedder is created, all subsequent BrowserPluginHostMsg_*
-  // messages are handled in BrowserPluginEmbedder. Thus, this code will not be
-  // executed if a BrowserPluginEmbedder exists for this WebContents.
   CHECK(!browser_plugin_embedder_.get());
   browser_plugin_embedder_.reset(BrowserPluginEmbedder::Create(this));
   browser_plugin_embedder_->OnMessageReceived(message);

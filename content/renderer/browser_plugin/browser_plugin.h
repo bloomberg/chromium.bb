@@ -38,6 +38,9 @@ class CONTENT_EXPORT BrowserPlugin :
  public:
   RenderViewImpl* render_view() const { return render_view_.get(); }
   int render_view_routing_id() const { return render_view_routing_id_; }
+  int instance_id() const { return instance_id_; }
+
+  static BrowserPlugin* FromContainer(WebKit::WebPluginContainer* container);
 
   bool OnMessageReceived(const IPC::Message& msg);
 
@@ -96,6 +99,11 @@ class CONTENT_EXPORT BrowserPlugin :
   bool guest_crashed() const { return guest_crashed_; }
   bool HasGuest() const;
 
+  // Attaches the window identified by |window_id| to the the given node
+  // encapsulating a BrowserPlugin.
+  static bool AttachWindowTo(const WebKit::WebNode& node,
+                             int window_id);
+
   // Query whether the guest can navigate back to the previous entry.
   bool CanGoBack() const;
   // Query whether the guest can navigation forward to the next entry.
@@ -141,6 +149,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Called by browser plugin binding.
   void OnEmbedderDecidedPermission(int request_id, bool allow);
 
+  // Sets the instance ID of the BrowserPlugin and requests a guest from the
+  // browser process.
+  void SetInstanceID(int instance_id, bool new_guest);
 
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
@@ -214,7 +225,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   int width() const { return plugin_rect_.width(); }
   int height() const { return plugin_rect_.height(); }
-  int instance_id() const { return instance_id_; }
   // Gets the Max Height value used for auto size.
   int GetAdjustedMaxHeight() const;
   // Gets the Max Width value used for auto size.

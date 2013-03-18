@@ -16,11 +16,8 @@ class BrowserPluginGuest;
 
 TestBrowserPluginGuest::TestBrowserPluginGuest(
     int instance_id,
-    WebContentsImpl* web_contents,
-    const BrowserPluginHostMsg_CreateGuest_Params& params)
-    : BrowserPluginGuest(instance_id,
-                         web_contents,
-                         params),
+    WebContentsImpl* web_contents)
+    : BrowserPluginGuest(instance_id, web_contents),
       update_rect_count_(0),
       damage_buffer_call_count_(0),
       exit_observed_(false),

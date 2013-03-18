@@ -76,13 +76,13 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
     guest_site_instance =
         embedder_site_instance->GetRelatedSiteInstance(GURL(params.src));
   } else {
-    const std::string& host = embedder_site_instance->GetSiteURL().host();
-    std::string url_encoded_partition = net::EscapeQueryParamValue(
-        params.storage_partition_id, false);
-
     if (guest_opener) {
       guest_site_instance = guest_opener->GetWebContents()->GetSiteInstance();
     } else {
+      const std::string& host = embedder_site_instance->GetSiteURL().host();
+
+      std::string url_encoded_partition = net::EscapeQueryParamValue(
+          params.storage_partition_id, false);
       // The SiteInstance of a given webview tag is based on the fact that it's
       // a guest process in addition to which platform application the tag
       // belongs to and what storage partition is in use, rather than the URL
@@ -114,8 +114,7 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
       guest_site_instance,
       routing_id,
       opener_web_contents,
-      instance_id,
-      params);
+      instance_id);
 }
 
 BrowserPluginGuest* BrowserPluginGuestManager::GetGuestByInstanceID(
@@ -178,16 +177,12 @@ bool BrowserPluginGuestManager::CanEmbedderAccessGuest(
   // An embedder can access |guest| if the guest has not been attached and its
   // opener's embedder lives in the same process as the given embedder.
   if (!guest->embedder_web_contents()) {
-    WebContentsImpl* opener = guest->GetWebContents()->opener();
-    if (!opener)
-      return false;
-
-    BrowserPluginGuest* guest_opener = opener->GetBrowserPluginGuest();
-    if (!guest_opener)
+    if (!guest->opener())
       return false;
 
     return embedder_render_process_id ==
-        guest_opener->embedder_web_contents()->GetRenderProcessHost()->GetID();
+        guest->opener()->embedder_web_contents()->GetRenderProcessHost()->
+            GetID();
   }
 
   return embedder_render_process_id ==

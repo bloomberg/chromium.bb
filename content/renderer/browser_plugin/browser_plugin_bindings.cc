@@ -42,16 +42,6 @@ BrowserPluginBindings* GetBindings(NPObject* object) {
       message_channel;
 }
 
-int Int32FromNPVariant(const NPVariant& variant) {
-  if (NPVARIANT_IS_INT32(variant))
-    return NPVARIANT_TO_INT32(variant);
-
-  if (NPVARIANT_IS_DOUBLE(variant))
-    return NPVARIANT_TO_DOUBLE(variant);
-
-  return 0;
-}
-
 std::string StringFromNPVariant(const NPVariant& variant) {
   if (!NPVARIANT_IS_STRING(variant))
     return std::string();
@@ -69,6 +59,27 @@ bool StringToNPVariant(const std::string &in, NPVariant *variant) {
   memcpy(chars, in.c_str(), length);
   STRINGN_TO_NPVARIANT(chars, length, *variant);
   return true;
+}
+
+// Depending on where the attribute comes from it could be a string, int32,
+// or a double. Javascript tends to produce an int32 or a string, but setting
+// the value from the developer tools console may also produce a double.
+int IntFromNPVariant(const NPVariant& variant) {
+  int value = 0;
+  switch (variant.type) {
+    case NPVariantType_Double:
+      value = NPVARIANT_TO_DOUBLE(variant);
+      break;
+    case NPVariantType_Int32:
+      value = NPVARIANT_TO_INT32(variant);
+      break;
+    case NPVariantType_String:
+      base::StringToInt(StringFromNPVariant(variant), &value);
+      break;
+    default:
+      break;
+  }
+  return value;
 }
 
 //------------------------------------------------------------------------------
@@ -215,6 +226,28 @@ class BrowserPluginMethodBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginMethodBinding);
 };
 
+class BrowserPluginBindingAttachWindowTo : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingAttachWindowTo()
+      : BrowserPluginMethodBinding(
+          browser_plugin::kMethodInternalAttachWindowTo, 2) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    WebKit::WebNode node;
+    WebBindings::getNode(NPVARIANT_TO_OBJECT(args[0]), &node);
+    int window_id = IntFromNPVariant(args[1]);
+    BOOLEAN_TO_NPVARIANT(BrowserPlugin::AttachWindowTo(node, window_id),
+                         *result);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAttachWindowTo);
+};
+
 class BrowserPluginBindingBack : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingBack()
@@ -330,7 +363,7 @@ class BrowserPluginBindingGo : public BrowserPluginMethodBinding {
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
-    bindings->instance()->Go(Int32FromNPVariant(args[0]));
+    bindings->instance()->Go(IntFromNPVariant(args[0]));
     return true;
   }
 
@@ -352,7 +385,7 @@ class BrowserPluginBindingPersistRequestObject
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
     bindings->instance()->PersistRequestObject(
-        args, StringFromNPVariant(args[1]), Int32FromNPVariant(args[2]));
+        args, StringFromNPVariant(args[1]), IntFromNPVariant(args[2]));
     return true;
   }
 
@@ -406,7 +439,7 @@ class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
-    int request_id = Int32FromNPVariant(args[0]);
+    int request_id = IntFromNPVariant(args[0]);
     bool allow = NPVARIANT_TO_BOOLEAN(args[1]);
     bindings->instance()->OnEmbedderDecidedPermission(request_id, allow);
     return true;
@@ -454,26 +487,6 @@ class BrowserPluginPropertyBinding {
   void UpdateDOMAttribute(BrowserPluginBindings* bindings,
                           std::string new_value) {
     bindings->instance()->UpdateDOMAttribute(name(), new_value);
-  }
- protected:
-  // Depending on where the attribute comes from it could be a string, int32,
-  // or a double. Javascript tends to produce an Int32 or a String, but setting
-  // the value from the developer tools console may also produce a Double...
-  int IntFromNPVariant(const NPVariant* variant) {
-    int value;
-    switch (variant->type) {
-      case NPVariantType_Double:
-      case NPVariantType_Int32:
-        value = Int32FromNPVariant(*variant);
-        break;
-      case NPVariantType_String:
-        base::StringToInt(StringFromNPVariant(*variant), &value);
-        break;
-      default:
-        value = 0;
-        break;
-    }
-    return value;
   }
  private:
   std::string name_;
@@ -555,7 +568,7 @@ class BrowserPluginPropertyBindingMaxHeight
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = IntFromNPVariant(*variant);
     if (bindings->instance()->GetMaxHeightAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
@@ -586,7 +599,7 @@ class BrowserPluginPropertyBindingMaxWidth
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = IntFromNPVariant(*variant);
     if (bindings->instance()->GetMaxWidthAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
@@ -617,7 +630,7 @@ class BrowserPluginPropertyBindingMinHeight
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = IntFromNPVariant(*variant);
     if (bindings->instance()->GetMinHeightAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
@@ -648,7 +661,7 @@ class BrowserPluginPropertyBindingMinWidth
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = IntFromNPVariant(*variant);
     if (bindings->instance()->GetMinWidthAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
@@ -808,6 +821,7 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 
+  method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
   method_bindings_.push_back(new BrowserPluginBindingBack);
   method_bindings_.push_back(new BrowserPluginBindingCanGoBack);
   method_bindings_.push_back(new BrowserPluginBindingCanGoForward);

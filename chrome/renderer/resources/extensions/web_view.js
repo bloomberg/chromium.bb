@@ -128,6 +128,7 @@ function WebView(node) {
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
   }
+  this.maybeSetupNewWindowEvent_();
   this.maybeSetupPermissionEvent_();
   this.maybeSetupExecuteScript_();
 }
@@ -185,6 +186,12 @@ WebView.prototype.setupEvent_ = function(eventname, attribs) {
     node.dispatchEvent(evt);
   });
 };
+
+/**
+ * Implemented when the experimental API is available.
+ * @private
+ */
+WebView.prototype.maybeSetupNewWindowEvent_ = function() {};
 
 /**
  * Implemented when experimental permission is available.

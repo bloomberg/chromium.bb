@@ -33,7 +33,6 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
   friend class base::DeleteHelper<BrowserPluginMessageFilter>;
 
   virtual ~BrowserPluginMessageFilter();
-  void OnCreateWindow(const IPC::Message& message);
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager();
 

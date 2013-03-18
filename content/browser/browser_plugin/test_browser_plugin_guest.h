@@ -23,9 +23,7 @@ class WebContentsImpl;
 // to be used in tests.
 class TestBrowserPluginGuest : public BrowserPluginGuest {
  public:
-  TestBrowserPluginGuest(int instance_id,
-                         WebContentsImpl* web_contents,
-                         const BrowserPluginHostMsg_CreateGuest_Params& params);
+  TestBrowserPluginGuest(int instance_id, WebContentsImpl* web_contents);
   virtual ~TestBrowserPluginGuest();
 
   WebContentsImpl* web_contents() const;

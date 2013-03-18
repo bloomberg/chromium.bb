@@ -17,9 +17,8 @@
 
 namespace content {
 
-BrowserPluginMessageFilter::BrowserPluginMessageFilter(
-    int render_process_id,
-    bool is_guest)
+BrowserPluginMessageFilter::BrowserPluginMessageFilter(int render_process_id,
+                                                       bool is_guest)
     : render_process_id_(render_process_id),
       is_guest_(is_guest) {
 }
@@ -43,15 +42,7 @@ bool BrowserPluginMessageFilter::OnMessageReceived(
     // thread.
     return true;
   }
-  if (!is_guest_)
-    return false;
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(BrowserPluginMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_CreateWindow,
-                                OnCreateWindow(message))
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  return false;
 }
 
 void BrowserPluginMessageFilter::OnDestruct() const {
@@ -60,27 +51,8 @@ void BrowserPluginMessageFilter::OnDestruct() const {
 
 void BrowserPluginMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
-  if (BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(message) ||
-      (is_guest_ && message.type() == ViewHostMsg_CreateWindow::ID)) {
+  if (BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(message))
     *thread = BrowserThread::UI;
-  }
-}
-
-void BrowserPluginMessageFilter::OnCreateWindow(const IPC::Message& message) {
-  // Special case: For ViewHostMsg_CreateWindow, we route based on the contents
-  // of the message.
-  PickleIterator iter = IPC::SyncMessage::GetDataIterator(&message);
-  ViewHostMsg_CreateWindow_Params params;
-  if (!IPC::ReadParam(&message, &iter, &params)) {
-    NOTREACHED();
-    return;
-  }
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id_,
-                                               params.opener_id);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(rvh));
-  BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
-  guest->OnMessageReceived(message);
 }
 
 BrowserPluginGuestManager*

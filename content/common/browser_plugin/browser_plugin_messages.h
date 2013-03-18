@@ -53,6 +53,8 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // Indicates the scale factor of the embedder WebView.
   IPC_STRUCT_MEMBER(float, scale_factor)
   // Indicates a request for a full repaint of the page.
+  // This is required for switching from compositing to the software
+  // rendering path.
   IPC_STRUCT_MEMBER(bool, repaint)
 IPC_STRUCT_END()
 
@@ -149,6 +151,14 @@ IPC_MESSAGE_ROUTED3(
 // embedder and helper. It is sent once prior to sending the first
 // BrowserPluginHostMsg_NavigateGuest message.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_CreateGuest,
+                    int /* instance_id */,
+                    BrowserPluginHostMsg_CreateGuest_Params /* params */)
+
+// This message is sent to the browser process to indicate that a BrowserPlugin
+// has taken ownership of the lifetime of the guest of the given |instance_id|.
+// |params| is the size information of the BrowserPlugin taking ownership of
+// the guest.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Attach,
                     int /* instance_id */,
                     BrowserPluginHostMsg_CreateGuest_Params /* params */)
 
@@ -397,5 +407,5 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_RequestPermission,
                      DictionaryValue /* request_info */)
 
 // Forwards a PointerLock Unlock request to the BrowserPlugin.
-IPC_MESSAGE_ROUTED1(BrowserPluginMsg_UnlockMouse, int /* instance_id */)
+IPC_MESSAGE_CONTROL1(BrowserPluginMsg_UnlockMouse, int /* instance_id */)
 

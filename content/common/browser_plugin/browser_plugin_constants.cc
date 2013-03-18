@@ -21,6 +21,7 @@ const char kMethodStop[] = "stop";
 const char kMethodTerminate[] = "terminate";
 
 // Internal method bindings.
+const char kMethodInternalAttachWindowTo[] = "-internal-attachWindowTo";
 const char kMethodInternalPersistObject[] = "-internal-persistObject";
 const char kMethodInternalSetPermission[] = "-internal-setPermission";
 
@@ -42,14 +43,18 @@ const char kEventLoadCommit[] = "loadcommit";
 const char kEventLoadRedirect[] = "loadredirect";
 const char kEventLoadStart[] = "loadstart";
 const char kEventLoadStop[] = "loadstop";
+const char kEventNewWindow[] = "newwindow";
 const char kEventRequestPermission[] = "permissionrequest";
 const char kEventResponsive[] = "responsive";
 const char kEventSizeChanged[] = "sizechanged";
 const char kEventUnresponsive[] = "unresponsive";
 
 // Parameters/properties on events.
+const char kInitialHeight[] = "initialHeight";
+const char kInitialWidth[] = "initialWidth";
 const char kIsTopLevel[] = "isTopLevel";
 const char kLastUnlockedBySelf[] = "lastUnlockedBySelf";
+const char kName[] = "name";
 const char kNewURL[] = "newUrl";
 const char kNewHeight[] = "newHeight";
 const char kNewWidth[] = "newWidth";
@@ -59,12 +64,16 @@ const char kOldWidth[] = "oldWidth";
 const char kPermission[] = "permission";
 const char kPermissionTypeGeolocation[] = "geolocation";
 const char kPermissionTypeMedia[] = "media";
+const char kPermissionTypeNewWindow[] = "newwindow";
 const char kPermissionTypePointerLock[] = "pointerLock";
 const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";
 const char kReason[] = "reason";
 const char kRequestId[] = "requestId";
+const char kTargetURL[] = "targetUrl";
 const char kURL[] = "url";
+const char kWindowID[] = "windowId";
+const char kWindowOpenDisposition[] = "windowOpenDisposition";
 const char kUserGesture[] = "userGesture";
 
 // Error messages.

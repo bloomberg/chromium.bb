@@ -20,7 +20,11 @@ util.createWebViewTagInDOM = function(partitionName) {
   return webview;
 };
 
-onload = function() {
+chrome.test.getConfig(function(config) {
+  var windowOpenGuestURL = 'http://localhost:' + config.testServer.port +
+      '/files/extensions/platform_apps/web_view/shim/guest.html';
+  var noReferrerGuestURL = 'http://localhost:' + config.testServer.port +
+      '/files/extensions/platform_apps/web_view/shim/guest_noreferrer.html';
   chrome.test.runTests([
     function webView() {
       var webview = document.querySelector('webview');
@@ -311,6 +315,88 @@ onload = function() {
       // Check that bindings are not registered.
       chrome.test.assertTrue(objectElement.canGoBack === undefined);
       chrome.test.succeed();
-    }
+    },
+
+    function webViewNewWindow() {
+      var webview = document.createElement('webview');
+      webview.addEventListener('newwindow', function(e) {
+        e.preventDefault();
+        var newwebview = document.createElement('webview');
+        newwebview.addEventListener('loadstop', function(evt) {
+          // If the new window finishes loading, the test is successful.
+          chrome.test.succeed();
+        });
+        document.body.appendChild(newwebview);
+        // Attach the new window to the new <webview>.
+        e.window.attach(newwebview);
+      });
+      webview.setAttribute('src', windowOpenGuestURL);
+      document.body.appendChild(webview);
+    },
+
+    // This test verifies "first-call-wins" semantics. That is, the first call
+    // to perform an action on the new window takes the action and all
+    // subsequent calls throw an exception.
+    function webViewNewWindowTwoListeners() {
+      var webview = document.createElement('webview');
+      var error = false;
+      webview.addEventListener('newwindow', function(e) {
+        e.preventDefault();
+        var newwebview = document.createElement('webview');
+        document.body.appendChild(newwebview);
+        try {
+          e.window.attach(newwebview);
+        } catch (err) {
+          chrome.test.fail();
+        }
+      });
+      webview.addEventListener('newwindow', function(e) {
+        e.preventDefault();
+        try {
+          e.window.discard();
+        } catch (err) {
+          chrome.test.succeed();
+        }
+      });
+      webview.setAttribute('src', windowOpenGuestURL);
+      document.body.appendChild(webview);
+    },
+
+    // This test verifies that the attach can be called inline without
+    // preventing default.
+    function webViewNewWindowNoPreventDefault() {
+      var webview = document.createElement('webview');
+      webview.addEventListener('newwindow', function(e) {
+        var newwebview = document.createElement('webview');
+        document.body.appendChild(newwebview);
+        // Attach the new window to the new <webview>.
+        try {
+          e.window.attach(newwebview);
+          chrome.test.succeed();
+        } catch (err) {
+          chrome.test.fail();
+        }
+      });
+      webview.setAttribute('src', windowOpenGuestURL);
+      document.body.appendChild(webview);
+    },
+
+    function webViewNoReferrerLink() {
+      var webview = document.createElement('webview');
+      webview.addEventListener('newwindow', function(e) {
+        e.preventDefault();
+        var newwebview = document.createElement('webview');
+        newwebview.addEventListener('loadstop', function(evt) {
+          // If the new window finishes loading, the test is successful.
+          chrome.test.succeed();
+        });
+        document.body.appendChild(newwebview);
+        // Attach the new window to the new <webview>.
+        e.window.attach(newwebview);
+      });
+      webview.setAttribute('src', noReferrerGuestURL);
+      document.body.appendChild(webview);
+    },
+
   ]);
-};
+});

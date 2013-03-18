@@ -61,8 +61,8 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedder, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_AllocateInstanceID,
                         OnAllocateInstanceID)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
-                        OnCreateGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Attach, OnAttach)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest, OnCreateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
                         OnPluginAtPositionResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -93,6 +93,16 @@ void BrowserPluginEmbedder::OnAllocateInstanceID(int request_id) {
   int instance_id = GetBrowserPluginGuestManager()->get_next_instance_id();
   Send(new BrowserPluginMsg_AllocateInstanceID_ACK(
       routing_id(), request_id, instance_id));
+}
+
+void BrowserPluginEmbedder::OnAttach(
+    int instance_id,
+    const BrowserPluginHostMsg_CreateGuest_Params& params) {
+  BrowserPluginGuest* guest =
+      GetBrowserPluginGuestManager()->GetGuestByInstanceID(
+          instance_id, web_contents()->GetRenderProcessHost()->GetID());
+  if (guest)
+    guest->Attach(static_cast<WebContentsImpl*>(web_contents()), params);
 }
 
 void BrowserPluginEmbedder::OnCreateGuest(

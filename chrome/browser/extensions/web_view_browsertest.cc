@@ -295,6 +295,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 #define MAYBE_Shim Shim
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim) {
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/shim")) << message_;
 }
 
