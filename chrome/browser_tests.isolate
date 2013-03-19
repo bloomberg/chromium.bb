@@ -56,6 +56,7 @@
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x64.nexe',
           '<(PRODUCT_DIR)/test_case.html',
           '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
           '<(PRODUCT_DIR)/test_page.css',
