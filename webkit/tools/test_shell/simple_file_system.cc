@@ -95,7 +95,12 @@ SimpleFileSystem::~SimpleFileSystem() {
 }
 
 void SimpleFileSystem::OpenFileSystem(
-    WebFrame* frame, WebFileSystem::Type type,
+    WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+    WebKit::WebFileSystemType type,
+#else
+    WebFileSystem::Type type,
+#endif
     long long, bool create,
     WebFileSystemCallbacks* callbacks) {
   if (!frame || !file_system_context_.get()) {
@@ -111,7 +116,12 @@ void SimpleFileSystem::OpenFileSystem(
 }
 
 void SimpleFileSystem::DeleteFileSystem(
-    WebFrame* frame, WebFileSystem::Type type,
+    WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+    WebKit::WebFileSystemType type,
+#else
+    WebFileSystem::Type type,
+#endif
     WebFileSystemCallbacks* callbacks) {
   if (!frame || !file_system_context_.get()) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);

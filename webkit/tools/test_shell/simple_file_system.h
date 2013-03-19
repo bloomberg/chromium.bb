@@ -11,6 +11,7 @@
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -38,12 +39,20 @@ class SimpleFileSystem
   virtual ~SimpleFileSystem();
 
   void OpenFileSystem(WebKit::WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+                      WebKit::WebFileSystemType type,
+#else
                       WebKit::WebFileSystem::Type type,
+#endif
                       long long size,
                       bool create,
                       WebKit::WebFileSystemCallbacks* callbacks);
   void DeleteFileSystem(WebKit::WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+                        WebKit::WebFileSystemType type,
+#else
                         WebKit::WebFileSystem::Type type,
+#endif
                         WebKit::WebFileSystemCallbacks* callbacks);
 
   fileapi::FileSystemContext* file_system_context() {

@@ -125,6 +125,7 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebDragData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebHTTPBody.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMessagePortChannel.h"
@@ -4200,7 +4201,11 @@ void RenderViewImpl::reportFindInPageSelection(int request_id,
 
 void RenderViewImpl::openFileSystem(
     WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+    WebKit::WebFileSystemType type,
+#else
     WebFileSystem::Type type,
+#endif
     long long size,
     bool create,
     WebFileSystemCallbacks* callbacks) {
@@ -4220,7 +4225,11 @@ void RenderViewImpl::openFileSystem(
 
 void RenderViewImpl::deleteFileSystem(
     WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+    WebKit::WebFileSystemType type ,
+#else
     WebFileSystem::Type type ,
+#endif
     WebFileSystemCallbacks* callbacks) {
   DCHECK(callbacks);
 

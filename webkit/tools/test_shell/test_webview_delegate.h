@@ -20,6 +20,7 @@
 #include "base/string16.h"
 #include "build/build_config.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -227,7 +228,11 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void openFileSystem(
       WebKit::WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+      WebKit::WebFileSystemType type,
+#else
       WebKit::WebFileSystem::Type type,
+#endif
       long long size,
       bool create,
       WebKit::WebFileSystemCallbacks* callbacks);

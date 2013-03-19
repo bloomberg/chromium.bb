@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerClient.h"
 
 namespace WebKit {
@@ -74,7 +75,12 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
                              const WebKit::WebString& display_name,
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
-  virtual void openFileSystem(WebKit::WebFileSystem::Type type,
+  virtual void openFileSystem(
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+                              WebKit::WebFileSystemType type,
+#else
+                              WebKit::WebFileSystem::Type type,
+#endif
                               long long size,
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);

@@ -851,14 +851,24 @@ WebURL GetDevToolsPathAsURL() {
 }
 
 // FileSystem
-void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
+void OpenFileSystem(WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+    WebKit::WebFileSystemType type,
+#else
+    WebFileSystem::Type type,
+#endif
     long long size, bool create, WebFileSystemCallbacks* callbacks) {
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
       test_environment->webkit_platform_support()->fileSystem());
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
 
-void DeleteFileSystem(WebFrame* frame, WebFileSystem::Type type,
+void DeleteFileSystem(WebFrame* frame,
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+                      WebKit::WebFileSystemType type,
+#else
+                      WebFileSystem::Type type,
+#endif
                       WebFileSystemCallbacks* callbacks) {
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
       test_environment->webkit_platform_support()->fileSystem());

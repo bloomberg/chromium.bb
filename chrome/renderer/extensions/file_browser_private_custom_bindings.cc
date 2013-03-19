@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
@@ -35,7 +36,11 @@ v8::Handle<v8::Value> FileBrowserPrivateCustomBindings::GetLocalFileSystem(
   WebKit::WebFrame* webframe = WebKit::WebFrame::frameForContext(v8_context());
   DCHECK(webframe);
   return webframe->createFileSystem(
+#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+      WebKit::WebFileSystemTypeExternal,
+#else
       WebKit::WebFileSystem::TypeExternal,
+#endif
       WebKit::WebString::fromUTF8(name.c_str()),
       WebKit::WebString::fromUTF8(path.c_str()));
 }
