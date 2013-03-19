@@ -285,7 +285,7 @@ void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  if (resource_metadata_->loaded() && !change_list_loader_->refreshing()) {
+  if (change_list_loader_->loaded() && !change_list_loader_->refreshing()) {
     change_list_loader_->LoadFromServerIfNeeded(
         DirectoryFetchInfo(),
         base::Bind(&DriveFileSystem::OnUpdateChecked,
@@ -407,7 +407,7 @@ void DriveFileSystem::LoadIfNeeded(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (resource_metadata_->loaded()) {
+  if (change_list_loader_->loaded()) {
     // The feed has already been loaded, so we have nothing to do, but post a
     // task to the same thread, rather than calling it here, as
     // LoadIfNeeded() is asynchronous.
@@ -1395,7 +1395,7 @@ void DriveFileSystem::GetMetadata(
   DCHECK(!callback.is_null());
 
   DriveFileSystemMetadata metadata;
-  metadata.loaded = resource_metadata_->loaded();
+  metadata.loaded = change_list_loader_->loaded();
   metadata.refreshing = change_list_loader_->refreshing();
 
   // Metadata related to delta update.

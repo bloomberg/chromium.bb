@@ -622,6 +622,8 @@ void ChangeListLoader::LoadAfterLoadFromCache(
   DCHECK(!callback.is_null());
 
   if (error == DRIVE_FILE_OK) {
+    loaded_ = true;
+
     // The loading from the cache file succeeded. Change the refreshing state
     // and tell the callback that the loading was successful.
     OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
@@ -643,7 +645,7 @@ void ChangeListLoader::LoadAfterLoadFromCache(
 void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK(!resource_metadata_->loaded());
+  DCHECK(!loaded_);
 
   // Sets the refreshing flag, so that the caller does not send refresh requests
   // in parallel (see DriveFileSystem::LoadFeedIfNeeded).
@@ -682,7 +684,7 @@ void ChangeListLoader::UpdateFromFeed(
       feed_list,
       is_delta_feed,
       root_feed_changestamp,
-      base::Bind(&ChangeListLoader::NotifyDirectoryChanged,
+      base::Bind(&ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed,
                  weak_ptr_factory_.GetWeakPtr(),
                  should_notify_changed_directories,
                  update_finished_callback));
@@ -728,12 +730,14 @@ void ChangeListLoader::ScheduleRun(
                             base::Bind(&util::EmptyFileOperationCallback));
 }
 
-void ChangeListLoader::NotifyDirectoryChanged(
+void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(
     bool should_notify_changed_directories,
     const base::Closure& update_finished_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(change_list_processor_.get());
   DCHECK(!update_finished_callback.is_null());
+
+  loaded_ = true;
 
   if (should_notify_changed_directories) {
     for (std::set<base::FilePath>::iterator dir_iter =

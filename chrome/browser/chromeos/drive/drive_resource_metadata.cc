@@ -253,7 +253,6 @@ DriveResourceMetadata::DriveResourceMetadata(
       root_resource_id_(root_resource_id),
       serialized_size_(0),
       largest_changestamp_(0),
-      loaded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -979,7 +978,6 @@ bool DriveResourceMetadata::ParseFromString(
       CreateEntryWithProperBaseName(proto.drive_directory().drive_entry()));
   AddDescendantsFromProto(proto.drive_directory());
 
-  loaded_ = true;
   largest_changestamp_ = proto.largest_changestamp();
 
   return true;

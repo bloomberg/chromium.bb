@@ -437,7 +437,6 @@ void ChangeListProcessor::UpdateRootEntryAfterRefreshEntry(
 void ChangeListProcessor::OnComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->set_loaded(true);
   resource_metadata_->SetLargestChangestamp(
       largest_changestamp_,
       base::Bind(&RunOnCompleteCallback, on_complete_callback_));

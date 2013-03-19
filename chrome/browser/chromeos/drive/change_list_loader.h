@@ -54,6 +54,8 @@ class ChangeListLoader {
   void AddObserver(ChangeListLoaderObserver* observer);
   void RemoveObserver(ChangeListLoaderObserver* observer);
 
+  bool loaded() const { return loaded_; }
+
   // Starts the change list loading first from the cache. If loading from the
   // cache is successful, runs |callback| and starts loading from the server
   // if needed (i.e. the cache is old). If loading from the cache is
@@ -247,8 +249,9 @@ class ChangeListLoader {
       base::WeakPtr<GetResourceListUiState> ui_state);
 
   // Callback for ChangeListProcessor::ApplyFeeds.
-  void NotifyDirectoryChanged(bool should_notify,
-                              const base::Closure& update_finished_callback);
+  void NotifyDirectoryChangedAfterApplyFeed(
+      bool should_notify,
+      const base::Closure& update_finished_callback);
 
   // Callback for UpdateFromFeed.
   void OnUpdateFromFeed(const FileOperationCallback& load_finished_callback);
@@ -285,6 +288,9 @@ class ChangeListLoader {
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing_;
   int64 last_known_remote_changestamp_;
+
+  // True if the file system feed is loaded from the cache or from the server.
+  bool loaded_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

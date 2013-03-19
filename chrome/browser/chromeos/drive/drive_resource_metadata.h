@@ -140,10 +140,6 @@ class DriveResourceMetadata {
   // to safely delete this object.
   void Destroy();
 
-  // True if the file system feed is loaded from the cache or from the server.
-  bool loaded() const { return loaded_; }
-  void set_loaded(bool loaded) { loaded_ = loaded; }
-
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
   void GetLargestChangestamp(const GetChangestampCallback& callback);
@@ -329,7 +325,6 @@ class DriveResourceMetadata {
   base::Time last_serialized_;
   size_t serialized_size_;
   int64 largest_changestamp_;  // Stored in the serialized proto.
-  bool loaded_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
