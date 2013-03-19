@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/mac/mac_util.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -17,11 +20,9 @@
 
 namespace {
 
-enum ChromeFullScreenState {
-  FULLSCREEN_UNKNOWN,
-  FULLSCREEN_ON,
-  FULLSCREEN_OFF
-};
+// The time, in milliseconds, that a fullscreen check will be started after
+// the active workspace change is notified. This value is from experiment.
+const int kCheckFullScreenDelayTimeMs = 200;
 
 class DisplaySettingsProviderCocoa : public DisplaySettingsProvider,
                                      public ui::WorkAreaWatcherObserver,
@@ -29,6 +30,8 @@ class DisplaySettingsProviderCocoa : public DisplaySettingsProvider,
  public:
   DisplaySettingsProviderCocoa();
   virtual ~DisplaySettingsProviderCocoa();
+
+  void ActiveSpaceChanged();
 
  protected:
   // Overridden from DisplaySettingsProvider:
@@ -44,20 +47,20 @@ class DisplaySettingsProviderCocoa : public DisplaySettingsProvider,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  void ActiveWorkSpaceChanged();
+
   content::NotificationRegistrar registrar_;
-  ChromeFullScreenState chrome_fullscreen_state_;
+  id active_space_change_;
+
+  // Owned by MessageLoop after posting.
+  base::WeakPtrFactory<DisplaySettingsProviderCocoa> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySettingsProviderCocoa);
 };
 
 DisplaySettingsProviderCocoa::DisplaySettingsProviderCocoa()
-    // Ideally we should initialize the value below with current state. However,
-    // there is not a centralized place we can pull the state from and we need
-    // to query all chrome browser windows to find it out.
-    // This will get automatically fixed when DisplaySettingsProvider is changed
-    // to be initialized before any chrome window is created with planning
-    // refactor effort to move it out of panel scope.
-    : chrome_fullscreen_state_(FULLSCREEN_UNKNOWN) {
+    : active_space_change_(nil),
+      weak_factory_(this) {
   AppController* appController = static_cast<AppController*>([NSApp delegate]);
   [appController addObserverForWorkAreaChange:this];
 
@@ -65,11 +68,22 @@ DisplaySettingsProviderCocoa::DisplaySettingsProviderCocoa()
       this,
       chrome::NOTIFICATION_FULLSCREEN_CHANGED,
       content::NotificationService::AllSources());
+
+  active_space_change_ = [[[NSWorkspace sharedWorkspace] notificationCenter]
+      addObserverForName:NSWorkspaceActiveSpaceDidChangeNotification
+                  object:nil
+                   queue:[NSOperationQueue mainQueue]
+              usingBlock:^(NSNotification* notification) {
+                  ActiveWorkSpaceChanged();
+              }];
 }
 
 DisplaySettingsProviderCocoa::~DisplaySettingsProviderCocoa() {
   AppController* appController = static_cast<AppController*>([NSApp delegate]);
   [appController removeObserverForWorkAreaChange:this];
+
+  [[[NSWorkspace sharedWorkspace] notificationCenter]
+      removeObserver:active_space_change_];
 }
 
 bool DisplaySettingsProviderCocoa::NeedsPeriodicFullScreenCheck() const {
@@ -88,14 +102,17 @@ bool DisplaySettingsProviderCocoa::IsFullScreen() {
   if (!base::mac::IsOSLionOrLater())
     return DisplaySettingsProvider::IsFullScreen();
 
-  if (chrome_fullscreen_state_ == FULLSCREEN_UNKNOWN) {
-    Browser* browser = chrome::GetLastActiveBrowser();
-    chrome_fullscreen_state_ =
-        browser && browser->fullscreen_controller()->IsFullscreenForBrowser() ?
-            FULLSCREEN_ON : FULLSCREEN_OFF;
-  }
+  Browser* browser = chrome::GetLastActiveBrowser();
+  if (!browser)
+    return false;
+  BrowserWindow* browser_window = browser->window();
+  if (!browser_window->IsFullscreen())
+    return false;
 
-  return chrome_fullscreen_state_ == FULLSCREEN_ON;
+  // If the user switches to another space where the fullscreen browser window
+  // does not live, we do not call it fullscreen.
+  NSWindow* native_window = browser_window->GetNativeWindow();
+  return [native_window isOnActiveSpace];
 }
 
 void DisplaySettingsProviderCocoa::WorkAreaChanged() {
@@ -107,9 +124,17 @@ void DisplaySettingsProviderCocoa::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
-  chrome_fullscreen_state_ = *(content::Details<bool>(details)).ptr() ?
-      FULLSCREEN_ON : FULLSCREEN_OFF;
   CheckFullScreenMode();
+}
+
+void DisplaySettingsProviderCocoa::ActiveWorkSpaceChanged() {
+  // The active workspace notification might be received earlier than the
+  // browser window knows that it is not in active space.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&DisplaySettingsProviderCocoa::CheckFullScreenMode,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kCheckFullScreenDelayTimeMs));
 }
 
 }  // namespace

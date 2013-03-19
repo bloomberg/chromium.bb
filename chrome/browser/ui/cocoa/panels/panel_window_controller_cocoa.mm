@@ -397,7 +397,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 
   [self updateWindowLevel];
 
-  [window setCollectionBehavior:NSWindowCollectionBehaviorParticipatesInCycle];
+  [self updateWindowCollectionBehavior];
 
   [titlebar_view_ attach];
 
@@ -851,7 +851,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   // to same normal level will not move it below the full-screen window. Thus
   // we need to reorder the panel window.
   if (isFullScreen)
-    [[self window] orderBack:nil];
+    [[self window] orderOut:nil];
   else
     [[self window] orderFrontRegardless];
 }
@@ -880,10 +880,8 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 - (void)updateWindowLevel:(BOOL)panelIsMinimized {
   if (![self isWindowLoaded])
     return;
-  // Make sure we don't draw on top of a window in full screen mode.
   Panel* panel = windowShim_->panel();
-  if (panel->manager()->display_settings_provider()->is_full_screen() ||
-      !panel->IsAlwaysOnTop()) {
+  if (!panel->IsAlwaysOnTop()) {
     [[self window] setLevel:NSNormalWindowLevel];
     return;
   }
@@ -907,6 +905,16 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
     return;
   }
   [[self window] setLevel:NSDockWindowLevel];
+}
+
+- (void)updateWindowCollectionBehavior {
+  if (![self isWindowLoaded])
+    return;
+  NSWindowCollectionBehavior collectionBehavior =
+      NSWindowCollectionBehaviorParticipatesInCycle;
+  if (windowShim_->panel()->IsAlwaysOnTop())
+    collectionBehavior |= NSWindowCollectionBehaviorCanJoinAllSpaces;
+  [[self window] setCollectionBehavior:collectionBehavior];
 }
 
 - (void)enableResizeByMouse:(BOOL)enable {

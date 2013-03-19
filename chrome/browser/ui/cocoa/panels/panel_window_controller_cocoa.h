@@ -131,6 +131,9 @@ class PanelCocoa;
 - (void)updateWindowLevel;
 - (void)updateWindowLevel:(BOOL)panelIsMinimized;
 
+// Adjusts NSWindowCollectionBehavior based on whether panel is always on top.
+- (void)updateWindowCollectionBehavior;
+
 // Turns on user-resizable corners/sides indications and enables live resize.
 - (void)enableResizeByMouse:(BOOL)enable;
 

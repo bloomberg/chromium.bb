@@ -246,6 +246,7 @@ void PanelCocoa::SetPanelAlwaysOnTop(bool on_top) {
     return;
   always_on_top_ = on_top;
   [controller_ updateWindowLevel];
+  [controller_ updateWindowCollectionBehavior];
 }
 
 void PanelCocoa::EnableResizeByMouse(bool enable) {
