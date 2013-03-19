@@ -82,9 +82,6 @@ class DriveMetadataStore
   // incrementally.
   bool IsIncrementalSyncOrigin(const GURL& origin) const;
 
-  // Returns true if |origin| is a disabled origin.
-  bool IsOriginDisabled(const GURL& origin) const;
-
   // Marks |origin| as a batch sync origin and associates it with the directory
   // identified by |resource_id|.
   // |origin| must not be a batch sync origin nor an incremental sync origin.
@@ -93,12 +90,6 @@ class DriveMetadataStore
   // Marks |origin| as an incremental sync origin.
   // |origin| must be a batch sync origin.
   void MoveBatchSyncOriginToIncremental(const GURL& origin);
-
-  void EnableOrigin(const GURL& origin,
-                    const SyncStatusCallback& callback);
-
-  void DisableOrigin(const GURL& origin,
-                     const SyncStatusCallback& callback);
 
   void RemoveOrigin(const GURL& origin,
                     const SyncStatusCallback& callback);
@@ -137,17 +128,9 @@ class DriveMetadataStore
     return incremental_sync_origins_;
   }
 
-  const ResourceIdByOrigin& disabled_origins() const {
-    DCHECK(CalledOnValidThread());
-    return disabled_origins_;
-  }
-
-  // Returns tracked and enabled origins. i.e. Union of batch_sync_origins_ and
+  // Returns all origins that are tracked. i.e. Union of batch_sync_origins_ and
   // incremental_sync_origins_.
-  void GetEnabledOrigins(std::vector<GURL>* origins);
-
-  // Returns tracked but disabled origins. i.e. disabled_origins_.
-  void GetDisabledOrigins(std::vector<GURL>* origins);
+  void GetAllOrigins(std::vector<GURL>* origins);
 
   // Maps |resource_id| to corresponding |origin|.
   // Returns true if the directory indicated by |resource_id| is not an origin
@@ -164,7 +147,7 @@ class DriveMetadataStore
   void DidInitialize(const InitializationCallback& callback,
                      DriveMetadataDBContents* contents,
                      SyncStatusCode error);
-  void DidUpdateOrigin(const SyncStatusCallback& callback,
+  void DidRemoveOrigin(const SyncStatusCallback& callback,
                        SyncStatusCode status);
 
   // These are only for testing.
@@ -172,12 +155,11 @@ class DriveMetadataStore
   void DidRestoreSyncRootDirectory(const SyncStatusCallback& callback,
                                    std::string* sync_root_directory_resource_id,
                                    SyncStatusCode status);
-  void RestoreOrigins(const SyncStatusCallback& callback);
-  void DidRestoreOrigins(const SyncStatusCallback& callback,
-                         ResourceIdByOrigin* batch_sync_origins,
-                         ResourceIdByOrigin* incremental_sync_origins,
-                         ResourceIdByOrigin* disabled_origins,
-                         SyncStatusCode status);
+  void RestoreSyncOrigins(const SyncStatusCallback& callback);
+  void DidRestoreSyncOrigins(const SyncStatusCallback& callback,
+                             ResourceIdByOrigin* batch_sync_origins,
+                             ResourceIdByOrigin* incremental_sync_origins,
+                             SyncStatusCode status);
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_ptr<DriveMetadataDB> db_;
@@ -189,7 +171,6 @@ class DriveMetadataStore
   std::string sync_root_directory_resource_id_;
   ResourceIdByOrigin batch_sync_origins_;
   ResourceIdByOrigin incremental_sync_origins_;
-  ResourceIdByOrigin disabled_origins_;
 
   OriginByResourceId origin_by_resource_id_;
 
