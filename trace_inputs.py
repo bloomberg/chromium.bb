@@ -3299,6 +3299,10 @@ def extract_directories(root_dir, files, blacklist):
 
   root_prefix = len(root_dir) + 1 if root_dir else 0
   for directory in sorted(buckets, reverse=True):
+    if not os.path.isdir(directory):
+      logging.debug(
+          '%s was a directory but doesn\'t exist anymore; ignoring', directory)
+      continue
     actual = set(f for f in os.listdir(directory) if not blacklist(f))
     expected = set(buckets[directory])
     if not (actual - expected):
