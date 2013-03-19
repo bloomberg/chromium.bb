@@ -70,11 +70,6 @@ class ChangeListLoader {
   void LoadIfNeeded(const DirectoryFetchInfo directory_fetch_info,
                     const FileOperationCallback& callback);
 
-  // Starts the change list loading from the cache, and runs |callback| to
-  // tell the result to the caller.  |callback| must not be null.
-  // TODO(satorux): make this private. crbug.com/193417
-  void LoadFromCache(const FileOperationCallback& callback);
-
   // Initiates the directory contents loading. This function first obtains
   // the changestamp from the server in order to set the per-directory
   // changestamp for the directory.
@@ -127,6 +122,10 @@ class ChangeListLoader {
  private:
   struct GetResourceListUiState;
   struct LoadFeedParams;
+
+  // Starts the change list loading from the cache, and runs |callback| to
+  // tell the result to the caller.  |callback| must not be null.
+  void LoadFromCache(const FileOperationCallback& callback);
 
   // Part of Load(). Called after loading from the cache is complete.
   void LoadAfterLoadFromCache(

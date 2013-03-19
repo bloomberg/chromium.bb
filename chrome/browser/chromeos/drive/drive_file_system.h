@@ -153,9 +153,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void OnFeedFromServerLoaded() OVERRIDE;
   virtual void OnInitialFeedLoaded() OVERRIDE;
 
-  // Used in tests to load the file system from the cache.
-  void LoadFromCacheForTesting(const FileOperationCallback& callback);
-
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at ChangeListLoader::UpdateFromFeed().
   ChangeListLoader* change_list_loader() { return change_list_loader_.get(); }

@@ -1200,13 +1200,6 @@ void DriveFileSystem::OnInitialFeedLoaded() {
                     OnInitialLoadFinished());
 }
 
-void DriveFileSystem::LoadFromCacheForTesting(
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  change_list_loader_->LoadFromCache(callback);
-}
-
 void DriveFileSystem::OnFileDownloaded(
     const GetFileFromCacheParams& params,
     google_apis::GDataErrorCode status,

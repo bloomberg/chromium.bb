@@ -382,16 +382,6 @@ class DriveFileSystemTest : public testing::Test {
     return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
   }
 
-  // Loads serialized proto file from GCache, and makes sure the root
-  // filesystem has a root at 'drive'
-  bool TestLoadMetadataFromCache() {
-    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-    file_system_->LoadFromCacheForTesting(
-        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-    google_apis::test_util::RunBlockingPoolTask();
-    return error == DRIVE_FILE_OK;
-  }
-
   // Flag for specifying the timestamp of the test filesystem cache.
   enum SaveTestFileSystemParam {
     USE_OLD_TIMESTAMP,
@@ -975,7 +965,8 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
 
 TEST_F(DriveFileSystemTest, CachedFeedLoading) {
   ASSERT_TRUE(SaveTestFileSystem(USE_OLD_TIMESTAMP));
-  ASSERT_TRUE(TestLoadMetadataFromCache());
+  // Tests that cached data can be loaded even if the server is not reachable.
+  fake_drive_service_->set_offline(true);
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Dir1"))));
