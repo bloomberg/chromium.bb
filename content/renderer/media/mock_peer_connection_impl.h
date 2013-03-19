@@ -81,9 +81,12 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   void SetLocalDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc) ;
-  virtual void SetRemoteDescription(
+  MOCK_METHOD2(SetRemoteDescription,
+               void(webrtc::SetSessionDescriptionObserver* observer,
+                    webrtc::SessionDescriptionInterface* desc));
+  void SetRemoteDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
-      webrtc::SessionDescriptionInterface* desc) OVERRIDE;
+      webrtc::SessionDescriptionInterface* desc);
   virtual bool UpdateIce(
       const IceServers& configuration,
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;

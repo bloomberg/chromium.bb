@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 
+using testing::_;
 using webrtc::AudioTrackInterface;
 using webrtc::CreateSessionDescriptionObserver;
 using webrtc::DtmfSenderInterface;
@@ -185,6 +186,10 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       hint_video_(false),
       getstats_result_(true),
       sdp_mline_index_(-1) {
+  ON_CALL(*this, SetLocalDescription(_, _)).WillByDefault(testing::Invoke(
+      this, &MockPeerConnectionImpl::SetLocalDescriptionWorker));
+  ON_CALL(*this, SetRemoteDescription(_, _)).WillByDefault(testing::Invoke(
+      this, &MockPeerConnectionImpl::SetRemoteDescriptionWorker));
 }
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
@@ -301,7 +306,7 @@ void MockPeerConnectionImpl::SetLocalDescriptionWorker(
   local_desc_.reset(desc);
 }
 
-void MockPeerConnectionImpl::SetRemoteDescription(
+void MockPeerConnectionImpl::SetRemoteDescriptionWorker(
     SetSessionDescriptionObserver* observer,
     SessionDescriptionInterface* desc) {
   desc->ToString(&description_sdp_);

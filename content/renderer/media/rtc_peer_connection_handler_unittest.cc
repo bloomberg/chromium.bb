@@ -37,6 +37,7 @@ static const char kDummySdpType[] = "dummy type";
 
 using WebKit::WebRTCPeerConnectionHandlerClient;
 using testing::NiceMock;
+using testing::_;
 
 namespace content {
 
@@ -167,6 +168,15 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
       TrackIceConnectionStateChange,
       void(RTCPeerConnectionHandler* pc_handler,
            WebRTCPeerConnectionHandlerClient::ICEConnectionState state));
+  MOCK_METHOD2(
+      TrackIceGatheringStateChange,
+      void(RTCPeerConnectionHandler* pc_handler,
+           WebRTCPeerConnectionHandlerClient::ICEGatheringState state));
+  MOCK_METHOD1(TrackOnRenegotiationNeeded,
+               void(RTCPeerConnectionHandler* pc_handler));
+  MOCK_METHOD2(TrackCreateDTMFSender,
+               void (RTCPeerConnectionHandler* pc_handler,
+                     const WebKit::WebMediaStreamTrack& track));
 };
 
 class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
@@ -188,7 +198,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   virtual void SetUp() {
-    mock_client_.reset(new MockWebRTCPeerConnectionHandlerClient());
+    mock_client_.reset(new NiceMock<MockWebRTCPeerConnectionHandlerClient>());
     mock_dependency_factory_.reset(new MockMediaStreamDependencyFactory());
     mock_dependency_factory_->EnsurePeerConnectionFactory();
     pc_handler_.reset(
@@ -287,6 +297,8 @@ TEST_F(RTCPeerConnectionHandlerTest, Destruct) {
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   WebKit::WebRTCSessionDescriptionRequest request;
   WebKit::WebMediaConstraints options;
+  EXPECT_CALL(*mock_tracker_.get(), TrackCreateOffer(pc_handler_.get(), _));
+
   // TODO(perkj): Can WebKit::WebRTCSessionDescriptionRequest be changed so
   // the |reqest| requestSucceeded can be tested? Currently the |request| object
   // can not be initialized from a unit test.
@@ -298,6 +310,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
 TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
   WebKit::WebRTCSessionDescriptionRequest request;
   WebKit::WebMediaConstraints options;
+  EXPECT_CALL(*mock_tracker_.get(), TrackCreateAnswer(pc_handler_.get(), _));
   // TODO(perkj): Can WebKit::WebRTCSessionDescriptionRequest be changed so
   // the |reqest| requestSucceeded can be tested? Currently the |request| object
   // can not be initialized from a unit test.
@@ -311,14 +324,9 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
   // before |mock_peer_connection| is called.
   testing::InSequence sequence;
   EXPECT_CALL(*mock_tracker_.get(),
-              TrackSetSessionDescription(pc_handler_.get(),
-                                         testing::NotNull(),
+              TrackSetSessionDescription(pc_handler_.get(), testing::NotNull(),
                                          PeerConnectionTracker::SOURCE_LOCAL));
-  EXPECT_CALL(*mock_peer_connection_,
-              SetLocalDescription(testing::_, testing::_))
-      .WillOnce(testing::Invoke(
-          mock_peer_connection_,
-          &MockPeerConnectionImpl::SetLocalDescriptionWorker));
+  EXPECT_CALL(*mock_peer_connection_, SetLocalDescription(_, _));
 
   WebKit::WebRTCVoidRequest request;
   WebKit::WebRTCSessionDescription description;
@@ -335,6 +343,14 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
+  // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
+  // before |mock_peer_connection| is called.
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetSessionDescription(pc_handler_.get(), testing::NotNull(),
+                                         PeerConnectionTracker::SOURCE_REMOTE));
+  EXPECT_CALL(*mock_peer_connection_, SetRemoteDescription(_, _));
+
   WebKit::WebRTCVoidRequest request;
   WebKit::WebRTCSessionDescription description;
   description.initialize(kDummySdpType, kDummySdp);
@@ -353,6 +369,7 @@ TEST_F(RTCPeerConnectionHandlerTest, updateICE) {
   WebKit::WebRTCConfiguration config;
   WebKit::WebMediaConstraints constraints;
 
+  EXPECT_CALL(*mock_tracker_.get(), TrackUpdateIce(pc_handler_.get(), _, _));
   // TODO(perkj): Test that the parameters in |config| can be translated when a
   // WebRTCConfiguration can be constructed. It's WebKit class and can't be
   // initialized from a test.
@@ -362,6 +379,11 @@ TEST_F(RTCPeerConnectionHandlerTest, updateICE) {
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
   WebKit::WebRTCICECandidate candidate;
   candidate.initialize(kDummySdp, "mid", 1);
+
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackAddIceCandidate(pc_handler_.get(),
+                                   testing::Ref(candidate),
+                                   PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_TRUE(pc_handler_->addICECandidate(candidate));
   EXPECT_EQ(kDummySdp, mock_peer_connection_->ice_sdp());
   EXPECT_EQ(1, mock_peer_connection_->sdp_mline_index());
@@ -374,6 +396,14 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
       CreateLocalMediaStream(stream_label));
   WebKit::WebMediaConstraints constraints;
 
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackAddStream(pc_handler_.get(),
+                             testing::Ref(local_stream),
+                             PeerConnectionTracker::SOURCE_LOCAL));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackRemoveStream(pc_handler_.get(),
+                                testing::Ref(local_stream),
+                                PeerConnectionTracker::SOURCE_LOCAL));
   EXPECT_TRUE(pc_handler_->addStream(local_stream, constraints));
   EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
   EXPECT_EQ(1u,
@@ -457,90 +487,139 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnSignalingChange) {
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateStable,
-            mock_client_->signaling_state());
+  testing::InSequence sequence;
 
   webrtc::PeerConnectionInterface::SignalingState new_state =
       webrtc::PeerConnectionInterface::kHaveRemoteOffer;
+  EXPECT_CALL(*mock_tracker_.get(), TrackSignalingStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemoteOffer));
+  EXPECT_CALL(*mock_client_.get(), didChangeSignalingState(
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemoteOffer));
   pc_handler_->OnSignalingChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemoteOffer,
-            mock_client_->signaling_state());
 
   new_state = webrtc::PeerConnectionInterface::kHaveLocalPrAnswer;
+  EXPECT_CALL(*mock_tracker_.get(), TrackSignalingStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalPrAnswer));
+  EXPECT_CALL(*mock_client_.get(), didChangeSignalingState(
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalPrAnswer));
   pc_handler_->OnSignalingChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalPrAnswer,
-            mock_client_->signaling_state());
 
   new_state = webrtc::PeerConnectionInterface::kHaveLocalOffer;
+  EXPECT_CALL(*mock_tracker_.get(), TrackSignalingStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalOffer));
+  EXPECT_CALL(*mock_client_.get(), didChangeSignalingState(
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalOffer));
   pc_handler_->OnSignalingChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalOffer,
-            mock_client_->signaling_state());
 
   new_state = webrtc::PeerConnectionInterface::kHaveRemotePrAnswer;
+  EXPECT_CALL(*mock_tracker_.get(), TrackSignalingStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemotePrAnswer));
+  EXPECT_CALL(*mock_client_.get(), didChangeSignalingState(
+      WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemotePrAnswer));
   pc_handler_->OnSignalingChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemotePrAnswer,
-            mock_client_->signaling_state());
 
   new_state = webrtc::PeerConnectionInterface::kClosed;
+  EXPECT_CALL(*mock_tracker_.get(), TrackSignalingStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::SignalingStateClosed));
+  EXPECT_CALL(*mock_client_.get(), didChangeSignalingState(
+      WebRTCPeerConnectionHandlerClient::SignalingStateClosed));
   pc_handler_->OnSignalingChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateClosed,
-            mock_client_->signaling_state());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnIceConnectionChange) {
+  testing::InSequence sequence;
+
   webrtc::PeerConnectionInterface::IceConnectionState new_state =
       webrtc::PeerConnectionInterface::kIceConnectionNew;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceConnectionStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateStarting));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateStarting));
   pc_handler_->OnIceConnectionChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEConnectionStateStarting,
-            mock_client_->ice_connection_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionChecking;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceConnectionStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateChecking));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateChecking));
   pc_handler_->OnIceConnectionChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEConnectionStateChecking,
-            mock_client_->ice_connection_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionConnected;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceConnectionStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateConnected));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateConnected));
   pc_handler_->OnIceConnectionChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEConnectionStateConnected,
-            mock_client_->ice_connection_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionCompleted;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceConnectionStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted));
   pc_handler_->OnIceConnectionChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted,
-            mock_client_->ice_connection_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionFailed;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceConnectionStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateFailed));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateFailed));
   pc_handler_->OnIceConnectionChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEConnectionStateFailed,
-            mock_client_->ice_connection_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionDisconnected;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceConnectionStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateDisconnected));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateDisconnected));
   pc_handler_->OnIceConnectionChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEConnectionStateDisconnected,
-            mock_client_->ice_connection_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionClosed;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceConnectionStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateClosed));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(
+      WebRTCPeerConnectionHandlerClient::ICEConnectionStateClosed));
   pc_handler_->OnIceConnectionChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEConnectionStateClosed,
-            mock_client_->ice_connection_state());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnIceGatheringChange) {
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceGatheringStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEGatheringStateNew));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEGatheringState(
+      WebRTCPeerConnectionHandlerClient::ICEGatheringStateNew));
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceGatheringStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEGatheringStateGathering));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEGatheringState(
+      WebRTCPeerConnectionHandlerClient::ICEGatheringStateGathering));
+  EXPECT_CALL(*mock_tracker_.get(), TrackIceGatheringStateChange(
+      pc_handler_.get(),
+      WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete));
+  EXPECT_CALL(*mock_client_.get(), didChangeICEGatheringState(
+      WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete));
+
   webrtc::PeerConnectionInterface::IceGatheringState new_state =
         webrtc::PeerConnectionInterface::kIceGatheringNew;
   pc_handler_->OnIceGatheringChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEGatheringStateNew,
-            mock_client_->ice_gathering_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceGatheringGathering;
   pc_handler_->OnIceGatheringChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEGatheringStateGathering,
-            mock_client_->ice_gathering_state());
 
   new_state = webrtc::PeerConnectionInterface::kIceGatheringComplete;
   pc_handler_->OnIceGatheringChange(new_state);
-  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete,
-            mock_client_->ice_gathering_state());
+
   // Check NULL candidate after ice gathering is completed.
   EXPECT_EQ("", mock_client_->candidate_mid());
   EXPECT_EQ(-1, mock_client_->candidate_mlineindex());
@@ -551,14 +630,37 @@ TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {
   std::string remote_stream_label("remote_stream");
   scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
-  pc_handler_->OnAddStream(remote_stream);
-  EXPECT_EQ(remote_stream_label, mock_client_->stream_label());
 
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_tracker_.get(), TrackAddStream(
+      pc_handler_.get(),
+      testing::Property(&WebKit::WebMediaStream::label,
+                        UTF8ToUTF16(remote_stream_label)),
+      PeerConnectionTracker::SOURCE_REMOTE));
+  EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
+      testing::Property(&WebKit::WebMediaStream::label,
+                        UTF8ToUTF16(remote_stream_label))));
+
+  EXPECT_CALL(*mock_tracker_.get(), TrackRemoveStream(
+      pc_handler_.get(),
+      testing::Property(&WebKit::WebMediaStream::label,
+                        UTF8ToUTF16(remote_stream_label)),
+      PeerConnectionTracker::SOURCE_REMOTE));
+  EXPECT_CALL(*mock_client_.get(), didRemoveRemoteStream(
+      testing::Property(&WebKit::WebMediaStream::label,
+                        UTF8ToUTF16(remote_stream_label))));
+
+  pc_handler_->OnAddStream(remote_stream);
   pc_handler_->OnRemoveStream(remote_stream);
-  EXPECT_TRUE(mock_client_->stream_label().empty());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnIceCandidate) {
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackAddIceCandidate(pc_handler_.get(), _,
+                                   PeerConnectionTracker::SOURCE_LOCAL));
+  EXPECT_CALL(*mock_client_.get(), didGenerateICECandidate(_));
+
   scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
       mock_dependency_factory_->CreateIceCandidate("mid", 1, kDummySdp));
   pc_handler_->OnIceCandidate(native_candidate.get());
@@ -568,13 +670,19 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceCandidate) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnRenegotiationNeeded) {
-  EXPECT_FALSE(mock_client_->renegotiate());
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackOnRenegotiationNeeded(pc_handler_.get()));
+  EXPECT_CALL(*mock_client_.get(), negotiationNeeded());
   pc_handler_->OnRenegotiationNeeded();
-  EXPECT_TRUE(mock_client_->renegotiate());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
   WebKit::WebString label = "d1";
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackCreateDataChannel(pc_handler_.get(),
+                                     testing::NotNull(),
+                                     PeerConnectionTracker::SOURCE_LOCAL));
   scoped_ptr<WebKit::WebRTCDataChannelHandler> channel(
       pc_handler_->createDataChannel("d1", true));
   EXPECT_TRUE(channel.get() != NULL);
@@ -589,11 +697,17 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
 
   WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
   local_stream.videoSources(tracks);
+
   ASSERT_LE(1ul, tracks.size());
   EXPECT_FALSE(pc_handler_->createDTMFSender(tracks[0]));
 
   local_stream.audioSources(tracks);
   ASSERT_LE(1ul, tracks.size());
+
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackCreateDTMFSender(pc_handler_.get(),
+                                    testing::Ref(tracks[0])));
+
   scoped_ptr<WebKit::WebRTCDTMFSenderHandler> sender(
       pc_handler_->createDTMFSender(tracks[0]));
   EXPECT_TRUE(sender.get());
