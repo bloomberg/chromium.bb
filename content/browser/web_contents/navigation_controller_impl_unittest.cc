@@ -2970,7 +2970,7 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForIntermediate) {
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url2);
 }
 
-// Test call to PruneAllButActive for intermediate entry.
+// Test call to PruneAllButActive for a pending entry.
 TEST_F(NavigationControllerTest, PruneAllButActiveForPending) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
@@ -2989,6 +2989,41 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForPending) {
   controller.PruneAllButActive();
 
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
+}
+
+// Test call to PruneAllButActive for a pending entry that is not yet in the
+// list of entries.
+TEST_F(NavigationControllerTest, PruneAllButActiveForPendingNotInList) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+  const GURL url3("http://foo/3");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  // Create a pending entry that is not in the entry list.
+  controller.LoadURL(
+      url3, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(2, controller.GetEntryCount());
+
+  contents()->ExpectSetHistoryLengthAndPrune(
+      NULL, 0, controller.GetPendingEntry()->GetPageID());
+  controller.PruneAllButActive();
+
+  // We should only have the pending entry at this point, and it should still
+  // not be in the entry list.
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(0, controller.GetEntryCount());
+
+  // Try to commit the pending entry.
+  test_rvh()->SendNavigate(2, url3);
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(url3, controller.GetEntryAtIndex(0)->GetURL());
 }
 
 // Test call to PruneAllButActive for transient entry.

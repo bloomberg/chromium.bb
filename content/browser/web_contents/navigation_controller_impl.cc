@@ -1405,12 +1405,11 @@ void NavigationControllerImpl::PruneAllButActive() {
 
   // If there is an entry left, we need to update the session history length of
   // the RenderView.
-  if (!GetEntryCount())
+  if (!GetActiveEntry())
     return;
 
   NavigationEntryImpl* entry =
       NavigationEntryImpl::FromNavigationEntry(GetActiveEntry());
-  CHECK(entry);
   // We pass 0 instead of GetEntryCount() for the history_length parameter of
   // SetHistoryLengthAndPrune, because it will create history_length additional
   // history entries.
