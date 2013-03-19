@@ -4,11 +4,12 @@
 
 {
   'variables': {
-    # Configuration. Ordinarily, all of these features are enabled. For
-    # Chromium's purposes, disable nearly everything to save about 15kB in
-    # the lzma_decompress library, which will be distributed with updates.
-    # This also translates to a 15kB savings in the compressed disk image
-    # that will contain the update.
+    # Configuration. Ordinarily, all of these features are enabled, and
+    # "small" is disabled. For Chromium's purposes, enable "small" and disable
+    # nearly everything else to save about 36kB in the lzma_decompress
+    # library, which will be distributed with updates. This also translates to
+    # a 25kB savings in the compressed disk image that will contain the
+    # update.
     'check_crc32': 1,
     'check_crc64': 0,
     'check_sha256': 0,
@@ -21,6 +22,7 @@
     'coder_bcj_powerpc': 0,
     'coder_bcj_sparc': 0,
     'coder_bcj_x86': 1,
+    'small': 1,
 
     'lzma_common_defines': [
       'HAVE_CONFIG_H',
@@ -44,16 +46,6 @@
     ],
 
     'lzma_common_source_files': [
-      # CRC-32 must be compiled for header integrity checks, even if it is not
-      # enabled for payload integrity checks. The x86-native CRC-32
-      # implementation is used, the "fast" and "small" variants are not. The
-      # "small" variant compiles to something about 12kB smaller than "x86",
-      # but when bzip2-compressed, the difference is only 2.5kB.
-      # 'xz/src/liblzma/check/crc32_fast.c',
-      # 'xz/src/liblzma/check/crc32_small.c',
-      'xz/src/liblzma/check/crc32_table.c',
-      'xz/src/liblzma/check/crc32_x86.S',
-
       'xz/src/common/tuklib_physmem.c',
       'xz/src/liblzma/check/check.c',
       'xz/src/liblzma/common/block_util.c',
@@ -104,13 +96,36 @@
       'xz/src/liblzma/common/vli_encoder.c',
       'xz/src/liblzma/lz/lz_encoder.c',
       'xz/src/liblzma/lz/lz_encoder_mf.c',
-      'xz/src/liblzma/lzma/fastpos_table.c',
       'xz/src/liblzma/lzma/lzma_encoder.c',
       'xz/src/liblzma/lzma/lzma_encoder_optimum_fast.c',
       'xz/src/liblzma/lzma/lzma_encoder_optimum_normal.c',
     ],
 
     'conditions': [
+      ['small != 0', {
+        'lzma_common_defines': [
+          'HAVE_SMALL=1',
+        ],
+        'lzma_common_source_files': [
+	  # CRC-32 must be compiled for header integrity checks, even if it is
+	  # not enabled for payload integrity checks.
+          'xz/src/liblzma/check/crc32_small.c',
+        ],
+      }, {
+        'lzma_common_source_files': [
+	  # CRC-32 must be compiled for header integrity checks, even if it is
+	  # not enabled for payload integrity checks.
+          #
+          # Use the "fast" implementation instead of the "x86" one for
+          # architecture independence. Both require the "table."
+          'xz/src/liblzma/check/crc32_fast.c',
+          'xz/src/liblzma/check/crc32_table.c',
+          # 'xz/src/liblzma/check/crc32_x86.S',
+        ],
+        'lzma_compress_source_files': [
+          'xz/src/liblzma/lzma/fastpos_table.c',
+        ],
+      }],
       ['check_crc32 != 0', {
         'lzma_common_defines': [
           'HAVE_CHECK_CRC32=1',
@@ -120,12 +135,20 @@
         'lzma_common_defines': [
           'HAVE_CHECK_CRC64=1',
         ],
-        'lzma_common_source_files': [
-          # The "fast" CRC-64 implementation is used, the "small" variant is
-          # not.
-          'xz/src/liblzma/check/crc64_fast.c',
-          # 'xz/src/liblzma/check/crc64_small.c',
-          'xz/src/liblzma/check/crc64_table.c',
+        'conditions': [
+          ['small != 0', {
+            'lzma_common_source_files': [
+              'xz/src/liblzma/check/crc64_small.c',
+            ],
+          }, {
+            'lzma_common_source_files': [
+              # Use the "fast" implementation instead of the "x86" one for
+              # architecture independence. Both require the "table."
+              'xz/src/liblzma/check/crc64_fast.c',
+              'xz/src/liblzma/check/crc64_table.c',
+              # 'xz/src/liblzma/check/crc64_x86.S',
+            ],
+          }],
         ],
       }],
       ['check_sha256 != 0', {
