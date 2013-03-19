@@ -19,13 +19,10 @@ import time
 import traceback
 
 from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
-_PRINT_INTERVAL = 1
 _BUFSIZE = 1024
-SIGTERM_TIMEOUT = 30
-SIGKILL_TIMEOUT = 30
-
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +43,13 @@ class _BackgroundTask(multiprocessing.Process):
   STARTUP_TIMEOUT = 60 * 5
   EXIT_TIMEOUT = 60 * 10
 
+  # The time before terminating or killing a task.
+  SIGTERM_TIMEOUT = 30
+  SIGKILL_TIMEOUT = 60
+
+  # Interval we check for updates from print statements.
+  PRINT_INTERVAL = 1
+
   def __init__(self, task, semaphore=None):
     """Create a new _BackgroundTask object.
 
@@ -58,7 +62,9 @@ class _BackgroundTask(multiprocessing.Process):
     self._queue = multiprocessing.Queue()
     self._semaphore = semaphore
     self._started = multiprocessing.Event()
+    self._killing = multiprocessing.Event()
     self._output = None
+    self._parent_pid = None
 
   def _WaitForStartup(self):
     # TODO(davidjames): Use python-2.7 syntax to simplify this.
@@ -66,13 +72,22 @@ class _BackgroundTask(multiprocessing.Process):
     msg = 'Process failed to start in %d seconds' % self.STARTUP_TIMEOUT
     assert self._started.is_set(), msg
 
-  def Kill(self, sig):
+  def Kill(self, sig, log_level):
     """Kill process with signal, ignoring if the process is dead.
 
     Args:
       sig: Signal to send.
+      log_level: The log level of log messages.
     """
     self._WaitForStartup()
+    if logger.isEnabledFor(log_level):
+      # Print a pstree of the hanging process.
+      logger.log(log_level, 'Killing %r (sig=%r)', self.pid, sig)
+      cros_build_lib.RunCommand(['pstree', '-Apal', str(self.pid)],
+                                debug_level=log_level, error_code_ok=True,
+                                log_output=True)
+
+    self._killing.set()
     try:
       os.kill(self.pid, sig)
     except OSError as ex:
@@ -81,6 +96,8 @@ class _BackgroundTask(multiprocessing.Process):
 
   def Cleanup(self, silent=False):
     """Wait for a process to exit."""
+    if os.getpid() != self._parent_pid or self._output is None:
+      return
     try:
       # Print output from subprocess.
       if not silent and logger.isEnabledFor(logging.DEBUG):
@@ -108,29 +125,40 @@ class _BackgroundTask(multiprocessing.Process):
       # File position pointers are shared across processes, so we must open
       # our own file descriptor to ensure output is not lost.
       self._WaitForStartup()
+      results = []
       with open(self._output.name, 'r') as output:
         pos = 0
         more_output = True
+        exited_cleanly = False
         while more_output:
-          # Check whether the process is finished.
+          # Check whether the process is still alive.
+          more_output = self.is_alive()
+
           try:
-            error, results = self._queue.get(True, _PRINT_INTERVAL)
-
-            # Wait for the process to actually exit.
+            error, results = self._queue.get(True, self.PRINT_INTERVAL)
             more_output = False
+            exited_cleanly = True
+          except Queue.Empty:
+            pass
 
-            # If the child doesn't exit in a timely fashion, kill it.
+          if not more_output:
+            # Wait for the process to actually exit. If the child doesn't exit
+            # in a timely fashion, kill it.
             self.join(self.EXIT_TIMEOUT)
             if self.exitcode is None:
-              _KillChildren([self])
               msg = '%r hung for %r seconds' % (self, self.EXIT_TIMEOUT)
+              logger.warning(msg)
+              self._KillChildren([self])
               error = (error + '\n%s' % msg) if error else msg
-          except Queue.Empty:
-            more_output = True
+            elif not exited_cleanly:
+              error = ('%r exited unexpectedly with code %s' %
+                       (self, self.exitcode))
 
-          # Print output so far.
+          # Read output from process.
           output.seek(pos)
           buf = output.read(_BUFSIZE)
+
+          # Print output so far.
           while len(buf) > 0:
             sys.stdout.write(buf)
             pos += len(buf)
@@ -155,17 +183,24 @@ class _BackgroundTask(multiprocessing.Process):
     sys.stderr.flush()
     self._output = tempfile.NamedTemporaryFile(delete=False, bufsize=0,
                                                prefix='chromite-parallel-')
+    self._parent_pid = os.getpid()
     return multiprocessing.Process.start(self)
 
   def run(self):
     """Run the list of steps."""
     if self._semaphore is not None:
       self._semaphore.acquire()
+
+    error = 'Unexpected exception in %r' % self
+    pid = os.getpid()
     try:
-      self._Run()
+      error = self._Run()
     finally:
-      if self._semaphore is not None:
-        self._semaphore.release()
+      if os.getpid() == pid:
+        results = results_lib.Results.Get()
+        self._queue.put((error, results))
+        if self._semaphore is not None:
+          self._semaphore.release()
 
   def _Run(self):
     """Internal method for running the list of steps."""
@@ -203,100 +238,142 @@ class _BackgroundTask(multiprocessing.Process):
       except BaseException as ex:
         error = traceback.format_exc()
 
+      if self._killing.is_set():
+        output.write(error)
+
       sys.stdout.flush()
       sys.stderr.flush()
+    return error
 
-    results = results_lib.Results.Get()
-    self._queue.put((error, results))
+  @classmethod
+  def _KillChildren(cls, bg_tasks, log_level=logging.WARNING):
+    """Kill a deque of background tasks.
 
+    This is needed to prevent hangs in the case where child processes refuse
+    to exit.
 
-def _KillChildren(bg_tasks):
-  """Kill a deque of background tasks.
+    Arguments:
+      bg_tasks: A list filled with _BackgroundTask objects.
+      log_level: The log level of log messages.
+    """
 
-  This is needed to prevent hangs in the case where child processes refuse
-  to exit.
-
-  Arguments:
-    bg_tasks: A deque, filled with _BackgroundTask objects.
-  """
-
-  signals = ((signal.SIGINT, SIGTERM_TIMEOUT),
-             (signal.SIGTERM, SIGKILL_TIMEOUT),
-             (signal.SIGKILL, None))
-  for sig, timeout in signals:
-    # Send signal to all tasks.
-    for task in bg_tasks:
-      task.Kill(sig)
-
-    # Wait for all tasks to exit, if requested.
-    if timeout is None:
+    logger.log(log_level, 'Killing tasks: %r', bg_tasks)
+    signals = ((signal.SIGINT, cls.SIGTERM_TIMEOUT),
+               (signal.SIGTERM, cls.SIGKILL_TIMEOUT),
+               (signal.SIGKILL, None))
+    for sig, timeout in signals:
+      # Send signal to all tasks.
       for task in bg_tasks:
-        task.join()
-        task.Cleanup()
-      break
+        task.Kill(sig, log_level)
 
-    # Wait until timeout expires.
-    end_time = time.time() + timeout
-    while bg_tasks:
-      time_left = end_time - time.time()
-      if time_left <= 0:
+      # Wait for all tasks to exit, if requested.
+      if timeout is None:
+        for task in bg_tasks:
+          task.join()
+          task.Cleanup()
         break
-      task = bg_tasks[0]
-      task.join(time_left)
-      if task.exitcode is not None:
-        task.Cleanup()
-        bg_tasks.popleft()
 
-
-@contextlib.contextmanager
-def _ParallelSteps(steps, max_parallel=None, halt_on_error=False):
-  """Run a list of functions in parallel.
-
-  This function launches the provided functions in the background, yields,
-  and then waits for the functions to exit.
-
-  The output from the functions is saved to a temporary file and printed as if
-  they were run in sequence.
-
-  If exceptions occur in the steps, we join together the tracebacks and print
-  them after all parallel tasks have finished running. Further, a
-  BackgroundFailure is raised with full stack traces of all exceptions.
-
-  Args:
-    steps: A list of functions to run.
-    max_parallel: The maximum number of simultaneous tasks to run in parallel.
-      By default, run all tasks in parallel.
-    halt_on_error: After the first exception occurs, halt any running steps,
-      and squelch any further output, including any exceptions that might occur.
-  """
-
-  semaphore = None
-  if max_parallel is not None:
-    semaphore = multiprocessing.Semaphore(max_parallel)
-
-  # First, start all the steps.
-  bg_tasks = collections.deque()
-  for step in steps:
-    task = _BackgroundTask(step, semaphore)
-    task.start()
-    bg_tasks.append(task)
-
-  try:
-    yield
-  finally:
-    # Wait for each step to complete.
-    tracebacks = []
-    while bg_tasks:
-      task = bg_tasks.popleft()
-      error = task.Wait()
-      if error is not None:
-        tracebacks.append(error)
-        if halt_on_error:
+      # Wait until timeout expires.
+      end_time = time.time() + timeout
+      while bg_tasks:
+        time_left = end_time - time.time()
+        if time_left <= 0:
           break
+        task = bg_tasks[-1]
+        task.join(time_left)
+        if task.exitcode is not None:
+          task.Cleanup()
+          bg_tasks.pop()
 
-    # If there are still tasks left, kill them.
-    if bg_tasks:
-      _KillChildren(bg_tasks)
+  @classmethod
+  @contextlib.contextmanager
+  def ParallelTasks(cls, steps, max_parallel=None, halt_on_error=False):
+    """Run a list of functions in parallel.
+
+    This function launches the provided functions in the background, yields,
+    and then waits for the functions to exit.
+
+    The output from the functions is saved to a temporary file and printed as if
+    they were run in sequence.
+
+    If exceptions occur in the steps, we join together the tracebacks and print
+    them after all parallel tasks have finished running. Further, a
+    BackgroundFailure is raised with full stack traces of all exceptions.
+
+    Args:
+      steps: A list of functions to run.
+      max_parallel: The maximum number of simultaneous tasks to run in parallel.
+        By default, run all tasks in parallel.
+      halt_on_error: After the first exception occurs, halt any running steps,
+        and squelch any further output, including any exceptions that might
+        occur.
+    """
+
+    semaphore = None
+    if max_parallel is not None:
+      semaphore = multiprocessing.Semaphore(max_parallel)
+
+    # First, start all the steps.
+    bg_tasks = collections.deque()
+    for step in steps:
+      task = cls(step, semaphore)
+      task.start()
+      bg_tasks.append(task)
+
+    try:
+      yield
+    finally:
+      # Wait for each step to complete.
+      tracebacks = []
+      while bg_tasks:
+        task = bg_tasks.popleft()
+        error = task.Wait()
+        if error is not None:
+          tracebacks.append(error)
+          if halt_on_error:
+            break
+
+      # If there are still tasks left, kill them.
+      if bg_tasks:
+        cls._KillChildren(bg_tasks, log_level=logging.DEBUG)
+
+      # Propagate any exceptions.
+      if tracebacks:
+        raise BackgroundFailure('\n' + ''.join(tracebacks))
+
+  @staticmethod
+  def TaskRunner(queue, task, onexit=None):
+    """Run task(*input) for each input in the queue.
+
+    Returns when it encounters an _AllTasksComplete object on the queue.
+    If exceptions occur, save them off and re-raise them as a
+    BackgroundFailure once we've finished processing the items in the queue.
+
+    Args:
+      queue: A queue of tasks to run. Add tasks to this queue, and they will
+        be run.
+      task: Function to run on each queued input.
+      onexit: Function to run after all inputs are processed.
+    """
+    tracebacks = []
+    while True:
+      # Wait for a new item to show up on the queue. This is a blocking wait,
+      # so if there's nothing to do, we just sit here.
+      x = queue.get()
+      if isinstance(x, _AllTasksComplete):
+        # All tasks are complete, so we should exit.
+        break
+
+      # If no tasks failed yet, process the remaining tasks.
+      if not tracebacks:
+        try:
+          task(*x)
+        except BaseException:
+          tracebacks.append(traceback.format_exc())
+
+    # Run exit handlers.
+    if onexit:
+      onexit()
 
     # Propagate any exceptions.
     if tracebacks:
@@ -331,51 +408,13 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False):
     RunParallelSteps(steps)
     # Blocks until all calls have completed.
   """
-  with _ParallelSteps(steps, max_parallel=max_parallel,
-                      halt_on_error=halt_on_error):
+  with _BackgroundTask.ParallelTasks(steps, max_parallel=max_parallel,
+                                     halt_on_error=halt_on_error):
     pass
 
 
 class _AllTasksComplete(object):
   """Sentinel object to indicate that all tasks are complete."""
-
-
-def _TaskRunner(queue, task, onexit=None):
-  """Run task(*input) for each input in the queue.
-
-  Returns when it encounters an _AllTasksComplete object on the queue.
-  If exceptions occur, save them off and re-raise them as a
-  BackgroundFailure once we've finished processing the items in the queue.
-
-  Args:
-    queue: A queue of tasks to run. Add tasks to this queue, and they will
-      be run.
-    task: Function to run on each queued input.
-    onexit: Function to run after all inputs are processed.
-  """
-  tracebacks = []
-  while True:
-    # Wait for a new item to show up on the queue. This is a blocking wait,
-    # so if there's nothing to do, we just sit here.
-    x = queue.get()
-    if isinstance(x, _AllTasksComplete):
-      # All tasks are complete, so we should exit.
-      break
-
-    # If no tasks failed yet, process the remaining tasks.
-    if not tracebacks:
-      try:
-        task(*x)
-      except BaseException:
-        tracebacks.append(traceback.format_exc())
-
-  # Run exit handlers.
-  if onexit:
-    onexit()
-
-  # Propagate any exceptions.
-  if tracebacks:
-    raise BackgroundFailure('\n' + ''.join(tracebacks))
 
 
 @contextlib.contextmanager
@@ -422,8 +461,9 @@ def BackgroundTaskRunner(task, queue=None, processes=None, onexit=None):
   if not processes:
     processes = multiprocessing.cpu_count()
 
-  steps = [functools.partial(_TaskRunner, queue, task, onexit)] * processes
-  with _ParallelSteps(steps):
+  child = functools.partial(_BackgroundTask.TaskRunner, queue, task, onexit)
+  steps = [child] * processes
+  with _BackgroundTask.ParallelTasks(steps):
     try:
       yield queue
     finally:

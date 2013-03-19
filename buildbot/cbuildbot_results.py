@@ -158,7 +158,7 @@ class _Results(object):
     return True
 
   def WasStageSuccessful(self, name):
-    """Return true stage passed."""
+    """Return true if stage passed."""
     cros_build_lib.Info('Checking for %s' % name)
     for entry in self._results_log:
       entry, result, _, _ = entry
@@ -167,6 +167,10 @@ class _Results(object):
         return result == self.SUCCESS
 
     return False
+
+  def StageHasResults(self, name):
+    """Return true if stage has posted results."""
+    return name in [entry[0] for entry in self._results_log]
 
   def Record(self, name, result, description=None, time=0):
     """Store off an additional stage result.

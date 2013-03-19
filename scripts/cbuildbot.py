@@ -349,6 +349,22 @@ class SimpleBuilder(Builder):
 
     return sync_stage
 
+  @staticmethod
+  def _RunParallelStages(stage_objs):
+    """Run the specified stages in parallel."""
+    steps = [stage.Run for stage in stage_objs]
+    try:
+      parallel.RunParallelSteps(steps)
+    except BaseException as ex:
+      # If a stage threw an exception, it might not have correctly reported
+      # results (e.g. because it was killed before it could report the
+      # results.) In this case, attribute the exception to any stages that
+      # didn't report back correctly (if any).
+      for stage in stage_objs:
+        if not results_lib.Results.StageHasResults(stage.name):
+          results_lib.Results.Record(stage.name, ex, str(ex))
+      raise
+
   def _RunBackgroundStagesForBoard(self, board):
     """Run background board-specific stages for the specified board."""
     archive_stage = self.archive_stages[board]
@@ -372,8 +388,8 @@ class SimpleBuilder(Builder):
         stage_list.append([stages.ASyncHWTestStage, board, archive_stage,
                            suite])
 
-    steps = [self._GetStageInstance(*x, config=config).Run for x in stage_list]
-    parallel.RunParallelSteps(steps + [archive_stage.Run])
+    stage_objs = [self._GetStageInstance(*x, config=config) for x in stage_list]
+    self._RunParallelStages(stage_objs + [archive_stage])
 
   def RunStages(self):
     """Runs through build process."""

@@ -10,6 +10,7 @@ import copy
 import json
 import mox
 import os
+import signal
 import shutil
 import StringIO
 import sys
@@ -1277,6 +1278,22 @@ class SkipStage(bs.BuilderStage):
   config_name = 'signer_tests'
 
 
+class SneakyFailStage(bs.BuilderStage):
+  """SneakyFailStage exits with an error."""
+
+  def _PerformStage(self):
+    """Exit without reporting back."""
+    os._exit(1)
+
+
+class SuicideStage(bs.BuilderStage):
+  """SuicideStage kills itself with kill -9."""
+
+  def _PerformStage(self):
+    """Exit without reporting back."""
+    os.kill(os.getpid(), signal.SIGKILL)
+
+
 class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def setUp(self):
@@ -1361,6 +1378,26 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS)
 
     self.assertFalse(results_lib.Results.BuildSucceededSoFar())
+
+  def testParallelStages(self):
+    stage_objs = [stage(self.options, self.build_config) for stage in
+                  (PassStage, SneakyFailStage, FailStage, SuicideStage,
+                   Pass2Stage)]
+    error = None
+    with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
+      try:
+        cbuildbot.SimpleBuilder._RunParallelStages(stage_objs)
+      except parallel.BackgroundFailure as ex:
+        error = ex
+    self.assertTrue(error)
+    expectedResults = [
+        ('Pass', results_lib.Results.SUCCESS),
+        ('Fail', FailStage.FAIL_EXCEPTION),
+        ('Pass2', results_lib.Results.SUCCESS),
+        ('SneakyFail', error),
+        ('Suicide', error),
+    ]
+    self._verifyRunResults(expectedResults)
 
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""

@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import contextlib
+import logging
 import multiprocessing
 import os
 import signal
@@ -17,6 +18,10 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 # pylint: disable=W0212
 _BUFSIZE = 10**4
@@ -34,11 +39,11 @@ class ParallelMock(partial_mock.PartialMock):
   testing.
   """
 
-  TARGET = 'chromite.lib.parallel'
-  ATTRS = ('_ParallelSteps', '_TaskRunner')
+  TARGET = 'chromite.lib.parallel._BackgroundTask'
+  ATTRS = ('ParallelTasks', 'TaskRunner')
 
   @contextlib.contextmanager
-  def _ParallelSteps(self, steps, max_parallel=None, halt_on_error=False):
+  def ParallelTasks(self, steps, max_parallel=None, halt_on_error=False):
     assert max_parallel is None or isinstance(max_parallel, (int, long))
     assert isinstance(halt_on_error, bool)
     try:
@@ -47,7 +52,7 @@ class ParallelMock(partial_mock.PartialMock):
       for step in steps:
         step()
 
-  def _TaskRunner(self, queue, task, onexit=None):
+  def TaskRunner(self, queue, task, onexit=None):
     try:
       while True:
         # Wait for a new item to show up on the queue. This is a blocking wait,
@@ -99,7 +104,7 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
     # Complain if there are any children left over.
     active_children = multiprocessing.active_children()
     for child in active_children:
-      child.Kill(signal.SIGKILL)
+      child.Kill(signal.SIGKILL, log_level=logging.WARNING)
       child.join()
     self.assertEqual(multiprocessing.active_children(), [])
     self.assertEqual(active_children, [])
@@ -107,20 +112,13 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
   def wrapOutputTest(self, func):
     # Set _PRINT_INTERVAL to a smaller number to make it easier to
     # reproduce bugs.
-    old_print_interval = parallel._PRINT_INTERVAL
-    parallel._PRINT_INTERVAL = 0.01
-    with tempfile.NamedTemporaryFile(bufsize=0) as output:
-      old_stdout = sys.stdout
-      with open(output.name, 'r', 0) as tmp:
-        self.tempfile = tmp
-        try:
-          sys.stdout = output
+    with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
+      with tempfile.NamedTemporaryFile(bufsize=0) as output:
+        with mock.patch.multiple(sys, stdout=output):
           func()
-        finally:
-          parallel._PRINT_INTERVAL = old_print_interval
-          sys.stdout = old_stdout
-        tmp.seek(0)
-        return tmp.read()
+        with open(output.name, 'r', 0) as tmp:
+          tmp.seek(0)
+          return tmp.read()
 
 
 class TestHelloWorld(TestBackgroundWrapper):
@@ -138,7 +136,7 @@ class TestHelloWorld(TestBackgroundWrapper):
     # Wait for the parent process to read the output. Once the output
     # has been read, try writing 'hello world' again, to be sure that
     # rewritten output is not read twice.
-    time.sleep(parallel._PRINT_INTERVAL * 10)
+    time.sleep(parallel._BackgroundTask.PRINT_INTERVAL * 10)
     sys.stdout.write(_GREETING)
     sys.stdout.flush()
 
@@ -262,19 +260,20 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
     sys.exit(1)
 
   def _Fail(self):
-    self.failed.wait(30)
+    self.failed.wait(60)
     self.failed.set()
 
   def testExceptionRaising(self):
     """Test that exceptions halt all running steps."""
     steps = [self._Exit, self._Fail, self._Pass, self._Fail]
-    output_str = None
+    output_str, ex_str = None, None
     with self.OutputCapturer() as capture:
       try:
         parallel.RunParallelSteps(steps, halt_on_error=True)
       except parallel.BackgroundFailure as ex:
         output_str = capture.GetStdout()
         ex_str = str(ex)
+        logging.debug(ex_str)
     self.assertTrue('Traceback' in ex_str)
     self.assertTrue(self.passed.is_set())
     self.assertEqual(output_str, _GREETING)
@@ -292,8 +291,6 @@ if __name__ == '__main__':
   # Set timeouts small so that if the unit test hangs, it won't hang for long.
   parallel._BackgroundTask.STARTUP_TIMEOUT = 5
   parallel._BackgroundTask.EXIT_TIMEOUT = 5
-  parallel.TERM_TIMEOUT = 5
-  parallel.KILL_TIMEOUT = 5
 
   # Run the tests.
-  cros_test_lib.main()
+  cros_test_lib.main(level=logging.INFO)
