@@ -172,6 +172,10 @@ void AppListItemView::OnMouseDragTimer() {
   SetUIState(UI_STATE_DRAGGING);
 }
 
+void AppListItemView::Prerender() {
+  title_->PaintToBackingImage();
+}
+
 void AppListItemView::ItemIconChanged() {
   UpdateIcon();
 }

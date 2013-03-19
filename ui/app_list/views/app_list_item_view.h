@@ -42,6 +42,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   void SetIconSize(const gfx::Size& size);
 
+  void Prerender();
+
   AppListItemModel* model() const { return model_; }
 
  private:

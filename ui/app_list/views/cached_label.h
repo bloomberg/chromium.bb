@@ -23,15 +23,15 @@ class CachedLabel : public views::Label {
   // Have the next call to OnPaint() update the backing image.
   void Invalidate() { needs_repaint_ = true; }
 
+  // Calls the base label's OnPaint() to paint into a backing image.
+  void PaintToBackingImage();
+
 #if defined(OS_WIN)
   // views::View overrides.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 #endif
 
  private:
-  // Calls the base label's OnPaint() to paint into a backing image.
-  void PaintToBackingImage();
-
   bool needs_repaint_;
   gfx::ImageSkia image_;
 };

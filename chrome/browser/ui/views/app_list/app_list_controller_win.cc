@@ -534,6 +534,7 @@ void AppListController::InitView(Profile* profile) {
   if (current_view_)
     return;
   PopulateViewFromProfile(profile);
+  current_view_->Prerender();
 }
 
 void AppListController::ShowAppListDuringModeSwitch(Profile* profile) {

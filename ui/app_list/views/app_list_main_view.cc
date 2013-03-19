@@ -130,6 +130,10 @@ void AppListMainView::Close() {
   icon_loading_wait_timer_.Stop();
 }
 
+void AppListMainView::Prerender() {
+  contents_view_->Prerender();
+}
+
 void AppListMainView::PreloadIcons(PaginationModel* pagination_model,
                                    views::View* anchor) {
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;

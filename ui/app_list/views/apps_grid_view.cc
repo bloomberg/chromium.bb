@@ -40,6 +40,9 @@ const int kPageFlipZoneSize = 40;
 // Delay in milliseconds to do the page flip.
 const int kPageFlipDelayInMs = 1000;
 
+// How many pages on either side of the selected one we prerender.
+const int kPrerenderPages = 1;
+
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
 // the original position, then the item is moved to just before its target
@@ -234,6 +237,17 @@ void AppsGridView::EndDrag(bool cancel) {
 
 bool AppsGridView::IsDraggedView(const views::View* view) const {
   return drag_view_ == view;
+}
+
+void AppsGridView::Prerender(int page_index) {
+  Layout();
+  int start = std::max(0, (page_index - kPrerenderPages) * tiles_per_page());
+  int end = std::min(view_model_.view_size(),
+                     (page_index + 1 + kPrerenderPages) * tiles_per_page());
+  for (int i = start; i < end; i++) {
+    AppListItemView* v = static_cast<AppListItemView*>(view_model_.view_at(i));
+    v->Prerender();
+  }
 }
 
 gfx::Size AppsGridView::GetPreferredSize() {

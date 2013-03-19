@@ -59,6 +59,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // WidgetDelegate overrides:
   virtual bool ShouldHandleSystemCommands() const OVERRIDE;
 
+  void Prerender();
+
  private:
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;

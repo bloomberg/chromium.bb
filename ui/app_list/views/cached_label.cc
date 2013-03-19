@@ -15,18 +15,19 @@ CachedLabel::CachedLabel()
 }
 
 void CachedLabel::PaintToBackingImage() {
+  if (image_.size() == size() && !needs_repaint_)
+    return;
   gfx::Canvas canvas(size(), ui::SCALE_FACTOR_100P, false /* is_opaque */);
   canvas.FillRect(GetLocalBounds(), SkColorSetARGB(0, 0, 0, 0),
                   SkXfermode::kSrc_Mode);
   Label::OnPaint(&canvas);
   image_ = gfx::ImageSkia(canvas.ExtractImageRep());
+  needs_repaint_ = false;
 }
 
 #if defined(OS_WIN)
 void CachedLabel::OnPaint(gfx::Canvas* canvas) {
-  if (needs_repaint_)
-    PaintToBackingImage();
-  needs_repaint_ = false;
+  PaintToBackingImage();
   canvas->DrawImageInt(image_, 0, 0);
 }
 #endif

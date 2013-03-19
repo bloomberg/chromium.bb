@@ -43,6 +43,8 @@ class AppListMainView : public views::View,
 
   void Close();
 
+  void Prerender();
+
   SearchBoxView* search_box_view() { return search_box_view_; }
 
  private:

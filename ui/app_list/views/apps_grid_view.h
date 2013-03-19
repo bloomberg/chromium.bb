@@ -74,6 +74,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
 
+  // Prerenders the icons on and around |page_index|.
+  void Prerender(int page_index);
+
   bool has_dragged_view() const { return drag_view_ != NULL; }
   bool dragging() const { return drag_pointer_ != NONE; }
 

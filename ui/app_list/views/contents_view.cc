@@ -142,6 +142,11 @@ void ContentsView::ShowSearchResults(bool show) {
   SetShowState(show ? SHOW_SEARCH_RESULTS : SHOW_APPS);
 }
 
+void ContentsView::Prerender() {
+  const int selected_page = std::max(0, pagination_model_->selected_page());
+  GetAppsGridView(view_model_.get())->Prerender(selected_page);
+}
+
 gfx::Size ContentsView::GetPreferredSize() {
   const gfx::Size grid_size =
       GetAppsGridView(view_model_.get())->GetPreferredSize();

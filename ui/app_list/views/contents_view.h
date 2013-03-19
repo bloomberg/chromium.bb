@@ -35,6 +35,8 @@ class ContentsView : public views::View {
 
   void ShowSearchResults(bool show);
 
+  void Prerender();
+
  private:
   enum ShowState {
     SHOW_APPS,
