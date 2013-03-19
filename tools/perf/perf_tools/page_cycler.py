@@ -126,17 +126,17 @@ class PageCycler(page_benchmark.PageBenchmark):
                 chart_name='read_op_b', data_type='unimportant')
     results.Add('w_op_b', '', io_stats['Browser']['WriteOperationCount'],
                 chart_name='write_op_b', data_type='unimportant')
-    results.Add('r_b', 'kb', io_stats['Browser']['ReadTransferCount'],
+    results.Add('r_b', 'kb', io_stats['Browser']['ReadTransferCount'] / 1024,
                 chart_name='read_byte_b', data_type='unimportant')
-    results.Add('w_b', 'kb', io_stats['Browser']['WriteTransferCount'],
+    results.Add('w_b', 'kb', io_stats['Browser']['WriteTransferCount'] / 1024,
                 chart_name='write_byte_b', data_type='unimportant')
     results.Add('r_op_r', '', io_stats['Renderer']['ReadOperationCount'],
                 chart_name='read_op_r', data_type='unimportant')
     results.Add('w_op_r', '', io_stats['Renderer']['WriteOperationCount'],
                 chart_name='write_op_r', data_type='unimportant')
-    results.Add('r_r', 'kb', io_stats['Renderer']['ReadOperationCount'],
+    results.Add('r_r', 'kb', io_stats['Renderer']['ReadTransferCount'] / 1024,
                 chart_name='read_byte_r', data_type='unimportant')
-    results.Add('w_r', 'kb', io_stats['Renderer']['WriteOperationCount'],
+    results.Add('w_r', 'kb', io_stats['Renderer']['WriteTransferCount'] / 1024,
                 chart_name='write_byte_r', data_type='unimportant')
 
   def MeasurePage(self, page, tab, results):
