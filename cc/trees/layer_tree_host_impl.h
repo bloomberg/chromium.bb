@@ -132,6 +132,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                        base::Time wall_clock_time);
 
   void ManageTiles();
+  void SetAnticipatedDrawTime(base::TimeTicks time);
 
   // Returns false if problems occured preparing the frame, and we should try
   // to avoid displaying the frame. If prepareToDraw is called, DidDrawAllLayers

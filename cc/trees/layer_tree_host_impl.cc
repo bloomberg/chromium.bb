@@ -280,6 +280,12 @@ void LayerTreeHostImpl::ManageTiles() {
                          memory_used_bytes);
 }
 
+void LayerTreeHostImpl::SetAnticipatedDrawTime(base::TimeTicks time)
+{
+  if (tile_manager_)
+    tile_manager_->SetAnticipatedDrawTime(time);
+}
+
 void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
                                                 bool anchor_point,
                                                 float page_scale,
@@ -1003,8 +1009,6 @@ const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
 }
 
 bool LayerTreeHostImpl::SwapBuffers() {
-  if (tile_manager_)
-    tile_manager_->DidCompleteFrame();
   return renderer_->SwapBuffers();
 }
 

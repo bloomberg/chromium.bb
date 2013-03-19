@@ -90,7 +90,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void CheckForCompletedTileUploads();
   void AbortPendingTileUploads();
   void ForceTileUploadToComplete(Tile* tile);
-  void DidCompleteFrame();
+  void SetAnticipatedDrawTime(base::TimeTicks time);
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
@@ -141,6 +141,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
     client_->ScheduleManageTiles();
     manage_tiles_pending_ = true;
   }
+  void UpdateCheapTasksTimeLimit();
   void DispatchMoreTasks();
   void AnalyzeTile(Tile* tile);
   void GatherPixelRefsForTile(Tile* tile);
@@ -215,13 +216,13 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   bool use_cheapness_estimator_;
   bool use_color_estimator_;
-  bool did_schedule_cheap_tasks_;
-  bool allow_cheap_tasks_;
   int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];
   bool prediction_benchmarking_;
 
   size_t pending_tasks_;
   size_t max_pending_tasks_;
+
+  base::TimeTicks anticipated_draw_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

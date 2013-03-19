@@ -164,8 +164,6 @@ TileManager::TileManager(
       record_rendering_stats_(false),
       use_cheapness_estimator_(use_cheapness_estimator),
       use_color_estimator_(use_color_estimator),
-      did_schedule_cheap_tasks_(false),
-      allow_cheap_tasks_(true),
       prediction_benchmarking_(prediction_benchmarking),
       pending_tasks_(0),
       max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads) {
@@ -196,6 +194,7 @@ void TileManager::SetGlobalState(
   global_state_ = global_state;
   resource_pool_->SetMaxMemoryUsageBytes(global_state_.memory_limit_in_bytes);
   ScheduleManageTiles();
+  UpdateCheapTasksTimeLimit();
 }
 
 void TileManager::RegisterTile(Tile* tile) {
@@ -425,11 +424,6 @@ void TileManager::AbortPendingTileUploads() {
     DidTileRasterStateChange(tile, IDLE_STATE);
     tiles_with_pending_upload_.pop();
   }
-}
-
-void TileManager::DidCompleteFrame() {
-  allow_cheap_tasks_ = true;
-  did_schedule_cheap_tasks_ = false;
 }
 
 void TileManager::ForceTileUploadToComplete(Tile* tile) {
@@ -665,9 +659,6 @@ bool TileManager::CanDispatchRasterTask(Tile* tile) const {
 }
 
 void TileManager::DispatchMoreTasks() {
-  if (did_schedule_cheap_tasks_)
-    allow_cheap_tasks_ = false;
-
   // Because tiles in the image decoding list have higher priorities, we
   // need to process those tiles first before we start to handle the tiles
   // in the need_to_be_rasterized queue. Note that solid/transparent tiles
@@ -839,6 +830,23 @@ scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
   return resource.Pass();
 }
 
+void TileManager::SetAnticipatedDrawTime(base::TimeTicks time) {
+  anticipated_draw_time_ = time;
+  UpdateCheapTasksTimeLimit();
+}
+
+void TileManager::UpdateCheapTasksTimeLimit() {
+  base::TimeTicks limit;
+  if (use_cheapness_estimator_ &&
+      global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY) {
+    limit = std::min(
+        base::TimeTicks::Now() +
+            base::TimeDelta::FromMilliseconds(kRunCheapTasksTimeMs),
+        anticipated_draw_time_);
+  }
+  raster_worker_pool_->SetRunCheapTasksTimeLimit(limit);
+}
+
 void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   TRACE_EVENT0("cc", "TileManager::DispatchOneRasterTask");
   scoped_ptr<ResourcePool::Resource> resource = PrepareTileForRaster(tile);
@@ -847,15 +855,9 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
       resource_pool_->resource_provider()->MapPixelBuffer(resource_id);
 
   ManagedTileState& managed_tile_state = tile->managed_state();
-  // TODO(skyostil): Post all cheap tasks as cheap and instead use the time
-  // limit to control their execution.
-  bool is_cheap_task =
-      allow_cheap_tasks_ &&
-      global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
-      managed_tile_state.picture_pile_analysis.is_cheap_to_raster;
   raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
-      is_cheap_task,
+      managed_tile_state.picture_pile_analysis.is_cheap_to_raster,
       base::Bind(&TileManager::RunRasterTask,
                  buffer,
                  tile->content_rect(),
@@ -866,12 +868,6 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                  tile,
                  base::Passed(&resource),
                  manage_tiles_call_count_));
-  if (is_cheap_task && !did_schedule_cheap_tasks_) {
-    raster_worker_pool_->SetRunCheapTasksTimeLimit(
-        base::TimeTicks::Now() +
-        base::TimeDelta::FromMilliseconds(kRunCheapTasksTimeMs));
-    did_schedule_cheap_tasks_ = true;
-  }
   pending_tasks_++;
 }
 
