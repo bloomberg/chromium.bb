@@ -61,6 +61,11 @@ class SurfaceStatsCollector(object):
   def GetResults(self):
     return self._results
 
+  @staticmethod
+  def _GetNormalizedDeltas(data, refresh_period):
+    deltas = [t2 - t1 for t1, t2 in zip(data, data[1:])]
+    return (deltas, [delta / refresh_period for delta in deltas])
+
   def _StorePerfResults(self):
     if self._use_legacy_method:
       surface_after = self._GetSurfaceStatsLegacy()
@@ -70,45 +75,48 @@ class SurfaceStatsCollector(object):
                      self._surface_before['page_flip_count'])
     else:
       assert self._collector_thread
-      (seconds, latencies) = self._GetDataFromThread()
-      if not seconds or not len(latencies):
+      (refresh_period, timestamps) = self._GetDataFromThread()
+      if not refresh_period or not len(timestamps) >= 3:
         logging.warning('Surface stat data is empty')
         return
+      frame_count = len(timestamps)
+      seconds = timestamps[-1] - timestamps[0]
 
-      frame_count = len(latencies)
-      jitter_count = 0
-      last_latency = latencies[0]
-      for latency in latencies[1:]:
-        if latency > last_latency:
-          jitter_count = jitter_count + 1
-        last_latency = latency
+      frame_lengths, normalized_frame_lengths = \
+          self._GetNormalizedDeltas(timestamps, refresh_period)
+      length_changes, normalized_changes = \
+          self._GetNormalizedDeltas(frame_lengths, refresh_period)
+      jankiness = [max(0, round(change)) for change in normalized_changes]
+      pause_threshold = 20
+      jank_count = sum(1 for change in jankiness
+                       if change > 0 and change < pause_threshold)
 
       self._results.append(SurfaceStatsCollector.Result(
-          'surface_latencies', latencies, ''))
+          'refresh_period', refresh_period, 'seconds'))
       self._results.append(SurfaceStatsCollector.Result(
-          'peak_jitter', [max(latencies)], ''))
+          'jank_count', jank_count, 'janks'))
       self._results.append(SurfaceStatsCollector.Result(
-          'jitter_percent', [jitter_count * 100.0 / frame_count], 'percent'))
+          'max_frame_delay', round(max(normalized_frame_lengths)),
+          'vsyncs'))
+      self._results.append(SurfaceStatsCollector.Result(
+          'frame_lengths', normalized_frame_lengths, 'vsyncs'))
     self._results.append(SurfaceStatsCollector.Result(
-          'avg_surface_fps', [int(round(frame_count / seconds))], 'fps'))
+        'avg_surface_fps', int(round(frame_count / seconds)), 'fps'))
 
   def _CollectorThread(self):
     last_timestamp = 0
-    first_timestamp = 0
-    latencies = []
+    timestamps = []
     retries = 0
-    has_collected_data = False
 
     while not self._stop_event.is_set():
       self._get_data_event.wait(1)
       try:
-        (t, last_timestamp) = self._GetSurfaceFlingerLatencyData(last_timestamp,
-                                                                 latencies)
-        if (t, last_timestamp) == (None, None):
+        refresh_period, new_timestamps = self._GetSurfaceFlingerFrameData()
+        if refresh_period is None or timestamps is None:
           retries += 1
           if retries < 3:
             continue
-          if has_collected_data:
+          if last_timestamp:
             # Some data has already been collected, but either the app
             # was closed or there's no new data. Signal the main thread and
             # wait.
@@ -117,17 +125,15 @@ class SurfaceStatsCollector(object):
             break
           raise Exception('Unable to get surface flinger latency data')
 
-        has_collected_data = True
-
-        if not first_timestamp:
-          first_timestamp = t
+        timestamps += [timestamp for timestamp in new_timestamps
+                       if timestamp > last_timestamp]
+        if len(timestamps):
+          last_timestamp = timestamps[-1]
 
         if self._get_data_event.is_set():
           self._get_data_event.clear()
-          self._data_queue.put(((last_timestamp - first_timestamp) / 1e9,
-                                latencies))
-          latencies = []
-          first_timestamp = 0
+          self._data_queue.put((refresh_period, timestamps))
+          timestamps = []
       except Exception as e:
         # On any error, before aborting, put the exception into _data_queue to
         # prevent the main thread from waiting at _data_queue.get() infinitely.
@@ -154,21 +160,15 @@ class SurfaceStatsCollector(object):
         'dumpsys SurfaceFlinger --latency-clear SurfaceView')
     return not len(results)
 
-  def _GetSurfaceFlingerLatencyData(self, previous_timestamp, latencies):
-    """Returns collected SurfaceFlinger latency data.
-
-    Args:
-      previous_timestamp: The timestamp returned from the previous call or 0.
-          Only data after this timestamp will be returned.
-      latencies: A list to receive latency data. The latencies are integers
-          each of which is the number of refresh periods of each frame.
+  def _GetSurfaceFlingerFrameData(self):
+    """Returns collected SurfaceFlinger frame timing data.
 
     Returns:
       A tuple containing:
-      - The timestamp of the beginning of the first frame (ns),
-      - The timestamp of the end of the last frame (ns).
-      The tuple may be (None, None) if there was no data collected (for example,
-      if the app was closed before the collector thread has finished).
+      - The display's nominal refresh period in seconds.
+      - A list of timestamps signifying frame presentation times in seconds.
+      The return value may be (None, None) if there was no data collected (for
+      example, if the app was closed before the collector thread has finished).
     """
     # adb shell dumpsys SurfaceFlinger --latency <window name>
     # prints some information about the last 128 frames displayed in
@@ -204,21 +204,18 @@ class SurfaceStatsCollector(object):
     if not len(results):
       return (None, None)
 
-    refresh_period = int(results[0])
-    last_timestamp = previous_timestamp
-    first_timestamp = 0
+    timestamps = []
+    nanoseconds_per_second = 1e9
+    refresh_period = long(results[0]) / nanoseconds_per_second
+
     for line in results[1:]:
       fields = line.split()
-      if len(fields) == 3:
-        timestamp = long(fields[0])
-        last_timestamp = long(fields[2])
-        if (timestamp > previous_timestamp):
-          if not first_timestamp:
-            first_timestamp = timestamp
-          # This is integral equivalent of ceil((C-A) / refresh-period)
-          latency_ns = int(last_timestamp - timestamp)
-          latencies.append((latency_ns + refresh_period - 1) / refresh_period)
-    return (first_timestamp, last_timestamp)
+      if len(fields) != 3:
+        continue
+      timestamp = long(fields[1]) / nanoseconds_per_second
+      timestamps.append(timestamp)
+
+    return (refresh_period, timestamps)
 
   def _GetSurfaceStatsLegacy(self):
     """Legacy method (before JellyBean), returns the current Surface index
