@@ -20,7 +20,7 @@ function FileListBannerController(
 
   this.initializeBanner_();
 
-  var handler = this.checkSpaceAndShowBanner_.bind(this);
+  var handler = this.checkSpaceAndMaybeShowBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
   this.directoryModel_.addEventListener('rescan-completed', handler);
   this.directoryModel_.addEventListener('directory-changed',
@@ -207,51 +207,6 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
 };
 
 /**
- * Desides whether to show a banner and if so which one.
- * @private
- */
-FileListBannerController.prototype.maybeShowBanner_ = function() {
-  if (!this.isOnDrive()) {
-    this.cleanupDriveWelcome_();
-    this.previousDirWasOnDrive_ = false;
-    return;
-  }
-
-  if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
-      !this.directoryModel_.isDriveMounted())
-    return;
-
-  if (this.directoryModel_.getFileList().length == 0 &&
-      this.welcomeHeaderCounter_ == 0) {
-    // Only show the full page banner if the header banner was never shown.
-    // Do not increment the counter.
-    // The timeout below is required because sometimes another
-    // 'rescan-completed' event arrives shortly with non-empty file list.
-    var self = this;
-    setTimeout(
-        function() {
-          var container = self.document_.querySelector('.dialog-container');
-          if (self.isOnDrive() && self.welcomeHeaderCounter_ == 0) {
-            self.showBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
-          }
-        },
-        2000);
-  } else if (this.welcomeHeaderCounter_ < WELCOME_HEADER_COUNTER_LIMIT) {
-    // We do not want to increment the counter when the user navigates
-    // between different directories on Drive, but we increment the counter
-    // once anyway to prevent the full page banner from showing.
-     if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
-       var self = this;
-       this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
-       self.showBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
-     }
-   } else {
-     this.closeBanner_();
-   }
-   this.previousDirWasOnDrive_ = true;
-};
-
-/**
  * Show or hide the "Low Google Drive space" warning.
  * @param {boolean} show True if the box need to be shown.
  * @param {Object} sizeStats Size statistics. Should be defined when showing the
@@ -398,23 +353,83 @@ FileListBannerController.prototype.closeBanner_ = function() {
  * Shows or hides the welcome banner for drive.
  * @private
  */
-FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
+FileListBannerController.prototype.checkSpaceAndMaybeShowBanner_ = function() {
+  if (!this.isOnDrive()) {
+    // We are not on the drive file system. Do not show (close) the welcome
+    // banner.
+    this.cleanupDriveWelcome_();
+    this.previousDirWasOnDrive_ = false;
+    return;
+  }
+
+  if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
+      !this.directoryModel_.isDriveMounted()) {
+    // The banner is already shown enough times or the drive FS is not mounted.
+    // So, do nothing here.
+    return;
+  }
+
+  if (!this.showOffers_) {
+    // Because it is not necessary to show the offer, set
+    // |useNewWelcomeBanner_| false here. Note that it probably should be able
+    // to do this in the constructor, but there remains non-trivial path,
+    // which may be causes |useNewWelcomeBanner_| == true's behavior even
+    // if |showOffers_| is false.
+    // TODO(hidehiko): Make sure if it is expected or not, and simplify
+    // |showOffers_| if possible.
+    this.useNewWelcomeBanner_ = false;
+  }
+
   var self = this;
-  if (self.useNewWelcomeBanner_ && self.isOnDrive()) {
+  if (self.useNewWelcomeBanner_) {
+    // getSizeStats for Drive file system accesses to the server, so we should
+    // minimize the invocation.
     chrome.fileBrowserPrivate.getSizeStats(
         util.makeFilesystemUrl(self.directoryModel_.getCurrentRootPath()),
         function(result) {
-          var offerSpaceKb = 100 * 1024 * 1024;  // 100GB.
-          if (util.boardIs('link'))
-            offerSpaceKb = 1024 * 1024 * 1024;  // 1TB.
-          if ((result && result.totalSizeKB >= offerSpaceKb) ||
-              !self.showOffers_)
+          var offerSpaceKb = util.boardIs('link') ?
+              1024 * 1024 * 1024 :  // 1TB.
+              100 * 1024 * 1024;  // 100GB.
+          if (result && result.totalSizeKB >= offerSpaceKb) {
             self.useNewWelcomeBanner_ = false;
+          }
           self.maybeShowBanner_();
         });
   } else {
     self.maybeShowBanner_();
   }
+};
+
+/**
+ * Decides which banner should be shown, and show it. This method is designed
+ * to be called only from checkSpaceAndMaybeShowBanner_.
+ * @private
+ */
+FileListBannerController.prototype.maybeShowBanner_ = function() {
+  if (this.directoryModel_.getFileList().length == 0 &&
+      this.welcomeHeaderCounter_ == 0) {
+    // Only show the full page banner if the header banner was never shown.
+    // Do not increment the counter.
+    // The timeout below is required because sometimes another
+    // 'rescan-completed' event arrives shortly with non-empty file list.
+    var self = this;
+    setTimeout(
+        function() {
+          if (self.isOnDrive() && self.welcomeHeaderCounter_ == 0) {
+            self.showBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
+          }
+        },
+        2000);
+  } else {
+    // We do not want to increment the counter when the user navigates
+    // between different directories on Drive, but we increment the counter
+    // once anyway to prevent the full page banner from showing.
+    if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
+      this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
+      this.showBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
+    }
+  }
+  this.previousDirWasOnDrive_ = true;
 };
 
 /**
