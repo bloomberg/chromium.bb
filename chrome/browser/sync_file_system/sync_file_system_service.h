@@ -121,6 +121,11 @@ class SyncFileSystemService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  void HandleExtensionUnloaded(int type,
+                               const content::NotificationDetails& details);
+  void HandleExtensionEnabled(int type,
+                              const content::NotificationDetails& details);
+
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged() OVERRIDE;
 
