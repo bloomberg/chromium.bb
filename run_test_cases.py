@@ -352,6 +352,9 @@ class Progress(object):
         self.last_printed_line = ''
 
       sys.stdout.write(line)
+    # Ensure that all the output is flush to prevent it from getting mixed with
+    # other output streams (like the logging streams).
+    sys.stdout.flush()
 
 
 def setup_gtest_env():
