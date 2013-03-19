@@ -577,6 +577,8 @@ TYPED_TEST_P(CookieStoreTest, PathTest) {
 TYPED_TEST_P(CookieStoreTest, EmptyExpires) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
   CookieOptions options;
+  if (!TypeParam::supports_http_only)
+    options.set_include_httponly();
   GURL url("http://www7.ipdl.inpit.go.jp/Tokujitu/tjkta.ipdl?N0000=108");
   std::string set_cookie_line =
       "ACSTM=20130308043820420042; path=/; domain=ipdl.inpit.go.jp; Expires=";
