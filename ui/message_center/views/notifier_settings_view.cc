@@ -202,6 +202,7 @@ NotifierSettingsView* NotifierSettingsView::Create(
   params.delegate = view;
   params.context = context;
   widget->Init(params);
+  widget->CenterWindow(widget->GetWindowBoundsInScreen().size());
   widget->Show();
 
   return view;
