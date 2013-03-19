@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "googleurl/src/gurl.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_bridge_manager.h"
 
@@ -68,8 +69,8 @@ class MediaPlayerManagerAndroid
   // Message handlers.
   void OnEnterFullscreen(int player_id);
   void OnExitFullscreen(int player_id);
-  void OnInitialize(int player_id, const std::string& url,
-                    const std::string& first_party_for_cookies);
+  void OnInitialize(int player_id, const GURL& url,
+                    const GURL& first_party_for_cookies);
   void OnStart(int player_id);
   void OnSeek(int player_id, base::TimeDelta time);
   void OnPause(int player_id);

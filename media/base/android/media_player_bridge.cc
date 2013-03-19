@@ -12,8 +12,8 @@
 #include "base/message_loop_proxy.h"
 #include "jni/MediaPlayerBridge_jni.h"
 #include "jni/MediaPlayer_jni.h"
-#include "media/base/android/cookie_getter.h"
 #include "media/base/android/media_player_bridge_manager.h"
+#include "media/base/android/media_resource_getter.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
@@ -34,9 +34,9 @@ namespace media {
 
 MediaPlayerBridge::MediaPlayerBridge(
     int player_id,
-    const std::string& url,
-    const std::string& first_party_for_cookies,
-    CookieGetter* cookie_getter,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    MediaResourceGetter* resource_getter,
     bool hide_url_log,
     MediaPlayerBridgeManager* manager,
     const MediaErrorCB& media_error_cb,
@@ -60,7 +60,6 @@ MediaPlayerBridge::MediaPlayerBridge(
       pending_play_(false),
       url_(url),
       first_party_for_cookies_(first_party_for_cookies),
-      has_cookies_(false),
       hide_url_log_(hide_url_log),
       duration_(base::TimeDelta::FromSeconds(kTemporaryDuration)),
       width_(0),
@@ -69,10 +68,12 @@ MediaPlayerBridge::MediaPlayerBridge(
       can_seek_forward_(true),
       can_seek_backward_(true),
       manager_(manager),
-      cookie_getter_(cookie_getter),
+      resource_getter_(resource_getter),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
       listener_(base::MessageLoopProxy::current(),
-                weak_this_.GetWeakPtr()) {}
+                weak_this_.GetWeakPtr()) {
+  has_cookies_ = url_.SchemeIsFileSystem() || url_.SchemeIsFile();
+}
 
 MediaPlayerBridge::~MediaPlayerBridge() {
   Release();
@@ -108,7 +109,7 @@ void MediaPlayerBridge::Prepare() {
   if (has_cookies_) {
     GetCookiesCallback(cookies_);
   } else {
-    cookie_getter_->GetCookies(url_, first_party_for_cookies_, base::Bind(
+    resource_getter_->GetCookies(url_, first_party_for_cookies_, base::Bind(
         &MediaPlayerBridge::GetCookiesCallback, weak_this_.GetWeakPtr()));
   }
 }
@@ -116,6 +117,19 @@ void MediaPlayerBridge::Prepare() {
 void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
   cookies_ = cookies;
   has_cookies_ = true;
+
+  if (j_media_player_.is_null())
+    return;
+
+  if (url_.SchemeIsFileSystem()) {
+    resource_getter_->GetPlatformPathFromFileSystemURL(url_, base::Bind(
+        &MediaPlayerBridge::SetDataSource, weak_this_.GetWeakPtr()));
+  } else {
+    SetDataSource(url_.spec());
+  }
+}
+
+void MediaPlayerBridge::SetDataSource(const std::string& url) {
   if (j_media_player_.is_null())
     return;
 
@@ -123,7 +137,7 @@ void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
   CHECK(env);
 
   // Create a Java String for the URL.
-  ScopedJavaLocalRef<jstring> j_url_string = ConvertUTF8ToJavaString(env, url_);
+  ScopedJavaLocalRef<jstring> j_url_string = ConvertUTF8ToJavaString(env, url);
   ScopedJavaLocalRef<jstring> j_cookies = ConvertUTF8ToJavaString(
       env, cookies_);
 

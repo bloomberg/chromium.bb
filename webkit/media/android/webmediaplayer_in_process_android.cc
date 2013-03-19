@@ -23,22 +23,28 @@ using media::MediaPlayerBridge;
 
 namespace webkit_media {
 
-InProcessCookieGetter::InProcessCookieGetter(WebKit::WebCookieJar* cookie_jar)
+InProcessMediaResourceGetter::InProcessMediaResourceGetter(
+    WebKit::WebCookieJar* cookie_jar)
     : cookie_jar_(cookie_jar) {
 }
 
-InProcessCookieGetter::~InProcessCookieGetter() {}
+InProcessMediaResourceGetter::~InProcessMediaResourceGetter() {}
 
-void InProcessCookieGetter::GetCookies(
-    const std::string& url,
-    const std::string& first_party_for_cookies,
+void InProcessMediaResourceGetter::GetCookies(
+    const GURL& url,
+    const GURL& first_party_for_cookies,
     const GetCookieCB& callback) {
   std::string cookies;
   if (cookie_jar_ != NULL) {
     cookies = UTF16ToUTF8(
-        cookie_jar_->cookies(GURL(url), GURL(first_party_for_cookies)));
+        cookie_jar_->cookies(url, first_party_for_cookies));
   }
   callback.Run(cookies);
+}
+
+void InProcessMediaResourceGetter::GetPlatformPathFromFileSystemURL(
+    const GURL& url, const GetPlatformPathCB& callback) {
+  callback.Run(std::string());
 }
 
 WebMediaPlayerInProcessAndroid::WebMediaPlayerInProcessAndroid(
@@ -135,8 +141,8 @@ void WebMediaPlayerInProcessAndroid::SetVideoSurface(jobject j_surface) {
 void WebMediaPlayerInProcessAndroid::InitializeMediaPlayer(GURL url) {
   GURL first_party_url = frame_->document().firstPartyForCookies();
   media_player_.reset(new MediaPlayerBridge(
-      player_id(), url.spec(), first_party_url.spec(),
-      new InProcessCookieGetter(cookie_jar_),
+      player_id(), url, first_party_url,
+      new InProcessMediaResourceGetter(cookie_jar_),
       disable_history_logging_,
       resource_manager_,
       base::Bind(&WebMediaPlayerInProcessAndroid::MediaErrorCallback,

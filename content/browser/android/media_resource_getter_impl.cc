@@ -1,11 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/cookie_getter_impl.h"
+#include "content/browser/android/media_resource_getter_impl.h"
 
 #include "base/bind.h"
+#include "base/path_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -18,12 +20,11 @@
 
 namespace content {
 
-static void ReturnCookieOnUIThread(
-    const media::CookieGetter::GetCookieCB& callback,
-    const std::string& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+static void ReturnResultOnUIThread(
+    const base::Callback<void(const std::string&)>& callback,
+    const std::string& result) {
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, cookies));
+      BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
 }
 
 // The task object that retrieves cookie on the IO thread.
@@ -38,7 +39,7 @@ class CookieGetterTask
   // Called by CookieGetterImpl to start getting cookies for a URL.
   void RequestCookies(
       const GURL& url, const GURL& first_party_for_cookies,
-      const media::CookieGetter::GetCookieCB& callback);
+      const media::MediaResourceGetter::GetCookieCB& callback);
 
  private:
   friend class base::RefCountedThreadSafe<CookieGetterTask>;
@@ -46,7 +47,7 @@ class CookieGetterTask
 
   void CheckPolicyForCookies(
       const GURL& url, const GURL& first_party_for_cookies,
-      const media::CookieGetter::GetCookieCB& callback,
+      const media::MediaResourceGetter::GetCookieCB& callback,
       const net::CookieList& cookie_list);
 
   // Context getter used to get the CookieStore.
@@ -76,7 +77,7 @@ CookieGetterTask::~CookieGetterTask() {}
 
 void CookieGetterTask::RequestCookies(
     const GURL& url, const GURL& first_party_for_cookies,
-    const media::CookieGetter::GetCookieCB& callback) {
+    const media::MediaResourceGetter::GetCookieCB& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -104,7 +105,7 @@ void CookieGetterTask::RequestCookies(
 
 void CookieGetterTask::CheckPolicyForCookies(
     const GURL& url, const GURL& first_party_for_cookies,
-    const media::CookieGetter::GetCookieCB& callback,
+    const media::MediaResourceGetter::GetCookieCB& callback,
     const net::CookieList& cookie_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (GetContentClient()->browser()->AllowGetCookie(
@@ -119,37 +120,114 @@ void CookieGetterTask::CheckPolicyForCookies(
   }
 }
 
-CookieGetterImpl::CookieGetterImpl(
-    BrowserContext* browser_context, int renderer_id, int routing_id)
+// The task object that retrieves platform path on the FILE thread.
+class PlatformPathGetterTask
+    : public base::RefCountedThreadSafe<PlatformPathGetterTask> {
+ public:
+  PlatformPathGetterTask(fileapi::FileSystemContext* file_system_context,
+                         int renderer_id);
+
+  // Called by MediaResourceGetterImpl to get the platform path from a file
+  // system URL.
+  void RequestPlaformPath(
+      const GURL& url,
+      const media::MediaResourceGetter::GetPlatformPathCB& callback);
+
+ private:
+  friend class base::RefCountedThreadSafe<PlatformPathGetterTask>;
+  virtual ~PlatformPathGetterTask();
+
+  // File system context for getting the platform path.
+  fileapi::FileSystemContext* file_system_context_;
+
+  // Render process id, used to check whether the process can access the URL.
+  int renderer_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformPathGetterTask);
+};
+
+PlatformPathGetterTask::PlatformPathGetterTask(
+    fileapi::FileSystemContext* file_system_context, int renderer_id)
+    : file_system_context_(file_system_context),
+      renderer_id_(renderer_id) {
+}
+
+PlatformPathGetterTask::~PlatformPathGetterTask() {}
+
+void PlatformPathGetterTask::RequestPlaformPath(
+    const GURL& url,
+    const media::MediaResourceGetter::GetPlatformPathCB& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FilePath platform_path;
+  SyncGetPlatformPath(file_system_context_,
+                      renderer_id_,
+                      url,
+                      &platform_path);
+  base::FilePath data_storage_path;
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
+  if (data_storage_path.IsParent(platform_path))
+    callback.Run(platform_path.value());
+  else
+    callback.Run(std::string());
+}
+
+MediaResourceGetterImpl::MediaResourceGetterImpl(
+    BrowserContext* browser_context,
+    fileapi::FileSystemContext* file_system_context,
+    int renderer_id, int routing_id)
     : browser_context_(browser_context),
+      file_system_context_(file_system_context),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
       renderer_id_(renderer_id),
       routing_id_(routing_id) {
 }
 
-CookieGetterImpl::~CookieGetterImpl() {}
+MediaResourceGetterImpl::~MediaResourceGetterImpl() {}
 
-void CookieGetterImpl::GetCookies(const std::string& url,
-                                  const std::string& first_party_for_cookies,
+void MediaResourceGetterImpl::GetCookies(const GURL& url,
+                                  const GURL& first_party_for_cookies,
                                   const GetCookieCB& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<CookieGetterTask> task = new CookieGetterTask(
       browser_context_, renderer_id_, routing_id_);
 
-  GetCookieCB cb = base::Bind(
-      &CookieGetterImpl::GetCookiesCallback, weak_this_.GetWeakPtr(), callback);
+  GetCookieCB cb = base::Bind(&MediaResourceGetterImpl::GetCookiesCallback,
+                              weak_this_.GetWeakPtr(), callback);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&CookieGetterTask::RequestCookies,
-                 task, GURL(url), GURL(first_party_for_cookies),
-                 base::Bind(&ReturnCookieOnUIThread, cb)));
+                 task, url, first_party_for_cookies,
+                 base::Bind(&ReturnResultOnUIThread, cb)));
 }
 
-void CookieGetterImpl::GetCookiesCallback(
+void MediaResourceGetterImpl::GetCookiesCallback(
     const GetCookieCB& callback, const std::string& cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback.Run(cookies);
+}
+
+void MediaResourceGetterImpl::GetPlatformPathFromFileSystemURL(
+      const GURL& url, const GetPlatformPathCB& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_refptr<PlatformPathGetterTask> task = new PlatformPathGetterTask(
+      file_system_context_, renderer_id_);
+
+  GetPlatformPathCB cb = base::Bind(
+      &MediaResourceGetterImpl::GetPlatformPathCallback,
+      weak_this_.GetWeakPtr(), callback);
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&PlatformPathGetterTask::RequestPlaformPath,
+                 task, url,
+                 base::Bind(&ReturnResultOnUIThread, cb)));
+}
+
+void MediaResourceGetterImpl::GetPlatformPathCallback(
+    const GetPlatformPathCB& callback, const std::string& platform_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  callback.Run(platform_path);
 }
 
 }  // namespace content

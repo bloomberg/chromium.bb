@@ -49,8 +49,7 @@ bool WebMediaPlayerProxyImplAndroid::OnMessageReceived(
 }
 
 void WebMediaPlayerProxyImplAndroid::Initialize(
-    int player_id, const std::string& url,
-    const std::string& first_party_for_cookies) {
+    int player_id, const GURL& url, const GURL& first_party_for_cookies) {
   Send(new MediaPlayerHostMsg_MediaPlayerInitialize(
       routing_id(), player_id, url, first_party_for_cookies));
 }

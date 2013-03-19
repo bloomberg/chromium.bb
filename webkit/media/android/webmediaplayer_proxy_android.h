@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/time.h"
+#include "googleurl/src/gurl.h"
 
 namespace webkit_media {
 
@@ -20,8 +21,8 @@ class WebMediaPlayerProxyAndroid {
   virtual ~WebMediaPlayerProxyAndroid();
 
   // Initialize a MediaPlayerBridge object in browser process
-  virtual void Initialize(int player_id, const std::string& url,
-                          const std::string& first_party_for_cookies) = 0;
+  virtual void Initialize(int player_id, const GURL& url,
+                          const GURL& first_party_for_cookies) = 0;
 
   // Start the player.
   virtual void Start(int player_id) = 0;

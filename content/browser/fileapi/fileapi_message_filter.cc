@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
@@ -506,42 +507,7 @@ void FileAPIMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
 
 void FileAPIMessageFilter::OnSyncGetPlatformPath(
     const GURL& path, base::FilePath* platform_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(platform_path);
-  *platform_path = base::FilePath();
-  FileSystemURL url(context_->CrackURL(path));
-  if (!url.is_valid())
-    return;
-
-  // Make sure if this file is ok to be read (in the current architecture
-  // which means roughly same as the renderer is allowed to get the platform
-  // path to the file).
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(url, fileapi::kReadFilePermissions, &error))
-    return;
-
-  // This is called only by pepper plugin as of writing to get the
-  // underlying platform path to upload a file in the sandboxed filesystem
-  // (e.g. TEMPORARY or PERSISTENT).
-  // TODO(kinuko): this hack should go away once appropriate upload-stream
-  // handling based on element types is supported.
-  LocalFileSystemOperation* operation =
-      context_->CreateFileSystemOperation(
-          url, NULL)->AsLocalFileSystemOperation();
-  DCHECK(operation);
-  if (!operation)
-    return;
-
-  operation->SyncGetPlatformPath(url, platform_path);
-
-  // The path is to be attached to URLLoader so we grant read permission
-  // for the file. (We first need to check if it can already be read not to
-  // overwrite existing permissions)
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-          process_id_, *platform_path)) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        process_id_, *platform_path);
-  }
+  SyncGetPlatformPath(context_, process_id_, path, platform_path);
 }
 
 void FileAPIMessageFilter::OnCreateSnapshotFile(
@@ -898,50 +864,8 @@ void FileAPIMessageFilter::RegisterFileAsBlob(
 
 bool FileAPIMessageFilter::HasPermissionsForFile(
     const FileSystemURL& url, int permissions, base::PlatformFileError* error) {
-  DCHECK(error);
-  *error = base::PLATFORM_FILE_OK;
-
-  if (!url.is_valid()) {
-    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
-    return false;
-  }
-
-  FileSystemMountPointProvider* mount_point_provider =
-      context_->GetMountPointProvider(url.type());
-  if (!mount_point_provider) {
-    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
-    return false;
-  }
-
-  base::FilePath file_path;
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  switch (mount_point_provider->GetPermissionPolicy(url, permissions)) {
-    case fileapi::FILE_PERMISSION_ALWAYS_DENY:
-      *error = base::PLATFORM_FILE_ERROR_SECURITY;
-      return false;
-    case fileapi::FILE_PERMISSION_ALWAYS_ALLOW:
-      CHECK(mount_point_provider == context_->sandbox_provider());
-      return true;
-    case fileapi::FILE_PERMISSION_USE_FILE_PERMISSION: {
-      const bool success = policy->HasPermissionsForFile(
-          process_id_, url.path(), permissions);
-      if (!success)
-        *error = base::PLATFORM_FILE_ERROR_SECURITY;
-      return success;
-    }
-    case fileapi::FILE_PERMISSION_USE_FILESYSTEM_PERMISSION: {
-      const bool success = policy->HasPermissionsForFileSystem(
-          process_id_, url.filesystem_id(), permissions);
-      if (!success)
-        *error = base::PLATFORM_FILE_ERROR_SECURITY;
-      return success;
-    }
-  }
-  NOTREACHED();
-  *error = base::PLATFORM_FILE_ERROR_SECURITY;
-  return false;
+  return CheckFileSystemPermissionsForProcess(context_, process_id_, url,
+                                              permissions, error);
 }
 
 FileSystemOperation* FileAPIMessageFilter::GetNewOperation(

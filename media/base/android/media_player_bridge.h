@@ -15,12 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "googleurl/src/gurl.h"
 #include "media/base/media_export.h"
 #include "media/base/android/media_player_listener.h"
 
 namespace media {
 
-class CookieGetter;
+class MediaResourceGetter;
 class MediaPlayerBridgeManager;
 
 // This class serves as a bridge for native code to call java functions inside
@@ -74,9 +75,9 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // unused resources and free them when needed. On the other hand, it needs
   // to call ReleaseMediaResources() when it is done with decoding.
   MediaPlayerBridge(int player_id,
-                    const std::string& url,
-                    const std::string& first_party_for_cookies,
-                    CookieGetter* cookie_getter,
+                    const GURL& url,
+                    const GURL& first_party_for_cookies,
+                    MediaResourceGetter* resource_getter,
                     bool hide_url_log,
                     MediaPlayerBridgeManager* manager,
                     const MediaErrorCB& media_error_cb,
@@ -138,7 +139,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // be called with an error type.
   void Prepare();
 
-  // Callback function passed to |cookies_retriever_|.
+  // Callback function passed to |resource_getter_|.
   void GetCookiesCallback(const std::string& cookies);
 
   int player_id() { return player_id_; }
@@ -150,6 +151,9 @@ class MEDIA_EXPORT MediaPlayerBridge {
  private:
   // Create the actual android media player.
   void InitializePlayer();
+
+  // Set the data source for the media player.
+  void SetDataSource(const std::string& url);
 
   // Functions that implements media player control.
   void StartInternal();
@@ -181,10 +185,10 @@ class MEDIA_EXPORT MediaPlayerBridge {
   base::TimeDelta pending_seek_;
 
   // Url for playback.
-  std::string url_;
+  GURL url_;
 
   // First party url for cookies.
-  std::string first_party_for_cookies_;
+  GURL first_party_for_cookies_;
 
   // Whether cookies are available.
   bool has_cookies_;
@@ -202,14 +206,14 @@ class MEDIA_EXPORT MediaPlayerBridge {
   bool can_seek_forward_;
   bool can_seek_backward_;
 
-  // Cookies for |url_|
+  // Cookies for |url_|.
   std::string cookies_;
 
   // Resource manager for all the media players.
   MediaPlayerBridgeManager* manager_;
 
-  // Object for retrieving cookies for this media player.
-  scoped_ptr<CookieGetter> cookie_getter_;
+  // Object for retrieving resources for this media player.
+  scoped_ptr<MediaResourceGetter> resource_getter_;
 
   // Java MediaPlayer instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_;

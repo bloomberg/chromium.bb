@@ -5,11 +5,12 @@
 #include "content/browser/android/media_player_manager_android.h"
 
 #include "base/bind.h"
-#include "content/browser/android/cookie_getter_impl.h"
+#include "content/browser/android/media_resource_getter_impl.h"
 #include "content/common/media/media_player_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 
 using media::MediaPlayerBridge;
 
@@ -94,8 +95,7 @@ void MediaPlayerManagerAndroid::SetVideoSurface(jobject surface) {
 }
 
 void MediaPlayerManagerAndroid::OnInitialize(
-    int player_id, const std::string& url,
-    const std::string& first_party_for_cookies) {
+    int player_id, const GURL& url, const GURL& first_party_for_cookies) {
   for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
@@ -106,9 +106,13 @@ void MediaPlayerManagerAndroid::OnInitialize(
 
   RenderProcessHost* host = render_view_host()->GetProcess();
   BrowserContext* context = host->GetBrowserContext();
+  StoragePartition* partition = host->GetStoragePartition();
+  fileapi::FileSystemContext* file_system_context =
+      partition ? partition->GetFileSystemContext() : NULL;
   players_.push_back(new MediaPlayerBridge(
       player_id, url, first_party_for_cookies,
-      new CookieGetterImpl(context, host->GetID(), routing_id()),
+      new MediaResourceGetterImpl(context, file_system_context, host->GetID(),
+                                  routing_id()),
       context->IsOffTheRecord(), this,
       base::Bind(&MediaPlayerManagerAndroid::OnError, base::Unretained(this)),
       base::Bind(&MediaPlayerManagerAndroid::OnVideoSizeChanged,

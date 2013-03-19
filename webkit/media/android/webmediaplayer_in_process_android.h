@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/android/cookie_getter.h"
+#include "media/base/android/media_resource_getter.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
@@ -32,21 +32,25 @@ namespace webkit_media {
 class StreamTextureFactory;
 class WebMediaPlayerManagerAndroid;
 
-// Class for retrieving the cookies from WebCookieJar.
-class InProcessCookieGetter : public media::CookieGetter {
+// Class for retrieving the media resources.
+class InProcessMediaResourceGetter
+    : public media::MediaResourceGetter {
  public:
   // Construct an InProcessCookieGetter object from a WebCookieJar.
-  explicit InProcessCookieGetter(WebKit::WebCookieJar* cookie_jar);
-  virtual ~InProcessCookieGetter();
+  explicit InProcessMediaResourceGetter(WebKit::WebCookieJar* cookie_jar);
+  virtual ~InProcessMediaResourceGetter();
 
   // media::CookieGetter implementation.
-  virtual void GetCookies(const std::string& url,
-                          const std::string& first_party_for_cookies,
+  virtual void GetCookies(const GURL& url,
+                          const GURL& first_party_for_cookies,
                           const GetCookieCB& callback) OVERRIDE;
+  virtual void GetPlatformPathFromFileSystemURL(
+      const GURL& url,
+      const GetPlatformPathCB& callback) OVERRIDE;
 
 private:
   WebKit::WebCookieJar* cookie_jar_;
-  DISALLOW_COPY_AND_ASSIGN(InProcessCookieGetter);
+  DISALLOW_COPY_AND_ASSIGN(InProcessMediaResourceGetter);
 };
 
 // This class implements WebKit::WebMediaPlayer by keeping the android

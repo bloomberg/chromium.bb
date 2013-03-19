@@ -9,6 +9,7 @@
 
 #include "base/time.h"
 #include "content/common/content_export.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -84,8 +85,8 @@ IPC_MESSAGE_ROUTED0(MediaPlayerHostMsg_DestroyAllMediaPlayers)
 // Initialize a media player object with the given player_id.
 IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_MediaPlayerInitialize,
                     int /* player_id */,
-                    std::string /* url */,
-                    std::string /* first_party_for_cookies */)
+                    GURL /* url */,
+                    GURL /* first_party_for_cookies */)
 
 // Pause the player.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_MediaPlayerPause,
