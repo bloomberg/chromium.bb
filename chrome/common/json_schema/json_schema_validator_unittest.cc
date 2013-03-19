@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "chrome/common/json_schema_validator.h"
-#include "chrome/common/json_schema_validator_unittest_base.h"
+#include "chrome/common/json_schema/json_schema_validator.h"
+#include "chrome/common/json_schema/json_schema_validator_unittest_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class JSONSchemaValidatorCPPTest : public JSONSchemaValidatorTestBase {

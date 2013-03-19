@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/json_schema_constants.h"
+#include "chrome/common/json_schema/json_schema_constants.h"
 
 namespace json_schema_constants {
 

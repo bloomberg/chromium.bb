@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/json_schema_validator.h"
+#include "chrome/common/json_schema/json_schema_validator.h"
 
 #include <cfloat>
 #include <cmath>
@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/common/json_schema_constants.h"
+#include "chrome/common/json_schema/json_schema_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace schema = json_schema_constants;

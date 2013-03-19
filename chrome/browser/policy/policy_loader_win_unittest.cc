@@ -18,7 +18,7 @@
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/json_schema_constants.h"
+#include "chrome/common/json_schema/json_schema_constants.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
