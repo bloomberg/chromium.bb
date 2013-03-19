@@ -239,7 +239,9 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
   // When the InstantController lives, the InstantService should live.
   // InstantService sets up profile-level facilities such as the ThemeSource for
   // the NTP.
-  InstantServiceFactory::GetForProfile(browser_->profile());
+  // TODO(dhollowa): Temporarily disabling to diagnose perf regression.
+  // http://crbug.com/189163.
+  //   InstantServiceFactory::GetForProfile(browser_->profile());
 }
 
 InstantController::~InstantController() {
