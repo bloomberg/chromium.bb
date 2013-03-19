@@ -497,6 +497,34 @@ void WalletClient::SendAutocheckoutStatus(
   MakeWalletRequest(GetSendStatusUrl(), post_body);
 }
 
+void WalletClient::UpdateAddress(const Address& address,
+                                 const GURL& source_url) {
+  if (HasRequestInProgress()) {
+    pending_requests_.push(base::Bind(&WalletClient::UpdateAddress,
+                                      base::Unretained(this),
+                                      address,
+                                      source_url));
+    return;
+  }
+
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = UPDATE_ADDRESS;
+
+  base::DictionaryValue request_dict;
+  request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
+  request_dict.SetString(kRiskParamsKey, GetRiskParams());
+  request_dict.SetString(kMerchantDomainKey,
+                         source_url.GetWithEmptyPath().spec());
+
+  request_dict.Set(kShippingAddressKey,
+                   address.ToDictionaryWithID().release());
+
+  std::string post_body;
+  base::JSONWriter::Write(&request_dict, &post_body);
+
+  MakeWalletRequest(GetSaveToWalletUrl(), post_body);
+}
+
 void WalletClient::UpdateInstrument(
     const std::string& instrument_id,
     const Address& billing_address,
@@ -713,6 +741,20 @@ void WalletClient::OnURLFetchComplete(
         delegate_->OnDidSaveInstrumentAndAddress(instrument_id,
                                                  shipping_address_id,
                                                  required_actions);
+      } else {
+        HandleMalformedResponse();
+      }
+      break;
+    }
+
+    case UPDATE_ADDRESS: {
+      std::string address_id;
+      std::vector<RequiredAction> required_actions;
+      GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      if (response_dict->GetString(kShippingAddressIdKey, &address_id) ||
+          !required_actions.empty()) {
+        LogRequiredActions(required_actions);
+        delegate_->OnDidUpdateAddress(address_id, required_actions);
       } else {
         HandleMalformedResponse();
       }

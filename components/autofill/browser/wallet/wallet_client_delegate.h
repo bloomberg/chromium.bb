@@ -79,6 +79,13 @@ class WalletClientDelegate {
   // Called when a SendAutocheckoutStatus request finishes successfully.
   virtual void OnDidSendAutocheckoutStatus() = 0;
 
+  // Called when an UpdateAddress request finishes successfully.
+  // |required_actions| is populated if there was a validation error with the
+  // data being saved.
+  virtual void OnDidUpdateAddress(
+      const std::string& address_id,
+      const std::vector<RequiredAction>& required_actions) = 0;
+
   // Called when an UpdateInstrument request finishes successfully.
   // |required_actions| is populated if there was a validation error with the
   // data being saved.

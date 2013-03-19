@@ -201,7 +201,12 @@ const char kUpdateInstrumentValidResponse[] =
     "  \"instrument_id\":\"instrument_id\""
     "}";
 
-const char kUpdateInstrumentWithRequiredActionsValidResponse[] =
+const char kUpdateAddressValidResponse[] =
+    "{"
+    "  \"shipping_address_id\":\"shipping_address_id\""
+    "}";
+
+const char kUpdateWithRequiredActionsValidResponse[] =
     "{"
     "  \"required_action\":"
     "  ["
@@ -210,7 +215,7 @@ const char kUpdateInstrumentWithRequiredActionsValidResponse[] =
     "  ]"
     "}";
 
-const char kUpdateInstrumentMalformedResponse[] =
+const char kUpdateMalformedResponse[] =
     "{"
     "  \"cheese\":\"monkeys\""
     "}";
@@ -463,6 +468,31 @@ const char kSendAutocheckoutStatusOfFailureValidRequest[] =
         "\"success\":false"
     "}";
 
+
+const char kUpdateAddressValidRequest[] =
+    "{"
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"risk_params\":\"risky business\","
+        "\"shipping_address\":"
+        "{"
+            "\"id\":\"shipping_address_id\","
+            "\"phone_number\":\"ship_phone_number\","
+            "\"postal_address\":"
+            "{"
+                "\"address_line\":"
+                "["
+                    "\"ship_address_line_1\","
+                    "\"ship_address_line_2\""
+                "],"
+                "\"administrative_area_name\":\"ship_admin_area_name\","
+                "\"country_name_code\":\"ship_country_name_code\","
+                "\"locality_name\":\"ship_locality_name\","
+                "\"postal_code_number\":\"ship_postal_code_number\","
+                "\"recipient_name\":\"ship_recipient_name\""
+            "}"
+        "}"
+    "}";
+
 const char kUpdateInstrumentValidRequest[] =
     "{"
         "\"instrument_phone_number\":\"phone_number\","
@@ -564,6 +594,9 @@ class MockWalletClientDelegate : public WalletClientDelegate {
                     const std::string& shipping_address_id,
                     const std::vector<RequiredAction>& required_actions));
   MOCK_METHOD0(OnDidSendAutocheckoutStatus, void());
+  MOCK_METHOD2(OnDidUpdateAddress,
+               void(const std::string& address_id,
+                    const std::vector<RequiredAction>& required_actions));
   MOCK_METHOD2(OnDidUpdateInstrument,
                void(const std::string& instrument_id,
                     const std::vector<RequiredAction>& required_actions));
@@ -1402,6 +1435,82 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
                          kSaveInstrumentAndAddressMissingInstrumentResponse);
 }
 
+TEST_F(WalletClientTest, UpdateAddressSucceeded) {
+  MockWalletClientDelegate delegate;
+  EXPECT_CALL(delegate,
+              OnDidUpdateAddress("shipping_address_id",
+                                 std::vector<RequiredAction>())).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+  address->set_object_id("shipping_address_id");
+
+  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
+  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateAddressValidRequest,
+                         kUpdateAddressValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
+  MockWalletClientDelegate delegate;
+
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(REQUIRE_PHONE_NUMBER);
+  required_actions.push_back(INVALID_FORM_FIELD);
+
+  EXPECT_CALL(delegate,
+              OnDidUpdateAddress(std::string(), required_actions)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+  address->set_object_id("shipping_address_id");
+
+  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
+  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateAddressValidRequest,
+                         kUpdateWithRequiredActionsValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
+  MockWalletClientDelegate delegate;
+  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+  address->set_object_id("shipping_address_id");
+
+  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
+  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateAddressValidRequest,
+                         kSaveWithInvalidRequiredActionsResponse);
+}
+
+TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
+  MockWalletClientDelegate delegate;
+  EXPECT_CALL(delegate, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+  address->set_object_id("shipping_address_id");
+
+  WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
+  wallet_client.UpdateAddress(*address, GURL(kMerchantUrl));
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateAddressValidRequest,
+                         kUpdateMalformedResponse);
+}
+
 TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
   MockWalletClientDelegate delegate;
   EXPECT_CALL(delegate,
@@ -1444,7 +1553,7 @@ TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
-                         kUpdateInstrumentWithRequiredActionsValidResponse);
+                         kUpdateWithRequiredActionsValidResponse);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
@@ -1480,7 +1589,7 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
-                         kUpdateInstrumentMalformedResponse);
+                         kUpdateMalformedResponse);
 }
 
 TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {

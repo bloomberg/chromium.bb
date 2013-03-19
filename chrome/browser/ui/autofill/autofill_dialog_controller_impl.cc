@@ -1179,6 +1179,13 @@ void AutofillDialogControllerImpl::OnDidSendAutocheckoutStatus() {
   NOTIMPLEMENTED();
 }
 
+void AutofillDialogControllerImpl::OnDidUpdateAddress(
+    const std::string& address_id,
+    const std::vector<wallet::RequiredAction>& required_actions) {
+  // TODO(dbeam): Handle this callback.
+  NOTIMPLEMENTED() << " address_id=" << address_id;
+}
+
 void AutofillDialogControllerImpl::OnDidUpdateInstrument(
     const std::string& instrument_id,
     const std::vector<wallet::RequiredAction>& required_actions) {

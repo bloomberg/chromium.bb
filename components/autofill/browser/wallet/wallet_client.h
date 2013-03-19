@@ -184,6 +184,10 @@ class WalletClient
                               const GURL& source_url,
                               const std::string& google_transaction_id);
 
+  // UpdateAddress updates Online Wallet with the data in |address|.
+  void UpdateAddress(const Address& address,
+                     const GURL& source_url);
+
   // UpdateInstrument changes the instrument with id |instrument_id| with the
   // information in |billing_address|. Its primary use is for upgrading ZIP code
   // only addresses or those missing phone numbers. DO NOT change the name on
@@ -216,6 +220,7 @@ class WalletClient
     SAVE_INSTRUMENT,
     SAVE_INSTRUMENT_AND_ADDRESS,
     SEND_STATUS,
+    UPDATE_ADDRESS,
     UPDATE_INSTRUMENT,
   };
 

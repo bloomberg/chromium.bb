@@ -176,6 +176,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const std::string& address_id,
       const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
   virtual void OnDidSendAutocheckoutStatus() OVERRIDE;
+  virtual void OnDidUpdateAddress(
+      const std::string& address_id,
+      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
   virtual void OnDidUpdateInstrument(
       const std::string& instrument_id,
       const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
