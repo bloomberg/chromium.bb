@@ -635,7 +635,7 @@ error:
 }
 
 /* -----------------------------------------------------------------------------
- * Connectors and planes
+ * Pipes and planes
  */
 
 /*
@@ -645,8 +645,8 @@ error:
  * Then you need to find the encoder attached to that connector so you
  * can bind it with a free crtc.
  */
-struct connector_arg {
-	uint32_t id;
+struct pipe_arg {
+	uint32_t con_id;
 	uint32_t crtc_id;
 	char mode_str[64];
 	char format_str[5];
@@ -669,14 +669,14 @@ struct plane_arg {
 	unsigned int fourcc;
 };
 
-static void connector_find_mode(struct device *dev, struct connector_arg *c)
+static void pipe_find_mode(struct device *dev, struct pipe_arg *pipe)
 {
 	drmModeConnector *connector;
 	drmModeEncoder *encoder;
 	int i, j;
 
 	/* First, find the connector & mode */
-	c->mode = NULL;
+	pipe->mode = NULL;
 	for (i = 0; i < dev->resources->res->count_connectors; i++) {
 		connector = dev->resources->connectors[i].connector;
 		if (!connector)
@@ -685,50 +685,50 @@ static void connector_find_mode(struct device *dev, struct connector_arg *c)
 		if (!connector->count_modes)
 			continue;
 
-		if (connector->connector_id != c->id)
+		if (connector->connector_id != pipe->con_id)
 			continue;
 
 		for (j = 0; j < connector->count_modes; j++) {
-			c->mode = &connector->modes[j];
-			if (!strcmp(c->mode->name, c->mode_str))
+			pipe->mode = &connector->modes[j];
+			if (!strcmp(pipe->mode->name, pipe->mode_str))
 				break;
 		}
 
 		/* Found it, break out */
-		if (c->mode)
+		if (pipe->mode)
 			break;
 	}
 
-	if (!c->mode) {
-		fprintf(stderr, "failed to find mode \"%s\"\n", c->mode_str);
+	if (!pipe->mode) {
+		fprintf(stderr, "failed to find mode \"%s\"\n", pipe->mode_str);
 		return;
 	}
 
 	/* If the CRTC ID was specified, get the corresponding CRTC. Otherwise
 	 * locate a CRTC that can be attached to the connector.
 	 */
-	if (c->crtc_id == (uint32_t)-1) {
+	if (pipe->crtc_id == (uint32_t)-1) {
 		for (i = 0; i < dev->resources->res->count_encoders; i++) {
 			encoder = dev->resources->encoders[i].encoder;
 			if (!encoder)
 				continue;
 
 			if (encoder->encoder_id  == connector->encoder_id) {
-				c->crtc_id = encoder->crtc_id;
+				pipe->crtc_id = encoder->crtc_id;
 				break;
 			}
 		}
 	}
 
-	if (c->crtc_id == (uint32_t)-1)
+	if (pipe->crtc_id == (uint32_t)-1)
 		return;
 
 	for (i = 0; i < dev->resources->res->count_crtcs; i++) {
 		struct crtc *crtc = &dev->resources->crtcs[i];
 
-		if (c->crtc_id == crtc->crtc->crtc_id) {
-			crtc->mode = c->mode;
-			c->crtc = crtc;
+		if (pipe->crtc_id == crtc->crtc->crtc_id) {
+			crtc->mode = pipe->mode;
+			pipe->crtc = crtc;
 			break;
 		}
 	}
@@ -815,28 +815,28 @@ static void
 page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
-	struct connector_arg *c;
+	struct pipe_arg *pipe;
 	unsigned int new_fb_id;
 	struct timeval end;
 	double t;
 
-	c = data;
-	if (c->current_fb_id == c->fb_id[0])
-		new_fb_id = c->fb_id[1];
+	pipe = data;
+	if (pipe->current_fb_id == pipe->fb_id[0])
+		new_fb_id = pipe->fb_id[1];
 	else
-		new_fb_id = c->fb_id[0];
+		new_fb_id = pipe->fb_id[0];
 
-	drmModePageFlip(fd, c->crtc_id, new_fb_id,
-			DRM_MODE_PAGE_FLIP_EVENT, c);
-	c->current_fb_id = new_fb_id;
-	c->swap_count++;
-	if (c->swap_count == 60) {
+	drmModePageFlip(fd, pipe->crtc_id, new_fb_id,
+			DRM_MODE_PAGE_FLIP_EVENT, pipe);
+	pipe->current_fb_id = new_fb_id;
+	pipe->swap_count++;
+	if (pipe->swap_count == 60) {
 		gettimeofday(&end, NULL);
 		t = end.tv_sec + end.tv_usec * 1e-6 -
-			(c->start.tv_sec + c->start.tv_usec * 1e-6);
-		fprintf(stderr, "freq: %.02fHz\n", c->swap_count / t);
-		c->swap_count = 0;
-		c->start = end;
+			(pipe->start.tv_sec + pipe->start.tv_usec * 1e-6);
+		fprintf(stderr, "freq: %.02fHz\n", pipe->swap_count / t);
+		pipe->swap_count = 0;
+		pipe->start = end;
 	}
 }
 
@@ -923,7 +923,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 	return 0;
 }
 
-static void set_mode(struct device *dev, struct connector_arg *c, unsigned int count)
+static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
 	unsigned int fb_id;
@@ -935,22 +935,24 @@ static void set_mode(struct device *dev, struct connector_arg *c, unsigned int c
 	dev->mode.height = 0;
 
 	for (i = 0; i < count; i++) {
-		connector_find_mode(dev, &c[i]);
-		if (c[i].mode == NULL)
+		struct pipe_arg *pipe = &pipes[i];
+
+		pipe_find_mode(dev, pipe);
+		if (pipe->mode == NULL)
 			continue;
-		dev->mode.width += c[i].mode->hdisplay;
-		if (dev->mode.height < c[i].mode->vdisplay)
-			dev->mode.height = c[i].mode->vdisplay;
+		dev->mode.width += pipe->mode->hdisplay;
+		if (dev->mode.height < pipe->mode->vdisplay)
+			dev->mode.height = pipe->mode->vdisplay;
 	}
 
-	bo = create_test_buffer(dev->kms, c->fourcc,
+	bo = create_test_buffer(dev->kms, pipes[0].fourcc,
 				dev->mode.width, dev->mode.height,
 				handles, pitches, offsets, PATTERN_SMPTE);
 	if (bo == NULL)
 		return;
 
-	ret = drmModeAddFB2(dev->fd, dev->mode.width, dev->mode.height, c->fourcc,
-			    handles, pitches, offsets, &fb_id, 0);
+	ret = drmModeAddFB2(dev->fd, dev->mode.width, dev->mode.height,
+			    pipes[0].fourcc, handles, pitches, offsets, &fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "failed to add fb (%ux%u): %s\n",
 			dev->mode.width, dev->mode.height, strerror(errno));
@@ -959,19 +961,22 @@ static void set_mode(struct device *dev, struct connector_arg *c, unsigned int c
 
 	x = 0;
 	for (i = 0; i < count; i++) {
-		if (c[i].mode == NULL)
+		struct pipe_arg *pipe = &pipes[i];
+
+		if (pipe->mode == NULL)
 			continue;
 
 		printf("setting mode %s@%s on connector %d, crtc %d\n",
-		       c[i].mode_str, c[i].format_str, c[i].id, c[i].crtc_id);
+		       pipe->mode_str, pipe->format_str, pipe->con_id,
+		       pipe->crtc_id);
 
-		ret = drmModeSetCrtc(dev->fd, c[i].crtc_id, fb_id, x, 0,
-				     &c[i].id, 1, c[i].mode);
+		ret = drmModeSetCrtc(dev->fd, pipe->crtc_id, fb_id, x, 0,
+				     &pipe->con_id, 1, pipe->mode);
 
 		/* XXX: Actually check if this is needed */
 		drmModeDirtyFB(dev->fd, fb_id, NULL, 0);
 
-		x += c[i].mode->hdisplay;
+		x += pipe->mode->hdisplay;
 
 		if (ret) {
 			fprintf(stderr, "failed to set mode: %s\n", strerror(errno));
@@ -993,7 +998,7 @@ static void set_planes(struct device *dev, struct plane_arg *p, unsigned int cou
 			return;
 }
 
-static void test_page_flip(struct device *dev, struct connector_arg *c, unsigned int count)
+static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
 	unsigned int other_fb_id;
@@ -1002,34 +1007,37 @@ static void test_page_flip(struct device *dev, struct connector_arg *c, unsigned
 	unsigned int i;
 	int ret;
 
-	other_bo = create_test_buffer(dev->kms, c->fourcc,
+	other_bo = create_test_buffer(dev->kms, pipes[0].fourcc,
 				      dev->mode.width, dev->mode.height,
 				      handles, pitches, offsets, PATTERN_PLAIN);
 	if (other_bo == NULL)
 		return;
 
-	ret = drmModeAddFB2(dev->fd, dev->mode.width, dev->mode.height, c->fourcc,
-			    handles, pitches, offsets, &other_fb_id, 0);
+	ret = drmModeAddFB2(dev->fd, dev->mode.width, dev->mode.height,
+			    pipes[0].fourcc, handles, pitches, offsets,
+			    &other_fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
 		return;
 	}
 
 	for (i = 0; i < count; i++) {
-		if (c[i].mode == NULL)
+		struct pipe_arg *pipe = &pipes[i];
+
+		if (pipe->mode == NULL)
 			continue;
 
-		ret = drmModePageFlip(dev->fd, c[i].crtc_id, other_fb_id,
-				      DRM_MODE_PAGE_FLIP_EVENT, &c[i]);
+		ret = drmModePageFlip(dev->fd, pipe->crtc_id, other_fb_id,
+				      DRM_MODE_PAGE_FLIP_EVENT, pipe);
 		if (ret) {
 			fprintf(stderr, "failed to page flip: %s\n", strerror(errno));
 			return;
 		}
-		gettimeofday(&c[i].start, NULL);
-		c[i].swap_count = 0;
-		c[i].fb_id[0] = dev->mode.fb_id;
-		c[i].fb_id[1] = other_fb_id;
-		c[i].current_fb_id = other_fb_id;
+		gettimeofday(&pipe->start, NULL);
+		pipe->swap_count = 0;
+		pipe->fb_id[0] = dev->mode.fb_id;
+		pipe->fb_id[1] = other_fb_id;
+		pipe->current_fb_id = other_fb_id;
 	}
 
 	memset(&evctx, 0, sizeof evctx);
@@ -1080,19 +1088,19 @@ static void test_page_flip(struct device *dev, struct connector_arg *c, unsigned
 
 #define min(a, b)	((a) < (b) ? (a) : (b))
 
-static int parse_connector(struct connector_arg *c, const char *arg)
+static int parse_connector(struct pipe_arg *pipe, const char *arg)
 {
 	unsigned int len;
 	const char *p;
 	char *endp;
 
-	c->crtc_id = (uint32_t)-1;
-	strcpy(c->format_str, "XR24");
+	pipe->crtc_id = (uint32_t)-1;
+	strcpy(pipe->format_str, "XR24");
 
-	c->id = strtoul(arg, &endp, 10);
+	pipe->con_id = strtoul(arg, &endp, 10);
 	if (*endp == '@') {
 		arg = endp + 1;
-		c->crtc_id = strtoul(arg, &endp, 10);
+		pipe->crtc_id = strtoul(arg, &endp, 10);
 	}
 	if (*endp != ':')
 		return -1;
@@ -1100,18 +1108,18 @@ static int parse_connector(struct connector_arg *c, const char *arg)
 	arg = endp + 1;
 
 	p = strchrnul(arg, '@');
-	len = min(sizeof c->mode_str - 1, (unsigned int)(p - arg));
-	strncpy(c->mode_str, arg, len);
-	c->mode_str[len] = '\0';
+	len = min(sizeof pipe->mode_str - 1, (unsigned int)(p - arg));
+	strncpy(pipe->mode_str, arg, len);
+	pipe->mode_str[len] = '\0';
 
 	if (*p == '@') {
-		strncpy(c->format_str, p + 1, 4);
-		c->format_str[4] = '\0';
+		strncpy(pipe->format_str, p + 1, 4);
+		pipe->format_str[4] = '\0';
 	}
 
-	c->fourcc = format_fourcc(c->format_str);
-	if (c->fourcc == 0)  {
-		fprintf(stderr, "unknown format %s\n", c->format_str);
+	pipe->fourcc = format_fourcc(pipe->format_str);
+	if (pipe->fourcc == 0)  {
+		fprintf(stderr, "unknown format %s\n", pipe->format_str);
 		return -1;
 	}
 
@@ -1235,7 +1243,7 @@ int main(int argc, char **argv)
 	unsigned int i;
 	int count = 0, plane_count = 0;
 	unsigned int prop_count = 0;
-	struct connector_arg *con_args = NULL;
+	struct pipe_arg *pipe_args = NULL;
 	struct plane_arg *plane_args = NULL;
 	struct property_arg *prop_args = NULL;
 	unsigned int args = 0;
@@ -1283,14 +1291,14 @@ int main(int argc, char **argv)
 			planes = 1;
 			break;
 		case 's':
-			con_args = realloc(con_args,
-					   (count + 1) * sizeof *con_args);
-			if (con_args == NULL) {
+			pipe_args = realloc(pipe_args,
+					    (count + 1) * sizeof *pipe_args);
+			if (pipe_args == NULL) {
 				fprintf(stderr, "memory allocation failed\n");
 				return 1;
 			}
 
-			if (parse_connector(&con_args[count], optarg) < 0)
+			if (parse_connector(&pipe_args[count], optarg) < 0)
 				usage(argv[0]);
 
 			count++;				      
@@ -1380,13 +1388,13 @@ int main(int argc, char **argv)
 		}
 
 		if (count)
-			set_mode(&dev, con_args, count);
+			set_mode(&dev, pipe_args, count);
 
 		if (plane_count)
 			set_planes(&dev, plane_args, plane_count);
 
 		if (test_vsync)
-			test_page_flip(&dev, con_args, count);
+			test_page_flip(&dev, pipe_args, count);
 
 		if (drop_master)
 			drmDropMaster(dev.fd);
