@@ -246,11 +246,14 @@ class BuilderStage(object):
         self.config_name and not self._build_config[self.config_name]):
       self._PrintLoudly('Not running Stage %s' % self.name)
       self.HandleSkip()
+      results_lib.Results.Record(self.name, results_lib.Results.SKIPPED)
       return
 
     record = results_lib.Results.PreviouslyCompletedRecord(self.name)
     if record:
-      self._PrintLoudly('Skipping Stage %s' % self.name)
+      # Success is stored in the results log for a stage that completed
+      # successfully in a previous run.
+      self._PrintLoudly('Stage %s processed previously' % self.name)
       self.HandleSkip()
       results_lib.Results.Record(self.name, results_lib.Results.SUCCESS, None,
                                  float(record[2]))

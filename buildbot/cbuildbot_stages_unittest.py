@@ -1351,6 +1351,29 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
+class PassStage(bs.BuilderStage):
+  """PassStage always works"""
+
+
+class Pass2Stage(bs.BuilderStage):
+  """Pass2Stage always works"""
+
+
+class FailStage(bs.BuilderStage):
+  """FailStage always throws an exception"""
+
+  FAIL_EXCEPTION = results_lib.StepFailure("Fail stage needs to fail.")
+
+  def _PerformStage(self):
+    """Throw the exception to make us fail."""
+    raise self.FAIL_EXCEPTION
+
+
+class SkipStage(bs.BuilderStage):
+  """SkipStage is skipped."""
+  config_name = 'signer_tests'
+
+
 class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def setUp(self):
@@ -1372,34 +1395,13 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.options.clobber = False
     self.options.buildnumber = 1234
     self.options.chrome_rev = None
-
-    self.failException = Exception("FailStage needs to fail.")
+    results_lib.Results.Clear()
 
   def _runStages(self):
     """Run a couple of stages so we can capture the results"""
-
-    # Save off our self where FailStage._PerformStage can find it.
-    outer_self = self
-
-    class PassStage(bs.BuilderStage):
-      """PassStage always works"""
-      pass
-
-    class Pass2Stage(bs.BuilderStage):
-      """Pass2Stage always works"""
-      pass
-
-    class FailStage(bs.BuilderStage):
-      """FailStage always throws an exception"""
-
-      def _PerformStage(self):
-        """Throw the exception to make us fail."""
-        raise outer_self.failException
-
     # Run two pass stages, and one fail stage.
     PassStage(self.options, self.build_config).Run()
     Pass2Stage(self.options, self.build_config).Run()
-
     self.assertRaises(
       results_lib.StepFailure,
       FailStage(self.options, self.build_config).Run)
@@ -1412,12 +1414,17 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.assertEqual(len(expectedResults), len(actualResults))
     for i in xrange(len(expectedResults)):
       name, result, description, runtime = actualResults[i]
+      xname, xresult = expectedResults[i]
 
-      if result != results_lib.Results.SUCCESS:
-        self.assertTrue(isinstance(description, str))
+      if result not in results_lib.Results.NON_FAILURE_TYPES:
+        self.assertTrue(isinstance(result, BaseException))
+        if isinstance(result, results_lib.StepFailure):
+          self.assertEqual(str(result), description)
 
       self.assertTrue(runtime >= 0 and runtime < 2.0)
-      self.assertEqual(expectedResults[i], (name, result))
+      self.assertEqual(xname, name)
+      self.assertEqual(type(xresult), type(result))
+      self.assertEqual(repr(xresult), repr(result))
 
   def _PassString(self):
     return results_lib.Results.SPLIT_TOKEN.join(['Pass', 'None', '0\n'])
@@ -1425,7 +1432,6 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def testRunStages(self):
     """Run some stages and verify the captured results"""
 
-    results_lib.Results.Clear()
     self.assertEqual(results_lib.Results.Get(), [])
 
     self._runStages()
@@ -1434,19 +1440,18 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     expectedResults = [
         ('Pass', results_lib.Results.SUCCESS),
         ('Pass2', results_lib.Results.SUCCESS),
-        ('Fail', self.failException)]
+        ('Fail', FailStage.FAIL_EXCEPTION)]
 
     self._verifyRunResults(expectedResults)
 
   def testSuccessTest(self):
     """Run some stages and verify the captured results"""
 
-    results_lib.Results.Clear()
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS)
 
     self.assertTrue(results_lib.Results.BuildSucceededSoFar())
 
-    results_lib.Results.Record('Fail', self.failException, time=1)
+    results_lib.Results.Record('Fail', FailStage.FAIL_EXCEPTION, time=1)
 
     self.assertFalse(results_lib.Results.BuildSucceededSoFar())
 
@@ -1460,10 +1465,10 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
-    results_lib.Results.Clear()
     results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
     results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
-    results_lib.Results.Record('Test', self.failException, time=3)
+    results_lib.Results.Record('Test', FailStage.FAIL_EXCEPTION, time=3)
+    results_lib.Results.Record('SignerTests', results_lib.Results.SKIPPED)
     result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
                                           returncode=2)
     results_lib.Results.Record(
@@ -1484,7 +1489,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         "************************************************************\n"
         "** PASS Build (0:00:02)\n"
         "************************************************************\n"
-        "** FAIL Test (0:00:03) with Exception\n"
+        "** FAIL Test (0:00:03) with StepFailure\n"
         "************************************************************\n"
         "** FAIL Archive (0:00:04) in /bin/false\n"
         "************************************************************\n"
@@ -1504,10 +1509,9 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
-    results_lib.Results.Clear()
     results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
     results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
-    results_lib.Results.Record('Test', self.failException,
+    results_lib.Results.Record('Test', FailStage.FAIL_EXCEPTION,
                                'failException Msg\nLine 2', time=3)
     result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
                                           returncode=2)
@@ -1530,7 +1534,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         "************************************************************\n"
         "** PASS Build (0:00:02)\n"
         "************************************************************\n"
-        "** FAIL Test (0:00:03) with Exception\n"
+        "** FAIL Test (0:00:03) with StepFailure\n"
         "************************************************************\n"
         "** FAIL Archive (0:00:04) in /bin/false\n"
         "************************************************************\n"
@@ -1561,7 +1565,6 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
                     'board2': 'result_url2'}
 
     # Store off a known set of results and generate a report
-    results_lib.Results.Clear()
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
 
     results = StringIO.StringIO()
@@ -1595,9 +1598,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     """Tests that we can save out completed stages."""
 
     # Run this again to make sure we have the expected results stored
-    results_lib.Results.Clear()
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS)
-    results_lib.Results.Record('Fail', self.failException)
+    results_lib.Results.Record('Fail', FailStage.FAIL_EXCEPTION)
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS)
 
     saveFile = StringIO.StringIO()
@@ -1607,7 +1609,6 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def testRestoreCompletedStages(self):
     """Tests that we can read in completed stages."""
 
-    results_lib.Results.Clear()
     results_lib.Results.RestoreCompletedStages(
         StringIO.StringIO(self._PassString()))
 
@@ -1618,7 +1619,6 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     """Tests that we skip previously completed stages."""
 
     # Fake results_lib.Results.RestoreCompletedStages
-    results_lib.Results.Clear()
     results_lib.Results.RestoreCompletedStages(
         StringIO.StringIO(self._PassString()))
 
@@ -1628,7 +1628,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     expectedResults = [
         ('Pass', results_lib.Results.SUCCESS),
         ('Pass2', results_lib.Results.SUCCESS),
-        ('Fail', self.failException)]
+        ('Fail', FailStage.FAIL_EXCEPTION)]
 
     self._verifyRunResults(expectedResults)
 
