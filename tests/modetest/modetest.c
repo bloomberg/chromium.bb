@@ -40,6 +40,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -634,6 +635,34 @@ error:
 	return NULL;
 }
 
+static drmModeConnector *get_connector_by_id(struct device *dev, uint32_t id)
+{
+	drmModeConnector *connector;
+	int i;
+
+	for (i = 0; i < dev->resources->res->count_connectors; i++) {
+		connector = dev->resources->connectors[i].connector;
+		if (connector && connector->connector_id == id)
+			return connector;
+	}
+
+	return NULL;
+}
+
+static drmModeEncoder *get_encoder_by_id(struct device *dev, uint32_t id)
+{
+	drmModeEncoder *encoder;
+	int i;
+
+	for (i = 0; i < dev->resources->res->count_encoders; i++) {
+		encoder = dev->resources->encoders[i].encoder;
+		if (encoder && encoder->encoder_id == id)
+			return encoder;
+	}
+
+	return NULL;
+}
+
 /* -----------------------------------------------------------------------------
  * Pipes and planes
  */
@@ -646,7 +675,8 @@ error:
  * can bind it with a free crtc.
  */
 struct pipe_arg {
-	uint32_t con_id;
+	uint32_t *con_ids;
+	unsigned int num_cons;
 	uint32_t crtc_id;
 	char mode_str[64];
 	char format_str[5];
@@ -669,69 +699,114 @@ struct plane_arg {
 	unsigned int fourcc;
 };
 
-static void pipe_find_mode(struct device *dev, struct pipe_arg *pipe)
+static drmModeModeInfo *
+connector_find_mode(struct device *dev, uint32_t con_id, const char *mode_str)
 {
 	drmModeConnector *connector;
-	drmModeEncoder *encoder;
-	int i, j;
+	drmModeModeInfo *mode;
+	int i;
 
-	/* First, find the connector & mode */
-	pipe->mode = NULL;
-	for (i = 0; i < dev->resources->res->count_connectors; i++) {
-		connector = dev->resources->connectors[i].connector;
+	connector = get_connector_by_id(dev, con_id);
+	if (!connector || !connector->count_modes)
+		return NULL;
+
+	for (i = 0; i < connector->count_modes; i++) {
+		mode = &connector->modes[i];
+		if (!strcmp(mode->name, mode_str))
+			return mode;
+	}
+
+	return NULL;
+}
+
+static struct crtc *pipe_find_crtc(struct device *dev, struct pipe_arg *pipe)
+{
+	uint32_t possible_crtcs = ~0;
+	uint32_t active_crtcs = 0;
+	unsigned int crtc_idx;
+	unsigned int i;
+	int j;
+
+	for (i = 0; i < pipe->num_cons; ++i) {
+		drmModeConnector *connector;
+		drmModeEncoder *encoder;
+
+		connector = get_connector_by_id(dev, pipe->con_ids[i]);
 		if (!connector)
-			continue;
+			return NULL;
 
-		if (!connector->count_modes)
-			continue;
+		encoder = get_encoder_by_id(dev, connector->encoder_id);
+		if (!encoder)
+			return NULL;
 
-		if (connector->connector_id != pipe->con_id)
-			continue;
+		possible_crtcs &= encoder->possible_crtcs;
 
-		for (j = 0; j < connector->count_modes; j++) {
-			pipe->mode = &connector->modes[j];
-			if (!strcmp(pipe->mode->name, pipe->mode_str))
-				break;
-		}
-
-		/* Found it, break out */
-		if (pipe->mode)
-			break;
-	}
-
-	if (!pipe->mode) {
-		fprintf(stderr, "failed to find mode \"%s\"\n", pipe->mode_str);
-		return;
-	}
-
-	/* If the CRTC ID was specified, get the corresponding CRTC. Otherwise
-	 * locate a CRTC that can be attached to the connector.
-	 */
-	if (pipe->crtc_id == (uint32_t)-1) {
-		for (i = 0; i < dev->resources->res->count_encoders; i++) {
-			encoder = dev->resources->encoders[i].encoder;
-			if (!encoder)
-				continue;
-
-			if (encoder->encoder_id  == connector->encoder_id) {
-				pipe->crtc_id = encoder->crtc_id;
+		for (j = 0; j < dev->resources->res->count_crtcs; ++j) {
+			drmModeCrtc *crtc = dev->resources->crtcs[j].crtc;
+			if (crtc && crtc->crtc_id == encoder->crtc_id) {
+				active_crtcs |= 1 << j;
 				break;
 			}
 		}
 	}
 
-	if (pipe->crtc_id == (uint32_t)-1)
-		return;
+	if (!possible_crtcs)
+		return NULL;
 
-	for (i = 0; i < dev->resources->res->count_crtcs; i++) {
-		struct crtc *crtc = &dev->resources->crtcs[i];
+	/* Return the first possible and active CRTC if one exists, or the first
+	 * possible CRTC otherwise.
+	 */
+	if (possible_crtcs & active_crtcs)
+		crtc_idx = ffs(possible_crtcs & active_crtcs);
+	else
+		crtc_idx = ffs(possible_crtcs);
 
-		if (pipe->crtc_id == crtc->crtc->crtc_id) {
-			crtc->mode = pipe->mode;
-			pipe->crtc = crtc;
-			break;
+	return &dev->resources->crtcs[crtc_idx - 1];
+}
+
+static int pipe_find_crtc_and_mode(struct device *dev, struct pipe_arg *pipe)
+{
+	drmModeModeInfo *mode;
+	int i;
+
+	pipe->mode = NULL;
+
+	for (i = 0; i < (int)pipe->num_cons; i++) {
+		mode = connector_find_mode(dev, pipe->con_ids[i],
+					   pipe->mode_str);
+		if (mode == NULL) {
+			fprintf(stderr,
+				"failed to find mode \"%s\" for connector %u\n",
+				pipe->mode_str, pipe->con_ids[i]);
+			return -EINVAL;
 		}
 	}
+
+	/* If the CRTC ID was specified, get the corresponding CRTC. Otherwise
+	 * locate a CRTC that can be attached to all the connectors.
+	 */
+	if (pipe->crtc_id != (uint32_t)-1) {
+		for (i = 0; i < dev->resources->res->count_crtcs; i++) {
+			struct crtc *crtc = &dev->resources->crtcs[i];
+
+			if (pipe->crtc_id == crtc->crtc->crtc_id) {
+				pipe->crtc = crtc;
+				break;
+			}
+		}
+	} else {
+		pipe->crtc = pipe_find_crtc(dev, pipe);
+	}
+
+	if (!pipe->crtc) {
+		fprintf(stderr, "failed to find CRTC for pipe\n");
+		return -EINVAL;
+	}
+
+	pipe->mode = mode;
+	pipe->crtc->mode = mode;
+
+	return 0;
 }
 
 /* -----------------------------------------------------------------------------
@@ -826,7 +901,7 @@ page_flip_handler(int fd, unsigned int frame,
 	else
 		new_fb_id = pipe->fb_id[0];
 
-	drmModePageFlip(fd, pipe->crtc_id, new_fb_id,
+	drmModePageFlip(fd, pipe->crtc->crtc->crtc_id, new_fb_id,
 			DRM_MODE_PAGE_FLIP_EVENT, pipe);
 	pipe->current_fb_id = new_fb_id;
 	pipe->swap_count++;
@@ -929,6 +1004,7 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 	unsigned int fb_id;
 	struct kms_bo *bo;
 	unsigned int i;
+	unsigned int j;
 	int ret, x;
 
 	dev->mode.width = 0;
@@ -937,9 +1013,10 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 	for (i = 0; i < count; i++) {
 		struct pipe_arg *pipe = &pipes[i];
 
-		pipe_find_mode(dev, pipe);
-		if (pipe->mode == NULL)
+		ret = pipe_find_crtc_and_mode(dev, pipe);
+		if (ret < 0)
 			continue;
+
 		dev->mode.width += pipe->mode->hdisplay;
 		if (dev->mode.height < pipe->mode->vdisplay)
 			dev->mode.height = pipe->mode->vdisplay;
@@ -966,12 +1043,15 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 		if (pipe->mode == NULL)
 			continue;
 
-		printf("setting mode %s@%s on connector %d, crtc %d\n",
-		       pipe->mode_str, pipe->format_str, pipe->con_id,
-		       pipe->crtc_id);
+		printf("setting mode %s@%s on connectors ",
+		       pipe->mode_str, pipe->format_str);
+		for (j = 0; j < pipe->num_cons; ++j)
+			printf("%u, ", pipe->con_ids[j]);
+		printf("crtc %d\n", pipe->crtc->crtc->crtc_id);
 
-		ret = drmModeSetCrtc(dev->fd, pipe->crtc_id, fb_id, x, 0,
-				     &pipe->con_id, 1, pipe->mode);
+		ret = drmModeSetCrtc(dev->fd, pipe->crtc->crtc->crtc_id, fb_id,
+				     x, 0, pipe->con_ids, pipe->num_cons,
+				     pipe->mode);
 
 		/* XXX: Actually check if this is needed */
 		drmModeDirtyFB(dev->fd, fb_id, NULL, 0);
@@ -1027,8 +1107,9 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 		if (pipe->mode == NULL)
 			continue;
 
-		ret = drmModePageFlip(dev->fd, pipe->crtc_id, other_fb_id,
-				      DRM_MODE_PAGE_FLIP_EVENT, pipe);
+		ret = drmModePageFlip(dev->fd, pipe->crtc->crtc->crtc_id,
+				      other_fb_id, DRM_MODE_PAGE_FLIP_EVENT,
+				      pipe);
 		if (ret) {
 			fprintf(stderr, "failed to page flip: %s\n", strerror(errno));
 			return;
@@ -1091,13 +1172,35 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 static int parse_connector(struct pipe_arg *pipe, const char *arg)
 {
 	unsigned int len;
+	unsigned int i;
 	const char *p;
 	char *endp;
 
 	pipe->crtc_id = (uint32_t)-1;
 	strcpy(pipe->format_str, "XR24");
 
-	pipe->con_id = strtoul(arg, &endp, 10);
+	/* Count the number of connectors and allocate them. */
+	pipe->num_cons = 1;
+	for (p = arg; isdigit(*p) || *p == ','; ++p) {
+		if (*p == ',')
+			pipe->num_cons++;
+	}
+
+	pipe->con_ids = malloc(pipe->num_cons * sizeof *pipe->con_ids);
+	if (pipe->con_ids == NULL)
+		return -1;
+
+	/* Parse the connectors. */
+	for (i = 0, p = arg; i < pipe->num_cons; ++i, p = endp + 1) {
+		pipe->con_ids[i] = strtoul(p, &endp, 10);
+		if (*endp != ',')
+			break;
+	}
+
+	if (i != pipe->num_cons - 1)
+		return -1;
+
+	/* Parse the remaining parameters. */
 	if (*endp == '@') {
 		arg = endp + 1;
 		pipe->crtc_id = strtoul(arg, &endp, 10);
@@ -1195,7 +1298,7 @@ static void usage(char *name)
 
 	fprintf(stderr, "\n Test options:\n\n");
 	fprintf(stderr, "\t-P <crtc_id>:<w>x<h>[+<x>+<y>][@<format>]\tset a plane\n");
-	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
+	fprintf(stderr, "\t-s <connector_id>[,<connector_id>][@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
 
