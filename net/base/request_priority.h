@@ -10,9 +10,10 @@ namespace net {
 // Prioritization used in various parts of the networking code such
 // as connection prioritization and resource loading prioritization.
 enum RequestPriority {
-  MINIMUM_PRIORITY = 0,
   IDLE = 0,
+  MINIMUM_PRIORITY = IDLE,
   LOWEST,
+  DEFAULT_PRIORITY = LOWEST,
   LOW,
   MEDIUM,
   HIGHEST,

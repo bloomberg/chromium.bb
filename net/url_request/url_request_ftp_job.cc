@@ -165,11 +165,10 @@ void URLRequestFtpJob::StartHttpTransaction() {
   http_request_info_.url = request_->url();
   http_request_info_.method = request_->method();
   http_request_info_.load_flags = request_->load_flags();
-  http_request_info_.priority = request_->priority();
   http_request_info_.request_id = request_->identifier();
 
   int rv = request_->context()->http_transaction_factory()->CreateTransaction(
-      &http_transaction_, NULL);
+      request_->priority(), &http_transaction_, NULL);
   if (rv == OK) {
     rv = http_transaction_->Start(
         &http_request_info_,

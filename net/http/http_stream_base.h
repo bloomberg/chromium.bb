@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 
 namespace net {
@@ -39,6 +40,7 @@ class NET_EXPORT_PRIVATE HttpStreamBase {
   // |request_info| must outlive the HttpStreamBase.
   // Returns a net error code, possibly ERR_IO_PENDING.
   virtual int InitializeStream(const HttpRequestInfo* request_info,
+                               RequestPriority priority,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) = 0;
 

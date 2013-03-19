@@ -342,7 +342,9 @@ bool HttpCache::ParseResponseInfo(const char* data, int len,
 }
 
 void HttpCache::WriteMetadata(const GURL& url,
-                              base::Time expected_response_time, IOBuffer* buf,
+                              RequestPriority priority,
+                              base::Time expected_response_time,
+                              IOBuffer* buf,
                               int buf_len) {
   if (!buf_len)
     return;
@@ -353,7 +355,8 @@ void HttpCache::WriteMetadata(const GURL& url,
     CreateBackend(NULL, net::CompletionCallback());
   }
 
-  HttpCache::Transaction* trans = new HttpCache::Transaction(this, NULL, NULL);
+  HttpCache::Transaction* trans =
+      new HttpCache::Transaction(priority, this, NULL, NULL);
   MetadataWriter* writer = new MetadataWriter(trans);
 
   // The writer will self destruct when done.
@@ -395,7 +398,8 @@ void HttpCache::InitializeInfiniteCache(const base::FilePath& path) {
   infinite_cache_.Init(path);
 }
 
-int HttpCache::CreateTransaction(scoped_ptr<HttpTransaction>* trans,
+int HttpCache::CreateTransaction(RequestPriority priority,
+                                 scoped_ptr<HttpTransaction>* trans,
                                  HttpTransactionDelegate* delegate) {
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
@@ -405,7 +409,7 @@ int HttpCache::CreateTransaction(scoped_ptr<HttpTransaction>* trans,
 
   InfiniteCacheTransaction* infinite_cache_transaction =
       infinite_cache_.CreateInfiniteCacheTransaction();
-  trans->reset(new HttpCache::Transaction(this, delegate,
+  trans->reset(new HttpCache::Transaction(priority, this, delegate,
                                           infinite_cache_transaction));
   return OK;
 }

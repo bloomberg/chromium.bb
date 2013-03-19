@@ -343,8 +343,8 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
   request_.method = "GET";
   request_.url = GURL("http://www.google.com/");
 
-  EXPECT_EQ(OK, stream_->InitializeStream(&request_, net_log_,
-                                          callback_.callback()));
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
   EXPECT_EQ(&response_, stream_->GetResponseInfo());
@@ -386,8 +386,8 @@ TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
   request_.method = "GET";
   request_.url = GURL("http://www.google.com/");
 
-  EXPECT_EQ(OK, stream_->InitializeStream(&request_, net_log_,
-                                          callback_.callback()));
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
   EXPECT_EQ(&response_, stream_->GetResponseInfo());
@@ -439,8 +439,8 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
 
-  EXPECT_EQ(OK, stream_->InitializeStream(&request_, net_log_,
-                                          callback_.callback()));
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
   EXPECT_EQ(&response_, stream_->GetResponseInfo());
@@ -498,8 +498,8 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
 
-  ASSERT_EQ(OK, stream_->InitializeStream(&request_, net_log_,
-                                          callback_.callback()));
+  ASSERT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
   ASSERT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
                                                  callback_.callback()));
   EXPECT_EQ(&response_, stream_->GetResponseInfo());
@@ -549,8 +549,8 @@ TEST_F(QuicHttpStreamTest, DestroyedEarly) {
   request_.method = "GET";
   request_.url = GURL("http://www.google.com/");
 
-  EXPECT_EQ(OK, stream_->InitializeStream(&request_, net_log_,
-                                         callback_.callback()));
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                     callback_.callback()));
   EXPECT_EQ(&response_, stream_->GetResponseInfo());

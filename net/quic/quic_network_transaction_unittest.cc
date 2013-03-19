@@ -304,7 +304,7 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
 
   CreateSession();
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(session_));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -349,7 +349,7 @@ TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
 
   CreateSession();
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(session_));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -428,7 +428,7 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 
   CreateSession();
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(session_));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -443,7 +443,7 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  trans.reset(new HttpNetworkTransaction(session_));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -492,7 +492,7 @@ TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
 
   CreateSession();
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(session_));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -507,7 +507,7 @@ TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  trans.reset(new HttpNetworkTransaction(session_));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);

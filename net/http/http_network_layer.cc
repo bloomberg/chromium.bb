@@ -48,12 +48,13 @@ void HttpNetworkLayer::ForceAlternateProtocol() {
 
 //-----------------------------------------------------------------------------
 
-int HttpNetworkLayer::CreateTransaction(scoped_ptr<HttpTransaction>* trans,
+int HttpNetworkLayer::CreateTransaction(RequestPriority priority,
+                                        scoped_ptr<HttpTransaction>* trans,
                                         HttpTransactionDelegate* delegate) {
   if (suspended_)
     return ERR_NETWORK_IO_SUSPENDED;
 
-  trans->reset(new HttpNetworkTransaction(GetSession()));
+  trans->reset(new HttpNetworkTransaction(priority, GetSession()));
   return OK;
 }
 

@@ -30,6 +30,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/infinite_cache.h"
@@ -162,8 +163,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // referenced by |url|, as long as the entry's |expected_response_time| has
   // not changed. This method returns without blocking, and the operation will
   // be performed asynchronously without any completion notification.
-  void WriteMetadata(const GURL& url, base::Time expected_response_time,
-                     IOBuffer* buf, int buf_len);
+  void WriteMetadata(const GURL& url,
+                     RequestPriority priority,
+                     base::Time expected_response_time,
+                     IOBuffer* buf,
+                     int buf_len);
 
   // Get/Set the cache's mode.
   void set_mode(Mode value) { mode_ = value; }
@@ -188,7 +192,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   InfiniteCache* infinite_cache() { return &infinite_cache_; }
 
   // HttpTransactionFactory implementation:
-  virtual int CreateTransaction(scoped_ptr<HttpTransaction>* trans,
+  virtual int CreateTransaction(RequestPriority priority,
+                                scoped_ptr<HttpTransaction>* trans,
                                 HttpTransactionDelegate* delegate) OVERRIDE;
   virtual HttpCache* GetCache() OVERRIDE;
   virtual HttpNetworkSession* GetSession() OVERRIDE;

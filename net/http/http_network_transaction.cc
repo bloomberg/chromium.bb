@@ -112,13 +112,15 @@ Value* NetLogSSLVersionFallbackCallback(const GURL* url,
 
 //-----------------------------------------------------------------------------
 
-HttpNetworkTransaction::HttpNetworkTransaction(HttpNetworkSession* session)
+HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
+                                               HttpNetworkSession* session)
     : pending_auth_target_(HttpAuth::AUTH_NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_callback_(
           base::Bind(&HttpNetworkTransaction::OnIOComplete,
                      base::Unretained(this)))),
       session_(session),
       request_(NULL),
+      priority_(priority),
       headers_valid_(false),
       logged_response_time_(false),
       request_headers_(),
@@ -623,6 +625,7 @@ int HttpNetworkTransaction::DoCreateStream() {
   stream_request_.reset(
       session_->http_stream_factory()->RequestStream(
           *request_,
+          priority_,
           server_ssl_config_,
           proxy_ssl_config_,
           this,
@@ -655,7 +658,7 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
 int HttpNetworkTransaction::DoInitStream() {
   DCHECK(stream_.get());
   next_state_ = STATE_INIT_STREAM_COMPLETE;
-  return stream_->InitializeStream(request_, net_log_, io_callback_);
+  return stream_->InitializeStream(request_, priority_, net_log_, io_callback_);
 }
 
 int HttpNetworkTransaction::DoInitStreamComplete(int result) {
@@ -1078,7 +1081,7 @@ void HttpNetworkTransaction::LogTransactionConnectedMetrics() {
   // Currently, non-HIGHEST priority requests are frame or sub-frame resource
   // types.  This will change when we also prioritize certain subresources like
   // css, js, etc.
-  if (request_->priority != HIGHEST) {
+  if (priority_ != HIGHEST) {
     UMA_HISTOGRAM_CUSTOM_TIMES(
         "Net.Priority_High_Latency_b",
         total_duration,

@@ -35,7 +35,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
     : public HttpTransaction,
       public HttpStreamRequest::Delegate {
  public:
-  explicit HttpNetworkTransaction(HttpNetworkSession* session);
+  HttpNetworkTransaction(RequestPriority priority,
+                         HttpNetworkSession* session);
 
   virtual ~HttpNetworkTransaction();
 
@@ -259,6 +260,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   BoundNetLog net_log_;
   const HttpRequestInfo* request_;
+  RequestPriority priority_;
   HttpResponseInfo response_;
 
   // |proxy_info_| is the ProxyInfo used by the HttpStreamRequest.

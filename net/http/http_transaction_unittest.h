@@ -15,6 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -104,7 +105,8 @@ class MockHttpRequest : public net::HttpRequestInfo {
 
 class TestTransactionConsumer {
  public:
-  explicit TestTransactionConsumer(net::HttpTransactionFactory* factory);
+  TestTransactionConsumer(net::RequestPriority priority,
+                          net::HttpTransactionFactory* factory);
   virtual ~TestTransactionConsumer();
 
   void Start(const net::HttpRequestInfo* request,
@@ -153,7 +155,8 @@ class MockNetworkLayer;
 // HttpCache implementation.
 class MockNetworkTransaction : public net::HttpTransaction {
  public:
-  explicit MockNetworkTransaction(MockNetworkLayer* factory);
+  MockNetworkTransaction(net::RequestPriority priority,
+                         MockNetworkLayer* factory);
   virtual ~MockNetworkTransaction();
 
   virtual int Start(const net::HttpRequestInfo* request,
@@ -213,6 +216,7 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
 
   // net::HttpTransactionFactory:
   virtual int CreateTransaction(
+      net::RequestPriority priority,
       scoped_ptr<net::HttpTransaction>* trans,
       net::HttpTransactionDelegate* delegate) OVERRIDE;
   virtual net::HttpCache* GetCache() OVERRIDE;

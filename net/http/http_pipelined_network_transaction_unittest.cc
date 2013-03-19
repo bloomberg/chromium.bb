@@ -145,14 +145,14 @@ class HttpPipelinedNetworkTransactionTest : public testing::Test {
 
   void CompleteTwoRequests(int data_index, int stop_at_step) {
     scoped_ptr<HttpNetworkTransaction> one_transaction(
-        new HttpNetworkTransaction(session_.get()));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     TestCompletionCallback one_callback;
     EXPECT_EQ(ERR_IO_PENDING,
               one_transaction->Start(GetRequestInfo("one.html"),
                                      one_callback.callback(), BoundNetLog()));
     EXPECT_EQ(OK, one_callback.WaitForResult());
 
-    HttpNetworkTransaction two_transaction(session_.get());
+    HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
     TestCompletionCallback two_callback;
     EXPECT_EQ(ERR_IO_PENDING,
               two_transaction.Start(GetRequestInfo("two.html"),
@@ -179,27 +179,27 @@ class HttpPipelinedNetworkTransactionTest : public testing::Test {
 
   void CompleteFourRequests(RequestInfoOptions options) {
     scoped_ptr<HttpNetworkTransaction> one_transaction(
-        new HttpNetworkTransaction(session_.get()));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     TestCompletionCallback one_callback;
     EXPECT_EQ(ERR_IO_PENDING,
               one_transaction->Start(GetRequestInfo("one.html", options),
                                      one_callback.callback(), BoundNetLog()));
     EXPECT_EQ(OK, one_callback.WaitForResult());
 
-    HttpNetworkTransaction two_transaction(session_.get());
+    HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
     TestCompletionCallback two_callback;
     EXPECT_EQ(ERR_IO_PENDING,
               two_transaction.Start(GetRequestInfo("two.html", options),
                                     two_callback.callback(), BoundNetLog()));
 
-    HttpNetworkTransaction three_transaction(session_.get());
+    HttpNetworkTransaction three_transaction(DEFAULT_PRIORITY, session_.get());
     TestCompletionCallback three_callback;
     EXPECT_EQ(ERR_IO_PENDING,
               three_transaction.Start(GetRequestInfo("three.html", options),
                                       three_callback.callback(),
                                       BoundNetLog()));
 
-    HttpNetworkTransaction four_transaction(session_.get());
+    HttpNetworkTransaction four_transaction(DEFAULT_PRIORITY, session_.get());
     TestCompletionCallback four_callback;
     EXPECT_EQ(ERR_IO_PENDING,
               four_transaction.Start(GetRequestInfo("four.html", options),
@@ -247,7 +247,7 @@ TEST_F(HttpPipelinedNetworkTransactionTest, OneRequest) {
   };
   AddExpectedConnection(reads, arraysize(reads), writes, arraysize(writes));
 
-  HttpNetworkTransaction transaction(session_.get());
+  HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session_.get());
   EXPECT_EQ(ERR_IO_PENDING,
             transaction.Start(GetRequestInfo("test.html"), callback_.callback(),
                               BoundNetLog()));
@@ -458,14 +458,14 @@ TEST_F(HttpPipelinedNetworkTransactionTest, ErrorEvictsToNewPipeline) {
   };
   AddExpectedConnection(reads2, arraysize(reads2), writes2, arraysize(writes2));
 
-  HttpNetworkTransaction one_transaction(session_.get());
+  HttpNetworkTransaction one_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction.Start(GetRequestInfo("one.html"),
                                   one_callback.callback(), BoundNetLog()));
   EXPECT_EQ(OK, one_callback.WaitForResult());
 
-  HttpNetworkTransaction two_transaction(session_.get());
+  HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction.Start(GetRequestInfo("two.html"),
@@ -498,13 +498,13 @@ TEST_F(HttpPipelinedNetworkTransactionTest, SendErrorEvictsToNewPipeline) {
   };
   AddExpectedConnection(reads2, arraysize(reads2), writes2, arraysize(writes2));
 
-  HttpNetworkTransaction one_transaction(session_.get());
+  HttpNetworkTransaction one_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction.Start(GetRequestInfo("one.html"),
                                   one_callback.callback(), BoundNetLog()));
 
-  HttpNetworkTransaction two_transaction(session_.get());
+  HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction.Start(GetRequestInfo("two.html"),
@@ -539,14 +539,14 @@ TEST_F(HttpPipelinedNetworkTransactionTest, RedirectDrained) {
   AddExpectedConnection(reads, arraysize(reads), writes, arraysize(writes));
 
   scoped_ptr<HttpNetworkTransaction> one_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction->Start(GetRequestInfo("redirect.html"),
                                    one_callback.callback(), BoundNetLog()));
   EXPECT_EQ(OK, one_callback.WaitForResult());
 
-  HttpNetworkTransaction two_transaction(session_.get());
+  HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction.Start(GetRequestInfo("two.html"),
@@ -595,9 +595,10 @@ TEST_F(HttpPipelinedNetworkTransactionTest, BasicHttpAuthentication) {
                                            BoundNetLog()));
   auth_handler_factory_->AddMockHandler(mock_auth, HttpAuth::AUTH_SERVER);
 
-  HttpNetworkTransaction transaction(session_.get());
+  HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session_.get());
   EXPECT_EQ(ERR_IO_PENDING,
-            transaction.Start(GetRequestInfo("one.html"), callback_.callback(),
+            transaction.Start(GetRequestInfo("one.html"),
+                              callback_.callback(),
                               BoundNetLog()));
   EXPECT_EQ(OK, callback_.WaitForResult());
 
@@ -648,7 +649,7 @@ TEST_F(HttpPipelinedNetworkTransactionTest, OldVersionDisablesPipelining) {
   };
   AddExpectedConnection(reads3, arraysize(reads3), writes3, arraysize(writes3));
 
-  HttpNetworkTransaction one_transaction(session_.get());
+  HttpNetworkTransaction one_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction.Start(GetRequestInfo("pipelined.html"),
@@ -714,7 +715,8 @@ TEST_F(HttpPipelinedNetworkTransactionTest, PipelinesImmediatelyIfKnownGood) {
 
   CompleteFourRequests(REQUEST_DEFAULT);
 
-  HttpNetworkTransaction second_one_transaction(session_.get());
+  HttpNetworkTransaction second_one_transaction(
+      DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback second_one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             second_one_transaction.Start(
@@ -722,7 +724,8 @@ TEST_F(HttpPipelinedNetworkTransactionTest, PipelinesImmediatelyIfKnownGood) {
                 second_one_callback.callback(), BoundNetLog()));
   MessageLoop::current()->RunUntilIdle();
 
-  HttpNetworkTransaction second_two_transaction(session_.get());
+  HttpNetworkTransaction second_two_transaction(
+      DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback second_two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             second_two_transaction.Start(
@@ -801,7 +804,7 @@ TEST_F(HttpPipelinedNetworkTransactionTest, OpenPipelinesWhileBinding) {
 
   AddExpectedConnection(NULL, 0, NULL, 0);
 
-  HttpNetworkTransaction one_transaction(session_.get());
+  HttpNetworkTransaction one_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction.Start(GetRequestInfo("one.html"),
@@ -810,7 +813,7 @@ TEST_F(HttpPipelinedNetworkTransactionTest, OpenPipelinesWhileBinding) {
   data_vector_[0]->SetStop(2);
   data_vector_[0]->Run();
 
-  HttpNetworkTransaction two_transaction(session_.get());
+  HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction.Start(GetRequestInfo("two.html"),
@@ -846,7 +849,7 @@ TEST_F(HttpPipelinedNetworkTransactionTest, ProxyChangesWhileConnecting) {
   data2.set_connect_data(MockConnect(ASYNC, ERR_FAILED));
   factory_.AddSocketDataProvider(&data2);
 
-  HttpNetworkTransaction transaction(session_.get());
+  HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session_.get());
   EXPECT_EQ(ERR_IO_PENDING,
             transaction.Start(GetRequestInfo("test.html"), callback_.callback(),
                               BoundNetLog()));
@@ -878,13 +881,13 @@ TEST_F(HttpPipelinedNetworkTransactionTest, ForcedPipelineSharesConnection) {
   AddExpectedConnection(reads, arraysize(reads), writes, arraysize(writes));
 
   scoped_ptr<HttpNetworkTransaction> one_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction->Start(GetRequestInfo("one.html"),
                                    one_callback.callback(), BoundNetLog()));
 
-  HttpNetworkTransaction two_transaction(session_.get());
+  HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction.Start(GetRequestInfo("two.html"),
@@ -909,13 +912,13 @@ TEST_F(HttpPipelinedNetworkTransactionTest,
   factory_.AddSocketDataProvider(&data);
 
   scoped_ptr<HttpNetworkTransaction> one_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction->Start(GetRequestInfo("one.html"),
                                    one_callback.callback(), BoundNetLog()));
 
-  HttpNetworkTransaction two_transaction(session_.get());
+  HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction.Start(GetRequestInfo("two.html"),
@@ -943,13 +946,13 @@ TEST_F(HttpPipelinedNetworkTransactionTest, ForcedPipelineEvictionIsFatal) {
   AddExpectedConnection(reads, arraysize(reads), writes, arraysize(writes));
 
   scoped_ptr<HttpNetworkTransaction> one_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction->Start(GetRequestInfo("one.html"),
                                    one_callback.callback(), BoundNetLog()));
 
-  HttpNetworkTransaction two_transaction(session_.get());
+  HttpNetworkTransaction two_transaction(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction.Start(GetRequestInfo("two.html"),
@@ -989,28 +992,28 @@ TEST_F(HttpPipelinedNetworkTransactionTest, ForcedPipelineOrder) {
   factory_.AddSocketDataProvider(&data);
 
   scoped_ptr<HttpNetworkTransaction> one_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback one_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             one_transaction->Start(GetRequestInfo("one.html"),
                                    one_callback.callback(), BoundNetLog()));
 
   scoped_ptr<HttpNetworkTransaction> two_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback two_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             two_transaction->Start(GetRequestInfo("two.html"),
                                    two_callback.callback(), BoundNetLog()));
 
   scoped_ptr<HttpNetworkTransaction> three_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback three_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             three_transaction->Start(GetRequestInfo("three.html"),
                                      three_callback.callback(), BoundNetLog()));
 
   scoped_ptr<HttpNetworkTransaction> four_transaction(
-      new HttpNetworkTransaction(session_.get()));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback four_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             four_transaction->Start(GetRequestInfo("four.html"),

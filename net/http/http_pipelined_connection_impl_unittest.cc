@@ -143,7 +143,7 @@ class HttpPipelinedConnectionImplTest : public testing::Test {
     HttpStream* stream = pipeline_->CreateNewStream();
     HttpRequestInfo* request_info = GetRequestInfo(filename);
     int rv = stream->InitializeStream(
-        request_info, BoundNetLog(), CompletionCallback());
+        request_info, DEFAULT_PRIORITY, BoundNetLog(), CompletionCallback());
     DCHECK_EQ(OK, rv);
     return stream;
   }

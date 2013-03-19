@@ -46,9 +46,10 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // HttpStream implementation.
 
-  // Must not be called if a NULL SpdySession was pssed into the
+  // Must not be called if a NULL SpdySession was passed into the
   // constructor.
   virtual int InitializeStream(const HttpRequestInfo* request_info,
+                               RequestPriority priority,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) OVERRIDE;
 

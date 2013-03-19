@@ -172,7 +172,8 @@ TEST_F(SpdyHttpStreamSpdy2Test, SendRequest) {
 
   ASSERT_EQ(
       OK,
-      http_stream->InitializeStream(&request, net_log, CompletionCallback()));
+      http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
+                                    net_log, CompletionCallback()));
   EXPECT_FALSE(http_stream->GetLoadTimingInfo(&load_timing_info));
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
@@ -237,7 +238,8 @@ TEST_F(SpdyHttpStreamSpdy2Test, LoadTimingTwoRequests) {
       new SpdyHttpStream(session_.get(), true));
 
   ASSERT_EQ(OK,
-            http_stream1->InitializeStream(&request1, BoundNetLog(),
+            http_stream1->InitializeStream(&request1, DEFAULT_PRIORITY,
+                                           BoundNetLog(),
                                            CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING, http_stream1->SendRequest(headers1, &response1,
                                                       callback1.callback()));
@@ -253,7 +255,8 @@ TEST_F(SpdyHttpStreamSpdy2Test, LoadTimingTwoRequests) {
       new SpdyHttpStream(session_.get(), true));
 
   ASSERT_EQ(OK,
-            http_stream2->InitializeStream(&request2, BoundNetLog(),
+            http_stream2->InitializeStream(&request2, DEFAULT_PRIORITY,
+                                           BoundNetLog(),
                                            CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING, http_stream2->SendRequest(headers2, &response2,
                                                       callback2.callback()));
@@ -329,7 +332,8 @@ TEST_F(SpdyHttpStreamSpdy2Test, SendChunkedPost) {
   SpdyHttpStream http_stream(session_.get(), true);
   ASSERT_EQ(
       OK,
-      http_stream.InitializeStream(&request, net_log, CompletionCallback()));
+      http_stream.InitializeStream(&request, DEFAULT_PRIORITY,
+                                   net_log, CompletionCallback()));
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream.SendRequest(
       headers, &response, callback.callback()));
@@ -395,9 +399,8 @@ TEST_F(SpdyHttpStreamSpdy2Test, DelayedSendChunkedPost) {
   BoundNetLog net_log;
   scoped_ptr<SpdyHttpStream> http_stream(
       new SpdyHttpStream(session_.get(), true));
-  ASSERT_EQ(OK, http_stream->InitializeStream(&request,
-                                              net_log,
-                                              CompletionCallback()));
+  ASSERT_EQ(OK, http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
+                                              net_log, CompletionCallback()));
 
   HttpRequestHeaders headers;
   HttpResponseInfo response;
@@ -488,7 +491,8 @@ TEST_F(SpdyHttpStreamSpdy2Test, SpdyURLTest) {
   scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
   ASSERT_EQ(
       OK,
-      http_stream->InitializeStream(&request, net_log, CompletionCallback()));
+      http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
+                                    net_log, CompletionCallback()));
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));

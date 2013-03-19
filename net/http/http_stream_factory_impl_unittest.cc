@@ -177,7 +177,7 @@ void PreconnectHelperForURL(int num_streams,
   request.load_flags = 0;
 
   session->http_stream_factory()->PreconnectStreams(
-      num_streams, request, ssl_config, ssl_config);
+      num_streams, request, DEFAULT_PRIORITY, ssl_config, ssl_config);
   mock_factory->WaitForPreconnects();
 };
 
@@ -444,9 +444,9 @@ TEST(HttpStreamFactoryTest, JobNotifiesProxy) {
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
   scoped_ptr<HttpStreamRequest> request(
-      session->http_stream_factory()->RequestStream(request_info, ssl_config,
-                                                    ssl_config, &waiter,
-                                                    BoundNetLog()));
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter, BoundNetLog()));
   waiter.WaitForStream();
 
   // The proxy that failed should now be known to the proxy_service as bad.

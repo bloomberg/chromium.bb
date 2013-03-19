@@ -27,6 +27,7 @@ HttpPipelinedStream::~HttpPipelinedStream() {
 
 int HttpPipelinedStream::InitializeStream(
     const HttpRequestInfo* request_info,
+    RequestPriority priority,
     const BoundNetLog& net_log,
     const CompletionCallback& callback) {
   request_info_ = request_info;

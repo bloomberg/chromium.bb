@@ -54,6 +54,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
+#include "net/base/request_priority.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
@@ -894,7 +895,8 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
   memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(
-      url, base::Time::FromDoubleT(expected_response_time), buf, data.size());
+      url, net::DEFAULT_PRIORITY,
+      base::Time::FromDoubleT(expected_response_time), buf, data.size());
 }
 
 void RenderMessageFilter::OnKeygen(uint32 key_size_index,

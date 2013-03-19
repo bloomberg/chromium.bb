@@ -27,6 +27,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
 
   // HttpStream implementation.
   virtual int InitializeStream(const HttpRequestInfo* request_info,
+                               RequestPriority priority,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) OVERRIDE;
   virtual int SendRequest(const HttpRequestHeaders& request_headers,

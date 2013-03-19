@@ -692,14 +692,14 @@ class ClientSocketPoolBase {
 
   // RequestSockets bundles up the parameters into a Request and then forwards
   // to ClientSocketPoolBaseHelper::RequestSockets().  Note that it assigns the
-  // priority to LOWEST and specifies the NO_IDLE_SOCKETS flag.
+  // priority to DEFAULT_PRIORITY and specifies the NO_IDLE_SOCKETS flag.
   void RequestSockets(const std::string& group_name,
                       const scoped_refptr<SocketParams>& params,
                       int num_sockets,
                       const BoundNetLog& net_log) {
     const Request request(NULL /* no handle */,
                           CompletionCallback(),
-                          LOWEST,
+                          DEFAULT_PRIORITY,
                           internal::ClientSocketPoolBaseHelper::NO_IDLE_SOCKETS,
                           params->ignore_limits(),
                           params,

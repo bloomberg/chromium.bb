@@ -42,6 +42,7 @@ QuicHttpStream::~QuicHttpStream() {
 }
 
 int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
+                                     RequestPriority priority,
                                      const BoundNetLog& stream_net_log,
                                      const CompletionCallback& callback) {
   CHECK(stream_);

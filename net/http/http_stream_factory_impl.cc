@@ -63,6 +63,7 @@ HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
 
 HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
     const HttpRequestInfo& request_info,
+    RequestPriority priority,
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config,
     HttpStreamRequest::Delegate* delegate,
@@ -80,14 +81,14 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
     HttpRequestInfo alternate_request_info = request_info;
     alternate_request_info.url = alternate_url;
     alternate_job =
-        new Job(this, session_, alternate_request_info, server_ssl_config,
-                proxy_ssl_config, net_log.net_log());
+        new Job(this, session_, alternate_request_info, priority,
+                server_ssl_config, proxy_ssl_config, net_log.net_log());
     request->AttachJob(alternate_job);
     alternate_job->MarkAsAlternate(request_info.url, alternate);
   }
 
-  Job* job = new Job(this, session_, request_info, server_ssl_config,
-                     proxy_ssl_config, net_log.net_log());
+  Job* job = new Job(this, session_, request_info, priority,
+                     server_ssl_config, proxy_ssl_config, net_log.net_log());
   request->AttachJob(job);
   if (alternate_job) {
     // Never share connection with other jobs for FTP requests.
@@ -109,6 +110,7 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
 void HttpStreamFactoryImpl::PreconnectStreams(
     int num_streams,
     const HttpRequestInfo& request_info,
+    RequestPriority priority,
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config) {
   GURL alternate_url;
@@ -118,12 +120,12 @@ void HttpStreamFactoryImpl::PreconnectStreams(
   if (alternate.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
     HttpRequestInfo alternate_request_info = request_info;
     alternate_request_info.url = alternate_url;
-    job = new Job(this, session_, alternate_request_info, server_ssl_config,
-                  proxy_ssl_config, session_->net_log());
+    job = new Job(this, session_, alternate_request_info, priority,
+                  server_ssl_config, proxy_ssl_config, session_->net_log());
     job->MarkAsAlternate(request_info.url, alternate);
   } else {
-    job = new Job(this, session_, request_info, server_ssl_config,
-                  proxy_ssl_config, session_->net_log());
+    job = new Job(this, session_, request_info, priority,
+                  server_ssl_config, proxy_ssl_config, session_->net_log());
   }
   preconnect_job_set_.insert(job);
   job->Preconnect(num_streams);

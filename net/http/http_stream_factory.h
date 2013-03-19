@@ -15,6 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
 #include "net/socket/ssl_client_socket.h"
 
@@ -171,6 +172,7 @@ class NET_EXPORT HttpStreamFactory {
   // Will callback to the HttpStreamRequestDelegate upon completion.
   virtual HttpStreamRequest* RequestStream(
       const HttpRequestInfo& info,
+      RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
@@ -179,6 +181,7 @@ class NET_EXPORT HttpStreamFactory {
   // Requests that enough connections for |num_streams| be opened.
   virtual void PreconnectStreams(int num_streams,
                                  const HttpRequestInfo& info,
+                                 RequestPriority priority,
                                  const SSLConfig& server_ssl_config,
                                  const SSLConfig& proxy_ssl_config) = 0;
 

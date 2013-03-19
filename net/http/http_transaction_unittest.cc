@@ -146,12 +146,13 @@ MockHttpRequest::MockHttpRequest(const MockTransaction& t) {
 int TestTransactionConsumer::quit_counter_ = 0;
 
 TestTransactionConsumer::TestTransactionConsumer(
+    net::RequestPriority priority,
     net::HttpTransactionFactory* factory)
     : state_(IDLE),
       trans_(NULL),
       error_(net::OK) {
   // Disregard the error code.
-  factory->CreateTransaction(&trans_, NULL);
+  factory->CreateTransaction(priority, &trans_, NULL);
   ++quit_counter_;
 }
 
@@ -215,7 +216,9 @@ void TestTransactionConsumer::OnIOComplete(int result) {
   }
 }
 
-MockNetworkTransaction::MockNetworkTransaction(MockNetworkLayer* factory)
+MockNetworkTransaction::MockNetworkTransaction(
+    net::RequestPriority priority,
+    MockNetworkLayer* factory)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       data_cursor_(0),
       transaction_factory_(factory->AsWeakPtr()) {
@@ -347,10 +350,11 @@ void MockNetworkLayer::TransactionDoneReading() {
 }
 
 int MockNetworkLayer::CreateTransaction(
+    net::RequestPriority priority,
     scoped_ptr<net::HttpTransaction>* trans,
     net::HttpTransactionDelegate* delegate) {
   transaction_count_++;
-  trans->reset(new MockNetworkTransaction(this));
+  trans->reset(new MockNetworkTransaction(priority, this));
   return net::OK;
 }
 

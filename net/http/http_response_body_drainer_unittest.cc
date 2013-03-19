@@ -77,6 +77,7 @@ class MockHttpStream : public HttpStream {
 
   // HttpStream implementation.
   virtual int InitializeStream(const HttpRequestInfo* request_info,
+                               RequestPriority priority,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) OVERRIDE {
     return ERR_UNEXPECTED;

@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_request_headers.h"
@@ -57,7 +58,8 @@ class HttpCache::Transaction : public HttpTransaction {
     UPDATE          = READ_META | WRITE,  // READ_WRITE & ~READ_DATA
   };
 
-  Transaction(HttpCache* cache,
+  Transaction(RequestPriority priority,
+              HttpCache* cache,
               HttpTransactionDelegate* transaction_delegate,
               InfiniteCacheTransaction* infinite_cache_transaction);
   virtual ~Transaction();
@@ -104,8 +106,9 @@ class HttpCache::Transaction : public HttpTransaction {
   const BoundNetLog& net_log() const;
 
   // HttpTransaction methods:
-  virtual int Start(const HttpRequestInfo*, const CompletionCallback&,
-                    const BoundNetLog&) OVERRIDE;
+  virtual int Start(const HttpRequestInfo* request_info,
+                    const CompletionCallback& callback,
+                    const BoundNetLog& net_log) OVERRIDE;
   virtual int RestartIgnoringLastError(
       const CompletionCallback& callback) OVERRIDE;
   virtual int RestartWithCertificate(
@@ -381,6 +384,7 @@ class HttpCache::Transaction : public HttpTransaction {
 
   State next_state_;
   const HttpRequestInfo* request_;
+  RequestPriority priority_;
   BoundNetLog net_log_;
   scoped_ptr<HttpRequestInfo> custom_request_;
   HttpRequestHeaders request_headers_copy_;

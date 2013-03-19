@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 
 namespace net {
 
@@ -22,7 +23,8 @@ class NET_EXPORT HttpTransactionFactory {
 
   // Creates a HttpTransaction object. On success, saves the new
   // transaction to |*trans| and returns OK.
-  virtual int CreateTransaction(scoped_ptr<HttpTransaction>* trans,
+  virtual int CreateTransaction(RequestPriority priority,
+                                scoped_ptr<HttpTransaction>* trans,
                                 HttpTransactionDelegate* delegate) = 0;
 
   // Returns the associated cache if any (may be NULL).

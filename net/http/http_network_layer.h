@@ -41,7 +41,8 @@ class NET_EXPORT HttpNetworkLayer
   static void ForceAlternateProtocol();
 
   // HttpTransactionFactory methods:
-  virtual int CreateTransaction(scoped_ptr<HttpTransaction>* trans,
+  virtual int CreateTransaction(RequestPriority priority,
+                                scoped_ptr<HttpTransaction>* trans,
                                 HttpTransactionDelegate* delegate) OVERRIDE;
   virtual HttpCache* GetCache() OVERRIDE;
   virtual HttpNetworkSession* GetSession() OVERRIDE;

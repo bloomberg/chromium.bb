@@ -34,7 +34,9 @@ HttpBasicStream::HttpBasicStream(ClientSocketHandle* connection,
 HttpBasicStream::~HttpBasicStream() {}
 
 int HttpBasicStream::InitializeStream(
-    const HttpRequestInfo* request_info, const BoundNetLog& net_log,
+    const HttpRequestInfo* request_info,
+    RequestPriority priority,
+    const BoundNetLog& net_log,
     const CompletionCallback& callback) {
   DCHECK(!parser_.get());
   request_info_ = request_info;

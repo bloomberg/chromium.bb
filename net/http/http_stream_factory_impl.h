@@ -33,6 +33,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   // HttpStreamFactory interface
   virtual HttpStreamRequest* RequestStream(
       const HttpRequestInfo& info,
+      RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
@@ -40,6 +41,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
 
   virtual void PreconnectStreams(int num_streams,
                                  const HttpRequestInfo& info,
+                                 RequestPriority priority,
                                  const SSLConfig& server_ssl_config,
                                  const SSLConfig& proxy_ssl_config) OVERRIDE;
   virtual base::Value* PipelineInfoToValue() const OVERRIDE;

@@ -394,7 +394,7 @@ void URLRequestHttpJob::StartTransactionInternal() {
     DCHECK(request_->context()->http_transaction_factory());
 
     rv = request_->context()->http_transaction_factory()->CreateTransaction(
-        &transaction_, http_transaction_delegate_.get());
+        request_->priority(), &transaction_, http_transaction_delegate_.get());
     if (rv == OK) {
       if (!throttling_entry_ ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
@@ -868,7 +868,6 @@ void URLRequestHttpJob::Start() {
   request_info_.url = request_->url();
   request_info_.method = request_->method();
   request_info_.load_flags = request_->load_flags();
-  request_info_.priority = request_->priority();
   request_info_.request_id = request_->identifier();
 
   // Strip Referer from request_info_.extra_headers to prevent, e.g., plugins

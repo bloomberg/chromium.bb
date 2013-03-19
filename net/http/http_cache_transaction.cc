@@ -118,11 +118,13 @@ static bool HeaderMatches(const HttpRequestHeaders& headers,
 //-----------------------------------------------------------------------------
 
 HttpCache::Transaction::Transaction(
+    RequestPriority priority,
     HttpCache* cache,
     HttpTransactionDelegate* transaction_delegate,
     InfiniteCacheTransaction* infinite_cache_transaction)
     : next_state_(STATE_NONE),
       request_(NULL),
+      priority_(priority),
       cache_(cache->AsWeakPtr()),
       entry_(NULL),
       new_entry_(NULL),
@@ -787,7 +789,8 @@ int HttpCache::Transaction::DoSendRequest() {
   send_request_since_ = TimeTicks::Now();
 
   // Create a network transaction.
-  int rv = cache_->network_layer_->CreateTransaction(&network_trans_, NULL);
+  int rv = cache_->network_layer_->CreateTransaction(
+      priority_, &network_trans_, NULL);
   if (rv != OK)
     return rv;
 

@@ -300,6 +300,7 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
               session_->InitializeWithSocket(connection, false, net::OK));
   }
   virtual int CreateTransaction(
+      net::RequestPriority priority,
       scoped_ptr<net::HttpTransaction>* trans,
       net::HttpTransactionDelegate* delegate) OVERRIDE {
     NOTREACHED();

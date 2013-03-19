@@ -38,6 +38,7 @@ class HttpBasicStream : public HttpStream {
 
   // HttpStream methods:
   virtual int InitializeStream(const HttpRequestInfo* request_info,
+                               RequestPriority priority,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) OVERRIDE;
 
