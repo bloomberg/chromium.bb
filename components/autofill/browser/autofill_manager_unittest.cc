@@ -686,7 +686,9 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
 
     ChromeRenderViewHostTestHarness::SetUp();
     io_thread_.StartIOThread();
+
     autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+
     personal_data_.SetBrowserContext(profile);
     autofill_manager_.reset(new TestAutofillManager(
         web_contents(),

@@ -178,6 +178,12 @@ void AutofillManager::CreateForWebContentsAndDelegate(
 
   contents->SetUserData(kAutofillManagerWebContentsUserDataKey,
                         new AutofillManager(contents, delegate));
+
+  // Trigger the lazy creation of AutocheckoutWhitelistManagerService, and
+  // schedule a fetch of the Autocheckout whitelist file if it's not already
+  // loaded. This helps ensure that the whitelist will be available by the time
+  // the user navigates to a form on which Autocheckout should be enabled.
+  delegate->GetAutocheckoutWhitelistManager();
 }
 
 // static
@@ -899,8 +905,8 @@ std::string AutofillManager::GetAutocheckoutURLPrefix() const {
     return std::string();
 
   autofill::autocheckout::WhitelistManager* whitelist_manager =
-      autofill::autocheckout::WhitelistManager::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
+      manager_delegate_->GetAutocheckoutWhitelistManager();
+
   return whitelist_manager->GetMatchedURLPrefix(web_contents()->GetURL());
 }
 

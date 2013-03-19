@@ -39,6 +39,10 @@ struct FormData;
 
 namespace autofill {
 
+namespace autocheckout {
+class WhitelistManager;
+}
+
 enum DialogType {
   // Autofill dialog for the Autocheckout feature.
   DIALOG_TYPE_AUTOCHECKOUT,
@@ -63,6 +67,11 @@ class AutofillManagerDelegate {
 
   // Gets the preferences associated with the delegate.
   virtual PrefService* GetPrefs() = 0;
+
+  // Gets the autocheckout::WhitelistManager instance associated with the
+  // delegate.
+  virtual autocheckout::WhitelistManager*
+      GetAutocheckoutWhitelistManager() const = 0;
 
   // Hides the associated request autocomplete dialog (if it exists).
   virtual void HideRequestAutocompleteDialog() = 0;

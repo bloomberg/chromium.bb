@@ -39,6 +39,8 @@ class TabAutofillManagerDelegate
   // AutofillManagerDelegate implementation.
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
+  virtual autocheckout::WhitelistManager*
+      GetAutocheckoutWhitelistManager() const OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
   virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
   virtual bool IsPasswordSyncEnabled() const OVERRIDE;

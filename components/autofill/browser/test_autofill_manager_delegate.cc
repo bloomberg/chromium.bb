@@ -13,6 +13,11 @@ PersonalDataManager* TestAutofillManagerDelegate::GetPersonalDataManager() {
   return NULL;
 }
 
+autocheckout::WhitelistManager*
+TestAutofillManagerDelegate::GetAutocheckoutWhitelistManager() const {
+  return NULL;
+}
+
 PrefService* TestAutofillManagerDelegate::GetPrefs() {
   return NULL;
 }

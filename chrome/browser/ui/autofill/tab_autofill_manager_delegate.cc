@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/autofill/autocheckout_whitelist_manager_factory.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -52,6 +53,14 @@ PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {
 PrefService* TabAutofillManagerDelegate::GetPrefs() {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
       GetPrefs();
+}
+
+autocheckout::WhitelistManager*
+TabAutofillManagerDelegate::GetAutocheckoutWhitelistManager() const {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  return autocheckout::WhitelistManagerFactory::GetForProfile(
+      profile->GetOriginalProfile());
 }
 
 bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {

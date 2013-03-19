@@ -33,8 +33,8 @@ class WhitelistManagerTest;
 
 class TestWhitelistManager : public WhitelistManager {
  public:
-  explicit TestWhitelistManager(net::URLRequestContextGetter* context_getter)
-      : WhitelistManager(context_getter),
+  TestWhitelistManager()
+      : WhitelistManager(),
         did_start_download_timer_(false) {}
 
   virtual void ScheduleDownload(size_t interval_seconds) OVERRIDE {
@@ -86,8 +86,7 @@ class WhitelistManagerTest : public testing::Test {
  protected:
   void CreateWhitelistManager() {
     if (!whitelist_manager_.get()) {
-      whitelist_manager_.reset(new TestWhitelistManager(
-          profile_.GetRequestContext()));
+      whitelist_manager_.reset(new TestWhitelistManager());
     }
   }
 

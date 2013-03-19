@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/supports_user_data.h"
 #include "base/timer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -28,20 +27,21 @@ namespace autocheckout {
 
 // Downloads and caches the list of URL prefixes whitelisted for use with
 // Autocheckout.
-class WhitelistManager : public net::URLFetcherDelegate,
-                         public base::SupportsUserData::Data {
+class WhitelistManager : public net::URLFetcherDelegate {
  public:
-  static WhitelistManager* GetForBrowserContext(
-      content::BrowserContext* context);
+  WhitelistManager();
+  virtual ~WhitelistManager();
+
+  // Schedule a fetch of the Autocheckout whitelist file if it's not already
+  // loaded. This helps ensure that the whitelist will be available by the time
+  // the user navigates to a form on which Autocheckout should be enabled.
+  void Init(net::URLRequestContextGetter* context_getter);
 
   // Matches the url with whitelist and return the matched url prefix.
   // Returns empty string when it is not matched.
   std::string GetMatchedURLPrefix(const GURL& url) const;
 
  protected:
-  explicit WhitelistManager(net::URLRequestContextGetter* context_getter);
-  virtual ~WhitelistManager();
-
   // Schedules a future call to TriggerDownload if one isn't already pending.
   virtual void ScheduleDownload(size_t interval_seconds);
 
@@ -75,7 +75,7 @@ class WhitelistManager : public net::URLFetcherDelegate,
   bool callback_is_pending_;
 
   // The context for the request.
-  net::URLRequestContextGetter* const context_getter_;  // WEAK
+  net::URLRequestContextGetter* context_getter_;  // WEAK
 
   // State of the kEnableExperimentalFormFilling flag.
   const bool experimental_form_filling_enabled_;

@@ -37,34 +37,23 @@ const char kWhiteListKeyName[] = "autocheckout_whitelist_manager";
 namespace autofill {
 namespace autocheckout {
 
-// static
-WhitelistManager* WhitelistManager::GetForBrowserContext(
-    content::BrowserContext* context) {
-  WhitelistManager* whitelist_manager = static_cast<WhitelistManager*>(
-      context->GetUserData(kWhiteListKeyName));
-  if (!whitelist_manager) {
-    whitelist_manager =
-        new WhitelistManager(context->GetRequestContext());
-    whitelist_manager->ScheduleDownload(kInitialDownloadDelaySeconds);
-    context->SetUserData(kWhiteListKeyName, whitelist_manager);
-  }
-  return whitelist_manager;
-}
-
-WhitelistManager::WhitelistManager(
-    net::URLRequestContextGetter* context_getter)
+WhitelistManager::WhitelistManager()
     : callback_is_pending_(false),
-      context_getter_(context_getter),
       experimental_form_filling_enabled_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableExperimentalFormFilling)),
       bypass_autocheckout_whitelist_(
           CommandLine::ForCurrentProcess()->HasSwitch(
                         switches::kBypassAutocheckoutWhitelist)) {
-  DCHECK(context_getter);
 }
 
 WhitelistManager::~WhitelistManager() {}
+
+void WhitelistManager::Init(net::URLRequestContextGetter* context_getter) {
+  DCHECK(context_getter);
+  context_getter_ = context_getter;
+  ScheduleDownload(kInitialDownloadDelaySeconds);
+}
 
 void WhitelistManager::ScheduleDownload(size_t interval_seconds) {
   if (!experimental_form_filling_enabled_) {

@@ -190,6 +190,10 @@ class TestAutofillManager : public AutofillManager {
   }
   virtual ~TestAutofillManager() {}
 
+  virtual std::string GetAutocheckoutURLPrefix() const OVERRIDE {
+    return std::string();
+  }
+
   virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
