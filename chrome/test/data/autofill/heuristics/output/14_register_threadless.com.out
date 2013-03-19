@@ -1,4 +1,6 @@
 UNKNOWN_TYPE | create_username | Desired username | 
+UNKNOWN_TYPE | create_password | Password | 
+UNKNOWN_TYPE | retype_password | Re-type password | 
 EMAIL_ADDRESS | email | Email | 
 UNKNOWN_TYPE | join_newsletter | Join our newsletter and be first to know about new tees and great deals! | on
 UNKNOWN_TYPE | recaptcha_response_field | Type the words above Type the numbers you hear | 

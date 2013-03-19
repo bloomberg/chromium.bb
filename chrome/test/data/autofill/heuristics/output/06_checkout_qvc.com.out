@@ -1,5 +1,7 @@
 EMAIL_ADDRESS | EmailAddress | * E-mail Address: | 
 EMAIL_ADDRESS | EmailAddressVerify | * Confirm E-mail Address: | 
+UNKNOWN_TYPE | Pin | * PIN: | 
+UNKNOWN_TYPE | PinVerify | * Verify Your PIN: | 
 UNKNOWN_TYPE | Prefix | * Title: | 06
 NAME_FIRST | BilltoFirstName | * First Name: | 
 NAME_LAST | BilltoLastName | * Last Name: | 

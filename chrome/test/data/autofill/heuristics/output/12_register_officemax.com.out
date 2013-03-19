@@ -4,3 +4,5 @@ NAME_LAST | /atg/userprofiling/ProfileFormHandler.value.lastName | * Last Name: 
 EMAIL_ADDRESS | /atg/userprofiling/ProfileFormHandler.value.login | * Email Address: | 
 EMAIL_ADDRESS | /atg/userprofiling/ProfileFormHandler.confirmEmailAddress | * Confirm Email: | 
 ADDRESS_HOME_ZIP | /atg/userprofiling/ProfileFormHandler.value.zip | * Zip: | 
+UNKNOWN_TYPE | /atg/userprofiling/ProfileFormHandler.value.password | * Password: | 
+UNKNOWN_TYPE | /atg/userprofiling/ProfileFormHandler.value.confirmPassword | * Confirm Password: | 

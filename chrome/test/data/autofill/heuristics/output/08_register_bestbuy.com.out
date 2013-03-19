@@ -3,5 +3,7 @@ NAME_MIDDLE_INITIAL | TxtMI | MI |
 NAME_LAST | TxtLastName | *Last Name | 
 EMAIL_ADDRESS | TxtEmail | *E-Mail Address | 
 EMAIL_ADDRESS | TxtEmailConfirm | *Retype E-Mail Address | 
+UNKNOWN_TYPE | PwdPassword | *Password (6 to 30 characters. At least one number.) | 
+UNKNOWN_TYPE | PwdPasswordConfirm | *Retype Password (must match exactly) | 
 ADDRESS_HOME_ZIP | TxtPostalCode | *ZIP Code | 
 UNKNOWN_TYPE | TxtRzMembershipId | Enter 10-Digit Member ID (optional) | 

@@ -1,5 +1,7 @@
 EMAIL_ADDRESS | LoginName | Email Address* | 
 EMAIL_ADDRESS | LoginName1 | Confirm Email Address* | 
+UNKNOWN_TYPE | Password | Password* | 
+UNKNOWN_TYPE | Password1 | Confirm Password* | 
 NAME_FIRST | FirstName | First Name* | 
 NAME_MIDDLE_INITIAL | BMI | MI | 
 NAME_LAST | LastName | Last Name* | 

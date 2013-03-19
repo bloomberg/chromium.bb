@@ -19,3 +19,5 @@ ADDRESS_HOME_LINE2 | ctl00$mainContentPlaceHolder$shippingAddressForm$address2 |
 ADDRESS_HOME_CITY | ctl00$mainContentPlaceHolder$shippingAddressForm$city | City | 
 ADDRESS_HOME_STATE | ctl00$mainContentPlaceHolder$shippingAddressForm$stateProvince | State/Province | -1
 ADDRESS_HOME_ZIP | ctl00$mainContentPlaceHolder$shippingAddressForm$zipCode | Zip/Postal Code | 
+UNKNOWN_TYPE | ctl00$mainContentPlaceHolder$registrationPassword | Password | 
+UNKNOWN_TYPE | ctl00$mainContentPlaceHolder$registrationPasswordConfirm | Confirm Password | 

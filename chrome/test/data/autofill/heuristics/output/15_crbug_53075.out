@@ -5,6 +5,8 @@ NAME_LAST | ecomms_last_name | Last Name: |
 PHONE_HOME_WHOLE_NUMBER | ecomms_telephone | Telephone: | 
 PHONE_HOME_WHOLE_NUMBER | ecomms_mobile | Mobile: | 
 EMAIL_ADDRESS | ecomms_email | Email Address: | x@foo.com
+UNKNOWN_TYPE | ecomms_password | Password: | abcdef
+UNKNOWN_TYPE | ecomms_password_confirm | Confirm password: | abcdef
 ADDRESS_HOME_LINE1 | ecomms_address1 | Address1: | 
 ADDRESS_HOME_LINE2 | ecomms_address2 | Address2: | 
 ADDRESS_HOME_CITY | ecomms_town | Town / City: | 

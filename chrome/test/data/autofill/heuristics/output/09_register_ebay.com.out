@@ -13,6 +13,8 @@ UNKNOWN_TYPE | dayphone4 | ext.: |
 EMAIL_ADDRESS | email | Email address | 
 EMAIL_ADDRESS | retype_email | Re-enter email address | 
 UNKNOWN_TYPE | userid | Create your eBay user ID | 
+UNKNOWN_TYPE | pass | Create your password | 
+UNKNOWN_TYPE | rpass | Re-enter your password | 
 UNKNOWN_TYPE | canned | Pick a secret question | 0
 UNKNOWN_TYPE | myanswer | Your secret answer | 
 UNKNOWN_TYPE | birthdate2 | Date of birth, Month | 0

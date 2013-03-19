@@ -4,5 +4,7 @@ UNKNOWN_TYPE | _ctl0:cphMainBody:txtVendNo | Vendor Number |
 UNKNOWN_TYPE | _ctl0:cphMainBody:txtEntity | U-Haul Shop Entity Number | 
 EMAIL_ADDRESS | _ctl0:cphMainBody:txtEmail | Email | 
 EMAIL_ADDRESS | _ctl0:cphMainBody:txtEmail0 | ReConfirm Email | 
+UNKNOWN_TYPE | _ctl0:cphMainBody:txtPassword | Password must be between 4 and 8 characters, contain at least one digit and one alphabetic character, and must not contain special characters. | 
+UNKNOWN_TYPE | _ctl0:cphMainBody:txtPassword0 | Password should be same as the above entered password | 
 PHONE_HOME_WHOLE_NUMBER | _ctl0:cphMainBody:txtPhone | Phone | 
 UNKNOWN_TYPE | _ctl0:cphMainBody:txtComments | Comments: | 

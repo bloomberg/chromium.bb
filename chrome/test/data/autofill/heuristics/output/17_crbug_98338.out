@@ -1,9 +1,11 @@
 UNKNOWN_TYPE | giftcardnumber_EGC | Gift Card Number Gift Card Number | 
+UNKNOWN_TYPE | pin_EGC | PIN PIN | 
 UNKNOWN_TYPE | giftCardNumber2 | Gift Card Number PIN | 
 UNKNOWN_TYPE | giftCardPin2 | Gift Card Number PIN | 
 UNKNOWN_TYPE | giftCardNumber3 | Gift Card Number PIN | 
 UNKNOWN_TYPE | giftCardPin3 | Gift Card Number PIN | 
 UNKNOWN_TYPE | giftcardnumber_GC | Gift Card Number PIN | 
+UNKNOWN_TYPE | pin_GC | Gift Card Number PIN | 
 UNKNOWN_TYPE | giftCardNumber2 | Gift Card Number PIN | 
 UNKNOWN_TYPE | giftCardPin2 | Gift Card Number PIN | 
 UNKNOWN_TYPE | giftCardNumber3 | Gift Card Number PIN | 

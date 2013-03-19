@@ -4,6 +4,9 @@ UNKNOWN_TYPE | fechaCompra | *dd/mm/yyyy |
 UNKNOWN_TYPE | serialNumber | Serial * | 
 UNKNOWN_TYPE | idProducto | Serial * | 
 EMAIL_ADDRESS | emailLogin | Email * | 
+UNKNOWN_TYPE | passLogin | a * | 
 NAME_FIRST | nombre | Nombre * | 
 NAME_LAST | apellido | Apellido * | 
 EMAIL_ADDRESS | emailRegistro | Email * | 
+UNKNOWN_TYPE | passRegistro | a * | 
+UNKNOWN_TYPE | rePassRegistro | a * | 

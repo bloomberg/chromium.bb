@@ -5,6 +5,8 @@ ADDRESS_HOME_LINE2 | Address2 | P.O. Box/Apt # |
 ADDRESS_HOME_ZIP | PostalCode | Zip Code | 
 EMAIL_ADDRESS | EmailAddress | Email | 
 EMAIL_ADDRESS | ConfirmEmailAddress | Verify Email | 
+UNKNOWN_TYPE | Password | Password | 
+UNKNOWN_TYPE | PasswordConfirm | Verify Password | 
 UNKNOWN_TYPE | BirthMonth | Birth date | NOSELECTION
 UNKNOWN_TYPE | BirthDay |  | NOSELECTION
 UNKNOWN_TYPE | BirthYear |  | NOSELECTION

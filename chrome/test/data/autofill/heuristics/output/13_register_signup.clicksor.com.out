@@ -3,6 +3,8 @@ EMAIL_ADDRESS | email2 | Confirm                           email: |
 UNKNOWN_TYPE | website | Website: | 
 PHONE_HOME_WHOLE_NUMBER | phone | Phone: | 
 UNKNOWN_TYPE | timezone | Time Zone: | 1
+UNKNOWN_TYPE | password | Password: | 
+UNKNOWN_TYPE | RePassword | Confirm                           password: | 
 NAME_FULL | name | Name: | 
 COMPANY_NAME | company | Company: | 
 ADDRESS_HOME_LINE1 | address | Address: | 

@@ -590,13 +590,9 @@ namespace autofill {
 
 const size_t kMaxParseableFields = 100;
 
-// In HTML5, all text fields except password are text input fields to
-// autocomplete.
+// All text fields, including password fields, should be extracted.
 bool IsTextInput(const WebInputElement* element) {
-  if (!element)
-    return false;
-
-  return element->isTextField() && !element->isPasswordField();
+  return element && element->isTextField();
 }
 
 bool IsSelectElement(const WebFormControlElement& element) {

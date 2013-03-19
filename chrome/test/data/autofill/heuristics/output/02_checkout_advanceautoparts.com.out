@@ -11,6 +11,8 @@ PHONE_HOME_NUMBER | billDayPhonePart2 | ) |
 PHONE_HOME_NUMBER | billDayPhonePart3 | *Day Phone: | 
 EMAIL_ADDRESS | billEmail | *Email Address: | 
 UNKNOWN_TYPE | sendMeEmail | *Email Address: | checked
+UNKNOWN_TYPE | billPassword | Password: | 
+UNKNOWN_TYPE | billPasswordVerify | Confirm Password: | 
 NAME_FIRST | shipFirstName | *First Name: | 
 NAME_LAST | shipLastName | *Last Name: | 
 ADDRESS_HOME_LINE1 | shipAddress1 | *Street Address 1: | 

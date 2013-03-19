@@ -302,7 +302,6 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldSelect) {
 TEST_F(FormAutofillTest, WebFormControlElementToFormFieldInvalidType) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <INPUT type=\"hidden\" id=\"hidden\" value=\"apple\"/>"
-           "  <INPUT type=\"password\" id=\"password\" value=\"secret\"/>"
            "  <INPUT type=\"submit\" id=\"submit\" value=\"Send\"/>"
            "</FORM>");
 
@@ -321,18 +320,33 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldInvalidType) {
   expected.form_control_type = "hidden";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 
-  web_element = frame->document().getElementById("password");
-  element = web_element.to<WebFormControlElement>();
-  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
-  expected.name = ASCIIToUTF16("password");
-  expected.form_control_type = "password";
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
-
   web_element = frame->document().getElementById("submit");
   element = web_element.to<WebFormControlElement>();
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
   expected.name = ASCIIToUTF16("submit");
   expected.form_control_type = "submit";
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
+}
+
+// We should be able to extract password fields.
+TEST_F(FormAutofillTest, WebFormControlElementToPasswordFormField) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <INPUT type=\"password\" id=\"password\" value=\"secret\"/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("password");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+
+  FormFieldData expected;
+  expected.max_length = WebInputElement::defaultMaxLength();
+  expected.name = ASCIIToUTF16("password");
+  expected.form_control_type = "password";
+  expected.value = ASCIIToUTF16("secret");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
 
@@ -419,12 +433,12 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
            "    <OPTION value=\"CA\">California</OPTION>"
            "    <OPTION value=\"TX\">Texas</OPTION>"
            "  </SELECT>"
-           // The below inputs should be ignored
-           " <LABEL for=\"notvisible\">Hidden:</LABEL>"
-           "  <INPUT type=\"hidden\" id=\"notvisible\" value=\"apple\"/>"
            " <LABEL for=\"password\">Password:</LABEL>"
            "  <INPUT type=\"password\" id=\"password\" value=\"secret\"/>"
            "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           // The below inputs should be ignored
+           " <LABEL for=\"notvisible\">Hidden:</LABEL>"
+           "  <INPUT type=\"hidden\" id=\"notvisible\" value=\"apple\"/>"
            "</FORM>");
 
   WebFrame* frame = GetMainFrame();
@@ -450,7 +464,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
-  ASSERT_EQ(3U, fields.size());
+  ASSERT_EQ(4U, fields.size());
 
   FormFieldData expected;
   expected.name = ASCIIToUTF16("firstname");
@@ -473,6 +487,13 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   expected.form_control_type = "select-one";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
+
+  expected.name = ASCIIToUTF16("password");
+  expected.value = ASCIIToUTF16("secret");
+  expected.label = ASCIIToUTF16("Password:");
+  expected.form_control_type = "password";
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
 }
 
 // We should not be able to serialize a form with too many fillable fields.

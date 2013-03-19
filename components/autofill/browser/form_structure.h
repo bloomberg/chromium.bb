@@ -136,7 +136,6 @@ class FormStructure {
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;
-  size_t checkable_field_count() const;
 
   // Returns the number of fields that are able to be autofilled.
   size_t autofill_count() const { return autofill_count_; }
@@ -192,6 +191,7 @@ class FormStructure {
 
   // Returns the minimal number of fillable fields required to start autofill.
   size_t RequiredFillableFields() const;
+  size_t active_field_count() const;
 
   // The name of the form.
   string16 form_name_;
@@ -208,8 +208,9 @@ class FormStructure {
   // A vector of all the input fields in the form.
   ScopedVector<AutofillField> fields_;
 
-  // The number of fields able to be checked.
-  size_t checkable_field_count_;
+  // The number of fields counted towards form signature and request to Autofill
+  // server.
+  size_t active_field_count_;
 
   // The names of the form input elements, that are part of the form signature.
   // The string starts with "&" and the names are also separated by the "&"

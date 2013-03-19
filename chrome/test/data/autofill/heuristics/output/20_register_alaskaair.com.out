@@ -28,6 +28,8 @@ PHONE_HOME_WHOLE_NUMBER | FormUserControl$_contactInformation$_phoneNumber$_phon
 UNKNOWN_TYPE | FormUserControl$_contactInformation$_phoneNumber$_extensionTextBox | Ext. | 
 EMAIL_ADDRESS | FormUserControl$_contactInformation$_emailAddress$_emailAddressTextBox | Email Address* | 
 UNKNOWN_TYPE | FormUserControl$_userIdPassword$_userId$_userId | Create a User ID* | 
+UNKNOWN_TYPE | FormUserControl$_userIdPassword$_password$_password | Create a Password | 
+UNKNOWN_TYPE | FormUserControl$_userIdPassword$_reEnterPassword$_password | Re-enter Password | 
 UNKNOWN_TYPE | FormUserControl$_secretQuestion$_question | Secret Question* | 
 UNKNOWN_TYPE | FormUserControl$_secretQuestion$_answer | Please choose a secret question and provide the answer. You will need to answer the question again in case you forget your password. Make sure you choose a question and answer that are easy for you to remember, but difficult for other people to know.Secret Question* Answer* | 
 UNKNOWN_TYPE | FormUserControl$_subscriptionsOffers$_insiderNewsletter$_subscriptionCheckBox | Insider NewsletterA weekly email personalized to provide you with an insider glimpse of the best deals we have to offer - across the board. | on

@@ -9,6 +9,8 @@ ADDRESS_HOME_COUNTRY | C3 | Country * | 0000
 ADDRESS_HOME_ZIP | Z1 | Zip Code * | 
 PHONE_HOME_WHOLE_NUMBER | P2 | Day Phone * | 
 PHONE_HOME_WHOLE_NUMBER | P3 | Evening Phone | 
+UNKNOWN_TYPE | P1 | Create Password * | 
+UNKNOWN_TYPE | PasswordConfirm | Confirm Password * | 
 NAME_FIRST | SF1 | First Name * | 
 NAME_LAST | SL1 | Last Name * | 
 ADDRESS_HOME_LINE1 | SS1 | Address Line 1 * | 

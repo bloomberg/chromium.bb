@@ -8,4 +8,6 @@ ADDRESS_HOME_CITY | ADDRESS<>city | city * |
 ADDRESS_HOME_STATE | ADDRESS<>state_cd | state/province * | 
 ADDRESS_HOME_ZIP | ADDRESS<>postal | zip code * | 
 PHONE_HOME_WHOLE_NUMBER | ADDRESS<>phone | phone number (numbers only) * | 
+UNKNOWN_TYPE | anonPassword | create password | 
+UNKNOWN_TYPE | anonPasswordConfirm | confirm password | 
 UNKNOWN_TYPE | anonPasswordHint | create password hint | 

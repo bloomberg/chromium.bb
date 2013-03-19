@@ -1,8 +1,11 @@
 NAME_FULL | name | : | 
 UNKNOWN_TYPE | login | : | 
+UNKNOWN_TYPE | passwd | : | 
+UNKNOWN_TYPE | confirm_passwd | : | 
 EMAIL_ADDRESS | altemail | : | 
 UNKNOWN_TYPE | chk_altemail |  | on
 UNKNOWN_TYPE | hintq | : | 
+UNKNOWN_TYPE | hinta | : | 
 UNKNOWN_TYPE | mothername | : | 
 UNKNOWN_TYPE | DOB_Day | : | 
 UNKNOWN_TYPE | DOB_Month | : | 

@@ -40,6 +40,8 @@ PHONE_HOME_WHOLE_NUMBER | billingPhone | Billing Phone Number CLOSEThis must mat
 UNKNOWN_TYPE | accessPassNumber | My AEREWARD$ # CLOSEAEREWARD$ NumberEnter the number found on the back of your AEREWARD$ card to earn rewards for your purchase.Learn More about AEREWARD$ | 
 UNKNOWN_TYPE | aeRewardsSignUp | Sign up now and receive 25 points  just for signing up! Learn More | true
 UNKNOWN_TYPE | aeAccount | Create my AE Account.CLOSECreate an AE Account to:Save Your Personal Info For Next TimeCheckout FasterTrack An Order Quicker Sign up now and receive 25 points just for signing up! Learn More | true
+UNKNOWN_TYPE | aeAccountPass | Password (6-15 Letters & Numbers) | 
+UNKNOWN_TYPE | aeAccountPassConfirm | Confirm Password | 
 UNKNOWN_TYPE | birthMonthBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
 UNKNOWN_TYPE | birthDayBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
 UNKNOWN_TYPE | birthYearBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 

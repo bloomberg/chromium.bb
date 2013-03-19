@@ -2159,6 +2159,12 @@ TEST(FormStructureTest, CheckFormSignature) {
   field.name = ASCIIToUTF16("first");
   form.fields.push_back(field);
 
+  // Password fields shouldn't affect the signature.
+  field.label = ASCIIToUTF16("Password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
   form_structure.reset(new FormStructure(form, std::string()));
 
   EXPECT_EQ(FormStructureTest::Hash64Bit(

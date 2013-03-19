@@ -233,7 +233,7 @@ FormStructure::FormStructure(const FormData& form,
       source_url_(form.origin),
       target_url_(form.action),
       autofill_count_(0),
-      checkable_field_count_(0),
+      active_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
       server_experiment_id_("no server response"),
       has_author_specified_types_(false),
@@ -244,14 +244,17 @@ FormStructure::FormStructure(const FormData& form,
            form.fields.begin();
        field != form.fields.end(); field++) {
 
-    // Skipping checkable elements when Autocheckout is not enabled, else
-    // these fields will interfere with existing field signatures with Autofill
-    // servers.
-    if (!field->is_checkable || IsAutocheckoutEnabled()) {
+    // Skip checkable and password elements when Autocheckout is not enabled,
+    // else these fields will interfere with existing field signatures with
+    // Autofill servers.
+    if ((!field->is_checkable && field->form_control_type != "password") ||
+        IsAutocheckoutEnabled()) {
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
       form_signature_field_names_.append("&");
       form_signature_field_names_.append(UTF16ToUTF8(field->name));
+
+      ++active_field_count_;
     }
 
     // Generate a unique name for this field by appending a counter to the name.
@@ -264,9 +267,6 @@ FormStructure::FormStructure(const FormData& form,
     string16 unique_name = field->name + ASCIIToUTF16("_") +
         base::IntToString16(unique_names[field->name]);
     fields_.push_back(new AutofillField(*field, unique_name));
-
-    if (field->is_checkable)
-      ++checkable_field_count_;
   }
 
   std::string method = UTF16ToUTF8(form.method);
@@ -609,10 +609,7 @@ void FormStructure::UpdateAutofillCount() {
 }
 
 bool FormStructure::ShouldBeParsed(bool require_method_post) const {
-  // Ignore counting checkable elements towards minimum number of elements
-  // required to parse. This avoids trying to crowdsource forms with few text
-  // or select elements.
-  if ((field_count() - checkable_field_count()) < RequiredFillableFields())
+  if (active_field_count() < RequiredFillableFields())
     return false;
 
   // Rule out http(s)://*/search?...
@@ -879,8 +876,8 @@ size_t FormStructure::field_count() const {
   return fields_.size();
 }
 
-size_t FormStructure::checkable_field_count() const {
-  return checkable_field_count_;
+size_t FormStructure::active_field_count() const {
+  return active_field_count_;
 }
 
 std::string FormStructure::server_experiment_id() const {
@@ -972,9 +969,10 @@ bool FormStructure::EncodeFormRequest(
         encompassing_xml_element->AddElement(field_element);
       }
     } else {
-      // Skip putting checkable fields in the request if Autocheckout is not
-      // enabled.
-      if (field->is_checkable && !IsAutocheckoutEnabled())
+      // Skip putting checkable and password fields in the request if
+      // Autocheckout is not enabled.
+      if ((field->is_checkable || field->form_control_type == "password") &&
+          !IsAutocheckoutEnabled())
         continue;
 
       buzz::XmlElement *field_element = new buzz::XmlElement(

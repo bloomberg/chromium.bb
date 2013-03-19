@@ -5,3 +5,5 @@ UNKNOWN_TYPE | gender | Male | F
 UNKNOWN_TYPE | year | Year of Birth: | 
 ADDRESS_HOME_ZIP | postal | ZIP/Postal Code: | 
 ADDRESS_HOME_COUNTRY | country | Country: | US
+UNKNOWN_TYPE | pass1 | Select a password: | 
+UNKNOWN_TYPE | pass2 | Confirm password: | 

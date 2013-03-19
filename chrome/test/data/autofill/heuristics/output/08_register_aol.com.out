@@ -1,7 +1,9 @@
 NAME_FIRST | {actionForm.firstName} | First Name | 
 NAME_LAST | {actionForm.lastName} | Last Name | 
 UNKNOWN_TYPE | {actionForm.desiredSN} | NEW! Pick a username: What's new? | 
+UNKNOWN_TYPE | {actionForm.password} | Password | 
 UNKNOWN_TYPE | verifyPasswordHint | Password | Retype password
+UNKNOWN_TYPE | {actionForm.verifyPassword} | Password | 
 UNKNOWN_TYPE | wlw-select_key:{actionForm.dobMonth} | Select Month | 
 UNKNOWN_TYPE | {actionForm.dobDay} | Select Month | Day (dd)
 UNKNOWN_TYPE | {actionForm.dobYear} | Select Month | Year (yyyy)

@@ -9,4 +9,6 @@ ADDRESS_HOME_ZIP | address$ctl00$address$addressValidator$_EditView$postal_code 
 UNKNOWN_TYPE | address$ctl00$address$addressValidator$_EditView$postal_code2 | Zip Code4-digit Ext. | 
 UNKNOWN_TYPE | address$ctl00$address$addressValidator$OverrideAddress | Problems? | on
 EMAIL_ADDRESS | email$ctl07 | Email Address (used to sign into your account) | 
+UNKNOWN_TYPE | CreateNewPassword$ctl07 | Create New Password | 
+UNKNOWN_TYPE | ConfirmPassword$ctl07 | Confirm New Password | 
 UNKNOWN_TYPE | Subscription |  | on

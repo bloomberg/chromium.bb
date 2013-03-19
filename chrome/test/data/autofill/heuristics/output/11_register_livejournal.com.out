@@ -1,5 +1,7 @@
 UNKNOWN_TYPE | Widget[CreateAccount]_user | Username: | 
 EMAIL_ADDRESS | Widget[CreateAccount]_email | Email Address: | 
+UNKNOWN_TYPE | Widget[CreateAccount]_password1 | Password: | 
+UNKNOWN_TYPE | Widget[CreateAccount]_password2 | Confirm Password: | 
 UNKNOWN_TYPE | Widget[CreateAccount]_gender | Gender: | 
 UNKNOWN_TYPE | Widget[CreateAccount]_bday_mm | Birthdate: | 1
 UNKNOWN_TYPE | Widget[CreateAccount]_bday_dd | Birthdate: | 

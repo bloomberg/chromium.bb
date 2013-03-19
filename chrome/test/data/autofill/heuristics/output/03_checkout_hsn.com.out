@@ -35,4 +35,6 @@ UNKNOWN_TYPE | IsDebitCard | Is this a Debit Card? | 1
 UNKNOWN_TYPE | IsDebitCard | Yes | 0
 UNKNOWN_TYPE | Body$SaveCC4Later | Is this a Debit Card? | on
 UNKNOWN_TYPE | PaymentTypeSelection | OR | 1
+UNKNOWN_TYPE | Body$NewPassword | Create Password (optional) | 
+UNKNOWN_TYPE | Body$RepeatNewPassword | Repeat Password (optional) | 
 UNKNOWN_TYPE | Body$NewPasswordHint | Password Hint (optional) | 

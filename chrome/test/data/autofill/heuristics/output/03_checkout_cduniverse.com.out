@@ -1,5 +1,7 @@
 NAME_FIRST | HT_First_Name | First Name | 
 NAME_LAST | HT_Last_Name | Last Name | 
+UNKNOWN_TYPE | HT_Password | Password | 
+UNKNOWN_TYPE | HT_Conf_Password | Re-enter Password | 
 EMAIL_ADDRESS | HT_email | Email | 
 ADDRESS_BILLING_LINE1 | HT_Bill_Address1 | Address 1 | 
 ADDRESS_BILLING_LINE2 | HT_Bill_Address2 | Address 2 | 

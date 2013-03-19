@@ -36,4 +36,6 @@ PHONE_HOME_NUMBER | addrsForm[2].phoneNumber3 | - |
 UNKNOWN_TYPE | addrsForm[2].phoneNumber4 | ext. | 
 EMAIL_ADDRESS | addrsForm[2].email | *Email Address: | 
 UNKNOWN_TYPE | loginForm.loginName | *Login Name: | 
-UNKNOWN_TYPE | loginForm.autoLogin | *Password Confirm: retype your password | on
+UNKNOWN_TYPE | loginForm.password | *Password: | 
+UNKNOWN_TYPE | loginForm.passwordConfirm | *Password Confirm: | 
+UNKNOWN_TYPE | loginForm.autoLogin | *Password Confirm: | on

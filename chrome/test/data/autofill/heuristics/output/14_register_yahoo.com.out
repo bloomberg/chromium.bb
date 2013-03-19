@@ -8,6 +8,8 @@ ADDRESS_HOME_COUNTRY | country | Country | us
 ADDRESS_HOME_ZIP | postalcode | Postal Code | 
 EMAIL_ADDRESS | yahooid | Yahoo! ID and Email | 
 UNKNOWN_TYPE | domain | @ | yahoo.com
+UNKNOWN_TYPE | password | Password | 
+UNKNOWN_TYPE | passwordconfirm | Re-type Password | 
 EMAIL_ADDRESS | altemail | Alternate Email (optional) | 
 UNKNOWN_TYPE | secquestion | Secret Question 1 | 
 UNKNOWN_TYPE | customsecquestion1 | Specify Your Question | 

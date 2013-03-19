@@ -1,6 +1,8 @@
 NAME_FIRST | firstName | First Name:* | 
 NAME_MIDDLE_INITIAL | middleName | Middle Initial: | 
 NAME_LAST | lastName | Last Name:* | 
+UNKNOWN_TYPE | logonPassword | Password:* | 
+UNKNOWN_TYPE | logonPasswordVerify | Re-type Password:* | 
 ADDRESS_HOME_ZIP | zipCode | ZIP (Postal) Code:* | 
 EMAIL_ADDRESS | email1 | E-mail Address:* | 
 UNKNOWN_TYPE | gearmail |  | y

@@ -16,4 +16,6 @@ UNKNOWN_TYPE | accountData.alternatePhoneType | Alternate phone: |
 UNKNOWN_TYPE | accountData.fax | Fax: | 
 EMAIL_ADDRESS | accountData.email | Email address: | 
 EMAIL_ADDRESS | accountData.confirmEmail | Confirm email: | 
+UNKNOWN_TYPE | registrationPassword1 | Password: | 
+UNKNOWN_TYPE | registrationPassword2 | Confirm password: | 
 UNKNOWN_TYPE | accountData.entrollmentCode | Enrollment code: | 

@@ -1,6 +1,9 @@
 UNKNOWN_TYPE | existingAccount | Are you a new customer? | 0
 UNKNOWN_TYPE | existingAccount | Are you a new customer? Create a new Buyer Account I have an existing deviantART account (email or username) | 1
 EMAIL_ADDRESS | emailAddress | Email Address | 
+UNKNOWN_TYPE | password | Password | 
 UNKNOWN_TYPE | remember_me | Stay logged in | 1
+UNKNOWN_TYPE | passwordNew | Password | 
+UNKNOWN_TYPE | passwordConfirm | Password (confirm) | 
 NAME_FULL | name | Full Name | 
 ADDRESS_HOME_COUNTRY | country | Country | 0

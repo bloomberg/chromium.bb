@@ -32,7 +32,11 @@ UNKNOWN_TYPE | ctl00$ContentInfo$chkSubOpStatement |  | on
 UNKNOWN_TYPE | ctl00$ContentInfo$chkSubopnewsoffers |  | on
 UNKNOWN_TYPE | ctl00$ContentInfo$chkSubcocomspecials |  | on
 UNKNOWN_TYPE | ctl00$ContentInfo$chkSubtripnotes |  | on
+UNKNOWN_TYPE | ctl00$ContentInfo$NewPin$txtNewPin$txtNewPin | New PIN: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$NewPin$txtConfPin$txtConfPin | Re-type New PIN: | 
 UNKNOWN_TYPE | ctl00$ContentInfo$UsernamePassword$username$txtUsername | Username: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$UsernamePassword$password$txtPassword | Password: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$UsernamePassword$passwordRetype$txtPassword | Re-type Password: | 
 UNKNOWN_TYPE | ctl00$ContentInfo$PINPasswordReminder$PINReminder1$txtPINReminder | PIN Reminder: (cannot include any numbers) | 
 UNKNOWN_TYPE | ctl00$ContentInfo$SecurityQuestionAnswer$Question$txtSecurity | Security Question: | 
 UNKNOWN_TYPE | ctl00$ContentInfo$SecurityQuestionAnswer$Answer$txtSecurity | Answer: | 

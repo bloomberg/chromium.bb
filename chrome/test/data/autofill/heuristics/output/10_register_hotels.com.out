@@ -1,5 +1,7 @@
 EMAIL_ADDRESS | profileInformation.email | Email address* | 
 EMAIL_ADDRESS | confirmEmail | Confirm email address* | 
+UNKNOWN_TYPE | profileInformation.password | Password* | 
+UNKNOWN_TYPE | confirmPassword | Confirm password* | 
 UNKNOWN_TYPE | profileInformation.customerContact.title | Title | NONE
 NAME_FIRST | profileInformation.customerContact.firstName | First name* | 
 NAME_LAST | profileInformation.customerContact.lastName | Last name* | 

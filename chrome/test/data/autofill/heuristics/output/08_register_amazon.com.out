@@ -3,3 +3,5 @@ UNKNOWN_TYPE | action | Create a new account (Recommended for Business accounts)
 UNKNOWN_TYPE | userName | First and Last Name: | 
 EMAIL_ADDRESS | email | E-mail Address: | 
 EMAIL_ADDRESS | emailCheck | Re-type E-mail Address: | 
+UNKNOWN_TYPE | password | Password: | 
+UNKNOWN_TYPE | passwordCheck | Re-type Password: | 

@@ -1,4 +1,6 @@
 NAME_FIRST | fname | * First Name | 
 NAME_LAST | lname | * Last Name | 
 EMAIL_ADDRESS | emLogin | * E-mail address | 
+UNKNOWN_TYPE | pw | * Password | 
+UNKNOWN_TYPE | verifypw | * Re-Confirm Password | 
 UNKNOWN_TYPE | wantMsg |  | on

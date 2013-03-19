@@ -4,6 +4,8 @@ UNKNOWN_TYPE | isug1 | Enter a word |  Enter a word
 UNKNOWN_TYPE | isug2 | Enter another word |  Enter another word
 UNKNOWN_TYPE | isug3 | Enter another word |  Enter another word
 EMAIL_ADDRESS | imembernameeasi | Use your email address: | Example: someone@example.com
+UNKNOWN_TYPE | iPwd | Create a password: | 
+UNKNOWN_TYPE | iRetypePwd | Retype password: | 
 EMAIL_ADDRESS | iAltEmail | Alternate email address: | 
 UNKNOWN_TYPE | iSQ | Question: | 0
 UNKNOWN_TYPE | iSA | Secret answer: | 

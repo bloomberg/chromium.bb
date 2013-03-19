@@ -8,6 +8,8 @@ UNKNOWN_TYPE | tbxMusicianName | Artist Name |
 UNKNOWN_TYPE | ddlGenre | Genre | 
 UNKNOWN_TYPE | ddlLabel | Label Type | 
 EMAIL_ADDRESS | tbxEmail | Email | 
+UNKNOWN_TYPE | tbxPassword | Password | 
+UNKNOWN_TYPE | tbxPassword1 | Confirm Password | 
 UNKNOWN_TYPE | ddlMonth | Birthday | 
 UNKNOWN_TYPE | ddlDay |  | 
 UNKNOWN_TYPE | ddlYear |  | 
