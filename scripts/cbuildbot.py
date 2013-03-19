@@ -428,12 +428,24 @@ class SimpleBuilder(Builder):
       task = self._RunBackgroundStagesForBoard
       with parallel.BackgroundTaskRunner(task) as queue:
         for board in self.build_config['boards']:
-          # Run BuildPackages and BuildImage in the foreground.
           archive_stage = self.archive_stages[board]
           config = configs.get(board, self.build_config)
-          self._RunStage(stages.BuildPackagesStage, board, config=config)
-          self._RunStage(stages.BuildImageStage, board, archive_stage,
-                         config=config)
+
+          # Run BuildPackages and BuildImage in the foreground, generating and
+          # using PGO data if requested.
+          built = False
+          for step in ('pgo_generate', 'pgo_use', None):
+            if config.get(step) or not step and not built:
+              kwargs = {step: True} if step else {}
+              self._RunStage(stages.BuildPackagesStage, board, archive_stage,
+                             config=config, **kwargs)
+              self._RunStage(stages.BuildImageStage, board, archive_stage,
+                             config=config, **kwargs)
+              if step == 'pgo_generate':
+                suite = cbuildbot_config.PGORecordTest()
+                self._RunStage(stages.HWTestStage, board, archive_stage,
+                               suite, config=config)
+              built = True
 
           # Kick off task(board) in the background.
           queue.put([board])

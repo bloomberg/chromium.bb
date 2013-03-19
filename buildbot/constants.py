@@ -95,6 +95,11 @@ USE_CHROME_PDF = 'chrome_pdf'
 USE_PGO_GENERATE = 'pgo_generate'
 USE_PGO_USE = 'pgo_use'
 
+# PGO-specific constants.
+PGO_GENERATE_DISK_LAYOUT = '2gb-rootfs'
+PGO_GENERATE_TIMEOUT = 90 * 60
+PGO_USE_TIMEOUT = PGO_GENERATE_TIMEOUT + 90 * 60
+
 # Builds and validates _alpha ebuilds.  These builds sync to the latest
 # revsion of the Chromium src tree and build with that checkout.
 CHROME_REV_TOT = 'tot'

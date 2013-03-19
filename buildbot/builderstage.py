@@ -4,6 +4,7 @@
 
 """Module containing the base class for the stages that a builder runs."""
 
+import copy
 import os
 import re
 import sys
@@ -57,7 +58,7 @@ class BuilderStage(object):
     if not self._options.archive_base and self._options.remote_trybot:
       self._bot_id = 'trybot-' + self._bot_id
 
-    self._build_config = build_config
+    self._build_config = copy.deepcopy(build_config)
     self.name = self.StageNamePrefix()
     if suffix:
       self.name += suffix

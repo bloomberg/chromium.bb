@@ -817,9 +817,16 @@ class ArchivingMock(partial_mock.PartialMock):
 class BuildPackagesStageTest(AbstractStageTest):
   """Tests BuildPackagesStage."""
 
+  def setUp(self):
+    self._release_tag = None
+    self.StartPatcher(ArchiveStageMock())
+
   def ConstructStage(self):
+    archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                        self._current_board,
+                                        self._release_tag)
     return stages.BuildPackagesStage(
-        self.options, self.build_config, self._current_board)
+        self.options, self.build_config, self._current_board, archive_stage)
 
   @contextlib.contextmanager
   def RunStageWithConfig(self, bot_id):
@@ -897,8 +904,6 @@ class BuildImageStageTest(BuildPackagesStageTest):
   """Tests BuildImageStage."""
 
   def setUp(self):
-    self._release_tag = None
-    self.StartPatcher(ArchiveStageMock())
     self.StartPatcher(BuildImageStageMock())
 
   def ConstructStage(self):

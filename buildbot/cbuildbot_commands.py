@@ -1570,13 +1570,13 @@ class MissingPGOData(results_lib.StepFailure):
   """Exception thrown when necessary PGO data is missing."""
 
 
-def WaitForPGOData(architectures, cpv, timeout=60 * 120):
+def WaitForPGOData(architectures, cpv, timeout=constants.PGO_USE_TIMEOUT):
   """Wait for PGO data to show up (with an appropriate timeout).
 
   Args:
     architectures: Set of architectures we're going to build Chrome for.
     cpv: CPV object for Chrome.
-    timeout: How long to wait total, in seconds (default: 2 hours)
+    timeout: How long to wait total, in seconds.
   """
   end_time = time.time() + timeout
   while time.time() < end_time:

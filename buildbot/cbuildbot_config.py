@@ -89,6 +89,8 @@ def OverrideConfigForTrybot(build_config, options):
         and not my_config['arm']):
       my_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
       my_config['quick_unit'] = False
+    my_config['pgo_generate'] = False
+    my_config['pgo_use'] = False
 
   return copy_config
 
@@ -306,6 +308,12 @@ _settings = dict(
 # build_tests -- Builds autotest tests.  Must be True if vm_tests is set.
   build_tests=True,
 
+# pgo_generate -- Generates PGO data.
+  pgo_generate=False,
+
+# pgo_use -- Uses PGO data.
+  pgo_use=False,
+
 # vm_tests -- Run vm test type defined in constants.
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 
@@ -483,6 +491,15 @@ class HWTestConfig(object):
     self.async = async
     self.critical = critical
     self.file_bugs = file_bugs
+
+
+def PGORecordTest(**dargs):
+  default_dict = dict(pool=constants.HWTEST_CHROME_PFQ_POOL,
+                      timeout=constants.PGO_GENERATE_TIMEOUT,
+                      critical=True, num=1, file_bugs=False)
+  # Allows dargs overrides to default_dict for cq.
+  default_dict.update(dargs)
+  return HWTestConfig('PGO_record', **default_dict)
 
 
 class _config(dict):
@@ -778,16 +795,8 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
 )
 
+# TODO(davidjames): Remove chrome_pgo builders as they are no longer needed.
 chrome_pgo = chrome_pfq.derive(
-  useflags=official['useflags'] + [constants.USE_PGO_GENERATE],
-  usepkg_build_packages=False,
-
-  vm_tests=None,
-  hw_tests=[HWTestConfig('PGO_record', pool=constants.HWTEST_CHROME_PFQ_POOL,
-                         timeout=90 * 60, critical=True, num=2)],
-  disk_layout='2gb-rootfs',
-
-  # TODO(petermayo): Remove once PGO is reliable again.
   important=False,
 )
 
@@ -1158,7 +1167,8 @@ _release.add_config('lumpy-pgo-release',
   boards=['lumpy'],
   hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
                                     num=4),
-  useflags=official['useflags'] + [constants.USE_PGO_USE],
+  pgo_generate=True,
+  pgo_use=True,
   push_image=False,
   dev_installer_prebuilts=False,
 )

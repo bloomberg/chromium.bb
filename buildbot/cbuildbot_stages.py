@@ -1178,10 +1178,6 @@ class SyncChromeStage(bs.BuilderStage):
 
   option_name = 'managed_chrome'
 
-  def _GetArchitectures(self):
-    """Get the list of architectures built by this builder."""
-    return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
-
   def _PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
@@ -1205,15 +1201,9 @@ class SyncChromeStage(bs.BuilderStage):
     useflags = self._build_config['useflags'] or []
     commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
                         **kwargs)
-    if constants.USE_PGO_USE in useflags and cpv is not None:
-      commands.WaitForPGOData(self._GetArchitectures(), cpv)
-    elif (constants.USE_PGO_GENERATE in useflags and cpv is not None and
-          commands.CheckPGOData(self._GetArchitectures(), cpv)):
-      cros_build_lib.Info('PGO data already generated')
-      sys.exit(0)
-    elif (self._chrome_rev and not chrome_atom_to_build and
-          self._options.buildbot and
-          self._build_config['build_type'] == constants.CHROME_PFQ_TYPE):
+    if (self._chrome_rev and not chrome_atom_to_build and
+        self._options.buildbot and
+        self._build_config['build_type'] == constants.CHROME_PFQ_TYPE):
       cros_build_lib.Info('Chrome already uprevved')
       sys.exit(0)
 
@@ -1231,17 +1221,28 @@ class PatchChromeStage(bs.BuilderStage):
       commands.PatchChrome(self._options.chrome_root, patch, subdir)
 
 
-class BuildPackagesStage(BoardSpecificBuilderStage):
+class BuildPackagesStage(ArchivingStage):
   """Build Chromium OS packages."""
 
   option_name = 'build'
-  def __init__(self, options, build_config, board, suffix=None):
+  def __init__(self, options, build_config, board, archive_stage,
+               pgo_generate=False, pgo_use=False):
+    useflags = build_config['useflags'] or []
+    self._pgo_generate, self._pgo_use = pgo_generate, pgo_use
+    suffix = None
+    assert not pgo_generate or not pgo_use
+    if pgo_generate:
+      suffix = ' [%s]' % constants.USE_PGO_GENERATE
+      useflags.append(constants.USE_PGO_GENERATE)
+    elif pgo_use:
+      suffix = ' [%s]' % constants.USE_PGO_USE
+      useflags.append(constants.USE_PGO_USE)
     super(BuildPackagesStage, self).__init__(options, build_config, board,
-                                             suffix=suffix)
+                                             archive_stage, suffix=suffix)
 
     self._env = {}
-    if self._build_config.get('useflags'):
-      self._env['USE'] = ' '.join(self._build_config['useflags'])
+    if useflags:
+      self._env['USE'] = ' '.join(useflags)
 
     if self._options.chrome_root:
       self._env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
@@ -1252,7 +1253,17 @@ class BuildPackagesStage(BoardSpecificBuilderStage):
     self._build_autotest = (self._build_config['build_tests'] and
                             self._options.tests)
 
+  def _GetArchitectures(self):
+    """Get the list of architectures built by this builder."""
+    return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
+
   def _PerformStage(self):
+    # Wait for PGO data to be ready if needed.
+    if self._pgo_use:
+      cpv = portage_utilities.BestVisible(constants.CHROME_CP,
+                                          buildroot=self._build_root)
+      commands.WaitForPGOData(self._GetArchitectures(), cpv)
+
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._build_autotest,
@@ -1264,18 +1275,23 @@ class BuildPackagesStage(BoardSpecificBuilderStage):
                    extra_env=self._env)
 
 
-# We inherit first from ArchivingStage so that we inherit the constructor
-# from this stage. super() then delegates to BuildPackages.__init__
-class BuildImageStage(ArchivingStage, BuildPackagesStage):
+class BuildImageStage(BuildPackagesStage):
   """Build standard Chromium OS images."""
 
   option_name = 'build'
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
-    images_can_build = set(['base', 'dev', 'test'])
+    if self._pgo_generate:
+      images_can_build = set(['test'])
+    else:
+      images_can_build = set(['base', 'dev', 'test'])
     images_to_build = set(self._build_config['images']).intersection(
         images_can_build)
+
+    disk_layout = self._build_config['disk_layout']
+    if self._pgo_generate:
+      disk_layout = constants.PGO_GENERATE_DISK_LAYOUT
 
     rootfs_verification = self._build_config['rootfs_verification']
     commands.BuildImage(self._build_root,
@@ -1283,7 +1299,7 @@ class BuildImageStage(ArchivingStage, BuildPackagesStage):
                         sorted(images_to_build),
                         rootfs_verification=rootfs_verification,
                         version=self.archive_stage.release_tag,
-                        disk_layout=self._build_config['disk_layout'],
+                        disk_layout=disk_layout,
                         extra_env=self._env)
 
     # Update link to latest image.
@@ -1299,7 +1315,7 @@ class BuildImageStage(ArchivingStage, BuildPackagesStage):
          lambda: self._GenerateAuZip(cbuildbot_image_link)])
 
   def _BuildVMImage(self):
-    if self._build_config['vm_tests']:
+    if self._build_config['vm_tests'] and not self._pgo_generate:
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,
@@ -1327,9 +1343,10 @@ class BuildImageStage(ArchivingStage, BuildPackagesStage):
 
   def _GenerateAuZip(self, image_dir):
     """Create au-generator.zip."""
-    commands.GenerateAuZip(self._build_root,
-                           image_dir,
-                           extra_env=self._env)
+    if not self._pgo_generate:
+      commands.GenerateAuZip(self._build_root,
+                             image_dir,
+                             extra_env=self._env)
 
   def _BuildAutotestTarballs(self):
     with osutils.TempDir(prefix='cbuildbot-autotest') as tempdir:
