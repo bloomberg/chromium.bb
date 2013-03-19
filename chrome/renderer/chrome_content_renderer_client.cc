@@ -540,18 +540,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           const Extension* extension =
               extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
                   ExtensionURLInfo(manifest_url));
-          bool is_extension_from_webstore =
-              extension && extension->from_webstore();
-          // Allow built-in extensions and extensions under development.
-          bool is_extension_unrestricted = extension &&
-              (extension->location() == extensions::Manifest::COMPONENT ||
-               extensions::Manifest::IsUnpackedLocation(extension->location()));
           GURL top_url = frame->top()->document().url();
           if (!IsNaClAllowed(manifest_url,
                              top_url,
                              is_nacl_unrestricted,
-                             is_extension_unrestricted,
-                             is_extension_from_webstore,
+                             extension,
                              &params)) {
             frame->addMessageToConsole(
                 WebConsoleMessage(
@@ -691,8 +684,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     const GURL& manifest_url,
     const GURL& top_url,
     bool is_nacl_unrestricted,
-    bool is_extension_unrestricted,
-    bool is_extension_from_webstore,
+    const Extension* extension,
     WebPluginParams* params) {
   // Temporarily allow these URLs to run NaCl apps. We should remove this
   // code when PNaCl ships.
@@ -701,6 +693,18 @@ bool ChromeContentRendererClient::IsNaClAllowed(
       (top_url.host() == "plus.google.com" ||
           top_url.host() == "plus.sandbox.google.com") &&
       top_url.path().find("/games") == 0;
+
+  bool is_extension_from_webstore =
+      extension && extension->from_webstore();
+
+  bool is_invoked_by_hosted_app = extension &&
+      extension->is_hosted_app() &&
+      extension->web_extent().MatchesURL(top_url);
+
+  // Allow built-in extensions and extensions under development.
+  bool is_extension_unrestricted = extension &&
+      (extension->location() == extensions::Manifest::COMPONENT ||
+       extensions::Manifest::IsUnpackedLocation(extension->location()));
 
   bool is_invoked_by_extension = top_url.SchemeIs("chrome-extension");
 
@@ -717,6 +721,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   bool is_nacl_allowed = is_nacl_unrestricted ||
                          is_whitelisted_url ||
                          is_nacl_pdf_viewer ||
+                         is_invoked_by_hosted_app ||
                          (is_invoked_by_extension &&
                              (is_extension_from_webstore ||
                                  is_extension_unrestricted));

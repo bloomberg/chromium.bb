@@ -165,8 +165,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   static bool IsNaClAllowed(const GURL& manifest_url,
                             const GURL& top_url,
                             bool is_nacl_unrestricted,
-                            bool is_extension_unrestricted,
-                            bool is_extension_from_webstore,
+                            const extensions::Extension* extension,
                             WebKit::WebPluginParams* params);
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;

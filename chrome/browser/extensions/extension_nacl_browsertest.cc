@@ -21,6 +21,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/mock_host_resolver.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::PluginService;
@@ -46,8 +47,8 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     INSTALL_TYPE_NON_WEBSTORE,
   };
 
-  const Extension* InstallExtension(InstallType install_type) {
-    base::FilePath file_path = test_data_dir_.AppendASCII("native_client");
+  const Extension* InstallExtension(const base::FilePath& file_path,
+                                    InstallType install_type) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     const Extension* extension = NULL;
@@ -82,6 +83,17 @@ class NaClExtensionTest : public ExtensionBrowserTest {
         break;
     }
     return extension;
+  }
+
+  const Extension* InstallExtension(InstallType install_type) {
+    base::FilePath file_path = test_data_dir_.AppendASCII("native_client");
+    return InstallExtension(file_path, install_type);
+  }
+
+  const Extension* InstallHostedApp() {
+    base::FilePath file_path = test_data_dir_.AppendASCII(
+        "native_client_hosted_app");
+    return InstallExtension(file_path, INSTALL_TYPE_FROM_WEBSTORE);
   }
 
   bool IsNaClPluginLoaded() {
@@ -168,6 +180,23 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, NonExtensionScheme) {
   ASSERT_TRUE(extension);
   CheckPluginsCreated(
       test_server()->GetURL("files/extensions/native_client/test.html"), false);
+}
+
+// Test that NaCl plugin isn't blocked for hosted app URLs.
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, HostedApp) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL("files/extensions/native_client/test.html");
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");
+  replace_host.SetHostStr(host_str);
+  replace_host.ClearPort();
+  url = url.ReplaceComponents(replace_host);
+
+  const Extension* extension = InstallHostedApp();
+  ASSERT_TRUE(extension);
+  CheckPluginsCreated(url, true);
 }
 
 }  // namespace
