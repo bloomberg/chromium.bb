@@ -129,13 +129,16 @@ Press any key to continue exploring.
   </message>
 
   <!-- Chrome OS Strings -->
-  <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_ALT" desc="Butter bar text when prompting user for sending coupon code. Prefixed with the site name.">
-    wants to confirm you are browsing on a Chrome OS device by requesting Google to verify your coupon code.
+  <message name="IDS_ECHO_CONSENT_DIALOG_TEXT" desc="Dialog text shown when user is asked to give consent to proceed with redeeming ECHO offer.">
+    <ph name="SERVICE_NAME">$1<ex>Google Drive</ex></ph> wants to verify that you are using an eligible Chrome OS device. <ph name="MORE_INFO_LINK">$2<ex>More info</ex></ph>
   </message>
-  <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL" desc="Butter bar text when prompting user for sending coupon code. Prefixed with the site name.">
-    wants to confirm you are browsing on a Chrome OS device.
+  <message name="IDS_ECHO_DISABLED_CONSENT_DIALOG_TEXT" desc="Dialog text shown when user is informed that redeeming offers is disabled for the device.">
+    Your IT administrator has disabled Chrome Goodies for your device. <ph name="MORE_INFO_LINK">$1<ex>More info</ex></ph>
   </message>
-  <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_LEARN_MORE" desc="Text of the Learn More link on the offer butter bar.">
+  <message name="IDS_ECHO_CONSENT_DISMISS_BUTTON" desc="Dismiss dialog button label for disabled echo dialog.">
+    Dismiss
+  </message>
+  <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_LEARN_MORE" desc="Text of the Learn More link in the echo dialog.">
     Learn More
   </message>
   <message name="IDS_OFFERS_CONSENT_INFOBAR_ENABLE_BUTTON" desc="Enable button label.">

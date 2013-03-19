@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_STYLED_LABEL_LISTENER_H_
 #define UI_VIEWS_CONTROLS_STYLED_LABEL_LISTENER_H_
 
+#include "ui/views/views_export.h"
+
 namespace ui {
 class Range;
 }
