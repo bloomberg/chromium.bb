@@ -603,6 +603,24 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
             new_tab->GetRenderViewHost()->GetEnabledBindings());
 }
 
+// If this test fails, please add the failure logs to http://crbug.com/176304
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUISettings) {
+  const GURL webui_url("chrome://settings");
+  ui_test_utils::NavigateToURL(browser(), webui_url);
+  const content::WebContents* old_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
+            old_tab->GetRenderViewHost()->GetEnabledBindings());
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, native_browser_list->size());
+  const content::WebContents* new_tab =
+      new_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(webui_url, new_tab->GetURL());
+  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
+            new_tab->GetRenderViewHost()->GetEnabledBindings());
+}
+
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
   ui_test_utils::NavigateToURL(browser(), url1_);
   ui_test_utils::NavigateToURL(browser(), url2_);
