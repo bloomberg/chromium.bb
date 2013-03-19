@@ -1511,15 +1511,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
     "http://sub.bbb.com/empty.html",
     "http://bbb.com/policy/blank.html",
   };
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(RedirectHostsToTestData, kURLS, arraysize(kURLS)),
-      MessageLoop::QuitClosure());
-  content::RunMessageLoop();
+  {
+    base::RunLoop loop;
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(RedirectHostsToTestData, kURLS, arraysize(kURLS)),
+        loop.QuitClosure());
+    loop.Run();
+  }
 
-  // Verify that all the URLs can be opened without a blacklist.
-  for (size_t i = 0; i < arraysize(kURLS); ++i)
-    CheckCanOpenURL(browser(), kURLS[i]);
+  // Verify that "bbb.com" opens before applying the blacklist.
+  CheckCanOpenURL(browser(), kURLS[1]);
 
   // Set a blacklist.
   base::ListValue blacklist;
@@ -1529,7 +1531,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
                POLICY_SCOPE_USER, blacklist.DeepCopy());
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
-  // All bbb.com URLs are blocked.
+  // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
   CheckCanOpenURL(browser(), kURLS[0]);
   for (size_t i = 1; i < arraysize(kURLS); ++i)
     CheckURLIsBlocked(browser(), kURLS[i]);
@@ -1542,16 +1544,18 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
                POLICY_SCOPE_USER, whitelist.DeepCopy());
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
-  CheckCanOpenURL(browser(), kURLS[0]);
   CheckURLIsBlocked(browser(), kURLS[1]);
   CheckCanOpenURL(browser(), kURLS[2]);
   CheckCanOpenURL(browser(), kURLS[3]);
 
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(UndoRedirectHostsToTestData, kURLS, arraysize(kURLS)),
-      MessageLoop::QuitClosure());
-  content::RunMessageLoop();
+  {
+    base::RunLoop loop;
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(UndoRedirectHostsToTestData, kURLS, arraysize(kURLS)),
+        loop.QuitClosure());
+    loop.Run();
+  }
 }
 
 // Flaky on Linux. http://crbug.com/155459
