@@ -11,7 +11,10 @@
 // that extra layer with on linux.
 
 #if defined(ADDRESS_SANITIZER) && defined(GOOGLE_CHROME_BUILD)
-const char *kAsanDefaultOptions = "quarantine_size=1048576";
+// Default AddressSanitizer options: limit the quarantine to 1Gb, disable the
+// strict memcmp() checking (http://crbug.com/178677 and
+// http://crbug.com/178404).
+const char *kAsanDefaultOptions = "quarantine_size=1048576 strict_memcmp=0";
 
 // Override the default ASan options for the Google Chrome executable.
 // __asan_default_options should not be instrumented, because it is called
