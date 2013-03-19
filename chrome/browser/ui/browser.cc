@@ -1941,6 +1941,11 @@ void Browser::ProcessPendingUIUpdates() {
           TabStripModelObserver::ALL);
     }
 
+    // Update the bookmark bar. It may happen that the tab is crashed, and if
+    // so, the bookmark bar should be hidden.
+    if (flags & content::INVALIDATE_TYPE_TAB)
+      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+
     // We don't need to process INVALIDATE_STATE, since that's not visible.
   }
 

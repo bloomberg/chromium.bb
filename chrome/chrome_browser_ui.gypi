@@ -1257,6 +1257,7 @@
         'browser/ui/profile_error_dialog.cc',
         'browser/ui/profile_error_dialog.h',
         'browser/ui/protocol_dialog_delegate.h',
+        'browser/ui/sad_tab.cc',
         'browser/ui/sad_tab.h',
         'browser/ui/sad_tab_helper.cc',
         'browser/ui/sad_tab_helper.h',

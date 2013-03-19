@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SAD_TAB_H_
 #define CHROME_BROWSER_UI_SAD_TAB_H_
 
+#include "base/process_util.h"
 #include "chrome/browser/ui/sad_tab_types.h"
 
 namespace content {
@@ -18,6 +19,9 @@ class SadTab {
  public:
   // Factory function to create the platform specific implementations.
   static SadTab* Create(content::WebContents* web_contents, SadTabKind kind);
+
+  // Returns true if the sad tab should be shown.
+  static bool ShouldShow(base::TerminationStatus status);
 
   virtual ~SadTab() {}
 

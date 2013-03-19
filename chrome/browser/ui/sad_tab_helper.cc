@@ -33,9 +33,7 @@ void SadTabHelper::RenderViewGone(base::TerminationStatus status) {
   if (sad_tab_)
     return;
 
-  if (status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
-      status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ||
-      status == base::TERMINATION_STATUS_PROCESS_CRASHED)
+  if (chrome::SadTab::ShouldShow(status))
     InstallSadTab(status);
 }
 
