@@ -39,6 +39,21 @@ var MIDDLE_MOUSE_BUTTON = 1;
 var MAX_SUGGESTIONS_TO_SHOW = 5;
 
 /**
+ * Assume any native suggestion with a score higher than this value has been
+ * inlined by the browser.
+ * @type {number}
+ * @const
+ */
+var INLINE_SUGGESTION_THRESHOLD = 1200;
+
+/**
+ * Suggestion provider type corresponding to a verbatim URL suggestion.
+ * @type {string}
+ * @const
+ */
+var VERBATIM_URL_TYPE = 'url-what-you-typed';
+
+/**
  * The omnibox input value during the last onnativesuggestions event.
  * @type {string}
  */
@@ -106,8 +121,7 @@ function renderSuggestions(nativeSuggestions) {
 
   for (var i = 0, length = nativeSuggestions.length;
        i < Math.min(MAX_SUGGESTIONS_TO_SHOW, length); ++i) {
-    // Select the first suggestion.
-    addSuggestionToBox(nativeSuggestions[i], box, i == 0);
+    addSuggestionToBox(nativeSuggestions[i], box, i == selectedIndex);
   }
 }
 
@@ -125,6 +139,21 @@ function clearSuggestions() {
  */
 function getDropdownHeight() {
   return $('suggestions-box-container').offsetHeight;
+}
+
+/**
+ * @param {Object} suggestion A suggestion.
+ * @param {boolean} inVerbatimMode Are we in verbatim mode?
+ * @return {boolean} True if the suggestion should be selected.
+ */
+function shouldSelectSuggestion(suggestion, inVerbatimMode) {
+  var isVerbatimUrl = suggestion.type == VERBATIM_URL_TYPE;
+  var inlinableSuggestion = suggestion.rankingData.relevance >
+      INLINE_SUGGESTION_THRESHOLD;
+  // Verbatim URLs should always be selected. Otherwise, select suggestions
+  // with a high enough score unless we are in verbatim mode (e.g. backspacing
+  // away).
+  return isVerbatimUrl || (!inVerbatimMode && inlinableSuggestion);
 }
 
 /**
@@ -178,18 +207,10 @@ function updateSelectedSuggestion(increment) {
 }
 
 /**
- * chrome.searchBox.onnativesuggestions implementation.
+ * Updates suggestions in response to a onchange or onnativesuggestions call.
  */
-function handleNativeSuggestions() {
+function updateSuggestions() {
   var apiHandle = getApiObjectHandle();
-
-  // Used to workaround repeated undesired asynchronous onnativesuggestions
-  // events and the fact that when a suggestion is clicked, the omnibox unfocus
-  // can cause onnativesuggestions to fire, preventing the suggestion onclick
-  // from registering.
-  if (lastInputValue == apiHandle.value && $('suggestionsBox')) {
-    return;
-  }
   lastInputValue = apiHandle.value;
 
   clearSuggestions();
@@ -198,10 +219,12 @@ function handleNativeSuggestions() {
     nativeSuggestions.sort(function(a, b) {
       return b.rankingData.relevance - a.rankingData.relevance;
     });
+    if (shouldSelectSuggestion(nativeSuggestions[0], apiHandle.verbatim)) {
+      selectedIndex = 0;
+      apiHandle.setRestrictedAutocompleteText(
+          nativeSuggestions[selectedIndex].rid);
+    }
     renderSuggestions(nativeSuggestions);
-    selectedIndex = 0;
-    apiHandle.setRestrictedAutocompleteText(
-        nativeSuggestions[selectedIndex].rid);
   }
 
   var height = getDropdownHeight();
@@ -219,7 +242,7 @@ function appendSuggestionStyles() {
   style.textContent =
       '.suggestion {' +
       '  -webkit-margin-start: ' + apiHandle.startMargin + 'px;' +
-      '  -webkit-margin-end: ' + apiHandle.endMargin + 'px;' +
+      '  width: ' + apiHandle.width + 'px;' +
       '  font: ' + apiHandle.fontSize + 'px "' + apiHandle.font + '";' +
       '}';
   document.querySelector('head').appendChild(style);
@@ -275,7 +298,8 @@ function onSubmit() {
  */
 function setUpApi() {
   var apiHandle = getApiObjectHandle();
-  apiHandle.onnativesuggestions = handleNativeSuggestions;
+  apiHandle.onnativesuggestions = updateSuggestions;
+  apiHandle.onchange = updateSuggestions;
   apiHandle.onkeypress = handleKeyPress;
   apiHandle.onsubmit = onSubmit;
   appendSuggestionStyles();

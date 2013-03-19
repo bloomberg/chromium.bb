@@ -18,6 +18,10 @@ namespace {
 const char kHTMLFilename[] = "local-omnibox-popup.html";
 const char kJsFilename[] = "local-omnibox-popup.js";
 const char kCSSFilename[] = "local-omnibox-popup.css";
+const char kPageIconFilename[] = "images/page_icon.png";
+const char kPageIcon2xFilename[] = "images/2x/page_icon.png";
+const char kSearchIconFilename[] = "images/search_icon.png";
+const char kSearchIcon2xFilename[] = "images/2x/search_icon.png";
 
 }  // namespace
 
@@ -42,6 +46,14 @@ void LocalOmniboxPopupSource::StartDataRequest(
     identifier = IDR_LOCAL_OMNIBOX_POPUP_JS;
   } else if (path == kCSSFilename) {
     identifier = IDR_LOCAL_OMNIBOX_POPUP_CSS;
+  } else if (path == kPageIconFilename) {
+    identifier = IDR_LOCAL_OMNIBOX_POPUP_IMAGES_PAGE_ICON_PNG;
+  } else if (path == kPageIcon2xFilename) {
+    identifier = IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_PAGE_ICON_PNG;
+  } else if (path == kSearchIconFilename) {
+    identifier = IDR_LOCAL_OMNIBOX_POPUP_IMAGES_SEARCH_ICON_PNG;
+  } else if (path == kSearchIcon2xFilename) {
+    identifier = IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_SEARCH_ICON_PNG;
   } else {
     callback.Run(NULL);
     return;
@@ -60,6 +72,9 @@ std::string LocalOmniboxPopupSource::GetMimeType(
     return "application/javascript";
   if (path == kCSSFilename)
     return "text/css";
+  if (path == kPageIconFilename || path == kPageIcon2xFilename ||
+      path == kSearchIconFilename || path == kSearchIcon2xFilename)
+    return "image/png";
   return "";
 }
 
@@ -71,7 +86,9 @@ bool LocalOmniboxPopupSource::ShouldServiceRequest(
     DCHECK(StartsWithASCII(request->url().path(), "/", true));
     std::string filename = request->url().path().substr(1);
     return filename == kHTMLFilename || filename == kJsFilename ||
-        filename == kCSSFilename;
+        filename == kCSSFilename || filename == kPageIconFilename ||
+        filename == kPageIcon2xFilename || filename == kSearchIconFilename ||
+        filename == kSearchIcon2xFilename;
   }
   return false;
 }
