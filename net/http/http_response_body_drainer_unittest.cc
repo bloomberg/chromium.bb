@@ -97,7 +97,6 @@ class MockHttpStream : public HttpStream {
   }
 
   virtual bool CanFindEndOfResponse() const OVERRIDE { return true; }
-  virtual bool IsMoreDataBuffered() const OVERRIDE { return false; }
   virtual bool IsConnectionReused() const OVERRIDE { return false; }
   virtual void SetConnectionReused() OVERRIDE {}
   virtual bool IsConnectionReusable() const OVERRIDE { return false; }

@@ -121,8 +121,6 @@ class NET_EXPORT_PRIVATE HttpPipelinedConnectionImpl
 
   bool CanFindEndOfResponse(int pipeline_id) const;
 
-  bool IsMoreDataBuffered(int pipeline_id) const;
-
   bool IsConnectionReused(int pipeline_id) const;
 
   void SetConnectionReused(int pipeline_id);

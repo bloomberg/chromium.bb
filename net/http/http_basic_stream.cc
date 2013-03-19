@@ -83,7 +83,7 @@ void HttpBasicStream::Close(bool not_reusable) {
 
 HttpStream* HttpBasicStream::RenewStreamForAuth() {
   DCHECK(IsResponseBodyComplete());
-  DCHECK(!IsMoreDataBuffered());
+  DCHECK(!parser_->IsMoreDataBuffered());
   parser_.reset();
   return new HttpBasicStream(connection_.release(), NULL, using_proxy_);
 }
@@ -94,10 +94,6 @@ bool HttpBasicStream::IsResponseBodyComplete() const {
 
 bool HttpBasicStream::CanFindEndOfResponse() const {
   return parser_->CanFindEndOfResponse();
-}
-
-bool HttpBasicStream::IsMoreDataBuffered() const {
-  return parser_->IsMoreDataBuffered();
 }
 
 bool HttpBasicStream::IsConnectionReused() const {

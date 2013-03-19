@@ -86,10 +86,6 @@ bool HttpPipelinedStream::CanFindEndOfResponse() const {
   return pipeline_->CanFindEndOfResponse(pipeline_id_);
 }
 
-bool HttpPipelinedStream::IsMoreDataBuffered() const {
-  return pipeline_->IsMoreDataBuffered(pipeline_id_);
-}
-
 bool HttpPipelinedStream::IsConnectionReused() const {
   return pipeline_->IsConnectionReused(pipeline_id_);
 }

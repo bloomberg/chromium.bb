@@ -36,11 +36,6 @@ class NET_EXPORT_PRIVATE HttpStream : public HttpStreamBase {
   // subclass does not support renewing the stream, NULL is returned.
   virtual HttpStream* RenewStreamForAuth() = 0;
 
-  // After the response headers have been read and after the response body
-  // is complete, this function indicates if more data (either erroneous or
-  // as part of the next pipelined response) has been read from the socket.
-  virtual bool IsMoreDataBuffered() const = 0;
-
   // Record histogram of number of round trips taken to download the full
   // response body vs bytes transferred.
   virtual void LogNumRttVsBytesMetrics() const = 0;

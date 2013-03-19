@@ -188,10 +188,6 @@ bool SpdyHttpStream::CanFindEndOfResponse() const {
   return true;
 }
 
-bool SpdyHttpStream::IsMoreDataBuffered() const {
-  return false;
-}
-
 bool SpdyHttpStream::IsConnectionReused() const {
   return spdy_session_->IsReused();
 }

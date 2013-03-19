@@ -197,10 +197,6 @@ bool QuicHttpStream::CanFindEndOfResponse() const {
   return true;
 }
 
-bool QuicHttpStream::IsMoreDataBuffered() const {
-  return false;
-}
-
 bool QuicHttpStream::IsConnectionReused() const {
   // TODO(rch): do something smarter here.
   return stream_ && stream_->id() > 1;

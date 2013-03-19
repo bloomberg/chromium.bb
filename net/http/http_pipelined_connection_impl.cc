@@ -641,11 +641,6 @@ bool HttpPipelinedConnectionImpl::CanFindEndOfResponse(int pipeline_id) const {
       CanFindEndOfResponse();
 }
 
-bool HttpPipelinedConnectionImpl::IsMoreDataBuffered(int pipeline_id) const {
-  CHECK(ContainsKey(stream_info_map_, pipeline_id));
-  return read_buf_->offset() != 0;
-}
-
 bool HttpPipelinedConnectionImpl::IsConnectionReused(int pipeline_id) const {
   CHECK(ContainsKey(stream_info_map_, pipeline_id));
   if (pipeline_id > 1) {

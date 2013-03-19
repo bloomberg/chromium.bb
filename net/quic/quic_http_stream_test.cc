@@ -326,12 +326,6 @@ TEST_F(QuicHttpStreamTest, CanFindEndOfResponse) {
   EXPECT_TRUE(stream_->CanFindEndOfResponse());
 }
 
-TEST_F(QuicHttpStreamTest, IsMoreDataBuffered) {
-  AddWrite(SYNCHRONOUS, ConstructChloPacket());
-  Initialize();
-  EXPECT_FALSE(stream_->IsMoreDataBuffered());
-}
-
 TEST_F(QuicHttpStreamTest, IsConnectionReusable) {
   AddWrite(SYNCHRONOUS, ConstructChloPacket());
   Initialize();
