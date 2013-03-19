@@ -35,7 +35,6 @@
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -487,21 +486,18 @@ void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
       opener_id, route_id, surface_id);
 }
 
-void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,
-                                                  size_t* shared_bytes) {
+void RenderMessageFilter::OnGetProcessMemorySizes(
+    size_t* private_bytes, size_t* shared_bytes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   using base::ProcessMetrics;
 #if !defined(OS_MACOSX) || defined(OS_IOS)
-  scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-      peer_handle()));
+  scoped_ptr<ProcessMetrics> metrics(
+      ProcessMetrics::CreateProcessMetrics(peer_handle()));
 #else
-  scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-      peer_handle(), content::BrowserChildProcessHost::GetPortProvider()));
+  scoped_ptr<ProcessMetrics> metrics(
+      ProcessMetrics::CreateProcessMetrics(peer_handle(), NULL));
 #endif
-  if (!metrics->GetMemoryBytes(private_bytes, shared_bytes)) {
-    *private_bytes = 0;
-    *shared_bytes = 0;
-  }
+  metrics->GetMemoryBytes(private_bytes, shared_bytes);
 }
 
 void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
