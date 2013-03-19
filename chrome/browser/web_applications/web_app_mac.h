@@ -43,7 +43,8 @@ class WebAppShortcutCreator {
   base::FilePath GetAppLoaderPath() const;
 
   // Returns a path to the destination where the app should be written to.
-  virtual base::FilePath GetDestinationPath() const;
+  virtual base::FilePath GetDestinationPath(
+      const base::FilePath& app_file_name) const;
 
   // Updates the plist inside |app_path| with information about the app.
   bool UpdatePlist(const base::FilePath& app_path) const;
