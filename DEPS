@@ -512,7 +512,7 @@ deps_os = {
       "/trunk/deps/third_party/nss@" + Var("nss_revision"),
 
     "src/chrome/installer/mac/third_party/xz/xz":
-      "/trunk/deps/third_party/xz@87706",
+      "/trunk/deps/third_party/xz@189101",
   },
   "unix": {
     # Linux, really.

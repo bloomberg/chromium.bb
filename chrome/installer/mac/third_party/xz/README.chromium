@@ -1,8 +1,8 @@
 Name: XZ Utils
 URL: http://tukaani.org/xz/
-Source URL: git://ctrl.tukaani.org/xz.git
-Version: 5.0.3 (git tag v5.0.3, e32cb264ea72a4459810f30abad70dae5a4fa17d,
-         2011-05-21 16:59:22 +0300)
+Source URL: http://git.tukaani.org/xz.git
+Version: 5.0.4 (git tag v5.0.4, f6999fefe47884922f3f62186ddcf849d54b1092,
+         2012-06-22 07:54:56 +0300)
 License: Public domain/license grant, LGPL 2.1, GPL 2, GPL 3
 
 Description:
