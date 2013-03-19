@@ -46,6 +46,10 @@ class KioskAppLauncher {
   void StartMount();
   void MountCallback(bool mount_success, cryptohome::MountError mount_error);
 
+  void AttemptRemove();
+  void RemoveCallback(bool success,
+                      cryptohome::MountError return_code);
+
   void OnProfilePrepared(Profile* profile);
 
   // The instance of the current running launch.
@@ -60,6 +64,9 @@ class KioskAppLauncher {
   // True when cryptohome for the app is mounted successfully and restart
   // is scheduled.
   bool success_;
+
+  // Whether remove existing cryptohome has attempted.
+  bool remove_attempted_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppLauncher);
 };

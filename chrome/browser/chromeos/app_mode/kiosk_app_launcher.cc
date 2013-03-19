@@ -138,7 +138,8 @@ KioskAppLauncher::KioskAppLauncher(const std::string& app_id,
                                    const LaunchCallback& callback)
     : app_id_(app_id),
       callback_(callback),
-      success_(false) {
+      success_(false),
+      remove_attempted_(false) {
 }
 
 KioskAppLauncher::~KioskAppLauncher() {}
@@ -172,7 +173,7 @@ void KioskAppLauncher::ReportLaunchResult(bool success) {
 
 void KioskAppLauncher::StartMount() {
   const std::string token =
-      CrosLibrary::Get()->GetCertLibrary()->EncryptWithUserKey(app_id_);
+      CrosLibrary::Get()->GetCertLibrary()->EncryptWithSystemSalt(app_id_);
 
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
       app_id_,
@@ -184,14 +185,41 @@ void KioskAppLauncher::StartMount() {
 
 void KioskAppLauncher::MountCallback(bool mount_success,
                                      cryptohome::MountError mount_error) {
-  if (!mount_success) {
-    LOG(ERROR) << "Failed to mount, error=" << mount_error;
-    ReportLaunchResult(false);
+  if (mount_success) {
+    profile_loader_.reset(new ProfileLoader(this));
+    profile_loader_->Start();
     return;
   }
 
-  profile_loader_.reset(new ProfileLoader(this));
-  profile_loader_->Start();
+  if (!remove_attempted_) {
+    LOG(ERROR) << "Attempt to remove app cryptohome because of mount failure"
+               << ", mount error=" << mount_error;
+
+    remove_attempted_ = true;
+    AttemptRemove();
+    return;
+  }
+
+  LOG(ERROR) << "Failed to mount app cryptohome, error=" << mount_error;
+  ReportLaunchResult(false);
+}
+
+void KioskAppLauncher::AttemptRemove() {
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
+      app_id_,
+      base::Bind(&KioskAppLauncher::RemoveCallback,
+                 base::Unretained(this)));
+}
+
+void KioskAppLauncher::RemoveCallback(bool success,
+                                      cryptohome::MountError return_code) {
+  if (success) {
+    StartMount();
+    return;
+  }
+
+  LOG(ERROR) << "Failed to remove app cryptohome, erro=" << return_code;
+  ReportLaunchResult(false);
 }
 
 void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
