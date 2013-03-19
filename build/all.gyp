@@ -281,6 +281,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox_linux_unittests',
+            '../dbus/dbus.gyp:dbus_unittests',
           ],
         }],
         ['OS=="mac"', {
