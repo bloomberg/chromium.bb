@@ -5,6 +5,9 @@
 ## You can do whatever you want with this file.
 ##
 
+# Use -n to prevent gzip from adding a timestamp to the .gz headers.
+GZIP_ENV = -9n
+
 DIST_SUBDIRS = lib src po tests debug
 SUBDIRS =
 
@@ -29,8 +32,16 @@ dist_doc_DATA = \
 
 examplesdir = $(docdir)/examples
 dist_examples_DATA = \
-	doc/examples/xz_pipe_comp.c \
-	doc/examples/xz_pipe_decomp.c
+	doc/examples/00_README.txt \
+	doc/examples/01_compress_easy.c \
+	doc/examples/02_decompress.c \
+	doc/examples/03_compress_custom.c \
+	doc/examples/Makefile
+
+examplesolddir = $(docdir)/examples_old
+dist_examplesold_DATA = \
+	doc/examples_old/xz_pipe_comp.c \
+	doc/examples_old/xz_pipe_decomp.c
 
 EXTRA_DIST = \
 	extra \

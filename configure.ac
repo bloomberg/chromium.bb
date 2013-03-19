@@ -431,10 +431,14 @@ AC_USE_SYSTEM_EXTENSIONS
 if test "x$enable_threads" = xyes; then
 	echo
 	echo "Threading support:"
-	ACX_PTHREAD
+	AX_PTHREAD
 	LIBS="$LIBS $PTHREAD_LIBS"
 	AM_CFLAGS="$AM_CFLAGS $PTHREAD_CFLAGS"
-	CC="$PTHREAD_CC"
+
+	dnl NOTE: PTHREAD_CC is ignored. It would be useful on AIX, but
+	dnl it's tricky to get it right together with AC_PROG_CC_C99.
+	dnl Thus, this is handled by telling the user in INSTALL to set
+	dnl the correct CC manually.
 fi
 
 echo
@@ -627,13 +631,13 @@ AC_CONFIG_FILES([
 	src/xzdec/Makefile
 	src/lzmainfo/Makefile
 	src/scripts/Makefile
-	src/scripts/xzdiff
-	src/scripts/xzgrep
-	src/scripts/xzmore
-	src/scripts/xzless
 	tests/Makefile
 	debug/Makefile
 ])
+AC_CONFIG_FILES([src/scripts/xzdiff], [chmod +x src/scripts/xzdiff])
+AC_CONFIG_FILES([src/scripts/xzgrep], [chmod +x src/scripts/xzgrep])
+AC_CONFIG_FILES([src/scripts/xzmore], [chmod +x src/scripts/xzmore])
+AC_CONFIG_FILES([src/scripts/xzless], [chmod +x src/scripts/xzless])
 
 AC_OUTPUT
 
