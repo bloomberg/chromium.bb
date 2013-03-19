@@ -105,7 +105,15 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   if (last_good_interval_.InMicroseconds() < kMinVsyncIntervalUs ||
       last_good_interval_.InMicroseconds() > kMaxVsyncIntervalUs) {
     LOG(FATAL) << "Calculated bogus refresh interval of "
-               << last_good_interval_.InMicroseconds() << " us.";
+               << last_good_interval_.InMicroseconds() << " us. "
+               << "Last time base of "
+               << last_timebase_.ToInternalValue() << " us. "
+               << "Current time base of "
+               << timebase.ToInternalValue() << " us. "
+               << "Last media stream count of "
+               << last_media_stream_counter_ << ". "
+               << "Current media stream count of "
+               << media_stream_counter << ".";
   }
 
   last_timebase_ = timebase;
