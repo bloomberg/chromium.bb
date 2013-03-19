@@ -295,19 +295,14 @@ class Instruction(object):
   def ParseOpcodes(self, opcodes_column):
     opcodes = opcodes_column.split()
 
-    # TODO(shcherbina): Just remove these 'opcodes' from .def files once
-    # gen_dfa.py is enabled. We can't do that right now because old gen_dfa
-    # uses them, even though they are redundant.
-    opcodes = [opcode for opcode in opcodes if opcode not in ['/r', '/m', '/s']]
-
     opcode_regex = re.compile(
-        r'0x[0-9a-f]{2}|'  # raw bytes
+        r'(0x[0-9a-f]{2}|'  # raw bytes
         r'data16|'
         r'rexw|'  # REX prefix with W-bit set
         r'/[0-7]|'  # opcode stored in ModRM byte
         r'/|'  # precedes 3DNow! opcode map
         r'RXB\.([01][0-9A-F]|[01]{5})|'  # VEX-specific, 5 bits (hex or binary)
-        r'[xW01]\.(src|src1|dest|cntl|1111)\.[Lx01]\.[01]{2}'  # VEX-specific
+        r'[xW01]\.(src|src1|dest|cntl|1111)\.[Lx01]\.[01]{2})$'  # VEX-specific
     )
 
     assert len(opcodes) > 0

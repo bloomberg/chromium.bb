@@ -172,14 +172,14 @@ pi2fd Qq Pq, 0x0f 0x0f / 0x0d, CPUFeature_3DNOW
 ######## PI2FW #################################################################
 pi2fw Qq Pq, 0x0f 0x0f / 0x0c, CPUFeature_E3DNOW
 ######## PINSTRW ###############################################################
-pinsrw Ib Mw Pq, 0x0f 0xc4 /m, CPUFeature_EMMXSSE
+pinsrw Ib Mw Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
 # Textbook definition of "pinsrw" as per AMD/Intel manuals looks like this:
 #  pinsrw Ib Rd Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
 # GNU as accepts this description, but objdump decodes last operand as "Gy".
 # Technically it makes no difference: "pinsrw" only uses low 16bit of the second
 # operand thus the whole operation produces precisely idential output for "Gy"
 # and "Gd" operands.  We'll use objdump's description.
-pinsrw Ib Ry Pq, 0x0f 0xc4 /r, CPUFeature_EMMXSSE
+pinsrw Ib Ry Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
 ######## PMADDUBSW #############################################################
 pmaddubsw Qpk Ppk, 0x0f 0x38 0x04, CPUFeature_MMX
 ######## PMADDWD ###############################################################

@@ -391,7 +391,7 @@ class TestInstructionPrinter(unittest.TestCase):
   def test_segment_register(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
     instr = gen_dfa.Instruction.Parse(
-        'mov Sw !Rw, 0x8c /s, nacl-forbidden')
+        'mov Sw !Rw, 0x8c, nacl-forbidden')
 
     printer.PrintInstructionWithModRMReg(instr)
 

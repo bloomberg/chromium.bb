@@ -159,11 +159,7 @@
 #   and rep/repz opcodes will set appropriate flags while 0x66, 0xf2, and 0xf3
 #   will not.
 #   If part of the opcode is stored in ModRM byte then opcode should include the
-#   usual "/0", "/1", ..., "/7" "bytes".  Use /s "byte" for segment register
-#   operand: it'll make only registers 0..5 valid (there are only six segment
-#   registers in total).  Use "/m" or "/r" "byte" to distinguish instructions
-#   which have different names for memory and register operands (such as
-#   "movlps" or "movhlps").
+#   usual "/0", "/1", ..., "/7" "bytes".
 #   For VEX/XOP instructions it is expected that first three opcode bytes are
 #   specified in the following form:
 #     0xc4 (or 0x8f)
