@@ -163,6 +163,7 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string InstantEnabledParam() const OVERRIDE;
   virtual std::string InstantExtendedEnabledParam() const OVERRIDE;
+  virtual std::string NTPIsThemedParam() const OVERRIDE;
 
  private:
   std::string google_base_url_value_;
@@ -171,6 +172,7 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   std::string search_client_;
   std::string instant_enabled_param_;
   std::string instant_extended_enabled_param_;
+  std::string ntp_is_themed_param_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTermsDataSnapshot);
 };
@@ -183,7 +185,8 @@ SearchTermsDataSnapshot::SearchTermsDataSnapshot(
       search_client_(search_terms_data.GetSearchClient()),
       instant_enabled_param_(search_terms_data.InstantEnabledParam()),
       instant_extended_enabled_param_(
-          search_terms_data.InstantExtendedEnabledParam()) {}
+          search_terms_data.InstantExtendedEnabledParam()),
+      ntp_is_themed_param_(search_terms_data.NTPIsThemedParam()) {}
 
 SearchTermsDataSnapshot::~SearchTermsDataSnapshot() {
 }
@@ -210,6 +213,10 @@ std::string SearchTermsDataSnapshot::InstantEnabledParam() const {
 
 std::string SearchTermsDataSnapshot::InstantExtendedEnabledParam() const {
   return instant_extended_enabled_param_;
+}
+
+std::string SearchTermsDataSnapshot::NTPIsThemedParam() const {
+  return ntp_is_themed_param_;
 }
 
 // -----------------------------------------------------------------

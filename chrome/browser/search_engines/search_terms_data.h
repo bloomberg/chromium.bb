@@ -55,6 +55,13 @@ class SearchTermsData {
   // Profile, so this can only ever be non-empty for UIThreadSearchTermsData.
   virtual std::string InstantExtendedEnabledParam() const;
 
+  // Returns a string indicating whether a non-default theme is active,
+  // suitable for adding as a query string param to the homepage.  This only
+  // applies if Instant Extended is enabled.  Returns an empty string otherwise.
+  // Determining this requires accessing the Profile, so this can only ever be
+  // non-empty for UIThreadSearchTermsData.
+  virtual std::string NTPIsThemedParam() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchTermsData);
 };
@@ -63,8 +70,8 @@ class SearchTermsData {
 class UIThreadSearchTermsData : public SearchTermsData {
  public:
   // If |profile_| is NULL, the Google base URL accessors will return default
-  // values, and InstantEnabledParam() and InstantExtendedEnabledParam() will
-  // return the empty string.
+  // values, and InstantEnabledParam(), InstantExtendedEnabledParam(), and
+  // NTPIsThemedParam(), will return the empty string.
   explicit UIThreadSearchTermsData(Profile* profile);
 
   virtual std::string GoogleBaseURLValue() const OVERRIDE;
@@ -73,6 +80,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string InstantEnabledParam() const OVERRIDE;
   virtual std::string InstantExtendedEnabledParam() const OVERRIDE;
+  virtual std::string NTPIsThemedParam() const OVERRIDE;
 
   // Used by tests to override the value for the Google base URL.  Passing the
   // empty string cancels this override.

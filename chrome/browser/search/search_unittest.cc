@@ -87,7 +87,8 @@ class SearchTest : public BrowserWithTestWindowTest {
 
     TemplateURLData data;
     data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo";
+    data.instant_url = "http://foo.com/instant?"
+        "{google:omniboxStartMarginParameter}foo=foo#foo=foo";
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
     data.search_terms_replacement_key = "strk";
 
@@ -311,6 +312,20 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
   // Disable suggest. No Instant URL.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
+}
+
+TEST_F(SearchTest, StartMarginCGI) {
+  // Instant is disabled, so no Instant URL.
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
+
+  // Enable Instant.  No margin.
+  profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
+  EXPECT_EQ(GURL("http://foo.com/instant?foo=foo#foo=foo"),
+            GetInstantURL(profile(), kDisableStartMargin));
+
+  // With start margin.
+  EXPECT_EQ(GURL("http://foo.com/instant?es_sm=10&foo=foo#foo=foo"),
+            GetInstantURL(profile(), 10));
 }
 
 }  // namespace search

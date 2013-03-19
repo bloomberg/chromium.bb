@@ -61,6 +61,7 @@ const char kGoogleInstantExtendedEnabledKey[] =
     "google:instantExtendedEnabledKey";
 const char kGoogleInstantExtendedEnabledKeyFull[] =
     "{google:instantExtendedEnabledKey}";
+const char kGoogleNTPIsThemedParameter[] = "google:ntpIsThemedParameter";
 const char kGoogleOmniboxStartMarginParameter[] =
     "google:omniboxStartMarginParameter";
 const char kGoogleOriginalQueryForSuggestionParameter[] =
@@ -309,6 +310,10 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 
       case GOOGLE_INSTANT_EXTENDED_ENABLED:
         url.insert(i->index, search_terms_data.InstantExtendedEnabledParam());
+        break;
+
+      case GOOGLE_NTP_IS_THEMED:
+        url.insert(i->index, search_terms_data.NTPIsThemedParam());
         break;
 
       case GOOGLE_OMNIBOX_START_MARGIN:
@@ -579,6 +584,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == kGoogleInstantExtendedEnabledKey) {
     url->insert(start, google_util::kInstantExtendedAPIParam);
+  } else if (parameter == kGoogleNTPIsThemedParameter) {
+    replacements->push_back(Replacement(GOOGLE_NTP_IS_THEMED, start));
   } else if (parameter == kGoogleOmniboxStartMarginParameter) {
     replacements->push_back(Replacement(GOOGLE_OMNIBOX_START_MARGIN, start));
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
