@@ -12488,13 +12488,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         How would you like to handle photos and videos?
       </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_PHOTOS_DRIVE" desc="In the action choice dialog, label of action to import photos to Drive.">
-        Google Drive
+        Save to Google Drive
       </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_DRIVE_NOT_REACHED" desc="In the action choice dialog, message informing that Drive is unreachable.">
         Google Drive could not be reached
       </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_VIEW_FILES" desc="In the action choice dialog, label of action to view all files.">
-        View files
+        View with the Files app
       </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_WATCH_SINGLE_VIDEO" desc="In the action choice dialog, label of action to watch a single video.">
         Watch <ph name="VIDEO_NAME">$1<ex>Best movie</ex></ph>
