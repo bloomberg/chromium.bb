@@ -178,15 +178,15 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.showOverdrawInTracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
 
+  // These flags should be mirrored by UI versions in ui/compositor/.
+  settings.initialDebugState.show_debug_borders =
+      cmd->HasSwitch(cc::switches::kShowCompositedLayerBorders);
   settings.initialDebugState.show_fps_counter =
-      cmd->HasSwitch(switches::kShowFPSCounter);
+      cmd->HasSwitch(cc::switches::kShowFPSCounter);
   settings.initialDebugState.show_paint_rects =
       cmd->HasSwitch(switches::kShowPaintRects);
-  settings.initialDebugState.show_debug_borders =
-      cmd->HasSwitch(switches::kShowCompositedLayerBorders);
   settings.initialDebugState.show_platform_layer_tree =
-      cmd->HasSwitch(switches::kShowCompositedLayerTree);
-
+      cmd->HasSwitch(cc::switches::kShowCompositedLayerTree);
   settings.initialDebugState.show_property_changed_rects =
       cmd->HasSwitch(cc::switches::kShowPropertyChangedRects);
   settings.initialDebugState.show_surface_damage_rects =
@@ -199,6 +199,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kShowOccludingRects);
   settings.initialDebugState.show_non_occluding_rects =
       cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
+
   settings.initialDebugState.SetRecordRenderingStats(
       cmd->HasSwitch(switches::kEnableGpuBenchmarking));
   settings.initialDebugState.trace_all_rendered_frames =

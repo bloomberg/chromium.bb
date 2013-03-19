@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/base/switches.h"
 #include "cc/base/thread_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -415,19 +416,36 @@ Compositor::Compositor(CompositorDelegate* delegate,
   root_web_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+
   cc::LayerTreeSettings settings;
-  settings.initialDebugState.show_fps_counter =
-      command_line->HasSwitch(switches::kUIShowFPSCounter);
-  settings.initialDebugState.show_platform_layer_tree =
-      command_line->HasSwitch(switches::kUIShowLayerTree);
   settings.refreshRate =
       g_test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
-  settings.initialDebugState.show_debug_borders =
-      command_line->HasSwitch(switches::kUIShowLayerBorders);
   settings.partialSwapEnabled =
-      command_line->HasSwitch(switches::kUIEnablePartialSwap);
+      command_line->HasSwitch(cc::switches::kUIEnablePartialSwap);
   settings.perTilePaintingEnabled =
-      command_line->HasSwitch(switches::kUIEnablePerTilePainting);
+      command_line->HasSwitch(cc::switches::kUIEnablePerTilePainting);
+
+  // These flags should be mirrored by renderer versions in content/renderer/.
+  settings.initialDebugState.show_debug_borders =
+      command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders);
+  settings.initialDebugState.show_fps_counter =
+      command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
+  settings.initialDebugState.show_paint_rects =
+      command_line->HasSwitch(switches::kUIShowPaintRects);
+  settings.initialDebugState.show_platform_layer_tree =
+      command_line->HasSwitch(cc::switches::kUIShowCompositedLayerTree);
+  settings.initialDebugState.show_property_changed_rects =
+      command_line->HasSwitch(cc::switches::kUIShowPropertyChangedRects);
+  settings.initialDebugState.show_surface_damage_rects =
+      command_line->HasSwitch(cc::switches::kUIShowSurfaceDamageRects);
+  settings.initialDebugState.show_screen_space_rects =
+      command_line->HasSwitch(cc::switches::kUIShowScreenSpaceRects);
+  settings.initialDebugState.show_replica_screen_space_rects =
+      command_line->HasSwitch(cc::switches::kUIShowReplicaScreenSpaceRects);
+  settings.initialDebugState.show_occluding_rects =
+      command_line->HasSwitch(cc::switches::kUIShowOccludingRects);
+  settings.initialDebugState.show_non_occluding_rects =
+      command_line->HasSwitch(cc::switches::kUIShowNonOccludingRects);
 
   scoped_ptr<cc::Thread> thread;
   if (g_compositor_thread) {

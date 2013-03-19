@@ -13,7 +13,6 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
-#include "cc/base/switches.h"
 #include "cc/base/thread.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/input/pinch_zoom_scrollbar.h"

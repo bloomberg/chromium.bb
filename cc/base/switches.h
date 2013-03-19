@@ -15,24 +15,17 @@
 namespace cc {
 namespace switches {
 
+// Switches for the renderer compositor only.
 CC_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
 CC_EXPORT extern const char kDisableThreadedAnimation[];
 CC_EXPORT extern const char kEnableCompositorFrameMessage[];
 CC_EXPORT extern const char kDisableImplSidePainting[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
-CC_EXPORT extern const char kEnablePartialSwap[];
-CC_EXPORT extern const char kEnablePerTilePainting[];
 CC_EXPORT extern const char kEnablePredictionBenchmarking[];
 CC_EXPORT extern const char kEnableRightAlignedScheduling[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 CC_EXPORT extern const char kNumRasterThreads[];
-CC_EXPORT extern const char kShowPropertyChangedRects[];
-CC_EXPORT extern const char kShowSurfaceDamageRects[];
-CC_EXPORT extern const char kShowScreenSpaceRects[];
-CC_EXPORT extern const char kShowReplicaScreenSpaceRects[];
-CC_EXPORT extern const char kShowOccludingRects[];
-CC_EXPORT extern const char kShowNonOccludingRects[];
 CC_EXPORT extern const char kTraceOverdraw[];
 CC_EXPORT extern const char kTopControlsHeight[];
 CC_EXPORT extern const char kTopControlsHideThreshold[];
@@ -43,6 +36,32 @@ CC_EXPORT extern const char kUseCheapnessEstimator[];
 CC_EXPORT extern const char kUseColorEstimator[];
 CC_EXPORT extern const char kLowResolutionContentsScaleFactor[];
 CC_EXPORT extern const char kCompositeToMailbox[];
+
+// Switches for both the renderer and ui compositors.
+CC_EXPORT extern const char kEnablePartialSwap[];
+CC_EXPORT extern const char kUIEnablePartialSwap[];
+CC_EXPORT extern const char kEnablePerTilePainting[];
+CC_EXPORT extern const char kUIEnablePerTilePainting[];
+
+// Debug visualizations.
+CC_EXPORT extern const char kShowCompositedLayerBorders[];
+CC_EXPORT extern const char kUIShowCompositedLayerBorders[];
+CC_EXPORT extern const char kShowCompositedLayerTree[];
+CC_EXPORT extern const char kUIShowCompositedLayerTree[];
+CC_EXPORT extern const char kShowFPSCounter[];
+CC_EXPORT extern const char kUIShowFPSCounter[];
+CC_EXPORT extern const char kShowPropertyChangedRects[];
+CC_EXPORT extern const char kUIShowPropertyChangedRects[];
+CC_EXPORT extern const char kShowSurfaceDamageRects[];
+CC_EXPORT extern const char kUIShowSurfaceDamageRects[];
+CC_EXPORT extern const char kShowScreenSpaceRects[];
+CC_EXPORT extern const char kUIShowScreenSpaceRects[];
+CC_EXPORT extern const char kShowReplicaScreenSpaceRects[];
+CC_EXPORT extern const char kUIShowReplicaScreenSpaceRects[];
+CC_EXPORT extern const char kShowOccludingRects[];
+CC_EXPORT extern const char kUIShowOccludingRects[];
+CC_EXPORT extern const char kShowNonOccludingRects[];
+CC_EXPORT extern const char kUIShowNonOccludingRects[];
 
 CC_EXPORT bool IsImplSidePaintingEnabled();
 
