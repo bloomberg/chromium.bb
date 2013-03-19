@@ -159,7 +159,8 @@ namespace base {
 
 bool KillAllNamedProcessesWithArgument(const string16& process_name,
                                        const string16& argument) {
-  return base::KillProcesses(process_name, 0, &ArgumentFilter(argument));
+  ArgumentFilter argument_filter(argument);
+  return base::KillProcesses(process_name, 0, &argument_filter);
 }
 
 }  // namespace base
