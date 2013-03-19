@@ -10,7 +10,7 @@ namespace extensions {
 class CrazyExtensionTest : public ExtensionApiTest {
 };
 
-IN_PROC_BROWSER_TEST_F(CrazyExtensionTest, DISABLED_Crazy) {
+IN_PROC_BROWSER_TEST_F(CrazyExtensionTest, Crazy) {
   ASSERT_TRUE(RunExtensionTest("crazy_extension"));
 }
 

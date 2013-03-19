@@ -34,10 +34,9 @@ chrome.test.runTests([
         case 2: {
           // Third test is that accessing API methods doesn't crash the
           // renderer if the frame doesn't exist anymore.
-          // TODO(kalman): this fails. Fix.
           var iframeChromeApp = iframe.contentWindow.chrome.app;
           document.body.removeChild(iframe);
-          chrome.test.assertEq(undefined, iframeChromeApp.getDetails);
+          chrome.test.assertEq(undefined, iframeChromeApp.getDetails());
           chrome.test.succeed();
           break;
         }
