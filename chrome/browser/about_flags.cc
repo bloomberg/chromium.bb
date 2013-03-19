@@ -1629,8 +1629,6 @@ bool FlagsState::IsRestartNeededToCommitChanges() {
 
 void FlagsState::SetExperimentEnabled(
     PrefService* prefs, const std::string& internal_name, bool enable) {
-  needs_restart_ = true;
-
   size_t at_index = internal_name.find(testing::kMultiSeparator);
   if (at_index != std::string::npos) {
     DCHECK(enable);
@@ -1644,7 +1642,7 @@ void FlagsState::SetExperimentEnabled(
     if (internal_name != experiment_name + "@0") {
       std::set<std::string> enabled_experiments;
       GetSanitizedEnabledFlags(prefs, &enabled_experiments);
-      enabled_experiments.insert(internal_name);
+      needs_restart_ |= enabled_experiments.insert(internal_name).second;
       SetEnabledFlags(prefs, enabled_experiments);
     }
     return;
@@ -1664,19 +1662,20 @@ void FlagsState::SetExperimentEnabled(
 
   if (e->type == Experiment::SINGLE_VALUE) {
     if (enable)
-      enabled_experiments.insert(internal_name);
+      needs_restart_ |= enabled_experiments.insert(internal_name).second;
     else
-      enabled_experiments.erase(internal_name);
+      needs_restart_ |= (enabled_experiments.erase(internal_name) > 0);
   } else {
     if (enable) {
       // Enable the first choice.
-      enabled_experiments.insert(e->NameForChoice(0));
+      needs_restart_ |= enabled_experiments.insert(e->NameForChoice(0)).second;
     } else {
       // Find the currently enabled choice and disable it.
       for (int i = 0; i < e->num_choices; ++i) {
         std::string choice_name = e->NameForChoice(i);
         if (enabled_experiments.find(choice_name) !=
             enabled_experiments.end()) {
+          needs_restart_ = true;
           enabled_experiments.erase(choice_name);
           // Continue on just in case there's a bug and more than one
           // experiment for this choice was enabled.

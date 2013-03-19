@@ -135,9 +135,30 @@ class AboutFlagsTest : public ::testing::Test {
   TestingPrefServiceSimple prefs_;
 };
 
+
+TEST_F(AboutFlagsTest, NoChangeNoRestart) {
+  EXPECT_FALSE(IsRestartNeededToCommitChanges());
+  SetExperimentEnabled(&prefs_, kFlags1, false);
+  EXPECT_FALSE(IsRestartNeededToCommitChanges());
+}
+
 TEST_F(AboutFlagsTest, ChangeNeedsRestart) {
   EXPECT_FALSE(IsRestartNeededToCommitChanges());
   SetExperimentEnabled(&prefs_, kFlags1, true);
+  EXPECT_TRUE(IsRestartNeededToCommitChanges());
+}
+
+TEST_F(AboutFlagsTest, MultiFlagChangeNeedsRestart) {
+  const Experiment& experiment = kExperiments[3];
+  ASSERT_EQ(kFlags4, experiment.internal_name);
+  EXPECT_FALSE(IsRestartNeededToCommitChanges());
+  // Enable the 2nd choice of the multi-value.
+  SetExperimentEnabled(&prefs_, experiment.NameForChoice(2), true);
+  EXPECT_TRUE(IsRestartNeededToCommitChanges());
+  testing::ClearState();
+  EXPECT_FALSE(IsRestartNeededToCommitChanges());
+  // Enable the default choice now.
+  SetExperimentEnabled(&prefs_, experiment.NameForChoice(0), true);
   EXPECT_TRUE(IsRestartNeededToCommitChanges());
 }
 
