@@ -9,70 +9,66 @@
 
 namespace cc {
 
-ManagedMemoryPolicy::ManagedMemoryPolicy(size_t bytesLimitWhenVisible)
-    : bytesLimitWhenVisible(bytesLimitWhenVisible)
-    , priorityCutoffWhenVisible(CUTOFF_ALLOW_EVERYTHING)
-    , bytesLimitWhenNotVisible(0)
-    , priorityCutoffWhenNotVisible(CUTOFF_ALLOW_NOTHING)
-{
+ManagedMemoryPolicy::ManagedMemoryPolicy(size_t bytes_limit_when_visible)
+    : bytes_limit_when_visible(bytes_limit_when_visible),
+      priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING),
+      bytes_limit_when_not_visible(0),
+      priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING) {}
+
+ManagedMemoryPolicy::ManagedMemoryPolicy(
+    size_t bytes_limit_when_visible,
+    PriorityCutoff priority_cutoff_when_visible,
+    size_t bytes_limit_when_not_visible,
+    PriorityCutoff priority_cutoff_when_not_visible)
+    : bytes_limit_when_visible(bytes_limit_when_visible),
+      priority_cutoff_when_visible(priority_cutoff_when_visible),
+      bytes_limit_when_not_visible(bytes_limit_when_not_visible),
+      priority_cutoff_when_not_visible(priority_cutoff_when_not_visible) {}
+
+bool ManagedMemoryPolicy::operator==(const ManagedMemoryPolicy& other) const {
+  return bytes_limit_when_visible == other.bytes_limit_when_visible &&
+         priority_cutoff_when_visible == other.priority_cutoff_when_visible &&
+         bytes_limit_when_not_visible == other.bytes_limit_when_not_visible &&
+         priority_cutoff_when_not_visible ==
+         other.priority_cutoff_when_not_visible;
 }
 
-ManagedMemoryPolicy::ManagedMemoryPolicy(size_t bytesLimitWhenVisible,
-                                         PriorityCutoff priorityCutoffWhenVisible,
-                                         size_t bytesLimitWhenNotVisible,
-                                         PriorityCutoff priorityCutoffWhenNotVisible)
-    : bytesLimitWhenVisible(bytesLimitWhenVisible)
-    , priorityCutoffWhenVisible(priorityCutoffWhenVisible)
-    , bytesLimitWhenNotVisible(bytesLimitWhenNotVisible)
-    , priorityCutoffWhenNotVisible(priorityCutoffWhenNotVisible)
-{
-}
-
-bool ManagedMemoryPolicy::operator==(const ManagedMemoryPolicy& other) const
-{
-    return bytesLimitWhenVisible == other.bytesLimitWhenVisible &&
-           priorityCutoffWhenVisible == other.priorityCutoffWhenVisible &&
-           bytesLimitWhenNotVisible == other.bytesLimitWhenNotVisible &&
-           priorityCutoffWhenNotVisible == other.priorityCutoffWhenNotVisible;
-}
-
-bool ManagedMemoryPolicy::operator!=(const ManagedMemoryPolicy& other) const
-{
-    return !(*this == other);
+bool ManagedMemoryPolicy::operator!=(const ManagedMemoryPolicy& other) const {
+  return !(*this == other);
 }
 
 // static
-int ManagedMemoryPolicy::priorityCutoffToValue(PriorityCutoff priorityCutoff)
-{
-    switch (priorityCutoff) {
+int ManagedMemoryPolicy::PriorityCutoffToValue(PriorityCutoff priority_cutoff) {
+  switch (priority_cutoff) {
     case CUTOFF_ALLOW_NOTHING:
-        return PriorityCalculator::AllowNothingCutoff();
+      return PriorityCalculator::AllowNothingCutoff();
     case CUTOFF_ALLOW_REQUIRED_ONLY:
-        return PriorityCalculator::AllowVisibleOnlyCutoff();
+      return PriorityCalculator::AllowVisibleOnlyCutoff();
     case CUTOFF_ALLOW_NICE_TO_HAVE:
-        return PriorityCalculator::AllowVisibleAndNearbyCutoff();
+      return PriorityCalculator::AllowVisibleAndNearbyCutoff();
     case CUTOFF_ALLOW_EVERYTHING:
-        return PriorityCalculator::AllowEverythingCutoff();
-    }
-    NOTREACHED();
-    return PriorityCalculator::AllowNothingCutoff();
+      return PriorityCalculator::AllowEverythingCutoff();
+  }
+  NOTREACHED();
+  return PriorityCalculator::AllowNothingCutoff();
 }
 
 // static
-TileMemoryLimitPolicy ManagedMemoryPolicy::priorityCutoffToTileMemoryLimitPolicy(PriorityCutoff priorityCutoff)
-{
-    switch (priorityCutoff) {
+TileMemoryLimitPolicy
+ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
+    PriorityCutoff priority_cutoff) {
+  switch (priority_cutoff) {
     case CUTOFF_ALLOW_NOTHING:
-        return ALLOW_NOTHING;
+      return ALLOW_NOTHING;
     case CUTOFF_ALLOW_REQUIRED_ONLY:
-        return ALLOW_ABSOLUTE_MINIMUM;
+      return ALLOW_ABSOLUTE_MINIMUM;
     case CUTOFF_ALLOW_NICE_TO_HAVE:
-        return ALLOW_PREPAINT_ONLY;
+      return ALLOW_PREPAINT_ONLY;
     case CUTOFF_ALLOW_EVERYTHING:
-        return ALLOW_ANYTHING;
-    }
-    NOTREACHED();
-    return ALLOW_NOTHING;
+      return ALLOW_ANYTHING;
+  }
+  NOTREACHED();
+  return ALLOW_NOTHING;
 }
 
 }  // namespace cc

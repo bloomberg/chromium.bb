@@ -129,7 +129,7 @@ public:
     virtual void DidLoseOutputSurface() OVERRIDE { }
     virtual void OnSwapBuffersComplete() OVERRIDE { }
     virtual void SetFullRootLayerDamage() OVERRIDE { m_setFullRootLayerDamageCount++; }
-    virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytesLimitWhenVisible; }
+    virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytes_limit_when_visible; }
     virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
     virtual bool HasImplThread() const OVERRIDE { return false; }
     virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }

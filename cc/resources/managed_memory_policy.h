@@ -12,28 +12,29 @@
 namespace cc {
 
 struct CC_EXPORT ManagedMemoryPolicy {
-     enum PriorityCutoff {
-        CUTOFF_ALLOW_NOTHING,
-        CUTOFF_ALLOW_REQUIRED_ONLY,
-        CUTOFF_ALLOW_NICE_TO_HAVE,
-        CUTOFF_ALLOW_EVERYTHING,
-    };
+  enum PriorityCutoff {
+    CUTOFF_ALLOW_NOTHING,
+    CUTOFF_ALLOW_REQUIRED_ONLY,
+    CUTOFF_ALLOW_NICE_TO_HAVE,
+    CUTOFF_ALLOW_EVERYTHING,
+  };
 
-    ManagedMemoryPolicy(size_t bytesLimitWhenVisible);
-    ManagedMemoryPolicy(size_t bytesLimitWhenVisible,
-                        PriorityCutoff priorityCutoffWhenVisible,
-                        size_t bytesLimitWhenNotVisible,
-                        PriorityCutoff priorityCutoffWhenNotVisible);
-    bool operator==(const ManagedMemoryPolicy&) const;
-    bool operator!=(const ManagedMemoryPolicy&) const;
+  ManagedMemoryPolicy(size_t bytes_limit_when_visible);
+  ManagedMemoryPolicy(size_t bytes_limit_when_visible,
+                      PriorityCutoff priority_cutoff_when_visible,
+                      size_t bytes_limit_when_not_visible,
+                      PriorityCutoff priority_cutoff_when_not_visible);
+  bool operator==(const ManagedMemoryPolicy&) const;
+  bool operator!=(const ManagedMemoryPolicy&) const;
 
-    size_t bytesLimitWhenVisible;
-    PriorityCutoff priorityCutoffWhenVisible;
-    size_t bytesLimitWhenNotVisible;
-    PriorityCutoff priorityCutoffWhenNotVisible;
+  size_t bytes_limit_when_visible;
+  PriorityCutoff priority_cutoff_when_visible;
+  size_t bytes_limit_when_not_visible;
+  PriorityCutoff priority_cutoff_when_not_visible;
 
-    static int priorityCutoffToValue(PriorityCutoff priorityCutoff);
-    static TileMemoryLimitPolicy priorityCutoffToTileMemoryLimitPolicy(PriorityCutoff priorityCutoff);
+  static int PriorityCutoffToValue(PriorityCutoff priority_cutoff);
+  static TileMemoryLimitPolicy PriorityCutoffToTileMemoryLimitPolicy(
+      PriorityCutoff priority_cutoff);
 };
 
 }  // namespace cc

@@ -216,7 +216,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   bool visible() const { return visible_; }
 
   size_t memory_allocation_limit_bytes() const {
-    return managed_memory_policy_.bytesLimitWhenVisible;
+    return managed_memory_policy_.bytes_limit_when_visible;
   }
 
   void SetViewportSize(gfx::Size layout_viewport_size,

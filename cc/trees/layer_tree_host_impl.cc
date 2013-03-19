@@ -825,11 +825,11 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
   bool evicted_resources = client_->ReduceContentsTextureMemoryOnImplThread(
-      visible_ ? policy.bytesLimitWhenVisible : policy.bytesLimitWhenNotVisible,
-      ManagedMemoryPolicy::priorityCutoffToValue(
-          visible_ ?
-          policy.priorityCutoffWhenVisible :
-          policy.priorityCutoffWhenNotVisible));
+      visible_ ? policy.bytes_limit_when_visible
+               : policy.bytes_limit_when_not_visible,
+      ManagedMemoryPolicy::PriorityCutoffToValue(
+          visible_ ? policy.priority_cutoff_when_visible
+                   : policy.priority_cutoff_when_not_visible));
   if (evicted_resources) {
     active_tree_->SetContentsTexturesPurged();
     if (pending_tree_)
@@ -843,13 +843,13 @@ void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
   if (tile_manager_) {
     GlobalStateThatImpactsTilePriority new_state(tile_manager_->GlobalState());
     new_state.memory_limit_in_bytes = visible_ ?
-                                      policy.bytesLimitWhenVisible :
-                                      policy.bytesLimitWhenNotVisible;
+                                      policy.bytes_limit_when_visible :
+                                      policy.bytes_limit_when_not_visible;
     new_state.memory_limit_policy =
-        ManagedMemoryPolicy::priorityCutoffToTileMemoryLimitPolicy(
+        ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
             visible_ ?
-            policy.priorityCutoffWhenVisible :
-            policy.priorityCutoffWhenNotVisible);
+            policy.priority_cutoff_when_visible :
+            policy.priority_cutoff_when_not_visible);
     tile_manager_->SetGlobalState(new_state);
   }
 }
