@@ -131,10 +131,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
                         OnHandleURLRequestReply)
     IPC_MESSAGE_HANDLER(PluginMsg_HTTPRangeRequestReply,
                         OnHTTPRangeRequestReply)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(PluginMsg_SetFakeAcceleratedSurfaceWindowHandle,
-                        OnSetFakeAcceleratedSurfaceWindowHandle)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -396,12 +392,5 @@ void WebPluginDelegateStub::OnHTTPRangeRequestReply(
       delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
   webplugin_->OnResourceCreated(resource_id, resource_client);
 }
-
-#if defined(OS_MACOSX)
-void WebPluginDelegateStub::OnSetFakeAcceleratedSurfaceWindowHandle(
-    gfx::PluginWindowHandle window) {
-  delegate_->set_windowed_handle(window);
-}
-#endif
 
 }  // namespace content

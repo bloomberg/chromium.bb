@@ -20,14 +20,6 @@ class WebPluginAcceleratedSurface {
  public:
   virtual ~WebPluginAcceleratedSurface() {}
 
-  // Sets the window handle used throughout the browser to identify this
-  // surface.
-  virtual void SetWindowHandle(gfx::PluginWindowHandle window) = 0;
-
-  // Indicates whether the new code path which renders the plugins via
-  // the compositor should be used.
-  virtual bool IsComposited() = 0;
-
   // Sets the size of the surface.
   virtual void SetSize(const gfx::Size& size) = 0;
 

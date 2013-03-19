@@ -2361,58 +2361,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
 // Instructs the browser to start plugin IME.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
 
-//---------------------------------------------------------------------------
-// Messages related to accelerated plugins
-
-// This is sent from the renderer to the browser to allocate a fake
-// PluginWindowHandle on the browser side which is used to identify
-// the plugin to the browser later when backing store is allocated
-// or reallocated. |opaque| indicates whether the plugin's output is
-// considered to be opaque, as opposed to translucent. This message
-// is reused for rendering the accelerated compositor's output.
-// |root| indicates whether the output is supposed to cover the
-// entire window.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_AllocateFakePluginWindowHandle,
-                           bool /* opaque */,
-                           bool /* root */,
-                           gfx::PluginWindowHandle /* id */)
-
-// Destroys a fake window handle previously allocated using
-// AllocateFakePluginWindowHandle.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DestroyFakePluginWindowHandle,
-                    gfx::PluginWindowHandle /* id */)
-
-// This message, used on Mac OS X 10.5 and earlier (no IOSurface support),
-// is sent from the renderer to the browser on behalf of the plug-in
-// to indicate that a new backing store was allocated for that plug-in
-// instance.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetTransportDIB,
-                    gfx::PluginWindowHandle /* window */,
-                    int32 /* width */,
-                    int32 /* height */,
-                    TransportDIB::Handle /* handle for the DIB */)
-
-// This message, used on Mac OS X 10.6 and later (where IOSurface is
-// supported), is sent from the renderer to the browser on behalf of the
-// plug-in to indicate that a new backing store was allocated for that
-// plug-in instance.
-//
-// NOTE: the original intent was to pass a mach port as the IOSurface
-// identifier but it looks like that will be a lot of work. For now we pass an
-// ID from IOSurfaceGetID.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
-                    gfx::PluginWindowHandle /* window */,
-                    int32 /* width */,
-                    int32 /* height */,
-                    uint64 /* surface_id */)
-
-// This message notifies the browser process that the plug-in
-// swapped the buffers associated with the given "window", which
-// should cause the browser to redraw the various plug-ins'
-// contents.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
-                    gfx::PluginWindowHandle /* window */,
-                    uint64 /* surface_handle */)
 #elif defined(OS_WIN)
 // Request that the given font characters be loaded by the browser so it's
 // cached by the OS. Please see RenderMessageFilter::OnPreCacheFontCharacters

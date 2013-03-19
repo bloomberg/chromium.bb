@@ -376,64 +376,7 @@ IPC_MESSAGE_ROUTED1(PluginHostMsg_FocusChanged,
 IPC_MESSAGE_ROUTED0(PluginHostMsg_StartIme)
 
 //----------------------------------------------------------------------
-// Legacy Core Animation plugin implementation rendering directly to screen.
-
-// This message, used in Mac OS X 10.5 and earlier, is sent from the plug-in
-// process to the renderer process to indicate that the plug-in allocated a
-// new TransportDIB that holds the GPU's rendered image.  This information is
-// then forwarded to the browser process via a similar message.
-IPC_MESSAGE_ROUTED4(PluginHostMsg_AcceleratedSurfaceSetTransportDIB,
-                    gfx::PluginWindowHandle /* window */,
-                    int32 /* width */,
-                    int32 /* height */,
-                    TransportDIB::Handle /* handle to the TransportDIB */)
-
-// Synthesize a fake window handle for the plug-in to identify the instance
-// to the browser, allowing mapping to a surface for hardware accelleration
-// of plug-in content. The browser generates the handle which is then set on
-// the plug-in. |opaque| indicates whether the content should be treated as
-// opaque.
-IPC_MESSAGE_ROUTED1(PluginHostMsg_BindFakePluginWindowHandle,
-                    bool /* opaque */)
-
-// This message, used only on 10.6 and later, is sent from the plug-in process
-// to the renderer process to indicate that the plugin allocated a new
-// IOSurface object of the given width and height. This information is then
-// forwarded on to the browser process.
-//
-// NOTE: the original intent was to pass a mach port as the IOSurface
-// identifier but it looks like that will be a lot of work. For now we pass an
-// ID from IOSurfaceGetID.
-IPC_MESSAGE_ROUTED4(PluginHostMsg_AcceleratedSurfaceSetIOSurface,
-                    gfx::PluginWindowHandle /* window */,
-                    int32 /* width */,
-                    int32 /* height */,
-                    uint64 /* surface_id */)
-
-
-// On the Mac, shared memory can't be allocated in the sandbox, so
-// the TransportDIB used by the plug-in for rendering has to be allocated
-// and managed by the browser.  This is a synchronous message, use with care.
-IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_AllocTransportDIB,
-                           size_t /* requested memory size */,
-                           TransportDIB::Handle /* output: DIB handle */)
-
-// Since the browser keeps handles to the allocated transport DIBs, this
-// message is sent to tell the browser that it may release them when the
-// renderer is finished with them.
-IPC_MESSAGE_ROUTED1(PluginHostMsg_FreeTransportDIB,
-                    TransportDIB::Id /* DIB id */)
-
-// This message notifies the renderer process (and from there the
-// browser process) that the plug-in swapped the buffers associated
-// with the given "window", which should cause the browser to redraw
-// the various plug-ins' contents.
-IPC_MESSAGE_ROUTED2(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
-                    gfx::PluginWindowHandle /* window */,
-                    uint64 /* surface_handle */)
-
-//----------------------------------------------------------------------
-// New Core Animation plugin implementation rendering via compositor.
+// Core Animation plugin implementation rendering via compositor.
 
 // Notifies the renderer process that this plugin will be using the
 // accelerated rendering path.

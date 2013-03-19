@@ -761,9 +761,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableAudio,
     switches::kDisableAudioOutputResampler,
     switches::kDisableBreakpad,
-#if defined(OS_MACOSX)
-    switches::kDisableCompositedCoreAnimationPlugins,
-#endif
     switches::kDisableDataTransferItems,
     switches::kDisableDatabases,
     switches::kDisableDesktopNotifications,

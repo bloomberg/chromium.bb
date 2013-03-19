@@ -74,11 +74,6 @@ static bool SupportsCoreAnimationPlugins() {
   }
   return (implementation == gfx::kGLImplementationDesktopGL);
 }
-
-static bool UsingCompositedCoreAnimationPlugins() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCompositedCoreAnimationPlugins);
-}
 #endif
 
 PluginHost::PluginHost() {
@@ -818,8 +813,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     case NPNVsupportsCompositingCoreAnimationPluginsBool: {
       NPBool* supports_compositing = reinterpret_cast<NPBool*>(value);
       *supports_compositing =
-          webkit::npapi::SupportsCoreAnimationPlugins() &&
-          webkit::npapi::UsingCompositedCoreAnimationPlugins();
+          webkit::npapi::SupportsCoreAnimationPlugins();
       rv = NPERR_NO_ERROR;
       break;
     }

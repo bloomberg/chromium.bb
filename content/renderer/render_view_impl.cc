@@ -811,16 +811,6 @@ RenderViewImpl::~RenderViewImpl() {
   date_time_picker_client_.reset();
 #endif
 
-#if defined(OS_MACOSX)
-  // Destroy all fake plugin window handles on the browser side.
-  while (!fake_plugin_window_handles_.empty()) {
-    // Make sure no NULL plugin window handles were inserted into this list.
-    DCHECK(*fake_plugin_window_handles_.begin());
-    // DestroyFakePluginWindowHandle modifies fake_plugin_window_handles_.
-    DestroyFakePluginWindowHandle(*fake_plugin_window_handles_.begin());
-  }
-#endif
-
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap or RoutingIDViewMap.
   ViewMap* views = g_view_map.Pointer();
@@ -6147,65 +6137,6 @@ void RenderViewImpl::StartPluginIme() {
   // within that context.
   msg->set_unblock(true);
   Send(msg);
-}
-
-gfx::PluginWindowHandle RenderViewImpl::AllocateFakePluginWindowHandle(
-    bool opaque, bool root) {
-  gfx::PluginWindowHandle window = gfx::kNullPluginWindow;
-  Send(new ViewHostMsg_AllocateFakePluginWindowHandle(
-      routing_id(), opaque, root, &window));
-  if (window) {
-    fake_plugin_window_handles_.insert(window);
-  }
-  return window;
-}
-
-void RenderViewImpl::DestroyFakePluginWindowHandle(
-    gfx::PluginWindowHandle window) {
-  if (window && fake_plugin_window_handles_.find(window) !=
-      fake_plugin_window_handles_.end()) {
-    Send(new ViewHostMsg_DestroyFakePluginWindowHandle(routing_id(), window));
-    fake_plugin_window_handles_.erase(window);
-  }
-}
-
-void RenderViewImpl::AcceleratedSurfaceSetIOSurface(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    uint64 io_surface_identifier) {
-  Send(new ViewHostMsg_AcceleratedSurfaceSetIOSurface(
-      routing_id(), window, width, height, io_surface_identifier));
-}
-
-void RenderViewImpl::AcceleratedSurfaceSetTransportDIB(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    TransportDIB::Handle transport_dib) {
-  Send(new ViewHostMsg_AcceleratedSurfaceSetTransportDIB(
-      routing_id(), window, width, height, transport_dib));
-}
-
-TransportDIB::Handle RenderViewImpl::AcceleratedSurfaceAllocTransportDIB(
-    size_t size) {
-  TransportDIB::Handle dib_handle;
-  // Assume this is a synchronous RPC.
-  if (Send(new ViewHostMsg_AllocTransportDIB(size, true, &dib_handle)))
-    return dib_handle;
-  // Return an invalid handle if Send() fails.
-  return TransportDIB::DefaultHandleValue();
-}
-
-void RenderViewImpl::AcceleratedSurfaceFreeTransportDIB(
-    TransportDIB::Id dib_id) {
-  Send(new ViewHostMsg_FreeTransportDIB(dib_id));
-}
-
-void RenderViewImpl::AcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_handle) {
-  Send(new ViewHostMsg_AcceleratedSurfaceBuffersSwapped(
-      routing_id(), window, surface_handle));
 }
 #endif  // defined(OS_MACOSX)
 

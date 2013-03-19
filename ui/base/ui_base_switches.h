@@ -39,12 +39,9 @@ UI_EXPORT extern const char kTouchCalibration[];
 #endif
 
 #if defined(OS_MACOSX)
-// TODO(kbr): remove this and the associated old code path:
-// http://crbug.com/105344
 // This isn't really the right place for this switch, but is the most
 // convenient place where it can be shared between
 // src/webkit/plugins/npapi/ and src/content/plugin/ .
-UI_EXPORT extern const char kDisableCompositedCoreAnimationPlugins[];
 UI_EXPORT extern const char kDisableCoreAnimationPlugins[];
 #endif
 

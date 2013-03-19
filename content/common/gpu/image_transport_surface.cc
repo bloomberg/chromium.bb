@@ -72,9 +72,6 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
                        "width", params.size.width());
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
-#if defined(OS_MACOSX)
-  params.window = handle_;
-#endif
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
 
@@ -82,9 +79,6 @@ void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params) {
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
-#if defined(OS_MACOSX)
-  params.window = handle_;
-#endif
   manager_->Send(new GpuHostMsg_AcceleratedSurfacePostSubBuffer(params));
 }
 

@@ -50,9 +50,6 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, route_id)
   IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(gfx::Size, size)
-#if defined(OS_MACOSX)
-  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
-#endif
 IPC_STRUCT_END()
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT
@@ -67,9 +64,6 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
   IPC_STRUCT_MEMBER(int, height)
   IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(gfx::Size, surface_size)
-#if defined(OS_MACOSX)
-  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
-#endif
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)

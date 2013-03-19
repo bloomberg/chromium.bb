@@ -1545,12 +1545,6 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   gpu_params.surface_handle = surface_handle;
   gpu_params.route_id = route_id;
   gpu_params.size = size;
-#if defined(OS_MACOSX)
-  // Compositor window is always gfx::kNullPluginWindow.
-  // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
-  // plugin windows.
-  gpu_params.window = gfx::kNullPluginWindow;
-#endif
   view_->AcceleratedSurfaceBuffersSwapped(gpu_params,
                                           gpu_process_host_id);
 }

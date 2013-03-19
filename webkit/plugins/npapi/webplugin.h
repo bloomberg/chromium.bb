@@ -147,19 +147,12 @@ class WebPlugin {
   // Starts plugin IME.
   virtual void StartIme() {}
 
-  // Synthesize a fake window handle for the plug-in to identify the instance
-  // to the browser, allowing mapping to a surface for hardware accelleration
-  // of plug-in content. The browser generates the handle which is then set on
-  // the plug-in. |opaque| indicates whether the content should be treated as
-  // opaque or translucent.
-  // TODO(stuartmorgan): Move this into WebPluginProxy.
-  virtual void BindFakePluginWindowHandle(bool opaque) {}
-
   // Returns the accelerated surface abstraction for accelerated plugins.
   virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
       gfx::GpuPreference gpu_preference) = 0;
 
-  // Composited Core Animation plugin support.
+  // Core Animation plugin support. CA plugins always render through
+  // the compositor.
   virtual void AcceleratedPluginEnabledRendering() = 0;
   virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
                                                    int32 height,

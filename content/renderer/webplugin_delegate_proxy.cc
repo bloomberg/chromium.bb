@@ -462,21 +462,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnFocusChanged);
     IPC_MESSAGE_HANDLER(PluginHostMsg_StartIme,
                         OnStartIme);
-    IPC_MESSAGE_HANDLER(PluginHostMsg_BindFakePluginWindowHandle,
-                        OnBindFakePluginWindowHandle);
-    // Used only on 10.6 and later.
-    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceSetIOSurface,
-                        OnAcceleratedSurfaceSetIOSurface)
-    // Used on 10.5 and earlier.
-    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceSetTransportDIB,
-                        OnAcceleratedSurfaceSetTransportDIB)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_AllocTransportDIB,
-                        OnAcceleratedSurfaceAllocTransportDIB)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_FreeTransportDIB,
-                        OnAcceleratedSurfaceFreeTransportDIB)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
-    // Used only on 10.6 and later.
     IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedPluginEnabledRendering,
                         OnAcceleratedPluginEnabledRendering)
     IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedPluginAllocatedIOSurface,
@@ -902,14 +887,6 @@ void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
 void WebPluginDelegateProxy::WillDestroyWindow() {
   DCHECK(window_);
   plugin_->WillDestroyWindow(window_);
-#if defined(OS_MACOSX)
-  if (window_) {
-    // This is actually a "fake" window handle only for the GPU
-    // plugin. Deallocate it on the browser side.
-    if (render_view_)
-      render_view_->DestroyFakePluginWindowHandle(window_);
-  }
-#endif
   window_ = gfx::kNullPluginWindow;
 }
 
@@ -1155,48 +1132,6 @@ void WebPluginDelegateProxy::OnStartIme() {
   if (render_view_)
     render_view_->StartPluginIme();
 }
-
-void WebPluginDelegateProxy::OnBindFakePluginWindowHandle(bool opaque) {
-  BindFakePluginWindowHandle(opaque);
-}
-
-// Synthesize a fake window handle for the plug-in to identify the instance
-// to the browser, allowing mapping to a surface for hardware acceleration
-// of plug-in content. The browser generates the handle which is then set on
-// the plug-in. Returns true if it successfully sets the window handle on the
-// plug-in.
-bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
-  gfx::PluginWindowHandle fake_window = gfx::kNullPluginWindow;
-  if (render_view_)
-    fake_window = render_view_->AllocateFakePluginWindowHandle(opaque, false);
-  // If we aren't running on 10.6, this allocation will fail.
-  if (!fake_window)
-    return false;
-  OnSetWindow(fake_window);
-  if (!Send(new PluginMsg_SetFakeAcceleratedSurfaceWindowHandle(instance_id_,
-                                                                fake_window))) {
-    return false;
-  }
-
-  // Since this isn't a real window, it doesn't get initial size and location
-  // information the way a real windowed plugin would, so we need to feed it its
-  // starting geometry.
-  webkit::npapi::WebPluginGeometry geom;
-  geom.window = fake_window;
-  geom.window_rect = plugin_rect_;
-  geom.clip_rect = clip_rect_;
-  geom.rects_valid = true;
-  geom.visible = true;
-  render_view_->DidMovePlugin(geom);
-  // Invalidate the plugin region to ensure that the move event actually gets
-  // dispatched (for a plugin on an otherwise static page).
-  render_view_->didInvalidateRect(WebKit::WebRect(plugin_rect_.x(),
-                                                  plugin_rect_.y(),
-                                                  plugin_rect_.width(),
-                                                  plugin_rect_.height()));
-
-  return true;
-}
 #endif
 
 gfx::PluginWindowHandle WebPluginDelegateProxy::GetPluginWindowHandle() {
@@ -1221,47 +1156,6 @@ void WebPluginDelegateProxy::OnDeferResourceLoading(unsigned long resource_id,
 }
 
 #if defined(OS_MACOSX)
-void WebPluginDelegateProxy::OnAcceleratedSurfaceSetIOSurface(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    uint64 io_surface_identifier) {
-  if (render_view_)
-    render_view_->AcceleratedSurfaceSetIOSurface(window, width, height,
-                                                 io_surface_identifier);
-}
-
-void WebPluginDelegateProxy::OnAcceleratedSurfaceSetTransportDIB(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    TransportDIB::Handle transport_dib) {
-  if (render_view_)
-    render_view_->AcceleratedSurfaceSetTransportDIB(window, width, height,
-                                                    transport_dib);
-}
-
-void WebPluginDelegateProxy::OnAcceleratedSurfaceAllocTransportDIB(
-    size_t size,
-    TransportDIB::Handle* dib_handle) {
-  if (render_view_)
-    *dib_handle = render_view_->AcceleratedSurfaceAllocTransportDIB(size);
-  else
-    *dib_handle = TransportDIB::DefaultHandleValue();
-}
-
-void WebPluginDelegateProxy::OnAcceleratedSurfaceFreeTransportDIB(
-    TransportDIB::Id dib_id) {
-  if (render_view_)
-    render_view_->AcceleratedSurfaceFreeTransportDIB(dib_id);
-}
-
-void WebPluginDelegateProxy::OnAcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_handle) {
-  if (render_view_)
-    render_view_->AcceleratedSurfaceBuffersSwapped(window, surface_handle);
-}
-
 void WebPluginDelegateProxy::OnAcceleratedPluginEnabledRendering() {
   uses_compositor_ = true;
   OnSetWindow(gfx::kNullPluginWindow);

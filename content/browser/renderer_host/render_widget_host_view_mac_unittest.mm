@@ -169,41 +169,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::TearDown();
   }
  protected:
-  // Adds an accelerated plugin view to |rwhv_cocoa_|.  Returns a handle to the
-  // newly-added view.  Callers must ensure that a UI thread is present and
-  // running before calling this function.
-  gfx::PluginWindowHandle AddAcceleratedPluginView(int w, int h) {
-    // Create an accelerated view the size of the rhwvmac.
-    [rwhv_cocoa_.get() setFrame:NSMakeRect(0, 0, w, h)];
-    gfx::PluginWindowHandle accelerated_handle;
-    rwhv_mac_->OnAllocateFakePluginWindowHandle(/*opaque=*/false,
-                                                /*root=*/false,
-                                                &accelerated_handle);
-    rwhv_mac_->OnAcceleratedSurfaceSetIOSurface(accelerated_handle, w, h, 0);
-
-    // The accelerated view isn't shown until it has a valid rect and has been
-    // painted to.
-    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-    params.window = accelerated_handle;
-    rwhv_mac_->AcceleratedSurfaceBuffersSwapped(params, 0);
-    webkit::npapi::WebPluginGeometry geom;
-    gfx::Rect rect(0, 0, w, h);
-    geom.window = accelerated_handle;
-    geom.window_rect = rect;
-    geom.clip_rect = rect;
-    geom.visible = true;
-    geom.rects_valid = true;
-    rwhv_mac_->MovePluginWindows(
-        gfx::Vector2d(),
-        std::vector<webkit::npapi::WebPluginGeometry>(1, geom));
-
-    return accelerated_handle;
-  }
-  
-  void DestroyPluginView(gfx::PluginWindowHandle accelerated_handle) {
-    rwhv_mac_->OnDestroyFakePluginWindowHandle(accelerated_handle);
-  }
-  
  private:
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
@@ -219,46 +184,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 };
 
 TEST_F(RenderWidgetHostViewMacTest, Basic) {
-}
-
-// Regression test for http://crbug.com/60318
-TEST_F(RenderWidgetHostViewMacTest, FocusAcceleratedView) {
-  // The accelerated view methods want to be called on the UI thread.
-  scoped_ptr<BrowserThreadImpl> ui_thread_(
-      new BrowserThreadImpl(BrowserThread::UI,
-                            MessageLoop::current()));
-
-  int w = 400, h = 300;
-  gfx::PluginWindowHandle accelerated_handle = AddAcceleratedPluginView(w, h);
-  EXPECT_FALSE([rwhv_cocoa_.get() isHidden]);
-  NSView* accelerated_view = static_cast<NSView*>(
-      rwhv_mac_->ViewForPluginWindowHandle(accelerated_handle));
-  EXPECT_FALSE([accelerated_view isHidden]);
-
-  // Take away first responder from the rwhvmac, then simulate the effect of a
-  // click on the accelerated view. The rwhvmac should be first responder
-  // again.
-  scoped_nsobject<NSWindow> window([[CocoaTestHelperWindow alloc] init]);
-  scoped_nsobject<NSView> other_view(
-      [[NSTextField alloc] initWithFrame:NSMakeRect(0, h, w, 40)]);
-  [[window contentView] addSubview:rwhv_cocoa_.get()];
-  [[window contentView] addSubview:other_view.get()];
-
-  EXPECT_TRUE([rwhv_cocoa_.get() acceptsFirstResponder]);
-  [window makeFirstResponder:rwhv_cocoa_.get()];
-  EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
-  EXPECT_FALSE([accelerated_view acceptsFirstResponder]);
-
-  EXPECT_TRUE([other_view acceptsFirstResponder]);
-  [window makeFirstResponder:other_view];
-  EXPECT_NE(rwhv_cocoa_.get(), [window firstResponder]);
-
-  EXPECT_TRUE([accelerated_view acceptsFirstResponder]);
-  [window makeFirstResponder:accelerated_view];
-  EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
-
-  // Clean up.
-  DestroyPluginView(accelerated_handle);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, AcceptsFirstResponder) {
@@ -292,43 +217,6 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDown) {
       cocoa_test_event_utils::MouseClickInView(rwhv_cocoa_.get(), 1);
   [rwhv_cocoa_.get() mouseDown:clicks.first];
   EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
-}
-
-// Regression test for http://crbug.com/64256
-TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
-  // The accelerated view methods want to be called on the UI thread.
-  scoped_ptr<BrowserThreadImpl> ui_thread_(
-      new BrowserThreadImpl(BrowserThread::UI,
-                            MessageLoop::current()));
-
-  int w = 400, h = 300;
-  gfx::PluginWindowHandle accelerated_handle = AddAcceleratedPluginView(w, h);
-  EXPECT_FALSE([rwhv_cocoa_.get() isHidden]);
-  NSView* accelerated_view = static_cast<NSView*>(
-      rwhv_mac_->ViewForPluginWindowHandle(accelerated_handle));
-  EXPECT_FALSE([accelerated_view isHidden]);
-
-  // Add the RWHVCocoa to the window and remove first responder status.
-  scoped_nsobject<CocoaTestHelperWindow>
-      window([[CocoaTestHelperWindow alloc] init]);
-  [[window contentView] addSubview:rwhv_cocoa_.get()];
-  [window setPretendIsKeyWindow:YES];
-  [window makeFirstResponder:nil];
-  EXPECT_NE(rwhv_cocoa_.get(), [window firstResponder]);
-
-  // Tell the RWHVMac to not accept first responder status.  The accelerated
-  // view should also stop accepting first responder.
-  rwhv_mac_->SetTakesFocusOnlyOnMouseDown(true);
-  EXPECT_FALSE([accelerated_view acceptsFirstResponder]);
-
-  // A click on the accelerated view should focus the RWHVCocoa.
-  std::pair<NSEvent*, NSEvent*> clicks =
-      cocoa_test_event_utils::MouseClickInView(accelerated_view, 1);
-  [rwhv_cocoa_.get() mouseDown:clicks.first];
-  EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
-
-  // Clean up.
-  DestroyPluginView(accelerated_handle);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {

@@ -23,7 +23,6 @@
 #include "base/utf_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
-#import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
@@ -405,16 +404,6 @@ bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewMac, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged, OnPluginFocusChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme, OnStartPluginIme)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateFakePluginWindowHandle,
-                        OnAllocateFakePluginWindowHandle)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyFakePluginWindowHandle,
-                        OnDestroyFakePluginWindowHandle)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
-                        OnAcceleratedSurfaceSetIOSurface)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceSetTransportDIB,
-                        OnAcceleratedSurfaceSetTransportDIB)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -619,49 +608,10 @@ gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
 void RenderWidgetHostViewMac::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewMac::MovePluginWindows");
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Handle movement of accelerated plugins, which are the only "windowed"
-  // plugins that exist on the Mac.
-  for (std::vector<webkit::npapi::WebPluginGeometry>::const_iterator iter =
-           moves.begin();
-       iter != moves.end();
-       ++iter) {
-    webkit::npapi::WebPluginGeometry geom = *iter;
-
-    AcceleratedPluginView* view = ViewForPluginWindowHandle(geom.window);
-    DCHECK(view);
-    if (!view)
-      continue;
-
-    if (geom.rects_valid) {
-      gfx::Rect rect = geom.window_rect;
-      if (geom.visible) {
-        rect.set_x(rect.x() + geom.clip_rect.x());
-        rect.set_y(rect.y() + geom.clip_rect.y());
-        rect.set_width(geom.clip_rect.width());
-        rect.set_height(geom.clip_rect.height());
-      }
-      NSRect new_rect([cocoa_view_ flipRectToNSRect:rect]);
-      [view setFrame:new_rect];
-      NSMutableArray* cutout_rects =
-          [NSMutableArray arrayWithCapacity:geom.cutout_rects.size()];
-      for (unsigned int i = 0; i < geom.cutout_rects.size(); ++i) {
-        // Convert to NSRect, and flip vertically.
-        NSRect cutout_rect = NSRectFromCGRect(geom.cutout_rects[i].ToCGRect());
-        cutout_rect.origin.y = new_rect.size.height - NSMaxY(cutout_rect);
-        [cutout_rects addObject:[NSValue valueWithRect:cutout_rect]];
-      }
-      [view setCutoutRects:cutout_rects];
-      [view setNeedsDisplay:YES];
-    }
-
-    plugin_container_manager_.SetPluginContainerGeometry(geom);
-
-    BOOL visible =
-        plugin_container_manager_.SurfaceShouldBeVisible(geom.window);
-    [view setHidden:!visible];
-  }
+  // Must be overridden, but unused on this platform. Core Animation
+  // plugins are drawn by the GPU process (through the compositor),
+  // and Core Graphics plugins are drawn by the renderer process.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void RenderWidgetHostViewMac::Focus() {
@@ -812,13 +762,6 @@ void RenderWidgetHostViewMac::RenderViewGone(base::TerminationStatus status,
 
 void RenderWidgetHostViewMac::Destroy() {
   AckPendingSwapBuffers();
-
-  for (NSView* subview in [cocoa_view_ subviews]) {
-    if ([subview isKindOfClass:[AcceleratedPluginView class]]) {
-      [static_cast<AcceleratedPluginView*>(subview)
-          onRenderWidgetHostViewGone];
-    }
-  }
 
   [[NSNotificationCenter defaultCenter]
       removeObserver:cocoa_view_
@@ -1096,21 +1039,6 @@ void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
   }
 }
 
-// This is called by AcceleratedPluginView's -dealloc.
-void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
-    gfx::PluginWindowHandle window) {
-  plugin_container_manager_.DestroyFakePluginWindowHandle(window);
-}
-
-AcceleratedPluginView* RenderWidgetHostViewMac::ViewForPluginWindowHandle(
-    gfx::PluginWindowHandle window) {
-  PluginViewMap::iterator it = plugin_views_.find(window);
-  DCHECK(plugin_views_.end() != it);
-  if (plugin_views_.end() == it)
-    return nil;
-  return it->second;
-}
-
 bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
                                                     const gfx::Size& size) {
   if (is_hidden_)
@@ -1340,27 +1268,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   pending_swap_buffers_acks_.push_back(std::make_pair(params.route_id,
                                                       gpu_host_id));
 
-  // Compositor window is always gfx::kNullPluginWindow.
-  // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
-  // plugin windows.
-  if (params.window == gfx::kNullPluginWindow) {
-    if (CompositorSwapBuffers(params.surface_handle, params.size))
-      AckPendingSwapBuffers();
-  } else {
-    // Deprecated accelerated plugin code path.
-    AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
-    DCHECK(view);
-    if (view) {
-      plugin_container_manager_.SetSurfaceWasPaintedTo(params.window,
-                                                       params.surface_handle);
-
-      // The surface is hidden until its first paint, to not show garbage.
-      if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
-        [view setHidden:NO];
-      [view drawView];
-    }
+  if (CompositorSwapBuffers(params.surface_handle, params.size))
     AckPendingSwapBuffers();
-  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
@@ -1373,29 +1282,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   pending_swap_buffers_acks_.push_back(std::make_pair(params.route_id,
                                                       gpu_host_id));
 
-  // Compositor window is always gfx::kNullPluginWindow.
-  // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
-  // plugin windows.
-  if (params.window == gfx::kNullPluginWindow) {
-    if (CompositorSwapBuffers(params.surface_handle, params.surface_size))
-      AckPendingSwapBuffers();
-  } else {
-    // Deprecated accelerated plugin code path.
-    AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
-    DCHECK(view);
-    if (view) {
-      plugin_container_manager_.SetSurfaceWasPaintedTo(
-          params.window,
-          params.surface_handle,
-          gfx::Rect(params.x, params.y, params.width, params.height));
-
-      // The surface is hidden until its first paint, to not show garbage.
-      if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
-        [view setHidden:NO];
-      [view drawView];
-    }
+  if (CompositorSwapBuffers(params.surface_handle, params.surface_size))
     AckPendingSwapBuffers();
-  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
@@ -1440,34 +1328,9 @@ gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewMac::GetCompositingSurface() {
-  // Compositor window is always gfx::kNullPluginWindow.
-  // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
-  // plugin windows.
+  // TODO(kbr): may be able to eliminate PluginWindowHandle argument
+  // completely on Mac OS.
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_TRANSPORT);
-}
-
-void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
-      CGLContextObj context,
-      gfx::PluginWindowHandle plugin_handle,
-      NSSize size) {
-  TRACE_EVENT0("browser",
-      "RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance");
-  // Called on the display link thread.
-  CGLSetCurrentContext(context);
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  // Note that we place the origin at the upper left corner with +y
-  // going down
-  glOrtho(0, size.width, size.height, 0, -1, 1);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  plugin_container_manager_.Draw(context, plugin_handle);
-}
-
-void RenderWidgetHostViewMac::ForceTextureReload() {
-  plugin_container_manager_.ForceTextureReload();
 }
 
 void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
@@ -1663,84 +1526,6 @@ void RenderWidgetHostViewMac::OnPluginFocusChanged(bool focused,
 
 void RenderWidgetHostViewMac::OnStartPluginIme() {
   [cocoa_view_ setPluginImeActive:YES];
-}
-
-void RenderWidgetHostViewMac::OnAllocateFakePluginWindowHandle(
-    bool opaque,
-    bool root,
-    gfx::PluginWindowHandle* id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // |render_widget_host_| is set to NULL when |RWHVMac::Destroy()| has
-  // completed. If |AllocateFakePluginWindowHandle()| is called after that,
-  // we will crash when the AcceleratedPluginView we allocate below is
-  // destroyed.
-  DCHECK(render_widget_host_);
-
-  // Create an NSView to host the plugin's/compositor's pixels.
-  gfx::PluginWindowHandle handle =
-      plugin_container_manager_.AllocateFakePluginWindowHandle(opaque, root);
-
-  scoped_nsobject<AcceleratedPluginView> plugin_view(
-      [[AcceleratedPluginView alloc] initWithRenderWidgetHostViewMac:this
-                                                        pluginHandle:handle]);
-  [plugin_view setHidden:YES];
-
-  [cocoa_view_ addSubview:plugin_view];
-  plugin_views_[handle] = plugin_view;
-
-  *id = handle;
-}
-
-void RenderWidgetHostViewMac::OnDestroyFakePluginWindowHandle(
-    gfx::PluginWindowHandle id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PluginViewMap::iterator it = plugin_views_.find(id);
-  DCHECK(plugin_views_.end() != it);
-  if (plugin_views_.end() == it) {
-    return;
-  }
-  [it->second removeFromSuperview];
-  plugin_views_.erase(it);
-
-  // The view's dealloc will call DeallocFakePluginWindowHandle(), which will
-  // remove the handle from |plugin_container_manager_|. This code path is
-  // taken if a plugin is removed, but the RWHVMac itself stays alive.
-}
-
-void RenderWidgetHostViewMac::OnAcceleratedSurfaceSetIOSurface(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    uint64 mach_port) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  plugin_container_manager_.SetSizeAndIOSurface(window,
-                                                width,
-                                                height,
-                                                mach_port);
-}
-
-void RenderWidgetHostViewMac::OnAcceleratedSurfaceSetTransportDIB(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    TransportDIB::Handle transport_dib) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  plugin_container_manager_.SetSizeAndTransportDIB(window,
-                                                   width,
-                                                   height,
-                                                   transport_dib);
-}
-
-void RenderWidgetHostViewMac::OnAcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_handle) {
-  // This code path could be updated to implement flow control for
-  // updating of accelerated plugins as well. However, if we add support
-  // for composited plugins then this is not necessary.
-  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.window = window;
-  params.surface_handle = surface_handle;
-  AcceleratedSurfaceBuffersSwapped(params, 0);
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
@@ -3319,7 +3104,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
         lastWindow_ = newWindow;
         renderWidgetHostView_->WindowFrameChanged();
       }
-      renderWidgetHostView_->ForceTextureReload();
     }
   }
 

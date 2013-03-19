@@ -135,40 +135,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
       GetAcceleratedSurface(gfx::GpuPreference gpu_preference) OVERRIDE;
 
   //----------------------------------------------------------------------
-  // Legacy Core Animation plugin implementation rendering directly to screen.
-
-  virtual void BindFakePluginWindowHandle(bool opaque) OVERRIDE;
-
-  // Tell the browser (via the renderer) to invalidate because the
-  // accelerated buffers have changed.
-  virtual void AcceleratedFrameBuffersDidSwap(
-      gfx::PluginWindowHandle window, uint64 surface_id);
-
-  // Tell the renderer and browser to associate the given plugin handle with
-  // |accelerated_surface_identifier|. The geometry is used to resize any
-  // native "window" (which on the Mac is a just a view).
-  // This method is used when IOSurface support is available.
-  virtual void SetAcceleratedSurface(gfx::PluginWindowHandle window,
-                                     const gfx::Size& size,
-                                     uint64 accelerated_surface_identifier);
-
-  // Tell the renderer and browser to associate the given plugin handle with
-  // |dib_handle|. The geometry is used to resize any native "window" (which
-  // on the Mac is just a view).
-  // This method is used when IOSurface support is not available.
-  virtual void SetAcceleratedDIB(
-      gfx::PluginWindowHandle window,
-      const gfx::Size& size,
-      const TransportDIB::Handle& dib_handle);
-
-  // Create/destroy TranportDIBs via messages to the browser process.
-  // These are only used when IOSurface support is not available.
-  virtual void AllocSurfaceDIB(const size_t size,
-                               TransportDIB::Handle* dib_handle);
-  virtual void FreeSurfaceDIB(TransportDIB::Id dib_id);
-
-  //----------------------------------------------------------------------
-  // New accelerated plugin implementation which renders via the compositor.
+  // Accelerated plugin implementation which renders via the compositor.
 
   // Tells the renderer, and from there the GPU process, that the plugin
   // is using accelerated rather than software rendering.

@@ -173,22 +173,7 @@ class WebPluginDelegateProxy
 #if defined(OS_MACOSX)
   void OnFocusChanged(bool focused);
   void OnStartIme();
-  void OnBindFakePluginWindowHandle(bool opaque);
-  void OnAcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
-                                        int32 width,
-                                        int32 height,
-                                        uint64 io_surface_identifier);
-  void OnAcceleratedSurfaceSetTransportDIB(gfx::PluginWindowHandle window,
-                                           int32 width,
-                                           int32 height,
-                                           TransportDIB::Handle transport_dib);
-  void OnAcceleratedSurfaceAllocTransportDIB(size_t size,
-                                             TransportDIB::Handle* dib_handle);
-  void OnAcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id);
-  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
-                                          uint64 surface_id);
-
-  // New accelerated plugin implementation.
+  // Accelerated (Core Animation) plugin implementation.
   void OnAcceleratedPluginEnabledRendering();
   void OnAcceleratedPluginAllocatedIOSurface(int32 width,
                                              int32 height,
@@ -254,15 +239,6 @@ class WebPluginDelegateProxy
   // plugin window gets destroyed, or when the plugin has crashed (at which
   // point the window has already been destroyed).
   void WillDestroyWindow();
-
-#if defined(OS_MACOSX)
-  // Synthesize a fake window handle for the plug-in to identify the instance
-  // to the browser, allowing mapping to a surface for hardware acceleration
-  // of plug-in content. The browser generates the handle which is then set on
-  // the plug-in. Returns true if it successfully sets the window handle on the
-  // plug-in.
-  bool BindFakePluginWindowHandle(bool opaque);
-#endif  // OS_MACOSX
 
 #if defined(OS_WIN)
   // Returns true if we should update the plugin geometry synchronously.

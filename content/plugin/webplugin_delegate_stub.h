@@ -126,15 +126,6 @@ class WebPluginDelegateStub : public IPC::Listener,
   // The url of the main frame hosting the plugin.
   GURL page_url_;
 
-#if defined(ENABLE_GPU)
-#if defined(OS_MACOSX)
-  // If this is a GPU-accelerated plug-in, we need to be able to receive a fake
-  // window handle which is used for subsequent communication back to the
-  // browser.
-  void OnSetFakeAcceleratedSurfaceWindowHandle(gfx::PluginWindowHandle window);
-#endif
-#endif
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebPluginDelegateStub);
 };
 

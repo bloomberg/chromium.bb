@@ -627,48 +627,12 @@ void WebPluginProxy::StartIme() {
   Send(msg);
 }
 
-void WebPluginProxy::BindFakePluginWindowHandle(bool opaque) {
-  Send(new PluginHostMsg_BindFakePluginWindowHandle(route_id_, opaque));
-}
-
 WebPluginAcceleratedSurface* WebPluginProxy::GetAcceleratedSurface(
     gfx::GpuPreference gpu_preference) {
   if (!accelerated_surface_.get())
     accelerated_surface_.reset(
         WebPluginAcceleratedSurfaceProxy::Create(this, gpu_preference));
   return accelerated_surface_.get();
-}
-
-void WebPluginProxy::AcceleratedFrameBuffersDidSwap(
-    gfx::PluginWindowHandle window, uint64 surface_handle) {
-  Send(new PluginHostMsg_AcceleratedSurfaceBuffersSwapped(
-        route_id_, window, surface_handle));
-}
-
-void WebPluginProxy::SetAcceleratedSurface(
-    gfx::PluginWindowHandle window,
-    const gfx::Size& size,
-    uint64 accelerated_surface_identifier) {
-  Send(new PluginHostMsg_AcceleratedSurfaceSetIOSurface(
-      route_id_, window, size.width(), size.height(),
-      accelerated_surface_identifier));
-}
-
-void WebPluginProxy::SetAcceleratedDIB(
-    gfx::PluginWindowHandle window,
-    const gfx::Size& size,
-    const TransportDIB::Handle& dib_handle) {
-  Send(new PluginHostMsg_AcceleratedSurfaceSetTransportDIB(
-      route_id_, window, size.width(), size.height(), dib_handle));
-}
-
-void WebPluginProxy::AllocSurfaceDIB(const size_t size,
-                                     TransportDIB::Handle* dib_handle) {
-  Send(new PluginHostMsg_AllocTransportDIB(route_id_, size, dib_handle));
-}
-
-void WebPluginProxy::FreeSurfaceDIB(TransportDIB::Id dib_id) {
-  Send(new PluginHostMsg_FreeTransportDIB(route_id_, dib_id));
 }
 
 void WebPluginProxy::AcceleratedPluginEnabledRendering() {

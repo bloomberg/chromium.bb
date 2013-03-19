@@ -29,8 +29,6 @@ class WebPluginAcceleratedSurfaceProxy
   virtual ~WebPluginAcceleratedSurfaceProxy();
 
   // WebPluginAcceleratedSurface implementation.
-  virtual void SetWindowHandle(gfx::PluginWindowHandle window) OVERRIDE;
-  virtual bool IsComposited() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual CGLContextObj context() OVERRIDE;
   virtual void StartDrawing() OVERRIDE;
@@ -38,13 +36,10 @@ class WebPluginAcceleratedSurfaceProxy
 
  private:
   WebPluginAcceleratedSurfaceProxy(WebPluginProxy* plugin_proxy,
-                                   AcceleratedSurface* surface,
-                                   bool composited);
+                                   AcceleratedSurface* surface);
 
   WebPluginProxy* plugin_proxy_;  // Weak ref.
-  gfx::PluginWindowHandle window_handle_;
   AcceleratedSurface* surface_;
-  bool composited_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginAcceleratedSurfaceProxy);
 };

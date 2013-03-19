@@ -83,10 +83,8 @@ const char kTouchCalibration[] = "touch-calibration";
 #endif
 
 #if defined(OS_MACOSX)
-const char kDisableCompositedCoreAnimationPlugins[] =
-    "disable-composited-core-animation-plugins";
-// Disables using core animation in plugins. This is triggered when accelerated
-// compositing is disabled. See http://crbug.com/122430
+// Disables support for Core Animation plugins. This is triggered when
+// accelerated compositing is disabled. See http://crbug.com/122430 .
 const char kDisableCoreAnimationPlugins[] =
     "disable-core-animation-plugins";
 #endif

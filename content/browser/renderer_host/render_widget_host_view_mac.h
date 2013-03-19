@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
-#include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/edit_command.h"
 #import "content/public/browser/render_widget_host_view_mac_base.h"
@@ -32,7 +31,6 @@ class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 }
 
-@class AcceleratedPluginView;
 @class FullscreenWindowManager;
 @protocol RenderWidgetHostViewMacDelegate;
 @class ToolTip;
@@ -285,16 +283,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 
-  // Exposed for testing.
-  CONTENT_EXPORT AcceleratedPluginView* ViewForPluginWindowHandle(
-      gfx::PluginWindowHandle window);
-
-  // Helper to do the actual cleanup after a plugin handle has been destroyed.
-  // Required because DestroyFakePluginWindowHandle() isn't always called for
-  // all handles (it's e.g. not called on navigation, when the RWHVMac gets
-  // destroyed anyway).
-  void DeallocFakePluginWindowHandle(gfx::PluginWindowHandle window);
-
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
       int gpu_host_id) OVERRIDE;
@@ -308,14 +296,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
-
-  void DrawAcceleratedSurfaceInstance(
-      CGLContextObj context,
-      gfx::PluginWindowHandle plugin_handle,
-      NSSize size);
-  // Forces the textures associated with any accelerated plugin instances
-  // to be reloaded.
-  void ForceTextureReload();
 
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
@@ -409,13 +389,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
-  typedef std::map<gfx::PluginWindowHandle, AcceleratedPluginView*>
-      PluginViewMap;
-  PluginViewMap plugin_views_;  // Weak values.
-
-  // Helper class for managing instances of accelerated plug-ins.
-  AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
-
   scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
 
   // Whether to allow overlapping views.
@@ -458,12 +431,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();
-  CONTENT_EXPORT void OnAllocateFakePluginWindowHandle(
-      bool opaque,
-      bool root,
-      gfx::PluginWindowHandle* id);
-  CONTENT_EXPORT void OnDestroyFakePluginWindowHandle(
-      gfx::PluginWindowHandle id);
   CONTENT_EXPORT void OnAcceleratedSurfaceSetIOSurface(
       gfx::PluginWindowHandle window,
       int32 width,

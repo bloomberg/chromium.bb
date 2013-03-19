@@ -182,7 +182,6 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   static const char* const kSwitchNames[] = {
     switches::kDisableBreakpad,
 #if defined(OS_MACOSX)
-    switches::kDisableCompositedCoreAnimationPlugins,
     switches::kDisableCoreAnimationPlugins,
     switches::kEnableSandboxLogging,
 #endif

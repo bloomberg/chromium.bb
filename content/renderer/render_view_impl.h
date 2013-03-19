@@ -336,24 +336,6 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_MACOSX)
   // Starts plugin IME.
   void StartPluginIme();
-
-  // Helper routines for accelerated plugin support. Used by the
-  // WebPluginDelegateProxy, which has a pointer to the RenderView.
-  gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
-                                                         bool root);
-  void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
-  void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
-                                      int32 width,
-                                      int32 height,
-                                      uint64 io_surface_identifier);
-  TransportDIB::Handle AcceleratedSurfaceAllocTransportDIB(size_t size);
-  void AcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id);
-  void AcceleratedSurfaceSetTransportDIB(gfx::PluginWindowHandle window,
-                                         int32 width,
-                                         int32 height,
-                                         TransportDIB::Handle transport_dib);
-  void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
-                                        uint64 surface_id);
 #endif
 
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
@@ -1384,13 +1366,6 @@ class CONTENT_EXPORT RenderViewImpl
   // These store the "has scrollbars" state last sent to the browser.
   bool cached_has_main_frame_horizontal_scrollbar_;
   bool cached_has_main_frame_vertical_scrollbar_;
-
-#if defined(OS_MACOSX)
-  // Track the fake plugin window handles allocated on the browser side for
-  // the accelerated compositor and (currently) accelerated plugins so that
-  // we can discard them when the view goes away.
-  std::set<gfx::PluginWindowHandle> fake_plugin_window_handles_;
-#endif
 
   // Helper objects ------------------------------------------------------------
 
