@@ -138,7 +138,11 @@ void RegisterFontFamilyMap(PrefRegistrySyncable* registry,
   }
 }
 
+#if !defined(OS_ANDROID)
 // Registers |obs| to observe per-script font prefs under the path |map_name|.
+// On android, there's no exposed way to change these prefs, so we can save
+// ~715KB of heap and some startup cycles by avoiding observing these prefs
+// since they will never change.
 void RegisterFontFamilyMapObserver(
     PrefChangeRegistrar* registrar,
     const char* map_name,
@@ -150,6 +154,7 @@ void RegisterFontFamilyMapObserver(
     registrar->Add(pref_name.c_str(), obs);
   }
 }
+#endif  // !defined(OS_ANDROID)
 
 struct FontDefault {
   const char* pref_name;
@@ -387,6 +392,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
       pref_change_registrar_.Add(pref_name, webkit_callback);
     }
 
+#if !defined(OS_ANDROID)
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
                                   prefs::kWebKitStandardFontFamilyMap,
                                   webkit_callback);
@@ -408,6 +414,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
                                   prefs::kWebKitPictographFontFamilyMap,
                                   webkit_callback);
+#endif  // !defined(OS_ANDROID)
   }
 
   renderer_preferences_util::UpdateFromSystemSettings(
