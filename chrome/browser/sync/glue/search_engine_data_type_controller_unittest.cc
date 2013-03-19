@@ -128,7 +128,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
       WillOnce(MakeSharedChangeProcessor());
 
   EXPECT_CALL(model_load_callback_, Run(_, _));
-
   EXPECT_FALSE(syncable_service_.syncing());
   search_engine_dtc_->LoadModels(
       base::Bind(&ModelLoadCallbackMock::Run,
@@ -142,6 +141,9 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
       content::Source<TemplateURLService>(test_util_.model()),
       content::NotificationService::NoDetails());
   EXPECT_EQ(DataTypeController::MODEL_LOADED, search_engine_dtc_->state());
+
+  // Wait until WebDB is loaded before we shut it down.
+  test_util_.BlockTillServiceProcessesRequests();
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartFirstRun) {

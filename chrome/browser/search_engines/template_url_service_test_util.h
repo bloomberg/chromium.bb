@@ -18,7 +18,7 @@
 
 class GURL;
 class TemplateURLService;
-class TemplateURLServiceTestingProfile;
+class TestingProfile;
 class TestingTemplateURLService;
 class TestingProfile;
 class WebDataService;
@@ -112,7 +112,9 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   // Needed to make the DeleteOnUIThread trait of WebDataService work
   // properly.
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<TemplateURLServiceTestingProfile> profile_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread io_thread_;
+  scoped_ptr<TestingProfile> profile_;
   int changed_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);
