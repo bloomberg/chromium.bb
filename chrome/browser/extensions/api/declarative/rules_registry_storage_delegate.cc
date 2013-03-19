@@ -63,6 +63,9 @@ class RulesRegistryStorageDelegate::Inner
         RulesRegistryWithCache* rules_registry,
         const std::string& storage_key);
 
+  // Run this once, just after Inner is constructed.
+  void Init();
+
  private:
   friend class base::RefCountedThreadSafe<Inner>;
   friend class RulesRegistryStorageDelegate;
@@ -147,6 +150,7 @@ void RulesRegistryStorageDelegate::InitOnUIThread(
   if (store)
     store->RegisterKey(storage_key);
   inner_ = new Inner(profile, rules_registry, storage_key);
+  inner_->Init();
 }
 
 void RulesRegistryStorageDelegate::CleanupOnUIThread() {
@@ -183,16 +187,18 @@ RulesRegistryStorageDelegate::Inner::Inner(
       rules_registry_thread_(rules_registry->GetOwnerThread()),
       rules_registry_(rules_registry),
       ready_(false),
-      log_storage_init_delay_(true) {
+      log_storage_init_delay_(true) {}
+
+void RulesRegistryStorageDelegate::Inner::Init() {
   if (!profile_->IsOffTheRecord()) {
     registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                    content::Source<Profile>(profile));
+                    content::Source<Profile>(profile_));
     registrar_->Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                    content::Source<Profile>(profile));
+                    content::Source<Profile>(profile_));
   } else {
     log_storage_init_delay_ = false;
     registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                    content::Source<Profile>(profile->GetOriginalProfile()));
+                    content::Source<Profile>(profile_->GetOriginalProfile()));
     InitForOTRProfile();
   }
 }
@@ -212,7 +218,7 @@ void RulesRegistryStorageDelegate::Inner::InitForOTRProfile() {
         extension_service->IsIncognitoEnabled((*i)->id()))
       ReadFromStorage((*i)->id());
   }
-  ready_ = true;
+  CheckIfReady();
 }
 
 void RulesRegistryStorageDelegate::Inner::Observe(
