@@ -63,9 +63,7 @@ class AudioMirroringManager;
 class MediaInternals;
 class ResourceContext;
 
-class CONTENT_EXPORT AudioRendererHost
-    : public BrowserMessageFilter,
-      public media::AudioOutputController::EventHandler {
+class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
  public:
   // Called from UI thread from the owner of this object.
   AudioRendererHost(int render_process_id,
@@ -79,16 +77,6 @@ class CONTENT_EXPORT AudioRendererHost
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  // AudioOutputController::EventHandler implementations.
-  virtual void OnCreated(media::AudioOutputController* controller) OVERRIDE;
-  virtual void OnPlaying(media::AudioOutputController* controller) OVERRIDE;
-  virtual void OnPaused(media::AudioOutputController* controller) OVERRIDE;
-  virtual void OnError(media::AudioOutputController* controller,
-                       int error_code) OVERRIDE;
-  virtual void OnDeviceChange(media::AudioOutputController* controller,
-                              int new_buffer_size,
-                              int new_sample_rate) OVERRIDE;
-
  private:
   friend class AudioRendererHostTest;
   friend class BrowserThread;
@@ -97,7 +85,7 @@ class CONTENT_EXPORT AudioRendererHost
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, CreateMockStream);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, MockStreamDataConversation);
 
-  struct AudioEntry;
+  class AudioEntry;
   typedef std::map<int, AudioEntry*> AudioEntryMap;
 
   virtual ~AudioRendererHost();
@@ -132,22 +120,13 @@ class CONTENT_EXPORT AudioRendererHost
 
   // Complete the process of creating an audio stream. This will set up the
   // shared memory or shared socket in low latency mode.
-  void DoCompleteCreation(media::AudioOutputController* controller);
+  void DoCompleteCreation(AudioEntry* entry);
 
-  // Send a state change message to the renderer.
-  void DoSendPlayingMessage(media::AudioOutputController* controller);
-  void DoSendPausedMessage(media::AudioOutputController* controller);
-  void DoSendDeviceChangeMessage(media::AudioOutputController* controller,
-                                 int new_buffer_size, int new_sample_rate);
-
-  // Handle error coming from audio stream.
-  void DoHandleError(media::AudioOutputController* controller, int error_code);
+  // Propagate audible signal to MediaObserver.
+  void DoNotifyAudibleState(AudioEntry* entry, bool is_audible);
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id);
-
-  // Delete all audio entry and all audio streams
-  void DeleteEntries();
 
   // Closes the stream. The stream is then deleted in DeleteEntry() after it
   // is closed.
@@ -163,13 +142,6 @@ class CONTENT_EXPORT AudioRendererHost
   // A helper method to look up a AudioEntry identified by |stream_id|.
   // Returns NULL if not found.
   AudioEntry* LookupById(int stream_id);
-
-  // Search for a AudioEntry having the reference to |controller|.
-  // This method is used to look up an AudioEntry after a controller
-  // event is received.
-  AudioEntry* LookupByController(media::AudioOutputController* controller);
-
-  media::AudioOutputController* LookupControllerByIdForTesting(int stream_id);
 
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;

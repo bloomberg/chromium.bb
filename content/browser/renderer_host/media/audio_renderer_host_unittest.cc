@@ -275,18 +275,16 @@ class AudioRendererHostTest : public testing::Test {
   void SimulateError() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "error"));
-    // Find the first AudioOutputController in the AudioRendererHost.
-    CHECK(host_->audio_entries_.size())
+    EXPECT_EQ(1u, host_->audio_entries_.size())
         << "Calls Create() before calling this method";
-    media::AudioOutputController* controller =
-        host_->LookupControllerByIdForTesting(kStreamId);
-    CHECK(controller) << "AudioOutputController not found";
 
     // Expect an error signal sent through IPC.
     EXPECT_CALL(*host_, OnStreamError(kStreamId));
 
     // Simulate an error sent from the audio device.
-    host_->OnError(controller, 0);
+    AudioRendererHost::AudioEntry* const entry = host_->LookupById(kStreamId);
+    ASSERT_TRUE(entry);
+    host_->DeleteEntryOnError(entry);
     SyncWithAudioThread();
 
     // Expect the audio stream record is removed.
