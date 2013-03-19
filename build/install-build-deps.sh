@@ -355,7 +355,7 @@ EOF
       mkdir -p "'"${tmp}"'/staging/dpkg/DEBIAN"
       cd "'"${tmp}"'/staging"
       ar x "'${orig}'"
-      tar zCfx dpkg data.tar.gz
+      tar Cfx dpkg data.tar*
       tar zCfx dpkg/DEBIAN control.tar.gz
 
       # Create a posix extended regular expression fragment that will
