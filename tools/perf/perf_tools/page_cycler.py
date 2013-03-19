@@ -20,6 +20,8 @@ class PageCycler(page_benchmark.PageBenchmark):
                        for h in MEMORY_HISTOGRAMS]
     for h in self.histograms:
       h.Start(page, tab)
+    # pylint: disable=W0201
+    self.start_commit_charge = tab.browser.memory_stats['SystemCommitCharge']
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--dom-automation')
@@ -110,7 +112,8 @@ class PageCycler(page_benchmark.PageBenchmark):
                   memory['Renderer']['ProportionalSetSize'],
                   chart_name='vm_pss_final_t', data_type='unimportant')
 
-    results.Add('cc', 'kb', memory['SystemCommitCharge'],
+    results.Add('cc', 'kb',
+                memory['SystemCommitCharge'] - self.start_commit_charge,
                 chart_name='commit_charge', data_type='unimportant')
     results.Add('proc_', 'count', memory['ProcessCount'],
                 chart_name='processes', data_type='unimportant')
