@@ -2481,6 +2481,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         assertEquals((float)pageScale, getScaleOnUiThread(awContents));
     }
 
+    /*
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    Crashing in DCHECK after webkit roll. See crbug.com/222069.
+    */
+    @DisabledTest
     public void testSetInitialScale() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
