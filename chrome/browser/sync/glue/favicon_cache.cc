@@ -7,7 +7,11 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "sync/api/time.h"
 #include "sync/protocol/favicon_image_specifics.pb.h"
 #include "sync/protocol/favicon_tracking_specifics.pb.h"
@@ -190,7 +194,11 @@ FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
     : profile_(profile),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       legacy_delegate_(NULL),
-      max_sync_favicon_limit_(max_sync_favicon_limit) {}
+      max_sync_favicon_limit_(max_sync_favicon_limit) {
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                              content::Source<Profile>(profile_));
+}
 
 FaviconCache::~FaviconCache() {}
 
@@ -248,8 +256,7 @@ syncer::SyncMergeResult FaviconCache::MergeDataAndStartSyncing(
       FaviconMap::iterator favicon_iter = synced_favicons_.find(*iter);
       DVLOG(1) << "Dropping local favicon "
                << favicon_iter->second->favicon_url.spec();
-      recent_favicons_.erase(favicon_iter->second);
-      synced_favicons_.erase(favicon_iter);
+      DropSyncedFavicon(favicon_iter);
       merge_result.set_num_items_deleted(merge_result.num_items_deleted() + 1);
     }
   }
@@ -316,8 +323,7 @@ syncer::SyncError FaviconCache::ProcessSyncChanges(
         continue;
       } else {
         DVLOG(1) << "Deleting favicon at " << favicon_url.spec();
-        recent_favicons_.erase(favicon_iter->second);
-        synced_favicons_.erase(favicon_iter);
+        DropSyncedFavicon(favicon_iter);
         // TODO(zea): it's possible that we'll receive a deletion for an image,
         // but not a tracking data, or vice versa, resulting in an orphan
         // favicon node in one of the types. We should track how often this
@@ -487,6 +493,41 @@ void FaviconCache::SetLegacyDelegate(FaviconCacheObserver* observer) {
 
 void FaviconCache::RemoveLegacyDelegate() {
   legacy_delegate_ = NULL;
+}
+
+void FaviconCache::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URLS_DELETED);
+
+  content::Details<history::URLsDeletedDetails> deleted_details(details);
+
+  // We only care about actual user (or sync) deletions.
+  if (deleted_details->archived)
+    return;
+
+  if (!deleted_details->all_history) {
+    DeleteSyncedFavicons(deleted_details->favicon_urls);
+    return;
+  }
+
+  // All history was cleared: just delete all favicons.
+  DVLOG(1) << "History clear detected, deleting all synced favicons.";
+  syncer::SyncChangeList image_deletions, tracking_deletions;
+  for (FaviconMap::iterator iter = synced_favicons_.begin();
+       iter != synced_favicons_.end();) {
+    iter = DeleteSyncedFavicon(iter,
+                               &image_deletions,
+                               &tracking_deletions);
+  }
+
+  if (favicon_images_sync_processor_.get() &&
+      favicon_tracking_sync_processor_.get()) {
+    favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                       image_deletions);
+    favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                         tracking_deletions);
+  }
 }
 
 bool FaviconCache::FaviconRecencyFunctor::operator()(
@@ -665,20 +706,9 @@ void FaviconCache::ExpireFaviconsIfNecessary(
   while (recent_favicons_.size() > max_sync_favicon_limit_) {
     linked_ptr<SyncedFaviconInfo> candidate = *recent_favicons_.begin();
     DVLOG(1) << "Expiring favicon " << candidate->favicon_url.spec();
-    recent_favicons_.erase(recent_favicons_.begin());
-    synced_favicons_.erase(candidate->favicon_url);
-    image_changes->push_back(
-        syncer::SyncChange(FROM_HERE,
-                           syncer::SyncChange::ACTION_DELETE,
-                           syncer::SyncData::CreateLocalDelete(
-                               candidate->favicon_url.spec(),
-                               syncer::FAVICON_IMAGES)));
-    tracking_changes->push_back(
-        syncer::SyncChange(FROM_HERE,
-                           syncer::SyncChange::ACTION_DELETE,
-                           syncer::SyncData::CreateLocalDelete(
-                               candidate->favicon_url.spec(),
-                               syncer::FAVICON_TRACKING)));
+    DeleteSyncedFavicon(synced_favicons_.find(candidate->favicon_url),
+                        image_changes,
+                        tracking_changes);
   }
   DCHECK_EQ(recent_favicons_.size(), synced_favicons_.size());
 }
@@ -828,6 +858,55 @@ syncer::SyncData FaviconCache::CreateSyncDataFromLocalFavicon(
                                            favicon_url.spec(),
                                            specifics);
   return data;
+}
+
+void FaviconCache::DeleteSyncedFavicons(const std::set<GURL>& favicon_urls) {
+  syncer::SyncChangeList image_deletions, tracking_deletions;
+  for (std::set<GURL>::const_iterator iter = favicon_urls.begin();
+       iter != favicon_urls.end(); ++iter) {
+    FaviconMap::iterator favicon_iter = synced_favicons_.find(*iter);
+    if (favicon_iter == synced_favicons_.end())
+      continue;
+    DeleteSyncedFavicon(favicon_iter,
+                        &image_deletions,
+                        &tracking_deletions);
+  }
+  DVLOG(1) << "Deleting " << image_deletions.size() << " synced favicons.";
+  if (favicon_images_sync_processor_.get() &&
+      favicon_tracking_sync_processor_.get()) {
+    favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                       image_deletions);
+    favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                         tracking_deletions);
+  }
+}
+
+FaviconCache::FaviconMap::iterator FaviconCache::DeleteSyncedFavicon(
+    FaviconMap::iterator favicon_iter,
+    syncer::SyncChangeList* image_changes,
+    syncer::SyncChangeList* tracking_changes) {
+  linked_ptr<SyncedFaviconInfo> favicon_info = favicon_iter->second;
+  image_changes->push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_DELETE,
+                         syncer::SyncData::CreateLocalDelete(
+                             favicon_info->favicon_url.spec(),
+                             syncer::FAVICON_IMAGES)));
+  tracking_changes->push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_DELETE,
+                         syncer::SyncData::CreateLocalDelete(
+                             favicon_info->favicon_url.spec(),
+                             syncer::FAVICON_TRACKING)));
+  FaviconMap::iterator next = favicon_iter;
+  next++;
+  DropSyncedFavicon(favicon_iter);
+  return next;
+}
+
+void FaviconCache::DropSyncedFavicon(FaviconMap::iterator favicon_iter) {
+  recent_favicons_.erase(favicon_iter->second);
+  synced_favicons_.erase(favicon_iter);
 }
 
 size_t FaviconCache::NumFaviconsForTest() const {

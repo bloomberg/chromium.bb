@@ -168,6 +168,10 @@ struct ExpireHistoryBackend::DeleteDependencies {
   // that we will need to check when the delete operations are complete.
   std::set<FaviconID> affected_favicons;
 
+  // The list of all favicon urls that were actually deleted from the thumbnail
+  // db.
+  std::set<GURL> expired_favicons;
+
   // Tracks the set of databases that have changed so we can optimize when
   // when we're done.
   TextDatabaseManager::ChangeSet text_db_changes;
@@ -234,7 +238,8 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     DeleteOneURL(url_row, is_bookmarked, &dependencies);
   }
 
-  DeleteFaviconsIfPossible(dependencies.affected_favicons);
+  DeleteFaviconsIfPossible(dependencies.affected_favicons,
+                           &dependencies.expired_favicons);
 
   if (text_db_)
     text_db_->OptimizeChangedDatabases(dependencies.text_db_changes);
@@ -306,7 +311,8 @@ void ExpireHistoryBackend::ExpireVisits(const VisitVector& visits) {
   // since this is called by the user who wants to delete their recent history,
   // and we don't want to leave any evidence.
   ExpireURLsForVisits(visits, &dependencies);
-  DeleteFaviconsIfPossible(dependencies.affected_favicons);
+  DeleteFaviconsIfPossible(dependencies.affected_favicons,
+                           &dependencies.expired_favicons);
 
   // An is_null begin time means that all history should be deleted.
   BroadcastDeleteNotifications(&dependencies, DELETION_USER_INITIATED);
@@ -365,14 +371,25 @@ void ExpireHistoryBackend::StartArchivingOldStuff(
 }
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(
-    const std::set<FaviconID>& favicon_set) {
+    const std::set<FaviconID>& favicon_set,
+    std::set<GURL>* expired_favicons) {
   if (!thumb_db_)
     return;
 
   for (std::set<FaviconID>::const_iterator i = favicon_set.begin();
        i != favicon_set.end(); ++i) {
-    if (!thumb_db_->HasMappingFor(*i))
-      thumb_db_->DeleteFavicon(*i);
+    if (!thumb_db_->HasMappingFor(*i)) {
+      GURL icon_url;
+      IconType icon_type;
+      FaviconSizes favicon_sizes;
+      if (thumb_db_->GetFaviconHeader(*i,
+                                      &icon_url,
+                                      &icon_type,
+                                      &favicon_sizes) &&
+          thumb_db_->DeleteFavicon(*i)) {
+        expired_favicons->insert(icon_url);
+      }
+    }
   }
 }
 
@@ -387,6 +404,7 @@ void ExpireHistoryBackend::BroadcastDeleteNotifications(
     deleted_details->all_history = false;
     deleted_details->archived = (type == DELETION_ARCHIVED);
     deleted_details->rows = dependencies->deleted_urls;
+    deleted_details->favicon_urls = dependencies->expired_favicons;
     delegate_->BroadcastNotifications(
         chrome::NOTIFICATION_HISTORY_URLS_DELETED, deleted_details);
   }
@@ -686,7 +704,8 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
        i != deleted_dependencies.affected_favicons.end(); ++i) {
     affected_favicons.insert(*i);
   }
-  DeleteFaviconsIfPossible(affected_favicons);
+  DeleteFaviconsIfPossible(affected_favicons,
+                           &deleted_dependencies.expired_favicons);
 
   // Send notifications for the stuff that was deleted. These won't normally be
   // in history views since they were subframes, but they will be in the visited

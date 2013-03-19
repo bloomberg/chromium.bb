@@ -197,7 +197,10 @@ class ExpireHistoryBackend {
 
   // Deletes the favicons listed in the set if unused. Fails silently (we don't
   // care about favicons so much, so don't want to stop everything if it fails).
-  void DeleteFaviconsIfPossible(const std::set<FaviconID>& favicon_id);
+  // Fills |expired_favicons| with the set of favicon urls that no longer
+  // have associated visits and were therefore expired.
+  void DeleteFaviconsIfPossible(const std::set<FaviconID>& favicon_id,
+                                std::set<GURL>* expired_favicons);
 
   // Enum representing what type of action resulted in the history DB deletion.
   enum DeletionType {

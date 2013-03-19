@@ -60,9 +60,13 @@ struct URLsDeletedDetails : public HistoryDetails {
   // an explicit user action through the History UI.
   bool archived;
 
-  // The URLRows of URLs deleted. This is valid only when all_history is false
+  // The URLRows of URLs deleted. This is valid only when |all_history| is false
   // indicating that a subset of history has been deleted.
   URLRows rows;
+
+  // The list of deleted favicon urls. This is valid only when |all_history| is
+  // false, indicating that a subset of history has been deleted.
+  std::set<GURL> favicon_urls;
 };
 
 // Details for NOTIFY_FAVICON_CHANGED.

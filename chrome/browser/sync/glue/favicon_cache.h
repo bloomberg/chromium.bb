@@ -18,6 +18,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/cancelable_task_tracker.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
@@ -52,7 +54,8 @@ class FaviconCacheObserver {
 
 // Encapsulates the logic for loading and storing synced favicons.
 // TODO(zea): make this a ProfileKeyedService.
-class FaviconCache : public syncer::SyncableService {
+class FaviconCache : public syncer::SyncableService,
+                     public content::NotificationObserver {
  public:
   FaviconCache(Profile* profile, int max_sync_favicon_limit);
   virtual ~FaviconCache();
@@ -105,6 +108,11 @@ class FaviconCache : public syncer::SyncableService {
   // Support for syncing favicons using the legacy format (within tab sync).
   void SetLegacyDelegate(FaviconCacheObserver* observer);
   void RemoveLegacyDelegate();
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class SyncFaviconCacheTest;
@@ -179,6 +187,21 @@ class FaviconCache : public syncer::SyncableService {
       syncer::ModelType type,
       const GURL& favicon_url) const;
 
+  // Deletes all synced favicons corresponding with |favicon_urls| and pushes
+  // the deletions to sync.
+  void DeleteSyncedFavicons(const std::set<GURL>& favicon_urls);
+
+  // Deletes the favicon pointed to by |favicon_iter| and appends the necessary
+  // sync deletions to |image_changes| and |tracking_changes|.
+  // Returns an iterator to the favicon after |favicon_iter|.
+  FaviconMap::iterator DeleteSyncedFavicon(
+      FaviconMap::iterator favicon_iter,
+      syncer::SyncChangeList* image_changes,
+      syncer::SyncChangeList* tracking_changes);
+
+  // Locally drops the favicon pointed to by |favicon_iter|.
+  void DropSyncedFavicon(FaviconMap::iterator favicon_iter);
+
   // For testing only.
   size_t NumFaviconsForTest() const;
   size_t NumTasksForTest() const;
@@ -213,6 +236,9 @@ class FaviconCache : public syncer::SyncableService {
 
   scoped_ptr<syncer::SyncChangeProcessor> favicon_images_sync_processor_;
   scoped_ptr<syncer::SyncChangeProcessor> favicon_tracking_sync_processor_;
+
+  // For listening to history deletions.
+  content::NotificationRegistrar notification_registrar_;
 
   // Maximum number of favicons to sync. 0 means no limit.
   const size_t max_sync_favicon_limit_;

@@ -5,6 +5,9 @@
 #include "chrome/browser/sync/glue/favicon_cache.h"
 
 #include "base/stringprintf.h"
+#include "chrome/browser/history/history_notifications.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/favicon_image_specifics.pb.h"
 #include "sync/protocol/favicon_tracking_specifics.pb.h"
@@ -238,12 +241,17 @@ testing::AssertionResult VerifyChanges(
       return testing::AssertionFailure() << "Change datatype doesn't match.";
     if (change_list[i].change_type() != expected_change_types[i])
       return testing::AssertionFailure() << "Change type doesn't match.";
-    testing::AssertionResult compare_result =
-        CompareFaviconDataToSpecifics(
-            BuildFaviconData(expected_icons[i]),
-            change_list[i].sync_data().GetSpecifics());
-    if (compare_result.failure_message())
-      return compare_result;
+    if (change_list[i].change_type() == syncer::SyncChange::ACTION_DELETE) {
+      if (change_list[i].sync_data().GetTag() != data.icon_url.spec())
+        return testing::AssertionFailure() << "Deletion url does not match.";
+    } else {
+      testing::AssertionResult compare_result =
+          CompareFaviconDataToSpecifics(
+              data,
+              change_list[i].sync_data().GetSpecifics());
+      if (!compare_result)
+        return compare_result;
+    }
   }
   return testing::AssertionSuccess();
 }
@@ -1279,6 +1287,112 @@ TEST_F(SyncFaviconCacheTest, ExpireOnFaviconVisited) {
 
   EXPECT_EQ(0U, GetTaskCount());
   EXPECT_EQ((unsigned long)kMaxSyncFavicons, GetFaviconCount());
+}
+
+// A full history clear notification should result in all synced favicons being
+// deleted.
+TEST_F(SyncFaviconCacheTest, HistoryFullClear) {
+  syncer::SyncDataList initial_image_data, initial_tracking_data;
+  std::vector<int> expected_icons;
+  std::vector<syncer::SyncChange::SyncChangeType> expected_deletions;
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    expected_icons.push_back(i);
+    expected_deletions.push_back(syncer::SyncChange::ACTION_DELETE);
+    TestFaviconData test_data = BuildFaviconData(i);
+    sync_pb::EntitySpecifics image_specifics, tracking_specifics;
+    FillImageSpecifics(test_data,
+                       image_specifics.mutable_favicon_image());
+    initial_image_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           image_specifics));
+    FillTrackingSpecifics(BuildFaviconData(i),
+                          tracking_specifics.mutable_favicon_tracking());
+    initial_tracking_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           tracking_specifics));
+  }
+
+  SetUpInitialSync(initial_image_data, initial_tracking_data);
+  syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+  EXPECT_TRUE(changes.empty());
+
+  history::URLsDeletedDetails deletions;
+  deletions.all_history = true;
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+  content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+        content::Source<Profile>(NULL),
+        content::Details<history::URLsDeletedDetails>(&deletions));
+  EXPECT_EQ(0U, GetFaviconCount());
+  changes = processor()->GetAndResetChangeList();
+  ASSERT_EQ(changes.size(), (unsigned long)kFaviconBatchSize*2);
+  syncer::SyncChangeList changes_1, changes_2;
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    changes_1.push_back(changes[i]);
+    changes_2.push_back(changes[i + kFaviconBatchSize]);
+  }
+  VerifyChanges(syncer::FAVICON_IMAGES,
+                expected_deletions,
+                expected_icons,
+                changes_1);
+  VerifyChanges(syncer::FAVICON_TRACKING,
+                expected_deletions,
+                expected_icons,
+                changes_2);
+}
+
+// A partial history clear notification should result in the expired favicons
+// also being deleted from sync.
+TEST_F(SyncFaviconCacheTest, HistorySubsetClear) {
+  syncer::SyncDataList initial_image_data, initial_tracking_data;
+  std::vector<int> expected_icons;
+  std::vector<syncer::SyncChange::SyncChangeType> expected_deletions;
+  history::URLsDeletedDetails deletions;
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    if (i < kFaviconBatchSize/2) {
+      expected_icons.push_back(i);
+      expected_deletions.push_back(syncer::SyncChange::ACTION_DELETE);
+      deletions.favicon_urls.insert(test_data.icon_url);
+    }
+    sync_pb::EntitySpecifics image_specifics, tracking_specifics;
+    FillImageSpecifics(test_data,
+                       image_specifics.mutable_favicon_image());
+    initial_image_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           image_specifics));
+    FillTrackingSpecifics(BuildFaviconData(i),
+                          tracking_specifics.mutable_favicon_tracking());
+    initial_tracking_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           tracking_specifics));
+  }
+
+  SetUpInitialSync(initial_image_data, initial_tracking_data);
+  syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+  EXPECT_TRUE(changes.empty());
+
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+  content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+        content::Source<Profile>(NULL),
+        content::Details<history::URLsDeletedDetails>(&deletions));
+  EXPECT_EQ((unsigned long)kFaviconBatchSize/2, GetFaviconCount());
+  changes = processor()->GetAndResetChangeList();
+  ASSERT_EQ(changes.size(), (unsigned long)kFaviconBatchSize);
+  syncer::SyncChangeList changes_1, changes_2;
+  for (size_t i = 0; i < kFaviconBatchSize/2; ++i) {
+    changes_1.push_back(changes[i]);
+    changes_2.push_back(changes[i + kFaviconBatchSize/2]);
+  }
+  VerifyChanges(syncer::FAVICON_IMAGES,
+                expected_deletions,
+                expected_icons,
+                changes_1);
+  VerifyChanges(syncer::FAVICON_TRACKING,
+                expected_deletions,
+                expected_icons,
+                changes_2);
 }
 
 }  // namespace browser_sync
