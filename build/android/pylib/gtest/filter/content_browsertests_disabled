@@ -44,9 +44,6 @@ BrowserPluginHostTest.*
 BrowserPluginTest.*
 PluginTest.*
 
-# http://crbug.com/181069
-WebrtcBrowserTest.*
-
 # http://crbug.com/187500
 RenderViewImplTest.*
 RendererAccessibilityTest.EditableTextModeFocusNotifications
@@ -64,3 +61,10 @@ DownloadContentTest.ResumeInterruptedDownloadNoRange
 DownloadContentTest.ResumeInterruptedDownloadNoVerifiers
 DownloadContentTest.ResumeInterruptedDownloadBadPrecondition
 DownloadContentTest.ResumeWithDeletedFile
+
+# http://crbug.com/181069
+WebrtcBrowserTest.CanSetupVideoCall
+WebrtcBrowserTest.CanSetupAudioAndVideoCall
+WebrtcBrowserTest.CanSetupAudioAndVideoCallWithoutMsidAndBundle
+WebrtcBrowserTest.CallWithDataOnly
+WebrtcBrowserTest.CallWithDataAndMedia
