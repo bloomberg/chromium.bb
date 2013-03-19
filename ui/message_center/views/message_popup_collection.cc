@@ -31,7 +31,6 @@ class ToastContentsView : public views::WidgetDelegateView {
     DCHECK(collection_);
 
     set_notify_enter_exit_on_child(true);
-    SetLayoutManager(new views::FillLayout());
     // Sets the transparent background. Then, when the message view is slid out,
     // the whole toast seems to slide although the actual bound of the widget
     // remains. This is hacky but easier to keep the consistency.
@@ -52,11 +51,6 @@ class ToastContentsView : public views::WidgetDelegateView {
     else
       params.top_level = true;
     params.transparent = true;
-    // The origin of the initial bounds are set to (0, 0). It'll then moved by
-    // MessagePopupCollection.
-    params.bounds = gfx::Rect(
-        gfx::Size(kWebNotificationWidth,
-                  GetHeightForWidth(kWebNotificationWidth)));
     params.delegate = this;
     views::Widget* widget = new views::Widget();
     widget->set_focus_on_creation(false);
@@ -70,6 +64,7 @@ class ToastContentsView : public views::WidgetDelegateView {
     views::Widget* widget = GetWidget();
     if (widget) {
       gfx::Rect bounds = widget->GetWindowBoundsInScreen();
+      bounds.set_width(kWebNotificationWidth);
       bounds.set_height(view->GetHeightForWidth(kWebNotificationWidth));
       widget->SetBounds(bounds);
     }
@@ -119,6 +114,19 @@ class ToastContentsView : public views::WidgetDelegateView {
 
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
     collection_->OnMouseExited();
+  }
+
+  virtual void Layout() OVERRIDE {
+    if (child_count() > 0)
+      child_at(0)->SetBounds(x(), y(), width(), height());
+  }
+
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    if (child_count() == 0)
+      return gfx::Size();
+
+    return gfx::Size(kWebNotificationWidth,
+                     child_at(0)->GetHeightForWidth(kWebNotificationWidth));
   }
 
  private:
@@ -192,8 +200,8 @@ void MessagePopupCollection::UpdatePopups() {
       toast_iter->second->SetContents(view);
     } else {
       ToastContentsView* toast = new ToastContentsView(*iter, this);
-      toast->SetContents(view);
       widget = toast->CreateWidget(context_);
+      toast->SetContents(view);
       widget->AddObserver(this);
       toast->StartTimer();
       toasts_[(*iter)->id()] = toast;
