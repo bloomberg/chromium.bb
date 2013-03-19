@@ -46,7 +46,6 @@ class SyncMessage;
 namespace WebKit {
 class WebGestureEvent;
 class WebInputEvent;
-class WebLayerTreeViewClient;
 class WebMouseEvent;
 class WebTouchEvent;
 struct WebPoint;
@@ -130,10 +129,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void didActivateCompositor(int input_handler_identifier);
   virtual void didDeactivateCompositor();
   virtual void initializeLayerTreeView();
-  virtual void initializeLayerTreeView(
-      WebKit::WebLayerTreeViewClient* client,
-      const WebKit::WebLayer& root_layer,
-      const WebKit::WebLayerTreeView::Settings& settings);
   virtual WebKit::WebLayerTreeView* layerTreeView();
   virtual void didBecomeReadyForAdditionalInput();
   virtual void didCommitAndDrawCompositorFrame();

@@ -1434,15 +1434,6 @@ void RenderWidget::initializeLayerTreeView() {
     compositor_->setSurfaceReady();
 }
 
-void RenderWidget::initializeLayerTreeView(
-    WebKit::WebLayerTreeViewClient* client,
-    const WebKit::WebLayer& root_layer,
-    const WebKit::WebLayerTreeView::Settings& settings) {
-  initializeLayerTreeView();
-  if (compositor_)
-    compositor_->setRootLayer(root_layer);
-}
-
 WebKit::WebLayerTreeView* RenderWidget::layerTreeView() {
   return compositor_.get();
 }
