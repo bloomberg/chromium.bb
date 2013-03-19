@@ -597,10 +597,32 @@ void ChangeListLoader::OnNotifyResourceListFetched(
   }
 }
 
-void ChangeListLoader::Load(const DirectoryFetchInfo directory_fetch_info,
-                            const FileOperationCallback& callback) {
+void ChangeListLoader::LoadIfNeeded(
+    const DirectoryFetchInfo directory_fetch_info,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  // If feed has already been loaded, for normal feed fetch (= empty
+  // directory_fetch_info), we have nothing to do. For "fast fetch", we need to
+  // schedule a fetching if a feed refresh is currently running, because we
+  // don't want to wait a possibly large delta feed to arrive.
+  if (loaded() && (directory_fetch_info.empty() || !refreshing())) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DRIVE_FILE_OK));
+    return;
+  }
+
+  // At this point, it is either !loaded() or refreshing().
+  // If the change list loading is in progress, schedule the callback to
+  // run when it's ready (i.e. when the entire resource list is loaded, or
+  // the directory contents are available per "fast fetch").
+  if (refreshing()) {
+    ScheduleRun(directory_fetch_info, callback);
+    return;
+  }
+
   if (!directory_fetch_info.empty()) {
     // Add a dummy task to so ScheduleRun() can check that the directory is
     // being fetched. This will be cleared either in

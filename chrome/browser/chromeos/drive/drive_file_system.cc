@@ -405,25 +405,7 @@ void DriveFileSystem::LoadIfNeeded(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (change_list_loader_->loaded()) {
-    // The feed has already been loaded, so we have nothing to do, but post a
-    // task to the same thread, rather than calling it here, as
-    // LoadIfNeeded() is asynchronous.
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, DRIVE_FILE_OK));
-    return;
-  }
-
-  if (change_list_loader_->refreshing()) {
-    // If the change list loading is in progress, schedule the callback to
-    // run when it's ready (i.e. when the entire resource list is loaded, or
-    // the directory contents are available per "fast fetch").
-    change_list_loader_->ScheduleRun(directory_fetch_info, callback);
-    return;
-  }
-
-  change_list_loader_->Load(directory_fetch_info, callback);
+  change_list_loader_->LoadIfNeeded(directory_fetch_info, callback);
 }
 
 void DriveFileSystem::TransferFileFromRemoteToLocal(

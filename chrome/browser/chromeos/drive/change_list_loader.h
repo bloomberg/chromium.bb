@@ -67,8 +67,8 @@ class ChangeListLoader {
   // instantly before the entire change list loading is complete.
   //
   // |callback| must not be null.
-  void Load(const DirectoryFetchInfo directory_fetch_info,
-            const FileOperationCallback& callback);
+  void LoadIfNeeded(const DirectoryFetchInfo directory_fetch_info,
+                    const FileOperationCallback& callback);
 
   // Starts the change list loading from the cache, and runs |callback| to
   // tell the result to the caller.  |callback| must not be null.
@@ -120,14 +120,6 @@ class ChangeListLoader {
                       bool is_delta_feed,
                       int64 root_feed_changestamp,
                       const base::Closure& update_finished_callback);
-
-  // Schedules |callback| to run when it's ready (i.e. the change list
-  // loading is complete or the directory specified by |directory_fetch_info|
-  // is loaded). |directory_fetch_info| can be empty if the callback is not
-  // interested in a particular directory.
-  // |callback| must not be null.
-  void ScheduleRun(const DirectoryFetchInfo& directory_fetch_info,
-                   const FileOperationCallback& callback);
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing() const { return refreshing_; }
@@ -267,6 +259,14 @@ class ChangeListLoader {
   void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
                                const FileOperationCallback& callback,
                                DriveFileError error);
+
+  // Schedules |callback| to run when it's ready (i.e. the change list
+  // loading is complete or the directory specified by |directory_fetch_info|
+  // is loaded). |directory_fetch_info| can be empty if the callback is not
+  // interested in a particular directory.
+  // |callback| must not be null.
+  void ScheduleRun(const DirectoryFetchInfo& directory_fetch_info,
+                   const FileOperationCallback& callback);
 
   // Flushes the feed loading callbacks added via ScheduleRun(), by scheduling
   // to run all of them with the given error code.
