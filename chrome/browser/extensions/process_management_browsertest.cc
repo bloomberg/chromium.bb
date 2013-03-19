@@ -38,9 +38,8 @@ class ProcessManagementTest : public ExtensionBrowserTest {
 }  // namespace
 
 
-// TODO(nasko): Timeouts on Windows: crbug.com/173137
-// V8 error on Linux: https://code.google.com/p/v8/issues/detail?id=2533
-#if defined(OS_WIN) || defined(OS_LINUX)
+// TODO(nasko): crbug.com/173137
+#if defined(OS_WIN)
 #define MAYBE_ProcessOverflow DISABLED_ProcessOverflow
 #else
 #define MAYBE_ProcessOverflow ProcessOverflow
