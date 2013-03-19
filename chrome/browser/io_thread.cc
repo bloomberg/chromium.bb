@@ -48,7 +48,6 @@
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -186,8 +185,6 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
   context->set_http_transaction_factory(
       globals->proxy_script_fetcher_http_transaction_factory.get());
-  context->set_ftp_transaction_factory(
-      globals->proxy_script_fetcher_ftp_transaction_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
   context->set_server_bound_cert_service(
       globals->system_server_bound_cert_service.get());
@@ -214,8 +211,6 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_proxy_service(globals->system_proxy_service.get());
   context->set_http_transaction_factory(
       globals->system_http_transaction_factory.get());
-  context->set_ftp_transaction_factory(
-      globals->system_ftp_transaction_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
   context->set_server_bound_cert_service(
       globals->system_server_bound_cert_service.get());
@@ -550,8 +545,6 @@ void IOThread::Init() {
       new net::HttpNetworkSession(session_params));
   globals_->proxy_script_fetcher_http_transaction_factory.reset(
       new net::HttpNetworkLayer(network_session));
-  globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
-      new net::FtpNetworkLayer(globals_->host_resolver.get()));
 
   globals_->throttler_manager.reset(new net::URLRequestThrottlerManager());
   globals_->throttler_manager->set_net_log(net_log_);
@@ -896,8 +889,6 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   globals_->system_http_transaction_factory.reset(
       new net::HttpNetworkLayer(
           new net::HttpNetworkSession(system_params)));
-  globals_->system_ftp_transaction_factory.reset(
-      new net::FtpNetworkLayer(globals_->host_resolver.get()));
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));
 

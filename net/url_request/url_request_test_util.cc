@@ -72,14 +72,6 @@ void TestURLRequestContext::Init() {
     context_storage_.set_proxy_service(ProxyService::CreateDirect());
   if (!cert_verifier())
     context_storage_.set_cert_verifier(CertVerifier::CreateDefault());
-  if (!ftp_transaction_factory()) {
-#if !defined(DISABLE_FTP_SUPPORT)
-    context_storage_.set_ftp_transaction_factory(
-        new FtpNetworkLayer(host_resolver()));
-#else
-    context_storage_.set_ftp_transaction_factory(NULL);
-#endif  // !defined(DISABLE_FTP_SUPPORT)
-  }
   if (!ssl_config_service())
     context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   if (!http_auth_handler_factory()) {

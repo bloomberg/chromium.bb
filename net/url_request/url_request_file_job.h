@@ -33,8 +33,6 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
                     NetworkDelegate* network_delegate,
                     const base::FilePath& file_path);
 
-  static URLRequest::ProtocolFactory Factory;
-
   // URLRequestJob:
   virtual void Start() OVERRIDE;
   virtual void Kill() OVERRIDE;

@@ -62,8 +62,6 @@ class NET_EXPORT URLRequestContextStorage {
       TransportSecurityState* transport_security_state);
   void set_http_transaction_factory(
       HttpTransactionFactory* http_transaction_factory);
-  void set_ftp_transaction_factory(
-      FtpTransactionFactory* ftp_transaction_factory);
   void set_job_factory(URLRequestJobFactory* job_factory);
   void set_throttler_manager(URLRequestThrottlerManager* throttler_manager);
   void set_http_user_agent_settings(
@@ -93,7 +91,6 @@ class NET_EXPORT URLRequestContextStorage {
   scoped_ptr<TransportSecurityState> transport_security_state_;
 
   scoped_ptr<HttpTransactionFactory> http_transaction_factory_;
-  scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   scoped_ptr<URLRequestJobFactory> job_factory_;
   scoped_ptr<URLRequestThrottlerManager> throttler_manager_;
 

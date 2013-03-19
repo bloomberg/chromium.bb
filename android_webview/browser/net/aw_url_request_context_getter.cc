@@ -52,7 +52,9 @@ void AwURLRequestContextGetter::Init() {
   net::URLRequestContextBuilder builder;
   builder.set_user_agent(content::GetUserAgent(GURL()));
   builder.set_network_delegate(new AwNetworkDelegate());
+#if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
+#endif
   builder.set_proxy_config_service(proxy_config_service_.release());
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
       content::GetContentClient()->browser()->GetAcceptLangs(

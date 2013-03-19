@@ -16,4 +16,8 @@ net::URLRequestJob* AboutProtocolHandler::MaybeCreateJob(
   return new net::URLRequestAboutJob(request, network_delegate);
 }
 
+bool AboutProtocolHandler::IsSafeRedirectTarget(const GURL& location) const {
+  return false;
+}
+
 }  // namespace chrome_browser_net
