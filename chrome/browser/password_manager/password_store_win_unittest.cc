@@ -115,8 +115,7 @@ class PasswordStoreWinTest : public testing::Test {
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
     wds_ = new WebDataService();
-    base::FilePath path = temp_dir_.path().AppendASCII("web_data_test");
-    wds_->Init(path);
+    ASSERT_TRUE(wds_->Init(temp_dir_.path()));
   }
 
   virtual void TearDown() {
