@@ -58,8 +58,6 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   BrowserPluginGuest* CreateGuest(
       SiteInstance* embedder_site_instance,
       int instance_id,
-      int routing_id,
-      BrowserPluginGuest* guest_opener,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   // Returns a BrowserPluginGuest given an instance ID. Returns NULL if the

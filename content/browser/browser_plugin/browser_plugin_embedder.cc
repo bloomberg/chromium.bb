@@ -109,8 +109,7 @@ void BrowserPluginEmbedder::OnCreateGuest(
     int instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
   BrowserPluginGuest* guest = GetBrowserPluginGuestManager()->CreateGuest(
-      web_contents()->GetSiteInstance(),
-      instance_id, MSG_ROUTING_NONE, NULL, params);
+      web_contents()->GetSiteInstance(), instance_id, params);
   if (guest)
     guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
 }

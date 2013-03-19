@@ -373,11 +373,8 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 BrowserPluginGuest* WebContentsImpl::CreateGuest(
     BrowserContext* browser_context,
     SiteInstance* site_instance,
-    int routing_id,
-    WebContentsImpl* opener_web_contents,
     int guest_instance_id) {
-  WebContentsImpl* new_contents = new WebContentsImpl(browser_context,
-                                                      opener_web_contents);
+  WebContentsImpl* new_contents = new WebContentsImpl(browser_context, NULL);
 
   // This makes |new_contents| act as a guest.
   // For more info, see comment above class BrowserPluginGuest.
@@ -385,7 +382,6 @@ BrowserPluginGuest* WebContentsImpl::CreateGuest(
       BrowserPluginGuest::Create(guest_instance_id, new_contents));
 
   WebContents::CreateParams create_params(browser_context, site_instance);
-  create_params.routing_id = routing_id;
   new_contents->Init(create_params);
 
   // We are instantiating a WebContents for browser plugin. Set its subframe bit

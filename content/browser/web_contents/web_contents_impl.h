@@ -88,8 +88,6 @@ class CONTENT_EXPORT WebContentsImpl
   static BrowserPluginGuest* CreateGuest(
       BrowserContext* browser_context,
       content::SiteInstance* site_instance,
-      int routing_id,
-      WebContentsImpl* opener_web_contents,
       int guest_instance_id);
 
   // Returns the content specific prefs for the given RVH.
