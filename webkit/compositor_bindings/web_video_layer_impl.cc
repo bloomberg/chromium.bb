@@ -23,7 +23,7 @@ WebVideoLayerImpl::~WebVideoLayerImpl() {}
 WebKit::WebLayer* WebVideoLayerImpl::layer() { return layer_.get(); }
 
 bool WebVideoLayerImpl::active() const {
-  return layer_->layer()->layer_tree_host();
+  return !!layer_->layer()->layer_tree_host();
 }
 
 }  // namespace webkit

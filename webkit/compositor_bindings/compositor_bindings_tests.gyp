@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'chromium_code': 0,
+    'chromium_code': 1,
     'webkit_compositor_bindings_tests_sources': [
       'web_animation_unittest.cc',
       'web_float_animation_curve_unittest.cc',

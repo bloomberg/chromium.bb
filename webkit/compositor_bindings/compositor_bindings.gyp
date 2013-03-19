@@ -4,6 +4,7 @@
 
 {
   'variables': {
+    'chromium_code': 1,
     'webkit_compositor_bindings_sources': [
       'web_animation_curve_common.cc',
       'web_animation_curve_common.h',
