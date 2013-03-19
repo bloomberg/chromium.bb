@@ -958,7 +958,8 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
 }
 
 /**
- * Enable or disable bump-scrolling.
+ * Enable or disable bump-scrolling. When disabling bump scrolling, also reset
+ * the scroll offsets to (0, 0).
  * @private
  * @param {boolean} enable True to enable bump-scrolling, false to disable it.
  */
@@ -972,6 +973,8 @@ remoting.ClientSession.prototype.enableBumpScroll_ = function(enable) {
     this.plugin.element().removeEventListener('mousemove', this.onMouseMoveRef_,
                                               false);
     this.onMouseMoveRef_ = null;
+    this.plugin.element().style.marginLeft = 0;
+    this.plugin.element().style.marginTop = 0;
   }
 };
 
