@@ -273,38 +273,38 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
     //             bb-4
     //            b-1
     //            b-2
-    BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
-    const BookmarkNode* root = model.bookmark_bar_node();
-    folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
-    model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
-    model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
-    model.AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    const BookmarkNode* root = model->bookmark_bar_node();
+    folder_a_ = model->AddFolder(root, 0, ASCIIToUTF16("a"));
+    model->AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
+    model->AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
+    model->AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
 
-    folder_b_ = model.AddFolder(root, 1, ASCIIToUTF16("b"));
-    model.AddURL(folder_b_, 0, ASCIIToUTF16("b-0"), GURL("http://b-0.com"));
-    folder_bb_ = model.AddFolder(folder_b_, 1, ASCIIToUTF16("bb"));
-    model.AddURL(folder_bb_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
-    model.AddURL(folder_bb_, 1, ASCIIToUTF16("bb-1"), GURL("http://bb-1.com"));
-    model.AddURL(folder_bb_, 2, ASCIIToUTF16("bb-2"), GURL("http://bb-2.com"));
+    folder_b_ = model->AddFolder(root, 1, ASCIIToUTF16("b"));
+    model->AddURL(folder_b_, 0, ASCIIToUTF16("b-0"), GURL("http://b-0.com"));
+    folder_bb_ = model->AddFolder(folder_b_, 1, ASCIIToUTF16("bb"));
+    model->AddURL(folder_bb_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
+    model->AddURL(folder_bb_, 1, ASCIIToUTF16("bb-1"), GURL("http://bb-1.com"));
+    model->AddURL(folder_bb_, 2, ASCIIToUTF16("bb-2"), GURL("http://bb-2.com"));
 
     // To find it later, this bookmark name must always have a URL
     // of http://bb-3.com or https://bb-3.com
     bb3_url_1_ = GURL("http://bb-3.com");
     bb3_url_2_ = GURL("https://bb-3.com");
-    bookmark_bb_3_ = model.AddURL(folder_bb_, 3, ASCIIToUTF16("bb-3"),
-                                  bb3_url_1_);
+    bookmark_bb_3_ = model->AddURL(folder_bb_, 3, ASCIIToUTF16("bb-3"),
+                                   bb3_url_1_);
 
-    model.AddURL(folder_bb_, 4, ASCIIToUTF16("bb-4"), GURL("http://bb-4.com"));
-    model.AddURL(folder_b_, 2, ASCIIToUTF16("b-1"), GURL("http://b-2.com"));
-    model.AddURL(folder_b_, 3, ASCIIToUTF16("b-2"), GURL("http://b-3.com"));
+    model->AddURL(folder_bb_, 4, ASCIIToUTF16("bb-4"), GURL("http://bb-4.com"));
+    model->AddURL(folder_b_, 2, ASCIIToUTF16("b-1"), GURL("http://b-2.com"));
+    model->AddURL(folder_b_, 3, ASCIIToUTF16("b-2"), GURL("http://b-3.com"));
 
-    folder_c_ = model.AddFolder(root, 2, ASCIIToUTF16("c"));
-    model.AddURL(folder_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
-    model.AddURL(folder_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
-    model.AddURL(folder_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
-    model.AddURL(folder_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
+    folder_c_ = model->AddFolder(root, 2, ASCIIToUTF16("c"));
+    model->AddURL(folder_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
+    model->AddURL(folder_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
+    model->AddURL(folder_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
+    model->AddURL(folder_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
 
-    model.AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
+    model->AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
   }
 
   virtual BookmarkEditorController* CreateController() {
@@ -350,11 +350,11 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
 };
 
 TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
-  BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
-  model.root_node();
-  const BookmarkNode& root(*model.bookmark_bar_node());
-  EXPECT_EQ(4, root.child_count());
-  const BookmarkNode* child = root.GetChild(0);
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  model->root_node();
+  const BookmarkNode* root = model->bookmark_bar_node();
+  EXPECT_EQ(4, root->child_count());
+  const BookmarkNode* child = root->GetChild(0);
   EXPECT_EQ(3, child->child_count());
   const BookmarkNode* subchild = child->GetChild(0);
   EXPECT_EQ(0, subchild->child_count());
@@ -363,7 +363,7 @@ TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
   subchild = child->GetChild(2);
   EXPECT_EQ(0, subchild->child_count());
 
-  child = root.GetChild(1);
+  child = root->GetChild(1);
   EXPECT_EQ(4, child->child_count());
   subchild = child->GetChild(0);
   EXPECT_EQ(0, subchild->child_count());
@@ -384,7 +384,7 @@ TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
   subchild = child->GetChild(3);
   EXPECT_EQ(0, subchild->child_count());
 
-  child = root.GetChild(2);
+  child = root->GetChild(2);
   EXPECT_EQ(4, child->child_count());
   subchild = child->GetChild(0);
   EXPECT_EQ(0, subchild->child_count());
@@ -395,7 +395,7 @@ TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
   subchild = child->GetChild(3);
   EXPECT_EQ(0, subchild->child_count());
 
-  child = root.GetChild(3);
+  child = root->GetChild(3);
   EXPECT_EQ(0, child->child_count());
   [controller_ cancel:nil];
 }

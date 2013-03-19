@@ -40,12 +40,12 @@ class BookmarkAllTabsControllerTest : public CocoaProfileTest {
   const BookmarkNode* folder_a_;
 
   void CreateModel() {
-    BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
-    const BookmarkNode* root = model.bookmark_bar_node();
-    folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
-    model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
-    model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
-    model.AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    const BookmarkNode* root = model->bookmark_bar_node();
+    folder_a_ = model->AddFolder(root, 0, ASCIIToUTF16("a"));
+    model->AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
+    model->AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
+    model->AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
   }
 
   virtual BookmarkAllTabsControllerOverride* CreateController() {

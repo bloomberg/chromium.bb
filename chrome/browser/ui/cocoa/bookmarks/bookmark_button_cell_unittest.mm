@@ -105,15 +105,15 @@ TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
 }
 
 TEST_F(BookmarkButtonCellTest, BookmarkNode) {
-  BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
 
-  const BookmarkNode* node = model.bookmark_bar_node();
+  const BookmarkNode* node = model->bookmark_bar_node();
   [cell setBookmarkNode:node];
   EXPECT_EQ(node, [cell bookmarkNode]);
 
-  node = model.other_node();
+  node = model->other_node();
   [cell setBookmarkNode:node];
   EXPECT_EQ(node, [cell bookmarkNode]);
 }

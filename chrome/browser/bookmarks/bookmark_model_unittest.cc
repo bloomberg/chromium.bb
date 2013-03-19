@@ -530,55 +530,56 @@ TEST_F(BookmarkModelTest, NonMovingMoveCall) {
 TEST_F(BookmarkModelTest, Copy) {
   const BookmarkNode* root = model_.bookmark_bar_node();
   static const std::string model_string("a 1:[ b c ] d 2:[ e f g ] h ");
-  model_test_utils::AddNodesFromModelString(model_, root, model_string);
+  model_test_utils::AddNodesFromModelString(&model_, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ(model_string, actualModelString);
+  std::string actual_model_string = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actual_model_string);
 
   // Copy 'd' to be after '1:b': URL item from bar to folder.
   const BookmarkNode* nodeToCopy = root->GetChild(2);
   const BookmarkNode* destination = root->GetChild(1);
   model_.Copy(nodeToCopy, destination, 1);
-  actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ("a 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
+  actual_model_string = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ("a 1:[ b d c ] d 2:[ e f g ] h ", actual_model_string);
 
   // Copy '1:d' to be after 'a': URL item from folder to bar.
   const BookmarkNode* folder = root->GetChild(1);
   nodeToCopy = folder->GetChild(1);
   model_.Copy(nodeToCopy, root, 1);
-  actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
+  actual_model_string = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e f g ] h ", actual_model_string);
 
   // Copy '1' to be after '2:e': Folder from bar to folder.
   nodeToCopy = root->GetChild(2);
   destination = root->GetChild(4);
   model_.Copy(nodeToCopy, destination, 1);
-  actualModelString = model_test_utils::ModelStringFromNode(root);
-  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ", actualModelString);
+  actual_model_string = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ",
+            actual_model_string);
 
   // Copy '2:1' to be after '2:f': Folder within same folder.
   folder = root->GetChild(4);
   nodeToCopy = folder->GetChild(1);
   model_.Copy(nodeToCopy, folder, 3);
-  actualModelString = model_test_utils::ModelStringFromNode(root);
+  actual_model_string = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h ",
-            actualModelString);
+            actual_model_string);
 
   // Copy first 'd' to be after 'h': URL item within the bar.
   nodeToCopy = root->GetChild(1);
   model_.Copy(nodeToCopy, root, 6);
-  actualModelString = model_test_utils::ModelStringFromNode(root);
+  actual_model_string = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
-            actualModelString);
+            actual_model_string);
 
   // Copy '2' to be after 'a': Folder within the bar.
   nodeToCopy = root->GetChild(4);
   model_.Copy(nodeToCopy, root, 1);
-  actualModelString = model_test_utils::ModelStringFromNode(root);
+  actual_model_string = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] d 1:[ b d c ] "
             "d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
-            actualModelString);
+            actual_model_string);
 }
 
 // Tests that adding a URL to a folder updates the last modified time.

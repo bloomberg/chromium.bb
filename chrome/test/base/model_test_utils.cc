@@ -29,7 +29,7 @@ std::string ModelStringFromNode(const BookmarkNode* node) {
 
 // Helper function which does the actual work of creating the nodes for
 // a particular level in the hierarchy.
-std::string::size_type AddNodesFromString(BookmarkModel& model,
+std::string::size_type AddNodesFromString(BookmarkModel* model,
                                           const BookmarkNode* node,
                                           const std::string& model_string,
                                           std::string::size_type start_pos) {
@@ -49,14 +49,14 @@ std::string::size_type AddNodesFromString(BookmarkModel& model,
       if (tell == folder_tell) {
         node_name = node_name.substr(0, part_length - 2);
         const BookmarkNode* new_node =
-            model.AddFolder(node, index, UTF8ToUTF16(node_name));
+            model->AddFolder(node, index, UTF8ToUTF16(node_name));
         end_pos = AddNodesFromString(model, new_node, model_string,
                                      end_pos + 1);
       } else {
         std::string url_string("http://");
         url_string += std::string(node_name.begin(), node_name.end());
         url_string += ".com";
-        model.AddURL(node, index, UTF8ToUTF16(node_name), GURL(url_string));
+        model->AddURL(node, index, UTF8ToUTF16(node_name), GURL(url_string));
         ++end_pos;
       }
       ++index;
@@ -70,7 +70,7 @@ std::string::size_type AddNodesFromString(BookmarkModel& model,
   return end_pos;
 }
 
-void AddNodesFromModelString(BookmarkModel& model,
+void AddNodesFromModelString(BookmarkModel* model,
                              const BookmarkNode* node,
                              const std::string& model_string) {
   DCHECK(node);

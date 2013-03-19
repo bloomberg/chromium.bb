@@ -46,7 +46,6 @@ class BookmarkAppleScriptTest : public CocoaProfileTest {
   scoped_nsobject<FakeAppDelegate> appDelegate_;
  protected:
   scoped_nsobject<BookmarkFolderAppleScript> bookmarkBar_;
-  BookmarkModel& model();
 };
 
 #endif

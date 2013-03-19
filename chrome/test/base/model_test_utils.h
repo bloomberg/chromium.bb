@@ -34,7 +34,7 @@ std::string ModelStringFromNode(const BookmarkNode* node);
 // |model| must be the model of which |node| is a member.
 // NOTE: The string format is very rigid and easily broken if not followed
 //       exactly (since we're using a very simple parser).
-void AddNodesFromModelString(BookmarkModel& model,
+void AddNodesFromModelString(BookmarkModel* model,
                              const BookmarkNode* node,
                              const std::string& model_string);
 

@@ -38,31 +38,34 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
     //             b-30
     //             b-31
     //            b-4
-    BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
-    const BookmarkNode* root = model.bookmark_bar_node();
-    folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
-    model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
-    model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
-    model.AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    const BookmarkNode* root = model->bookmark_bar_node();
+    folder_a_ = model->AddFolder(root, 0, ASCIIToUTF16("a"));
+    model->AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
+    model->AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
+    model->AddURL(folder_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
 
-    folder_b_ = model.AddFolder(root, 1, ASCIIToUTF16("b"));
-    folder_b_0_ = model.AddFolder(folder_b_, 0, ASCIIToUTF16("b-0"));
-    model.AddURL(folder_b_0_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
-    model.AddURL(folder_b_, 1, ASCIIToUTF16("b-1"), GURL("http://b-1.com"));
-    model.AddURL(folder_b_, 2, ASCIIToUTF16("b-2"), GURL("http://b-2.com"));
-    folder_b_3_ = model.AddFolder(folder_b_, 3, ASCIIToUTF16("b-3"));
-    model.AddURL(folder_b_3_, 0, ASCIIToUTF16("b-30"), GURL("http://b-30.com"));
-    model.AddURL(folder_b_3_, 1, ASCIIToUTF16("b-31"), GURL("http://b-31.com"));
-    model.AddURL(folder_b_, 4, ASCIIToUTF16("b-4"), GURL("http://b-4.com"));
+    folder_b_ = model->AddFolder(root, 1, ASCIIToUTF16("b"));
+    folder_b_0_ = model->AddFolder(folder_b_, 0, ASCIIToUTF16("b-0"));
+    model->AddURL(folder_b_0_, 0, ASCIIToUTF16("bb-0"),
+                  GURL("http://bb-0.com"));
+    model->AddURL(folder_b_, 1, ASCIIToUTF16("b-1"), GURL("http://b-1.com"));
+    model->AddURL(folder_b_, 2, ASCIIToUTF16("b-2"), GURL("http://b-2.com"));
+    folder_b_3_ = model->AddFolder(folder_b_, 3, ASCIIToUTF16("b-3"));
+    model->AddURL(folder_b_3_, 0, ASCIIToUTF16("b-30"),
+                  GURL("http://b-30.com"));
+    model->AddURL(folder_b_3_, 1, ASCIIToUTF16("b-31"),
+                  GURL("http://b-31.com"));
+    model->AddURL(folder_b_, 4, ASCIIToUTF16("b-4"), GURL("http://b-4.com"));
 
-    folder_c_ = model.AddFolder(root, 2, ASCIIToUTF16("c"));
-    model.AddURL(folder_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
-    model.AddURL(folder_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
-    model.AddURL(folder_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
-    model.AddURL(folder_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
-    model.AddFolder(folder_c_, 4, ASCIIToUTF16("c-4"));
+    folder_c_ = model->AddFolder(root, 2, ASCIIToUTF16("c"));
+    model->AddURL(folder_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
+    model->AddURL(folder_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
+    model->AddURL(folder_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
+    model->AddURL(folder_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
+    model->AddFolder(folder_c_, 4, ASCIIToUTF16("c-4"));
 
-    model.AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
+    model->AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
   }
 
   virtual BookmarkEditorBaseController* CreateController() {
@@ -99,11 +102,11 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
-  BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
-  const BookmarkNode& root(*model.bookmark_bar_node());
-  EXPECT_EQ(4, root.child_count());
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  EXPECT_EQ(4, root->child_count());
   // a
-  const BookmarkNode* child = root.GetChild(0);
+  const BookmarkNode* child = root->GetChild(0);
   EXPECT_EQ(3, child->child_count());
   const BookmarkNode* subchild = child->GetChild(0);
   EXPECT_EQ(0, subchild->child_count());
@@ -112,7 +115,7 @@ TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   subchild = child->GetChild(2);
   EXPECT_EQ(0, subchild->child_count());
   // b
-  child = root.GetChild(1);
+  child = root->GetChild(1);
   EXPECT_EQ(5, child->child_count());
   subchild = child->GetChild(0);
   EXPECT_EQ(1, subchild->child_count());
@@ -131,7 +134,7 @@ TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   subchild = child->GetChild(4);
   EXPECT_EQ(0, subchild->child_count());
   // c
-  child = root.GetChild(2);
+  child = root->GetChild(2);
   EXPECT_EQ(5, child->child_count());
   subchild = child->GetChild(0);
   EXPECT_EQ(0, subchild->child_count());
@@ -144,7 +147,7 @@ TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   subchild = child->GetChild(4);
   EXPECT_EQ(0, subchild->child_count());
   // d
-  child = root.GetChild(3);
+  child = root->GetChild(3);
   EXPECT_EQ(0, child->child_count());
   [controller_ cancel:nil];
 }
@@ -193,36 +196,36 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateTwoFolders) {
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
-  BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [controller_ selectTestNodeInBrowser:folder_b_3_];
   EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
   // Delete the selected node, and verify it's no longer selected:
-  model.Remove(folder_b_, 3);
+  model->Remove(folder_b_, 3);
   EXPECT_NE(folder_b_3_, [controller_ selectedNode]);
 
   [controller_ cancel:nil];
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
-  BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
-  const BookmarkNode* root = model.bookmark_bar_node();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
   [controller_ selectTestNodeInBrowser:folder_b_3_];
   EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
   // Delete the selected node's parent, and verify it's no longer selected:
-  model.Remove(root, 1);
+  model->Remove(root, 1);
   EXPECT_NE(folder_b_3_, [controller_ selectedNode]);
 
   [controller_ cancel:nil];
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
-  BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
-  const BookmarkNode* root = model.bookmark_bar_node();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
 
   // Add a folder node to the model, and verify it can be selected in the tree:
-  const BookmarkNode* folder_added = model.AddFolder(
+  const BookmarkNode* folder_added = model->AddFolder(
       root, 0, ASCIIToUTF16("added"));
   [controller_ selectTestNodeInBrowser:folder_added];
   EXPECT_EQ(folder_added, [controller_ selectedNode]);
@@ -232,11 +235,11 @@ TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
 
 // Verifies expandeNodes and getExpandedNodes.
 TEST_F(BookmarkEditorBaseControllerTest, ExpandedState) {
-  BookmarkModel& model(*(BookmarkModelFactory::GetForProfile(profile())));
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   // Sets up the state we're going to expand.
   BookmarkExpandedStateTracker::Nodes nodes;
-  nodes.insert(model.bookmark_bar_node());
+  nodes.insert(model->bookmark_bar_node());
   nodes.insert(folder_b_);
   nodes.insert(folder_c_);
 
