@@ -218,4 +218,12 @@
     Unrecognized error
   </message>
 
+  <!-- Status Tray ScreenCapture strings -->
+  <message name="IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STATUS" desc="label used in screen capture bubble and ash tray bubble to show the screen sharing status">
+    Sharing screen with another device
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP" desc="label used for screen sharing stop button">
+    Stop
+  </message>
+  
 </grit-part>
