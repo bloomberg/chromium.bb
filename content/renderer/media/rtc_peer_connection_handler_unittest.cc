@@ -44,21 +44,17 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
  public:
   MockRTCStatsResponse()
       : report_count_(0),
-        element_count_(0),
         statistic_count_(0) {
   }
 
-  virtual size_t addReport() OVERRIDE {
+  virtual size_t addReport(WebKit::WebString type,
+                           WebKit::WebString id,
+                           double timestamp) OVERRIDE {
     ++report_count_;
     return report_count_;
   }
 
-  virtual void addElement(size_t report, bool isLocal, double timestamp)
-      OVERRIDE {
-    ++element_count_;
-  }
-
-  virtual void addStatistic(size_t report, bool isLocal,
+  virtual void addStatistic(size_t report,
                             WebKit::WebString name, WebKit::WebString value)
       OVERRIDE {
     ++statistic_count_;
@@ -67,7 +63,6 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
 
  private:
   int report_count_;
-  int element_count_;
   int statistic_count_;
 };
 

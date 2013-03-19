@@ -231,37 +231,34 @@ class StatsResponse : public webrtc::StatsObserver {
       const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
     for (std::vector<webrtc::StatsReport>::const_iterator it = reports.begin();
          it != reports.end(); ++it) {
-      int idx = response_->addReport();
+      // TODO(hta): Remove local/remote from libjingle API.
       if (it->local.values.size() > 0) {
-        AddElement(idx, true, it->id, it->type, it->local);
+        AddElement(it->id, it->type, it->local);
       }
       if (it->remote.values.size() > 0) {
-        AddElement(idx, false, it->id, it->type, it->remote);
+        AddElement(it->id, it->type, it->remote);
       }
     }
     request_->requestSucceeded(response_);
   }
 
  private:
-  void AddElement(int idx,
-                  bool is_local,
-                  const std::string& id,
+  void AddElement(const std::string& id,
                   const std::string& type,
                   const webrtc::StatsElement& element) {
-    response_->addElement(idx, is_local, element.timestamp);
-    // TODO(hta): Make a better disposition of id and type.
-    AddStatistic(idx, is_local, "id", id);
-    AddStatistic(idx, is_local, "type", type);
+    int idx = response_->addReport(WebKit::WebString::fromUTF8(id),
+                                   WebKit::WebString::fromUTF8(type),
+                                   element.timestamp);
     for (webrtc::StatsElement::Values::const_iterator value_it =
              element.values.begin();
          value_it != element.values.end(); ++value_it) {
-      AddStatistic(idx, is_local, value_it->name, value_it->value);
+      AddStatistic(idx, value_it->name, value_it->value);
     }
   }
 
-  void AddStatistic(int idx, bool is_local, const std::string& name,
+  void AddStatistic(int idx, const std::string& name,
                     const std::string& value) {
-    response_->addStatistic(idx, is_local,
+    response_->addStatistic(idx,
                             WebKit::WebString::fromUTF8(name),
                             WebKit::WebString::fromUTF8(value));
   }
@@ -308,21 +305,16 @@ WebKit::WebRTCStatsResponse LocalRTCStatsResponse::webKitStatsResponse() const {
   return impl_;
 }
 
-size_t LocalRTCStatsResponse::addReport() {
-  return impl_.addReport();
-}
-
-void LocalRTCStatsResponse::addElement(size_t report,
-                                       bool is_local,
-                                       double timestamp) {
-  impl_.addElement(report, is_local, timestamp);
+size_t LocalRTCStatsResponse::addReport(WebKit::WebString type,
+                                        WebKit::WebString id,
+                                        double timestamp) {
+  return impl_.addReport(type, id, timestamp);
 }
 
 void LocalRTCStatsResponse::addStatistic(size_t report,
-                                         bool is_local,
                                          WebKit::WebString name,
                                          WebKit::WebString value) {
-  impl_.addStatistic(report, is_local, name, value);
+  impl_.addStatistic(report, name, value);
 }
 
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(

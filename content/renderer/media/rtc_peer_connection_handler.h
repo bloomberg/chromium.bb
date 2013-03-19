@@ -29,17 +29,17 @@ class CONTENT_EXPORT LocalRTCStatsResponse
   explicit LocalRTCStatsResponse(const WebKit::WebRTCStatsResponse& impl)
       : impl_(impl) {
   }
-  // Constructor for testing.
-  LocalRTCStatsResponse() {}
 
   virtual WebKit::WebRTCStatsResponse webKitStatsResponse() const;
-  virtual size_t addReport();
-  virtual void addElement(size_t report, bool is_local, double timestamp);
-  virtual void addStatistic(size_t report, bool is_local,
+  virtual size_t addReport(WebKit::WebString type, WebKit::WebString id,
+                           double timestamp);
+  virtual void addStatistic(size_t report,
                             WebKit::WebString name, WebKit::WebString value);
 
  protected:
   virtual ~LocalRTCStatsResponse() {}
+  // Constructor for creating mocks.
+  LocalRTCStatsResponse() {}
 
  private:
   WebKit::WebRTCStatsResponse impl_;
