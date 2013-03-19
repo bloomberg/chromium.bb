@@ -32,7 +32,6 @@
 #       d: Data register: %dl/%dx/%edx/%rdx (depending on size).
 #       i: Second immediate value encoded in the instruction.
 #       o: I/O port in %dx (used in "in"/"out" instructions).
-#       p: Accumulator pair (%dx:%ax/%edx:%eax/%rdx:%rax depending on size).
 #       r: Register in opcode (low 3 bits plus rex.B).
 #       t: Top of the x87 stack (%st).
 #       x: A memory operand addressed by the %ds:(%[er]bx). See "xlat".
@@ -164,6 +163,13 @@
 #   registers in total).  Use "/m" or "/r" "byte" to distinguish instructions
 #   which have different names for memory and register operands (such as
 #   "movlps" or "movhlps").
+#   For VEX/XOP instructions it is expected that first three opcode bytes are
+#   specified in the following form:
+#     0xc4 (or 0x8f)
+#     RXB.<map_select>
+#     <W>.<vvvv>.<L>.<pp>
+#   (so they describe long form of VEX prefix; short form is deduced
+#   automatically when appropriate)
 ################################################################################
 # Third column: additional instruction notes.
 #   Different kind of notes for the instruction: non-typical prefixes (for
@@ -194,65 +200,8 @@
 #       nacl-amd64-modifiable: instruction can be modified in amd64 mode
 #       att-show-name-suffix-{b,l,ll,t,s,q,x,y,w}: instruction is shown with the
 #         given suffix by objdump in AT&T mode
-#       att-show-memory-suffix-{b,l,ll,t,s,q,x,y,w}: instruction is shown in the
-#         given suffix by objdump in AT&T mode, but only if it accesses memory
-#       spurious-rex.w: instruction ignores rex.w bit (most instructions don't
-#         ignore it, that's why it's the default)
 #
-#     Possible CPUID values:
-#       CPUFeature_3DNOW:     Fn8000_0001_EDX[3DNOW]
-#       CPUFeature_3DPRFTCH:  Fn8000_0001_ECX[3DNowPrefetch] ||
-#                             Fn8000_0001_EDX[LM] ||
-#                             Fn8000_0001_EDX[3DNow]
-#       CPUFeature_AES:       Fn0000_0001_ECX[AES]
-#       CPUFeature_AESAVX:    Fn0000_0001_ECX[AES] && Fn0000_0001_ECX[AVX]
-#       CPUFeature_ALTMOVCR8: Fn8000_0001_ECX[ALTMOVCR8] || Fn8000_0001_EDX[LM]
-#       CPUFeature_AVX:       Fn0000_0001_ECX[AVX]
-#       CPUFeature_BMI1:      Fn0000_0007_EBX_x0[BMI1]
-#       CPUFeature_CLFLUSH:   Fn0000_0001_EDX[CLFSH]
-#       CPUFeature_CLMUL:     Fn0000_0001_ECX[PCLMULQDQ]
-#       CPUFeature_CLMULAVX:  Fn0000_0001_ECX[PCLMULQDQ] &&
-#                             Fn0000_0001_ECX[AVX]
-#       CPUFeature_CMOV:      Fn0000_0001_EDX[CMOV] || Fn8000_0001_EDX[CMOV]
-#       CPUFeature_CMOVx87:  (Fn0000_0001_EDX[CMOV] || Fn8000_0001_EDX[CMOV]) &&
-#                             Fn0000_0001_EDX[x87]
-#       CPUFeature_CX16:      Fn0000_0001_ECX[CMPXCHG16B]
-#       CPUFeature_CX8:       Fn0000_0001_EDX[CMPXCHG8B] ||
-#                             Fn8000_0001_EDX[CMPXCHG8B]
-#       CPUFeature_E3DNOW:    Fn8000_0001_EDX[E3DNOW]
-#       CPUFeature_EMMX:      Fn8000_0001_EDX[EMMX]
-#       CPUFeature_EMMXSSE:   Fn8000_0001_EDX[EMMX] ||
-#                             Fn0000_0001_EDX[SSE]
-#       CPUFeature_F16C:      Fn0000_0001_ECX[F16C]
-#       CPUFeature_FMA:       Fn0000_0001_ECX[FMA]
-#       CPUFeature_FMA4:      Fn8000_0001_ECX[FMA4]
-#       CPUFeature_FXSR:      Fn0000_0001_ECX[XSAVE]
-#       CPUFeature_LAHF:      Fn8000_0001_ECX[LahfSahf]
-#       CPUFeature_LWP:       Fn8000_0001_ECX[LWP]
-#       CPUFeature_LZCNT:     Fn8000_0001_EXC[ABM]
-#       CPUFeature_MMX:       Fn0000_0001_EDX[MMX]
-#       CPUFeature_MON:       Fn0000_0001_ECX[Monitor]
-#       CPUFeature_MOVBE:     Fn0000_0001_ECX[MOVBE]
-#       CPUFeature_MSR:       Fn0000_0001_EDX[MSR]
-#       CPUFeature_POPCNT:    Fn0000_0001_ECX[POPCNT]
-#       CPUFeature_SEP:       Fn0000_0001_EDX[SYSENTER]
-#       CPUFeature_SSE:       Fn0000_0001_EDX[SSE]
-#       CPUFeature_SSE2:      Fn0000_0001_EDX[SSE2]
-#       CPUFeature_SSE3:      Fn0000_00001_ECX[SSE3]
-#       CPUFeature_SSE41:     Fn0000_0001_ECX[SSE41]
-#       CPUFeature_SSE42:     Fn0000_0001_ECX[SSE42]
-#       CPUFeature_SSE4A:     Fn8000_0001_ECX[SSE4A]
-#       CPUFeature_SSSE3:     Fn0000_00001_ECX[SSSE3]
-#       CPUFeature_SKINIT:   (Fn8000_0001_ECX[SVM] && EFER.SVME) ||
-#                             Fn8000_0001_ECX[SKINIT]
-#       CPUFeature_SVM:       Fn8000_0001_ECX[SVM] && EFER.SVME
-#       CPUFeature_SYSCALL:   Fn8000_0001_EDX[SYSCALL]
-#       CPUFeature_TBM:       Fn8000_0001_ECX[TBM]
-#       CPUFeature_TSC:       Fn0000_0001_EDX[RDTSC] || Fn8000_0001_EDX[RDTSC]
-#       CPUFeature_TSCP:      Fn8000_0001_EDX[RDTSCP]
-#       CPUFeature_TZCNT:     Fn0000_0007_EBX_x0[BMI1]
-#       CPUFeature_x87:       Fn0000_0001_EDX[x87]
-#       CPUFeature_XOP:       Fn8000_0001_ECX[XOP]
+#     CPU features are defined in validator_internal.h.
 ################################################################################
 
 
@@ -347,9 +296,6 @@ SUPPORTED_ATTRIBUTES = [
     'att-show-name-suffix-x',
     'att-show-name-suffix-y',
     'att-show-name-suffix-w',
-
-    # Spurious REX.W bits (instructions 'in', 'out', 'nop', etc).
-    'spurious-rex.w'
 ]
 
 
@@ -403,3 +349,7 @@ class OperandType(object):
   PORT_IN_DX = 'o'
 
   X87_ST = 't'
+
+
+ALL_OPERAND_TYPES = set(
+    v for k, v in OperandType.__dict__.items() if not k.startswith('__'))

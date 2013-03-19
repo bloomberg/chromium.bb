@@ -32,7 +32,7 @@ class Operand(object):
       def_format.OperandReadWriteMode.READ,
       def_format.OperandReadWriteMode.WRITE,
       def_format.OperandReadWriteMode.READ_WRITE)
-  arg_type_regex = r'[acdioprtxBCDEGHIJLMNOPQRSUVWXY]'
+  arg_type_regex = '|'.join(def_format.ALL_OPERAND_TYPES)
   size_regex = (
       r'|2|7|b|d|do|dq|fq|o|p|pb|pd|pdw|pdwx|pdx|ph|phx|pi|pj|pjx|pk|pkx|'
       r'pq|pqw|pqwx|pqx|ps|psx|pw|q|r|s|sb|sd|se|si|sq|sr|ss|st|sw|sx|'
