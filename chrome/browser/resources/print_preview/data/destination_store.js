@@ -115,13 +115,6 @@ cr.define('print_preview', function() {
      */
     this.isLocalDestinationSearchInProgress_ = false;
 
-    /**
-     * Number of outstanding cloud destination search requests.
-     * @type {number}
-     * @private
-     */
-    this.outstandingCloudSearchRequestCount_ = 0;
-
     this.addEventListeners_();
     this.reset_();
   };
@@ -209,7 +202,8 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether a search for cloud destinations is in progress.
      */
     get isCloudDestinationSearchInProgress() {
-      return this.outstandingCloudSearchRequestCount_ > 0;
+      return this.cloudPrintInterface_ &&
+             this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
     },
 
     /**
@@ -400,23 +394,16 @@ cr.define('print_preview', function() {
           this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
     },
 
-    /** Initiates loading of recent cloud destinations. */
-    startLoadRecentCloudDestinations: function() {
-      if (this.cloudPrintInterface_ != null) {
-        this.cloudPrintInterface_.search(true /*isRecent*/);
-        this.outstandingCloudSearchRequestCount_++;
-        cr.dispatchSimpleEvent(
-            this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
-      }
-    },
-
-    /** Initiates loading of all cloud destinations. */
-    startLoadAllCloudDestinations: function() {
+    /**
+     * Initiates loading of cloud destinations.
+     * @param {boolean} recentOnly Whether the load recet destinations only.
+     */
+    startLoadCloudDestinations: function(recentOnly) {
       if (this.cloudPrintInterface_ != null &&
-          !this.hasLoadedAllCloudDestinations_) {
-        this.cloudPrintInterface_.search(false /*isRecent*/);
-        this.outstandingCloudSearchRequestCount_++;
-        this.hasLoadedAllCloudDestinations_ = true;
+          !this.hasLoadedAllCloudDestinations_ &&
+          (!recentOnly || !this.isCloudDestinationSearchInProgress)) {
+        this.cloudPrintInterface_.search(recentOnly);
+        this.hasLoadedAllCloudDestinations_ = !recentOnly;
         cr.dispatchSimpleEvent(
             this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
       }
@@ -563,7 +550,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintSearchDone_: function(event) {
-      this.outstandingCloudSearchRequestCount_--;
       this.insertDestinations(event.printers);
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
@@ -575,7 +561,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintSearchFailed_: function() {
-      this.outstandingCloudSearchRequestCount_--;
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
     },
@@ -624,8 +609,8 @@ cr.define('print_preview', function() {
       this.reset_();
       this.isInAutoSelectMode_ = true;
       this.startLoadLocalDestinations();
-      this.startLoadRecentCloudDestinations();
-      this.startLoadAllCloudDestinations();
+      this.startLoadCloudDestinations(true);
+      this.startLoadCloudDestinations(false);
     },
 
     /**

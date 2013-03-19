@@ -521,9 +521,9 @@ cr.define('print_preview', function() {
 
       this.userInfo_.setCloudPrintInterface(this.cloudPrintInterface_);
       this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
-      this.destinationStore_.startLoadRecentCloudDestinations();
+      this.destinationStore_.startLoadCloudDestinations(true);
       if (this.destinationSearch_.getIsVisible()) {
-        this.destinationStore_.startLoadAllCloudDestinations();
+        this.destinationStore_.startLoadCloudDestinations(false);
       }
     },
 
@@ -746,7 +746,7 @@ cr.define('print_preview', function() {
      */
     onDestinationChangeButtonActivate_: function() {
       this.destinationSearch_.setIsVisible(true);
-      this.destinationStore_.startLoadAllCloudDestinations();
+      this.destinationStore_.startLoadCloudDestinations(false);
       this.metrics_.incrementDestinationSearchBucket(
           print_preview.Metrics.DestinationSearchBucket.SHOWN);
     },

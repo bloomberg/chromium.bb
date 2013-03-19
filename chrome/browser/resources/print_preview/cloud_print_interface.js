@@ -27,6 +27,13 @@ cr.define('cloudprint', function() {
      * @private
      */
     this.xsrfToken_ = '';
+
+    /**
+     * Number of outstanding cloud destination search requests.
+     * @type {number}
+     * @private
+     */
+    this.outstandingCloudSearchRequestCount_ = 0;
   };
 
   /**
@@ -99,6 +106,13 @@ cr.define('cloudprint', function() {
     },
 
     /**
+     * @return {boolean} Whether a search for cloud destinations is in progress.
+     */
+    get isCloudDestinationSearchInProgress() {
+      return this.outstandingCloudSearchRequestCount_ > 0;
+    },
+
+    /**
      * Sends a Google Cloud Print search API request.
      * @param {boolean} isRecent Whether to search for only recently used
      *     printers.
@@ -111,6 +125,7 @@ cr.define('cloudprint', function() {
       if (isRecent) {
         params.push(new HttpParam('q', '^recent'));
       }
+      ++this.outstandingCloudSearchRequestCount_;
       this.sendRequest_('GET', 'search', params,
                         this.onSearchDone_.bind(this, isRecent));
     },
@@ -333,6 +348,7 @@ cr.define('cloudprint', function() {
      * @private
      */
     onSearchDone_: function(isRecent, status, result) {
+      --this.outstandingCloudSearchRequestCount_;
       if (status == 200 && result['success']) {
         var printerListJson = result['printers'] || [];
         var printerList = [];
