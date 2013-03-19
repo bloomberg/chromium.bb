@@ -220,6 +220,11 @@ void AddDriveMountPoint(
     Profile* profile,
     const std::string& extension_id,
     content::RenderViewHost* render_view_host) {
+  if (!render_view_host ||
+      !render_view_host->GetSiteInstance() || !render_view_host->GetProcess()) {
+    return;
+  }
+
   content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetStoragePartition(profile, site_instance)->
@@ -228,9 +233,6 @@ void AddDriveMountPoint(
     return;
 
   const base::FilePath mount_point = drive::util::GetDriveMountPointPath();
-  if (!render_view_host || !render_view_host->GetProcess())
-    return;
-
   // Grant R/W permissions to drive 'folder'. File API layer still
   // expects this to be satisfied.
   GrantFilePermissionsToHost(render_view_host,
