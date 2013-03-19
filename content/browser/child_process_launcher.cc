@@ -29,7 +29,7 @@
 #include "content/browser/mach_broker_mac.h"
 #elif defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "content/browser/android/child_process_launcher.h"
+#include "content/browser/android/child_process_launcher_android.h"
 #elif defined(OS_POSIX)
 #include "base/memory/singleton.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"

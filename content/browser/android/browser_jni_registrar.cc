@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "content/browser/android/android_browser_process.h"
-#include "content/browser/android/child_process_launcher.h"
+#include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/content_view_core_impl.h"
