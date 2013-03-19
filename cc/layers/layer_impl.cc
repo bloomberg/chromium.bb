@@ -816,8 +816,8 @@ void LayerImpl::UpdateScrollbarPositions() {
   last_scroll_offset_ = current_offset;
 
   if (scrollbar_animation_controller_ &&
-      !scrollbar_animation_controller_->isScrollGestureInProgress()) {
-    scrollbar_animation_controller_->didProgrammaticallyUpdateScroll(
+      !scrollbar_animation_controller_->IsScrollGestureInProgress()) {
+    scrollbar_animation_controller_->DidProgrammaticallyUpdateScroll(
         base::TimeTicks::Now());
   }
 
@@ -909,7 +909,7 @@ inline scoped_ptr<ScrollbarAnimationController>
 CreateScrollbarAnimationControllerWithFade(LayerImpl* layer) {
   base::TimeDelta fadeout_delay = base::TimeDelta::FromMilliseconds(300);
   base::TimeDelta fadeout_length = base::TimeDelta::FromMilliseconds(300);
-  return ScrollbarAnimationControllerLinearFade::create(
+  return ScrollbarAnimationControllerLinearFade::Create(
       layer, fadeout_delay, fadeout_length)
       .PassAs<ScrollbarAnimationController>();
 }

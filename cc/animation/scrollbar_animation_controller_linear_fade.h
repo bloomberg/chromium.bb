@@ -12,39 +12,43 @@
 namespace cc {
 class LayerImpl;
 
-class CC_EXPORT ScrollbarAnimationControllerLinearFade : public ScrollbarAnimationController {
-public:
-    static scoped_ptr<ScrollbarAnimationControllerLinearFade> create(LayerImpl* scrollLayer, base::TimeDelta fadeoutDelay, base::TimeDelta fadeoutLength);
+class CC_EXPORT ScrollbarAnimationControllerLinearFade :
+    public ScrollbarAnimationController {
+ public:
+  static scoped_ptr<ScrollbarAnimationControllerLinearFade> Create(
+      LayerImpl* scroll_layer,
+      base::TimeDelta fadeout_delay,
+      base::TimeDelta fadeout_length);
 
-    virtual ~ScrollbarAnimationControllerLinearFade();
+  virtual ~ScrollbarAnimationControllerLinearFade();
 
-    // ScrollbarAnimationController overrides.
-    virtual bool isScrollGestureInProgress() const OVERRIDE;
-    virtual bool isAnimating() const OVERRIDE;
-    virtual base::TimeDelta delayBeforeStart(base::TimeTicks now) const OVERRIDE;
+  // ScrollbarAnimationController overrides.
+  virtual bool IsScrollGestureInProgress() const OVERRIDE;
+  virtual bool IsAnimating() const OVERRIDE;
+  virtual base::TimeDelta DelayBeforeStart(base::TimeTicks now) const OVERRIDE;
 
-    virtual bool animate(base::TimeTicks) OVERRIDE;
-    virtual void didScrollGestureBegin() OVERRIDE;
-    virtual void didScrollGestureEnd(base::TimeTicks now) OVERRIDE;
-    virtual void didProgrammaticallyUpdateScroll(base::TimeTicks now) OVERRIDE;
+  virtual bool Animate(base::TimeTicks now) OVERRIDE;
+  virtual void DidScrollGestureBegin() OVERRIDE;
+  virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
+  virtual void DidProgrammaticallyUpdateScroll(base::TimeTicks now) OVERRIDE;
 
-protected:
-    ScrollbarAnimationControllerLinearFade(LayerImpl* scrollLayer, base::TimeDelta fadeoutDelay, base::TimeDelta fadeoutLength);
+ protected:
+  ScrollbarAnimationControllerLinearFade(LayerImpl* scroll_layer,
+                                         base::TimeDelta fadeout_delay,
+                                         base::TimeDelta fadeout_length);
 
-private:
-    float opacityAtTime(base::TimeTicks);
+ private:
+  float OpacityAtTime(base::TimeTicks now);
 
-    LayerImpl* m_scrollLayer;
+  LayerImpl* scroll_layer_;
 
-    base::TimeTicks m_lastAwakenTime;
-    bool m_scrollGestureInProgress;
+  base::TimeTicks last_awaken_time_;
+  bool scroll_gesture_in_progress_;
 
-    base::TimeDelta m_fadeoutDelay;
-    base::TimeDelta m_fadeoutLength;
-
-    double m_currentTimeForTesting;
+  base::TimeDelta fadeout_delay_;
+  base::TimeDelta fadeout_length_;
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_

@@ -11,22 +11,23 @@
 
 namespace cc {
 
-// This abstract class represents the compositor-side analogy of ScrollbarAnimator.
-// Individual platforms should subclass it to provide specialized implementation.
+// This abstract class represents the compositor-side analogy of
+// ScrollbarAnimator.  Individual platforms should subclass it to provide
+// specialized implementation.
 class CC_EXPORT ScrollbarAnimationController {
-public:
-    virtual ~ScrollbarAnimationController() {}
+ public:
+  virtual ~ScrollbarAnimationController() {}
 
-    virtual bool isScrollGestureInProgress() const = 0;
-    virtual bool isAnimating() const = 0;
-    virtual base::TimeDelta delayBeforeStart(base::TimeTicks now) const = 0;
+  virtual bool IsScrollGestureInProgress() const = 0;
+  virtual bool IsAnimating() const = 0;
+  virtual base::TimeDelta DelayBeforeStart(base::TimeTicks now) const = 0;
 
-    virtual bool animate(base::TimeTicks) = 0;
-    virtual void didScrollGestureBegin() = 0;
-    virtual void didScrollGestureEnd(base::TimeTicks now) = 0;
-    virtual void didProgrammaticallyUpdateScroll(base::TimeTicks now) = 0;
+  virtual bool Animate(base::TimeTicks now) = 0;
+  virtual void DidScrollGestureBegin() = 0;
+  virtual void DidScrollGestureEnd(base::TimeTicks now) = 0;
+  virtual void DidProgrammaticallyUpdateScroll(base::TimeTicks now) = 0;
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_

@@ -152,11 +152,11 @@ void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
 
   if (currently_scrolling_layer_ &&
       currently_scrolling_layer_->scrollbar_animation_controller())
-    currently_scrolling_layer_->scrollbar_animation_controller()
-        ->didScrollGestureEnd(base::TimeTicks::Now());
+    currently_scrolling_layer_->scrollbar_animation_controller()->
+        DidScrollGestureEnd(base::TimeTicks::Now());
   currently_scrolling_layer_ = layer;
   if (layer && layer->scrollbar_animation_controller())
-    layer->scrollbar_animation_controller()->didScrollGestureBegin();
+    layer->scrollbar_animation_controller()->DidScrollGestureBegin();
 }
 
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {

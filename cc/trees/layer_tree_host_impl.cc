@@ -1844,7 +1844,7 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
 
   ScrollbarAnimationController* scrollbar_controller =
       layer->scrollbar_animation_controller();
-  if (scrollbar_controller && scrollbar_controller->animate(time)) {
+  if (scrollbar_controller && scrollbar_controller->Animate(time)) {
     TRACE_EVENT_INSTANT0(
         "cc", "LayerTreeHostImpl::SetNeedsRedraw due to AnimateScrollbars");
     client_->SetNeedsRedrawOnImplThread();
@@ -1866,11 +1866,11 @@ void LayerTreeHostImpl::StartScrollbarAnimationRecursive(LayerImpl* layer,
 
   ScrollbarAnimationController* scrollbar_controller =
       layer->scrollbar_animation_controller();
-  if (scrollbar_controller && scrollbar_controller->isAnimating()) {
-    base::TimeDelta delay = scrollbar_controller->delayBeforeStart(time);
+  if (scrollbar_controller && scrollbar_controller->IsAnimating()) {
+    base::TimeDelta delay = scrollbar_controller->DelayBeforeStart(time);
     if (delay > base::TimeDelta())
       client_->RequestScrollbarAnimationOnImplThread(delay);
-    else if (scrollbar_controller->animate(time))
+    else if (scrollbar_controller->Animate(time))
       client_->SetNeedsRedrawOnImplThread();
   }
 
