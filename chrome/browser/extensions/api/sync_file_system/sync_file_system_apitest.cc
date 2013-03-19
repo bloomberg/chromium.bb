@@ -101,10 +101,6 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
 
 }  // namespace
 
-// TODO(calvinlo): Add Chrome OS support for syncable file system
-// (http://crbug.com/160693)
-#if !defined(OS_CHROMEOS)
-
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DeleteFileSystem) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/delete_file_system"))
       << message_;
@@ -177,7 +173,5 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, ConflictResolutionPolicy) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/conflict_resolution_policy"))
       << message_;
 }
-
-#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace chrome
