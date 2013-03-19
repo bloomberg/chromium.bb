@@ -116,6 +116,7 @@ ChangeListLoader::ChangeListLoader(
       webapps_registry_(webapps_registry),
       cache_(cache),
       refreshing_(false),
+      last_known_remote_changestamp_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -183,6 +184,7 @@ void ChangeListLoader::LoadFromServerIfNeededAfterGetAbout(
   if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
     DCHECK(about_resource);
     remote_changestamp = about_resource->largest_change_id();
+    last_known_remote_changestamp_ = remote_changestamp;
   }
 
   resource_metadata_->GetLargestChangestamp(
@@ -217,16 +219,42 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
 
   int64 start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
 
-  // TODO(satorux): Use directory_fetch_info to start "fast-fetch" here.
-  LoadChangeListFromServer(start_changestamp,
-                           remote_changestamp,
-                           callback);
+  if (directory_fetch_info.empty()) {
+    // If the caller is not interested in a particular directory, just start
+    // loading the change list.
+    LoadChangeListFromServer(start_changestamp,
+                             remote_changestamp,
+                             callback);
+  } else if (directory_fetch_info.changestamp() < remote_changestamp) {
+    // If the caller is interested in a particular directory, and the
+    // directory changestamp is older than server's, start loading the
+    // directory first.
+    DVLOG(1) << "Fast-fetching directory: " << directory_fetch_info.ToString()
+             << "; remote_changestamp: " << remote_changestamp;
+    const DirectoryFetchInfo new_directory_fetch_info(
+        directory_fetch_info.resource_id(), remote_changestamp);
+    DoLoadDirectoryFromServer(
+        new_directory_fetch_info,
+        base::Bind(&ChangeListLoader::StartLoadChangeListFromServer,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   directory_fetch_info,
+                   start_changestamp,
+                   remote_changestamp,
+                   callback));
+  } else {
+    // The directory is up-to-date, hence there is no need to load.
+    OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
+  }
 }
 
 void ChangeListLoader::LoadChangeListFromServer(
     int64 start_changestamp,
     int64 remote_changestamp,
     const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(refreshing_);
+
   scoped_ptr<LoadFeedParams> load_params(new LoadFeedParams);
   load_params->start_changestamp = start_changestamp;
   LoadFromServer(
@@ -236,6 +264,33 @@ void ChangeListLoader::LoadChangeListFromServer(
                  start_changestamp != 0,  // is_delta_feed
                  remote_changestamp,
                  callback));
+}
+
+void ChangeListLoader::StartLoadChangeListFromServer(
+    const DirectoryFetchInfo& directory_fetch_info,
+    int64 start_changestamp,
+    int64 remote_changestamp,
+    const FileOperationCallback& callback,
+    DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(refreshing_);
+
+  if (error == DRIVE_FILE_OK) {
+    callback.Run(DRIVE_FILE_OK);
+    DVLOG(1) << "Fast-fetch was successful: " << directory_fetch_info.ToString()
+             << "; Start loading the change list";
+    // Stop passing |callback| as it's just consumed.
+    LoadChangeListFromServer(
+        start_changestamp,
+        remote_changestamp,
+        base::Bind(&util::EmptyFileOperationCallback));
+  } else {
+    // The directory fast-fetch failed, but the change list loading may
+    // succeed. Keep passing |callback| so it's run after the change list
+    // loading is complete.
+    LoadChangeListFromServer(start_changestamp, remote_changestamp, callback);
+  }
 }
 
 void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
@@ -314,6 +369,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(!directory_fetch_info.empty());
+  DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams);
   params->directory_resource_id = directory_fetch_info.resource_id();
@@ -351,17 +407,20 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
       change_list_processor.entry_proto_map(),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
+                 directory_fetch_info,
                  callback));
 }
 
 void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
+    const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     DriveFileError error,
     const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  callback.Run(error);
+  DVLOG(1) << "Directory loaded: " << directory_fetch_info.ToString();
+  OnDirectoryLoadComplete(directory_fetch_info, callback, error);
   // Also notify the observers.
   if (error == DRIVE_FILE_OK) {
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
@@ -540,6 +599,13 @@ void ChangeListLoader::Load(const DirectoryFetchInfo directory_fetch_info,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+  if (!directory_fetch_info.empty()) {
+    // Add a dummy task to so ScheduleRun() can check that the directory is
+    // being fetched. This will be cleared either in
+    // ProcessPendingLoadCallbackForDirectory() or FlushPendingLoadCallback().
+    pending_load_callback_[directory_fetch_info.resource_id()].push_back(
+        base::Bind(&util::EmptyFileOperationCallback));
+  }
 
   // First start loading from the cache.
   LoadFromCache(base::Bind(&ChangeListLoader::LoadAfterLoadFromCache,
@@ -563,7 +629,7 @@ void ChangeListLoader::LoadAfterLoadFromCache(
     // Load from server if needed (i.e. the cache is old). Note that we
     // should still propagate |directory_fetch_info| though the directory is
     // loaded first. This way, the UI can get notified via a directory change
-    // event as soons as the current directory contents are fetched.
+    // event as soon as the current directory contents are fetched.
     LoadFromServerIfNeeded(directory_fetch_info,
                            base::Bind(&util::EmptyFileOperationCallback));
   } else {
@@ -627,8 +693,39 @@ void ChangeListLoader::ScheduleRun(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+  DCHECK(refreshing_);
 
-  queue_.push(std::make_pair(directory_fetch_info, callback));
+  if (directory_fetch_info.empty()) {
+    // If the caller is not interested in a particular directory, just add the
+    // callback to the pending list and return.
+    pending_load_callback_[""].push_back(callback);
+    return;
+  }
+
+  const std::string& resource_id = directory_fetch_info.resource_id();
+
+  // If the directory of interest is already scheduled to be fetched, add the
+  // callback to the pending list and return.
+  LoadCallbackMap::iterator it = pending_load_callback_.find(resource_id);
+  if (it != pending_load_callback_.end()) {
+    it->second.push_back(callback);
+    return;
+  }
+
+  // If the directory's changestamp is up-to-date, just schedule to run the
+  // callback, as there is no need to fetch the directory.
+  if (directory_fetch_info.changestamp() >= last_known_remote_changestamp_) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DRIVE_FILE_OK));
+    return;
+  }
+
+  // The directory should be fetched. Add the callback to the pending list. The
+  // callback will be run after the directory is loaded.
+  pending_load_callback_[resource_id].push_back(callback);
+  DoLoadDirectoryFromServer(directory_fetch_info,
+                            base::Bind(&util::EmptyFileOperationCallback));
 }
 
 void ChangeListLoader::NotifyDirectoryChanged(
@@ -677,21 +774,52 @@ void ChangeListLoader::OnChangeListLoadComplete(
 
   refreshing_ = false;
   callback.Run(error);
-
-  FlushQueue(error);
+  FlushPendingLoadCallback(error);
 }
 
-void ChangeListLoader::FlushQueue(DriveFileError error) {
+void ChangeListLoader::OnDirectoryLoadComplete(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback,
+    DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  callback.Run(error);
+  ProcessPendingLoadCallbackForDirectory(directory_fetch_info.resource_id(),
+                                         error);
+}
+
+void ChangeListLoader::FlushPendingLoadCallback(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!refreshing_);
 
-  while (!queue_.empty()) {
-    QueuedCallbackInfo info  = queue_.front();
-    const FileOperationCallback& callback = info.second;
-    queue_.pop();
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, error));
+  for (LoadCallbackMap::iterator it = pending_load_callback_.begin();
+       it != pending_load_callback_.end();  ++it) {
+    const std::vector<FileOperationCallback>& callbacks = it->second;
+    for (size_t i = 0; i < callbacks.size(); ++i) {
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callbacks[i], error));
+    }
+  }
+  pending_load_callback_.clear();
+}
+
+void ChangeListLoader::ProcessPendingLoadCallbackForDirectory(
+    const std::string& resource_id,
+    DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  LoadCallbackMap::iterator it = pending_load_callback_.find(resource_id);
+  if (it != pending_load_callback_.end()) {
+    DVLOG(1) << "Running callback for " << resource_id;
+    const std::vector<FileOperationCallback>& callbacks = it->second;
+    for (size_t i = 0; i < callbacks.size(); ++i) {
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callbacks[i], error));
+    }
+    pending_load_callback_.erase(it);
   }
 }
 

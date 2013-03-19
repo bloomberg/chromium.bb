@@ -73,10 +73,10 @@ chrome.test.runTests([
     chrome.fileBrowserPrivate.requestLocalFileSystem(
       function (fileSystem) {
         chrome.test.assertFalse(!fileSystem, 'Failed to get file system.');
-        fileSystem.root.getDirectory('drive', {create: false},
-            // Also read the root directory. This will initiate loading of the
-            // resource metadata. As of now, 'search' only works with the
-            // resource metadata fully loaded. crbug.com/181075
+        fileSystem.root.getDirectory('drive/test_dir', {create: false},
+            // Also read a non-root directory. This will initiate loading of
+            // the full resource metadata. As of now, 'search' only works
+            // with the resource metadata fully loaded. crbug.com/181075
             function(entry) {
               var reader = entry.createReader();
               reader.readEntries(

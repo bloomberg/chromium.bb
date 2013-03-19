@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
 
-#include <queue>
+#include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
@@ -62,7 +63,6 @@ class ChangeListLoader {
   // If |directory_fetch_info| is not empty, the directory will be fetched
   // first from the server, so the UI can show the directory contents
   // instantly before the entire change list loading is complete.
-  // TODO(satorux): Implement the "fast-fetch" behavior. crbug.com/178348
   //
   // |callback| must not be null.
   void Load(const DirectoryFetchInfo directory_fetch_info,
@@ -100,7 +100,7 @@ class ChangeListLoader {
                         const GURL& next_feed,
                         const LoadFeedListCallback& feed_load_callback);
 
-  // Initiates the chnage list loading from the server if the local
+  // Initiates the change list loading from the server if the local
   // changestamp is older than the server changestamp.
   // See the comment at Load() for |directory_fetch_info| parameter.
   // |callback| must not be null.
@@ -141,7 +141,7 @@ class ChangeListLoader {
       DriveFileError error);
 
   // Starts loading from the server, with details specified in |params|. This
-  // is a general purpuse function, which is used for loading change lists,
+  // is a general purpose function, which is used for loading change lists,
   // full resource lists, and directory contents.
   void LoadFromServer(scoped_ptr<LoadFeedParams> params,
                       const LoadFeedListCallback& callback);
@@ -155,7 +155,7 @@ class ChangeListLoader {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceList> data);
 
-  // Part of LoadDirectoryFromServer() Callled when
+  // Part of LoadDirectoryFromServer(). Called when
   // DriveScheduler::GetAboutResource() is complete. Calls
   // DoLoadDirectoryFromServer() to initiate the directory contents loading.
   void LoadDirectoryFromServerAfterGetAbout(
@@ -180,11 +180,12 @@ class ChangeListLoader {
   // Part of DoLoadDirectoryFromServer(). Called after
   // DriveResourceMetadata::RefreshDirectory() is complete.
   void DoLoadDirectoryFromServerAfterRefresh(
+      const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       DriveFileError error,
       const base::FilePath& directory_path);
 
-  // Part of LoadFromServerIfNeeded() Callled when
+  // Part of LoadFromServerIfNeeded(). Called when
   // DriveScheduler::GetAboutResource() is complete. This method calls
   // CompareChangestampsAndLoadIfNeeded() to make a decision about whether or
   // not to fetch the change list.
@@ -210,6 +211,15 @@ class ChangeListLoader {
       int64 start_changestamp,
       int64 remote_changestamp,
       const FileOperationCallback& callback);
+
+  // Starts loading the change list from the server. Called after the
+  // directory contents are "fast-fetch"ed.
+  void StartLoadChangeListFromServer(
+    const DirectoryFetchInfo& directory_fetch_info,
+    int64 start_changestamp,
+    int64 remote_changestamp,
+    const FileOperationCallback& callback,
+    DriveFileError error);
 
   // Callback for handling response from |DriveAPIService::GetAppList|.
   // If the application list is successfully parsed, passes the list to
@@ -244,13 +254,23 @@ class ChangeListLoader {
   void OnUpdateFromFeed(const FileOperationCallback& load_finished_callback);
 
   // This function should be called when the change list load is complete.
-  // Runs |callback| with |error|, and flushes the queue.
+  // Runs |callback| with |error|, and flushes the pending callbacks.
   void OnChangeListLoadComplete(const FileOperationCallback& callback,
                                 DriveFileError error);
 
-  // Flushes the queue by running all the callbacks scheduled via
-  // ScheduleRun(), with the given error code.
-  void FlushQueue(DriveFileError error);
+  // This function should be called when the change list load is complete.
+  // Runs |callback| with |error|, and flushes the pending callbacks.
+  void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
+                               const FileOperationCallback& callback,
+                               DriveFileError error);
+
+  // Flushes the feed loading callbacks added via ScheduleRun(), by scheduling
+  // to run all of them with the given error code.
+  void FlushPendingLoadCallback(DriveFileError error);
+
+  // Processes tasks that match the resource ID.
+  void ProcessPendingLoadCallbackForDirectory(const std::string& resource_id,
+                                              DriveFileError error);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveScheduler* scheduler_;  // Not owned.
@@ -258,12 +278,13 @@ class ChangeListLoader {
   DriveCache* cache_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
   scoped_ptr<ChangeListProcessor> change_list_processor_;
-  typedef std::pair<DirectoryFetchInfo,
-                    FileOperationCallback> QueuedCallbackInfo;
-  std::queue<QueuedCallbackInfo> queue_;
+  typedef std::map<std::string, std::vector<FileOperationCallback> >
+      LoadCallbackMap;
+  LoadCallbackMap pending_load_callback_;
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing_;
+  int64 last_known_remote_changestamp_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

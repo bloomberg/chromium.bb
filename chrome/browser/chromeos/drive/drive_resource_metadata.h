@@ -52,6 +52,9 @@ class DirectoryFetchInfo {
   // the directory contents should be fetched.
   int64 changestamp() const { return changestamp_; }
 
+  // Returns a string representation of this object.
+  std::string ToString() const;
+
  private:
   const std::string resource_id_;
   const int64 changestamp_;

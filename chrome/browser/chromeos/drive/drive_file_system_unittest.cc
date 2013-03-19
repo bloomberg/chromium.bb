@@ -566,6 +566,10 @@ void AsyncInitializationCallback(
 }
 
 TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
+  // The root directory will be loaded that triggers the event.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+
   int counter = 0;
   ReadDirectoryWithSettingCallback callback = base::Bind(
       &AsyncInitializationCallback,
@@ -580,11 +584,20 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
-  // ReadDirectoryByPath() was called twice, but the account metadata and the
-  // resource list should only be loaded once. In the past, there was a bug
-  // that caused them to be loaded twice.
+  // ReadDirectoryByPath() was called twice, but the account metadata should
+  // only be loaded once. In the past, there was a bug that caused it to be
+  // loaded twice.
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
-  EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
+  // On the other hand, the resource list could be loaded twice. One for
+  // just the directory contents, and one for the entire resource list.
+  //
+  // The |callback| function gets called back soon after the directory content
+  // is loaded, and the full resource load is done in background asynchronously.
+  // So it depends on timing whether we receive the full resource load request
+  // at this point.
+  EXPECT_TRUE(fake_drive_service_->resource_list_load_count() == 1 ||
+              fake_drive_service_->resource_list_load_count() == 2)
+      << ": " << fake_drive_service_->resource_list_load_count();
 }
 
 TEST_F(DriveFileSystemTest, GetRootEntry) {
@@ -757,6 +770,10 @@ TEST_F(DriveFileSystemTest, SearchInSubSubdir) {
 }
 
 TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
+  // The root directory will be loaded that triggers the event.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+
   // ReadDirectoryByPath() should kick off the resource list loading.
   scoped_ptr<DriveEntryProtoVector> entries(
       ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));

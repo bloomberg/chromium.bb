@@ -138,6 +138,11 @@ DriveEntryProto CreateEntryWithProperBaseName(const DriveEntryProto& source) {
 
 }  // namespace
 
+std::string DirectoryFetchInfo::ToString() const {
+  return ("resource_id: " + resource_id_ +
+          ", changestamp: " + base::Int64ToString(changestamp_));
+}
+
 EntryInfoResult::EntryInfoResult() : error(DRIVE_FILE_ERROR_FAILED) {
 }
 
