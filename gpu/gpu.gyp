@@ -219,7 +219,7 @@
     },
     {
       'target_name': 'gl_tests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -263,6 +263,13 @@
         'command_buffer/tests/gl_virtual_contexts_unittests.cc',
         'command_buffer/tests/gl_stream_draw_unittests.cc',
         'command_buffer/tests/occlusion_query_unittests.cc',
+      ],
+      'conditions': [
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -478,6 +485,24 @@
               'msvs_target_platform': 'x64',
             },
           },
+        },
+      ],
+    }],
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'gl_tests_apk',
+          'type': 'none',
+          'dependencies': [
+            'gl_tests',
+          ],
+          'variables': {
+            'test_suite_name': 'gl_tests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)gl_tests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [
+            '../build/apk_test.gypi',
+          ],
         },
       ],
     }],
