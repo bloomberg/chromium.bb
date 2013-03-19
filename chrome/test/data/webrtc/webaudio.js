@@ -14,11 +14,21 @@ function loadAudioAndAddToPeerConnection(url, peerconnection) {
   peerconnection.addStream(inputSink.stream);
 
   loadAudioBuffer_(url, function(voiceSoundBuffer) {
-    var bufferSource = gContext.createBufferSource();
-    bufferSource.buffer = voiceSoundBuffer;
-    bufferSource.connect(inputSink);
-    bufferSource.start(gContext.currentTime);
+    if (peerconnection.webAudioBufferSource)
+      throw failTest('Cannot load more than one sound per peerconnection.');
+
+    peerconnection.webAudioBufferSource = gContext.createBufferSource();
+    peerconnection.webAudioBufferSource.buffer = voiceSoundBuffer;
+    peerconnection.webAudioBufferSource.connect(inputSink);
+
+    returnToTest('ok-added');
   });
+}
+
+function playPreviouslyLoadedAudioFile(peerconnection) {
+  if (!peerconnection.webAudioBufferSource)
+    throw failTest('Must call loadAudioAndAddToPeerConnection before this.');
+  peerconnection.webAudioBufferSource.start(gContext.currentTime);
 }
 
 /** @private */

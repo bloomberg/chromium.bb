@@ -50,8 +50,9 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
        checkbox. Ensure the mix device is the default recording device.
     5. Launch chrome and try playing a video with sound. You should see movement
        in the volume meter for the mix device. Configure the mix device to have
-       a level so that it's not too silent (otherwise the silence elimination
-       algorithm will delete too much).
+       50 / 100 in level. Also go into the playback tab, right-click Speakers,
+       and set that level to 50 / 100. Otherwise you will get distortion in
+       the recording.
   """
   def setUp(self):
     pyauto.PyUITest.setUp(self)
@@ -109,10 +110,12 @@ class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
     self.CreatePeerConnection(tab_index=0)
     self.AddWebAudioFile(tab_index=0, input_relative_path=input_relative_path)
 
-    self._CallAndRunFor(duration_seconds)
-
-  def _CallAndRunFor(self, duration_seconds):
+    # Note: it COULD be that the media flow isn't necessarily established on
+    # the connection just because the ready state is ok on both sides. In that
+    # case we could need a small sleep between call establishment and playing
+    # to avoid cutting of the beginning of the audio file.
     self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
+    self.PlayWebAudioFile(tab_index=0)
 
     # Keep the call up while we detect audio.
     time.sleep(duration_seconds)

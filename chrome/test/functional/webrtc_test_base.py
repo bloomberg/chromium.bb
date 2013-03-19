@@ -109,10 +109,19 @@ class WebrtcTestBase(pyauto.PyUITest):
         'addLocalStream()', tab_index=tab_index))
 
   def AddWebAudioFile(self, tab_index, input_relative_path):
-    """The path must be relative to where the javascript is."""
+    """The path must be relative to where the javascript is.
+
+    This call just loads and adds a file to a peer connection, but it doesn't
+    start to play it until you call PlayWebAudioFile.
+    """
     self.assertEquals('ok-added', self.ExecuteJavascript(
         'addAudioFile("%s")' % re.escape(input_relative_path),
         tab_index=tab_index))
+
+  def PlayWebAudioFile(self, tab_index):
+    """Plays a web audio file which was added earlier."""
+    self.assertEquals('ok-playing', self.ExecuteJavascript(
+        'playAudioFile()', tab_index=tab_index))
 
   def EstablishCall(self, from_tab_with_index, to_tab_with_index):
     self.WaitUntilPeerConnects(tab_index=from_tab_with_index)
