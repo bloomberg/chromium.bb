@@ -26,8 +26,8 @@ LOCAL_AIDL_INCLUDES := \
     $(LOCAL_PATH)/../third_party/eyesfree/src/android/java/src
 LOCAL_SRC_FILES += \
     $(call all-java-files-under, ../content/public/android/java/src) \
-    ../content/public/android/java/src/org/chromium/content/common/ISandboxedProcessCallback.aidl \
-    ../content/public/android/java/src/org/chromium/content/common/ISandboxedProcessService.aidl \
+    ../content/public/android/java/src/org/chromium/content/common/IChildProcessCallback.aidl \
+    ../content/public/android/java/src/org/chromium/content/common/IChildProcessService.aidl \
     $(call all-java-files-under, ../base/android/java/src) \
     $(call all-java-files-under, ../media/base/android/java/src) \
     $(call all-java-files-under, ../net/android/java/src) \

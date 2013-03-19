@@ -8,10 +8,11 @@
   # TODO(jrg): when doing the above, make sure we support multiple
   # output directories (e.g. browser/jni and common/jni if needed).
   'sources': [
+    'public/android/java/src/org/chromium/content/app/ChildProcessService.java',
     'public/android/java/src/org/chromium/content/app/ContentMain.java',
     'public/android/java/src/org/chromium/content/app/LibraryLoader.java',
-    'public/android/java/src/org/chromium/content/app/SandboxedProcessService.java',
     'public/android/java/src/org/chromium/content/browser/AndroidBrowserProcess.java',
+    'public/android/java/src/org/chromium/content/browser/ChildProcessLauncher.java',
     'public/android/java/src/org/chromium/content/browser/ContentSettings.java',
     'public/android/java/src/org/chromium/content/browser/ContentVideoView.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewCore.java',
@@ -24,7 +25,6 @@
     'public/android/java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java',
     'public/android/java/src/org/chromium/content/browser/LoadUrlParams.java',
     'public/android/java/src/org/chromium/content/browser/LocationProvider.java',
-    'public/android/java/src/org/chromium/content/browser/SandboxedProcessLauncher.java',
     'public/android/java/src/org/chromium/content/browser/TouchPoint.java',
     'public/android/java/src/org/chromium/content/browser/TracingIntentHandler.java',
     'public/android/java/src/org/chromium/content/browser/WebContentsObserverAndroid.java',

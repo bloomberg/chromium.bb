@@ -6,14 +6,14 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "content/app/android/child_process_service.h"
 #include "content/app/android/content_main.h"
-#include "content/app/android/sandboxed_process_service.h"
 
 namespace {
 
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "ContentMain", content::RegisterContentMain },
-  { "SandboxedProcessService", content::RegisterSandboxedProcessService },
+  { "ChildProcessService", content::RegisterChildProcessService },
 };
 
 }  // namespace

@@ -16,7 +16,7 @@ class SurfaceTexturePeerBrowserImpl : public SurfaceTexturePeer {
   // Construct a SurfaceTexturePeerBrowserImpl object. If
   // |player_in_render_process| is true, calling EstablishSurfaceTexturePeer()
   // will send the java surface texture object to the render process through
-  // SandboxedProcessService. Otherwise, it will pass the surface texture
+  // ChildProcessService. Otherwise, it will pass the surface texture
   // to the MediaPlayerBridge object in the browser process.
   SurfaceTexturePeerBrowserImpl();
   virtual ~SurfaceTexturePeerBrowserImpl();

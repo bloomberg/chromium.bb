@@ -1,5 +1,4 @@
 H C EC: Using pointer equality to compare a JavaBridgeCoercionTest$CustomType with a JavaBridgeCoercionTest$CustomType2 in org.chromium.content.browser.JavaBridgeCoercionTest.testPassJavaObject()  At JavaBridgeCoercionTest.java
-H D RCN: Redundant nullcheck of org.chromium.content.browser.SandboxedProcessConnection.mConnectionParams, which is known to be non-null in org.chromium.content.browser.SandboxedProcessConnection.doConnectionSetup()  Redundant null check at SandboxedProcessConnection.java
 M B DE: org.chromium.net.X509Util.clearTestRootCertificates() might ignore java.io.IOException  At X509Util.java
 M B Nm: The method name org.chromium.base.test.util.ScalableTimeout.ScaleTimeout(long) doesn't start with a lower case letter  At ScalableTimeout.java
 M B RV: exceptional return value of java.io.File.delete() ignored in org.chromium.android_webview.test.ArchiveTest.doArchiveTest(AwContents, String, boolean, String)  At ArchiveTest.java
@@ -17,8 +16,6 @@ M C CSM: Shouldn't use synchronized method, please narrow down the synchronizati
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeReturnValuesTest.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeTestBase.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At PerfTraceEvent.java
-M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SandboxedProcessConnection.java
-M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SandboxedProcessLauncher.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SimpleSynchronizedMethod.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SimpleSynchronizedStaticMethod.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At TraceEvent.java
@@ -34,11 +31,7 @@ M D SF: Switch statement found in org.chromium.chrome.browser.database.SQLiteCur
 M D SF: Switch statement found in org.chromium.content.browser.ContentSettings$EventHandler$1.handleMessage(Message) where default case is missing  At ContentSettings.java
 M D SF: Switch statement found in org.chromium.content.browser.HandleView.onTouchEvent(MotionEvent) where default case is missing  At HandleView.java
 M D SF: Switch statement found in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent) where default case is missing  At GestureDetector.java
-M D ST: Write to static field org.chromium.content.app.SandboxedProcessService.sContext from instance method org.chromium.content.app.SandboxedProcessService.onCreate()  At SandboxedProcessService.java
 M D ST: Write to static field org.chromium.content.browser.ContentSettings.sAppCachePathIsSet from instance method org.chromium.content.browser.ContentSettings.setAppCachePath(String)  At ContentSettings.java
-M M IS: Inconsistent synchronization of org.chromium.content.browser.SandboxedProcessConnection.mPID; locked 66% of time  Unsynchronized access at SandboxedProcessConnection.java
-M M IS: Inconsistent synchronization of org.chromium.content.browser.SandboxedProcessConnection.mService; locked 55% of time  Unsynchronized access at SandboxedProcessConnection.java
-M M IS: Inconsistent synchronization of org.chromium.content.browser.SandboxedProcessConnection.mServiceConnectComplete; locked 60% of time  Unsynchronized access at SandboxedProcessConnection.java
 M M LI: Incorrect lazy initialization and update of static field org.chromium.base.SystemMonitor.sInstance in org.chromium.base.SystemMonitor.create(Context)  At SystemMonitor.java
 M M LI: Incorrect lazy initialization and update of static field org.chromium.content.browser.ContentVideoView.sContentVideoView in org.chromium.content.browser.ContentVideoView.createContentVideoView(int)  At ContentVideoView.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getBooleanValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setBooleanValue(boolean) is synchronized  At JavaBridgeReturnValuesTest.java

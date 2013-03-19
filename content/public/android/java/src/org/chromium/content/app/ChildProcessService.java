@@ -18,33 +18,34 @@ import android.view.Surface;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.browser.SandboxedProcessConnection;
-import org.chromium.content.common.ISandboxedProcessCallback;
-import org.chromium.content.common.ISandboxedProcessService;
-import org.chromium.content.browser.SandboxedProcessLauncher;
+import org.chromium.content.browser.ChildProcessConnection;
+import org.chromium.content.common.IChildProcessCallback;
+import org.chromium.content.common.IChildProcessService;
+import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.common.ProcessInitException;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This is the base class for sandboxed services; the SandboxedProcessService0, 1.. etc
+ * This is the base class for child services; the [Non]SandboxedProcessService0, 1.. etc
  * subclasses provide the concrete service entry points, to enable the browser to connect
  * to more than one distinct process (i.e. one process per service number, up to limit of N).
  * The embedding application must declare these service instances in the application section
  * of its AndroidManifest.xml, for example with N entries of the form:-
- *     <service android:name="org.chromium.content.app.SandboxedProcessServiceX"
- *              android:process=":sandboxed_processX" />
- * for X in 0...N-1 (where N is {@link SandboxedProcessLauncher#MAX_REGISTERED_SERVICES})
+ *     <service android:name="org.chromium.content.app.[Non]SandboxedProcessServiceX"
+ *              android:process=":[non]sandboxed_processX" />
+ * for X in 0...N-1 (where N is {@link ChildProcessLauncher#MAX_REGISTERED_SERVICES})
  */
 @JNINamespace("content")
-public class SandboxedProcessService extends Service {
-    private static final String MAIN_THREAD_NAME = "SandboxedProcessMain";
-    private static final String TAG = "SandboxedProcessService";
-    private ISandboxedProcessCallback mCallback;
+public class ChildProcessService extends Service {
+    private static final String MAIN_THREAD_NAME = "ChildProcessMain";
+    private static final String TAG = "ChildProcessService";
+    private IChildProcessCallback mCallback;
 
     // This is the native "Main" thread for the renderer / utility process.
-    private Thread mSandboxMainThread;
-    // Parameters received via IPC, only accessed while holding the mSandboxMainThread monitor.
+    private Thread mMainThread;
+    // Parameters received via IPC, only accessed while holding the mMainThread monitor.
     private String mNativeLibraryName;  // Must be passed in via the bind command.
     private String[] mCommandLineParams;
     private int mCpuCount;
@@ -53,88 +54,88 @@ public class SandboxedProcessService extends Service {
     private ArrayList<Integer> mFileIds;
     private ArrayList<ParcelFileDescriptor> mFileFds;
 
-    private static Context sContext = null;
+    private static AtomicReference<Context> sContext = new AtomicReference<Context>(null);
     private boolean mLibraryInitialized = false;
 
     // Binder object used by clients for this service.
-    private final ISandboxedProcessService.Stub mBinder = new ISandboxedProcessService.Stub() {
-        // NOTE: Implement any ISandboxedProcessService methods here.
+    private final IChildProcessService.Stub mBinder = new IChildProcessService.Stub() {
+        // NOTE: Implement any IChildProcessService methods here.
         @Override
-        public int setupConnection(Bundle args, ISandboxedProcessCallback callback) {
+        public int setupConnection(Bundle args, IChildProcessCallback callback) {
             mCallback = callback;
-            synchronized (mSandboxMainThread) {
+            synchronized (mMainThread) {
                 // Allow the command line to be set via bind() intent or setupConnection, but
                 // the FD can only be transferred here.
                 if (mCommandLineParams == null) {
                     mCommandLineParams = args.getStringArray(
-                            SandboxedProcessConnection.EXTRA_COMMAND_LINE);
+                            ChildProcessConnection.EXTRA_COMMAND_LINE);
                 }
                 // We must have received the command line by now
                 assert mCommandLineParams != null;
-                mCpuCount = args.getInt(SandboxedProcessConnection.EXTRA_CPU_COUNT);
-                mCpuFeatures = args.getLong(SandboxedProcessConnection.EXTRA_CPU_FEATURES);
+                mCpuCount = args.getInt(ChildProcessConnection.EXTRA_CPU_COUNT);
+                mCpuFeatures = args.getLong(ChildProcessConnection.EXTRA_CPU_FEATURES);
                 assert mCpuCount > 0;
                 mFileIds = new ArrayList<Integer>();
                 mFileFds = new ArrayList<ParcelFileDescriptor>();
                 for (int i = 0;; i++) {
-                    String fdName = SandboxedProcessConnection.EXTRA_FILES_PREFIX + i
-                            + SandboxedProcessConnection.EXTRA_FILES_FD_SUFFIX;
+                    String fdName = ChildProcessConnection.EXTRA_FILES_PREFIX + i
+                            + ChildProcessConnection.EXTRA_FILES_FD_SUFFIX;
                     ParcelFileDescriptor parcel = args.getParcelable(fdName);
                     if (parcel == null) {
                         // End of the file list.
                         break;
                     }
                     mFileFds.add(parcel);
-                    String idName = SandboxedProcessConnection.EXTRA_FILES_PREFIX + i
-                            + SandboxedProcessConnection.EXTRA_FILES_ID_SUFFIX;
+                    String idName = ChildProcessConnection.EXTRA_FILES_PREFIX + i
+                            + ChildProcessConnection.EXTRA_FILES_ID_SUFFIX;
                     mFileIds.add(args.getInt(idName));
                 }
-                mSandboxMainThread.notifyAll();
+                mMainThread.notifyAll();
             }
             return Process.myPid();
         }
     };
 
     /* package */ static Context getContext() {
-        return sContext;
+        return sContext.get();
     }
 
     @Override
     public void onCreate() {
-        Log.i(TAG, "Creating new SandboxedProcessService pid=" + Process.myPid());
-        if (sContext != null) {
-            Log.e(TAG, "SanboxedProcessService created again in process!");
+        Log.i(TAG, "Creating new ChildProcessService pid=" + Process.myPid());
+        if (sContext.get() != null) {
+            Log.e(TAG, "ChildProcessService created again in process!");
         }
-        sContext = this;
+        sContext.set(this);
         super.onCreate();
 
-        mSandboxMainThread = new Thread(new Runnable() {
+        mMainThread = new Thread(new Runnable() {
             @Override
             public void run()  {
                 try {
-                    synchronized (mSandboxMainThread) {
+                    synchronized (mMainThread) {
                         while (mNativeLibraryName == null) {
-                            mSandboxMainThread.wait();
+                            mMainThread.wait();
                         }
                     }
                     LibraryLoader.setLibraryToLoad(mNativeLibraryName);
                     try {
                         LibraryLoader.loadNow();
                     } catch (ProcessInitException e) {
-                        Log.e(TAG, "Failed to load native library, exiting sandboxed process", e);
+                        Log.e(TAG, "Failed to load native library, exiting child process", e);
                         return;
                     }
-                    synchronized (mSandboxMainThread) {
+                    synchronized (mMainThread) {
                         while (mCommandLineParams == null) {
-                            mSandboxMainThread.wait();
+                            mMainThread.wait();
                         }
                     }
                     LibraryLoader.initializeOnMainThread(mCommandLineParams);
-                    synchronized (mSandboxMainThread) {
+                    synchronized (mMainThread) {
                         mLibraryInitialized = true;
-                        mSandboxMainThread.notifyAll();
+                        mMainThread.notifyAll();
                         while (mFileIds == null) {
-                            mSandboxMainThread.wait();
+                            mMainThread.wait();
                         }
                     }
                     assert mFileIds.size() == mFileFds.size();
@@ -144,12 +145,12 @@ public class SandboxedProcessService extends Service {
                         fileIds[i] = mFileIds.get(i);
                         fileFds[i] = mFileFds.get(i).detachFd();
                     }
-                    ContentMain.initApplicationContext(sContext.getApplicationContext());
-                    nativeInitSandboxedProcess(sContext.getApplicationContext(),
-                            SandboxedProcessService.this, fileIds, fileFds,
+                    ContentMain.initApplicationContext(sContext.get().getApplicationContext());
+                    nativeInitChildProcess(sContext.get().getApplicationContext(),
+                            ChildProcessService.this, fileIds, fileFds,
                             mCpuCount, mCpuFeatures);
                     ContentMain.start();
-                    nativeExitSandboxedProcess();
+                    nativeExitChildProcess();
                 } catch (InterruptedException e) {
                     Log.w(TAG, MAIN_THREAD_NAME + " startup failed: " + e);
                 } catch (ProcessInitException e) {
@@ -157,46 +158,46 @@ public class SandboxedProcessService extends Service {
                 }
             }
         }, MAIN_THREAD_NAME);
-        mSandboxMainThread.start();
+        mMainThread.start();
     }
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "Destroying SandboxedProcessService pid=" + Process.myPid());
+        Log.i(TAG, "Destroying ChildProcessService pid=" + Process.myPid());
         super.onDestroy();
         if (mCommandLineParams == null) {
             // This process was destroyed before it even started. Nothing more to do.
             return;
         }
-        synchronized (mSandboxMainThread) {
+        synchronized (mMainThread) {
             try {
                 while (!mLibraryInitialized) {
                     // Avoid a potential race in calling through to native code before the library
                     // has loaded.
-                    mSandboxMainThread.wait();
+                    mMainThread.wait();
                 }
             } catch (InterruptedException e) {
             }
         }
-        // Try to shutdown the SandboxMainThread gracefully, but it might not
+        // Try to shutdown the MainThread gracefully, but it might not
         // have chance to exit normally.
-        nativeShutdownSandboxMainThread();
+        nativeShutdownMainThread();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         // We call stopSelf() to request that this service be stopped as soon as the client
         // unbinds. Otherwise the system may keep it around and available for a reconnect. The
-        // sandboxed processes do not currently support reconnect; they must be initialized from
+        // child processes do not currently support reconnect; they must be initialized from
         // scratch every time.
         stopSelf();
 
-        synchronized (mSandboxMainThread) {
+        synchronized (mMainThread) {
             mNativeLibraryName = intent.getStringExtra(
-                    SandboxedProcessConnection.EXTRA_NATIVE_LIBRARY_NAME);
+                    ChildProcessConnection.EXTRA_NATIVE_LIBRARY_NAME);
             mCommandLineParams = intent.getStringArrayExtra(
-                    SandboxedProcessConnection.EXTRA_COMMAND_LINE);
-            mSandboxMainThread.notifyAll();
+                    ChildProcessConnection.EXTRA_COMMAND_LINE);
+            mMainThread.notifyAll();
         }
 
         return mBinder;
@@ -207,8 +208,8 @@ public class SandboxedProcessService extends Service {
      * Through using the callback object the browser is used as a proxy to route the
      * call to the correct process.
      *
-     * @param pid Process handle of the sandboxed process to share the SurfaceTexture with.
-     * @param surfaceObject The Surface or SurfaceTexture to share with the other sandboxed process.
+     * @param pid Process handle of the child process to share the SurfaceTexture with.
+     * @param surfaceObject The Surface or SurfaceTexture to share with the other child process.
      * @param primaryID Used to route the call to the correct client instance.
      * @param secondaryID Used to route the call to the correct client instance.
      */
@@ -261,23 +262,23 @@ public class SandboxedProcessService extends Service {
     }
 
     /**
-     * The main entry point for a sandboxed process. This should be called from a new thread since
-     * it will not return until the sandboxed process exits. See sandboxed_process_service.{h,cc}
+     * The main entry point for a child process. This should be called from a new thread since
+     * it will not return until the child process exits. See child_process_service.{h,cc}
      *
      * @param applicationContext The Application Context of the current process.
-     * @param service The current SandboxedProcessService object.
+     * @param service The current ChildProcessService object.
      * @param fileIds A list of file IDs that should be registered for access by the renderer.
      * @param fileFds A list of file descriptors that should be registered for access by the
      * renderer.
      */
-    private static native void nativeInitSandboxedProcess(Context applicationContext,
-            SandboxedProcessService service, int[] extraFileIds, int[] extraFileFds,
+    private static native void nativeInitChildProcess(Context applicationContext,
+            ChildProcessService service, int[] extraFileIds, int[] extraFileFds,
             int cpuCount, long cpuFeatures);
 
     /**
-     * Force the sandboxed process to exit.
+     * Force the child process to exit.
      */
-    private static native void nativeExitSandboxedProcess();
+    private static native void nativeExitChildProcess();
 
-    private native void nativeShutdownSandboxMainThread();
+    private native void nativeShutdownMainThread();
 }

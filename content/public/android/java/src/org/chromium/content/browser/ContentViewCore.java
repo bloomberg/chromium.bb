@@ -1180,7 +1180,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         if (mNativeContentViewCore != 0) {
             int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
             if (pid > 0) {
-                SandboxedProcessLauncher.bindAsHighPriority(pid);
+                ChildProcessLauncher.bindAsHighPriority(pid);
             }
         }
         setAccessibilityState(true);
@@ -1195,7 +1195,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         if (mNativeContentViewCore != 0) {
             int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
             if (pid > 0) {
-                SandboxedProcessLauncher.unbindAsHighPriority(pid);
+                ChildProcessLauncher.unbindAsHighPriority(pid);
             }
         }
         setAccessibilityState(false);
@@ -2133,10 +2133,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private void onRenderProcessSwap(int oldPid, int newPid) {
         if (mAttachedToWindow && oldPid != newPid) {
             if (oldPid > 0) {
-                SandboxedProcessLauncher.unbindAsHighPriority(oldPid);
+                ChildProcessLauncher.unbindAsHighPriority(oldPid);
             }
             if (newPid > 0) {
-                SandboxedProcessLauncher.bindAsHighPriority(newPid);
+                ChildProcessLauncher.bindAsHighPriority(newPid);
             }
         }
     }

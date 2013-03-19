@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/app/android/sandboxed_process_service.h"
+#include "content/app/android/child_process_service.h"
 
 #include <android/native_window_jni.h>
 #include <cpu-features.h>
@@ -18,7 +18,7 @@
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/common/content_descriptors.h"
 #include "ipc/ipc_descriptors.h"
-#include "jni/SandboxedProcessService_jni.h"
+#include "jni/ChildProcessService_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -28,18 +28,18 @@ namespace content {
 
 namespace {
 
-class SurfaceTexturePeerSandboxedImpl : public content::SurfaceTexturePeer,
-                                        public content::GpuSurfaceLookup {
+class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
+                                    public content::GpuSurfaceLookup {
  public:
   // |service| is the instance of
-  // org.chromium.content.app.SandboxedProcessService.
-  explicit SurfaceTexturePeerSandboxedImpl(
+  // org.chromium.content.app.ChildProcessService.
+  explicit SurfaceTexturePeerChildImpl(
       const base::android::ScopedJavaLocalRef<jobject>& service)
       : service_(service) {
     GpuSurfaceLookup::InitInstance(this);
   }
 
-  virtual ~SurfaceTexturePeerSandboxedImpl() {
+  virtual ~SurfaceTexturePeerChildImpl() {
     GpuSurfaceLookup::InitInstance(NULL);
   }
 
@@ -49,7 +49,7 @@ class SurfaceTexturePeerSandboxedImpl : public content::SurfaceTexturePeer,
       int primary_id,
       int secondary_id) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    content::Java_SandboxedProcessService_establishSurfaceTexturePeer(
+    content::Java_ChildProcessService_establishSurfaceTexturePeer(
         env, service_.obj(), pid,
         surface_texture_bridge->j_surface_texture().obj(), primary_id,
         secondary_id);
@@ -59,7 +59,7 @@ class SurfaceTexturePeerSandboxedImpl : public content::SurfaceTexturePeer,
   virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
     ScopedJavaSurface surface(
-        content::Java_SandboxedProcessService_getViewSurface(
+        content::Java_ChildProcessService_getViewSurface(
         env, service_.obj(), surface_id));
 
     if (surface.j_surface().is_null())
@@ -72,15 +72,15 @@ class SurfaceTexturePeerSandboxedImpl : public content::SurfaceTexturePeer,
   }
 
  private:
-  // The instance of org.chromium.content.app.SandboxedProcessService.
+  // The instance of org.chromium.content.app.ChildProcessService.
   base::android::ScopedJavaGlobalRef<jobject> service_;
 
-  DISALLOW_COPY_AND_ASSIGN(SurfaceTexturePeerSandboxedImpl);
+  DISALLOW_COPY_AND_ASSIGN(SurfaceTexturePeerChildImpl);
 };
 
-// Chrome actually uses the renderer code path for all of its sandboxed
+// Chrome actually uses the renderer code path for all of its child
 // processes such as renderers, plugins, etc.
-void InternalInitSandboxedProcess(const std::vector<int>& file_ids,
+void InternalInitChildProcess(const std::vector<int>& file_ids,
                                   const std::vector<int>& file_fds,
                                   JNIEnv* env,
                                   jclass clazz,
@@ -100,17 +100,17 @@ void InternalInitSandboxedProcess(const std::vector<int>& file_ids,
     base::GlobalDescriptors::GetInstance()->Set(file_ids[i], file_fds[i]);
 
   content::SurfaceTexturePeer::InitInstance(
-      new SurfaceTexturePeerSandboxedImpl(service));
+      new SurfaceTexturePeerChildImpl(service));
 
 }
 
-void QuitSandboxMainThreadMessageLoop() {
+void QuitMainThreadMessageLoop() {
   MessageLoop::current()->Quit();
 }
 
 }  // namespace <anonymous>
 
-void InitSandboxedProcess(JNIEnv* env,
+void InitChildProcess(JNIEnv* env,
                           jclass clazz,
                           jobject context,
                           jobject service,
@@ -123,29 +123,29 @@ void InitSandboxedProcess(JNIEnv* env,
   JavaIntArrayToIntVector(env, j_file_ids, &file_ids);
   JavaIntArrayToIntVector(env, j_file_fds, &file_fds);
 
-  InternalInitSandboxedProcess(
+  InternalInitChildProcess(
       file_ids, file_fds, env, clazz, context, service,
       cpu_count, cpu_features);
 }
 
-void ExitSandboxedProcess(JNIEnv* env, jclass clazz) {
-  LOG(INFO) << "SandboxedProcessService: Exiting sandboxed process.";
+void ExitChildProcess(JNIEnv* env, jclass clazz) {
+  LOG(INFO) << "ChildProcessService: Exiting child process.";
   LibraryLoaderExitHook();
   _exit(0);
 }
 
-bool RegisterSandboxedProcessService(JNIEnv* env) {
+bool RegisterChildProcessService(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ShutdownSandboxMainThread(JNIEnv* env, jobject obj) {
+void ShutdownMainThread(JNIEnv* env, jobject obj) {
   ChildProcess* current_process = ChildProcess::current();
   if (!current_process)
     return;
   ChildThread* main_child_thread = current_process->main_thread();
   if (main_child_thread && main_child_thread->message_loop())
     main_child_thread->message_loop()->PostTask(FROM_HERE,
-        base::Bind(&QuitSandboxMainThreadMessageLoop));
+        base::Bind(&QuitMainThreadMessageLoop));
 }
 
 }  // namespace content

@@ -14,7 +14,7 @@ import org.chromium.base.JNINamespace;
  * the different initialization process.
  *
  * TODO (michaelbai): Refactorying the BrowserProcessMain.java and the
- * SandboxedProcessService.java to start ContentMain, and run the process
+ * ChildProcessService.java to start ContentMain, and run the process
  * specific initialization code in ContentMainRunner::Initialize.
  *
  **/

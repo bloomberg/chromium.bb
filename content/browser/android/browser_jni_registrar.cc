@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "content/browser/android/android_browser_process.h"
+#include "content/browser/android/child_process_launcher.h"
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/content_view_core_impl.h"
@@ -16,7 +17,6 @@
 #include "content/browser/android/download_controller_android_impl.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
-#include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/android/tracing_intent_handler.h"
@@ -32,6 +32,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "AndroidLocationApiAdapter",
     content::AndroidLocationApiAdapter::RegisterGeolocationService },
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
+  { "ChildProcessLauncher", content::RegisterChildProcessLauncher },
   { "ContentSettings", content::ContentSettings::RegisterContentSettings },
   { "ContentViewRenderView",
     content::ContentViewRenderView::RegisterContentViewRenderView },
@@ -45,7 +46,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
         ::RegisterInterstitialPageDelegateAndroid },
   { "LoadUrlParams", content::RegisterLoadUrlParams },
   { "RegisterImeAdapter", content::RegisterImeAdapter },
-  { "SandboxedProcessLauncher", content::RegisterSandboxedProcessLauncher },
   { "TouchPoint", content::RegisterTouchPoint },
   { "TracingIntentHandler", content::RegisterTracingIntentHandler },
   { "WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid },

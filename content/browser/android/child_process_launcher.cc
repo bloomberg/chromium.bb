@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/sandboxed_process_launcher.h"
+#include "content/browser/android/child_process_launcher.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -14,14 +14,14 @@
 #include "content/common/android/scoped_java_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "jni/SandboxedProcessLauncher_jni.h"
+#include "jni/ChildProcessLauncher_jni.h"
 #include "media/base/android/media_player_bridge.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using content::StartSandboxedProcessCallback;
+using content::StartChildProcessCallback;
 
 namespace content {
 
@@ -61,27 +61,27 @@ static void SetSurfacePeer(
 
 }  // anonymous namespace
 
-// Called from SandboxedProcessLauncher.java when the SandboxedProcess was
+// Called from ChildProcessLauncher.java when the ChildProcess was
 // started.
-// |client_context| is the pointer to StartSandboxedProcessCallback which was
-// passed in from StartSandboxedProcess.
+// |client_context| is the pointer to StartChildProcessCallback which was
+// passed in from StartChildProcess.
 // |handle| is the processID of the child process as originated in Java, 0 if
-// the SandboxedProcess could not be created.
-static void OnSandboxedProcessStarted(JNIEnv*,
-                                      jclass,
-                                      jint client_context,
-                                      jint handle) {
-  StartSandboxedProcessCallback* callback =
-      reinterpret_cast<StartSandboxedProcessCallback*>(client_context);
+// the ChildProcess could not be created.
+static void OnChildProcessStarted(JNIEnv*,
+                                  jclass,
+                                  jint client_context,
+                                  jint handle) {
+  StartChildProcessCallback* callback =
+      reinterpret_cast<StartChildProcessCallback*>(client_context);
   if (handle)
     callback->Run(static_cast<base::ProcessHandle>(handle));
   delete callback;
 }
 
-void StartSandboxedProcess(
+void StartChildProcess(
     const CommandLine::StringVector& argv,
     const std::vector<content::FileDescriptorInfo>& files_to_register,
-    const StartSandboxedProcessCallback& callback) {
+    const StartChildProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
 
@@ -115,19 +115,19 @@ void StartSandboxedProcess(
   env->ReleaseIntArrayElements(j_file_fds.obj(), file_fds, 0);
   env->ReleaseBooleanArrayElements(j_file_auto_close.obj(), file_auto_close, 0);
 
-  Java_SandboxedProcessLauncher_start(env,
+  Java_ChildProcessLauncher_start(env,
       base::android::GetApplicationContext(),
       j_argv.obj(),
       j_file_ids.obj(),
       j_file_fds.obj(),
       j_file_auto_close.obj(),
-      reinterpret_cast<jint>(new StartSandboxedProcessCallback(callback)));
+      reinterpret_cast<jint>(new StartChildProcessCallback(callback)));
 }
 
-void StopSandboxedProcess(base::ProcessHandle handle) {
+void StopChildProcess(base::ProcessHandle handle) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  Java_SandboxedProcessLauncher_stop(env, static_cast<jint>(handle));
+  Java_ChildProcessLauncher_stop(env, static_cast<jint>(handle));
 }
 
 void EstablishSurfacePeer(
@@ -151,7 +151,7 @@ jobject GetViewSurface(JNIEnv* env, jclass clazz, jint surface_id) {
   return CompositorImpl::GetSurface(surface_id);
 }
 
-bool RegisterSandboxedProcessLauncher(JNIEnv* env) {
+bool RegisterChildProcessLauncher(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

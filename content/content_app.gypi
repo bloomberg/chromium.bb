@@ -15,11 +15,11 @@
   'sources': [
     'app/android/app_jni_registrar.cc',
     'app/android/app_jni_registrar.h',
+    'app/android/child_process_service.cc',
+    'app/android/child_process_service.h',
     'app/android/content_main.cc',
     'app/android/content_main.h',
     'app/android/library_loader_hooks.cc',
-    'app/android/sandboxed_process_service.cc',
-    'app/android/sandboxed_process_service.h',
     'app/content_main.cc',
     'app/content_main_runner.cc',
     'app/startup_helper_win.cc',

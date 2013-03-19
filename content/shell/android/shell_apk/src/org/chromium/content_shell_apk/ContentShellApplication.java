@@ -12,7 +12,7 @@ import org.chromium.content.browser.ResourceExtractor;
 
 /**
  * Entry point for the content shell application.  Handles initialization of information that needs
- * to be shared across the main activity and the sandbox services created.
+ * to be shared across the main activity and the child services created.
  */
 public class ContentShellApplication extends Application {
 

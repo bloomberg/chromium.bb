@@ -32,7 +32,7 @@ import java.lang.ref.WeakReference;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.common.ISandboxedProcessService;
+import org.chromium.content.common.IChildProcessService;
 import org.chromium.content.R;
 
 @JNINamespace("content")

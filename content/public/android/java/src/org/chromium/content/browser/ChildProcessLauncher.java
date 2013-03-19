@@ -17,18 +17,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.app.SandboxedProcessService;
-import org.chromium.content.common.ISandboxedProcessCallback;
-import org.chromium.content.common.ISandboxedProcessService;
+import org.chromium.content.common.IChildProcessCallback;
+import org.chromium.content.common.IChildProcessService;
 
 /**
- * This class provides the method to start/stop SandboxedProcess called by
+ * This class provides the method to start/stop ChildProcess called by
  * native.
  */
 @JNINamespace("content")
-public class SandboxedProcessLauncher {
-    private static String TAG = "SandboxedProcessLauncher";
+public class ChildProcessLauncher {
+    private static String TAG = "ChildProcessLauncher";
 
     private static final int CALLBACK_FOR_UNKNOWN_PROCESS = 0;
     private static final int CALLBACK_FOR_GPU_PROCESS = 1;
@@ -37,10 +37,10 @@ public class SandboxedProcessLauncher {
     // The upper limit on the number of simultaneous service process instances supported.
     // This must not exceed total number of SandboxedProcessServiceX classes declared in
     // this package, and defined as services in the embedding application's manifest file.
-    // (See {@link SandboxedProcessService} for more details on defining the services.)
+    // (See {@link ChildProcessService} for more details on defining the services.)
     /* package */ static final int MAX_REGISTERED_SERVICES = 6;
-    private static final SandboxedProcessConnection[] mConnections =
-        new SandboxedProcessConnection[MAX_REGISTERED_SERVICES];
+    private static final ChildProcessConnection[] mConnections =
+        new ChildProcessConnection[MAX_REGISTERED_SERVICES];
     // The list of free slots in mConnections.  When looking for a free connection,
     // the first index in that list should be used. When a connection is freed, its index
     // is added to the end of the list. This is so that we avoid immediately reusing a freed
@@ -57,54 +57,54 @@ public class SandboxedProcessLauncher {
         }
     }
 
-    // Service class for sandboxed process. As the default value it uses
-    // SandboxedProcessService.
-    private static Class<? extends SandboxedProcessService> mServiceClass =
-            SandboxedProcessService.class;
+    // Service class for child process. As the default value it uses
+    // SandboxedProcessService0.
+    private static Class<? extends ChildProcessService> mServiceClass =
+            org.chromium.content.app.SandboxedProcessService0.class;
     private static boolean mConnectionAllocated = false;
 
     // Sets service class for sandboxed service.
-    public static void setServiceClass(Class<? extends SandboxedProcessService> serviceClass) {
+    public static void setServiceClass(Class<? extends ChildProcessService> serviceClass) {
         // We should guarantee this is called before allocating connection.
         assert !mConnectionAllocated;
         mServiceClass = serviceClass;
     }
 
-    private static SandboxedProcessConnection allocateConnection(Context context) {
-        SandboxedProcessConnection.DeathCallback deathCallback =
-            new SandboxedProcessConnection.DeathCallback() {
+    private static ChildProcessConnection allocateConnection(Context context) {
+        ChildProcessConnection.DeathCallback deathCallback =
+            new ChildProcessConnection.DeathCallback() {
                 @Override
-                public void onSandboxedProcessDied(int pid) {
+                public void onChildProcessDied(int pid) {
                     stop(pid);
                 }
             };
         synchronized (mConnections) {
             if (mFreeConnectionIndices.isEmpty()) {
-                Log.w(TAG, "Ran out of sandboxed services.");
+                Log.w(TAG, "Ran out of child services.");
                 return null;
             }
             int slot = mFreeConnectionIndices.remove(0);
             assert mConnections[slot] == null;
-            mConnections[slot] = new SandboxedProcessConnection(context, slot, deathCallback,
+            mConnections[slot] = new ChildProcessConnection(context, slot, deathCallback,
                     mServiceClass);
             mConnectionAllocated = true;
             return mConnections[slot];
         }
     }
 
-    private static SandboxedProcessConnection allocateBoundConnection(Context context,
+    private static ChildProcessConnection allocateBoundConnection(Context context,
             String[] commandLine) {
-        SandboxedProcessConnection connection = allocateConnection(context);
+        ChildProcessConnection connection = allocateConnection(context);
         if (connection != null) {
             String libraryName = LibraryLoader.getLibraryToLoad();
-            assert libraryName != null : "Attempting to launch a sandbox process without first "
+            assert libraryName != null : "Attempting to launch a child process without first "
                     + "calling LibraryLoader.setLibraryToLoad";
             connection.bind(libraryName, commandLine);
         }
         return connection;
     }
 
-    private static void freeConnection(SandboxedProcessConnection connection) {
+    private static void freeConnection(ChildProcessConnection connection) {
         if (connection == null) {
             return;
         }
@@ -133,23 +133,23 @@ public class SandboxedProcessLauncher {
     // Represents an invalid process handle; same as base/process.h kNullProcessHandle.
     private static final int NULL_PROCESS_HANDLE = 0;
 
-    // Map from pid to SandboxedService connection.
-    private static Map<Integer, SandboxedProcessConnection> mServiceMap =
-            new ConcurrentHashMap<Integer, SandboxedProcessConnection>();
+    // Map from pid to ChildService connection.
+    private static Map<Integer, ChildProcessConnection> mServiceMap =
+            new ConcurrentHashMap<Integer, ChildProcessConnection>();
 
     // A pre-allocated and pre-bound connection ready for connection setup, or null.
-    static SandboxedProcessConnection mSpareConnection = null;
+    static ChildProcessConnection mSpareConnection = null;
 
     /**
-     * Returns the sandboxed process service interface for the given pid. This may be called on
+     * Returns the child process service interface for the given pid. This may be called on
      * any thread, but the caller must assume that the service can disconnect at any time. All
      * service calls should catch and handle android.os.RemoteException.
      *
      * @param pid The pid (process handle) of the service obtained from {@link #start}.
-     * @return The ISandboxedProcessService or null if the service no longer exists.
+     * @return The IChildProcessService or null if the service no longer exists.
      */
-    public static ISandboxedProcessService getSandboxedService(int pid) {
-        SandboxedProcessConnection connection = mServiceMap.get(pid);
+    public static IChildProcessService getChildService(int pid) {
+        ChildProcessConnection connection = mServiceMap.get(pid);
         if (connection != null) {
             return connection.getService();
         }
@@ -157,25 +157,27 @@ public class SandboxedProcessLauncher {
     }
 
     /**
-     * Should be called early in startup so the work needed to spawn the sandboxed process can
+     * Should be called early in startup so the work needed to spawn the child process can
      * be done in parallel to other startup work. Must not be called on the UI thread.
      * @param context the application context used for the connection.
      */
-    public static synchronized void warmUp(Context context) {
-        assert !ThreadUtils.runningOnUiThread();
-        if (mSpareConnection == null) {
-            mSpareConnection = allocateBoundConnection(context, null);
+    public static void warmUp(Context context) {
+        synchronized (ChildProcessLauncher.class) {
+            assert !ThreadUtils.runningOnUiThread();
+            if (mSpareConnection == null) {
+                mSpareConnection = allocateBoundConnection(context, null);
+            }
         }
     }
 
     /**
-     * Spawns and connects to a sandboxed process. May be called on any thread. It will not
-     * block, but will instead callback to {@link #nativeOnSandboxedProcessStarted} when the
+     * Spawns and connects to a child process. May be called on any thread. It will not
+     * block, but will instead callback to {@link #nativeOnChildProcessStarted} when the
      * connection is established. Note this callback will not necessarily be from the same thread
      * (currently it always comes from the main thread).
      *
      * @param context Context used to obtain the application context.
-     * @param commandLine The sandboxed process command line argv.
+     * @param commandLine The child process command line argv.
      * @param file_ids The ID that should be used when mapping files in the created process.
      * @param file_fds The file descriptors that should be mapped in the created process.
      * @param file_auto_close Whether the file descriptors should be closed once they were passed to
@@ -197,8 +199,8 @@ public class SandboxedProcessLauncher {
                     new FileDescriptorInfo(fileIds[i], fileFds[i], fileAutoClose[i]);
         }
         assert clientContext != 0;
-        SandboxedProcessConnection allocatedConnection;
-        synchronized (SandboxedProcessLauncher.class) {
+        ChildProcessConnection allocatedConnection;
+        synchronized (ChildProcessLauncher.class) {
             allocatedConnection = mSpareConnection;
             mSpareConnection = null;
         }
@@ -206,13 +208,13 @@ public class SandboxedProcessLauncher {
             allocatedConnection = allocateBoundConnection(context, commandLine);
             if (allocatedConnection == null) {
                 // Notify the native code so it can free the heap allocated callback.
-                nativeOnSandboxedProcessStarted(clientContext, 0);
+                nativeOnChildProcessStarted(clientContext, 0);
                 return;
             }
         }
-        final SandboxedProcessConnection connection = allocatedConnection;
+        final ChildProcessConnection connection = allocatedConnection;
         Log.d(TAG, "Setting up connection to process: slot=" + connection.getServiceNumber());
-        // Note: This runnable will be executed when the sandboxed connection is setup.
+        // Note: This runnable will be executed when the child connection is setup.
         final Runnable onConnect = new Runnable() {
             @Override
             public void run() {
@@ -223,7 +225,7 @@ public class SandboxedProcessLauncher {
                 } else {
                     freeConnection(connection);
                 }
-                nativeOnSandboxedProcessStarted(clientContext, pid);
+                nativeOnChildProcessStarted(clientContext, pid);
             }
         };
         int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
@@ -241,15 +243,15 @@ public class SandboxedProcessLauncher {
     }
 
     /**
-     * Terminates a sandboxed process. This may be called from any thread.
+     * Terminates a child process. This may be called from any thread.
      *
      * @param pid The pid (process handle) of the service connection obtained from {@link #start}.
      */
     @CalledByNative
     static void stop(int pid) {
-        Log.d(TAG, "stopping sandboxed connection: pid=" + pid);
+        Log.d(TAG, "stopping child connection: pid=" + pid);
 
-        SandboxedProcessConnection connection = mServiceMap.remove(pid);
+        ChildProcessConnection connection = mServiceMap.remove(pid);
         if (connection == null) {
             Log.w(TAG, "Tried to stop non-existent connection to pid: " + pid);
             return;
@@ -259,14 +261,14 @@ public class SandboxedProcessLauncher {
     }
 
     /**
-     * Bind a sandboxed process as a high priority process so that it has the same
+     * Bind a child process as a high priority process so that it has the same
      * priority as the main process. This can be used for the foreground renderer
      * process to distinguish it from the the background renderer process.
      *
      * @param pid The process handle of the service connection obtained from {@link #start}.
      */
     static void bindAsHighPriority(int pid) {
-        SandboxedProcessConnection connection = mServiceMap.get(pid);
+        ChildProcessConnection connection = mServiceMap.get(pid);
         if (connection == null) {
             Log.w(TAG, "Tried to bind a non-existent connection to pid: " + pid);
             return;
@@ -280,7 +282,7 @@ public class SandboxedProcessLauncher {
      * @param pid The process handle of the service obtained from {@link #start}.
      */
     static void unbindAsHighPriority(int pid) {
-        SandboxedProcessConnection connection = mServiceMap.get(pid);
+        ChildProcessConnection connection = mServiceMap.get(pid);
         if (connection == null) {
             Log.w(TAG, "Tried to unbind non-existent connection to pid: " + pid);
             return;
@@ -291,8 +293,8 @@ public class SandboxedProcessLauncher {
     /**
      * This implementation is used to receive callbacks from the remote service.
      */
-    private static ISandboxedProcessCallback createCallback(final int callbackType) {
-        return new ISandboxedProcessCallback.Stub() {
+    private static IChildProcessCallback createCallback(final int callbackType) {
+        return new IChildProcessCallback.Stub() {
             /**
              * This is called by the remote service regularly to tell us about
              * new values.  Note that IPC calls are dispatched through a thread
@@ -326,7 +328,7 @@ public class SandboxedProcessLauncher {
         };
     };
 
-    private static native void nativeOnSandboxedProcessStarted(int clientContext, int pid);
+    private static native void nativeOnChildProcessStarted(int clientContext, int pid);
     private static native Surface nativeGetViewSurface(int surfaceId);
     private static native void nativeEstablishSurfacePeer(
             int pid, Surface surface, int primaryID, int secondaryID);

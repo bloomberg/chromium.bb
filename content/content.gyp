@@ -295,8 +295,8 @@
             'aidl_interface_file': 'public/android/java/src/org/chromium/content/common/common.aidl',
           },
           'sources': [
-            'public/android/java/src/org/chromium/content/common/ISandboxedProcessCallback.aidl',
-            'public/android/java/src/org/chromium/content/common/ISandboxedProcessService.aidl',
+            'public/android/java/src/org/chromium/content/common/IChildProcessCallback.aidl',
+            'public/android/java/src/org/chromium/content/common/IChildProcessService.aidl',
           ],
           'includes': [ '../build/java_aidl.gypi' ],
         },

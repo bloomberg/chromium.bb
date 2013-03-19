@@ -29,7 +29,7 @@
 #include "content/browser/mach_broker_mac.h"
 #elif defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "content/browser/android/sandboxed_process_launcher.h"
+#include "content/browser/android/child_process_launcher.h"
 #elif defined(OS_POSIX)
 #include "base/memory/singleton.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
@@ -109,7 +109,7 @@ class ChildProcessLauncher::Context
   }
 
 #if defined(OS_ANDROID)
-  static void OnSandboxedProcessStarted(
+  static void OnChildProcessStarted(
       // |this_object| is NOT thread safe. Only use it to post a task back.
       scoped_refptr<Context> this_object,
       BrowserThread::ID client_thread_id,
@@ -210,8 +210,8 @@ class ChildProcessLauncher::Context
         GetAdditionalMappedFilesForChildProcess(*cmd_line, child_process_id,
                                                 &files_to_register);
 
-    StartSandboxedProcess(cmd_line->argv(), files_to_register,
-        base::Bind(&ChildProcessLauncher::Context::OnSandboxedProcessStarted,
+    StartChildProcess(cmd_line->argv(), files_to_register,
+        base::Bind(&ChildProcessLauncher::Context::OnChildProcessStarted,
                    this_object, client_thread_id, begin_launch_time));
 
 #elif defined(OS_POSIX)
@@ -366,7 +366,7 @@ class ChildProcessLauncher::Context
       base::ProcessHandle handle) {
 #if defined(OS_ANDROID)
     LOG(INFO) << "ChromeProcess: Stopping process with handle " << handle;
-    StopSandboxedProcess(handle);
+    StopChildProcess(handle);
 #else
     base::Process process(handle);
      // Client has gone away, so just kill the process.  Using exit code 0
