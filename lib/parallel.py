@@ -43,6 +43,17 @@ class _BackgroundTask(multiprocessing.Process):
   STARTUP_TIMEOUT = 60 * 5
   EXIT_TIMEOUT = 60 * 10
 
+  # The time we allow processes to be silent. This must be greater than the
+  # hw_test_timeout set in cbuildbot_config.py, and less than the timeout set
+  # by buildbot itself (typically, 150 minutes.)
+  SILENT_TIMEOUT = 60 * 145
+
+  # The amount by which we reduce the SILENT_TIMEOUT every time we launch
+  # a subprocess. This helps ensure that children get a chance to enforce the
+  # SILENT_TIMEOUT prior to the parents enforcing it.
+  SILENT_TIMEOUT_STEP = 30
+  MINIMUM_SILENT_TIMEOUT = 60 * 135
+
   # The time before terminating or killing a task.
   SIGTERM_TIMEOUT = 30
   SIGKILL_TIMEOUT = 60
@@ -79,6 +90,7 @@ class _BackgroundTask(multiprocessing.Process):
       sig: Signal to send.
       log_level: The log level of log messages.
     """
+    self._killing.set()
     self._WaitForStartup()
     if logger.isEnabledFor(log_level):
       # Print a pstree of the hanging process.
@@ -87,7 +99,6 @@ class _BackgroundTask(multiprocessing.Process):
                                 debug_level=log_level, error_code_ok=True,
                                 log_output=True)
 
-    self._killing.set()
     try:
       os.kill(self.pid, sig)
     except OSError as ex:
@@ -125,38 +136,47 @@ class _BackgroundTask(multiprocessing.Process):
       # File position pointers are shared across processes, so we must open
       # our own file descriptor to ensure output is not lost.
       self._WaitForStartup()
+      silent_death_time = time.time() + self.SILENT_TIMEOUT
       results = []
       with open(self._output.name, 'r') as output:
         pos = 0
-        more_output = True
-        exited_cleanly = False
-        while more_output:
+        running, exited_cleanly, msg, error = (True, False, None, None)
+        while running:
           # Check whether the process is still alive.
-          more_output = self.is_alive()
+          running = self.is_alive()
 
           try:
             error, results = self._queue.get(True, self.PRINT_INTERVAL)
-            more_output = False
+            running = False
             exited_cleanly = True
           except Queue.Empty:
             pass
 
-          if not more_output:
+          if not running:
             # Wait for the process to actually exit. If the child doesn't exit
             # in a timely fashion, kill it.
             self.join(self.EXIT_TIMEOUT)
             if self.exitcode is None:
               msg = '%r hung for %r seconds' % (self, self.EXIT_TIMEOUT)
-              logger.warning(msg)
               self._KillChildren([self])
-              error = (error + '\n%s' % msg) if error else msg
             elif not exited_cleanly:
-              error = ('%r exited unexpectedly with code %s' %
-                       (self, self.exitcode))
-
+              msg = ('%r exited unexpectedly with code %s' %
+                     (self, self.EXIT_TIMEOUT))
           # Read output from process.
           output.seek(pos)
           buf = output.read(_BUFSIZE)
+
+          if len(buf) > 0:
+            silent_death_time = time.time() + self.SILENT_TIMEOUT
+          elif running and time.time() > silent_death_time:
+            msg = ('No output from %r for %r seconds' %
+                   (self, self.SILENT_TIMEOUT))
+            self._KillChildren([self])
+
+            # Read remaining output from the process.
+            output.seek(pos)
+            buf = output.read(_BUFSIZE)
+            running = False
 
           # Print output so far.
           while len(buf) > 0:
@@ -165,7 +185,16 @@ class _BackgroundTask(multiprocessing.Process):
             if len(buf) < _BUFSIZE:
               break
             buf = output.read(_BUFSIZE)
+
+          # Print error messages if anything exceptional occurred.
+          if msg:
+            cros_build_lib.PrintBuildbotStepFailure()
+            error = '\n'.join(x for x in (error, msg) if x)
+            logger.warning(error)
+            traceback.print_stack()
+
           sys.stdout.flush()
+          sys.stderr.flush()
 
       # Propagate any results.
       for result in results:
@@ -179,6 +208,9 @@ class _BackgroundTask(multiprocessing.Process):
 
   def start(self):
     """Invoke multiprocessing.Process.start after flushing output/err."""
+    if self.SILENT_TIMEOUT < self.MINIMUM_SILENT_TIMEOUT:
+      raise AssertionError('Maximum recursion depth exceeded in %r' % self)
+
     sys.stdout.flush()
     sys.stderr.flush()
     self._output = tempfile.NamedTemporaryFile(delete=False, bufsize=0,
@@ -196,7 +228,7 @@ class _BackgroundTask(multiprocessing.Process):
     try:
       error = self._Run()
     finally:
-      if os.getpid() == pid:
+      if not self._killing.is_set() and os.getpid() == pid:
         results = results_lib.Results.Get()
         self._queue.put((error, results))
         if self._semaphore is not None:
@@ -232,17 +264,23 @@ class _BackgroundTask(multiprocessing.Process):
       try:
         self._started.set()
         results_lib.Results.Clear()
+
+        # Reduce the silent timeout by the prescribed amount.
+        cls = self.__class__
+        cls.SILENT_TIMEOUT -= cls.SILENT_TIMEOUT_STEP
+
+        # Actually launch the task.
         self._task()
       except results_lib.StepFailure as ex:
         error = str(ex)
       except BaseException as ex:
         error = traceback.format_exc()
+        if self._killing.is_set():
+          traceback.print_exc()
+      finally:
+        sys.stdout.flush()
+        sys.stderr.flush()
 
-      if self._killing.is_set():
-        output.write(error)
-
-      sys.stdout.flush()
-      sys.stderr.flush()
     return error
 
   @classmethod
@@ -256,7 +294,6 @@ class _BackgroundTask(multiprocessing.Process):
       bg_tasks: A list filled with _BackgroundTask objects.
       log_level: The log level of log messages.
     """
-
     logger.log(log_level, 'Killing tasks: %r', bg_tasks)
     signals = ((signal.SIGINT, cls.SIGTERM_TIMEOUT),
                (signal.SIGTERM, cls.SIGKILL_TIMEOUT),

@@ -14,6 +14,7 @@ import time
 import Queue
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -285,6 +286,29 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
       self.assertEqual(os.listdir(tempdir), [])
       self.testExceptionRaising()
       self.assertEqual(os.listdir(tempdir), [])
+
+  def testKillQuiet(self, steps=None, **kwds):
+    """Test that processes do get killed if they're silent for too long."""
+    if steps is None:
+      steps = [self._Fail] * 10
+    kwds.setdefault('SILENT_TIMEOUT', 0.1)
+    kwds.setdefault('MINIMUM_SILENT_TIMEOUT', 0.01)
+    kwds.setdefault('SILENT_TIMEOUT_STEP', 0)
+    kwds.setdefault('SIGTERM_TIMEOUT', 0.1)
+    kwds.setdefault('PRINT_INTERVAL', 0.01)
+
+    ex_str = None
+    with mock.patch.multiple(parallel._BackgroundTask, **kwds):
+      with self.OutputCapturer() as capture:
+        try:
+          with cros_test_lib.DisableLogger(parallel.logger):
+            with cros_test_lib.DisableLogger(cros_build_lib.logger):
+              parallel.RunParallelSteps(steps)
+        except parallel.BackgroundFailure as ex:
+          ex_str = str(ex)
+          error_str = capture.GetStderr()
+    self.assertTrue('parallel_unittest.py' in error_str)
+    self.assertTrue(ex_str)
 
 
 if __name__ == '__main__':

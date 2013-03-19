@@ -43,8 +43,10 @@ CONFIG_TYPE_DUMP_ORDER = (
     'refresh-packages',
 )
 
+# hw_tests_timeout -- Usually, 2 hours and ten minutes. This must be less than
+#                     lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
 DEFAULT_HW_TESTS = ['bvt']
-DEFAULT_HW_TEST_TIMEOUT = 8400
+DEFAULT_HW_TEST_TIMEOUT = 60 * 130
 
 def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
@@ -318,7 +320,8 @@ _settings = dict(
 # them to the perf dashboard.
   hw_copy_perf_results=False,
 
-# hw_tests_timeout -- Usually, 2 hours and twenty minutes.
+# hw_tests_timeout -- Usually, 2 hours and ten minutes. This must be less than
+#                     lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
   hw_tests_timeout=DEFAULT_HW_TEST_TIMEOUT,
 
 # hw_tests_pool -- Pool to use for hw testing.

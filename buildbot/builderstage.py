@@ -282,6 +282,9 @@ class BuilderStage(object):
       if result not in (results_lib.Results.FORGIVEN,
                         results_lib.Results.SUCCESS):
         raise results_lib.StepFailure()
+    except BaseException as e:
+      result, description = self._HandleStageException(e)
+      raise
     finally:
       elapsed_time = time.time() - start_time
       results_lib.Results.Record(self.name, result, description,
