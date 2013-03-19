@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 
 #include <algorithm>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
@@ -102,10 +105,10 @@ namespace chromeos {
 namespace {
 
 // The minimum session length limit that can be set.
-const int kSessionLengthLimitMinMs = 30 * 1000; // 30 seconds.
+const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 
 // The maximum session length limit that can be set.
-const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000; // 24 hours.
+const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
 // Time delay for rechecking gdata operation when we suspect that there will
 // be no upcoming activity notifications that need to be pushed to UI.
@@ -370,7 +373,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (manager->IsLoggedInAsGuest())
       return ash::user::LOGGED_IN_GUEST;
     if (manager->IsLoggedInAsDemoUser())
-      return ash::user::LOGGED_IN_KIOSK;
+      return ash::user::LOGGED_IN_RETAIL_MODE;
     if (manager->IsLoggedInAsPublicAccount())
       return ash::user::LOGGED_IN_PUBLIC;
     return ash::user::LOGGED_IN_USER;
@@ -628,7 +631,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     info->tray_icon_visible = icon->ShouldShowIconInTray();
   }
 
-  virtual void GetVirtualNetworkIcon(ash::NetworkIconInfo* info) OVERRIDE{
+  virtual void GetVirtualNetworkIcon(ash::NetworkIconInfo* info) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     if (crosnet->virtual_network_connected()) {
       NetworkMenuIcon* icon = network_icon_vpn_.get();
@@ -888,8 +891,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     BaseLoginDisplayHost::default_host()->OpenProxySettings();
   }
 
-  virtual ash::VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE
-  {
+  virtual ash::VolumeControlDelegate*
+  GetVolumeControlDelegate() const OVERRIDE {
     return volume_control_delegate_.get();
   }
 
@@ -1284,7 +1287,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
             base::TimeDelta::FromMilliseconds(kGDataOperationRecheckDelayMs));
       }
     }
-
   }
 
   // Pulls the list of ongoing drive operations and initiates status update.

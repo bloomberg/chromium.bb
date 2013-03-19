@@ -12,12 +12,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+class Profile;
+
 namespace chromeos {
 
-// KioskAppLauncher launches a given app. It first attempts to mount a
-// cryptohome for the app. If the mount is successful, it restarts chrome with
-// app mode command line to finish to launch. Note that there should only
-// be one launch attempt in progress.
+// KioskAppLauncher launches a given app from login screen. It first attempts
+// to mount a cryptohome for the app. If the mount is successful, it prepares
+// app profile then calls StartupAppLauncher to finish the launch. Note that
+// there should only be one launch attempt in progress.
 class KioskAppLauncher {
  public:
   // Callback after a launch attempt.
@@ -37,11 +39,14 @@ class KioskAppLauncher {
 
  private:
   class CryptohomedChecker;
+  class ProfileLoader;
 
   void ReportLaunchResult(bool success);
 
   void StartMount();
   void MountCallback(bool mount_success, cryptohome::MountError mount_error);
+
+  void OnProfilePrepared(Profile* profile);
 
   // The instance of the current running launch.
   static KioskAppLauncher* running_instance_;
@@ -50,6 +55,7 @@ class KioskAppLauncher {
   const LaunchCallback callback_;
 
   scoped_ptr<CryptohomedChecker> crytohomed_checker;
+  scoped_ptr<ProfileLoader> profile_loader_;
 
   // True when cryptohome for the app is mounted successfully and restart
   // is scheduled.

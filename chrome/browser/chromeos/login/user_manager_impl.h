@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_MANAGER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_MANAGER_IMPL_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -49,6 +50,7 @@ class UserManagerImpl
                             bool browser_restart) OVERRIDE;
   virtual void RetailModeUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
+  virtual void KioskAppLoggedIn(const std::string& username) OVERRIDE;
   virtual void LocallyManagedUserLoggedIn(const std::string& username) OVERRIDE;
   virtual void PublicAccountUserLoggedIn(User* user) OVERRIDE;
   virtual void RegularUserLoggedIn(const std::string& email,
@@ -86,6 +88,7 @@ class UserManagerImpl
   virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
   virtual bool IsLoggedInAsLocallyManagedUser() const OVERRIDE;
+  virtual bool IsLoggedInAsKioskApp() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
   virtual MergeSessionState GetMergeSessionState() const OVERRIDE;

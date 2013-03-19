@@ -514,7 +514,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
       kTrayPopupPaddingBetweenItems));
   AddChildViewAt(user_card_, 0);
 
-  if (login == ash::user::LOGGED_IN_KIOSK) {
+  if (login == ash::user::LOGGED_IN_RETAIL_MODE) {
     views::Label* details = new views::Label;
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     details->SetText(
@@ -623,7 +623,8 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
       label_->SetVisible(true);
       break;
 
-    case user::LOGGED_IN_KIOSK:
+    case user::LOGGED_IN_RETAIL_MODE:
+    case user::LOGGED_IN_KIOSK_APP:
     case user::LOGGED_IN_NONE:
       avatar_->SetVisible(false);
       break;

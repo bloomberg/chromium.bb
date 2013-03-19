@@ -53,6 +53,9 @@ class UserManager {
   // Domain that is used for all locally managed users.
   static const char kLocallyManagedUserDomain[];
 
+  // Domain that is used for kiosk app robot.
+  static const char kKioskAppUserDomain[];
+
   // Returns a shared instance of a UserManager. Not thread-safe, should only be
   // called from the main UI thread.
   static UserManager* Get();
@@ -103,6 +106,9 @@ class UserManager {
 
   // Indicates that user just started incognito session.
   virtual void GuestUserLoggedIn() = 0;
+
+  // Indicates that a kiosk app robot just logged in.
+  virtual void KioskAppLoggedIn(const std::string& app_id) = 0;
 
   // Indicates that a locally managed user just logged in.
   virtual void LocallyManagedUserLoggedIn(const std::string& username) = 0;
@@ -221,6 +227,9 @@ class UserManager {
 
   // Returns true if we're logged in as a locally managed user.
   virtual bool IsLoggedInAsLocallyManagedUser() const = 0;
+
+  // Returns true if we're logged in as a kiosk app.
+  virtual bool IsLoggedInAsKioskApp() const = 0;
 
   // Returns true if we're logged in as the stub user used for testing on Linux.
   virtual bool IsLoggedInAsStub() const = 0;

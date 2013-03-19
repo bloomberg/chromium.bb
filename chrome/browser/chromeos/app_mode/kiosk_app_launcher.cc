@@ -4,12 +4,17 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/chrome_restart_request.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -18,6 +23,14 @@
 using content::BrowserThread;
 
 namespace chromeos {
+
+namespace {
+
+std::string GetAppUserNameFromAppId(const std::string& app_id) {
+  return app_id + "@" + UserManager::kKioskAppUserDomain;
+}
+
+}  // namespace
 
 // static
 KioskAppLauncher* KioskAppLauncher::running_instance_ = NULL;
@@ -67,7 +80,8 @@ class KioskAppLauncher::CryptohomedChecker
     if (is_mounted)
       LOG(ERROR) << "Cryptohome is mounted before launching kiosk app.";
 
-    ReportCheckResult(!is_mounted);
+    // Proceed only when cryptohome is not mounded or running on dev box.
+    ReportCheckResult(!is_mounted || !base::chromeos::IsRunningOnChromeOS());
     return;
   }
 
@@ -82,6 +96,39 @@ class KioskAppLauncher::CryptohomedChecker
   int retry_count_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomedChecker);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// KioskAppLauncher::ProfileLoader creates or loads the app profile.
+
+class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
+ public:
+  explicit ProfileLoader(KioskAppLauncher* launcher)
+      : launcher_(launcher) {
+  }
+
+  virtual ~ProfileLoader() {
+    LoginUtils::Get()->DelegateDeleted(this);
+  }
+
+  void Start() {
+    LoginUtils::Get()->PrepareProfile(
+        GetAppUserNameFromAppId(launcher_->app_id_),
+        std::string(),  // display email
+        std::string(),  // password
+        false,  // using_oauth
+        false,  // has_cookies
+        this);
+  }
+
+ private:
+  // LoginUtils::Delegate overrides:
+  virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
+    launcher_->OnProfilePrepared(profile);
+  }
+
+  KioskAppLauncher* launcher_;
+  DISALLOW_COPY_AND_ASSIGN(ProfileLoader);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +190,17 @@ void KioskAppLauncher::MountCallback(bool mount_success,
     return;
   }
 
-  RestartChrome(GetKioskAppCommandLine(app_id_));
+  profile_loader_.reset(new ProfileLoader(this));
+  profile_loader_->Start();
+}
+
+void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
+  // StartupAppLauncher deletes itself when done.
+  (new chromeos::StartupAppLauncher(profile, app_id_))->Start();
+
+  BaseLoginDisplayHost::default_host()->OnSessionStart();
+  UserManager::Get()->SessionStarted();
+
   ReportLaunchResult(true);
 }
 

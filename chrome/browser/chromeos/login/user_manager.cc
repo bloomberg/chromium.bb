@@ -15,6 +15,9 @@ const char UserManager::kStubUser[] = "stub-user@example.com";
 const char UserManager::kLocallyManagedUserDomain[] =
     "locally-managed.localhost";
 
+// static
+const char UserManager::kKioskAppUserDomain[] = "kiosk-apps.localhost";
+
 // Class that is holds pointer to UserManager instance.
 // One could set UserManager mock instance through it (see UserManager::Set).
 class UserManagerImplWrapper {

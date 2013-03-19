@@ -19,9 +19,6 @@ std::string GetOffTheRecordCommandLine(
     const CommandLine& base_command_line,
     CommandLine* command_line);
 
-// Returns the command line string to be used for the kiosk app process.
-std::string GetKioskAppCommandLine(const std::string& app_id);
-
 // Request session manager to restart chrome with a new command line.
 void RestartChrome(const std::string& command_line);
 

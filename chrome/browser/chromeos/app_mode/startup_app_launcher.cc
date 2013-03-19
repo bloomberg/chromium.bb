@@ -86,11 +86,17 @@ void StartupAppLauncher::OnLaunchSuccess() {
   }
 
   chromeos::CloseAppLaunchSplashScreen();
+
+  // Ends OpenAsh() keep alive since the session should be bound with the just
+  // launched app now.
+  chrome::EndKeepAlive();
+
   delete this;
 }
 
 void StartupAppLauncher::OnLaunchFailure() {
   // Ends the session if launch fails. This should bring us back to login.
+  KioskAppManager::Get()->SetSuppressAutoLaunch(true);
   chrome::AttemptUserExit();
 
   // TODO(xiyuan): Signal somehow to the session manager that app launch
@@ -188,7 +194,6 @@ void StartupAppLauncher::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
-  KioskAppManager::Get()->SetSuppressAutoLaunch(true);
   OnLaunchFailure();  // User cancel failure.
 }
 

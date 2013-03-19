@@ -33,11 +33,13 @@ ash::user::LoginStatus GetCurrentLoginStatus() {
     case User::USER_TYPE_GUEST:
       return ash::user::LOGGED_IN_GUEST;
     case User::USER_TYPE_RETAIL_MODE:
-      return ash::user::LOGGED_IN_KIOSK;
+      return ash::user::LOGGED_IN_RETAIL_MODE;
     case User::USER_TYPE_PUBLIC_ACCOUNT:
       return ash::user::LOGGED_IN_PUBLIC;
     case User::USER_TYPE_LOCALLY_MANAGED:
       return ash::user::LOGGED_IN_LOCALLY_MANAGED;
+    case User::USER_TYPE_KIOSK_APP:
+      return ash::user::LOGGED_IN_KIOSK_APP;
   }
 
   NOTREACHED();
