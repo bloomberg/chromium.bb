@@ -228,11 +228,8 @@ void LayerTreeImpl::UpdateSolidColorScrollbars() {
   DCHECK(settings().solidColorScrollbars);
 
   LayerImpl* root_scroll = RootScrollLayer();
-  if (!root_scroll)
-    return;
-
-  if (!IsActiveTree())
-    return;
+  DCHECK(root_scroll);
+  DCHECK(IsActiveTree());
 
   gfx::RectF scrollable_viewport(
       gfx::PointAtOffsetFromOrigin(root_scroll->TotalScrollOffset()),
@@ -260,15 +257,15 @@ struct UpdateTilePrioritiesForLayer {
 };
 
 void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
-  if (settings().solidColorScrollbars && IsActiveTree()) {
+  if (settings().solidColorScrollbars && IsActiveTree() && RootScrollLayer()) {
     UpdateSolidColorScrollbars();
 
     // The top controls manager is incompatible with the WebKit-created cliprect
     // because it can bring into view a larger amount of content when it
     // hides. It's safe to deactivate the clip rect if no non-overlay scrollbars
     // are present.
-    if (layer_tree_host_impl_->top_controls_manager())
-      RootScrollLayer()->parent()->SetMasksToBounds(false);
+    if (RootClipLayer() && layer_tree_host_impl_->top_controls_manager())
+      RootClipLayer()->SetMasksToBounds(false);
   }
 
   if (!needs_update_draw_properties_) {
