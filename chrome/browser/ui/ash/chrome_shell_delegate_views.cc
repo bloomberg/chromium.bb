@@ -17,6 +17,10 @@ bool ChromeShellDelegate::IsSessionStarted() const {
   return true;
 }
 
+bool ChromeShellDelegate::IsGuestSession() const {
+  return false;
+}
+
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return false;
 }

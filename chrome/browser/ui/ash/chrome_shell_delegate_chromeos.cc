@@ -60,9 +60,13 @@ bool ChromeShellDelegate::IsUserLoggedIn() const {
   return chromeos::UserManager::Get()->IsUserLoggedIn();
 }
 
-  // Returns true if we're logged in and browser has been started
 bool ChromeShellDelegate::IsSessionStarted() const {
+  // Returns true if we're logged in and browser has been started
   return chromeos::UserManager::Get()->IsSessionStarted();
+}
+
+bool ChromeShellDelegate::IsGuestSession() const {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
 }
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {

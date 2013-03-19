@@ -27,6 +27,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #endif
 
 using content::BrowserThread;
@@ -104,6 +105,8 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 void DesktopNotificationsTest::SetUp() {
 #if defined(USE_ASH)
   WebKit::initialize(webkit_platform_support_.Get());
+  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 #if defined(ENABLE_MESSAGE_CENTER)
   // The message center is notmally initialized on |g_browser_process| which
   // is not created for these tests.

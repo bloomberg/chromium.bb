@@ -41,6 +41,10 @@ bool TestShellDelegate::IsSessionStarted() const {
   return session_started_;
 }
 
+bool TestShellDelegate::IsGuestSession() const {
+  return false;
+}
+
 bool TestShellDelegate::IsFirstRunAfterBoot() const {
   return false;
 }

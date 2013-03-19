@@ -92,6 +92,9 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if we're logged in and browser has been started
   virtual bool IsSessionStarted() const = 0;
 
+  // Returns true if we're logged in as guest.
+  virtual bool IsGuestSession() const = 0;
+
   // Returns true if this is the first time that the shell has been run after
   // the system has booted.  false is returned after the shell has been
   // restarted, typically due to logging in as a guest or logging out.

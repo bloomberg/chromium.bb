@@ -47,6 +47,10 @@ bool ShellDelegateImpl::IsSessionStarted() const {
   return true;
 }
 
+bool ShellDelegateImpl::IsGuestSession() const {
+  return false;
+}
+
 bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
   return false;
 }

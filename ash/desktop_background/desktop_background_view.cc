@@ -12,6 +12,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
@@ -194,17 +195,24 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   int animation_type = wallpaper_delegate->GetAnimationType();
   views::corewm::SetWindowVisibilityAnimationType(
       desktop_widget->GetNativeView(), animation_type);
-  // Disable animation when creating the first widget. Otherwise, wallpaper
-  // will animate from a white screen. Note that boot animation is different.
-  // It animates from a white background.
-  if (animation_type == views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE &&
-      root_window->GetProperty(kAnimatingDesktopController) == NULL) {
-    views::corewm::SetWindowVisibilityAnimationTransition(
-        desktop_widget->GetNativeView(), views::corewm::ANIMATE_NONE);
-  } else {
+
+  // Enable wallpaper transition for the following cases:
+  // 1. Initial(OOBE) wallpaper animation.
+  // 2. Wallpaper fades in from a non empty background.
+  // 3. From an empty background, chrome transit to a logged in user session.
+  // 4. From an empty background, guest user logged in.
+  if (wallpaper_delegate->ShouldShowInitialAnimation() ||
+      root_window->GetProperty(kAnimatingDesktopController) ||
+      Shell::GetInstance()->delegate()->IsGuestSession() ||
+      Shell::GetInstance()->delegate()->IsUserLoggedIn()) {
     views::corewm::SetWindowVisibilityAnimationTransition(
         desktop_widget->GetNativeView(), views::corewm::ANIMATE_SHOW);
+  } else {
+    // Disable animation if transition to login screen from an empty background.
+    views::corewm::SetWindowVisibilityAnimationTransition(
+        desktop_widget->GetNativeView(), views::corewm::ANIMATE_NONE);
   }
+
   desktop_widget->SetBounds(params.parent->bounds());
   ui::ScopedLayerAnimationSettings settings(
       desktop_widget->GetNativeView()->layer()->GetAnimator());
