@@ -18,8 +18,7 @@ class ResourceProvider;
 class CC_EXPORT DelegatingRenderer :
     public Renderer,
     public NON_EXPORTED_BASE(
-        WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback)
-{
+        WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback) {
  public:
   static scoped_ptr<DelegatingRenderer> Create(
       RendererClient* client,
@@ -50,7 +49,7 @@ class CC_EXPORT DelegatingRenderer :
   // WebGraphicsContext3D::WebGraphicsContextLostCallback implementation.
   virtual void onContextLost() OVERRIDE;
 
-private:
+ private:
   DelegatingRenderer(RendererClient* client,
                      OutputSurface* output_surface,
                      ResourceProvider* resource_provider);
