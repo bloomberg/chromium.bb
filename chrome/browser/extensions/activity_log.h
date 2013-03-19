@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
@@ -199,13 +198,6 @@ class ActivityLog : public ProfileKeyedService,
   // Whether to log activity to stdout or the UI. These are set by switches.
   bool log_activity_to_stdout_;
   bool log_activity_to_ui_;
-
-  // log_arguments controls whether to log API call arguments. By default, we
-  // don't log most arguments to avoid saving too much data. In testing mode,
-  // argument collection is enabled. We also whitelist some arguments for
-  // collection regardless of whether this bool is true.
-  bool log_arguments_;
-  base::hash_set<std::string> arg_whitelist_api_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };

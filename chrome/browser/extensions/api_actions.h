@@ -45,8 +45,6 @@ class APIAction : public Action {
 
   static const char* kTableName;
   static const char* kTableContentFields[];
-  static const char* kAlwaysLog[];
-  static const int kSizeAlwaysLog;
 
   // Create the database table for storing APIActions, or update the schema if
   // it is out of date.  Any existing data is preserved.

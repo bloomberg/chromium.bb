@@ -148,17 +148,6 @@ ActivityLog::ActivityLog(Profile* profile) {
   log_activity_to_ui_ = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableExtensionActivityUI);
 
-  // enable-extension-activity-log-testing
-  // Currently, this just controls whether arguments are collected. In the
-  // future, it may also control other optional activity log features.
-  log_arguments_ = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableExtensionActivityLogTesting);
-  if (!log_arguments_) {
-    for (int i = 0; i < APIAction::kSizeAlwaysLog; i++) {
-      arg_whitelist_api_.insert(std::string(APIAction::kAlwaysLog[i]));
-    }
-  }
-
   // If the database cannot be initialized for some reason, we keep
   // chugging along but nothing will get recorded. If the UI is
   // available, things will still get sent to the UI even if nothing
@@ -244,13 +233,7 @@ void ActivityLog::LogAPIAction(const Extension* extension,
                                const ListValue* args,
                                const std::string& extra) {
   if (!IsLogEnabled()) return;
-  bool log_args = log_arguments_ ||
-      arg_whitelist_api_.find(api_call) != arg_whitelist_api_.end();
-  LogAPIActionInternal(extension,
-                       api_call,
-                       log_args ? args : new ListValue(),
-                       extra,
-                       APIAction::CALL);
+  LogAPIActionInternal(extension, api_call, args, extra, APIAction::CALL);
 }
 
 // A wrapper around LogAPIActionInternal, but we know it's actually an event
@@ -264,7 +247,7 @@ void ActivityLog::LogEventAction(const Extension* extension,
   if (!IsLogEnabled()) return;
   LogAPIActionInternal(extension,
                        api_call,
-                       log_arguments_ ? args : new ListValue(),
+                       args,
                        extra,
                        APIAction::EVENT_CALLBACK);
 }
@@ -275,22 +258,17 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
                                    const char* reason,
                                    const std::string& extra) {
   if (!IsLogEnabled()) return;
-  bool log_args = log_arguments_ ||
-      arg_whitelist_api_.find(blocked_call) != arg_whitelist_api_.end();
-  std::string altered_args =
-      log_args ? MakeArgList(args) : MakeArgList(new ListValue());
   scoped_refptr<BlockedAction> action = new BlockedAction(extension->id(),
                                                           base::Time::Now(),
                                                           blocked_call,
-                                                          altered_args,
+                                                          MakeArgList(args),
                                                           std::string(reason),
                                                           extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
   // Display the action.
   ObserverMap::const_iterator iter = observers_.find(extension);
   if (iter != observers_.end()) {
-    std::string blocked_str = MakeCallSignature(blocked_call,
-        log_args ? args : new ListValue());
+    std::string blocked_str = MakeCallSignature(blocked_call, args);
     iter->second->Notify(&Observer::OnExtensionActivity,
                          extension,
                          ActivityLog::ACTIVITY_EXTENSION_API_BLOCK,

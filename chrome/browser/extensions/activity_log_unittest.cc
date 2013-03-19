@@ -50,23 +50,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(2, static_cast<int>(i->size()));
   }
 
-  static void Arguments_Missing(
-      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
-    scoped_refptr<Action> last = i->front();
-    std::string noargs = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
-      "CALL, VERB: UNKNOWN_VERB, TARGET: TABS, API: tabs.testMethod, ARGS: ";
-    ASSERT_EQ(noargs, last->PrettyPrintForDebug());
-  }
-
-  static void Arguments_Present(
-      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
-    scoped_refptr<Action> last = i->front();
-    std::string args = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
-      "CALL, VERB: UNKNOWN_VERB, TARGET: UNKNOWN_TARGET, API: "
-      "extension.connect, ARGS: \"hello\", \"world\"";
-    ASSERT_EQ(args, last->PrettyPrintForDebug());
-  }
-
  protected:
   ExtensionService* extension_service_;
   Profile* profile_;
@@ -127,56 +110,6 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
       extension->id(),
       0,
       base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions));
-}
-
-TEST_F(ActivityLogTest, LogWithoutArguments) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
-  ASSERT_TRUE(ActivityLog::IsLogEnabled());
-
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Set(0, new base::StringValue("hello"));
-  args->Set(1, new base::StringValue("world"));
-  activity_log->LogAPIAction(extension,
-                             std::string("tabs.testMethod"),
-                             args.get(),
-                             "");
-  activity_log->GetActions(
-      extension->id(),
-      0,
-      base::Bind(ActivityLogTest::Arguments_Missing));
-}
-
-TEST_F(ActivityLogTest, LogWithArguments) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
-  ASSERT_TRUE(ActivityLog::IsLogEnabled());
-
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Set(0, new base::StringValue("hello"));
-  args->Set(1, new base::StringValue("world"));
-  activity_log->LogAPIAction(extension,
-                            std::string("extension.connect"),
-                            args.get(),
-                            "");
-  activity_log->GetActions(
-      extension->id(),
-      0,
-      base::Bind(ActivityLogTest::Arguments_Present));
 }
 
 }  // namespace extensions

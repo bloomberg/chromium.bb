@@ -15,13 +15,6 @@ const char* APIAction::kTableName = "activitylog_apis";
 const char* APIAction::kTableContentFields[] =
     {"api_type", "api_action_type", "target_type", "api_call", "args", "extra"};
 
-// We should log the arguments to these API calls, even if argument logging is
-// disabled by default.
-const char* APIAction::kAlwaysLog[] =
-    {"extension.connect", "extension.sendMessage",
-     "tabs.executeScript", "tabs.insertCSS" };
-const int APIAction::kSizeAlwaysLog = arraysize(kAlwaysLog);
-
 APIAction::APIAction(const std::string& extension_id,
                      const base::Time& time,
                      const Type type,
