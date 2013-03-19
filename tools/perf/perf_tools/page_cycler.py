@@ -88,7 +88,7 @@ class PageCycler(page_benchmark.PageBenchmark):
                   chart_name='vm_pss_final_r', data_type='unimportant')
 
     # Total
-    if 'VM' in memory['Browser'] and 'WM' in memory['Renderer']:
+    if 'VM' in memory['Browser'] and 'VM' in memory['Renderer']:
       results.Add('vm_size_f_t', 'bytes',
                   memory['Browser']['VM'] + memory['Renderer']['VM'],
                   chart_name='vm_size_final_t', data_type='unimportant')
