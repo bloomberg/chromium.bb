@@ -11,7 +11,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
@@ -39,6 +41,7 @@ struct ChannelHandle;
 namespace content {
 class BrowserChildProcessHostImpl;
 class GpuMainThread;
+class RenderWidgetHostViewFrameSubscriber;
 class ShaderDiskCache;
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
@@ -123,6 +126,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void ForceShutdown();
 
+  void BeginFrameSubscription(
+      int surface_id,
+      base::WeakPtr<RenderWidgetHostViewFrameSubscriber> subscriber);
+  void EndFrameSubscription(int surface_id);
   void LoadedShader(const std::string& key, const std::string& data);
 
  private:
@@ -248,6 +255,13 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Statics kept around to send to UMA histograms on GPU process lost.
   bool uma_memory_stats_received_;
   GPUMemoryUmaStats uma_memory_stats_;
+
+  // This map of frame subscribers are listening for frame presentation events.
+  // The key is the surface id and value is the subscriber.
+  typedef base::hash_map<int,
+                         base::WeakPtr<RenderWidgetHostViewFrameSubscriber> >
+  FrameSubscriberMap;
+  FrameSubscriberMap frame_subscribers_;
 
   typedef std::map<int32, scoped_refptr<ShaderDiskCache> >
       ClientIdToShaderCacheMap;

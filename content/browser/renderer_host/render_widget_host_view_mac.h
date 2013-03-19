@@ -276,7 +276,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual bool CanCopyToVideoFrame() const OVERRIDE;
   virtual bool CanSubscribeFrame() const OVERRIDE;
   virtual void BeginFrameSubscription(
-      RenderWidgetHostViewFrameSubscriber* subscriber) OVERRIDE;
+      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE;
   virtual void EndFrameSubscription() OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void OnAccessibilityNotifications(

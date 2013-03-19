@@ -27,6 +27,7 @@
 #include "content/common/view_messages.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -893,6 +894,13 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     return;
   }
 
+  scoped_refptr<media::VideoFrame> target_frame;
+  RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback copy_callback;
+  FrameSubscriberMap::iterator it = frame_subscribers_.find(params.surface_id);
+  bool should_copy = false;
+  if (it != frame_subscribers_.end() && it->second)
+    should_copy = it->second->ShouldCaptureFrame(&target_frame, &copy_callback);
+
   scoped_completion_runner.Release();
   presenter->AsyncPresentAndAcknowledge(
       params.size,
@@ -902,6 +910,16 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
                  params.route_id,
                  params.surface_id,
                  params.surface_handle));
+
+  // It is a potential improvement to do the copy in present, but we use a
+  // simpler approach now.
+  if (should_copy) {
+    // The timestamp here is not the acutal presentation time but it is close
+    // enough.
+    presenter->AsyncCopyToVideoFrame(
+        gfx::Rect(params.size), target_frame,
+        base::Bind(copy_callback, base::Time::Now()));
+  }
 }
 
 void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(
@@ -981,6 +999,16 @@ void GpuProcessHost::ForceShutdown() {
     g_gpu_process_hosts[kind_] = NULL;
 
   process_->ForceShutdown();
+}
+
+void GpuProcessHost::BeginFrameSubscription(
+    int surface_id,
+    base::WeakPtr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+  frame_subscribers_[surface_id] = subscriber;
+}
+
+void GpuProcessHost::EndFrameSubscription(int surface_id) {
+  frame_subscribers_.erase(surface_id);
 }
 
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {

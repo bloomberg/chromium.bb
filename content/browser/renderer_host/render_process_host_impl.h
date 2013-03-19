@@ -32,6 +32,7 @@ class RendererMainThread;
 class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
+class RenderWidgetHostViewFrameSubscriber;
 class StoragePartition;
 class StoragePartitionImpl;
 
@@ -127,6 +128,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
   int GetActiveViewCount();
+
+  // Start and end frame subscription for a specific renderer.
+  // This API only supports subscription to accelerated composited frames.
+  void BeginFrameSubscription(
+      int route_id,
+      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
+  void EndFrameSubscription(int route_id);
 
   // Register/unregister the host identified by the host id in the global host
   // list.

@@ -97,6 +97,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -1556,6 +1557,28 @@ int RenderProcessHostImpl::GetActiveViewCount() {
       num_active_views++;
   }
   return num_active_views;
+}
+
+// Frame subscription API for this class is for accelerated composited path
+// only. These calls are redirected to GpuMessageFilter.
+void RenderProcessHostImpl::BeginFrameSubscription(
+    int route_id,
+    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+  if (!gpu_message_filter_)
+    return;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &GpuMessageFilter::BeginFrameSubscription,
+      gpu_message_filter_,
+      route_id, base::Passed(&subscriber)));
+}
+
+void RenderProcessHostImpl::EndFrameSubscription(int route_id) {
+  if (!gpu_message_filter_)
+    return;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &GpuMessageFilter::EndFrameSubscription,
+      gpu_message_filter_,
+      route_id));
 }
 
 void RenderProcessHostImpl::OnShutdownRequest() {

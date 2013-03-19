@@ -20,6 +20,7 @@ struct GPUCreateCommandBufferConfig;
 
 namespace content {
 class RenderWidgetHelper;
+class RenderWidgetHostViewFrameSubscriber;
 struct GPUInfo;
 
 // A message filter for messages from the renderer to the GpuProcessHost(UIShim)
@@ -38,10 +39,18 @@ class GpuMessageFilter : public BrowserMessageFilter {
   // unblock existing CreateViewCommandBuffer requests using that surface.
   void SurfaceUpdated(int32 surface_id);
 
+  // This set of API is used to subscribe to frame presentation events.
+  // See RenderWidgetHostViewFrameSubscriber for more details.
+  void BeginFrameSubscription(
+      int route_id,
+      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
+  void EndFrameSubscription(int route_id);
+
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<GpuMessageFilter>;
   struct CreateViewCommandBufferRequest;
+  struct FrameSubscription;
 
   virtual ~GpuMessageFilter();
 
@@ -58,6 +67,13 @@ class GpuMessageFilter : public BrowserMessageFilter {
                                 const GPUInfo& gpu_info);
   void CreateCommandBufferCallback(IPC::Message* reply, int32 route_id);
 
+  void BeginAllFrameSubscriptions();
+  void EndAllFrameSubscriptions();
+  void BeginFrameSubscriptionInternal(
+      linked_ptr<FrameSubscription> subscription);
+  void EndFrameSubscriptionInternal(
+      linked_ptr<FrameSubscription> subscription);
+
   int gpu_process_id_;
   int render_process_id_;
   bool share_contexts_;
@@ -66,6 +82,9 @@ class GpuMessageFilter : public BrowserMessageFilter {
   std::vector<linked_ptr<CreateViewCommandBufferRequest> > pending_requests_;
 
   base::WeakPtrFactory<GpuMessageFilter> weak_ptr_factory_;
+
+  typedef std::vector<linked_ptr<FrameSubscription> > FrameSubscriptionList;
+  FrameSubscriptionList frame_subscription_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMessageFilter);
 };

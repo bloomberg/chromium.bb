@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/render_view_host.h"
@@ -36,6 +39,8 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   }
 
 #if defined(OS_MACOSX)
+  // TODO(justinlin): Update Mac unit tests to use the common way of forcing
+  // compositing and updates.
   void SetupCompositingSurface() {
     NavigateToURL(shell(), net::FilePathToFileURL(
         test_dir_.AppendASCII("rwhv_compositing_static.html")));
@@ -57,6 +62,47 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
       increment++;
       ASSERT_LT(increment, 50);
     }
+  }
+#else
+
+  bool CheckAcceleratedCompositingActive() {
+    RenderWidgetHostImpl* impl =
+        RenderWidgetHostImpl::From(
+            shell()->web_contents()->GetRenderWidgetHostView()->
+                GetRenderWidgetHost());
+    return impl->is_accelerated_compositing_active();
+  }
+
+  bool CheckCompositingSurface() {
+#if defined(OS_WIN)
+    if (!GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface())
+      return false;
+#endif
+
+    RenderViewHost* const rwh =
+        shell()->web_contents()->GetRenderViewHost();
+    RenderWidgetHostViewPort* rwhvp =
+        static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
+    return !rwhvp->GetCompositingSurface().is_null();
+  }
+
+  bool SetupCompositingSurface() {
+    NavigateToURL(shell(), net::FilePathToFileURL(
+        test_dir_.AppendASCII("rwhv_compositing_animation.html")));
+    if (!CheckAcceleratedCompositingActive())
+      return false;
+
+    // The page is now accelerated composited but a compositing surface might
+    // not be available immediately so wait for it.
+    while (!CheckCompositingSurface()) {
+      base::RunLoop run_loop;
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          run_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(10));
+      run_loop.Run();
+    }
+    return true;
   }
 #endif
 
@@ -103,6 +149,19 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  private:
   DeliverFrameCallback callback_;
 };
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+
+static void DeliverFrameFunc(const scoped_refptr<base::MessageLoopProxy>& loop,
+                             base::Closure quit_closure,
+                             bool* frame_captured_out,
+                             base::Time timestamp,
+                             bool frame_captured) {
+  *frame_captured_out = frame_captured;
+  loop->PostTask(FROM_HERE, quit_closure);
+}
+
+#endif
 
 #if defined(OS_MACOSX)
 // Tests that the callback passed to CopyFromBackingStore is always called, even
@@ -189,14 +248,6 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
   ASSERT_TRUE(finish_called_);
 }
 
-static void DeliverFrameFunc(base::Closure quit_closure,
-                             bool* frame_captured_out,
-                             base::Time timestamp,
-                             bool frame_captured) {
-  *frame_captured_out = frame_captured;
-  quit_closure.Run();
-}
-
 // This test is flaky: crbug.com/180190.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
                        DISABLED_MacFrameSubscriberTest) {
@@ -213,10 +264,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
   EXPECT_TRUE(view->CanSubscribeFrame());
 
   bool frame_captured = false;
-  view->BeginFrameSubscription(
+  scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
       new FakeFrameSubscriber(base::Bind(&DeliverFrameFunc,
+                                         base::MessageLoopProxy::current(),
                                          run_loop.QuitClosure(),
                                          &frame_captured)));
+  view->BeginFrameSubscription(subscriber.Pass());
 
   // To ensure there is always a repaint we resize the window to a weird
   // size. This gurantees a repaint if the window is already in |size_|.
@@ -228,6 +281,34 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
   EXPECT_TRUE(frame_captured);
 }
 
+#endif
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
+                       FrameSubscriberTest) {
+  if (!SetupCompositingSurface()) {
+    LOG(ERROR) << "Accelerated compositing not running.";
+    return;
+  }
+
+  base::RunLoop run_loop;
+  RenderWidgetHostViewPort* view = RenderWidgetHostViewPort::FromRWHV(
+      shell()->web_contents()->GetRenderViewHost()->GetView());
+  ASSERT_TRUE(view);
+
+  EXPECT_TRUE(view->CanSubscribeFrame());
+
+  bool frame_captured = false;
+  scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
+      new FakeFrameSubscriber(base::Bind(&DeliverFrameFunc,
+                                         base::MessageLoopProxy::current(),
+                                         run_loop.QuitClosure(),
+                                         &frame_captured)));
+  view->BeginFrameSubscription(subscriber.Pass());
+  run_loop.Run();
+  view->EndFrameSubscription();
+  EXPECT_TRUE(frame_captured);
+}
 #endif
 
 }  // namespace content

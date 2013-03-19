@@ -1043,8 +1043,8 @@ bool RenderWidgetHostViewMac::CanSubscribeFrame() const {
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(
-    RenderWidgetHostViewFrameSubscriber* subscriber) {
-  frame_subscriber_.reset(subscriber);
+    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+  frame_subscriber_ = subscriber.Pass();
 }
 
 void RenderWidgetHostViewMac::EndFrameSubscription() {

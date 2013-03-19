@@ -71,7 +71,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       int mouse_event_y) OVERRIDE;
   virtual bool CanSubscribeFrame() const OVERRIDE;
   virtual void BeginFrameSubscription(
-      RenderWidgetHostViewFrameSubscriber* subscriber) OVERRIDE;
+      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE;
   virtual void EndFrameSubscription() OVERRIDE;
   virtual void OnSwapCompositorFrame(
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE {}

@@ -770,6 +770,10 @@ void RenderWidgetHostViewWin::RenderViewGone(base::TerminationStatus status,
   Destroy();
 }
 
+bool RenderWidgetHostViewWin::CanSubscribeFrame() const {
+  return render_widget_host_ != NULL;
+}
+
 void RenderWidgetHostViewWin::WillWmDestroy() {
   CleanupCompositorWindow();
 }

@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/basic_mouse_wheel_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/smooth_scroll_gesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/gfx/display.h"
@@ -470,18 +472,40 @@ void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
 }
 
+// Platform implementation should override this method to allow frame
+// subscription. Frame subscriber is set to RenderProcessHost, which is
+// platform independent. It should be set to the specific presenter on each
+// platform.
 bool RenderWidgetHostViewBase::CanSubscribeFrame() const {
   NOTIMPLEMENTED();
   return false;
 }
 
+// Base implementation for this method sets the subscriber to RenderProcessHost,
+// which is platform independent. Note: Implementation only support subscribing
+// to accelerated composited frames.
 void RenderWidgetHostViewBase::BeginFrameSubscription(
-    RenderWidgetHostViewFrameSubscriber* subscriber) {
-  NOTIMPLEMENTED();
+    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+  RenderWidgetHostImpl* impl = NULL;
+  if (GetRenderWidgetHost())
+    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  if (!impl)
+    return;
+  RenderProcessHostImpl* render_process_host =
+      static_cast<RenderProcessHostImpl*>(impl->GetProcess());
+  render_process_host->BeginFrameSubscription(impl->GetRoutingID(),
+                                              subscriber.Pass());
 }
 
 void RenderWidgetHostViewBase::EndFrameSubscription() {
-  NOTIMPLEMENTED();
+  RenderWidgetHostImpl* impl = NULL;
+  if (GetRenderWidgetHost())
+    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  if (!impl)
+    return;
+  RenderProcessHostImpl* render_process_host =
+      static_cast<RenderProcessHostImpl*>(impl->GetProcess());
+  render_process_host->EndFrameSubscription(impl->GetRoutingID());
 }
 
 }  // namespace content
