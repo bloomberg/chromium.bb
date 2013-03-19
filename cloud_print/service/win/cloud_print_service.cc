@@ -2,12 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Service has no COM objects. http://support.microsoft.com/kb/2480736
-#define _ATL_NO_COM_SUPPORT
-
 #include <atlbase.h>
-#include <atlcom.h>
-#include <atlctl.h>
 #include <security.h>
 
 #include <iomanip>
