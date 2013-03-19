@@ -57,7 +57,7 @@ const uint64 kOutdatedBuildAgeInDays = 12 * 7;
 
 // Finch Experiment strings to identify if we should check for outdated install.
 const char kOutdatedInstallCheckTrialName[] = "OutdatedInstallCheck";
-const char kOutdatedInstallCheck12WeeksGroupName[] = "12WeeksOutdatedIntalls";
+const char kOutdatedInstallCheck12WeeksGroupName[] = "12WeeksOutdatedInstall";
 
 std::string CmdLineInterval() {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
