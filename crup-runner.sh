@@ -112,7 +112,7 @@ if [ "$solution" = "$1" ]; then
 else
   submodule="${1#*/}"
   echo "[$solution] updating $submodule"
-  "$GIT_EXE" submodule update --quiet "$submodule" |
+  "$GIT_EXE" submodule update --recursive --quiet "$submodule" |
   ( grep -v '^Skipping submodule' || true ) | sed "s|^|[$1] |g"
   status=$?
   if [ "$status" -ne "0" ]; then
