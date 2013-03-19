@@ -981,7 +981,8 @@ void NetworkMenu::DoConnect(Network* network) {
     }
   } else if (network->type() == TYPE_CELLULAR) {
     CellularNetwork* cellular = static_cast<CellularNetwork*>(network);
-    if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED) {
+    if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED ||
+        cellular->out_of_credits()) {
       ActivateCellular(cellular);
     } else {
       cros->ConnectToCellularNetwork(cellular);
@@ -1026,7 +1027,7 @@ void NetworkMenu::ConnectToNetwork(Network* network) {
 
     case TYPE_CELLULAR: {
       CellularNetwork* cell = static_cast<CellularNetwork*>(network);
-      if (cell->NeedsActivation()) {
+      if (cell->NeedsActivation() || cell->out_of_credits()) {
         ActivateCellular(cell);
       } else if (cell->connecting_or_connected() ||
                  cell->activation_state() == ACTIVATION_STATE_ACTIVATING) {

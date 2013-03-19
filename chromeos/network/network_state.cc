@@ -42,6 +42,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &guid_);
   } else if (key == shill::kActivateOverNonCellularNetworkProperty) {
     return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
+  } else if (key == shill::kOutOfCreditsProperty) {
+    return GetBooleanValue(key, value, &cellular_out_of_credits_);
   }
   return false;
 }
@@ -71,6 +73,8 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   dictionary->SetBooleanWithoutPathExpansion(
       shill::kActivateOverNonCellularNetworkProperty,
       activate_over_non_cellular_networks());
+  dictionary->SetBooleanWithoutPathExpansion(shill::kOutOfCreditsProperty,
+                                             cellular_out_of_credits());
 }
 
 bool NetworkState::IsConnectedState() const {

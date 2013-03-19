@@ -11,6 +11,7 @@
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/chromeos/network/network_state_notifier.h"
+#include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -33,23 +34,23 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
+using ash::internal::TrayNetwork;
+using ash::NetworkObserver;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
 namespace {
 
-using ash::internal::TrayNetwork;
-
-int GetMessageIcon(
-    TrayNetwork::MessageType message_type,
-    TrayNetwork::NetworkType network_type) {
+int GetMessageIcon(NetworkObserver::MessageType message_type,
+                   NetworkObserver::NetworkType network_type) {
   switch(message_type) {
-    case TrayNetwork::ERROR_CONNECT_FAILED:
-      if (TrayNetwork::NETWORK_CELLULAR == network_type)
+    case NetworkObserver::ERROR_CONNECT_FAILED:
+      if (NetworkObserver::NETWORK_CELLULAR == network_type)
         return IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED;
       else
         return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
-    case TrayNetwork::MESSAGE_DATA_PROMO:
+    case NetworkObserver::ERROR_OUT_OF_CREDITS:
+    case NetworkObserver::MESSAGE_DATA_PROMO:
       if (network_type == TrayNetwork::NETWORK_CELLULAR_LTE)
         return IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
       else
@@ -77,7 +78,7 @@ class NetworkMessages {
   struct Message {
     Message() : delegate(NULL) {}
     Message(NetworkTrayDelegate* in_delegate,
-            TrayNetwork::NetworkType network_type,
+            NetworkObserver::NetworkType network_type,
             const string16& in_title,
             const string16& in_message,
             const std::vector<string16>& in_links) :
@@ -87,12 +88,12 @@ class NetworkMessages {
         message(in_message),
         links(in_links) {}
     NetworkTrayDelegate* delegate;
-    TrayNetwork::NetworkType network_type_;
+    NetworkObserver::NetworkType network_type_;
     string16 title;
     string16 message;
     std::vector<string16> links;
   };
-  typedef std::map<TrayNetwork::MessageType, Message> MessageMap;
+  typedef std::map<NetworkObserver::MessageType, Message> MessageMap;
 
   MessageMap& messages() { return messages_; }
   const MessageMap& messages() const { return messages_; }
@@ -295,7 +296,7 @@ class NetworkMessageView : public views::View,
                            public views::LinkListener {
  public:
   NetworkMessageView(TrayNetwork* tray_network,
-                     TrayNetwork::MessageType message_type,
+                     NetworkObserver::MessageType message_type,
                      const NetworkMessages::Message& network_msg)
       : tray_network_(tray_network),
         message_type_(message_type),
@@ -339,13 +340,13 @@ class NetworkMessageView : public views::View,
     tray_network_->LinkClicked(message_type_, source->id());
   }
 
-  TrayNetwork::MessageType message_type() const { return message_type_; }
-  TrayNetwork::NetworkType network_type() const { return network_type_; }
+  NetworkObserver::MessageType message_type() const { return message_type_; }
+  NetworkObserver::NetworkType network_type() const { return network_type_; }
 
  private:
   TrayNetwork* tray_network_;
-  TrayNetwork::MessageType message_type_;
-  TrayNetwork::NetworkType network_type_;
+  NetworkObserver::MessageType message_type_;
+  NetworkObserver::NetworkType network_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMessageView);
 };
@@ -498,11 +499,11 @@ void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
 }
 
 void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
-                                   MessageType message_type,
-                                   NetworkType network_type,
-                                   const string16& title,
-                                   const string16& message,
-                                   const std::vector<string16>& links) {
+                                    MessageType message_type,
+                                    NetworkType network_type,
+                                    const string16& title,
+                                    const string16& message,
+                                    const std::vector<string16>& links) {
   messages_->messages()[message_type] = tray::NetworkMessages::Message(
       delegate, network_type, title, message, links);
   if (notification_)
@@ -619,7 +620,7 @@ void TrayNetwork::LinkClicked(MessageType message_type, int link_id) {
   tray::NetworkMessages::MessageMap::const_iterator iter =
       messages()->messages().find(message_type);
   if (iter != messages()->messages().end() && iter->second.delegate)
-    iter->second.delegate->NotificationLinkClicked(link_id);
+    iter->second.delegate->NotificationLinkClicked(message_type, link_id);
 }
 
 }  // namespace internal

@@ -12,20 +12,14 @@
 namespace ash {
 
 struct NetworkIconInfo;
-
-class NetworkTrayDelegate {
- public:
-  virtual ~NetworkTrayDelegate() {}
-
-  // Notifies that the |index|-th link on the notification is clicked.
-  virtual void NotificationLinkClicked(size_t index) = 0;
-};
+class NetworkTrayDelegate;
 
 class NetworkObserver {
  public:
   enum MessageType {
     // Priority order, highest to lowest.
     ERROR_CONNECT_FAILED,
+    ERROR_OUT_OF_CREDITS,
     MESSAGE_DATA_PROMO,
   };
 

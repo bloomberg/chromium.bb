@@ -859,6 +859,7 @@ void CellularApn::Set(const DictionaryValue& dict) {
 CellularNetwork::CellularNetwork(const std::string& service_path)
     : WirelessNetwork(service_path, TYPE_CELLULAR),
       activate_over_non_cellular_network_(false),
+      out_of_credits_(false),
       activation_state_(ACTIVATION_STATE_UNKNOWN),
       network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
       roaming_state_(ROAMING_STATE_UNKNOWN),

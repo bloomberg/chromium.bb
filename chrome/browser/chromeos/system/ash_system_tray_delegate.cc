@@ -17,6 +17,7 @@
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
+#include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
@@ -189,6 +190,14 @@ void BluetoothDeviceConnectError(
   // TODO(sad): Do something?
 }
 
+ash::NetworkObserver::NetworkType NetworkTypeForCellular(
+    const CellularNetwork* cellular) {
+  if (cellular->network_technology() == NETWORK_TECHNOLOGY_LTE ||
+      cellular->network_technology() == NETWORK_TECHNOLOGY_LTE_ADVANCED)
+    return ash::NetworkObserver::NETWORK_CELLULAR_LTE;
+  return ash::NetworkObserver::NETWORK_CELLULAR;
+}
+
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
@@ -222,6 +231,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         screen_locked_(false),
         data_promo_notification_(new DataPromoNotification()),
         cellular_activating_(false),
+        cellular_out_of_credits_(false),
         volume_control_delegate_(new VolumeController()) {
     // Register notifications on construction so that events such as
     // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -750,18 +760,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     Network* network = crosnet->FindNetworkByPath(network_id);
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshDisableNewNetworkStatusArea)) {
-      // If the new network handlers are enabled, this should always trigger
-      // displaying the network settings UI.
-      if (network)
-        network_menu_->ShowTabbedNetworkSettings(network);
-      else
-        ShowNetworkSettings();
-    } else {
-      if (network)
-        network_menu_->ConnectToNetwork(network);
-    }
+    if (network)
+      network_menu_->ConnectToNetwork(network);  // Shows settings if connected
+    else
+      ShowNetworkSettings();
   }
 
   virtual void RequestNetworkScan() OVERRIDE {
@@ -1023,14 +1025,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
-  void RefreshNetworkDeviceObserver(NetworkLibrary* crosnet) {
-    const NetworkDevice* cellular = crosnet->FindCellularDevice();
-    std::string new_cellular_device_path = cellular ?
-        cellular->device_path() : std::string();
-    if (cellular_device_path_ != new_cellular_device_path)
-      cellular_device_path_ = new_cellular_device_path;
-  }
-
   void AddNetworkToList(std::vector<ash::NetworkIconInfo>* list,
                         std::set<const Network*>* added,
                         const Network* network) {
@@ -1150,10 +1144,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from NetworkLibrary::NetworkManagerObserver.
   virtual void OnNetworkManagerChanged(NetworkLibrary* crosnet) OVERRIDE {
     RefreshNetworkObserver(crosnet);
-    RefreshNetworkDeviceObserver(crosnet);
     data_promo_notification_->ShowOptionalMobileDataPromoNotification(
         crosnet, GetPrimarySystemTray(), this);
-    UpdateCellularActivation();
+    UpdateCellular();
 
     NotifyRefreshNetwork();
   }
@@ -1358,7 +1351,19 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // Overridden from ash::NetworkTrayDelegate
-  virtual void NotificationLinkClicked(size_t index) OVERRIDE {
+  virtual void NotificationLinkClicked(
+      ash::NetworkObserver::MessageType message_type,
+      size_t link_index) OVERRIDE {
+    if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
+      const CellularNetwork* cellular =
+          CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
+      if (cellular)
+        ConnectToNetwork(cellular->service_path());
+      ash::Shell::GetInstance()->system_tray_notifier()->
+          NotifyClearNetworkMessage(message_type);
+    }
+    if (message_type != ash::NetworkObserver::MESSAGE_DATA_PROMO)
+      return;
     // If we have deal info URL defined that means that there're
     // 2 links in bubble. Let the user close it manually then thus giving
     // ability to navigate to second link.
@@ -1369,7 +1374,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       data_promo_notification_->CloseNotification();
 
     std::string deal_url_to_open;
-    if (index == 0) {
+    if (link_index == 0) {
       if (!deal_topup_url.empty()) {
         deal_url_to_open = deal_topup_url;
       } else {
@@ -1380,7 +1385,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         network_menu_->ShowTabbedNetworkSettings(cellular);
         return;
       }
-    } else if (index == 1) {
+    } else if (link_index == 1) {
       deal_url_to_open = deal_info_url;
     }
 
@@ -1410,7 +1415,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     UpdateEnterpriseDomain();
   }
 
-  void UpdateCellularActivation() {
+  void UpdateCellular() {
     const CellularNetworkVector& cellular_networks =
         CrosLibrary::Get()->GetNetworkLibrary()->cellular_networks();
     if (cellular_networks.empty())
@@ -1422,15 +1427,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       cellular_activating_ = true;
     } else if (cellular->activated() && cellular_activating_) {
       cellular_activating_ = false;
-
-      // Detect which icon to show, 3G or LTE.
-      ash::NetworkObserver::NetworkType type =
-          (cellular->network_technology() == NETWORK_TECHNOLOGY_LTE ||
-           cellular->network_technology() == NETWORK_TECHNOLOGY_LTE_ADVANCED)
-          ? ash::NetworkObserver::NETWORK_CELLULAR_LTE
-          : ash::NetworkObserver::NETWORK_CELLULAR;
-
-      // Show the notification.
+      ash::NetworkObserver::NetworkType type = NetworkTypeForCellular(cellular);
       ash::Shell::GetInstance()->system_tray_notifier()->
           NotifySetNetworkMessage(
               NULL,
@@ -1443,6 +1440,27 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                   UTF8ToUTF16((cellular->name()))),
                   std::vector<string16>());
     }
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshDisableNewNetworkStatusArea)) {
+      return;
+    }
+    // Trigger "Out of credits" notification (for NetworkLibrary impl)
+    if (cellular->out_of_credits() && !cellular_out_of_credits_) {
+      cellular_out_of_credits_ = true;
+      ash::NetworkObserver::NetworkType type = NetworkTypeForCellular(cellular);
+      std::vector<string16> links;
+      links.push_back(
+          l10n_util::GetStringFUTF16(IDS_NETWORK_OUT_OF_CREDITS_LINK,
+                                     UTF8ToUTF16(cellular->name())));
+      ash::Shell::GetInstance()->system_tray_notifier()->
+          NotifySetNetworkMessage(
+              this, ash::NetworkObserver::ERROR_OUT_OF_CREDITS, type,
+              l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE),
+              l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_BODY),
+              links);
+    } else if (!cellular->out_of_credits() && cellular_out_of_credits_) {
+      cellular_out_of_credits_ = false;
+    }
   }
 
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
@@ -1453,7 +1471,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar local_state_registrar_;
   scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
-  std::string cellular_device_path_;
   std::string active_network_path_;
   PowerSupplyStatus power_supply_status_;
   base::HourClockType clock_type_;
@@ -1467,6 +1484,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   scoped_ptr<DataPromoNotification> data_promo_notification_;
   bool cellular_activating_;
+  bool cellular_out_of_credits_;
 
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
 

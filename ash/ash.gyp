@@ -201,6 +201,7 @@
         'system/chromeos/network/network_state_list_detailed_view.h',
         'system/chromeos/network/network_state_notifier.cc',
         'system/chromeos/network/network_state_notifier.h',
+        'system/chromeos/network/network_tray_delegate.h',
         'system/chromeos/network/tray_network.cc',
         'system/chromeos/network/tray_network.h',
         'system/chromeos/network/tray_network_state_observer.cc',

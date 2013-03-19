@@ -888,6 +888,7 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
   const std::string& operator_country() const { return operator_country_; }
+  bool out_of_credits() const { return out_of_credits_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& usage_url() const { return usage_url_; }
   const std::string& post_data() const { return post_data_; }
@@ -955,6 +956,9 @@ class CellularNetwork : public WirelessNetwork {
   void set_operator_country(const std::string& operator_country) {
     operator_country_ = operator_country;
   }
+  void set_out_of_credits(bool out_of_credits) {
+    out_of_credits_ = out_of_credits;
+  }
   void set_payment_url(const std::string& payment_url) {
     payment_url_ = payment_url;
   }
@@ -971,6 +975,7 @@ class CellularNetwork : public WirelessNetwork {
   }
 
   bool activate_over_non_cellular_network_;
+  bool out_of_credits_;
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;

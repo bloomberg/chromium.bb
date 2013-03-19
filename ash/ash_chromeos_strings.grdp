@@ -117,6 +117,15 @@
   <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS" desc="Message for network connection error notification with details">
     Failed to connect to network '<ph name="name">$1<ex>GoogleGuest</ex></ph>': <ph name="details">$2<ex>Unrecognized error</ex></ph>
   </message>
+  <message name="IDS_NETWORK_OUT_OF_CREDITS_TITLE" desc="Title for network out of data error notification">
+    Network Connection Error
+  </message>
+  <message name="IDS_NETWORK_OUT_OF_CREDITS_BODY" desc="Message body for network out of data error notification">
+    You may have used up your mobile data allowance.
+  </message>
+  <message name="IDS_NETWORK_OUT_OF_CREDITS_LINK" desc="Link text for network out of data error notification">
+    Visit the <ph name="name">$1<ex>GoogleGuest</ex></ph> activation portal to buy more data.
+  </message>
 
   <!-- Network state strings -->
   <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">
