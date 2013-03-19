@@ -62,7 +62,7 @@ class DriveSyncClient
   void Initialize();
 
   // DriveFileSystemInterface::Observer overrides.
-  virtual void OnInitialLoadFinished(DriveFileError error) OVERRIDE;
+  virtual void OnInitialLoadFinished() OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
   // DriveCache::Observer overrides.

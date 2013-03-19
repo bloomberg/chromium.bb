@@ -464,6 +464,7 @@ void ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer(
                  feed_changestamp,
                  base::Bind(&ChangeListLoader::OnUpdateFromFeed,
                             weak_ptr_factory_.GetWeakPtr(),
+                            !loaded(),  // is_initial_load
                             callback));
 }
 
@@ -628,6 +629,9 @@ void ChangeListLoader::LoadAfterLoadFromCache(
     // The loading from the cache file succeeded. Change the refreshing state
     // and tell the callback that the loading was successful.
     OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
+    FOR_EACH_OBSERVER(ChangeListLoaderObserver,
+                      observers_,
+                      OnInitialFeedLoaded());
 
     // Load from server if needed (i.e. the cache is old). Note that we
     // should still propagate |directory_fetch_info| though the directory is
@@ -757,11 +761,17 @@ void ChangeListLoader::NotifyDirectoryChangedAfterApplyFeed(
 }
 
 void ChangeListLoader::OnUpdateFromFeed(
+    bool is_inital_load,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
+  if (is_inital_load) {
+    FOR_EACH_OBSERVER(ChangeListLoaderObserver,
+                      observers_,
+                      OnInitialFeedLoaded());
+  }
 
   // Save file system metadata to disk.
   SaveFileSystem();

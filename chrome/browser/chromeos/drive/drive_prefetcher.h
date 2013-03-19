@@ -43,7 +43,7 @@ class DrivePrefetcher : public DriveFileSystemObserver {
   virtual ~DrivePrefetcher();
 
   // DriveFileSystemObserver overrides.
-  virtual void OnInitialLoadFinished(DriveFileError error) OVERRIDE;
+  virtual void OnInitialLoadFinished() OVERRIDE;
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
 

@@ -151,6 +151,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const base::FilePath& directory_path) OVERRIDE;
   virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
+  virtual void OnInitialFeedLoaded() OVERRIDE;
 
   // Used in tests to load the file system from the cache.
   void LoadFromCacheForTesting(const FileOperationCallback& callback);
@@ -308,11 +309,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates().
   void OnUpdateChecked(DriveFileError error);
-
-  // Notifies that the initial feed load is finished and runs |callback|.
-  // |callback| must not be null.
-  void NotifyInitialLoadFinishedAndRun(const FileOperationCallback& callback,
-                                       DriveFileError error);
 
   // Helper function for internally handling responses from
   // GetFileFromCacheByResourceIdAndMd5() calls during processing of

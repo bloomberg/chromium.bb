@@ -241,10 +241,8 @@ void DriveFileSystem::Reload() {
 
   change_list_loader_->LoadFromServerIfNeeded(
       DirectoryFetchInfo(),
-      base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Bind(&DriveFileSystem::OnUpdateChecked,
-                            weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(&DriveFileSystem::OnUpdateChecked,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveFileSystem::Initialize() {
@@ -425,11 +423,7 @@ void DriveFileSystem::LoadIfNeeded(
     return;
   }
 
-  change_list_loader_->Load(
-      directory_fetch_info,
-      base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  change_list_loader_->Load(directory_fetch_info, callback);
 }
 
 void DriveFileSystem::TransferFileFromRemoteToLocal(
@@ -1216,6 +1210,14 @@ void DriveFileSystem::OnFeedFromServerLoaded() {
                     OnFeedFromServerLoaded());
 }
 
+void DriveFileSystem::OnInitialFeedLoaded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  FOR_EACH_OBSERVER(DriveFileSystemObserver,
+                    observers_,
+                    OnInitialLoadFinished());
+}
+
 void DriveFileSystem::LoadFromCacheForTesting(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1329,20 +1331,6 @@ void DriveFileSystem::NotifyFileSystemToBeUnmounted() {
   // Notify the observers that the file system is being unmounted.
   FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
                     OnFileSystemBeingUnmounted());
-}
-
-void DriveFileSystem::NotifyInitialLoadFinishedAndRun(
-    const FileOperationCallback& callback,
-    DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // Notify the observers that root directory has been loaded.
-  FOR_EACH_OBSERVER(DriveFileSystemObserver,
-                    observers_,
-                    OnInitialLoadFinished(error));
-
-  callback.Run(error);
 }
 
 void DriveFileSystem::AddUploadedFile(

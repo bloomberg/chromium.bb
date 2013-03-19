@@ -32,7 +32,7 @@ class StaleCacheFilesRemover : public DriveFileSystemObserver {
   // Removes stale cache files.
   // Gets the list of all the resource id and calls OnGetResourceIdsOfAllFiles()
   // with the list.
-  virtual void OnInitialLoadFinished(DriveFileError error) OVERRIDE;
+  virtual void OnInitialLoadFinished() OVERRIDE;
 
   // Gets the file entry and calls RemoveCacheIfNecessary() with the file entry.
   // This is called from StaleCacheFilesRemover::OnInitialLoadFinished.

@@ -254,7 +254,8 @@ class ChangeListLoader {
       const base::Closure& update_finished_callback);
 
   // Callback for UpdateFromFeed.
-  void OnUpdateFromFeed(const FileOperationCallback& load_finished_callback);
+  void OnUpdateFromFeed(bool is_initial_load,
+                        const FileOperationCallback& load_finished_callback);
 
   // This function should be called when the change list load is complete.
   // Runs |callback| with |error|, and flushes the pending callbacks.

@@ -174,7 +174,7 @@ class DrivePrefetcherTest : public testing::Test {
     EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _, _)).Times(0);
     EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _, _))
         .WillRepeatedly(MockGetFile(&fetched_list));
-    prefetcher_->OnInitialLoadFinished(DRIVE_FILE_OK);
+    prefetcher_->OnInitialLoadFinished();
     RunMessageLoop();
     EXPECT_EQ(expected, fetched_list);
   }

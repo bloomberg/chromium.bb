@@ -30,6 +30,11 @@ class ChangeListLoaderObserver {
   virtual void OnFeedFromServerLoaded() {
   }
 
+  // Triggered when the feed is loaded for the first time, either from the
+  // cache or the server.
+  virtual void OnInitialFeedLoaded() {
+  }
+
  protected:
   virtual ~ChangeListLoaderObserver() {}
 };

@@ -117,11 +117,10 @@ std::vector<std::string> DriveSyncClient::GetResourceIdsForTesting(
   return std::vector<std::string>();
 }
 
-void DriveSyncClient::OnInitialLoadFinished(DriveFileError error) {
+void DriveSyncClient::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == DRIVE_FILE_OK)
-    StartProcessingBacklog();
+  StartProcessingBacklog();
 }
 
 void DriveSyncClient::OnFeedFromServerLoaded() {

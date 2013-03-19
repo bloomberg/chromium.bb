@@ -78,11 +78,10 @@ DrivePrefetcher::~DrivePrefetcher() {
     file_system_->RemoveObserver(this);
 }
 
-void DrivePrefetcher::OnInitialLoadFinished(DriveFileError error) {
+void DrivePrefetcher::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == DRIVE_FILE_OK)
-    StartPrefetcherCycle();
+  StartPrefetcherCycle();
 }
 
 void DrivePrefetcher::OnDirectoryChanged(const base::FilePath& directory_path) {
