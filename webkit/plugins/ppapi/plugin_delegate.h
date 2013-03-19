@@ -17,6 +17,7 @@
 #include "base/sync_socket.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_platform_file.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
@@ -650,6 +651,12 @@ class PluginDelegate {
   // Stop enumerating devices of the specified |request_id|. The |request_id|
   // is the return value of EnumerateDevicesCallback.
   virtual void StopEnumerateDevices(int request_id) = 0;
+
+  // Share a given handle with the target process.
+  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+      base::PlatformFile handle,
+      base::ProcessId target_process_id,
+      bool should_close_source) const = 0;
 };
 
 }  // namespace ppapi

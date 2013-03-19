@@ -382,5 +382,12 @@ int MockPluginDelegate::EnumerateDevices(
 void MockPluginDelegate::StopEnumerateDevices(int request_id) {
 }
 
+IPC::PlatformFileForTransit MockPluginDelegate::ShareHandleWithRemote(
+      base::PlatformFile handle,
+      base::ProcessId target_process_id,
+      bool should_close_source) const {
+  return IPC::InvalidPlatformFileForTransit();
+}
+
 }  // namespace ppapi
 }  // namespace webkit

@@ -16,7 +16,7 @@ using ppapi::NPObjectVar;
 namespace webkit {
 namespace ppapi {
 
-HostVarTracker::HostVarTracker() {
+HostVarTracker::HostVarTracker() : last_shared_memory_map_id_(0) {
 }
 
 HostVarTracker::~HostVarTracker() {
@@ -24,6 +24,12 @@ HostVarTracker::~HostVarTracker() {
 
 ArrayBufferVar* HostVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
   return new HostArrayBufferVar(size_in_bytes);
+}
+
+ArrayBufferVar* HostVarTracker::CreateShmArrayBuffer(
+    uint32 size_in_bytes,
+    base::SharedMemoryHandle handle) {
+  return new HostArrayBufferVar(size_in_bytes, handle);
 }
 
 void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
@@ -125,6 +131,40 @@ void HostVarTracker::ForceReleaseNPObject(::ppapi::NPObjectVar* object_var) {
   iter->second.ref_count = 0;
   DCHECK(iter->second.track_with_no_reference_count == 0);
   DeleteObjectInfoIfNecessary(iter);
+}
+
+int HostVarTracker::TrackSharedMemoryHandle(PP_Instance instance,
+                                            base::SharedMemoryHandle handle,
+                                            uint32 size_in_bytes) {
+  SharedMemoryMapEntry entry;
+  entry.instance = instance;
+  entry.handle = handle;
+  entry.size_in_bytes = size_in_bytes;
+
+  // Find a free id for our map.
+  while (shared_memory_map_.find(last_shared_memory_map_id_) !=
+         shared_memory_map_.end()) {
+    ++last_shared_memory_map_id_;
+  }
+  shared_memory_map_[last_shared_memory_map_id_] = entry;
+  return last_shared_memory_map_id_;
+}
+
+bool HostVarTracker::StopTrackingSharedMemoryHandle(
+    int id,
+    PP_Instance instance,
+    base::SharedMemoryHandle* handle,
+    uint32* size_in_bytes) {
+  SharedMemoryMap::iterator it = shared_memory_map_.find(id);
+  if (it == shared_memory_map_.end())
+    return false;
+  if (it->second.instance != instance)
+    return false;
+
+  *handle = it->second.handle;
+  *size_in_bytes = it->second.size_in_bytes;
+  shared_memory_map_.erase(it);
+  return true;
 }
 
 }  // namespace ppapi

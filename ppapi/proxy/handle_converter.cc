@@ -4,11 +4,15 @@
 
 #include "ppapi/proxy/handle_converter.h"
 
+#include <vector>
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_handle.h"
+#include "ppapi/proxy/serialized_var.h"
+
+class NaClDescImcShm;
 
 namespace IPC {
 class Message;
@@ -28,9 +32,9 @@ void WriteHandle(int handle_index,
 
 typedef std::vector<ppapi::proxy::SerializedHandle> Handles;
 
-// We define overload for catching SerializedHandles, so that we can share
-// them correctly to the untrusted side, and another for handling all other
-// parameters. See ConvertHandlesImpl for how these get used.
+// We define overloads for catching SerializedHandles so that we can share
+// them correctly to the untrusted side.
+// See ConvertHandlesImpl for how these get used.
 void ConvertHandlesInParam(const ppapi::proxy::SerializedHandle& handle,
                            Handles* handles,
                            IPC::Message* msg,
@@ -38,6 +42,20 @@ void ConvertHandlesInParam(const ppapi::proxy::SerializedHandle& handle,
   handles->push_back(handle);
   if (msg)
     WriteHandle((*handle_index)++, handle, msg);
+}
+
+void ConvertHandlesInParam(const ppapi::proxy::SerializedVar& var,
+                           Handles* handles,
+                           IPC::Message* msg,
+                           int* handle_index) {
+  ppapi::proxy::SerializedHandle *handle = var.GetPluginShmemHandle();
+  if (handle) {
+    handles->push_back(*handle);
+    if (msg) {
+      var.WriteRawVarHeader(msg);
+      WriteHandle((*handle_index)++, *handle, msg);
+    }
+  }
 }
 
 // For PpapiMsg_ResourceReply and the reply to PpapiHostMsg_ResourceSyncCall,
@@ -218,6 +236,7 @@ bool HandleConverter::ConvertNativeHandlesToPosix(
   switch (msg.type()) {
     CASE_FOR_MESSAGE(PpapiMsg_CreateNaClChannel)
     CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
+    CASE_FOR_MESSAGE(PpapiMsg_PPPMessaging_HandleMessage)
     CASE_FOR_MESSAGE(PpapiPluginMsg_ResourceReply)
     case IPC_REPLY_ID: {
       int id = IPC::SyncMessage::GetMessageId(msg);
@@ -232,6 +251,7 @@ bool HandleConverter::ConvertNativeHandlesToPosix(
         CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer)
         CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateNaCl)
         CASE_FOR_REPLY(PpapiHostMsg_ResourceSyncCall)
+        CASE_FOR_REPLY(PpapiHostMsg_SharedMemory_CreateSharedMemory)
         default:
           // Do nothing for messages we don't know.
           break;

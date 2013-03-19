@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/shared_memory.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -59,6 +60,13 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
 
   // VarTracker public overrides.
   void DidDeleteInstance(PP_Instance instance) OVERRIDE;
+  virtual int TrackSharedMemoryHandle(PP_Instance instance,
+                                      base::SharedMemoryHandle file,
+                                      uint32 size_in_bytes) OVERRIDE;
+  virtual bool StopTrackingSharedMemoryHandle(int id,
+                                              PP_Instance instance,
+                                              base::SharedMemoryHandle* handle,
+                                              uint32* size_in_bytes) OVERRIDE;
 
   // Notification that a plugin-implemented object (PPP_Class) was created by
   // the plugin or deallocated by WebKit over IPC.
@@ -86,6 +94,9 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
   virtual void ObjectGettingZeroRef(VarMap::iterator iter) OVERRIDE;
   virtual bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) OVERRIDE;
   virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE;
+  virtual ArrayBufferVar* CreateShmArrayBuffer(
+      uint32 size_in_bytes,
+      base::SharedMemoryHandle handle) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;

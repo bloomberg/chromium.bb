@@ -15,9 +15,11 @@
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_platform_file.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_handle.h"
 
@@ -460,6 +462,7 @@ int NaClIPCAdapter::LockedReceive(NaClImcTypedMsgHdr* msg) {
 
 bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
                                          size_t buffer_len) {
+  lock_.AssertAcquired();
   // The message will have already been validated, so we know it's large enough
   // for our header.
   const NaClMessageHeader* header =

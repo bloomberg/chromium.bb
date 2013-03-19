@@ -5,6 +5,7 @@
 #include "chrome/renderer/pepper/pepper_helper.h"
 
 #include "chrome/renderer/pepper/chrome_renderer_pepper_host_factory.h"
+#include "chrome/renderer/pepper/pepper_shared_memory_message_filter.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 
@@ -23,6 +24,9 @@ void PepperHelper::DidCreatePepperPlugin(content::RendererPpapiHost* host) {
   host->GetPpapiHost()->AddHostFactoryFilter(
       scoped_ptr<ppapi::host::HostFactory>(
           new ChromeRendererPepperHostFactory(host)));
+  host->GetPpapiHost()->AddInstanceMessageFilter(
+      scoped_ptr<ppapi::host::InstanceMessageFilter>(
+          new PepperSharedMemoryMessageFilter(host)));
 }
 
 }  // namespace chrome

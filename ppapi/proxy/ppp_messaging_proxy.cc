@@ -34,7 +34,7 @@ void HandleMessage(PP_Instance instance, PP_Var message_data) {
   dispatcher->Send(new PpapiMsg_PPPMessaging_HandleMessage(
       API_ID_PPP_MESSAGING,
       instance,
-      SerializedVarSendInput(dispatcher, message_data)));
+      SerializedVarSendInputShmem(dispatcher, message_data, instance)));
 }
 
 static const PPP_Messaging messaging_interface = {
@@ -90,7 +90,7 @@ bool PPP_Messaging_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPP_Messaging_Proxy::OnMsgHandleMessage(
     PP_Instance instance, SerializedVarReceiveInput message_data) {
-  PP_Var received_var(message_data.Get(dispatcher()));
+  PP_Var received_var(message_data.GetForInstance(dispatcher(), instance));
   // SerializedVarReceiveInput will decrement the reference count, but we want
   // to give the recipient a reference.
   PpapiGlobals::Get()->GetVarTracker()->AddRefVar(received_var);

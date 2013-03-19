@@ -387,6 +387,12 @@ class PepperPluginDelegateImpl
   MouseLockDispatcher* GetMouseLockDispatcher(
       webkit::ppapi::PluginInstance* instance);
 
+  // Share a given handle with the target process.
+  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+      base::PlatformFile handle,
+      base::ProcessId target_process_id,
+      bool should_close_source) const OVERRIDE;
+
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
 

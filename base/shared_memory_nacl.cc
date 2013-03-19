@@ -123,7 +123,6 @@ SharedMemoryHandle SharedMemory::handle() const {
 
 void SharedMemory::Close() {
   Unmap();
-
   if (mapped_file_ > 0) {
     if (close(mapped_file_) < 0)
       DPLOG(ERROR) << "close";

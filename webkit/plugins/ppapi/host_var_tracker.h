@@ -14,7 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_resource.h"
+#include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "webkit/plugins/webkit_plugins_export.h"
@@ -58,10 +58,20 @@ class HostVarTracker : public ::ppapi::VarTracker {
   // VarTracker public implementation.
   virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE;
 
+  virtual int TrackSharedMemoryHandle(PP_Instance instance,
+                                      base::SharedMemoryHandle file,
+                                      uint32 size_in_bytes) OVERRIDE;
+  virtual bool StopTrackingSharedMemoryHandle(int id,
+                                              PP_Instance instance,
+                                              base::SharedMemoryHandle* handle,
+                                              uint32* size_in_bytes) OVERRIDE;
+
  private:
   // VarTracker private implementation.
   virtual ::ppapi::ArrayBufferVar* CreateArrayBuffer(
       uint32 size_in_bytes) OVERRIDE;
+  virtual ::ppapi::ArrayBufferVar* CreateShmArrayBuffer(
+      uint32 size_in_bytes, base::SharedMemoryHandle handle) OVERRIDE;
 
   // Clear the reference count of the given object and remove it from
   // live_vars_.
@@ -80,6 +90,16 @@ class HostVarTracker : public ::ppapi::VarTracker {
   typedef std::map<PP_Instance, linked_ptr<NPObjectToNPObjectVarMap> >
       InstanceMap;
   InstanceMap instance_map_;
+
+  // Tracks all shared memory handles used for transmitting array buffers.
+  struct SharedMemoryMapEntry {
+    PP_Instance instance;
+    base::SharedMemoryHandle handle;
+    uint32 size_in_bytes;
+  };
+  typedef std::map<int, SharedMemoryMapEntry> SharedMemoryMap;
+  SharedMemoryMap shared_memory_map_;
+  uint32_t last_shared_memory_map_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HostVarTracker);
 };

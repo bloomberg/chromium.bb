@@ -194,6 +194,12 @@ ArrayBufferVar* PluginVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
   return new PluginArrayBufferVar(size_in_bytes);
 }
 
+ArrayBufferVar* PluginVarTracker::CreateShmArrayBuffer(
+    uint32 size_in_bytes,
+    base::SharedMemoryHandle handle) {
+  return new PluginArrayBufferVar(size_in_bytes, handle);
+}
+
 void PluginVarTracker::PluginImplementedObjectCreated(
     PP_Instance instance,
     const PP_Var& created_var,
@@ -367,6 +373,22 @@ scoped_refptr<ProxyObjectVar> PluginVarTracker::FindOrMakePluginVarFromHostVar(
   // All objects should be proxy objects.
   DCHECK(ret->second.var->AsProxyObjectVar());
   return scoped_refptr<ProxyObjectVar>(ret->second.var->AsProxyObjectVar());
+}
+
+int PluginVarTracker::TrackSharedMemoryHandle(PP_Instance instance,
+                                              base::SharedMemoryHandle handle,
+                                              uint32 size_in_bytes) {
+  NOTREACHED();
+  return -1;
+}
+
+bool PluginVarTracker::StopTrackingSharedMemoryHandle(
+    int id,
+    PP_Instance instance,
+    base::SharedMemoryHandle* handle,
+    uint32* size_in_bytes) {
+  NOTREACHED();
+  return false;
 }
 
 }  // namesace proxy

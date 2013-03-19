@@ -1455,6 +1455,17 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
                      PP_PrintSettings_Dev /* print_settings */)
 
+// Shared memory ---------------------------------------------------------------
+// Creates shared memory on the host side, returning a handle to the shared
+// memory on the plugin and keeping the memory mapped in on the host.
+// We return a "host handle_id" that can be mapped back to the
+// handle on the host side by PpapiGlobals::UntrackSharedMemoryHandle().
+IPC_SYNC_MESSAGE_CONTROL2_2(PpapiHostMsg_SharedMemory_CreateSharedMemory,
+                            PP_Instance /* instance */,
+                            uint32_t /* size */,
+                            int /* host_handle_id */,
+                            ppapi::proxy::SerializedHandle /* plugin_handle */)
+
 // WebSocket ------------------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_WebSocket_Create)
 

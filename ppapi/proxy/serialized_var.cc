@@ -6,20 +6,29 @@
 
 #include "base/logging.h"
 #include "ipc/ipc_message_utils.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
+#include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 namespace proxy {
+
+// When sending array buffers, if the size is over 256K, we use shared
+// memory instead of sending the data over IPC. Light testing suggests
+// shared memory is much faster for 256K and larger messages.
+static const uint32 kMinimumArrayBufferSizeForShmem = 256 * 1024;
 
 // SerializedVar::Inner --------------------------------------------------------
 
 SerializedVar::Inner::Inner()
     : serialization_rules_(NULL),
       var_(PP_MakeUndefined()),
+      instance_(0),
       cleanup_mode_(CLEANUP_NONE) {
 #ifndef NDEBUG
   has_been_serialized_ = false;
@@ -30,6 +39,7 @@ SerializedVar::Inner::Inner()
 SerializedVar::Inner::Inner(VarSerializationRules* serialization_rules)
     : serialization_rules_(serialization_rules),
       var_(PP_MakeUndefined()),
+      instance_(0),
       cleanup_mode_(CLEANUP_NONE) {
 #ifndef NDEBUG
   has_been_serialized_ = false;
@@ -65,9 +75,28 @@ void SerializedVar::Inner::SetVar(PP_Var var) {
   raw_var_data_.reset(NULL);
 }
 
+void SerializedVar::Inner::SetInstance(PP_Instance instance) {
+  instance_ = instance;
+}
+
 void SerializedVar::Inner::ForceSetVarValueForTest(PP_Var value) {
   var_ = value;
   raw_var_data_.reset(NULL);
+}
+
+void SerializedVar::Inner::WriteRawVarHeader(IPC::Message* m) const {
+  // Write raw_var_data_ when we're called from
+  // chrome/nacl/nacl_ipc_adapter.cc.
+  DCHECK(raw_var_data_.get());
+  DCHECK_EQ(PP_VARTYPE_ARRAY_BUFFER, raw_var_data_->type);
+  DCHECK(raw_var_data_->shmem_size != 0);
+
+  // The serialization for this message MUST MATCH the implementation at
+  // SerializedVar::Inner::WriteToMessage for ARRAY_BUFFER_SHMEM_PLUGIN.
+  m->WriteInt(static_cast<int>(raw_var_data_->type));
+  m->WriteInt(ARRAY_BUFFER_SHMEM_PLUGIN);
+  m->WriteInt(raw_var_data_->shmem_size);
+  // NaClIPCAdapter will write the handles for us.
 }
 
 void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
@@ -124,14 +153,45 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
       // handle the invalid string as if it was in process rather than seeing
       // what looks like a valid empty ArraryBuffer.
       ArrayBufferVar* buffer_var = ArrayBufferVar::FromPPVar(var_);
-      if (buffer_var) {
-        // TODO(dmichael): If it wasn't already Mapped, Unmap it. (Though once
-        //                 we use shared memory, this will probably be
-        //                 completely different anyway).
-        m->WriteData(static_cast<const char*>(buffer_var->Map()),
-                     buffer_var->ByteLength());
-      } else {
-        m->WriteData(NULL, 0);
+      bool using_shmem = false;
+      if (buffer_var &&
+          buffer_var->ByteLength() >= kMinimumArrayBufferSizeForShmem &&
+          instance_ != 0) {
+        int host_shm_handle_id;
+        base::SharedMemoryHandle plugin_shm_handle;
+        using_shmem = buffer_var->CopyToNewShmem(instance_,
+                                                 &host_shm_handle_id,
+                                                 &plugin_shm_handle);
+        if (using_shmem) {
+          // The serialization for this message MUST MATCH the implementation
+          // at SerializedVar::Inner::WriteRawVarHeader for
+          // ARRAY_BUFFER_SHMEM_PLUGIN.
+          if (host_shm_handle_id != -1) {
+            DCHECK(!base::SharedMemory::IsHandleValid(plugin_shm_handle));
+            DCHECK(PpapiGlobals::Get()->IsPluginGlobals());
+            m->WriteInt(ARRAY_BUFFER_SHMEM_HOST);
+            m->WriteInt(host_shm_handle_id);
+          } else {
+            DCHECK(base::SharedMemory::IsHandleValid(plugin_shm_handle));
+            DCHECK(PpapiGlobals::Get()->IsHostGlobals());
+            m->WriteInt(ARRAY_BUFFER_SHMEM_PLUGIN);
+            m->WriteInt(buffer_var->ByteLength());
+            SerializedHandle handle(plugin_shm_handle,
+                                    buffer_var->ByteLength());
+            IPC::ParamTraits<SerializedHandle>::Write(m, handle);
+          }
+        }
+      }
+      if (!using_shmem) {
+        if (buffer_var) {
+          m->WriteInt(ARRAY_BUFFER_NO_SHMEM);
+          m->WriteData(static_cast<const char*>(buffer_var->Map()),
+                       buffer_var->ByteLength());
+        } else {
+          // TODO(teravest): Introduce an ARRAY_BUFFER_EMPTY message type.
+          m->WriteBool(ARRAY_BUFFER_NO_SHMEM);
+          m->WriteData(NULL, 0);
+        }
       }
       break;
     }
@@ -159,7 +219,6 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
   DCHECK(!has_been_deserialized_);
   has_been_deserialized_ = true;
 #endif
-
   // When reading, the dispatcher should be set when we get a Deserialize
   // call (which will supply a dispatcher).
   int type;
@@ -197,11 +256,40 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
     case PP_VARTYPE_ARRAY_BUFFER: {
       int length = 0;
       const char* message_bytes = NULL;
-      success = m->ReadData(iter, &message_bytes, &length);
+      int shmem_type;
+      success = m->ReadInt(iter, &shmem_type);
       if (success) {
-        raw_var_data_.reset(new RawVarData);
-        raw_var_data_->type = PP_VARTYPE_ARRAY_BUFFER;
-        raw_var_data_->data.assign(message_bytes, length);
+        if (shmem_type == ARRAY_BUFFER_NO_SHMEM) {
+          success = m->ReadData(iter, &message_bytes, &length);
+          if (success) {
+            raw_var_data_.reset(new RawVarData);
+            raw_var_data_->type = PP_VARTYPE_ARRAY_BUFFER;
+            raw_var_data_->shmem_type = static_cast<ShmemType>(shmem_type);
+            raw_var_data_->shmem_size = 0;
+            raw_var_data_->data.assign(message_bytes, length);
+          }
+        } else if (shmem_type == ARRAY_BUFFER_SHMEM_HOST) {
+          int host_handle_id;
+          success = m->ReadInt(iter, &host_handle_id);
+          if (success) {
+            raw_var_data_.reset(new RawVarData);
+            raw_var_data_->type = PP_VARTYPE_ARRAY_BUFFER;
+            raw_var_data_->shmem_type = static_cast<ShmemType>(shmem_type);
+            raw_var_data_->host_handle_id = host_handle_id;
+          }
+        } else if (shmem_type == ARRAY_BUFFER_SHMEM_PLUGIN) {
+          SerializedHandle plugin_handle;
+          success = m->ReadInt(iter, &length);
+          success &= IPC::ParamTraits<SerializedHandle>::Read(
+              m, iter, &plugin_handle);
+          if (success) {
+            raw_var_data_.reset(new RawVarData);
+            raw_var_data_->type = PP_VARTYPE_ARRAY_BUFFER;
+            raw_var_data_->shmem_type = static_cast<ShmemType>(shmem_type);
+            raw_var_data_->shmem_size = length;
+            raw_var_data_->plugin_handle = plugin_handle;
+          }
+        }
       }
       break;
     }
@@ -237,6 +325,9 @@ void SerializedVar::Inner::SetCleanupModeToEndReceiveCallerOwned() {
 }
 
 void SerializedVar::Inner::ConvertRawVarData() {
+#if defined(NACL_WIN64)
+  NOTREACHED();
+#else
   if (!raw_var_data_.get())
     return;
 
@@ -248,15 +339,49 @@ void SerializedVar::Inner::ConvertRawVarData() {
       break;
     }
     case PP_VARTYPE_ARRAY_BUFFER: {
-      var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          static_cast<uint32>(raw_var_data_->data.size()),
-          raw_var_data_->data.data());
+      if (raw_var_data_->shmem_type == ARRAY_BUFFER_SHMEM_HOST) {
+        base::SharedMemoryHandle host_handle;
+        uint32 size_in_bytes;
+        bool ok =
+            PpapiGlobals::Get()->GetVarTracker()->
+            StopTrackingSharedMemoryHandle(raw_var_data_->host_handle_id,
+                                           instance_,
+                                           &host_handle,
+                                           &size_in_bytes);
+        if (ok) {
+          var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+              size_in_bytes, host_handle);
+        } else {
+          LOG(ERROR) << "Couldn't find array buffer id: "
+                     <<  raw_var_data_->host_handle_id;
+          var_ = PP_MakeUndefined();
+        }
+      } else if (raw_var_data_->shmem_type == ARRAY_BUFFER_SHMEM_PLUGIN) {
+        var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+            raw_var_data_->shmem_size,
+            raw_var_data_->plugin_handle.shmem());
+      } else {
+        var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+            static_cast<uint32>(raw_var_data_->data.size()),
+            raw_var_data_->data.data());
+      }
       break;
     }
     default:
       NOTREACHED();
   }
   raw_var_data_.reset(NULL);
+#endif
+}
+
+SerializedHandle* SerializedVar::Inner::GetPluginShmemHandle() const {
+  if (raw_var_data_.get()) {
+    if (raw_var_data_->type == PP_VARTYPE_ARRAY_BUFFER) {
+      if (raw_var_data_->shmem_size != 0)
+        return &raw_var_data_->plugin_handle;
+    }
+  }
+  return NULL;
 }
 
 // SerializedVar ---------------------------------------------------------------
@@ -287,6 +412,17 @@ void SerializedVarSendInput::ConvertVector(Dispatcher* dispatcher,
   output->reserve(input_count);
   for (size_t i = 0; i < input_count; i++)
     output->push_back(SerializedVarSendInput(dispatcher, input[i]));
+}
+
+// SerializedVarSendInputShmem -------------------------------------------------
+
+SerializedVarSendInputShmem::SerializedVarSendInputShmem(
+    Dispatcher* dispatcher,
+    const PP_Var& var,
+    const PP_Instance& instance)
+    : SerializedVar(dispatcher->serialization_rules()) {
+  inner_->SetVar(dispatcher->serialization_rules()->SendCallerOwned(var));
+  inner_->SetInstance(instance);
 }
 
 // ReceiveSerializedVarReturnValue ---------------------------------------------
@@ -392,6 +528,13 @@ PP_Var SerializedVarReceiveInput::Get(Dispatcher* dispatcher) {
       serialized_.inner_->serialization_rules()->BeginReceiveCallerOwned(
           serialized_.inner_->GetVar()));
   return serialized_.inner_->GetVar();
+}
+
+
+PP_Var SerializedVarReceiveInput::GetForInstance(Dispatcher* dispatcher,
+                                                 PP_Instance instance) {
+  serialized_.inner_->SetInstance(instance);
+  return Get(dispatcher);
 }
 
 // SerializedVarVectorReceiveInput ---------------------------------------------

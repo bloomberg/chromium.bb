@@ -6,6 +6,7 @@
 #define PPAPI_SHARED_IMPL_TEST_GLOBALS_H_
 
 #include "base/compiler_specific.h"
+#include "base/shared_memory.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
@@ -20,7 +21,23 @@ class TestVarTracker : public VarTracker {
   virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE {
     return NULL;
   }
+  virtual ArrayBufferVar* CreateShmArrayBuffer(
+      uint32 size_in_bytes,
+      base::SharedMemoryHandle handle) OVERRIDE {
+    return NULL;
+  }
   virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE {
+  }
+  virtual int TrackSharedMemoryHandle(PP_Instance instance,
+                                      base::SharedMemoryHandle handle,
+                                      uint32 size_in_bytes) OVERRIDE {
+    return -1;
+  }
+  virtual bool StopTrackingSharedMemoryHandle(int id,
+                                              PP_Instance instance,
+                                              base::SharedMemoryHandle* handle,
+                                              uint32* size_in_bytes) OVERRIDE {
+    return false;
   }
 };
 

@@ -167,6 +167,10 @@ class MockPluginDelegate : public PluginDelegate {
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const EnumerateDevicesCallback& callback);
   virtual void StopEnumerateDevices(int request_id);
+  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+      base::PlatformFile handle,
+      base::ProcessId target_process_id,
+      bool should_close_source) const;
 };
 
 }  // namespace ppapi

@@ -680,7 +680,8 @@ void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
                                      PP_Var message) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PostMessage(
       API_ID_PPB_INSTANCE,
-      instance, SerializedVarSendInput(dispatcher(), message)));
+      instance, SerializedVarSendInputShmem(dispatcher(), message,
+                                            instance)));
 }
 
 PP_Bool PPB_Instance_Proxy::SetCursor(PP_Instance instance,
@@ -912,7 +913,9 @@ void PPB_Instance_Proxy::OnHostMsgPostMessage(
     SerializedVarReceiveInput message) {
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
-    enter.functions()->PostMessage(instance, message.Get(dispatcher()));
+    enter.functions()->PostMessage(instance,
+                                   message.GetForInstance(dispatcher(),
+                                                          instance));
 }
 
 void PPB_Instance_Proxy::OnHostMsgLockMouse(PP_Instance instance) {

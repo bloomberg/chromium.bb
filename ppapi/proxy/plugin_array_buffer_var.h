@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/shared_memory.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/shared_impl/var.h"
 
@@ -18,16 +21,27 @@ namespace ppapi {
 class PluginArrayBufferVar : public ArrayBufferVar {
  public:
   explicit PluginArrayBufferVar(uint32 size_in_bytes);
+  PluginArrayBufferVar(uint32 size_in_bytes,
+                       base::SharedMemoryHandle plugin_handle);
   virtual ~PluginArrayBufferVar();
 
   // ArrayBufferVar implementation.
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual uint32 ByteLength() OVERRIDE;
+  virtual bool CopyToNewShmem(
+      PP_Instance instance,
+      int* host_handle,
+      base::SharedMemoryHandle* plugin_handle) OVERRIDE;
 
  private:
-  // TODO(dmichael): Use shared memory for this.
+  // Non-shared memory
   std::vector<uint8> buffer_;
+
+  // Shared memory
+  base::SharedMemoryHandle plugin_handle_;
+  scoped_ptr<base::SharedMemory> shmem_;
+  uint32 size_in_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginArrayBufferVar);
 };

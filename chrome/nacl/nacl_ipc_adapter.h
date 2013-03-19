@@ -8,6 +8,7 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
