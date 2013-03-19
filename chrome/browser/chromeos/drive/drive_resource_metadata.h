@@ -64,11 +64,6 @@ enum DriveFileType {
   HOSTED_DOCUMENT,
 };
 
-// The root directory name used for the Google Drive file system tree. The
-// name is used in URLs for the file manager, hence user-visible.
-const base::FilePath::CharType kDriveRootDirectory[] =
-    FILE_PATH_LITERAL("drive");
-
 // This should be incremented when incompatibility change is made in
 // drive.proto.
 const int32 kProtoVersion = 2;

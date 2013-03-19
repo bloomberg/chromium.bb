@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "base/bind.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 
@@ -53,13 +54,12 @@ class SearchMetadataHelper {
   // Starts searching the local resource metadata by reading the root
   // directory.
   void Start() {
-    const base::FilePath root(kDriveRootDirectory);
     ++num_pending_reads_;
     file_system_->ReadDirectoryByPath(
-        root,
+        util::GetDriveMyDriveRootPath(),
         base::Bind(&SearchMetadataHelper::DidReadDirectoryByPath,
                    weak_ptr_factory_.GetWeakPtr(),
-                   root));
+                   util::GetDriveMyDriveRootPath()));
   }
 
 

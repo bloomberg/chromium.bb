@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -94,7 +95,7 @@ void ChangeListProcessor::ApplyEntryProtoMap(bool is_delta_feed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!is_delta_feed) {  // Full update.
-    changed_dirs_.insert(base::FilePath(kDriveRootDirectory));
+    changed_dirs_.insert(util::GetDriveMyDriveRootPath());
     resource_metadata_->RemoveAll(
         base::Bind(&ChangeListProcessor::ApplyNextEntryProtoAsync,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -205,7 +206,8 @@ void ChangeListProcessor::NotifyForAddEntry(bool is_directory,
                                             const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DVLOG(1) << "NotifyForAddEntry " << file_path.value();
+  DVLOG(1) << "NotifyForAddEntry " << file_path.value() << ", error = "
+      << error;
   if (error == DRIVE_FILE_OK) {
     // Notify if a directory has been created.
     if (is_directory)
@@ -384,7 +386,7 @@ void ChangeListProcessor::UpdateRootEntry(const base::Closure& closure) {
   DCHECK(!closure.is_null());
 
   resource_metadata_->GetEntryInfoByPath(
-      base::FilePath(kDriveRootDirectory),
+      util::GetDriveMyDriveRootPath(),
       base::Bind(&ChangeListProcessor::UpdateRootEntryAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  closure));

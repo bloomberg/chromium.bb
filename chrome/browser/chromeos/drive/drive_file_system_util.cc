@@ -129,6 +129,25 @@ void OnGetEntryInfoByResourceId(Profile* profile,
 
 }  // namespace
 
+
+const base::FilePath& GetDriveGrandRootPath() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, grand_root_path,
+      (base::FilePath::FromUTF8Unsafe(util::kDriveGrandRootDirName)));
+  return grand_root_path;
+}
+
+const base::FilePath& GetDriveMyDriveRootPath() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_root_path,
+      (base::FilePath::FromUTF8Unsafe(util::kDriveMyDriveRootPath)));
+  return drive_root_path;
+}
+
+const base::FilePath& GetDriveOtherDirPath() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, other_root_path,
+      (base::FilePath::FromUTF8Unsafe(util::kDriveOtherDirPath)));
+  return other_root_path;
+}
+
 const base::FilePath& GetDriveMountPointPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mount_path,
       (base::FilePath::FromUTF8Unsafe(kDriveMountPointPath)));

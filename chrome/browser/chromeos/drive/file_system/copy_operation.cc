@@ -245,11 +245,11 @@ void CopyOperation::MoveEntryFromRootDirectory(
     const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK_EQ(kDriveRootDirectory, file_path.DirName().value());
+  DCHECK_EQ(util::kDriveMyDriveRootPath, file_path.DirName().value());
 
   // Return if there is an error or |dir_path| is the root directory.
   if (error != DRIVE_FILE_OK ||
-      directory_path == base::FilePath(kDriveRootDirectory)) {
+      directory_path == util::GetDriveMyDriveRootPath()) {
     callback.Run(error);
     return;
   }

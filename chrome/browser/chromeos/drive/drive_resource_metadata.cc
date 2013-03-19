@@ -167,7 +167,7 @@ DriveResourceMetadata::DriveResourceMetadata(
   DriveEntryProto root;
   root.mutable_file_info()->set_is_directory(true);
   root.set_resource_id(root_resource_id);
-  root.set_title(kDriveRootDirectory);
+  root.set_title(util::kDriveGrandRootDirName);
   storage_->PutEntry(CreateEntryWithProperBaseName(root));
 }
 
@@ -347,6 +347,7 @@ void DriveResourceMetadata::GetEntryInfoByResourceId(
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!resource_id.empty());
   DCHECK(!callback.is_null());
 
   scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(resource_id);

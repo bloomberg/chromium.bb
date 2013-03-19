@@ -33,7 +33,6 @@ namespace drive {
 
 namespace {
 
-const char kDriveRootDirectory[] = "drive";
 const char kFeedField[] = "feed";
 
 // Helper function to run reply on results of base::CreatePlatformFile() on

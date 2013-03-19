@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/event_logger.h"
@@ -572,7 +573,8 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
     return;
 
   // Start rendering the file system tree as text.
-  const base::FilePath root_path = base::FilePath(drive::kDriveRootDirectory);
+  const base::FilePath root_path = drive::util::GetDriveMyDriveRootPath();
+
   system_service->file_system()->GetEntryInfoByPath(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnGetEntryInfoByPath,

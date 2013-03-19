@@ -1941,7 +1941,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
 
   // We'll notify the directory change to the observer upon completion.
   EXPECT_CALL(*mock_directory_observer_,
-              OnDirectoryChanged(Eq(base::FilePath(kDriveRootDirectory))))
+              OnDirectoryChanged(Eq(util::GetDriveMyDriveRootPath())))
       .Times(1);
 
   // Check the number of files in the root directory. We'll compare the
@@ -2073,12 +2073,11 @@ TEST_F(DriveFileSystemTest, RefreshDirectory) {
 
   // We'll notify the directory change to the observer.
   EXPECT_CALL(*mock_directory_observer_,
-      OnDirectoryChanged(Eq(
-          base::FilePath::FromUTF8Unsafe(kDriveRootDirectory)))).Times(1);
+      OnDirectoryChanged(Eq(util::GetDriveMyDriveRootPath()))).Times(1);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->RefreshDirectory(
-      base::FilePath::FromUTF8Unsafe(kDriveRootDirectory),
+      util::GetDriveMyDriveRootPath(),
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);

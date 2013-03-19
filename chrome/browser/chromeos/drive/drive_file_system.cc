@@ -370,6 +370,7 @@ void DriveFileSystem::GetEntryInfoByResourceId(
     const std::string& resource_id,
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!resource_id.empty());
   DCHECK(!callback.is_null());
 
   resource_metadata_->GetEntryInfoByResourceId(
@@ -649,6 +650,7 @@ void DriveFileSystem::GetFileByResourceId(
     const GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!resource_id.empty());
   DCHECK(!get_file_callback.is_null());
 
   resource_metadata_->GetEntryInfoByResourceId(
@@ -1423,7 +1425,7 @@ void DriveFileSystem::SetHideHostedDocuments(bool hide) {
 
   // Kick off directory refresh when this setting changes.
   FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
-                    OnDirectoryChanged(base::FilePath(kDriveRootDirectory)));
+                    OnDirectoryChanged(util::GetDriveMyDriveRootPath()));
 }
 
 //============= DriveFileSystem: internal helper functions =====================

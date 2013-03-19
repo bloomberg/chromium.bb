@@ -96,8 +96,7 @@ void DrivePrefetcher::StartPrefetcherCycle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Scans the filesystem. When it is finished, DoPrefetch() will be called.
-  base::FilePath root(util::ExtractDrivePath(util::GetDriveMountPointPath()));
-  VisitDirectory(root);
+  VisitDirectory(util::GetDriveMyDriveRootPath());
 }
 
 void DrivePrefetcher::DoPrefetch() {
