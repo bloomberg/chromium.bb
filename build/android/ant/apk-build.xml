@@ -37,6 +37,9 @@
     <path id="project.library.bin.r.file.path">
       <filelist files="${ADDITIONAL_R_TEXT_FILES}"/>
     </path>
+    <path id="project.library.manifest.file.path">
+      <filelist files="${LIBRARY_MANIFEST_PATHS}"/>
+    </path>
     <script language="javascript">
       var before = project.getProperty("ADDITIONAL_RES_PACKAGES");
       project.setProperty("project.library.packages", before.replaceAll(" ", ";"));
@@ -114,8 +117,12 @@
     <property name="java.source" value="1.5" />
     <property name="java.compilerargs" value="" />
 
-    <!-- manifest merger default value -->
-    <property name="manifestmerger.enabled" value="false" />
+    <!-- manifest merger default value if it's not set.-->
+    <condition property="manifestmerger.enabled"
+         value="false"
+         else="true">
+      <equals arg1="${LIBRARY_MANIFEST_PATHS}" arg2=""/>
+    </condition>
 
     <!-- Verbosity -->
     <property name="verbose" value="false" />
@@ -304,6 +311,7 @@
                 appManifest="${manifest.abs.file}"
                 outManifest="${out.manifest.abs.file}"
                 enabled="${manifestmerger.enabled}">
+            <library refid="project.library.manifest.file.path" />
         </mergemanifest>
 
         <echo level="info">----------</echo>

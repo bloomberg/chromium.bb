@@ -47,6 +47,8 @@
 #    By default, the package given in AndroidManifest.xml will be used.
 #  java_strings_grd - The name of the grd file from which to generate localized
 #    strings.xml files, if any.
+#  library_manifest_paths'- Paths to additional AndroidManifest.xml files from
+#    libraries.
 
 {
   'variables': {
@@ -68,6 +70,7 @@
     'is_test_apk%': 0,
     'java_strings_grd%': '',
     'grit_grd_file%': '',
+    'library_manifest_paths%' : [],
   },
   'sources': [
       '<@(native_libs_paths)'
@@ -148,6 +151,7 @@
         '>@(input_jars_paths)',
         '>@(native_libs_paths)',
         '>@(additional_input_paths)',
+        '>@(library_manifest_paths)',
       ],
       'conditions': [
         ['resource_dir!=""', {
@@ -169,7 +173,7 @@
         }],
         ['proguard_enabled == "true" and proguard_flags != ""', {
           'inputs': ['<(java_in_dir)/<(proguard_flags)']
-        }]
+        }],
       ],
       'outputs': [
         '<(PRODUCT_DIR)/apks/<(apk_name).apk',
@@ -202,6 +206,7 @@
         '-DAPP_MANIFEST_VERSION_CODE=<(app_manifest_version_code)',
         '-DPROGUARD_FLAGS=>(proguard_flags)',
         '-DPROGUARD_ENABLED=>(proguard_enabled)',
+        '-DLIBRARY_MANIFEST_PATHS=>(library_manifest_paths)',
 
         # Add list of inputs to the command line, so if inputs change
         # (e.g. if a Java file is removed), the command will be re-run.
