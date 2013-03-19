@@ -465,6 +465,11 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
         // baselines. So this is mostly a dummy surface.
         if (g_allow_os_mesa) {
           surface = new DRTSurfaceOSMesa();
+          if (!surface || !surface->Initialize())
+            return NULL;
+
+          surface = new PassThroughImageTransportSurface(
+              manager, stub, surface.get(), /*is_transport=*/false);
         } else {
           NOTREACHED();
           return NULL;

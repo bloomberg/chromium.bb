@@ -70,6 +70,8 @@ class SimpleSwapFence : public ResourceProvider::Fence {
 
 bool NeedsIOSurfaceReadbackWorkaround() {
 #if defined(OS_MACOSX)
+  // This isn't strictly required in DumpRenderTree-mode when Mesa is used,
+  // but it doesn't seem to hurt.
   return true;
 #else
   return false;
