@@ -5,8 +5,6 @@
 #include "webkit/gpu/context_provider_in_process.h"
 
 #include "webkit/gpu/grcontext_for_webgraphicscontext3d.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 namespace webkit {
 namespace gpu {
@@ -45,17 +43,28 @@ class ContextProviderInProcess::MemoryAllocationCallbackProxy
   ContextProviderInProcess* provider_;
 };
 
-ContextProviderInProcess::ContextProviderInProcess(InProcessType type)
-    : type_(type),
-      destroyed_(false) {
+ContextProviderInProcess::ContextProviderInProcess()
+    : destroyed_(false) {
 }
 
 ContextProviderInProcess::~ContextProviderInProcess() {}
 
 bool ContextProviderInProcess::InitializeOnMainThread() {
   DCHECK(!context3d_);
-  context3d_ = CreateOffscreenContext3d().Pass();
-  return !!context3d_;
+
+  WebKit::WebGraphicsContext3D::Attributes attributes;
+  attributes.depth = false;
+  attributes.stencil = true;
+  attributes.antialias = false;
+  attributes.shareResources = true;
+  attributes.noAutomaticFlushes = true;
+
+  context3d_.reset(
+      new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
+  if (!context3d_->Initialize(attributes, NULL))
+    context3d_.reset();
+
+  return context3d_;
 }
 
 bool ContextProviderInProcess::BindToCurrentThread() {
@@ -119,41 +128,6 @@ void ContextProviderInProcess::OnMemoryAllocationChanged(
     bool nonzero_allocation) {
   if (gr_context_)
     gr_context_->SetMemoryLimit(nonzero_allocation);
-}
-
-static scoped_ptr<WebKit::WebGraphicsContext3D> CreateInProcessImpl(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  return make_scoped_ptr(
-      webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attributes, false)).PassAs<WebKit::WebGraphicsContext3D>();
-}
-
-static scoped_ptr<WebKit::WebGraphicsContext3D> CreateCommandBufferImpl(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl> ctx(
-      new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
-  if (!ctx->Initialize(attributes, NULL))
-    return scoped_ptr<WebKit::WebGraphicsContext3D>();
-  return ctx.PassAs<WebKit::WebGraphicsContext3D>();
-}
-
-scoped_ptr<WebKit::WebGraphicsContext3D>
-ContextProviderInProcess::CreateOffscreenContext3d() {
-  WebKit::WebGraphicsContext3D::Attributes attributes;
-  attributes.depth = false;
-  attributes.stencil = true;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-
-  switch (type_) {
-    case IN_PROCESS:
-      return CreateInProcessImpl(attributes).Pass();
-    case IN_PROCESS_COMMAND_BUFFER:
-      return CreateCommandBufferImpl(attributes).Pass();
-  }
-  NOTREACHED();
-  return CreateInProcessImpl(attributes).Pass();
 }
 
 }  // namespace gpu
