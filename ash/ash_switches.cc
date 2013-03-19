@@ -102,12 +102,6 @@ const char kAshImmersiveHideTabIndicators[] =
 // Specifies the internal display's ui scale.
 const char kAshInternalDisplayUIScale[] = "ash-internal-display-ui-scale";
 
-// Overrides all displays' orientation. The value should be one of 0
-// (normal), 1 (90 degrees clockwise), 2 (180 degrees) or 3 (270
-// degrees clockwise).
-const char kAshOverrideDisplayOrientation[] =
-    "ash-override-display-orientation";
-
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display

@@ -36,6 +36,11 @@
 #include "base/time.h"
 #include "chromeos/display/output_configurator.h"
 #include "ui/base/x/x11_util.h"
+
+// Including this at the bottom to avoid other
+// potential conflict with chrome headers.
+#include <X11/extensions/Xrandr.h>
+#undef RootWindow
 #endif  // defined(OS_CHROMEOS)
 
 DECLARE_WINDOW_PROPERTY_TYPE(gfx::Display::Rotation);
@@ -161,22 +166,26 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
   const char kScaleFactorProp[] = "_CHROME_DISPLAY_SCALE_FACTOR";
   const char kInternalProp[] = "_CHROME_DISPLAY_INTERNAL";
   const char kCARDINAL[] = "CARDINAL";
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  int rotation = static_cast<int>(info.rotation());
-  if (command_line->HasSwitch(switches::kAshOverrideDisplayOrientation)) {
-    std::string value = command_line->
-        GetSwitchValueASCII(switches::kAshOverrideDisplayOrientation);
-    DCHECK(base::StringToInt(value, &rotation));
-    DCHECK(0 <= rotation && rotation <= 3) << "Invalid rotation value="
-                                           << rotation;
-    if (rotation < 0 || rotation > 3)
-      rotation = 0;
+  int xrandr_rotation = RR_Rotate_0;
+  switch (info.rotation()) {
+    case gfx::Display::ROTATE_0:
+      xrandr_rotation = RR_Rotate_0;
+      break;
+    case gfx::Display::ROTATE_90:
+      xrandr_rotation = RR_Rotate_90;
+      break;
+    case gfx::Display::ROTATE_180:
+      xrandr_rotation = RR_Rotate_180;
+      break;
+    case gfx::Display::ROTATE_270:
+      xrandr_rotation = RR_Rotate_270;
+      break;
   }
+
   int internal = display.IsInternal() ? 1 : 0;
   gfx::AcceleratedWidget xwindow = root->GetAcceleratedWidget();
   ui::SetIntProperty(xwindow, kInternalProp, kCARDINAL, internal);
-  ui::SetIntProperty(xwindow, kRotationProp, kCARDINAL, rotation);
+  ui::SetIntProperty(xwindow, kRotationProp, kCARDINAL, xrandr_rotation);
   ui::SetIntProperty(xwindow,
                      kScaleFactorProp,
                      kCARDINAL,
