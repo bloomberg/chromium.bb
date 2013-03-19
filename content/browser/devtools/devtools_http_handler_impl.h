@@ -17,10 +17,12 @@
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/worker_service.h"
 #include "net/server/http_server.h"
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 class Thread;
 class Value;
 }
@@ -85,6 +87,9 @@ class DevToolsHttpHandlerImpl
   void ResetHandlerThread();
   void ResetHandlerThreadAndRelease();
 
+  void CollectWorkerInfo(base::ListValue* target_list, std::string host);
+  void SendTargetList(int connection_id, base::ListValue* target_list);
+
   void Init();
   void Teardown();
 
@@ -110,6 +115,14 @@ class DevToolsHttpHandlerImpl
 
   base::DictionaryValue* SerializePageInfo(RenderViewHost* rvh,
                                            const std::string& host);
+
+  base::DictionaryValue* SerializeWorkerInfo(
+      const WorkerService::WorkerInfo& worker,
+      const std::string& host);
+
+  void SerializeDebuggerURLs(base::DictionaryValue* dictionary,
+                             const std::string& id,
+                             const std::string& host);
 
   // The thread used by the devtools handler to run server socket.
   scoped_ptr<base::Thread> thread_;

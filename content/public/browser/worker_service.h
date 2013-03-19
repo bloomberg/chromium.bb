@@ -9,8 +9,7 @@
 
 #include "base/process.h"
 #include "content/common/content_export.h"
-
-class GURL;
+#include "googleurl/src/gurl.h"
 
 namespace content {
 
