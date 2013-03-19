@@ -673,6 +673,8 @@
         'browser/chromeos/status/network_menu_icon.h',
         'browser/chromeos/system/ash_system_tray_delegate.cc',
         'browser/chromeos/system/ash_system_tray_delegate.h',
+        'browser/chromeos/system/automatic_reboot_manager.cc',
+        'browser/chromeos/system/automatic_reboot_manager.h',
         'browser/chromeos/system/drm_settings.cc',
         'browser/chromeos/system/drm_settings.h',
         'browser/chromeos/system/input_device_settings.cc',

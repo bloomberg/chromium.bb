@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,6 +56,10 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .Times(1);
     EXPECT_CALL(*mock_session_manager_client, RetrieveDevicePolicy(_))
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_dbus_thread_manager->mock_update_engine_client(),
+                GetLastStatus())
+        .Times(1)
+        .WillOnce(Return(MockUpdateEngineClient::Status()));
 
     // Minimal set of expectations needed on NetworkScreen initialization.
     // Status bar expectations are defined with RetiresOnSaturation() so

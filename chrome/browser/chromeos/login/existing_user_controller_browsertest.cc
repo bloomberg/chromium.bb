@@ -27,6 +27,7 @@
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -144,6 +145,10 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
                 RemovePropertyChangedObserver(_))
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_dbus_thread_manager->mock_update_engine_client(),
+                GetLastStatus())
+        .Times(1)
+        .WillOnce(Return(MockUpdateEngineClient::Status()));
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     cros_mock_->InitStatusAreaMocks();

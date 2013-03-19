@@ -19,6 +19,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -66,6 +68,7 @@
 #include "chrome/browser/chromeos/screensaver/screensaver_controller.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
+#include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
@@ -633,6 +636,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   primary_display_switch_observer_.reset(
       new PrimaryDisplaySwitchObserver());
 
+  automatic_reboot_manager_.reset(new system::AutomaticRebootManager(
+      scoped_ptr<base::TickClock>(new base::DefaultTickClock)));
+
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
 
@@ -743,6 +749,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // of the CrosSettings singleton before it is destroyed.
   UserManager::Get()->Shutdown();
   WallpaperManager::Get()->Shutdown();
+
+  // Let the AutomaticRebootManager unregister itself as an observer of several
+  // subsystems.
+  automatic_reboot_manager_.reset();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }

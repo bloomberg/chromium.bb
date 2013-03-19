@@ -130,6 +130,7 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
+#include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -244,6 +245,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(registry);
   chromeos::RegisterDisplayLocalStatePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(registry);
+  chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserManager::RegisterPrefs(registry);
   chromeos::WallpaperManager::RegisterPrefs(registry);

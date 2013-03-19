@@ -735,6 +735,8 @@ extern const char kUsersWallpaperInfo[];
 extern const char kAudioOutputAllowed[];
 extern const char kOwnerPrimaryMouseButtonRight[];
 extern const char kOwnerTapToClickEnabled[];
+extern const char kUptimeLimit[];
+extern const char kRebootAfterUpdate[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

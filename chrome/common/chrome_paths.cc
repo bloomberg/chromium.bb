@@ -110,6 +110,12 @@ const base::FilePath::CharType kOwnerKeyFileName[] =
 const base::FilePath::CharType kInstallAttributesFileName[] =
     FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
 
+const base::FilePath::CharType kUptimeFileName[] =
+    FILE_PATH_LITERAL("/proc/uptime");
+
+const base::FilePath::CharType kUpdateRebootNeededUptimeFile[] =
+    FILE_PATH_LITERAL("/var/run/chrome/update_reboot_needed_uptime");
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -424,6 +430,12 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case chrome::FILE_INSTALL_ATTRIBUTES:
       cur = base::FilePath(kInstallAttributesFileName);
+      break;
+    case chrome::FILE_UPTIME:
+      cur = base::FilePath(kUptimeFileName);
+      break;
+    case chrome::FILE_UPDATE_REBOOT_NEEDED_UPTIME:
+      cur = base::FilePath(kUpdateRebootNeededUptimeFile);
       break;
 #endif
 #if defined(ENABLE_MANAGED_USERS)

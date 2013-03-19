@@ -45,6 +45,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -381,6 +382,12 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
     // Mock out cryptohome mount calls to succeed immediately.
     EXPECT_CALL(*dbus_thread_manager, GetCryptohomeClient())
         .WillRepeatedly(Return(&cryptohome_client_));
+
+    // Set up the MockUpdateEngineClient.
+    EXPECT_CALL(*dbus_thread_manager->mock_update_engine_client(),
+                GetLastStatus())
+        .Times(1)
+        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

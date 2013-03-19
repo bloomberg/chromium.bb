@@ -56,6 +56,12 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     mock_update_engine_client_
         = mock_dbus_thread_manager->mock_update_engine_client();
 
+    // ChromeBrowserMainPartsChromeos::PostProfileInit() creates an
+    // AutomaticRebootManager which calls the following function.
+    EXPECT_CALL(*mock_update_engine_client_, GetLastStatus())
+        .Times(1)
+        .WillRepeatedly(Return(MockUpdateEngineClient::Status()));
+
     // UpdateScreen::StartUpdate() will be called by the WizardController
     // just after creating the update screen, so the expectations for that
     // should be set up here.

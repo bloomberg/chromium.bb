@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 191
+#   For your editing convenience: highest ID currently used: 193
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4219,7 +4219,7 @@
           'example_value': True,
           'id': 183,
           'caption': '''Specify whether video activity affects power management''',
-          'desc': '''Specifies whether vidoe activity affects power management.
+          'desc': '''Specifies whether video activity affects power management.
 
           If this policy is set to True or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached and the corresponding actions from being taken.
 
@@ -4350,6 +4350,50 @@
       'id': 191,
       'caption': '''System wide flags to be applied on Chrome start-up''',
       'desc': '''Specifies the flags that should be applied to Chrome when it starts. The specified flags are applied before Chrome is started even for the sign-in screen.''',
+    },
+    {
+      'name': 'UptimeLimit',
+      'type': 'int',
+      'schema': { 'type': 'integer' },
+      'supported_on': ['chrome_os:27-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 86400,
+      'id': 192,
+      'caption': '''Limit device uptime by automatically rebooting''',
+      'desc': '''Limit the device uptime by scheduling automatic reboots.
+
+      When this policy is set, it specifies the length of device uptime after which an automatic reboot is scheduled.
+
+      When this policy is not set, the device uptime is not limited.
+
+      If you set this policy, users cannot change or override it.
+
+      An automatic reboot is scheduled at the selected time but may be delayed on the device by up to 24 hours, e.g. if a user is currently using the device or an app/extension has requested reboots to be inhibited temporarily.
+
+      The policy value should be specified in seconds. Values are clamped to be at least 3600 (one hour).''',
+    },
+    {
+      'name': 'RebootAfterUpdate',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:27-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 193,
+      'caption': '''Automatically reboot after update''',
+      'desc': '''Schedule an automatic reboot after a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update has been applied.
+
+      When this policy is set to true, an automatic reboot is scheduled when a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update has been applied and a reboot is required to complete the update process. The reboot is scheduled immediately but may be delayed on the device by up to 24 hours, e.g. if a user is currently using the device or an app/extension has requested reboots to be inhibited temporarily.
+
+      When this policy is set to false, no automatic reboot is scheduled after applying a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update. The update process is completed when the user next reboots the device.
+
+      If you set this policy, users cannot change or override it.''',
     },
   ],
   'messages': {

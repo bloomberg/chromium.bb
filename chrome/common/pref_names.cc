@@ -2012,6 +2012,14 @@ const char kOwnerPrimaryMouseButtonRight[] = "owner.mouse.primary_right";
 
 // Copy of owner tap-to-click option to use on login screen.
 const char kOwnerTapToClickEnabled[] = "owner.touchpad.enable_tap_to_click";
+
+// The length of device uptime after which an automatic reboot is scheduled,
+// expressed in seconds.
+const char kUptimeLimit[] = "automatic_reboot.uptime_limit";
+
+// Whether an automatic reboot should be scheduled when an update has been
+// applied and a reboot is required to complete the update process.
+const char kRebootAfterUpdate[] = "automatic_reboot.reboot_after_update";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

@@ -43,6 +43,7 @@
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -53,6 +54,7 @@
 using testing::AnyNumber;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
+using testing::Return;
 using testing::_;
 
 namespace em = enterprise_management;
@@ -196,6 +198,10 @@ class CloudPolicyTest : public InProcessBrowserTest {
     EXPECT_CALL(*mock_dbus_thread_manager_->mock_session_manager_client(),
                 RetrieveUserPolicy(_))
         .WillRepeatedly(RetrieveUserPolicy(&session_manager_user_policy_));
+    EXPECT_CALL(*mock_dbus_thread_manager_->mock_update_engine_client(),
+                GetLastStatus())
+        .Times(1)
+        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
 #endif
   }
 

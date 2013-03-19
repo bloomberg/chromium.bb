@@ -369,6 +369,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kShowAccessibilityOptionsInSystemTrayMenu,
     prefs::kShouldAlwaysShowAccessibilityMenu,
     Value::TYPE_BOOLEAN },
+  { key::kRebootAfterUpdate,
+    prefs::kRebootAfterUpdate,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -498,6 +501,9 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           key::kPresentationIdleDelayScale,
           prefs::kPowerPresentationIdleDelayFactor,
           100, INT_MAX, true));
+  handlers_.push_back(new IntRangePolicyHandler(key::kUptimeLimit,
+                                                prefs::kUptimeLimit,
+                                                3600, INT_MAX, true));
 #endif  // defined(OS_CHROMEOS)
 }
 

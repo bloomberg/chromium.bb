@@ -1818,6 +1818,12 @@
   "DeviceStartUpFlags": {
   },
 
+  "UptimeLimit": {
+  },
+
+  "RebootAfterUpdate": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

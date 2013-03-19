@@ -11,6 +11,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -29,6 +30,10 @@ class PowerApiTest : public InProcessBrowserTest {
 
     EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
         .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
+    EXPECT_CALL(*mock_dbus_thread_manager->mock_update_engine_client(),
+                GetLastStatus())
+        .Times(1)
+        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
     chromeos::DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     power_client_ = mock_dbus_thread_manager->mock_power_manager_client();
 

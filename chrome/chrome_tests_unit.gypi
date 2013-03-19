@@ -633,6 +633,7 @@
         'browser/chromeos/settings/stub_cros_settings_provider_unittest.cc',
         'browser/chromeos/status/network_menu_icon.cc',
         'browser/chromeos/status/network_menu_icon_unittest.cc',
+        'browser/chromeos/system/automatic_reboot_manager_unittest.cc',
         'browser/chromeos/system/name_value_pairs_parser_unittest.cc',
         'browser/chromeos/system_logs/lsb_release_log_source_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',

@@ -37,6 +37,9 @@ class GetUpdateStatusApiTest : public ExtensionApiTest {
     chromeos::DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     mock_update_engine_client_ =
         mock_dbus_thread_manager->mock_update_engine_client();
+    EXPECT_CALL(*mock_update_engine_client_, GetLastStatus())
+        .Times(1)
+        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {

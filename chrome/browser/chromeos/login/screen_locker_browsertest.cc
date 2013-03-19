@@ -22,6 +22,7 @@
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,6 +130,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_session_manager_client_, NotifyLockScreenDismissed())
         .Times(1)
         .RetiresOnSaturation();
+    EXPECT_CALL(*mock_dbus_thread_manager->mock_update_engine_client(),
+                GetLastStatus())
+        .Times(1)
+        .WillOnce(Return(MockUpdateEngineClient::Status()));
     // Expectations for the status are on the screen lock window.
     cros_mock_->SetStatusAreaMocksExpectations();
     MockNetworkLibrary* mock_network_library =

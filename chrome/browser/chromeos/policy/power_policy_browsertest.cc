@@ -16,6 +16,7 @@
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,6 +74,10 @@ void PowerPolicyBrowserTest::SetUpInProcessBrowserTestFixture() {
   chromeos::DBusThreadManager::InitializeForTesting(dbus_thread_manager);
   EXPECT_CALL(*dbus_thread_manager->mock_session_manager_client(),
               RetrieveUserPolicy(_));
+  EXPECT_CALL(*dbus_thread_manager->mock_update_engine_client(),
+              GetLastStatus())
+      .Times(1)
+      .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
   power_manager_client_ = dbus_thread_manager->mock_power_manager_client();
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));

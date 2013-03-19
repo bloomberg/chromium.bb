@@ -42,6 +42,10 @@ namespace internal {
 class DBusServices;
 }
 
+namespace system {
+class AutomaticRebootManager;
+}
+
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
   explicit ChromeBrowserMainPartsChromeos(
@@ -88,6 +92,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<ScreenDimmingObserver> screen_dimming_observer_;
   scoped_refptr<StorageMonitorCros> storage_monitor_;
+  scoped_ptr<system::AutomaticRebootManager> automatic_reboot_manager_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 

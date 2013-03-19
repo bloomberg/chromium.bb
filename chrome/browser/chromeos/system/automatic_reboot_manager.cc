@@ -1,0 +1,353 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
+
+#include <algorithm>
+#include <string>
+
+#include "ash/shell.h"
+#include "ash/wm/user_activity_detector.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/path_service.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/time/tick_clock.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+
+namespace chromeos {
+namespace system {
+
+namespace {
+
+const int kMinRebootUptimeMs = 60 * 60 * 1000;  // 1 hour.
+const int kLoginManagerIdleTimeoutMs = 60 * 1000;  // 60 seconds.
+const int kGracePeriodMs = 24 * 60 * 60 * 1000;  // 24 hours.
+
+base::TimeDelta ReadTimeDeltaFromFile(const base::FilePath& path) {
+  std::string contents;
+  if (!file_util::ReadFileToString(path, &contents))
+    return base::TimeDelta();
+  double seconds;
+  if (!base::StringToDouble(contents.substr(0, contents.find(' ')), &seconds) ||
+      seconds < 0.0) {
+    return base::TimeDelta();
+  }
+  return base::TimeDelta::FromMilliseconds(seconds * 1000.0);
+}
+
+void GetSystemEventTimes(
+    scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
+    base::Callback<void(
+        const AutomaticRebootManager::SystemEventTimes&)> reply) {
+  base::FilePath uptime_file;
+  CHECK(PathService::Get(chrome::FILE_UPTIME, &uptime_file));
+  base::FilePath update_reboot_needed_uptime_file;
+  CHECK(PathService::Get(chrome::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
+                         &update_reboot_needed_uptime_file));
+  reply_task_runner->PostTask(FROM_HERE, base::Bind(reply,
+      AutomaticRebootManager::SystemEventTimes(
+          ReadTimeDeltaFromFile(uptime_file),
+          ReadTimeDeltaFromFile(update_reboot_needed_uptime_file))));
+}
+
+void SaveUpdateRebootNeededUptime() {
+  const base::TimeDelta kZeroTimeDelta;
+
+  base::FilePath update_reboot_needed_uptime_file;
+  CHECK(PathService::Get(chrome::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
+                         &update_reboot_needed_uptime_file));
+  const base::TimeDelta last_update_reboot_needed_uptime =
+      ReadTimeDeltaFromFile(update_reboot_needed_uptime_file);
+  if (last_update_reboot_needed_uptime != kZeroTimeDelta)
+    return;
+
+  base::FilePath uptime_file;
+  CHECK(PathService::Get(chrome::FILE_UPTIME, &uptime_file));
+  const base::TimeDelta uptime = ReadTimeDeltaFromFile(uptime_file);
+  if (uptime == kZeroTimeDelta)
+    return;
+
+  std::string update_reboot_needed_uptime =
+      base::DoubleToString(uptime.InSecondsF());
+  file_util::WriteFile(update_reboot_needed_uptime_file,
+                       update_reboot_needed_uptime.c_str(),
+                       update_reboot_needed_uptime.size());
+}
+
+}  // namespace
+
+AutomaticRebootManager::SystemEventTimes::SystemEventTimes()
+    : has_boot_time(false),
+      has_update_reboot_needed_time(false) {
+}
+
+AutomaticRebootManager::SystemEventTimes::SystemEventTimes(
+    const base::TimeDelta& uptime,
+    const base::TimeDelta& update_reboot_needed_uptime)
+    : has_boot_time(false),
+      has_update_reboot_needed_time(false) {
+  const base::TimeDelta kZeroTimeDelta;
+  if (uptime == kZeroTimeDelta)
+    return;
+  boot_time = base::TimeTicks::Now() - uptime;
+  has_boot_time = true;
+  if (update_reboot_needed_uptime == kZeroTimeDelta)
+    return;
+  // Calculate the time at which an update was applied and a reboot became
+  // necessary in base::TimeTicks::Now() ticks.
+  update_reboot_needed_time = boot_time + update_reboot_needed_uptime;
+  has_update_reboot_needed_time = true;
+}
+
+AutomaticRebootManager::AutomaticRebootManager(
+    scoped_ptr<base::TickClock> clock)
+    : clock_(clock.Pass()),
+      have_boot_time_(false),
+      have_update_reboot_needed_time_(false),
+      reboot_requested_(false),
+      weak_ptr_factory_(this) {
+  local_state_registrar_.Init(g_browser_process->local_state());
+  local_state_registrar_.Add(prefs::kUptimeLimit,
+                             base::Bind(&AutomaticRebootManager::Reschedule,
+                                        base::Unretained(this)));
+  local_state_registrar_.Add(prefs::kRebootAfterUpdate,
+                             base::Bind(&AutomaticRebootManager::Reschedule,
+                                        base::Unretained(this)));
+
+  DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
+  dbus_thread_manager->GetPowerManagerClient()->AddObserver(this);
+  dbus_thread_manager->GetUpdateEngineClient()->AddObserver(this);
+
+  // If no user is logged in, a reboot may be performed whenever the user is
+  // idle. Start listening for user activity to determine whether the user is
+  // idle or not.
+  if (!UserManager::Get()->IsUserLoggedIn()) {
+    if (ash::Shell::HasInstance())
+      ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+    notification_registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+        content::NotificationService::AllSources());
+    login_screen_idle_timer_.reset(
+        new base::OneShotTimer<AutomaticRebootManager>);
+    OnUserActivity();
+  }
+
+  // In a regular browser, base::ThreadTaskRunnerHandle::Get() and
+  // base::MessageLoopProxy::current() return pointers to the same object.
+  // In unit tests, using base::ThreadTaskRunnerHandle::Get() has the advantage
+  // that it allows a custom base::SingleThreadTaskRunner to be injected.
+  content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+      FROM_HERE,
+      base::Bind(&GetSystemEventTimes,
+                 base::ThreadTaskRunnerHandle::Get(),
+                 base::Bind(&AutomaticRebootManager::Init,
+                            weak_ptr_factory_.GetWeakPtr())),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+}
+
+AutomaticRebootManager::~AutomaticRebootManager() {
+  DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
+  dbus_thread_manager->GetPowerManagerClient()->RemoveObserver(this);
+  dbus_thread_manager->GetUpdateEngineClient()->RemoveObserver(this);
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+}
+
+void AutomaticRebootManager::SystemResumed(
+    const base::TimeDelta& sleep_duration) {
+  MaybeReboot(true);
+}
+
+void AutomaticRebootManager::UpdateStatusChanged(
+    const UpdateEngineClient::Status& status) {
+  // Ignore repeated notifications that a reboot is necessary. This is important
+  // so that only the time of the first notification is taken into account and
+  // repeated notifications do not postpone the reboot request and grace period.
+  if (status.status != UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT ||
+      !have_boot_time_ || have_update_reboot_needed_time_) {
+    return;
+  }
+
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(&SaveUpdateRebootNeededUptime));
+
+  update_reboot_needed_time_ = clock_->NowTicks();
+  have_update_reboot_needed_time_ = true;
+
+  Reschedule();
+}
+
+void AutomaticRebootManager::OnUserActivity() {
+  if (!login_screen_idle_timer_)
+    return;
+
+  // Destroying and re-creating the timer ensures that Start() posts a fresh
+  // task with a delay of exactly |kLoginManagerIdleTimeoutMs|, ensuring that
+  // the timer fires predictably in tests.
+  login_screen_idle_timer_.reset(
+      new base::OneShotTimer<AutomaticRebootManager>);
+  login_screen_idle_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kLoginManagerIdleTimeoutMs),
+      base::Bind(&AutomaticRebootManager::MaybeReboot,
+                 base::Unretained(this),
+                 false));
+}
+
+void AutomaticRebootManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  // Reboots are always inhibited while a user is logged in and the device is
+  // not sleeping. Stop listening for user activity as this is no longer a
+  // relevant criterion.
+  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
+    if (ash::Shell::HasInstance())
+      ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+    notification_registrar_.RemoveAll();
+    login_screen_idle_timer_.reset();
+  } else {
+    NOTREACHED();
+  }
+}
+
+// static
+void AutomaticRebootManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kUptimeLimit, 0);
+  registry->RegisterBooleanPref(prefs::kRebootAfterUpdate, false);
+}
+
+void AutomaticRebootManager::Init(const SystemEventTimes& system_event_times) {
+  const base::TimeDelta offset = clock_->NowTicks() - base::TimeTicks::Now();
+  if (system_event_times.has_boot_time) {
+    // Convert the time at which the device was booted to |clock_| ticks.
+    boot_time_ = system_event_times.boot_time + offset;
+    have_boot_time_ = true;
+  }
+  if (system_event_times.has_update_reboot_needed_time) {
+    // Convert the time at which a reboot became necessary to |clock_| ticks.
+    const base::TimeTicks update_reboot_needed_time =
+        system_event_times.update_reboot_needed_time + offset;
+    update_reboot_needed_time_ = update_reboot_needed_time;
+    have_update_reboot_needed_time_ = true;
+  } else {
+    UpdateStatusChanged(
+        DBusThreadManager::Get()->GetUpdateEngineClient()->GetLastStatus());
+  }
+
+  Reschedule();
+}
+
+void AutomaticRebootManager::Reschedule() {
+  // Safeguard against reboot loops under error conditions: If the boot time is
+  // unavailable because /proc/uptime could not be read, do nothing.
+  if (!have_boot_time_)
+    return;
+
+  // Assume that no reboot has been requested.
+  reboot_requested_ = false;
+
+  const base::TimeDelta kZeroTimeDelta;
+
+  // If an uptime limit is set, calculate the time at which it should cause a
+  // reboot to be requested.
+  const base::TimeDelta uptime_limit = base::TimeDelta::FromSeconds(
+      local_state_registrar_.prefs()->GetInteger(prefs::kUptimeLimit));
+  base::TimeTicks reboot_request_time = boot_time_ + uptime_limit;
+  bool have_reboot_request_time = uptime_limit != kZeroTimeDelta;
+
+  // If the policy to automatically reboot after an update is enabled and an
+  // update has been applied, set the time at which a reboot should be
+  // requested to the minimum of its current value and the time when the reboot
+  // became necessary.
+  if (have_update_reboot_needed_time_ &&
+      local_state_registrar_.prefs()->GetBoolean(prefs::kRebootAfterUpdate) &&
+      (!have_reboot_request_time ||
+       update_reboot_needed_time_ < reboot_request_time)) {
+    reboot_request_time = update_reboot_needed_time_;
+    have_reboot_request_time = true;
+  }
+
+  // If no reboot should be requested, remove any grace period.
+  if (!have_reboot_request_time) {
+    grace_start_timer_.reset();
+    grace_end_timer_.reset();
+    return;
+  }
+
+  // Safeguard against reboot loops: Ensure that the uptime after which a reboot
+  // is actually requested and the grace period begins is never less than
+  // |kMinRebootUptimeMs|.
+  const base::TimeTicks now = clock_->NowTicks();
+  const base::TimeTicks grace_start_time = std::max(reboot_request_time,
+      boot_time_ + base::TimeDelta::FromMilliseconds(kMinRebootUptimeMs));
+  // Set up a timer for the start of the grace period. If the grace period
+  // started in the past, the timer is still used with its delay set to zero.
+  if (!grace_start_timer_)
+    grace_start_timer_.reset(new base::OneShotTimer<AutomaticRebootManager>);
+  grace_start_timer_->Start(FROM_HERE,
+                            std::max(grace_start_time - now, kZeroTimeDelta),
+                            base::Bind(&AutomaticRebootManager::RequestReboot,
+                                       base::Unretained(this)));
+
+  const base::TimeTicks grace_end_time = grace_start_time +
+      base::TimeDelta::FromMilliseconds(kGracePeriodMs);
+  // Set up a timer for the end of the grace period. If the grace period ended
+  // in the past, the timer is still used with its delay set to zero.
+  if (!grace_end_timer_)
+    grace_end_timer_.reset(new base::OneShotTimer<AutomaticRebootManager>);
+  grace_end_timer_->Start(FROM_HERE,
+                          std::max(grace_end_time - now, kZeroTimeDelta),
+                          base::Bind(&AutomaticRebootManager::Reboot,
+                                     base::Unretained(this)));
+}
+
+void AutomaticRebootManager::RequestReboot() {
+  reboot_requested_ = true;
+  MaybeReboot(false);
+}
+
+void AutomaticRebootManager::MaybeReboot(bool ignore_logged_in_user) {
+  // Do not reboot if any of the following applies:
+  // * No reboot has been requested.
+  // * A user is interacting with the login screen.
+  // * A user is logged in and |ignore_logged_in_user| is not set.
+  if (!reboot_requested_ ||
+      (login_screen_idle_timer_ && login_screen_idle_timer_->IsRunning()) ||
+      (!ignore_logged_in_user && UserManager::Get()->IsUserLoggedIn())) {
+    return;
+  }
+
+  Reboot();
+}
+
+void AutomaticRebootManager::Reboot() {
+  login_screen_idle_timer_.reset();
+  grace_start_timer_.reset();
+  grace_end_timer_.reset();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
+}  // namespace system
+}  // namespace chromeos

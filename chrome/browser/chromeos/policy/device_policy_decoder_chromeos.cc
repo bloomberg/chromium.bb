@@ -361,6 +361,13 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE,
                     allowed_connection_types);
     }
+
+    if (container.has_reboot_after_update()) {
+      policies->Set(key::kRebootAfterUpdate,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.reboot_after_update()));
+    }
   }
 }
 
@@ -423,6 +430,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE,
                     Value::CreateBooleanValue(
                         container.allow_redeem_offers()));
+    }
+  }
+
+  if (policy.has_uptime_limit()) {
+    const em::UptimeLimitProto& container(policy.uptime_limit());
+    if (container.has_uptime_limit()) {
+      policies->Set(key::kUptimeLimit,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    DecodeIntegerValue(container.uptime_limit()));
     }
   }
 
