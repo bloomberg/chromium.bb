@@ -228,7 +228,8 @@ class SandboxIPCProcess  {
     SendRendererReply(fds, reply, result_fd);
 
     if (result_fd >= 0) {
-      DCHECK(!HANDLE_EINTR(close(result_fd)));
+      int err = HANDLE_EINTR(close(result_fd));
+      DCHECK(!err);
     }
   }
 
