@@ -174,7 +174,15 @@ void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
     CHECK_EQ(window_, window);
     window_->RemoveObserver(this);
     window_ = NULL;
+    frame_->GetWidget()->RemoveObserver(this);
   }
+}
+
+void FrameMaximizeButton::OnWidgetActivationChanged(views::Widget* widget,
+                                                    bool active) {
+  // Upon losing focus, the control bubble should hide.
+  if (!active && maximizer_.get())
+    maximizer_.reset();
 }
 
 bool FrameMaximizeButton::OnMousePressed(const ui::MouseEvent& event) {
@@ -198,6 +206,7 @@ void FrameMaximizeButton::OnMouseEntered(const ui::MouseEvent& event) {
     if (!window_) {
       window_ = frame_->GetWidget()->GetNativeWindow();
       window_->AddObserver(this);
+      frame_->GetWidget()->AddObserver(this);
     }
     maximizer_.reset(new MaximizeBubbleController(
         this,
