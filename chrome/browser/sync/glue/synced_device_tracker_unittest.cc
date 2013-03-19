@@ -83,8 +83,12 @@ TEST_F(SyncedDeviceTrackerTest, CreateNewDeviceInfo) {
 
   ResetObservedChangesCounter();
 
+  // Include the non-ASCII character "’" (typographic apostrophe) in the client
+  // name to ensure that SyncedDeviceTracker can properly handle non-ASCII
+  // characters, which client names can include on some platforms (e.g., Mac
+  // and iOS).
   DeviceInfo write_device_info(
-      "Name", "Chromium 3000", "ChromeSyncAgent 3000",
+      "John’s Device", "Chromium 3000", "ChromeSyncAgent 3000",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(write_device_info);
 
@@ -100,7 +104,7 @@ TEST_F(SyncedDeviceTrackerTest, CreateNewDeviceInfo) {
 TEST_F(SyncedDeviceTrackerTest, DontModifyExistingDeviceInfo) {
   // For writing.
   DeviceInfo device_info(
-      "Name", "XYZ v1", "XYZ SyncAgent v1",
+      "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info);
 
@@ -128,7 +132,7 @@ TEST_F(SyncedDeviceTrackerTest, DontModifyExistingDeviceInfo) {
 TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
   // Write v1 device info.
   DeviceInfo device_info_v1(
-      "Name", "XYZ v1", "XYZ SyncAgent v1",
+      "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info_v1);
 
@@ -136,7 +140,7 @@ TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
 
   // Write upgraded device info.
   DeviceInfo device_info_v2(
-      "Name", "XYZ v2", "XYZ SyncAgent v2",
+      "John’s Device", "XYZ v2", "XYZ SyncAgent v2",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info_v2);
 
