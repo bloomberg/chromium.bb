@@ -114,18 +114,20 @@ class Copier(object):
   Provides destination stripping and permission setting functionality.
   """
 
-  def __init__(self, strip_bin=None, default_mode=0644, dir_mode=0755,
-               exe_mode=0755):
+  def __init__(self, strip_bin=None, strip_flags=None, default_mode=0644,
+               dir_mode=0755, exe_mode=0755):
     """Initialization.
 
     Arguments:
       strip_bin: Path to the program used to strip binaries.  If set to None,
                  binaries will not be stripped.
+      strip_flags: A list of flags to pass to the |strip_bin| executable.
       default_mode: Default permissions to set on files.
       dir_mode: Mode to set for directories.
       exe_mode: Permissions to set on executables.
     """
     self.strip_bin = strip_bin
+    self.strip_flags = strip_flags
     self.default_mode = default_mode
     self.dir_mode = dir_mode
     self.exe_mode = exe_mode
@@ -147,8 +149,10 @@ class Copier(object):
     assert not os.path.isdir(src), '%s: Not expecting a directory!' % src
     osutils.SafeMakedirs(os.path.dirname(dest), mode=self.dir_mode)
     if path.exe and self.strip_bin and path.strip and os.path.getsize(src) > 0:
-      cros_build_lib.DebugRunCommand([self.strip_bin, '--strip-unneeded',
-                                      '-o', dest, src])
+      strip_flags = (['--strip-unneeded'] if self.strip_flags is None else
+                     self.strip_flags)
+      cros_build_lib.DebugRunCommand(
+          [self.strip_bin] + strip_flags + ['-o', dest, src])
       shutil.copystat(src, dest)
     else:
       shutil.copy2(src, dest)
@@ -355,7 +359,8 @@ class StagingError(results_lib.StepFailure):
 
 
 def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
-                            sloppy=False, gyp_defines=None, staging_flags=None):
+                            sloppy=False, gyp_defines=None, staging_flags=None,
+                            strip_flags=None):
   """Populates a staging directory with necessary build artifacts.
 
   If |strict| is set, then we decide what to stage based on the |gyp_defines|
@@ -375,6 +380,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
       containing GYP_DEFINES Chrome was built with.
     staging_flags: A list of extra staging flags.  Valid flags are specified in
       STAGING_FLAGS.
+    strip_flags: A list of flags to pass to the tool used to strip binaries.
   """
   if os.path.exists(staging_dir) and os.listdir(staging_dir):
     raise StagingError('Staging directory %s must be empty.' % staging_dir)
@@ -387,7 +393,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
   if staging_flags is None:
     staging_flags = []
 
-  copier = Copier(strip_bin=strip_bin)
+  copier = Copier(strip_bin=strip_bin, strip_flags=strip_flags)
   copied_paths = []
   for p in _COPY_PATHS:
     if not strict or p.ShouldProcess(gyp_defines, staging_flags):

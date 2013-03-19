@@ -23,6 +23,7 @@ import logging
 import multiprocessing
 import os
 import optparse
+import shlex
 import time
 
 
@@ -266,13 +267,16 @@ def _CreateParser():
                    help='Path to local chrome prebuilt package to deploy.')
   group.add_option('--sloppy', action='store_true', default=False,
                    help='Ignore when mandatory artifacts are missing.')
+  group.add_option('--staging-flags', default=None, type='gyp_defines',
+                   help='Extra flags to control staging.  Valid flags are - %s'
+                        % ', '.join(chrome_util.STAGING_FLAGS))
   group.add_option('--strict', action='store_true', default=False,
                    help='Stage artifacts based on the GYP_DEFINES environment '
                         'variable and --staging-flags, if set. Enforce that '
                         'all optional artifacts are deployed.')
-  group.add_option('--staging-flags', default=None, type='gyp_defines',
-                   help='Extra flags to control staging.  Valid flags are - %s'
-                        % ', '.join(chrome_util.STAGING_FLAGS))
+  group.add_option('--strip-flags', default=None,
+                   help="Flags to call the 'strip' binutil tool with.  "
+                        "Overrides the default arguments.")
 
   parser.add_option_group(group)
 
@@ -289,11 +293,10 @@ def _CreateParser():
   # Only prepare the staging directory, and skip deploying to the device.
   parser.add_option('--staging-only', action='store_true', default=False,
                     help=optparse.SUPPRESS_HELP)
-  # Path to a binutil 'strip' tool to strip binaries with.  Used by the Chrome
-  # ebuild to skip fetching the SDK toolchain.
-  parser.add_option('--strip-bin', type='path', default=None,
-                    help=optparse.SUPPRESS_HELP)
-
+  # Path to a binutil 'strip' tool to strip binaries with.  The passed-in path
+  # is used as-is, and not normalized.  Used by the Chrome ebuild to skip
+  # fetching the SDK toolchain.
+  parser.add_option('--strip-bin', default=None, help=optparse.SUPPRESS_HELP)
   return parser
 
 
@@ -410,10 +413,13 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
   """
   if options.build_dir:
     with _StripBinContext(options) as strip_bin:
+      strip_flags = (None if options.strip_flags is None else
+                     shlex.split(options.strip_flags))
       chrome_util.StageChromeFromBuildDir(
           staging_dir, options.build_dir, strip_bin, strict=options.strict,
           sloppy=options.sloppy, gyp_defines=options.gyp_defines,
-          staging_flags=options.staging_flags)
+          staging_flags=options.staging_flags,
+          strip_flags=strip_flags)
   else:
     pkg_path = options.local_pkg_path
     if options.gs_path:
