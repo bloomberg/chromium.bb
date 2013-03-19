@@ -204,6 +204,47 @@ class TestPersonalDataManager : public PersonalDataManager {
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
 
+// Populates |form| with 3 fields and a field with autocomplete attribute.
+void CreateTestFormWithAutocompleteAttribute(FormData* form) {
+  form->name = ASCIIToUTF16("UserSpecified");
+  form->method = ASCIIToUTF16("POST");
+  form->origin = GURL("http://myform.com/userspecified.html");
+  form->action = GURL("http://myform.com/submit.html");
+  form->user_submitted = true;
+
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
+  form->fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Middle Name", "middlename", "", "text", &field);
+  form->fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Last Name", "lastname", "", "text", &field);
+  form->fields.push_back(field);
+  field.autocomplete_attribute="cc-type";
+  autofill_test::CreateTestFormField(
+    "cc-type", "cc-type", "", "text", &field);
+  form->fields.push_back(field);
+}
+
+// Populates |form| with data corresponding to a simple shipping options form.
+void CreateTestShippingOptionsFormData(FormData* form) {
+  form->name = ASCIIToUTF16("Shipping Options");
+  form->method = ASCIIToUTF16("POST");
+  form->origin = GURL("http://myform.com/shipping.html");
+  form->action = GURL("http://myform.com/submit.html");
+  form->user_submitted = true;
+
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+    "Shipping1", "option", "option1", "radio", &field);
+  form->fields.push_back(field);
+  autofill_test::CreateTestFormField(
+    "Shipping2", "option", "option2", "radio", &field);
+  form->fields.push_back(field);
+}
+
 // Populates |form| with data corresponding to a simple address form.
 // Note that this actually appends fields to the form data, which can be useful
 // for building up more complex test forms.
@@ -474,7 +515,7 @@ class TestAutofillManager : public AutofillManager {
     autofill_enabled_ = autofill_enabled;
   }
 
-  void set_autocheckout_url_prefix(std::string autocheckout_url_prefix) {
+  void set_autocheckout_url_prefix(const std::string& autocheckout_url_prefix) {
     autocheckout_url_prefix_ = autocheckout_url_prefix;
   }
 
@@ -591,6 +632,10 @@ class TestAutofillManager : public AutofillManager {
 
   void AddSeenForm(FormStructure* form) {
     form_structures()->push_back(form);
+  }
+
+  void ClearFormStructures() {
+    form_structures()->clear();
   }
 
   virtual void ReturnAutocompleteResult(
@@ -874,6 +919,43 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsEmptyValue) {
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
                     expected_labels, expected_icons, expected_unique_ids);
+}
+
+// Test that in the case of Autocheckout, forms seen are in order supplied.
+TEST_F(AutofillManagerTest, AutocheckoutFormsSeen) {
+  FormData shipping_options;
+  CreateTestShippingOptionsFormData(&shipping_options);
+  FormData user_supplied;
+  CreateTestFormWithAutocompleteAttribute(&user_supplied);
+  FormData address;
+  CreateTestAddressFormData(&address);
+
+  // Push user_supplied before address and observe order changing when
+  // Autocheckout is not enabled..
+  std::vector<FormData> forms;
+  forms.push_back(shipping_options);
+  forms.push_back(user_supplied);
+  forms.push_back(address);
+
+  // Test without enabling Autocheckout. FormStructure should only contain
+  // form1. Shipping Options form will not qualify as parsable form.
+  FormsSeen(forms);
+  std::vector<FormStructure*> form_structures;
+  form_structures = autofill_manager_->GetFormStructures();
+  ASSERT_EQ(2U, form_structures.size());
+  EXPECT_EQ("/form.html", form_structures[0]->source_url().path());
+  EXPECT_EQ("/userspecified.html", form_structures[1]->source_url().path());
+  autofill_manager_->ClearFormStructures();
+
+  // Test after enabling Autocheckout. Order should be shipping_options,
+  // userspecified and then address form.
+  autofill_manager_->set_autocheckout_url_prefix("yes-autocheckout");
+  FormsSeen(forms);
+  form_structures = autofill_manager_->GetFormStructures();
+  ASSERT_EQ(3U, form_structures.size());
+  EXPECT_EQ("/shipping.html", form_structures[0]->source_url().path());
+  EXPECT_EQ("/userspecified.html", form_structures[1]->source_url().path());
+  EXPECT_EQ("/form.html", form_structures[2]->source_url().path());
 }
 
 // Test that we return only matching address profile suggestions when the

@@ -637,7 +637,9 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
 }
 
 bool FormStructure::ShouldBeCrowdsourced() const {
-  return !has_author_specified_types_ && ShouldBeParsed(true);
+  // Allow all forms in Autocheckout flow to be crowdsourced.
+  return (!has_author_specified_types_ && ShouldBeParsed(true)) ||
+      IsAutocheckoutEnabled();
 }
 
 void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
