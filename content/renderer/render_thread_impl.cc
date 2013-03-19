@@ -764,6 +764,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(true);
     WebRuntimeFeatures::enableCSSRegions(true);
     WebRuntimeFeatures::enableDialogElement(true);
+    WebRuntimeFeatures::enableFontLoadEvents(true);
   }
 
   WebRuntimeFeatures::enableSeamlessIFrames(
