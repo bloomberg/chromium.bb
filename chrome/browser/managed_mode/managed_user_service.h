@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 
+class Browser;
 class ManagedModeURLFilter;
 class ManagedModeSiteList;
 class PrefRegistrySyncable;
@@ -80,6 +81,10 @@ class ManagedUserService : public ProfileKeyedService,
   void SetManualBehaviorForURLs(const std::vector<GURL>& url,
                                 ManualBehavior behavior);
 
+  // Checks if the passphrase dialog can be skipped (the profile is already in
+  // elevated state or the passphrase is empty).
+  bool CanSkipPassphraseDialog();
+
   // Handles the request to authorize as the custodian of the managed user.
   void RequestAuthorization(content::WebContents* web_contents,
                             const PassphraseCheckedCallback& callback);
@@ -87,7 +92,9 @@ class ManagedUserService : public ProfileKeyedService,
   // Handles the request to authorize as the custodian of the managed user.
   // Also determines the active web contents to be passed to the passphrase
   // dialog.
-  void RequestAuthorization(const PassphraseCheckedCallback& callback);
+  void RequestAuthorizationUsingActiveWebContents(
+      Browser* browser,
+      const PassphraseCheckedCallback& callback);
 
   void SetElevated(bool is_elevated);
 

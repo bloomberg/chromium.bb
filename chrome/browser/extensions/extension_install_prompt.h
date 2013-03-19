@@ -216,6 +216,10 @@ class ExtensionInstallPrompt
 
   bool record_oauth2_grant() const { return record_oauth2_grant_; }
 
+  content::WebContents* parent_web_contents() const {
+    return show_params_.parent_web_contents;
+  }
+
   // This is called by the bundle installer to verify whether the bundle
   // should be installed.
   //

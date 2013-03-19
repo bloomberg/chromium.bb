@@ -12,8 +12,7 @@
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -104,15 +103,18 @@ bool ManagedUserService::IsElevated() const {
   return is_elevated_;
 }
 
-void ManagedUserService::RequestAuthorization(
-    content::WebContents* web_contents,
-    const PassphraseCheckedCallback& callback) {
-
+bool ManagedUserService::CanSkipPassphraseDialog() {
   // If the profile is already elevated or there is no passphrase set, no
   // authentication is needed.
   PrefService* pref_service = profile_->GetPrefs();
-  if (IsElevated() ||
-      pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty()) {
+  return IsElevated() ||
+      pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty();
+}
+
+void ManagedUserService::RequestAuthorization(
+    content::WebContents* web_contents,
+    const PassphraseCheckedCallback& callback) {
+  if (CanSkipPassphraseDialog()) {
     callback.Run(true);
     return;
   }
@@ -121,11 +123,9 @@ void ManagedUserService::RequestAuthorization(
   new ManagedUserPassphraseDialog(web_contents, callback);
 }
 
-void ManagedUserService::RequestAuthorization(
+void ManagedUserService::RequestAuthorizationUsingActiveWebContents(
+    Browser* browser,
     const PassphraseCheckedCallback& callback) {
-  Browser* browser = chrome::FindBrowserWithProfile(
-      profile_,
-      chrome::GetActiveDesktop());
   RequestAuthorization(
       browser->tab_strip_model()->GetActiveWebContents(),
       callback);

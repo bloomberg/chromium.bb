@@ -78,9 +78,10 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   extension_ = extension;
 
 #if defined(ENABLE_MANAGED_USERS)
-  // If the profile belongs to a managed user, a passphrase dialog is shown,
-  // and if the custodian authorizes by entering his passphrase, the uninstall
-  // is continued by calling |ExtensionUninstallAccepted| on the delegate.
+  // If the profile belongs to a managed user, and the profile is not in
+  // elevated state, a passphrase dialog is shown, and if the custodian
+  // authorizes by entering his passphrase, the uninstall is continued by
+  // calling |ExtensionUninstallAccepted| on the delegate.
   if (ShowAuthorizationDialog())
     return;
 #endif
@@ -149,8 +150,9 @@ void ExtensionUninstallDialog::Observe(
 bool ExtensionUninstallDialog::ShowAuthorizationDialog() {
   ManagedUserService* service =
       ManagedUserServiceFactory::GetForProfile(profile_);
-  if (service->ProfileIsManaged()) {
-    service->RequestAuthorization(
+  if (service->ProfileIsManaged() && !service->CanSkipPassphraseDialog()) {
+    service->RequestAuthorizationUsingActiveWebContents(
+        browser_,
         base::Bind(&ExtensionUninstallDialog::OnAuthorizationResult,
                    base::Unretained(this)));
     return true;

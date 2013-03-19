@@ -431,7 +431,11 @@ void CrxInstaller::OnRequirementsChecked(
   ManagedUserService* service =
       ManagedUserServiceFactory::GetForProfile(profile_);
   if (service->ProfileIsManaged()) {
-        service->RequestAuthorization(
+    // parent_web_contents could be NULL when the client is instantiated from
+    // ExtensionEnableFlow, but that code path does not lead to here.
+    CHECK(client_->parent_web_contents() != NULL);
+    service->RequestAuthorization(
+        client_->parent_web_contents(),
         base::Bind(&CrxInstaller::OnAuthorizationResult,
                    this));
     return;
