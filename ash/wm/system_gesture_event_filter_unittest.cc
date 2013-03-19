@@ -253,7 +253,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
 
   scoped_ptr<ui::GestureEvent> event(CreateGesture(
-      ui::ET_GESTURE_TAP, 0, 0, 0, 0, kTouchId));
+      ui::ET_GESTURE_TAP, 0, 0, 1, 0, kTouchId));
   bool consumed = root_window->DispatchGestureEvent(event.get());
 
   EXPECT_TRUE(consumed);
@@ -264,7 +264,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
       shell_test.system_gesture_event_filter());
 
   scoped_ptr<ui::GestureEvent> event2(CreateGesture(
-      ui::ET_GESTURE_TAP, 0, 0, 0, 0, kTouchId));
+      ui::ET_GESTURE_TAP, 0, 0, 1, 0, kTouchId));
   consumed = root_window->DispatchGestureEvent(event2.get());
 
   // The event filter doesn't exist, so the touch won't be consumed.

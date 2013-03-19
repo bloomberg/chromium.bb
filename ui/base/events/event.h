@@ -129,7 +129,6 @@ class UI_EXPORT Event {
       case ET_GESTURE_TAP_DOWN:
       case ET_GESTURE_BEGIN:
       case ET_GESTURE_END:
-      case ET_GESTURE_DOUBLE_TAP:
       case ET_GESTURE_TWO_FINGER_TAP:
       case ET_GESTURE_PINCH_BEGIN:
       case ET_GESTURE_PINCH_END:

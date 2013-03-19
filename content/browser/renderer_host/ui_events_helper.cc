@@ -161,9 +161,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
     case ui::ET_GESTURE_TAP_CANCEL:
       gesture_event.type = WebKit::WebInputEvent::GestureTapCancel;
       break;
-    case ui::ET_GESTURE_DOUBLE_TAP:
-      gesture_event.type = WebKit::WebInputEvent::GestureDoubleTap;
-      break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       gesture_event.type = WebKit::WebInputEvent::GestureScrollBegin;
       break;
