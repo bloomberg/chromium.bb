@@ -10,5 +10,10 @@ def Init():
                           '..', '..', 'telemetry')
   absolute_telemetry_path = os.path.abspath(telemetry_path)
   sys.path.append(absolute_telemetry_path)
+  telemetry_tools_path = os.path.join(os.path.dirname(__file__),
+                                      '..', '..', 'telemetry_tools')
+  absolute_telemetry_tools_path = os.path.abspath(telemetry_tools_path)
+  sys.path.append(absolute_telemetry_tools_path)
+
 
 Init()

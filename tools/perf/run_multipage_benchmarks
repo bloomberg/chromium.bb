@@ -26,7 +26,7 @@ def BootstrapIfNeeded(module_name, module_path, module_deps_url):
       return
     except ImportError:
       bootstrap_txt = urllib.urlopen('http://src.chromium.org/viewvc/chrome/' +
-                                     'trunk/src/tools/telemetry/tools/' +
+                                     'trunk/src/tools/telemetry_tools/' +
                                      'telemetry_bootstrap.py').read()
       bootstrap = imp.new_module('bootstrap')
       exec bootstrap_txt in bootstrap.__dict__
@@ -40,7 +40,7 @@ def ListBootstrapDeps():
 
   Returns: a list of telemetry deps.
   """
-  from tools import telemetry_bootstrap
+  import telemetry_bootstrap
   deps_file = os.path.join(os.path.dirname(perf_tools.__file__),
                            DEPS_FILE)
   return telemetry_bootstrap.ListAllDepsPaths(open(deps_file).read())
