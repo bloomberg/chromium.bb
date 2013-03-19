@@ -805,6 +805,13 @@ bool BrowserPlugin::AttachWindowTo(const WebKit::WebNode& node, int window_id) {
   if (!browser_plugin)
     return false;
 
+  // If the BrowserPlugin already has a guest attached to it then we probably
+  // shouldn't allow attaching a different guest.
+  // TODO(fsamuel): We may wish to support reattaching guests in the future:
+  // http://crbug.com/156219
+  if (browser_plugin->HasGuest())
+    return false;
+
   browser_plugin->SetInstanceID(window_id, false);
   return true;
 }

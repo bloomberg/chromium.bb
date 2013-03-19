@@ -150,6 +150,10 @@ WebView.prototype.maybeSetupNewWindowEvent_ = function() {
         setTimeout(function() {
           var attached =
               objectNode['-internal-attachWindowTo'](webview, detail.windowId);
+          if (!attached) {
+            console.error('Unable to attach the new window to the provided ' +
+                'webview.');
+          }
           // If the object being passed into attach is not a valid <webview>
           // then we will fail and it will be treated as if the new window
           // was rejected. The permission API plumbing is used here to clean
