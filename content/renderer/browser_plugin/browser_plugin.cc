@@ -33,6 +33,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/plugins/sad_plugin.h"
 
 #if defined (OS_WIN)
@@ -50,6 +51,25 @@ using WebKit::WebVector;
 namespace content {
 
 namespace {
+
+static bool shouldIgnoreKeyBoardEvent(const WebKit::WebKeyboardEvent* event) {
+  if (event->type == WebKit::WebInputEvent::Char)
+    return false;
+  int keycode = event->windowsKeyCode;
+  if (keycode == ui::VKEY_SHIFT ||
+      keycode == ui::VKEY_CONTROL ||
+      keycode == ui::VKEY_MENU ||
+      keycode == ui::VKEY_LWIN)  // The search key on chromeOS.
+    return true;
+  // We don't want to handle keys like volume control, or app launchers inside
+  // of BrowserPlugin. These keys should be handled either by the browser, or
+  // the OS.
+  if ((keycode >= ui::VKEY_BROWSER_BACK &&
+       keycode <= ui::VKEY_MEDIA_LAUNCH_APP2) ||
+      (keycode >= ui::VKEY_F1 && keycode <= ui::VKEY_F24))
+    return true;
+  return false;
+}
 
 static std::string TerminationStatusToString(base::TerminationStatus status) {
   switch (status) {
@@ -1375,6 +1395,15 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   if (guest_crashed_ || !HasGuest() ||
       event.type == WebKit::WebInputEvent::ContextMenu)
     return false;
+  if (WebKit::WebInputEvent::isKeyboardEventType(event.type)) {
+    // TODO(mthiesse): This is a temporary solution for BrowserPlugin capturing
+    // keys like the search key on chromeOS. The guest should be allowed to
+    // handle these key events (as javascript allows this), so a better solution
+    // is needed.
+    if (shouldIgnoreKeyBoardEvent(
+        static_cast<const WebKit::WebKeyboardEvent*>(&event)))
+      return false;
+  }
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
                                                 instance_id_,
