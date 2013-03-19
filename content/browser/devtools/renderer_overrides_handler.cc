@@ -13,35 +13,46 @@
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
+#include "googleurl/src/gurl.h"
 
 namespace content {
 
 namespace {
 
-const char kFileInputCommand[] = "DOM.setFileInputFiles";
-const char kFileInputFilesParam[] = "files";
-const char kHandleDialogCommand[] = "Page.handleJavaScriptDialog";
-const char kHandleDialogAcceptParam[] = "accept";
+const char kDOMFileInputCommand[] = "DOM.setFileInputFiles";
+const char kDOMFileInputFilesParam[] = "files";
+const char kPageHandleDialogCommand[] = "Page.handleJavaScriptDialog";
+const char kPageHandleDialogAcceptParam[] = "accept";
+const char kPageNavigateCommand[] = "Page.navigate";
+const char kPageNavigateUrlParam[] = "url";
 
 }  // namespace
 
 RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
     : agent_(agent) {
   RegisterCommandHandler(
-      kFileInputCommand,
+      kDOMFileInputCommand,
       base::Bind(
           &RendererOverridesHandler::GrantPermissionsForSetFileInputFiles,
           base::Unretained(this)));
   RegisterCommandHandler(
-      kHandleDialogCommand,
+      kPageHandleDialogCommand,
       base::Bind(
-          &RendererOverridesHandler::HandleJavaScriptDialog,
+          &RendererOverridesHandler::PageHandleJavaScriptDialog,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      kPageNavigateCommand,
+      base::Bind(
+          &RendererOverridesHandler::PageNavigate,
           base::Unretained(this)));
 }
 
@@ -50,50 +61,88 @@ RendererOverridesHandler::~RendererOverridesHandler() {}
 scoped_ptr<DevToolsProtocol::Response>
 RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     DevToolsProtocol::Command* command) {
-  const base::ListValue* file_list;
-  if (!command->params()->GetList(kFileInputFilesParam, &file_list)) {
+  base::DictionaryValue* params = command->params();
+  base::ListValue* file_list;
+  if (!params || !params->GetList(kDOMFileInputFilesParam, &file_list)) {
     return command->ErrorResponse(
         DevToolsProtocol::kErrorInvalidParams,
         base::StringPrintf("Missing or invalid '%s' parameter",
-                           kFileInputFilesParam));
+                           kDOMFileInputFilesParam));
   }
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (!host)
+    return scoped_ptr<DevToolsProtocol::Response>();
+
   for (size_t i = 0; i < file_list->GetSize(); ++i) {
     base::FilePath::StringType file;
     if (!file_list->GetString(i, &file)) {
       return command->ErrorResponse(
           DevToolsProtocol::kErrorInvalidParams,
           base::StringPrintf("'%s' must be a list of strings",
-                             kFileInputFilesParam));
+                             kDOMFileInputFilesParam));
     }
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        agent_->GetRenderViewHost()->GetProcess()->GetID(),
-        base::FilePath(file));
+        host->GetProcess()->GetID(), base::FilePath(file));
   }
   return scoped_ptr<DevToolsProtocol::Response>();
 }
 
 scoped_ptr<DevToolsProtocol::Response>
-RendererOverridesHandler::HandleJavaScriptDialog(
+RendererOverridesHandler::PageHandleJavaScriptDialog(
     DevToolsProtocol::Command* command) {
+  base::DictionaryValue* params = command->params();
   bool accept;
-  if (!command->params()->GetBoolean(kHandleDialogAcceptParam, &accept)) {
+  if (!params || !params->GetBoolean(kPageHandleDialogAcceptParam, &accept)) {
     return command->ErrorResponse(
         DevToolsProtocol::kErrorInvalidParams,
         base::StringPrintf("Missing or invalid '%s' parameter",
-                           kHandleDialogAcceptParam));
+                           kPageHandleDialogAcceptParam));
   }
 
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      agent_->GetRenderViewHost()->GetDelegate()->GetAsWebContents());
-  if (web_contents) {
-    JavaScriptDialogManager* manager =
-        web_contents->GetDelegate()->GetJavaScriptDialogManager();
-    if (manager && manager->HandleJavaScriptDialog(web_contents, accept))
-      return scoped_ptr<DevToolsProtocol::Response>();
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (host) {
+    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
+    if (web_contents) {
+      JavaScriptDialogManager* manager =
+          web_contents->GetDelegate()->GetJavaScriptDialogManager();
+      if (manager && manager->HandleJavaScriptDialog(web_contents, accept))
+        return scoped_ptr<DevToolsProtocol::Response>();
+    }
   }
   return command->ErrorResponse(
       DevToolsProtocol::kErrorInternalError,
       "No JavaScript dialog to handle");
+}
+
+scoped_ptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageNavigate(
+    DevToolsProtocol::Command* command) {
+  base::DictionaryValue* params = command->params();
+  std::string url;
+  if (!params || !params->GetString(kPageNavigateUrlParam, &url)) {
+    return command->ErrorResponse(
+        DevToolsProtocol::kErrorInvalidParams,
+        base::StringPrintf("Missing or invalid '%s' parameter",
+                           kPageNavigateUrlParam));
+  }
+  GURL gurl(url);
+  if (!gurl.is_valid()) {
+    return command->ErrorResponse(
+        DevToolsProtocol::kErrorInternalError,
+        "Cannot navigate to invalid URL");
+  }
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (host) {
+    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
+    if (web_contents) {
+      web_contents->GetController().LoadURL(
+          gurl, Referrer(), PAGE_TRANSITION_TYPED, "");
+      return command->SuccessResponse(new base::DictionaryValue());
+    }
+  }
+  return command->ErrorResponse(
+      DevToolsProtocol::kErrorInternalError,
+      "No WebContents to navigate");
 }
 
 }  // namespace content

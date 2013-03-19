@@ -25,7 +25,9 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
  private:
   scoped_ptr<DevToolsProtocol::Response> GrantPermissionsForSetFileInputFiles(
       DevToolsProtocol::Command* command);
-  scoped_ptr<DevToolsProtocol::Response> HandleJavaScriptDialog(
+  scoped_ptr<DevToolsProtocol::Response> PageHandleJavaScriptDialog(
+      DevToolsProtocol::Command* command);
+  scoped_ptr<DevToolsProtocol::Response> PageNavigate(
       DevToolsProtocol::Command* command);
 
   DevToolsAgentHost* agent_;
