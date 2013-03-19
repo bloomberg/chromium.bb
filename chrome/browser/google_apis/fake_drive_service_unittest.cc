@@ -101,9 +101,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_All) {
       "",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -125,9 +123,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndex) {
       "",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -150,9 +146,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndexAndMaxResults) {
       "",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -182,9 +176,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithDefaultMaxResultsChanged) {
       "",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -213,9 +205,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
       "",  // search_query
       false, // shared_with_me
       fake_service_.GetRootResourceId(),  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -237,9 +227,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
       "File",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -262,9 +250,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchWithAttribute) {
       "title:1.txt",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -287,9 +273,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchMultipleQueries) {
       "Directory 1",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -303,9 +287,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchMultipleQueries) {
       "\"Directory 1\"",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -331,9 +313,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_NoNewEntries) {
       "",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -366,9 +346,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
       "",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -392,9 +370,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Offline) {
       "",  // search_query
       false, // shared_with_me
       "",  // directory_resource_id
-      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
-                 &error,
-                 &resource_list));
+      test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);

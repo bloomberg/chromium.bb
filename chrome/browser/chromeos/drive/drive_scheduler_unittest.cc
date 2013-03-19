@@ -211,10 +211,8 @@ TEST_F(DriveSchedulerTest, GetResourceList) {
       std::string(),
       true,
       std::string(),
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetResourceListCallback,
-          &error,
-          &resource_list));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_list));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);

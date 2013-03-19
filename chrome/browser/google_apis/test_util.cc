@@ -101,15 +101,6 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   return value.Pass();
 }
 
-void CopyResultsFromGetResourceListCallback(
-    GDataErrorCode* error_out,
-    scoped_ptr<ResourceList>* resource_list_out,
-    GDataErrorCode error_in,
-    scoped_ptr<ResourceList> resource_list_in) {
-  resource_list_out->swap(resource_list_in);
-  *error_out = error_in;
-}
-
 void CopyResultsFromGetAccountMetadataCallback(
     GDataErrorCode* error_out,
     scoped_ptr<AccountMetadata>* account_metadata_out,
