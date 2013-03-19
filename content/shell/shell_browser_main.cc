@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/shell/shell.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
 #include "net/base/net_util.h"
@@ -117,6 +118,7 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
         switches::kCheckLayoutTestSysDeps)) {
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     main_runner_->Run();
+    content::Shell::CloseAllWindows();
     main_runner_->Shutdown();
     return 0;
   }
