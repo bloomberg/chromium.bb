@@ -2108,6 +2108,8 @@
         'browser/webdata/token_service_table.h',
         'browser/webdata/web_apps_table.cc',
         'browser/webdata/web_apps_table.h',
+        'browser/webdata/web_database_service.cc',
+        'browser/webdata/web_database_service.h',
         'browser/webdata/web_data_request_manager.cc',
         'browser/webdata/web_data_request_manager.h',
         'browser/webdata/web_data_service.cc',

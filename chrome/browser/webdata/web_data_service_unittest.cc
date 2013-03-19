@@ -77,7 +77,8 @@ class WebDataServiceTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     wds_ = new WebDataService();
-    wds_->Init(temp_dir_.path());
+    base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
+    wds_->Init(path);
   }
 
   virtual void TearDown() {
@@ -85,9 +86,9 @@ class WebDataServiceTest : public testing::Test {
     wds_ = NULL;
     WaitForDatabaseThread();
 
-    db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
+    db_thread_.Stop();
   }
 
   void WaitForDatabaseThread() {

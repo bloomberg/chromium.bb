@@ -30,6 +30,10 @@ class NotificationService;
 // This class manages a SQLite database that stores various web page meta data.
 class WebDatabase {
  public:
+  enum State {
+    COMMIT_NOT_NEEDED,
+    COMMIT_NEEDED
+  };
   // Exposed publicly so the keyword table can access it.
   static const int kCurrentVersionNumber;
 

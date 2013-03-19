@@ -85,8 +85,7 @@ WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
   path = path.Append(chrome::kWebDataFilename);
 
   scoped_refptr<WebDataService> wds(new WebDataService());
-  if (!wds->Init(profile->GetPath()))
-    NOTREACHED();
+  wds->Init(path);
   return wds.get();
 }
 

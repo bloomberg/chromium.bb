@@ -1311,8 +1311,7 @@ TEST_F(TemplateURLServiceTest, FailedInit) {
   scoped_refptr<WebDataService> web_service =
       WebDataServiceFactory::GetForProfile(test_util_.profile(),
                                            Profile::EXPLICIT_ACCESS);
-  web_service->UnloadDatabase();
-  web_service->set_failed_init(true);
+  web_service->ShutdownDatabase();
 
   test_util_.ResetModel(false);
   model()->Load();

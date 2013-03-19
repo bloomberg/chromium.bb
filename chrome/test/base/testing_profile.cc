@@ -422,9 +422,11 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
 
 static scoped_refptr<RefcountedProfileKeyedService> BuildWebDataService(
     Profile* profile) {
+  base::FilePath path = profile->GetPath();
+  path = path.Append(chrome::kWebDataFilename);
   WebDataService* web_data_service = new WebDataService();
   if (web_data_service)
-    web_data_service->Init(profile->GetPath());
+    web_data_service->Init(path);
   return web_data_service;
 }
 
