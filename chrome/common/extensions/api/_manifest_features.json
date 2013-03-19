@@ -187,7 +187,8 @@
     "whitelist": [
       "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
       "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
-      "ionpfmkccalenbmnddpbmocokhaknphg"   // QuickOffice Dev
+      "ionpfmkccalenbmnddpbmocokhaknphg",  // QuickOffice Dev
+      "bpmcpldpdmajfigpchkicefoigmkfalc"   // Quickoffice component extension
     ]
   },
   "minimum_chrome_version": {

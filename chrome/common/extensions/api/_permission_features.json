@@ -254,7 +254,8 @@
       // doesn't hurt anything.
       "hhaomjibdihmijegdhdafkllkbggdgoj",  // File manager
       "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // Quickoffice
-      "ionpfmkccalenbmnddpbmocokhaknphg"   // Quickoffice dev
+      "ionpfmkccalenbmnddpbmocokhaknphg",  // Quickoffice dev
+      "bpmcpldpdmajfigpchkicefoigmkfalc"   // Quickoffice component extension
     ]
   },
   "nativeMessaging": [
@@ -358,7 +359,8 @@
     "whitelist": [
       "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
       "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
-      "ionpfmkccalenbmnddpbmocokhaknphg"   // QuickOffice Dev
+      "ionpfmkccalenbmnddpbmocokhaknphg",  // QuickOffice Dev
+      "bpmcpldpdmajfigpchkicefoigmkfalc"   // Quickoffice component extension
     ]
   },
   "socket": {

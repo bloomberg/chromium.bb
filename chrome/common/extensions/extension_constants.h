@@ -111,11 +111,14 @@ namespace extension_misc {
   // The extension id of the Crosh component app for ChromeOS.
   extern const char kCroshBuiltinAppId[];
 
-  // The extension id of the Office Viewer extension.
-  extern const char kQuickOfficeExtensionId[];
+  // The extension id of the Office Viewer component extension.
+  extern const char kQuickOfficeComponentExtensionId[];
 
   // The extension id of the Office Viewer dev extension.
   extern const char kQuickOfficeDevExtensionId[];
+
+  // The extension id of the Office Viewer extension.
+  extern const char kQuickOfficeExtensionId[];
 
   // The extension id used for testing streamsPrivate
   extern const char kStreamsPrivateTestExtensionId[];

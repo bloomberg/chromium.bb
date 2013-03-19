@@ -314,6 +314,7 @@
       </if>
       <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />
+        <include name="IDR_QUICK_OFFICE_MANIFEST" file="resources\quick_office\manifest.json" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('use_ash')">
         <include name="IDR_GESTURE_CONFIG_CSS" file="resources\gesture_config.css" type="BINDATA" />

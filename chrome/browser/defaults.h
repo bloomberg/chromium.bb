@@ -94,6 +94,10 @@ extern const bool kAlwaysCreateTabbedBrowserOnSessionRestore;
 // Are bookmark enabled? True by default.
 extern bool bookmarks_enabled;
 
+// Whether Quick Office component extension is enabled.
+// True by default. This is only used by Chrome OS today.
+extern bool enable_component_quick_office;
+
 // Whether HelpApp is enabled. True by default. This is only used by Chrome OS
 // today.
 extern bool enable_help_app;

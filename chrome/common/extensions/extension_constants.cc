@@ -128,8 +128,10 @@ const char kEnterpriseWebStoreAppId[] = "afchcafgojfnemjkcbhfekplkmjaldaa";
 const char kHTermAppId[] = "pnhechapfaindjhompbnflcldabbghjo";
 const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
-const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
+const char kQuickOfficeComponentExtensionId[] =
+    "bpmcpldpdmajfigpchkicefoigmkfalc";
 const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
+const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
 const char kStreamsPrivateTestExtensionId[] =
     "oickdpebdnfbgkcaoklfcdhjniefkcji";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";

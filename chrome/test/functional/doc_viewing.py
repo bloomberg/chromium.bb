@@ -22,9 +22,11 @@ class DocViewingTest(pyauto.PyUITest):
     pyauto.PyUITest.setUp(self)
     extension_path = '/opt/google/chrome/extensions'\
         '/gbkeegbaiigmenfmjfclcdgdpimamgkj.crx'
-    ext_id = self.InstallExtension(extension_path, from_webstore=True)
-    self.assertTrue(ext_id, msg='Failed to install extension %s' %
-                    extension_path)
+    # If crx file with doesn't exist, component extensions should be used.
+    if os.path.exists(extension_path):
+      ext_id = self.InstallExtension(extension_path, from_webstore=True)
+      self.assertTrue(ext_id, msg='Failed to install extension %s' %
+                      extension_path)
 
   def _GetFullPageFileBrowser(self):
     """Display the full page file browser.

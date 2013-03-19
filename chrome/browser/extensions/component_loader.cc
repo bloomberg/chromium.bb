@@ -418,6 +418,16 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if defined(GOOGLE_CHROME_BUILD)
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+
+    if (browser_defaults::enable_component_quick_office) {
+      // Don't load Quickoffice component extension in Guest mode because
+      // it doesn't work in Incognito mode due to disabled temp fs.
+      // TODO(dpolukhin): enable Quickoffice in Guest mode.
+      if (!command_line->HasSwitch(switches::kGuestSession)) {
+        Add(IDR_QUICK_OFFICE_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
+                                  "/usr/share/chromeos-assets/quick_office")));
+      }
+    }
 #endif  // defined(OFFICIAL_BUILD)
 
     base::FilePath echo_extension_path(FILE_PATH_LITERAL(

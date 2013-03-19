@@ -617,8 +617,10 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       local_state_(NULL),
       restart_last_session_(false) {
   // If we're running tests (ui_task is non-null).
-  if (parameters.ui_task)
+  if (parameters.ui_task) {
     browser_defaults::enable_help_app = false;
+    browser_defaults::enable_component_quick_office = false;
+  }
 
   // Chrome disallows cookies by default. All code paths that want to use
   // cookies need to go through one of Chrome's URLRequestContexts which have

@@ -104,6 +104,8 @@ int ExtractProcessFromExtensionId(Profile* profile,
 
 bool IsBuiltinTask(const FileBrowserHandler* task) {
   return (task->extension_id() == kFileBrowserExtensionId ||
+          task->extension_id() ==
+              extension_misc::kQuickOfficeComponentExtensionId ||
           task->extension_id() == extension_misc::kQuickOfficeDevExtensionId ||
           task->extension_id() == extension_misc::kQuickOfficeExtensionId);
 }
