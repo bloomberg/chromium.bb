@@ -12,5 +12,12 @@ if ! test -f "$PWD/src/.gitmodules"; then
 fi
 
 gclient_spec="solutions=[{'name':'src','url':None,'deps_file':'.DEPS.git'}]"
-gclient runhooks --spec="$gclient_spec"
+kernel_name=$(uname -s)
+if [ "${kernel_name:0:5}" = "MINGW" ]; then
+  dir="${0%\\*}"
+  cmd "/C ${dir}\\python.bat ${dir}\\gclient.py runhooks --spec=$gclient_spec"
+else
+  dir="$(dirname $0)"
+  PYTHONDONTWRITEBYTECODE=1 exec python "$dir/gclient.py" runhooks --spec="$gclient_spec"
+fi
 exit $?
