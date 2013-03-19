@@ -342,7 +342,8 @@ bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void TreeView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_DOUBLE_TAP) {
     if (OnClickOrTap(*event))
       event->SetHandled();
   }
@@ -583,15 +584,8 @@ bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
           Expand(node->model_node());
       } else if (relative_x > kArrowRegionSize) {
         SetSelectedNode(node->model_node());
-        bool should_toggle = false;
-        if (event.type() == ui::ET_GESTURE_TAP) {
-          const ui::GestureEvent& gesture =
-              static_cast<const ui::GestureEvent&>(event);
-          should_toggle = gesture.details().tap_count() == 2;
-        } else {
-          should_toggle = (event.flags() & ui::EF_IS_DOUBLE_CLICK) != 0;
-        }
-        if (should_toggle) {
+        if (event.flags() & ui::EF_IS_DOUBLE_CLICK ||
+            event.type() == ui::ET_GESTURE_DOUBLE_TAP) {
           if (node->is_expanded())
             Collapse(node->model_node());
           else

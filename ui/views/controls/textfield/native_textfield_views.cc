@@ -164,6 +164,12 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
       OnAfterUserAction();
       event->SetHandled();
       break;
+    case ui::ET_GESTURE_DOUBLE_TAP:
+      OnBeforeUserAction();
+      SelectAll(false);
+      OnAfterUserAction();
+      event->SetHandled();
+      break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       OnBeforeUserAction();
       if (MoveCursorTo(event->location(), true))
@@ -172,14 +178,7 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       break;
     case ui::ET_GESTURE_TAP:
-      if (event->details().tap_count() == 1) {
-        CreateTouchSelectionControllerAndNotifyIt();
-      } else {
-        OnBeforeUserAction();
-        SelectAll(false);
-        OnAfterUserAction();
-        event->SetHandled();
-      }
+      CreateTouchSelectionControllerAndNotifyIt();
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       // If long press happens outside selection, select word and show context
