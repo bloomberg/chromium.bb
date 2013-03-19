@@ -157,6 +157,33 @@ class Popen(subprocess.Popen):
   Inspired by
   http://code.activestate.com/recipes/440554-module-to-allow-asynchronous-subprocess-use-on-win/
   """
+  def __init__(self, *args, **kwargs):
+    self.start = time.time()
+    self.end = None
+    super(Popen, self).__init__(*args, **kwargs)
+
+  def duration(self):
+    """Duration of the child process.
+
+    It is greater or equal to the actual time the child process ran. It can be
+    significantly higher than the real value if neither .wait() nor .poll() was
+    used.
+    """
+    return (self.end or time.time()) - self.start
+
+  def wait(self):
+    ret = super(Popen, self).wait()
+    if not self.end:
+      # communicate() uses wait() internally.
+      self.end = time.time()
+    return ret
+
+  def poll(self):
+    ret = super(Popen, self).poll()
+    if ret is not None and not self.end:
+      self.end = time.time()
+    return ret
+
   def recv(self, maxsize=None, timeout=None):
     """Reads from stdout asynchronously."""
     return self._recv('stdout', maxsize, timeout)
@@ -189,17 +216,16 @@ def call_with_timeout(cmd, timeout, **kwargs):
       stdout=subprocess.PIPE,
       **kwargs)
   if timeout:
-    start = time.time()
     output = ''
     while proc.poll() is None:
-      remaining = max(timeout - (time.time() - start), 0.001)
+      remaining = max(timeout - proc.duration(), 0.001)
       data = proc.recv(timeout=remaining)
       if data:
         output += data
-      if (time.time() - start) >= timeout:
+      if proc.duration() >= timeout:
         break
-    if (time.time() - start) >= timeout and proc.poll() is None:
-      logging.debug('Kill %s %s' % ((time.time() - start) , timeout))
+    if proc.poll() is None and proc.duration() >= timeout:
+      logging.debug('Kill %s %s', proc.duration(), timeout)
       proc.kill()
     proc.wait()
     # Try reading a last time.
@@ -211,7 +237,7 @@ def call_with_timeout(cmd, timeout, **kwargs):
   else:
     # This code path is much faster.
     output = proc.communicate()[0]
-  return output, proc.returncode
+  return output, proc.returncode, proc.duration()
 
 
 class QueueWithProgress(Queue.PriorityQueue):
@@ -691,14 +717,12 @@ class Runner(object):
 
     # TODO(maruel): Use a distribution model.
     timeout = self.timeout * len(test_cases)
-    start = time.time()
-    output, returncode = call_with_timeout(
+    output, returncode, duration = call_with_timeout(
         cmd,
         timeout,
         cwd=self.cwd_dir,
         stderr=subprocess.STDOUT,
         env=self.env)
-    duration = time.time() - start
 
     if self.verbose > 1:
       self.progress.update_item('Command[%s] finished after %ss' % (cmd,
