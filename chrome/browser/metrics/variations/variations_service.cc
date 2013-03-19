@@ -25,6 +25,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -116,22 +117,11 @@ base::Time ConvertStudyDateToBaseTime(int64 date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
 }
 
-// Determine and return the Variations server URL.
-GURL GetVariationsServerURL() {
-  std::string server_url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kVariationsServerURL));
-  if (server_url.empty())
-    server_url = kDefaultVariationsServerURL;
-  GURL url_as_gurl = GURL(server_url);
-  DCHECK(url_as_gurl.is_valid());
-  return url_as_gurl;
-}
-
 }  // namespace
 
 VariationsService::VariationsService(PrefService* local_state)
     : local_state_(local_state),
-      variations_server_url_(GetVariationsServerURL()),
+      variations_server_url_(GetVariationsServerURL(local_state)),
       create_trials_from_seed_called_(false),
       resource_request_allowed_notifier_(
           new ResourceRequestAllowedNotifier) {
@@ -140,7 +130,7 @@ VariationsService::VariationsService(PrefService* local_state)
 
 VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier)
     : local_state_(NULL),
-      variations_server_url_(GetVariationsServerURL()),
+      variations_server_url_(GetVariationsServerURL(NULL)),
       create_trials_from_seed_called_(false),
       resource_request_allowed_notifier_(notifier) {
   resource_request_allowed_notifier_->Init(this);
@@ -213,6 +203,26 @@ bool VariationsService::GetNetworkTime(base::Time* network_time,
   return network_time_tracker_.GetNetworkTime(network_time, uncertainty);
 }
 
+// static
+GURL VariationsService::GetVariationsServerURL(PrefService* local_state) {
+  std::string server_url_string(CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kVariationsServerURL));
+  if (server_url_string.empty())
+    server_url_string = kDefaultVariationsServerURL;
+  GURL server_url = GURL(server_url_string);
+  if (local_state) {
+    // Append the "restrict" parameter if it is found in prefs.
+    const std::string restrict_param =
+        local_state->GetString(prefs::kVariationsRestrictParameter);
+    if (!restrict_param.empty())
+      server_url = net::AppendOrReplaceQueryParameter(server_url,
+                                                      "restrict",
+                                                      restrict_param);
+  }
+  DCHECK(server_url.is_valid());
+  return server_url;
+}
+
 #if defined(OS_WIN)
 void VariationsService::StartGoogleUpdateRegistrySync() {
   registry_syncer_.RequestRegistrySync();
@@ -224,11 +234,18 @@ void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
 }
 
 // static
+std::string VariationsService::GetDefaultVariationsServerURLForTesting() {
+  return kDefaultVariationsServerURL;
+}
+
+// static
 void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
   registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
                               base::Time().ToInternalValue());
   registry->RegisterInt64Pref(prefs::kVariationsLastFetchTime, 0);
+  registry->RegisterStringPref(prefs::kVariationsRestrictParameter,
+                               std::string());
 }
 
 // static

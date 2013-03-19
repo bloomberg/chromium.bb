@@ -446,6 +446,7 @@ extern const char kBookmarkPromptEnabled[];
 extern const char kBookmarkPromptImpressionCount[];
 
 extern const char kVariationsLastFetchTime[];
+extern const char kVariationsRestrictParameter[];
 extern const char kVariationsSeed[];
 extern const char kVariationsSeedDate[];
 

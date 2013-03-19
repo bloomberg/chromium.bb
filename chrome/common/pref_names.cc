@@ -1285,6 +1285,9 @@ const char kBookmarkPromptImpressionCount[] =
 // fetch (i.e. when the Variations server responds with 200 or 304).
 const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
 
+// String for the restrict parameter to be appended to the variations URL.
+const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
+
 // String serialized form of variations seed protobuf.
 const char kVariationsSeed[] = "variations_seed";
 

@@ -368,6 +368,20 @@ TEST(VariationsServiceTest, IsStudyExpired) {
   }
 }
 
+TEST(VariationsServiceTest, VariationsURLIsValid) {
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
+  const std::string default_variations_url =
+      VariationsService::GetDefaultVariationsServerURLForTesting();
+
+  EXPECT_EQ(default_variations_url,
+            VariationsService::GetVariationsServerURL(&prefs).spec());
+
+  prefs.SetString(prefs::kVariationsRestrictParameter, "restricted");
+  EXPECT_EQ(default_variations_url + "?restrict=restricted",
+            VariationsService::GetVariationsServerURL(&prefs).spec());
+}
+
 TEST(VariationsServiceTest, LoadSeed) {
   // Store good seed data to test if loading from prefs works.
   const TrialsSeed seed = CreateTestSeed();

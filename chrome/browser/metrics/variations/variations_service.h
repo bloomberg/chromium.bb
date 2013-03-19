@@ -53,6 +53,11 @@ class VariationsService
   bool GetNetworkTime(base::Time* network_time,
                       base::TimeDelta* uncertainty) const;
 
+  // Returns the variations server URL, which can vary if a command-line flag is
+  // set and/or the variations restrict pref is set in |local_prefs|. Declared
+  // static for test purposes.
+  static GURL GetVariationsServerURL(PrefService* local_prefs);
+
 #if defined(OS_WIN)
   // Starts syncing Google Update Variation IDs with the registry.
   void StartGoogleUpdateRegistrySync();
@@ -60,6 +65,9 @@ class VariationsService
 
   // Exposed for testing.
   void SetCreateTrialsFromSeedCalledForTesting(bool called);
+
+  // Exposed for testing.
+  static std::string GetDefaultVariationsServerURLForTesting();
 
   // Register Variations related prefs in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
