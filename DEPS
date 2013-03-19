@@ -44,6 +44,10 @@ vars = {
   # the commit queue can handle CLs rolling swarm_client
   # and whatever else without interference from each other.
   "swarm_revision": "187307",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling openssl
+  # and whatever else without interference from each other.
+  "openssl_revision": "177803",
 }
 
 deps = {
@@ -526,7 +530,7 @@ deps_os = {
        Var("lss_revision")),
 
     "src/third_party/openssl":
-      "/trunk/deps/third_party/openssl@177803",
+      "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
 
     "src/third_party/WebKit/Tools/gdb":
       Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
@@ -590,6 +594,13 @@ deps_os = {
 
     "src/third_party/jsr-305/src":
       (Var("googlecode_url") % "jsr-305") + "/trunk@51",
+
+    "src/third_party/lss":
+      ((Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@" +
+       Var("lss_revision")),
+
+    "src/third_party/openssl":
+      "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
 
     "src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille":
       (Var("googlecode_url") % "eyes-free") + "/trunk/braille/client/src/com/googlecode/eyesfree/braille@797",
