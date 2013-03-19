@@ -137,7 +137,7 @@ void CloudPrintProxyService::GetPrintersAvalibleForRegistration(
       std::vector<std::string>* printers) {
   base::FilePath list_path(
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kCloudPrintConnectoEnablePrinters));
+          switches::kCloudPrintSetupProxy));
   if (!list_path.empty()) {
     std::string printers_json;
     file_util::ReadFileToString(list_path, &printers_json);
