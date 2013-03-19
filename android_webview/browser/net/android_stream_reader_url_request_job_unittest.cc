@@ -157,7 +157,8 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
     req_.reset(
         new TestURLRequest(GURL("content://foo"),
                            &url_request_delegate_,
-                           &context_));
+                           &context_,
+                           &network_delegate_));
     req_->set_method("GET");
   }
 

@@ -108,9 +108,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
       request_->SetExtraRequestHeaders(*headers);
     ASSERT_TRUE(!job_);
     job_ = new FileSystemURLRequestJob(
-        request_.get(),
-        empty_context_.network_delegate(),
-        file_system_context_.get());
+        request_.get(), NULL, file_system_context_.get());
     pending_job_ = job_;
 
     request_->Start();

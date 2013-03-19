@@ -88,9 +88,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     delegate_->set_quit_on_redirect(true);
     request_.reset(empty_context_.CreateRequest(url, delegate_.get()));
     job_ = new FileSystemDirURLRequestJob(
-        request_.get(),
-        empty_context_.network_delegate(),
-        file_system_context_.get());
+        request_.get(), NULL, file_system_context_.get());
 
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
