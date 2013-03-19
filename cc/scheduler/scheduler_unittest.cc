@@ -516,5 +516,34 @@ TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit) {
   EXPECT_EQ(0, controller_ptr->numFramesPending());
 }
 
+TEST(SchedulerTest, RecreateOutputSurfaceClearsPendingDrawCount) {
+  scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
+  FakeSchedulerClient client;
+  scoped_ptr<FakeFrameRateController> controller(
+      new FakeFrameRateController(time_source));
+  FakeFrameRateController* controller_ptr = controller.get();
+  SchedulerSettings default_scheduler_settings;
+  scoped_ptr<Scheduler> scheduler =
+      Scheduler::Create(&client,
+                        controller.PassAs<FrameRateController>(),
+                        default_scheduler_settings);
+
+  scheduler->SetCanBeginFrame(true);
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  // Draw successfully, this starts a new frame.
+  scheduler->SetNeedsRedraw();
+  time_source->tick();
+  EXPECT_EQ(1, controller_ptr->numFramesPending());
+
+  scheduler->DidLoseOutputSurface();
+  // Verifying that it's 1 so that we know that it's reset on recreate.
+  EXPECT_EQ(1, controller_ptr->numFramesPending());
+
+  scheduler->DidRecreateOutputSurface();
+  EXPECT_EQ(0, controller_ptr->numFramesPending());
+}
+
 }  // namespace
 }  // namespace cc

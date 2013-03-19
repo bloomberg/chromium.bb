@@ -107,13 +107,13 @@ void Scheduler::DidSwapBuffersComplete() {
 
 void Scheduler::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::didLoseOutputSurface");
-  frame_rate_controller_->didAbortAllPendingFrames();
   state_machine_.DidLoseOutputSurface();
   ProcessScheduledActions();
 }
 
 void Scheduler::DidRecreateOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::didRecreateOutputSurface");
+  frame_rate_controller_->didAbortAllPendingFrames();
   state_machine_.DidRecreateOutputSurface();
   ProcessScheduledActions();
 }
