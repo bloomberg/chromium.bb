@@ -958,18 +958,6 @@ void ProfileSyncService::OnExperimentsChanged(
   }
 
   // Now enable any non-datatype features.
-  if (experiments.sync_tab_favicons) {
-    DVLOG(1) << "Enabling syncing of tab favicons.";
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                      "sync-tab-favicons",
-                                      true);
-#if defined(OS_ANDROID)
-    // Android does not support about:flags and experiments, so we need to force
-    // setting the experiments as command line switches.
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSyncTabFavicons);
-#endif
-  }
-
   if (experiments.keystore_encryption) {
     about_flags::SetExperimentEnabled(g_browser_process->local_state(),
                                       syncer::kKeystoreEncryptionFlag,
@@ -979,6 +967,12 @@ void ProfileSyncService::OnExperimentsChanged(
   if (experiments.full_history_sync) {
     about_flags::SetExperimentEnabled(g_browser_process->local_state(),
                                       syncer::kFullHistorySyncFlag,
+                                      true);
+  }
+
+  if (experiments.favicon_sync) {
+    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+                                      syncer::kFaviconSyncFlag,
                                       true);
   }
 

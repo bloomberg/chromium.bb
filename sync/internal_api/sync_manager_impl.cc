@@ -1347,10 +1347,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     return false;
   }
   bool found_experiment = false;
-  if (nigori_node.GetNigoriSpecifics().sync_tab_favicons()) {
-    experiments->sync_tab_favicons = true;
-    found_experiment = true;
-  }
 
   ReadNode keystore_node(&trans);
   if (keystore_node.InitByClientTagLookup(
@@ -1378,6 +1374,15 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
       full_history_sync_node.GetExperimentsSpecifics().
           history_delete_directives().enabled()) {
     experiments->full_history_sync = true;
+    found_experiment = true;
+  }
+
+  ReadNode favicon_sync_node(&trans);
+  if (favicon_sync_node.InitByClientTagLookup(
+          syncer::EXPERIMENTS,
+          syncer::kFaviconSyncTag) == BaseNode::INIT_OK &&
+      favicon_sync_node.GetExperimentsSpecifics().favicon_sync().enabled()) {
+    experiments->favicon_sync = true;
     found_experiment = true;
   }
 

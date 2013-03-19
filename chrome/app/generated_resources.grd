@@ -6447,11 +6447,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION" desc="Description for the flag to disable history navigation from horizontal overscroll.">
         Disables experimental history navigation in response to horizontal overscroll.
       </message>
-      <message name="IDS_FLAGS_SYNC_TAB_FAVICONS_NAME" desc="Title for the flag to enable syncing tab favicons with tab sync">
-        Enable tab favicon sync.
+      <message name="IDS_FLAGS_ENABLE_SYNC_FAVICONS_NAME" desc="Title for the flag to enable the favicon sync datatype">
+        Enable favicon sync.
       </message>
-      <message name="IDS_FLAGS_SYNC_TAB_FAVICONS_DESCRIPTION" desc="Description for the flag to enable syncing tab favicons with tab sync">
-        Enable syncing the favicons of open tabs as part of Open Tab sync.
+      <message name="IDS_FLAGS_ENABLE_SYNC_FAVICONS_DESCRIPTION" desc="Description for the flag to enable the favicon sync datatype">
+        Enable syncing the set of recent favicons.
       </message>
       <message name="IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_NAME" desc="Title for the flag to enable sync's keystore encryption options">
         Enable sync keystore encryption.

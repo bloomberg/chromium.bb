@@ -105,6 +105,15 @@ base::ListValue* MakeRepeatedValue(const F& fields, V* (*converter_fn)(T)) {
                                    std::string >, \
                                base::StringValue>(proto.field(), \
                                             MakeStringValue))
+#define SET_EXPERIMENT_ENABLED_FIELD(field)          \
+  do {                                               \
+    if (proto.has_##field() &&                       \
+        proto.field().has_enabled()) {               \
+      value->Set(#field,                             \
+                 new base::FundamentalValue(         \
+                     proto.field().enabled()));      \
+    }                                                \
+  } while (0)
 
 #define SET_FIELD(field, fn)                         \
   do {                                               \
@@ -205,13 +214,6 @@ base::DictionaryValue* PasswordSpecificsDataToValue(
   SET_BOOL(preferred);
   SET_INT64(date_created);
   SET_BOOL(blacklisted);
-  return value;
-}
-
-base::DictionaryValue* KeystoreEncryptionFlagsToValue(
-    const sync_pb::KeystoreEncryptionFlags& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET_BOOL(enabled);
   return value;
 }
 
@@ -339,7 +341,10 @@ base::DictionaryValue* DictionarySpecificsToValue(
 base::DictionaryValue* ExperimentsSpecificsToValue(
     const sync_pb::ExperimentsSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
-  SET(keystore_encryption, KeystoreEncryptionFlagsToValue);
+  SET_EXPERIMENT_ENABLED_FIELD(keystore_encryption);
+  SET_EXPERIMENT_ENABLED_FIELD(history_delete_directives);
+  SET_EXPERIMENT_ENABLED_FIELD(autofill_culling);
+  SET_EXPERIMENT_ENABLED_FIELD(favicon_sync);
   return value;
 }
 

@@ -545,11 +545,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowAutofillTypePredictions)
   },
   {
-    "sync-tab-favicons",
-    IDS_FLAGS_SYNC_TAB_FAVICONS_NAME,
-    IDS_FLAGS_SYNC_TAB_FAVICONS_DESCRIPTION,
+    "enable-sync-favicons",
+    IDS_FLAGS_ENABLE_SYNC_FAVICONS_NAME,
+    IDS_FLAGS_ENABLE_SYNC_FAVICONS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kSyncTabFavicons)
+    SINGLE_VALUE_TYPE(switches::kEnableSyncFavicons)
   },
   {
     "sync-keystore-encryption",

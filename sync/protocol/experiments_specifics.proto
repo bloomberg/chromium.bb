@@ -27,6 +27,11 @@ message AutofillCullingFlags {
   optional bool enabled = 1;
 }
 
+// Whether the favicon sync datatypes are enabled.
+message FaviconSyncFlags {
+  optional bool enabled = 1;
+}
+
 // Contains one flag or set of related flags.  Each node of the experiments type
 // will have a unique_client_tag identifying which flags it contains.  By
 // convention, the tag name should match the sub-message name.
@@ -34,4 +39,5 @@ message ExperimentsSpecifics {
   optional KeystoreEncryptionFlags keystore_encryption = 1;
   optional HistoryDeleteDirectives history_delete_directives = 2;
   optional AutofillCullingFlags autofill_culling = 3;
+  optional FaviconSyncFlags favicon_sync = 4;
 }
