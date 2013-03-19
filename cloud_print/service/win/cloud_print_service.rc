@@ -10,14 +10,14 @@
 #include "version.h"
 #undef APSTUDIO_READONLY_SYMBOLS
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-
 #ifdef APSTUDIO_INVOKED
 # error Don't open this in the GUI, it'll be massacred on save.
 #endif // APSTUDIO_INVOKED
 
-IDR_CLOUDPRINTSERVICE   REGISTRY                "cloud_print_service.rgs"
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+IDR_CLOUDPRINTSERVICE   REGISTRY                "resources\\cloud_print_service.rgs"
 
 STRINGTABLE
 BEGIN

@@ -66,7 +66,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/cloud_print/cloud_print_service_exe_version.rc',
         'win/cloud_print_service.cc',
         'win/cloud_print_service.rc',
-        'win/resource.h',
       ],
       'dependencies': [
         'cloud_print_service_lib',
