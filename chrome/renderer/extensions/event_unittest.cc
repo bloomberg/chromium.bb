@@ -17,6 +17,7 @@ class EventUnittest : public ModuleSystemTest {
     RegisterModule("event", IDR_EVENT_BINDINGS_JS);
     RegisterModule("schemaUtils", IDR_SCHEMA_UTILS_JS);
     RegisterModule("utils", IDR_UTILS_JS);
+    RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
 
     // Mock out the native handler for event_bindings. These mocks will fail if
     // any invariants maintained by the real event_bindings are broken.
@@ -71,6 +72,8 @@ class EventUnittest : public ModuleSystemTest {
         "exports.GetExtensionAPIDefinition = function() {};");
     OverrideNativeHandler("logging",
         "exports.DCHECK = function() {};");
+    OverrideNativeHandler("schema_registry",
+        "exports.GetSchema = function() {};");
   }
 };
 

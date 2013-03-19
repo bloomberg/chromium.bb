@@ -55,7 +55,7 @@ TEST_F(ModuleSystemTest, TestExceptionHandling) {
   TestExceptionHandler* handler = new TestExceptionHandler;
   scoped_ptr<ModuleSystem::ExceptionHandler> scoped_handler(handler);
   ASSERT_FALSE(handler->handled_exception());
-  module_system_->set_exception_handler(scoped_handler.Pass());
+  module_system_->SetExceptionHandlerForTest(scoped_handler.Pass());
 
   RegisterModule("test", "throw 'hi';");
   module_system_->Require("test");

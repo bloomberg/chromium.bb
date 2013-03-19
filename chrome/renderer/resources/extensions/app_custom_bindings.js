@@ -4,9 +4,15 @@
 
 // Custom binding for the app API.
 
+var GetAvailability = requireNative('v8_context').GetAvailability;
+if (!GetAvailability('app').is_available) {
+  exports.chromeApp = {};
+  exports.chromeHiddenApp = {};
+  return;
+}
+
 var appNatives = requireNative('app');
 var chrome = requireNative('chrome').GetChrome();
-var GetAvailability = requireNative('v8_context').GetAvailability;
 
 // This becomes chrome.app
 var app = {
@@ -48,8 +54,5 @@ app.installState = function getInstallState(callback) {
 
 // These must match the names in InstallAppbinding() in
 // chrome/renderer/extensions/dispatcher.cc.
-var availability = GetAvailability('app');
-if (availability.is_available) {
-  exports.chromeApp = app;
-  exports.chromeHiddenApp = chromeHiddenApp;
-}
+exports.chromeApp = app;
+exports.chromeHiddenApp = chromeHiddenApp;

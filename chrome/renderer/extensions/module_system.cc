@@ -5,7 +5,6 @@
 #include "chrome/renderer/extensions/module_system.h"
 
 #include "base/bind.h"
-#include "base/debug/alias.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -15,6 +14,8 @@
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
 
+namespace extensions {
+
 namespace {
 
 const char* kModuleSystem = "module_system";
@@ -22,9 +23,51 @@ const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
-} // namespace
+// Formats |try_catch| as a nice string.
+std::string CreateExceptionString(const v8::TryCatch& try_catch) {
+  v8::Handle<v8::Message> message(try_catch.Message());
+  if (message.IsEmpty()) {
+    return "try_catch has no message";
+  }
 
-namespace extensions {
+  std::string resource_name = "<unknown resource>";
+  if (!message->GetScriptResourceName().IsEmpty()) {
+    v8::String::Utf8Value resource_name_v8(
+        message->GetScriptResourceName()->ToString());
+    resource_name.assign(*resource_name_v8, resource_name_v8.length());
+  }
+
+  std::string error_message = "<no error message>";
+  if (!message->Get().IsEmpty()) {
+    v8::String::Utf8Value error_message_v8(message->Get());
+    error_message.assign(*error_message_v8, error_message_v8.length());
+  }
+
+  return base::StringPrintf("%s:%d: %s",
+                            resource_name.c_str(),
+                            message->GetLineNumber(),
+                            error_message.c_str());
+}
+
+// Fatally dumps the debug info from |try_catch| to the console.
+// Don't use this for logging exceptions that might originate in external code!
+void DumpException(const v8::TryCatch& try_catch) {
+  v8::HandleScope handle_scope;
+
+  std::string stack_trace = "<stack trace unavailable>";
+  if (!try_catch.StackTrace().IsEmpty()) {
+    v8::String::Utf8Value stack_value(try_catch.StackTrace());
+    if (*stack_value)
+      stack_trace.assign(*stack_value, stack_value.length());
+    else
+      stack_trace = "<could not convert stack trace to string>";
+  }
+
+  console::Fatal(v8::Context::GetCalling(),
+                 CreateExceptionString(try_catch) + "{" + stack_trace + "}");
+}
+
+} // namespace
 
 ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
                            SourceMap* source_map)
@@ -80,48 +123,10 @@ ModuleSystem::NativesEnabledScope::~NativesEnabledScope() {
 }
 
 void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
-  DumpException(try_catch);
-  if (exception_handler_.get())
+  if (exception_handler_)
     exception_handler_->HandleUncaughtException();
-}
-
-// static
-std::string ModuleSystem::CreateExceptionString(const v8::TryCatch& try_catch) {
-  v8::Handle<v8::Message> message(try_catch.Message());
-  if (message.IsEmpty()) {
-    return "try_catch has no message";
-  }
-
-  std::string resource_name = "<unknown resource>";
-  if (!message->GetScriptResourceName().IsEmpty()) {
-    resource_name =
-        *v8::String::Utf8Value(message->GetScriptResourceName()->ToString());
-  }
-
-  std::string error_message = "<no error message>";
-  if (!message->Get().IsEmpty())
-    error_message = *v8::String::Utf8Value(message->Get());
-
-  return base::StringPrintf("%s:%d: %s",
-                            resource_name.c_str(),
-                            message->GetLineNumber(),
-                            error_message.c_str());
-}
-
-// static
-void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
-  v8::HandleScope handle_scope;
-
-  std::string stack_trace = "<stack trace unavailable>";
-  if (!try_catch.StackTrace().IsEmpty()) {
-    v8::String::Utf8Value stack_value(try_catch.StackTrace());
-    if (*stack_value)
-      stack_trace.assign(*stack_value, stack_value.length());
-    else
-      stack_trace = "<could not convert stack trace to string>";
-  }
-
-  LOG(ERROR) << CreateExceptionString(try_catch) << "{" << stack_trace << "}";
+  else
+    DumpException(try_catch);
 }
 
 v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
@@ -139,6 +144,8 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJs(const v8::Arguments& args) {
 v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     v8::Handle<v8::String> module_name) {
   v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(v8_context());
+
   v8::Handle<v8::Object> global(v8_context()->Global());
 
   // The module system might have been deleted. This can happen if a different
@@ -147,8 +154,8 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   v8::Handle<v8::Value> modules_value =
       global->GetHiddenValue(v8::String::New(kModulesField));
   if (modules_value.IsEmpty() || modules_value->IsUndefined()) {
-    console::Error(v8::Context::GetCalling(),
-                   "Extension view no longer exists");
+    console::Warn(v8::Context::GetCalling(), "Extension view no longer exists");
+    return v8::Undefined();
   }
 
   v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(modules_value));
@@ -158,13 +165,22 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
 
   std::string module_name_str = *v8::String::AsciiValue(module_name);
   v8::Handle<v8::Value> source(GetSource(module_name_str));
-  if (source->IsUndefined())
-    return handle_scope.Close(v8::Undefined());
+  if (source.IsEmpty() || source->IsUndefined()) {
+    console::Error(v8::Context::GetCalling(),
+                   "No source for require(" + module_name_str + ")");
+    return v8::Undefined();
+  }
   v8::Handle<v8::String> wrapped_source(WrapSource(
       v8::Handle<v8::String>::Cast(source)));
-  v8::Handle<v8::Function> func =
-      v8::Handle<v8::Function>::Cast(RunString(wrapped_source, module_name));
-  CHECK(!func.IsEmpty()) << "Bad source code for " << module_name_str;
+  // Modules are wrapped in (function(){...}) so they always return functions.
+  v8::Handle<v8::Value> func_as_value = RunString(wrapped_source, module_name);
+  if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
+    console::Error(v8::Context::GetCalling(),
+                   "Bad source for require(" + module_name_str + ")");
+    return v8::Undefined();
+  }
+
+  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(func_as_value);
 
   exports = v8::Object::New();
   v8::Handle<v8::Object> natives(NewInstance());
@@ -202,13 +218,22 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
   v8::Local<v8::Value> module =
       v8::Local<v8::Value>::New(
           RequireForJsInner(v8::String::New(module_name.c_str())));
-  if (module.IsEmpty() || !module->IsObject())
-    return v8::Local<v8::Value>();
+  if (module.IsEmpty() || !module->IsObject()) {
+    console::Error(
+        v8::Context::GetCalling(),
+        "Failed to get module " + module_name + " to call " + method_name);
+    return handle_scope.Close(v8::Undefined());
+  }
+
   v8::Local<v8::Value> value =
       v8::Handle<v8::Object>::Cast(module)->Get(
           v8::String::New(method_name.c_str()));
-  if (value.IsEmpty() || !value->IsFunction())
-    return v8::Local<v8::Value>();
+  if (value.IsEmpty() || !value->IsFunction()) {
+    console::Error(v8::Context::GetCalling(),
+                   module_name + "." + method_name + " is not a function");
+    return handle_scope.Close(v8::Undefined());
+  }
+
   v8::Handle<v8::Function> func =
       v8::Handle<v8::Function>::Cast(value);
   v8::Handle<v8::Object> global(v8_context()->Global());
@@ -224,17 +249,13 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
   return handle_scope.Close(result);
 }
 
-bool ModuleSystem::HasNativeHandler(const std::string& name) {
-  return native_handler_map_.find(name) != native_handler_map_.end();
-}
-
 void ModuleSystem::RegisterNativeHandler(const std::string& name,
     scoped_ptr<NativeHandler> native_handler) {
   native_handler_map_[name] =
       linked_ptr<NativeHandler>(native_handler.release());
 }
 
-void ModuleSystem::OverrideNativeHandler(const std::string& name) {
+void ModuleSystem::OverrideNativeHandlerForTest(const std::string& name) {
   overridden_native_handlers_.insert(name);
 }
 
@@ -266,15 +287,19 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
   CHECK(info.Data()->IsObject());
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> parameters = v8::Handle<v8::Object>::Cast(info.Data());
-  // This context should be the same as v8_context_, but this method is static.
+  // This context should be the same as v8_context().
   v8::Handle<v8::Context> context = parameters->CreationContext();
   v8::Handle<v8::Object> global(context->Global());
   v8::Handle<v8::Value> module_system_value =
       global->GetHiddenValue(v8::String::New(kModuleSystem));
-  if (module_system_value.IsEmpty() || module_system_value->IsUndefined()) {
+  if (module_system_value.IsEmpty() || !module_system_value->IsExternal()) {
     // ModuleSystem has been deleted.
+    // TODO(kalman): See comment in header file.
+    console::Warn(v8::Context::GetCalling(),
+                  "Module system has been deleted, does extension view exist?");
     return v8::Undefined();
   }
+
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
       v8::Handle<v8::External>::Cast(module_system_value)->Value());
 
@@ -287,36 +312,43 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
   NativesEnabledScope natives_enabled_scope(module_system);
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Object> module = v8::Handle<v8::Object>::Cast(
-      (module_system->*require_function)(name));
+  v8::Handle<v8::Value> module_value = (module_system->*require_function)(name);
   if (try_catch.HasCaught()) {
     module_system->HandleException(try_catch);
-    return handle_scope.Close(v8::Handle<v8::Value>());
+    return v8::Undefined();
+  }
+  if (module_value.IsEmpty() || !module_value->IsObject()) {
+    // require_function will have already logged this, we don't need to.
+    return v8::Undefined();
   }
 
-  if (module.IsEmpty())
-    return handle_scope.Close(v8::Handle<v8::Value>());
-
+  v8::Handle<v8::Object> module = v8::Handle<v8::Object>::Cast(module_value);
   v8::Handle<v8::String> field =
       parameters->Get(v8::String::New(kModuleField))->ToString();
 
-  // http://crbug.com/179741.
-  std::string field_name = *v8::String::AsciiValue(field);
-  char stack_debug[64];
-  base::debug::Alias(&stack_debug);
-  base::snprintf(stack_debug, arraysize(stack_debug),
-                 "%s.%s", name.c_str(), field_name.c_str());
+  if (!module->Has(field)) {
+    std::string field_str = *v8::String::AsciiValue(field);
+    console::Fatal(v8::Context::GetCalling(),
+                   "Lazy require of " + name + "." + field_str + " did not " +
+                   "set the " + field_str + " field");
+    return v8::Undefined();
+  }
 
   v8::Local<v8::Value> new_field = module->Get(field);
-  v8::Handle<v8::Object> object = info.This();
+  if (try_catch.HasCaught()) {
+    module_system->HandleException(try_catch);
+    return v8::Undefined();
+  }
+
+  // Ok for it to be undefined, among other things it's how bindings signify
+  // that the extension doesn't have permission to use them.
+  CHECK(!new_field.IsEmpty());
+
   // Delete the getter and set this field to |new_field| so the same object is
   // returned every time a certain API is accessed.
-  // CHECK is for http://crbug.com/179741.
-  CHECK(!new_field.IsEmpty()) << "Empty require " << name << "." << field_name;
-  if (!new_field->IsUndefined()) {
-    object->Delete(property);
-    object->Set(property, new_field);
-  }
+  v8::Handle<v8::Object> object = info.This();
+  object->Delete(property);
+  object->Set(property, new_field);
   return handle_scope.Close(new_field);
 }
 
@@ -356,19 +388,21 @@ void ModuleSystem::SetNativeLazyField(v8::Handle<v8::Object> object,
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
                                               v8::Handle<v8::String> name) {
   v8::HandleScope handle_scope;
+
   WebKit::WebScopedMicrotaskSuppression suppression;
-  v8::Handle<v8::Value> result;
   v8::TryCatch try_catch;
   try_catch.SetCaptureMessage(true);
   v8::Handle<v8::Script> script(v8::Script::New(code, name));
   if (try_catch.HasCaught()) {
     HandleException(try_catch);
-    return handle_scope.Close(result);
+    return v8::Undefined();
   }
 
-  result = script->Run();
-  if (try_catch.HasCaught())
+  v8::Handle<v8::Value> result = script->Run();
+  if (try_catch.HasCaught()) {
     HandleException(try_catch);
+    return v8::Undefined();
+  }
 
   return handle_scope.Close(result);
 }
@@ -388,13 +422,27 @@ v8::Handle<v8::Value> ModuleSystem::RequireNative(const v8::Arguments& args) {
 
 v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
     const std::string& native_name) {
-  if (natives_enabled_ == 0)
-    return v8::ThrowException(v8::String::New("Natives disabled"));
+  if (natives_enabled_ == 0) {
+    // HACK: if in test throw exception so that we can test the natives-disabled
+    // logic; however, under normal circumstances, this is programmer error so
+    // we could crash.
+    if (exception_handler_)
+      return v8::ThrowException(v8::String::New("Natives disabled"));
+    console::Fatal(v8::Context::GetCalling(),
+                   "Natives disabled for requireNative(" + native_name + ")");
+    return v8::Undefined();
+  }
+
   if (overridden_native_handlers_.count(native_name) > 0u)
     return RequireForJsInner(v8::String::New(native_name.c_str()));
+
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
-  if (i == native_handler_map_.end())
+  if (i == native_handler_map_.end()) {
+    console::Fatal(
+        v8::Context::GetCalling(),
+        "Couldn't find native for requireNative(" + native_name + ")");
     return v8::Undefined();
+  }
   return i->second->NewInstance();
 }
 

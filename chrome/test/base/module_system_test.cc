@@ -93,7 +93,7 @@ ModuleSystemTest::ModuleSystemTest()
   module_system_.reset(new ModuleSystem(context_.get(), source_map_.get()));
   module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
       assert_natives_));
-  module_system_->set_exception_handler(
+  module_system_->SetExceptionHandlerForTest(
       scoped_ptr<ModuleSystem::ExceptionHandler>(new FailsOnException));
 }
 
@@ -117,7 +117,7 @@ void ModuleSystemTest::RegisterModule(const std::string& name,
 void ModuleSystemTest::OverrideNativeHandler(const std::string& name,
                                              const std::string& code) {
   RegisterModule(name, code);
-  module_system_->OverrideNativeHandler(name);
+  module_system_->OverrideNativeHandlerForTest(name);
 }
 
 void ModuleSystemTest::TearDown() {

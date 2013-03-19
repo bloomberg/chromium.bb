@@ -64,9 +64,6 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   ModuleSystem(v8::Handle<v8::Context> context, SourceMap* source_map);
   virtual ~ModuleSystem();
 
-  // Dumps the debug info from |try_catch| to LOG(ERROR).
-  static void DumpException(const v8::TryCatch& try_catch);
-
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
   v8::Handle<v8::Value> Require(const std::string& module_name);
@@ -89,41 +86,42 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // |native_handler|.
   void RegisterNativeHandler(const std::string& name,
                              scoped_ptr<NativeHandler> native_handler);
-  // Check if a native handler has been registered for this |name|.
-  bool HasNativeHandler(const std::string& name);
 
   // Causes requireNative(|name|) to look for its module in |source_map_|
   // instead of using a registered native handler. This can be used in unit
   // tests to mock out native modules.
-  void OverrideNativeHandler(const std::string& name);
+  void OverrideNativeHandlerForTest(const std::string& name);
 
   // Executes |code| in the current context with |name| as the filename.
   void RunString(const std::string& code, const std::string& name);
 
-  // Retrieves the lazily defined field specified by |property|.
-  static v8::Handle<v8::Value> LazyFieldGetter(v8::Local<v8::String> property,
-                                               const v8::AccessorInfo& info);
-  // Retrieves the lazily defined field specified by |property| on a native
-  // object.
-  static v8::Handle<v8::Value> NativeLazyFieldGetter(
-      v8::Local<v8::String> property,
-      const v8::AccessorInfo& info);
-
   // Make |object|.|field| lazily evaluate to the result of
   // require(|module_name|)[|module_field|].
+  //
+  // TODO(kalman): All targets for this method are ObjectBackedNativeHandlers,
+  //               move this logic into those classes (in fact, the chrome
+  //               object is the only client, only that needs to implement it).
   void SetLazyField(v8::Handle<v8::Object> object,
                     const std::string& field,
                     const std::string& module_name,
                     const std::string& module_field);
 
+  void SetLazyField(v8::Handle<v8::Object> object,
+                    const std::string& field,
+                    const std::string& module_name,
+                    const std::string& module_field,
+                    v8::AccessorGetter getter);
+
   // Make |object|.|field| lazily evaluate to the result of
   // requireNative(|module_name|)[|module_field|].
+  // TODO(kalman): Same as above.
   void SetNativeLazyField(v8::Handle<v8::Object> object,
                           const std::string& field,
                           const std::string& module_name,
                           const std::string& module_field);
 
-  void set_exception_handler(scoped_ptr<ExceptionHandler> handler) {
+  // Passes exceptions to |handler| rather than console::Fatal.
+  void SetExceptionHandlerForTest(scoped_ptr<ExceptionHandler> handler) {
     exception_handler_ = handler.Pass();
   }
 
@@ -134,10 +132,17 @@ class ModuleSystem : public ObjectBackedNativeHandler {
  private:
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
 
+  // Retrieves the lazily defined field specified by |property|.
+  static v8::Handle<v8::Value> LazyFieldGetter(v8::Local<v8::String> property,
+                                               const v8::AccessorInfo& info);
+  // Retrieves the lazily defined field specified by |property| on a native
+  // object.
+  static v8::Handle<v8::Value> NativeLazyFieldGetter(
+      v8::Local<v8::String> property,
+      const v8::AccessorInfo& info);
+
   // Called when an exception is thrown but not caught.
   void HandleException(const v8::TryCatch& try_catch);
-
-  static std::string CreateExceptionString(const v8::TryCatch& try_catch);
 
   // Ensure that require_ has been evaluated from require.js.
   void EnsureRequireLoaded();
@@ -149,13 +154,6 @@ class ModuleSystem : public ObjectBackedNativeHandler {
 
   v8::Handle<v8::Value> RequireForJs(const v8::Arguments& args);
   v8::Handle<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
-
-  // Sets a lazy field using the specified |getter|.
-  void SetLazyField(v8::Handle<v8::Object> object,
-                    const std::string& field,
-                    const std::string& module_name,
-                    const std::string& module_field,
-                    v8::AccessorGetter getter);
 
   typedef v8::Handle<v8::Value> (ModuleSystem::*RequireFunction)(
       const std::string&);
@@ -191,6 +189,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   int natives_enabled_;
 
   // Called when an exception is thrown but not caught in JS.
+  // Non-NULL in tests only.
   scoped_ptr<ExceptionHandler> exception_handler_;
 
   std::set<std::string> overridden_native_handlers_;

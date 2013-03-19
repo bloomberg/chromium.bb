@@ -5,6 +5,10 @@
 #include "chrome/renderer/extensions/console.h"
 
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
+#include "base/lazy_instance.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
@@ -19,6 +23,8 @@ namespace console {
 
 namespace {
 
+// Finds the RenderView associated with a context. Note: there will be multiple
+// contexts in each RenderView.
 class ByContextFinder : public content::RenderViewVisitor {
  public:
   static content::RenderView* Find(v8::Handle<v8::Context> context) {
@@ -47,6 +53,15 @@ class ByContextFinder : public content::RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(ByContextFinder);
 };
 
+// Writes |message| to stack to show up in minidump, then crashes.
+void CheckWithMinidump(const std::string& message) {
+  char minidump[256];
+  base::debug::Alias(&minidump);
+  base::snprintf(minidump, arraysize(minidump),
+                 "e::console: %s", message.c_str());
+  CHECK(false) << message;
+}
+
 }  // namespace
 
 void Debug(content::RenderView* render_view, const std::string& message) {
@@ -63,6 +78,11 @@ void Warn(content::RenderView* render_view, const std::string& message) {
 
 void Error(content::RenderView* render_view, const std::string& message) {
   AddMessage(render_view, content::CONSOLE_MESSAGE_LEVEL_ERROR, message);
+}
+
+void Fatal(content::RenderView* render_view, const std::string& message) {
+  Error(render_view, message);
+  CheckWithMinidump(message);
 }
 
 void AddMessage(content::RenderView* render_view,
@@ -105,6 +125,11 @@ void Warn(v8::Handle<v8::Context> context, const std::string& message) {
 
 void Error(v8::Handle<v8::Context> context, const std::string& message) {
   AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_ERROR, message);
+}
+
+void Fatal(v8::Handle<v8::Context> context, const std::string& message) {
+  Error(context, message);
+  CheckWithMinidump(message);
 }
 
 void AddMessage(v8::Handle<v8::Context> context,

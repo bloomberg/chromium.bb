@@ -97,9 +97,13 @@ disableGetters(window, 'window',
      'toolbar']);
 
 // Disable window.localStorage.
-disableGetters(window, 'window',
-    ['localStorage'],
-    'Use chrome.storage.local instead.');
+// Sometimes DOM security policy prevents us from doing this (e.g. for data:
+// URLs) so wrap in try-catch.
+try {
+  disableGetters(window, 'window',
+      ['localStorage'],
+      'Use chrome.storage.local instead.');
+} catch (e) {}
 
 // Document instance properties that we wish to disable need to be set when
 // the document begins loading, since only then will the "document" reference

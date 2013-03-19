@@ -188,14 +188,17 @@ Binding.prototype = {
 
     // TODO(kalman/cduvall): Make GetAvailability handle this, then delete the
     // supporting code.
-    if (!isSchemaNodeSupported(schema, platform, manifestVersion))
-      return;
+    if (!isSchemaNodeSupported(schema, platform, manifestVersion)) {
+      console.error('chrome.' + schema.namespace + ' is not supported on ' +
+                    'this platform or manifest version');
+      return undefined;
+    }
 
     var availability = GetAvailability(schema.namespace);
     if (!availability.is_available) {
       console.error('chrome.' + schema.namespace + ' is not available: ' +
-                        availability.message);
-      return;
+                    availability.message);
+      return undefined;
     }
 
     // See comment on internalAPIs at the top.

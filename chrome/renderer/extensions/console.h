@@ -25,6 +25,9 @@ void Log(content::RenderView* render_view, const std::string& message);
 void Warn(content::RenderView* render_view, const std::string& message);
 void Error(content::RenderView* render_view, const std::string& message);
 
+// Logs an Error then crashes the current process.
+void Fatal(content::RenderView* render_view, const std::string& message);
+
 void AddMessage(content::RenderView* render_view,
                 content::ConsoleMessageLevel level,
                 const std::string& message);
@@ -34,6 +37,9 @@ void Debug(v8::Handle<v8::Context> context, const std::string& message);
 void Log(v8::Handle<v8::Context> context, const std::string& message);
 void Warn(v8::Handle<v8::Context> context, const std::string& message);
 void Error(v8::Handle<v8::Context> context, const std::string& message);
+
+// Logs an Error then crashes the current process.
+void Fatal(v8::Handle<v8::Context> context, const std::string& message);
 
 void AddMessage(v8::Handle<v8::Context> context,
                 content::ConsoleMessageLevel level,
