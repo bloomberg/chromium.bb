@@ -40,6 +40,7 @@
           '../tools/swarm_client/run_test_cases.py',
           '--use-less-jobs',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '-v', '-v', '-v',
         ],
       },
     }],
@@ -87,6 +88,7 @@
           '../tools/swarm_client/run_test_cases.py',
           '--use-less-jobs',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '-v', '-v', '-v',
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
