@@ -30,6 +30,7 @@ template <typename T> class JSONValueConverter;
 
 namespace ash {
 namespace internal {
+class DisplayManager;
 class RootWindowController;
 }
 
@@ -78,6 +79,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
     // Invoked when the display configuration change is requested,
     // but before the change is applied to aura/ash.
     virtual void OnDisplayConfigurationChanging() = 0;
+
+    // Invoked when the all display configuration changes
+    // have been applied.
+    virtual void OnDisplayConfigurationChanged() {};
 
    protected:
     virtual ~Observer() {}
@@ -180,6 +185,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
  private:
+  friend class internal::DisplayManager;
+
   // Create a root window for given |display|.
   aura::RootWindow* CreateRootWindowForDisplay(const gfx::Display& display);
 
@@ -190,6 +197,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   void UpdateDisplayBoundsForLayout();
 
   void NotifyDisplayConfigurationChanging();
+  void NotifyDisplayConfigurationChanged();
 
   void SetLayoutForDisplayIdPair(const DisplayIdPair& display_pair,
                                  const DisplayLayout& layout);

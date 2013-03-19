@@ -180,7 +180,7 @@ void StoreCurrentDisplayLayoutPrefs() {
 
 
 void StorePrimaryDisplayIDPref(int64 display_id) {
-  if (!IsValidUser())
+  if (!IsValidUser() || gfx::Screen::GetNativeScreen()->GetNumDisplays() < 2)
     return;
 
   PrefService* local_state = g_browser_process->local_state();
@@ -211,8 +211,13 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 void StoreDisplayPrefs() {
-  StorePrimaryDisplayIDPref(ash::Shell::GetScreen()->GetPrimaryDisplay().id());
-  StoreCurrentDisplayLayoutPrefs();
+  if (!IsValidUser())
+    return;
+  if (gfx::Screen::GetNativeScreen()->GetNumDisplays() == 2) {
+    StorePrimaryDisplayIDPref(
+        ash::Shell::GetScreen()->GetPrimaryDisplay().id());
+    StoreCurrentDisplayLayoutPrefs();
+  }
 }
 
 void SetAndStoreDisplayLayoutPref(int layout, int offset) {

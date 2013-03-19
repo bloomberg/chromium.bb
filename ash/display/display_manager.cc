@@ -179,8 +179,11 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     DisplayInfo info = GetDisplayInfo(*iter);
-    if (info.id() == display_id)
+    if (info.id() == display_id) {
+      if (info.rotation() == rotation)
+        return;
       info.set_rotation(rotation);
+    }
     display_info_list.push_back(info);
   }
   UpdateDisplays(display_info_list);
@@ -194,8 +197,11 @@ void DisplayManager::SetDisplayUIScale(int64 display_id,
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     DisplayInfo info = GetDisplayInfo(*iter);
-    if (info.id() == display_id)
+    if (info.id() == display_id) {
+      if (info.ui_scale() == ui_scale)
+        return;
       info.set_ui_scale(ui_scale);
+    }
     display_info_list.push_back(info);
   }
   UpdateDisplays(display_info_list);
@@ -217,9 +223,12 @@ bool DisplayManager::IsDisplayUIScalingEnabled() const {
   // 2x density (currently Pixel).
   int64 display_id = gfx::Display::InternalDisplayId();
 #if defined(OS_CHROMEOS)
-  // On linux desktop, allow ui scaling on the first dislpay.
-  if (!base::chromeos::IsRunningOnChromeOS())
+  // On linux desktop, allow ui scaling on the first dislpay if an internal
+  // display isn't specified.
+  if (display_id == gfx::Display::kInvalidDisplayID &&
+      !base::chromeos::IsRunningOnChromeOS()) {
     display_id = Shell::GetInstance()->display_manager()->first_display_id();
+  }
 #endif
   return GetDisplayForId(display_id).device_scale_factor() == 2.0f;
 }
@@ -371,6 +380,12 @@ void DisplayManager::UpdateDisplays(
   // being removed are accessed during shutting down the root.
   displays_.insert(displays_.end(), removed_displays.begin(),
                    removed_displays.end());
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  // |display_controller| is NULL during the bootstrap.
+  if (display_controller)
+    display_controller->NotifyDisplayConfigurationChanging();
+
   for (DisplayList::const_reverse_iterator iter = removed_displays.rbegin();
        iter != removed_displays.rend(); ++iter) {
     Shell::GetInstance()->screen()->NotifyDisplayRemoved(displays_.back());
@@ -384,8 +399,10 @@ void DisplayManager::UpdateDisplays(
        iter != changed_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
   }
-  EnsurePointerInDisplays();
+  if (display_controller)
+    display_controller->NotifyDisplayConfigurationChanged();
 
+  EnsurePointerInDisplays();
 #if defined(USE_X11) && defined(OS_CHROMEOS)
   if (!changed_display_indices.empty() && base::chromeos::IsRunningOnChromeOS())
     ui::ClearX11DefaultRootWindow();

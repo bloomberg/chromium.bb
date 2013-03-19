@@ -27,7 +27,7 @@ namespace {
 
 class TestObserver : public DisplayController::Observer {
  public:
-  TestObserver() : count_(0) {
+  TestObserver() : changing_count_(0), changed_count_(0) {
     Shell::GetInstance()->display_controller()->AddObserver(this);
   }
 
@@ -36,17 +36,23 @@ class TestObserver : public DisplayController::Observer {
   }
 
   virtual void OnDisplayConfigurationChanging() OVERRIDE {
-    ++count_;
+    ++changing_count_;
+  }
+
+  virtual void OnDisplayConfigurationChanged() OVERRIDE {
+    ++changed_count_;
   }
 
   int CountAndReset() {
-    int c = count_;
-    count_ = 0;
+    EXPECT_EQ(changing_count_, changed_count_);
+    int c = changing_count_;
+    changing_count_ = changed_count_ = 0;
     return c;
   }
 
  private:
-  int count_;
+  int changing_count_;
+  int changed_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -127,7 +133,7 @@ TEST_F(DisplayControllerShutdownTest, Shutdown) {
 TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   TestObserver observer;
   UpdateDisplay("500x500,400x400");
-  EXPECT_EQ(2, observer.CountAndReset());  // resize and add
+  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   gfx::Display* secondary_display =
       Shell::GetInstance()->display_manager()->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
@@ -198,10 +204,11 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   TestObserver observer;
   SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
   UpdateDisplay("200x200,300x300");  // layout, resize and add.
-  EXPECT_EQ(3, observer.CountAndReset());
+  EXPECT_EQ(2, observer.CountAndReset());
 
-  gfx::Display* secondary_display =
-      Shell::GetInstance()->display_manager()->GetDisplayAt(1);
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+  gfx::Display* secondary_display = display_manager->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
   secondary_display->UpdateWorkAreaFromInsets(insets);
 
@@ -210,7 +217,7 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ("5,205 290x290", GetSecondaryDisplay().work_area().ToString());
 
   UpdateDisplay("400x400,200x200");
-  EXPECT_EQ(2, observer.CountAndReset());  // two resizes
+  EXPECT_EQ(1, observer.CountAndReset());  // two resizes
   EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,400 200x200", GetSecondaryDisplay().bounds().ToString());
   if (!ash::Shell::IsLauncherPerDisplayEnabled())
@@ -228,11 +235,30 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ(1, Shell::GetScreen()->GetNumDisplays());
 
-  UpdateDisplay("500x500,700x700");
-  EXPECT_EQ(2, observer.CountAndReset());
+  UpdateDisplay("400x500,700x700*2");
+  EXPECT_EQ(1, observer.CountAndReset());
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("0,500 700x700", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,0 400x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,500 350x350", GetSecondaryDisplay().bounds().ToString());
+
+  // No change
+  UpdateDisplay("400x500,700x700*2");
+  EXPECT_EQ(0, observer.CountAndReset());
+
+  // Rotation
+  int64 primary_id = GetPrimaryDisplay().id();
+  display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
+  EXPECT_EQ(1, observer.CountAndReset());
+  display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
+  EXPECT_EQ(0, observer.CountAndReset());
+
+  // UI scale
+  int64 secondary_id = GetSecondaryDisplay().id();
+  gfx::Display::SetInternalDisplayId(secondary_id);
+  display_manager->SetDisplayUIScale(secondary_id, 1.25f);
+  EXPECT_EQ(1, observer.CountAndReset());
+  display_manager->SetDisplayUIScale(secondary_id, 1.25f);
+  EXPECT_EQ(0, observer.CountAndReset());
 }
 
 TEST_F(DisplayControllerTest, InvertLayout) {

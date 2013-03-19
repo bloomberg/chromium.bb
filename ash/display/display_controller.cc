@@ -457,6 +457,7 @@ void DisplayController::SetDefaultDisplayLayout(const DisplayLayout& layout) {
     default_display_layout_ = layout;
     NotifyDisplayConfigurationChanging();
     UpdateDisplayBoundsForLayout();
+    NotifyDisplayConfigurationChanged();
   }
 }
 
@@ -498,6 +499,7 @@ void DisplayController::SetLayoutForCurrentDisplays(
     paired_layouts_[pair] = to_set;
     NotifyDisplayConfigurationChanging();
     UpdateDisplayBoundsForLayout();
+    NotifyDisplayConfigurationChanged();
   }
 }
 
@@ -670,7 +672,6 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
       GetDisplayManager()->GetDisplayInfo(display);
   DCHECK(!display_info.bounds_in_pixel().IsEmpty());
 
-  NotifyDisplayConfigurationChanging();
   UpdateDisplayBoundsForLayout();
   aura::RootWindow* root = root_windows_[display.id()];
   root->SetHostBoundsAndInsetsAndRootWindowScale(
@@ -684,7 +685,6 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
   if (limiter_.get())
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
 
-  NotifyDisplayConfigurationChanging();
   if (primary_root_window_for_replace_) {
     DCHECK(root_windows_.empty());
     primary_display_id = display.id();
@@ -715,7 +715,6 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
 
   aura::RootWindow* root_to_delete = root_windows_[display.id()];
   DCHECK(root_to_delete) << display.ToString();
-  NotifyDisplayConfigurationChanging();
 
   // Display for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
@@ -845,6 +844,10 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
 
 void DisplayController::NotifyDisplayConfigurationChanging() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
+}
+
+void DisplayController::NotifyDisplayConfigurationChanged() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
 }
 
 void DisplayController::RegisterLayoutForDisplayIdPairInternal(

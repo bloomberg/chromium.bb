@@ -31,8 +31,8 @@
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
-#include "chrome/browser/chromeos/display/primary_display_switch_observer.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
@@ -633,8 +633,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   NotifyDisplayLocalStatePrefChanged();
 
-  primary_display_switch_observer_.reset(
-      new PrimaryDisplaySwitchObserver());
+  display_configuration_observer_.reset(
+      new DisplayConfigurationObserver());
 
   automatic_reboot_manager_.reset(new system::AutomaticRebootManager(
       scoped_ptr<base::TickClock>(new base::DefaultTickClock)));
@@ -733,7 +733,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // before the shell is destroyed.
   user_activity_notifier_.reset();
   video_activity_notifier_.reset();
-  primary_display_switch_observer_.reset();
+  display_configuration_observer_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
