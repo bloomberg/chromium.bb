@@ -59,6 +59,8 @@ void OutdatedUpgradeBubbleView::ShowBubble(views::View* anchor_view,
   upgrade_bubble_ = new OutdatedUpgradeBubbleView(anchor_view, navigator);
   views::BubbleDelegateView::CreateBubble(upgrade_bubble_);
   upgrade_bubble_->StartFade(true);
+  content::RecordAction(
+      content::UserMetricsAction("OutdatedUpgradeBubble.Show"));
 }
 
 bool OutdatedUpgradeBubbleView::IsAvailable() {
