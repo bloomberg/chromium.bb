@@ -4,6 +4,8 @@
 
 #include "remoting/host/win/rdp_client_window.h"
 
+#include <wtsdefs.h>
+
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
@@ -101,6 +103,11 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   if (FAILED(result))
     goto done;
 
+  // Use 32-bit color.
+  result = client_->put_ColorDepth(32);
+  if (FAILED(result))
+    goto done;
+
   // Set dimensions of the remote desktop.
   result = client_->put_DesktopWidth(screen_size_.width());
   if (FAILED(result))
@@ -148,6 +155,14 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
 
   // Do not grab focus on connect.
   result = client_settings_->put_GrabFocusOnConnect(VARIANT_FALSE);
+  if (FAILED(result))
+    goto done;
+
+  // Enable enhanced graphics, font smoothing and desktop composition.
+  const LONG kDesiredFlags = WTS_PERF_ENABLE_ENHANCED_GRAPHICS |
+                             WTS_PERF_ENABLE_FONT_SMOOTHING |
+                             WTS_PERF_ENABLE_DESKTOP_COMPOSITION;
+  result = client_settings_->put_PerformanceFlags(kDesiredFlags);
   if (FAILED(result))
     goto done;
 
