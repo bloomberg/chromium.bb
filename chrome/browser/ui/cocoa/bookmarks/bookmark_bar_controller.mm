@@ -658,6 +658,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [self doMenuFlashOnSeparateThread:sender];
   DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
   const BookmarkNode* node = [sender bookmarkNode];
+  DCHECK(node);
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   RecordAppLaunch(browser_->profile(), node->url());
@@ -2174,7 +2175,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // If folder menus are not being shown, do nothing.  This is different from
   // BookmarkBarFolderController's implementation because the bar should NOT
   // automatically open folder menus when the mouse passes over a folder
-  // button while the BookmarkBarFolderController DOES automically open
+  // button while the BookmarkBarFolderController DOES automatically open
   // a subfolder menu.
   if (!showFolderMenus_)
     return;
@@ -2186,7 +2187,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ([folderController_ parentButton] == sender)
     return;
   // Else open a new one if it makes sense to do so.
-  if ([sender bookmarkNode]->is_folder()) {
+  const BookmarkNode* node = [sender bookmarkNode];
+  if (node && node->is_folder()) {
     // Update |hoverButton_| so that it corresponds to the open folder.
     hoverButton_.reset([sender retain]);
     [folderTarget_ openBookmarkFolderFromButton:sender];
