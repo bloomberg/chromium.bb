@@ -746,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillFormWithRepeatedField) {
 }
 
 // http://crbug.com/150084
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_AutofillFormWithNonAutofillableField \
     AutofillFormWithNonAutofillableField
 #else

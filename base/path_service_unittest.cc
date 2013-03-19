@@ -62,7 +62,7 @@ bool ReturnsValidPath(int dir_type) {
       check_path_exists = false;
   }
 #endif
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
   if (dir_type != base::DIR_EXE && dir_type != base::DIR_MODULE &&
       dir_type != base::FILE_EXE && dir_type != base::FILE_MODULE) {
     if (path.ReferencesParent())
