@@ -198,6 +198,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteSetTimeout);
   session_command_map[CommandNames::kSetScriptTimeout] =
       base::Bind(&ExecuteSetScriptTimeout);
+  session_command_map[CommandNames::kImplicitlyWait] =
+      base::Bind(&ExecuteImplicitlyWait);
   session_command_map[CommandNames::kGetAlert] =
       base::Bind(&ExecuteGetAlert);
   session_command_map[CommandNames::kGetAlertText] =

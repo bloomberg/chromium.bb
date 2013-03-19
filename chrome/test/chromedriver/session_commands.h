@@ -87,6 +87,12 @@ Status ExecuteSetScriptTimeout(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Set the amount of time the driver should wait when searching for elements.
+Status ExecuteImplicitlyWait(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Returns whether an alert is open.
 Status ExecuteGetAlert(
     Session* session,

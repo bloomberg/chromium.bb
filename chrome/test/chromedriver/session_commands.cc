@@ -204,6 +204,17 @@ Status ExecuteSetScriptTimeout(
   return Status(kOk);
 }
 
+Status ExecuteImplicitlyWait(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  int ms;
+  if (!params.GetInteger("ms", &ms) || ms < 0)
+    return Status(kUnknownError, "'ms' must be a non-negative integer");
+  session->implicit_wait = ms;
+  return Status(kOk);
+}
+
 Status ExecuteGetAlert(
     Session* session,
     const base::DictionaryValue& params,
