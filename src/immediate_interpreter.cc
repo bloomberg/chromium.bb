@@ -705,7 +705,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       scroll_stationary_finger_max_distance_(
           prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
       bottom_zone_size_(prop_reg, "Bottom Zone Size", 10.0),
-      button_evaluation_timeout_(prop_reg, "Button Evaluation Timeout", 0.1),
+      button_evaluation_timeout_(prop_reg, "Button Evaluation Timeout", 0.05),
+      button_finger_timeout_(prop_reg, "Button Finger Timeout", 0.03),
       button_move_dist_(prop_reg, "Button Move Distance", 10.0),
       button_max_dist_from_expected_(prop_reg,
                                      "Button Max Distance From Expected", 20.0),
@@ -2064,6 +2065,11 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
                                button_evaluation_timeout_.val_;
     button_type_ = EvaluateButtonType(hwstate, button_down_time);
 
+    if (!hwstate.SameFingersAs(*state_buffer_.Get(0))) {
+      // Fingers have changed since last state, reset timeout
+      button_down_timeout_ = hwstate.timestamp + button_finger_timeout_.val_;
+    }
+
     // button_up before button_evaluation_timeout_ expired.
     // Send up & down for button that was previously down, but not yet sent.
     if (button_type_ == GESTURES_BUTTON_NONE)
@@ -2080,8 +2086,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
                         button_type_,
                         0);
       sent_button_down_ = true;
-    } else if (button_type_ == GESTURES_BUTTON_LEFT &&
-               hwstate.timestamp < button_down_timeout_ && timeout) {
+    } else if (timeout) {
       *timeout = button_down_timeout_ - hwstate.timestamp;
     }
   }

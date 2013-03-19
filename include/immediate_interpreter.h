@@ -594,8 +594,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty scroll_stationary_finger_max_distance_;
   // Height [mm] of the bottom zone
   DoubleProperty bottom_zone_size_;
-  // Time [s] to evaluate number of fingers for a click
+  // Time [s] to after button down to evaluate number of fingers for a click
   DoubleProperty button_evaluation_timeout_;
+  // Time [s] to evaluate number of fingers for a click after a new touch has
+  // been registered
+  DoubleProperty button_finger_timeout_;
   // Distance [mm] a finger can move to still be considered for a button click
   DoubleProperty button_move_dist_;
   // Distance [mm] a finger can be away from it's expected location to be
