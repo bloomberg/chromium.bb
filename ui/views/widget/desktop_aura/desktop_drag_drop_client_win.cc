@@ -5,7 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/drag_source.h"
+#include "ui/base/dragdrop/drag_source_win.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/views/widget/desktop_aura/desktop_drop_target_win.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
@@ -34,7 +34,7 @@ int DesktopDragDropClientWin::StartDragAndDrop(
   drag_drop_in_progress_ = true;
   drag_operation_ = operation;
 
-  drag_source_ = new ui::DragSource;
+  drag_source_ = new ui::DragSourceWin;
   DWORD effects;
   DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
              drag_source_,

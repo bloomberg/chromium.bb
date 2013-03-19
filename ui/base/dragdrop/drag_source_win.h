@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DRAGDROP_DRAG_SOURCE_H_
-#define UI_BASE_DRAGDROP_DRAG_SOURCE_H_
+#ifndef UI_BASE_DRAGDROP_DRAG_SOURCE_WIN_H_
+#define UI_BASE_DRAGDROP_DRAG_SOURCE_WIN_H_
 
 #include <objidl.h>
 
@@ -17,11 +17,12 @@ namespace ui {
 // drag-drop operation as the user mouses over other drop targets on their
 // system. This object tells Windows whether or not the drag should continue,
 // and supplies the appropriate cursors.
-class UI_EXPORT DragSource : public IDropSource,
-                             public base::RefCountedThreadSafe<DragSource> {
+class UI_EXPORT DragSourceWin
+    : public IDropSource,
+      public base::RefCountedThreadSafe<DragSourceWin> {
  public:
-  DragSource();
-  virtual ~DragSource() {}
+  DragSourceWin();
+  virtual ~DragSourceWin() {}
 
   // Stop the drag operation at the next chance we get.  This doesn't
   // synchronously stop the drag (since Windows is controlling that),
@@ -48,9 +49,9 @@ class UI_EXPORT DragSource : public IDropSource,
   // Set to true if we want to cancel the drag operation.
   bool cancel_drag_;
 
-  DISALLOW_COPY_AND_ASSIGN(DragSource);
+  DISALLOW_COPY_AND_ASSIGN(DragSourceWin);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_DRAGDROP_DRAG_SOURCE_H_
+#endif  // UI_BASE_DRAGDROP_DRAG_SOURCE_WIN_H_

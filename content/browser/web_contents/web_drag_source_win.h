@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/dragdrop/drag_source.h"
+#include "ui/base/dragdrop/drag_source_win.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
@@ -20,7 +20,7 @@ class WebContents;
 // sent by an active drag-drop operation as the user mouses over other drop
 // targets on their system. This object tells Windows whether or not the drag
 // should continue, and supplies the appropriate cursors.
-class WebDragSource : public ui::DragSource,
+class WebDragSource : public ui::DragSourceWin,
                       public NotificationObserver {
  public:
   // Create a new DragSource for a given HWND and WebContents.
@@ -35,7 +35,7 @@ class WebDragSource : public ui::DragSource,
   void set_effect(DWORD effect) { effect_ = effect; }
 
  protected:
-  // ui::DragSource
+  // ui::DragSourceWin
   virtual void OnDragSourceCancel();
   virtual void OnDragSourceDrop();
   virtual void OnDragSourceMove();

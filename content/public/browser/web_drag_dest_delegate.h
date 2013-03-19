@@ -12,7 +12,7 @@
 #include "base/string16.h"
 
 #if defined(OS_WIN)
-#include "ui/base/dragdrop/drop_target.h"
+#include "ui/base/dragdrop/drop_target_win.h"
 #endif
 
 class GURL;

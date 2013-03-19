@@ -7,13 +7,13 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_DROP_DELEGATE_H_
 #define WEBKIT_TOOLS_TEST_SHELL_DROP_DELEGATE_H_
 
-#include "ui/base/dragdrop/drop_target.h"
+#include "ui/base/dragdrop/drop_target_win.h"
 
 namespace WebKit {
 class WebView;
 }
 
-class TestDropDelegate : public ui::DropTarget {
+class TestDropDelegate : public ui::DropTargetWin {
  public:
   TestDropDelegate(HWND source_hwnd, WebKit::WebView* webview);
 

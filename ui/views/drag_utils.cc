@@ -16,7 +16,7 @@
 #include "ui/views/widget/widget.h"
 #elif defined(OS_WIN)
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/drag_source.h"
+#include "ui/base/dragdrop/drag_source_win.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #else
 #error
@@ -55,7 +55,7 @@ void RunShellDrag(gfx::NativeView view,
         data, root_window, view, root_location, operation, source);
   }
 #elif defined(OS_WIN)
-  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
+  scoped_refptr<ui::DragSourceWin> drag_source(new ui::DragSourceWin);
   DWORD effects;
   DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
              drag_source,

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
-#include "ui/base/dragdrop/drop_target.h"
+#include "ui/base/dragdrop/drop_target_win.h"
 #include "webkit/glue/webdropdata.h"
 
 namespace content {
@@ -20,7 +20,7 @@ class WebDragDestDelegate;
 // A helper object that provides drop capabilities to a WebContentsImpl. The
 // DropTarget handles drags that enter the region of the WebContents by
 // passing on the events to the renderer.
-class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
+class CONTENT_EXPORT WebDragDest : public ui::DropTargetWin {
  public:
   // Create a new WebDragDest associating it with the given HWND and
   // WebContents.

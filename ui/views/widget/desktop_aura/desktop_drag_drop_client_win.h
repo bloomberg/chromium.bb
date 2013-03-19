@@ -11,7 +11,7 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
-class DragSource;
+class DragSourceWin;
 class RootWindow;
 }
 
@@ -47,7 +47,7 @@ class VIEWS_EXPORT DesktopDragDropClientWin
 
   int drag_operation_;
 
-  scoped_refptr<ui::DragSource> drag_source_;
+  scoped_refptr<ui::DragSourceWin> drag_source_;
 
   scoped_refptr<DesktopDropTargetWin> drop_target_;
 

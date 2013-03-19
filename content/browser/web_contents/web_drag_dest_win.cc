@@ -61,7 +61,7 @@ int GetModifierFlags() {
 
 }  // namespace
 
-// InterstitialDropTarget is like a ui::DropTarget implementation that
+// InterstitialDropTarget is like a ui::DropTargetWin implementation that
 // WebDragDest passes through to if an interstitial is showing.  Rather than
 // passing messages on to the renderer, we just check to see if there's a link
 // in the drop data and handle links as navigations.
@@ -103,7 +103,7 @@ class InterstitialDropTarget {
 };
 
 WebDragDest::WebDragDest(HWND source_hwnd, WebContents* web_contents)
-    : ui::DropTarget(source_hwnd),
+    : ui::DropTargetWin(source_hwnd),
       web_contents_(web_contents),
       current_rvh_(NULL),
       drag_cursor_(WebDragOperationNone),

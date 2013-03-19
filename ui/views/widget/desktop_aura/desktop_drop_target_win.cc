@@ -20,7 +20,7 @@ namespace views {
 
 DesktopDropTargetWin::DesktopDropTargetWin(aura::RootWindow* root_window,
                                            HWND window)
-    : ui::DropTarget(window),
+    : ui::DropTargetWin(window),
       root_window_(root_window),
       target_window_(NULL) {
 }

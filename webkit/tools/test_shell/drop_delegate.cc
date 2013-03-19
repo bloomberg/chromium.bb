@@ -15,7 +15,7 @@ using WebKit::WebPoint;
 using WebKit::WebView;
 
 TestDropDelegate::TestDropDelegate(HWND source_hwnd, WebKit::WebView* webview)
-    : ui::DropTarget(source_hwnd),
+    : ui::DropTargetWin(source_hwnd),
       webview_(webview) {
 }
 

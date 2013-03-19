@@ -51,8 +51,8 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/drag_source.h"
-#include "ui/base/dragdrop/drop_target.h"
+#include "ui/base/dragdrop/drag_source_win.h"
+#include "ui/base/dragdrop/drop_target_win.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/events/event.h"
@@ -154,7 +154,7 @@ void DoCopyURL(const GURL& url, const string16& text, Profile* profile) {
 // URL. A drop of plain text from the same edit either copies or moves the
 // selected text, and a drop of plain text from a source other than the edit
 // does a paste and go.
-class OmniboxViewWin::EditDropTarget : public ui::DropTarget {
+class OmniboxViewWin::EditDropTarget : public ui::DropTargetWin {
  public:
   explicit EditDropTarget(OmniboxViewWin* edit);
 
@@ -195,7 +195,7 @@ class OmniboxViewWin::EditDropTarget : public ui::DropTarget {
 };
 
 OmniboxViewWin::EditDropTarget::EditDropTarget(OmniboxViewWin* edit)
-    : ui::DropTarget(edit->m_hWnd),
+    : ui::DropTargetWin(edit->m_hWnd),
       edit_(edit),
       drag_has_url_(false),
       drag_has_string_(false) {
@@ -2713,7 +2713,7 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
 
   data.SetString(text_to_write);
 
-  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
+  scoped_refptr<ui::DragSourceWin> drag_source(new ui::DragSourceWin);
   DWORD dropped_mode;
   base::AutoReset<bool> auto_reset_in_drag(&in_drag_, true);
   if (DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),

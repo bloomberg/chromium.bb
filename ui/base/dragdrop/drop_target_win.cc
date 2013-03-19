@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/dragdrop/drop_target.h"
+#include "ui/base/dragdrop/drop_target_win.h"
 
 #include <shlobj.h>
 
@@ -10,9 +10,9 @@
 
 namespace ui {
 
-IDropTargetHelper* DropTarget::cached_drop_target_helper_ = NULL;
+IDropTargetHelper* DropTargetWin::cached_drop_target_helper_ = NULL;
 
-DropTarget::DropTarget(HWND hwnd)
+DropTargetWin::DropTargetWin(HWND hwnd)
     : hwnd_(hwnd),
       ref_count_(0) {
   DCHECK(hwnd);
@@ -20,11 +20,11 @@ DropTarget::DropTarget(HWND hwnd)
   DCHECK(SUCCEEDED(result));
 }
 
-DropTarget::~DropTarget() {
+DropTargetWin::~DropTargetWin() {
 }
 
 // static
-IDropTargetHelper* DropTarget::DropHelper() {
+IDropTargetHelper* DropTargetWin::DropHelper() {
   if (!cached_drop_target_helper_) {
     CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
                      IID_IDropTargetHelper,
@@ -34,12 +34,12 @@ IDropTargetHelper* DropTarget::DropHelper() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DropTarget, IDropTarget implementation:
+// DropTargetWin, IDropTarget implementation:
 
-HRESULT DropTarget::DragEnter(IDataObject* data_object,
-                                  DWORD key_state,
-                                  POINTL cursor_position,
-                                  DWORD* effect) {
+HRESULT DropTargetWin::DragEnter(IDataObject* data_object,
+                                 DWORD key_state,
+                                 POINTL cursor_position,
+                                 DWORD* effect) {
   // Tell the helper that we entered so it can update the drag image.
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper) {
@@ -53,9 +53,9 @@ HRESULT DropTarget::DragEnter(IDataObject* data_object,
   return S_OK;
 }
 
-HRESULT DropTarget::DragOver(DWORD key_state,
-                                 POINTL cursor_position,
-                                 DWORD* effect) {
+HRESULT DropTargetWin::DragOver(DWORD key_state,
+                                POINTL cursor_position,
+                                DWORD* effect) {
   // Tell the helper that we moved over it so it can update the drag image.
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper)
@@ -66,7 +66,7 @@ HRESULT DropTarget::DragOver(DWORD key_state,
   return S_OK;
 }
 
-HRESULT DropTarget::DragLeave() {
+HRESULT DropTargetWin::DragLeave() {
   // Tell the helper that we moved out of it so it can update the drag image.
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper)
@@ -78,10 +78,10 @@ HRESULT DropTarget::DragLeave() {
   return S_OK;
 }
 
-HRESULT DropTarget::Drop(IDataObject* data_object,
-                             DWORD key_state,
-                             POINTL cursor_position,
-                             DWORD* effect) {
+HRESULT DropTargetWin::Drop(IDataObject* data_object,
+                            DWORD key_state,
+                            POINTL cursor_position,
+                            DWORD* effect) {
   // Tell the helper that we dropped onto it so it can update the drag image.
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper) {
@@ -95,9 +95,9 @@ HRESULT DropTarget::Drop(IDataObject* data_object,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DropTarget, IUnknown implementation:
+// DropTargetWin, IUnknown implementation:
 
-HRESULT DropTarget::QueryInterface(const IID& iid, void** object) {
+HRESULT DropTargetWin::QueryInterface(const IID& iid, void** object) {
   *object = NULL;
   if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDropTarget)) {
     *object = this;
@@ -108,11 +108,11 @@ HRESULT DropTarget::QueryInterface(const IID& iid, void** object) {
   return S_OK;
 }
 
-ULONG DropTarget::AddRef() {
+ULONG DropTargetWin::AddRef() {
   return ++ref_count_;
 }
 
-ULONG DropTarget::Release() {
+ULONG DropTargetWin::Release() {
   if (--ref_count_ == 0) {
     delete this;
     return 0U;
@@ -120,27 +120,27 @@ ULONG DropTarget::Release() {
   return ref_count_;
 }
 
-DWORD DropTarget::OnDragEnter(IDataObject* data_object,
-                              DWORD key_state,
-                              POINT cursor_position,
-                              DWORD effect) {
+DWORD DropTargetWin::OnDragEnter(IDataObject* data_object,
+                                 DWORD key_state,
+                                 POINT cursor_position,
+                                 DWORD effect) {
   return DROPEFFECT_NONE;
 }
 
-DWORD DropTarget::OnDragOver(IDataObject* data_object,
-                             DWORD key_state,
-                             POINT cursor_position,
-                             DWORD effect) {
+DWORD DropTargetWin::OnDragOver(IDataObject* data_object,
+                                DWORD key_state,
+                                POINT cursor_position,
+                                DWORD effect) {
   return DROPEFFECT_NONE;
 }
 
-void DropTarget::OnDragLeave(IDataObject* data_object) {
+void DropTargetWin::OnDragLeave(IDataObject* data_object) {
 }
 
-DWORD DropTarget::OnDrop(IDataObject* data_object,
-                         DWORD key_state,
-                         POINT cursor_position,
-                         DWORD effect) {
+DWORD DropTargetWin::OnDrop(IDataObject* data_object,
+                            DWORD key_state,
+                            POINT cursor_position,
+                            DWORD effect) {
   return DROPEFFECT_NONE;
 }
 

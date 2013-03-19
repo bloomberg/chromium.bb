@@ -6,8 +6,8 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTIOP_DROP_TARGET_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/dragdrop/drop_target.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/dragdrop/drop_target_win.h"
 
 namespace aura {
 class RootWindow;
@@ -26,14 +26,14 @@ namespace views {
 // DesktopDropTargetWin takes care of managing drag and drop for
 // DesktopRootWindowHostWin. It converts Windows OLE drop messages into
 // aura::client::DragDropDelegate calls.
-class DesktopDropTargetWin : public ui::DropTarget,
+class DesktopDropTargetWin : public ui::DropTargetWin,
                              public aura::WindowObserver {
  public:
   DesktopDropTargetWin(aura::RootWindow* root_window, HWND window);
   virtual ~DesktopDropTargetWin();
 
  private:
-  // ui::DropTarget implementation:
+  // ui::DropTargetWin implementation:
   virtual DWORD OnDragEnter(IDataObject* data_object,
                             DWORD key_state,
                             POINT position,
@@ -51,8 +51,8 @@ class DesktopDropTargetWin : public ui::DropTarget,
   // aura::WindowObserver implementation:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
-  // Common functionality for the ui::DropTarget methods to translate from COM
-  // data types to Aura ones.
+  // Common functionality for the ui::DropTargetWin methods to translate from
+  // COM data types to Aura ones.
   void Translate(IDataObject* data_object,
                  DWORD key_state,
                  POINT cursor_position,

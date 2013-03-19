@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/dragdrop/drag_source.h"
+#include "ui/base/dragdrop/drag_source_win.h"
 
 namespace ui {
 
-DragSource::DragSource() : cancel_drag_(false) {
+DragSourceWin::DragSourceWin() : cancel_drag_(false) {
 }
 
-HRESULT DragSource::QueryContinueDrag(BOOL escape_pressed, DWORD key_state) {
+HRESULT DragSourceWin::QueryContinueDrag(BOOL escape_pressed, DWORD key_state) {
   if (cancel_drag_)
     return DRAGDROP_S_CANCEL;
 
@@ -27,11 +27,11 @@ HRESULT DragSource::QueryContinueDrag(BOOL escape_pressed, DWORD key_state) {
   return S_OK;
 }
 
-HRESULT DragSource::GiveFeedback(DWORD effect) {
+HRESULT DragSourceWin::GiveFeedback(DWORD effect) {
   return DRAGDROP_S_USEDEFAULTCURSORS;
 }
 
-HRESULT DragSource::QueryInterface(const IID& iid, void** object) {
+HRESULT DragSourceWin::QueryInterface(const IID& iid, void** object) {
   *object = NULL;
   if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDropSource)) {
     *object = this;
@@ -42,13 +42,13 @@ HRESULT DragSource::QueryInterface(const IID& iid, void** object) {
   return S_OK;
 }
 
-ULONG DragSource::AddRef() {
-  base::RefCountedThreadSafe<DragSource>::AddRef();
+ULONG DragSourceWin::AddRef() {
+  base::RefCountedThreadSafe<DragSourceWin>::AddRef();
   return 0;
 }
 
-ULONG DragSource::Release() {
-  base::RefCountedThreadSafe<DragSource>::Release();
+ULONG DragSourceWin::Release() {
+  base::RefCountedThreadSafe<DragSourceWin>::Release();
   return 0;
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DRAGDROP_DROP_TARGET_H_
-#define UI_BASE_DRAGDROP_DROP_TARGET_H_
+#ifndef UI_BASE_DRAGDROP_DROP_TARGET_WIN_H_
+#define UI_BASE_DRAGDROP_DROP_TARGET_WIN_H_
 
 #include <objidl.h>
 
@@ -24,11 +24,11 @@ namespace ui {
 // before the HWND is deleted too.
 //
 // This class is meant to be used in a STA and is not multithread-safe.
-class UI_EXPORT DropTarget : public IDropTarget {
+class UI_EXPORT DropTargetWin : public IDropTarget {
  public:
   // Create a new DropTarget associating it with the given HWND.
-  explicit DropTarget(HWND hwnd);
-  virtual ~DropTarget();
+  explicit DropTargetWin(HWND hwnd);
+  virtual ~DropTargetWin();
 
   // IDropTarget implementation:
   HRESULT __stdcall DragEnter(IDataObject* data_object,
@@ -106,9 +106,9 @@ class UI_EXPORT DropTarget : public IDropTarget {
 
   LONG ref_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(DropTarget);
+  DISALLOW_COPY_AND_ASSIGN(DropTargetWin);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_DRAGDROP_DROP_TARGET_H_
+#endif  // UI_BASE_DRAGDROP_DROP_TARGET_WIN_H_
