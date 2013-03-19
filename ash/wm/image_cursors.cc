@@ -5,6 +5,7 @@
 #include "ash/wm/image_cursors.h"
 
 #include "base/logging.h"
+#include "base/string16.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/display.h"
@@ -132,6 +133,10 @@ bool ImageCursors::SetDisplay(const gfx::Display& display) {
 
 void ImageCursors::SetPlatformCursor(gfx::NativeCursor* cursor) {
   cursor_loader_->SetPlatformCursor(cursor);
+}
+
+void ImageCursors::SetCursorResourceModule(const string16& module_name) {
+  cursor_loader_->SetCursorResourceModule(module_name);
 }
 
 }  // namespace ash

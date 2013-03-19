@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -38,6 +39,9 @@ class ASH_EXPORT ImageCursors {
 
   // Sets the platform cursor based on the native type of |cursor|.
   void SetPlatformCursor(gfx::NativeCursor* cursor);
+
+  // Sets the cursor resource module name for non system cursors.
+  void SetCursorResourceModule(const string16& module_name);
 
  private:
   scoped_ptr<ui::CursorLoader> cursor_loader_;

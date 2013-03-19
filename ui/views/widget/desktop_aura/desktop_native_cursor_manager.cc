@@ -66,4 +66,9 @@ void DesktopNativeCursorManager::SetMouseEventsEnabled(
   root_window_->OnMouseEventsEnableStateChanged(enabled);
 }
 
+void DesktopNativeCursorManager::SetCursorResourceModule(
+    const string16& module_name) {
+  cursor_loader_->SetCursorResourceModule(module_name);
+}
+
 }  // namespace views

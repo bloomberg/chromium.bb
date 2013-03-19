@@ -28,6 +28,7 @@
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -2449,8 +2450,16 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
-  if (cursor_client)
+  if (cursor_client) {
+#if defined(OS_WIN)
+    if (GetContentClient() && GetContentClient()->browser() &&
+        GetContentClient()->browser()->GetResourceDllName()) {
+      cursor_client->SetCursorResourceModule(
+          GetContentClient()->browser()->GetResourceDllName());
+    }
+#endif
     cursor_client->SetCursor(cursor);
+  }
 }
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {

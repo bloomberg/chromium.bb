@@ -62,6 +62,9 @@ class TestCursorClient : public aura::client::CursorClient {
   virtual void UnlockCursor() OVERRIDE {
   }
 
+  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE {
+  }
+
  private:
   bool visible_;
   bool mouse_events_enabled_;

@@ -6,6 +6,7 @@
 #define UI_BASE_CURSOR_CURSOR_LOADER_H_
 
 #include "base/logging.h"
+#include "base/string16.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
@@ -48,6 +49,10 @@ class UI_EXPORT CursorLoader {
 
   // Sets the platform cursor based on the native type of |cursor|.
   virtual void SetPlatformCursor(gfx::NativeCursor* cursor) = 0;
+
+  // Used to pass the cursor resource module name to the cursor loader. This is
+  // typically used to load non system cursors.
+  virtual void SetCursorResourceModule(const string16& module_name) = 0;
 
   // Creates a CursorLoader.
   static CursorLoader* Create();

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/cursor/cursor_loader_win.h"
+#include "grit/ui_unscaled_resources.h"
 
 namespace ui {
 
@@ -59,29 +60,46 @@ const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
     case kCursorNotAllowed:
       return IDC_NO;
     case kCursorColumnResize:
+      return MAKEINTRESOURCE(IDC_COLRESIZE);
     case kCursorRowResize:
+      return MAKEINTRESOURCE(IDC_ROWRESIZE);
     case kCursorMiddlePanning:
+      return MAKEINTRESOURCE(IDC_PAN_MIDDLE);
     case kCursorEastPanning:
+      return MAKEINTRESOURCE(IDC_PAN_EAST);
     case kCursorNorthPanning:
+      return MAKEINTRESOURCE(IDC_PAN_NORTH);
     case kCursorNorthEastPanning:
+      return MAKEINTRESOURCE(IDC_PAN_NORTH_EAST);
     case kCursorNorthWestPanning:
+      return MAKEINTRESOURCE(IDC_PAN_NORTH_WEST);
     case kCursorSouthPanning:
+      return MAKEINTRESOURCE(IDC_PAN_SOUTH);
     case kCursorSouthEastPanning:
+      return MAKEINTRESOURCE(IDC_PAN_SOUTH_EAST);
     case kCursorSouthWestPanning:
+      return MAKEINTRESOURCE(IDC_PAN_SOUTH_WEST);
     case kCursorWestPanning:
+      return MAKEINTRESOURCE(IDC_PAN_WEST);
     case kCursorVerticalText:
+      return MAKEINTRESOURCE(IDC_VERTICALTEXT);
     case kCursorCell:
-    case kCursorContextMenu:
-    case kCursorAlias:
-    case kCursorCopy:
-    case kCursorNone:
+      return MAKEINTRESOURCE(IDC_CELL);
     case kCursorZoomIn:
+      return MAKEINTRESOURCE(IDC_ZOOMIN);
     case kCursorZoomOut:
+      return MAKEINTRESOURCE(IDC_ZOOMOUT);
     case kCursorGrab:
+      return MAKEINTRESOURCE(IDC_HAND_GRAB);
     case kCursorGrabbing:
+      return MAKEINTRESOURCE(IDC_HAND_GRABBING);
+    case kCursorCopy:
+      return MAKEINTRESOURCE(IDC_COPYCUR);
+    case kCursorAlias:
+      return MAKEINTRESOURCE(IDC_ALIAS);
+    case kCursorContextMenu:
+    case kCursorNone:
     case kCursorCustom:
-      // TODO(jamescook): Should we use WebKit glue resources for these?
-      // Or migrate those resources to someplace ui/aura can share?
       NOTIMPLEMENTED();
       return IDC_ARROW;
     default:
@@ -124,13 +142,23 @@ void CursorLoaderWin::UnloadAll() {
 void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
 #if defined(USE_AURA)
   if (cursor->native_type() != kCursorCustom) {
-    const wchar_t* cursor_id = GetCursorId(*cursor);
-
-    // TODO(jamescook): Support for non-system cursors will require finding
-    // the appropriate module to pass to LoadCursor().
-    cursor->SetPlatformCursor(LoadCursor(NULL, cursor_id));
+    if (cursor->platform()) {
+      cursor->SetPlatformCursor(cursor->platform());
+    } else {
+      const wchar_t* cursor_id = GetCursorId(*cursor);
+      PlatformCursor platform_cursor = LoadCursor(NULL, cursor_id);
+      if (!platform_cursor && !cursor_resource_module_name_.empty()) {
+        platform_cursor = LoadCursor(
+            GetModuleHandle(cursor_resource_module_name_.c_str()), cursor_id);
+      }
+      cursor->SetPlatformCursor(platform_cursor);
+    }
   }
 #endif
+}
+
+void CursorLoaderWin::SetCursorResourceModule(const string16& module_name) {
+  cursor_resource_module_name_ = module_name;
 }
 
 }  // namespace ui

@@ -46,6 +46,7 @@ class VIEWS_EXPORT DesktopNativeCursorManager
   virtual void SetMouseEventsEnabled(
       bool enabled,
       views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE;
 
   aura::RootWindow* root_window_;
   scoped_ptr<ui::CursorLoader> cursor_loader_;

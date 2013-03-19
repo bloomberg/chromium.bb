@@ -150,6 +150,10 @@ void CursorManager::UnlockCursor() {
   }
 }
 
+void CursorManager::SetCursorResourceModule(const string16& module_name) {
+  delegate_->SetCursorResourceModule(module_name);
+}
+
 gfx::NativeCursor CursorManager::GetCurrentCursor() const {
   return current_state_->cursor();
 }

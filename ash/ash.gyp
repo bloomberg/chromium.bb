@@ -691,6 +691,9 @@
             ['exclude', 'magnifier/magnification_controller_unittest.cc'],
             ['exclude', 'wm/workspace/workspace_window_resizer_unittest.cc'],
           ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
+          ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],

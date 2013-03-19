@@ -5,6 +5,7 @@
 #ifndef UI_AURA_CLIENT_CURSOR_CLIENT_H_
 #define UI_AURA_CLIENT_CURSOR_CLIENT_H_
 
+#include "base/string16.h"
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -54,6 +55,10 @@ class AURA_EXPORT CursorClient {
   // set by the lastest call of SetCursor, ShowCursor/HideCursor, and
   // EnableMouseEvents/DisableMouseEvents.
   virtual void UnlockCursor() = 0;
+
+  // Used to pass the cursor resource module name to the cursor loader. This is
+  // typically used to load non system cursors.
+  virtual void SetCursorResourceModule(const string16& module_name) = 0;
 
  protected:
   virtual ~CursorClient() {}
