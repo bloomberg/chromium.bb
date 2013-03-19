@@ -635,6 +635,19 @@ error:
 	return NULL;
 }
 
+static int get_crtc_index(struct device *dev, uint32_t id)
+{
+	int i;
+
+	for (i = 0; i < dev->resources->res->count_crtcs; ++i) {
+		drmModeCrtc *crtc = dev->resources->crtcs[i].crtc;
+		if (crtc && crtc->crtc_id == id)
+			return i;
+	}
+
+	return -1;
+}
+
 static drmModeConnector *get_connector_by_id(struct device *dev, uint32_t id)
 {
 	drmModeConnector *connector;
@@ -728,26 +741,28 @@ static struct crtc *pipe_find_crtc(struct device *dev, struct pipe_arg *pipe)
 	int j;
 
 	for (i = 0; i < pipe->num_cons; ++i) {
+		uint32_t crtcs_for_connector = 0;
 		drmModeConnector *connector;
 		drmModeEncoder *encoder;
+		int idx;
 
 		connector = get_connector_by_id(dev, pipe->con_ids[i]);
 		if (!connector)
 			return NULL;
 
-		encoder = get_encoder_by_id(dev, connector->encoder_id);
-		if (!encoder)
-			return NULL;
+		for (j = 0; j < connector->count_encoders; ++j) {
+			encoder = get_encoder_by_id(dev, connector->encoders[j]);
+			if (!encoder)
+				continue;
 
-		possible_crtcs &= encoder->possible_crtcs;
+			crtcs_for_connector |= encoder->possible_crtcs;
 
-		for (j = 0; j < dev->resources->res->count_crtcs; ++j) {
-			drmModeCrtc *crtc = dev->resources->crtcs[j].crtc;
-			if (crtc && crtc->crtc_id == encoder->crtc_id) {
-				active_crtcs |= 1 << j;
-				break;
-			}
+			idx = get_crtc_index(dev, encoder->crtc_id);
+			if (idx >= 0)
+				active_crtcs |= 1 << idx;
 		}
+
+		possible_crtcs &= crtcs_for_connector;
 	}
 
 	if (!possible_crtcs)
