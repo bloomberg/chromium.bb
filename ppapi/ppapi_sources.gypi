@@ -299,6 +299,8 @@
       'cpp/private/network_list_private.h',
       'cpp/private/network_monitor_private.cc',
       'cpp/private/network_monitor_private.h',
+      'cpp/private/pdf.cc',
+      'cpp/private/pdf.h',
       'cpp/private/tcp_server_socket_private.cc',
       'cpp/private/tcp_server_socket_private.h',
       'cpp/private/tcp_socket_private.cc',
