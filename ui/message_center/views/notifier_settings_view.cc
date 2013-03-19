@@ -293,6 +293,10 @@ views::View* NotifierSettingsView::GetContentsView() {
   return this;
 }
 
+bool NotifierSettingsView::CanResize() const {
+  return true;
+}
+
 void NotifierSettingsView::Layout() {
   int title_height = title_entry_->GetPreferredSize().height();
   title_entry_->SetBounds(0, 0, width(), title_height);
@@ -301,6 +305,10 @@ void NotifierSettingsView::Layout() {
 
 gfx::Size NotifierSettingsView::GetMinimumSize() {
   return gfx::Size(kMinimumWindowWidth, kMinimumWindowHeight);
+}
+
+gfx::Size NotifierSettingsView::GetPreferredSize() {
+  return GetMinimumSize();
 }
 
 void NotifierSettingsView::ButtonPressed(views::Button* sender,

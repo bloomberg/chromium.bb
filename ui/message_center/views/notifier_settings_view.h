@@ -54,10 +54,12 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   // Overridden from views::WidgetDelegate:
   virtual void WindowClosing() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
+  virtual bool CanResize() const OVERRIDE;
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
