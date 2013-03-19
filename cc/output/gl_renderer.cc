@@ -131,7 +131,7 @@ bool GLRenderer::Initialize() {
       Settings().partialSwapEnabled &&
       extensions.count("GL_CHROMIUM_post_sub_buffer");
 
-  // Use the swapBuffers callback only with the threaded proxy.
+  // Use the SwapBuffers callback only with the threaded proxy.
   if (client_->HasImplThread())
     capabilities_.using_swap_complete_callback =
         extensions.count("GL_CHROMIUM_swapbuffers_complete_callback");
@@ -496,10 +496,10 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   desc.fHeight = source.height();
   desc.fConfig = kSkia8888_GrPixelConfig;
   desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-  GrAutoScratchTexture scratchTexture(
+  GrAutoScratchTexture scratch_texture(
       offscreen_contexts->GrContext(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
-      skia::AdoptRef(scratchTexture.detach());
+      skia::AdoptRef(scratch_texture.detach());
 
   // Create a device and canvas using that backing store.
   SkGpuDevice device(offscreen_contexts->GrContext(), backing_store.get());
@@ -680,14 +680,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
   gfx::QuadF device_quad = MathUtil::MapQuad(
       contents_device_transform, SharedGeometryQuad(), &clipped);
   DCHECK(!clipped);
-  LayerQuad deviceLayerBounds(gfx::QuadF(device_quad.BoundingBox()));
+  LayerQuad device_layer_bounds(gfx::QuadF(device_quad.BoundingBox()));
   LayerQuad device_layer_edges(device_quad);
 
   // Use anti-aliasing programs only when necessary.
   bool use_aa = (!device_quad.IsRectilinear() ||
                  !device_quad.BoundingBox().IsExpressibleAsRect());
   if (use_aa) {
-    deviceLayerBounds.InflateAntiAliasingDistance();
+    device_layer_bounds.InflateAntiAliasingDistance();
     device_layer_edges.InflateAntiAliasingDistance();
   }
 
@@ -823,7 +823,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame& frame,
   if (shader_edge_location != -1) {
     float edge[24];
     device_layer_edges.ToFloatArray(edge);
-    deviceLayerBounds.ToFloatArray(&edge[12]);
+    device_layer_bounds.ToFloatArray(&edge[12]);
     GLC(Context(), Context()->uniform3fv(shader_edge_location, 8, edge));
   }
 
@@ -934,7 +934,7 @@ bool GLRenderer::SetupQuadForAntialiasing(
   // Create device space quad.
   LayerQuad device_quad(left_edge, top_edge, right_edge, bottom_edge);
 
-  // Map device space quad to local space. deviceTransform has no 3d
+  // Map device space quad to local space. device_transform has no 3d
   // component since it was flattened, so we don't need to project.  We should
   // have already checked that the transform was uninvertible above.
   gfx::Transform inverse_device_transform(
@@ -944,7 +944,7 @@ bool GLRenderer::SetupQuadForAntialiasing(
   *local_quad = MathUtil::MapQuad(
       inverse_device_transform, device_quad.ToQuadF(), &clipped);
   // We should not DCHECK(!clipped) here, because anti-aliasing inflation may
-  // cause deviceQuad to become clipped. To our knowledge this scenario does
+  // cause device_quad to become clipped. To our knowledge this scenario does
   // not need to be handled differently than the unclipped case.
 
   return true;
@@ -991,7 +991,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame& frame,
   // to use antialiasing.
   SetBlendEnabled(quad->ShouldDrawWithBlending() || use_aa);
 
-  // Normalize to tileRect.
+  // Normalize to tile_rect.
   local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
 
   SetShaderQuadF(local_quad, uniforms.point_location);
@@ -999,7 +999,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame& frame,
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
   // quad passed in via uniform is the actual geometry that gets used to draw
-  // it. This is why this centered rect is used and not the original quadRect.
+  // it. This is why this centered rect is used and not the original quad_rect.
   gfx::RectF centered_rect(gfx::PointF(-0.5f * tile_rect.width(),
                                        -0.5f * tile_rect.height()),
                            tile_rect.size());
@@ -1041,7 +1041,7 @@ void GLRenderer::DrawTileQuad(const DrawingFrame& frame,
   float tex_to_geom_scale_x = quad->rect.width() / tex_coord_rect.width();
   float tex_to_geom_scale_y = quad->rect.height() / tex_coord_rect.height();
 
-  // tex_coord_rect corresponds to quad_rect, but quadVisibleRect may be
+  // tex_coord_rect corresponds to quad_rect, but quad_visible_rect may be
   // smaller than quad_rect due to occlusion or clipping. Adjust
   // tex_coord_rect to match.
   gfx::Vector2d top_left_diff = tile_rect.origin() - quad->rect.origin();
@@ -1174,11 +1174,11 @@ void GLRenderer::DrawTileQuad(const DrawingFrame& frame,
   // un-antialiased quad should have and which vertex this is and the float
   // quad passed in via uniform is the actual geometry that gets used to draw
   // it. This is why this centered rect is used and not the original quad_rect.
-  gfx::RectF centeredRect(
+  gfx::RectF centered_rect(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
       tile_rect.size());
   DrawQuadGeometry(
-      frame, quad->quadTransform(), centeredRect, uniforms.matrix_location);
+      frame, quad->quadTransform(), centered_rect, uniforms.matrix_location);
 }
 
 void GLRenderer::DrawYUVVideoQuad(const DrawingFrame& frame,
@@ -1328,7 +1328,7 @@ void GLRenderer::FlushTextureQuadCache() {
     // As it turns out, the premultiplied alpha blending function (ONE,
     // ONE_MINUS_SRC_ALPHA) will never cause the alpha channel to be set to
     // anything less than 1.0f if it is initialized to that value! Therefore,
-    // premultipliedAlpha being false is the first situation we can generally
+    // premultiplied_alpha being false is the first situation we can generally
     // see an alpha channel less than 1.0f coming out of the compositor. This is
     // causing platform differences in some layout tests (see
     // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use
@@ -1460,7 +1460,7 @@ void GLRenderer::DrawTextureQuad(const DrawingFrame& frame,
     // As it turns out, the premultiplied alpha blending function (ONE,
     // ONE_MINUS_SRC_ALPHA) will never cause the alpha channel to be set to
     // anything less than 1.0f if it is initialized to that value! Therefore,
-    // premultipliedAlpha being false is the first situation we can generally
+    // premultiplied_alpha being false is the first situation we can generally
     // see an alpha channel less than 1.0f coming out of the compositor. This is
     // causing platform differences in some layout tests (see
     // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use
