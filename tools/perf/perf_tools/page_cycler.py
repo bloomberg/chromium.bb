@@ -40,16 +40,16 @@ class PageCycler(page_benchmark.PageBenchmark):
       results.Add('vm_size_f_b', 'bytes', memory['Browser']['VM'],
                   chart_name='vm_size_final_b', data_type='unimportant')
     if 'VMPeak' in memory['Browser']:
-      results.Add('vm_peak_b', 'bytes', memory['Browser']['VMPeak'],
-                  chart_name='vm_pk_b', data_type='unimportant')
+      results.Add('vm_pk_b', 'bytes', memory['Browser']['VMPeak'],
+                  chart_name='vm_peak_b', data_type='unimportant')
     if 'WorkingSetSize' in memory['Browser']:
       results.Add('vm_%s_f_b' % metric, 'bytes',
                   memory['Browser']['WorkingSetSize'],
                   chart_name='vm_%s_final_b' % metric, data_type='unimportant')
     if 'WorkingSetSizePeak' in memory['Browser']:
-      results.Add('%s_peak_b' % metric, 'bytes',
+      results.Add('%s_pk_b' % metric, 'bytes',
                   memory['Browser']['WorkingSetSizePeak'],
-                  chart_name='%s_pk_b' % metric, data_type='unimportant')
+                  chart_name='%s_peak_b' % metric, data_type='unimportant')
     if 'PrivateDirty' in memory['Browser']:
       results.Add('vm_private_dirty_f_b', 'bytes',
                   memory['Browser']['PrivateDirty'],
@@ -65,16 +65,16 @@ class PageCycler(page_benchmark.PageBenchmark):
       results.Add('vm_size_f_r', 'bytes', memory['Renderer']['VM'],
                   chart_name='vm_size_final_r', data_type='unimportant')
     if 'VMPeak' in memory['Renderer']:
-      results.Add('vm_peak_r', 'bytes', memory['Browser']['VMPeak'],
-                  chart_name='vm_pk_r', data_type='unimportant')
+      results.Add('vm_pk_r', 'bytes', memory['Browser']['VMPeak'],
+                  chart_name='vm_peak_r', data_type='unimportant')
     if 'WorkingSetSize' in memory['Renderer']:
       results.Add('vm_%s_f_r' % metric, 'bytes',
                   memory['Renderer']['WorkingSetSize'],
                   chart_name='vm_%s_final_r' % metric, data_type='unimportant')
     if 'WorkingSetSizePeak' in memory['Renderer']:
-      results.Add('%s_peak_r' % metric, 'bytes',
+      results.Add('%s_pk_r' % metric, 'bytes',
                   memory['Browser']['WorkingSetSizePeak'],
-                  chart_name='%s_pk_r' % metric, data_type='unimportant')
+                  chart_name='%s_peak_r' % metric, data_type='unimportant')
     if 'PrivateDirty' in memory['Renderer']:
       results.Add('vm_private_dirty_f_r', 'bytes',
                   memory['Renderer']['PrivateDirty'],
