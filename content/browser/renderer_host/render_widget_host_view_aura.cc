@@ -33,6 +33,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/video_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -333,6 +334,28 @@ void AcknowledgeBufferForGpu(
   ack.sync_point = sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
       route_id, gpu_host_id, ack);
+}
+
+void CopySnapshotToVideoFrame(const scoped_refptr<media::VideoFrame>& target,
+                              const gfx::Rect& region_in_frame,
+                              const base::Callback<void(bool)>& callback,
+                              bool succeed,
+                              const SkBitmap& bitmap) {
+  if (!succeed) {
+    callback.Run(false);
+    return;
+  }
+
+  DCHECK(region_in_frame.size() == gfx::Size(bitmap.width(), bitmap.height()));
+  {
+    SkAutoLockPixels lock(bitmap);
+    media::CopyRGBToVideoFrame(
+        reinterpret_cast<const uint8*>(bitmap.getPixels()),
+        bitmap.rowBytes(),
+        region_in_frame,
+        target.get());
+  }
+  callback.Run(true);
 }
 
 }  // namespace
@@ -1066,17 +1089,12 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
   return new BackingStoreAura(host_, size);
 }
 
-void RenderWidgetHostViewAura::CopyFromCompositingSurface(
+void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHelper(
     const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
+    const gfx::Size& dst_size_in_pixel,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-
-  if (!current_surface_)
-    return;
-
-  gfx::Size dst_size_in_pixel = ConvertSizeToPixel(this, dst_size);
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
@@ -1116,16 +1134,55 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
       wrapper_callback);
 }
 
+void RenderWidgetHostViewAura::CopyFromCompositingSurface(
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  if (!current_surface_) {
+    callback.Run(false, SkBitmap());
+    return;
+  }
+
+  CopyFromCompositingSurfaceHelper(src_subrect,
+                                   ConvertSizeToPixel(this, dst_size),
+                                   callback);
+}
+
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+
+  if (!current_surface_)
+    return;
+
+  // Compute the dest size we want after the letterboxing resize. Make the
+  // coordinates and sizes even because we letterbox in YUV space
+  // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
+  // line up correctly.
+  // The video frame's coded_size() is in pixels and src_subrect is in DIP, but
+  // we are only concerned with the video frame's aspect ratio in this case.
+  gfx::Rect region_in_frame =
+      media::ComputeLetterboxRegion(gfx::Rect(target->coded_size()),
+                                    src_subrect.size());
+  region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
+                              region_in_frame.y() & ~1,
+                              region_in_frame.width() & ~1,
+                              region_in_frame.height() & ~1);
+
+  scoped_callback_runner.Release();
+
+  CopyFromCompositingSurfaceHelper(src_subrect,
+                                   region_in_frame.size(),
+                                   base::Bind(CopySnapshotToVideoFrame,
+                                              target,
+                                              region_in_frame,
+                                              callback));
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
-  return false;
+  return current_surface_ != NULL;
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {

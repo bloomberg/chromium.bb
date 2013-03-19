@@ -404,6 +404,11 @@ class RenderWidgetHostViewAura
   void UpdateCutoutRects();
 #endif
 
+  void CopyFromCompositingSurfaceHelper(
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size_in_pixel,
+      const base::Callback<void(bool, const SkBitmap&)>& callback);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
