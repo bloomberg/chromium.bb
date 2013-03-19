@@ -18,7 +18,7 @@ class WebGraphicsContext3D;
 }
 
 namespace cc {
-class FakeLayerImplTreeHostClient;
+class FakeLayerTreeHostClient;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostClient;
@@ -64,7 +64,7 @@ public:
     virtual scoped_refptr<cc::ContextProvider> OffscreenContextProviderForCompositorThread();
 
 private:
-    scoped_ptr<FakeLayerImplTreeHostClient> m_fakeClient;
+    scoped_ptr<FakeLayerTreeHostClient> m_fakeClient;
 };
 
 class TimeoutTask;

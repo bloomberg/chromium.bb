@@ -267,26 +267,24 @@ TEST_F(ScrollbarLayerTestMaxTextureSize, runTest) {
 
 class MockLayerTreeHost : public LayerTreeHost {
 public:
-    MockLayerTreeHost(const LayerTreeSettings& settings)
-        : LayerTreeHost(&m_fakeClient, settings)
+    MockLayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings)
+        : LayerTreeHost(client, settings)
     {
         Initialize(scoped_ptr<Thread>(NULL));
     }
-
-private:
-    FakeLayerImplTreeHostClient m_fakeClient;
 };
 
 
 class ScrollbarLayerTestResourceCreation : public testing::Test {
 public:
     ScrollbarLayerTestResourceCreation()
+        : m_fakeClient(FakeLayerTreeHostClient::DIRECT_3D)
     {
     }
 
     void testResourceUpload(int expectedResources)
     {
-        m_layerTreeHost.reset(new MockLayerTreeHost(m_layerTreeSettings));
+        m_layerTreeHost.reset(new MockLayerTreeHost(&m_fakeClient, m_layerTreeSettings));
 
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
         scoped_refptr<Layer> layerTreeRoot = Layer::Create();
@@ -327,8 +325,9 @@ public:
     }
 
 protected:
-    scoped_ptr<MockLayerTreeHost> m_layerTreeHost;
+    FakeLayerTreeHostClient m_fakeClient;
     LayerTreeSettings m_layerTreeSettings;
+    scoped_ptr<MockLayerTreeHost> m_layerTreeHost;
 };
 
 TEST_F(ScrollbarLayerTestResourceCreation, resourceUpload)

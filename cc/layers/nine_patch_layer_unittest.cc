@@ -30,20 +30,20 @@ namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
 public:
-    MockLayerTreeHost()
-        : LayerTreeHost(&m_fakeClient, LayerTreeSettings())
+    MockLayerTreeHost(LayerTreeHostClient* client)
+        : LayerTreeHost(client, LayerTreeSettings())
     {
         Initialize(scoped_ptr<Thread>(NULL));
     }
 
 private:
-    FakeLayerImplTreeHostClient m_fakeClient;
 };
 
 
 class NinePatchLayerTest : public testing::Test {
 public:
     NinePatchLayerTest()
+        : m_fakeClient(FakeLayerTreeHostClient::DIRECT_3D)
     {
     }
 
@@ -52,7 +52,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        layer_tree_host_.reset(new MockLayerTreeHost);
+        layer_tree_host_.reset(new MockLayerTreeHost(&m_fakeClient));
     }
 
     virtual void TearDown()
@@ -61,6 +61,7 @@ protected:
     }
 
     scoped_ptr<MockLayerTreeHost> layer_tree_host_;
+    FakeLayerTreeHostClient m_fakeClient;
 };
 
 TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)

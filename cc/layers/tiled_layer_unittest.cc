@@ -49,6 +49,7 @@ public:
         : m_proxy(NULL)
         , m_outputSurface(createFakeOutputSurface())
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
+        , m_fakeLayerImplTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)
         , m_occlusion(0)
     {
         m_settings.maxPartialTextureUpdates = std::numeric_limits<size_t>::max();
@@ -186,7 +187,7 @@ public:
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     PriorityCalculator m_priorityCalculator;
-    FakeLayerImplTreeHostClient m_fakeLayerImplTreeHostClient;
+    FakeLayerTreeHostClient m_fakeLayerImplTreeHostClient;
     scoped_ptr<LayerTreeHost> layer_tree_host_;
     scoped_ptr<FakeLayerTreeHostImpl> m_hostImpl;
     scoped_ptr<PrioritizedResourceManager> m_resourceManager;
@@ -540,8 +541,6 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
 {
     // Create a LayerTreeHost that has the right viewportsize,
     // so the layer is considered small enough.
-    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
-
     bool runOutOfMemory[2] = {false, true};
     for (int i = 0; i < 2; i++) {
         // Create a layer with 5x5 tiles, with 4x4 size viewport.

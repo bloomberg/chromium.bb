@@ -94,7 +94,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   }
 
   // LayerTreeHost interface to Proxy.
-  void WillBeginFrame() { client_->willBeginFrame(); }
+  void WillBeginFrame() { client_->WillBeginFrame(); }
   void DidBeginFrame();
   void UpdateAnimations(base::TimeTicks monotonic_frame_begin_time);
   void DidStopFlinging();
@@ -116,8 +116,8 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
     RecreateFailedAndGaveUp,
   };
   RecreateResult RecreateOutputSurface();
-  void DidCommitAndDrawFrame() { client_->didCommitAndDrawFrame(); }
-  void DidCompleteSwapBuffers() { client_->didCompleteSwapBuffers(); }
+  void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
+  void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
   virtual void AcquireLayerTextures();
   // Returns false if we should abort this frame due to initialization failure.

@@ -146,7 +146,7 @@ void LayerTreeHost::InitializeRenderer() {
   if (!proxy_->InitializeRenderer()) {
     // Uh oh, better tell the client that we can't do anything with this output
     // surface.
-    client_->didRecreateOutputSurface(false);
+    client_->DidRecreateOutputSurface(false);
     return;
   }
 
@@ -184,12 +184,12 @@ LayerTreeHost::RecreateResult LayerTreeHost::RecreateOutputSurface() {
   DCHECK(output_surface_lost_);
 
   if (proxy_->RecreateOutputSurface()) {
-    client_->didRecreateOutputSurface(true);
+    client_->DidRecreateOutputSurface(true);
     output_surface_lost_ = false;
     return RecreateSucceeded;
   }
 
-  client_->willRetryRecreateOutputSurface();
+  client_->WillRetryRecreateOutputSurface();
 
   // Tolerate a certain number of recreation failures to work around races
   // in the output-surface-lost machinery.
@@ -205,7 +205,7 @@ LayerTreeHost::RecreateResult LayerTreeHost::RecreateOutputSurface() {
 
   // We have tried too many times to recreate the output surface. Tell the
   // host to fall back to software rendering.
-  client_->didRecreateOutputSurface(false);
+  client_->DidRecreateOutputSurface(false);
   return RecreateFailedAndGaveUp;
 }
 
@@ -222,12 +222,12 @@ void LayerTreeHost::AcquireLayerTextures() {
 }
 
 void LayerTreeHost::DidBeginFrame() {
-  client_->didBeginFrame();
+  client_->DidBeginFrame();
 }
 
 void LayerTreeHost::UpdateAnimations(base::TimeTicks frame_begin_time) {
   animating_ = true;
-  client_->animate((frame_begin_time - base::TimeTicks()).InSecondsF());
+  client_->Animate((frame_begin_time - base::TimeTicks()).InSecondsF());
   AnimateLayers(frame_begin_time);
   animating_ = false;
 
@@ -239,7 +239,7 @@ void LayerTreeHost::DidStopFlinging() {
 }
 
 void LayerTreeHost::Layout() {
-  client_->layout();
+  client_->Layout();
 }
 
 void LayerTreeHost::BeginCommitOnImplThread(LayerTreeHostImpl* host_impl) {
@@ -409,7 +409,7 @@ void LayerTreeHost::CreateAndAddPinchZoomScrollbars() {
 }
 
 void LayerTreeHost::WillCommit() {
-  client_->willCommit();
+  client_->WillCommit();
 
   if (settings().usePinchZoomScrollbars)
     CreateAndAddPinchZoomScrollbars();
@@ -429,15 +429,15 @@ void LayerTreeHost::UpdateHudLayer() {
 }
 
 void LayerTreeHost::CommitComplete() {
-  client_->didCommit();
+  client_->DidCommit();
 }
 
 scoped_ptr<OutputSurface> LayerTreeHost::CreateOutputSurface() {
-  return client_->createOutputSurface();
+  return client_->CreateOutputSurface();
 }
 
 scoped_ptr<InputHandler> LayerTreeHost::CreateInputHandler() {
-  return client_->createInputHandler();
+  return client_->CreateInputHandler();
 }
 
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
@@ -513,7 +513,7 @@ void LayerTreeHost::SetNeedsFullTreeSync() {
 void LayerTreeHost::SetNeedsRedraw() {
   proxy_->SetNeedsRedraw();
   if (!proxy_->ImplThread())
-    client_->scheduleComposite();
+    client_->ScheduleComposite();
 }
 
 bool LayerTreeHost::CommitRequested() const {
@@ -611,7 +611,7 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
 }
 
 void LayerTreeHost::ScheduleComposite() {
-  client_->scheduleComposite();
+  client_->ScheduleComposite();
 }
 
 bool LayerTreeHost::InitializeRendererIfNeeded() {
@@ -893,7 +893,7 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
                              info.scrolls[i].scrollDelta);
   }
   if (!root_scroll_delta.IsZero() || info.pageScaleDelta != 1.f)
-    client_->applyScrollAndScale(root_scroll_delta, info.pageScaleDelta);
+    client_->ApplyScrollAndScale(root_scroll_delta, info.pageScaleDelta);
 }
 
 void LayerTreeHost::SetImplTransform(const gfx::Transform& transform) {

@@ -75,20 +75,20 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void setContinuousPaintingEnabled(bool enabled);
 
   // cc::LayerTreeHostClient implementation.
-  virtual void willBeginFrame() OVERRIDE;
-  virtual void didBeginFrame() OVERRIDE;
-  virtual void animate(double monotonic_frame_begin_time) OVERRIDE;
-  virtual void layout() OVERRIDE;
-  virtual void applyScrollAndScale(gfx::Vector2d scroll_delta,
+  virtual void WillBeginFrame() OVERRIDE;
+  virtual void DidBeginFrame() OVERRIDE;
+  virtual void Animate(double frame_begin_time) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                    float page_scale) OVERRIDE;
-  virtual scoped_ptr<cc::OutputSurface> createOutputSurface() OVERRIDE;
-  virtual void didRecreateOutputSurface(bool success) OVERRIDE;
-  virtual scoped_ptr<cc::InputHandler> createInputHandler() OVERRIDE;
-  virtual void willCommit() OVERRIDE;
-  virtual void didCommit() OVERRIDE;
-  virtual void didCommitAndDrawFrame() OVERRIDE;
-  virtual void didCompleteSwapBuffers() OVERRIDE;
-  virtual void scheduleComposite() OVERRIDE;
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
+  virtual void DidRecreateOutputSurface(bool success) OVERRIDE;
+  virtual scoped_ptr<cc::InputHandler> CreateInputHandler() OVERRIDE;
+  virtual void WillCommit() OVERRIDE;
+  virtual void DidCommit() OVERRIDE;
+  virtual void DidCommitAndDrawFrame() OVERRIDE;
+  virtual void DidCompleteSwapBuffers() OVERRIDE;
+  virtual void ScheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>

@@ -165,25 +165,17 @@ void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
 
 void WebLayerTreeViewImplForTesting::renderingStats(WebRenderingStats&) const {}
 
-void WebLayerTreeViewImplForTesting::willBeginFrame() {}
-
-void WebLayerTreeViewImplForTesting::didBeginFrame() {}
-
-void WebLayerTreeViewImplForTesting::animate(
-    double monotonic_frame_begin_time) {
-}
-
-void WebLayerTreeViewImplForTesting::layout() {
+void WebLayerTreeViewImplForTesting::Layout() {
   if (client_)
     client_->Layout();
 }
 
-void WebLayerTreeViewImplForTesting::applyScrollAndScale(
+void WebLayerTreeViewImplForTesting::ApplyScrollAndScale(
     gfx::Vector2d scroll_delta,
     float page_scale) {}
 
 scoped_ptr<cc::OutputSurface>
-WebLayerTreeViewImplForTesting::createOutputSurface() {
+WebLayerTreeViewImplForTesting::CreateOutputSurface() {
   scoped_ptr<cc::OutputSurface> surface;
   switch (type_) {
     case webkit_support::FAKE_CONTEXT: {
@@ -209,22 +201,12 @@ WebLayerTreeViewImplForTesting::createOutputSurface() {
   return surface.Pass();
 }
 
-void WebLayerTreeViewImplForTesting::didRecreateOutputSurface(bool success) {}
-
 scoped_ptr<cc::InputHandler>
-WebLayerTreeViewImplForTesting::createInputHandler() {
+WebLayerTreeViewImplForTesting::CreateInputHandler() {
   return scoped_ptr<cc::InputHandler>();
 }
 
-void WebLayerTreeViewImplForTesting::willCommit() {}
-
-void WebLayerTreeViewImplForTesting::didCommit() {}
-
-void WebLayerTreeViewImplForTesting::didCommitAndDrawFrame() {}
-
-void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() {}
-
-void WebLayerTreeViewImplForTesting::scheduleComposite() {
+void WebLayerTreeViewImplForTesting::ScheduleComposite() {
   if (client_)
     client_->ScheduleComposite();
 }

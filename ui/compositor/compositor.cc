@@ -507,7 +507,7 @@ void Compositor::Draw(bool force_clear) {
   if (!IsLocked()) {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
-    layout();
+    Layout();
     host_->Composite(base::TimeTicks::Now());
   }
   if (!pending_swap.posted())
@@ -596,16 +596,7 @@ void Compositor::OnUpdateVSyncParameters(base::TimeTicks timebase,
                     OnUpdateVSyncParameters(this, timebase, interval));
 }
 
-void Compositor::willBeginFrame() {
-}
-
-void Compositor::didBeginFrame() {
-}
-
-void Compositor::animate(double frameBeginTime) {
-}
-
-void Compositor::layout() {
+void Compositor::Layout() {
   // We're sending damage that will be addressed during this composite
   // cycle, so we don't need to schedule another composite to address it.
   disable_schedule_composite_ = true;
@@ -614,45 +605,35 @@ void Compositor::layout() {
   disable_schedule_composite_ = false;
 }
 
-void Compositor::applyScrollAndScale(gfx::Vector2d scrollDelta,
-                                     float pageScale) {
-}
-
-scoped_ptr<cc::OutputSurface> Compositor::createOutputSurface() {
+scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface() {
   return make_scoped_ptr(
       ContextFactory::GetInstance()->CreateOutputSurface(this));
 }
 
-void Compositor::didRecreateOutputSurface(bool success) {
-}
-
-scoped_ptr<cc::InputHandler> Compositor::createInputHandler() {
+scoped_ptr<cc::InputHandler> Compositor::CreateInputHandler() {
   return scoped_ptr<cc::InputHandler>();
 }
 
-void Compositor::willCommit() {
-}
-
-void Compositor::didCommit() {
+void Compositor::DidCommit() {
   DCHECK(!IsLocked());
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingDidCommit(this));
 }
 
-void Compositor::didCommitAndDrawFrame() {
+void Compositor::DidCommitAndDrawFrame() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingStarted(this, start_time));
 }
 
-void Compositor::didCompleteSwapBuffers() {
+void Compositor::DidCompleteSwapBuffers() {
   DCHECK(g_compositor_thread);
   NotifyEnd();
 }
 
-void Compositor::scheduleComposite() {
+void Compositor::ScheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();
 }

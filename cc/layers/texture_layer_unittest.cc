@@ -27,26 +27,27 @@ using ::testing::AnyNumber;
 namespace cc {
 namespace {
 
-class MockLayerImplTreeHost : public LayerTreeHost {
+class MockLayerTreeHost : public LayerTreeHost {
  public:
-  MockLayerImplTreeHost() : LayerTreeHost(&fake_client_, LayerTreeSettings()) {
+  MockLayerTreeHost(LayerTreeHostClient* client)
+      : LayerTreeHost(client, LayerTreeSettings()) {
     Initialize(scoped_ptr<Thread>(NULL));
   }
 
   MOCK_METHOD0(AcquireLayerTextures, void());
   MOCK_METHOD0(SetNeedsCommit, void());
-
- private:
-  FakeLayerImplTreeHostClient fake_client_;
 };
 
 class TextureLayerTest : public testing::Test {
  public:
-  TextureLayerTest() : host_impl_(&proxy_) {}
+  TextureLayerTest()
+      : fake_client_(
+          FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
+        host_impl_(&proxy_) {}
 
  protected:
   virtual void SetUp() {
-    layer_tree_host_.reset(new MockLayerImplTreeHost);
+    layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
   }
 
   virtual void TearDown() {
@@ -58,8 +59,9 @@ class TextureLayerTest : public testing::Test {
     layer_tree_host_.reset();
   }
 
-  scoped_ptr<MockLayerImplTreeHost> layer_tree_host_;
+  scoped_ptr<MockLayerTreeHost> layer_tree_host_;
   FakeImplProxy proxy_;
+  FakeLayerTreeHostClient fake_client_;
   FakeLayerTreeHostImpl host_impl_;
 };
 
@@ -376,13 +378,18 @@ SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerImplWithMailboxThreadedCallback);
 
 class TextureLayerImplWithMailboxTest : public TextureLayerTest {
  protected:
+  TextureLayerImplWithMailboxTest()
+      : fake_client_(
+          FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)) {}
+
   virtual void SetUp() {
     TextureLayerTest::SetUp();
-    layer_tree_host_.reset(new MockLayerImplTreeHost);
+    layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
     EXPECT_TRUE(host_impl_.InitializeRenderer(createFakeOutputSurface()));
   }
 
   CommonMailboxObjects test_data_;
+  FakeLayerTreeHostClient fake_client_;
 };
 
 TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {

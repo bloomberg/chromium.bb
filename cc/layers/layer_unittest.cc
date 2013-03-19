@@ -44,16 +44,13 @@ namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
  public:
-  MockLayerTreeHost()
-      : LayerTreeHost(&fake_client_, LayerTreeSettings()) {
+  MockLayerTreeHost(LayerTreeHostClient* client)
+      : LayerTreeHost(client, LayerTreeSettings()) {
     Initialize(scoped_ptr<Thread>(NULL));
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
-
- private:
-  FakeLayerImplTreeHostClient fake_client_;
 };
 
 class MockLayerPainter : public LayerPainter {
@@ -67,11 +64,12 @@ class MockLayerPainter : public LayerPainter {
 class LayerTest : public testing::Test {
  public:
   LayerTest()
-      : host_impl_(&proxy_) {}
+      : host_impl_(&proxy_),
+        fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
  protected:
   virtual void SetUp() OVERRIDE {
-    layer_tree_host_.reset(new StrictMock<MockLayerTreeHost>);
+    layer_tree_host_.reset(new StrictMock<MockLayerTreeHost>(&fake_client_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -138,6 +136,7 @@ class LayerTest : public testing::Test {
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
 
+  FakeLayerTreeHostClient fake_client_;
   scoped_ptr<StrictMock<MockLayerTreeHost> > layer_tree_host_;
   scoped_refptr<Layer> parent_;
   scoped_refptr<Layer> child1_;
@@ -760,29 +759,25 @@ TEST_F(LayerTest, MaskAndReplicaHasParent) {
   EXPECT_EQ(replica, replica->mask_layer()->parent());
 }
 
-class FakeLayerImplTreeHost : public LayerTreeHost {
+class LayerTreeHostFactory {
  public:
-  static scoped_ptr<FakeLayerImplTreeHost> Create() {
-    scoped_ptr<FakeLayerImplTreeHost> host =
-        make_scoped_ptr(new FakeLayerImplTreeHost(LayerTreeSettings()));
-    // The initialize call will fail, since our client doesn't provide a valid
-    // GraphicsContext3D, but it doesn't matter in the tests that use this fake
-    // so ignore the return value.
-    host->Initialize(scoped_ptr<Thread>(NULL));
-    return host.Pass();
+  LayerTreeHostFactory()
+      : client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+
+  scoped_ptr<LayerTreeHost> Create() {
+    return LayerTreeHost::Create(&client_,
+                                 LayerTreeSettings(),
+                                 scoped_ptr<Thread>(NULL)).Pass();
   }
 
-  static scoped_ptr<FakeLayerImplTreeHost> Create(LayerTreeSettings settings) {
-    scoped_ptr<FakeLayerImplTreeHost> host(new FakeLayerImplTreeHost(settings));
-    host->Initialize(scoped_ptr<Thread>(NULL));
-    return host.Pass();
+  scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
+    return LayerTreeHost::Create(&client_,
+                                 settings,
+                                 scoped_ptr<Thread>(NULL)).Pass();
   }
 
  private:
-  FakeLayerImplTreeHost(const LayerTreeSettings& settings)
-      : LayerTreeHost(&client_, settings) {}
-
-  FakeLayerImplTreeHostClient client_;
+  FakeLayerTreeHostClient client_;
 };
 
 void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {
@@ -814,8 +809,8 @@ TEST(LayerLayerTreeHostTest, EnteringTree) {
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(), NULL);
 
-  scoped_ptr<FakeLayerImplTreeHost> layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
   // Setting the root layer should set the host pointer for all layers in the
   // tree.
   layer_tree_host->SetRootLayer(parent.get());
@@ -831,8 +826,8 @@ TEST(LayerLayerTreeHostTest, EnteringTree) {
 
 TEST(LayerLayerTreeHostTest, AddingLayerSubtree) {
   scoped_refptr<Layer> parent = Layer::Create();
-  scoped_ptr<FakeLayerImplTreeHost> layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
 
   layer_tree_host->SetRootLayer(parent.get());
 
@@ -871,8 +866,8 @@ TEST(LayerLayerTreeHostTest, ChangeHost) {
   child->SetReplicaLayer(replica.get());
   replica->SetMaskLayer(replica_mask.get());
 
-  scoped_ptr<FakeLayerImplTreeHost> first_layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> first_layer_tree_host = factory.Create();
   first_layer_tree_host->SetRootLayer(parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(),
@@ -880,8 +875,7 @@ TEST(LayerLayerTreeHostTest, ChangeHost) {
 
   // Now re-root the tree to a new host (simulating what we do on a context lost
   // event). This should update the host pointers for all layers in the tree.
-  scoped_ptr<FakeLayerImplTreeHost> second_layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  scoped_ptr<LayerTreeHost> second_layer_tree_host = factory.Create();
   second_layer_tree_host->SetRootLayer(parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(),
@@ -902,8 +896,8 @@ TEST(LayerLayerTreeHostTest, ChangeHostInSubtree) {
   second_child->AddChild(second_grand_child);
   first_parent->AddChild(second_child);
 
-  scoped_ptr<FakeLayerImplTreeHost> first_layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> first_layer_tree_host = factory.Create();
   first_layer_tree_host->SetRootLayer(first_parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(first_parent.get(),
@@ -911,8 +905,7 @@ TEST(LayerLayerTreeHostTest, ChangeHostInSubtree) {
 
   // Now reparent the subtree starting at second_child to a layer in a different
   // tree.
-  scoped_ptr<FakeLayerImplTreeHost> second_layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  scoped_ptr<LayerTreeHost> second_layer_tree_host = factory.Create();
   second_layer_tree_host->SetRootLayer(second_parent.get());
 
   second_parent->AddChild(second_child);
@@ -941,8 +934,8 @@ TEST(LayerLayerTreeHostTest, ReplaceMaskAndReplicaLayer) {
   mask->AddChild(mask_child);
   replica->AddChild(replica_child);
 
-  scoped_ptr<FakeLayerImplTreeHost> layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
   layer_tree_host->SetRootLayer(parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(), layer_tree_host.get());
@@ -965,8 +958,8 @@ TEST(LayerLayerTreeHostTest, DestroyHostWithNonNullRootLayer) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
   root->AddChild(child);
-  scoped_ptr<FakeLayerImplTreeHost> layer_tree_host =
-      FakeLayerImplTreeHost::Create();
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
   layer_tree_host->SetRootLayer(root);
 }
 
@@ -1003,8 +996,8 @@ TEST(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
 
   LayerTreeSettings settings;
   settings.acceleratedAnimationEnabled = false;
-  scoped_ptr<FakeLayerImplTreeHost> layer_tree_host =
-      FakeLayerImplTreeHost::Create(settings);
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create(settings);
   layer_tree_host->SetRootLayer(layer);
   layer->SetLayerTreeHost(layer_tree_host.get());
   AssertLayerTreeHostMatchesForSubtree(layer.get(), layer_tree_host.get());

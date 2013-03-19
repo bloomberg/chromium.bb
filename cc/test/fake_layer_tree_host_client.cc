@@ -9,48 +9,60 @@
 
 namespace cc {
 
-FakeLayerImplTreeHostClient::FakeLayerImplTreeHostClient(bool useSoftwareRendering, bool useDelegatingRenderer)
-    : m_useSoftwareRendering(useSoftwareRendering)
-    , m_useDelegatingRenderer(useDelegatingRenderer)
-{
-}
+FakeLayerTreeHostClient::FakeLayerTreeHostClient(RendererOptions options)
+    : use_software_rendering_(options == DIRECT_SOFTWARE ||
+                              options == DELEGATED_SOFTWARE),
+      use_delegating_renderer_(options == DELEGATED_3D ||
+                               options == DELEGATED_SOFTWARE) {}
 
-FakeLayerImplTreeHostClient::~FakeLayerImplTreeHostClient() { }
+FakeLayerTreeHostClient::~FakeLayerTreeHostClient() {}
 
-scoped_ptr<OutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
-{
-    if (m_useSoftwareRendering) {
-        if (m_useDelegatingRenderer)
-            return FakeOutputSurface::CreateDelegatingSoftware(make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
-
-        return FakeOutputSurface::CreateSoftware(make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
+scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface() {
+  if (use_software_rendering_) {
+    if (use_delegating_renderer_) {
+      return FakeOutputSurface::CreateDelegatingSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
     }
 
-    WebKit::WebGraphicsContext3D::Attributes attrs;
-    if (m_useDelegatingRenderer)
-        return FakeOutputSurface::CreateDelegating3d(TestWebGraphicsContext3D::Create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return FakeOutputSurface::CreateSoftware(
+        make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
+  }
 
-    return FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+  WebKit::WebGraphicsContext3D::Attributes attrs;
+  if (use_delegating_renderer_) {
+    return FakeOutputSurface::CreateDelegating3d(
+        TestWebGraphicsContext3D::Create(attrs)
+            .PassAs<WebKit::WebGraphicsContext3D>())
+        .PassAs<OutputSurface>();
+  }
+
+  return FakeOutputSurface::Create3d(
+      TestWebGraphicsContext3D::Create(attrs)
+          .PassAs<WebKit::WebGraphicsContext3D>())
+      .PassAs<OutputSurface>();
 }
 
-scoped_ptr<InputHandler> FakeLayerImplTreeHostClient::createInputHandler()
-{
-    return scoped_ptr<InputHandler>();
+scoped_ptr<InputHandler> FakeLayerTreeHostClient::CreateInputHandler() {
+  return scoped_ptr<InputHandler>();
 }
 
-scoped_refptr<cc::ContextProvider> FakeLayerImplTreeHostClient::OffscreenContextProviderForMainThread() {
-    if (!m_mainThreadContexts || m_mainThreadContexts->DestroyedOnMainThread()) {
-        m_mainThreadContexts = FakeContextProvider::Create();
-        if (!m_mainThreadContexts->BindToCurrentThread())
-            m_mainThreadContexts = NULL;
-    }
-    return m_mainThreadContexts;
+scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
+    OffscreenContextProviderForMainThread() {
+  if (!main_thread_contexts_ ||
+      main_thread_contexts_->DestroyedOnMainThread()) {
+    main_thread_contexts_ = FakeContextProvider::Create();
+    if (!main_thread_contexts_->BindToCurrentThread())
+      main_thread_contexts_ = NULL;
+  }
+  return main_thread_contexts_;
 }
 
-scoped_refptr<cc::ContextProvider> FakeLayerImplTreeHostClient::OffscreenContextProviderForCompositorThread() {
-    if (!m_compositorThreadContexts || m_compositorThreadContexts->DestroyedOnMainThread())
-        m_compositorThreadContexts = FakeContextProvider::Create();
-    return m_compositorThreadContexts;
+scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
+    OffscreenContextProviderForCompositorThread() {
+  if (!compositor_thread_contexts_ ||
+      compositor_thread_contexts_->DestroyedOnMainThread())
+    compositor_thread_contexts_ = FakeContextProvider::Create();
+  return compositor_thread_contexts_;
 }
 
 }  // namespace cc

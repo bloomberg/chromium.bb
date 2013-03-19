@@ -31,9 +31,7 @@ namespace cc {
 
 TestHooks::TestHooks()
 {
-  bool useSoftwareRendering = false;
-  bool useDelegatingRenderer = false;
-  m_fakeClient.reset(new FakeLayerImplTreeHostClient(useSoftwareRendering, useDelegatingRenderer));
+    m_fakeClient.reset(new FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D));
 }
 
 TestHooks::~TestHooks() { }
@@ -214,68 +212,68 @@ public:
         return make_scoped_ptr(new ThreadedMockLayerTreeHostClient(testHooks));
     }
 
-    virtual void willBeginFrame() OVERRIDE
+    virtual void WillBeginFrame() OVERRIDE
     {
     }
 
-    virtual void didBeginFrame() OVERRIDE
+    virtual void DidBeginFrame() OVERRIDE
     {
     }
 
-    virtual void animate(double monotonicTime) OVERRIDE
+    virtual void Animate(double monotonicTime) OVERRIDE
     {
         m_testHooks->animate(base::TimeTicks::FromInternalValue(monotonicTime * base::Time::kMicrosecondsPerSecond));
     }
 
-    virtual void layout() OVERRIDE
+    virtual void Layout() OVERRIDE
     {
         m_testHooks->layout();
     }
 
-    virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float scale) OVERRIDE
+    virtual void ApplyScrollAndScale(gfx::Vector2d scrollDelta, float scale) OVERRIDE
     {
         m_testHooks->applyScrollAndScale(scrollDelta, scale);
     }
 
-    virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE
+    virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE
     {
         return m_testHooks->createOutputSurface();
     }
 
-    virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE
+    virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE
     {
         m_testHooks->didRecreateOutputSurface(succeeded);
     }
 
-    virtual void willRetryRecreateOutputSurface() OVERRIDE
+    virtual void WillRetryRecreateOutputSurface() OVERRIDE
     {
         m_testHooks->willRetryRecreateOutputSurface();
     }
 
-    virtual scoped_ptr<InputHandler> createInputHandler() OVERRIDE
+    virtual scoped_ptr<InputHandler> CreateInputHandler() OVERRIDE
     {
         return scoped_ptr<InputHandler>();
     }
 
-    virtual void willCommit() OVERRIDE
+    virtual void WillCommit() OVERRIDE
     {
     }
 
-    virtual void didCommit() OVERRIDE
+    virtual void DidCommit() OVERRIDE
     {
         m_testHooks->didCommit();
     }
 
-    virtual void didCommitAndDrawFrame() OVERRIDE
+    virtual void DidCommitAndDrawFrame() OVERRIDE
     {
         m_testHooks->didCommitAndDrawFrame();
     }
 
-    virtual void didCompleteSwapBuffers() OVERRIDE
+    virtual void DidCompleteSwapBuffers() OVERRIDE
     {
     }
 
-    virtual void scheduleComposite() OVERRIDE
+    virtual void ScheduleComposite() OVERRIDE
     {
         m_testHooks->scheduleComposite();
     }

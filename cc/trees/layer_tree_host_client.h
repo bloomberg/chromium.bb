@@ -18,33 +18,38 @@ class InputHandler;
 class OutputSurface;
 
 class LayerTreeHostClient {
-public:
-    virtual void willBeginFrame() = 0;
-    // Marks finishing compositing-related tasks on the main thread. In threaded mode, this corresponds to didCommit().
-    virtual void didBeginFrame() = 0;
-    virtual void animate(double frameBeginTime) = 0;
-    virtual void layout() = 0;
-    virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float pageScale) = 0;
-    virtual scoped_ptr<OutputSurface> createOutputSurface() = 0;
-    virtual void didRecreateOutputSurface(bool success) = 0;
-    virtual scoped_ptr<InputHandler> createInputHandler() = 0;
-    virtual void willCommit() = 0;
-    virtual void didCommit() = 0;
-    virtual void didCommitAndDrawFrame() = 0;
-    virtual void didCompleteSwapBuffers() = 0;
+ public:
+  virtual void WillBeginFrame() = 0;
+  // Marks finishing compositing-related tasks on the main thread. In threaded
+  // mode, this corresponds to DidCommit().
+  virtual void DidBeginFrame() = 0;
+  virtual void Animate(double frame_begin_time) = 0;
+  virtual void Layout() = 0;
+  virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
+                                   float page_scale) = 0;
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() = 0;
+  virtual void DidRecreateOutputSurface(bool success) = 0;
+  virtual scoped_ptr<InputHandler> CreateInputHandler() = 0;
+  virtual void WillCommit() = 0;
+  virtual void DidCommit() = 0;
+  virtual void DidCommitAndDrawFrame() = 0;
+  virtual void DidCompleteSwapBuffers() = 0;
 
-    // Used only in the single-threaded path.
-    virtual void scheduleComposite() = 0;
+  // Used only in the single-threaded path.
+  virtual void ScheduleComposite() = 0;
 
-    // These must always return a valid ContextProvider. But the provider does not need to be capable of creating contexts.
-    virtual scoped_refptr<cc::ContextProvider> OffscreenContextProviderForMainThread() = 0;
-    virtual scoped_refptr<cc::ContextProvider> OffscreenContextProviderForCompositorThread() = 0;
+  // These must always return a valid ContextProvider. But the provider does not
+  // need to be capable of creating contexts.
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForMainThread() = 0;
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForCompositorThread() = 0;
 
-    // This hook is for testing.
-    virtual void willRetryRecreateOutputSurface() {}
+  // This hook is for testing.
+  virtual void WillRetryRecreateOutputSurface() {}
 
-protected:
-    virtual ~LayerTreeHostClient() { }
+ protected:
+  virtual ~LayerTreeHostClient() {}
 };
 
 }

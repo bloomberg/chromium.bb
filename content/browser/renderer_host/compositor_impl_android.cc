@@ -313,17 +313,7 @@ bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
   return true;
 }
 
-void CompositorImpl::animate(double monotonicFrameBeginTime) {
-}
-
-void CompositorImpl::layout() {
-}
-
-void CompositorImpl::applyScrollAndScale(gfx::Vector2d scrollDelta,
-                                         float pageScale) {
-}
-
-scoped_ptr<cc::OutputSurface> CompositorImpl::createOutputSurface() {
+scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
   if (g_use_direct_gl) {
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = false;
@@ -364,24 +354,15 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::createOutputSurface() {
   }
 }
 
-scoped_ptr<cc::InputHandler> CompositorImpl::createInputHandler() {
+scoped_ptr<cc::InputHandler> CompositorImpl::CreateInputHandler() {
   return scoped_ptr<cc::InputHandler>();
 }
 
-void CompositorImpl::didRecreateOutputSurface(bool success) {
-}
-
-void CompositorImpl::didCommit() {
-}
-
-void CompositorImpl::didCommitAndDrawFrame() {
-}
-
-void CompositorImpl::didCompleteSwapBuffers() {
+void CompositorImpl::DidCompleteSwapBuffers() {
   client_->OnSwapBuffersCompleted();
 }
 
-void CompositorImpl::scheduleComposite() {
+void CompositorImpl::ScheduleComposite() {
   client_->ScheduleComposite();
 }
 

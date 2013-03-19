@@ -1876,21 +1876,18 @@ TEST_F(LayerTreeHostTestDeferCommits, runMultiThread)
 
 class LayerTreeHostWithProxy : public LayerTreeHost {
 public:
-    LayerTreeHostWithProxy(FakeLayerImplTreeHostClient* client, const LayerTreeSettings& settings, scoped_ptr<Proxy> proxy)
+    LayerTreeHostWithProxy(FakeLayerTreeHostClient* client, const LayerTreeSettings& settings, scoped_ptr<Proxy> proxy)
             : LayerTreeHost(client, settings)
     {
         EXPECT_TRUE(InitializeForTesting(proxy.Pass()));
     }
-
-private:
-    FakeLayerImplTreeHostClient m_client;
 };
 
 TEST(LayerTreeHostTest, LimitPartialUpdates)
 {
     // When partial updates are not allowed, max updates should be 0.
     {
-        FakeLayerImplTreeHostClient client;
+        FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
         proxy->GetRendererCapabilities().allow_partial_texture_updates = false;
@@ -1907,7 +1904,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
 
     // When partial updates are allowed, max updates should be limited by the proxy.
     {
-        FakeLayerImplTreeHostClient client;
+        FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
         proxy->GetRendererCapabilities().allow_partial_texture_updates = true;
@@ -1924,7 +1921,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
 
     // When partial updates are allowed, max updates should also be limited by the settings.
     {
-        FakeLayerImplTreeHostClient client;
+        FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
         proxy->GetRendererCapabilities().allow_partial_texture_updates = true;
@@ -1942,9 +1939,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
 
 TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer)
 {
-    bool useSoftwareRendering = false;
-    bool useDelegatingRenderer = false;
-    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
+    FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
     LayerTreeSettings settings;
     settings.maxPartialTextureUpdates = 4;
@@ -1956,9 +1951,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer)
 
 TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer)
 {
-    bool useSoftwareRendering = true;
-    bool useDelegatingRenderer = false;
-    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
+    FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_SOFTWARE);
 
     LayerTreeSettings settings;
     settings.maxPartialTextureUpdates = 4;
@@ -1970,9 +1963,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer)
 
 TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent)
 {
-    bool useSoftwareRendering = false;
-    bool useDelegatingRenderer = true;
-    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
+    FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DELEGATED_3D);
 
     LayerTreeSettings settings;
     settings.maxPartialTextureUpdates = 4;
@@ -1984,9 +1975,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent)
 
 TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndSoftwareContent)
 {
-    bool useSoftwareRendering = true;
-    bool useDelegatingRenderer = true;
-    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
+    FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DELEGATED_SOFTWARE);
 
     LayerTreeSettings settings;
     settings.maxPartialTextureUpdates = 4;

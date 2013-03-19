@@ -440,38 +440,38 @@ void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::willBeginFrame() {
+void RenderWidgetCompositor::WillBeginFrame() {
   widget_->InstrumentWillBeginFrame();
   widget_->willBeginCompositorFrame();
 }
 
-void RenderWidgetCompositor::didBeginFrame() {
+void RenderWidgetCompositor::DidBeginFrame() {
   widget_->InstrumentDidBeginFrame();
 }
 
-void RenderWidgetCompositor::animate(double monotonic_frame_begin_time) {
-  widget_->webwidget()->animate(monotonic_frame_begin_time);
+void RenderWidgetCompositor::Animate(double frame_begin_time) {
+  widget_->webwidget()->animate(frame_begin_time);
 }
 
-void RenderWidgetCompositor::layout() {
+void RenderWidgetCompositor::Layout() {
   widget_->webwidget()->layout();
 }
 
-void RenderWidgetCompositor::applyScrollAndScale(gfx::Vector2d scroll_delta,
+void RenderWidgetCompositor::ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                                  float page_scale) {
   widget_->webwidget()->applyScrollAndScale(scroll_delta, page_scale);
 }
 
-scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::createOutputSurface() {
+scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::CreateOutputSurface() {
   return widget_->CreateOutputSurface();
 }
 
-void RenderWidgetCompositor::didRecreateOutputSurface(bool success) {
+void RenderWidgetCompositor::DidRecreateOutputSurface(bool success) {
   if (!success)
     widget_->webwidget()->didExitCompositingMode();
 }
 
-scoped_ptr<cc::InputHandler> RenderWidgetCompositor::createInputHandler() {
+scoped_ptr<cc::InputHandler> RenderWidgetCompositor::CreateInputHandler() {
   scoped_ptr<cc::InputHandler> ret;
   scoped_ptr<WebKit::WebInputHandler> web_handler(
       widget_->webwidget()->createInputHandler());
@@ -480,24 +480,24 @@ scoped_ptr<cc::InputHandler> RenderWidgetCompositor::createInputHandler() {
   return ret.Pass();
 }
 
-void RenderWidgetCompositor::willCommit() {
+void RenderWidgetCompositor::WillCommit() {
   widget_->InstrumentWillComposite();
 }
 
-void RenderWidgetCompositor::didCommit() {
+void RenderWidgetCompositor::DidCommit() {
   widget_->DidCommitCompositorFrame();
   widget_->didBecomeReadyForAdditionalInput();
 }
 
-void RenderWidgetCompositor::didCommitAndDrawFrame() {
+void RenderWidgetCompositor::DidCommitAndDrawFrame() {
   widget_->didCommitAndDrawCompositorFrame();
 }
 
-void RenderWidgetCompositor::didCompleteSwapBuffers() {
+void RenderWidgetCompositor::DidCompleteSwapBuffers() {
   widget_->didCompleteSwapBuffers();
 }
 
-void RenderWidgetCompositor::scheduleComposite() {
+void RenderWidgetCompositor::ScheduleComposite() {
   if (!suppress_schedule_composite_)
     widget_->scheduleComposite();
 }
