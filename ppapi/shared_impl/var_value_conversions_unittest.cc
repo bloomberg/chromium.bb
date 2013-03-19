@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/dictionary_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -94,8 +95,22 @@ bool Equals(const base::Value& value, const PP_Var& var) {
       return non_undefined_count == dict_value.size();
     }
     case base::Value::TYPE_LIST: {
-      // TODO(yzshen): add support once array var is supported.
-      return false;
+      const base::ListValue& list_value =
+          static_cast<const base::ListValue&>(value);
+      ArrayVar* array_var = ArrayVar::FromPPVar(var);
+      if (!array_var || list_value.GetSize() != array_var->elements().size())
+        return false;
+
+      base::ListValue::const_iterator value_iter = list_value.begin();
+      ArrayVar::ElementVector::const_iterator var_iter =
+          array_var->elements().begin();
+      for (; value_iter != list_value.end() &&
+                 var_iter != array_var->elements().end();
+           ++value_iter, ++var_iter) {
+        if (!Equals(**value_iter, var_iter->get()))
+          return false;
+      }
+      return true;
     }
   }
   NOTREACHED();
@@ -127,22 +142,22 @@ class VarValueConversionsTest : public testing::Test {
 TEST_F(VarValueConversionsTest, CreateValueFromVar) {
   {
     // Var holding a ref to itself is not a valid input.
-    scoped_refptr<DictionaryVar> dict_var_1(new DictionaryVar());
-    ScopedPPVar var_1(ScopedPPVar::PassRef(), dict_var_1->GetPPVar());
-    scoped_refptr<DictionaryVar> dict_var_2(new DictionaryVar());
-    ScopedPPVar var_2(ScopedPPVar::PassRef(), dict_var_2->GetPPVar());
+    scoped_refptr<DictionaryVar> dict_var(new DictionaryVar());
+    ScopedPPVar var_1(ScopedPPVar::PassRef(), dict_var->GetPPVar());
+    scoped_refptr<ArrayVar> array_var(new ArrayVar());
+    ScopedPPVar var_2(ScopedPPVar::PassRef(), array_var->GetPPVar());
 
-    ASSERT_TRUE(dict_var_1->SetWithStringKey("key_1", var_2.get()));
+    ASSERT_TRUE(dict_var->SetWithStringKey("key_1", var_2.get()));
     scoped_ptr<base::Value> value(CreateValueFromVar(var_1.get()));
     ASSERT_TRUE(value.get());
 
-    ASSERT_TRUE(dict_var_2->SetWithStringKey("key_2", var_1.get()));
+    ASSERT_TRUE(array_var->Set(0, var_1.get()));
     value.reset(CreateValueFromVar(var_1.get()));
     ASSERT_EQ(NULL, value.get());
 
     // Make sure |var_1| doesn't indirectly hold a ref to itself, otherwise it
     // is leaked.
-    dict_var_1->DeleteWithStringKey("key_1");
+    dict_var->DeleteWithStringKey("key_1");
   }
 
   // Vars of null or undefined type are converted to null values.
@@ -154,6 +169,16 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     value.reset(CreateValueFromVar(PP_MakeUndefined()));
     ASSERT_TRUE(value.get());
     ASSERT_TRUE(Equals(*value, PP_MakeUndefined()));
+  }
+
+  {
+    // Test empty dictionary.
+    scoped_refptr<DictionaryVar> dict_var(new DictionaryVar());
+    ScopedPPVar var(ScopedPPVar::PassRef(), dict_var->GetPPVar());
+
+    scoped_ptr<base::Value> value(CreateValueFromVar(var.get()));
+    ASSERT_TRUE(value.get());
+    ASSERT_TRUE(Equals(*value, var.get()));
   }
 
   {
@@ -188,11 +213,28 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
   }
 
   {
+    // Test basic cases for array.
+    scoped_refptr<ArrayVar> array_var(new ArrayVar());
+    ScopedPPVar var(ScopedPPVar::PassRef(), array_var->GetPPVar());
+
+    scoped_ptr<base::Value> value(CreateValueFromVar(var.get()));
+    ASSERT_TRUE(value.get());
+    ASSERT_TRUE(Equals(*value, var.get()));
+
+    ASSERT_TRUE(array_var->Set(0, PP_MakeDouble(1)));
+    value.reset(CreateValueFromVar(var.get()));
+    ASSERT_TRUE(value.get());
+    ASSERT_TRUE(Equals(*value, var.get()));
+  }
+
+  {
     // Test more complex inputs.
     scoped_refptr<DictionaryVar> dict_var_1(new DictionaryVar());
     ScopedPPVar dict_pp_var_1(ScopedPPVar::PassRef(), dict_var_1->GetPPVar());
     scoped_refptr<DictionaryVar> dict_var_2(new DictionaryVar());
     ScopedPPVar dict_pp_var_2(ScopedPPVar::PassRef(), dict_var_2->GetPPVar());
+    scoped_refptr<ArrayVar> array_var(new ArrayVar());
+    ScopedPPVar array_pp_var(ScopedPPVar::PassRef(), array_var->GetPPVar());
     scoped_refptr<StringVar> string_var(new StringVar("string_value"));
     ScopedPPVar string_pp_var(ScopedPPVar::PassRef(), string_var->GetPPVar());
 
@@ -204,8 +246,11 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     ASSERT_TRUE(dict_var_2->SetWithStringKey("undefined_key",
                                              PP_MakeUndefined()));
     ASSERT_TRUE(dict_var_2->SetWithStringKey("double_key", PP_MakeDouble(1)));
-    ASSERT_TRUE(dict_var_2->SetWithStringKey("int_key", PP_MakeInt32(2)));
-    ASSERT_TRUE(dict_var_2->SetWithStringKey("bool_key", PP_MakeBool(PP_TRUE)));
+    ASSERT_TRUE(dict_var_2->SetWithStringKey("array_key", array_pp_var.get()));
+
+    ASSERT_TRUE(array_var->Set(0, PP_MakeInt32(2)));
+    ASSERT_TRUE(array_var->Set(1, PP_MakeBool(PP_TRUE)));
+    ASSERT_TRUE(array_var->SetLength(4));
 
     scoped_ptr<base::Value> value(CreateValueFromVar(dict_pp_var_1.get()));
     ASSERT_TRUE(value.get());
@@ -227,15 +272,45 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
 }
 
 TEST_F(VarValueConversionsTest, CreateVarFromValue) {
-  base::DictionaryValue dict_value;
-  dict_value.Set("null_key", base::Value::CreateNullValue());
-  dict_value.SetString("string_key", "string_value");
-  dict_value.SetDouble("dict_key.double_key", 1);
-  dict_value.SetInteger("dict_key.int_key", 2);
-  dict_value.SetBoolean("dict_key.bool_key", true);
+  {
+    // Test basic cases for dictionary.
+    base::DictionaryValue dict_value;
+    ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(dict_value));
+    ASSERT_TRUE(Equals(dict_value, var.get()));
 
-  ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(dict_value));
-  ASSERT_TRUE(Equals(dict_value, var.get()));
+    dict_value.SetInteger("int_key", 1);
+    var = ScopedPPVar(ScopedPPVar::PassRef(), CreateVarFromValue(dict_value));
+    ASSERT_TRUE(Equals(dict_value, var.get()));
+  }
+
+  {
+    // Test basic cases for array.
+    base::ListValue list_value;
+    ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(list_value));
+    ASSERT_TRUE(Equals(list_value, var.get()));
+
+    list_value.AppendInteger(1);
+    var = ScopedPPVar(ScopedPPVar::PassRef(), CreateVarFromValue(list_value));
+    ASSERT_TRUE(Equals(list_value, var.get()));
+  }
+
+  {
+    // Test more complex inputs.
+    base::DictionaryValue dict_value;
+    dict_value.Set("null_key", base::Value::CreateNullValue());
+    dict_value.SetString("string_key", "string_value");
+    dict_value.SetDouble("dict_key.double_key", 1);
+
+    scoped_ptr<base::ListValue> list_value(new base::ListValue());
+    list_value->AppendInteger(2);
+    list_value->AppendBoolean(true);
+    list_value->Append(base::Value::CreateNullValue());
+
+    dict_value.Set("dict_key.array_key", list_value.release());
+
+    ScopedPPVar var(ScopedPPVar::PassRef(), CreateVarFromValue(dict_value));
+    ASSERT_TRUE(Equals(dict_value, var.get()));
+  }
 }
 
 }  // namespace ppapi

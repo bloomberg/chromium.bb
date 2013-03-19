@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/dictionary_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
@@ -98,8 +99,14 @@ bool CreateValueFromVarHelper(const std::set<int64_t>& parent_ids,
       return false;
     }
     case PP_VARTYPE_ARRAY: {
-      // TODO(yzshen): Implement it once array var is supported.
-      return false;
+      if (ContainsKey(parent_ids, var.value.as_id)) {
+        // A circular reference is found.
+        return false;
+      }
+
+      value->reset(new base::ListValue());
+      state->push(VarNode(var, value->get()));
+      return true;
     }
     case PP_VARTYPE_DICTIONARY: {
       if (ContainsKey(parent_ids, var.value.as_id)) {
@@ -200,8 +207,10 @@ bool CreateVarFromValueHelper(const base::Value& value,
       return true;
     }
     case base::Value::TYPE_LIST: {
-      // TODO(yzshen): Add support once array var is supported.
-      return false;
+      scoped_refptr<ArrayVar> array_var(new ArrayVar());
+      *var = ScopedPPVar(ScopedPPVar::PassRef(), array_var->GetPPVar());
+      state->push(ValueNode(var->get(), &value));
+      return true;
     }
   }
   NOTREACHED();
@@ -252,6 +261,29 @@ base::Value* CreateValueFromVar(const PP_Var& var) {
 
         dict_value->SetWithoutPathExpansion(iter->first, child_value.release());
       }
+    } else if (top.var.type == PP_VARTYPE_ARRAY) {
+      parent_ids.insert(top.var.value.as_id);
+      top.sentinel = true;
+
+      ArrayVar* array_var = ArrayVar::FromPPVar(top.var);
+      if (!array_var)
+        return NULL;
+
+      DCHECK(top.value->GetType() == base::Value::TYPE_LIST);
+      base::ListValue* list_value = static_cast<base::ListValue*>(top.value);
+
+      for (ArrayVar::ElementVector::const_iterator iter =
+               array_var->elements().begin();
+           iter != array_var->elements().end();
+           ++iter) {
+        scoped_ptr<base::Value> child_value;
+        if (!CreateValueFromVarHelper(parent_ids, iter->get(), &child_value,
+                                      &state)) {
+          return NULL;
+        }
+
+        list_value->Append(child_value.release());
+      }
     } else {
       NOTREACHED();
       return NULL;
@@ -285,6 +317,20 @@ PP_Var CreateVarFromValue(const base::Value& value) {
             !dict_var->SetWithStringKey(iter.key(), child_var.get())) {
           return PP_MakeUndefined();
         }
+      }
+    } else if (top.value->GetType() == base::Value::TYPE_LIST) {
+      const base::ListValue* list_value =
+          static_cast<const base::ListValue*>(top.value);
+      ArrayVar* array_var = ArrayVar::FromPPVar(top.var);
+      DCHECK(array_var);
+      for (base::ListValue::const_iterator iter = list_value->begin();
+           iter != list_value->end();
+           ++iter) {
+        ScopedPPVar child_var;
+        if (!CreateVarFromValueHelper(**iter, &child_var, &state))
+          return PP_MakeUndefined();
+
+        array_var->elements().push_back(child_var);
       }
     } else {
       NOTREACHED();

@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
+#include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
@@ -81,8 +82,16 @@ PP_Bool DictionaryVar::HasKey(const PP_Var& key) const {
 }
 
 PP_Var DictionaryVar::GetKeys() const {
-  // TODO(yzshen): Implement once array PP_Var is supported.
-  return PP_MakeNull();
+  scoped_refptr<ArrayVar> array_var(new ArrayVar());
+  array_var->elements().reserve(key_value_map_.size());
+
+  for (KeyValueMap::const_iterator iter = key_value_map_.begin();
+       iter != key_value_map_.end(); ++iter) {
+    array_var->elements().push_back(
+        ScopedPPVar(ScopedPPVar::PassRef(),
+                    StringVar::StringToPPVar(iter->first)));
+  }
+  return array_var->GetPPVar();
 }
 
 bool DictionaryVar::SetWithStringKey(const std::string& utf8_key,

@@ -29,6 +29,7 @@
 #include "ppapi/cpp/dev/selection_dev.h"
 #include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
+#include "ppapi/cpp/dev/var_array_dev.h"
 #include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/dev/video_decoder_dev.h"
 #include "ppapi/cpp/dev/view_dev.h"

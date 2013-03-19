@@ -83,6 +83,10 @@ ProxyObjectVar* Var::AsProxyObjectVar() {
   return NULL;
 }
 
+ArrayVar* Var::AsArrayVar() {
+  return NULL;
+}
+
 DictionaryVar* Var::AsDictionaryVar() {
   return NULL;
 }

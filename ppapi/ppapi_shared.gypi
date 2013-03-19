@@ -20,6 +20,8 @@
       # This part is shared between the targets defined below.
       ['ppapi_shared_target==1', {
         'sources': [
+          'shared_impl/array_var.cc',
+          'shared_impl/array_var.h',
           'shared_impl/array_writer.cc',
           'shared_impl/array_writer.h',
           'shared_impl/callback_tracker.cc',
@@ -233,6 +235,7 @@
           'thunk/ppb_url_response_info_api.h',
           'thunk/ppb_url_response_info_thunk.cc',
           'thunk/ppb_url_util_thunk.cc',
+          'thunk/ppb_var_array_thunk.cc',
           'thunk/ppb_var_dictionary_thunk.cc',
           'thunk/ppb_video_capture_api.h',
           'thunk/ppb_video_capture_thunk.cc',
