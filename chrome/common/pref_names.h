@@ -766,6 +766,11 @@ extern const char kBuiltInDnsClientEnabled[];
 
 extern const char kHttpReceivedContentLength[];
 extern const char kHttpOriginalContentLength[];
+#if defined(OS_ANDROID) || defined(OS_IOS)
+extern const char kDailyHttpOriginalContentLength[];
+extern const char kDailyHttpReceivedContentLength[];
+extern const char kDailyHttpContentLengthLastUpdateDate[];
+#endif
 
 extern const char kRegisteredProtocolHandlers[];
 extern const char kIgnoredProtocolHandlers[];

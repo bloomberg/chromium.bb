@@ -1950,6 +1950,23 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 // was received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// A List pref that contains daily totals of the original size of all HTTP
+// that was received over the network.
+const char kDailyHttpOriginalContentLength[] =
+    "data_reduction.daily_original_length";
+
+// A List pref that contains daily totals of the size of all HTTP content that
+// has been received from the network.
+const char kDailyHttpReceivedContentLength[] =
+    "data_reduction.daily_received_length";
+
+// An int64 pref that contains an internal representation of midnight on the
+// date of the last update to |kDailyHttp{Original,Received}ContentLength|.
+const char kDailyHttpContentLengthLastUpdateDate[] =
+    "data_reduction.last_update_date";
+#endif
+
 // A pref holding the value of the policy used to disable capturing audio on
 // ChromeOS devices.
 const char kAudioCaptureAllowed[] = "hardware.audio_capture_enabled";
