@@ -45,7 +45,6 @@ class ResourcePrefetchPredictorObserver;
 namespace net {
 class CookieStore;
 class FraudulentCertificateReporter;
-class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class ServerBoundCertService;
@@ -287,7 +286,8 @@ class ProfileIOData {
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       net::NetworkDelegate* network_delegate,
-      net::FtpTransactionFactory* ftp_transaction_factory) const;
+      net::FtpTransactionFactory* ftp_transaction_factory,
+      net::FtpAuthCache* ftp_auth_cache) const;
 
   // Called when the profile is destroyed.
   void ShutdownOnUIThread();

@@ -63,8 +63,4 @@ bool AwURLRequestJobFactory::SetProtocolHandler(
   return next_factory_->SetProtocolHandler(scheme, protocol_handler);
 }
 
-bool AwURLRequestJobFactory::IsSafeRedirectTarget(const GURL& location) const {
-  return next_factory_->IsSafeRedirectTarget(location);
-}
-
 } // namespace android_webview

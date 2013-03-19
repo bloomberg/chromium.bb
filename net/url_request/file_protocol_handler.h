@@ -9,8 +9,6 @@
 #include "base/compiler_specific.h"
 #include "net/url_request/url_request_job_factory.h"
 
-class GURL;
-
 namespace net {
 
 class NetworkDelegate;
@@ -24,7 +22,6 @@ class NET_EXPORT FileProtocolHandler :
   FileProtocolHandler();
   virtual URLRequestJob* MaybeCreateJob(
       URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileProtocolHandler);

@@ -26,13 +26,9 @@
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
-#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 
 namespace net {
 
@@ -184,11 +180,7 @@ URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
 
 URLRequestContextBuilder::URLRequestContextBuilder()
-    : data_enabled_(false),
-      file_enabled_(false),
-#if !defined(DISABLE_FTP_SUPPORT)
-      ftp_enabled_(false),
-#endif
+    : ftp_enabled_(false),
       http_cache_enabled_(true) {}
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
 
@@ -212,6 +204,11 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   storage->set_network_delegate(network_delegate);
 
   storage->set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
+
+  if (ftp_enabled_) {
+    storage->set_ftp_transaction_factory(
+        new FtpNetworkLayer(context->host_resolver()));
+  }
 
   context->StartFileThread();
 
@@ -292,21 +289,6 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     http_transaction_factory = new HttpNetworkLayer(network_session);
   }
   storage->set_http_transaction_factory(http_transaction_factory);
-
-  URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
-  if (data_enabled_)
-    job_factory->SetProtocolHandler("data", new DataProtocolHandler);
-  if (file_enabled_)
-    job_factory->SetProtocolHandler("file", new FileProtocolHandler);
-#if !defined(DISABLE_FTP_SUPPORT)
-  if (ftp_enabled_) {
-    ftp_transaction_factory_.reset(
-        new FtpNetworkLayer(context->host_resolver()));
-    job_factory->SetProtocolHandler("ftp",
-        new FtpProtocolHandler(ftp_transaction_factory_.get()));
-  }
-#endif
-  storage->set_job_factory(job_factory);
 
   // TODO(willchan): Support sdch.
 

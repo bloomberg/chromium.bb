@@ -205,12 +205,6 @@ bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledURL(
       job_factory_->IsHandledURL(url);
 }
 
-bool ProtocolHandlerRegistry::JobInterceptorFactory::IsSafeRedirectTarget(
-    const GURL& location) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return job_factory_->IsSafeRedirectTarget(location);
-}
-
 // DefaultClientObserver ------------------------------------------------------
 
 ProtocolHandlerRegistry::DefaultClientObserver::DefaultClientObserver(

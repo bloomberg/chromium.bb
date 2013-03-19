@@ -18,7 +18,6 @@ class AboutProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AboutProtocolHandler);

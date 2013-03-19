@@ -35,7 +35,6 @@ class AwURLRequestJobFactory : public net::URLRequestJobFactory {
       net::NetworkDelegate* network_delegate) const OVERRIDE;
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
 
  private:
   // By default calls are forwarded to this factory, to avoid having to

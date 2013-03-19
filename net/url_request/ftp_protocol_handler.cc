@@ -15,9 +15,12 @@
 namespace net {
 
 FtpProtocolHandler::FtpProtocolHandler(
-    FtpTransactionFactory* ftp_transaction_factory)
-    : ftp_transaction_factory_(ftp_transaction_factory) {
+    FtpTransactionFactory* ftp_transaction_factory,
+    FtpAuthCache* ftp_auth_cache)
+    : ftp_transaction_factory_(ftp_transaction_factory),
+      ftp_auth_cache_(ftp_auth_cache) {
   DCHECK(ftp_transaction_factory_);
+  DCHECK(ftp_auth_cache_);
 }
 
 URLRequestJob* FtpProtocolHandler::MaybeCreateJob(
@@ -31,7 +34,7 @@ URLRequestJob* FtpProtocolHandler::MaybeCreateJob(
   return new URLRequestFtpJob(request,
                               network_delegate,
                               ftp_transaction_factory_,
-                              &ftp_auth_cache_);
+                              ftp_auth_cache_);
 }
 
 }  // namespace net

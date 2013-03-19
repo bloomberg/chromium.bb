@@ -43,7 +43,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_throttler_header_adapter.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -1014,16 +1013,25 @@ Filter* URLRequestHttpJob::SetupFilter() const {
 }
 
 bool URLRequestHttpJob::IsSafeRedirect(const GURL& location) {
-  // HTTP is always safe.
-  // TODO(pauljensen): Remove once crbug.com/146591 is fixed.
-  if (location.is_valid() &&
-      (location.scheme() == "http" || location.scheme() == "https")) {
+  // We only allow redirects to certain "safe" protocols.  This does not
+  // restrict redirects to externally handled protocols.  Our consumer would
+  // need to take care of those.
+
+  if (!URLRequest::IsHandledURL(location))
     return true;
+
+  static const char* kSafeSchemes[] = {
+    "http",
+    "https",
+    "ftp"
+  };
+
+  for (size_t i = 0; i < arraysize(kSafeSchemes); ++i) {
+    if (location.SchemeIs(kSafeSchemes[i]))
+      return true;
   }
-  // Query URLRequestJobFactory as to whether |location| would be safe to
-  // redirect to.
-  return request_->context()->job_factory() &&
-      request_->context()->job_factory()->IsSafeRedirectTarget(location);
+
+  return false;
 }
 
 bool URLRequestHttpJob::NeedsAuth() {

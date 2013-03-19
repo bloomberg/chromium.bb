@@ -44,8 +44,4 @@ URLRequestJob* FileProtocolHandler::MaybeCreateJob(
   return new URLRequestFileJob(request, network_delegate, file_path);
 }
 
-bool FileProtocolHandler::IsSafeRedirectTarget(const GURL& location) const {
-  return false;
-}
-
 }  // namespace net

@@ -7,11 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "net/ftp/ftp_auth_cache.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 
+class FtpAuthCache;
 class FtpTransactionFactory;
 class NetworkDelegate;
 class URLRequestJob;
@@ -20,13 +20,14 @@ class URLRequestJob;
 class NET_EXPORT FtpProtocolHandler :
     public URLRequestJobFactory::ProtocolHandler {
  public:
-  explicit FtpProtocolHandler(FtpTransactionFactory* ftp_transaction_factory);
+  FtpProtocolHandler(FtpTransactionFactory* ftp_transaction_factory,
+                     FtpAuthCache* ftp_auth_cache);
   virtual URLRequestJob* MaybeCreateJob(
       URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
   FtpTransactionFactory* ftp_transaction_factory_;
-  mutable FtpAuthCache ftp_auth_cache_;
+  FtpAuthCache* ftp_auth_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FtpProtocolHandler);
 };

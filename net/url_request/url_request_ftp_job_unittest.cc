@@ -6,13 +6,10 @@
 #include "base/run_loop.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/socket/socket_test_util.h"
-#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -52,26 +49,15 @@ class SimpleProxyConfigService : public ProxyConfigService {
   Observer* observer_;
 };
 
-class MockFtpTransactionFactory : public FtpTransactionFactory {
- public:
-  MOCK_METHOD0(CreateTransaction, FtpTransaction*());
-  MOCK_METHOD1(Suspend, void(bool suspend));
-};
-
 class FtpTestURLRequestContext : public TestURLRequestContext {
  public:
   FtpTestURLRequestContext(ClientSocketFactory* socket_factory,
                            ProxyService* proxy_service,
-                           NetworkDelegate* network_delegate,
-                           FtpTransactionFactory* ftp_transaction_factory)
+                           NetworkDelegate* network_delegate)
       : TestURLRequestContext(true) {
     set_client_socket_factory(socket_factory);
     context_storage_.set_proxy_service(proxy_service);
     set_network_delegate(network_delegate);
-    URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
-    job_factory->SetProtocolHandler(
-        "ftp", new FtpProtocolHandler(ftp_transaction_factory));
-    context_storage_.set_job_factory(job_factory);
     Init();
   }
 };
@@ -83,8 +69,7 @@ class URLRequestFtpJobTest : public testing::Test {
                            new SimpleProxyConfigService, NULL, NULL)),
         request_context_(&socket_factory_,
                          proxy_service_,
-                         &network_delegate_,
-                         &ftp_transaction_factory_) {
+                         &network_delegate_) {
   }
 
   virtual ~URLRequestFtpJobTest() {
@@ -114,7 +99,6 @@ class URLRequestFtpJobTest : public testing::Test {
   ScopedVector<DeterministicSocketData> socket_data_;
   DeterministicMockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
-  ::testing::StrictMock<MockFtpTransactionFactory> ftp_transaction_factory_;
 
   // Owned by |request_context_|:
   ProxyService* proxy_service_;

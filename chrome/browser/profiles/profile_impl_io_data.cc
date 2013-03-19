@@ -411,6 +411,7 @@ void ProfileImplIOData::InitializeInternal(
 #if !defined(DISABLE_FTP_SUPPORT)
   ftp_factory_.reset(
       new net::FtpNetworkLayer(io_thread_globals->host_resolver.get()));
+  main_context->set_ftp_transaction_factory(ftp_factory_.get());
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
@@ -420,7 +421,8 @@ void ProfileImplIOData::InitializeInternal(
       main_job_factory.Pass(),
       profile_params->protocol_handler_interceptor.Pass(),
       network_delegate(),
-      ftp_factory_.get());
+      main_context->ftp_transaction_factory(),
+      main_context->ftp_auth_cache());
   main_context->set_job_factory(main_job_factory_.get());
 
 #if defined(ENABLE_EXTENSIONS)
@@ -464,6 +466,11 @@ void ProfileImplIOData::
   extensions_cookie_store->SetCookieableSchemes(schemes, 2);
   extensions_context->set_cookie_store(extensions_cookie_store);
 
+#if !defined(DISABLE_FTP_SUPPORT)
+  DCHECK(ftp_factory_.get());
+  extensions_context->set_ftp_transaction_factory(ftp_factory_.get());
+#endif  // !defined(DISABLE_FTP_SUPPORT)
+
   scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
       new net::URLRequestJobFactoryImpl());
   // TODO(shalev): The extensions_job_factory has a NULL NetworkDelegate.
@@ -476,7 +483,8 @@ void ProfileImplIOData::
       extensions_job_factory.Pass(),
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>(NULL),
       NULL,
-      ftp_factory_.get());
+      extensions_context->ftp_transaction_factory(),
+      extensions_context->ftp_auth_cache());
   extensions_context->set_job_factory(extensions_job_factory_.get());
 }
 
@@ -568,7 +576,8 @@ ProfileImplIOData::InitializeAppRequestContext(
     top_job_factory = SetUpJobFactoryDefaults(
         job_factory.Pass(), protocol_handler_interceptor.Pass(),
         network_delegate(),
-        ftp_factory_.get());
+        context->ftp_transaction_factory(),
+        context->ftp_auth_cache());
   } else {
     top_job_factory = job_factory.PassAs<net::URLRequestJobFactory>();
   }

@@ -18,7 +18,6 @@ class Predictor;
 }  // namespace chrome_browser_net
 
 namespace net {
-class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
 }  // namespace net
