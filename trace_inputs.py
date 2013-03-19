@@ -1107,14 +1107,6 @@ class Strace(ApiBase):
       RE_HEADER = re.compile(r'^([a-z_0-9]+)\((.+?)\)\s+= (.+)$')
       # An interrupted function call, only grab the minimal header.
       RE_UNFINISHED = re.compile(r'^([^\(]+)(.*) \<unfinished \.\.\.\>$')
-      # An interrupted function call, with the process exiting. It must be the
-      # last line in the log.
-      RE_UNFINISHED_EXIT = re.compile(
-          r'^([^\(]+)(.*) \<unfinished \.\.\.\ exit status \d+>$')
-      # An interrupted function call the hard way. Usually observed with futex()
-      # on ubuntu 12.04.
-      RE_INTERRUPTED_HARD = re.compile(r'^([^\(]+)\('
-                                       '[A-Z0-9a-z:\,\_\|\{\}\(\)\>\< ]*$')
       # A resumed function call.
       RE_RESUMED = re.compile(r'^<\.\.\. ([^ ]+) resumed> (.+)$')
       # A process received a signal.
@@ -1228,7 +1220,7 @@ class Strace(ApiBase):
         self._line_number += 1
         if self._done:
           raise TracingFailure(
-              'Found a trace for a terminated process',
+              'Found a trace for a terminated process or corrupted log',
               None, None, None)
 
         if self.RE_SIGNAL.match(line):
@@ -1259,14 +1251,6 @@ class Strace(ApiBase):
                 match.group(1) + match.group(2))
             return
 
-          match = (
-              self.RE_UNFINISHED_EXIT.match(line) or
-              self.RE_INTERRUPTED_HARD.match(line))
-          if match:
-            # The process died. No other line can be processed afterward.
-            self._done = True
-            return
-
           match = self.RE_UNAVAILABLE.match(line)
           if match:
             # This usually means a process was killed and a pending call was
@@ -1288,9 +1272,12 @@ class Strace(ApiBase):
 
           match = self.RE_HEADER.match(line)
           if not match:
-            raise TracingFailure(
-                'Found an invalid line: %s' % line,
-                None, None, None)
+            # The line is corrupted. It happens occasionally when a process is
+            # killed forcibly with activity going on. Assume the process died.
+            # No other line can be processed afterward.
+            self._done = True
+            return
+
           if match.group(1) == self.UNNAMED_FUNCTION:
             return
 
