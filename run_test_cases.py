@@ -316,6 +316,10 @@ class Progress(object):
 
   def print_update(self):
     """Prints the current status."""
+    # Flush all the logging output so it doesn't appear within this output.
+    for handler in logging.Logger.manager.loggerDict:
+      handler.flush()
+
     while True:
       try:
         name, index, size = self.queued_lines.get_nowait()
