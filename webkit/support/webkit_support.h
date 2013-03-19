@@ -126,6 +126,9 @@ enum GraphicsContext3DImplementation {
   IN_PROCESS,
   IN_PROCESS_COMMAND_BUFFER
 };
+// Registers which GraphicsContext3D Implementation to use.
+void SetGraphicsContext3DImplementation(GraphicsContext3DImplementation);
+GraphicsContext3DImplementation GetGraphicsContext3DImplementation();
 
 WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,

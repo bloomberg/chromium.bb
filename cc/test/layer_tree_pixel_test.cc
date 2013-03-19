@@ -32,7 +32,8 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::createOutputSurface() {
 scoped_refptr<cc::ContextProvider>
 LayerTreePixelTest::OffscreenContextProviderForMainThread() {
   scoped_refptr<webkit::gpu::ContextProviderInProcess> provider =
-      webkit::gpu::ContextProviderInProcess::Create();
+      webkit::gpu::ContextProviderInProcess::Create(
+          webkit::gpu::ContextProviderInProcess::IN_PROCESS_COMMAND_BUFFER);
   CHECK(provider->BindToCurrentThread());
   return provider;
 }
@@ -40,7 +41,8 @@ LayerTreePixelTest::OffscreenContextProviderForMainThread() {
 scoped_refptr<cc::ContextProvider>
 LayerTreePixelTest::OffscreenContextProviderForCompositorThread() {
   scoped_refptr<webkit::gpu::ContextProviderInProcess> provider =
-      webkit::gpu::ContextProviderInProcess::Create();
+      webkit::gpu::ContextProviderInProcess::Create(
+          webkit::gpu::ContextProviderInProcess::IN_PROCESS_COMMAND_BUFFER);
   CHECK(provider);
   return provider;
 }

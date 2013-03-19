@@ -70,7 +70,8 @@ void PixelTest::SetUp() {
                                  resource_provider_.get());
 
   scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts =
-      webkit::gpu::ContextProviderInProcess::Create();
+      webkit::gpu::ContextProviderInProcess::Create(
+          webkit::gpu::ContextProviderInProcess::IN_PROCESS_COMMAND_BUFFER);
   ASSERT_TRUE(offscreen_contexts->BindToCurrentThread());
   resource_provider_->set_offscreen_context_provider(offscreen_contexts);
 }
