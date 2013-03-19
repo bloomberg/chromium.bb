@@ -35,6 +35,8 @@
         'bluetooth/bluetooth_device.h',
         'bluetooth/bluetooth_device_chromeos.cc',
         'bluetooth/bluetooth_device_chromeos.h',
+        'bluetooth/bluetooth_device_mac.h',
+        'bluetooth/bluetooth_device_mac.mm',
         'bluetooth/bluetooth_device_win.cc',
         'bluetooth/bluetooth_device_win.h',
         'bluetooth/bluetooth_init_win.cc',
