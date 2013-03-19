@@ -2,20 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-li {
-  clear: both;
-}
-
-textarea {
-  width: 100%;
-}
-
 .log-container {
   float: left;
-}
-
-.log-header-event {
-  min-width: 600px;
 }
 
 .stats-table-container {
@@ -28,8 +16,8 @@ body {
   padding: 20px;
 }
 
-button {
-  margin-left: 1em;
+details {
+  width: 30em;
 }
 
 h3 + div {
@@ -52,14 +40,10 @@ h3 {
 }
 
 li {
+  clear: both;
   list-style-type: none;
   margin: none;
   padding: none;
-}
-
-span {
-  width: 17em;
-  display: inline-block;
 }
 
 table {
@@ -80,6 +64,7 @@ td:first-child {
 textarea {
   border: none;
   outline: none;
+  width: 100%;
 }
 
 table > tr {

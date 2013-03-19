@@ -62,29 +62,23 @@ function addToPeerConnectionLog(logElement, update) {
   logElement.appendChild(row);
 
   var expandable = (update.value.length > 0);
-  row.innerHTML = '<td>' + (new Date()).toLocaleString() + '</td>' +
-                  '<td><span>' + update.type + '</span>' +
-                  (expandable ? '<button>Expand/Collapse</button>' : '') +
-                  '</td>';
+  // details.open is true initially so that we can get the real scrollHeight
+  // of the textareas.
+  row.innerHTML =
+      '<td>' + (new Date()).toLocaleString() + '</td>' +
+      (expandable ?
+          '<td><details open><summary>' + update.type + '</summary>' +
+              '</details></td>' :
+          '<td>' + update.type + '</td>');
   if (!expandable)
     return;
 
   var valueContainer = document.createElement('textarea');
-  row.cells[1].appendChild(valueContainer);
+  var details = row.cells[1].childNodes[0];
+  details.appendChild(valueContainer);
   valueContainer.value = update.value;
   valueContainer.style.height = valueContainer.scrollHeight + 'px';
-  valueContainer.style.display = 'none';
-
-  // Hide or reveal the update details on clicking the button.
-  row.cells[1].childNodes[1].addEventListener('click', function(event) {
-      var element = event.target.nextSibling;
-      if (element.style.display == 'none') {
-        element.style.display = 'block';
-      }
-      else {
-        element.style.display = 'none';
-      }
-  });
+  details.open = false;
 }
 
 // Ensure the DIV container for the stats tables is created as a child of
