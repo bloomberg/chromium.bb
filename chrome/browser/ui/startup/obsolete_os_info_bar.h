@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 
 class InfoBarService;

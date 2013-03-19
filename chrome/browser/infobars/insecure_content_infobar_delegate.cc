@@ -5,8 +5,8 @@
 #include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

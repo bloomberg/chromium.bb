@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 
-#include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

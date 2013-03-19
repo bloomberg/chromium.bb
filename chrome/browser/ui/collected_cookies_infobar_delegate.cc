@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar_container.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "ui/base/animation/slide_animation.h"
 
 SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type) {

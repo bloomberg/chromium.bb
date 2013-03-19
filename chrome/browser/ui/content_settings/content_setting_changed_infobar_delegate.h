@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_CHANGED_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_CHANGED_INFOBAR_DELEGATE_H_
 
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 
 class InfoBarService;
 

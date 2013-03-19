@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
-#define CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
+#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_
+#define CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -70,4 +70,4 @@ class InfoBarService {
   virtual content::WebContents* GetWebContents() = 0;
 };
 
-#endif  // CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
+#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
+#include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 
-#include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // static

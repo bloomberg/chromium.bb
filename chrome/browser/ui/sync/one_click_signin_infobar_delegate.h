@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
 
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 // An interface derived from ConfirmInfoBarDelegate implemented for the

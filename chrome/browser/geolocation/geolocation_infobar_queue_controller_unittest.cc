@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PLUGINS_PLUGIN_INFOBAR_DELEGATES_H_
 
 #include "base/callback.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)

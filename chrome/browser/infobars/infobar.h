@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
-#include "chrome/browser/api/infobars/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"

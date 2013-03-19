@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_SCREEN_CAPTURE_INFOBAR_DELEGATE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 

@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 
 // This file contains temporary stubs to allow the libtestshell target to
 // compile. They will be removed once real implementations are

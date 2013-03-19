@@ -5,8 +5,8 @@
 #include "chrome/browser/three_d_api_observer.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/web_contents.h"

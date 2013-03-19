@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 
 class InfoBarService;
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
 #define CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
 
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

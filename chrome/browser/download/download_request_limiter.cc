@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"

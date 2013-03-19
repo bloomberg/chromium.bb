@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 
-#include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"

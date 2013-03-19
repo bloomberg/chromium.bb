@@ -4,9 +4,9 @@
 
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 
-#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"

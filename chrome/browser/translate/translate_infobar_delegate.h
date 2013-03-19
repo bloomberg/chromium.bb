@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "chrome/browser/api/infobars/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/translate_errors.h"
