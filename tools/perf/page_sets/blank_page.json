@@ -1,0 +1,8 @@
+{
+    "description": "A single blank page.",
+    "pages": [
+        {
+            "url": "file:///blank_page.html"
+        }
+    ]
+}
