@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -38,13 +37,6 @@ const GoogleUpdateSettings::UpdatePolicy kGoogleUpdateDefaultUpdatePolicy =
 #else
     GoogleUpdateSettings::UPDATES_DISABLED;
 #endif
-
-const wchar_t* const kDays[] =
-    { L"Sun", L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat" };
-
-const wchar_t* const kMonths[] =
-    { L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep",
-      L"Oct", L"Nov", L"Dec"};
 
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   // The registry functions below will end up going to disk.  Do this on another
@@ -715,30 +707,4 @@ bool GoogleUpdateSettings::ReadExperimentLabels(
   }
 
   return result == ERROR_SUCCESS;
-}
-
-string16 GoogleUpdateSettings::BuildExperimentDateString() {
-  // The Google Update experiment_labels timestamp format is:
-  // "DAY, DD0 MON YYYY HH0:MI0:SE0 TZ"
-  //  DAY = 3 character day of week,
-  //  DD0 = 2 digit day of month,
-  //  MON = 3 character month of year,
-  //  YYYY = 4 digit year,
-  //  HH0 = 2 digit hour,
-  //  MI0 = 2 digit minute,
-  //  SE0 = 2 digit second,
-  //  TZ = 3 character timezone
-  base::Time::Exploded then = {};
-  base::Time::Now().UTCExplode(&then);
-  then.year += 1;
-  DCHECK(then.HasValidValues());
-
-  return base::StringPrintf(L"%ls, %02d %ls %d %02d:%02d:%02d GMT",
-                            kDays[then.day_of_week],
-                            then.day_of_month,
-                            kMonths[then.month - 1],
-                            then.year,
-                            then.hour,
-                            then.minute,
-                            then.second);
 }

@@ -26,6 +26,7 @@
         # issue.
         'common_net',
         'common_version',
+        'installer_util',
         'metrics_proto',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',

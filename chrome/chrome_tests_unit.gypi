@@ -877,7 +877,6 @@
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/variations/network_time_tracker_unittest.cc',
-        'browser/metrics/variations/variations_registry_syncer_unittest_win.cc',
         'browser/metrics/variations/variations_service_unittest.cc',
         'browser/metrics/variations/resource_request_allowed_notifier_test_util.cc',
         'browser/metrics/variations/resource_request_allowed_notifier_test_util.h',

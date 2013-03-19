@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/installer/gcapi/gcapi.h"
+#include "chrome/installer/util/google_update_experiment_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 using base::Time;
@@ -40,8 +41,7 @@ bool SetReactivationExperimentLabels(const wchar_t* brand_code,
                       L"reacbrand=%ls_%d|%ls",
                       brand_code,
                       week_number,
-                      GoogleUpdateSettings::BuildExperimentDateString()
-                          .c_str());
+                      installer::BuildExperimentDateString().c_str());
 
   return GoogleUpdateSettings::SetExperimentLabels(
       shell_mode == GCAPI_INVOKED_UAC_ELEVATION,

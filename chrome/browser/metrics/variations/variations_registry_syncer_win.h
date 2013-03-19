@@ -5,12 +5,7 @@
 #ifndef CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REGISTRY_SYNCER_WIN_H_
 #define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REGISTRY_SYNCER_WIN_H_
 
-#include <string>
-
-#include "base/metrics/field_trial.h"
-#include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/common/metrics/variations/variation_ids.h"
 
 namespace chrome_variations {
 
@@ -25,26 +20,6 @@ class VariationsRegistrySyncer {
   // Variations associated with Google Update. If the timer is already running,
   // calling this just resets the timer.
   void RequestRegistrySync();
-
-  // Takes the list of active groups and builds the label for the ones that have
-  // Google Update VariationID associated with them. This will return an empty
-  // string if there are no such groups.
-  // Note that |active_groups| is passed in separately rather than being fetched
-  // here for testing.
-  static string16 BuildGoogleUpdateExperimentLabel(
-      base::FieldTrial::ActiveGroups& active_groups);
-
-  // Creates a final combined experiment labels string with |variation_labels|
-  // and |other_labels|, appropriately appending a separator based on their
-  // contents. It is assumed that |variation_labels| and |other_labels| do not
-  // have leading or trailing separators.
-  static string16 CombineExperimentLabels(const string16& variation_labels,
-                                          const string16& other_labels);
-
-  // Takes the value of experiment_labels from the registry and returns a valid
-  // experiment_labels string value containing only the labels that are not
-  // associated with Chrome Variations. This is exposed as static for testing.
-  static string16 ExtractNonVariationLabels(const string16& labels);
 
  private:
   // Perform the actual synchronization process with the registry.

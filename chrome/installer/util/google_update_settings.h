@@ -272,10 +272,6 @@ class GoogleUpdateSettings {
   static bool ReadExperimentLabels(bool system_install,
                                    string16* experiment_labels);
 
-  // Constructs a date string in the format understood by Google Update for the
-  // current time plus one year.
-  static string16 BuildExperimentDateString();
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);
 };

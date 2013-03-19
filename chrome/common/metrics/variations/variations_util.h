@@ -133,6 +133,24 @@ void GenerateVariationChunks(const std::vector<string16>& variation_strings,
 // them to the child process logging module so it can save it for crash dumps.
 void SetChildProcessLoggingVariationList();
 
+// Takes the list of active groups and builds the label for the ones that have
+// Google Update VariationID associated with them. This will return an empty
+// string if there are no such groups.
+string16 BuildGoogleUpdateExperimentLabel(
+    base::FieldTrial::ActiveGroups& active_groups);
+
+// Creates a final combined experiment labels string with |variation_labels|
+// and |other_labels|, appropriately appending a separator based on their
+// contents. It is assumed that |variation_labels| and |other_labels| do not
+// have leading or trailing separators.
+string16 CombineExperimentLabels(const string16& variation_labels,
+                                 const string16& other_labels);
+
+// Takes the value of experiment_labels from the registry and returns a valid
+// experiment_labels string value containing only the labels that are not
+// associated with Chrome Variations.
+string16 ExtractNonVariationLabels(const string16& labels);
+
 // Expose some functions for testing. These functions just wrap functionality
 // that is implemented above.
 namespace testing {
