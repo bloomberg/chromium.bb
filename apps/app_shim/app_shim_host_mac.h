@@ -60,6 +60,11 @@ class AppShimHost : public IPC::Listener,
   // app shim to send multiple launch messages.
   void OnLaunchApp(std::string profile, std::string app_id);
 
+  // Called when the app shim process notifies that the app should be brought
+  // to the front (i.e. the user has clicked on the app's icon in the dock or
+  // Cmd+Tabbed to it.)
+  void OnFocus();
+
   bool LaunchAppImpl(const std::string& profile_dir, const std::string& app_id);
 
   // The AppShimHost listens to the NOTIFICATION_EXTENSION_HOST_DESTROYED

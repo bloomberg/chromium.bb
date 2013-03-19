@@ -15,8 +15,10 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ui/base/cocoa/focus_window_set.h"
 
 AppShimHost::AppShimHost()
     : channel_(NULL), profile_(NULL) {
@@ -38,6 +40,7 @@ bool AppShimHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AppShimHost, message)
     IPC_MESSAGE_HANDLER(AppShimHostMsg_LaunchApp, OnLaunchApp)
+    IPC_MESSAGE_HANDLER(AppShimHostMsg_FocusApp, OnFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -53,6 +56,23 @@ void AppShimHost::OnLaunchApp(std::string profile_dir, std::string app_id) {
   DCHECK(CalledOnValidThread());
   bool success = LaunchAppImpl(profile_dir, app_id);
   Send(new AppShimMsg_LaunchApp_Done(success));
+}
+
+void AppShimHost::OnFocus() {
+  DCHECK(CalledOnValidThread());
+  if (!profile_)
+    return;
+  extensions::ShellWindowRegistry* registry =
+      extensions::ShellWindowRegistry::Get(profile_);
+  const std::set<ShellWindow*> windows =
+      registry->GetShellWindowsForApp(app_id_);
+  std::set<gfx::NativeWindow> native_windows;
+  for (std::set<ShellWindow*>::const_iterator i = windows.begin();
+       i != windows.end();
+       ++i) {
+    native_windows.insert((*i)->GetNativeWindow());
+  }
+  ui::FocusWindowSet(native_windows);
 }
 
 bool AppShimHost::LaunchAppImpl(const std::string& profile_dir,

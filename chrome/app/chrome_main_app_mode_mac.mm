@@ -51,6 +51,10 @@ class AppShimController : public IPC::Listener {
   // shim process should die.
   void OnLaunchAppDone(bool success);
 
+  // Called when the app is activated, either by the user clicking on it in the
+  // dock or by Cmd+Tabbing to it.
+  void OnDidActivateApplication();
+
   // Quits the app shim process.
   void Quit();
 
@@ -95,12 +99,28 @@ void AppShimController::OnChannelError() {
 }
 
 void AppShimController::OnLaunchAppDone(bool success) {
-  if (!success)
+  if (!success) {
     Quit();
+    return;
+  }
+  [[[NSWorkspace sharedWorkspace] notificationCenter]
+      addObserverForName:NSWorkspaceDidActivateApplicationNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* notification) {
+      NSRunningApplication* activated_app =
+          [[notification userInfo] objectForKey:NSWorkspaceApplicationKey];
+      if ([activated_app isEqual:[NSRunningApplication currentApplication]])
+        OnDidActivateApplication();
+  }];
 }
 
 void AppShimController::Quit() {
   [NSApp terminate:nil];
+}
+
+void AppShimController::OnDidActivateApplication() {
+  channel_->Send(new AppShimHostMsg_FocusApp);
 }
 
 //-----------------------------------------------------------------------------

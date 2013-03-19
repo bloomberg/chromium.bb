@@ -96,6 +96,8 @@
         'base/cocoa/find_pasteboard.mm',
         'base/cocoa/focus_tracker.h',
         'base/cocoa/focus_tracker.mm',
+        'base/cocoa/focus_window_set.h',
+        'base/cocoa/focus_window_set.mm',
         'base/cocoa/fullscreen_window_manager.h',
         'base/cocoa/fullscreen_window_manager.mm',
         'base/cocoa/nib_loading.h',

@@ -1,6 +1,7 @@
 include_rules = [
   "+base",
   "+content",
+  "+ui",
   # Temporary allowed includes.
   # TODO(benwells): remove these (http://crbug.com/159366)
   "+chrome/browser/browser_process.h",
@@ -8,6 +9,7 @@ include_rules = [
   "+chrome/browser/profiles",
   "+chrome/browser/shell_integration.h",
   "+chrome/browser/ui/extensions/application_launch.h",
+  "+chrome/browser/ui/extensions/shell_window.h",
   "+chrome/browser/ui/host_desktop.h",
   "+chrome/browser/ui/web_applications/web_app_ui.h",
   "+chrome/browser/web_applications/web_app.h",

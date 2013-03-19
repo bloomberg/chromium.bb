@@ -20,3 +20,8 @@ IPC_MESSAGE_CONTROL1(AppShimMsg_LaunchApp_Done,
 IPC_MESSAGE_CONTROL2(AppShimHostMsg_LaunchApp,
                      std::string /* profile name */,
                      std::string /* app id */)
+
+// Sent when the user has indicated a desire to focus the app, either by
+// clicking on the app's icon in the dock or by selecting it with Cmd+Tab. In
+// response, Chrome brings the app's windows to the foreground.
+IPC_MESSAGE_CONTROL0(AppShimHostMsg_FocusApp)
