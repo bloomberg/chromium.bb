@@ -511,213 +511,103 @@ scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
   return state.PassAs<base::Value>();
 }
 
-namespace {
+// This struct represents an event at which the expending rect intersects
+// one of its boundaries.  4 intersection events will occur during expansion.
+struct EdgeEvent {
+  enum { BOTTOM, TOP, LEFT, RIGHT } edge;
+  int* num_edges;
+  int distance;
+};
 
-int ComputeOffsetToExpand4EdgesEqually(int old_width,
-                                       int old_height,
-                                       int64 target_area) {
-  // We need to expand the rect in 4 directions, we can compute the
-  // amount to expand along each axis with a quadratic equation:
-  //   (old_w + add) * (old_h + add) = target_area
-  //   old_w * old_h + old_w * add + add * old_h + add * add = target_area
-  //   add^2 + add * (old_w + old_h) - target_area + old_w * old_h = 0
-  // Therefore, we solve the quadratic equation with:
-  // a = 1
-  // b = old_w + old_h
-  // c = -target_area + old_w * old_h
-  int a = 1;
-  int64 b = old_width + old_height;
-  int64 c = -target_area + old_width * old_height;
-  int sqrt_part = std::sqrt(b * b - 4.0 * a * c);
-  int add_each_axis = (-b + sqrt_part) / 2 / a;
-  return add_each_axis / 2;
-}
-
-int ComputeOffsetToExpand3EdgesEqually(int old_width,
-                                       int old_height,
-                                       int64 target_area,
-                                       bool left_complete,
-                                       bool top_complete,
-                                       bool right_complete,
-                                       bool bottom_complete) {
-  // We need to expand the rect in three directions, so we will have to
-  // expand along one axis twice as much as the other. Otherwise, this
-  // is very similar to the case where we expand in all 4 directions.
-
-  if (left_complete || right_complete) {
-    // Expanding twice as much vertically as horizontally.
-    //   (old_w + add) * (old_h + add*2) = target_area
-    //   old_w * old_h + old_w * add*2 + add * old_h + add * add*2 = target_area
-    //   (add^2)*2 + add * (old_w*2 + old_h) - target_area + old_w * old_h = 0
-    // Therefore, we solve the quadratic equation with:
-    // a = 2
-    // b = old_w*2 + old_h
-    // c = -target_area + old_w * old_h
-    int a = 2;
-    int64 b = old_width * 2 + old_height;
-    int64 c = -target_area + old_width * old_height;
-    int sqrt_part = std::sqrt(b * b - 4.0 * a * c);
-    int add_each_direction = (-b + sqrt_part) / 2 / a;
-    return add_each_direction;
-  } else {
-    // Expanding twice as much horizontally as vertically.
-    //   (old_w + add*2) * (old_h + add) = target_area
-    //   old_w * old_h + old_w * add + add*2 * old_h + add*2 * add = target_area
-    //   (add^2)*2 + add * (old_w + old_h*2) - target_area + old_w * old_h = 0
-    // Therefore, we solve the quadratic equation with:
-    // a = 2
-    // b = old_w + old_h*2
-    // c = -target_area + old_w * old_h
-    int a = 2;
-    int64 b = old_width + old_height * 2;
-    int64 c = -target_area + old_width * old_height;
-    int sqrt_part = std::sqrt(b * b - 4.0 * a * c);
-    int add_each_direction = (-b + sqrt_part) / 2 / a;
-    return add_each_direction;
-  }
-}
-
-int ComputeOffsetToExpand2EdgesEqually(int old_width,
-                                       int old_height,
-                                       int64 target_area,
-                                       bool left_complete,
-                                       bool top_complete,
-                                       bool right_complete,
-                                       bool bottom_complete) {
-  // We need to expand the rect along two directions. If the two directions
-  // are opposite from each other then we only need to compute a distance
-  // along a single axis.
-  if (left_complete && right_complete) {
-    // Expanding along the vertical axis only:
-    //   old_w * (old_h + add) = target_area
-    //   old_w * old_h + old_w * add = target_area
-    //   add_vertically = (target_area - old_w * old_h) / old_w
-    int add_vertically = target_area / old_width - old_height;
-    return add_vertically / 2;
-  } else if (top_complete && bottom_complete) {
-    // Expanding along the horizontal axis only:
-    //   (old_w + add) * old_h = target_area
-    //   old_w * old_h + add * old_h = target_area
-    //   add_horizontally = (target_area - old_w * old_h) / old_h
-    int add_horizontally = target_area / old_height - old_width;
-    return add_horizontally / 2;
-  } else {
-    // If we need to expand along both horizontal and vertical axes, we can use
-    // the same result as if we were expanding all four edges. But we apply the
-    // offset computed for opposing edges to a single edge.
-    int add_each_direction = ComputeOffsetToExpand4EdgesEqually(
-        old_width, old_height, target_area);
-    return add_each_direction * 2;
-  }
-}
-
-int ComputeOffsetToExpand1Edge(int old_width,
-                               int old_height,
-                               int64 target_area,
-                               bool left_complete,
-                               bool top_complete,
-                               bool right_complete,
-                               bool bottom_complete) {
-  // We need to expand the rect in a single direction, so we are either
-  // moving just a verical edge, or just a horizontal edge.
-  if (!top_complete || !bottom_complete) {
-    // Moving a vertical edge:
-    //   old_w * (old_h + add) = target_area
-    //   old_w * old_h + old_w * add = target_area
-    //   add_vertically = (target_area - old_w * old_h) / old_w
-    int add_vertically = target_area / old_width - old_height;
-    return add_vertically;
-  } else {
-    // Moving a horizontal edge:
-    //   (old_w + add) * old_h = target_area
-    //   old_w * old_h + add * old_h = target_area
-    //   add_horizontally = (target_area - old_w * old_h) / old_h
-    int add_horizontally = target_area / old_height - old_width;
-    return add_horizontally;
-  }
-}
-
-}  // namespace
-
-// static
 gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
     gfx::Rect starting_rect,
     int64 target_area,
     gfx::Rect bounding_rect) {
+  DCHECK(!starting_rect.IsEmpty());
+  DCHECK(!bounding_rect.IsEmpty());
+  DCHECK(target_area > 0);
 
-  bool left_complete = false;
-  bool top_complete = false;
-  bool right_complete = false;
-  bool bottom_complete = false;
-  int num_edges_complete = 0;
+  gfx::Rect rect = IntersectRects(starting_rect, bounding_rect);
+  DCHECK(!rect.IsEmpty());
 
-  gfx::Rect working_rect = starting_rect;
-  for (int i = 0; i < 4; ++i) {
-    if (num_edges_complete != i)
+  // These values will be updated by the loop and uses as the output.
+  int origin_x = rect.x();
+  int origin_y = rect.y();
+  int width = rect.width();
+  int height = rect.height();
+
+  // In the beginning we will consider 2 edges in each dimension.
+  int num_y_edges = 2;
+  int num_x_edges = 2;
+
+  // Create an event list.
+  EdgeEvent events[] = {
+    { EdgeEvent::BOTTOM, &num_y_edges, rect.y() - bounding_rect.y() },
+    { EdgeEvent::TOP, &num_y_edges, bounding_rect.bottom() - rect.bottom() },
+    { EdgeEvent::LEFT, &num_x_edges, rect.x() - bounding_rect.x() },
+    { EdgeEvent::RIGHT, &num_x_edges, bounding_rect.right() - rect.right() }
+  };
+
+  // Sort the events by distance (closest first).
+  if (events[0].distance > events[1].distance) std::swap(events[0], events[1]);
+  if (events[2].distance > events[3].distance) std::swap(events[2], events[3]);
+  if (events[0].distance > events[2].distance) std::swap(events[0], events[2]);
+  if (events[1].distance > events[3].distance) std::swap(events[1], events[3]);
+  if (events[1].distance > events[2].distance) std::swap(events[1], events[2]);
+
+  for (int event_index = 0; event_index < 4; event_index++) {
+    const EdgeEvent& event = events[event_index];
+
+    // Early out if our distance to event is 0.
+    // This optimization is not required for correctness.
+    if (event.distance == 0) {
+      --*event.num_edges;
       continue;
-    int offset_for_each_edge = 0;
-    switch (num_edges_complete) {
-      case 0:
-        offset_for_each_edge = ComputeOffsetToExpand4EdgesEqually(
-            working_rect.width(),
-            working_rect.height(),
-            target_area);
-        break;
-      case 1:
-        offset_for_each_edge = ComputeOffsetToExpand3EdgesEqually(
-            working_rect.width(),
-            working_rect.height(),
-            target_area,
-            left_complete,
-            top_complete,
-            right_complete,
-            bottom_complete);
-        break;
-      case 2:
-        offset_for_each_edge = ComputeOffsetToExpand2EdgesEqually(
-            working_rect.width(),
-            working_rect.height(),
-            target_area,
-            left_complete,
-            top_complete,
-            right_complete,
-            bottom_complete);
-        break;
-      case 3:
-        offset_for_each_edge = ComputeOffsetToExpand1Edge(
-            working_rect.width(),
-            working_rect.height(),
-            target_area,
-            left_complete,
-            top_complete,
-            right_complete,
-            bottom_complete);
     }
 
-    working_rect.Inset((left_complete ? 0 : -offset_for_each_edge),
-                       (top_complete ? 0 : -offset_for_each_edge),
-                       (right_complete ? 0 : -offset_for_each_edge),
-                       (bottom_complete ? 0 : -offset_for_each_edge));
+    // Compute coefficients for the quadraic equation.
+    int a = num_y_edges * num_x_edges;
+    int b = num_y_edges * width + num_x_edges * height;
+    int c = width * height - target_area;
 
-    if (bounding_rect.Contains(working_rect))
-      return working_rect;
-    working_rect.Intersect(bounding_rect);
+    // Compute the delta for our edges using the quadratic equation.
+    int delta = a == 0 ? -c / b :
+       (-b + static_cast<int>(std::sqrt(b * b - 4.0 * a * c))) / (2 * a);
 
-    if (working_rect.x() == bounding_rect.x()) left_complete = true;
-    if (working_rect.y() == bounding_rect.y()) top_complete = true;
-    if (working_rect.right() == bounding_rect.right()) right_complete = true;
-    if (working_rect.bottom() == bounding_rect.bottom()) bottom_complete = true;
+    // Clamp delta to our event distance.
+    if (delta > event.distance)
+      delta = event.distance;
 
-    num_edges_complete = (left_complete ? 1 : 0) +
-                         (top_complete ? 1 : 0) +
-                         (right_complete ? 1 : 0) +
-                         (bottom_complete ? 1 : 0);
-    if (num_edges_complete == 4)
-      return working_rect;
+    // Adjust the edge count for this kind of edge.
+    --*event.num_edges;
+
+    // Apply the delta to the edges and edge events.
+    for (int i = event_index; i < 4; i++) {
+      switch (events[i].edge) {
+        case EdgeEvent::BOTTOM:
+            origin_y -= delta;
+            height += delta;
+            break;
+        case EdgeEvent::TOP:
+            height += delta;
+            break;
+        case EdgeEvent::LEFT:
+            origin_x -= delta;
+            width += delta;
+            break;
+        case EdgeEvent::RIGHT:
+            width += delta;
+            break;
+      }
+      events[i].distance -= delta;
+    }
+
+    // If our delta is less then our event distance, we're done.
+    if (delta < event.distance)
+      break;
   }
 
-  NOTREACHED();
-  return starting_rect;
+  return gfx::Rect(origin_x, origin_y, width, height);
 }
 
 }  // namespace cc
