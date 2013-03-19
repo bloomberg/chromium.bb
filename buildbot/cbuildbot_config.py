@@ -984,8 +984,8 @@ internal_paladin.add_config('zgb-paladin',
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
-  hw_tests=['bvt'],
   upload_hw_test_artifacts=True,
+  quick_unit=False,
 )
 
 internal_paladin.add_config('fox-wtm2-paladin',
@@ -1017,7 +1017,6 @@ internal_paladin.add_config('link-paladin',
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
-  quick_unit=False,
 )
 
 internal_paladin.add_config('stout-paladin',
