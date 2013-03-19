@@ -1065,6 +1065,7 @@ _release = full.derive(official, internal,
   dev_installer_prebuilts=True,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,
+  hw_tests=['bvt', constants.HWTEST_AU_SUITE],
   upload_hw_test_artifacts=True,
   signer_tests=True,
   trybot_list=True,
@@ -1073,19 +1074,18 @@ _release = full.derive(official, internal,
 
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
-  hw_tests=['bvt', constants.HWTEST_AU_SUITE],
   master=True,
 )
 
 _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
-    hw_tests=['bvt'],
   ),
   _release.add_config('x86-alex_he-release',
     boards=['x86-alex_he'],
     vm_tests=None,
     unittests=None,
+    hw_tests=[],
     upload_hw_test_artifacts=False,
   ),
   critical_for_chrome=True,
@@ -1094,24 +1094,22 @@ _config.add_group('x86-alex-release-group',
 _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
-    hw_tests=['bvt'],
   ),
   _release.add_config('x86-zgb_he-release',
     boards=['x86-zgb_he'],
     vm_tests=None,
     unittests=None,
+    hw_tests=[],
     upload_hw_test_artifacts=False,
   ),
 )
 
 _release.add_config('stumpy-release',
   boards=['stumpy'],
-  hw_tests=['bvt'],
 )
 
 _release.add_config('lumpy-release',
   boards=['lumpy'],
-  hw_tests=['bvt'],
   critical_for_chrome=True,
 )
 
@@ -1127,25 +1125,21 @@ _release.add_config('lumpy-pgo-release',
 
 _release.add_config('link-release',
   boards=['link'],
-  hw_tests=['bvt'],
   useflags=official['useflags'] + ['highdpi'],
   prebuilts=False,
 )
 
 _release.add_config('parrot-release',
   boards=['parrot'],
-  hw_tests=['bvt'],
 )
 
 _release.add_config('stout-release',
   boards=['stout'],
-  hw_tests=['bvt'],
   hw_tests_num=3,
 )
 
 _release.add_config('butterfly-release',
   boards=['butterfly'],
-  hw_tests=['bvt'],
   useflags=official['useflags'] + ['oem_wallpaper'],
 )
 
@@ -1161,13 +1155,13 @@ _arm_release = _release.derive(arm)
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
-  hw_tests=['bvt'],
   hw_tests_num=4,
   critical_for_chrome=True,
 )
 
 _arm_release.add_config('spring-release',
   boards=['daisy_spring'],
+  hw_tests=[],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
@@ -1179,6 +1173,7 @@ _arm_release.add_config('spring-release',
 _factory_release = _release.derive(
   prebuilts=False,
   upload_hw_test_artifacts=False,
+  hw_tests=[],
   description='Factory Builds',
 )
 
@@ -1191,6 +1186,7 @@ _firmware_release = _release.derive(
   build_tests=False,
   unittests=False,
   vm_tests=None,
+  hw_tests=[],
   prebuilts=False,
   dev_installer_prebuilts=False,
   upload_hw_test_artifacts=False,
