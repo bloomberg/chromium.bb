@@ -615,6 +615,7 @@ void EventRouter::Observe(int type,
         queue->AddPendingTask(profile_, extension->id(),
                               base::Bind(&DoNothing));
       }
+      break;
     }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add all registered lazy listeners to our cache.
