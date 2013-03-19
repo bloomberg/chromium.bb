@@ -102,7 +102,6 @@ TEST(WebAppShortcutCreatorTest, RunShortcut) {
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
 
   base::FilePath dst_folder = scoped_temp_dir.path();
-  dst_folder = base::FilePath("/Applications");
   base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
@@ -120,9 +119,15 @@ TEST(WebAppShortcutCreatorTest, RunShortcut) {
 }
 
 TEST(WebAppShortcutCreatorTest, CreateFailure) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  base::FilePath non_existent_path =
+      scoped_temp_dir.path().Append("not-existent").Append("name.app");
+
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(GetShortcutInfo());
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
-      .WillRepeatedly(Return(base::FilePath("/non-existant/path/")));
+      .WillRepeatedly(Return(non_existent_path));
   EXPECT_FALSE(shortcut_creator.CreateShortcut());
 }
 
