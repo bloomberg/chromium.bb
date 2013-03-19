@@ -2315,11 +2315,16 @@ bool RenderWidgetHostViewWin::LockMouse() {
 
   move_to_center_request_.pending = false;
   last_mouse_position_.locked_global = last_mouse_position_.unlocked_global;
-  MoveCursorToCenterIfNecessary();
 
+  // Must set the clip rectangle before MoveCursorToCenterIfNecessary()
+  // so that if the cursor is moved it uses the clip rect set to the window
+  // rect. Otherwise, MoveCursorToCenterIfNecessary() may move the cursor
+  // to the center of the screen, and then we would clip to the window
+  // rect, thus moving the cursor and causing a movement delta.
   CRect rect;
   GetWindowRect(&rect);
   ::ClipCursor(&rect);
+  MoveCursorToCenterIfNecessary();
 
   return true;
 }
