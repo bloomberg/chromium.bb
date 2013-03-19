@@ -1771,6 +1771,7 @@
                 # http://crbug.com/156058
                 ['exclude', '^browser/autocomplete/bookmark_provider_unittest\\.cc$'],
                 ['exclude', '^browser/autocomplete/builtin_provider_unittest\\.cc$'],
+                ['exclude', '^browser/autocomplete/history_quick_provider_unittest\\.cc$'],
                 ['exclude', '^browser/autocomplete/shortcuts_provider_unittest\\.cc$'],
               ],
             }],
