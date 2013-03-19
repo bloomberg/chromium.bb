@@ -306,3 +306,29 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
       suggestions[0],
       WebAutofillClient::MenuItemIDPasswordEntry);
 }
+
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
+  // Set up a field that shouldn't get autocompleted or display warnings.
+  const FormData form;
+  FormFieldData field;
+  field.is_focusable = true;
+  field.should_autocomplete = false;
+  const gfx::RectF element_bounds;
+
+  external_delegate_->OnQuery(kQueryId, form, field, element_bounds, false);
+
+  std::vector<string16> autofill_items;
+  autofill_items.push_back(string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutocompleteEntry);
+
+  // Ensure the popup tries to hide itself, since it is not allowed to show
+  // anything.
+  EXPECT_CALL(manager_delegate_, HideAutofillPopup());
+
+  external_delegate_->OnSuggestionsReturned(kQueryId,
+                                            autofill_items,
+                                            autofill_items,
+                                            autofill_items,
+                                            autofill_ids);
+}

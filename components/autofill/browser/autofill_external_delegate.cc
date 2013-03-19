@@ -111,7 +111,10 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     ApplyAutofillOptions(&values, &labels, &icons, &ids);
 
   // Remove the separator if it is the last element.
-  if (ids.back() == WebAutofillClient::MenuItemIDSeparator) {
+  // It is possible for ids to be empty at this point if the vectors were
+  // cleared by ApplyAutofillWarnings (which can occur if we shouldn't
+  // autocomplete or display warnings for this field).
+  if (!ids.empty() && ids.back() == WebAutofillClient::MenuItemIDSeparator) {
     values.pop_back();
     labels.pop_back();
     icons.pop_back();
