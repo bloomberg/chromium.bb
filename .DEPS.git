@@ -317,7 +317,7 @@ deps_os = {
     'mac':
     {
         'src/chrome/installer/mac/third_party/xz/xz':
-            Var('git_url') + '/chromium/deps/xz.git@604fa85cc4e214aa0f418a2596ea865c0eed7a54',
+            Var('git_url') + '/chromium/deps/xz.git@dd8415469606fe7bfdc2ebc12b8457b912ede326',
         'src/chrome/tools/test/reference_build/chrome_mac':
             Var('git_url') + '/chromium/reference_builds/chrome_mac.git@b43b0539e14bf908e771dbbf0b080f7dc9b75219',
         'src/third_party/GTM':
