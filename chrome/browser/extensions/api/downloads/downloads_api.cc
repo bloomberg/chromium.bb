@@ -83,7 +83,7 @@ const char kInvalidOrderByError[] = "Invalid orderBy field";
 const char kInvalidQueryLimit[] = "Invalid query limit";
 const char kInvalidStateError[] = "Invalid state";
 const char kInvalidURLError[] = "Invalid URL";
-const char kNotImplementedError[] = "NotImplemented.";
+const char kNotImplementedError[] = "NotImplemented";
 const char kTooManyListenersError[] = "Each extension may have at most one "
   "onDeterminingFilename listener between all of its renderer execution "
   "contexts.";

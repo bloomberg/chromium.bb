@@ -33,9 +33,10 @@ namespace downloads {
     DOMString url;
 
     // A file path relative to the Downloads directory to contain the downloaded
-    // file. See $ref:onDeterminingFilename for how to dynamically suggest a
-    // filename after the file's MIME type and a tentative filename have been
-    // determined.
+    // file. Cannot yet contain subdirectories; support for subdirectories will
+    // be implemented before this API is released to the stable channel. See
+    // $ref:onDeterminingFilename for how to dynamically suggest a filename
+    // after the file's MIME type and a tentative filename have been determined.
     DOMString? filename;
 
     // Use a file-chooser to allow the user to select a filename.
