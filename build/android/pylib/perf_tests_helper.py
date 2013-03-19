@@ -110,11 +110,10 @@ def PrintPerfResult(measurement, trace, values, units, result_type='default',
     # across different histograms.
     assert len(values) == 1
     value = values[0]
-    measurement += '.' + trace_name
     output = '%s%s: %s= %s' % (
         RESULT_TYPES[result_type],
         _EscapePerfResult(measurement),
-        _EscapePerfResult(measurement),
+        trace_name,
         value)
     avg, sd = GeomMeanAndStdDevFromHistogram(value)
 
