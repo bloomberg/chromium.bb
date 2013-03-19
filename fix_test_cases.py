@@ -18,6 +18,8 @@ import subprocess
 import sys
 import tempfile
 
+import isolate
+import isolate_test_cases
 import run_test_cases
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -217,26 +219,14 @@ def main():
 
   if args:
     parser.error('Unsupported arg: %s' % args)
-  if not options.isolated:
-    parser.error('--isolated is required')
-  if not options.isolated.endswith('.isolated'):
-    parser.error('--isolated argument must end with .isolated')
+  isolate.parse_isolated_option(parser, options, os.getcwd(), True)
 
-  # Retrieve the command from the .isolated file.
-  with open(options.isolated) as f:
-    data = json.load(f)
-
-  command = data.get('command')
+  _, command, test_cases = isolate_test_cases.safely_load_isolated(
+      parser, options)
   if not command:
     parser.error('A command must be defined')
-  test_cases = parser.process_gtest_options(
-      run_test_cases.fix_python_path(command),
-      data.get('relative_cwd', os.getcwd()),
-      options)
   if not test_cases:
-    print >> sys.stderr, 'No test case to run'
-    return 1
-
+    parser.error('No test case to run')
   return not fix_all(options.isolated, test_cases, options.verbose)
 
 

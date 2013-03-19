@@ -51,7 +51,7 @@ def isolate_test_cases(
       log_dict = logs[item['tracename']]
       if log_dict.get('exception'):
         exception = exception or log_dict['exception']
-        logging.error('Got exception')
+        logging.error('Got exception: %s', exception)
         continue
       files = log_dict['results'].strip_root(root_dir).files
       tracked, touched = isolate.split_touched(files)
@@ -107,6 +107,18 @@ def test_xvfb(command, rel_dir):
       sys.exit(subprocess.call(cmd))
 
 
+def safely_load_isolated(parser, options):
+  config = isolate.CompleteState.load_files(options.isolated)
+  reldir = os.path.join(config.root_dir, config.saved_state.relative_cwd)
+  command = config.saved_state.command
+  test_cases = []
+  if command:
+    command = run_test_cases.fix_python_path(command)
+    test_xvfb(command, reldir)
+    test_cases = parser.process_gtest_options(command, reldir, options)
+  return config, command, test_cases
+
+
 def main():
   """CLI frontend to validate arguments."""
   parser = run_test_cases.OptionParserTestCases(
@@ -118,17 +130,15 @@ def main():
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported arg: %s' % args)
-  isolate.parse_variable_option(parser, options, os.getcwd(), True)
+  isolate.parse_isolated_option(parser, options, os.getcwd(), True)
+  isolate.parse_variable_option(options)
 
   try:
-    config = isolate.CompleteState.load_files(options.isolated)
-    reldir = os.path.join(config.root_dir, config.saved_state.relative_cwd)
-    command = run_test_cases.fix_python_path(config.saved_state.command)
-    test_xvfb(command, reldir)
-    test_cases = parser.process_gtest_options(command, reldir, options)
+    config, command, test_cases = safely_load_isolated(parser, options)
+    if not command:
+      parser.error('A command must be defined')
     if not test_cases:
-      print >> sys.stderr, 'No test case to run'
-      return 1
+      parser.error('No test case to run')
 
     config.saved_state.variables.update(options.variables)
     return isolate_test_cases(

@@ -2046,8 +2046,8 @@ def add_variable_option(parser):
             '<.isolated>.state')
 
 
-def parse_variable_option(parser, options, cwd, require_isolated):
-  """Processes --isolated and --variable."""
+def parse_isolated_option(parser, options, cwd, require_isolated):
+  """Processes --isolated."""
   if options.isolated:
     options.isolated = os.path.normpath(
         os.path.join(cwd, options.isolated.replace('/', os.path.sep)))
@@ -2057,6 +2057,10 @@ def parse_variable_option(parser, options, cwd, require_isolated):
                  'file- to see how to create the .isolated file.')
   if options.isolated and not options.isolated.endswith('.isolated'):
     parser.error('--isolated value must end with \'.isolated\'')
+
+
+def parse_variable_option(options):
+  """Processes --variable."""
   # TODO(benrg): Maybe we should use a copy of gyp's NameValueListToDict here,
   # but it wouldn't be backward compatible.
   def try_make_int(s):
@@ -2106,7 +2110,8 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
       self.error('Unsupported argument: %s' % args)
 
     cwd = os.getcwd()
-    parse_variable_option(self, options, cwd, self.require_isolated)
+    parse_isolated_option(self, options, cwd, self.require_isolated)
+    parse_variable_option(options)
 
     if options.isolate:
       # TODO(maruel): Work with non-ASCII.
