@@ -79,11 +79,8 @@ chrome.storage.local;
 
 /** @type {Object} */
 chrome.app.runtime = {
-  /** @type {Object} */
-  onLaunched: {
-    /** @param {function():void} callback */
-    addListener: function(callback) {}
-  }
+  /** @type {chrome.Event} */
+  onLaunched: null
 };
 
 /** @type {Object} */
@@ -107,6 +104,26 @@ chrome.experimental.identity = {
   getAuthToken: function(parameters, callback) {}
 };
 
+/** @constructor */
+chrome.Event = function() {};
+
+/** @param {function():void} callback */
+chrome.Event.prototype.addListener = function(callback) {};
+
+/** @constructor */
+chrome.extension.Port = function() {};
+
+/** @type {chrome.Event} */
+chrome.extension.Port.prototype.onMessage;
+
+/** @type {chrome.Event} */
+chrome.extension.Port.prototype.onDisconnect;
+
+/**
+ * @param {Object} message
+ */
+chrome.extension.Port.prototype.postMessage = function(message) {};
+
 /** @type {Object} */
 chrome.runtime = {
   /** @type {Object} */
@@ -117,6 +134,11 @@ chrome.runtime = {
   /** @return {{version: string}} */
   getManifest: function() {}
 };
+
+/**
+ * @type {?function(string):chrome.extension.Port}
+ */
+chrome.runtime.connectNative = function(name) {};
 
 /** @type {Object} */
 chrome.tabs;

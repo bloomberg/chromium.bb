@@ -10,10 +10,16 @@ var remoting = remoting || {};
 /** @constructor */
 remoting.HostController = function() {
   /** @type {remoting.HostPlugin} @private */
-  this.plugin_ = remoting.HostSession.createPlugin();
-  /** @type {HTMLElement} @private */
-  this.container_ = document.getElementById('daemon-plugin-container');
-  this.container_.appendChild(this.plugin_);
+  this.plugin_ = null;
+  if (remoting.HostNativeMessaging.isSupported()) {
+    this.plugin_ = new remoting.HostNativeMessaging();
+  } else {
+    this.plugin_ = remoting.HostSession.createPlugin();
+    /** @type {HTMLElement} @private */
+    var container = document.getElementById('daemon-plugin-container');
+    container.appendChild(this.plugin_);
+  }
+
   /** @type {string?} */
   this.localHostId_ = null;
   /** @param {string} version */

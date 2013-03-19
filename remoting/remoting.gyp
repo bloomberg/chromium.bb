@@ -188,6 +188,7 @@
       'webapp/host.js',
       'webapp/host_controller.js',
       'webapp/host_list.js',
+      'webapp/host_native_messaging.js',
       'webapp/host_screen.js',
       'webapp/host_session.js',
       'webapp/host_settings.js',
