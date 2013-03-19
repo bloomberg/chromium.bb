@@ -387,6 +387,10 @@ class AutofillDialogViews : public AutofillDialogView,
   // of the dialog.
   DetailsGroup* GroupForSection(DialogSection section);
 
+  // Checks all manual inputs in |group| for validity. Decorates the invalid
+  // ones and returns true if all were valid.
+  bool ValidateGroup(DetailsGroup* group);
+
   // Checks all manual inputs in the form for validity. Decorates the invalid
   // ones and returns true if all were valid.
   bool ValidateForm();

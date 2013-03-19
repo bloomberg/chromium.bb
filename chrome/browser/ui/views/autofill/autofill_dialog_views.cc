@@ -838,7 +838,16 @@ void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
-  combobox->SetInvalid(false);
+  DetailsGroup* group = NULL;
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (combobox->parent() == iter->second.manual_input) {
+      group = &iter->second;
+      break;
+    }
+  }
+  DCHECK(group);
+  ValidateGroup(group);
 }
 
 void AutofillDialogViews::InitChildViews() {
@@ -1114,6 +1123,60 @@ bool AutofillDialogViews::AtLeastOneSectionIsEditing() {
   return false;
 }
 
+bool AutofillDialogViews::ValidateGroup(DetailsGroup* group) {
+  DCHECK(group->container->visible());
+
+  scoped_ptr<DetailInput> cvc_input;
+  DetailOutputMap detail_outputs;
+  std::map<AutofillFieldType, base::Callback<void(bool)> > field_map;
+
+  if (group->manual_input->visible()) {
+    for (TextfieldMap::iterator iter = group->textfields.begin();
+         iter != group->textfields.end(); ++iter) {
+      detail_outputs[iter->first] = iter->second->textfield()->text();
+      field_map[iter->first->type] =
+          base::Bind(&DecoratedTextfield::SetInvalid,
+                     base::Unretained(iter->second));
+    }
+    for (ComboboxMap::iterator iter = group->comboboxes.begin();
+         iter != group->comboboxes.end(); ++iter) {
+      views::Combobox* combobox = iter->second;
+      string16 item =
+          combobox->model()->GetItemAt(combobox->selected_index());
+      detail_outputs[iter->first] = item;
+      field_map[iter->first->type] =
+          base::Bind(&views::Combobox::SetInvalid,
+                     base::Unretained(iter->second));
+    }
+  } else if (group->section == SECTION_CC) {
+    DecoratedTextfield* decorated_cvc =
+        group->suggested_info->decorated_textfield();
+    cvc_input.reset(new DetailInput);
+    cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
+    detail_outputs[cvc_input.get()] = decorated_cvc->textfield()->text();
+    field_map[cvc_input->type] =
+        base::Bind(&DecoratedTextfield::SetInvalid,
+                   base::Unretained(decorated_cvc));
+  }
+
+  std::vector<AutofillFieldType> invalid_inputs;
+  invalid_inputs = controller_->InputsAreValid(detail_outputs);
+  // Flag invalid fields, removing them from |field_map|.
+  for (std::vector<AutofillFieldType>::const_iterator iter =
+           invalid_inputs.begin(); iter != invalid_inputs.end(); ++iter) {
+    field_map[*iter].Run(true);
+    field_map.erase(*iter);
+  }
+
+  // The remaining fields in |field_map| are valid. Mark them as such.
+  for (std::map<AutofillFieldType, base::Callback<void(bool)> >::iterator
+       iter = field_map.begin(); iter != field_map.end(); ++iter) {
+    iter->second.Run(false);  // Calls SetInvalid(false) for this field.
+  }
+
+  return invalid_inputs.empty();
+}
+
 bool AutofillDialogViews::ValidateForm() {
   bool all_valid = true;
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
@@ -1122,46 +1185,8 @@ bool AutofillDialogViews::ValidateForm() {
     if (!group->container->visible())
       continue;
 
-    scoped_ptr<DetailInput> cvc_input;
-    DetailOutputMap detail_outputs;
-    std::map<AutofillFieldType, base::Callback<void(bool)> > field_map;
-
-    if (group->manual_input->visible()) {
-      for (TextfieldMap::iterator iter = group->textfields.begin();
-           iter != group->textfields.end(); ++iter) {
-        detail_outputs[iter->first] = iter->second->textfield()->text();
-        field_map[iter->first->type] =
-            base::Bind(&DecoratedTextfield::SetInvalid,
-                       base::Unretained(iter->second));
-      }
-      for (ComboboxMap::iterator iter = group->comboboxes.begin();
-           iter != group->comboboxes.end(); ++iter) {
-        views::Combobox* combobox = iter->second;
-        string16 item =
-            combobox->model()->GetItemAt(combobox->selected_index());
-        detail_outputs[iter->first] = item;
-        field_map[iter->first->type] =
-            base::Bind(&views::Combobox::SetInvalid,
-                       base::Unretained(iter->second));
-      }
-    } else if (group->section == SECTION_CC) {
-      DecoratedTextfield* decorated_cvc =
-          group->suggested_info->decorated_textfield();
-      cvc_input.reset(new DetailInput);
-      cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
-      detail_outputs[cvc_input.get()] = decorated_cvc->textfield()->text();
-      field_map[cvc_input->type] =
-          base::Bind(&DecoratedTextfield::SetInvalid,
-                     base::Unretained(decorated_cvc));
-    }
-
-    std::vector<AutofillFieldType> invalid_inputs;
-    invalid_inputs = controller_->InputsAreValid(detail_outputs);
-    for (std::vector<AutofillFieldType>::const_iterator iter =
-        invalid_inputs.begin(); iter != invalid_inputs.end(); ++iter) {
-      field_map[*iter].Run(true);
-      all_valid = false;
-    }
+   if (!ValidateGroup(group))
+     all_valid = false;
   }
 
   return all_valid;
@@ -1210,9 +1235,9 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   }
   DCHECK_NE(UNKNOWN_TYPE, type);
 
-  // If the field is marked as invalid, check if the text is now valid.
-  if (decorated->invalid() && was_edit)
-    decorated->SetInvalid(!controller_->InputIsValid(type, textfield->text()));
+  // Re-validate the group with the new input.
+  if (was_edit)
+    ValidateGroup(group);
 
   gfx::Image icon = controller_->IconForField(type, textfield->text());
   textfield->SetIcon(icon.AsImageSkia());

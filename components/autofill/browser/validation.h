@@ -7,7 +7,17 @@
 
 #include "base/string16.h"
 
+namespace base {
+class Time;
+}  // namespace base;
+
 namespace autofill {
+
+// Returns true if |year| and |month| describe a date later than |now|.
+// |year| must have 4 digits.
+bool IsValidCreditCardExpirationDate(const string16& year,
+                                     const string16& month,
+                                     const base::Time& now);
 
 // Returns true if |text| looks like a valid credit card number.
 // Uses the Luhn formula to validate the number.

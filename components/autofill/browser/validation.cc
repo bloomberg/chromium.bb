@@ -5,11 +5,42 @@
 #include "components/autofill/browser/validation.h"
 
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_regexes.h"
 #include "components/autofill/browser/credit_card.h"
 
 namespace autofill {
+
+bool IsValidCreditCardExpirationDate(const string16& year,
+                                     const string16& month,
+                                     const base::Time& now) {
+  string16 year_cleaned, month_cleaned;
+  TrimWhitespace(year, TRIM_ALL, &year_cleaned);
+  TrimWhitespace(month, TRIM_ALL, &month_cleaned);
+  if (year_cleaned.length() != 4)
+    return false;
+
+  base::Time::Exploded now_exploded;
+  now.LocalExplode(&now_exploded);
+  size_t current_year = size_t(now_exploded.year);
+  size_t current_month = size_t(now_exploded.month);
+
+  size_t cc_year;
+  if (!base::StringToSizeT(year_cleaned, &cc_year))
+    return false;
+  if (cc_year < current_year)
+    return false;
+
+  size_t cc_month;
+  if (!base::StringToSizeT(month_cleaned, &cc_month))
+    return false;
+  if (cc_year == current_year && cc_month < current_month)
+    return false;
+
+  return true;
+}
 
 bool IsValidCreditCardNumber(const string16& text) {
   string16 number = CreditCard::StripSeparators(text);

@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/validation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+struct ExpirationDate {
+  const char* year;
+  const char* month;
+};
 
 // From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
 const char* const kValidNumbers[] = {
@@ -33,6 +39,17 @@ const char* const kInvalidNumbers[] = {
   "41111111111111111115", /* too long */
   "4111-1111-1111-1110", /* wrong Luhn checksum */
   "3056 9309 0259 04aa", /* non-digit characters */
+};
+const char kCurrentDate[]="1 May 2013";
+const ExpirationDate kValidCreditCardExpirationDate[] = {
+  { "2013", "5" },  // Valid month in current year.
+  { "2014", "1" },  // Any month in next year.
+  { "2014", " 1" },  // Whitespace in month.
+  { " 2014", "1" },  // Whitespace in year.
+};
+const ExpirationDate kInvalidCreditCardExpirationDate[] = {
+  { "2013", "04" },  // Previous month in current year.
+  { "2012", "12" },  // Any month in previous year.
 };
 const char* const kValidCreditCardSecurityCode[] = {
   "323",  // 3-digit CSC.
@@ -67,6 +84,31 @@ TEST(AutofillValidation, IsValidCreditCardNumber) {
     SCOPED_TRACE(kInvalidNumbers[i]);
     EXPECT_FALSE(
         autofill::IsValidCreditCardNumber(ASCIIToUTF16(kInvalidNumbers[i])));
+  }
+}
+
+TEST(AutofillValidation, IsValidCreditCardExpirationDate)
+{
+  base::Time now;
+  ASSERT_TRUE(base::Time::FromString(kCurrentDate, &now));
+
+  for (size_t i = 0; i < arraysize(kValidCreditCardExpirationDate); ++i) {
+    const ExpirationDate data = kValidCreditCardExpirationDate[i];
+    SCOPED_TRACE(data.year);
+    SCOPED_TRACE(data.month);
+    EXPECT_TRUE(
+        autofill::IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
+                                                  ASCIIToUTF16(data.month),
+                                                  now));
+  }
+  for (size_t i = 0; i < arraysize(kInvalidCreditCardExpirationDate); ++i) {
+    const ExpirationDate data = kInvalidCreditCardExpirationDate[i];
+    SCOPED_TRACE(data.year);
+    SCOPED_TRACE(data.month);
+    EXPECT_TRUE(
+        !autofill::IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
+                                                   ASCIIToUTF16(data.month),
+                                                   now));
   }
 }
 

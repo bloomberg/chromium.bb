@@ -777,18 +777,33 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
 std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
     const DetailOutputMap& inputs) {
   std::vector<AutofillFieldType> invalid_fields;
+  std::map<AutofillFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
+    field_values[iter->first->type] = iter->second;
     if (!InputIsValid(iter->first->type, iter->second))
       invalid_fields.push_back(iter->first->type);
   }
 
-  // TODO(groby): Add cross-field validation.
+  // If the dialog has a CC month, there must 4 digit year.
+  // Validate the date formed by month and appropriate year field.
+  if (field_values.count(CREDIT_CARD_EXP_MONTH)) {
+    DCHECK(field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+    if (!autofill::IsValidCreditCardExpirationDate(
+        field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
+        field_values[CREDIT_CARD_EXP_MONTH],
+        base::Time::Now())) {
+      invalid_fields.push_back(CREDIT_CARD_EXP_MONTH);
+      invalid_fields.push_back(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+    }
+  }
 
   // De-duplicate invalid fields.
   std::sort(invalid_fields.begin(), invalid_fields.end());
   invalid_fields.erase(std::unique(
       invalid_fields.begin(), invalid_fields.end()), invalid_fields.end());
+
+  // TODO(groby): Add cross-field validation for CVC/CC type.
   return invalid_fields;
 }
 
