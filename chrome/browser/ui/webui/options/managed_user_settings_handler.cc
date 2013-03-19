@@ -41,8 +41,6 @@ void ManagedUserSettingsHandler::InitializeHandler() {
 }
 
 void ManagedUserSettingsHandler::InitializePage() {
-  start_time_ = base::TimeTicks::Now();
-  content::RecordAction(UserMetricsAction("ManagedMode_OpenSettings"));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableManagedUsers)) {
     PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
@@ -52,6 +50,11 @@ void ManagedUserSettingsHandler::InitializePage() {
         "ManagedUserSettings.passphraseChanged",
         is_passphrase_set);
   }
+}
+
+void ManagedUserSettingsHandler::HandlePageOpened(const base::ListValue* args) {
+  start_time_ = base::TimeTicks::Now();
+  content::RecordAction(UserMetricsAction("ManagedMode_OpenSettings"));
 }
 
 void ManagedUserSettingsHandler::GetLocalizedValues(
@@ -94,6 +97,10 @@ void ManagedUserSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "confirmManagedUserSettings",
       base::Bind(&ManagedUserSettingsHandler::SaveMetrics,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "settingsPageOpened",
+      base::Bind(&ManagedUserSettingsHandler::HandlePageOpened,
                  base::Unretained(this)));
 }
 

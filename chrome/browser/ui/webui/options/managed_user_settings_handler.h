@@ -29,6 +29,9 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
   // Save user metrics. Called from WebUI.
   void SaveMetrics(const base::ListValue* args);
 
+  // Records metric that the settings page was opened. Called from WebUI.
+  void HandlePageOpened(const base::ListValue* args);
+
   // Called when the local passphrase changes.
   void OnLocalPassphraseChanged();
 

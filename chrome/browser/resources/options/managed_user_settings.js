@@ -107,6 +107,7 @@ cr.define('options', function() {
       var isAuthenticated =
           this.authenticationState == ManagedUserAuthentication.AUTHENTICATED;
       this.enableControls(isAuthenticated);
+      chrome.send('settingsPageOpened');
     },
 
     // Enables or disables all controls based on the authentication state of
