@@ -328,8 +328,10 @@ class Instruction(object):
     return result
 
   def HasRegisterInOpcode(self):
-    return self.FindOperand(
-        def_format.OperandType.REGISTER_IN_OPCODE) is not None
+    return (self.FindOperand(
+                def_format.OperandType.REGISTER_IN_OPCODE) is not None or
+            self.FindOperand(
+                def_format.OperandType.X87_REGISTER_IN_OPCODE) is not None)
 
   def HasOpcodeInsteadOfImmediate(self):
     return '/' in self.opcodes
@@ -557,13 +559,19 @@ class InstructionPrinter(object):
       self._out.write(' (%s)' % '|'.join(
           hex(b) for b in range(last_byte, last_byte + 2**3)))
 
+      self._out.write(' ')
+
       operand = instruction.FindOperand(
           def_format.OperandType.REGISTER_IN_OPCODE)
-      self._out.write(' ')
-      if operand.size == '7':
-        self._PrintOperandSource(operand, 'from_opcode_x87')
-      else:
+      if operand is not None:
+        assert operand.size != '7'
         self._PrintOperandSource(operand, 'from_opcode')
+      else:
+        operand = instruction.FindOperand(
+            def_format.OperandType.X87_REGISTER_IN_OPCODE)
+        assert operand.size == '7'
+        self._PrintOperandSource(operand, 'from_opcode_x87')
+
     else:
       self._out.write(' '.join(main_opcode_part))
 
@@ -654,8 +662,7 @@ class InstructionPrinter(object):
       return False
 
     # In 64-bit validator we only care about general purpose registers we
-    # are writing to. We need to look at the format in order to distinguish
-    # general-purpose registers from x87 ones.
+    # are writing to.
     return (
         operand.Writable() and
         operand.arg_type in [
@@ -665,8 +672,7 @@ class InstructionPrinter(object):
             def_format.OperandType.REGISTER_IN_RM,
             def_format.OperandType.AX,
             def_format.OperandType.CX,
-            def_format.OperandType.DX] and
-        operand.GetFormat(self._bitness) in ['8bit', '16bit', '32bit', '64bit'])
+            def_format.OperandType.DX])
 
   def _PrintOperandSource(self, operand, source):
     """Print action specifying operand source."""
@@ -818,10 +824,9 @@ class InstructionPrinter(object):
 
     operand = instruction.FindOperand(def_format.OperandType.REGISTER_IN_OPCODE)
     if operand is not None:
-      # Register in opcode could be either general-purpose register (there are
-      # 16 of them in 64-bit mode) or x87 register (there are 8 of them even in
-      # 64-bit mode). Fourth bit (when required) goes to rex.B.
-      if self._bitness == 64 and operand.size != '7':
+      # In 64-bit mode there are 16 general-purpose registers, so fourth bit
+      # goes to rex.B.
+      if self._bitness == 64:
         assert operand.size in ['b', 'w', 'd', 'q', 'r']
         instruction.rex.b_matters = True
 
@@ -890,8 +895,7 @@ class InstructionPrinter(object):
     assert instruction.HasModRM()
     assert instruction.FindOperand(def_format.OperandType.MEMORY) is None
 
-    assert instruction.FindOperand(
-        def_format.OperandType.REGISTER_IN_OPCODE) is None
+    assert not instruction.HasRegisterInOpcode()
 
     if instruction.RMatters():
       instruction.rex.r_matters = True
@@ -961,8 +965,7 @@ class InstructionPrinter(object):
 
     assert address_mode in ALL_ADDRESS_MODES
 
-    assert instruction.FindOperand(
-        def_format.OperandType.REGISTER_IN_OPCODE) is None
+    assert not instruction.HasRegisterInOpcode()
 
     if instruction.RMatters():
       instruction.rex.r_matters = True

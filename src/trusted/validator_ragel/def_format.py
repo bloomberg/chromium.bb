@@ -30,9 +30,10 @@
 #       a: Accumulator: %al/%ax/%eax/%rax/%xmm0 (depending on size).
 #       c: Counter register: %cl/%cx/%ecx/%rcx (depending on size).
 #       d: Data register: %dl/%dx/%edx/%rdx (depending on size).
+#       f: x87 register in opcode (3 least significant bits).
 #       i: Second immediate value encoded in the instruction.
 #       o: I/O port in %dx (used in "in"/"out" instructions).
-#       r: Register in opcode (low 3 bits plus rex.B).
+#       r: Register in opcode (3 least significant bits plus rex.B).
 #       t: Top of the x87 stack (%st).
 #       x: A memory operand addressed by the %ds:(%[er]bx). See "xlat".
 #       B: General purpose register specified by the VEX/XOP.vvvv field.
@@ -318,6 +319,9 @@ class OperandType(object):
   DEBUG_REGISTER = 'D'  # in ModRM.reg
 
   REGISTER_IN_OPCODE = 'r'
+  X87_REGISTER_IN_OPCODE = 'f'
+
+  X87_ST = 't'  # st0 that objdump displays as 'st'
 
   ABSOLUTE_DISP = 'O'
 
@@ -347,8 +351,6 @@ class OperandType(object):
   XMM_REGISTER_IN_VVVV = 'H'
 
   PORT_IN_DX = 'o'
-
-  X87_ST = 't'
 
 
 ALL_OPERAND_TYPES = set(

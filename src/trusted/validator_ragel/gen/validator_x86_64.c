@@ -20187,9 +20187,9 @@ st225:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof225;
 case 225:
-	if ( (*( current_position)) <= 127u )
-		goto tr52;
-	goto tr601;
+	if ( 128u <= (*( current_position)) )
+		goto tr601;
+	goto tr52;
 st226:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof226;
