@@ -413,12 +413,14 @@ void WebKitTestController::DiscardMainWindow() {
   // loop. Otherwise, we're already outside of the message loop, and we just
   // discard the main window.
   WebContentsObserver::Observe(NULL);
-  main_window_ = NULL;
-  current_pid_ = base::kNullProcessId;
   if (is_running_test_) {
     Shell::CloseAllWindows();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  } else if (main_window_) {
+    main_window_->Close();
   }
+  main_window_ = NULL;
+  current_pid_ = base::kNullProcessId;
 }
 
 void WebKitTestController::SendTestConfiguration() {
