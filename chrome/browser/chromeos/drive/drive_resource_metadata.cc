@@ -150,6 +150,94 @@ EntryInfoPairResult::EntryInfoPairResult() {
 EntryInfoPairResult::~EntryInfoPairResult() {
 }
 
+// Struct to hold result values passed to FileMoveCallback.
+struct DriveResourceMetadata::FileMoveResult {
+  FileMoveResult(DriveFileError error, const base::FilePath& path)
+      : error(error),
+        path(path) {}
+
+  explicit FileMoveResult(DriveFileError error)
+      : error(error) {}
+
+  FileMoveResult() : error(DRIVE_FILE_OK) {}
+
+  // Runs GetEntryInfoCallback with the values stored in |result|.
+  static void RunCallbackWithResult(const FileMoveCallback& callback,
+                                    const FileMoveResult& result) {
+    DCHECK(!callback.is_null());
+    callback.Run(result.error, result.path);
+  }
+
+  DriveFileError error;
+  base::FilePath path;
+};
+
+// Struct to hold result values passed to GetEntryInfoCallback.
+struct DriveResourceMetadata::GetEntryInfoResult {
+  GetEntryInfoResult(DriveFileError error, scoped_ptr<DriveEntryProto> entry)
+      : error(error),
+        entry(entry.Pass()) {}
+
+  explicit GetEntryInfoResult(DriveFileError error)
+      : error(error) {}
+
+  // Runs GetEntryInfoCallback with the values stored in |result|.
+  static void RunCallbackWithResult(const GetEntryInfoCallback& callback,
+                                    scoped_ptr<GetEntryInfoResult> result) {
+    DCHECK(!callback.is_null());
+    DCHECK(result);
+    callback.Run(result->error, result->entry.Pass());
+  }
+
+  DriveFileError error;
+  scoped_ptr<DriveEntryProto> entry;
+};
+
+// Struct to hold result values passed to GetEntryInfoWithFilePathCallback.
+struct DriveResourceMetadata::GetEntryInfoWithFilePathResult {
+  GetEntryInfoWithFilePathResult(DriveFileError error,
+                                 const base::FilePath& path,
+                                 scoped_ptr<DriveEntryProto> entry)
+      : error(error),
+        path(path),
+        entry(entry.Pass()) {}
+
+  explicit GetEntryInfoWithFilePathResult(DriveFileError error)
+      : error(error) {}
+
+  // Runs GetEntryInfoWithFilePathCallback with the values stored in |result|.
+  static void RunCallbackWithResult(
+      const GetEntryInfoWithFilePathCallback& callback,
+      scoped_ptr<GetEntryInfoWithFilePathResult> result) {
+    DCHECK(!callback.is_null());
+    DCHECK(result);
+    callback.Run(result->error, result->path, result->entry.Pass());
+  }
+
+  DriveFileError error;
+  base::FilePath path;
+  scoped_ptr<DriveEntryProto> entry;
+};
+
+// Struct to hold result values passed to ReadDirectoryCallback.
+struct DriveResourceMetadata::ReadDirectoryResult {
+  ReadDirectoryResult(DriveFileError error,
+                      scoped_ptr<DriveEntryProtoVector> entries)
+      : error(error),
+        entries(entries.Pass()) {}
+
+  // Runs ReadDirectoryCallback with the values stored in |result|.
+  static void RunCallbackWithResult(const ReadDirectoryCallback& callback,
+                                    scoped_ptr<ReadDirectoryResult> result) {
+    DCHECK(!callback.is_null());
+    DCHECK(result);
+    callback.Run(result->error, result->entries.Pass());
+  }
+
+  DriveFileError error;
+  scoped_ptr<DriveEntryProtoVector> entries;
+};
+
 // DriveResourceMetadata class implementation.
 
 DriveResourceMetadata::DriveResourceMetadata(

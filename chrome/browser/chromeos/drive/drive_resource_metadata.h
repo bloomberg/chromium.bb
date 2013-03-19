@@ -232,6 +232,11 @@ class DriveResourceMetadata {
  private:
   friend class DriveResourceMetadataTest;
 
+  struct FileMoveResult;
+  struct GetEntryInfoResult;
+  struct GetEntryInfoWithFilePathResult;
+  struct ReadDirectoryResult;
+
   // Note: Use Destroy() to delete this object.
   virtual ~DriveResourceMetadata();
 
