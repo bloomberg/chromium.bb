@@ -132,6 +132,16 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
   return a.url_info.last_visit() > b.url_info.last_visit();
 }
 
+// Extracts typed_count, visit_count, and last_visited time from the
+// URLRow and puts them in the additional info field of the |match|
+// for display in about:omnibox.
+void RecordAdditionalInfoFromUrlRow(const history::URLRow& info,
+                                    AutocompleteMatch* match) {
+  match->RecordAdditionalInfo("typed count", info.typed_count());
+  match->RecordAdditionalInfo("visit count", info.visit_count());
+  match->RecordAdditionalInfo("last visit", info.last_visit());
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------
@@ -707,6 +717,7 @@ bool HistoryURLProvider::FixupExactSuggestion(
       // We have data for this match, use it.
       match->deletable = true;
       match->description = classifier.url_row().title();
+      RecordAdditionalInfoFromUrlRow(classifier.url_row(), match);
       AutocompleteMatch::ClassifyMatchInString(
           input.text(),
           classifier.url_row().title(),
@@ -1034,10 +1045,6 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
                                            info.title(),
                                            ACMatchClassification::NONE,
                                            &match.description_class);
-
-  match.RecordAdditionalInfo("typed count", info.typed_count());
-  match.RecordAdditionalInfo("visit count", info.visit_count());
-  match.RecordAdditionalInfo("last visit", info.last_visit());
-
+  RecordAdditionalInfoFromUrlRow(info, &match);
   return match;
 }
