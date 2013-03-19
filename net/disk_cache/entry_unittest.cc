@@ -426,7 +426,7 @@ void DiskCacheEntryTest::ExternalAsyncIO() {
     expected++;
 
   EXPECT_TRUE(helper.WaitUntilCacheIoFinished(expected));
-  EXPECT_STREQ("the data", buffer1->data());
+  EXPECT_STREQ("the data", buffer2->data());
 
   base::strlcpy(buffer2->data(), "The really big data goes here", kSize2);
   ret = entry->WriteData(
@@ -456,7 +456,8 @@ void DiskCacheEntryTest::ExternalAsyncIO() {
     expected++;
 
   EXPECT_TRUE(helper.WaitUntilCacheIoFinished(expected));
-  EXPECT_EQ(0, memcmp(buffer2->data(), buffer2->data(), 10000));
+  memset(buffer3->data(), 0, kSize3);
+  EXPECT_EQ(0, memcmp(buffer2->data(), buffer3->data(), 10000));
   ret = entry->ReadData(
       1, 30000, buffer2, kSize2,
       base::Bind(&CallbackTest::Run, base::Unretained(&callback6)));
@@ -474,7 +475,7 @@ void DiskCacheEntryTest::ExternalAsyncIO() {
   if (net::ERR_IO_PENDING == ret)
     expected++;
   ret = entry->WriteData(
-      1, 20000, buffer1, kSize1,
+      1, 20000, buffer3, kSize1,
       base::Bind(&CallbackTest::Run, base::Unretained(&callback9)), false);
   EXPECT_TRUE(17000 == ret || net::ERR_IO_PENDING == ret);
   if (net::ERR_IO_PENDING == ret)
