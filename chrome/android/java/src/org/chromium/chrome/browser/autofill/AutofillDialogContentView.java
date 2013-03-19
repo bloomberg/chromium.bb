@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +26,6 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.NUM_SECTIONS;
-import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_EMAIL;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC_BILLING;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_BILLING;
@@ -105,7 +106,8 @@ public class AutofillDialogContentView extends LinearLayout {
     private void createAndAddPlaceHolders() {
         AutofillDialogMenuItem[] ccItems = new AutofillDialogMenuItem[1];
         ccItems[0] = new AutofillDialogMenuItem(
-                0, "XXXX-XXXX-XXXX-1000", "Additional info required", null);
+                0, "XXXX-XXXX-XXXX-1000", "Additional info required",
+                        BitmapFactory.decodeResource(getResources(), R.drawable.visa));
         AutofillDialogMenuItem[] addressItems = new AutofillDialogMenuItem[1];
         addressItems[0] = new AutofillDialogMenuItem(
                 0, "Place Holder", "1600 Amphitheatre Pkwy", null);
@@ -326,10 +328,24 @@ public class AutofillDialogContentView extends LinearLayout {
             ImageView icon = (ImageView) convertView.findViewById(R.id.cc_icon);
             TextView line1 = (TextView) convertView.findViewById(R.id.adapter_item_line_1);
             TextView line2 = (TextView) convertView.findViewById(R.id.adapter_item_line_2);
-            // TODO(yusufo): Fix card icon when it gets added to menuItem.
-            if (icon != null) icon.setImageResource(R.drawable.visa);
+            if (icon != null) {
+                if (item.mIcon != null) {
+                    icon.setImageBitmap(item.mIcon);
+                    icon.setVisibility(VISIBLE);
+                } else {
+                    icon.setImageBitmap(null);
+                    icon.setVisibility(GONE);
+                }
+            }
             if (line1 != null) line1.setText(item.mLine1);
-            if (line2 != null) line2.setText(item.mLine2);
+            if (line2 != null) {
+                if (!TextUtils.isEmpty(item.mLine2)) {
+                    line2.setVisibility(VISIBLE);
+                    line2.setText(item.mLine2);
+                } else {
+                    line2.setVisibility(GONE);
+                }
+            }
             return convertView;
         }
     }
