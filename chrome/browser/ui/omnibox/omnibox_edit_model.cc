@@ -1143,7 +1143,7 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
   }
 
   InstantController* instant = controller_->GetInstant();
-  if (instant)
+  if (instant && !in_revert_)
     instant->HandleAutocompleteResults(*autocomplete_controller_->providers());
 }
 
