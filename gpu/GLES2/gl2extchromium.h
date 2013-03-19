@@ -70,8 +70,7 @@ typedef void (GL_APIENTRYP PFNGLCONSUMETEXTURECHROMIUMPROC) (
 #define GL_CHROMIUM_pixel_transfer_buffer_object 1
 
 #ifndef GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM
-// TODO(reveman): Get official numbers for this constants.
-#define GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM 0x88EC
+#define GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM 0x78EC
 
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void* GL_APIENTRY glMapBufferCHROMIUM(GLuint target,GLenum access);
@@ -83,8 +82,7 @@ typedef GLboolean (GL_APIENTRY PFNGLUNMAPBUFFERCHROMIUM) (GLuint target);
 #endif  /* GL_CHROMIUM_pixel_transfer_buffer_object */
 
 #ifndef GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM
-// TODO(reveman): Get official numbers for this constants.
-#define GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM 0x88EF
+#define GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM 0x78EF
 #endif
 #endif  /* GL_CHROMIUM_pixel_transfer_buffer_object */
 
