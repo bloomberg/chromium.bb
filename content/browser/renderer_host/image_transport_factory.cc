@@ -669,6 +669,7 @@ class GpuProcessTransportFactory
   }
 
   void OnLostMainThreadSharedContext() {
+    LOG(ERROR) << "Lost UI shared context.";
     // Keep old resources around while we call the observers, but ensure that
     // new resources are created if needed.
 
