@@ -614,12 +614,12 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
     canvas->Restore();
 }
 
-unsigned Layer::prepareTexture(cc::ResourceUpdateQueue&) {
+unsigned Layer::PrepareTexture(cc::ResourceUpdateQueue* queue) {
   DCHECK(texture_layer_);
   return texture_->PrepareTexture();
 }
 
-WebKit::WebGraphicsContext3D* Layer::context() {
+WebKit::WebGraphicsContext3D* Layer::Context3d() {
   DCHECK(texture_layer_);
   return texture_->HostContext3D();
 }

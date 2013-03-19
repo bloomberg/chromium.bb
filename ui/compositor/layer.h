@@ -298,8 +298,8 @@ class COMPOSITOR_EXPORT Layer
   cc::Layer* cc_layer() { return cc_layer_; }
 
   // TextureLayerClient
-  virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
+  virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
 
   float device_scale_factor() const { return device_scale_factor_; }
 

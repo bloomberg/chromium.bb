@@ -58,7 +58,7 @@ TextureLayer::~TextureLayer() {
     if (texture_id_)
       layer_tree_host()->AcquireLayerTextures();
     if (rate_limit_context_ && client_)
-      layer_tree_host()->StopRateLimiter(client_->context());
+      layer_tree_host()->StopRateLimiter(client_->Context3d());
   }
   if (own_mailbox_)
     texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
@@ -102,7 +102,7 @@ void TextureLayer::SetPremultipliedAlpha(bool premultiplied_alpha) {
 
 void TextureLayer::SetRateLimitContext(bool rate_limit) {
   if (!rate_limit && rate_limit_context_ && client_ && layer_tree_host())
-    layer_tree_host()->StopRateLimiter(client_->context());
+    layer_tree_host()->StopRateLimiter(client_->Context3d());
 
   rate_limit_context_ = rate_limit;
 }
@@ -140,7 +140,7 @@ void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
   Layer::SetNeedsDisplayRect(dirty_rect);
 
   if (rate_limit_context_ && client_ && layer_tree_host() && DrawsContent())
-    layer_tree_host()->StartRateLimiter(client_->context());
+    layer_tree_host()->StartRateLimiter(client_->Context3d());
 }
 
 void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -158,9 +158,9 @@ void TextureLayer::Update(ResourceUpdateQueue* queue,
                           const OcclusionTracker* occlusion,
                           RenderingStats* stats) {
   if (client_) {
-    texture_id_ = client_->prepareTexture(*queue);
+    texture_id_ = client_->PrepareTexture(queue);
     context_lost_ =
-        client_->context()->getGraphicsResetStatusARB() != GL_NO_ERROR;
+        client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR;
   }
 
   needs_display_ = false;

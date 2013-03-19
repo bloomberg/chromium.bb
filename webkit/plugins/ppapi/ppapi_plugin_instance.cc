@@ -2089,11 +2089,11 @@ void PluginInstance::DeliverSamples(PP_Instance instance,
   content_decryptor_delegate_->DeliverSamples(audio_frames, block_info);
 }
 
-unsigned PluginInstance::prepareTexture(cc::ResourceUpdateQueue&) {
+unsigned PluginInstance::PrepareTexture(cc::ResourceUpdateQueue* queue) {
   return GetBackingTextureId();
 }
 
-WebKit::WebGraphicsContext3D* PluginInstance::context() {
+WebKit::WebGraphicsContext3D* PluginInstance::Context3d() {
   DCHECK(bound_graphics_3d_.get());
   DCHECK(bound_graphics_3d_->platform_context());
   return bound_graphics_3d_->platform_context()->GetParentContext();

@@ -463,8 +463,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                               const PP_DecryptedBlockInfo* block_info) OVERRIDE;
 
   // TextureLayerClient implementation.
-  virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
+  virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
 
   // Reset this instance as proxied. Assigns the instance a new module, resets
   // cached interfaces to point to the out-of-process proxy and re-sends

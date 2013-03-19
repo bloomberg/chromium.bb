@@ -34,8 +34,8 @@ class WebExternalTextureLayerImpl : public WebKit::WebExternalTextureLayer,
   virtual void setRateLimitContext(bool rate_limit);
 
   // TextureLayerClient implementation.
-  virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
+  virtual unsigned PrepareTexture(cc::ResourceUpdateQueue*) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
 
  private:
   WebKit::WebExternalTextureLayerClient* client_;

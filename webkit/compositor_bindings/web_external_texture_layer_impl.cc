@@ -82,14 +82,14 @@ class WebTextureUpdaterImpl : public WebKit::WebTextureUpdater {
   ResourceUpdateQueue* queue_;
 };
 
-unsigned WebExternalTextureLayerImpl::prepareTexture(
-    ResourceUpdateQueue& queue) {
+unsigned WebExternalTextureLayerImpl::PrepareTexture(
+    ResourceUpdateQueue* queue) {
   DCHECK(client_);
-  WebTextureUpdaterImpl updater_impl(&queue);
+  WebTextureUpdaterImpl updater_impl(queue);
   return client_->prepareTexture(updater_impl);
 }
 
-WebKit::WebGraphicsContext3D* WebExternalTextureLayerImpl::context() {
+WebKit::WebGraphicsContext3D* WebExternalTextureLayerImpl::Context3d() {
   DCHECK(client_);
   return client_->context();
 }
