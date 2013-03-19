@@ -511,11 +511,19 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
   SetReadOnly(popup_window_mode_);
   SetFont(font_.GetNativeFont());
 
-  // Disable auto font changing. Otherwise, characters come from
-  // auto-completion and characters come from keyboard may be rendered with
-  // different fonts. See http://crbug.com/168480 for details.
-  const LRESULT lang_option = SendMessage(m_hWnd, EM_GETLANGOPTIONS, 0, 0);
-  SendMessage(m_hWnd, EM_SETLANGOPTIONS, 0, lang_option & ~IMF_AUTOFONT);
+  // IMF_DUALFONT (on by default) is supposed to use one font for ASCII text
+  // and a different one for Asian text.  In some cases, ASCII characters may
+  // be mis-marked as Asian, e.g. because input from the keyboard may be
+  // auto-stamped with the keyboard language.  As a result adjacent characters
+  // can render in different fonts, which looks bizarre.  To fix this we
+  // disable dual-font mode, which forces the control to use a single font for
+  // everything.
+  // Note that we should not disable the very similar IMF_AUTOFONT flag, which
+  // allows the control to hunt for fonts that can display all the current
+  // characters; doing this results in "missing glyph" boxes when the user
+  // enters characters not available in the currently-chosen font.
+  const LRESULT lang_options = SendMessage(m_hWnd, EM_GETLANGOPTIONS, 0, 0);
+  SendMessage(m_hWnd, EM_SETLANGOPTIONS, 0, lang_options & ~IMF_DUALFONT);
 
   // NOTE: Do not use SetWordBreakProcEx() here, that is no longer supported as
   // of Rich Edit 2.0 onward.
