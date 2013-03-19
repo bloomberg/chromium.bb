@@ -17,24 +17,13 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
-
 const char kNotAvailable[] = "<not available>";
 const char kRoutesKeyName[] = "routes";
 const char kNetworkStatusKeyName[] = "network-status";
 const char kModemStatusKeyName[] = "modem-status";
 const char kUserLogFileKeyName[] = "user_log_files";
-}  // namespace
 
 namespace chromeos {
-
-// Fetches logs from the debug daemon over DBus. When all the logs have been
-// fetched, forwards the results to the supplied Request. Used like:
-//   DebugDaemonLogSource* fetcher = new DebugDaemonLogSource(request);
-//   fetcher->Fetch();
-// Note that you do not need to delete the fetcher; it will delete itself after
-// Fetch() has forwarded the result to the request handler.
-
 
 DebugDaemonLogSource::DebugDaemonLogSource()
     : response_(new SystemLogsResponse()),

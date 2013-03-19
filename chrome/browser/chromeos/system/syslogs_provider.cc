@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 
 #include "ash/shell.h"
-#include "ash/touch/touch_observer_hud.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -334,11 +333,6 @@ void SyslogsProviderImpl::ReadSyslogs(
   (*logs)["network_event_log"] = chromeos::network_event_log::GetAsString(
       chromeos::network_event_log::OLDEST_FIRST,
       chromeos::system::kFeedbackMaxLineCount);
-
-  if (ash::Shell::GetInstance()->touch_observer_hud()) {
-    (*logs)[kHUDLogDataKey] =
-        ash::Shell::GetInstance()->touch_observer_hud()->GetLogAsString();
-  }
 
   // SyslogsMemoryHandler will clean itself up.
   // SyslogsMemoryHandler::OnDetailsAvailable() will modify |logs| and call

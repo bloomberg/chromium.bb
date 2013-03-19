@@ -23,7 +23,6 @@
 #include "base/win/windows_version.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 
 class Profile;
@@ -31,12 +30,6 @@ class Profile;
 namespace content {
 class WebContents;
 }
-
-extern const char kSyncDataKey[];
-
-#if defined(OS_CHROMEOS)
-extern const char kHUDLogDataKey[];
-#endif
 
 class FeedbackUtil {
  public:
@@ -72,7 +65,7 @@ class FeedbackUtil {
                                int64 delay);
 
   // Generates bug report data.
-  static void SendReport(const FeedbackData& data);
+  static void SendReport(scoped_refptr<FeedbackData> data);
   // Redirects the user to Google's phishing reporting page.
   static void ReportPhishing(content::WebContents* current_tab,
                              const std::string& phishing_url);

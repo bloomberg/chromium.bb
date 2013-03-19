@@ -11,9 +11,7 @@
 
 namespace chromeos {
 
-namespace {
 const char kNetworkEventLogEntry[] = "network_event_log";
-}
 
 void NetworkEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

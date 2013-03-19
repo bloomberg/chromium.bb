@@ -9,6 +9,8 @@
 #include "chrome/browser/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 
+const char kHUDLogDataKey[] = "hud_log";
+
 namespace chromeos {
 
 TouchLogSource::TouchLogSource() {

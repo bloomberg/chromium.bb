@@ -20,10 +20,10 @@ class DebugDaemonLogSource : public SystemLogsSource {
   DebugDaemonLogSource();
   virtual ~DebugDaemonLogSource();
 
+  // SystemLogsSource override:
   // Fetches logs from the daemon over dbus. After the fetch is complete, the
   // results will be forwarded to the request supplied to the constructor and
   // this instance will free itself.
-  // SystemLogsSource override.
   virtual void Fetch(const SysLogsSourceCallback& callback) OVERRIDE;
 
  private:

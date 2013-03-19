@@ -691,6 +691,8 @@
         'browser/chromeos/system/timezone_settings.h',
         'browser/chromeos/system_key_event_listener.cc',
         'browser/chromeos/system_key_event_listener.h',
+        'browser/chromeos/system_logs/chrome_internal_log_source.cc',
+        'browser/chromeos/system_logs/chrome_internal_log_source.h',
         'browser/chromeos/system_logs/command_line_log_source.cc',
         'browser/chromeos/system_logs/command_line_log_source.h',
         'browser/chromeos/system_logs/dbus_log_source.cc',

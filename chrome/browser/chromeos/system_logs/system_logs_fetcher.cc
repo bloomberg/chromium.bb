@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/system_logs/chrome_internal_log_source.h"
 #include "chrome/browser/chromeos/system_logs/command_line_log_source.h"
 #include "chrome/browser/chromeos/system_logs/dbus_log_source.h"
 #include "chrome/browser/chromeos/system_logs/debug_daemon_log_source.h"
@@ -27,6 +28,7 @@ SystemLogsFetcher::SystemLogsFetcher()
   data_sources_.push_back(new DebugDaemonLogSource());
 
   // Chrome data sources.
+  data_sources_.push_back(new ChromeInternalLogSource());
   data_sources_.push_back(new CommandLineLogSource());
   data_sources_.push_back(new DBusLogSource());
   data_sources_.push_back(new LsbReleaseLogSource());

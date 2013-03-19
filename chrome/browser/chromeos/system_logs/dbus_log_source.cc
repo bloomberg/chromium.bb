@@ -8,12 +8,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "dbus/dbus_statistics.h"
 
-namespace chromeos {
-
-namespace {
 const char kDBusLogEntryShort[] = "dbus_summary";
 const char kDBusLogEntryLong[] = "dbus_details";
-}
+
+namespace chromeos {
 
 void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

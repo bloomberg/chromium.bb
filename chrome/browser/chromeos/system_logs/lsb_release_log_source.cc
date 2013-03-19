@@ -17,10 +17,10 @@
 
 using content::BrowserThread;
 
-namespace {
-
 const char kInvalidLogEntry[] = "<invalid characters in log entry>";
 const char kEmptyLogEntry[] = "<no value>";
+
+namespace {
 
 typedef std::pair<std::string, std::string> KeyValuePair;
 
