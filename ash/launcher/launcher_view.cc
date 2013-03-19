@@ -1415,7 +1415,10 @@ void LauncherView::ShowMenu(
           views::MenuRunner::CONTEXT_MENU) == views::MenuRunner::MENU_DELETED)
     return;
 
-  closing_event_time_ = launcher_menu_runner_->closing_event_time();
+  // Unpinning an item will reset the |launcher_menu_runner_| before coming
+  // here.
+  if (launcher_menu_runner_.get())
+    closing_event_time_ = launcher_menu_runner_->closing_event_time();
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
