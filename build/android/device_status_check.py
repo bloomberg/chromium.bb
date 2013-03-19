@@ -33,14 +33,17 @@ def DeviceInfo(serial):
 
   device_type = AdbShellCmd('getprop ro.build.product')
   device_build = AdbShellCmd('getprop ro.build.id')
+  device_product_name = AdbShellCmd('getprop ro.product.name')
 
   setup_wizard_disabled = AdbShellCmd(
       'getprop ro.setupwizard.mode') == 'DISABLED'
   battery = AdbShellCmd('dumpsys battery')
   if 'Error' in battery:
+    ac_power = 'Unknown'
     battery_level = 'Unknown'
     battery_temp = 'Unknown'
   else:
+    ac_power = re.findall('AC powered: (\w+)', battery)[0]
     battery_level = int(re.findall('level: (\d+)', battery)[0])
     battery_temp = float(re.findall('temperature: (\d+)', battery)[0]) / 10
   report = ['Device %s (%s)' % (serial, device_type),
@@ -54,13 +57,15 @@ def DeviceInfo(serial):
             '  Wifi IP: %s' % AdbShellCmd('getprop dhcp.wlan0.ipaddress'),
             '']
 
-  warnings = []
+  errors = []
   if battery_level < 5:
-    warnings += ['critically low battery']
+    errors += ['Device critically low in battery.']
   if not setup_wizard_disabled:
-    warnings += ['Setup wizard not disabled. Was it provisioned correctly?']
+    errors += ['Setup wizard not disabled. Was it provisioned correctly?']
+  if device_product_name == 'mantaray' and ac_power != 'true':
+    errors += ['Mantaray device not connected to AC power.']
 
-  return device_type, device_build, '\n'.join(report), warnings
+  return device_type, device_build, '\n'.join(report), errors
 
 
 def CheckForMissingDevices(options, adb_online_devs):
@@ -100,50 +105,24 @@ def CheckForMissingDevices(options, adb_online_devs):
 
   last_devices_path = os.path.join(out_dir, '.last_devices')
   last_devices = ReadDeviceList('.last_devices')
-
   missing_devs = list(set(last_devices) - set(adb_online_devs))
+
+  WriteDeviceList('.last_devices', (adb_online_devs + last_devices))
+  WriteDeviceList('.last_missing', missing_devs)
+
   if missing_devs:
-    from_address = 'buildbot@chromium.org'
-    to_address = 'chromium-android-device-alerts@google.com'
-    bot_name = os.environ.get('BUILDBOT_BUILDERNAME')
-    slave_name = os.environ.get('BUILDBOT_SLAVENAME')
-    num_online_devs = len(adb_online_devs)
-    subject = 'Devices offline on %s, %s (%d remaining).' % (slave_name,
-                                                             bot_name,
-                                                             num_online_devs)
-    buildbot_report.PrintWarning()
     devices_missing_msg = '%d devices not detected.' % len(missing_devs)
     buildbot_report.PrintSummaryText(devices_missing_msg)
 
     # TODO(navabi): Debug by printing both output from GetCmdOutput and
     # GetAttachedDevices to compare results.
-    body = '\n'.join(
-        ['Current online devices: %s' % adb_online_devs,
-         '%s are no longer visible. Were they removed?\n' % missing_devs,
-         'SHERIFF: See go/chrome_device_monitor',
-         'Cache file: %s\n\n' % last_devices_path,
-         'adb devices: %s' % GetCmdOutput(['adb', 'devices']),
-         'adb devices(GetAttachedDevices): %s' %
-         android_commands.GetAttachedDevices()])
-
-    print body
-
-    # Only send email if the first time a particular device goes offline
-    last_missing = ReadDeviceList('.last_missing')
-    new_missing_devs = set(missing_devs) - set(last_missing)
-
-    if new_missing_devs and bot_name:
-      msg_body = '\r\n'.join(
-          ['From: %s' % from_address,
-           'To: %s' % to_address,
-           'Subject: %s' % subject,
-           '', body])
-      try:
-        server = smtplib.SMTP('localhost')
-        server.sendmail(from_address, [to_address], msg_body)
-        server.quit()
-      except Exception as e:
-        print 'Failed to send alert email. Error: %s' % e
+    return ['Current online devices: %s' % adb_online_devs,
+            '%s are no longer visible. Were they removed?\n' % missing_devs,
+            'SHERIFF: See go/chrome_device_monitor',
+            'Cache file: %s\n\n' % last_devices_path,
+            'adb devices: %s' % GetCmdOutput(['adb', 'devices']),
+            'adb devices(GetAttachedDevices): %s' %
+            android_commands.GetAttachedDevices()]
   else:
     new_devs = set(adb_online_devs) - set(last_devices)
     if new_devs and os.path.exists(last_devices_path):
@@ -152,8 +131,22 @@ def CheckForMissingDevices(options, adb_online_devs):
           '%d new devices detected' % len(new_devs))
       print ('New devices detected %s. And now back to your '
              'regularly scheduled program.' % list(new_devs))
-  WriteDeviceList('.last_devices', (adb_online_devs + last_devices))
-  WriteDeviceList('.last_missing', missing_devs)
+
+
+def SendDeviceStatusAlert(msg):
+  from_address = 'buildbot@chromium.org'
+  to_address = 'chromium-android-device-alerts@google.com'
+  bot_name = os.environ.get('BUILDBOT_BUILDERNAME')
+  slave_name = os.environ.get('BUILDBOT_SLAVENAME')
+  subject = 'Device status check errors on %s, %s.' % (slave_name, bot_name)
+  msg_body = '\r\n'.join(['From: %s' % from_address, 'To: %s' % to_address,
+                          'Subject: %s' % subject, '', msg])
+  try:
+    server = smtplib.SMTP('localhost')
+    server.sendmail(from_address, [to_address], msg_body)
+    server.quit()
+  except Exception as e:
+    print 'Failed to send alert email. Error: %s' % e
 
 
 def main():
@@ -171,6 +164,8 @@ def main():
   if devices:
     types, builds, reports, errors = zip(*[DeviceInfo(dev) for dev in devices])
 
+  err_msg = CheckForMissingDevices(options, devices) or []
+
   unique_types = list(set(types))
   unique_builds = list(set(builds))
 
@@ -178,14 +173,18 @@ def main():
                            % (len(devices), unique_types, unique_builds))
   print '\n'.join(reports)
 
-  full_errors = []
-  for serial, device_errors in zip(devices, errors):
-    full_errors.extend('%s: %s' % (serial, error) for error in device_errors)
-  if full_errors:
-    buildbot_report.PrintWarning()
-    print '\n'.join(full_errors)
+  for serial, dev_errors in zip(devices, errors):
+    if dev_errors:
+      err_msg += ['%s errors:' % serial]
+      err_msg += ['    %s' % error for error in dev_errors]
 
-  CheckForMissingDevices(options, devices)
+  if err_msg:
+    buildbot_report.PrintWarning()
+    msg = '\n'.join(err_msg)
+    print msg
+    SendDeviceStatusAlert(msg)
+    return 1
+
 
 if __name__ == '__main__':
   sys.exit(main())
