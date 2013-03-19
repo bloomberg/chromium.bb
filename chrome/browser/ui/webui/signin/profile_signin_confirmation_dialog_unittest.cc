@@ -15,6 +15,7 @@
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -49,12 +50,9 @@ void GetValueAndQuit(T* result, base::Closure quit, T actual) {
 template<typename T>
 T GetCallbackResult(base::Callback<void(base::Callback<void(T)>)> callback) {
   T result = false;
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-  callback.Run(base::Bind(&GetValueAndQuit<T>, &result,
-                          base::Bind(&content::MessageLoopRunner::Quit,
-                                     runner)));
-  runner->Run();
+  base::RunLoop loop;
+  callback.Run(base::Bind(&GetValueAndQuit<T>, &result, loop.QuitClosure()));
+  loop.Run();
   return result;
 }
 
