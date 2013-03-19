@@ -267,11 +267,6 @@ UI_EXPORT void PutARGBImage(Display* display,
 void FreePicture(Display* display, XID picture);
 void FreePixmap(Display* display, XID pixmap);
 
-// Gets the list of the output displaying device handles via XRandR, and sets to
-// |outputs|.  Returns false if it fails to get the list and |outputs| is
-// cleared.
-UI_EXPORT bool GetOutputDeviceHandles(std::vector<XID>* outputs);
-
 // Gets some useful data from the specified output device, such like
 // manufacturer's ID, product code, and human readable name. Returns false if it
 // fails to get those data and doesn't touch manufacturer ID/product code/name.

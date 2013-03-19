@@ -94,46 +94,22 @@ class DisplayView : public ash::internal::ActionableView {
  private:
   // Returns the name of the currently connected external display.
   string16 GetExternalDisplayName() const {
-    if (base::chromeos::IsRunningOnChromeOS())
-      return GetNativeExternalDisplayName();
-    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
-  }
-
-  string16 GetNativeExternalDisplayName() const {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    int64 internal_display_id = gfx::Display::InternalDisplayId();
-    int64 primary_display_id =
-        Shell::GetScreen()->GetPrimaryDisplay().id();
+    int64 external_id = display_manager->mirrored_display_id();
 
-    // Use xrandr features rather than DisplayManager to find out the external
-    // display's name. DisplayManager's API doesn't work well in mirroring mode
-    // since it's based on gfx::Display but in mirroring mode there's only one
-    // gfx::Display instance which represents both displays.
-    // TODO(oshima): Use DisplayManager to get external display name.
-    std::vector<XID> outputs;
-    ui::GetOutputDeviceHandles(&outputs);
-    for (size_t i = 0; i < outputs.size(); ++i) {
-      std::string name;
-      uint16 manufacturer_id = 0;
-      uint16 product_code = 0;
-      if (ui::GetOutputDeviceData(
-              outputs[i], &manufacturer_id, &product_code, &name)) {
-        int64 display_id = gfx::Display::GetID(
-            manufacturer_id, product_code, i);
-        if (display_id == internal_display_id)
-          continue;
-        // Some systems like stumpy don't have the internal display at all. It
-        // means both of the displays are external but we need to choose either
-        // one. Currently we adopt simple heuristics which just avoids the
-        // primary display.
-        if (!display_manager->HasInternalDisplay() &&
-            display_id == primary_display_id) {
-          continue;
+    if (external_id == gfx::Display::kInvalidDisplayID) {
+      int64 internal_display_id = gfx::Display::InternalDisplayId();
+      int64 first_display_id = display_manager->first_display_id();
+      for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
+        int64 id = display_manager->GetDisplayAt(i)->id();
+        if (id != internal_display_id && id != first_display_id) {
+          external_id = id;
+          break;
         }
-
-        return UTF8ToUTF16(name);
       }
     }
+    if (external_id != gfx::Display::kInvalidDisplayID)
+      return UTF8ToUTF16(display_manager->GetDisplayNameForId(external_id));
     return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
   }
 
