@@ -61,9 +61,6 @@ class GpuVideoDecodeAcceleratorHost
   GpuChannelHost* channel_;
 
   // Route ID for the associated decoder in the GPU process.
-  // TODO(fischman): storing route_id's for GPU process entities in the client
-  // process is vulnerable to GPU process crashing & being respawned, and
-  // attempting to use an outdated or reused route id.
   int32 decoder_route_id_;
 
   // Reference to the client that will receive callbacks from the decoder.

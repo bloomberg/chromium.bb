@@ -59,11 +59,9 @@ static bool MakeDecoderContextCurrent(
 }
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
-    IPC::Sender* sender,
     int32 host_route_id,
     GpuCommandBufferStub* stub)
-    : sender_(sender),
-      init_done_msg_(NULL),
+    : init_done_msg_(NULL),
       host_route_id_(host_route_id),
       stub_(stub->AsWeakPtr()),
       video_decode_accelerator_(NULL),
@@ -76,8 +74,11 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
-  if (stub_)
+  if (stub_) {
+    stub_->channel()->RemoveRoute(host_route_id_);
     stub_->RemoveDestructionObserver(this);
+  }
+
   if (video_decode_accelerator_.get())
     video_decode_accelerator_.release()->Destroy();
 }
@@ -161,6 +162,8 @@ void GpuVideoDecodeAccelerator::Initialize(
   init_done_msg_ = init_done_msg;
   if (!stub_)
     return;
+
+  stub_->channel()->AddRoute(host_route_id_, this);
 
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
@@ -355,8 +358,8 @@ void GpuVideoDecodeAccelerator::OnWillDestroyStub(GpuCommandBufferStub* stub) {
 }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
-  DCHECK(sender_);
-  return sender_->Send(message);
+  DCHECK(stub_);
+  return stub_->channel()->Send(message);
 }
 
 }  // namespace content

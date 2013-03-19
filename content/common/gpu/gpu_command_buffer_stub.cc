@@ -754,15 +754,13 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
   int decoder_route_id = channel_->GenerateRouteID();
   GpuVideoDecodeAccelerator* decoder =
-      new GpuVideoDecodeAccelerator(this, decoder_route_id, this);
+      new GpuVideoDecodeAccelerator(decoder_route_id, this);
   video_decoders_.AddWithID(decoder, decoder_route_id);
-  channel_->AddRoute(decoder_route_id, decoder);
   decoder->Initialize(profile, reply_message);
 }
 
 void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyVideoDecoder");
-  channel_->RemoveRoute(decoder_route_id);
   video_decoders_.Remove(decoder_route_id);
 }
 

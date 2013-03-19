@@ -106,9 +106,7 @@ class GpuCommandBufferStub
   GpuChannel* channel() const { return channel_; }
 
   // Identifies the target surface.
-  int32 surface_id() const {
-    return surface_id_;
-  }
+  int32 surface_id() const { return surface_id_; }
 
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.

@@ -26,9 +26,7 @@ class GpuVideoDecodeAccelerator
   // Each of the arguments to the constructor must outlive this object.
   // |stub->decoder()| will be made current around any operation that touches
   // the underlying VDA so that it can make GL calls safely.
-  GpuVideoDecodeAccelerator(IPC::Sender* sender,
-                            int32 host_route_id,
-                            GpuCommandBufferStub* stub);
+  GpuVideoDecodeAccelerator(int32 host_route_id, GpuCommandBufferStub* stub);
   virtual ~GpuVideoDecodeAccelerator();
 
   // IPC::Listener implementation.
@@ -71,9 +69,6 @@ class GpuVideoDecodeAccelerator
   void OnFlush();
   void OnReset();
   void OnDestroy();
-
-  // Pointer to the IPC message sender.
-  IPC::Sender* sender_;
 
   // Message to Send() when initialization is done.  Is only non-NULL during
   // initialization and is owned by the IPC channel underlying the
