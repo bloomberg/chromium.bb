@@ -14,7 +14,6 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @class BookmarkBarController;
-@class BookmarkBarImportButton;
 @class BookmarkBarItemContainer;
 @class BookmarkBarTextField;
 
@@ -25,11 +24,11 @@
 
   IBOutlet BookmarkBarController* controller_;
   IBOutlet BookmarkBarTextField* noItemTextfield_;
-  IBOutlet BookmarkBarImportButton* importBookmarksButton_;
+  IBOutlet NSButton* importBookmarksButton_;
   BookmarkBarItemContainer* noItemContainer_;
 }
 - (BookmarkBarTextField*)noItemTextfield;
-- (BookmarkBarImportButton*)importBookmarksButton;
+- (NSButton*)importBookmarksButton;
 - (BookmarkBarController*)controller;
 
 @property(nonatomic, assign) IBOutlet BookmarkBarItemContainer* noItemContainer;
@@ -46,15 +45,6 @@
 // This is necessary when building with the 10.6 SDK because -rightMouseDown:
 // does not follow the responder chain.
 @interface BookmarkBarTextField : NSTextField {
- @private
-  IBOutlet BookmarkBarView* barView_;
-}
-@end
-
-// NSButton subclass responsible for routing -menu to the BookmarBarView.
-// This is necessary when building with the 10.6 SDK because -rightMouseDown:
-// does not follow the responder chain.
-@interface BookmarkBarImportButton : NSButton {
  @private
   IBOutlet BookmarkBarView* barView_;
 }
