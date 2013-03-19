@@ -127,9 +127,20 @@ def PrintPerfResult(measurement, trace, values, units, result_type='default',
   return output
 
 
-class PerfTestSetup(object):
-  """Provides methods for setting up a device for perf testing."""
+class CacheControl(object):
   _DROP_CACHES = '/proc/sys/vm/drop_caches'
+
+  def __init__(self, adb):
+    self._adb = adb
+
+  def DropRamCaches(self):
+    """Drops the filesystem ram caches for performance testing."""
+    self._adb.RunShellCommand('su -c sync')
+    self._adb.SetProtectedFileContents(CacheControl._DROP_CACHES, '3')
+
+
+class PerfControl(object):
+  """Provides methods for setting the performance mode of a device."""
   _SCALING_GOVERNOR_FMT = (
       '/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor')
 
@@ -139,30 +150,49 @@ class PerfTestSetup(object):
                                          log_result=False)
     assert kernel_max, 'Unable to find /sys/devices/system/cpu/kernel_max'
     self._kernel_max = int(kernel_max[0])
-    self._original_scaling_governor = None
+    self._original_scaling_governor = self._adb.GetFileContents(
+      PerfControl._SCALING_GOVERNOR_FMT % 0,
+      log_result=False)[0]
 
-  def DropRamCaches(self):
-    """Drops the filesystem ram caches for performance testing."""
-    self._adb.RunShellCommand('su -c sync')
-    self._adb.SetProtectedFileContents(PerfTestSetup._DROP_CACHES, '3')
+  def SetHighPerfMode(self):
+    """Sets the highest possible performance mode for the device."""
+    self._SetScalingGovernorInternal('performance')
 
-  def SetUp(self):
-    """Sets up performance tests."""
-    if not self._original_scaling_governor:
-      self._original_scaling_governor = self._adb.GetFileContents(
-          PerfTestSetup._SCALING_GOVERNOR_FMT % 0,
-          log_result=False)[0]
-      self._SetScalingGovernorInternal('performance')
-    self.DropRamCaches()
+  def SetDefaultPerfMode(self):
+    """Sets the performance mode for the device to its default mode."""
+    product_model = self._adb.GetProductModel()
+    governor_mode = {
+                    "GT-I9300" : 'pegasusq',
+                    "Galaxy Nexus" : 'interactive',
+                    "Nexus 4" : 'ondemand',
+                    "Nexus 7" : 'interactive',
+                    "Nexus 10": 'interactive'
+                    }.get(product_model, 'ondemand')
+    self._SetScalingGovernorInternal(governor_mode)
 
-  def TearDown(self):
-    """Tears down performance tests."""
-    if self._original_scaling_governor:
-      self._SetScalingGovernorInternal(self._original_scaling_governor)
-    self._original_scaling_governor = None
+  def RestoreOriginalPerfMode(self):
+    """Resets the original performance mode of the device."""
+    self._SetScalingGovernorInternal(self._original_scaling_governor)
 
   def _SetScalingGovernorInternal(self, value):
     for cpu in range(self._kernel_max + 1):
-      scaling_governor_file = PerfTestSetup._SCALING_GOVERNOR_FMT % cpu
+      scaling_governor_file = PerfControl._SCALING_GOVERNOR_FMT % cpu
       if self._adb.FileExistsOnDevice(scaling_governor_file):
         self._adb.SetProtectedFileContents(scaling_governor_file, value)
+
+
+class PerfTestSetup(PerfControl):
+  """Provides methods for setting up a device for perf testing.
+
+     TODO(aberent): remove once all tests have been moved to the new classes
+  """
+
+  def DropRamCaches(self):
+    CacheControl(self._adb).DropRamCaches()
+
+  def SetUp(self):
+    self.SetHighPerfMode()
+    self.DropRamCaches()
+
+  def TearDown(self):
+    self.ResetOriginalPerfMode()

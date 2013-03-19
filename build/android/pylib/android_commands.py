@@ -839,6 +839,12 @@ class AndroidCommands(object):
     assert build_type
     return build_type
 
+  def GetProductModel(self):
+    """Returns the namve of the product model (e.g. "Galaxy Nexus") """
+    model = self.RunShellCommand('getprop ro.product.model')[0]
+    assert model
+    return model
+
   def StartMonitoringLogcat(self, clear=True, logfile=None, filters=None):
     """Starts monitoring the output of logcat, for use with WaitForLogMatch.
 
