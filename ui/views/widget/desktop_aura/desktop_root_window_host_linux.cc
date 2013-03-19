@@ -1114,8 +1114,12 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         // window manager before we receive the event that changes the
         // fullscreen state. Unsure what to do about that.
         Widget* widget = native_widget_delegate_->AsWidget();
-        widget->client_view()->InvalidateLayout();
-        widget->non_client_view()->InvalidateLayout();
+        NonClientView* non_client_view = widget->non_client_view();
+        // non_client_view may be NULL, especially during creation.
+        if (non_client_view) {
+          non_client_view->client_view()->InvalidateLayout();
+          non_client_view->InvalidateLayout();
+        }
         widget->GetRootView()->Layout();
       }
     }
