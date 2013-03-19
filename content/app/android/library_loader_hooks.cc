@@ -35,8 +35,8 @@ base::AtExitManager* g_at_exit_manager = NULL;
 
 namespace content {
 
-static jint LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
-                                          jobjectArray init_command_line) {
+static jint LibraryLoaded(JNIEnv* env, jclass clazz,
+                          jobjectArray init_command_line) {
   InitNativeCommandLineFromJavaArray(env, init_command_line);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();

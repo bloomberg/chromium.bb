@@ -130,7 +130,7 @@ public class ChildProcessService extends Service {
                             mMainThread.wait();
                         }
                     }
-                    LibraryLoader.initializeOnMainThread(mCommandLineParams);
+                    LibraryLoader.initialize(mCommandLineParams);
                     synchronized (mMainThread) {
                         mLibraryInitialized = true;
                         mMainThread.notifyAll();
