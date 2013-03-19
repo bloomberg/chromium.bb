@@ -545,6 +545,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
                                   &tracker_);
 #endif
 
+  storage_monitor_ = new StorageMonitorCros();
+
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 }
@@ -620,7 +622,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
   chromeos::accessibility::Initialize();
 
-  storage_monitor_ = new StorageMonitorCros();
+  storage_monitor_->Init();
 
   // Initialize the network portal detector for Chrome OS. The network
   // portal detector starts to listen for notifications from

@@ -25,6 +25,11 @@ class TransientDeviceIds;
 
 // Base class for platform-specific instances watching for removable storage
 // attachments/detachments.
+// Lifecycle contracts: This class is created by ChromeBrowserMain
+// implementations before the profile is initialized, so listeners can be
+// created during profile construction. The platform-specific initialization,
+// which can lead to calling registered listeners with notifications of
+// attached volumes, will happen after profile construction.
 class StorageMonitor {
  public:
   // This interface is provided to generators of storage notifications.

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/storage_monitor/storage_monitor_mac.h"
 
+#include "base/mac/mac_util.h"
+#include "chrome/browser/storage_monitor/image_capture_device_manager.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -12,6 +14,9 @@ namespace chrome {
 namespace {
 
 const char kDiskImageModelName[] = "Disk Image";
+
+// TODO(gbillock): Make these take weak pointers and don't have
+// StorageMonitorMac be ref counted.
 
 void GetDiskInfoAndUpdateOnFileThread(
     const scoped_refptr<StorageMonitorMac>& monitor,
@@ -84,10 +89,17 @@ void EjectDisk(EjectDiskOptions* options) {
 }  // namespace
 
 StorageMonitorMac::StorageMonitorMac() {
-  session_.reset(DASessionCreate(NULL));
+}
 
-  DASessionScheduleWithRunLoop(
-      session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+StorageMonitorMac::~StorageMonitorMac() {
+  if (session_.get()) {
+    DASessionUnscheduleFromRunLoop(
+        session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+  }
+}
+
+void StorageMonitorMac::Init() {
+  session_.reset(DASessionCreate(NULL));
 
   // Register for callbacks for attached, changed, and removed devices.
   // This will send notifications for existing devices too.
@@ -107,11 +119,14 @@ StorageMonitorMac::StorageMonitorMac() {
       kDADiskDescriptionWatchVolumePath,
       DiskDescriptionChangedCallback,
       this);
-}
 
-StorageMonitorMac::~StorageMonitorMac() {
-  DASessionUnscheduleFromRunLoop(
+  DASessionScheduleWithRunLoop(
       session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+
+  if (base::mac::IsOSLionOrLater()) {
+    image_capture_device_manager_.reset(new chrome::ImageCaptureDeviceManager);
+    image_capture_device_manager_->SetNotifications(receiver());
+  }
 }
 
 void StorageMonitorMac::UpdateDisk(const DiskInfoMac& info,

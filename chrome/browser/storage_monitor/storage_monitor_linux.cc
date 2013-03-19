@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -20,8 +21,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/udev_util_linux.h"
+#include "chrome/common/chrome_switches.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace chrome {
 
@@ -270,6 +274,12 @@ StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path,
 
 StorageMonitorLinux::~StorageMonitorLinux() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&device::MediaTransferProtocolManager::Shutdown));
+  }
 }
 
 void StorageMonitorLinux::Init() {
@@ -282,6 +292,17 @@ void StorageMonitorLinux::Init() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&StorageMonitorLinux::InitOnFileThread, this));
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    scoped_refptr<base::MessageLoopProxy> loop_proxy;
+    loop_proxy = content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::FILE);
+    device::MediaTransferProtocolManager::Initialize(loop_proxy);
+
+    media_transfer_protocol_device_observer_.reset(
+        new MediaTransferProtocolDeviceObserverLinux());
+    media_transfer_protocol_device_observer_->SetNotifications(receiver());
+  }
 }
 
 bool StorageMonitorLinux::GetStorageInfoForPath(

@@ -127,6 +127,7 @@ MediaTransferProtocolDeviceObserverLinux()
 
   device::MediaTransferProtocolManager* mtp_manager =
       device::MediaTransferProtocolManager::GetInstance();
+  DCHECK(mtp_manager);
   mtp_manager->AddObserver(this);
   EnumerateStorages();
 }
@@ -137,8 +138,6 @@ MediaTransferProtocolDeviceObserverLinux(
     GetStorageInfoFunc get_storage_info_func)
     : get_storage_info_func_(get_storage_info_func),
       notifications_(NULL) {
-  // In unit tests, we don't have a media transfer protocol manager.
-  DCHECK(!device::MediaTransferProtocolManager::GetInstance());
   DCHECK(!g_mtp_device_observer);
   g_mtp_device_observer = this;
 }

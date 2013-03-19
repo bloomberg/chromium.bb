@@ -15,6 +15,8 @@
 
 namespace chrome {
 
+class ImageCaptureDeviceManager;
+
 // This class posts notifications to listeners when a new disk
 // is attached, removed, or changed.
 class StorageMonitorMac
@@ -29,6 +31,8 @@ class StorageMonitorMac
 
   // Should only be called by browser start up code.  Use GetInstance() instead.
   StorageMonitorMac();
+
+  void Init();
 
   void UpdateDisk(const DiskInfoMac& info, UpdateType update_type);
 
@@ -64,6 +68,8 @@ class StorageMonitorMac
   // devices on the system though only notifications for removable devices are
   // posted.
   std::map<std::string, DiskInfoMac> disk_info_map_;
+
+  scoped_ptr<chrome::ImageCaptureDeviceManager> image_capture_device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorMac);
 };

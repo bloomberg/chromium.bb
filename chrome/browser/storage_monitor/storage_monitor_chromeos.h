@@ -21,6 +21,10 @@
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
+namespace chrome {
+class MediaTransferProtocolDeviceObserverLinux;
+}
+
 namespace chromeos {
 
 class StorageMonitorCros
@@ -30,6 +34,10 @@ class StorageMonitorCros
  public:
   // Should only be called by browser start up code. Use GetInstance() instead.
   StorageMonitorCros();
+
+  // Sets up disk listeners and issues notifications for any discovered
+  // mount points. Sets up MTP manager and listeners.
+  void Init();
 
   virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
                            const disks::DiskMountManager::Disk* disk) OVERRIDE;
@@ -85,6 +93,9 @@ class StorageMonitorCros
   // Mapping of relevant mount points and their corresponding mount devices.
   // Only accessed on the UI thread.
   MountMap mount_map_;
+
+  scoped_ptr<chrome::MediaTransferProtocolDeviceObserverLinux>
+      media_transfer_protocol_device_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorCros);
 };
