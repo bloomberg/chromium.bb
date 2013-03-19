@@ -262,6 +262,16 @@ TEST_F(NotificationListTest, Priority) {
             GetPopupCounts());
 }
 
+TEST_F(NotificationListTest, HasPopupsWithPriority) {
+  ASSERT_EQ(0u, notification_list()->NotificationCount());
+  ASSERT_EQ(0u, notification_list()->unread_count());
+
+  AddPriorityNotification(-2);
+  AddPriorityNotification(2);
+
+  EXPECT_EQ(1u, GetPopupCounts());
+}
+
 TEST_F(NotificationListTest, PriorityPromotion) {
   std::string id0 = AddPriorityNotification(-1);
   std::string replaced = id0 + "_replaced";

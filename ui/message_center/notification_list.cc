@@ -210,7 +210,7 @@ NotificationList::PopupNotifications NotificationList::GetPopupNotifications() {
 
     // No popups for LOW/MIN priority.
     if ((*iter)->priority() < DEFAULT_PRIORITY)
-      break;
+      continue;
 
     // Checking limits. No limits for HIGH/MAX priority. DEFAULT priority
     // will return at most kMaxVisiblePopupNotifications entries. If the
