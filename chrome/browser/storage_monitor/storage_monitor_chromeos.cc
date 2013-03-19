@@ -212,6 +212,42 @@ uint64 StorageMonitorCros::GetStorageSize(
       info_it->second.total_size_in_bytes : 0;
 }
 
+// Callback executed when the unmount call is run by DiskMountManager.
+// Forwards result to |EjectDevice| caller.
+void NotifyUnmountResult(
+    base::Callback<void(chrome::StorageMonitor::EjectStatus)> callback,
+    chromeos::MountError error_code) {
+  if (error_code == MOUNT_ERROR_NONE)
+    callback.Run(chrome::StorageMonitor::EJECT_OK);
+  else
+    callback.Run(chrome::StorageMonitor::EJECT_FAILURE);
+}
+
+void StorageMonitorCros::EjectDevice(
+    const std::string& device_id,
+    base::Callback<void(EjectStatus)> callback) {
+  std::string mount_path;
+  for (MountMap::const_iterator info_it = mount_map_.begin();
+       info_it != mount_map_.end(); ++info_it) {
+    if (info_it->second.device_id == device_id)
+      mount_path = info_it->first;
+  }
+
+  if (mount_path.empty()) {
+    callback.Run(EJECT_NO_SUCH_DEVICE);
+    return;
+  }
+
+  disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
+  if (!manager) {
+    callback.Run(EJECT_FAILURE);
+    return;
+  }
+
+  manager->UnmountPath(mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
+                       base::Bind(NotifyUnmountResult, callback));
+}
+
 void StorageMonitorCros::CheckMountedPathOnFileThread(
     const disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

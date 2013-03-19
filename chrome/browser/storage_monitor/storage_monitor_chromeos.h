@@ -53,6 +53,10 @@ class StorageMonitorCros
   // device information is unavailable, returns zero.
   virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
 
+  virtual void EjectDevice(
+      const std::string& device_id,
+      base::Callback<void(EjectStatus)> callback) OVERRIDE;
+
  private:
   friend class base::RefCountedThreadSafe<StorageMonitorCros>;
 
