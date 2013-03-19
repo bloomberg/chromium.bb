@@ -31,15 +31,16 @@ namespace {
 const char kOrigin[] = "chrome-extension://example";
 const char* const kServiceName = DriveFileSyncService::kServiceName;
 
-typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
+typedef DriveMetadataStore::ResourceIdByOrigin ResourceIdByOrigin;
+typedef DriveMetadataStore::OriginByResourceId OriginByResourceId;
 
 fileapi::FileSystemURL URL(const base::FilePath& path) {
   return CreateSyncableFileSystemURL(GURL(kOrigin), kServiceName, path);
 }
 
-std::string GetResourceID(const ResourceIDMap& sync_origins,
+std::string GetResourceID(const ResourceIdByOrigin& sync_origins,
                           const GURL& origin) {
-  ResourceIDMap::const_iterator itr = sync_origins.find(origin);
+  ResourceIdByOrigin::const_iterator itr = sync_origins.find(origin);
   if (itr == sync_origins.end())
     return std::string();
   return itr->second;
@@ -206,6 +207,24 @@ class DriveMetadataStoreTest : public testing::Test {
     return drive_metadata_store_->metadata_map_;
   }
 
+  void VerifyReverseMap() {
+    const ResourceIdByOrigin& batch_sync_origins =
+        drive_metadata_store_->batch_sync_origins_;
+    const ResourceIdByOrigin& incremental_sync_origins =
+        drive_metadata_store_->incremental_sync_origins_;
+    const OriginByResourceId& origin_by_resource_id =
+        drive_metadata_store_->origin_by_resource_id_;
+
+    size_t expected_size =
+        batch_sync_origins.size() + incremental_sync_origins.size();
+    size_t actual_size = origin_by_resource_id.size();
+    EXPECT_EQ(expected_size, actual_size);
+    EXPECT_TRUE(VerifyReverseMapInclusion(batch_sync_origins,
+                                          origin_by_resource_id));
+    EXPECT_TRUE(VerifyReverseMapInclusion(incremental_sync_origins,
+                                          origin_by_resource_id));
+  }
+
  private:
   void DidInitializeDatabase(bool* done_out,
                              SyncStatusCode* status_out,
@@ -226,6 +245,17 @@ class DriveMetadataStoreTest : public testing::Test {
   void DidRestoreSyncOrigins(SyncStatusCode status) {
     EXPECT_EQ(SYNC_STATUS_OK, status);
     message_loop_.Quit();
+  }
+
+  bool VerifyReverseMapInclusion(const ResourceIdByOrigin& left,
+                                 const OriginByResourceId& right) {
+    for (ResourceIdByOrigin::const_iterator itr = left.begin();
+         itr != left.end(); ++itr) {
+      OriginByResourceId::const_iterator found = right.find(itr->second);
+      if (found == right.end() || found->second != itr->first)
+        return false;
+    }
+    return true;
   }
 
   base::ScopedTempDir base_dir_;
@@ -275,6 +305,8 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
   EXPECT_EQ(SYNC_DATABASE_ERROR_NOT_FOUND,
             metadata_store()->ReadEntry(url, &metadata));
   EXPECT_EQ(SYNC_DATABASE_ERROR_NOT_FOUND, DeleteEntry(url));
+
+  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
@@ -302,6 +334,8 @@ TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
   EXPECT_FALSE(ContainsKey(urls, URL(path1)));
   EXPECT_TRUE(ContainsKey(urls, URL(path2)));
   EXPECT_TRUE(ContainsKey(urls, URL(path3)));
+
+  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, GetToBeFetchedFilessTest) {
@@ -329,6 +363,8 @@ TEST_F(DriveMetadataStoreTest, GetToBeFetchedFilessTest) {
   EXPECT_EQ(2U, list.size());
   EXPECT_EQ(list[0].first, URL(path2));
   EXPECT_EQ(list[1].first, URL(path3));
+
+  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
@@ -346,6 +382,8 @@ TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
 
   RestoreSyncRootDirectoryFromDB();
   EXPECT_EQ(kResourceID, metadata_store()->sync_root_directory());
+
+  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
@@ -405,6 +443,8 @@ TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
                           kOrigin1));
   EXPECT_EQ(kResourceID2,
             GetResourceID(metadata_store()->batch_sync_origins(), kOrigin2));
+
+  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
@@ -466,6 +506,8 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
   DriveMetadataStore::MetadataMap::const_iterator found =
       metadata_map().find(kOrigin3);
   EXPECT_TRUE(found != metadata_map().end() && found->second.size() == 1u);
+
+  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
@@ -489,6 +531,8 @@ TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
 
   EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
   EXPECT_EQ(kResourceId2, metadata_store()->GetResourceIdForOrigin(kOrigin2));
+
+  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, MigrationFromV0) {
@@ -564,6 +608,8 @@ TEST_F(DriveMetadataStoreTest, MigrationFromV0) {
   EXPECT_EQ(kFileMD5, metadata.md5_checksum());
   EXPECT_FALSE(metadata.conflicted());
   EXPECT_FALSE(metadata.to_be_fetched());
+
+  VerifyReverseMap();
 }
 
 }  // namespace sync_file_system

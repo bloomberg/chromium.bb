@@ -30,6 +30,9 @@ using fileapi::FileSystemURL;
 
 namespace sync_file_system {
 
+typedef DriveMetadataStore::ResourceIdByOrigin ResourceIdByOrigin;
+typedef DriveMetadataStore::OriginByResourceId OriginByResourceId;
+
 const base::FilePath::CharType DriveMetadataStore::kDatabaseName[] =
     FILE_PATH_LITERAL("DriveMetadata");
 
@@ -92,7 +95,6 @@ void MetadataKeyToOriginAndPath(const std::string& metadata_key,
 class DriveMetadataDB {
  public:
   typedef DriveMetadataStore::MetadataMap MetadataMap;
-  typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
 
   DriveMetadataDB(const base::FilePath& base_dir,
                   base::SequencedTaskRunner* task_runner);
@@ -117,8 +119,8 @@ class DriveMetadataDB {
                                                const std::string& resource_id);
   SyncStatusCode RemoveOrigin(const GURL& origin);
 
-  SyncStatusCode GetSyncOrigins(ResourceIDMap* batch_sync_origins,
-                                ResourceIDMap* incremental_sync_origins);
+  SyncStatusCode GetSyncOrigins(ResourceIdByOrigin* batch_sync_origins,
+                                ResourceIdByOrigin* incremental_sync_origins);
 
  private:
   bool CalledOnValidThread() const {
@@ -137,8 +139,8 @@ struct DriveMetadataDBContents {
   int64 largest_changestamp;
   DriveMetadataStore::MetadataMap metadata_map;
   std::string sync_root_directory_resource_id;
-  DriveMetadataStore::ResourceIDMap batch_sync_origins;
-  DriveMetadataStore::ResourceIDMap incremental_sync_origins;
+  ResourceIdByOrigin batch_sync_origins;
+  ResourceIdByOrigin incremental_sync_origins;
 };
 
 namespace {
@@ -186,13 +188,30 @@ std::string CreateKeyForIncrementalSyncOrigin(const GURL& origin) {
 }
 
 void AddOriginsToVector(std::vector<GURL>* all_origins,
-                        const DriveMetadataStore::ResourceIDMap& resource_map) {
-  typedef DriveMetadataStore::ResourceIDMap::const_iterator itr;
-  for (std::map<GURL, std::string>::const_iterator itr = resource_map.begin();
+                        const ResourceIdByOrigin& resource_map) {
+  for (ResourceIdByOrigin::const_iterator itr = resource_map.begin();
        itr != resource_map.end();
        ++itr) {
     all_origins->push_back(itr->first);
   }
+}
+
+void InsertReverseMap(const ResourceIdByOrigin& forward_map,
+                      OriginByResourceId* backward_map) {
+  for (ResourceIdByOrigin::const_iterator itr = forward_map.begin();
+       itr != forward_map.end(); ++itr)
+    backward_map->insert(std::make_pair(itr->second, itr->first));
+}
+
+bool EraseIfExists(ResourceIdByOrigin* map,
+                   const GURL& origin,
+                   std::string* resource_id) {
+  ResourceIdByOrigin::iterator found = map->find(origin);
+  if (found == map->end())
+    return false;
+  *resource_id = found->second;
+  map->erase(found);
+  return true;
 }
 
 }  // namespace
@@ -241,6 +260,11 @@ void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
   batch_sync_origins_.swap(contents->batch_sync_origins);
   incremental_sync_origins_.swap(contents->incremental_sync_origins);
   // |largest_changestamp_| is set to 0 for a fresh empty database.
+
+  origin_by_resource_id_.clear();
+  InsertReverseMap(batch_sync_origins_, &origin_by_resource_id_);
+  InsertReverseMap(incremental_sync_origins_, &origin_by_resource_id_);
+
   callback.Run(status, largest_changestamp_ <= 0);
 }
 
@@ -278,8 +302,8 @@ void DriveMetadataStore::DidRestoreSyncRootDirectory(
 void DriveMetadataStore::RestoreSyncOrigins(
     const SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  ResourceIDMap* batch_sync_origins = new ResourceIDMap;
-  ResourceIDMap* incremental_sync_origins = new ResourceIDMap;
+  ResourceIdByOrigin* batch_sync_origins = new ResourceIdByOrigin;
+  ResourceIdByOrigin* incremental_sync_origins = new ResourceIdByOrigin;
   base::PostTaskAndReplyWithResult(
       file_task_runner_, FROM_HERE,
       base::Bind(&DriveMetadataDB::GetSyncOrigins,
@@ -294,8 +318,8 @@ void DriveMetadataStore::RestoreSyncOrigins(
 
 void DriveMetadataStore::DidRestoreSyncOrigins(
     const SyncStatusCallback& callback,
-    ResourceIDMap* batch_sync_origins,
-    ResourceIDMap* incremental_sync_origins,
+    ResourceIdByOrigin* batch_sync_origins,
+    ResourceIdByOrigin* incremental_sync_origins,
     SyncStatusCode status) {
   DCHECK(CalledOnValidThread());
   DCHECK(batch_sync_origins);
@@ -309,6 +333,11 @@ void DriveMetadataStore::DidRestoreSyncOrigins(
 
   batch_sync_origins_.swap(*batch_sync_origins);
   incremental_sync_origins_.swap(*incremental_sync_origins);
+
+  origin_by_resource_id_.clear();
+  InsertReverseMap(batch_sync_origins_, &origin_by_resource_id_);
+  InsertReverseMap(incremental_sync_origins_, &origin_by_resource_id_);
+
   callback.Run(status);
 }
 
@@ -428,6 +457,7 @@ void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin,
   DCHECK_EQ(SYNC_STATUS_OK, db_status_);
 
   batch_sync_origins_.insert(std::make_pair(origin, resource_id));
+  origin_by_resource_id_.insert(std::make_pair(resource_id, origin));
 
   // Store a pair of |origin| and |resource_id| in the DB.
   base::PostTaskAndReplyWithResult(
@@ -463,8 +493,12 @@ void DriveMetadataStore::RemoveOrigin(
   DCHECK(CalledOnValidThread());
 
   metadata_map_.erase(origin);
-  batch_sync_origins_.erase(origin);
-  incremental_sync_origins_.erase(origin);
+
+  std::string resource_id;
+  if (EraseIfExists(&batch_sync_origins_, origin, &resource_id) ||
+      EraseIfExists(&incremental_sync_origins_, origin, &resource_id)) {
+    origin_by_resource_id_.erase(resource_id);
+  }
 
   base::PostTaskAndReplyWithResult(
       file_task_runner_, FROM_HERE,
@@ -547,7 +581,8 @@ std::string DriveMetadataStore::GetResourceIdForOrigin(
   DCHECK(CalledOnValidThread());
   DCHECK(IsBatchSyncOrigin(origin) || IsIncrementalSyncOrigin(origin));
 
-  ResourceIDMap::const_iterator found = incremental_sync_origins_.find(origin);
+  ResourceIdByOrigin::const_iterator found =
+      incremental_sync_origins_.find(origin);
   if (found != incremental_sync_origins_.end())
     return found->second;
 
@@ -560,10 +595,24 @@ std::string DriveMetadataStore::GetResourceIdForOrigin(
 }
 
 void DriveMetadataStore::GetAllOrigins(std::vector<GURL>* origins) {
+  DCHECK(CalledOnValidThread());
   origins->reserve(batch_sync_origins_.size() +
                    incremental_sync_origins_.size());
   AddOriginsToVector(origins, batch_sync_origins_);
   AddOriginsToVector(origins, incremental_sync_origins_);
+}
+
+bool DriveMetadataStore::GetOriginByOriginRootDirectoryId(
+    const std::string& resource_id,
+    GURL* origin) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(origin);
+
+  OriginByResourceId::iterator found = origin_by_resource_id_.find(resource_id);
+  if (found == origin_by_resource_id_.end())
+    return false;
+  *origin = found->second;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -852,8 +901,8 @@ SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin_to_remove) {
 }
 
 SyncStatusCode DriveMetadataDB::GetSyncOrigins(
-    ResourceIDMap* batch_sync_origins,
-    ResourceIDMap* incremental_sync_origins) {
+    ResourceIdByOrigin* batch_sync_origins,
+    ResourceIdByOrigin* incremental_sync_origins) {
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
 

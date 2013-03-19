@@ -2115,6 +2115,8 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
     // TODO(tzik): Handle rename/delete of the sync root directory and the
     // directory for a origin.
     // http://crbug.com/177626
+    HandleSyncRootDirectoryChange(entry);
+    HandleOriginRootDirectoryChange(entry);
 
     GURL origin;
     if (!GetOriginForEntry(entry, &origin))
@@ -2149,6 +2151,24 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   }
 
   NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
+}
+
+void DriveFileSyncService::HandleSyncRootDirectoryChange(
+    const google_apis::ResourceEntry& entry) {
+  if (entry.resource_id() != metadata_store_->sync_root_directory())
+    return;
+
+  NOTIMPLEMENTED();
+}
+
+void DriveFileSyncService::HandleOriginRootDirectoryChange(
+    const google_apis::ResourceEntry& entry) {
+  GURL origin;
+  if (!metadata_store_->GetOriginByOriginRootDirectoryId(
+          entry.resource_id(), &origin))
+    return;
+
+  NOTIMPLEMENTED();
 }
 
 bool DriveFileSyncService::GetOriginForEntry(

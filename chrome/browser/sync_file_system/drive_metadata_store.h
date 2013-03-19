@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -36,7 +37,8 @@ class DriveMetadataStore
     : public base::NonThreadSafe,
       public base::SupportsWeakPtr<DriveMetadataStore> {
  public:
-  typedef std::map<GURL, std::string> ResourceIDMap;
+  typedef std::map<GURL, std::string> ResourceIdByOrigin;
+  typedef std::map<std::string, GURL> OriginByResourceId;
   typedef std::map<base::FilePath, DriveMetadata> PathToMetadata;
   typedef std::map<GURL, PathToMetadata> MetadataMap;
   typedef std::vector<std::pair<fileapi::FileSystemURL, std::string> >
@@ -116,12 +118,12 @@ class DriveMetadataStore
     return sync_root_directory_resource_id_;
   }
 
-  const ResourceIDMap& batch_sync_origins() const {
+  const ResourceIdByOrigin& batch_sync_origins() const {
     DCHECK(CalledOnValidThread());
     return batch_sync_origins_;
   }
 
-  const ResourceIDMap& incremental_sync_origins() const {
+  const ResourceIdByOrigin& incremental_sync_origins() const {
     DCHECK(CalledOnValidThread());
     return incremental_sync_origins_;
   }
@@ -129,6 +131,12 @@ class DriveMetadataStore
   // Returns all origins that are tracked. i.e. Union of batch_sync_origins_ and
   // incremental_sync_origins_.
   void GetAllOrigins(std::vector<GURL>* origins);
+
+  // Maps |resource_id| to corresponding |origin|.
+  // Returns true if the directory indicated by |resource_id| is not an origin
+  // root directory.
+  bool GetOriginByOriginRootDirectoryId(const std::string& resource_id,
+                                        GURL* origin);
 
  private:
   friend class DriveMetadataStoreTest;
@@ -149,8 +157,8 @@ class DriveMetadataStore
                                    SyncStatusCode status);
   void RestoreSyncOrigins(const SyncStatusCallback& callback);
   void DidRestoreSyncOrigins(const SyncStatusCallback& callback,
-                             ResourceIDMap* batch_sync_origins,
-                             ResourceIDMap* incremental_sync_origins,
+                             ResourceIdByOrigin* batch_sync_origins,
+                             ResourceIdByOrigin* incremental_sync_origins,
                              SyncStatusCode status);
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
@@ -161,8 +169,10 @@ class DriveMetadataStore
   MetadataMap metadata_map_;
 
   std::string sync_root_directory_resource_id_;
-  ResourceIDMap batch_sync_origins_;
-  ResourceIDMap incremental_sync_origins_;
+  ResourceIdByOrigin batch_sync_origins_;
+  ResourceIdByOrigin incremental_sync_origins_;
+
+  OriginByResourceId origin_by_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveMetadataStore);
 };

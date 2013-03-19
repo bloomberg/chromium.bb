@@ -429,6 +429,9 @@ class DriveFileSyncService
                                         SyncAction action_taken,
                                         SyncDirection direction);
 
+  void HandleSyncRootDirectoryChange(const google_apis::ResourceEntry& entry);
+  void HandleOriginRootDirectoryChange(const google_apis::ResourceEntry& entry);
+
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClientInterface> sync_client_;
 
