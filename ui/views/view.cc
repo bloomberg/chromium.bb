@@ -987,7 +987,8 @@ ui::TextInputClient* View::GetTextInputClient() {
 
 InputMethod* View::GetInputMethod() {
   Widget* widget = GetWidget();
-  return widget ? widget->GetInputMethod() : NULL;
+  // Call GetInputMethodDirect() to avoid initialization in GetInputMethod().
+  return widget ? widget->GetInputMethodDirect() : NULL;
 }
 
 bool View::CanAcceptEvent(const ui::Event& event) {
