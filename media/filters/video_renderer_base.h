@@ -53,9 +53,6 @@ class MEDIA_EXPORT VideoRendererBase
   // down the video thread may result in losing synchronization with audio.
   //
   // Setting |drop_frames_| to true causes the renderer to drop expired frames.
-  //
-  // TODO(scherkus): pass the VideoFrame* to this callback and remove
-  // Get/PutCurrentFrame() http://crbug.com/108435
   VideoRendererBase(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                     const SetDecryptorReadyCB& set_decryptor_ready_cb,
                     const PaintCB& paint_cb,
