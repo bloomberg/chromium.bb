@@ -1276,7 +1276,7 @@ _factory_release = _release.derive(
   description='Factory Builds',
 )
 
-_firmware_release = _release.derive(
+_firmware = _config(
   images=[],
   packages=('virtual/chromeos-firmware',),
   usepkg_setup_board=True,
@@ -1292,10 +1292,20 @@ _firmware_release = _release.derive(
   upload_symbols=False,
   signer_tests=False,
   trybot_list=False,
-  description='Firmware Builds',
+)
+
+_firmware_release = _release.derive(_firmware,
+  description='Firmware Canary',
 )
 
 _depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
+
+_depthcharge_full_internal = full.derive(
+  internal,
+  _firmware,
+  useflags=['depthcharge'],
+  description='Firmware Informational',
+)
 
 _x86_firmware_boards = (
   'butterfly',
@@ -1327,6 +1337,11 @@ def _AddFirmwareConfigs():
   for board in _x86_depthcharge_firmware_boards:
     _depthcharge_release.add_config(
         '%s-%s-%s' % (board, 'depthcharge', CONFIG_TYPE_FIRMWARE),
+        boards=[board],
+    )
+    _depthcharge_full_internal.add_config(
+        '%s-%s-%s-%s' % (board, 'depthcharge', CONFIG_TYPE_FULL,
+                         CONFIG_TYPE_FIRMWARE),
         boards=[board],
     )
 
