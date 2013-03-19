@@ -274,14 +274,14 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                           name:bookmark_button::kPulseBookmarkButtonNotification
                         object:nil];
 
-    // This call triggers an awakeFromNib, which builds the bar, which
-    // might uses folderImage_.  So make sure it happens after
-    // folderImage_ is loaded.
-    [[self animatableView] setResizeDelegate:resizeDelegate];
-
     contextMenuController_.reset(
         [[BookmarkContextMenuCocoaController alloc]
             initWithBookmarkBarController:self]);
+
+    // This call triggers an -awakeFromNib, which builds the bar, which might
+    // use |folderImage_| and |contextMenuController_|. Ensure it happens after
+    // |folderImage_| is loaded and |contextMenuController_| is created.
+    [[self animatableView] setResizeDelegate:resizeDelegate];
   }
   return self;
 }
