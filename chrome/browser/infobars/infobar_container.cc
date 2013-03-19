@@ -45,17 +45,23 @@ InfoBarContainer::~InfoBarContainer() {
 }
 
 void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
-  registrar_.RemoveAll();
+  // We have to call HideAllInfoBars() here and not after the early exit below,
+  // to handle the case we're switching from a tab with visible infobars to one
+  // where the SearchModel directs us to hide infobars.
+  HideAllInfoBars();
+
+  infobar_service_ = infobar_service;
+
+  if (search_model_ && !search_model_->top_bars_visible())
+    return;
 
   // Note that HideAllInfoBars() sets |infobars_shown_| to false, because that's
   // what the other, Instant-related callers want; but here we actually
   // explicitly want to reset this variable to true.  So do that after calling
   // the function.
-  HideAllInfoBars();
   infobars_shown_ = true;
   infobars_shown_time_ = base::TimeTicks();
 
-  infobar_service_ = infobar_service;
   if (infobar_service_) {
     content::Source<InfoBarService> source(infobar_service_);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
@@ -138,12 +144,8 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
 void InfoBarContainer::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  // When infobars are supposed to be hidden, we shouldn't try to hide or show
-  // anything in response to any notifications.  Once infobars get un-hidden
-  // via ChangeInfoBarService(), we'll get the updated set of visible infobars
-  // from the InfoBarService.
-  if (!infobars_shown_)
-    return;
+  // When infobars are hidden, we shouldn't be listening for notifications.
+  DCHECK(infobars_shown_);
 
   switch (type) {
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
@@ -174,29 +176,17 @@ void InfoBarContainer::Observe(int type,
   }
 }
 
-void InfoBarContainer::ModeChanged(const chrome::search::Mode& old_mode,
-                                   const chrome::search::Mode& new_mode) {
-  // Hide infobars when showing Instant Extended suggestions.
-  if (new_mode.is_search_suggestions()) {
-    // If suggestions are being shown on a |DEFAULT| page, delay the hiding
-    // until notification that Instant overlay is ready is received via
-    // OverlayStateChanged(); this prevents jankiness caused by infobars hiding
-    // followed by suggestions appearing.
-    if (new_mode.is_origin_default())
-      return;
-    HideAllInfoBars();
-    OnInfoBarStateChanged(false);
-  } else {
+void InfoBarContainer::ModelChanged(
+    const chrome::search::SearchModel::State& old_state,
+    const chrome::search::SearchModel::State& new_state) {
+  if (!chrome::search::SearchModel::ShouldChangeTopBarsVisibility(old_state,
+                                                                  new_state))
+    return;
+
+  if (new_state.top_bars_visible && !infobars_shown_) {
     ChangeInfoBarService(infobar_service_);
     infobars_shown_time_ = base::TimeTicks::Now();
-  }
-}
-
-void InfoBarContainer::OverlayStateChanged(const InstantOverlayModel& model) {
-  // If suggestions are being shown on a |DEFAULT| page, hide the infobars now.
-  // See comments for ModeChanged() for explanation.
-  if (model.mode().is_search_suggestions() &&
-      model.mode().is_origin_default()) {
+  } else if (!new_state.top_bars_visible && infobars_shown_) {
     HideAllInfoBars();
     OnInfoBarStateChanged(false);
   }
@@ -229,6 +219,8 @@ size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
 }
 
 void InfoBarContainer::HideAllInfoBars() {
+  registrar_.RemoveAll();
+
   infobars_shown_ = false;
   while (!infobars_.empty()) {
     InfoBar* infobar = infobars_.front();

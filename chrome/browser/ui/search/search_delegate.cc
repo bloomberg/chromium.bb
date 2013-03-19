@@ -20,8 +20,9 @@ SearchDelegate::~SearchDelegate() {
   DCHECK(!tab_model_) << "All tabs should have been deactivated or closed.";
 }
 
-void SearchDelegate::ModeChanged(const Mode& old_mode, const Mode& new_mode) {
-  browser_model_->SetMode(new_mode);
+void SearchDelegate::ModelChanged(const SearchModel::State& old_state,
+                                  const SearchModel::State& new_state) {
+  browser_model_->SetState(new_state);
 }
 
 void SearchDelegate::OnTabActivated(content::WebContents* web_contents) {
@@ -29,7 +30,7 @@ void SearchDelegate::OnTabActivated(content::WebContents* web_contents) {
     tab_model_->RemoveObserver(this);
   tab_model_ =
       chrome::search::SearchTabHelper::FromWebContents(web_contents)->model();
-  browser_model_->SetMode(tab_model_->mode());
+  browser_model_->SetState(tab_model_->state());
   tab_model_->AddObserver(this);
 }
 

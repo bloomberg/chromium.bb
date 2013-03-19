@@ -18,23 +18,52 @@ class SearchModelObserver;
 // changes.
 class SearchModel {
  public:
+  struct State {
+    State() : top_bars_visible(true) {}
+
+    bool operator==(const State& rhs) const {
+      return mode == rhs.mode && top_bars_visible == rhs.top_bars_visible;
+    }
+
+    // The display mode of UI elements such as the toolbar, the tab strip, etc.
+    Mode mode;
+    // The visibility of top bars such as bookmark and info bars.
+    bool top_bars_visible;
+  };
+
   SearchModel();
   ~SearchModel();
 
-  // Change the mode.  Change notifications are sent to observers.  An animated
-  // transition may be requested.
+  // Returns true if visibility in top bars should be changed based on
+  // |old_state| and |new_state|.
+  static bool ShouldChangeTopBarsVisibility(const State& old_state,
+                                            const State& new_state);
+
+  // Change the state.  Change notifications are sent to observers.
+  void SetState(const State& state);
+
+  // Get the current state.
+  const State& state() const { return state_; }
+
+  // Change the mode.  Change notifications are sent to observers.
   void SetMode(const Mode& mode);
 
   // Get the active mode.
-  const Mode& mode() const { return mode_; }
+  const Mode& mode() const { return state_.mode; }
+
+  // Set visibility of top bars.  Change notifications are sent to observers.
+  void SetTopBarsVisible(bool visible);
+
+  // Get the visibility of top bars.
+  bool top_bars_visible() const { return state_.top_bars_visible; }
 
   // Add and remove observers.
   void AddObserver(SearchModelObserver* observer);
   void RemoveObserver(SearchModelObserver* observer);
 
  private:
-  // The display mode of UI elements such as the toolbar, the tab strip, etc.
-  Mode mode_;
+  // Current state of model.
+  State state_;
 
   // Observers.
   ObserverList<SearchModelObserver> observers_;

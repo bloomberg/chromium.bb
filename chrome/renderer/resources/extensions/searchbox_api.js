@@ -105,6 +105,8 @@ if (!chrome.embeddedSearch) {
       native function StartCapturingKeyStrokes();
       native function StopCapturingKeyStrokes();
       native function NavigateSearchBox();
+      native function ShowBars();
+      native function HideBars();
 
       function SafeWrapSuggestion(restrictedText) {
         return SafeWrap(restrictedText, window.innerWidth - 155, 22);
@@ -270,6 +272,12 @@ if (!chrome.embeddedSearch) {
       this.navigateContentWindow = function(destination, disposition) {
         NavigateSearchBox(destination, disposition);
       }
+      this.showBars = function() {
+        ShowBars();
+      };
+      this.hideBars = function() {
+        HideBars();
+      };
       this.onchange = null;
       this.onsubmit = null;
       this.oncancel = null;
@@ -278,6 +286,7 @@ if (!chrome.embeddedSearch) {
       this.onkeycapturechange = null;
       this.onmarginchange = null;
       this.onnativesuggestions = null;
+      this.onbarshidden = null;
 
       // DEPRECATED. These methods are from the legacy searchbox API.
       // TODO(jered): Delete these.

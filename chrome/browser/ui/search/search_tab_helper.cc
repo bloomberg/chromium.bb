@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
 #include "chrome/browser/search/search.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -35,7 +36,8 @@ namespace chrome {
 namespace search {
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
-    : is_search_enabled_(chrome::search::IsInstantExtendedAPIEnabled()),
+    : WebContentsObserver(web_contents),
+      is_search_enabled_(chrome::search::IsInstantExtendedAPIEnabled()),
       user_input_in_progress_(false),
       web_contents_(web_contents) {
   if (!is_search_enabled_)
@@ -60,14 +62,14 @@ void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
   if (!user_input_in_progress && !cancelling)
     return;
 
-  UpdateModel();
+  UpdateMode();
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
   if (!is_search_enabled_)
     return;
 
-  UpdateModel();
+  UpdateMode();
 }
 
 void SearchTabHelper::Observe(
@@ -75,10 +77,22 @@ void SearchTabHelper::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
-  UpdateModel();
+  UpdateMode();
 }
 
-void SearchTabHelper::UpdateModel() {
+bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SearchTabHelper, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxShowBars,
+                        OnSearchBoxShowBars)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxHideBars,
+                        OnSearchBoxHideBars)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void SearchTabHelper::UpdateMode() {
   Mode::Type type = Mode::MODE_DEFAULT;
   Mode::Origin origin = Mode::ORIGIN_DEFAULT;
   if (IsNTP(web_contents_)) {
@@ -91,6 +105,18 @@ void SearchTabHelper::UpdateModel() {
   if (user_input_in_progress_)
     type = Mode::MODE_SEARCH_SUGGESTIONS;
   model_.SetMode(Mode(type, origin));
+}
+
+void SearchTabHelper::OnSearchBoxShowBars(int page_id) {
+  if (web_contents()->IsActiveEntry(page_id))
+    model_.SetTopBarsVisible(true);
+}
+
+void SearchTabHelper::OnSearchBoxHideBars(int page_id) {
+  if (web_contents()->IsActiveEntry(page_id)) {
+    model_.SetTopBarsVisible(false);
+    Send(new ChromeViewMsg_SearchBoxBarsHidden(routing_id()));
+  }
 }
 
 }  // namespace search

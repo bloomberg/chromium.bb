@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -22,6 +23,7 @@ namespace search {
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
 class SearchTabHelper : public content::NotificationObserver,
+                        public content::WebContentsObserver,
                         public content::WebContentsUserData<SearchTabHelper> {
  public:
   virtual ~SearchTabHelper();
@@ -50,8 +52,16 @@ class SearchTabHelper : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Overridden from contents::WebContentsObserver:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
   // Sets the mode of the model based on the current URL of web_contents().
-  void UpdateModel();
+  void UpdateMode();
+
+  // Handlers for SearchBox API to show and hide top bars (bookmark and info
+  // bars).
+  void OnSearchBoxShowBars(int page_id);
+  void OnSearchBoxHideBars(int page_id);
 
   const bool is_search_enabled_;
 

@@ -61,6 +61,13 @@ class SearchBox : public content::RenderViewObserver,
   // browser.
   void UndoAllMostVisitedDeletions();
 
+  // Shows any attached bars.
+  void ShowBars();
+
+  // Hides any attached bars.  When the bars are hidden, the "onbarshidden"
+  // event is fired to notify the page.
+  void HideBars();
+
   const string16& query() const { return query_; }
   bool verbatim() const { return verbatim_; }
   size_t selection_start() const { return selection_start_; }
@@ -100,6 +107,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnCancel(const string16& query);
   void OnPopupResize(const gfx::Rect& bounds);
   void OnMarginChange(int margin, int width);
+  void OnBarsHidden();
   void OnDetermineIfPageSupportsInstant();
   void OnAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);

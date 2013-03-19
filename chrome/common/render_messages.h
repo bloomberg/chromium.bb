@@ -312,6 +312,8 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxMarginChange,
                     int /* start */,
                     int /* end */)
 
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxBarsHidden)
+
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
@@ -696,6 +698,14 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ShowInstantOverlay,
 
 // Sent by Instant to focus the omnibox.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusOmnibox,
+                    int /* page_id */)
+
+// Sent by Instant to show any attached bars.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxShowBars,
+                    int /* page_id */)
+
+// Sent by Instant to hide any attached bars.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxHideBars,
                     int /* page_id */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_StartCapturingKeyStrokes,

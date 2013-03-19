@@ -111,8 +111,9 @@ class BrowserInstantController : public content::NotificationObserver,
   void ResetInstant(const std::string& pref_name);
 
   // Overridden from search::SearchModelObserver:
-  virtual void ModeChanged(const search::Mode& old_mode,
-                           const search::Mode& new_mode) OVERRIDE;
+  virtual void ModelChanged(
+      const search::SearchModel::State& old_state,
+      const search::SearchModel::State& new_state) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

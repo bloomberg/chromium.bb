@@ -236,8 +236,14 @@ void BrowserInstantController::ResetInstant(const std::string& pref_name) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, search::SearchModelObserver implementation:
 
-void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
-                                           const search::Mode& new_mode) {
+void BrowserInstantController::ModelChanged(
+    const search::SearchModel::State& old_state,
+    const search::SearchModel::State& new_state) {
+  if (old_state.mode == new_state.mode)
+    return;
+
+  const search::Mode& new_mode = new_state.mode;
+
   if (search::IsInstantExtendedAPIEnabled()) {
     // Record some actions corresponding to the mode change. Note that to get
     // the full story, it's necessary to look at other UMA actions as well,
@@ -252,7 +258,7 @@ void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
   if (new_mode.is_ntp())
     UpdateThemeInfo();
 
-  instant_.SearchModeChanged(old_mode, new_mode);
+  instant_.SearchModeChanged(old_state.mode, new_mode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

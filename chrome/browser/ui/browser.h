@@ -453,12 +453,6 @@ class Browser : public TabStripModelObserver,
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
 
-  // If necessary, update the bookmark bar state according to the Instant
-  // overlay state: when Instant overlay shows suggestions and bookmark bar is
-  // still showing attached, hide it.
-  void MaybeUpdateBookmarkBarStateForInstantOverlay(
-      const chrome::search::Mode& mode);
-
   // Show a download on the download shelf.
   void ShowDownload(content::DownloadItem* download);
 
@@ -680,8 +674,9 @@ class Browser : public TabStripModelObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from chrome::search::SearchModelObserver:
-  virtual void ModeChanged(const chrome::search::Mode& old_mode,
-                           const chrome::search::Mode& new_mode) OVERRIDE;
+  virtual void ModelChanged(
+      const chrome::search::SearchModel::State& old_state,
+      const chrome::search::SearchModel::State& new_state) OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 

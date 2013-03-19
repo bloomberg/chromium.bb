@@ -40,6 +40,7 @@ class SearchBoxExtension {
   static void DispatchKeyCaptureChange(WebKit::WebFrame* frame);
   static void DispatchMarginChange(WebKit::WebFrame* frame);
   static void DispatchThemeChange(WebKit::WebFrame* frame);
+  static void DispatchBarsHidden(WebKit::WebFrame* frame);
 
   // New Tab Page API.
   static void DispatchMostVisitedChanged(WebKit::WebFrame* frame);

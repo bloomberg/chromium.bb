@@ -91,6 +91,18 @@ void SearchBox::UndoAllMostVisitedDeletions() {
       render_view()->GetRoutingID()));
 }
 
+void SearchBox::ShowBars() {
+  DVLOG(1) << render_view() << " ShowBars";
+  render_view()->Send(new ChromeViewHostMsg_SearchBoxShowBars(
+      render_view()->GetRoutingID(), render_view()->GetPageId()));
+}
+
+void SearchBox::HideBars() {
+  DVLOG(1) << render_view() << " HideBars";
+  render_view()->Send(new ChromeViewHostMsg_SearchBoxHideBars(
+      render_view()->GetRoutingID(), render_view()->GetPageId()));
+}
+
 int SearchBox::GetStartMargin() const {
   return static_cast<int>(start_margin_ / GetZoom());
 }
@@ -135,6 +147,7 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxCancel, OnCancel)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxPopupResize, OnPopupResize)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMarginChange, OnMarginChange)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxBarsHidden, OnBarsHidden)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
                         OnDetermineIfPageSupportsInstant)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxAutocompleteResults,
@@ -221,6 +234,13 @@ void SearchBox::OnMarginChange(int margin, int width) {
 
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchMarginChange(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
+void SearchBox::OnBarsHidden() {
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchBarsHidden(
         render_view()->GetWebView()->mainFrame());
   }
 }

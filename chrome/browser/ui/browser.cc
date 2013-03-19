@@ -1225,20 +1225,6 @@ void Browser::ShowFirstRunBubble() {
   window()->GetLocationBar()->ShowFirstRunBubble();
 }
 
-void Browser::MaybeUpdateBookmarkBarStateForInstantOverlay(
-    const chrome::search::Mode& mode) {
-  // This is invoked by a platform-specific implementation of
-  // |InstantOverlayController| to update bookmark bar state according to
-  // Instant overlay state.
-  // ModeChanged() updates bookmark bar state for all mode transitions except
-  // when new mode is |SEARCH_SUGGESTIONS|, because that needs to be done when
-  // the suggestions are ready.
-  if (mode.is_search_suggestions() &&
-      bookmark_bar_state_ == BookmarkBar::SHOW) {
-    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-  }
-}
-
 void Browser::ShowDownload(content::DownloadItem* download) {
   if (!window())
     return;
@@ -1814,22 +1800,13 @@ void Browser::Observe(int type,
   }
 }
 
-void Browser::ModeChanged(const chrome::search::Mode& old_mode,
-                          const chrome::search::Mode& new_mode) {
-  // If new mode is |SEARCH_SUGGESTIONS|, don't update bookmark bar state now;
-  // wait till the Instant overlay is ready to show suggestions before hiding
-  // the bookmark bar (in MaybeUpdateBookmarkBarStateForInstantOverlay()).
-  // TODO(kuan): but for now, only delay updating bookmark bar state if origin
-  // is |DEFAULT|; other origins require more complex logic to be implemented
-  // to prevent jankiness caused by hiding bookmark bar, so just hide the
-  // bookmark bar immediately and tolerate the jankiness for a while.
-  // For other mode transitions, update bookmark bar state accordingly.
-  if (new_mode.is_search_suggestions() &&
-      new_mode.is_origin_default() &&
-      bookmark_bar_state_ == BookmarkBar::SHOW) {
-    return;
+void Browser::ModelChanged(
+    const chrome::search::SearchModel::State& old_state,
+    const chrome::search::SearchModel::State& new_state) {
+  if (chrome::search::SearchModel::ShouldChangeTopBarsVisibility(old_state,
+                                                                 new_state)) {
+    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
   }
-  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2139,16 +2116,22 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       state = BookmarkBar::HIDDEN;
   }
 
-  // Don't allow the bookmark bar to be shown in suggestions mode.
+  // Bookmark bar may need to be hidden for |SEARCH_SUGGESTIONS| and
+  // |SEARCH_RESULTS| modes as per SearchBox API or Instant overlay or if it's
+  // detached.
+  // TODO(sail): remove conditional MACOSX flag when bookmark bar is actually
+  // hidden on mac; for now, mac keeps the bookmark bar shown but changes its
+  // z-order to stack it below contents.
 #if !defined(OS_MACOSX)
-  if (search_model_->mode().is_search_suggestions())
+  if (search_model_->mode().is_search() &&
+      (state == BookmarkBar::DETACHED || !search_model_->top_bars_visible())) {
     state = BookmarkBar::HIDDEN;
-#endif
-
-  // Don't allow detached bookmark bar to be shown in suggestions or results
-  // modes.
+  }
+#else
+  // TODO(sail): remove this when the above block is enabled for mac.
   if (state == BookmarkBar::DETACHED && search_model_->mode().is_search())
     state = BookmarkBar::HIDDEN;
+#endif  // !defined(OS_MACOSX)
 
   if (state == bookmark_bar_state_)
     return;

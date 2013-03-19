@@ -50,6 +50,10 @@ struct Mode {
     return mode == rhs.mode && origin == rhs.origin;
   }
 
+  bool operator!=(const Mode& rhs) const {
+    return !(*this == rhs);
+  }
+
   bool is_default() const {
     return mode == MODE_DEFAULT;
   }

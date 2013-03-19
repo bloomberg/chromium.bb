@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/time.h"
-#include "chrome/browser/ui/search/instant_overlay_model_observer.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/search_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -50,8 +49,7 @@ class SearchModel;
 // would re-show the infobars only to instantly animate them closed.  The window
 // to re-hide infobars without animation is canceled if a tab change occurs.
 class InfoBarContainer : public content::NotificationObserver,
-                         public chrome::search::SearchModelObserver,
-                         public InstantOverlayModelObserver {
+                         public chrome::search::SearchModelObserver {
  public:
   class Delegate {
    public:
@@ -110,9 +108,6 @@ class InfoBarContainer : public content::NotificationObserver,
 
   const Delegate* delegate() const { return delegate_; }
 
-  // InstantOverlayModelObserver:
-  virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
-
  protected:
   // Subclasses must call this during destruction, so that we can remove
   // infobars (which will call the pure virtual functions below) while the
@@ -135,8 +130,9 @@ class InfoBarContainer : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // chrome::search::SearchModelObserver:
-  virtual void ModeChanged(const chrome::search::Mode& old_mode,
-                           const chrome::search::Mode& new_mode) OVERRIDE;
+  virtual void ModelChanged(
+      const chrome::search::SearchModel::State& old_state,
+      const chrome::search::SearchModel::State& new_state) OVERRIDE;
 
   // Hides an InfoBar for the specified delegate, in response to a notification
   // from the selected InfoBarService.  The InfoBar's disappearance will be

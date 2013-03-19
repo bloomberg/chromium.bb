@@ -239,6 +239,15 @@ static const char kDispatchMostVisitedChangedScript[] =
     "  true;"
     "}";
 
+static const char kDispatchBarsHiddenEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onbarshidden &&"
+    "    typeof window.chrome.searchBox.onbarshidden == 'function') {"
+    "  window.chrome.searchBox.onbarshidden();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -365,6 +374,13 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> UndoMostVisitedDeletion(
       const v8::Arguments& args);
 
+  // Shows any attached bars.
+  static v8::Handle<v8::Value> ShowBars(const v8::Arguments& args);
+
+  // Hides any attached bars.  When the bars are hidden, the "onbarshidden"
+  // event is fired to notify the page.
+  static v8::Handle<v8::Value> HideBars(const v8::Arguments& args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
@@ -440,6 +456,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(UndoAllMostVisitedDeletions);
   if (name->Equals(v8::String::New("UndoMostVisitedDeletion")))
     return v8::FunctionTemplate::New(UndoMostVisitedDeletion);
+  if (name->Equals(v8::String::New("ShowBars")))
+    return v8::FunctionTemplate::New(ShowBars);
+  if (name->Equals(v8::String::New("HideBars")))
+    return v8::FunctionTemplate::New(HideBars);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -1099,6 +1119,27 @@ bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
   return !v.IsEmpty() && v->BooleanValue();
 }
 
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::ShowBars(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << render_view << " ShowBars";
+  SearchBox::Get(render_view)->ShowBars();
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::HideBars(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << render_view << " HideBars";
+  SearchBox::Get(render_view)->HideBars();
+  return v8::Undefined();
+}
+
 // static
 void SearchBoxExtension::DispatchChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchChangeEventScript);
@@ -1163,4 +1204,9 @@ void SearchBoxExtension::DispatchMostVisitedChanged(
     WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchMostVisitedChangedScript);
 }
+
+void SearchBoxExtension::DispatchBarsHidden(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchBarsHiddenEventScript);
+}
+
 }  // namespace extensions_v8
