@@ -82,7 +82,6 @@
 
 .favicon-cell {
   -webkit-tap-highlight-color: transparent;
-  -webkit-transition: background 300ms linear;
   display: inline-block;
   height: 105px;
   padding: 11px;

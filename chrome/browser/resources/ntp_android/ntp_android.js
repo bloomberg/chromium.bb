@@ -653,6 +653,10 @@ cr.define('ntp', function() {
     title.insertBefore(spacerImg, title.firstChild);
     thumbnailCell.appendChild(title);
 
+    var shade = createDiv('thumbnail-cell-shade');
+    thumbnailContainer.appendChild(shade);
+    addActiveTouchListener(shade, 'thumbnail-cell-shade-active');
+
     wrapClickHandler(thumbnailCell, item, opt_clickCallback);
 
     thumbnailCell.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
