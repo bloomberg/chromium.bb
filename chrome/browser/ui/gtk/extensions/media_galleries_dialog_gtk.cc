@@ -43,7 +43,8 @@ MediaGalleriesDialogGtk::~MediaGalleriesDialogGtk() {
 }
 
 void MediaGalleriesDialogGtk::InitWidgets() {
-  contents_.Own(gtk_vbox_new(FALSE, ui::kContentAreaSpacing));
+  contents_.reset(gtk_vbox_new(FALSE, ui::kContentAreaSpacing));
+  g_object_ref_sink(contents_.get());
   g_signal_connect(contents_.get(),
                    "destroy",
                    G_CALLBACK(OnDestroyThunk),

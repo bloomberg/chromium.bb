@@ -22,7 +22,7 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/base/gtk/scoped_gobject.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -68,7 +68,8 @@ class LoginHandlerGtk : public LoginHandler {
       const string16& explanation) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    root_.Own(gtk_vbox_new(FALSE, ui::kContentAreaBorder));
+    root_.reset(gtk_vbox_new(FALSE, ui::kContentAreaBorder));
+    g_object_ref_sink(root_.get());
     g_signal_connect(root_.get(), "destroy", G_CALLBACK(OnDestroyThunk), this);
 
     GtkWidget* label = gtk_label_new(UTF16ToUTF8(explanation).c_str());
@@ -134,7 +135,6 @@ class LoginHandlerGtk : public LoginHandler {
 
  protected:
   virtual ~LoginHandlerGtk() {
-    root_.Destroy();
   }
 
  private:
@@ -148,7 +148,7 @@ class LoginHandlerGtk : public LoginHandler {
 
   // The GtkWidgets that form our visual hierarchy:
   // The root container we pass to our parent.
-  ui::OwnedWidgetGtk root_;
+  ui::ScopedGObject<GtkWidget>::Type root_;
 
   // GtkEntry widgets that the user types into.
   GtkWidget* username_entry_;

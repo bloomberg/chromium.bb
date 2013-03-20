@@ -27,7 +27,7 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/base/gtk/scoped_gobject.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -84,7 +84,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver {
   GtkWidget* cert_combo_box_;
   GtkTextBuffer* cert_details_buffer_;
 
-  ui::OwnedWidgetGtk root_widget_;
+  ui::ScopedGObject<GtkWidget>::Type root_widget_;
   // Hold on to the select button to focus it.
   GtkWidget* select_button_;
 
@@ -102,7 +102,8 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
     : SSLClientAuthObserver(network_session, cert_request_info, callback),
       web_contents_(web_contents),
       window_(NULL) {
-  root_widget_.Own(gtk_vbox_new(FALSE, ui::kControlSpacing));
+  root_widget_.reset(gtk_vbox_new(FALSE, ui::kControlSpacing));
+  g_object_ref_sink(root_widget_.get());
   g_signal_connect(root_widget_.get(),
                    "destroy",
                    G_CALLBACK(OnDestroyThunk),
@@ -192,7 +193,6 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
 }
 
 SSLClientCertificateSelector::~SSLClientCertificateSelector() {
-  root_widget_.Destroy();
 }
 
 void SSLClientCertificateSelector::Show() {

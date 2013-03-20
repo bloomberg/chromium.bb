@@ -14,7 +14,7 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/base/gtk/scoped_gobject.h"
 
 namespace chrome {
 
@@ -59,7 +59,7 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog {
   GtkWidget* window_;
 
   // The root widget for the dialog.
-  ui::OwnedWidgetGtk contents_;
+  ui::ScopedGObject<GtkWidget>::Type contents_;
 
   // The confirm button.
   GtkWidget* confirm_;
