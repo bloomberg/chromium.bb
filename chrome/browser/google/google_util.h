@@ -18,6 +18,11 @@ class Profile;
 // and state relating to Google Chrome distributions (such as RLZ).
 namespace google_util {
 
+// True iff |str| contains a "q=" query parameter with a non-empty value.
+// |str| should be a query or a hash fragment, without the ? or # (as
+// returned by GURL::query() or GURL::ref().
+bool HasGoogleSearchQueryParam(const std::string& str);
+
 // The query key that identifies a Google Extended API request for Instant.
 const char kInstantExtendedAPIParam[] = "espv";
 

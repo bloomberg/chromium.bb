@@ -39,27 +39,21 @@ namespace {
 
 const char* brand_for_testing = NULL;
 
-// True iff |str| contains a "q=" query parameter with a non-empty value.
-// |str| should be a URL parameter or a hash fragment, without the ? or # (as
-// returned by GURL::query() or GURL::ref().
-bool HasQueryParameter(const std::string& str) {
-  std::vector<std::string> parameters;
-
-  base::SplitString(str, '&', &parameters);
-  for (std::vector<std::string>::const_iterator itr = parameters.begin();
-       itr != parameters.end();
-       ++itr) {
-    if (StartsWithASCII(*itr, "q=", false) && itr->size() > 2)
-      return true;
-  }
-  return false;
-}
-
 bool gUseMockLinkDoctorBaseURLForTesting = false;
 
 }  // anonymous namespace
 
 namespace google_util {
+
+bool HasGoogleSearchQueryParam(const std::string& str) {
+  url_parse::Component query(0, str.length()), key, value;
+  while (url_parse::ExtractQueryKeyValue(str.c_str(), &query, &key,
+                                         &value)) {
+    if ((key.len == 1) && (str[key.begin] == 'q') && value.is_nonempty())
+      return true;
+  }
+  return false;
+}
 
 GURL LinkDoctorBaseURL() {
   if (gUseMockLinkDoctorBaseURLForTesting)
@@ -238,8 +232,8 @@ bool IsGoogleSearchUrl(const std::string& url) {
   // the path type.
   std::string query(original_url.query());
   std::string ref(original_url.ref());
-  return HasQueryParameter(ref) ||
-      (!is_home_page_base && HasQueryParameter(query));
+  return HasGoogleSearchQueryParam(ref) ||
+      (!is_home_page_base && HasGoogleSearchQueryParam(query));
 }
 
 bool IsOrganic(const std::string& brand) {

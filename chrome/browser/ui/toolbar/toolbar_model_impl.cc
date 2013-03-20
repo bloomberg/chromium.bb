@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -111,7 +112,10 @@ string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
   if (!WouldReplaceSearchURLWithSearchTerms())
     return string16();
   GURL url(GetURL());
-  const std::string& query_str(url.query());
+  // If there is a query in the url fragment look for the corpus name there,
+  // otherwise look for the corpus name in the query parameters.
+  const std::string& query_str(google_util::HasGoogleSearchQueryParam(
+      url.ref()) ? url.ref() : url.query());
   url_parse::Component query(0, query_str.length()), key, value;
   const char kChipKey[] = "sboxchip";
   while (url_parse::ExtractQueryKeyValue(query_str.c_str(), &query, &key,
