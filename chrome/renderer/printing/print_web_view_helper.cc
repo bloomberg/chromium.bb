@@ -565,11 +565,13 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     bool fit_to_page = ignore_css_margins &&
                        print_params.print_scaling_option ==
                             WebKit::WebPrintScalingOptionFitToPrintableArea;
+    ComputeWebKitPrintParamsInDesiredDpi(params, &web_print_params_);
+    frame_->printBegin(web_print_params_, node_to_print_, NULL);
     print_params = CalculatePrintParamsForCss(frame_, 0, print_params,
                                               ignore_css_margins, fit_to_page,
                                               NULL);
+    frame_->printEnd();
   }
-
   ComputeWebKitPrintParamsInDesiredDpi(print_params, &web_print_params_);
 }
 
@@ -662,6 +664,7 @@ void PrepareFrameAndViewForPrint::CallOnReady() {
 }
 
 gfx::Size PrepareFrameAndViewForPrint::GetPrintCanvasSize() const {
+  DCHECK(is_printing_started_);
   return gfx::Size(web_print_params_.printContentArea.width,
                    web_print_params_.printContentArea.height);
 }
