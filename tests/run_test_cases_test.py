@@ -51,54 +51,45 @@ class ListTestCasesTest(unittest.TestCase):
 
 
 class RunTestCases(unittest.TestCase):
-  def test_call(self):
-    cmd = [sys.executable, SLEEP, '0.001']
-    # 0 means no timeout, like None.
-    output, code, _ = run_test_cases.call_with_timeout(cmd, 0)
-    self.assertEquals(to_native_eol('Sleeping.\nSlept.\n'), output)
-    self.assertEquals(0, code)
+  def test_call_with_timeout(self):
+    test_data = [
+      {
+        # 0 means no timeout, like None.
+        'cmd': ['0.001'],
+        'timeout': 0,
+        'stdout': 'Sleeping.\nSlept.\n',
+        'returncode': 0,
+      },
+      {
+        # On a loaded system, this can be tight.
+        'cmd': ['100'],
+        'timeout': 1.,
+        'stdout': 'Sleeping.\n',
+        'returncode': 1 if sys.platform == 'win32' else -9,
+      },
+      {
+        'cmd': ['0.001'],
+        'timeout': 100,
+        'stdout': 'Sleeping.\nSlept.\n',
+        'returncode': 0,
+      },
+    ]
+    for data in test_data:
+      stdout, code, duration = run_test_cases.call_with_timeout(
+          [sys.executable, SLEEP] + data['cmd'],
+          data['timeout'])
+      self.assertTrue(duration > 0.0001, data)
+      self.assertEqual(to_native_eol(data['stdout']), stdout, data)
+      self.assertEqual(data['returncode'], code, data)
 
-  def test_call_eol(self):
-    cmd = [sys.executable, SLEEP, '0.001']
-    # 0 means no timeout, like None.
-    output, code, _ = run_test_cases.call_with_timeout(
-        cmd, 0, universal_newlines=True)
-    self.assertEquals('Sleeping.\nSlept.\n', output)
-    self.assertEquals(0, code)
-
-  def test_call_timed_out_kill(self):
-    cmd = [sys.executable, SLEEP, '100']
-    # On a loaded system, this can be tight.
-    output, code, _ = run_test_cases.call_with_timeout(cmd, timeout=1)
-    self.assertEquals(to_native_eol('Sleeping.\n'), output)
-    if sys.platform == 'win32':
-      self.assertEquals(1, code)
-    else:
-      self.assertEquals(-9, code)
-
-  def test_call_timed_out_kill_eol(self):
-    cmd = [sys.executable, SLEEP, '100']
-    # On a loaded system, this can be tight.
-    output, code, _ = run_test_cases.call_with_timeout(
-        cmd, timeout=1, universal_newlines=True)
-    self.assertEquals('Sleeping.\n', output)
-    if sys.platform == 'win32':
-      self.assertEquals(1, code)
-    else:
-      self.assertEquals(-9, code)
-
-  def test_call_timeout_no_kill(self):
-    cmd = [sys.executable, SLEEP, '0.001']
-    output, code, _ = run_test_cases.call_with_timeout(cmd, timeout=100)
-    self.assertEquals(to_native_eol('Sleeping.\nSlept.\n'), output)
-    self.assertEquals(0, code)
-
-  def test_call_timeout_no_kill_eol(self):
-    cmd = [sys.executable, SLEEP, '0.001']
-    output, code, _ = run_test_cases.call_with_timeout(
-        cmd, timeout=100, universal_newlines=True)
-    self.assertEquals('Sleeping.\nSlept.\n', output)
-    self.assertEquals(0, code)
+      # Try again with universal_newlines=True.
+      stdout, code, duration = run_test_cases.call_with_timeout(
+          [sys.executable, SLEEP] + data['cmd'],
+          data['timeout'],
+          universal_newlines=True)
+      self.assertTrue(duration > 0.0001, data)
+      self.assertEqual(data['stdout'], stdout, data)
+      self.assertEqual(data['returncode'], code, data)
 
   def test_gtest_filter(self):
     old = run_test_cases.run_test_cases
