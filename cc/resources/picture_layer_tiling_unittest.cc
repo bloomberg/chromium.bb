@@ -42,8 +42,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
     Region remaining = expect_rect;
     for (PictureLayerTiling::Iterator iter(tiling_.get(),
                                            rect_scale,
-                                           request_rect,
-                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
+                                           request_rect);
          iter;
          ++iter) {
 
@@ -144,16 +143,14 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorEmptyRect) {
   Initialize(gfx::Size(100, 100), 1.0f, gfx::Size(800, 600));
 
   gfx::Rect empty;
-  PictureLayerTiling::Iterator iter(tiling_.get(), 1.0f, empty,
-                                    PictureLayerTiling::LayerDeviceAlignmentUnknown);
+  PictureLayerTiling::Iterator iter(tiling_.get(), 1.0f, empty);
   EXPECT_FALSE(iter);
 }
 
 TEST_F(PictureLayerTilingIteratorTest, NonIntersectingRect) {
   Initialize(gfx::Size(100, 100), 1.0f, gfx::Size(800, 600));
   gfx::Rect non_intersecting(1000, 1000, 50, 50);
-  PictureLayerTiling::Iterator iter(tiling_.get(), 1, non_intersecting,
-                                    PictureLayerTiling::LayerDeviceAlignmentUnknown);
+  PictureLayerTiling::Iterator iter(tiling_.get(), 1, non_intersecting);
   EXPECT_FALSE(iter);
 }
 

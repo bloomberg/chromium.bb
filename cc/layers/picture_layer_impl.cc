@@ -96,20 +96,11 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
       draw_transform(),
       gfx::QuadF(rect),
       &clipped);
-  bool is_axis_aligned_in_target = !clipped && target_quad.IsRectilinear();
-
-  bool is_pixel_aligned = is_axis_aligned_in_target &&
-                          draw_transform().IsIdentityOrIntegerTranslation();
-  PictureLayerTiling::LayerDeviceAlignment layerDeviceAlignment =
-      is_pixel_aligned ? PictureLayerTiling::LayerAlignedToDevice
-                       : PictureLayerTiling::LayerNotAlignedToDevice;
-
   if (ShowDebugBorders()) {
     for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                               contents_scale_x(),
                                               rect,
-                                              ideal_contents_scale_,
-                                              layerDeviceAlignment);
+                                              ideal_contents_scale_);
          iter;
          ++iter) {
       SkColor color;
@@ -153,8 +144,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
   for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                             contents_scale_x(),
                                             rect,
-                                            ideal_contents_scale_,
-                                            layerDeviceAlignment);
+                                            ideal_contents_scale_);
        iter;
        ++iter) {
 
@@ -475,11 +465,7 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   gfx::Rect content_rect(content_bounds());
   float scale = contents_scale_x();
   for (PictureLayerTilingSet::Iterator
-           iter(tilings_.get(),
-                scale,
-                content_rect,
-                ideal_contents_scale_,
-                PictureLayerTiling::LayerDeviceAlignmentUnknown);
+           iter(tilings_.get(), scale, content_rect, ideal_contents_scale_);
        iter;
        ++iter) {
     // Mask resource not ready yet.
@@ -535,11 +521,7 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
     if (tiling->contents_scale() < min_acceptable_scale)
       continue;
 
-    for (PictureLayerTiling::Iterator
-             iter(tiling,
-                  contents_scale_x(),
-                  rect,
-                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+    for (PictureLayerTiling::Iterator iter(tiling, contents_scale_x(), rect);
          iter;
          ++iter) {
       if (should_force_uploads && iter)

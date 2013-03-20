@@ -65,12 +65,6 @@ class CC_EXPORT PictureLayerTiling {
     return all_tiles;
   }
 
-  enum LayerDeviceAlignment {
-    LayerDeviceAlignmentUnknown,
-    LayerAlignedToDevice,
-    LayerNotAlignedToDevice,
-  };
-
   static gfx::Rect ExpandRectEquallyToAreaBoundedBy(
       gfx::Rect starting_rect,
       int64 target_area,
@@ -85,8 +79,7 @@ class CC_EXPORT PictureLayerTiling {
     Iterator();
     Iterator(const PictureLayerTiling* tiling,
         float dest_scale,
-        gfx::Rect rect,
-        LayerDeviceAlignment layerDeviceAlignment);
+        gfx::Rect rect);
     ~Iterator();
 
     // Visible rect (no borders), always in the space of content_rect,

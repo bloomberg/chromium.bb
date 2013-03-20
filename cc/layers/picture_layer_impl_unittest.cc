@@ -194,10 +194,7 @@ class PictureLayerImplTest : public testing::Test {
       const PictureLayerTiling* tiling,
       PicturePileImpl* pile) {
     for (PictureLayerTiling::Iterator
-             iter(tiling,
-                  tiling->contents_scale(),
-                  tiling->ContentRect(),
-                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+             iter(tiling, tiling->contents_scale(), tiling->ContentRect());
          iter;
          ++iter) {
       EXPECT_TRUE(*iter);
@@ -343,8 +340,7 @@ TEST_F(PictureLayerImplTest, clonePartialInvalidation) {
     for (PictureLayerTiling::Iterator
              iter(tiling,
                   tiling->contents_scale(),
-                  tiling->ContentRect(),
-                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+                  tiling->ContentRect());
          iter;
          ++iter) {
       EXPECT_TRUE(*iter);
@@ -406,8 +402,7 @@ TEST_F(PictureLayerImplTest, noInvalidationBoundsChange) {
     for (PictureLayerTiling::Iterator
              iter(tiling,
                   tiling->contents_scale(),
-                  tiling->ContentRect(),
-                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+                  tiling->ContentRect());
          iter;
          ++iter) {
       EXPECT_TRUE(*iter);
@@ -458,8 +453,7 @@ TEST_F(PictureLayerImplTest, addTilesFromNewRecording) {
     for (PictureLayerTiling::Iterator
              iter(tiling,
                   tiling->contents_scale(),
-                  tiling->ContentRect(),
-                  PictureLayerTiling::LayerDeviceAlignmentUnknown);
+                  tiling->ContentRect());
          iter;
          ++iter) {
       EXPECT_FALSE(iter.full_tile_geometry_rect().IsEmpty());

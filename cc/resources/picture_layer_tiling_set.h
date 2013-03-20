@@ -74,8 +74,7 @@ class CC_EXPORT PictureLayerTilingSet {
     Iterator(const PictureLayerTilingSet* set,
       float contents_scale,
       gfx::Rect content_rect,
-      float ideal_contents_scale,
-      PictureLayerTiling::LayerDeviceAlignment layerDeviceAlignment);
+      float ideal_contents_scale);
     ~Iterator();
 
     // Visible rect (no borders), always in the space of rect,
@@ -100,7 +99,6 @@ class CC_EXPORT PictureLayerTilingSet {
     const PictureLayerTilingSet* set_;
     float contents_scale_;
     float ideal_contents_scale_;
-    PictureLayerTiling::LayerDeviceAlignment layer_device_alignment_;
     PictureLayerTiling::Iterator tiling_iter_;
     int current_tiling_;
     int ideal_tiling_;

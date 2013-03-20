@@ -110,12 +110,10 @@ PictureLayerTilingSet::Iterator::Iterator(
     const PictureLayerTilingSet* set,
     float contents_scale,
     gfx::Rect content_rect,
-    float ideal_contents_scale,
-    PictureLayerTiling::LayerDeviceAlignment layerDeviceAlignment)
+    float ideal_contents_scale)
     : set_(set),
       contents_scale_(contents_scale),
       ideal_contents_scale_(ideal_contents_scale),
-      layer_device_alignment_(layerDeviceAlignment),
       current_tiling_(-1) {
   missing_region_.Union(content_rect);
 
@@ -249,8 +247,7 @@ PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
     tiling_iter_ = PictureLayerTiling::Iterator(
         set_->tilings_[current_tiling_],
         contents_scale_,
-        last_rect,
-        layer_device_alignment_);
+        last_rect);
   }
 
   return *this;

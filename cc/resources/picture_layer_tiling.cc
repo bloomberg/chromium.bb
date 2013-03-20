@@ -137,8 +137,7 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
     gfx::Rect rect =
         gfx::ToEnclosingRect(ScaleRect(layer_invalidation, contents_scale_));
 
-    for (PictureLayerTiling::Iterator tile_iter(this, contents_scale_, rect,
-                                                PictureLayerTiling::LayerDeviceAlignmentUnknown);
+    for (PictureLayerTiling::Iterator tile_iter(this, contents_scale_, rect);
          tile_iter;
          ++tile_iter) {
       TileMapKey key(tile_iter.tile_i_, tile_iter.tile_j_);
@@ -185,8 +184,7 @@ PictureLayerTiling::Iterator::Iterator()
 
 PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
                                        float dest_scale,
-                                       gfx::Rect dest_rect,
-                                       LayerDeviceAlignment layerDeviceAlignment)
+                                       gfx::Rect dest_rect)
     : tiling_(tiling),
       dest_rect_(dest_rect),
       dest_to_content_scale_(0),
