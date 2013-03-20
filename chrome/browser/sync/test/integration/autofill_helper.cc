@@ -86,7 +86,8 @@ void RunOnDBThreadAndBlock(base::Closure task) {
 void GetAllAutofillEntriesOnDBThread(WebDataService* wds,
                                      std::vector<AutofillEntry>* entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  wds->GetDatabase()->GetAutofillTable()->GetAllAutofillEntries(entries);
+  AutofillTable::FromWebDatabase(
+      wds->GetDatabase())->GetAllAutofillEntries(entries);
 }
 
 std::vector<AutofillEntry> GetAllAutofillEntries(WebDataService* wds) {

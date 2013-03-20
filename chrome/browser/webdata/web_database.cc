@@ -6,12 +6,7 @@
 
 #include <algorithm>
 
-#include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/keyword_table.h"
-#include "chrome/browser/webdata/logins_table.h"
-#include "chrome/browser/webdata/token_service_table.h"
-#include "chrome/browser/webdata/web_apps_table.h"
-#include "chrome/browser/webdata/web_intents_table.h"
+#include "base/stl_util.h"
 #include "content/public/browser/notification_service.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -51,7 +46,16 @@ sql::InitStatus FailedMigrationTo(int version_num) {
 
 WebDatabase::WebDatabase() {}
 
-WebDatabase::~WebDatabase() {}
+WebDatabase::~WebDatabase() {
+}
+
+void WebDatabase::AddTable(WebDatabaseTable* table) {
+  tables_[table->GetTypeKey()] = table;
+}
+
+WebDatabaseTable* WebDatabase::GetTable(WebDatabaseTable::TypeKey key) {
+  return tables_[key];
+}
 
 void WebDatabase::BeginTransaction() {
   db_.BeginTransaction();
@@ -59,26 +63,6 @@ void WebDatabase::BeginTransaction() {
 
 void WebDatabase::CommitTransaction() {
   db_.CommitTransaction();
-}
-
-AutofillTable* WebDatabase::GetAutofillTable() {
-  return autofill_table_;
-}
-
-KeywordTable* WebDatabase::GetKeywordTable() {
-  return keyword_table_;
-}
-
-LoginsTable* WebDatabase::GetLoginsTable() {
-  return logins_table_;
-}
-
-TokenServiceTable* WebDatabase::GetTokenServiceTable() {
-  return token_service_table_;
-}
-
-WebAppsTable* WebDatabase::GetWebAppsTable() {
-  return web_apps_table_;
 }
 
 sql::Connection* WebDatabase::GetSQLConnection() {
@@ -123,36 +107,11 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name,
     return sql::INIT_TOO_NEW;
   }
 
-  // TODO(joi): Table creation should move out of this class; switch
-  // to a two-phase init to accomplish this.
-
-  // Create the tables.
-  autofill_table_ = new AutofillTable(&db_, &meta_table_);
-  tables_.push_back(autofill_table_);
-
-  keyword_table_ = new KeywordTable(&db_, &meta_table_);
-  tables_.push_back(keyword_table_);
-
-  // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
-  // access, but for now, we still create it on all platforms since it deletes
-  // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  logins_table_ = new LoginsTable(&db_, &meta_table_);
-  tables_.push_back(logins_table_);
-
-  token_service_table_ = new TokenServiceTable(&db_, &meta_table_);
-  tables_.push_back(token_service_table_);
-
-  web_apps_table_ = new WebAppsTable(&db_, &meta_table_);
-  tables_.push_back(web_apps_table_);
-
-  web_intents_table_ = new WebIntentsTable(&db_, &meta_table_);
-  tables_.push_back(web_intents_table_);
-
   // Initialize the tables.
-  for (ScopedVector<WebDatabaseTable>::iterator it = tables_.begin();
+  for (TableMap::iterator it = tables_.begin();
        it != tables_.end();
        ++it) {
-    if (!(*it)->Init()) {
+    if (!it->second->Init(&db_, &meta_table_)) {
       LOG(WARNING) << "Unable to initialize the web database.";
       return sql::INIT_FAILURE;
     }
@@ -199,14 +158,14 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(
        next_version <= kCurrentVersionNumber;
        ++next_version) {
     // Give each table a chance to migrate to this version.
-    for (ScopedVector<WebDatabaseTable>::iterator it = tables_.begin();
+    for (TableMap::iterator it = tables_.begin();
          it != tables_.end();
          ++it) {
       // Any of the tables may set this to true, but by default it is false.
       bool update_compatible_version = false;
-      if (!(*it)->MigrateToVersion(next_version,
-                                   app_locale,
-                                   &update_compatible_version)) {
+      if (!it->second->MigrateToVersion(next_version,
+                                           app_locale,
+                                           &update_compatible_version)) {
         return FailedMigrationTo(next_version);
       }
 

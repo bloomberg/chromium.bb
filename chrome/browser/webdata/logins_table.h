@@ -14,16 +14,22 @@
 struct IE7PasswordInfo;
 #endif
 
+class WebDatabase;
+
 // This class manages the logins table within the SQLite database passed to the
 // constructor. We no longer store passwords here except for imported IE
 // passwords, so this class is now mostly responsible for deleting the table if
 // it is found to exist. (The data was migrated out long ago.)
 class LoginsTable : public WebDatabaseTable {
  public:
-  LoginsTable(sql::Connection* db, sql::MetaTable* meta_table)
-      : WebDatabaseTable(db, meta_table) {}
+  LoginsTable() {}
   virtual ~LoginsTable() {}
-  virtual bool Init() OVERRIDE;
+
+  // Retrieves the LoginsTable* owned by |database|.
+  static LoginsTable* FromWebDatabase(WebDatabase* db);
+
+  virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
+  virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table) OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
   virtual bool MigrateToVersion(int version,
                                 const std::string& app_locale,

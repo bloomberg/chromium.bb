@@ -102,13 +102,15 @@ ACTION_P2(ExpectFormValuesForElementNameMatch, element_name, matcher) {
   base::FilePath profile_path(
       root_path.Append(L"Default").Append(chrome::kWebDataFilename));
 
+  AutofillTable autofill_table;
   WebDatabase web_database;
+  web_database.AddTable(&autofill_table);
   sql::InitStatus init_status = web_database.Init(profile_path, std::string());
   EXPECT_EQ(sql::INIT_OK, init_status);
 
   if (init_status == sql::INIT_OK) {
     std::vector<string16> values;
-    web_database.GetAutofillTable()->GetFormValuesForElementName(
+    autofill_table.GetFormValuesForElementName(
         element_name, L"", &values, 9999);
     EXPECT_THAT(values, matcher);
   }

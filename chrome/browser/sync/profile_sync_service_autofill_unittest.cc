@@ -95,7 +95,7 @@ class HistoryService;
 
 class AutofillTableMock : public AutofillTable {
  public:
-  AutofillTableMock() : AutofillTable(NULL, NULL) {}
+  AutofillTableMock() : AutofillTable() {}
   MOCK_METHOD2(RemoveFormElement,
                bool(const string16& name, const string16& value));  // NOLINT
   MOCK_METHOD1(GetAllAutofillEntries,
@@ -122,15 +122,9 @@ MATCHER_P(MatchProfiles, profile, "") {
 
 class WebDatabaseFake : public WebDatabase {
  public:
-  explicit WebDatabaseFake(AutofillTable* autofill_table)
-      : autofill_table_(autofill_table) {}
-
-  virtual AutofillTable* GetAutofillTable() OVERRIDE {
-    return autofill_table_;
+  explicit WebDatabaseFake(AutofillTable* autofill_table) {
+    AddTable(autofill_table);
   }
-
- private:
-  AutofillTable* autofill_table_;
 };
 
 class ProfileSyncServiceAutofillTest;

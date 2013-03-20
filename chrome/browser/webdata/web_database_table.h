@@ -16,11 +16,23 @@ class MetaTable;
 // Each table should subclass this, adding type-specific methods as needed.
 class WebDatabaseTable {
  public:
-  WebDatabaseTable(sql::Connection* db, sql::MetaTable* meta_table);
+  // To look up a WebDatabaseTable of a certain type from WebDatabase,
+  // we use a void* key, so that we can simply use the address of one
+  // of the type's statics.
+  typedef void* TypeKey;
+
+  // The object is not ready for use until Init() has been called.
+  WebDatabaseTable();
   virtual ~WebDatabaseTable();
 
+  // Retrieves the TypeKey for the concrete subtype.
+  virtual TypeKey GetTypeKey() const = 0;
+
   // Attempts to initialize the table and returns true if successful.
-  virtual bool Init() = 0;
+  //
+  // The base class stores the members passed and always return true;
+  // subclasses may perform other initialization as needed.
+  virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table);
 
   // In order to encourage developers to think about sync when adding or
   // or altering new tables, this method must be implemented. Please get in
@@ -43,6 +55,10 @@ class WebDatabaseTable {
                                 bool* update_compatible_version) = 0;
 
  protected:
+  // Non-owning. These are owned by WebDatabase, valid as long as that
+  // class exists. Since lifetime of WebDatabaseTable objects slightly
+  // exceeds that of WebDatabase, they should not be used in
+  // ~WebDatabaseTable.
   sql::Connection* db_;
   sql::MetaTable* meta_table_;
 

@@ -299,8 +299,8 @@ void AutocompleteSyncableService::Observe(int type,
 
 bool AutocompleteSyncableService::LoadAutofillData(
     std::vector<AutofillEntry>* entries) const {
-  return web_data_service_->GetDatabase()->
-             GetAutofillTable()->GetAllAutofillEntries(entries);
+  return AutofillTable::FromWebDatabase(
+      web_data_service_->GetDatabase())->GetAllAutofillEntries(entries);
 }
 
 bool AutocompleteSyncableService::SaveChangesToWebData(
@@ -308,8 +308,9 @@ bool AutocompleteSyncableService::SaveChangesToWebData(
   DCHECK(CalledOnValidThread());
 
   if (!new_entries.empty() &&
-      !web_data_service_->GetDatabase()->
-          GetAutofillTable()->UpdateAutofillEntries(new_entries)) {
+      !AutofillTable::FromWebDatabase(
+          web_data_service_->GetDatabase())->UpdateAutofillEntries(
+              new_entries)) {
     return false;
   }
   return true;
@@ -381,8 +382,9 @@ void AutocompleteSyncableService::WriteAutofillEntry(
 
 syncer::SyncError AutocompleteSyncableService::AutofillEntryDelete(
     const sync_pb::AutofillSpecifics& autofill) {
-  if (!web_data_service_->GetDatabase()->GetAutofillTable()->RemoveFormElement(
-          UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
+  if (!AutofillTable::FromWebDatabase(
+          web_data_service_->GetDatabase())->RemoveFormElement(
+              UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
     return error_handler_->CreateAndUploadError(
         FROM_HERE,
         "Could not remove autocomplete entry from WebDatabase.");
@@ -400,8 +402,8 @@ void AutocompleteSyncableService::ActOnChanges(
       case AutofillChange::ADD:
       case AutofillChange::UPDATE: {
         std::vector<base::Time> timestamps;
-        if (!web_data_service_->GetDatabase()->
-                GetAutofillTable()->GetAutofillTimestamps(
+        if (!AutofillTable::FromWebDatabase(
+                web_data_service_->GetDatabase())->GetAutofillTimestamps(
                     change->key().name(),
                     change->key().value(),
                     &timestamps)) {

@@ -30,14 +30,14 @@ WebDataService::Handle WebDataService::GetIE7Login(
 
 WebDatabase::State WebDataService::AddIE7LoginImpl(
     const IE7PasswordInfo& info, WebDatabase* db) {
-  if (db->GetLoginsTable()->AddIE7Login(info))
+  if (LoginsTable::FromWebDatabase(db)->AddIE7Login(info))
     return WebDatabase::COMMIT_NEEDED;
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
 WebDatabase::State WebDataService::RemoveIE7LoginImpl(
     const IE7PasswordInfo& info, WebDatabase* db) {
-  if (db->GetLoginsTable()->RemoveIE7Login(info))
+  if (LoginsTable::FromWebDatabase(db)->RemoveIE7Login(info))
     return WebDatabase::COMMIT_NEEDED;
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
@@ -45,7 +45,7 @@ WebDatabase::State WebDataService::RemoveIE7LoginImpl(
 scoped_ptr<WDTypedResult> WebDataService::GetIE7LoginImpl(
     const IE7PasswordInfo& info, WebDatabase* db) {
     IE7PasswordInfo result;
-    db->GetLoginsTable()->GetIE7Login(info, &result);
+    LoginsTable::FromWebDatabase(db)->GetIE7Login(info, &result);
     return scoped_ptr<WDTypedResult>(
         new WDResult<IE7PasswordInfo>(PASSWORD_IE7_RESULT, result));
 }

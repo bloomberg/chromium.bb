@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_id.h"
 
 struct TemplateURLData;
+class WebDatabase;
 
 namespace sql {
 class Statement;
@@ -71,9 +72,14 @@ class KeywordTable : public WebDatabaseTable {
 
   static const char kDefaultSearchProviderKey[];
 
-  KeywordTable(sql::Connection* db, sql::MetaTable* meta_table);
+  KeywordTable();
   virtual ~KeywordTable();
-  virtual bool Init() OVERRIDE;
+
+  // Retrieves the KeywordTable* owned by |database|.
+  static KeywordTable* FromWebDatabase(WebDatabase* db);
+
+  virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
+  virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table) OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
   virtual bool MigrateToVersion(int version,
                                 const std::string& app_locale,

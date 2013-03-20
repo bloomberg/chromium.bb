@@ -18,6 +18,7 @@ class MetaTable;
 }
 
 struct DefaultWebIntentService;
+class WebDatabase;
 
 // TODO(thakis): Delete this class once there's a migration that drops the
 // table backing it.
@@ -50,11 +51,15 @@ struct DefaultWebIntentService;
 //
 class WebIntentsTable : public WebDatabaseTable {
  public:
-  WebIntentsTable(sql::Connection* db, sql::MetaTable* meta_table);
+  WebIntentsTable();
   virtual ~WebIntentsTable();
 
+  // Retrieves the WebIntentsTable* owned by |database|.
+  static WebIntentsTable* FromWebDatabase(WebDatabase* database);
+
   // WebDatabaseTable implementation.
-  virtual bool Init() OVERRIDE;
+  virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
+  virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table) OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
   virtual bool MigrateToVersion(int version,
                                 const std::string& app_locale,

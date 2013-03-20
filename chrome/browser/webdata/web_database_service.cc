@@ -8,8 +8,14 @@
 #include "base/location.h"
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
+#include "chrome/browser/webdata/autofill_table.h"
+#include "chrome/browser/webdata/keyword_table.h"
+#include "chrome/browser/webdata/logins_table.h"
+#include "chrome/browser/webdata/token_service_table.h"
+#include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_data_request_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_intents_table.h"
 // TODO(caitkp): Remove this autofill dependency.
 #include "components/autofill/browser/autofill_country.h"
 
@@ -72,6 +78,13 @@ class WebDataServiceBackend
   // Path to database file.
   FilePath db_path_;
 
+  scoped_ptr<AutofillTable> autofill_table_;
+  scoped_ptr<KeywordTable> keyword_table_;
+  scoped_ptr<LoginsTable> logins_table_;
+  scoped_ptr<TokenServiceTable> token_service_table_;
+  scoped_ptr<WebAppsTable> web_apps_table_;
+  scoped_ptr<WebIntentsTable> web_intents_table_;
+
   scoped_ptr<WebDatabase> db_;
 
   // Keeps track of all pending requests made to the db.
@@ -114,6 +127,32 @@ sql::InitStatus WebDataServiceBackend::LoadDatabaseIfNecessary() {
   }
   init_complete_ = true;
   db_.reset(new WebDatabase());
+
+  // All tables objects that participate in managing the database must
+  // be added here.
+  autofill_table_.reset(new AutofillTable());
+  db_->AddTable(autofill_table_.get());
+
+  keyword_table_.reset(new KeywordTable());
+  db_->AddTable(keyword_table_.get());
+
+  // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
+  // access, but for now, we still create it on all platforms since it deletes
+  // the old logins table. We can remove this after a while, e.g. in M22 or so.
+  logins_table_.reset(new LoginsTable());
+  db_->AddTable(logins_table_.get());
+
+  token_service_table_.reset(new TokenServiceTable());
+  db_->AddTable(token_service_table_.get());
+
+  web_apps_table_.reset(new WebAppsTable());
+  db_->AddTable(web_apps_table_.get());
+
+  // TODO(thakis): Add a migration to delete the SQL table used by
+  // WebIntentsTable, then remove this.
+  web_intents_table_.reset(new WebIntentsTable());
+  db_->AddTable(web_intents_table_.get());
+
   init_status_ = db_->Init(db_path_, app_locale_);
   if (init_status_ != sql::INIT_OK) {
     LOG(ERROR) << "Cannot initialize the web database: " << init_status_;

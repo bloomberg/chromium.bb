@@ -546,7 +546,7 @@ bool AutofillProfileSyncableService::MergeProfile(
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {
-  return web_data_service_->GetDatabase()->GetAutofillTable();
+  return AutofillTable::FromWebDatabase(web_data_service_->GetDatabase());
 }
 
 AutofillProfileSyncableService::DataBundle::DataBundle() {}

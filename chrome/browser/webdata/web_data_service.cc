@@ -312,20 +312,20 @@ void WebDataService::ShutdownSyncableServices() {
 
 WebDatabase::State WebDataService::AddKeywordImpl(
     const TemplateURLData& data, WebDatabase* db) {
-  db->GetKeywordTable()->AddKeyword(data);
+  KeywordTable::FromWebDatabase(db)->AddKeyword(data);
   return WebDatabase::COMMIT_NEEDED;
 }
 
 WebDatabase::State WebDataService::RemoveKeywordImpl(
     TemplateURLID id, WebDatabase* db) {
   DCHECK(id);
-  db->GetKeywordTable()->RemoveKeyword(id);
+  KeywordTable::FromWebDatabase(db)->RemoveKeyword(id);
   return WebDatabase::COMMIT_NEEDED;
 }
 
 WebDatabase::State WebDataService::UpdateKeywordImpl(
     const TemplateURLData& data, WebDatabase* db) {
-  if (!db->GetKeywordTable()->UpdateKeyword(data)) {
+  if (!KeywordTable::FromWebDatabase(db)->UpdateKeyword(data)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -334,18 +334,18 @@ WebDatabase::State WebDataService::UpdateKeywordImpl(
 
 scoped_ptr<WDTypedResult> WebDataService::GetKeywordsImpl(WebDatabase* db) {
   WDKeywordsResult result;
-  db->GetKeywordTable()->GetKeywords(&result.keywords);
+  KeywordTable::FromWebDatabase(db)->GetKeywords(&result.keywords);
   result.default_search_provider_id =
-      db->GetKeywordTable()->GetDefaultSearchProviderID();
+      KeywordTable::FromWebDatabase(db)->GetDefaultSearchProviderID();
   result.builtin_keyword_version =
-      db->GetKeywordTable()->GetBuiltinKeywordVersion();
+      KeywordTable::FromWebDatabase(db)->GetBuiltinKeywordVersion();
   return scoped_ptr<WDTypedResult>(
       new WDResult<WDKeywordsResult>(KEYWORDS_RESULT, result));
 }
 
 WebDatabase::State WebDataService::SetDefaultSearchProviderImpl(
     TemplateURLID id, WebDatabase* db) {
-  if (!db->GetKeywordTable()->SetDefaultSearchProviderID(id)) {
+  if (!KeywordTable::FromWebDatabase(db)->SetDefaultSearchProviderID(id)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -354,7 +354,7 @@ WebDatabase::State WebDataService::SetDefaultSearchProviderImpl(
 
 WebDatabase::State WebDataService::SetBuiltinKeywordVersionImpl(
     int version, WebDatabase* db) {
-  if (!db->GetKeywordTable()->SetBuiltinKeywordVersion(version)) {
+  if (!KeywordTable::FromWebDatabase(db)->SetBuiltinKeywordVersion(version)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -369,28 +369,29 @@ WebDatabase::State WebDataService::SetBuiltinKeywordVersionImpl(
 
 WebDatabase::State WebDataService::SetWebAppImageImpl(
     const GURL& app_url, const SkBitmap& image, WebDatabase* db) {
-  db->GetWebAppsTable()->SetWebAppImage(app_url, image);
+  WebAppsTable::FromWebDatabase(db)->SetWebAppImage(app_url, image);
   return WebDatabase::COMMIT_NEEDED;
 }
 
 WebDatabase::State WebDataService::SetWebAppHasAllImagesImpl(
     const GURL& app_url, bool has_all_images, WebDatabase* db) {
-  db->GetWebAppsTable()->
-      SetWebAppHasAllImages(app_url, has_all_images);
+  WebAppsTable::FromWebDatabase(db)->SetWebAppHasAllImages(app_url,
+                                                           has_all_images);
   return WebDatabase::COMMIT_NEEDED;
 }
 
 WebDatabase::State WebDataService::RemoveWebAppImpl(
     const GURL& app_url, WebDatabase* db) {
-  db->GetWebAppsTable()->RemoveWebApp(app_url);
+  WebAppsTable::FromWebDatabase(db)->RemoveWebApp(app_url);
   return WebDatabase::COMMIT_NEEDED;
 }
 
 scoped_ptr<WDTypedResult> WebDataService::GetWebAppImagesImpl(
     const GURL& app_url, WebDatabase* db) {
   WDAppImagesResult result;
-  result.has_all_images = db->GetWebAppsTable()->GetWebAppHasAllImages(app_url);
-  db->GetWebAppsTable()->GetWebAppImages(app_url, &result.images);
+  result.has_all_images =
+      WebAppsTable::FromWebDatabase(db)->GetWebAppHasAllImages(app_url);
+  WebAppsTable::FromWebDatabase(db)->GetWebAppImages(app_url, &result.images);
   return scoped_ptr<WDTypedResult>(
       new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
 }
@@ -402,7 +403,7 @@ scoped_ptr<WDTypedResult> WebDataService::GetWebAppImagesImpl(
 ////////////////////////////////////////////////////////////////////////////////
 
 WebDatabase::State WebDataService::RemoveAllTokensImpl(WebDatabase* db) {
-  if (db->GetTokenServiceTable()->RemoveAllTokens()) {
+  if (TokenServiceTable::FromWebDatabase(db)->RemoveAllTokens()) {
     return WebDatabase::COMMIT_NEEDED;
   }
   return WebDatabase::COMMIT_NOT_NEEDED;
@@ -410,7 +411,8 @@ WebDatabase::State WebDataService::RemoveAllTokensImpl(WebDatabase* db) {
 
 WebDatabase::State WebDataService::SetTokenForServiceImpl(
     const std::string& service, const std::string& token, WebDatabase* db) {
-  if (db->GetTokenServiceTable()->SetTokenForService(service, token)) {
+  if (TokenServiceTable::FromWebDatabase(db)->SetTokenForService(service,
+                                                                 token)) {
     return WebDatabase::COMMIT_NEEDED;
   }
   return WebDatabase::COMMIT_NOT_NEEDED;
@@ -418,7 +420,7 @@ WebDatabase::State WebDataService::SetTokenForServiceImpl(
 
 scoped_ptr<WDTypedResult> WebDataService::GetAllTokensImpl(WebDatabase* db) {
   std::map<std::string, std::string> map;
-  db->GetTokenServiceTable()->GetAllTokens(&map);
+  TokenServiceTable::FromWebDatabase(db)->GetAllTokens(&map);
   return scoped_ptr<WDTypedResult>(
       new WDResult<std::map<std::string, std::string> >(TOKEN_RESULT, map));
 }
@@ -432,7 +434,8 @@ scoped_ptr<WDTypedResult> WebDataService::GetAllTokensImpl(WebDatabase* db) {
 WebDatabase::State WebDataService::AddFormElementsImpl(
     const std::vector<FormFieldData>& fields, WebDatabase* db) {
   AutofillChangeList changes;
-  if (!db->GetAutofillTable()->AddFormFieldValues(fields, &changes)) {
+  if (!AutofillTable::FromWebDatabase(db)->AddFormFieldValues(
+          fields, &changes)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -451,7 +454,7 @@ WebDatabase::State WebDataService::AddFormElementsImpl(
 scoped_ptr<WDTypedResult> WebDataService::GetFormValuesForElementNameImpl(
     const string16& name, const string16& prefix, int limit, WebDatabase* db) {
   std::vector<string16> values;
-  db->GetAutofillTable()->GetFormValuesForElementName(
+  AutofillTable::FromWebDatabase(db)->GetFormValuesForElementName(
       name, prefix, &values, limit);
   return scoped_ptr<WDTypedResult>(
       new WDResult<std::vector<string16> >(AUTOFILL_VALUE_RESULT, values));
@@ -462,7 +465,7 @@ WebDatabase::State WebDataService::RemoveFormElementsAddedBetweenImpl(
     WebDatabase* db) {
   AutofillChangeList changes;
 
-  if (db->GetAutofillTable()->RemoveFormElementsAddedBetween(
+  if (AutofillTable::FromWebDatabase(db)->RemoveFormElementsAddedBetween(
       delete_begin, delete_end, &changes)) {
     if (!changes.empty()) {
       // Post the notifications including the list of affected keys.
@@ -482,7 +485,7 @@ WebDatabase::State WebDataService::RemoveExpiredFormElementsImpl(
     WebDatabase* db) {
   AutofillChangeList changes;
 
-  if (db->GetAutofillTable()->RemoveExpiredFormElements(&changes)) {
+  if (AutofillTable::FromWebDatabase(db)->RemoveExpiredFormElements(&changes)) {
     if (!changes.empty()) {
       // Post the notifications including the list of affected keys.
       // This is sent here so that work resulting from this notification
@@ -500,7 +503,7 @@ WebDatabase::State WebDataService::RemoveExpiredFormElementsImpl(
 WebDatabase::State WebDataService::RemoveFormValueForElementNameImpl(
     const string16& name, const string16& value, WebDatabase* db) {
 
-  if (db->GetAutofillTable()->RemoveFormElement(name, value)) {
+  if (AutofillTable::FromWebDatabase(db)->RemoveFormElement(name, value)) {
     AutofillChangeList changes;
     changes.push_back(AutofillChange(AutofillChange::REMOVE,
                                      AutofillKey(name, value)));
@@ -518,7 +521,7 @@ WebDatabase::State WebDataService::RemoveFormValueForElementNameImpl(
 
 WebDatabase::State WebDataService::AddAutofillProfileImpl(
     const AutofillProfile& profile, WebDatabase* db) {
-  if (!db->GetAutofillTable()->AddAutofillProfile(profile)) {
+  if (!AutofillTable::FromWebDatabase(db)->AddAutofillProfile(profile)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -540,13 +543,14 @@ WebDatabase::State WebDataService::UpdateAutofillProfileImpl(
   // valid to try to update a missing profile.  We simply drop the write and
   // the caller will detect this on the next refresh.
   AutofillProfile* original_profile = NULL;
-  if (!db->GetAutofillTable()->GetAutofillProfile(profile.guid(),
+  if (!AutofillTable::FromWebDatabase(db)->GetAutofillProfile(profile.guid(),
       &original_profile)) {
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
   scoped_ptr<AutofillProfile> scoped_profile(original_profile);
 
-  if (!db->GetAutofillTable()->UpdateAutofillProfileMulti(profile)) {
+  if (!AutofillTable::FromWebDatabase(db)->UpdateAutofillProfileMulti(
+          profile)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NEEDED;
   }
@@ -565,13 +569,13 @@ WebDatabase::State WebDataService::UpdateAutofillProfileImpl(
 WebDatabase::State WebDataService::RemoveAutofillProfileImpl(
     const std::string& guid, WebDatabase* db) {
   AutofillProfile* profile = NULL;
-  if (!db->GetAutofillTable()->GetAutofillProfile(guid, &profile)) {
+  if (!AutofillTable::FromWebDatabase(db)->GetAutofillProfile(guid, &profile)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
   scoped_ptr<AutofillProfile> scoped_profile(profile);
 
-  if (!db->GetAutofillTable()->RemoveAutofillProfile(guid)) {
+  if (!AutofillTable::FromWebDatabase(db)->RemoveAutofillProfile(guid)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -589,7 +593,7 @@ WebDatabase::State WebDataService::RemoveAutofillProfileImpl(
 scoped_ptr<WDTypedResult> WebDataService::GetAutofillProfilesImpl(
     WebDatabase* db) {
   std::vector<AutofillProfile*> profiles;
-  db->GetAutofillTable()->GetAutofillProfiles(&profiles);
+  AutofillTable::FromWebDatabase(db)->GetAutofillProfiles(&profiles);
   return scoped_ptr<WDTypedResult>(
       new WDDestroyableResult<std::vector<AutofillProfile*> >(
           AUTOFILL_PROFILES_RESULT,
@@ -600,7 +604,7 @@ scoped_ptr<WDTypedResult> WebDataService::GetAutofillProfilesImpl(
 
 WebDatabase::State WebDataService::AddCreditCardImpl(
     const CreditCard& credit_card, WebDatabase* db) {
-  if (!db->GetAutofillTable()->AddCreditCard(credit_card)) {
+  if (!AutofillTable::FromWebDatabase(db)->AddCreditCard(credit_card)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -613,13 +617,13 @@ WebDatabase::State WebDataService::UpdateCreditCardImpl(
   // It is currently valid to try to update a missing profile.  We simply drop
   // the write and the caller will detect this on the next refresh.
   CreditCard* original_credit_card = NULL;
-  if (!db->GetAutofillTable()->GetCreditCard(credit_card.guid(),
+  if (!AutofillTable::FromWebDatabase(db)->GetCreditCard(credit_card.guid(),
       &original_credit_card)) {
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
   scoped_ptr<CreditCard> scoped_credit_card(original_credit_card);
 
-  if (!db->GetAutofillTable()->UpdateCreditCard(credit_card)) {
+  if (!AutofillTable::FromWebDatabase(db)->UpdateCreditCard(credit_card)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -628,7 +632,7 @@ WebDatabase::State WebDataService::UpdateCreditCardImpl(
 
 WebDatabase::State WebDataService::RemoveCreditCardImpl(
     const std::string& guid, WebDatabase* db) {
-  if (!db->GetAutofillTable()->RemoveCreditCard(guid)) {
+  if (!AutofillTable::FromWebDatabase(db)->RemoveCreditCard(guid)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -637,7 +641,7 @@ WebDatabase::State WebDataService::RemoveCreditCardImpl(
 
 scoped_ptr<WDTypedResult> WebDataService::GetCreditCardsImpl(WebDatabase* db) {
   std::vector<CreditCard*> credit_cards;
-  db->GetAutofillTable()->GetCreditCards(&credit_cards);
+  AutofillTable::FromWebDatabase(db)->GetCreditCards(&credit_cards);
   return scoped_ptr<WDTypedResult>(
       new WDDestroyableResult<std::vector<CreditCard*> >(
           AUTOFILL_CREDITCARDS_RESULT,
@@ -652,7 +656,7 @@ WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
         WebDatabase* db) {
   std::vector<std::string> profile_guids;
   std::vector<std::string> credit_card_guids;
-  if (db->GetAutofillTable()->
+  if (AutofillTable::FromWebDatabase(db)->
       RemoveAutofillProfilesAndCreditCardsModifiedBetween(
           delete_begin,
           delete_end,

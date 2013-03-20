@@ -5,19 +5,13 @@
 #ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
 #define CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
 
+#include <map>
+
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
+#include "chrome/browser/webdata/web_database_table.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
-
-class AutofillTable;
-class KeywordTable;
-class LoginsTable;
-class TokenServiceTable;
-class WebAppsTable;
-class WebDatabaseTable;
-class WebIntentsTable;
 
 namespace base {
 class FilePath;
@@ -40,22 +34,28 @@ class WebDatabase {
   WebDatabase();
   virtual ~WebDatabase();
 
+  // Adds a database table. Ownership remains with the caller, which
+  // must ensure that the lifetime of |table| exceeds this object's
+  // lifetime. Must only be called before Init.
+  void AddTable(WebDatabaseTable* table);
+
+  // Retrieves a table based on its |key|.
+  WebDatabaseTable* GetTable(WebDatabaseTable::TypeKey key);
+
   // Initialize the database given a name. The name defines where the SQLite
   // file is. If this returns an error code, no other method should be called.
   // Requires the |app_locale| to be passed as a parameter as the locale can
   // only safely be queried on the UI thread.
+  //
+  // Before calling this method, you must call AddTable for any
+  // WebDatabaseTable objects that are supposed to participate in
+  // managing the database.
   sql::InitStatus Init(
       const base::FilePath& db_name, const std::string& app_locale);
 
   // Transactions management
   void BeginTransaction();
   void CommitTransaction();
-
-  virtual AutofillTable* GetAutofillTable();
-  virtual KeywordTable* GetKeywordTable();
-  virtual LoginsTable* GetLoginsTable();
-  virtual TokenServiceTable* GetTokenServiceTable();
-  virtual WebAppsTable* GetWebAppsTable();
 
   // Exposed for testing only.
   sql::Connection* GetSQLConnection();
@@ -69,20 +69,10 @@ class WebDatabase {
   sql::Connection db_;
   sql::MetaTable meta_table_;
 
-  // TODO(joi): All of the typed pointers are going in a future
-  // change, as we remove knowledge of the specific types from this
-  // class.
-  AutofillTable* autofill_table_;
-  KeywordTable* keyword_table_;
-  LoginsTable* logins_table_;
-  TokenServiceTable* token_service_table_;
-  WebAppsTable* web_apps_table_;
-  // TODO(thakis): Add a migration to delete this table, then remove this.
-  WebIntentsTable* web_intents_table_;
-
-  // Owns all the different database tables that have been added to
-  // this object.
-  ScopedVector<WebDatabaseTable> tables_;
+  // Map of all the different tables that have been added to this
+  // object. Non-owning.
+  typedef std::map<WebDatabaseTable::TypeKey, WebDatabaseTable*> TableMap;
+  TableMap tables_;
 
   scoped_ptr<content::NotificationService> notification_service_;
 

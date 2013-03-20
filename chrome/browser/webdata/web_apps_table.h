@@ -12,6 +12,7 @@
 
 class GURL;
 class SkBitmap;
+class WebDatabase;
 
 // This class manages the WebApps tables within the SQLite database passed to
 // the constructor. It expects the following schema:
@@ -30,10 +31,14 @@ class SkBitmap;
 //
 class WebAppsTable : public WebDatabaseTable {
  public:
-  WebAppsTable(sql::Connection* db, sql::MetaTable* meta_table)
-      : WebDatabaseTable(db, meta_table) {}
+  WebAppsTable() {}
   virtual ~WebAppsTable() {}
-  virtual bool Init() OVERRIDE;
+
+  // Retrieves the WebAppsTable* owned by |database|.
+  static WebAppsTable* FromWebDatabase(WebDatabase* database);
+
+  virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
+  virtual bool Init(sql::Connection* db, sql::MetaTable* meta_table) OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
   virtual bool MigrateToVersion(int version,
                                 const std::string& app_locale,

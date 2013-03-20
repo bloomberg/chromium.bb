@@ -9,20 +9,39 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/webdata/web_database.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
-WebIntentsTable::WebIntentsTable(sql::Connection* db,
-                                 sql::MetaTable* meta_table)
-    : WebDatabaseTable(db, meta_table) {
+namespace {
+
+int table_key = 0;
+
+WebDatabaseTable::TypeKey GetKey() {
+  return reinterpret_cast<void*>(&table_key);
+}
+
+}  // namespace
+
+WebIntentsTable::WebIntentsTable() {
 }
 
 WebIntentsTable::~WebIntentsTable() {
 }
 
-bool WebIntentsTable::Init() {
+WebIntentsTable* WebIntentsTable::FromWebDatabase(WebDatabase* db) {
+  return static_cast<WebIntentsTable*>(db->GetTable(GetKey()));
+}
+
+WebDatabaseTable::TypeKey WebIntentsTable::GetTypeKey() const {
+  return GetKey();
+}
+
+bool WebIntentsTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
+  WebDatabaseTable::Init(db, meta_table);
+
   if (!db_->DoesTableExist("web_intents")) {
     if (!db_->Execute("CREATE TABLE web_intents ("
                       " service_url LONGVARCHAR,"
@@ -97,7 +116,7 @@ bool WebIntentsTable::MigrateToVersion46AddSchemeColumn() {
     return false;
   }
 
-  if (!Init()) return false;
+  if (!Init(db_, meta_table_)) return false;
 
   int error = db_->ExecuteAndReturnErrorCode(
       "INSERT INTO web_intents"
