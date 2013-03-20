@@ -62,4 +62,21 @@ TEST_F(DesktopCaptureClientTest, ResetMouseEventHandlerOnCapture) {
   EXPECT_EQ(NULL, root_window()->mouse_pressed_handler());
 }
 
+// Makes sure that when one window gets capture, it forces the release on the
+// other. This is needed has to be handled explicitly on Linux, and is a sanity
+// check on Windows.
+TEST_F(DesktopCaptureClientTest, ResetOtherWindowCaptureOnCapture) {
+  // Create a window inside the RootWindow.
+  scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
+  w1->SetCapture();
+  EXPECT_EQ(w1.get(), desktop_capture_client_->GetCaptureWindow());
+
+  // Build a window in the second RootWindow and give it capture. The other
+  // capture should be cleared.
+  scoped_ptr<aura::Window> w2(CreateNormalWindow(2, second_root_.get(), NULL));
+  w2->SetCapture();
+  EXPECT_EQ(NULL, desktop_capture_client_->GetCaptureWindow());
+  EXPECT_EQ(w2.get(), second_desktop_capture_client_->GetCaptureWindow());
+}
+
 }  // namespace views

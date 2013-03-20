@@ -22,14 +22,6 @@ DesktopCaptureClient::~DesktopCaptureClient() {
   aura::client::SetCaptureClient(root_window_, NULL);
 }
 
-void DesktopCaptureClient::OnOtherCaptureClientTookCapture() {
-  if (capture_window_ == NULL) {
-    // While RootWindow may not technically have capture, it will store state
-    // that needs to be cleared on capture changed regarding mouse up/down.
-    root_window_->ClearMouseHandlers();
-  }
-}
-
 void DesktopCaptureClient::SetCapture(aura::Window* window) {
   if (capture_window_ == window)
     return;
@@ -62,6 +54,21 @@ void DesktopCaptureClient::ReleaseCapture(aura::Window* window) {
 
 aura::Window* DesktopCaptureClient::GetCaptureWindow() {
   return capture_window_;
+}
+
+void DesktopCaptureClient::OnOtherCaptureClientTookCapture() {
+  if (capture_window_ == NULL) {
+    // While RootWindow may not technically have capture, it will store state
+    // that needs to be cleared on capture changed regarding mouse up/down.
+    root_window_->ClearMouseHandlers();
+  }
+#if defined(OS_LINUX)
+  else {
+    // Capture is a concept that we emulate on Linux; we don't receive messages
+    // from the X11 server about right click menu dismissal.
+    SetCapture(NULL);
+  }
+#endif
 }
 
 }  // namespace views

@@ -22,14 +22,14 @@ class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
   explicit DesktopCaptureClient(aura::RootWindow* root_window);
   virtual ~DesktopCaptureClient();
 
- private:
-  // Called when another instance of the capture client takes capture.
-  void OnOtherCaptureClientTookCapture();
-
   // Overridden from client::CaptureClient:
   virtual void SetCapture(aura::Window* window) OVERRIDE;
   virtual void ReleaseCapture(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetCaptureWindow() OVERRIDE;
+
+ private:
+  // Called when another instance of the capture client takes capture.
+  void OnOtherCaptureClientTookCapture();
 
   aura::RootWindow* root_window_;
   aura::Window* capture_window_;
