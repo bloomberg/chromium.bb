@@ -139,14 +139,14 @@ static const int kOtherFolderButtonTag = 1;
 // TODO(kuan): change chrome::kNTPBookmarkBarHeight to this new height when
 // search_ntp replaces ntp4; for now, while both versions exist, this new height
 // is only needed locally.
-static const int kSearchNewTabBookmarkBarHeight = 36;
+static const int kSearchNewTabBookmarkBarHeight = 40;
 
 // TODO(kuan): change BookmarkBarView::kNewtabHorizontalPadding and
 // BookmarkBarView::kNewtabVerticalPadding to these new values when search_ntp
 // replaces ntp4; for now, while both versions exist, these new values are only
 // needed locally.
-static const int kSearchNewTabHorizontalPadding = 0;
-static const int kSearchNewTabVerticalPadding = 3;
+static const int kSearchNewTabHorizontalPadding = 2;
+static const int kSearchNewTabVerticalPadding = 5;
 
 // Tag for the 'Apps Shortcut' button.
 static const int kAppsShortcutButtonTag = 2;

@@ -189,8 +189,23 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
       chrome::search::GetDetachedBookmarkBarSeparatorColor(theme_provider);
   DetachableToolbarView::PaintHorizontalBorder(canvas, view, true,
                                                separator_color);
-  DetachableToolbarView::PaintHorizontalBorder(canvas, view, false,
-                                               separator_color);
+  // The bottom border needs to be 1-px thick in both regular and retina
+  // displays, so we can't use DetachableToolbarView::PaintHorizontalBorder
+  // which paints a 2-px thick border in retina display.
+  SkPaint paint;
+  paint.setAntiAlias(false);
+  // Sets border to 1-px thick regardless of scale factor.
+  paint.setStrokeWidth(0);
+  // Bottom border is at 50% opacity of top border.
+  paint.setColor(SkColorSetA(separator_color,
+                             SkColorGetA(separator_color) / 2));
+  // Calculate thickness of bottom border as per current scale factor to
+  // determine where to draw the 1-px thick border.
+  float thickness = views::NonClientFrameView::kClientEdgeThickness /
+                    ui::GetScaleFactorScale(canvas->scale_factor());
+  SkScalar y = SkIntToScalar(view->height()) - SkFloatToScalar(thickness);
+  canvas->sk_canvas()->drawLine(SkIntToScalar(0), y,
+                                SkIntToScalar(view->width()), y, paint);
 }
 
 void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
