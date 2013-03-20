@@ -280,8 +280,7 @@ void LayerTreeHostImpl::ManageTiles() {
                          memory_used_bytes);
 }
 
-void LayerTreeHostImpl::SetAnticipatedDrawTime(base::TimeTicks time)
-{
+void LayerTreeHostImpl::SetAnticipatedDrawTime(base::TimeTicks time) {
   if (tile_manager_)
     tile_manager_->SetAnticipatedDrawTime(time);
 }
