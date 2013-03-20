@@ -386,6 +386,8 @@ TEST_F(SpdySessionSpdy2Test, FailedPing) {
   session = NULL;
 }
 
+// TODO(kristianm): Could also test with more sessions where some are idle,
+// and more than one session to a HostPortPair.
 TEST_F(SpdySessionSpdy2Test, CloseIdleSessions) {
   CreateNetworkSession();
 
@@ -671,42 +673,21 @@ TEST_F(SpdySessionSpdy2Test, SendSettingsOnNewSession) {
 }
 
 namespace {
-
-// Specifies the style for closing the connection.
-enum SpdyPoolCloseSessionsType {
-  SPDY_POOL_CLOSE_SESSIONS_MANUALLY,
-  SPDY_POOL_CLOSE_CURRENT_SESSIONS,
-  SPDY_POOL_CLOSE_IDLE_SESSIONS,
-};
-
-// This test has three variants, one for each style of closing the connection.
-// If |clean_via_close_current_sessions| is SPDY_POOL_CLOSE_SESSIONS_MANUALLY,
-// the sessions are closed manually, calling SpdySessionPool::Remove() directly.
-// If |clean_via_close_current_sessions| is SPDY_POOL_CLOSE_CURRENT_SESSIONS,
+// This test has two variants, one for each style of closing the connection.
+// If |clean_via_close_current_sessions| is false, the sessions are closed
+// manually, calling SpdySessionPool::Remove() directly.  If it is true,
 // sessions are closed with SpdySessionPool::CloseCurrentSessions().
-// If |clean_via_close_current_sessions| is SPDY_POOL_CLOSE_IDLE_SESSIONS,
-// sessions are closed with SpdySessionPool::CloseIdleSessions().
-void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
+void IPPoolingTest(bool clean_via_close_current_sessions) {
   const int kTestPort = 80;
   struct TestHosts {
-    std::string url;
     std::string name;
     std::string iplist;
     HostPortProxyPair pair;
     AddressList addresses;
   } test_hosts[] = {
-    { "http:://www.foo.com",
-      "www.foo.com",
-      "192.0.2.33,192.168.0.1,192.168.0.5"
-    },
-    { "http://js.foo.com",
-      "js.foo.com",
-      "192.168.0.2,192.168.0.3,192.168.0.5,192.0.2.33"
-    },
-    { "http://images.foo.com",
-      "images.foo.com",
-      "192.168.0.4,192.168.0.3"
-    },
+    { "www.foo.com",    "192.0.2.33,192.168.0.1,192.168.0.5" },
+    { "images.foo.com", "192.168.0.2,192.168.0.3,192.168.0.5,192.0.2.33" },
+    { "js.foo.com",     "192.168.0.4,192.168.0.3" },
   };
 
   SpdySessionDependencies session_deps;
@@ -813,58 +794,13 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   EXPECT_TRUE(spdy_session_pool->HasSession(test_hosts[1].pair));
 
   // Cleanup the sessions.
-  switch (close_sessions_type) {
-    case SPDY_POOL_CLOSE_SESSIONS_MANUALLY:
-      spdy_session_pool->Remove(session);
-      session = NULL;
-      spdy_session_pool->Remove(session2);
-      session2 = NULL;
-      break;
-    case SPDY_POOL_CLOSE_CURRENT_SESSIONS:
-      spdy_session_pool->CloseCurrentSessions(net::ERR_ABORTED);
-      break;
-    case SPDY_POOL_CLOSE_IDLE_SESSIONS:
-      GURL url(test_hosts[0].url);
-      scoped_refptr<SpdyStream> spdy_stream =
-          CreateStreamSynchronously(session, url, MEDIUM, BoundNetLog());
-      GURL url1(test_hosts[1].url);
-      scoped_refptr<SpdyStream> spdy_stream1 =
-          CreateStreamSynchronously(session1, url1, MEDIUM, BoundNetLog());
-      GURL url2(test_hosts[2].url);
-      scoped_refptr<SpdyStream> spdy_stream2 =
-          CreateStreamSynchronously(session2, url2, MEDIUM, BoundNetLog());
-
-      // Close streams to make spdy_session and spdy_session1 inactive.
-      session->CloseCreatedStream(spdy_stream, OK);
-      session1->CloseCreatedStream(spdy_stream1, OK);
-
-      // Check spdy_session and spdy_session1 are not closed.
-      EXPECT_FALSE(session->is_active());
-      EXPECT_FALSE(session->IsClosed());
-      EXPECT_FALSE(session1->is_active());
-      EXPECT_FALSE(session1->IsClosed());
-      EXPECT_TRUE(session2->is_active());
-      EXPECT_FALSE(session2->IsClosed());
-
-      // Test that calling CloseIdleSessions, does not cause a crash.
-      // http://crbug.com/181400
-      spdy_session_pool->CloseIdleSessions();
-
-      // Verify spdy_session and spdy_session1 are closed.
-      EXPECT_FALSE(session->is_active());
-      EXPECT_TRUE(session->IsClosed());
-      EXPECT_FALSE(session1->is_active());
-      EXPECT_TRUE(session1->IsClosed());
-      EXPECT_TRUE(session2->is_active());
-      EXPECT_FALSE(session2->IsClosed());
-
-      spdy_stream = NULL;
-      spdy_stream1 = NULL;
-      spdy_stream2->Cancel();
-      spdy_stream2 = NULL;
-      spdy_session_pool->Remove(session2);
-      session2 = NULL;
-      break;
+  if (!clean_via_close_current_sessions) {
+    spdy_session_pool->Remove(session);
+    session = NULL;
+    spdy_session_pool->Remove(session2);
+    session2 = NULL;
+  } else {
+    spdy_session_pool->CloseCurrentSessions(net::ERR_ABORTED);
   }
 
   // Verify that the map is all cleaned up.
@@ -876,15 +812,11 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
 }  // namespace
 
 TEST_F(SpdySessionSpdy2Test, IPPooling) {
-  IPPoolingTest(SPDY_POOL_CLOSE_SESSIONS_MANUALLY);
+  IPPoolingTest(false);
 }
 
 TEST_F(SpdySessionSpdy2Test, IPPoolingCloseCurrentSessions) {
-  IPPoolingTest(SPDY_POOL_CLOSE_CURRENT_SESSIONS);
-}
-
-TEST_F(SpdySessionSpdy2Test, IPPoolingCloseIdleSessions) {
-  IPPoolingTest(SPDY_POOL_CLOSE_IDLE_SESSIONS);
+  IPPoolingTest(true);
 }
 
 TEST_F(SpdySessionSpdy2Test, ClearSettingsStorageOnIPAddressChanged) {
