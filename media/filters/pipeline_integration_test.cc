@@ -418,11 +418,8 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
 
   ASSERT_TRUE(WaitUntilOnEnded());
 
-  EXPECT_EQ(GetVideoHash(), "f0be120a90a811506777c99a2cdf7cc1");
-
-  // TODO(dalecurtis): Audio decoded in float does not have a consistent hash
-  // across platforms.  Fix this: http://crbug.com/168204
-  // EXPECT_EQ(GetAudioHash(), "");
+  EXPECT_EQ("f0be120a90a811506777c99a2cdf7cc1", GetVideoHash());
+  EXPECT_EQ("-5.15,2.31,-4.78,5.24,-2.23,4.54,", GetAudioHash());
 }
 
 // TODO(fgalligan): Enable test when code to parse encrypted WebM files lands

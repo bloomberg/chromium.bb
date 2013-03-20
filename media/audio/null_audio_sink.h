@@ -5,7 +5,8 @@
 #ifndef MEDIA_AUDIO_NULL_AUDIO_SINK_H_
 #define MEDIA_AUDIO_NULL_AUDIO_SINK_H_
 
-#include "base/md5.h"
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_renderer_sink.h"
 
@@ -15,6 +16,7 @@ class MessageLoopProxy;
 
 namespace media {
 class AudioBus;
+class AudioHash;
 class FakeAudioConsumer;
 
 class MEDIA_EXPORT NullAudioSink
@@ -31,11 +33,10 @@ class MEDIA_EXPORT NullAudioSink
   virtual void Play() OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
 
-  // Enables audio frame hashing and reinitializes the MD5 context.  Must be
-  // called prior to Initialize().
+  // Enables audio frame hashing.  Must be called prior to Initialize().
   void StartAudioHashForTesting();
 
-  // Returns the MD5 hash of all audio frames seen since the last reset.
+  // Returns the hash of all audio frames seen since construction.
   std::string GetAudioHashForTesting();
 
  protected:
@@ -49,10 +50,8 @@ class MEDIA_EXPORT NullAudioSink
   bool playing_;
   RenderCallback* callback_;
 
-  // Controls whether or not a running MD5 hash is computed for audio frames.
-  bool hash_audio_for_testing_;
-  int channels_;
-  scoped_array<base::MD5Context> md5_channel_contexts_;
+  // Controls whether or not a running hash is computed for audio frames.
+  scoped_ptr<AudioHash> audio_hash_;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_ptr<FakeAudioConsumer> fake_consumer_;

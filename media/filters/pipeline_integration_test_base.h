@@ -65,7 +65,7 @@ class PipelineIntegrationTestBase {
   // with hashing enabled.
   std::string GetVideoHash();
 
-  // Returns the MD5 hash of all audio frames seen.  Should only be called once
+  // Returns the hash of all audio frames seen.  Should only be called once
   // after playback completes.  Pipeline must have been started with hashing
   // enabled.
   std::string GetAudioHash();
