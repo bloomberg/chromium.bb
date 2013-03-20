@@ -279,9 +279,9 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
     int contents_child_id;
     int contents_route_id;
     if (prerender_contents->GetChildId(&contents_child_id) &&
-        prerender_contents->GetRouteId(&contents_route_id) &&
-        contents_child_id == process_id && contents_route_id == route_id) {
-      return NULL;
+        prerender_contents->GetRouteId(&contents_route_id)) {
+      if (contents_child_id == process_id && contents_route_id == route_id)
+        return NULL;
     }
   }
 
