@@ -444,6 +444,22 @@ void TabSpecificContentSettings::OnMediaStreamAllowed() {
   OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
+void TabSpecificContentSettings::OnMicrophoneAccessed() {
+  OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+}
+
+void TabSpecificContentSettings::OnMicrophoneAccessBlocked() {
+  OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string());
+}
+
+void TabSpecificContentSettings::OnCameraAccessed() {
+  OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+}
+
+void TabSpecificContentSettings::OnCameraAccessBlocked() {
+  OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string());
+}
+
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i) {
     if (i == CONTENT_SETTINGS_TYPE_COOKIES)

@@ -1878,7 +1878,7 @@ class MediaStreamDevicesControllerBrowserTest
         content_settings,
         request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
-    controller.DismissInfoBarAndTakeActionOnSettings();
+    controller.ProcessRequest();
 
     MessageLoop::current()->QuitWhenIdle();
   }
@@ -1894,7 +1894,7 @@ class MediaStreamDevicesControllerBrowserTest
     MediaStreamDevicesController controller(
         browser()->profile(), content_settings, request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
-    controller.DismissInfoBarAndTakeActionOnSettings();
+    controller.ProcessRequest();
 
     MessageLoop::current()->QuitWhenIdle();
   }
@@ -1933,6 +1933,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_dev", "Fake Video Device");
   video_devices.push_back(fake_video_device);
 
+LOG(ERROR) << " *** Policy test";
   PolicyMap policies;
   policies.Set(key::kVideoCaptureAllowed, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,

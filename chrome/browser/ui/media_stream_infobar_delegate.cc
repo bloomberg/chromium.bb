@@ -32,7 +32,7 @@ bool MediaStreamInfoBarDelegate::Create(
   scoped_ptr<MediaStreamDevicesController> controller(
       new MediaStreamDevicesController(profile, content_settings,
                                        request, callback));
-  if (controller->DismissInfoBarAndTakeActionOnSettings())
+  if (controller->ProcessRequest())
     return false;
 
   InfoBarService* infobar_service =
@@ -57,12 +57,12 @@ bool MediaStreamInfoBarDelegate::Create(
 void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
   // we don't want WebRTC to be waiting for an answer that will never come.
-  controller_->Deny(false);
+  controller_->OnCancel();
 }
 
 gfx::Image* MediaStreamInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      controller_->has_video() ?
+      controller_->IsCameraRequested() ?
           IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC);
 }
 
@@ -77,12 +77,12 @@ MediaStreamInfoBarDelegate*
 
 string16 MediaStreamInfoBarDelegate::GetMessageText() const {
   int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
-  if (!controller_->has_audio())
+  if (!controller_->IsMicrophoneRequested())
     message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!controller_->has_video())
+  else if (!controller_->IsCameraRequested())
     message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
   return l10n_util::GetStringFUTF16(
-      message_id, UTF8ToUTF16(controller_->GetSecurityOriginSpec()));
+      message_id, UTF8ToUTF16(controller_->GetRequestOrigin().spec()));
 }
 
 string16 MediaStreamInfoBarDelegate::GetButtonLabel(
@@ -92,12 +92,12 @@ string16 MediaStreamInfoBarDelegate::GetButtonLabel(
 }
 
 bool MediaStreamInfoBarDelegate::Accept() {
-  controller_->Accept(true);
+  controller_->OnGrantPermission();
   return true;
 }
 
 bool MediaStreamInfoBarDelegate::Cancel() {
-  controller_->Deny(true);
+  controller_->OnDenyPermission();
   return true;
 }
 
@@ -125,5 +125,6 @@ MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_service),
       controller_(controller) {
   DCHECK(controller_.get());
-  DCHECK(controller_->has_audio() || controller_->has_video());
+  DCHECK(controller_->IsMicrophoneRequested() ||
+         controller_->IsCameraRequested());
 }
