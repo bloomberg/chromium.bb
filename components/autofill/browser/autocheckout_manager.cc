@@ -226,8 +226,6 @@ void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
   for (size_t i = 0; i < result->field_count(); ++i) {
     AutofillFieldType type = result->field(i)->type();
     if (type == CREDIT_CARD_VERIFICATION_CODE) {
-      // TODO(ramankk): CVV is not handled by CreditCard, not sure how to
-      // handle it yet.
       cvv_ = result->field(i)->value;
       continue;
     }

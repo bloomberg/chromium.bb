@@ -217,9 +217,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutofilled) {
 
 // We should be able to extract a radio or a checkbox field that has been
 // autofilled.
-// TODO(ramankk): Enable this test once IsCheckable is enabled in
-// IsAutofillableInputElement function in form_autofill_util.
-TEST_F(FormAutofillTest, DISABLED_WebFormControlElementToClickableFormField) {
+TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   LoadHTML("<INPUT type=\"checkbox\" id=\"checkbox\" value=\"mail\"/>"
            "<INPUT type=\"radio\" id=\"radio\" value=\"male\"/>");
 
