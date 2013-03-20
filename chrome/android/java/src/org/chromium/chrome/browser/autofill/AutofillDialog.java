@@ -178,9 +178,10 @@ public class AutofillDialog extends AlertDialog
      * @param visible Whether the section should be visible.
      * @param dialogInputs The array that contains the data for each field in the section.
      * @param menuItems The array that contains the dropdown items to be shown for the section.
+     * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
      */
     public void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
-            AutofillDialogMenuItem[] menuItems) {
+            AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
         EditText currentField;
         String inputValue;
         for (int i = 0; i < dialogInputs.length; i++) {

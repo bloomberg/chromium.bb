@@ -40,6 +40,12 @@ void AutofillDialogViewAndroid::Show() {
       reinterpret_cast<jint>(this),
       WindowAndroidHelper::FromWebContents(controller_->web_contents())->
           GetWindowAndroid()->GetJavaObject().obj()));
+
+  UpdateSection(SECTION_EMAIL);
+  UpdateSection(SECTION_CC);
+  UpdateSection(SECTION_BILLING);
+  UpdateSection(SECTION_CC_BILLING);
+  UpdateSection(SECTION_SHIPPING);
 }
 
 void AutofillDialogViewAndroid::Hide() {
@@ -96,7 +102,12 @@ void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
       Java_AutofillDialogGlue_createAutofillDialogMenuItemArray(env,
                                                                 itemCount);
 
+  int checkedItem = -1;
+
   for (int i = 0; i < itemCount; ++i) {
+    if (menuModel->IsItemCheckedAt(i))
+      checkedItem = i;
+
     ScopedJavaLocalRef<jstring> line1 =
         base::android::ConvertUTF16ToJavaString(env, menuModel->GetLabelAt(i));
     ScopedJavaLocalRef<jstring> line2 =
@@ -119,7 +130,8 @@ void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
                                         section,
                                         controller_->SectionIsActive(section),
                                         field_array.obj(),
-                                        menu_array.obj());
+                                        menu_array.obj(),
+                                        checkedItem);
 }
 
 void AutofillDialogViewAndroid::GetUserInput(DialogSection section,

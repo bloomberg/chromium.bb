@@ -37,12 +37,15 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
      * Updates a section of Autofill dialog.
      * @param section Section that needs to be updated. Should match one of the values in
      *                {@link AutofillDialogConstants}.
-     * @param dialogInputs The array of values for inputs in the dialog.
+     * @param visible Whether the section should be visible.
+     * @param dialogInputs Input fields of the currently selected menu item.
+     * @param menuItems Menu items for the section.
+     * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
      */
     @CalledByNative
     private void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
-            AutofillDialogMenuItem[] menuItems) {
-        mAutofillDialog.updateSection(section, visible, dialogInputs, menuItems);
+            AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
+        mAutofillDialog.updateSection(section, visible, dialogInputs, menuItems, selectedMenuItem);
     }
 
     @CalledByNative
