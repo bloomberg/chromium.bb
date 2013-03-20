@@ -41,7 +41,7 @@ using extensions::Extension;
 #define MAYBE_ExtensionCrashRecoveryTest DISABLED_ExtensionCrashRecoveryTest
 #else
 #define MAYBE_ExtensionCrashRecoveryTest ExtensionCrashRecoveryTest
-#endif  // defined(OS_MAC) || defined(USE_AURA)
+#endif  // defined(OS_MACOSX) || defined(USE_AURA)
 
 class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
  protected:

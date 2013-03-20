@@ -16,7 +16,7 @@ namespace extensions {
 namespace {
 
 const char kNativeMessagingDirectory[] =
-#if defined(OS_MAXOSX)
+#if defined(OS_MACOSX)
     "/Library/Chrome/NativeMessagingHosts";
 #else
     "/etc/opt/chrome/native-messaging-hosts";
