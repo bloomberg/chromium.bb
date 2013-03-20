@@ -150,14 +150,14 @@ void WebContentsAudioInputStream::Impl::Start(AudioInputCallback* callback) {
   if (state_ != OPENED)
     return;
 
+  callback_ = callback;
   if (IsTargetLost()) {
     ReportError();
+    callback_ = NULL;
     return;
   }
 
   state_ = MIRRORING;
-
-  callback_ = callback;
   mixer_stream_->Start(callback);
 
   StartMirroring();
