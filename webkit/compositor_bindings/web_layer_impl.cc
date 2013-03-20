@@ -324,6 +324,8 @@ void WebLayerImpl::setScrollClient(
   layer_->set_layer_scroll_client(scroll_client);
 }
 
+bool WebLayerImpl::isOrphan() const { return !layer_->layer_tree_host(); }
+
 Layer* WebLayerImpl::layer() const { return layer_.get(); }
 
 }  // namespace WebKit

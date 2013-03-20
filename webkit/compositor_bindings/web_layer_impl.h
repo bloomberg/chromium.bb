@@ -113,6 +113,7 @@ class WebLayerImpl : public WebKit::WebLayer {
   virtual void setFixedToContainerLayer(bool is_fixed);
   virtual bool fixedToContainerLayer() const;
   virtual void setScrollClient(WebKit::WebLayerScrollClient* client);
+  virtual bool isOrphan() const;
 
  protected:
   scoped_refptr<cc::Layer> layer_;
