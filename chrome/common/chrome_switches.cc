@@ -526,7 +526,9 @@ const char kEnableIPPooling[]               = "enable-ip-pooling";
 // have restrictions applied.
 const char kEnableManagedUsers[]     = "enable-managed-users";
 
-// Allows reporting memory info (JS heap size) to page.
+// Make the values returned to window.performance.memory more granular and more
+// up to date. Without this flag, the memory information is still available, but
+// it is bucketized and updated less frequently.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
 
 // Enables metrics recording and reporting in the browser startup sequence, as
