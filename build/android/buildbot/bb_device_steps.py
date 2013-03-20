@@ -236,6 +236,12 @@ def RunWebkitLayoutTests(options):
       cmd_args.extend(['--%s' % flag.replace('_', '-'),
                        options.factory_properties.get(flag)])
 
+  for f in options.factory_properties.get('additional_expectations', []):
+    cmd_args.extend(
+        ['--additional-expectations=%s' % os.path.join(CHROME_SRC, *f)])
+
+  # TODO(dpranke): Remove this block after
+  # https://codereview.chromium.org/12927002/ lands.
   for f in options.factory_properties.get('additional_expectations_files', []):
     cmd_args.extend(
         ['--additional-expectations=%s' % os.path.join(CHROME_SRC, *f)])
