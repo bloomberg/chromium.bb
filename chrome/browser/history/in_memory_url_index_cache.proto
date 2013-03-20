@@ -55,12 +55,18 @@ message InMemoryURLIndexCacheItem {
 
   message HistoryInfoMapItem {
     message HistoryInfoMapEntry {
+      message VisitInfo {
+        required int64 visit_time = 1;
+        // Corresponds to content::PageTransition.
+        required uint64 transition_type = 2;
+      }
       required int64 history_id = 1;
       required int32 visit_count = 2;
       required int32 typed_count = 3;
       required int64 last_visit = 4;
       required string url = 5;
       optional string title = 6;
+      repeated VisitInfo visits = 7;
     }
 
     required uint32 item_count = 1;

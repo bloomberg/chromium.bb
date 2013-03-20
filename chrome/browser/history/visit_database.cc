@@ -17,11 +17,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "sql/statement.h"
 
-// Rows, in order, of the visit table.
-#define HISTORY_VISIT_ROW_FIELDS \
-    " id,url,visit_time,from_visit,transition,segment_id,is_indexed," \
-    "visit_duration "
-
 namespace history {
 
 VisitDatabase::VisitDatabase() {

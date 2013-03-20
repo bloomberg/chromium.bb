@@ -211,6 +211,11 @@ class VisitDatabase {
   DISALLOW_COPY_AND_ASSIGN(VisitDatabase);
 };
 
+// Rows, in order, of the visit table.
+#define HISTORY_VISIT_ROW_FIELDS \
+    " id,url,visit_time,from_visit,transition,segment_id,is_indexed," \
+    "visit_duration "
+
 }  // history
 
 #endif  // CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_

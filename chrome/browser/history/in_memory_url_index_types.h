@@ -150,8 +150,25 @@ typedef std::vector<HistoryID> HistoryIDVector;
 typedef std::map<WordID, HistoryIDSet> WordIDHistoryMap;
 typedef std::map<HistoryID, WordIDSet> HistoryIDWordMap;
 
+
+// Information used in scoring a particular URL.
+typedef std::vector<VisitInfo> VisitInfoVector;
+struct HistoryInfoMapValue {
+  HistoryInfoMapValue();
+  ~HistoryInfoMapValue();
+
+  // This field is always populated.
+  URLRow url_row;
+
+  // This field gets filled in asynchronously after a visit.  As such,
+  // it's almost always correct.  If it's wrong, it's likely to either
+  // be empty (if this URL was recently added to the index) or
+  // slightly out-of-date (one visit behind).
+  VisitInfoVector visits;
+};
+
 // A map from history_id to the history's URL and title.
-typedef std::map<HistoryID, URLRow> HistoryInfoMap;
+typedef std::map<HistoryID, HistoryInfoMapValue> HistoryInfoMap;
 
 // A map from history_id to URL and page title word start metrics.
 struct RowWordStarts {

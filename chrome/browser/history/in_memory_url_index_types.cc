@@ -155,6 +155,11 @@ Char16Set Char16SetFromString16(const string16& term) {
   return characters;
 }
 
+// HistoryInfoMapValue ---------------------------------------------------------
+
+HistoryInfoMapValue::HistoryInfoMapValue() {}
+HistoryInfoMapValue::~HistoryInfoMapValue() {}
+
 // RowWordStarts ---------------------------------------------------------------
 
 RowWordStarts::RowWordStarts() {}

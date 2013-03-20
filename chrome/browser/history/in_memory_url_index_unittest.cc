@@ -121,6 +121,7 @@ class InMemoryURLIndexTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   TestingProfile profile_;
+  HistoryService* history_service_;
 
   scoped_ptr<InMemoryURLIndex> url_index_;
   HistoryDatabase* history_database_;
@@ -173,8 +174,9 @@ const std::set<std::string>& InMemoryURLIndexTest::scheme_whitelist() {
 }
 
 bool InMemoryURLIndexTest::UpdateURL(const URLRow& row) {
-  return GetPrivateData()->UpdateURL(row, url_index_->languages_,
-                                     url_index_->scheme_whitelist_);
+  return GetPrivateData()->UpdateURL(
+      history_service_, row, url_index_->languages_,
+      url_index_->scheme_whitelist_);
 }
 
 bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
@@ -188,11 +190,10 @@ void InMemoryURLIndexTest::SetUp() {
   profile_.BlockUntilBookmarkModelLoaded();
   profile_.BlockUntilHistoryProcessesPendingRequests();
   profile_.BlockUntilHistoryIndexIsRefreshed();
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(&profile_,
-                                           Profile::EXPLICIT_ACCESS);
-  ASSERT_TRUE(history_service);
-  HistoryBackend* backend = history_service->history_backend_.get();
+  history_service_ = HistoryServiceFactory::GetForProfile(
+      &profile_, Profile::EXPLICIT_ACCESS);
+  ASSERT_TRUE(history_service_);
+  HistoryBackend* backend = history_service_->history_backend_.get();
   history_database_ = backend->db();
 
   // Create and populate a working copy of the URL history database.
@@ -226,9 +227,8 @@ void InMemoryURLIndexTest::SetUp() {
     }
     transaction.Commit();
   }
-  proto_file.close();
 
-  // Update the last_visit_time table column
+  // Update the last_visit_time table column in the "urls" table
   // such that it represents a time relative to 'now'.
   sql::Statement statement(db.GetUniqueStatement(
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls;"));
@@ -246,6 +246,26 @@ void InMemoryURLIndexTest::SetUp() {
         last_visit -= day_delta;
       row.set_last_visit(last_visit);
       history_database_->UpdateURLRow(row.id(), row);
+    }
+    transaction.Commit();
+  }
+
+  // Update the visit_time table column in the "visits" table
+  // such that it represents a time relative to 'now'.
+  statement.Assign(db.GetUniqueStatement(
+      "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits;"));
+  ASSERT_TRUE(statement.is_valid());
+  {
+    sql::Transaction transaction(&db);
+    transaction.Begin();
+    while (statement.Step()) {
+      VisitRow row;
+      history_database_->FillVisitRow(statement, &row);
+      base::Time last_visit = time_right_now;
+      for (int64 i = row.visit_time.ToInternalValue(); i > 0; --i)
+        last_visit -= day_delta;
+      row.visit_time = last_visit;
+      history_database_->UpdateVisitRow(row);
     }
     transaction.Commit();
   }
@@ -348,12 +368,20 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
     // gtest and STLPort in the Android build. See
     // http://code.google.com/p/googletest/issues/detail?id=359
     ASSERT_TRUE(actual_info != actual.history_info_map_.end());
-    const URLRow& expected_row(expected_info->second);
-    const URLRow& actual_row(actual_info->second);
+    const URLRow& expected_row(expected_info->second.url_row);
+    const URLRow& actual_row(actual_info->second.url_row);
     EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
     EXPECT_EQ(expected_row.typed_count(), actual_row.typed_count());
     EXPECT_EQ(expected_row.last_visit(), actual_row.last_visit());
     EXPECT_EQ(expected_row.url(), actual_row.url());
+    const VisitInfoVector& expected_visits(expected_info->second.visits);
+    const VisitInfoVector& actual_visits(actual_info->second.visits);
+    EXPECT_EQ(expected_visits.size(), actual_visits.size());
+    for (size_t i = 0;
+         i < std::min(expected_visits.size(), actual_visits.size()); ++i) {
+      EXPECT_EQ(expected_visits[i].first, actual_visits[i].first);
+      EXPECT_EQ(expected_visits[i].second, actual_visits[i].second);
+    }
   }
 
   for (WordStartsMap::const_iterator expected_starts =
@@ -919,6 +947,48 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
               private_data.URLSchemeIsWhitelisted(url, whitelist));
+  }
+}
+
+TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
+  const HistoryInfoMap& history_info_map = GetPrivateData()->history_info_map_;
+
+  // Check (for URL with id 1) that the number of visits and their
+  // transition types are what we expect.  We don't bother checking
+  // the timestamps because it's too much trouble.  (The timestamps go
+  // through a transformation in InMemoryURLIndexTest::SetUp().  We
+  // assume that if the count and transitions show up with the right
+  // information, we're getting the right information from the history
+  // database file.)
+  HistoryInfoMap::const_iterator entry = history_info_map.find(1);
+  ASSERT_TRUE(entry != history_info_map.end());
+  {
+    const VisitInfoVector& visits = entry->second.visits;
+    EXPECT_EQ(3u, visits.size());
+    EXPECT_EQ(0u, visits[0].second);
+    EXPECT_EQ(1u, visits[1].second);
+    EXPECT_EQ(0u, visits[2].second);
+  }
+
+  // Ditto but for URL with id 35.
+  entry = history_info_map.find(35);
+  ASSERT_TRUE(entry != history_info_map.end());
+  {
+    const VisitInfoVector& visits = entry->second.visits;
+    EXPECT_EQ(2u, visits.size());
+    EXPECT_EQ(1u, visits[0].second);
+    EXPECT_EQ(1u, visits[1].second);
+  }
+
+  // The URL with id 32 has many visits listed in the database, but we
+  // should only read the most recent 10 (which are all transition type 0).
+  entry = history_info_map.find(32);
+  ASSERT_TRUE(entry != history_info_map.end());
+  {
+    const VisitInfoVector& visits = entry->second.visits;
+    EXPECT_EQ(10u, visits.size());
+    for (size_t i = 0; i < visits.size(); ++i)
+      EXPECT_EQ(0u, visits[i].second);
   }
 }
 

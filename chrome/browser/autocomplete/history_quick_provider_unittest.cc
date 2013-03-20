@@ -173,7 +173,7 @@ bool HistoryQuickProviderTest::UpdateURL(const history::URLRow& row) {
   DCHECK(index);
   history::URLIndexPrivateData* private_data = index->private_data();
   DCHECK(private_data);
-  return private_data->UpdateURL(row, index->languages_,
+  return private_data->UpdateURL(history_service_, row, index->languages_,
                                  index->scheme_whitelist_);
 }
 
