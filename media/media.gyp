@@ -412,6 +412,8 @@
         'video/picture.h',
         'video/video_decode_accelerator.cc',
         'video/video_decode_accelerator.h',
+        'webm/webm_audio_client.cc',
+        'webm/webm_audio_client.h',
         'webm/webm_cluster_parser.cc',
         'webm/webm_cluster_parser.h',
         'webm/webm_constants.h',
@@ -429,6 +431,8 @@
         'webm/webm_stream_parser.h',
         'webm/webm_tracks_parser.cc',
         'webm/webm_tracks_parser.h',
+        'webm/webm_video_client.cc',
+        'webm/webm_video_client.h',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -465,8 +469,6 @@
             'ffmpeg/ffmpeg_common.h',
             'filters/audio_file_reader.cc',
             'filters/audio_file_reader.h',
-            'filters/chunk_demuxer.cc',
-            'filters/chunk_demuxer.h',
             'filters/blocking_url_protocol.cc',
             'filters/blocking_url_protocol.h',
             'filters/ffmpeg_audio_decoder.cc',
@@ -479,10 +481,6 @@
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter.h',
             'filters/ffmpeg_video_decoder.cc',
             'filters/ffmpeg_video_decoder.h',
-            'webm/webm_cluster_parser.cc',
-            'webm/webm_cluster_parser.h',
-            'webm/webm_stream_parser.cc',
-            'webm/webm_stream_parser.h',
           ],
         }],
         ['media_use_libvpx == 1', {

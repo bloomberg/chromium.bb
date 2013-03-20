@@ -12,9 +12,10 @@
 #include "media/base/byte_queue.h"
 #include "media/base/stream_parser.h"
 #include "media/base/video_decoder_config.h"
-#include "media/webm/webm_cluster_parser.h"
 
 namespace media {
+
+class WebMClusterParser;
 
 class WebMStreamParser : public StreamParser {
  public:

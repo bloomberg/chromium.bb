@@ -7,12 +7,17 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/media_log.h"
+#include "media/base/video_decoder_config.h"
+#include "media/webm/webm_audio_client.h"
 #include "media/webm/webm_content_encodings_client.h"
 #include "media/webm/webm_parser.h"
+#include "media/webm/webm_video_client.h"
 
 namespace media {
 
@@ -36,8 +41,17 @@ class WebMTracksParser : public WebMParserClient {
   const std::string& audio_encryption_key_id() const {
     return audio_encryption_key_id_;
   }
+
+  const AudioDecoderConfig& audio_decoder_config() {
+    return audio_decoder_config_;
+  }
+
   const std::string& video_encryption_key_id() const {
     return video_encryption_key_id_;
+  }
+
+  const VideoDecoderConfig& video_decoder_config() {
+    return video_decoder_config_;
   }
 
   const std::set<int>& text_tracks() const {
@@ -45,7 +59,7 @@ class WebMTracksParser : public WebMParserClient {
   }
 
  private:
-  // WebMParserClient methods
+  // WebMParserClient implementation.
   virtual WebMParserClient* OnListStart(int id) OVERRIDE;
   virtual bool OnListEnd(int id) OVERRIDE;
   virtual bool OnUInt(int id, int64 val) OVERRIDE;
@@ -55,8 +69,9 @@ class WebMTracksParser : public WebMParserClient {
 
   int64 track_type_;
   int64 track_num_;
+  std::string codec_id_;
+  std::vector<uint8> codec_private_;
   scoped_ptr<WebMContentEncodingsClient> track_content_encodings_client_;
-  TextKind text_track_kind_;
 
   int64 audio_track_num_;
   int64 video_track_num_;
@@ -65,6 +80,12 @@ class WebMTracksParser : public WebMParserClient {
   std::string audio_encryption_key_id_;
   std::string video_encryption_key_id_;
   LogCB log_cb_;
+
+  WebMAudioClient audio_client_;
+  AudioDecoderConfig audio_decoder_config_;
+
+  WebMVideoClient video_client_;
+  VideoDecoderConfig video_decoder_config_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMTracksParser);
 };
