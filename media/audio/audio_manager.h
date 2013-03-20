@@ -35,6 +35,11 @@ class MEDIA_EXPORT AudioManager {
   // NOTE: There should only be one instance.
   static AudioManager* Create();
 
+  // Returns the pointer to the last created instance, or NULL if not yet
+  // created. This is a utility method for the code outside of media directory,
+  // like src/chrome.
+  static AudioManager* Get();
+
   // Returns true if the OS reports existence of audio devices. This does not
   // guarantee that the existing devices support all formats and sample rates.
   virtual bool HasAudioOutputDevices() = 0;

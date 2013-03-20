@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,16 +12,16 @@ using namespace media;
 
 // Test that input is supported and output is not.
 TEST(IOSAudioTest, AudioSupport) {
-  AudioManager* audio_manager = AudioManager::Create();
-  ASSERT_TRUE(NULL != audio_manager);
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  ASSERT_TRUE(NULL != audio_manager.get());
   ASSERT_FALSE(audio_manager->HasAudioOutputDevices());
   ASSERT_TRUE(audio_manager->HasAudioInputDevices());
 }
 
 // Test that input stream can be opened and closed.
 TEST(IOSAudioTest, InputStreamOpenAndClose) {
-  AudioManager* audio_manager = AudioManager::Create();
-  ASSERT_TRUE(NULL != audio_manager);
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  ASSERT_TRUE(NULL != audio_manager.get());
   if (!audio_manager->HasAudioInputDevices())
     return;
   AudioInputStream* ias = audio_manager->MakeAudioInputStream(
