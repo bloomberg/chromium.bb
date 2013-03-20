@@ -163,6 +163,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // The region specified will be transparent to mouse clicks.
   virtual void SetClickthroughRegion(SkRegion* region) = 0;
 #endif
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  // Set the parent native accessible view for this View.
+  virtual void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent) = 0;
+#endif
 };
 
 }  // namespace content

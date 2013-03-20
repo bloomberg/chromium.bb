@@ -53,14 +53,6 @@ AccessibilityNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
   return empty_document;
 }
 
-IAccessible* BrowserAccessibilityManagerWin::parent_iaccessible() {
-  return parent_iaccessible_;
-}
-
-HWND BrowserAccessibilityManagerWin::parent_hwnd() {
-  return parent_hwnd_;
-}
-
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     int type,
     BrowserAccessibility* node) {

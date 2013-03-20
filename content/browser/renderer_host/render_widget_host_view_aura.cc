@@ -624,7 +624,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       synthetic_move_sent_(false),
       accelerated_compositing_state_changed_(false),
       can_lock_compositor_(YES),
-      paint_observer_(NULL) {
+      paint_observer_(NULL),
+      accessible_parent_(NULL) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   aura::client::SetTooltipText(window_, &tooltip_);
@@ -815,7 +816,7 @@ BrowserAccessibilityManager*
 RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
   BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
   if (manager)
-    return NULL;
+    return manager;
 
 #if defined(OS_WIN)
   aura::RootWindow* root_window = window_->GetRootWindow();
@@ -823,12 +824,8 @@ RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
     return NULL;
   HWND hwnd = root_window->GetAcceleratedWidget();
 
-  // TODO: this should be the accessible of the parent View, for example
-  // GetNativeViewAccessible() called on this tab's ContentsContainer.
-  IAccessible* parent_iaccessible = NULL;
-
   manager = new BrowserAccessibilityManagerWin(
-      hwnd, parent_iaccessible,
+      hwnd, accessible_parent_,
       BrowserAccessibilityManagerWin::GetEmptyDocument(), this);
 #else
   manager = BrowserAccessibilityManager::Create(AccessibilityNodeData(), this);
@@ -933,6 +930,25 @@ bool RenderWidgetHostViewAura::IsShowing() {
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
   return window_->GetBoundsInScreen();
 }
+
+void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
+  RenderWidgetHostViewBase::SetBackground(background);
+  host_->SetBackground(background);
+  window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
+}
+
+#if defined(OS_WIN)
+void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
+    gfx::NativeViewAccessible accessible_parent) {
+  accessible_parent_ = accessible_parent;
+
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  if (manager) {
+    static_cast<BrowserAccessibilityManagerWin*>(manager)->
+        set_parent_iaccessible(accessible_parent);
+  }
+}
+#endif
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
@@ -1567,12 +1583,6 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished(
   if (!render_widget_host_view.get())
     return;
   --render_widget_host_view->pending_thumbnail_tasks_;
-}
-
-void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
-  host_->SetBackground(background);
-  window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {

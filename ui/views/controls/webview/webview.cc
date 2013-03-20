@@ -213,6 +213,15 @@ void WebView::AttachWebContents() {
         content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<content::WebContents>(web_contents_));
   }
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  content::RenderWidgetHostView* host_view =
+      web_contents_->GetRenderWidgetHostView();
+  if (host_view) {
+    host_view->SetParentNativeViewAccessible(
+        parent()->GetNativeViewAccessible());
+  }
+#endif
 }
 
 void WebView::DetachWebContents() {
@@ -227,6 +236,11 @@ void WebView::DetachWebContents() {
     // Moving this out of here would also mean we wouldn't be potentially
     // calling member functions on a half-destroyed WebContents.
     ShowWindow(web_contents_->GetView()->GetNativeView(), SW_HIDE);
+#elif defined(OS_WIN) && defined(USE_AURA)
+  content::RenderWidgetHostView* host_view =
+      web_contents_->GetRenderWidgetHostView();
+  if (host_view)
+    host_view->SetParentNativeViewAccessible(NULL);
 #endif
   }
   registrar_.RemoveAll();

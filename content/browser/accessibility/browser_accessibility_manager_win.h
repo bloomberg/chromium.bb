@@ -29,11 +29,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   static AccessibilityNodeData GetEmptyDocument();
 
   // Get the closest containing HWND.
-  HWND parent_hwnd();
+  HWND parent_hwnd() { return parent_hwnd_; }
 
-  // Get a the default IAccessible for the parent window, does not make a
-  // new reference.
-  IAccessible* parent_iaccessible();
+  // The IAccessible for the parent window.
+  IAccessible* parent_iaccessible() { return parent_iaccessible_; }
+  void set_parent_iaccessible(IAccessible* parent_iaccessible) {
+    parent_iaccessible_ = parent_iaccessible;
+  }
 
   // BrowserAccessibilityManager methods
   virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node);
