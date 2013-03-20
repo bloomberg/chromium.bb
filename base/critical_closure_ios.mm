@@ -18,13 +18,10 @@ namespace {
 class CriticalClosure : public base::RefCountedThreadSafe<CriticalClosure> {
  public:
   explicit CriticalClosure(base::Closure* closure) : closure_(closure) {
-    background_scope_.reset(new base::ios::ScopedCriticalAction());
   }
 
   void Run() {
     closure_->Run();
-
-    background_scope_.reset();
   }
 
  private:
@@ -32,8 +29,8 @@ class CriticalClosure : public base::RefCountedThreadSafe<CriticalClosure> {
 
   virtual ~CriticalClosure() {}
 
+  base::ios::ScopedCriticalAction criticial_action_;
   scoped_ptr<base::Closure> closure_;
-  scoped_ptr<base::ios::ScopedCriticalAction> background_scope_;
 
   DISALLOW_COPY_AND_ASSIGN(CriticalClosure);
 };
