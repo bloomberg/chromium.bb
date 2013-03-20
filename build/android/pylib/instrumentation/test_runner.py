@@ -21,8 +21,6 @@ from pylib import valgrind_tools
 from pylib.base import base_test_runner
 from pylib.base import test_result
 
-import apk_info
-
 
 _PERF_TEST_ANNOTATION = 'PerfTest'
 
@@ -47,8 +45,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
                                        '/chrome-profile*')
   _DEVICE_HAS_TEST_FILES = {}
 
-  def __init__(self, options, device, shard_index, coverage, apks,
-               ports_to_forward):
+  def __init__(self, options, device, shard_index, coverage, test_pkg,
+               ports_to_forward, is_uiautomator_test=False):
     """Create a new TestRunner.
 
     Args:
@@ -64,34 +62,30 @@ class TestRunner(base_test_runner.BaseTestRunner):
       device: Attached android device.
       shard_index: Shard index.
       coverage: Collects coverage information if opted.
-      apks: A list of ApkInfo objects need to be installed. The first element
-            should be the tests apk, the rests could be the apks used in test.
-            The default is ChromeTest.apk.
+      test_pkg: A TestPackage object.
       ports_to_forward: A list of port numbers for which to set up forwarders.
                         Can be optionally requested by a test case.
+      is_uiautomator_test: Whether this is a uiautomator test.
     Raises:
       Exception: if coverage metadata is not available.
     """
     super(TestRunner, self).__init__(device, options.tool, options.build_type)
     self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
 
-    if not apks:
-      apks = [apk_info.ApkInfo(options.test_apk_path,
-                               options.test_apk_jar_path)]
-
     self.build_type = options.build_type
-    self.install_apk = options.install_apk
     self.test_data = options.test_data
     self.save_perf_json = options.save_perf_json
     self.screenshot_failures = options.screenshot_failures
     self.wait_for_debugger = options.wait_for_debugger
     self.disable_assertions = options.disable_assertions
-
     self.coverage = coverage
-    self.apks = apks
-    self.test_apk = apks[0]
-    self.instrumentation_class_path = self.test_apk.GetPackageName()
+    self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
+    self.is_uiautomator_test = is_uiautomator_test
+    if self.is_uiautomator_test:
+      self.package_name = options.package_name
+    else:
+      self.install_apk = options.install_apk
 
     self.forwarder = None
 
@@ -125,10 +119,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
         self.adb.PushIfNeeded(host_test_files_path,
                               self.adb.GetExternalStorage() + '/' +
                               TestRunner._DEVICE_DATA_DIR + '/' + dst_layer)
-    if self.install_apk:
-      for apk in self.apks:
-        self.adb.ManagedInstall(apk.GetApkPath(),
-                                package_name=apk.GetPackageName())
+    if self.is_uiautomator_test:
+      self.test_pkg.Install(self.adb)
+    elif self.install_apk:
+      self.test_pkg.Install(self.adb)
+
     self.tool.CopyFiles()
     TestRunner._DEVICE_HAS_TEST_FILES[self.device] = True
 
@@ -253,7 +248,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       Whether the test is annotated as a performance test.
     """
-    return _PERF_TEST_ANNOTATION in self.test_apk.GetTestAnnotations(test)
+    return _PERF_TEST_ANNOTATION in self.test_pkg.GetTestAnnotations(test)
 
   def SetupPerfMonitoringIfNeeded(self, test):
     """Sets up performance monitoring if the specified test requires it.
@@ -352,7 +347,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
   def _GetIndividualTestTimeoutScale(self, test):
     """Returns the timeout scale for the given |test|."""
-    annotations = self.apks[0].GetTestAnnotations(test)
+    annotations = self.test_pkg.GetTestAnnotations(test)
     timeout_scale = 1
     if 'TimeoutScale' in annotations:
       for annotation in annotations:
@@ -365,7 +360,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
   def _GetIndividualTestTimeoutSecs(self, test):
     """Returns the timeout in seconds for the given |test|."""
-    annotations = self.apks[0].GetTestAnnotations(test)
+    annotations = self.test_pkg.GetTestAnnotations(test)
     if 'Manual' in annotations:
       return 600 * 60
     if 'External' in annotations:
@@ -382,29 +377,31 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       A test_result.TestResults object.
     """
-    instrumentation_path = (self.instrumentation_class_path +
-                            '/android.test.InstrumentationTestRunner')
-    instrumentation_args = self._GetInstrumentationArgs()
     raw_result = None
     start_date_ms = None
     test_results = test_result.TestResults()
+    timeout=(self._GetIndividualTestTimeoutSecs(test) *
+             self._GetIndividualTestTimeoutScale(test) *
+             self.tool.GetTimeoutScale())
     try:
       self.TestSetup(test)
       start_date_ms = int(time.time()) * 1000
-      args_with_filter = dict(instrumentation_args)
-      args_with_filter['class'] = test
-      # |raw_results| is a list that should contain
-      # a single TestResult object.
-      logging.warn(args_with_filter)
-      (raw_results, _) = self.adb.Adb().StartInstrumentation(
-          instrumentation_path=instrumentation_path,
-          instrumentation_args=args_with_filter,
-          timeout_time=(self._GetIndividualTestTimeoutSecs(test) *
-                        self._GetIndividualTestTimeoutScale(test) *
-                        self.tool.GetTimeoutScale()))
+
+      if self.is_uiautomator_test:
+        self.adb.ClearApplicationState(self.package_name)
+        # TODO(frankf): Stop-gap solution. Should use annotations.
+        if 'FirstRun' in test:
+          self.flags.RemoveFlags(['--disable-fre'])
+        else:
+          self.flags.AddFlags(['--disable-fre'])
+        raw_result = self.adb.RunUIAutomatorTest(
+            test, self.test_pkg.GetPackageName(), timeout)
+      else:
+        raw_result = self.adb.RunInstrumentationTest(
+            test, self.test_pkg.GetPackageName(),
+            self._GetInstrumentationArgs(), timeout)
+
       duration_ms = int(time.time()) * 1000 - start_date_ms
-      assert len(raw_results) == 1
-      raw_result = raw_results[0]
       status_code = raw_result.GetStatusCode()
       if status_code:
         log = raw_result.GetFailureReason()

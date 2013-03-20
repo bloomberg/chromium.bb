@@ -25,7 +25,7 @@ import time
 
 from pylib import android_commands
 from pylib.base.test_result import SingleTestResult, TestResults
-from pylib.instrumentation import apk_info
+from pylib.instrumentation import test_package
 from pylib.instrumentation import test_runner
 
 
@@ -75,10 +75,11 @@ class PythonTestBase(object):
       TestResults object with a single test result.
     """
     test = self._ComposeFullTestName(fname, suite, test)
-    apks = [apk_info.ApkInfo(self.options.test_apk_path,
-            self.options.test_apk_jar_path)]
+    test_pkg = test_package.TestPackage(
+        self.options.test_apk_path, self.options.test_apk_jar_path)
     java_test_runner = test_runner.TestRunner(self.options, self.device_id,
-                                              self.shard_index, False, apks,
+                                              self.shard_index, False,
+                                              test_pkg,
                                               self.ports_to_forward)
     try:
       java_test_runner.SetUp()

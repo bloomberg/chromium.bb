@@ -18,20 +18,19 @@ import sys
 import tempfile
 import time
 
+import cmd_helper
+import constants
 import io_stats_parser
 try:
   import pexpect
 except:
   pexpect = None
 
-CHROME_SRC = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), '..', '..', '..')
-
-sys.path.append(os.path.join(CHROME_SRC, 'third_party', 'android_testrunner'))
+sys.path.append(os.path.join(
+    constants.CHROME_DIR, 'third_party', 'android_testrunner'))
 import adb_interface
-
-import cmd_helper
-import errors  #  is under ../../../third_party/android_testrunner/errors.py
+import am_instrument_parser
+import errors
 
 
 # Pattern to search for the next whole line of pexpect output and capture it
@@ -1213,6 +1212,50 @@ class AndroidCommands(object):
     binary on the device (ex.: md5sum_bin).
     """
     self._util_wrapper = util_wrapper
+
+  def RunInstrumentationTest(self, test, test_package, instr_args, timeout):
+    """Runs a single instrumentation test.
+
+    Args:
+      test: Test class/method.
+      test_package: Package name of test apk.
+      instr_args: Extra key/value to pass to am instrument.
+      timeout: Timeout time in seconds.
+
+    Returns:
+      An instance of am_instrument_parser.TestResult object.
+    """
+    instrumentation_path = ('%s/android.test.InstrumentationTestRunner' %
+                            test_package)
+    args_with_filter = dict(instr_args)
+    args_with_filter['class'] = test
+    logging.info(args_with_filter)
+    (raw_results, _) = self._adb.StartInstrumentation(
+        instrumentation_path=instrumentation_path,
+        instrumentation_args=args_with_filter,
+        timeout_time=timeout)
+    assert len(raw_results) == 1
+    return raw_results[0]
+
+  def RunUIAutomatorTest(self, test, test_package, timeout):
+    """Runs a single uiautomator test.
+
+    Args:
+      test: Test class/method.
+      test_package: Name of the test jar.
+      timeout: Timeout time in seconds.
+
+    Returns:
+      An instance of am_instrument_parser.TestResult object.
+    """
+    cmd = 'uiautomator runtest %s -e class %s' % (test_package, test)
+    logging.info('>>> $' + cmd)
+    output = self._adb.SendShellCommand(cmd, timeout_time=timeout)
+    # uiautomator doesn't fully conform to the instrumenation test runner
+    # convention and doesn't terminate with INSTRUMENTATION_CODE.
+    # Just assume the first result is valid.
+    (test_results, _) = am_instrument_parser.ParseAmInstrumentOutput(output)
+    return test_results[0]
 
 
 class NewLineNormalizer(object):

@@ -10,12 +10,13 @@ import os
 from pylib import android_commands
 from pylib.base import shard
 from pylib.base import test_result
+from pylib.uiautomator import test_package as uiautomator_package
 
-import apk_info
+import test_package
 import test_runner
 
 
-def Dispatch(options, apks):
+def Dispatch(options):
   """Dispatches instrumentation tests onto connected device(s).
 
   If possible, this method will attempt to shard the tests to
@@ -23,7 +24,6 @@ def Dispatch(options, apks):
 
   Args:
     options: Command line options.
-    apks: list of APKs to use.
 
   Returns:
     A TestResults object holding the results of the Java tests.
@@ -31,26 +31,33 @@ def Dispatch(options, apks):
   Raises:
     Exception: when there are no attached devices.
   """
-  test_apk = apks[0]
+  is_uiautomator_test = False
+  if hasattr(options, 'uiautomator_jar'):
+    test_pkg = uiautomator_package.TestPackage(
+        options.uiautomator_jar, options.uiautomator_info_jar)
+    is_uiautomator_test = True
+  else:
+    test_pkg = test_package.TestPackage(options.test_apk_path,
+                                        options.test_apk_jar_path)
   # The default annotation for tests which do not have any sizes annotation.
   default_size_annotation = 'SmallTest'
 
-  def _GetTestsMissingAnnotation(test_apk):
+  def _GetTestsMissingAnnotation(test_pkg):
     test_size_annotations = frozenset(['Smoke', 'SmallTest', 'MediumTest',
                                        'LargeTest', 'EnormousTest', 'FlakyTest',
                                        'DisabledTest', 'Manual', 'PerfTest'])
     tests_missing_annotations = []
-    for test_method in test_apk.GetTestMethods():
-      annotations = frozenset(test_apk.GetTestAnnotations(test_method))
+    for test_method in test_pkg.GetTestMethods():
+      annotations = frozenset(test_pkg.GetTestAnnotations(test_method))
       if (annotations.isdisjoint(test_size_annotations) and
-          not apk_info.ApkInfo.IsPythonDrivenTest(test_method)):
+          not test_pkg.IsPythonDrivenTest(test_method)):
         tests_missing_annotations.append(test_method)
     return sorted(tests_missing_annotations)
 
   if options.annotation:
-    available_tests = test_apk.GetAnnotatedTests(options.annotation)
+    available_tests = test_pkg.GetAnnotatedTests(options.annotation)
     if options.annotation.count(default_size_annotation) > 0:
-      tests_missing_annotations = _GetTestsMissingAnnotation(test_apk)
+      tests_missing_annotations = _GetTestsMissingAnnotation(test_pkg)
       if tests_missing_annotations:
         logging.warning('The following tests do not contain any annotation. '
                         'Assuming "%s":\n%s',
@@ -58,8 +65,8 @@ def Dispatch(options, apks):
                         '\n'.join(tests_missing_annotations))
         available_tests += tests_missing_annotations
   else:
-    available_tests = [m for m in test_apk.GetTestMethods()
-                       if not apk_info.ApkInfo.IsPythonDrivenTest(m)]
+    available_tests = [m for m in test_pkg.GetTestMethods()
+                       if not test_pkg.IsPythonDrivenTest(m)]
   coverage = os.environ.get('EMMA_INSTRUMENT') == 'true'
 
   tests = []
@@ -92,7 +99,8 @@ def Dispatch(options, apks):
     attached_devices = attached_devices[:1]
 
   def TestRunnerFactory(device, shard_index):
-    return test_runner.TestRunner(options, device, shard_index, False, apks, [])
+    return test_runner.TestRunner(
+        options, device, shard_index, False, test_pkg, [], is_uiautomator_test)
 
   return shard.ShardAndRunTests(TestRunnerFactory, attached_devices, tests,
                                 options.build_type)

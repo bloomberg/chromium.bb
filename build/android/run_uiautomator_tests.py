@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs both the Python and Java instrumentation tests."""
+"""Runs both the Python and Java UIAutomator tests."""
 
 import optparse
 import os
@@ -21,8 +21,8 @@ from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
 
 
-def DispatchInstrumentationTests(options):
-  """Dispatches the Java and Python instrumentation tests, sharding if possible.
+def DispatchUIAutomatorTests(options):
+  """Dispatches the UIAutomator tests, sharding if possible.
 
   Uses the logging module to print the combined final results and
   summary of the Java and Python tests. If the java_only option is set, only
@@ -54,8 +54,8 @@ def DispatchInstrumentationTests(options):
                                                          python_results])
 
   all_results.LogFull(
-      test_type='Instrumentation',
-      test_package=options.test_apk,
+      test_type='UIAutomator',
+      test_package=os.path.basename(options.uiautomator_jar),
       annotation=options.annotation,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
@@ -65,15 +65,14 @@ def DispatchInstrumentationTests(options):
 
 def main(argv):
   option_parser = optparse.OptionParser()
-  test_options_parser.AddInstrumentationOptions(option_parser)
+  test_options_parser.AddUIAutomatorOptions(option_parser)
   options, args = option_parser.parse_args(argv)
-  test_options_parser.ValidateInstrumentationOptions(option_parser, options,
-                                                     args)
+  test_options_parser.ValidateUIAutomatorOptions(option_parser, options, args)
 
   run_tests_helper.SetLogLevel(options.verbose_count)
   ret = 1
   try:
-    ret = DispatchInstrumentationTests(options)
+    ret = DispatchUIAutomatorTests(options)
   finally:
     buildbot_report.PrintStepResultIfNeeded(options, ret)
   return ret

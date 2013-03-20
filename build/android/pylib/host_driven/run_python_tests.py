@@ -12,7 +12,7 @@ import types
 from pylib import android_commands
 from pylib import constants
 from pylib.base.test_result import TestResults
-from pylib.instrumentation import apk_info
+from pylib.instrumentation import test_package
 from pylib.instrumentation import test_runner
 
 import python_test_base
@@ -84,9 +84,10 @@ def DispatchPythonTests(options):
   # Copy files to each device before running any tests.
   for device_id in attached_devices:
     logging.debug('Pushing files to device %s', device_id)
-    apks = [apk_info.ApkInfo(options.test_apk_path, options.test_apk_jar_path)]
+    test_pkg = test_package.TestPackage(options.test_apk_path,
+                                        options.test_apk_jar_path)
     test_files_copier = test_runner.TestRunner(options, device_id, 0, False,
-                                               apks, [])
+                                               test_pkg, [])
     test_files_copier.CopyTestFilesOnce()
 
   # Actually run the tests.

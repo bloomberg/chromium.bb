@@ -11,7 +11,7 @@ import sys
 
 from pylib import android_commands
 from pylib import constants
-from pylib.instrumentation import apk_info
+from pylib.utils import apk_helper
 from pylib.utils import test_options_parser
 
 
@@ -36,7 +36,7 @@ def main(argv):
     raise Exception('Error: no connected devices')
 
   if not options.apk_package:
-    options.apk_package = apk_info.GetPackageNameForApk(options.apk)
+    options.apk_package = apk_helper.GetPackageName(options.apk)
 
   pool = multiprocessing.Pool(len(devices))
   # Send a tuple (apk_path, apk_package, device) per device.

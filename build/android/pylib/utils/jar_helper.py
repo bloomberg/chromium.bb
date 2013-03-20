@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Gathers information about APKs."""
+"""Module containing utilities for jar packages."""
 
 import collections
 import logging
@@ -17,22 +17,9 @@ from pylib import constants
 # If you change the cached output of proguard, increment this number
 PICKLE_FORMAT_VERSION = 1
 
-def GetPackageNameForApk(apk_path):
-  """Returns the package name of the apk file."""
-  aapt_output = cmd_helper.GetCmdOutput(
-      ['aapt', 'dump', 'badging', apk_path]).split('\n')
-  package_name_re = re.compile(r'package: .*name=\'(\S*)\'')
-  for line in aapt_output:
-    m = package_name_re.match(line)
-    if m:
-      return m.group(1)
-  raise Exception('Failed to determine package name of %s' % apk_path)
 
-
-class ApkInfo(object):
-  """Helper class for inspecting APKs."""
-
-  def __init__(self, apk_path, jar_path):
+class TestPackageJar(object):
+  def __init__(self, jar_path):
     sdk_root = os.getenv('ANDROID_SDK_ROOT', constants.ANDROID_SDK_ROOT)
     self._PROGUARD_PATH = os.path.join(sdk_root,
                                        'tools/proguard/bin/proguard.sh')
@@ -46,18 +33,12 @@ class ApkInfo(object):
         re.compile(r'\s*?- Constant element value.*$'))
     self._PROGUARD_ANNOTATION_VALUE_RE = re.compile(r'\s*?- \S+? \[(.*)\]$')
 
-    if not os.path.exists(apk_path):
-      raise Exception('%s not found, please build it' % apk_path)
-    self._apk_path = apk_path
     if not os.path.exists(jar_path):
       raise Exception('%s not found, please build it' % jar_path)
     self._jar_path = jar_path
     self._annotation_map = collections.defaultdict(list)
     self._pickled_proguard_name = self._jar_path + '-proguard.pickle'
     self._test_methods = []
-    self._Initialize()
-
-  def _Initialize(self):
     if not self._GetCachedProguardData():
       self._GetProguardData()
 
@@ -144,13 +125,6 @@ class ApkInfo(object):
   def _IsTestMethod(self, test):
     class_name, method = test.split('#')
     return class_name.endswith('Test') and method.startswith('test')
-
-  def GetApkPath(self):
-    return self._apk_path
-
-  def GetPackageName(self):
-    """Returns the package name of this APK."""
-    return GetPackageNameForApk(self._apk_path)
 
   def GetTestAnnotations(self, test):
     """Returns a list of all annotations for the given |test|. May be empty."""

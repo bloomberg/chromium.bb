@@ -28,6 +28,7 @@ def AddBuildTypeOption(option_parser):
                            help='If set, run test suites under out/Release. '
                                 'Default is env var BUILDTYPE or Debug.')
 
+
 def AddInstallAPKOption(option_parser):
   """Decorates OptionParser with apk option used to install the APK."""
   AddBuildTypeOption(option_parser)
@@ -127,14 +128,12 @@ def AddGTestOptions(option_parser):
                            'the APK.')
 
 
-def AddInstrumentationOptions(option_parser):
-  """Decorates OptionParser with instrumentation tests options."""
+def AddCommonInstrumentationOptions(option_parser):
+  """Decorates OptionParser with base instrumentation tests options."""
 
   AddTestRunnerOptions(option_parser)
   option_parser.add_option('-w', '--wait_debugger', dest='wait_for_debugger',
                            action='store_true', help='Wait for debugger.')
-  option_parser.add_option('-I', dest='install_apk', help='Install APK.',
-                           action='store_true')
   option_parser.add_option('-f', '--test_filter',
                            help='Test filter (if not fully qualified, '
                            'will run all matches).')
@@ -153,11 +152,6 @@ def AddInstrumentationOptions(option_parser):
                            dest='number_of_runs', default=1,
                            help=('How many times to run each test, regardless '
                                  'of the result. (Default is 1)'))
-  option_parser.add_option('--test-apk', dest='test_apk',
-                           help=('The name of the apk containing the tests '
-                                 '(without the .apk extension). For SDK '
-                                 'builds, the apk name without the debug '
-                                 'suffix(for example, ContentShellTest).'))
   option_parser.add_option('--screenshot', dest='screenshot_failures',
                            action='store_true',
                            help='Capture screenshots of test failures')
@@ -193,23 +187,65 @@ def AddInstrumentationOptions(option_parser):
                                  'directory, and <source> is relative to the '
                                  'chromium build directory.'))
 
-def ValidateInstrumentationOptions(option_parser, options, args):
-  """Validate options/arguments and populate options with defaults."""
+
+def AddInstrumentationOptions(option_parser):
+  """Decorates OptionParser with instrumentation tests options."""
+
+  AddCommonInstrumentationOptions(option_parser)
+  option_parser.add_option('-I', dest='install_apk',
+                           help='Install APK.', action='store_true')
+  option_parser.add_option('--test-apk', dest='test_apk',
+                           help=('The name of the apk containing the tests '
+                                 '(without the .apk extension). For SDK '
+                                 'builds, the apk name without the debug '
+                                 'suffix(for example, ContentShellTest).'))
+
+
+def AddUIAutomatorOptions(option_parser):
+  """Decorates OptionParser with uiautomator tests options."""
+
+  AddCommonInstrumentationOptions(option_parser)
+  option_parser.add_option(
+      '--package-name',
+      help=('The package name used by the apk containing the application.'))
+  option_parser.add_option(
+      '--uiautomator-jar',
+      help=('Path to the uiautomator jar to be installed on the device.'))
+  option_parser.add_option(
+      '--uiautomator-info-jar',
+      help=('Path to the uiautomator jar for use by proguard.'))
+
+
+def ValidateCommonInstrumentationOptions(option_parser, options, args):
+  """Validate common options/arguments and populate options with defaults."""
   if len(args) > 1:
     option_parser.print_help(sys.stderr)
     option_parser.error('Unknown arguments: %s' % args[1:])
+
   if options.java_only and options.python_only:
     option_parser.error('Options java_only (-j) and python_only (-p) '
                         'are mutually exclusive.')
-  if not options.test_apk:
-    option_parser.error('--test-apk must be specified.')
-
   options.run_java_tests = True
   options.run_python_tests = True
   if options.java_only:
     options.run_python_tests = False
   elif options.python_only:
     options.run_java_tests = False
+
+  if options.annotation_str:
+    options.annotation = options.annotation_str.split()
+  elif options.test_filter:
+    options.annotation = []
+  else:
+    options.annotation = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest']
+
+
+def ValidateInstrumentationOptions(option_parser, options, args):
+  """Validate options/arguments and populate options with defaults."""
+  ValidateCommonInstrumentationOptions(option_parser, options, args)
+
+  if not options.test_apk:
+    option_parser.error('--test-apk must be specified.')
 
   if os.path.exists(options.test_apk):
     # The APK is fully qualified, assume the JAR lives along side.
@@ -224,9 +260,18 @@ def ValidateInstrumentationOptions(option_parser, options, args):
     options.test_apk_jar_path = os.path.join(
         _SDK_OUT_DIR, options.build_type, constants.SDK_BUILD_TEST_JAVALIB_DIR,
         '%s.jar' %  options.test_apk)
-  if options.annotation_str:
-    options.annotation = options.annotation_str.split()
-  elif options.test_filter:
-    options.annotation = []
-  else:
-    options.annotation = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest']
+
+
+def ValidateUIAutomatorOptions(option_parser, options, args):
+  """Validate uiautomator options/arguments."""
+  ValidateCommonInstrumentationOptions(option_parser, options, args)
+
+  if not options.package_name:
+    option_parser.error('--package-name must be specified.')
+
+  if not options.uiautomator_jar:
+    option_parser.error('--uiautomator-jar must be specified.')
+
+  if not options.uiautomator_info_jar:
+    option_parser.error('--uiautomator-info-jar must be specified.')
+
