@@ -703,7 +703,8 @@ class GitWrapper(SCMWrapper):
         # revert').
         if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
           config_cmd = ['config', 'remote.origin.fetch',
-                        '+refs/branch-heads/*:refs/remotes/branch-heads/*']
+                        '+refs/branch-heads/*:refs/remotes/branch-heads/*',
+                        '^\\+refs/branch-heads/\\*:.*$']
           self._Run(config_cmd, options)
 
           # Update the "branch-heads" remote-tracking branches, since we might
