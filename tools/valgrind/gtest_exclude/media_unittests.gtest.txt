@@ -1,3 +1,6 @@
 # This test tries to record fake audio in real-time.
 # This appears to be too sensitive to slowdown, see http://crbug.com/49497
 FakeAudioInputTest.BasicCallbacks
+
+# http://crbug.com/222490
+PipelineIntegrationTest.BasicPlaybackHashed
