@@ -265,6 +265,8 @@ class QueueWithProgress(Queue.PriorityQueue):
       logging.debug('all_tasks_done.notify_all() at %s', time.time())
       logging.debug('%s unfinished tasks', unfinished)
       self.all_tasks_done.notify_all()
+    except Exception as e:
+      logging.exception('task_done threw an exception.\n%s', e)
     finally:
       self.all_tasks_done.release()
 
