@@ -20,7 +20,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.content_shell.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellTestBase;
 
 public class InsertionHandleTest extends ContentShellTestBase {
 

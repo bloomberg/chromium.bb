@@ -8,8 +8,8 @@ import android.util.Log;
 
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content_shell.ContentShellTestBase;
 import org.chromium.content_shell_apk.ContentShellActivity;
+import org.chromium.content_shell_apk.ContentShellTestBase;
 
 public class ContentViewTestBase extends ContentShellTestBase {
 

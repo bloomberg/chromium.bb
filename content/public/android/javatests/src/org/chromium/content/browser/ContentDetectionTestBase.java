@@ -15,7 +15,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnStartContentIntentHelper;
-import org.chromium.content_shell.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellTestBase;
 
 /**
  * Base class for content detection test suites.
