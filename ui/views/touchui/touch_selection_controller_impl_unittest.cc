@@ -166,7 +166,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   textfield_->SetText(ASCIIToUTF16("some text"));
   // Tap the textfield to invoke touch selection.
   ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f), 0);
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f), 0);
   textfield_view_->OnGestureEvent(&tap);
 
   // Test selecting a range.
@@ -198,7 +198,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
   textfield_->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
   // Tap the textfield to invoke touch selection.
   ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f), 0);
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f), 0);
   textfield_view_->OnGestureEvent(&tap);
 
   // Test cursor at run boundary and with empty selection.
@@ -246,7 +246,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   textfield_->SetText(ASCIIToUTF16("textfield with selected text"));
   // Tap the textfield to invoke touch selection.
   ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f), 0);
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f), 0);
   textfield_view_->OnGestureEvent(&tap);
   textfield_->SelectRange(ui::Range(3, 7));
 
@@ -283,7 +283,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   textfield_->SetText(WideToUTF16(L"abc\x05e1\x05e2\x05e3"L"def"));
   // Tap the textfield to invoke touch selection.
   ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f), 0);
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f), 0);
   textfield_view_->OnGestureEvent(&tap);
 
   // Select [c] from left to right.

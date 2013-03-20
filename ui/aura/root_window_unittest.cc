@@ -483,9 +483,6 @@ std::string EventTypeToString(ui::EventType type) {
     case ui::ET_GESTURE_END:
       return "GESTURE_END";
 
-    case ui::ET_GESTURE_DOUBLE_TAP:
-      return "GESTURE_DOUBLE_TAP";
-
     default:
       break;
   }

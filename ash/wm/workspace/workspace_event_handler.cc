@@ -113,7 +113,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
 void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
+  if (event->type() == ui::ET_GESTURE_TAP &&
+      event->details().tap_count() == 2 &&
       target->delegate()->GetNonClientComponent(event->location()) ==
       HTCAPTION) {
     ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(

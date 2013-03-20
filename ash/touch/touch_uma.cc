@@ -195,16 +195,23 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
         return UMA_ET_GESTURE_SCROLL_UPDATE_2;
       return UMA_ET_GESTURE_SCROLL_UPDATE;
     }
-    case ui::ET_GESTURE_TAP:
-      return UMA_ET_GESTURE_TAP;
+    case ui::ET_GESTURE_TAP: {
+      const ui::GestureEvent& gesture =
+          static_cast<const ui::GestureEvent&>(event);
+      int tap_count = gesture.details().tap_count();
+      if (tap_count == 1)
+        return UMA_ET_GESTURE_TAP;
+      else if (tap_count == 2)
+        return UMA_ET_GESTURE_DOUBLE_TAP;
+      NOTREACHED() << "Received tap with tapcount " << tap_count;
+      return UMA_ET_UNKNOWN;
+    }
     case ui::ET_GESTURE_TAP_DOWN:
       return UMA_ET_GESTURE_TAP_DOWN;
     case ui::ET_GESTURE_BEGIN:
       return UMA_ET_GESTURE_BEGIN;
     case ui::ET_GESTURE_END:
       return UMA_ET_GESTURE_END;
-    case ui::ET_GESTURE_DOUBLE_TAP:
-      return UMA_ET_GESTURE_DOUBLE_TAP;
     case ui::ET_GESTURE_TWO_FINGER_TAP:
       return UMA_ET_GESTURE_TWO_FINGER_TAP;
     case ui::ET_GESTURE_PINCH_BEGIN:

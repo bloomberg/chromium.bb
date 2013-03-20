@@ -678,16 +678,6 @@ void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
       1 << point.touch_id()));
 }
 
-void GestureSequence::AppendDoubleClickGestureEvent(const GesturePoint& point,
-                                                    Gestures* gestures) {
-  gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_DOUBLE_TAP, 0, 0),
-      point.first_touch_position(),
-      flags_,
-      base::Time::FromDoubleT(point.last_touch_time()),
-      1 << point.touch_id()));
-}
-
 void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
                                                const gfx::Point& location,
                                                Gestures* gestures) {
@@ -833,8 +823,6 @@ bool GestureSequence::Click(const TouchEvent& event,
   if (point.IsInClickWindow(event)) {
     bool double_tap = point.IsInDoubleClickWindow(event);
     AppendClickGestureEvent(point, double_tap ? 2 : 1, gestures);
-    if (double_tap)
-      AppendDoubleClickGestureEvent(point, gestures);
     return true;
   } else if (point.IsInsideManhattanSquare(event) &&
       !GetLongPressTimer()->IsRunning()) {

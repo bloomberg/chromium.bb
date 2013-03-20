@@ -1738,7 +1738,9 @@ TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
 
   // Tapping on the textfield should turn on the TouchSelectionController.
-  GestureEventForTest tap(ui::ET_GESTURE_TAP, eventX, eventY, 0);
+  ui::GestureEvent tap(ui::ET_GESTURE_TAP, eventX, eventY, 0, base::TimeDelta(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f),
+                       0);
   textfield_view_->OnGestureEvent(&tap);
   EXPECT_TRUE(GetTouchSelectionController());
 
