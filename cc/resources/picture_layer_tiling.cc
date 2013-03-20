@@ -526,7 +526,8 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
   DCHECK(target_area > 0);
 
   gfx::Rect rect = IntersectRects(starting_rect, bounding_rect);
-  DCHECK(!rect.IsEmpty());
+  if (rect.IsEmpty())
+    return rect;
 
   // These values will be updated by the loop and uses as the output.
   int origin_x = rect.x();

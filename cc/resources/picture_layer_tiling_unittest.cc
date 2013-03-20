@@ -351,5 +351,14 @@ TEST(PictureLayerTilingTest, ExpandRectSquishedVertically) {
   EXPECT_TRUE(bounds.Contains(out));
 }
 
+TEST(PictureLayerTilingTest, ExpandRectOutOfBounds) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(0, 0, 10, 10);
+  int64 target_area = 400 * 400;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_TRUE(out.IsEmpty());
+}
+
 }  // namespace
 }  // namespace cc
