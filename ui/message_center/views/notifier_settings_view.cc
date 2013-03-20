@@ -102,14 +102,15 @@ Separator::~Separator() {
 void Separator::Paint(const views::View& view, gfx::Canvas* canvas) {
   gfx::Rect bounds(view.GetLocalBounds());
   bounds.Inset(kMarginWidth, 0);
-  const views::ScrollView* scroll_view =
-      static_cast<const views::ScrollView*>(&view);
-  bounds.set_width(bounds.width() - scroll_view->GetScrollBarWidth());
   canvas->DrawLine(bounds.origin(), bounds.top_right(), kSeparatorColor);
 }
 
 gfx::Insets Separator::GetInsets() const {
-  return gfx::Insets(1, 0, 0, 0);
+  // Do not set the insets for the separator. This means that the separater will
+  // overlap with the top of the scroll contents, otherwise the scroll view will
+  // create a scroll bar if the contents height is exactly same as the height of
+  // the window.
+  return gfx::Insets();
 }
 
 }  // namespace
@@ -272,12 +273,7 @@ NotifierSettingsView::NotifierSettingsView(
   }
   scroller_->SetContents(contents_view);
 
-  gfx::Size contents_size = contents_view->GetPreferredSize();
-  if (kMinimumWindowHeight <
-      title_entry_->GetPreferredSize().height() + contents_size.height()) {
-    contents_size.Enlarge(-scroller_->GetScrollBarWidth(), 0);
-  }
-  contents_view->SetBoundsRect(gfx::Rect(contents_size));
+  contents_view->SetBoundsRect(gfx::Rect(contents_view->GetPreferredSize()));
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
@@ -304,7 +300,12 @@ void NotifierSettingsView::Layout() {
 }
 
 gfx::Size NotifierSettingsView::GetMinimumSize() {
-  return gfx::Size(kMinimumWindowWidth, kMinimumWindowHeight);
+  gfx::Size size(kMinimumWindowWidth, kMinimumWindowHeight);
+  int total_height = title_entry_->GetPreferredSize().height() +
+      scroller_->contents()->GetPreferredSize().height();
+  if (total_height > kMinimumWindowHeight)
+    size.Enlarge(scroller_->GetScrollBarWidth(), 0);
+  return size;
 }
 
 gfx::Size NotifierSettingsView::GetPreferredSize() {
