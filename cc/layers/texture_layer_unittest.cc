@@ -12,7 +12,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/layer_tree_test_common.h"
+#include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -266,7 +266,7 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
   test_layer->SetTextureMailbox(test_data_.mailbox1_);
 }
 
-class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
+class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
  public:
   TextureLayerImplWithMailboxThreadedCallback()
       : callback_count_(0),
@@ -287,7 +287,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
     layer_->SetTextureMailbox(mailbox);
   }
 
-  virtual void beginTest() OVERRIDE {
+  virtual void BeginTest() OVERRIDE {
     gfx::Size bounds(100, 100);
     root_ = Layer::Create();
     root_->SetAnchorPoint(gfx::PointF());
@@ -299,8 +299,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
     layer_->SetBounds(bounds);
 
     root_->AddChild(layer_);
-    m_layerTreeHost->SetRootLayer(root_);
-    m_layerTreeHost->SetViewportSize(bounds, bounds);
+    layer_tree_host()->SetRootLayer(root_);
+    layer_tree_host()->SetViewportSize(bounds, bounds);
     SetMailbox('1');
     EXPECT_EQ(0, callback_count_);
 
@@ -308,10 +308,10 @@ class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
     // released immediately.
     SetMailbox('2');
     EXPECT_EQ(1, callback_count_);
-    postSetNeedsCommitToMainThread();
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void didCommit() OVERRIDE {
+  virtual void DidCommit() OVERRIDE {
     ++commit_count_;
     switch (commit_count_) {
       case 1:
@@ -326,7 +326,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
         // until this didCommit returns.
         // TODO(piman): fix this.
         EXPECT_EQ(1, callback_count_);
-        m_layerTreeHost->SetNeedsCommit();
+        layer_tree_host()->SetNeedsCommit();
         break;
       case 3:
         EXPECT_EQ(2, callback_count_);
@@ -340,7 +340,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
         // until this didCommit returns.
         // TODO(piman): fix this.
         EXPECT_EQ(2, callback_count_);
-        m_layerTreeHost->SetNeedsCommit();
+        layer_tree_host()->SetNeedsCommit();
         break;
       case 5:
         EXPECT_EQ(3, callback_count_);
@@ -353,11 +353,11 @@ class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
         // until this didCommit returns.
         // TODO(piman): fix this.
         EXPECT_EQ(3, callback_count_);
-        m_layerTreeHost->SetNeedsCommit();
+        layer_tree_host()->SetNeedsCommit();
         break;
       case 7:
         EXPECT_EQ(4, callback_count_);
-        endTest();
+        EndTest();
         break;
       default:
         NOTREACHED();
@@ -365,7 +365,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
     }
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   int callback_count_;

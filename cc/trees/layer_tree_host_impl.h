@@ -75,9 +75,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public TileManagerClient,
                                     public OutputSurfaceClient,
                                     public TopControlsManagerClient {
+ public:
   typedef std::vector<LayerImpl*> LayerList;
 
- public:
   static scoped_ptr<LayerTreeHostImpl> Create(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,

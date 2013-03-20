@@ -5,7 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "cc/layers/layer.h"
-#include "cc/test/layer_tree_test_common.h"
+#include "cc/test/layer_tree_test.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 
 namespace cc {
@@ -48,7 +48,7 @@ class TestLayer : public Layer {
   Region expected_occlusion_;
 };
 
-class LayerTreeHostOcclusionTest : public ThreadedTest {
+class LayerTreeHostOcclusionTest : public LayerTreeTest {
  public:
 
   LayerTreeHostOcclusionTest()
@@ -59,18 +59,18 @@ class LayerTreeHostOcclusionTest : public ThreadedTest {
         mask_(TestLayer::Create()) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void didCommit() OVERRIDE {
-    TestLayer* root = static_cast<TestLayer*>(m_layerTreeHost->root_layer());
+  virtual void DidCommit() OVERRIDE {
+    TestLayer* root = static_cast<TestLayer*>(layer_tree_host()->root_layer());
     VerifyOcclusion(root);
 
-    endTest();
+    EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
   void VerifyOcclusion(TestLayer* layer) const {
     EXPECT_EQ(layer->expected_occlusion().ToString(),
@@ -110,7 +110,7 @@ class LayerTreeHostOcclusionTest : public ThreadedTest {
 class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // The child layer is a surface and the grandChild is opaque, but clipped to
     // the child and root
     SetLayerPropertiesForTesting(
@@ -129,8 +129,8 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 10, 190));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -140,7 +140,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // If the child layer is opaque, then it adds to the occlusion seen by the
     // root_.
     SetLayerPropertiesForTesting(
@@ -159,8 +159,8 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -170,7 +170,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionTwoChildren :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // Add a second child to the root layer and the regions should merge
     SetLayerPropertiesForTesting(
         root_.get(), NULL, identity_matrix_,
@@ -192,8 +192,8 @@ class LayerTreeHostOcclusionTestOcclusionTwoChildren :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 20, 190));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -203,7 +203,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionMask :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // If the child layer has a mask on it, then it shouldn't contribute to
     // occlusion on stuff below it.
     SetLayerPropertiesForTesting(
@@ -226,8 +226,8 @@ class LayerTreeHostOcclusionTestOcclusionMask :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 180, 180));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -236,7 +236,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionMask)
 class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // If the child layer with a mask is below child2, then child2 should
     // contribute to occlusion on everything, and child shouldn't contribute
     // to the root_.
@@ -261,8 +261,8 @@ class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -272,7 +272,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionOpacity :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // If the child layer has a non-opaque opacity, then it shouldn't
     // contribute to occlusion on stuff below it
     SetLayerPropertiesForTesting(
@@ -295,8 +295,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacity :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -305,7 +305,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionOpacity)
 class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // If the child layer with non-opaque opacity is below child2, then
     // child2 should contribute to occlusion on everything, and child shouldn't
     // contribute to the root_.
@@ -330,8 +330,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -341,7 +341,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     gfx::Transform childTransform;
     childTransform.Translate(250.0, 250.0);
     childTransform.Rotate(90.0);
@@ -374,8 +374,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
         gfx::Rect(10, 330, 160, 170), gfx::Rect(40, 500, 130, 20)));
     root_->set_expected_occlusion(gfx::Rect(10, 70, 190, 130));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -385,7 +385,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionBlurFilter :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     gfx::Transform childTransform;
     childTransform.Translate(250.0, 250.0);
     childTransform.Rotate(90.0);
@@ -416,8 +416,8 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter :
     child_->set_expected_occlusion(gfx::Rect(10, 330, 160, 170));
     root_->set_expected_occlusion(gfx::Rect(10, 70, 190, 130));
 
-    m_layerTreeHost->SetRootLayer(root_);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
   }
 };
 
@@ -427,7 +427,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestManySurfaces :
     public LayerTreeHostOcclusionTest {
  public:
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     // We create enough RenderSurfaces that it will trigger Vector reallocation
     // while computing occlusion.
     std::vector<scoped_refptr<TestLayer> > layers;
@@ -465,8 +465,8 @@ class LayerTreeHostOcclusionTestManySurfaces :
       layers[i]->set_expected_occlusion(expected_occlusion);
     }
 
-    m_layerTreeHost->SetRootLayer(layers[0]);
-    ThreadedTest::setupTree();
+    layer_tree_host()->SetRootLayer(layers[0]);
+    LayerTreeTest::SetupTree();
   }
 };
 

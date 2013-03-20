@@ -11,16 +11,16 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/layer_tree_test_common.h"
+#include "cc/test/layer_tree_test.h"
 
 namespace cc {
 namespace {
 
-class LayerTreeHostAnimationTest : public ThreadedTest {
+class LayerTreeHostAnimationTest : public LayerTreeTest {
  public:
-  virtual void setupTree() OVERRIDE {
-    ThreadedTest::setupTree();
-    m_layerTreeHost->root_layer()->set_layer_animation_delegate(this);
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeTest::SetupTree();
+    layer_tree_host()->root_layer()->set_layer_animation_delegate(this);
   }
 };
 
@@ -33,38 +33,38 @@ class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested :
       : num_commits_(0) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void animate(base::TimeTicks monotonicTime) OVERRIDE {
+  virtual void Animate(base::TimeTicks monotonicTime) OVERRIDE {
     // We skip the first commit becasue its the commit that populates the
     // impl thread with a tree. After the second commit, the test is done.
     if (num_commits_ != 1)
       return;
 
-    m_layerTreeHost->SetNeedsAnimate();
+    layer_tree_host()->SetNeedsAnimate();
     // Right now, commitRequested is going to be true, because during
     // beginFrame, we force commitRequested to true to prevent requests from
     // hitting the impl thread. But, when the next didCommit happens, we should
     // verify that commitRequested has gone back to false.
   }
 
-  virtual void didCommit() OVERRIDE {
+  virtual void DidCommit() OVERRIDE {
     if (!num_commits_) {
-      EXPECT_FALSE(m_layerTreeHost->CommitRequested());
-      m_layerTreeHost->SetNeedsAnimate();
-      EXPECT_FALSE(m_layerTreeHost->CommitRequested());
+      EXPECT_FALSE(layer_tree_host()->CommitRequested());
+      layer_tree_host()->SetNeedsAnimate();
+      EXPECT_FALSE(layer_tree_host()->CommitRequested());
     }
 
     // Verifies that the setNeedsAnimate we made in ::animate did not
     // trigger commitRequested.
-    EXPECT_FALSE(m_layerTreeHost->CommitRequested());
-    endTest();
+    EXPECT_FALSE(layer_tree_host()->CommitRequested());
+    EndTest();
     num_commits_++;
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   int num_commits_;
@@ -85,20 +85,20 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback :
       : num_animates_(0) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void animate(base::TimeTicks) OVERRIDE {
+  virtual void Animate(base::TimeTicks) OVERRIDE {
     if (!num_animates_) {
-      m_layerTreeHost->SetNeedsAnimate();
+      layer_tree_host()->SetNeedsAnimate();
       num_animates_++;
       return;
     }
-    endTest();
+    EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   int num_animates_;
@@ -119,11 +119,11 @@ class LayerTreeHostAnimationTestAddAnimation :
       , start_time_(0) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postAddInstantAnimationToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostAddInstantAnimationToMainThread();
   }
 
-  virtual void updateAnimationState(
+  virtual void UpdateAnimationState(
       LayerTreeHostImpl* impl_host,
       bool hasUnfinishedAnimation) OVERRIDE {
     if (!num_animates_) {
@@ -136,7 +136,7 @@ class LayerTreeHostAnimationTestAddAnimation :
 
     if (received_animation_started_notification_) {
       EXPECT_LT(0, start_time_);
-      endTest();
+      EndTest();
     }
   }
 
@@ -145,11 +145,11 @@ class LayerTreeHostAnimationTestAddAnimation :
     start_time_ = wall_clock_time;
     if (num_animates_) {
       EXPECT_LT(0, start_time_);
-      endTest();
+      EndTest();
     }
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
 private:
   int num_animates_;
@@ -168,29 +168,29 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws :
       : started_animating_(false) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postAddAnimationToMainThread(m_layerTreeHost->root_layer());
+  virtual void BeginTest() OVERRIDE {
+    PostAddAnimationToMainThread(layer_tree_host()->root_layer());
   }
 
-  virtual void animateLayers(
+  virtual void AnimateLayers(
       LayerTreeHostImpl* host_impl,
       base::TimeTicks monotonicTime) OVERRIDE {
     started_animating_ = true;
   }
 
-  virtual void drawLayersOnThread(LayerTreeHostImpl*) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl*) OVERRIDE {
     if (started_animating_)
-      endTest();
+      EndTest();
   }
 
-  virtual bool prepareToDrawOnThread(
+  virtual bool PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
       bool result) OVERRIDE {
     return false;
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   bool started_animating_;
@@ -207,29 +207,29 @@ class LayerTreeHostAnimationTestTickAnimationWhileBackgrounded :
       : num_animates_(0) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postAddAnimationToMainThread(m_layerTreeHost->root_layer());
+  virtual void BeginTest() OVERRIDE {
+    PostAddAnimationToMainThread(layer_tree_host()->root_layer());
   }
 
   // Use willAnimateLayers to set visible false before the animation runs and
   // causes a commit, so we block the second visible animate in single-thread
   // mode.
-  virtual void willAnimateLayers(
+  virtual void WillAnimateLayers(
       LayerTreeHostImpl* host_impl,
       base::TimeTicks monotonicTime) OVERRIDE {
     if (num_animates_ < 2) {
       if (!num_animates_) {
         // We have a long animation running. It should continue to tick even
         // if we are not visible.
-        postSetVisibleToMainThread(false);
+        PostSetVisibleToMainThread(false);
       }
       num_animates_++;
       return;
     }
-    endTest();
+    EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   int num_animates_;
@@ -244,15 +244,15 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction :
 public:
   LayerTreeHostAnimationTestAddAnimationWithTimingFunction() {}
 
-  virtual void beginTest() OVERRIDE {
-    postAddAnimationToMainThread(m_layerTreeHost->root_layer());
+  virtual void BeginTest() OVERRIDE {
+    PostAddAnimationToMainThread(layer_tree_host()->root_layer());
   }
 
-  virtual void animateLayers(
+  virtual void AnimateLayers(
       LayerTreeHostImpl* host_impl,
       base::TimeTicks monotonicTime) OVERRIDE {
     LayerAnimationController* controller =
-        m_layerTreeHost->root_layer()->layer_animation_controller();
+        layer_tree_host()->root_layer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     if (!animation)
@@ -277,10 +277,10 @@ public:
 
     controller->RemoveAnimation(animation->id());
     controller_impl->RemoveAnimation(animation_impl->id());
-    endTest();
+    EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -296,23 +296,23 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
         impl_start_time_(-1) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postAddAnimationToMainThread(m_layerTreeHost->root_layer());
+  virtual void BeginTest() OVERRIDE {
+    PostAddAnimationToMainThread(layer_tree_host()->root_layer());
   }
 
   virtual void notifyAnimationStarted(double time) OVERRIDE {
     LayerAnimationController* controller =
-        m_layerTreeHost->root_layer()->layer_animation_controller();
+        layer_tree_host()->root_layer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     main_start_time_ = animation->start_time();
     controller->RemoveAnimation(animation->id());
 
     if (impl_start_time_ > 0)
-      endTest();
+      EndTest();
   }
 
-  virtual void updateAnimationState(
+  virtual void UpdateAnimationState(
       LayerTreeHostImpl* impl_host,
       bool hasUnfinishedAnimation) OVERRIDE {
     LayerAnimationController* controller =
@@ -326,10 +326,10 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
     controller->RemoveAnimation(animation->id());
 
     if (main_start_time_ > 0)
-      endTest();
+      EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {
+  virtual void AfterTest() OVERRIDE {
     EXPECT_FLOAT_EQ(impl_start_time_, main_start_time_);
   }
 
@@ -338,7 +338,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
   double impl_start_time_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestSynchronizeAnimationStartTimes)
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestSynchronizeAnimationStartTimes)
 
 // Ensures that notifyAnimationFinished is called.
 class LayerTreeHostAnimationTestAnimationFinishedEvents :
@@ -346,21 +347,21 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents :
  public:
   LayerTreeHostAnimationTestAnimationFinishedEvents() {}
 
-  virtual void beginTest() OVERRIDE {
-    postAddInstantAnimationToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostAddInstantAnimationToMainThread();
   }
 
   virtual void notifyAnimationFinished(double time) OVERRIDE {
     LayerAnimationController* controller =
-        m_layerTreeHost->root_layer()->layer_animation_controller();
+        layer_tree_host()->root_layer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     if (animation)
       controller->RemoveAnimation(animation->id());
-    endTest();
+    EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -375,21 +376,21 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity :
       : update_check_layer_(FakeContentLayer::Create(&client_)) {
   }
 
-  virtual void setupTree() OVERRIDE {
+  virtual void SetupTree() OVERRIDE {
     update_check_layer_->SetOpacity(0.f);
-    m_layerTreeHost->SetRootLayer(update_check_layer_);
-    LayerTreeHostAnimationTest::setupTree();
+    layer_tree_host()->SetRootLayer(update_check_layer_);
+    LayerTreeHostAnimationTest::SetupTree();
   }
 
-  virtual void beginTest() OVERRIDE {
-    postAddAnimationToMainThread(update_check_layer_.get());
+  virtual void BeginTest() OVERRIDE {
+    PostAddAnimationToMainThread(update_check_layer_.get());
   }
 
-  virtual void commitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE {
-    endTest();
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE {
+    EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {
+  virtual void AfterTest() OVERRIDE {
     // Update() should have been called once, proving that the layer was not
     // skipped.
     EXPECT_EQ(1, update_check_layer_->update_count());
@@ -413,12 +414,12 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation :
  public:
   LayerTreeHostAnimationTestLayerAddedWithAnimation() { }
 
-  virtual void beginTest() OVERRIDE {
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void didCommit() OVERRIDE {
-    if (m_layerTreeHost->commit_number() == 1) {
+  virtual void DidCommit() OVERRIDE {
+    if (layer_tree_host()->commit_number() == 1) {
       scoped_refptr<Layer> layer = Layer::Create();
       layer->set_layer_animation_delegate(this);
 
@@ -430,17 +431,17 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation :
       layer->layer_animation_controller()->AddAnimation(animation.Pass());
 
       // We add the animation *before* attaching the layer to the tree.
-      m_layerTreeHost->root_layer()->AddChild(layer);
+      layer_tree_host()->root_layer()->AddChild(layer);
     }
   }
 
-  virtual void animateLayers(
+  virtual void AnimateLayers(
       LayerTreeHostImpl* impl_host,
       base::TimeTicks monotonic_time) OVERRIDE {
-    endTest();
+    EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -453,25 +454,25 @@ class LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount :
       : animated_commit_(-1) {
   }
 
-  virtual void animate(base::TimeTicks) OVERRIDE {
+  virtual void Animate(base::TimeTicks) OVERRIDE {
     // We shouldn't animate on the compositeAndReadback-forced commit, but we
     // should for the setNeedsCommit-triggered commit.
-    animated_commit_ = m_layerTreeHost->commit_number();
+    animated_commit_ = layer_tree_host()->commit_number();
     EXPECT_NE(2, animated_commit_);
   }
 
-  virtual void beginTest() OVERRIDE {
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void didCommit() OVERRIDE {
-    switch (m_layerTreeHost->commit_number()) {
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->commit_number()) {
       case 1:
-        m_layerTreeHost->SetNeedsCommit();
+        layer_tree_host()->SetNeedsCommit();
         break;
       case 2: {
         char pixels[4];
-        m_layerTreeHost->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
+        layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
         break;
       }
       case 3:
@@ -479,14 +480,14 @@ class LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount :
         break;
       case 4:
         // This is finishing the followup commit.
-        endTest();
+        EndTest();
         break;
       default:
         NOTREACHED();
     }
   }
 
-  virtual void afterTest() OVERRIDE {
+  virtual void AfterTest() OVERRIDE {
     EXPECT_EQ(3, animated_commit_);
   }
 
@@ -504,32 +505,32 @@ class LayerTreeHostAnimationTestContinuousAnimate :
         num_draw_layers_(0) {
   }
 
-  virtual void beginTest() OVERRIDE {
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void animate(base::TimeTicks) OVERRIDE {
+  virtual void Animate(base::TimeTicks) OVERRIDE {
     if (num_draw_layers_ == 2)
       return;
-    m_layerTreeHost->SetNeedsAnimate();
+    layer_tree_host()->SetNeedsAnimate();
   }
 
-  virtual void layout() OVERRIDE {
-    m_layerTreeHost->root_layer()->SetNeedsDisplay();
+  virtual void Layout() OVERRIDE {
+    layer_tree_host()->root_layer()->SetNeedsDisplay();
   }
 
-  virtual void commitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE {
     if (num_draw_layers_ == 1)
       num_commit_complete_++;
   }
 
-  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     num_draw_layers_++;
     if (num_draw_layers_ == 2)
-      endTest();
+      EndTest();
   }
 
-  virtual void afterTest() OVERRIDE {
+  virtual void AfterTest() OVERRIDE {
     // Check that we didn't commit twice between first and second draw.
     EXPECT_EQ(1, num_commit_complete_);
   }

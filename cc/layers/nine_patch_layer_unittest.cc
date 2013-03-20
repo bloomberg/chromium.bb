@@ -4,6 +4,7 @@
 
 #include "cc/layers/nine_patch_layer.h"
 
+#include "cc/base/thread.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
@@ -12,7 +13,6 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_tree_test_common.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"

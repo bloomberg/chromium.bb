@@ -5,19 +5,19 @@
 #include "cc/output/delegating_renderer.h"
 
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/layer_tree_test_common.h"
+#include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 
-class DelegatingRendererTest : public ThreadedTest {
+class DelegatingRendererTest : public LayerTreeTest {
  public:
-  DelegatingRendererTest() : ThreadedTest(), output_surface_(NULL) {}
+  DelegatingRendererTest() : LayerTreeTest(), output_surface_(NULL) {}
   virtual ~DelegatingRendererTest() {}
 
-  virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
     scoped_ptr<TestWebGraphicsContext3D> context3d =
         TestWebGraphicsContext3D::Create(
             WebKit::WebGraphicsContext3D::Attributes());
@@ -36,14 +36,14 @@ class DelegatingRendererTest : public ThreadedTest {
 
 class DelegatingRendererTestDraw : public DelegatingRendererTest {
  public:
-  virtual void beginTest() OVERRIDE {
-    m_layerTreeHost->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
-  virtual bool prepareToDrawOnThread(
+  virtual bool PrepareToDrawOnThread(
       LayerTreeHostImpl*, LayerTreeHostImpl::FrameData* frame, bool result)
       OVERRIDE {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
@@ -56,7 +56,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
     return true;
   }
 
-  virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
     CompositorFrame& last_frame = output_surface_->last_sent_frame();
@@ -73,7 +73,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
         0u, last_frame.delegated_frame_data->resource_list.size());
     EXPECT_EQ(1u, last_frame.delegated_frame_data->render_pass_list.size());
 
-    endTest();
+    EndTest();
   }
 };
 
@@ -81,13 +81,13 @@ SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestDraw)
 
 class DelegatingRendererTestResources : public DelegatingRendererTest {
  public:
-  virtual void beginTest() OVERRIDE {
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void afterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 
-  virtual bool prepareToDrawOnThread(
+  virtual bool PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
       bool result) OVERRIDE {
@@ -113,7 +113,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     return true;
   }
 
-  virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
     CompositorFrame& last_frame = output_surface_->last_sent_frame();
@@ -127,7 +127,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     EXPECT_EQ(
         15u, last_frame.delegated_frame_data->resource_list.size());
 
-    endTest();
+    EndTest();
   }
 };
 

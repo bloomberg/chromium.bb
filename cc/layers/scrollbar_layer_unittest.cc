@@ -18,7 +18,7 @@
 #include "cc/test/fake_web_scrollbar.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_tree_test_common.h"
+#include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -209,7 +209,7 @@ TEST(ScrollbarLayerTest, solidColorDrawQuads)
 
 }
 
-class ScrollbarLayerTestMaxTextureSize : public ThreadedTest {
+class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
 public:
     ScrollbarLayerTestMaxTextureSize() {}
 
@@ -217,24 +217,24 @@ public:
         bounds_ = bounds;
     }
 
-    virtual void beginTest() OVERRIDE
+    virtual void BeginTest() OVERRIDE
     {
-        m_layerTreeHost->InitializeRendererIfNeeded();
+        layer_tree_host()->InitializeRendererIfNeeded();
 
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
         m_scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), 1);
-        m_scrollbarLayer->SetLayerTreeHost(m_layerTreeHost.get());
+        m_scrollbarLayer->SetLayerTreeHost(layer_tree_host());
         m_scrollbarLayer->SetBounds(bounds_);
-        m_layerTreeHost->root_layer()->AddChild(m_scrollbarLayer);
+        layer_tree_host()->root_layer()->AddChild(m_scrollbarLayer);
 
         m_scrollLayer = Layer::Create();
         m_scrollbarLayer->SetScrollLayerId(m_scrollLayer->id());
-        m_layerTreeHost->root_layer()->AddChild(m_scrollLayer);
+        layer_tree_host()->root_layer()->AddChild(m_scrollLayer);
 
-        postSetNeedsCommitToMainThread();
+        PostSetNeedsCommitToMainThread();
     }
 
-    virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
+    virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
         const int kMaxTextureSize = impl->GetRendererCapabilities().max_texture_size;
 
@@ -244,10 +244,10 @@ public:
         EXPECT_EQ(m_scrollbarLayer->content_bounds().width(), kMaxTextureSize - 1);
         EXPECT_EQ(m_scrollbarLayer->content_bounds().height(), kMaxTextureSize - 1);
 
-        endTest();
+        EndTest();
     }
 
-    virtual void afterTest() OVERRIDE
+    virtual void AfterTest() OVERRIDE
     {
     }
 
@@ -262,7 +262,7 @@ TEST_F(ScrollbarLayerTestMaxTextureSize, runTest) {
     int max_size = 0;
     context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
     setScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
-    runTest(true);
+    RunTest(true);
 }
 
 class MockLayerTreeHost : public LayerTreeHost {

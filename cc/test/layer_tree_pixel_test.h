@@ -4,7 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "cc/layers/solid_color_layer.h"
-#include "cc/test/layer_tree_test_common.h"
+#include "cc/test/layer_tree_test.h"
 
 #ifndef CC_TEST_LAYER_TREE_PIXEL_TEST_H_
 #define CC_TEST_LAYER_TREE_PIXEL_TEST_H_
@@ -12,25 +12,22 @@
 namespace cc {
 class LayerTreeHost;
 
-class LayerTreePixelTest : public ThreadedTest {
+class LayerTreePixelTest : public LayerTreeTest {
  protected:
   LayerTreePixelTest();
   virtual ~LayerTreePixelTest();
 
-  bool RunTest(scoped_refptr<Layer> root_layer,
-               const base::FilePath::StringType& file_name);
-
-  virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE;
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE;
-  virtual void swapBuffersOnThread(LayerTreeHostImpl* host_impl,
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                    bool result) OVERRIDE;
 
-  virtual void beginTest() OVERRIDE;
-  virtual void setupTree() OVERRIDE;
-  virtual void afterTest() OVERRIDE;
+  virtual void BeginTest() OVERRIDE;
+  virtual void SetupTree() OVERRIDE;
+  virtual void AfterTest() OVERRIDE;
 
   scoped_refptr<SolidColorLayer> CreateSolidColorLayer(gfx::Rect rect,
                                                        SkColor color);

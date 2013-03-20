@@ -13,7 +13,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_json_parser.h"
-#include "cc/test/layer_tree_test_common.h"
+#include "cc/test/layer_tree_test.h"
 #include "cc/test/paths.h"
 
 namespace cc {
@@ -23,19 +23,19 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class LayerTreeHostPerfTest : public ThreadedTest {
+class LayerTreeHostPerfTest : public LayerTreeTest {
  public:
   LayerTreeHostPerfTest()
       : num_draws_(0) {
     fake_content_layer_client_.setPaintAllOpaque(true);
   }
 
-  virtual void beginTest() OVERRIDE {
-    buildTree();
-    postSetNeedsCommitToMainThread();
+  virtual void BeginTest() OVERRIDE {
+    BuildTree();
+    PostSetNeedsCommitToMainThread();
   }
 
-  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ++num_draws_;
     if (num_draws_ == kWarmupRuns)
       start_time_ = base::TimeTicks::HighResNow();
@@ -44,16 +44,16 @@ class LayerTreeHostPerfTest : public ThreadedTest {
       base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
       if (elapsed >= base::TimeDelta::FromMilliseconds(kTimeLimitMillis)) {
         elapsed_ = elapsed;
-        endTest();
+        EndTest();
         return;
       }
     }
     impl->setNeedsRedraw();
   }
 
-  virtual void buildTree() {}
+  virtual void BuildTree() {}
 
-  virtual void afterTest() OVERRIDE {
+  virtual void AfterTest() OVERRIDE {
     // Format matches chrome/test/perf/perf_test.h:PrintResult
     printf("*RESULT %s: frames= %.2f runs/s\n",
            test_name_.c_str(),
@@ -75,7 +75,7 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
       : LayerTreeHostPerfTest() {
   }
 
-  void readTestFile(std::string name) {
+  void ReadTestFile(std::string name) {
     test_name_ = name;
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(cc::DIR_TEST_DATA, &test_data_dir));
@@ -83,13 +83,13 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
     ASSERT_TRUE(file_util::ReadFileToString(json_file, &json_));
   }
 
-  virtual void buildTree() OVERRIDE {
+  virtual void BuildTree() OVERRIDE {
     gfx::Size viewport = gfx::Size(720, 1038);
-    m_layerTreeHost->SetViewportSize(viewport, viewport);
+    layer_tree_host()->SetViewportSize(viewport, viewport);
     scoped_refptr<Layer> root = ParseTreeFromJson(json_,
                                                   &fake_content_layer_client_);
     ASSERT_TRUE(root.get());
-    m_layerTreeHost->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
   }
 
  private:
@@ -98,8 +98,8 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 
 // Simulates a tab switcher scene with two stacks of 10 tabs each.
 TEST_F(LayerTreeHostPerfTestJsonReader, TenTenSingleThread) {
-  readTestFile("10_10_layer_tree");
-  runTest(false);
+  ReadTestFile("10_10_layer_tree");
+  RunTest(false);
 }
 
 // Simulates main-thread scrolling on each frame.
@@ -109,13 +109,13 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
       : LayerTreeHostPerfTestJsonReader() {
   }
 
-  virtual void buildTree() OVERRIDE {
-    LayerTreeHostPerfTestJsonReader::buildTree();
-    scrollable_ = m_layerTreeHost->root_layer()->children()[1];
+  virtual void BuildTree() OVERRIDE {
+    LayerTreeHostPerfTestJsonReader::BuildTree();
+    scrollable_ = layer_tree_host()->root_layer()->children()[1];
     ASSERT_TRUE(scrollable_);
   }
 
-  virtual void layout() OVERRIDE {
+  virtual void Layout() OVERRIDE {
     static const gfx::Vector2d delta = gfx::Vector2d(0, 10);
     scrollable_->SetScrollOffset(scrollable_->scroll_offset() + delta);
   }
@@ -125,8 +125,8 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
 };
 
 TEST_F(ScrollingLayerTreePerfTest, LongScrollablePage) {
-  readTestFile("long_scrollable_page");
-  runTest(false);
+  ReadTestFile("long_scrollable_page");
+  RunTest(false);
 }
 
 }  // namespace

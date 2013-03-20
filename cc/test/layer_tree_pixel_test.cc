@@ -18,7 +18,7 @@ LayerTreePixelTest::LayerTreePixelTest() {}
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
-scoped_ptr<OutputSurface> LayerTreePixelTest::createOutputSurface() {
+scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
@@ -47,7 +47,7 @@ LayerTreePixelTest::OffscreenContextProviderForCompositorThread() {
   return provider;
 }
 
-void LayerTreePixelTest::swapBuffersOnThread(LayerTreeHostImpl* host_impl,
+void LayerTreePixelTest::SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                              bool result) {
   EXPECT_TRUE(result);
 
@@ -70,14 +70,14 @@ void LayerTreePixelTest::swapBuffersOnThread(LayerTreeHostImpl* host_impl,
 
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file_)));
 
-  endTest();
+  EndTest();
 }
 
-void LayerTreePixelTest::beginTest() {
-  postSetNeedsCommitToMainThread();
+void LayerTreePixelTest::BeginTest() {
+  PostSetNeedsCommitToMainThread();
 }
 
-void LayerTreePixelTest::afterTest() {}
+void LayerTreePixelTest::AfterTest() {}
 
 scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
     gfx::Rect rect, SkColor color) {
@@ -96,15 +96,15 @@ void LayerTreePixelTest::RunPixelTest(
 {
   content_root_ = content_root;
   ref_file_ = file_name;
-  runTest(true);
+  RunTest(true);
 }
 
-void LayerTreePixelTest::setupTree() {
+void LayerTreePixelTest::SetupTree() {
   scoped_refptr<Layer> root = Layer::Create();
   root->SetBounds(content_root_->bounds());
   root->AddChild(content_root_);
-  m_layerTreeHost->SetRootLayer(root);
-  ThreadedTest::setupTree();
+  layer_tree_host()->SetRootLayer(root);
+  LayerTreeTest::SetupTree();
 }
 
 }  // namespace cc
