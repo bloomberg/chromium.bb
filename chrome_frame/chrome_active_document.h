@@ -439,6 +439,10 @@ END_EXEC_COMMAND_MAP()
   bool IsNewNavigation(const NavigationInfo& new_navigation_info,
                        int flags) const;
 
+  // Returns true if the NavigationInfo object passed in represents a first
+  // page navigation initiated as this active document was being created.
+  bool IsFirstNavigation(const NavigationInfo& new_navigation_info) const;
+
  protected:
   typedef std::map<int, OLECMDF> CommandStatusMap;
 

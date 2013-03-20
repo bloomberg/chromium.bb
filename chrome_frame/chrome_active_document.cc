@@ -35,6 +35,7 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/generated_resources.h"
@@ -830,11 +831,29 @@ void ChromeActiveDocument::UpdateNavigationState(
            title.AsInput(), NULL);
   }
 
-  // It is important that we only update the navigation_info_ after we have
-  // finalized the travel log. This is because IE will ask for information
-  // such as navigation index when the travel log is finalized and we need
-  // supply the old index and not the new one.
-  *navigation_info_ = new_navigation_info;
+  // There are cases in which we receive NavigationStateChanged events for
+  // provisional loads. These events will contain a new URL but will not be
+  // considered new navigations since their navigation_index is 0. For these
+  // events, do not update the navigation_info_ state, as this will muck up the
+  // travel log when the subsequent committed navigation event takes place.
+  //
+  // Given this filtering, also special-case first navigations since those
+  // are needed to initially populate navigation_info_ to keep it in sync with
+  // what was placed in the IE travel log when CF was first opened.
+  //
+  // Lastly, allow through navigation events that would neither affect the
+  // travel log nor cause the page location to change, as these will
+  // contain informational state (referrer, title, etc.) that we should
+  // preserve.
+  if (is_internal_navigation || IsFirstNavigation(new_navigation_info) ||
+      new_navigation_info.url == navigation_info_->url) {
+    // It is important that we only update the navigation_info_ after we have
+    // finalized the travel log. This is because IE will ask for information
+    // such as navigation index when the travel log is finalized and we need
+    // supply the old index and not the new one.
+    *navigation_info_ = new_navigation_info;
+  }
+
   // Update the IE zone here. Ideally we would like to do it when the active
   // document is activated. However that does not work at times as the frame we
   // get there is not the actual frame which handles the command.
@@ -1411,4 +1430,11 @@ bool ChromeActiveDocument::IsNewNavigation(
     return true;
 
   return false;
+}
+
+bool ChromeActiveDocument::IsFirstNavigation(
+    const NavigationInfo& new_navigation_info) const {
+  return (navigation_info_->url.is_empty() &&
+          new_navigation_info.navigation_type ==
+              content::NAVIGATION_TYPE_NEW_PAGE);
 }
