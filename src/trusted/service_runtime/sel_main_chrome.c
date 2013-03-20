@@ -296,8 +296,9 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   /*
    * Load the integrated runtime (IRT) library.
    */
-  if (args->irt_fd != -1) {
+  if (args->irt_fd != -1 && !nap->irt_loaded) {
     NaClLoadIrt(nap, args->irt_fd);
+    nap->irt_loaded = 1;
   }
 
   NACL_FI_FATAL("BeforeEnvCleanserCtor");

@@ -168,6 +168,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->secure_service_address = NULL;
   nap->bootstrap_channel = NULL;
   nap->secure_service = NULL;
+  nap->irt_loaded = 0;
 
   nap->manifest_proxy = NULL;
   nap->kernel_service = NULL;
@@ -1146,6 +1147,17 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
     goto cleanup;
   }
 
+  /*
+   * The command channel gets the first chance to load the IRT, so the
+   * only way that we'll see irt_loaded true is if there were two
+   * LoadIrt RPCs.
+   */
+  if (nap->irt_loaded) {
+    NaClLog(LOG_ERROR, "NaClLoadIrtRpc: double load of IRT?\n");
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
+  }
+
   if (!NaClLoadDesc(irt_binary, &load_src)) {
     NaClLog(4, "NaClLoadIrtRpc: failed to load descriptor\n");
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -1171,6 +1183,7 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
             "NaClLoadIrt: Failed to load the integrated runtime (IRT). "
             "The user executable was probably not built to use the IRT.\n");
   }
+  nap->irt_loaded = 1;
   rpc->result = NACL_SRPC_RESULT_OK;
 
  cleanup:
