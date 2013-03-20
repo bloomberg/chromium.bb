@@ -35,7 +35,7 @@ namespace {
 const int kLayoutSpacing = -1;
 
 // The background color.
-const SkColor kBubbleBackgroundColor = 0xc8141414;
+const SkColor kBubbleBackgroundColor = 0xFF141414;
 
 // The text color within the bubble.
 const SkColor kBubbleTextColor = SK_ColorWHITE;
@@ -397,7 +397,6 @@ MaximizeBubbleController::Bubble::Bubble(
   set_notify_enter_exit_on_child(true);
   set_adjust_if_offscreen(false);
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
   set_color(kBubbleBackgroundColor);
   set_close_on_deactivate(false);
   set_background(
