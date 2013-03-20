@@ -48,7 +48,7 @@ begword lánc =	For example láncszem, lánccsörgés words
 partword licenc =	For example licencsértés, licenccsalád words
 partword malac =	For example malacság, malacsült words
 begword nerc =	For example nercstóla word
-begword nercsinszk 1345-15-1235-146-24-1345-156-13
+always nercsinszk 1345-15-1235-146-24-1345-156-13
 always pácsó =	Pácsó word
 partword polc =	For example polcsor word
 begword ipolcs 24-1234-135-123-146
@@ -100,6 +100,7 @@ always arcseb =	For example arcseb, arcsebe words
 partword nyargonccs 1246-1-1235-1245-135-1345-14-146	For example nyargonccsizma word
 partword perec =	For example perecsütőnő, vállpereccsontjából words
 always perecse 1234-15-1235-15-146-15
+always perecsét 1234-15-1235-15-146-16-2345
 begword princség =	For example princséged word
 always rácság =	For example rácság, rácságból words
 partword suhanc =	For example suhanccsürhe, suhancsereg word
@@ -196,6 +197,8 @@ partword hazugság 125-1-126-136-1245-234-4-1245	For example hazugsággyár word
 partword édesség =	For example édességgyártók word need this exception
 partword tőzeggy 2345-12456-126-15-1245-1456	For example tőzeggyapot, tőzeggyár words
 always geggyár 1245-15-1245-1456-4-1235	For example geggyáros word
+partword dopping =	For example doppinggyanú word need this exception
+partword tehetség =	For example tehetséggyár word need this exception
 
 #ny, nny related exceptions
 #Following exception parts need marking nny letter pairs with single n and nny braille dot combinations
@@ -258,6 +261,7 @@ partword szezonny 156-15-126-135-1345-1246	For example szezonnyitó word need th
 partword óceán =	For example óceánnyi word need this general exception
 partword dizájnny 145-24-126-4-245-1345-1246	For example dizájnnyaklánc word need this exception
 partword proton =	For example protonnyalábok word need this exception
+partword börtön =	For example börtönnyíláson, börtönnyitó words
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
@@ -281,7 +285,7 @@ always működés =	For example működészavar word need this exception
 begword nyílás 1246-34-123-4-234	For example nyílászáró word need this exception
 always ritmus =	For example ritmuszavar word need this exception
 begword vas =	vas beginning words need handling single part the vas word part for braille translation, example words are vaszár, vasszekrény, vasszerkezet words
-begword vaszil 1236-1-156-24-123
+always vaszil 1236-1-156-24-123
 begword vonós =	For example vonószenekar, vonósszerenád words need handlin vonós word part with single part
 begword pénzes 1234-16-1345-126-15-234	For example pénzeszacskó, pénzeszsák words need this exception
 partword pénzeszk 1234-16-1345-126-15-156-13	For example pénzeszközök word need this exception
@@ -329,6 +333,11 @@ partword sertés =	For example sertészsír word
 partword tászsin 2345-4-234-345-24-1345	For example gyújtászsinór word
 partword rvaszsír 1235-1236-1-234-345-34-1235	For example szarvaszsír word
 partword lakás =	For example lakásszövetkezet, lakásszentelés, lakásszerzők word
+begword nyilas 1246-24-123-1-234	For example nyilasszervezet word
+partword kolbászos 13-135-123-12-4-156-135-234	For example kolbászoszsemle word
+partword feldolgozás 124-15-123-145-135-123-1245-135-126-4-234	For example feldolgozászenekar, feldolgozásszerű words need this exception
+partword tojás =	For example tojászápor, tojászáporos words need this exception
+partword kérdés =	For example kérdészápor word need this exception
 
 #ssz related exceptions
 #Following exception words and word parts need writing one s and one sz braille letter
@@ -422,6 +431,7 @@ partword tásszö 2345-4-234-156-12345	For example látásszög word
 partword xussz 1346-136-234-156	For example luxusszálloda word
 partword tésszá 2345-16-234-156-4	For example töltésszám word
 partword nessza 1345-15-234-156-1
+begword vanessz 1236-1-1345-15-156-156	For example Vanessza name is an exception the nessza general exception related
 begword barnessz 12-1-1235-1345-15-156-156	For example barnesszal word
 always másszor 134-4-234-156-135-1235	For example másszor word
 partword tésszer 2345-16-234-156-15-1235	For example töltésszerűen word
@@ -464,7 +474,6 @@ partword lösszáj 123-12345-234-156-4-245	For example tejfölösszájú word
 partword üléssz 12356-123-16-234-156	For example repülésszerű, településszerkezet words
 partword melésszer 134-15-123-16-234-156-15-1235	For example emelésszerű word
 partword itkosszol 24-2345-13-135-234-156-135-123	For example titkosszolgálat word
-partword ojássz 135-245-4-234-156	For example tojásszerű word
 partword övisszú 12345-1236-24-234-156-346	For example tövisszúrás word
 partword kosszel 13-135-234-156-15-123
 partword udásszo 136-145-4-234-156-135	For example tudásszomj word
@@ -604,7 +613,7 @@ begword édesszesz 16-145-15-234-156-15-156	For example édesszesztestvér word
 partword egyenesszál 15-1456-15-1345-15-234-156-4-123	For example egyenesszálú word
 partword őrsszerű 12456-1235-234-156-15-1235-23456	For example előőrsszerű
 begword ésszer 16-156-156-15-1235	For example ésszerű word
-begword fásszín 124-4-234-156-34-1345
+always fásszín 124-4-234-156-34-1345
 partword fehéressz 124-15-125-16-1235-15-234-156	For example fehéresszőke, fehéresszürke words
 partword feketésszürk 124-15-13-15-2345-16-234-156-12356-1235-13	For example feketésszürke word
 begword felszerelés 124-15-123-156-15-1235-15-123-16-234	For example felszerelésszettet word need this exception
@@ -758,6 +767,13 @@ partword ismétléssz 24-234-134-16-2345-123-16-234-156	For example ismétléssz
 partword visszaéléssz 1236-24-156-156-1-16-123-16-234-156	For example visszaélésszerű word
 partword szállodássz 156-4-123-123-135-145-4-234-156	For example szállodásszövetség word need this exception
 begword egyessz 15-1456-15-234-156	For example egyesszám, egyesszámban word
+partword fémessz 124-16-134-15-234-156	For example fémesszürke word
+begword kisszöv 13-24-234-156-12345-1236	For example kisszövetkezet word
+partword bázissz 12-4-126-24-234-156	For example bázisszint word
+partword webes =	For example webesszolgáltatás word
+partword felsorolás =	For example felsorolásszerűen word
+begword kisszíne 13-24-234-156-34-1345-15	For example kisszínes word
+partword végzéssz 1236-16-1245-126-16-234-156	For example kivégzésszerű word need this exception
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules
@@ -780,6 +796,10 @@ always reality =	For example realityműsora word need this exception
 always style =
 always zloty 126-123-135-2345-13456	Old polish money name
 always station =	For example playstationnyi word
+always ability =	For example in hungary have a place with name is Ability Park
+always activity =
+always betty =
+always kitty =
 
 #zs, zzs related exceptions
 partword ínházsi 34-1345-125-4-345-24

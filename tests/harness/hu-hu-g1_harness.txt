@@ -155,6 +155,10 @@
           "output": "bádoggyűjtemény"
         }, 
         {
+          "input": "⠃⠈⠣⠊⠎⠱⠊⠝⠞", 
+          "output": "bázisszint"
+        }, 
+        {
           "input": "⠃⠁⠗⠝⠈⠎⠱⠻⠅⠑", 
           "output": "barnásszőke"
         }, 
@@ -249,6 +253,10 @@
         {
           "input": "⠃⠟⠗⠞⠟⠝⠫⠑⠇⠧⠑", 
           "output": "börtönnyelve"
+        }, 
+        {
+          "input": "⠃⠟⠗⠞⠟⠝⠫⠌⠇⠈⠎⠕⠝⠂ ⠃⠟⠗⠞⠟⠝⠫⠊⠞⠪", 
+          "output": "börtönnyíláson, börtönnyitó"
         }, 
         {
           "input": "⠃⠗⠑⠅⠑⠛⠡⠎⠱⠑⠗⠾", 
@@ -361,6 +369,10 @@
         {
           "input": "⠙⠗⠕⠛⠹⠁⠝⠬⠎", 
           "output": "droggyanús"
+        }, 
+        {
+          "input": "⠙⠕⠏⠏⠊⠝⠛⠹⠁⠝⠬", 
+          "output": "doppinggyanú"
         }, 
         {
           "input": "⠙⠬⠎⠱⠁⠅⠈⠇⠇⠬", 
@@ -591,6 +603,10 @@
           "output": "feketésszürke"
         }, 
         {
+          "input": "⠋⠑⠇⠙⠕⠇⠛⠕⠣⠈⠎⠣⠑⠝⠑⠅⠁⠗", 
+          "output": "feldolgozászenekar"
+        }, 
+        {
           "input": "⠋⠑⠇⠑⠎⠡⠛⠹⠊⠇⠅⠕⠎", 
           "output": "feleséggyilkos"
         }, 
@@ -603,12 +619,20 @@
           "output": "felséggyilkolás"
         }, 
         {
+          "input": "⠋⠑⠇⠎⠕⠗⠕⠇⠈⠎⠱⠑⠗⠾⠑⠝", 
+          "output": "felsorolásszerűen"
+        }, 
+        {
           "input": "⠋⠑⠇⠱⠑⠗⠑⠇⠡⠎⠱⠑⠞⠞⠑⠞", 
           "output": "felszerelésszettet"
         }, 
         {
           "input": "⠋⠑⠗⠞⠻⠣⠡⠎⠱⠑⠗⠾", 
           "output": "fertőzésszerű"
+        }, 
+        {
+          "input": "⠋⠡⠍⠑⠎⠱⠷⠗⠅⠑", 
+          "output": "fémesszürke"
         }, 
         {
           "input": "⠋⠊⠇⠉⠩⠊⠣⠍⠁", 
@@ -1275,6 +1299,10 @@
           "output": "keresésszolgáltató"
         }, 
         {
+          "input": "⠅⠡⠗⠙⠡⠎⠣⠈⠏⠕⠗", 
+          "output": "kérdészápor"
+        }, 
+        {
           "input": "⠅⠡⠗⠡⠎⠱⠑⠗⠾⠑⠝", 
           "output": "kérésszerűen"
         }, 
@@ -1323,6 +1351,10 @@
           "output": "Kisszeben"
         }, 
         {
+          "input": "⠅⠊⠎⠱⠌⠝⠑⠎", 
+          "output": "kisszínes"
+        }, 
+        {
           "input": "⠅⠊⠎⠱⠡⠅", 
           "output": "kisszék"
         }, 
@@ -1355,6 +1387,10 @@
           "output": "Kiszombor"
         }, 
         {
+          "input": "⠅⠊⠎⠱⠟⠧⠑⠞⠅⠑⠣⠑⠞", 
+          "output": "kisszövetkezet"
+        }, 
+        {
           "input": "⠅⠊⠱⠟⠛⠑⠇⠇⠡⠎⠱⠑⠗⠾⠑⠝", 
           "output": "kiszögellésszerűen"
         }, 
@@ -1371,12 +1407,20 @@
           "output": "kitüntetésszalagokat"
         }, 
         {
+          "input": "⠅⠊⠧⠡⠛⠣⠡⠎⠱⠑⠗⠾⠑⠝", 
+          "output": "kivégzésszerűen"
+        }, 
+        {
           "input": "⠅⠇⠊⠑⠝⠎⠱⠕⠋⠞⠧⠑⠗", 
           "output": "kliensszoftver"
         }, 
         {
           "input": "⠅⠪⠉⠩⠕⠍⠪", 
           "output": "kóccsomó"
+        }, 
+        {
+          "input": "⠅⠕⠇⠃⠈⠱⠕⠎⠜⠑⠍⠇⠑", 
+          "output": "kolbászoszsemle"
         }, 
         {
           "input": "⠅⠕⠇⠙⠥⠎⠱⠈⠚", 
@@ -2009,6 +2053,10 @@
         {
           "input": "⠫⠊⠅⠅⠁⠝⠈⠎⠱⠑⠗⠾", 
           "output": "nyikkanásszerű"
+        }, 
+        {
+          "input": "⠫⠊⠇⠁⠎⠱⠑⠗⠧⠑⠣⠑⠞", 
+          "output": "nyilasszervezet"
         }, 
         {
           "input": "⠫⠌⠇⠈⠎⠣⠈⠗⠪", 
@@ -2739,6 +2787,10 @@
           "output": "társszövetség"
         }, 
         {
+          "input": "⠞⠑⠓⠑⠞⠎⠡⠛⠹⠈⠗", 
+          "output": "tehetséggyár"
+        }, 
+        {
           "input": "⠞⠑⠈⠎⠱⠑⠗⠧⠌⠣", 
           "output": "teásszervíz"
         }, 
@@ -2797,6 +2849,10 @@
         {
           "input": "⠞⠌⠣⠛⠁⠇⠇⠕⠝⠫⠊", 
           "output": "tízgallonnyi"
+        }, 
+        {
+          "input": "⠞⠕⠚⠈⠎⠣⠈⠏⠕⠗", 
+          "output": "tojászápor"
         }, 
         {
           "input": "⠞⠕⠚⠈⠎⠱⠑⠗⠾", 
@@ -3251,6 +3307,10 @@
           "output": "vöröszászló"
         }, 
         {
+          "input": "⠺⠑⠃⠑⠎⠱⠕⠇⠛⠈⠇⠞⠁⠞⠈⠎", 
+          "output": "webesszolgáltatás"
+        }, 
+        {
           "input": "⠣⠈⠇⠕⠛⠹⠾⠗⠾⠍⠑⠞", 
           "output": "záloggyűrűmet"
         }, 
@@ -3495,6 +3555,10 @@
           "output": "⠃⠈⠙⠕⠛⠹⠾⠚⠞⠑⠍⠡⠫"
         }, 
         {
+          "input": "bázisszint", 
+          "output": "⠃⠈⠣⠊⠎⠱⠊⠝⠞"
+        }, 
+        {
           "input": "barnásszőke", 
           "output": "⠃⠁⠗⠝⠈⠎⠱⠻⠅⠑"
         }, 
@@ -3589,6 +3653,10 @@
         {
           "input": "börtönnyelve", 
           "output": "⠃⠟⠗⠞⠟⠝⠫⠑⠇⠧⠑"
+        }, 
+        {
+          "input": "börtönnyíláson, börtönnyitó", 
+          "output": "⠃⠟⠗⠞⠟⠝⠫⠌⠇⠈⠎⠕⠝⠂ ⠃⠟⠗⠞⠟⠝⠫⠊⠞⠪"
         }, 
         {
           "input": "brekegésszerű", 
@@ -3701,6 +3769,10 @@
         {
           "input": "droggyanús", 
           "output": "⠙⠗⠕⠛⠹⠁⠝⠬⠎"
+        }, 
+        {
+          "input": "doppinggyanú", 
+          "output": "⠙⠕⠏⠏⠊⠝⠛⠹⠁⠝⠬"
         }, 
         {
           "input": "dússzakállú", 
@@ -3931,6 +4003,10 @@
           "output": "⠋⠑⠅⠑⠞⠡⠎⠱⠷⠗⠅⠑"
         }, 
         {
+          "input": "feldolgozászenekar", 
+          "output": "⠋⠑⠇⠙⠕⠇⠛⠕⠣⠈⠎⠣⠑⠝⠑⠅⠁⠗"
+        }, 
+        {
           "input": "feleséggyilkos", 
           "output": "⠋⠑⠇⠑⠎⠡⠛⠹⠊⠇⠅⠕⠎"
         }, 
@@ -3943,12 +4019,20 @@
           "output": "⠋⠑⠇⠎⠡⠛⠹⠊⠇⠅⠕⠇⠈⠎"
         }, 
         {
+          "input": "felsorolásszerűen", 
+          "output": "⠋⠑⠇⠎⠕⠗⠕⠇⠈⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
           "input": "felszerelésszettet", 
           "output": "⠋⠑⠇⠱⠑⠗⠑⠇⠡⠎⠱⠑⠞⠞⠑⠞"
         }, 
         {
           "input": "fertőzésszerű", 
           "output": "⠋⠑⠗⠞⠻⠣⠡⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "fémesszürke", 
+          "output": "⠋⠡⠍⠑⠎⠱⠷⠗⠅⠑"
         }, 
         {
           "input": "filccsizma", 
@@ -4615,6 +4699,10 @@
           "output": "⠅⠑⠗⠑⠎⠡⠎⠱⠕⠇⠛⠈⠇⠞⠁⠞⠪"
         }, 
         {
+          "input": "kérdészápor", 
+          "output": "⠅⠡⠗⠙⠡⠎⠣⠈⠏⠕⠗"
+        }, 
+        {
           "input": "kérésszerűen", 
           "output": "⠅⠡⠗⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
@@ -4663,6 +4751,10 @@
           "output": "⠨⠅⠊⠎⠱⠑⠃⠑⠝"
         }, 
         {
+          "input": "kisszínes", 
+          "output": "⠅⠊⠎⠱⠌⠝⠑⠎"
+        }, 
+        {
           "input": "kisszék", 
           "output": "⠅⠊⠎⠱⠡⠅"
         }, 
@@ -4695,6 +4787,10 @@
           "output": "⠨⠅⠊⠎⠣⠕⠍⠃⠕⠗"
         }, 
         {
+          "input": "kisszövetkezet", 
+          "output": "⠅⠊⠎⠱⠟⠧⠑⠞⠅⠑⠣⠑⠞"
+        }, 
+        {
           "input": "kiszögellésszerűen", 
           "output": "⠅⠊⠱⠟⠛⠑⠇⠇⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
@@ -4711,12 +4807,20 @@
           "output": "⠅⠊⠞⠷⠝⠞⠑⠞⠡⠎⠱⠁⠇⠁⠛⠕⠅⠁⠞"
         }, 
         {
+          "input": "kivégzésszerűen", 
+          "output": "⠅⠊⠧⠡⠛⠣⠡⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
           "input": "kliensszoftver", 
           "output": "⠅⠇⠊⠑⠝⠎⠱⠕⠋⠞⠧⠑⠗"
         }, 
         {
           "input": "kóccsomó", 
           "output": "⠅⠪⠉⠩⠕⠍⠪"
+        }, 
+        {
+          "input": "kolbászoszsemle", 
+          "output": "⠅⠕⠇⠃⠈⠱⠕⠎⠜⠑⠍⠇⠑"
         }, 
         {
           "input": "koldusszáj", 
@@ -5349,6 +5453,10 @@
         {
           "input": "nyikkanásszerű", 
           "output": "⠫⠊⠅⠅⠁⠝⠈⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "nyilasszervezet", 
+          "output": "⠫⠊⠇⠁⠎⠱⠑⠗⠧⠑⠣⠑⠞"
         }, 
         {
           "input": "nyílászáró", 
@@ -6079,6 +6187,10 @@
           "output": "⠞⠈⠗⠎⠱⠟⠧⠑⠞⠎⠡⠛"
         }, 
         {
+          "input": "tehetséggyár", 
+          "output": "⠞⠑⠓⠑⠞⠎⠡⠛⠹⠈⠗"
+        }, 
+        {
           "input": "teásszervíz", 
           "output": "⠞⠑⠈⠎⠱⠑⠗⠧⠌⠣"
         }, 
@@ -6137,6 +6249,10 @@
         {
           "input": "tízgallonnyi", 
           "output": "⠞⠌⠣⠛⠁⠇⠇⠕⠝⠫⠊"
+        }, 
+        {
+          "input": "tojászápor", 
+          "output": "⠞⠕⠚⠈⠎⠣⠈⠏⠕⠗"
         }, 
         {
           "input": "tojásszerű", 
@@ -6589,6 +6705,10 @@
         {
           "input": "vöröszászló", 
           "output": "⠧⠟⠗⠟⠎⠣⠈⠱⠇⠪"
+        }, 
+        {
+          "input": "webesszolgáltatás", 
+          "output": "⠺⠑⠃⠑⠎⠱⠕⠇⠛⠈⠇⠞⠁⠞⠈⠎"
         }, 
         {
           "input": "záloggyűrűmet", 

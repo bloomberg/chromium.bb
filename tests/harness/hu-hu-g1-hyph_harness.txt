@@ -156,6 +156,10 @@
           "output": "bá-dog-gyűj-te-mény"
         }, 
         {
+          "input": "bázisszint", 
+          "output": "bá-zis-szint"
+        }, 
+        {
           "input": "barnásszőke", 
           "output": "bar-nássző-ke"
         }, 
@@ -258,6 +262,14 @@
         {
           "input": "börtönnyelve", 
           "output": "bör-tön-nyel-ve"
+        }, 
+        {
+          "input": "börtönnyíláson", 
+          "output": "bör-tön-nyí-lá-son"
+        }, 
+        {
+          "input": "börtönnyitó", 
+          "output": "bör-tön-nyi-tó"
         }, 
         {
           "input": "búcsújárásszerű", 
@@ -370,6 +382,10 @@
         {
           "input": "droggyanús", 
           "output": "drog-gya-nús"
+        }, 
+        {
+          "input": "doppinggyanú", 
+          "output": "dop-ping-gya-nú"
         }, 
         {
           "input": "dússzakállú", 
@@ -624,6 +640,10 @@
           "output": "fe-ke-tés-szür-ke"
         }, 
         {
+          "input": "feldolgozászenekar", 
+          "output": "fel-dol-go-zás-ze-ne-kar"
+        }, 
+        {
           "input": "feleséggyilkos", 
           "output": "fe-le-ség-gyil-kos"
         }, 
@@ -636,12 +656,20 @@
           "output": "fel-fe-de-zés-szám-ba"
         }, 
         {
+          "input": "felsorolásszerűen", 
+          "output": "fel-so-ro-lás-sze-rű-en"
+        }, 
+        {
           "input": "felszerelésszettet", 
           "output": "fel-sze-re-lésszet-tet"
         }, 
         {
           "input": "fertőzésszerű", 
           "output": "fer-tő-zés-sze-rű"
+        }, 
+        {
+          "input": "fémesszürke", 
+          "output": "fé-mes-szür-ke"
         }, 
         {
           "input": "filccsizma", 
@@ -1300,6 +1328,10 @@
           "output": "ke-resés-szol-gál-ta-tó"
         }, 
         {
+          "input": "kérdészápor", 
+          "output": "kér-dés-zá-por"
+        }, 
+        {
           "input": "kérésszerűen", 
           "output": "ké-réssze-rű-en"
         }, 
@@ -1348,6 +1380,10 @@
           "output": "Kis-sze-ben"
         }, 
         {
+          "input": "kisszínes", 
+          "output": "kis-szí-nes"
+        }, 
+        {
           "input": "kisszék", 
           "output": "kis-szék"
         }, 
@@ -1380,6 +1416,10 @@
           "output": "Kis-zom-bor"
         }, 
         {
+          "input": "kisszövetkezet", 
+          "output": "kis-szö-vet-ke-zet"
+        }, 
+        {
           "input": "kiszögellésszerűen", 
           "output": "ki-szö-gel-lés-sze-rű-en"
         }, 
@@ -1394,6 +1434,10 @@
         {
           "input": "kitüntetésszalagokat", 
           "output": "ki-tün-te-tés-sza-la-go-kat"
+        }, 
+        {
+          "input": "kivégzésszerűen", 
+          "output": "ki-vég-zés-sze-rű-en"
         }, 
         {
           "input": "kliensszoftver", 
@@ -2030,6 +2074,10 @@
         {
           "input": "nyikkanásszerű", 
           "output": "nyik-ka-nás-sze-rű"
+        }, 
+        {
+          "input": "nyilasszervezet", 
+          "output": "nyi-las-szer-ve-zet"
         }, 
         {
           "input": "nyílászáró", 
@@ -2760,6 +2808,10 @@
           "output": "társ-szö-vet-ség"
         }, 
         {
+          "input": "tehetséggyár", 
+          "output": "te-het-ség-gyár"
+        }, 
+        {
           "input": "teásszervíz", 
           "output": "te-ás-szer-víz"
         }, 
@@ -2818,6 +2870,10 @@
         {
           "input": "tízgallonnyi", 
           "output": "tíz-gal-lonnyi"
+        }, 
+        {
+          "input": "tojászápor", 
+          "output": "to-jás-zá-por"
         }, 
         {
           "input": "tojásszerű", 
@@ -3266,6 +3322,10 @@
         {
           "input": "vöröszászló", 
           "output": "vör-ö-s-zász-ló"
+        }, 
+        {
+          "input": "webesszolgáltatás", 
+          "output": "we-besszol-gál-ta-tás"
         }, 
         {
           "input": "záloggyűrűmet", 

@@ -112,6 +112,9 @@ testmode: hyphenate
 bádoggyűjtemény
 
 testmode: hyphenate
+bázisszint
+
+testmode: hyphenate
 barnásszőke
 
 testmode: hyphenate
@@ -188,6 +191,12 @@ bőgésszerű
 
 testmode: hyphenate
 börtönnyelve
+
+testmode: hyphenate
+börtönnyíláson
+
+testmode: hyphenate
+börtönnyitó
 
 testmode: hyphenate
 búcsújárásszerű
@@ -272,6 +281,9 @@ dragonyoszászlóalj
 
 testmode: hyphenate
 droggyanús
+
+testmode: hyphenate
+doppinggyanú
 
 testmode: hyphenate
 dússzakállú
@@ -463,6 +475,9 @@ testmode: hyphenate
 feketésszürke
 
 testmode: hyphenate
+feldolgozászenekar
+
+testmode: hyphenate
 feleséggyilkos
 
 testmode: hyphenate
@@ -472,10 +487,16 @@ testmode: hyphenate
 felfedezésszámba
 
 testmode: hyphenate
+felsorolásszerűen
+
+testmode: hyphenate
 felszerelésszettet
 
 testmode: hyphenate
 fertőzésszerű
+
+testmode: hyphenate
+fémesszürke
 
 testmode: hyphenate
 filccsizma
@@ -970,6 +991,9 @@ testmode: hyphenate
 keresésszolgáltató
 
 testmode: hyphenate
+kérdészápor
+
+testmode: hyphenate
 kérésszerűen
 
 testmode: hyphenate
@@ -1006,6 +1030,9 @@ testmode: hyphenate
 Kisszeben
 
 testmode: hyphenate
+kisszínes
+
+testmode: hyphenate
 kisszék
 
 testmode: hyphenate
@@ -1030,6 +1057,9 @@ testmode: hyphenate
 Kiszombor
 
 testmode: hyphenate
+kisszövetkezet
+
+testmode: hyphenate
 kiszögellésszerűen
 
 testmode: hyphenate
@@ -1040,6 +1070,9 @@ kitörésszerű
 
 testmode: hyphenate
 kitüntetésszalagokat
+
+testmode: hyphenate
+kivégzésszerűen
 
 testmode: hyphenate
 kliensszoftver
@@ -1517,6 +1550,9 @@ nyereggyártók
 
 testmode: hyphenate
 nyikkanásszerű
+
+testmode: hyphenate
+nyilasszervezet
 
 testmode: hyphenate
 nyílászáró
@@ -2065,6 +2101,9 @@ testmode: hyphenate
 társszövetség
 
 testmode: hyphenate
+tehetséggyár
+
+testmode: hyphenate
 teásszervíz
 
 testmode: hyphenate
@@ -2108,6 +2147,9 @@ tizedesszállás
 
 testmode: hyphenate
 tízgallonnyi
+
+testmode: hyphenate
+tojászápor
 
 testmode: hyphenate
 tojásszerű
@@ -2444,6 +2486,9 @@ vörösszőke
 
 testmode: hyphenate
 vöröszászló
+
+testmode: hyphenate
+webesszolgáltatás
 
 testmode: hyphenate
 záloggyűrűmet

@@ -185,6 +185,11 @@ bádoggyűjtemény
 testmode: backtranslate
 bádoggyűjtemény
 
+bázisszint
+
+testmode: backtranslate
+bázisszint
+
 barnásszőke
 
 testmode: backtranslate
@@ -304,6 +309,11 @@ börtönnyelve
 
 testmode: backtranslate
 börtönnyelve
+
+börtönnyíláson, börtönnyitó
+
+testmode: backtranslate
+börtönnyíláson, börtönnyitó
 
 brekegésszerű
 
@@ -444,6 +454,11 @@ droggyanús
 
 testmode: backtranslate
 droggyanús
+
+doppinggyanú
+
+testmode: backtranslate
+doppinggyanú
 
 dússzakállú
 
@@ -730,6 +745,11 @@ feketésszürke
 testmode: backtranslate
 feketésszürke
 
+feldolgozászenekar
+
+testmode: backtranslate
+feldolgozászenekar
+
 feleséggyilkos
 
 testmode: backtranslate
@@ -745,6 +765,11 @@ felséggyilkolás
 testmode: backtranslate
 felséggyilkolás
 
+felsorolásszerűen
+
+testmode: backtranslate
+felsorolásszerűen
+
 felszerelésszettet
 
 testmode: backtranslate
@@ -754,6 +779,11 @@ fertőzésszerű
 
 testmode: backtranslate
 fertőzésszerű
+
+fémesszürke
+
+testmode: backtranslate
+fémesszürke
 
 filccsizma
 
@@ -1585,6 +1615,11 @@ keresésszolgáltató
 testmode: backtranslate
 keresésszolgáltató
 
+kérdészápor
+
+testmode: backtranslate
+kérdészápor
+
 kérésszerűen
 
 testmode: backtranslate
@@ -1645,6 +1680,11 @@ Kisszeben
 testmode: backtranslate
 Kisszeben
 
+kisszínes
+
+testmode: backtranslate
+kisszínes
+
 kisszék
 
 testmode: backtranslate
@@ -1685,6 +1725,11 @@ Kiszombor
 testmode: backtranslate
 Kiszombor
 
+kisszövetkezet
+
+testmode: backtranslate
+kisszövetkezet
+
 kiszögellésszerűen
 
 testmode: backtranslate
@@ -1705,6 +1750,10 @@ kitüntetésszalagokat
 testmode: backtranslate
 kitüntetésszalagokat
 
+kivégzésszerűen
+testmode: backtranslate
+kivégzésszerűen
+
 kliensszoftver
 
 testmode: backtranslate
@@ -1714,6 +1763,11 @@ kóccsomó
 
 testmode: backtranslate
 kóccsomó
+
+kolbászoszsemle
+
+testmode: backtranslate
+kolbászoszsemle
 
 koldusszáj
 
@@ -2504,6 +2558,11 @@ nyikkanásszerű
 
 testmode: backtranslate
 nyikkanásszerű
+
+nyilasszervezet
+
+testmode: backtranslate
+nyilasszervezet
 
 nyílászáró
 
@@ -3415,6 +3474,11 @@ társszövetség
 testmode: backtranslate
 társszövetség
 
+tehetséggyár
+
+testmode: backtranslate
+tehetséggyár
+
 teásszervíz
 
 testmode: backtranslate
@@ -3489,6 +3553,11 @@ tízgallonnyi
 
 testmode: backtranslate
 tízgallonnyi
+
+tojászápor
+
+testmode: backtranslate
+tojászápor
 
 tojásszerű
 
@@ -4055,6 +4124,11 @@ vöröszászló
 testmode: backtranslate
 vöröszászló
 
+webesszolgáltatás
+
+testmode: backtranslate
+webesszolgáltatás
+
 záloggyűrűmet
 
 testmode: backtranslate
@@ -4164,5 +4238,4 @@ Az e-mail címem: akarmi@akarmi.hu.
 
 testmode: backtranslate
 Az e-mail címem: akarmi@akarmi.hu.
-
 
