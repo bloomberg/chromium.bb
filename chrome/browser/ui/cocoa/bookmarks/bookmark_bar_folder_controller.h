@@ -202,6 +202,8 @@
 - (NSScrollView*)scrollView;
 - (NSView*)folderView;
 
+- (IBAction)openBookmarkFolderFromButton:(id)sender;
+
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 @end
 

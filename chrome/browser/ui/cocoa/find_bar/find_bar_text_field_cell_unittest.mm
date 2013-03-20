@@ -11,11 +11,11 @@
 #include "testing/platform_test.h"
 
 @interface FindBarTextFieldCell (ExposedForTesting)
-- (NSAttributedString*)resultsString;
+- (NSAttributedString*)resultsAttributedString;
 @end
 
 @implementation FindBarTextFieldCell (ExposedForTesting)
-- (NSAttributedString*)resultsString {
+- (NSAttributedString*)resultsAttributedString {
   return resultsString_.get();
 }
 @end
@@ -81,16 +81,18 @@ TEST_F(FindBarTextFieldCellTest, FocusedDisplay) {
 // appropriately.
 TEST_F(FindBarTextFieldCellTest, SetAndClearFindResults) {
   [cell_ setActiveMatch:10 of:30];
-  scoped_nsobject<NSAttributedString> tenString([[cell_ resultsString] copy]);
+  scoped_nsobject<NSAttributedString> tenString(
+      [[cell_ resultsAttributedString] copy]);
   EXPECT_GT([tenString length], 0U);
 
   [cell_ setActiveMatch:0 of:0];
-  scoped_nsobject<NSAttributedString> zeroString([[cell_ resultsString] copy]);
+  scoped_nsobject<NSAttributedString> zeroString(
+      [[cell_ resultsAttributedString] copy]);
   EXPECT_GT([zeroString length], 0U);
   EXPECT_FALSE([tenString isEqualToAttributedString:zeroString]);
 
   [cell_ clearResults];
-  EXPECT_EQ(0U, [[cell_ resultsString] length]);
+  EXPECT_EQ(0U, [[cell_ resultsAttributedString] length]);
 }
 
 TEST_F(FindBarTextFieldCellTest, TextFrame) {

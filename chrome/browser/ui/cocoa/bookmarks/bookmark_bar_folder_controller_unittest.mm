@@ -39,14 +39,10 @@ void DeleteBookmark(BookmarkButton* button, Profile* profile) {
 
 // Add a redirect to make testing easier.
 @interface BookmarkBarFolderController(MakeTestingEasier)
-- (IBAction)openBookmarkFolderFromButton:(id)sender;
 - (void)validateMenuSpacing;
 @end
 
 @implementation BookmarkBarFolderController(MakeTestingEasier)
-- (IBAction)openBookmarkFolderFromButton:(id)sender {
-  [[self folderTarget] openBookmarkFolderFromButton:sender];
-}
 
 // Utility function to verify that the buttons in this folder are all
 // evenly spaced in a progressive manner.
