@@ -313,13 +313,6 @@
 <translation id="6258193603492867656">Određuje treba li generirani Kerberos SPN uključivati nestandardni priključak. Ako omogućite ovu postavku, a bude unesen nestandardni priključak (tj. priključak koji nije 80 ili 443), on će biti uključen u generirani Kerberos SPN. Ako onemogućite ovu postavku ili ju ne postavite, generirani Kerberos SPN neće uključivati priključak ni u kojem slučaju.</translation>
 <translation id="3236046242843493070">Obrasci URL-ova za dopuštanje instalacija proširenja, aplikacija i korisničkih skripti iz izvora</translation>
 <translation id="2498238926436517902">Uvijek automatski sakrij policu</translation>
-<translation id="3442095178490656861">Određuje vremensku zonu koja će se upotrebljavati za uređaj. Korisnici mogu zaobići navedenu vremensku zonu za trenutačnu sesiju. Međutim, nakon odjave uređaj se ponovo postavlja na navedenu vremensku zonu. Ako se pruži nevažeća vrijednost, pravilo je još uvijek aktivirano i umjesto nje upotrebljava se &quot;GMT&quot;.
-
-      Ako se ovo pravilo ne upotrebljava, trenutačno aktivna vremenska zona ostat će u upotrebi, no korisnici će ju moći promijeniti i ta će promjena biti trajna. Stoga će promjena koju napravi jedan korisnik utjecati na zaslon za prijavu i sve ostale korisnike.
-
-      Na novim uređajima početna vremenska zona postavljena je na &quot;SAD/Pacifik&quot;.
-
-      Format vrijednosti slijedi nazive vremenskih zona u &quot;Bazi podataka vremenskih zona IANA&quot; (pogledajte &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Većina vremenskih zona može biti označena kao &quot;kontinent/veliki_grad&quot; ili &quot;ocean/veliki_grad&quot;.</translation>
 <translation id="152657506688053119">Popis zamjenskih URL-ova za zadanog davatelja usluge pretraživanja</translation>
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME"/></translation>

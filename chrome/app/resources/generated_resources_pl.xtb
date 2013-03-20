@@ -37,7 +37,6 @@
 <translation id="7131104516964267328">Włącz eksperymentalne funkcje WebKit.</translation>
 <translation id="3581034179710640788">Ważność certyfikatu bezpieczeństwa tej witryny wygasła!</translation>
 <translation id="2825758591930162672">Klucz publiczny podmiotu</translation>
-<translation id="8306243285620593545">Ustaw fokus na ikonę stanu</translation>
 <translation id="1130622745736410868">prosi Google o zweryfikowanie kodu Twojego kuponu, by sprawdzić, czy przeglądasz na urządzeniu z systemem operacyjnym Chrome.</translation>
 <translation id="2440434527508820752">Dodanie drukarek do Google Cloud Print umożliwia Ci
         drukowanie z każdego miejsca w dowolnym miejscu.
@@ -70,7 +69,6 @@
 <translation id="1420684932347524586">Ojej! Nie można wygenerować losowego klucza prywatnego RSA.</translation>
 <translation id="7323509342138776962">Ostatnia synchronizacja</translation>
 <translation id="2501173422421700905">Certyfikat wstrzymany</translation>
-<translation id="3635248062687671948">Zresetuj urządzenie <ph name="IDS_SHORT_PRODUCT_NAME"/> do ustawień fabrycznych</translation>
 <translation id="368260109873638734">Szczegóły o problemach na tej stronie</translation>
 <translation id="5387489168702576069">EASE_OUT_2</translation>
 <translation id="7428534988046001922">Następujące aplikacje zostały zainstalowane:</translation>
@@ -436,6 +434,7 @@
 <translation id="3227446593489428613">Czy chcesz korzystać z szybkiego autouzupełniania?</translation>
 <translation id="7445762425076701745">Nie można w pełni zweryfikować tożsamości serwera, z którym nawiązano połączenie. Nawiązano połączenie z serwerem przy użyciu nazwy obowiązującej jedynie w Twojej sieci i której własności zewnętrzny urząd certyfikacji nie jest w stanie zweryfikować. Niektóre urzędy certyfikacji wydają certyfikaty dla takich nazw bez względu na to, że nie można upewnić się, iż nawiązano połączenie z witryną, z którą zamierzano, a nie z intruzem.</translation>
 <translation id="1556537182262721003">Nie można przenieść katalogu rozszerzenia do profilu.</translation>
+<translation id="2946640296642327832">Włącz Bluetooth</translation>
 <translation id="5866557323934807206">Wyczyść te ustawienia na wypadek przyszłych odwiedzin</translation>
 <translation id="5355351445385646029">Naciśnij spację, aby wybrać propozycję</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
@@ -451,7 +450,6 @@
 <translation id="2103050821726968278">Skróty klawiszowe – rozszerzenia i aplikacje</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="6732061527064171007">Wejście Web Audio</translation>
-<translation id="8694146932926629530">Użycie urządzenia może być monitorowane.</translation>
 <translation id="5191625995327478163">&amp;Ustawienia języka...</translation>
 <translation id="734651947642430719">Metoda wprowadzania znaków tamilskich (InScript)</translation>
 <translation id="3649256019230929621">Minimalizuj okno</translation>
@@ -472,7 +470,6 @@
 <translation id="6896830120821965585">Uruchamia w tle program, który łączy usługę Google Cloud Print z drukarkami zainstalowanymi na tym komputerze. Jeśli włączysz to laboratorium, możesz uruchomić łącznik Google Cloud Print, logując się na swoje konto Google w sekcji Dla zaawansowanych w Ustawieniach.</translation>
 <translation id="3999508690854143454">Pytaj mnie, gdy strona żąda dostępu do mojej kamery i mikrofonu (zalecane)</translation>
 <translation id="1674989413181946727">Ogólne ustawienia SSL:</translation>
-<translation id="1531285811424589182">Błąd usuwania certyfikatu</translation>
 <translation id="8703575177326907206">Połączenie z witryną <ph name="DOMAIN"/> nie jest szyfrowane.</translation>
 <translation id="6135622770221372891">Identyfikatory kanałów</translation>
 <translation id="3042282020249392540">Dodaj przeglądarkę <ph name="PRODUCT_NAME"/> jako dozwolony program w ustawieniach zapory sieciowej lub oprogramowania antywirusowego. Jeśli przeglądarka jest już takim programem, usuń ją z listy dozwolonych programów, a następnie dodaj ponownie.</translation>
@@ -513,7 +510,6 @@
 <translation id="4928351909437667303">Wyłącz Dysk Google na tym urządzeniu.</translation>
 <translation id="6315723398663634808">Certyfikat serwera ma słaby klucz kryptograficzny.</translation>
 <translation id="6907087977791145135">Dziennik zdarzeń (od najnowszych):</translation>
-<translation id="4311195029067684288">Pełne</translation>
 <translation id="2887525882758501333">Dokument PDF</translation>
 <translation id="289426338439836048">Inna sieć komórkowa</translation>
 <translation id="3986287159189541211">Błąd HTTP <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
@@ -525,7 +521,6 @@
 <translation id="6060685159320643512">Ostrożnie, na tych eksperymentach można się sparzyć</translation>
 <translation id="4755351698505571593">Tylko właściciel może zmodyfikować to ustawienie:</translation>
 <translation id="4607068441094952239">Usuń tego użytkownika</translation>
-<translation id="2437917371952004532">Przy bieżących ustawieniach proxy nie udało się załadować strony logowania. <ph name="LINK_START"/>Zaloguj się ponownie<ph name="LINK_END"/> lub użyj innych ustawień proxy.</translation>
 <translation id="5829990587040054282">Zablokuj ekran lub wyłącz</translation>
 <translation id="7800304661137206267">Przesyłane dane są szyfrowane za pomocą algorytmu <ph name="CIPHER"/>. Metoda uwierzytelniania komunikatów to <ph name="MAC"/>, a mechanizm wymiany kluczy to <ph name="KX"/>.</translation>
 <translation id="350893259022641366">Osobne rysowanie fragmentów</translation>
@@ -624,7 +619,6 @@
 <translation id="4929686562207984390">Jeśli synchronizacja kart jest włączona, ta funkcja umożliwia przeglądanie i usuwanie wpisów historii z zsynchronizowanych urządzeń na chrome://history.</translation>
 <translation id="8556732995053816225">Dopasuj &amp;wielkość liter</translation>
 <translation id="3942420633017001071">Diagnostyka</translation>
-<translation id="8679063045091038652">Podczas ładowania pliku konfiguracji sieci wystąpił błąd: <ph name="ERROR"/></translation>
 <translation id="3504135463003295723">Nazwa grupy:</translation>
 <translation id="3314070176311241517">Zezwalaj na wykonywanie kodu JavaScript w witrynach (zalecane)</translation>
 <translation id="7419631653042041064">Klawiatura katalońska</translation>
@@ -700,13 +694,12 @@
 <translation id="5524517123096967210">Nie można odczytać pliku.</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="5548207786079516019">To jest druga instalacja przeglądarki <ph name="PRODUCT_NAME"/> i nie można ustawić jej jako domyślnej.</translation>
-<translation id="8142041167538903585">Kurza twarz! Podczas formatowania wystąpiły pewne błędy...</translation>
 <translation id="3984413272403535372">Błąd podczas podpisywania rozszerzenia.</translation>
+<translation id="7222373446505536781">F11</translation>
 <translation id="9202365664128598850">Pierwszy</translation>
 <translation id="9208886416788010685">Program Adobe Reader jest nieaktualny</translation>
 <translation id="2945028952025978099">Wyłącza odraczanie renderowania kanwy 2D, co powoduje natychmiastowe wykonywanie operacji rysowania przed uruchomieniem kolejnego polecenia JavaScript.</translation>
 <translation id="375841316537350618">Pobieram skrypt serwera proxy...</translation>
-<translation id="5611028511275186941">Nieznany typ certyfikatu</translation>
 <translation id="318408932946428277">Usuń pliki cookie oraz inne dane witryn i wtyczek w momencie zamknięcia przeglądarki</translation>
 <translation id="9169664750068251925">Zawsze blokuj w tej witrynie</translation>
 <translation id="6406303162637086258">Symuluj ponowne uruchomienie przeglądarki</translation>
@@ -721,7 +714,6 @@
 <translation id="3605499851022050619">Strona diagnostyczna Safe Browsing</translation>
 <translation id="4417271111203525803">Wiersz adresu 2</translation>
 <translation id="7617095560120859490">Powiedz nam, co się dzieje. (wymagane)</translation>
-<translation id="3426211747733405477">Nie można przeanalizować niektórych parametrów z zaszyfrowanego pliku ONC.</translation>
 <translation id="5618333180342767515">(może to potrwać kilka minut)</translation>
 <translation id="4991314311188418603">Wybrano: <ph name="COUNT"/></translation>
 <translation id="1697820107502723922">Archiwa</translation>
@@ -734,7 +726,6 @@
 <translation id="5912378097832178659">&amp;Edytuj wyszukiwarki...</translation>
 <translation id="6187065185557150870">Czat</translation>
 <translation id="3749289110408117711">Nazwa pliku</translation>
-<translation id="5576767520660353104">Błąd podczas usuwania sieci</translation>
 <translation id="5538092967727216836">Załaduj ponownie ramkę</translation>
 <translation id="4813345808229079766">Połączenie</translation>
 <translation id="5390284375844109566">Zaindeksowana baza danych</translation>
@@ -754,11 +745,11 @@
 <translation id="4426082685552308673">Średnia</translation>
 <translation id="1029317248976101138">Powiększ</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> z <ph name="TOTAL_MATCHCOUNT"/></translation>
-<translation id="6999531337630656517">Rozpocznij kalibrację przeskanowania</translation>
 <translation id="1617097702943948177">Tymczasowa przestrzeń dyskowa:</translation>
 <translation id="1202290638211552064">Upłynął limit czasu bramy lub serwera proxy podczas oczekiwania na odpowiedź od serwera wyższego rzędu.</translation>
 <translation id="6095934445851029429">Zainstaluj brakującą wtyczkę</translation>
 <translation id="5405583139863214747">Usuń zdjęcia po zaimportowaniu</translation>
+<translation id="7765158879357617694">Przenieś</translation>
 <translation id="2455024757381081216">Pobierz pakiety treści</translation>
 <translation id="2731700343119398978">Czekaj...</translation>
 <translation id="5731751937436428514">wietnamski (VIQR)</translation>
@@ -783,7 +774,6 @@
 <translation id="68541483639528434">Zamknij inne karty</translation>
 <translation id="7939897309824246284">Włącz działający w tle komponent programu wczytującego aplikacje hostowane</translation>
 <translation id="941543339607623937">Nieprawidłowy klucz prywatny.</translation>
-<translation id="6499058468232888609">Błąd sieci podczas komunikowania się z usługą zarządzania urządzeniem.</translation>
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
 <translation id="863718024604665812">Proces renderujący zawiesił się</translation>
 <translation id="6039651071822577588">Zniekształcony słownik właściwości sieci</translation>
@@ -828,8 +818,8 @@
 <translation id="954888418274735665">Użyj globalnej wartości domyślnej (<ph name="PERMISSION_VALUE"/>)</translation>
 <translation id="904752364881701675">W lewym dolnym rogu</translation>
 <translation id="8943805475239098364">Chcesz wyszukiwać w <ph name="NEW_GOOGLE_HOST"/> zamiast <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
-<translation id="3813510441224209252">Formatowanie czeka na realizację.</translation>
 <translation id="8912793549644936705">Rozciągnij</translation>
+<translation id="7864539943188674973">Wyłącz Bluetooth</translation>
 <translation id="8026684114486203427">Aby skorzystać ze sklepu internetowego Chrome, musisz zalogować się przy użyciu konta Google.</translation>
 <translation id="1486096554574027028">Szukaj haseł</translation>
 <translation id="4631887759990505102">Wykonawca</translation>
@@ -886,7 +876,6 @@
 <translation id="8366694425498033255">Klawisze wyboru</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> godz.</translation>
 <translation id="6011503819411930212">Łączne wykorzystanie procesora przez wszystkie procesy związane z <ph name="SHORT_PRODUCT_NAME"/></translation>
-<translation id="2624449429763181457">Przytrzymaj Control, Alt lub Shift, aby wyświetlić skróty klawiszowe z danym klawiszem.</translation>
 <translation id="420665587194630159">(To rozszerzenie jest zarządzane, więc nie można go usunąć ani wyłączyć).</translation>
 <translation id="6535758682390046055">Anulowano pobieranie <ph name="PLUGIN_NAME"/>.</translation>
 <translation id="7267955541478798371">Włącz synchronizację ikon kart.</translation>
@@ -949,7 +938,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8494979374722910010">Próba połączenia z serwerem nie powiodła się.</translation>
 <translation id="1864756863218646478">Nie można znaleźć pliku.</translation>
 <translation id="7810202088502699111">Wyskakujące okienka na tej stronie zostały zablokowane.</translation>
-<translation id="8190698733819146287">Dostosuj języki i metody wprowadzania</translation>
 <translation id="3808873045540128170">Ciemność, widzę ciemność!</translation>
 <translation id="3452404311384756672">Okres pobierania:</translation>
 <translation id="646727171725540434">Serwer proxy HTTP</translation>
@@ -1093,7 +1081,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="4988792151665380515">Nie można wyeksportować klucza publicznego.</translation>
 <translation id="6333049849394141510">Wybierz elementy do synchronizacji</translation>
 <translation id="5990559369517809815">Żądania do serwera zostały zablokowane przez rozszerzenie.</translation>
-<translation id="7164143092832122788">Zaszyfrowany plik ONC jest uszkodzony.</translation>
 <translation id="5699524327937694758">Zarządzaj danymi</translation>
 <translation id="3828440302402348524">Jesteś zalogowany(a) jako <ph name="USER_NAME"/>...</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
@@ -1163,7 +1150,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="4597972110633667332">Pobieranie plików</translation>
 <translation id="5911798608827489036">Wymiana danych z dowolnym komputerem w sieci lokalnej lub internecie</translation>
 <translation id="14171126816530869">Tożsamość organizacji <ph name="ORGANIZATION"/> (<ph name="LOCALITY"/>) została zweryfikowana przed wystawcę <ph name="ISSUER"/>.</translation>
-<translation id="824902718516184009">Brak danych certyfikatu</translation>
 <translation id="7314327919567192532">Zmniejszaj tempo zmiany wielkości okna.</translation>
 <translation id="220858061631308971">Wpisz ten kod PIN na urządzeniu „<ph name="DEVICE_NAME"/>”:</translation>
 <translation id="6263082573641595914">Wersja urzędu certyfikacji firmy Microsoft</translation>
@@ -1236,6 +1222,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="5451646087589576080">Wyświetl &amp;informacje o ramce</translation>
 <translation id="7952408061263786094">Wyloguj się i ponownie zaloguj</translation>
 <translation id="3368922792935385530">Połączone</translation>
+<translation id="8340999562596018839">Potwierdzenia głosowe</translation>
 <translation id="3866443872548686097">Nośnik odzyskiwania jest gotowy. Możesz odłączyć go od komputera.</translation>
 <translation id="6824564591481349393">Kopiuj adres &amp;e-mail</translation>
 <translation id="907148966137935206">Nie zezwalaj na wyskakujące okienka w żadnej witrynie (zalecane)</translation>
@@ -1259,7 +1246,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8569764466147087991">Wybierz plik do otwarcia</translation>
 <translation id="5086589117546410981">Dodaj nazwisko</translation>
 <translation id="4275663329226226506">Multimedia</translation>
-<translation id="5449451542704866098">Brak usługi transmisji danych</translation>
 <translation id="3093853184108622112">Uzyskiwać dostęp do Twoich danych w witrynach <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="2391593830069336007">Wyszukiwanie dynamiczne: <ph name="INSTANT_PREVIEW_NAME"/></translation>
 <translation id="5649768706273821470">Posłuchaj</translation>
@@ -1311,7 +1297,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="6776310961830589430">Anulowano przenoszenie.</translation>
 <translation id="5299109548848736476">Bez śledzenia</translation>
 <translation id="4421932782753506458">Puszysty</translation>
-<translation id="8417944620073548444">Pozostało: <ph name="MEGABYTES"/> MB</translation>
 <translation id="2378075407703503998">Wybrano <ph name="SELCTED_FILE_COUNT"/> pliki(ów)</translation>
 <translation id="4498419978438799658">Uzyskiwać dostęp do wszelkiego tekstu mówionego przy użyciu syntezatora mowy</translation>
 <translation id="842701469313097462">Oto kilka propozycji z Chrome Web Store:</translation>
@@ -1541,7 +1526,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="1936157145127842922">Pokaż w folderze</translation>
 <translation id="2367567093518048410">Poziom</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> min temu</translation>
-<translation id="3952119550285200690">Aby dodać użytkownika, połącz się najpierw z siecią.</translation>
 <translation id="7977590112176369853">&lt;wprowadź zapytanie&gt;</translation>
 <translation id="6991665348624301627">Wybierz urządzenie docelowe</translation>
 <translation id="3449839693241009168">Naciśnij klawisz <ph name="SEARCH_KEY"/>, aby wysłać polecenia do rozszerzenia <ph name="EXTENSION_NAME"/></translation>
@@ -1638,7 +1622,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="5264528602373835377">Na panelu aplikacji strony nowej karty pokazuje widżet + instalujący dodatkowe aplikacje.</translation>
 <translation id="370665806235115550">Ładowanie...</translation>
 <translation id="2580924999637585241">Łącznie: <ph name="SHEETS_LABEL"/> – <ph name="NUMBER_OF_SHEETS"/></translation>
-<translation id="4899063388368595117">Połącz się z internetem, aby zakończyć konfigurowanie Chromebooka.</translation>
 <translation id="254416073296957292">&amp;Ustawienia języka...</translation>
 <translation id="6652975592920847366">Utwórz nośnik odzyskiwania systemu operacyjnego</translation>
 <translation id="52912272896845572">Plik kluczy prywatnych jest nieprawidłowy.</translation>
@@ -1702,12 +1685,12 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="6129938384427316298">Komentarz do certyfikatu firmy Netscape</translation>
 <translation id="4262366363486082931">Ustaw fokus na pasku narzędzi</translation>
 <translation id="5434054177797318680">Szybkie przewijanie niemieszczącej się zawartości</translation>
-<translation id="8210608804940886430">Strona w dół</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="8812403718714328880"><ph name="PRODUCT_NAME"/> zablokował na razie dostęp do <ph name="HOST_NAME"/>.</translation>
 <translation id="6315493146179903667">Przenieś wszystko na wierzch</translation>
 <translation id="1000498691615767391">Wybierz folder do otwarcia</translation>
 <translation id="3593152357631900254">Włącz tryb „ujednolicony pinyin”</translation>
+<translation id="2570059561924004903">Wyłącz potwierdzenia głosowe</translation>
 <translation id="2276503375879033601">Dodaj więcej aplikacji</translation>
 <translation id="5015344424288992913">Łączenie z proxy...</translation>
 <translation id="4389091756366370506">Użytkownik <ph name="VALUE"/></translation>
@@ -1736,7 +1719,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="3024663005179499861">Nieprawidłowy typ zasady</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="3306862040449685450">Włącz awaryjne kończenie pracy przy zawieszeniu się GPU.</translation>
-<translation id="7227669995306390694"><ph name="NETWORK"/> – brak usługi transmisji danych</translation>
 <translation id="1818196664359151069">Rozdzielczość:</translation>
 <translation id="3481915276125965083">Następujące wyskakujące okienka na tej stronie zostały zablokowane:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> godz</translation>
@@ -1747,7 +1729,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="1196338895211115272">Nie można wyeksportować klucza prywatnego.</translation>
 <translation id="1459967076783105826">Wyszukiwarki dodane przez rozszerzenia</translation>
 <translation id="629730747756840877">Konto</translation>
-<translation id="6162656142027440299">Wyłącz Bluetooth</translation>
 <translation id="8525306231823319788">Pełny ekran</translation>
 <translation id="5892507820957994680">Zastępuje wbudowaną listę renderowania programowego i włącza przyspieszanie za pomocą procesora GPU w przypadku nieobsługiwanej konfiguracji systemu.</translation>
 <translation id="9054208318010838">Zezwalaj wszystkim witrynom na rejestrowanie mojej fizycznej lokalizacji</translation>
@@ -1792,13 +1773,12 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="6437213622978068772">Załaduj ponownie (Ctrl + R)</translation>
 <translation id="5350480486488078311">Interfejs API NaCl Socket.</translation>
 <translation id="5329858601952122676">&amp;Usuń</translation>
-<translation id="7175068093520555008">Uzyskiwać dostęp do zdjęć, muzyki i innych multimediów na komputerze (odczyt)</translation>
+<translation id="7175068093520555008">Uzyskaj dostęp do zdjęć, muzyki i innych multimediów na komputerze (odczyt)</translation>
 <translation id="6100736666660498114">Menu Start</translation>
 <translation id="2706131822305474920">Przełączaj otwarte karty</translation>
 <translation id="4402766404187539019">Poczta Google.com</translation>
 <translation id="3994878504415702912">&amp;Rozmiar tekstu</translation>
 <translation id="9009369504041480176">Przesyłanie (<ph name="PROGRESS_PERCENT"/>%)...</translation>
-<translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN"/></translation>
 <translation id="5486561344817861625">Symuluj ponowne uruchomienie przeglądarki</translation>
 <translation id="5602600725402519729">O&amp;dśwież</translation>
 <translation id="6955446738988643816">Sprawdź wyskakujące okienko</translation>
@@ -2056,7 +2036,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="23362385947277794">Kolory i obrazy tła</translation>
 <translation id="4233752162269226207">Wpisz litery widoczne powyżej</translation>
 <translation id="2120316813730635488">Instalacje rozszerzenia</translation>
-<translation id="2336459134277228578">Błąd importowania certyfikatu</translation>
 <translation id="8398877366907290961">Kontynuuj mimo wszystko</translation>
 <translation id="5063180925553000800">Nowy kod PIN:</translation>
 <translation id="4883178195103750615">Eksportuj zakładki do pliku HTML...</translation>
@@ -2091,7 +2070,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="6423731501149634044">Czy Adobe Reader ma być domyślną przeglądarką dokumentów PDF?</translation>
 <translation id="1965328510789761112">Pamięć prywatna</translation>
 <translation id="7312441861087971374">Wtyczka <ph name="PLUGIN_NAME"/> jest nieaktualna.</translation>
-<translation id="255654065756093884">Dodaj urządzenie Bluetooth</translation>
 <translation id="2461687051570989462">Korzystaj ze swoich drukarek z dowolnego komputera lub smartfonu. <ph name="BEGIN_LINK"/>Więcej informacji<ph name="END_LINK"/></translation>
 <translation id="7194430665029924274">&amp;Przypomnij mi później</translation>
 <translation id="5790085346892983794">Zakończono pomyślnie</translation>
@@ -2245,7 +2223,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="6052976518993719690">Urząd certyfikacji protokołu SSL</translation>
 <translation id="2925935892230812200">Użyj GPU do wspomagania renderowania filtrów SVG.</translation>
 <translation id="1636959874332483835">Witryna <ph name="HOST_NAME"/> zawiera złośliwe oprogramowanie. Otwarcie tej witryny grozi zainfekowaniem komputera wirusem.</translation>
-<translation id="8050783156231782848">Brak dostępnych danych</translation>
 <translation id="1175364870820465910">&amp;Drukuj...</translation>
 <translation id="1220583964985596988">Dodaj nowego użytkownika</translation>
 <translation id="3502662168994969388">Ogranicza debugowanie aplikacji klienta natywnego oparte na GDB zgodnie z URL-em pliku manifestu. Aby ta opcja działała, debugowanie klienta natywnego oparte na GDB musi być włączone.</translation>
@@ -2297,7 +2274,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="898581154329849655">Włącza lub wyłącza „Script Bubble” – eksperymentalny interfejs użytkownika paska narzędzi.</translation>
 <translation id="9148126808321036104">Zaloguj się ponownie</translation>
 <translation id="2282146716419988068">Proces GPU</translation>
-<translation id="428771275901304970">Dostępne mniej niż 1 MB</translation>
 <translation id="1682548588986054654">Nowe okno incognito</translation>
 <translation id="6833901631330113163">Południowoeuropejski</translation>
 <translation id="6065289257230303064">Atrybuty katalogu podmiotu certyfikatu</translation>
@@ -2324,7 +2300,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="59659456909144943">Powiadomienie: <ph name="NOTIFICATION_NAME"/></translation>
 <translation id="2965328226365382335">Ostatnie 15 minut</translation>
 <translation id="6731320427842222405">Może to potrwać kilka minut</translation>
-<translation id="4806525999832945986">Zarządzane w domenie <ph name="DOMAIN"/> (<ph name="STATUS"/>)</translation>
 <translation id="7503191893372251637">Typ certyfikatu firmy Netscape</translation>
 <translation id="2894654529758326923">Informacje</translation>
 <translation id="4135450933899346655">Twoje certyfikaty</translation>
@@ -2485,7 +2460,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="2930644991850369934">Wystąpił problem podczas pobierania obrazu odzyskiwania. Połączenie sieciowe zostało zerwane.</translation>
 <translation id="6891622577412956611">Widok mozaiki</translation>
 <translation id="8150722005171944719">Nie można odczytać pliku <ph name="URL"/>. Być może został usunięty lub uprawnienia dostępu uniemożliwiają jego odczyt.</translation>
-<translation id="5750053751252005701">Brak danych z sieci <ph name="NETWORK"/></translation>
 <translation id="994901932508062332">Ostatni miesiąc</translation>
 <translation id="1720318856472900922">Uwierzytelnianie serwera WWW TLS</translation>
 <translation id="62243461820985415">Chrome nie może pobrać tej tapety.</translation>
@@ -2500,7 +2474,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="2893271451009400655">Nie można odczytać zdjęć.</translation>
 <translation id="509429900233858213">Wystąpił błąd.</translation>
 <translation id="7227780179130368205">Wykryto złośliwe oprogramowanie!</translation>
-<translation id="435243347905038008">Niski poziom danych <ph name="NETWORK"/></translation>
 <translation id="2489428929217601177">ostatni dzień</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="6840155730904976091"><ph name="PRODUCT_NAME"/> używa do łączenia się z siecią ustawień serwera proxy z systemu Twojej komórki.</translation>
@@ -2553,7 +2526,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="961805664415579088">Wymiana danych z dowolnym komputerem w domenie <ph name="DOMAIN"/></translation>
 <translation id="4521805507184738876">(wygasł)</translation>
 <translation id="111844081046043029">Czy na pewno chcesz opuścić tę stronę?</translation>
-<translation id="4296521821307602198">Uzyskiwać dostęp do zdjęć, muzyki i innych multimediów na komputerze (odczyt, zapis i usuwanie)</translation>
+<translation id="4296521821307602198">Uzyskaj dostęp do zdjęć, muzyki i innych multimediów na komputerze (odczyt, zapis i usuwanie)</translation>
 <translation id="7622994733745016847">Wykorzystanie pamięci prywatnej</translation>
 <translation id="1951615167417147110">Przewiń o jedną stronę w górę</translation>
 <translation id="488726935215981469">Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je poniżej.</translation>
@@ -2561,7 +2534,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="4154664944169082762">Odciski cyfrowe</translation>
 <translation id="3202578601642193415">Najnowsze</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> godz.</translation>
-<translation id="5774295353725270860">Otwórz aplikację Pliki</translation>
 <translation id="1398853756734560583">Maksymalizuj</translation>
 <translation id="1829129547161959350">Pingwin</translation>
 <translation id="8988255471271407508">Nie znaleziono strony internetowej w pamięci podręcznej. Niektóre zasoby można bezpiecznie wczytać tylko z pamięci podręcznej, np. strony wygenerowane na podstawie przesłanych danych. <ph name="LINE_BREAK"/> Ten błąd może być również spowodowany uszkodzeniem pamięci podręcznej w wyniku niepoprawnego zamknięcia programu. <ph name="LINE_BREAK"/> Jeśli problem nie ustąpi, wyczyść pamięć podręczną.</translation>
@@ -2618,7 +2590,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="1204242529756846967">Ten język jest używany do sprawdzania pisowni</translation>
 <translation id="3981760180856053153">Wprowadzono nieprawidłowy typ zapisu.</translation>
 <translation id="4508345242223896011">Płynne przewijanie</translation>
-<translation id="8464591670878858520">Dane <ph name="NETWORK"/> utraciły ważność</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
 <translation id="5622158329259661758">Wyłącza używanie GPU do renderowania kanwy 2D i powoduje używanie zamiast tego renderowania programowego.</translation>
 <translation id="8639033665604704195">Nie powiodło się uwierzytelnianie przy użyciu podanego klucza wstępnego.</translation>
@@ -2635,7 +2606,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="49027928311173603">Polityka pobrana z serwera jest nieprawidłowa: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2850961597638370327">Wystawiony dla: <ph name="NAME"/></translation>
 <translation id="8534579021159131403">Minuty</translation>
-<translation id="2168039046890040389">Strona do góry</translation>
 <translation id="1767519210550978135">Hsu</translation>
 <translation id="2498539833203011245">Zminimalizuj</translation>
 <translation id="7410344089573941623">Pytaj, gdy witryna <ph name="HOST"/> chce mieć dostęp do kamery i mikrofonu</translation>
@@ -2668,7 +2638,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="7984180109798553540">W celu zwiększenia bezpieczeństwa <ph name="PRODUCT_NAME"/> szyfruje Twoje dane.</translation>
 <translation id="8190193592390505034">Łączenie z siecią <ph name="PROVIDER_NAME"/></translation>
 <translation id="6144890426075165477">Aplikacja <ph name="PRODUCT_NAME"/> nie jest domyślną przeglądarką.</translation>
-<translation id="823241703361685511">Abonament</translation>
 <translation id="4068506536726151626">Ta strona zawiera elementy z następujących witryn, które śledzą Twoją lokalizację:</translation>
 <translation id="4220128509585149162">Awarie</translation>
 <translation id="8798099450830957504">Domyślny</translation>
@@ -2680,7 +2649,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> min</translation>
 <translation id="5512653252560939721">Certyfikat użytkownika musi być wspierany sprzętowo.</translation>
 <translation id="5372529912055771682">Ta wersja systemu operacyjnego nie obsługuje podanego trybu rejestrowania. Upewnij się, że używasz najnowszej wersji i spróbuj ponownie.</translation>
-<translation id="3881435075661337013">Bliskie wygaśnięcie w sieci <ph name="NETWORK"/></translation>
 <translation id="5681833099441553262">Aktywuj poprzednią kartę</translation>
 <translation id="1681614449735360921">Wyświetl niezgodności</translation>
 <translation id="6227235786875481728">Nie można odtworzyć tego pliku.</translation>
@@ -2759,7 +2727,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="4724450788351008910">Zmiana przynależności</translation>
 <translation id="2249605167705922988">np. 1–5, 8, 11–13</translation>
 <translation id="8572510699242209592">Gigabajty</translation>
-<translation id="3886815172404033724">Przełącz funkcje ułatwień dostępu</translation>
 <translation id="8691686986795184760">(Włączona na podstawie zasad przedsiębiorstwa)</translation>
 <translation id="1911483096198679472">Co to jest?</translation>
 <translation id="878763818693997570">Ta nazwa jest za długa</translation>
@@ -2788,7 +2755,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="402759845255257575">Nie zezwalaj na wykonywanie kodu JavaScript w żadnej witrynie</translation>
 <translation id="4610637590575890427">Czy chodziło o przejście do witryny <ph name="SITE"/>?</translation>
-<translation id="7723779034587221017">Utracono połączenie z usługą zasad. Zresetuj urządzenie lub skontaktuj się z przedstawicielem obsługi klienta.</translation>
 <translation id="5141240743006678641">Szyfruj synchronizowane hasła z danymi uwierzytelniającymi Google</translation>
 <translation id="5097002363526479830">Nie udało się połączyć z siecią „<ph name="NAME"/>”: <ph name="DETAILS"/></translation>
 <translation id="6906142274982384363">Gdy wyszukiwanie dynamiczne jest włączone i obsługiwane przez domyślną wyszukiwarkę, wyniki wyszukiwania są wyświetlane na bieżąco w trakcie wpisywania zapytania w omniboksie, a podpowiadane przewidywane hasła pomagają zawęzić wyszukiwanie.
@@ -2819,7 +2785,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="2527167509808613699">Dowolny rodzaj połączenia</translation>
 <translation id="5056501771989853890">Włącz odtwarzanie kodeka Opus w elementach &lt;video&gt;.</translation>
 <translation id="8072988827236813198">Przypinanie kart</translation>
-<translation id="378193144039415469">Plik ONC jest zaszyfrowany nieobsługiwanym schematem szyfrowania.</translation>
 <translation id="1234466194727942574">Pasek kart</translation>
 <translation id="4330523403413375536">Włącza eksperymenty w narzędziach dla programistów. Poszczególne eksperymenty można włączać na panelu Ustawienia w narzędziach dla programistów.</translation>
 <translation id="7004499039102548441">Niedawno używane karty</translation>
@@ -2885,12 +2850,12 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8241040075392580210">Zacieniony</translation>
 <translation id="6206337697064384582">Serwer 1</translation>
 <translation id="8690155203172212841">Zarządzaj ustawieniami uprawnień</translation>
+<translation id="7052633198403197513">F1</translation>
 <translation id="411319158827715214">Zdarzenia związane z rozszerzeniami, które są (lub były) zainstalowane w <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="7466861475611330213">Styl znaków przestankowych</translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="602251597322198729">Witryna próbuje pobrać wiele plików. Czy chcesz na to zezwolić?</translation>
 <translation id="34742832633288298">Potokowanie HTTP</translation>
-<translation id="5843685321177053287">Oczekiwanie na uzgodnienie połączenia z usługą zarządzania urządzeniem...</translation>
 <translation id="4365673000813822030">Ups, synchronizacja przestała działać.</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> godz.</translation>
 <translation id="7026338066939101231">Zmniejsz</translation>
@@ -3120,7 +3085,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="7168109975831002660">Minimalny rozmiar czcionki</translation>
 <translation id="7070804685954057874">Wprowadzanie bezpośrednie</translation>
 <translation id="2631006050119455616">Zapisano</translation>
-<translation id="4949449223641512255">Nieznany poziom zaufania do certyfikatu</translation>
 <translation id="5175870427301879686">Witryna <ph name="URL"/> chce na stałe przechowywać dane lokalne na Twoim komputerze.</translation>
 <translation id="3265459715026181080">Zamknij okno</translation>
 <translation id="6074871234879228294">japoński (dla klawiatury japońskiej)</translation>
@@ -3165,6 +3129,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
         Niezależnie od tego, co się stanie z Twoim urządzeniem, pliki będą bezpiecznie zapisane na Dysku Google.<ph name="MARKUP_6"/>
         <ph name="MARKUP_7"/>Udostępniaj i twórz pliki oraz pracuj<ph name="MARKUP_8"/>
         nad nimi razem z innymi – wszystko w jednym miejscu.<ph name="MARKUP_9"/></translation>
+<translation id="3473479545200714844">Lupa</translation>
 <translation id="8488533838423032861">Zmień funkcję animacji podczas rozruchu.</translation>
 <translation id="6759193508432371551">Ustawienia fabryczne</translation>
 <translation id="9074348188580488499">Czy na pewno chcesz usunąć wszystkie hasła?</translation>
@@ -3191,7 +3156,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="2890624088306605051">Pobierz tylko zsynchronizowane ustawienia i dane</translation>
 <translation id="4779083564647765204">Powiększ</translation>
 <translation id="6397363302884558537">Przestań mówić</translation>
-<translation id="3282430104564575032">Inspektor DOM</translation>
 <translation id="1526560967942511387">Dokument bez tytułu</translation>
 <translation id="3979748722126423326">Włącz: <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">Klucz wstępny (WPA lub RSN)</translation>
@@ -3334,7 +3298,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="7877451762676714207">Nieznany błąd serwera. Spróbuj ponownie lub skontaktuj się z administratorem serwera.</translation>
 <translation id="5085162214018721575">Sprawdzanie dostępności aktualizacji</translation>
 <translation id="5737306429639033676">Przewiduj działania w sieci, aby przyspieszyć ładowanie stron</translation>
-<translation id="367021013903415024">Zakończ kalibrację</translation>
 <translation id="5376363957846771741">Nieznane lub nieobsługiwane urządzenie (<ph name="ADDRESS"/>)</translation>
 <translation id="8123426182923614874">Pozostałe dane w abonamencie:</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
@@ -3366,7 +3329,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="7387339603919136090">Mediana</translation>
 <translation id="2750518858905599015">Zaktualizowano <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="7554791636758816595">Nowa karta</translation>
-<translation id="3026557130425686673">Logowanie zostało anulowane z powodu uszkodzenia niektórych ustawień urządzenia.</translation>
 <translation id="6928853950228839340">Komponowanie do tekstury</translation>
 <translation id="3630337581925712713"><ph name="PERMISSION_TYPE_LABEL"/>:</translation>
 <translation id="1114091355035739006">Użyj median, by zminimalizować wpływ elementów odstających na dane wydajności</translation>
@@ -3388,7 +3350,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8151639108075998630">Zezwalaj na logowanie jako gość</translation>
 <translation id="2608770217409477136">Użyj ustawień domyślnych</translation>
 <translation id="3157931365184549694">Przywróć</translation>
-<translation id="2318625572303095424">Włącz Bluetooth.</translation>
 <translation id="996250603853062861">Trwa nawiązywanie bezpiecznego połączenia...</translation>
 <translation id="6059232451013891645">Folder:</translation>
 <translation id="4274292172790327596">Nierozpoznany błąd</translation>
@@ -3399,9 +3360,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="375403751935624634">Tłumaczenie nie powiodło się z powodu błędu serwera.</translation>
 <translation id="2101225219012730419">Wersja:</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE"/> – <ph name="PAGE_URL"/></translation>
-<translation id="571201111803517998">Otwórz okno dialogowe</translation>
 <translation id="8050038245906040378">Podpisywanie kodu handlowego firmy Microsoft</translation>
-<translation id="271907111803265074">Limit komórkowej transmisji danych został wyczerpany. Wykup następny pakiet, aby korzystać z sieci <ph name="NETWORK"/>.</translation>
 <translation id="7299721129597238157">Usuń zakładkę</translation>
 <translation id="3031557471081358569">Wybierz elementy do zaimportowania:</translation>
 <translation id="1368832886055348810">Od lewej do prawej</translation>
@@ -3419,7 +3378,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="2799223571221894425">Uruchom ponownie</translation>
 <translation id="5771816112378578655">Trwa konfigurowanie...</translation>
 <translation id="1197979282329025000">Podczas pobierania informacji o możliwościach drukarki <ph name="PRINTER_NAME"/> wystąpił błąd. Nie można zarejestrować tej drukarki w usłudze <ph name="CLOUD_PRINT_NAME"/>.</translation>
-<translation id="285480231336205327">Włącz tryb wysokiego kontrastu</translation>
 <translation id="890308499387283275">Chrome nie może pobrać tego pliku.</translation>
 <translation id="6557565812667414268">Włączony tylko w przypadku wyświetlaczy o wysokiej rozdzielczości DPI</translation>
 <translation id="6744468237221042970">Komputer (<ph name="ADDRESS"/>)</translation>
@@ -3514,7 +3472,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="5986279928654338866">Serwer <ph name="DOMAIN"/> wymaga nazwy użytkownika i hasła.</translation>
 <translation id="521467793286158632">Usuń wszystkie hasła</translation>
 <translation id="2491120439723279231">Certyfikat serwera zawiera błędy.</translation>
-<translation id="4448844063988177157">Trwa wyszukiwanie sieci Wi-Fi...</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="1740044382983372319">Zainstalowano rozszerzenie</translation>
 <translation id="2954705784594331199"><ph name="BEGIN_LINK"/>Ponownie załaduj<ph name="END_LINK"/> tę stronę internetową później.</translation>
@@ -3575,7 +3532,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="770015031906360009">Grecki</translation>
 <translation id="7455133967321480974">Użyj globalnej wartości domyślnej (Blokuj)</translation>
 <translation id="2386793615875593361">Wybrano: 1</translation>
-<translation id="4971925105143343452">Częściowe</translation>
 <translation id="3454157711543303649">Aktywacja ukończona</translation>
 <translation id="884923133447025588">Nie znaleziono mechanizmu unieważniania.</translation>
 <translation id="7801746894267596941">Tylko osoba znająca hasło może odczytać Twoje zaszyfrowane dane – hasło nie jest przesyłane do firmy  Google ani przez nią przechowywane. Jeśli zapomnisz hasła, trzeba będzie</translation>
@@ -3654,8 +3610,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="3391110846660358513">Aplikacje działające w tle</translation>
 <translation id="7077872827894353012">Ignorowane moduły obsługi</translation>
 <translation id="8377701321234747567">Importuj multimedia</translation>
-<translation id="6831820634148551662">Za wiele iteracji hasła.</translation>
-<translation id="1400709102841174216">Brak identyfikatora GUID certyfikatu</translation>
 <translation id="5689774203269256801">Skorzystanie z <ph name="NETWORK_ID"/> może wymagać <ph name="LINK_START"/>wejścia na stronę logowania się do sieci<ph name="LINK_END"/>, która otworzy się automatycznie za kilka sekund. Jeśli tak się nie stanie, nie będzie można połączyć się z internetem przez tę sieć.</translation>
 <translation id="1122988962988799712">Wyłącz interfejs WebGL</translation>
 <translation id="5190835502935405962">Pasek zakładek</translation>
@@ -3692,7 +3646,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8698464937041809063">Rysunek Google</translation>
 <translation id="7053053706723613360">Wyłącz lepsze przywracanie sesji</translation>
 <translation id="5233930340889611108">WebKit</translation>
-<translation id="2195171268098158481">Urządzenie zostanie zresetowane do stanu fabrycznego. Wszystkie lokalne pliki i multimedia zostaną usunięte. Czy chcesz kontynuować?</translation>
 <translation id="8260864402787962391">Mysz</translation>
 <translation id="8276560076771292512">Opróżnij pamięć podręczną i wymuś ponowne załadowanie</translation>
 <translation id="9076523132036239772">Niestety, nie udało się zweryfikować Twojego adresu e-mail lub hasła. Najpierw nawiąż połączenie z siecią.</translation>
@@ -3793,7 +3746,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="1317130519471511503">Edytuj elementy</translation>
 <translation id="6391538222494443604">Katalog wejściowy musi istnieć.</translation>
 <translation id="4264154755694493263">Podczas instalowania aplikacji zawsze pokazuj dymek wskazujący przycisk strony Nowa karta widoczny na pasku kart, zamiast otwierać tę stronę.</translation>
-<translation id="8051695050440594747">Dostępne: <ph name="MEGABYTES"/> MB</translation>
 <translation id="3656347391768053953">Zapisz za pomocą…</translation>
 <translation id="7088615885725309056">Starsze</translation>
 <translation id="3623476034248543066">Pokaż wartość</translation>
@@ -3948,14 +3900,12 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="3092040396860056776">Mimo to spróbuj wczytać stronę</translation>
 <translation id="4350711002179453268">Nie można nawiązać bezpiecznego połączenia z serwerem. To może być problem z serwerem lub wymagany jest certyfikat uwierzytelniania klienta, którego nie masz.</translation>
 <translation id="750509436279396091">Otwórz folder pobierania</translation>
-<translation id="5789620807628673402">Błąd importowania sieci</translation>
 <translation id="5963026469094486319">Pobierz motywy</translation>
 <translation id="5306456126804895670">Włącz pełną synchronizację historii.</translation>
 <translation id="3855072293748278406">Dostęp przez wtyczkę poza piaskownicą</translation>
 <translation id="1893137424981664888">Brak zainstalowanych wtyczek.</translation>
 <translation id="4919810557098212913">Strona <ph name="HOST"/> chce korzystać z aparatu.</translation>
 <translation id="3718288130002896473">Zachowanie</translation>
-<translation id="1633226303025864103">Nieprawidłowy poziom zaufania do certyfikatu</translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="8711402221661888347">Pikle</translation>
 <translation id="1254117744268754948">Wybierz folder</translation>
@@ -4153,7 +4103,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="5973229212631512780">Plik <ph name="FILE_NAME"/> wygląda na szkodliwy.</translation>
 <translation id="9144064758854528804">Skrypt dotyczący zawartości</translation>
 <translation id="2927657246008729253">Zmień...</translation>
-<translation id="7586781939132793422">Wyłącz potwierdzenia głosowe</translation>
 <translation id="7978412674231730200">Klucz prywatny</translation>
 <translation id="5308380583665731573">Połącz się</translation>
 <translation id="5813394174971374198"><ph name="BEGIN_BOLD"/>Zalecenie: <ph name="END_BOLD"/>włącz adapter <ph name="ADAPTER_NAME"/>.</translation>
@@ -4195,7 +4144,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="563969276220951735">Autouzupełnianie formularzy</translation>
 <translation id="7818135753970109980">Dodano nowy motyw (<ph name="EXTENSION_NAME"/>)</translation>
 <translation id="6870130893560916279">Klawiatura ukraińska</translation>
-<translation id="766592070029747268">Nie można odszyfrować pliku ONC.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> min</translation>
 <translation id="5563986351966648191">Poprawiaj wykrywanie złośliwego oprogramowania, wysyłając do Google dodatkowe dane, gdy pojawi się takie ostrzeżenie. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -4226,7 +4174,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="7540972813190816353">Podczas sprawdzania dostępności aktualizacji wystąpił błąd: <ph name="ERROR"/></translation>
 <translation id="2225024820658613551">Nie przechodź dalej – &lt;strong&gt;zwłaszcza&lt;/strong&gt; jeśli pierwszy raz widzisz to ostrzeżenie na tej stronie.</translation>
 <translation id="4596904276221394120">Włącza rozszerzony interfejs API wyszukiwania dynamicznego.</translation>
-<translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Nie wcześniej niż</translation>
 <translation id="7845920762538502375">Przeglądarka <ph name="PRODUCT_NAME"/> nie może zsynchronizować danych, ponieważ nie udało się nawiązać połączenia z serwerem synchronizacji. Trwa ponawianie próby...</translation>
 <translation id="7325437708553334317">Rozszerzenie High Contrast</translation>
@@ -4268,7 +4215,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="5869522115854928033">Zapisane hasła</translation>
 <translation id="2089090684895656482">Mniejsza</translation>
 <translation id="6656103420185847513">Folder edytora</translation>
-<translation id="3436440123324878555">Wykup usługę transmisji danych...</translation>
 <translation id="5748266869826978907">Sprawdź ustawienia DNS. Jeśli nie masz pewności, co to znaczy, skontaktuj się z administratorem sieci.</translation>
 <translation id="4193154014135846272">Dokument Google</translation>
 <translation id="4771973620359291008">Wystąpił nieznany błąd.</translation>
@@ -4287,7 +4233,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="4775266380558160821">Zawsze zezwalaj na korzystanie z tych wtyczek na <ph name="HOST"/></translation>
 <translation id="6154808779448689242">Zwrócony token zasady jest niezgodny z bieżącym</translation>
 <translation id="8155798677707647270">Instalowanie nowej wersji...</translation>
-<translation id="8186593878477717195">Kolizja identyfikatorów GUID certyfikatów</translation>
 <translation id="6886871292305414135">Otwórz link w nowej &amp;karcie</translation>
 <translation id="1639192739400715787">Aby otworzyć ustawienia zabezpieczeń, wprowadź kod PIN karty SIM.</translation>
 <translation id="4499634737431431434">Tygodnie</translation>
@@ -4511,7 +4456,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="9147392381910171771">&amp;Opcje</translation>
 <translation id="1803557475693955505">Nie można wczytać strony w tle „<ph name="BACKGROUND_PAGE"/>”.</translation>
 <translation id="8942091167399397362">Wyłącza nowe animacje blokady.</translation>
-<translation id="6643016212128521049">Wyczyść</translation>
 <translation id="3633997706330212530">Możesz opcjonalnie wyłączyć te usługi.</translation>
 <translation id="4335713051520279344">Ten komputer zostanie zresetowany za 1 s.
 Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
@@ -4583,10 +4527,10 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6096326118418049043">Nazwa X.500</translation>
 <translation id="6086259540486894113">Musisz wybrać co najmniej jeden typ danych do synchronizacji.</translation>
 <translation id="923467487918828349">Pokaż wszystko</translation>
+<translation id="8061464966246066292">Wysoki kontrast</translation>
 <translation id="3093189737735839308">Czy na pewno chcesz zainstalować <ph name="PLUGIN_NAME"/>? Należy instalować tylko zaufane wtyczki.</translation>
 <translation id="1928696683969751773">Aktualizacje</translation>
 <translation id="4298972503445160211">Klawiatura duńska</translation>
-<translation id="8926821375399729046">Włącz proste ustalanie kierunku przewijania <ph name="BEGIN_LINK"/>Więcej informacji<ph name="END_LINK"/></translation>
 <translation id="6621440228032089700">Włącza komponowanie do tekstury pozaekranowej zamiast bezpośrednio do wyświetlenia.</translation>
 <translation id="3488065109653206955">Częściowo aktywowane</translation>
 <translation id="1481244281142949601">Piaskownica jest bezpieczna.</translation>
@@ -4678,7 +4622,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4065006016613364460">K&amp;opiuj adres URL grafiki</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="421182450098841253">&amp;Pokaż pasek zakładek</translation>
-<translation id="8000066093800657092">Brak sieci</translation>
 <translation id="4481249487722541506">Wczytaj rozszerzenie bez pakietu...</translation>
 <translation id="8180239481735238521">strona</translation>
 <translation id="7532099961752278950">Ustawione przez aplikację:</translation>
@@ -4749,14 +4692,12 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="343467364461911375">Niektóre usługi związane z treściami używają identyfikatorów komputerów do jednoznacznej identyfikacji użytkownika na potrzeby autoryzacji dostępu do chronionych treści.</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="747459581954555080">Przywróć wszystkie</translation>
-<translation id="5130217514988682057">Zniekształcone dane certyfikatu</translation>
 <translation id="7602079150116086782">Brak kart z innych urządzeń</translation>
 <translation id="7167486101654761064">&amp;Zawsze otwieraj pliki tego typu</translation>
 <translation id="5826507051599432481">Nazwa pospolita (CN)</translation>
 <translation id="8914326144705007149">Bardzo duży</translation>
 <translation id="4215444178533108414">Zakończ usuwanie elementów</translation>
 <translation id="5154702632169343078">Podmiot</translation>
-<translation id="2575379921941782763">Funkcje ułatwień dostępu są włączone.</translation>
 <translation id="2273562597641264981">Operator:</translation>
 <translation id="122082903575839559">Algorytm podpisu certyfikatu</translation>
 <translation id="4462159676511157176">Własne serwery nazw</translation>
@@ -4851,7 +4792,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="7900877224946181357"><ph name="PRODUCT_NAME"/> używa Twojej kamery.</translation>
 <translation id="6596325263575161958">Opcje szyfrowania</translation>
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
-<translation id="622718162866842437">Zniekształcony słownik protokołu EAP</translation>
 <translation id="3380864720620200369">Identyfikator klienta:</translation>
 <translation id="5037888205580811046">Włącza interfejs interaktywnego autouzupełniania, które można wywołać, używając HTMLFormElement#requestAutocomplete.</translation>
 <translation id="1559528461873125649">Brak takiego pliku lub katalogu</translation>

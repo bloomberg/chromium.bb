@@ -306,13 +306,6 @@
 <translation id="6258193603492867656">Especifica se o SPN do Kerberos gerado deverá incluir uma porta não padrão. Se ativar esta definição e for introduzida uma porta não padrão (ou seja, outra porta que não a 80 ou a 443), essa porta será incluída no SPN do Kerberos gerado. Se desativar esta definição ou não a definir, o SPN do Kerberos gerado não incluirá uma porta em circunstância alguma.</translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalações de extensões, aplicações e scripts do utilizador a partir de</translation>
 <translation id="2498238926436517902">Ocultar automaticamente a prateleira sempre</translation>
-<translation id="3442095178490656861">Especifica o fuso horário a ser utilizado para o dispositivo. Os utilizadores podem substituir o fuso horário especificado pela sessão atual. No entanto, quando a sessão for terminada, este regressará ao fuso horário especificado. Se for fornecido um valor inválido, a política ainda é ativada utilizando o &quot;GMT&quot; no seu lugar.
-
-      Se esta política não for utilizada, o fuso horário atualmente ativo permanecerá em utilização apesar de os utilizadores poderem alterar o fuso horário e a alteração ser permanente. Desta forma, uma alteração de um utilizador afeta o ecrã de início de sessão e todos os outros utilizadores.
-
-      Os novos dispositivos começam com o fuso horário definido para &quot;EUA/Pacífico&quot;.
-
-      O formato do valor segue os nomes dos fusos horários na &quot;Base de Dados de Fuso Horário IANA&quot; (consultar &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Em particular, a maioria dos fusos horários pode ser referida como &quot;continente/grande_cidade&quot; ou &quot;oceano/grande_cidade&quot;.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o fornecedor de pesquisas predefinido</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
 <translation id="262740370354162807">Permitir o envio de documentos para o <ph name="CLOUD_PRINT_NAME"/></translation>

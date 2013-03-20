@@ -430,13 +430,6 @@
           Jika anda melumpuhkan tetapan ini atau membiarkannya tanpa ditetapkan, Kerberos SPN yang dihasilkan tidak akan memasukkan port dalam sebarang keadaan.</translation>
 <translation id="3236046242843493070">Pola URL untuk membenarkan pemasangan pelanjutan, aplikasi dan skrip pengguna</translation>
 <translation id="2498238926436517902">Sentiasa sembunyikan rak secara automatik</translation>
-<translation id="3442095178490656861">Menentukan zon waktu yang akan digunakan pada peranti. Pengguna boleh menggantikan zon waktu yang ditentukan untuk sesi semasa. Bagaimanapun, semasa log keluar, zon waktu ditetapkan semula kepada zon waktu yang ditentukan. Sebaliknya, jika nilai tidak sah diberikan, dasar masih diaktifkan menggunakan &quot;GMT&quot;.
-
-      Jika dasar ini tidak digunakan, zon waktu aktif akan kekal digunakan, bagaimanapun, pengguna boleh menukar zon waktu dan perubahan tersebut akan berkekalan. Oleh itu, perubahan oleh seorang pengguna mempengaruhi skrin log masuk dan semua pengguna lain.
-
-      Peranti baharu bermula dengan zon waktu yang ditetapkan kepada &quot;US/Pacific&quot;.
-
-      Nilai diformatkan mengikut nama zon waktu dalam &quot;Pangkalan Data Zon Waktu IANA&quot; (lihat &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Secara khususnya, kebanyakan zon waktu boleh dirujuk melalui &quot;continent/large_city&quot; atau &quot;ocean/large_city&quot;.</translation>
 <translation id="152657506688053119">Senarai URL alternatif untuk penyedia carian lalai</translation>
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
 <translation id="262740370354162807">Dayakan penyerahan dokumen pada <ph name="CLOUD_PRINT_NAME"/></translation>

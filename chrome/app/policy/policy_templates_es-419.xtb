@@ -301,13 +301,6 @@
 <translation id="6258193603492867656">Especifica si el SPN de Kerberos generado debe incluir un puerto no estándar. Si se habilita esta configuración y se ingresa un puerto no estándar (es decir, un puerto que no sea 80 ni 443), se incluirá en el SPN de Kerberos generado. Si se inhabilita esta opción o si no se configura, el SPN de Kerberos generado no incluirá un puerto en ningún caso.</translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se pueden instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="2498238926436517902">Siempre ocultar automáticamente los archivos</translation>
-<translation id="3442095178490656861">Especifica la zona horaria que utilizará el dispositivo. Los usuarios pueden anular la zona horaria especificada para la sesión actual. Sin embargo, al cierre de sesión regresará a la zona horaria especificada. Si se proporciona un valor no válido, la política sigue activa utilizando &quot;GMT&quot; en su lugar. 
-
-Si esta política no se usa, la zona horaria activa se mantendrá en uso; sin embargo, los usuarios pueden cambiar la zona horaria y el cambio se mantendrá. De este modo, un cambio que realize un usuario afectará a la pantalla de acceso y a todos los demás usuarios. 
-
-Los dispositivos nuevos tienen configurada la zona horaria &quot;EE.UU./Pacífico&quot;. 
-
-El formato del valor sigue los nombres de zonas horarias de la &quot;Base de datos de zona horaria de IANA&quot; (ver &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). En particular, se puede hacer referencia a la mayoría de las zonas horarias como &quot;continent/ large_city&quot; o como &quot;ocean/large_city&quot;.</translation>
 <translation id="152657506688053119">Lista de las URL alternativas para el proveedor de búsqueda predeterminado</translation>
 <translation id="8992176907758534924">No permitir que ningún sitio muestre imágenes.</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME"/></translation>

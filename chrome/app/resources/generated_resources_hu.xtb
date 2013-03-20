@@ -37,7 +37,6 @@
 <translation id="7131104516964267328">Kísérleti WebKit funkciók engedélyezése.</translation>
 <translation id="3581034179710640788">A hely biztonsági tanúsítványa lejárt!</translation>
 <translation id="2825758591930162672">Nyilvános kulcs</translation>
-<translation id="8306243285620593545">Váltás az állapotikonra</translation>
 <translation id="1130622745736410868">meg szeretné erősíteni, hogy Ön egy Chrome OS rendszerű eszközön végez böngészést -- ehhez fel kell kérnie a Google-t kuponkódja ellenőrzésére.</translation>
 <translation id="2440434527508820752">Ha hozzáadja nyomtatóit a Google Cloud Print szolgáltatáshoz,
         bárhonnan és bárhova nyomtathat. Megoszthatja nyomtatóit, akivel csak szeretné, és
@@ -68,7 +67,6 @@
 <translation id="1420684932347524586">Ajjaj! Nem sikerült a véletlenszerű RSA privát kulcs generálása.</translation>
 <translation id="7323509342138776962">Utolsó szinkronizálás</translation>
 <translation id="2501173422421700905">A tanúsítvány felfüggesztve</translation>
-<translation id="3635248062687671948"><ph name="IDS_SHORT_PRODUCT_NAME"/> eszköz visszaállítása gyári alapállapotba</translation>
 <translation id="368260109873638734">Részletek a webhely problémáival kapcsolatban</translation>
 <translation id="5387489168702576069">KÖNNYED_ÁTMENET_2</translation>
 <translation id="7428534988046001922">A következő alkalmazásokat telepítette:</translation>
@@ -433,6 +431,7 @@
 <translation id="3227446593489428613">Szeretné a gyorsított Automatikus kitöltést használni?</translation>
 <translation id="7445762425076701745">Nem sikerült teljesen ellenőrizni a szerver azonosságát, amelyhez kapcsolódik. Egy olyan névvel kapcsolódik a szerverhez, amelynek tulajdonjogát egy külső tanúsítványkibocsátó nem ellenőrizheti. Mivel egyes tanúsítványkibocsátók figyelmen kívül hagyják ezeket a neveket, így semmi nem biztosítja, hogy a kívánt webhelyhez kapcsolódik, és nem egy támadó webhelyhez.</translation>
 <translation id="1556537182262721003">Nem sikerült áthelyezni a bővítménykönyvtárat a profilba.</translation>
+<translation id="2946640296642327832">Bluetooth engedélyezése</translation>
 <translation id="5866557323934807206">Beállítások törlése a jövőbeni látogatások miatt</translation>
 <translation id="5355351445385646029">A jelöltek kiválasztásához nyomja meg a Space billentyűt</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
@@ -448,7 +447,6 @@
 <translation id="2103050821726968278">Billentyűkódok -- bővítmények és alkalmazások</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="6732061527064171007">Web Audio bemenet</translation>
-<translation id="8694146932926629530">Lehet, hogy a rendszer nyomon követi az eszközhasználatot.</translation>
 <translation id="5191625995327478163">&amp;Nyelvi beállítások...</translation>
 <translation id="734651947642430719">Tamil beviteli mód (InScript)</translation>
 <translation id="3649256019230929621">Ablak kis méretre állítása</translation>
@@ -469,7 +467,6 @@
 <translation id="6896830120821965585">Engedélyez egy háttérszolgáltatást, amely összekapcsolja a Google Cloud Print szolgáltatást a számítógépen telepített nyomtatókkal. Miután aktiválta ezt a funkciót, úgy kapcsolhatja be a Google Cloud Print csatlakozási szoftvert, hogy bejelentkezik Google Fiókjába a Beállítások menü A motorháztető alatt részében.</translation>
 <translation id="3999508690854143454">Kérdezzen rá, amikor egy webhely hozzáférést kér a kamerámhoz és mikrofonomhoz (ajánlott)</translation>
 <translation id="1674989413181946727">Számítógépre érvényes SSL-beállítások:</translation>
-<translation id="1531285811424589182">Tanúsítványtörlési hiba</translation>
 <translation id="8703575177326907206">A kapcsolat (<ph name="DOMAIN"/>) nem titkosított.</translation>
 <translation id="6135622770221372891">Csatornaazonosítók</translation>
 <translation id="3042282020249392540">Próbálja meg hozzáadni a <ph name="PRODUCT_NAME"/> szoftvert mint engedélyezett programot tűzfala vagy víruskereső szoftvere beállításainál. Ha már engedélyezve van, kísérelje meg törölni az engedélyezett programok listájáról, majd újra hozzáadni.</translation>
@@ -510,7 +507,6 @@
 <translation id="4928351909437667303">Google Drive letiltása az eszközön.</translation>
 <translation id="6315723398663634808">A szervertanúsítvány gyenge titkosítási kulcsot tartalmaz!</translation>
 <translation id="6907087977791145135">Eseménynapló (a legújabb az első):</translation>
-<translation id="4311195029067684288">Teljes</translation>
 <translation id="2887525882758501333">PDF-dokumentum</translation>
 <translation id="289426338439836048">Egyéb mobilhálózat...</translation>
 <translation id="3986287159189541211"><ph name="ERROR_NUMBER"/> HTTP hiba (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
@@ -522,7 +518,6 @@
 <translation id="6060685159320643512">Óvatosan, ezek a kísérletek haraphatnak</translation>
 <translation id="4755351698505571593">Ezeket a beállításokat csak a tulajdonos módosíthatja:</translation>
 <translation id="4607068441094952239">Felhasználó törlése</translation>
-<translation id="2437917371952004532">A bejelentkezési oldalt nem sikerült betölteni az aktuális proxybeállításokkal. Kérjük, <ph name="LINK_START"/>próbáljon újból bejelentkezni<ph name="LINK_END"/>, vagy használjon más proxybeállításokat.</translation>
 <translation id="5829990587040054282">Képernyő zárolása vagy kikapcsolás</translation>
 <translation id="7800304661137206267">A kapcsolat a(z) <ph name="CIPHER"/> használatával lett kódolva, <ph name="MAC"/> algoritmussal az üzenethitelesítéshez és <ph name="KX"/> algoritmussal a kulcscserélő folyamathoz.</translation>
 <translation id="350893259022641366">Mozaikonkénti festés</translation>
@@ -620,7 +615,6 @@
 <translation id="4929686562207984390">Ha a lapszinkronizálás engedélyezett, akkor ez a funkció lehetővé teszi, hogy megjelenítse és törölje a szinkronizált eszközök előzményeit a chrome://history helyen.</translation>
 <translation id="8556732995053816225">Kis-/nagybetű &amp;egyezése</translation>
 <translation id="3942420633017001071">Diagnosztika</translation>
-<translation id="8679063045091038652">Nem sikerült betölteni a hálózati konfigurációs fájlt: <ph name="ERROR"/></translation>
 <translation id="3504135463003295723">Csoport neve:</translation>
 <translation id="3314070176311241517">Minden webhelyen engedélyezze a JavaScript futtatását (javasolt)</translation>
 <translation id="7419631653042041064">Katalán billentyűzet</translation>
@@ -696,13 +690,12 @@
 <translation id="5524517123096967210">A fájl nem olvasható.</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="5548207786079516019">Ez a <ph name="PRODUCT_NAME"/> második telepítése, amelyet nem állíthat be az alapértelmezett böngészővé.</translation>
-<translation id="8142041167538903585">Ajjaj! Hiba történt a formázás során...</translation>
 <translation id="3984413272403535372">Hiba történt a bővítmények aláírása során.</translation>
+<translation id="7222373446505536781">F11</translation>
 <translation id="9202365664128598850">Első</translation>
 <translation id="9208886416788010685">Az Adobe Reader elavult</translation>
 <translation id="2945028952025978099">Letiltja a késleltetett 2D vászon megjelenítést, aminek következtében a rajzolási műveletek azonnal, a javascript következő parancsának futtatása előtt megvalósulnak.</translation>
 <translation id="375841316537350618">Proxyszkript letöltése...</translation>
-<translation id="5611028511275186941">Hiányzik a tanúsítvány típusa</translation>
 <translation id="318408932946428277">Cookie-k, valamint egyéb plug-in- és webhelyadatok törlése, ha kilépek a böngészőből</translation>
 <translation id="9169664750068251925">Mindig tiltsa ezen az oldalon</translation>
 <translation id="6406303162637086258">Böngésző újraindításának szimulálása</translation>
@@ -717,7 +710,6 @@
 <translation id="3605499851022050619">Diagnosztikai oldal - Biztonságos böngészés</translation>
 <translation id="4417271111203525803">Cím második sora</translation>
 <translation id="7617095560120859490">Mondja el, mi történik. (szükséges)</translation>
-<translation id="3426211747733405477">Nem lehet feldolgozni a titkosított ONC-fájl néhány paraméterét.</translation>
 <translation id="5618333180342767515">(ez eltarthat pár percig)</translation>
 <translation id="4991314311188418603"><ph name="COUNT"/> kijelölve</translation>
 <translation id="1697820107502723922">Régebbi bejegyzések</translation>
@@ -730,7 +722,6 @@
 <translation id="5912378097832178659">&amp;Keresők beállítása...</translation>
 <translation id="6187065185557150870">Csevegés</translation>
 <translation id="3749289110408117711">Fájlnév</translation>
-<translation id="5576767520660353104">Hálózati törlési hiba</translation>
 <translation id="5538092967727216836">Keret újratöltése</translation>
 <translation id="4813345808229079766">Kapcsolat</translation>
 <translation id="5390284375844109566">Indexelt adatbázis</translation>
@@ -750,11 +741,11 @@
 <translation id="4426082685552308673">Átlag</translation>
 <translation id="1029317248976101138">Nagyítás</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/>, összesen: <ph name="TOTAL_MATCHCOUNT"/></translation>
-<translation id="6999531337630656517">Túlpásztázás kalibrálásának indítása</translation>
 <translation id="1617097702943948177">Ideiglenes tárhely:</translation>
 <translation id="1202290638211552064">A kapuoldal vagy a proxyszerver kapcsolata időtúllépés miatt megszakadt, miközben egy ellentétes irányú szerver válaszára várt.</translation>
 <translation id="6095934445851029429">Hiányzó bővítmény telepítése</translation>
 <translation id="5405583139863214747">Fényképek törlése importálás után</translation>
+<translation id="7765158879357617694">Áthelyezés</translation>
 <translation id="2455024757381081216">Tartalomcsomagok beszerzése</translation>
 <translation id="2731700343119398978">Kérjük, várjon...</translation>
 <translation id="5731751937436428514">Vietnami beviteli mód (VIQR)</translation>
@@ -779,7 +770,6 @@
 <translation id="68541483639528434">A többi lap bezárása</translation>
 <translation id="7939897309824246284">Háttérbetöltő összetevő engedélyezése közvetített alkalmazásoknál</translation>
 <translation id="941543339607623937">Érvénytelen privát kulcs.</translation>
-<translation id="6499058468232888609">Hálózati hiba történt az eszközkezelő szolgáltatással való kommunikáció során.</translation>
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="863718024604665812">Megjelenítő lefagyott</translation>
 <translation id="6039651071822577588">A hálózatitulajdonság-szótár formátuma hibás</translation>
@@ -824,8 +814,8 @@
 <translation id="954888418274735665">Globális alapértelmezés használata (<ph name="PERMISSION_VALUE"/>)</translation>
 <translation id="904752364881701675">Balra lent</translation>
 <translation id="8943805475239098364">Szeretne a <ph name="NEW_GOOGLE_HOST"/> domainnel keresni a <ph name="CURRENT_GOOGLE_HOST"/> helyett?</translation>
-<translation id="3813510441224209252">Formázás függőben</translation>
 <translation id="8912793549644936705">Nyújtva</translation>
+<translation id="7864539943188674973">Bluetooth letiltása</translation>
 <translation id="8026684114486203427">A Chrome internetes áruház használatához be kell jelentkeznie egy Google Fiókkal.</translation>
 <translation id="1486096554574027028">Jelszavak keresése</translation>
 <translation id="4631887759990505102">Előadó</translation>
@@ -882,7 +872,6 @@
 <translation id="8366694425498033255">Kiválasztógombok</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> óra</translation>
 <translation id="6011503819411930212">A(z) <ph name="SHORT_PRODUCT_NAME"/> összes kapcsolódó folyamatának összesített processzorhasználata</translation>
-<translation id="2624449429763181457">Tartsa lenyomva a Control, Alt vagy Shift billentyűket az adott módosítóhoz tartozó&lt;br&gt;billentyűkódok megjelenítéséhez</translation>
 <translation id="420665587194630159">(Ez egy felügyelt bővítmény, nem lehet eltávolítani, illetve letiltani)</translation>
 <translation id="6535758682390046055">A(z) <ph name="PLUGIN_NAME"/> plug-in letöltését megszakították.</translation>
 <translation id="7267955541478798371">Lap kedvencikon-szinkronizálásának engedélyezése.</translation>
@@ -945,7 +934,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8494979374722910010">A szerverhez való kapcsolódás sikertelen.</translation>
 <translation id="1864756863218646478">A fájl nem található.</translation>
 <translation id="7810202088502699111">Az előugró ablakok le vannak tiltva ezen az oldalon.</translation>
-<translation id="8190698733819146287">Nyelvek és beviteli módok személyre szabása...</translation>
 <translation id="3808873045540128170">Ennek a lapnak annyi!</translation>
 <translation id="3452404311384756672">Lekérési intervallum:</translation>
 <translation id="646727171725540434">HTTP-proxy</translation>
@@ -1089,7 +1077,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4988792151665380515">Nem sikerült a nyilvános kulcs exportálása.</translation>
 <translation id="6333049849394141510">Válassza ki a szinkronizálandó adattípusokat</translation>
 <translation id="5990559369517809815">A szerver felé irányuló kéréseket egy bővítmény blokkolja.</translation>
-<translation id="7164143092832122788">A titkosított ONC-fájl rosszul van formázva.</translation>
 <translation id="5699524327937694758">Adatok kezelése</translation>
 <translation id="3828440302402348524"><ph name="USER_NAME"/> néven bejelentkezve...</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
@@ -1150,7 +1137,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4597972110633667332">Fájlok letöltése</translation>
 <translation id="5911798608827489036">Adatok cseréje bármilyen számítógéppel a helyi hálózaton vagy az interneten</translation>
 <translation id="14171126816530869"><ph name="ORGANIZATION"/> identitását <ph name="LOCALITY"/> régióban <ph name="ISSUER"/> ellenőrizte.</translation>
-<translation id="824902718516184009">Hiányzó tanúsítványadatok</translation>
 <translation id="7314327919567192532">Ablakátméretezés gyorsaságának csökkentése.</translation>
 <translation id="220858061631308971">Kérjük, adja meg a PIN kódot a(z) &quot;<ph name="DEVICE_NAME"/>&quot; eszközhöz:</translation>
 <translation id="6263082573641595914">Microsoft CA verzió</translation>
@@ -1227,6 +1213,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="5451646087589576080">Keret adata&amp;inak megtekintése</translation>
 <translation id="7952408061263786094">Jelentkezzen ki, majd jelentkezzen be újra...</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
+<translation id="8340999562596018839">Hangos visszajelzés</translation>
 <translation id="3866443872548686097">A helyreállító adathordozó elkészült. Eltávolíthatja a rendszerből.</translation>
 <translation id="6824564591481349393">&amp;E-mail cím másolása</translation>
 <translation id="907148966137935206">Tiltsa le az előugró ablakokat minden webhelyen (javasolt)</translation>
@@ -1250,7 +1237,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8569764466147087991">Válassza ki a megnyitni kívánt fájlt</translation>
 <translation id="5086589117546410981">Családnév hozzáadása</translation>
 <translation id="4275663329226226506">Média</translation>
-<translation id="5449451542704866098">Nincs előfizetési csomag</translation>
 <translation id="3093853184108622112">Hozzáférés az Ön adataihoz a(z) <ph name="WEBSITE_1"/> és <ph name="WEBSITE_2"/> webhelyeken</translation>
 <translation id="2391593830069336007">Azonnali: <ph name="INSTANT_PREVIEW_NAME"/></translation>
 <translation id="5649768706273821470">Meghallgatás</translation>
@@ -1302,7 +1288,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="6776310961830589430">Az áthelyezés megszakítva.</translation>
 <translation id="5299109548848736476">Nincs nyomon követés</translation>
 <translation id="4421932782753506458">Bolyhos</translation>
-<translation id="8417944620073548444"><ph name="MEGABYTES"/> MB maradt</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT"/> fájl kiválasztva</translation>
 <translation id="4498419978438799658">Hozzáférés a szintetizált beszédet használó kimondott szöveghez</translation>
 <translation id="842701469313097462">Néhány javaslat a Chrome Internetes áruházból:</translation>
@@ -1525,7 +1510,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="1936157145127842922">Megjelenítés mappában</translation>
 <translation id="2367567093518048410">Szint</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> perce</translation>
-<translation id="3952119550285200690">Felhasználó hozzáadásához, kérjük, először csatlakozzon egy hálózathoz.</translation>
 <translation id="7977590112176369853">&lt;lekérdezés megadása&gt;</translation>
 <translation id="6991665348624301627">Válasszon egy célhelyet</translation>
 <translation id="3449839693241009168">Nyomja meg a(z) <ph name="SEARCH_KEY"/> billentyűt a parancsok elküldéséhez a következőre: <ph name="EXTENSION_NAME"/></translation>
@@ -1622,7 +1606,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="5264528602373835377">Megjelenít egy + modult, amellyel további alkalmazások telepíthetők az NTP alkalmazásablakán.</translation>
 <translation id="370665806235115550">Betöltés…</translation>
 <translation id="2580924999637585241">Összesen: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
-<translation id="4899063388368595117">Csatlakozzon az internethez, hogy befejezze Chromebookja telepítését.</translation>
 <translation id="254416073296957292">&amp;Nyelvi beállítások...</translation>
 <translation id="6652975592920847366">OS-helyreállító adathordozó készítése</translation>
 <translation id="52912272896845572">A privátkulcs-fájl érvénytelen.</translation>
@@ -1686,12 +1669,12 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="6129938384427316298">Netscape tanúsítvány - megjegyzés</translation>
 <translation id="4262366363486082931">Váltás az eszköztárra</translation>
 <translation id="5434054177797318680">Gyorsított túlcsorduló görgetés</translation>
-<translation id="8210608804940886430">Page Down</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="8812403718714328880">A(z) <ph name="PRODUCT_NAME"/> egyelőre letiltotta a(z) <ph name="HOST_NAME"/> elérését.</translation>
 <translation id="6315493146179903667">Összes az előtérbe</translation>
 <translation id="1000498691615767391">Válasszon megnyitni kívánt mappát</translation>
 <translation id="3593152357631900254">Részleges pinjin mód engedélyezése</translation>
+<translation id="2570059561924004903">Beszélt visszajelzések kikapcsolása</translation>
 <translation id="2276503375879033601">További alkalmazások hozzáadása</translation>
 <translation id="5015344424288992913">Proxy azonosítása folyamatban...</translation>
 <translation id="4389091756366370506"><ph name="VALUE"/> felhasználó</translation>
@@ -1720,7 +1703,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="3306862040449685450">Összeomlás engedélyezése a GPU leállásakor.</translation>
-<translation id="7227669995306390694"><ph name="NETWORK"/> nincs előfizetési csomag</translation>
 <translation id="1818196664359151069">Felbontás:</translation>
 <translation id="3481915276125965083">A következő előugró ablakokat letiltottuk ezen az oldalon:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> óra van hátra</translation>
@@ -1731,7 +1713,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="1196338895211115272">A privát kulcs exportálása sikertelen.</translation>
 <translation id="1459967076783105826">Bővítmények által hozzáadott keresőmotorok</translation>
 <translation id="629730747756840877">Fiók</translation>
-<translation id="6162656142027440299">Bluetooth letiltása</translation>
 <translation id="8525306231823319788">Teljes képernyő</translation>
 <translation id="5892507820957994680">Felülbírálja a beépített szoftveres megjelenítési listát, és lehetővé teszi a GPU-gyorsítást a nem támogatott rendszerkonfigurációkon.</translation>
 <translation id="9054208318010838">Minden webhely követheti a tartózkodási helyemet</translation>
@@ -1782,7 +1763,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4402766404187539019">Google.com Mail</translation>
 <translation id="3994878504415702912">&amp;Szöveg mérete</translation>
 <translation id="9009369504041480176">Feltöltés (<ph name="PROGRESS_PERCENT"/>%)...</translation>
-<translation id="8995603266996330174">Kezelő: <ph name="DOMAIN"/></translation>
 <translation id="5486561344817861625">Böngésző újraindításának szimulálása</translation>
 <translation id="5602600725402519729">Újra&amp;töltés</translation>
 <translation id="6955446738988643816">Pop-up vizsgálata</translation>
@@ -2040,7 +2020,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="23362385947277794">Háttérszínek és képek</translation>
 <translation id="4233752162269226207">Írja be a fenti betűket</translation>
 <translation id="2120316813730635488">Bővítménytelepítési alkalmak</translation>
-<translation id="2336459134277228578">Hiba a tanúsítvány importálásánál</translation>
 <translation id="8398877366907290961">Továbblépés</translation>
 <translation id="5063180925553000800">Új PIN kód:</translation>
 <translation id="4883178195103750615">Könyvjelzők exportálása HTML-fájlba...</translation>
@@ -2075,7 +2054,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="6423731501149634044">Az Adobe Reader legyen az alapértelmezett PDF-megjelenítő?</translation>
 <translation id="1965328510789761112">Saját memória</translation>
 <translation id="7312441861087971374">A(z) <ph name="PLUGIN_NAME"/> egy elavult plug-in.</translation>
-<translation id="255654065756093884">Bluetooth-eszköz hozzáadása</translation>
 <translation id="2461687051570989462">Nyomtatóihoz bármilyen számítógéppel vagy okostelefonnal hozzáférhet. <ph name="BEGIN_LINK"/>További információ<ph name="END_LINK"/></translation>
 <translation id="7194430665029924274">Emlékeztessen &amp;később</translation>
 <translation id="5790085346892983794">Sikerült</translation>
@@ -2229,7 +2207,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="6052976518993719690">SSL tanúsítványkibocsátó</translation>
 <translation id="2925935892230812200">A GPU használata az SVG-szűrők megjelenítésének felgyorsítására.</translation>
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> kártékony programot tartalmaz. A webhely felkeresése esetén számítógépe vírusfertőzést szenvedhet.</translation>
-<translation id="8050783156231782848">Nincs rendelkezésre álló adat</translation>
 <translation id="1175364870820465910">&amp;Nyomtatás...</translation>
 <translation id="1220583964985596988">Új felhasználó hozzáadása</translation>
 <translation id="3502662168994969388">Korlátozza a natív kliensalkalmazás GDB-alapú, jegyzékfájl-URL szerinti hibakeresését. Hogy a lehetőség működhessen, engedélyezni kell a natív kliens GDB-alapú hibakeresését.</translation>
@@ -2281,7 +2258,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="898581154329849655">Engedélyezi vagy letiltja a „Szkriptbuborék” nevű kísérleti eszköztár kezelőfelületét.</translation>
 <translation id="9148126808321036104">Jelentkezzen be újra</translation>
 <translation id="2282146716419988068">GPU-folyamat</translation>
-<translation id="428771275901304970">Kevesebb, mint 1 MB szabad</translation>
 <translation id="1682548588986054654">Új &amp;inkognitóablak</translation>
 <translation id="6833901631330113163">Dél-európai</translation>
 <translation id="6065289257230303064">Tanúsítványtulajdonos könyvtárattribútumai</translation>
@@ -2308,7 +2284,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="59659456909144943">Értesítés: <ph name="NOTIFICATION_NAME"/></translation>
 <translation id="2965328226365382335">Az elmúlt 15 perc</translation>
 <translation id="6731320427842222405">Ez eltarthat pár percig</translation>
-<translation id="4806525999832945986">Kezelő: <ph name="DOMAIN"/> (<ph name="STATUS"/>)</translation>
 <translation id="7503191893372251637">Netscape-tanúsítvány típusa</translation>
 <translation id="2894654529758326923">Információ</translation>
 <translation id="4135450933899346655">Tanúsítványai</translation>
@@ -2469,7 +2444,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="2930644991850369934">Probléma lépett fel a helyreállító képfájl letöltése során. A hálózati kapcsolat megszakadt.</translation>
 <translation id="6891622577412956611">Mozaik nézet</translation>
 <translation id="8150722005171944719">A fájl (<ph name="URL"/>) nem olvasható. Lehet, hogy eltávolították, áthelyezték, vagy a fájlengedélyek megakadályozzák a hozzáférést.</translation>
-<translation id="5750053751252005701"><ph name="NETWORK"/> - felhasználta az adatkeretet</translation>
 <translation id="994901932508062332">Múlt hónap</translation>
 <translation id="1720318856472900922">TLS WWW szerver hitelesítése</translation>
 <translation id="62243461820985415">A Chrome nem tudja letölteni ezt a háttérképet.</translation>
@@ -2484,7 +2458,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="2893271451009400655">A fotókat nem lehet beolvasni.</translation>
 <translation id="509429900233858213">Hiba történt.</translation>
 <translation id="7227780179130368205">Ártalmas programot észleltünk!</translation>
-<translation id="435243347905038008">Alacsony <ph name="NETWORK"/> adatok</translation>
 <translation id="2489428929217601177">elmúlt nap</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="6840155730904976091">A(z) <ph name="PRODUCT_NAME"/> a hálózathoz való csatlakozáshoz mobil eszközének rendszerproxy-beállításait használja.</translation>
@@ -2545,7 +2518,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4154664944169082762">Ujjlenyomatok</translation>
 <translation id="3202578601642193415">Legújabb</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> óra</translation>
-<translation id="5774295353725270860">Fájlok alkalmazás megnyitása</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="8988255471271407508">A weboldal nem található a gyorsítótárban. Egyes források, mint a beküldött adatokból generált oldalak, csak a gyorsítótárból tölthetők be biztonságosan. <ph name="LINE_BREAK"/> Ezt a hibát helytelen leállítás miatti gyorsítótárhiba is okozhatja. <ph name="LINE_BREAK"/> Ha a probléma továbbra is fennáll, próbálja meg kiüríteni a gyorsítótárat.</translation>
@@ -2602,7 +2574,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="1204242529756846967">A helyesírás-ellenőrzés ezen a nyelven történik</translation>
 <translation id="3981760180856053153">A megadott mentéstípus érvénytelen.</translation>
 <translation id="4508345242223896011">Finomgörgetés</translation>
-<translation id="8464591670878858520"><ph name="NETWORK"/> adat lejárt</translation>
 <translation id="6192792657125177640">Kivételek</translation>
 <translation id="5622158329259661758">Letiltja a GPU használatát a 2D megjelenítés végrehajtásakor, és helyette szoftveres megjelenítést használ.</translation>
 <translation id="8639033665604704195">A hitelesítés nem sikerült az előre megosztott kulccsal</translation>
@@ -2619,7 +2590,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="49027928311173603">A szerverről letöltött irányelv érvénytelen: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2850961597638370327">Tulajdonos: <ph name="NAME"/></translation>
 <translation id="8534579021159131403">Perc</translation>
-<translation id="2168039046890040389">Oldal fel</translation>
 <translation id="1767519210550978135">Hsu</translation>
 <translation id="2498539833203011245">Kis méret</translation>
 <translation id="7410344089573941623">Kérdezzen rá, ha a(z) <ph name="HOST"/> hozzá szeretne férni a kamerához és a mikrofonhoz</translation>
@@ -2652,7 +2622,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="7984180109798553540">A nagyobb biztonság érdekében a <ph name="PRODUCT_NAME"/> titkosítja adatait.</translation>
 <translation id="8190193592390505034">Csatlakozás a következő hálózathoz: <ph name="PROVIDER_NAME"/></translation>
 <translation id="6144890426075165477">Az alapértelmezett böngésző jelenleg nem a <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="823241703361685511">Előfizetési csomag</translation>
 <translation id="4068506536726151626">Ezen az oldalon olyan elemek vannak webhelyekről, amelyek figyelik az tartózkodási helyét:</translation>
 <translation id="4220128509585149162">Összeomlások</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
@@ -2664,7 +2633,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> perc</translation>
 <translation id="5512653252560939721">A felhasználói tanúsítványnak hardvertámogatottnak kell lennie.</translation>
 <translation id="5372529912055771682">Az operációs rendszer jelen verziója nem támogatja a kínált regisztrációs módot. Kérjük, győződjön meg arról, hogy a legújabb verziót használja, majd próbálkozzon újra.</translation>
-<translation id="3881435075661337013"><ph name="NETWORK"/> nemsokára lejár</translation>
 <translation id="5681833099441553262">Előző lap aktiválása</translation>
 <translation id="1681614449735360921">Inkompatibilitások megtekintése</translation>
 <translation id="6227235786875481728">Ezt a fájlt nem lehet lejátszani.</translation>
@@ -2733,7 +2701,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4724450788351008910">A hovatartozás módosult</translation>
 <translation id="2249605167705922988">pl. 1-5, 8, 11-13</translation>
 <translation id="8572510699242209592">Gigabájt</translation>
-<translation id="3886815172404033724">Kisegítő lehetőségek be- és kikapcsolása</translation>
 <translation id="8691686986795184760">(A vállalat bekapcsolta)</translation>
 <translation id="1911483096198679472">Mi ez?</translation>
 <translation id="878763818693997570">Ez a név túl hosszú</translation>
@@ -2762,7 +2729,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="402759845255257575">JavaScript futtatásának tiltása minden webhely számára</translation>
 <translation id="4610637590575890427">Valójában ide szeretett volna menni: <ph name="SITE"/>?</translation>
-<translation id="7723779034587221017">Megszakadt a kapcsolat a vezérlőszolgáltatással. Kérjük, állítsa alaphelyzetbe az eszközt, vagy lépjen kapcsolatba ügyfélszolgálati képviselőjével.</translation>
 <translation id="5141240743006678641">A szinkronizált jelszavak titkosítása a Google hitelesítési adataival</translation>
 <translation id="5097002363526479830">Nem sikerült csatlakozni a(z) <ph name="NAME"/> hálózathoz: <ph name="DETAILS"/></translation>
 <translation id="6906142274982384363">Ha alapértelmezett keresője támogatja, az Instant funkció bekapcsolásával a találatok azonnal megjelennek, mialatt Ön begépeli a lekérdezéseket a cím- és keresősávba, valamint gyors javaslatok segítik Önt a keresésben. 
@@ -2793,7 +2759,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="2527167509808613699">Bármilyen kapcsolódás</translation>
 <translation id="5056501771989853890">Opus lejátszás engedélyezése &lt;video&gt; elemekben.</translation>
 <translation id="8072988827236813198">Lapok rögzítése</translation>
-<translation id="378193144039415469">A titkosított ONC-fájl nem támogatott titkosítási sémát használ.</translation>
 <translation id="1234466194727942574">Lapfül</translation>
 <translation id="4330523403413375536">A Fejlesztői eszközök kísérleteinek engedélyezése. A Fejlesztői eszközök Beállítások paneljén kapcsolhatja be/ki az egyes kísérleteket.</translation>
 <translation id="7004499039102548441">Nemrégiben megjelenített lapok</translation>
@@ -2859,12 +2824,12 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8241040075392580210">Felhős</translation>
 <translation id="6206337697064384582">1. szerver</translation>
 <translation id="8690155203172212841">Engedélybeállítások kezelése</translation>
+<translation id="7052633198403197513">F1</translation>
 <translation id="411319158827715214">Olyan események, amelyek kapcsolódnak a(z) <ph name="SHORT_PRODUCT_NAME"/> alkalmazásban jelenleg vagy régebben telepített bővítményekhez</translation>
 <translation id="7466861475611330213">Központozási stílus</translation>
 <translation id="2496180316473517155">Böngészés előzményei</translation>
 <translation id="602251597322198729">A webhely több fájlt próbál letölteni. Engedélyezi?</translation>
 <translation id="34742832633288298">HTTP-adatcsatornázás</translation>
-<translation id="5843685321177053287">Az eszközkezelő szolgáltatással való kapcsolatfelvétel függőben van...</translation>
 <translation id="4365673000813822030">Hoppá, a szinkronizálás leállt.</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> óra</translation>
 <translation id="7026338066939101231">Csökkentés</translation>
@@ -3093,7 +3058,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="7168109975831002660">Minimális betűméret</translation>
 <translation id="7070804685954057874">Közvetlen bevitel</translation>
 <translation id="2631006050119455616">Mentve</translation>
-<translation id="4949449223641512255">Ismeretlen megbízható tanúsítvány</translation>
 <translation id="5175870427301879686">A(z) <ph name="URL"/> webhely állandó adatokat akar tárolni a helyi számítógépen.</translation>
 <translation id="3265459715026181080">Ablak bezárása</translation>
 <translation id="6074871234879228294">Japán beviteli mód (japán billentyűzetre)</translation>
@@ -3138,6 +3102,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
         Nem számít, mi történik az eszközével, fájljai biztonságban vannak a Google Drive-on.<ph name="MARKUP_6"/>
         <ph name="MARKUP_7"/>Megoszthat, létrehozhat és együtt dolgozhat<ph name="MARKUP_8"/>
         másokkal fájlokon -- mindezt egy helyen.<ph name="MARKUP_9"/></translation>
+<translation id="3473479545200714844">Képernyőnagyító</translation>
 <translation id="8488533838423032861">Indítási animáció funkció módosítása</translation>
 <translation id="6759193508432371551">Gyári beállítások visszaállítása</translation>
 <translation id="9074348188580488499">Biztosan törölni szeretné az összes jelszót?</translation>
@@ -3164,7 +3129,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="2890624088306605051">Csak a szinkronizált beállítások és adatok lekérése</translation>
 <translation id="4779083564647765204">Nagyítás</translation>
 <translation id="6397363302884558537">Beszéd leállítása</translation>
-<translation id="3282430104564575032">DOM ellenőr</translation>
 <translation id="1526560967942511387">Név nélküli dokumentum</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE"/> engedélyezése</translation>
 <translation id="7819857487979277519">PSK (WPA vagy RSN)</translation>
@@ -3308,7 +3272,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="7877451762676714207">Ismeretlen szerverhiba. Kérjük, próbálja újra, vagy lépjen kapcsolatba a szerver rendszergazdájával.</translation>
 <translation id="5085162214018721575">Frissítések keresése</translation>
 <translation id="5737306429639033676">Hálózati műveletek előrejelzése az oldalbetöltések teljesítményének növelése érdekében</translation>
-<translation id="367021013903415024">Kalibrálás befejezése</translation>
 <translation id="5376363957846771741">Ismeretlen vagy nem támogatott eszköz (<ph name="ADDRESS"/>)</translation>
 <translation id="8123426182923614874">Megmaradt adatmennyiség:</translation>
 <translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
@@ -3340,7 +3303,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="7387339603919136090">Középérték</translation>
 <translation id="2750518858905599015">A(z) <ph name="SHORT_PRODUCT_NAME"/> frissítve</translation>
 <translation id="7554791636758816595">Új lap</translation>
-<translation id="3026557130425686673">A bejelentkezés megszakadt, mert az eszköz néhány beállítása sérült.</translation>
 <translation id="6928853950228839340">Összevonás textúrába</translation>
 <translation id="3630337581925712713"><ph name="PERMISSION_TYPE_LABEL"/>:</translation>
 <translation id="1114091355035739006">Középértékek használata, csökkentve a külső hatásokat a teljesítményadatokban</translation>
@@ -3362,7 +3324,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8151639108075998630">Vendégként való böngészés engedélyezése</translation>
 <translation id="2608770217409477136">Alapbeállítások használata</translation>
 <translation id="3157931365184549694">Visszaállítás</translation>
-<translation id="2318625572303095424">Bluetooth engedélyezése</translation>
 <translation id="996250603853062861">Biztonságos kapcsolat létesítése...</translation>
 <translation id="6059232451013891645">Mappa:</translation>
 <translation id="4274292172790327596">Azonosítatlan hiba</translation>
@@ -3373,9 +3334,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
 <translation id="2101225219012730419">Verzió:</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE"/> - <ph name="PAGE_URL"/></translation>
-<translation id="571201111803517998">Párbeszédablak megnyitása</translation>
 <translation id="8050038245906040378">Microsoft kereskedelmi kódaláírás</translation>
-<translation id="271907111803265074">Ön felhasználta adatforgalmi keretét. Vásároljon egy másik csomagot a(z) <ph name="NETWORK"/> használatához.</translation>
 <translation id="7299721129597238157">Könyvjelző törlése</translation>
 <translation id="3031557471081358569">Válassza ki az importálandó elemeket:</translation>
 <translation id="1368832886055348810">Balról jobbra</translation>
@@ -3393,7 +3352,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="2799223571221894425">Újraindítás</translation>
 <translation id="5771816112378578655">A telepítés folyamatban...</translation>
 <translation id="1197979282329025000">Hiba történt a(z) <ph name="PRINTER_NAME"/> nyomtató képességeinek lekérésekor. Ez a nyomtató nem regisztrálható itt: <ph name="CLOUD_PRINT_NAME"/>.</translation>
-<translation id="285480231336205327">Nagy kontrasztú mód engedélyezése</translation>
 <translation id="890308499387283275">A Chrome nem tudja letölteni a fájlt.</translation>
 <translation id="6557565812667414268">Csak nagy képpontsűrűségű kijelzők számára engedélyezett</translation>
 <translation id="6744468237221042970">Számítógép (<ph name="ADDRESS"/>)</translation>
@@ -3488,7 +3446,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="5986279928654338866">A(z) <ph name="DOMAIN"/> szerverhez felhasználónév és jelszó szükséges.</translation>
 <translation id="521467793286158632">Az összes jelszó eltávolítása</translation>
 <translation id="2491120439723279231">A szervezet tanúsítványa hibákat tartalmaz.</translation>
-<translation id="4448844063988177157">Wi-Fi hálózatok keresése...</translation>
 <translation id="5765780083710877561">Leírás:</translation>
 <translation id="1740044382983372319">Bővítmény telepítve</translation>
 <translation id="2954705784594331199">A weboldal <ph name="BEGIN_LINK"/>újratöltése<ph name="END_LINK"/> később.</translation>
@@ -3549,7 +3506,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="770015031906360009">Görög</translation>
 <translation id="7455133967321480974">Globális alapértelmezés használata (Tiltás)</translation>
 <translation id="2386793615875593361">1 kijelölve</translation>
-<translation id="4971925105143343452">Részleges</translation>
 <translation id="3454157711543303649">Aktiválás befejezve</translation>
 <translation id="884923133447025588">Nem található visszavonási mechanizmus.</translation>
 <translation id="7801746894267596941">Titkosított adatait csak olyanok tudják elolvasni, akik rendelkeznek összetett jelszavával. Az összetett jelszót a Google nem kapja meg és nem tárolja. Ha elfelejti összetett jelszavát, akkor a következőt kell tennie:</translation>
@@ -3628,8 +3584,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="3391110846660358513">Háttéralkalmazások</translation>
 <translation id="7077872827894353012">Figyelmen kívül hagyott protokollkezelők</translation>
 <translation id="8377701321234747567">Médiaimportálás</translation>
-<translation id="6831820634148551662">Az összetett jelszó iterációs száma túl nagy.</translation>
-<translation id="1400709102841174216">Hiányzó tanúsítvány-GUID</translation>
 <translation id="5689774203269256801">A(z) <ph name="NETWORK_ID"/> használatához először <ph name="LINK_START"/>fel kell keresnie a hálózat bejelentkezési oldalát<ph name="LINK_END"/>, amely automatikusan megnyílik néhány másodpercen belül. Ha ez nem történik meg, akkor a hálózat nem használható az internetkapcsolathoz.</translation>
 <translation id="1122988962988799712">WebGL letiltása</translation>
 <translation id="5190835502935405962">Könyvjelzősáv</translation>
@@ -3666,7 +3620,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8698464937041809063">Google-rajz</translation>
 <translation id="7053053706723613360">Jobb munkamenet-visszaállítás letiltása</translation>
 <translation id="5233930340889611108">WebKit</translation>
-<translation id="2195171268098158481">Az eszköz visszaáll eredeti, gyári állapotára. Minden helyi fájl és a média törlődik. Szeretné folytatni?</translation>
 <translation id="8260864402787962391">Egér</translation>
 <translation id="8276560076771292512">Gyorsítótár ürítése és teljes újratöltés</translation>
 <translation id="9076523132036239772">Elnézést kérünk, de e-mail címének vagy jelszavának ellenőrzése sikertelen volt. Próbáljon csatlakozni egy hálózathoz.</translation>
@@ -3767,7 +3720,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="1317130519471511503">Elemek szerkesztése...</translation>
 <translation id="6391538222494443604">Kell lennie beviteli könyvtárnak.</translation>
 <translation id="4264154755694493263">Alkalmazás telepítése esetén mindig megjelenik egy buborék, amely a lapsáv Új lap oldal gombjára mutat, ahelyett, hogy új lap nyílna automatikusan.</translation>
-<translation id="8051695050440594747"><ph name="MEGABYTES"/> MB áll rendelkezésre</translation>
 <translation id="3656347391768053953">Mentés…</translation>
 <translation id="7088615885725309056">Régebbi</translation>
 <translation id="3623476034248543066">Érték megjelenítése</translation>
@@ -3922,14 +3874,12 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="3092040396860056776">Próbálja meg betölteni az oldalt</translation>
 <translation id="4350711002179453268">Nem lehet biztonságos kapcsolatot létesíteni a szerverrel. Lehet, hogy a szerverrel van probléma, de az is lehet, hogy olyan ügyfélhitelesítési tanúsítványt kér, amellyel nem rendelkezik.</translation>
 <translation id="750509436279396091">Letöltések mappa megnyitása</translation>
-<translation id="5789620807628673402">Hálózatimportálási hiba</translation>
 <translation id="5963026469094486319">Témák letöltése</translation>
 <translation id="5306456126804895670">Teljes előzményszinkronizáció engedélyezése.</translation>
 <translation id="3855072293748278406">Sandbox-technológiát nem alkalmazó bővítmény hozzáférése</translation>
 <translation id="1893137424981664888">Nincsenek telepített bővítmények.</translation>
 <translation id="4919810557098212913">A(z) <ph name="HOST"/> weboldal használni kívánja a kamerát.</translation>
 <translation id="3718288130002896473">Viselkedés</translation>
-<translation id="1633226303025864103">A tanúsítvány megbízhatósága érvénytelen</translation>
 <translation id="4813512666221746211">Hálózati hiba</translation>
 <translation id="8711402221661888347">Hamburger</translation>
 <translation id="1254117744268754948">Mappa kiválasztása</translation>
@@ -4127,7 +4077,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="5973229212631512780">A(z) <ph name="FILE_NAME"/> fájl rosszindulatúnak tűnik.</translation>
 <translation id="9144064758854528804">Tartalommal kapcsolatos szkript</translation>
 <translation id="2927657246008729253">Módosítás...</translation>
-<translation id="7586781939132793422">Hangos visszajelzések kikapcsolása</translation>
 <translation id="7978412674231730200">Privát kulcs</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5813394174971374198"><ph name="BEGIN_BOLD"/> Javaslat: <ph name="END_BOLD"/>engedélyezze a(z) <ph name="ADAPTER_NAME"/> adaptert.</translation>
@@ -4169,7 +4118,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="563969276220951735">Űrlap automatikus kitöltése</translation>
 <translation id="7818135753970109980">Új téma hozzáadva (<ph name="EXTENSION_NAME"/>)</translation>
 <translation id="6870130893560916279">Ukrán billentyűzet</translation>
-<translation id="766592070029747268">Nem lehet visszafejteni a titkosított ONC-fájlt.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> perc</translation>
 <translation id="5563986351966648191">Szeretném javítani a rosszindulatú programok észlelését úgy, hogy további adatokat küldök a Google részére, amikor ilyen figyelmeztetésekkel találkozom. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -4200,7 +4148,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="7540972813190816353">Hiba történt a frissítések keresése közben: <ph name="ERROR"/></translation>
 <translation id="2225024820658613551">Javasoljuk, hogy ne menjen tovább, &lt;strong&gt;különösen&lt;/strong&gt; akkor, ha ezt a figyelmeztetést még nem látta ezen a webhelyen.</translation>
 <translation id="4596904276221394120">Engedélyezi az Instant bővített API-t.</translation>
-<translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN"/> domain kezeli.</translation>
 <translation id="1932098463447129402">Ez előtt nem:</translation>
 <translation id="7845920762538502375">A <ph name="PRODUCT_NAME"/> nem tudja szinkronizálni adatait, mert nem képes csatlakozni a szinkronizálás szerveréhez. Újrapróbálkozás...</translation>
 <translation id="7325437708553334317">Kontrasztos megjelenítés bővítmény</translation>
@@ -4242,7 +4189,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="5869522115854928033">Mentett jelszavak</translation>
 <translation id="2089090684895656482">Kisebb</translation>
 <translation id="6656103420185847513">Mappa szerkesztése</translation>
-<translation id="3436440123324878555">Előfizetési csomag vásárlása...</translation>
 <translation id="5748266869826978907">Ellenőrizze a DNS beállításait. Forduljon a hálózati rendszergazdához, ha nem tudja, hogy ez mit jelent.</translation>
 <translation id="4193154014135846272">Google-dokumentum</translation>
 <translation id="4771973620359291008">Ismeretlen hiba történt.</translation>
@@ -4261,7 +4207,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4775266380558160821">Mindig engedélyezze a sandboxba nem helyezett bővítményeket itt: <ph name="HOST"/></translation>
 <translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
 <translation id="8155798677707647270">Új verzió telepítése...</translation>
-<translation id="8186593878477717195">GUID-tanúsítvány ütközés</translation>
 <translation id="6886871292305414135">Link megnyitása új &amp;lapon</translation>
 <translation id="1639192739400715787">A Biztonsági beállításokhoz való hozzáféréshez adja meg a SIM-kártya PIN kódját</translation>
 <translation id="4499634737431431434">Hét</translation>
@@ -4484,7 +4429,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="9147392381910171771">&amp;Beállítások</translation>
 <translation id="1803557475693955505">Nem lehet betölteni a(z) '<ph name="BACKGROUND_PAGE"/>' háttéroldalt.</translation>
 <translation id="8942091167399397362">Letiltja az új zárolási animációkat.</translation>
-<translation id="6643016212128521049">Törlés</translation>
 <translation id="3633997706330212530">Tetszése szerint kikapcsolhatja ezeket a szolgáltatásokat.</translation>
 <translation id="4335713051520279344">Ez a számítógép 1 másodperc múlva újraindul. Bármely gomb lenyomásával folytathatja a felfedezését.</translation>
 <translation id="2929033900046795715">Ebben az esetben a böngészőnek bemutatott szervertanúsítvány vagy egy köztes CA tanúsítvány gyenge kulcsot -- például egy 1024 bitnél kisebb RSA kulcsot -- tartalmaz. Mivel viszonylag könnyű kikövetkeztetni a megfelelő privát kulcsot egy gyenge nyilvános kulcsból, a támadó meghamisíthatta a valódi szerver azonosságát.</translation>
@@ -4555,10 +4499,10 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="6096326118418049043">X.500 név</translation>
 <translation id="6086259540486894113">Legalább egy adattípust ki kell választania a szinkronizáláshoz.</translation>
 <translation id="923467487918828349">Összes megjelenítése</translation>
+<translation id="8061464966246066292">Kontrasztos megjelenítés</translation>
 <translation id="3093189737735839308">Biztosan telepíteni szeretné a(z) <ph name="PLUGIN_NAME"/> plug-int? Csak olyan plug-ineket telepítsen, amelyekben megbízik.</translation>
 <translation id="1928696683969751773">Frissítések</translation>
 <translation id="4298972503445160211">Dán billentyűzet</translation>
-<translation id="8926821375399729046">Egyszerű görgetési irány engedélyezése <ph name="BEGIN_LINK"/>További információ<ph name="END_LINK"/></translation>
 <translation id="6621440228032089700">Lehetővé teszi a képernyőn kívüli textúrák összevonását (&quot;compositing&quot;) a közvetlen megjelenítés helyett.</translation>
 <translation id="3488065109653206955">Részben aktiválva</translation>
 <translation id="1481244281142949601">Az Ön sandbox-technológiája megfelelő.</translation>
@@ -4650,7 +4594,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4065006016613364460">Kép URL-jének má&amp;solása</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="421182450098841253">&amp;Könyvjelzősáv megjelenítése</translation>
-<translation id="8000066093800657092">Nincs hálózat</translation>
 <translation id="4481249487722541506">Kicsomagolt bővítmények betöltése...</translation>
 <translation id="8180239481735238521">oldal</translation>
 <translation id="7532099961752278950">Alkalmazás által beállítva:</translation>
@@ -4721,14 +4664,12 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="343467364461911375">Némelyik tartalomszolgáltatás számítógép-azonosítókat használ az Ön egyedi azonosítására, hogy jogosultságot biztosítson a védett tartalom elérésére.</translation>
 <translation id="5061708541166515394">Kontraszt</translation>
 <translation id="747459581954555080">Összes visszaállítása</translation>
-<translation id="5130217514988682057">Helytelenül formázott tanúsítványadatok</translation>
 <translation id="7602079150116086782">Nincs más eszközről származó lap</translation>
 <translation id="7167486101654761064">&amp;Az ilyen típusú fájlokat mindig nyissa meg</translation>
 <translation id="5826507051599432481">Név (CN)</translation>
 <translation id="8914326144705007149">Nagyon nagy</translation>
 <translation id="4215444178533108414">Elemek eltávolításának befejezése</translation>
 <translation id="5154702632169343078">Tulajdonos</translation>
-<translation id="2575379921941782763">Kisegítő lehetőségek  engedélyezve</translation>
 <translation id="2273562597641264981">Operátor:</translation>
 <translation id="122082903575839559">Tanúsítvány aláírási algoritmusa</translation>
 <translation id="4462159676511157176">Egyéni névszerverek</translation>
@@ -4823,7 +4764,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="7900877224946181357">A(z) <ph name="PRODUCT_NAME"/> használja a kamerát.</translation>
 <translation id="6596325263575161958">Titkosítási lehetőségek</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
-<translation id="622718162866842437">Hibás formátumú hálózati EAP-szótár</translation>
 <translation id="3380864720620200369">Ügyfél-azonosító:</translation>
 <translation id="5037888205580811046">Egy interaktív automatikus kiegészítés felhasználói felületet aktivál, melyet a HTMLFormElement#requestAutocomplete használatával hívhat meg.</translation>
 <translation id="1559528461873125649">Nincs ilyen fájl vagy könyvtár</translation>

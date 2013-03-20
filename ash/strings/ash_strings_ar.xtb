@@ -74,7 +74,7 @@
 <translation id="2472320577759310817">تم إيقاف البلوتوث.</translation>
 <translation id="2372145515558759244">جارٍ مزامنة التطبيقات...</translation>
 <translation id="3227723743333276085"><ph name="BLUETOOTH"/>: جارٍ إلغاء التوصيل...</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> حتى الاكتمال</translation>
+<translation id="8456362689280298700">حتى الاكتمال: <ph name="HOUR"/>:<ph name="MINUTE"/> ‏</translation>
 <translation id="5787281376604286451">تم تمكين التعليقات المنطوقة.
 يمكنك الضغط على Ctrl+Alt+Z لتعطيلها.</translation>
 <translation id="4479639480957787382">إيثرنت</translation>
@@ -124,7 +124,7 @@
 <translation id="5045002648206642691">إعدادات Google Drive...</translation>
 <translation id="7209101170223508707">المفتاح CAPS LOCK في وضع التشغيل. اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift لإلغاء التشغيل.</translation>
 <translation id="8061464966246066292">تباين عالٍ</translation>
-<translation id="5102001756192215136">الوقت المتبقي <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="5102001756192215136">الوقت المتبقي: <ph name="HOUR"/>:<ph name="MINUTE"/> ‏</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>

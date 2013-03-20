@@ -432,13 +432,6 @@ If not set or set to False, users will be able to transfer files to Google Drive
 <translation id="6258193603492867656">Specifies whether the generated Kerberos SPN should include a non-standard port. If you enable this setting, and a non-standard port (i.e. a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN. If you disable this setting, the generated Kerberos SPN will not include a port in any case.</translation>
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
 <translation id="2498238926436517902">Always auto-hide the shelf</translation>
-<translation id="3442095178490656861">Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using &quot;GMT&quot; instead.
-
-      If this policy is not used, the currently active timezone will remain in use however users can change the timezone and the change is persistent. Thus a change by one user affects the login-screen and all other users.
-
-      New devices start out with the timezone set to &quot;US/Pacific&quot;.
-
-      The format of the value follows the names of timezones in the &quot;IANA Time Zone Database&quot; (see &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). In particular, most timezones can be referred to by &quot;continent/large_city&quot; or &quot;ocean/large_city&quot;.</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME"/></translation>

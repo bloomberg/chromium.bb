@@ -35,7 +35,7 @@
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
 <translation id="4831257561365056138">卸载 Chromium 应用启动器</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Chromium 无法阻止扩展程序记录您的浏览历史记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Chromium 无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>

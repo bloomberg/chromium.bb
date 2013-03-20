@@ -305,13 +305,6 @@
 <translation id="6258193603492867656">Menentukan apakah SPN Kerberos yang dihasilkan harus mencakup port non-standar. Jika Anda mengaktifkan setelan ini, dan port non-standar (selain port 80 atau 443) dimasukkan, port ini akan dimasukkan ke SPN Kerberos yang dihasilkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, SPN Kerberos yang dihasilkan tidak akan pernah mencakup port.</translation>
 <translation id="3236046242843493070">Pola URL untuk memungkinkan pemasangan skrip pengguna, aplikasi, dan ekstensi dari</translation>
 <translation id="2498238926436517902">Selalu sembunyikan rak secara otomatis</translation>
-<translation id="3442095178490656861">Tentukan zona waktu yang akan digunakan di perangkat. Pengguna dapat mengganti zona waktu yang telah ditentukan untuk sesi ini. Namun, zona waktu tersebut akan kembali ke zona waktu yang telah ditentukan saat keluar. Jika nilai yang diberikan tidak valid, maka kebijakan ini tetap diaktifkan menggunakan &quot;GMT&quot; sebagai gantinya.
-
-      Jika kebijakan ini tidak digunakan, zona waktu yang aktif saat ini akan digunakan. Namun, pengguna dapat mengubah zona waktu ini dan perubahan tersebut akan tetap digunakan. Perubahan yang dilakukan oleh pengguna itu memengaruhi layar masuk dan semua pengguna lain.
-
-      Perangkat baru memulai dengan zona waktu disetel ke &quot;AS/Pasifik&quot;.
-
-      Format nilai mengikuti nama zona waktu dalam &quot;Basis Data Zona Waktu IANA&quot; (lihat &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Khususnya, hampir semua zona waktu dapat direferensikan dengan &quot;continent/large_city&quot; atau &quot;ocean/large_city&quot;.</translation>
 <translation id="152657506688053119">Daftar URL pengganti untuk penyedia penelusuran default</translation>
 <translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME"/></translation>

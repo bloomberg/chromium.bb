@@ -436,13 +436,6 @@
           Si inhabilitas esta opción o si no estableces esta política, el SPN de Kerberos generado no incluirá un puerto en ningún caso.</translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se puede instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="2498238926436517902">Ocultar siempre automáticamente los archivos</translation>
-<translation id="3442095178490656861">Especifica la zona horaria que se debe utilizar para el dispositivo. Los usuarios pueden sobrescribir la zona horaria especificada para la sesión en curso. Sin embargo, al cerrar sesión, se vuelve a establecer la zona horaria especificada. Si se indica un valor que no sea válido, la política se activa utilizando GMT.
-
-      Si no se utiliza esta política, se sigue utilizando la zona horaria activa en ese momento. No obstante, los usuarios pueden cambiar la zona horaria, y ese cambio perdura. Por tanto, si un usuario hace un cambio, ese cambio afectará a la pantalla de inicio de sesión y a todos los demás usuarios.
-
-      Cuando se inician nuevos dispositivos, se establece la zona horaria US/Pacific.
-
-      El valor sigue el formato de nombre de las zonas horarias de la base de datos de zonas horarias (TimeZone Database o TZ Database) de IANA (http://es.wikipedia.org/wiki/TZ_Database). Concretamente, la mayoría de las zonas horarias pueden corresponder a ocean/large_city o continent/large_city.</translation>
 <translation id="152657506688053119">Lista de URL alternativas para el proveedor de búsquedas predeterminado</translation>
 <translation id="8992176907758534924">No permitir que todos los sitios muestren imágenes</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME"/></translation>

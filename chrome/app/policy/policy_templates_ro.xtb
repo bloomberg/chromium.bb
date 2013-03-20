@@ -305,13 +305,6 @@
 <translation id="6258193603492867656">Specifică dacă în protocolul Kerberos numele SPN generate ar trebui să includă un port non-standard. Dacă activați această setare și este introdus un port non-standard (de exemplu, un alt port decât 80 sau 443), acesta va fi inclus în numele SPN generate în protocolul Kerberos. Dacă dezactivați această setare sau o lăsați nesetată, codurile SPN generate în Kerberos nu vor include un port.</translation>
 <translation id="3236046242843493070">Modele de adrese URL de la care se permite instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="2498238926436517902">Ascundeți întotdeauna automat raftul</translation>
-<translation id="3442095178490656861">Specifică fusul orar utilizat pentru dispozitiv. Utilizatorii pot schimba fusul orar specificat pentru sesiunea în curs. Cu toate acestea, la deconectare, setarea revine la fusul orar specificat. Dacă se furnizează o valoare incorectă, politica este activată utilizând în schimb fusul orar „GMT”.
-
-      Dacă nu se utilizează această politică, va fi utilizat fusul orar activ la momentul respectiv. Totuși, utilizatorii pot modifica fusul orar și se va păstra această schimbare. Prin urmare, schimbarea făcută de un utilizator afectează ecranul de conectare și pe toți ceilalți utilizatori.
-
-      Dispozitivele noi pornesc cu fusul orar setat la „SUA/Pacific”.
-
-      Formatul valorii respectă denumirile fusurilor orare din „Baza de date de fusuri orare IANA” (accesați „http://en.wikipedia.org/wiki/List_of_tz_database_time”). Mai exact, majoritatea fusurilor orare sunt denumite după „continent/oraș_mare” sau „ocean/oraș_mare”.</translation>
 <translation id="152657506688053119">Lista adreselor URL alternative pentru furnizorul de căutare prestabilit</translation>
 <translation id="8992176907758534924">Nu permiteți niciunui site să afișeze imagini</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME"/></translation>

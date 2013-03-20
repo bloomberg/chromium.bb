@@ -6,7 +6,7 @@
 <translation id="2426432199384958866">将流式传输电影恢复为实时</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="6015796118275082299">年</translation>
-<translation id="9186171386827445984">正在载入文档：已载入 <ph name="PAGE_NUMBER"/> 页，共 <ph name="NUMBER_OF_PAGES"/> 页...</translation>
+<translation id="9186171386827445984">正在加载文档：已加载 <ph name="PAGE_NUMBER"/> 页，共 <ph name="NUMBER_OF_PAGES"/> 页...</translation>
 <translation id="1235745349614807883">清除最近的搜索</translation>
 <translation id="7223624360433298498">已播放时间</translation>
 <translation id="1171774979989969504">请输入电子邮件地址。</translation>
@@ -27,7 +27,7 @@
 <translation id="1930711995431081526">状态</translation>
 <translation id="658823671542763450">进入全屏模式</translation>
 <translation id="7720026100085573005">剩余时间</translation>
-<translation id="370665806235115550">正在载入...</translation>
+<translation id="370665806235115550">正在加载...</translation>
 <translation id="2723001399770238859">音频</translation>
 <translation id="6845533974506654842">按</translation>
 <translation id="8244226242650769279">图片映射</translation>
@@ -83,7 +83,7 @@
 <translation id="2226276347425096477">请将该文本减少为 <ph name="MAX_CHARACTERS"/> 个字符或更少（您当前使用了 <ph name="CURRENT_LENGTH"/> 个字符）。</translation>
 <translation id="6101327004457443354">取消对音轨静音</translation>
 <translation id="1822429046913737220">上午/下午</translation>
-<translation id="1639239467298939599">正在载入</translation>
+<translation id="1639239467298939599">正在加载</translation>
 <translation id="2908441821576996758">请输入用逗号分隔的电子邮件地址的列表。</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="1921819250265091946">dd</translation>
@@ -101,7 +101,7 @@
 <translation id="6643016212128521049">清除</translation>
 <translation id="4851297395436456855">快进</translation>
 <translation id="1088086359088493902">秒</translation>
-<translation id="3934680773876859118">无法载入 PDF 文档</translation>
+<translation id="3934680773876859118">无法加载 PDF 文档</translation>
 <translation id="3632707345189162177">电影剩余时间（以秒为单位）</translation>
 <translation id="6359256949422175976">电影时间进度条缩略图</translation>
 <translation id="8597182159515967513">标题</translation>

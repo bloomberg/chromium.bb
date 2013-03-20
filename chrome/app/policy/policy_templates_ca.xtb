@@ -313,13 +313,6 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
 <translation id="6258193603492867656">Especifica si l'SPN de Kerberos que es genera ha d'incloure un port no estàndard. Si activeu aquest paràmetre i introduïu un port no estàndard (p. ex. un port diferent de 80 o de 443), s'inclourà a l'SPN de Kerberos que es generi. Si desactiveu aquest paràmetre o no el definiu, l'SPN del Kerberos que es generi no inclourà cap port en cap cas.</translation>
 <translation id="3236046242843493070">Patrons d'URL per permetre la instal·lació d'extensions, d'aplicacions i de scripts d'usuari des de</translation>
 <translation id="2498238926436517902">Amaga sempre la safata automàticament</translation>
-<translation id="3442095178490656861">Especifica la zona horària que ha d'utilitzar el dispositiu. Els usuaris poden canviar la zona horària especificada a la sessió actual. Tanmateix, en tancar la sessió, torna a la zona horària especificada. Si es proporciona un valor no vàlid, la política fa servir la zona horària &quot;GMT&quot; per activar-se.
-
-      Si no es fa servir aquesta política, es continuarà utilitzant la zona horària activa actualment, tot i que els usuaris podran canviar la zona horària, i el canvi es mantindrà. Els canvis fets pels usuaris afecten la pantalla d'inici de sessió i tots els altres usuaris.
-
-      Els dispositius nous s'inicien amb la zona horària definida com a &quot;EUA/Pacífic&quot;.
-
-      El format del valor es regeix pels noms de les zones horàries, que podeu consultar a la &quot;Base de dades de zones horàries IANA&quot; (consulteu &quot;http://en.wikipedia.org/wiki/Tz_database&quot;, en anglès). En concret, la majoria de zones horàries es descriuen amb el format &quot;continent/ciutat_gran&quot; o &quot;oceà/ciutat_gran&quot;.</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME"/></translation>

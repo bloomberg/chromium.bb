@@ -429,13 +429,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak toto nastavenie zakážete alebo ho ponecháte nenastavené, port sa do vygenerovaného hlavného názvu služby protokolu Kerberos v žiadnom prípade nezahrnie.</translation>
 <translation id="3236046242843493070">Vzory adries URL na povolenie zdrojov inštalácie rozšírenia, aplikácie a skriptov používateľa</translation>
 <translation id="2498238926436517902">Poličku vždy skrývať automaticky</translation>
-<translation id="3442095178490656861">Určuje, ktoré časové pásmo sa má v zariadení použiť. Používatelia môžu prepísať stanovené časové pásmo pre aktuálnu reláciu. Po odhlásení sa však nastaví späť na pôvodne určené časové pásmo. V prípade zadania nesprávnej hodnoty je pravidlo namiesto toho stále aktivované pomocou možnosti GMT.
-
-      Ak sa toto pravidlo nepoužíva, aktuálne aktívne časové pásmo zostane platné aj naďalej. Používatelia ho však môžu zmeniť a zmena bude trvalá. Zmena jedným používateľom preto ovplyvní prihlasovaciu obrazovku aj všetkých ostatných používateľov.
-
-      Pôvodné časové pásmo v nových zariadeniach je nastavené na hodnotu US/Pacific (americký/tichomorský čas).
-
-      Formát hodnoty je stanovený podľa názvov časových pásiem v databáze IANA Time Zone Database (pozrite si stránku http://en.wikipedia.org/wiki/List_of_tz_database_time). Väčšina časových pásiem sa konkrétne udáva ako continent/large_city (kontinent / veľké mesto) alebo ocean/large_city (oceán / veľké mesto).</translation>
 <translation id="152657506688053119">Zoznam alternatívnych adries URL pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="8992176907758534924">Zakázať všetkým stránkam zobrazovať obrázky</translation>
 <translation id="262740370354162807">Povolí odoslanie dokumentov do služby <ph name="CLOUD_PRINT_NAME"/></translation>

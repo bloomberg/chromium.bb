@@ -435,13 +435,6 @@
             Pokud toto nastavení deaktivujete nebo nenastavíte, vygenerovaný hlavní název služby (SPN) protokolu Kerberos port v žádném případě obsahovat nebude.</translation>
 <translation id="3236046242843493070">Vzory adres URL, ze kterých je možné instalovat rozšíření, aplikace a uživatelské skripty</translation>
 <translation id="2498238926436517902">Vždy automaticky skrýt sklad</translation>
-<translation id="3442095178490656861">Určuje, které časové pásmo se má v zařízení použít. Uživatelé mohou stanovené časové pásmo v aktuální relaci přepsat. Po odhlášení se však nastaví zpět na původně určené časové pásmo. Je-li zadána nesprávná hodnota, zásada se i tak aktivuje a použije pásmo GMT.
-
-      Pokud se zásada nepoužívá, zůstane i nadále platné aktuální aktivní časové pásmo. Uživatelé je však budou moci změnit a změna bude trvalá. Změna provedená jedním uživatelem proto ovlivní přihlašovací obrazovku i všechny ostatní uživatele.
-
-      Časové pásmo je v nových zařízeních nastaveno na americký tichomořský čas.
-
-      Formát hodnot je stanoven podle názvu časových pásem v databázi „IANA Time Zone Database“ (viz http://en.wikipedia.org/wiki/Tz_database). Většina časových pásem se udává jako kontinent/velké_město nebo oceán/velké_město.</translation>
 <translation id="152657506688053119">Seznam alternativních adres URL výchozího poskytovatele vyhledávání</translation>
 <translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
 <translation id="262740370354162807">Povolí odesílání dokumentů do služby <ph name="CLOUD_PRINT_NAME"/></translation>

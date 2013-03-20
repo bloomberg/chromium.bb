@@ -432,13 +432,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
          Kung hindi mo pinagana ang setting na ito, ang nabuong Kerberos SPN ay hindi magsasama ng port sa anumang kaso.</translation>
 <translation id="3236046242843493070">Mga pattern ng URL na bibigyang-daan ang mga manggagaling na pag-install ng extension, app, at script ng user</translation>
 <translation id="2498238926436517902">Palaging awtomatikong itago ang shelf</translation>
-<translation id="3442095178490656861">Tinutukoy ang gagamiting timezone para sa device. Maaaring i-override ng mga user ang tinukoy na timezone para sa kasalukuyang session. Gayunpaman, itinatakda ito pabalik sa tinukoy na timezone sa pag-logout. Kung nagbigay ng di-wastong halaga, maa-activate pa rin ang patakaran gamit sa halip ang &quot;GMT&quot;.
-
-      Kung hindi ginamit ang patakarang ito, mananatili ang paggamit sa kasalukuyang aktibong timezone, gayunpaman, mababago ng mga user ang timezone at hindi mapapalitan ang pagbabago. Samakatuwid, makakaapekto ang pagbabago ng isang user sa screen sa pag-login at sa lahat ng iba pang user.
-
-      Magsisimula ang mga bagong device na nakatakda ang timezone sa &quot;US/Pacific&quot;.
-
-      Sumusunod ang format ng halaga sa pangalan ng mga timezone sa &quot;IANA Time Zone Database&quot; (tingnan ang &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Sa partikular, maaaring tawagin ang karamihan sa mga timezone ayon sa &quot;continent/large_city&quot; o &quot;ocean/large_city&quot;.</translation>
 <translation id="152657506688053119">Listahan ng mga kahaliling URL para sa default na search provider</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME"/></translation>

@@ -435,13 +435,6 @@ Si vous activez ce paramètre et qu'un port non standard (c'est-à-dire, un port
 Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerberos généré ne comprend aucun port.</translation>
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="2498238926436517902">Toujours masquer automatiquement le répertoire</translation>
-<translation id="3442095178490656861">Indique le fuseau horaire utilisé par l'appareil. Les utilisateurs peuvent ignorer le fuseau horaire spécifié pour la session en cours. Cependant, le paramètre est de nouveau défini sur le fuseau horaire spécifié lors de la déconnexion. Si une valeur non valide est utilisée, la règle est toutefois activée avec le fuseau &quot;GMT&quot;.
-
-      Si la règle n'est pas appliquée, le fuseau horaire actif continue d'être utilisé. Cependant, les utilisateurs peuvent modifier le fuseau horaire, et cette modification est permanente. En conséquence, toute modification apportée par un utilisateur a une incidence sur l'écran de connexion de tous les autres utilisateurs.
-
-      Le fuseau horaire est défini sur &quot;États-Unis/Pacifique&quot; pour tous les nouveaux appareils.
-
-      Le format de la valeur correspond aux noms des fuseaux horaires de la &quot;IANA Time Zone Database&quot; (voir la page &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). La plupart des fuseaux horaires se présentent sous la forme &quot;continent/grande_ville&quot; ou &quot;océan/grande_ville&quot;.</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME"/></translation>

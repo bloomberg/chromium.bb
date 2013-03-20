@@ -303,13 +303,6 @@ Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_
 <translation id="6258193603492867656">Consente di specificare se il Kerberos SPN generato deve includere una porta non standard. Se attivi questa impostazione e specifichi una porta non standard (cioè una porta diversa da 80 o 443), la porta verrà inclusa nel Kerberos SPN generato. Se disattivi l'impostazione o non la imposti, il Kerberos SPN generato non includerà in nessun caso una porta.</translation>
 <translation id="3236046242843493070">Pattern URL per consentire installazioni di estensioni, applicazioni e script utente da</translation>
 <translation id="2498238926436517902">Nascondi sempre automaticamente lo shelf</translation>
-<translation id="3442095178490656861">Consente di specificare il fuso orario da utilizzare per il dispositivo. Gli utenti possono sostituire il fuso orario specificato per la sessione corrente. Dopo la disconnessione viene ripristinato il fuso orario specificato. Se viene specificato un valore non valido, la norma viene attivata comunque utilizzando il valore &quot;GMT&quot;.
-
-Se questa norma non viene utilizzata, rimarrà in uso il fuso orario attivo, ma gli utenti potranno modificarlo e tale modifica sarà costante. La modifica di un utente incide sulla schermata di accesso e su tutti gli altri utenti.
-
-Sui nuovi dispositivi è impostato il fuso orario &quot;US/Pacific&quot;.
-
-Il formato del valore segue quello dei nomi dei fusi orari del &quot;IANA Time Zone Database&quot; (consultare la pagina &quot;http://en.wikipedia.org/wiki/Tz_database&quot;). In particolare, gran parte dei fusi orari possono essere indicati come &quot;continente/grande_città&quot; o &quot;oceano/grande_città&quot;.</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME"/></translation>

@@ -125,7 +125,7 @@
 <translation id="2346876346033403680">之前有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST"/> 帐户登录 Chrome。如果这不是您的帐户，请新建一个 Chrome 用户来单独保存您的信息。
 
 如果您仍然登录，Chrome 信息（例如书签、历史记录和其他设置）将合并到 <ph name="ACCOUNT_EMAIL_NEW"/>。</translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Google Chrome 浏览器无法阻止扩展程序记录您的浏览历史记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Google Chrome 浏览器无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
@@ -233,6 +233,6 @@
 <translation id="8449380764213232436">Google Chrome 浏览器正在从<ph name="BROWSER_COMPONENT"/>中导入以下内容：</translation>
 <translation id="852884188147941900">Chrome 浏览器工作应用</translation>
 <translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载 Google Chrome。</translation>
-<translation id="5495581687705680288">模块已载入到 Google Chrome 浏览器中</translation>
+<translation id="5495581687705680288">模块已加载到 Google Chrome 浏览器中</translation>
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
 </translationbundle>

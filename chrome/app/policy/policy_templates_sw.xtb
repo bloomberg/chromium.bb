@@ -437,13 +437,6 @@
           Ukilemaza mpangilio huu au uuache bila kuwekwa, Kerberos SPN zilizotengenezwa hazitajumuisha lango kwa namna yoyote.</translation>
 <translation id="3236046242843493070">Ruwaza za URL ili kuruhusu viendelezi, programu, na hati za mtumiaji kusakinisha kutoka</translation>
 <translation id="2498238926436517902">Ficha rafu otomatiki kila wakati</translation>
-<translation id="3442095178490656861">Inabainisha saa za eneo zitakazotumiwa kwa ajili ya kifaa. Mtumiaji anaweza kufuta saa ya eneo iliyobainishwa kwa ajili ya kipindi cha sasa. Hata hivyo, wakati wa kutoka inawekwa nyuma kwenye saa ya ukanda iliyobainishwa. Ikiwa thamani batili itatolewa, sera ingali itaamilishwa kwa kutumia &quot;GMT&quot; badala yake.
-
-      Ikiwa sera hii haitatumiwa, saa za eneo zitaendelea kutumiwa hata hivyo watumiaji wanaweza kubadilisha saa ya ukanda na mabadiliko yaendelee. Kwa hivyo mabadiliko ya mtumiaji mmoja yanaathiri skrini ya kuingia na watumiaji wengine wote.
-
-      Vifaa vipya vinaanza saa za eneo zikiwa zimewekwa kwenye &quot;US/Pacific&quot;.
-
-      Umbizo la thamani linafuata jina la saa za eneo katika &quot;Hifadhidata ya Saa ya Ukanda ya IANA&quot; (ona &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Pia, saa nyingi za ukanda zinaweza kujulikana kama &quot;continent/large_city&quot; au &quot;ocean/large_city&quot;.</translation>
 <translation id="152657506688053119">Orodha ya URL mbadala za mtoa huduma chaguo-msingi wa utafutaji.</translation>
 <translation id="8992176907758534924">Usiruhusu tovuti yoyote kuonyesha picha</translation>
 <translation id="262740370354162807">Wezesha uwasilishaji wa nyaraka kwenye <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -1287,7 +1280,7 @@ Ucheleweshaji wa kutokuwa na shughuli unapopimwa, ufifilizi wa skrini, uchelewes
 
           Sera hii inapokuwa haijawekwa, urefu wa muda wa chaguo-msingi unatumiwa.
 
-          Sera ya thamani inastahili kubainishwa kwa nukta.</translation>
+          Sera ya thamani inastahili kubainishwa kwa nukta. </translation>
 <translation id="5512418063782665071">URL ya ukurasa wa kwanza</translation>
 <translation id="2948381198510798695"><ph name="PRODUCT_NAME"/> itakwepa proksi yoyote ya orodha ya wapangishaji iliyotolewa hapa.
 

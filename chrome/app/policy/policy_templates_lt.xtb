@@ -434,13 +434,6 @@
           Jei šio nustatymo neleisite, į sugeneruotą „Kerberos“ SPN niekada nebus įtrauktas prievadas.</translation>
 <translation id="3236046242843493070">URL šablonai, kuriuos naudojant galima įdiegti plėtinį, programą ir naudotojo scenarijų iš</translation>
 <translation id="2498238926436517902">Visada automatiškai paslėpti lentyną</translation>
-<translation id="3442095178490656861">Nurodo įrenginyje naudojamą laiko juostą. Naudotojai gali nepaisyti nurodytos laiko juostos dabartinės sesijos metu. Tačiau atsijungus vėl nustatoma nurodyta laiko juosta. Jei pateikiama netinkama vertė, politika vis tiek suaktyvinama naudojant Grinvičo laiko juostą.
-
-      Jei ši politika nenaudojama, bus naudojama šiuo metu suaktyvinta laiko juosta, bet naudotojai gali pakeisti laiko juostą ir šis pakeitimas bus nuolatinis. Todėl vieno naudotojo atliktas pakeitimas turi įtakos prisijungimo ekranui ir visiems kitiems naudotojams.
-
-      Naujuose įrenginiuose nustatyta „JAV / Ramiojo vandenyno“ laiko juosta.
-
-      Vertės formatai atitinka laiko juostas, pateiktas „IANA laiko juostų duomenyse“ (žr. šiuo adresu: http://lt.wikipedia.org/wiki/List_of_tz_database_time). Daugelis laiko juostų pavadintos pagal „žemyną / didelį_miestą“ arba „vandenyną / didelį_miestą“.</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
 <translation id="262740370354162807">Įgalinti dokumentų pateikimą „<ph name="CLOUD_PRINT_NAME"/>“</translation>

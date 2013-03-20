@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau yang lebih baru.</translation>
-<translation id="8124352762008487242">Hak Cipta 2013 Google Inc. Semua hak dilindungi.</translation>
+<translation id="8124352762008487242">Hak Cipta 2013 Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="8485767968786176057">Kalau begini, alamat yang tercantum dalam sertifikat tidak cocok dengan alamat situs web yang ingin dituju browser Anda. Satu kemungkinan penyebabnya adalah komunikasi Anda sedang diganggu oleh penyerang yang memberikan sertifikat untuk situs web lain, sehingga mengakibatkan ketidakcocokan. Kemungkinan lain adalah server dikonfigurasi untuk menampilkan sertifikat yang sama untuk beberapa situs web, termasuk salah satu yang akan dikunjungi, meskipun sertifikat tersebut tidak valid bagi semua situs web tersebut. Google Chrome dapat memastikan bahwa Anda mencapai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, namun tidak dapat memverifikasi bahwa itu adalah situs yang sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang ingin Anda buka. Jika Anda melanjutkan, Chrome tidak akan memeriksa setiap ketidakcocokan nama lebih lanjut.</translation>
 <translation id="5430073640787465221">File preferensi Anda rusak atau tidak valid. Google Chrome tidak dapat memulihkan setelan Anda.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>

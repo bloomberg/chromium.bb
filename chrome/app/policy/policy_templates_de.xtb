@@ -305,13 +305,6 @@
 <translation id="6258193603492867656">Gibt an, ob der generierte Kerberos-SPN einen Nicht-Standard-Port umfassen soll. Falls Sie diese Einstellung aktivieren und ein Nicht-Standard-Port (ein anderer Port als 80 oder 443) eingegeben wird, wird dieser in den generierten Kerberos-SPN aufgenommen. Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, umfasst der generierte Kerberos-SPN in keinem Fall einen Port.</translation>
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="2498238926436517902">Ablage immer automatisch ausblenden</translation>
-<translation id="3442095178490656861">Mit dieser Richtlinie wird die für das Gerät zu verwendende Zeitzone festgelegt. Die Nutzer können die festgelegte Zeitzone für die aktuelle Sitzung außer Kraft setzen. Sobald sie sich abmelden, wird die Zeitzone jedoch wieder auf die festgelegte Einstellung zurückgesetzt. Bei Angabe eines ungültigen Werts greift die Richtlinie weiterhin und es wird stattdessen &quot;GMT&quot; verwendet.
-
-      Wird die Richtlinie nicht angewendet, wird die derzeit aktive Zeitzone verwendet. Allerdings können die Nutzer die Zeitzone dann ändern und die Änderung wird beibehalten. Die Änderung durch einen Nutzer wirkt sich dann auf die Anmeldeseite und die Einstellungen für alle Nutzer aus.
-
-      Bei neuen Geräten ist die Zeitzone &quot;US/Pacific Time&quot; voreingestellt.
-
-      Das Format des Werts entspricht den Namen der Zeitzonen in der &quot;IANA Time Zone Database&quot; (siehe &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time_zones&quot;). Auf die meisten Zeitzonen kann über &quot;Kontinent/Stadt&quot; oder &quot;Ozean/Stadt&quot; verwiesen werden.</translation>
 <translation id="152657506688053119">Liste alternativer URLs für den Standardsuchanbieter</translation>
 <translation id="8992176907758534924">Anzeige von Bildern für alle Websites blockieren</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME"/> aktivieren</translation>

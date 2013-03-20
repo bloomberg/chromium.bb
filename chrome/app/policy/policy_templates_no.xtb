@@ -396,13 +396,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
           Hvis du deaktiverer denne innstillingen eller ikke angir den, omfatter ikke den genererte Kerberos SPN-en noen port i noe tilfelle.</translation>
 <translation id="3236046242843493070">Nettadressemønstre du vil tillate installasjoner av utvidelser, programmer og brukerskript fra</translation>
 <translation id="2498238926436517902">Alltid skjul hyllen automatisk</translation>
-<translation id="3442095178490656861">Angir tidssonen som skal brukes for enheten. Brukere kan overstyre den angitte tidssone for den gjeldende økten. Men ved avlogging tilbakestilles denne til den angitte tidssonen. Hvis en ugyldig verdi angis, er retningslinjen fremdeles aktivert, og benytter «GMT» i stedet.
-
-      Hvis denne retningslinjen ikke brukes, blir den gjeldende tidssonen fremdeles brukt, men brukere kan endre tidssonen, og endringen er vedvarende. Dermed kommer en endring som gjøres av én bruker til å påvirke påloggingssiden og alle andre brukere.
-
-      Nye enheter har tidssonen for USA og Stillehavskysten som standard.
-
-      Formatet på verdien følger navnene på tidssoner i tidssonedatabasen «IANA Time Zone Database» (les mer her: http://en.wikipedia.org/wiki/List_of_tz_database_time). De fleste tidssoner kan refereres til som «kontinent/stor_by» eller «hav/stor_by».</translation>
 <translation id="152657506688053119">Liste over alternative nettadresser for standard søkeleverandør</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME"/></translation>

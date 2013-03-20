@@ -430,13 +430,6 @@
       Bu ayarı devre dışı bırakırsanız oluşturulan Kerberos SPN'sine hiçbir durumda bağlantı noktası dahil edilmez.</translation>
 <translation id="3236046242843493070">Uzantı, uygulama ve kullanıcı komut dosyası yüklemelerine izin veren URL kalıpları</translation>
 <translation id="2498238926436517902">Rafı her zaman otomatik olarak gizle</translation>
-<translation id="3442095178490656861">Cihazda kullanılacak saat dilimini belirtir. Kullanıcılar belirtilen saat dilimini mevcut oturum için geçersiz kılabilir. Ancak, çıkış yapınca saat dilimi belirtilen dilime geri döner. Geçersiz bir değer sağlanırsa, politika yine etkinleştirilir ve bu durumda saat dilimi olarak &quot;GMT&quot; kullanılır.
-
-      Bu politika kullanılmazsa o anda etkin olan saat dilimi kullanımda kalır, ancak kullanıcılar saat dilimini değiştirebilirler ve bu değişiklik kalıcı olur. Bu durumda bir kullanıcının yaptığı değişiklik giriş ekranını ve diğer tüm kullanıcıları etkiler.
-
-      Yeni cihazlarda saat dilimi &quot;ABD/Pasifik&quot; olarak ayarlıdır.
-
-      Değerin biçimi  &quot;IANA Saat Dilimleri Veritabanı&quot; (bkz.&quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;) içindeki saat dilimi adlarına uygundur. Özellikle, saat dilimlerinin çoğu &quot;kıta/büyük_kent&quot; veya &quot;okyanus/büyük_kent&quot; olarak anılır.</translation>
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME"/> için gönderilmesini etkinleştir</translation>
