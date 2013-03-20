@@ -208,6 +208,7 @@ IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
   IPC_STRUCT_TRAITS_MEMBER(image_vertical_alignment)
   IPC_STRUCT_TRAITS_MEMBER(image_tiling)
   IPC_STRUCT_TRAITS_MEMBER(image_height)
+  IPC_STRUCT_TRAITS_MEMBER(has_attribution)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStat)

@@ -40,6 +40,9 @@ const char kCSSBackgroundRepeatX[] = "repeat-x";
 const char kCSSBackgroundRepeatY[] = "repeat-y";
 const char kCSSBackgroundRepeat[] = "repeat";
 
+const char kThemeAttributionUrl[] =
+    "chrome-search://theme/IDR_THEME_NTP_ATTRIBUTION";
+
 const char kLTRHtmlTextDirection[] = "ltr";
 const char kRTLHtmlTextDirection[] = "rtl";
 
@@ -709,6 +712,12 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
     // The theme background image height is only valid if |imageUrl| is valid.
     info->Set(v8::String::New("imageHeight"),
               v8::Int32::New(theme_info.image_height));
+
+    // The attribution URL is only valid if the theme has attribution logo.
+    if (theme_info.has_attribution) {
+      info->Set(v8::String::New("attributionUrl"),
+                UTF8ToV8String(kThemeAttributionUrl));
+    }
   }
 
   return info;

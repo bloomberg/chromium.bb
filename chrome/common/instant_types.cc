@@ -38,7 +38,8 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
       image_horizontal_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_vertical_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_tiling(THEME_BKGRND_IMAGE_NO_REPEAT),
-      image_height(0) {
+      image_height(0),
+      has_attribution(false) {
 }
 
 ThemeBackgroundInfo::~ThemeBackgroundInfo() {

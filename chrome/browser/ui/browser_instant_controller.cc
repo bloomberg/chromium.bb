@@ -337,6 +337,9 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
           IDR_THEME_NTP_BACKGROUND);
       DCHECK(image);
       theme_info_.image_height = image->height();
+
+      theme_info_.has_attribution =
+          theme_service->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
     }
 
     initialized_theme_info_ = true;

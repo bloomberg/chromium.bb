@@ -136,6 +136,10 @@ struct ThemeBackgroundInfo {
   // The theme background image height.
   // Value is only valid if |theme_id| is valid.
   uint16 image_height;
+
+  // True if theme has attribution logo.
+  // Value is only valid if |theme_id| is valid.
+  bool has_attribution;
 };
 
 struct InstantMostVisitedItem {
