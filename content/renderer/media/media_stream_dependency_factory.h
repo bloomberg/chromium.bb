@@ -114,6 +114,11 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
+  // Stop the audio source for local audio tracks.
+  // TODO(xians): Remove this function if each audio track takes care of their
+  // own source.
+  void StopLocalAudioSource(const WebKit::WebMediaStream& description);
+
  protected:
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual scoped_refptr<webrtc::MediaStreamInterface>

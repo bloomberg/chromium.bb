@@ -42,11 +42,10 @@ class CONTENT_EXPORT AudioInputMessageFilter
   virtual void RemoveDelegate(int id) OVERRIDE;
   virtual void CreateStream(
       int stream_id,
+      int session_id,
       const media::AudioParameters& params,
-      const std::string& device_id,
       bool automatic_gain_control,
       uint32 total_segments) OVERRIDE;
-  virtual void StartDevice(int stream_id, int session_id) OVERRIDE;
   virtual void RecordStream(int stream_id) OVERRIDE;
   virtual void CloseStream(int stream_id) OVERRIDE;
   virtual void SetVolume(int stream_id, double volume) OVERRIDE;
@@ -85,9 +84,6 @@ class CONTENT_EXPORT AudioInputMessageFilter
   // changed.
   void OnStreamStateChanged(int stream_id,
                             media::AudioInputIPCDelegate::State state);
-
-  // Notification of the opened device of an audio session.
-  void OnDeviceStarted(int stream_id, const std::string& device_id);
 
   // A map of stream ids to delegates.
   IDMap<media::AudioInputIPCDelegate> delegates_;

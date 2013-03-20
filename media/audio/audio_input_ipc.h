@@ -43,10 +43,6 @@ class MEDIA_EXPORT AudioInputIPCDelegate {
   // Called when the input stream volume has changed.
   virtual void OnVolume(double volume) = 0;
 
-  // Called when a device has been started on the server side.
-  // If the device could not be started, |device_id| will be empty.
-  virtual void OnDeviceReady(const std::string& device_id) = 0;
-
   // Called when the AudioInputIPC object is going away and/or when the
   // IPC channel has been closed and no more IPC requests can be made.
   // Implementations must clear any references to the AudioInputIPC object
@@ -79,17 +75,11 @@ class MEDIA_EXPORT AudioInputIPC {
   // Once the stream has been created, the implementation must
   // generate a notification to the AudioInputIPCDelegate and call
   // OnStreamCreated().
-  virtual void CreateStream(
-      int stream_id,
-      const AudioParameters& params,
-      const std::string& device_id,
-      bool automatic_gain_control,
-      uint32 total_segments) = 0;
-
-  // Starts the device on the server side.  Once the device has started,
-  // or failed to start, a callback to
-  // AudioInputIPCDelegate::OnDeviceReady() must be made.
-  virtual void StartDevice(int stream_id, int session_id) = 0;
+  virtual void CreateStream(int stream_id,
+                            int session_id,
+                            const AudioParameters& params,
+                            bool automatic_gain_control,
+                            uint32 total_segments) = 0;
 
   // Corresponds to a call to AudioInputController::Record() on the server side.
   virtual void RecordStream(int stream_id) = 0;

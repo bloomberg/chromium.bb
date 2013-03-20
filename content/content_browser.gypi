@@ -679,7 +679,6 @@
     'browser/renderer_host/java/java_type.cc',
     'browser/renderer_host/java/java_type.h',
     'browser/renderer_host/media/audio_input_device_manager.cc',
-    'browser/renderer_host/media/audio_input_device_manager_event_handler.h',
     'browser/renderer_host/media/audio_input_device_manager.h',
     'browser/renderer_host/media/audio_input_renderer_host.cc',
     'browser/renderer_host/media/audio_input_renderer_host.h',

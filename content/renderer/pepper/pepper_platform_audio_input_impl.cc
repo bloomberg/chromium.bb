@@ -106,24 +106,6 @@ void PepperPlatformAudioInputImpl::OnStateChanged(
     media::AudioInputIPCDelegate::State state) {
 }
 
-void PepperPlatformAudioInputImpl::OnDeviceReady(const std::string& device_id) {
-  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
-      BelongsToCurrentThread());
-
-  if (shutdown_called_)
-    return;
-
-  if (device_id.empty()) {
-    main_message_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PepperPlatformAudioInputImpl::NotifyStreamCreationFailed,
-                   this));
-  } else {
-    // We will be notified by OnStreamCreated().
-    ipc_->CreateStream(stream_id_, params_, device_id, false, 1);
-  }
-}
-
 void PepperPlatformAudioInputImpl::OnIPCClosed() {
   ipc_ = NULL;
 }
@@ -168,19 +150,13 @@ bool PepperPlatformAudioInputImpl::Initialize(
                 media::CHANNEL_LAYOUT_MONO, 1, 0,
                 sample_rate, 16, frames_per_buffer);
 
-  if (device_id.empty()) {
-    // Use the default device.
-    ChildProcess::current()->io_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&PepperPlatformAudioInputImpl::InitializeOnIOThread,
-                   this, 0));
-  } else {
-    // We need to open the device and obtain the label and session ID before
-    // initializing.
-    plugin_delegate_->OpenDevice(
-        PP_DEVICETYPE_DEV_AUDIOCAPTURE, device_id,
-        base::Bind(&PepperPlatformAudioInputImpl::OnDeviceOpened, this));
-  }
+  // We need to open the device and obtain the label and session ID before
+  // initializing.
+  plugin_delegate_->OpenDevice(
+      PP_DEVICETYPE_DEV_AUDIOCAPTURE,
+      device_id.empty() ? media::AudioManagerBase::kDefaultDeviceId : device_id,
+      base::Bind(&PepperPlatformAudioInputImpl::OnDeviceOpened, this));
+
   return true;
 }
 
@@ -196,14 +172,8 @@ void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
   stream_id_ = ipc_->AddDelegate(this);
   DCHECK_NE(0, stream_id_);
 
-  if (!session_id) {
-    // We will be notified by OnStreamCreated().
-    ipc_->CreateStream(stream_id_, params_,
-        media::AudioManagerBase::kDefaultDeviceId, false, 1);
-  } else {
-    // We will be notified by OnDeviceReady().
-    ipc_->StartDevice(stream_id_, session_id);
-  }
+  // We will be notified by OnStreamCreated().
+  ipc_->CreateStream(stream_id_, session_id, params_, false, 1);
 }
 
 void PepperPlatformAudioInputImpl::StartCaptureOnIOThread() {

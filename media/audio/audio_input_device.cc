@@ -49,29 +49,21 @@ AudioInputDevice::AudioInputDevice(
     const scoped_refptr<base::MessageLoopProxy>& io_loop)
     : ScopedLoopObserver(io_loop),
       callback_(NULL),
-      event_handler_(NULL),
       ipc_(ipc),
       stream_id_(0),
       session_id_(0),
-      pending_device_ready_(false),
       agc_is_enabled_(false) {
   CHECK(ipc_);
 }
 
 void AudioInputDevice::Initialize(const AudioParameters& params,
                                   CaptureCallback* callback,
-                                  CaptureEventHandler* event_handler) {
+                                  int session_id) {
   DCHECK(!callback_);
-  DCHECK(!event_handler_);
+  DCHECK_EQ(0, session_id_);
   audio_parameters_ = params;
   callback_ = callback;
-  event_handler_ = event_handler;
-}
-
-void AudioInputDevice::SetDevice(int session_id) {
-  DVLOG(1) << "SetDevice (session_id=" << session_id << ")";
-  message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::SetSessionIdOnIOThread, this, session_id));
+  session_id_ = session_id;
 }
 
 void AudioInputDevice::Start() {
@@ -164,11 +156,7 @@ void AudioInputDevice::OnStateChanged(
       audio_thread_.Stop(MessageLoop::current());
       audio_callback_.reset();
 
-      if (event_handler_)
-        event_handler_->OnDeviceStopped();
-
       stream_id_ = 0;
-      pending_device_ready_ = false;
       break;
     case AudioInputIPCDelegate::kRecording:
       NOTIMPLEMENTED();
@@ -190,30 +178,6 @@ void AudioInputDevice::OnStateChanged(
   }
 }
 
-void AudioInputDevice::OnDeviceReady(const std::string& device_id) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  DVLOG(1) << "OnDeviceReady (device_id=" << device_id << ")";
-
-  // Takes care of the case when Stop() is called before OnDeviceReady().
-  if (!pending_device_ready_)
-    return;
-
-  // If AudioInputDeviceManager returns an empty string, it means no device
-  // is ready for start.
-  if (device_id.empty()) {
-    ipc_->RemoveDelegate(stream_id_);
-    stream_id_ = 0;
-  } else {
-    ipc_->CreateStream(stream_id_, audio_parameters_, device_id,
-                       agc_is_enabled_, kRequestedSharedMemoryCount);
-  }
-
-  pending_device_ready_ = false;
-  // Notify the client that the device has been started.
-  if (event_handler_)
-    event_handler_->OnDeviceStarted(device_id);
-}
-
 void AudioInputDevice::OnIPCClosed() {
   ipc_ = NULL;
 }
@@ -231,23 +195,14 @@ void AudioInputDevice::InitializeOnIOThread() {
   if (stream_id_)
     return;
 
-  stream_id_ = ipc_->AddDelegate(this);
-  // If |session_id_| is not specified, it will directly create the stream;
-  // otherwise it will send a AudioInputHostMsg_StartDevice msg to the browser
-  // and create the stream when getting a OnDeviceReady() callback.
-  if (!session_id_) {
-    ipc_->CreateStream(stream_id_, audio_parameters_,
-        AudioManagerBase::kDefaultDeviceId, agc_is_enabled_,
-        kRequestedSharedMemoryCount);
-  } else {
-    ipc_->StartDevice(stream_id_, session_id_);
-    pending_device_ready_ = true;
+  if (session_id_ <= 0) {
+    DLOG(WARNING) << "Invalid session id for the input stream " << session_id_;
+    return;
   }
-}
 
-void AudioInputDevice::SetSessionIdOnIOThread(int session_id) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  session_id_ = session_id;
+  stream_id_ = ipc_->AddDelegate(this);
+  ipc_->CreateStream(stream_id_, session_id_, audio_parameters_,
+                     agc_is_enabled_, kRequestedSharedMemoryCount);
 }
 
 void AudioInputDevice::StartOnIOThread() {
@@ -267,8 +222,6 @@ void AudioInputDevice::ShutDownOnIOThread() {
     }
 
     stream_id_ = 0;
-    session_id_ = 0;
-    pending_device_ready_ = false;
     agc_is_enabled_ = false;
   }
 
@@ -282,6 +235,7 @@ void AudioInputDevice::ShutDownOnIOThread() {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   audio_thread_.Stop(NULL);
   audio_callback_.reset();
+  session_id_ = 0;
 }
 
 void AudioInputDevice::SetVolumeOnIOThread(double volume) {

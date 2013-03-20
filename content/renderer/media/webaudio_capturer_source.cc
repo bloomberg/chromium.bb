@@ -47,7 +47,7 @@ void WebAudioCapturerSource::setFormat(
 void WebAudioCapturerSource::Initialize(
     const media::AudioParameters& params,
     media::AudioCapturerSource::CaptureCallback* callback,
-    media::AudioCapturerSource::CaptureEventHandler* event_handler) {
+    int session_id) {
   // The downstream client should be configured the same as what WebKit
   // is feeding it.
   DCHECK_EQ(set_format_channels_, params.channels());

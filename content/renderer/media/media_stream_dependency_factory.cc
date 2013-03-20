@@ -462,7 +462,11 @@ MediaStreamDependencyFactory::CreateLocalVideoSource(
 bool MediaStreamDependencyFactory::InitializeAudioSource(
   const StreamDeviceInfo& device_info) {
   DVLOG(1) << "MediaStreamDependencyFactory::InitializeAudioSource()";
-  const MediaStreamDevice device = device_info.device;
+
+  // TODO(henrika): the current design does not support a unique source
+  // for each audio track.
+  if (device_info.session_id <= 0)
+    return false;
 
   // Initialize the source using audio parameters for the selected
   // capture device.
@@ -470,18 +474,10 @@ bool MediaStreamDependencyFactory::InitializeAudioSource(
   // TODO(henrika): refactor \content\public\common\media_stream_request.h
   // to allow dependency of media::ChannelLayout and avoid static_cast.
   if (!capturer->Initialize(
-          static_cast<media::ChannelLayout>(device.channel_layout),
-          device.sample_rate))
+          static_cast<media::ChannelLayout>(device_info.device.channel_layout),
+          device_info.device.sample_rate, device_info.session_id))
     return false;
 
-  // Specify which capture device to use. The acquired session id is used
-  // for identification.
-  // TODO(henrika): the current design does not support a uniqe source
-  // for each audio track.
-  if (device_info.session_id <= 0)
-    return false;
-
-  capturer->SetDevice(device_info.session_id);
   return true;
 }
 
@@ -553,6 +549,21 @@ webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
 WebRtcAudioDeviceImpl*
 MediaStreamDependencyFactory::GetWebRtcAudioDevice() {
   return audio_device_;
+}
+
+void MediaStreamDependencyFactory::StopLocalAudioSource(
+    const WebKit::WebMediaStream& description) {
+  MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
+      description.extraData());
+  if (extra_data && extra_data->is_local() && extra_data->stream() &&
+      !extra_data->stream()->GetAudioTracks().empty()) {
+    if (GetWebRtcAudioDevice()) {
+      scoped_refptr<WebRtcAudioCapturer> capturer =
+          GetWebRtcAudioDevice()->capturer();
+      if (capturer)
+        capturer->Stop();
+    }
+  }
 }
 
 void MediaStreamDependencyFactory::InitializeWorkerThread(

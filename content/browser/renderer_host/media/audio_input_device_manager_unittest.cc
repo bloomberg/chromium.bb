@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
-#include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,36 +38,6 @@ class MockAudioInputDeviceManagerListener
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputDeviceManagerListener);
-};
-
-class MockAudioInputDeviceManagerEventHandler
-    : public AudioInputDeviceManagerEventHandler {
- public:
-  explicit MockAudioInputDeviceManagerEventHandler(MessageLoop* message_loop)
-      : message_loop_(message_loop) {}
-  virtual ~MockAudioInputDeviceManagerEventHandler() {}
-
-  MOCK_METHOD2(DeviceStarted, void(int, const std::string&));
-  MOCK_METHOD1(DeviceStopped, void(int));
-
-  virtual void OnDeviceStarted(int session_id,
-                               const std::string& device_id) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(
-            &MockAudioInputDeviceManagerEventHandler::DeviceStarted,
-            base::Unretained(this), session_id, device_id));
-  }
-
-  virtual void OnDeviceStopped(int session_id) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(
-            &MockAudioInputDeviceManagerEventHandler::DeviceStopped,
-            base::Unretained(this), session_id));
-  }
-
- private:
-  MessageLoop* message_loop_;
-  DISALLOW_COPY_AND_ASSIGN(MockAudioInputDeviceManagerEventHandler);
 };
 
 class AudioInputDeviceManagerTest : public testing::Test {
@@ -133,12 +102,15 @@ TEST_F(AudioInputDeviceManagerTest, OpenAndCloseDevice) {
        iter != devices_.end(); ++iter) {
     // Opens/closes the devices.
     int session_id = manager_->Open(*iter);
-    manager_->Close(session_id);
 
     // Expected mock call with expected return value.
     EXPECT_CALL(*audio_input_listener_,
                 Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
         .Times(1);
+    // Waits for the callback.
+    message_loop_->RunUntilIdle();
+
+    manager_->Close(session_id);
     EXPECT_CALL(*audio_input_listener_,
                 Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
         .Times(1);
@@ -229,8 +201,6 @@ TEST_F(AudioInputDeviceManagerTest, OpenDeviceTwice) {
   // Opens and closes the default device twice.
   int first_session_id = manager_->Open(devices_.front());
   int second_session_id = manager_->Open(devices_.front());
-  manager_->Close(first_session_id);
-  manager_->Close(second_session_id);
 
   // Expected mock calls with expected returned values.
   EXPECT_NE(first_session_id, second_session_id);
@@ -240,19 +210,23 @@ TEST_F(AudioInputDeviceManagerTest, OpenDeviceTwice) {
   EXPECT_CALL(*audio_input_listener_,
               Opened(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
+  // Waits for the callback.
+  message_loop_->RunUntilIdle();
+
+  manager_->Close(first_session_id);
+  manager_->Close(second_session_id);
   EXPECT_CALL(*audio_input_listener_,
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
-
   // Waits for the callback.
   message_loop_->RunUntilIdle();
 }
 
-// Starts and closes the sessions after opening the devices.
-TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
+// Accesses then closes the sessions after opening the devices.
+TEST_F(AudioInputDeviceManagerTest, AccessAndCloseSession) {
   if (!CanRunAudioInputDeviceTests())
     return;
 
@@ -263,13 +237,8 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
   int index = 0;
   scoped_array<int> session_id(new int[devices_.size()]);
 
-  // Creates the EventHandler for the sessions.
-  scoped_ptr<MockAudioInputDeviceManagerEventHandler>
-      audio_input_event_handler(
-          new MockAudioInputDeviceManagerEventHandler(message_loop_.get()));
-
-  // Loops through the devices and calls Open()/Start()/Stop()/Close() for
-  // each device.
+  // Loops through the devices and calls Open()/Close()/GetOpenedDeviceInfoById
+  // for each device.
   for (StreamDeviceInfoArray::const_iterator iter = devices_.begin();
        iter != devices_.end(); ++iter, ++index) {
     // Note that no DeviceStopped() notification for Event Handler as we have
@@ -280,13 +249,10 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
         .Times(1);
     message_loop_->RunUntilIdle();
 
-    manager_->Start(session_id[index], audio_input_event_handler.get());
-    EXPECT_CALL(*audio_input_event_handler,
-                DeviceStarted(session_id[index], iter->device.id))
-        .Times(1);
-    message_loop_->RunUntilIdle();
-
-    manager_->Stop(session_id[index]);
+    const StreamDeviceInfo* info = manager_->GetOpenedDeviceInfoById(
+        session_id[index]);
+    DCHECK(info);
+    EXPECT_EQ(iter->device.id, info->device.id);
     manager_->Close(session_id[index]);
     EXPECT_CALL(*audio_input_listener_,
                 Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
@@ -295,119 +261,11 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
   }
 }
 
-// Tests the behavior of calling Close() without calling Stop().
-TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
-
-  ASSERT_FALSE(devices_.empty());
-
-  InSequence s;
-
-  int index = 0;
-  scoped_array<int> session_id(new int[devices_.size()]);
-
-  // Creates the EventHandlers for the sessions.
-  scoped_ptr<MockAudioInputDeviceManagerEventHandler>
-      audio_input_event_handler(
-          new MockAudioInputDeviceManagerEventHandler(message_loop_.get()));
-
-  // Loop through the devices, and calls Open()/Start()/Close() for the devices.
-  // Note that we do not call stop.
-  for (StreamDeviceInfoArray::const_iterator iter = devices_.begin();
-       iter != devices_.end(); ++iter, ++index) {
-    // Calls Open()/Start()/Close() for each device.
-    session_id[index] = manager_->Open(*iter);
-    EXPECT_CALL(*audio_input_listener_,
-                Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
-        .Times(1);
-    message_loop_->RunUntilIdle();
-
-    manager_->Start(session_id[index], audio_input_event_handler.get());
-    EXPECT_CALL(*audio_input_event_handler,
-                DeviceStarted(session_id[index], iter->device.id))
-        .Times(1);
-    message_loop_->RunUntilIdle();
-
-    // Event Handler should get a stop device notification as no stop is called
-    // before closing the device.
-    manager_->Close(session_id[index]);
-    EXPECT_CALL(*audio_input_event_handler,
-                DeviceStopped(session_id[index]))
-        .Times(1);
-    EXPECT_CALL(*audio_input_listener_,
-                Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
-        .Times(1);
-    message_loop_->RunUntilIdle();
-  }
-}
-
-// Starts the same device twice.
-TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
-
-  ASSERT_FALSE(devices_.empty());
-
-  InSequence s;
-
-  // Create one EventHandler for each session.
-  scoped_ptr<MockAudioInputDeviceManagerEventHandler>
-      first_event_handler(
-          new MockAudioInputDeviceManagerEventHandler(message_loop_.get()));
-  scoped_ptr<MockAudioInputDeviceManagerEventHandler>
-      second_event_handler(
-          new MockAudioInputDeviceManagerEventHandler(message_loop_.get()));
-
-  // Open the default device twice.
-  StreamDeviceInfoArray::const_iterator iter = devices_.begin();
-  int first_session_id = manager_->Open(*iter);
-  int second_session_id = manager_->Open(*iter);
-  EXPECT_NE(first_session_id, second_session_id);
-  EXPECT_CALL(*audio_input_listener_,
-              Opened(MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
-      .Times(1);
-  EXPECT_CALL(*audio_input_listener_,
-              Opened(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
-      .Times(1);
-  message_loop_->RunUntilIdle();
-
-  // Calls Start()/Stop()/Close() for the default device twice.
-  manager_->Start(first_session_id, first_event_handler.get());
-  manager_->Start(second_session_id, second_event_handler.get());
-  EXPECT_CALL(*first_event_handler,
-              DeviceStarted(first_session_id,
-                            media::AudioManagerBase::kDefaultDeviceId))
-      .Times(1);
-  EXPECT_CALL(*second_event_handler,
-              DeviceStarted(second_session_id,
-                            media::AudioManagerBase::kDefaultDeviceId))
-      .Times(1);
-  message_loop_->RunUntilIdle();
-
-  manager_->Stop(first_session_id);
-  manager_->Stop(second_session_id);
-  manager_->Close(first_session_id);
-  manager_->Close(second_session_id);
-  EXPECT_CALL(*audio_input_listener_,
-              Closed(MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
-      .Times(1);
-  EXPECT_CALL(*audio_input_listener_,
-              Closed(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
-      .Times(1);
-  message_loop_->RunUntilIdle();
-}
-
-// Starts an invalid session.
-TEST_F(AudioInputDeviceManagerTest, StartInvalidSession) {
+// Access an invalid session.
+TEST_F(AudioInputDeviceManagerTest, AccessInvalidSession) {
   if (!CanRunAudioInputDeviceTests())
     return;
   InSequence s;
-
-  // Creates the EventHandlers for the sessions.
-  scoped_ptr<MockAudioInputDeviceManagerEventHandler>
-      audio_input_event_handler(
-          new MockAudioInputDeviceManagerEventHandler(message_loop_.get()));
 
   // Opens the first device.
   StreamDeviceInfoArray::const_iterator iter = devices_.begin();
@@ -417,57 +275,13 @@ TEST_F(AudioInputDeviceManagerTest, StartInvalidSession) {
       .Times(1);
   message_loop_->RunUntilIdle();
 
-  // Starts a non-opened device.
-  // This should fail and trigger error code 'kDeviceNotAvailable'.
+  // Access a non-opened device.
+  // This should fail and return an empty StreamDeviceInfo.
   int invalid_session_id = session_id + 1;
-  manager_->Start(invalid_session_id, audio_input_event_handler.get());
-  EXPECT_CALL(*audio_input_event_handler,
-              DeviceStarted(invalid_session_id, std::string()))
-      .Times(1);
-  message_loop_->RunUntilIdle();
+  const StreamDeviceInfo* info =
+      manager_->GetOpenedDeviceInfoById(invalid_session_id);
+  DCHECK(!info);
 
-  manager_->Close(session_id);
-  EXPECT_CALL(*audio_input_listener_,
-              Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
-      .Times(1);
-  message_loop_->RunUntilIdle();
-}
-
-// Starts a session twice, the first time should succeed, while the second
-// time should fail.
-TEST_F(AudioInputDeviceManagerTest, StartSessionTwice) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
-  InSequence s;
-
-  // Creates the EventHandlers for the sessions.
-  scoped_ptr<MockAudioInputDeviceManagerEventHandler>
-      audio_input_event_handler(
-          new MockAudioInputDeviceManagerEventHandler(message_loop_.get()));
-
-  // Opens the first device.
-  StreamDeviceInfoArray::const_iterator iter = devices_.begin();
-  int session_id = manager_->Open(*iter);
-  EXPECT_CALL(*audio_input_listener_,
-              Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
-      .Times(1);
-  message_loop_->RunUntilIdle();
-
-  // Starts the session, it should succeed.
-  manager_->Start(session_id, audio_input_event_handler.get());
-  EXPECT_CALL(*audio_input_event_handler,
-              DeviceStarted(session_id,
-                            media::AudioManagerBase::kDefaultDeviceId))
-      .Times(1);
-  message_loop_->RunUntilIdle();
-
-  // Starts the session for the second time, it should fail.
-  manager_->Start(session_id, audio_input_event_handler.get());
-  EXPECT_CALL(*audio_input_event_handler,
-              DeviceStarted(session_id, std::string()))
-      .Times(1);
-
-  manager_->Stop(session_id);
   manager_->Close(session_id);
   EXPECT_CALL(*audio_input_listener_,
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))

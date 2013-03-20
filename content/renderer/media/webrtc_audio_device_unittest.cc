@@ -100,11 +100,9 @@ bool InitializeCapturer(WebRtcAudioDeviceImpl* webrtc_audio_device) {
   int sample_rate = hardware_config->GetInputSampleRate();
   media::ChannelLayout channel_layout =
       hardware_config->GetInputChannelLayout();
-  if (!capturer->Initialize(channel_layout, sample_rate))
+  if (!capturer->Initialize(channel_layout, sample_rate, 1))
     return false;
 
-  // Ensures that the default capture device is utilized.
-  webrtc_audio_device->capturer()->SetDevice(1);
   return true;
 }
 

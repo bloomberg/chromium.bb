@@ -205,7 +205,8 @@ bool WebRtcAudioCapturer::Reconfigure(int sample_rate,
 }
 
 bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
-                                     int sample_rate) {
+                                     int sample_rate,
+                                     int session_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!sinks_.empty());
   DVLOG(1) << "WebRtcAudioCapturer::Initialize()";
@@ -213,6 +214,8 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputChannelLayout",
                             channel_layout, media::CHANNEL_LAYOUT_MAX);
+
+  session_id_ = session_id;
 
   // Verify that the reported input channel configuration is supported.
   if (channel_layout != media::CHANNEL_LAYOUT_MONO &&
@@ -241,7 +244,7 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
 
   // Create and configure the default audio capturing source. The |source_|
   // will be overwritten if an external client later calls SetCapturerSource()
-  // providing an alternaive media::AudioCapturerSource.
+  // providing an alternative media::AudioCapturerSource.
   SetCapturerSource(AudioDeviceFactory::NewInputDevice(),
                     channel_layout,
                     static_cast<float>(sample_rate));
@@ -252,7 +255,8 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
 WebRtcAudioCapturer::WebRtcAudioCapturer()
     : source_(NULL),
       running_(false),
-      agc_is_enabled_(false) {
+      agc_is_enabled_(false),
+      session_id_(0) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
 }
 
@@ -299,6 +303,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
     media::ChannelLayout channel_layout,
     float sample_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK_GT(session_id_, 0);
   DVLOG(1) << "SetCapturerSource(channel_layout=" << channel_layout << ","
            << "sample_rate=" << sample_rate << ")";
   scoped_refptr<media::AudioCapturerSource> old_source;
@@ -338,7 +343,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
 
   if (source) {
     // Make sure to grab the new parameters in case they were reconfigured.
-    source->Initialize(current_buffer->params(), this, this);
+    source->Initialize(current_buffer->params(), this, session_id_);
   }
 }
 
@@ -380,14 +385,6 @@ void WebRtcAudioCapturer::SetVolume(double volume) {
   base::AutoLock auto_lock(lock_);
   if (source_)
     source_->SetVolume(volume);
-}
-
-void WebRtcAudioCapturer::SetDevice(int session_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcAudioCapturer::SetDevice(" << session_id << ")";
-  base::AutoLock auto_lock(lock_);
-  if (source_)
-    source_->SetDevice(session_id);
 }
 
 void WebRtcAudioCapturer::SetAutomaticGainControl(bool enable) {
@@ -439,14 +436,6 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
 }
 
 void WebRtcAudioCapturer::OnCaptureError() {
-  NOTIMPLEMENTED();
-}
-
-void WebRtcAudioCapturer::OnDeviceStarted(const std::string& device_id) {
-  device_id_ = device_id;
-}
-
-void WebRtcAudioCapturer::OnDeviceStopped() {
   NOTIMPLEMENTED();
 }
 

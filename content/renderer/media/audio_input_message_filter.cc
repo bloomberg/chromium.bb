@@ -49,8 +49,6 @@ bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamVolume, OnStreamVolume)
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamStateChanged,
                         OnStreamStateChanged)
-    IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyDeviceStarted,
-                        OnDeviceStarted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -136,17 +134,6 @@ void AudioInputMessageFilter::OnStreamStateChanged(
   delegate->OnStateChanged(state);
 }
 
-void AudioInputMessageFilter::OnDeviceStarted(int stream_id,
-                                              const std::string& device_id) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
-  if (!delegate) {
-    NOTREACHED();
-    return;
-  }
-  delegate->OnDeviceReady(device_id);
-}
-
 int AudioInputMessageFilter::AddDelegate(
     media::AudioInputIPCDelegate* delegate) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
@@ -159,23 +146,19 @@ void AudioInputMessageFilter::RemoveDelegate(int id) {
 }
 
 void AudioInputMessageFilter::CreateStream(int stream_id,
+                                           int session_id,
                                            const media::AudioParameters& params,
-                                           const std::string& device_id,
                                            bool automatic_gain_control,
                                            uint32 total_segments) {
   Send(new AudioInputHostMsg_CreateStream(
-      stream_id, params, device_id, automatic_gain_control,
-      total_segments));
+      stream_id, session_id, params, automatic_gain_control, total_segments));
+
 }
 
 void AudioInputMessageFilter::AssociateStreamWithConsumer(int stream_id,
                                                           int render_view_id) {
   Send(new AudioInputHostMsg_AssociateStreamWithConsumer(
       stream_id, render_view_id));
-}
-
-void AudioInputMessageFilter::StartDevice(int stream_id, int session_id) {
-  Send(new AudioInputHostMsg_StartDevice(stream_id, session_id));
 }
 
 void AudioInputMessageFilter::RecordStream(int stream_id) {

@@ -33,23 +33,22 @@ class WebRtcLocalAudioRenderer;
 // created on the main render thread, captured data is provided on a dedicated
 // AudioInputDevice thread, and methods can be called either on the Libjingle
 // thread or on the main render thread but also other client threads
-// if an alternative AudioCapturerSource has been set. In addition, the
-// AudioCapturerSource::CaptureEventHandler methods are called on the IO thread
-// and requests for data to render is done on the AudioOutputDevice thread.
+// if an alternative AudioCapturerSource has been set.
 class CONTENT_EXPORT WebRtcAudioCapturer
     : public base::RefCountedThreadSafe<WebRtcAudioCapturer>,
-      NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback),
-      NON_EXPORTED_BASE(
-          public media::AudioCapturerSource::CaptureEventHandler) {
+      NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback) {
  public:
   // Use to construct the audio capturer.
   // Called on the main render thread.
   static scoped_refptr<WebRtcAudioCapturer> CreateCapturer();
 
   // Creates and configures the default audio capturing source using the
-  // provided audio parameters.
+  // provided audio parameters, |session_id| is passed to the browser to
+  // decide which device to use.
   // Called on the main render thread.
-  bool Initialize(media::ChannelLayout channel_layout, int sample_rate);
+  bool Initialize(media::ChannelLayout channel_layout,
+                  int sample_rate,
+                  int session_id);
 
   // Called by the client on the sink side to add a sink.
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
@@ -84,10 +83,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Called on the AudioInputDevice audio thread.
   void SetVolume(double volume);
 
-  // Specifies the |session_id| to query which device to use.
-  // Called on the main render thread.
-  void SetDevice(int session_id);
-
   // Enables or disables the WebRtc AGC control.
   // Called from a Libjingle working thread.
   void SetAutomaticGainControl(bool enable);
@@ -108,11 +103,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
                        int audio_delay_milliseconds,
                        double volume) OVERRIDE;
   virtual void OnCaptureError() OVERRIDE;
-
-  // AudioCapturerSource::CaptureEventHandler implementation.
-  // Called on the IO thread.
-  virtual void OnDeviceStarted(const std::string& device_id) OVERRIDE;
-  virtual void OnDeviceStopped() OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<WebRtcAudioCapturer>;
@@ -145,11 +135,13 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Allocated during initialization.
   class ConfiguredBuffer;
   scoped_refptr<ConfiguredBuffer> buffer_;
-  std::string device_id_;
   bool running_;
 
   // True when automatic gain control is enabled, false otherwise.
   bool agc_is_enabled_;
+
+  // The media session ID used to identify which input device to be started.
+  int session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioCapturer);
 };

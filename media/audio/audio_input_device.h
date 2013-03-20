@@ -27,18 +27,10 @@
 //
 // State sequences:
 //
-// Sequence where session_id has not been set using SetDevice():
-// ('<-' signifies callbacks, -> signifies calls made by AudioInputDevice)
 // Start -> InitializeOnIOThread -> CreateStream ->
 //       <- OnStreamCreated <-
 //       -> StartOnIOThread -> PlayStream ->
 //
-// Sequence where session_id has been set using SetDevice():
-// Start -> InitializeOnIOThread -> StartDevice ->
-//       <- OnDeviceReady <-
-//       -> CreateStream ->
-//       <- OnStreamCreated <-
-//       -> StartOnIOThread -> PlayStream ->
 //
 // AudioInputDevice::Capture => low latency audio transport on audio thread =>
 //                               |
@@ -93,11 +85,10 @@ class MEDIA_EXPORT AudioInputDevice
   // AudioCapturerSource implementation.
   virtual void Initialize(const AudioParameters& params,
                           CaptureCallback* callback,
-                          CaptureEventHandler* event_handler) OVERRIDE;
+                          int session_id) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void SetVolume(double volume) OVERRIDE;
-  virtual void SetDevice(int session_id) OVERRIDE;
   virtual void SetAutomaticGainControl(bool enabled) OVERRIDE;
 
  protected:
@@ -110,7 +101,6 @@ class MEDIA_EXPORT AudioInputDevice
   virtual void OnVolume(double volume) OVERRIDE;
   virtual void OnStateChanged(
       AudioInputIPCDelegate::State state) OVERRIDE;
-  virtual void OnDeviceReady(const std::string& device_id) OVERRIDE;
   virtual void OnIPCClosed() OVERRIDE;
 
   friend class base::RefCountedThreadSafe<AudioInputDevice>;
@@ -122,7 +112,6 @@ class MEDIA_EXPORT AudioInputDevice
   // be executed on that thread. They interact with AudioInputMessageFilter and
   // sends IPC messages on that thread.
   void InitializeOnIOThread();
-  void SetSessionIdOnIOThread(int session_id);
   void StartOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
@@ -135,7 +124,6 @@ class MEDIA_EXPORT AudioInputDevice
   AudioParameters audio_parameters_;
 
   CaptureCallback* callback_;
-  CaptureEventHandler* event_handler_;
 
   AudioInputIPC* ipc_;
 
@@ -143,12 +131,8 @@ class MEDIA_EXPORT AudioInputDevice
   int stream_id_;
 
   // The media session ID used to identify which input device to be started.
-  // Only modified on the IO thread.
+  // Only modified in Initialize() and ShutDownOnIOThread().
   int session_id_;
-
-  // State variable used to indicate it is waiting for a OnDeviceReady()
-  // callback. Only modified on the IO thread.
-  bool pending_device_ready_;
 
   // Stores the Automatic Gain Control state. Default is false.
   // Only modified on the IO thread.

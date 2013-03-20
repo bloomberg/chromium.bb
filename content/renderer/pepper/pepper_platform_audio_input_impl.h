@@ -59,7 +59,6 @@ class PepperPlatformAudioInputImpl
   virtual void OnVolume(double volume) OVERRIDE;
   virtual void OnStateChanged(
       media::AudioInputIPCDelegate::State state) OVERRIDE;
-  virtual void OnDeviceReady(const std::string&) OVERRIDE;
   virtual void OnIPCClosed() OVERRIDE;
 
  protected:

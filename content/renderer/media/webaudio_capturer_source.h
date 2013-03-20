@@ -44,12 +44,11 @@ class WebAudioCapturerSource
   virtual void Initialize(
       const media::AudioParameters& params,
       media::AudioCapturerSource::CaptureCallback* callback,
-      media::AudioCapturerSource::CaptureEventHandler* event_handler) OVERRIDE;
+      int session_id) OVERRIDE;
 
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void SetVolume(double volume) OVERRIDE { }
-  virtual void SetDevice(int session_id) OVERRIDE { }
   virtual void SetAutomaticGainControl(bool enable) OVERRIDE { }
 
  private:

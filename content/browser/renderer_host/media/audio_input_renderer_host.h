@@ -14,28 +14,6 @@
 //
 // AudioInputHostMsg_CloseStream -> OnCloseStream -> AIC::Close ->
 //
-// For the OnStartDevice() request, AudioInputRendererHost starts the device
-// referenced by the session id, and an OnDeviceStarted() callback with the
-// id of the opened device will be received later. Then it will send a
-// IPC message to notify the renderer that the device is ready, so that
-// renderer can continue with the OnCreateStream() request.
-//
-// OnDeviceStopped() is called when the user closes the device through
-// AudioInputDeviceManager without calling Stop() before. What
-// AudioInputRenderHost::OnDeviceStopped() does is to send a IPC mesaage to
-// notify the renderer in order to stop the stream.
-//
-// Start device sequence:
-//
-// OnStartDevice -> AudioInputDeviceManager::Start ->
-// AudioInputDeviceManagerEventHandler::OnDeviceStarted ->
-// AudioInputMsg_NotifyDeviceStarted
-//
-// Shutdown device sequence:
-//
-// OnDeviceStopped -> CloseAndDeleteStream
-//                    AudioInputMsg_NotifyStreamStateChanged
-//
 // This class is owned by BrowserRenderProcessHost and instantiated on UI
 // thread. All other operations and method calls happen on IO thread, so we
 // need to be extra careful about the lifetime of this object.
@@ -56,7 +34,6 @@
 #include "base/process.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/shared_memory.h"
-#include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_controller.h"
@@ -73,8 +50,7 @@ class MediaStreamManager;
 
 class CONTENT_EXPORT AudioInputRendererHost
     : public BrowserMessageFilter,
-      public media::AudioInputController::EventHandler,
-      public AudioInputDeviceManagerEventHandler {
+      public media::AudioInputController::EventHandler {
  public:
   // Called from UI thread from the owner of this object.
   AudioInputRendererHost(
@@ -96,11 +72,6 @@ class CONTENT_EXPORT AudioInputRendererHost
                       const uint8* data,
                       uint32 size) OVERRIDE;
 
-  // AudioInputDeviceManagerEventHandler implementation.
-  virtual void OnDeviceStarted(int session_id,
-                               const std::string& device_id) OVERRIDE;
-  virtual void OnDeviceStopped(int session_id) OVERRIDE;
-
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
   friend class BrowserThread;
@@ -108,23 +79,20 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   struct AudioEntry;
   typedef std::map<int, AudioEntry*> AudioEntryMap;
-  typedef std::map<int, int> SessionEntryMap;
 
   virtual ~AudioInputRendererHost();
 
   // Methods called on IO thread ----------------------------------------------
 
-  // Start the audio input device with the session id. If the device
-  // starts successfully, it will trigger OnDeviceStarted() callback.
-  void OnStartDevice(int stream_id, int session_id);
-
   // Audio related IPC message handlers.
-  // Creates an audio input stream with the specified format. If this call is
-  // successful this object would keep an internal entry of the stream for the
-  // required properties.
+  // Creates an audio input stream with the specified session id and format.
+  // |session_id| is used to find out which device to be used for the stream,
+  // when it is AudioInputDeviceManager::kFakeOpenSessionId, it uses the
+  // the default device. If this call is successful this object would keep an
+  // internal entry of the stream for the required properties.
   void OnCreateStream(int stream_id,
+                      int session_id,
                       const media::AudioParameters& params,
-                      const std::string& device_id,
                       bool automatic_gain_control,
                       int shared_memory_count);
 
@@ -167,9 +135,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Delete audio entry and close the related audio input stream.
   void DeleteEntryOnError(AudioEntry* entry);
 
-  // Stop the device and delete its audio session entry.
-  void StopAndDeleteDevice(int stream_id);
-
   // A helper method to look up a AudioEntry identified by |stream_id|.
   // Returns NULL if not found.
   AudioEntry* LookupById(int stream_id);
@@ -179,10 +144,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   // event is received.
   AudioEntry* LookupByController(media::AudioInputController* controller);
 
-  // A helper method to look up a session identified by |stream_id|.
-  // Returns 0 if not found.
-  int LookupSessionById(int stream_id);
-
   // Used to create an AudioInputController.
   media::AudioManager* audio_manager_;
 
@@ -191,9 +152,6 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
-
-  // A map of session IDs to audio session sources.
-  SessionEntryMap session_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };

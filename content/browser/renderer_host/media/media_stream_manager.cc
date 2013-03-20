@@ -663,9 +663,20 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
     case MEDIA_GENERATE_STREAM: {
       // Partition the array of devices into audio vs video.
       StreamDeviceInfoArray audio_devices, video_devices;
-      for (StreamDeviceInfoArray::const_iterator device_it = devices->begin();
+      for (StreamDeviceInfoArray::iterator device_it = devices->begin();
            device_it != devices->end(); ++device_it) {
         if (IsAudioMediaType(device_it->device.type)) {
+          // Store the native audio parameters in the device struct.
+          // TODO(xians): Handle the tab capture sample rate/channel layout
+          // in AudioInputDeviceManager::Open().
+          if (device_it->device.type != content::MEDIA_TAB_AUDIO_CAPTURE) {
+            const StreamDeviceInfo* info =
+                audio_input_device_manager_->GetOpenedDeviceInfoById(
+                    device_it->session_id);
+            DCHECK_EQ(info->device.id, device_it->device.id);
+            device_it->device.sample_rate = info->device.sample_rate;
+            device_it->device.channel_layout = info->device.channel_layout;
+          }
           audio_devices.push_back(*device_it);
         } else if (IsVideoMediaType(device_it->device.type)) {
           video_devices.push_back(*device_it);
