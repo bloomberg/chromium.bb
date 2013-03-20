@@ -115,22 +115,22 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetScrollbarData(scrollbar_.get());
   scrollbar_layer->SetThumbSize(thumb_size_);
 
-  if (back_track_ && back_track_->texture()->haveBackingTexture()) {
+  if (back_track_ && back_track_->texture()->have_backing_texture()) {
     scrollbar_layer->set_back_track_resource_id(
-        back_track_->texture()->resourceId());
+        back_track_->texture()->ResourceId());
   } else {
     scrollbar_layer->set_back_track_resource_id(0);
   }
 
-  if (fore_track_ && fore_track_->texture()->haveBackingTexture()) {
+  if (fore_track_ && fore_track_->texture()->have_backing_texture()) {
     scrollbar_layer->set_fore_track_resource_id(
-        fore_track_->texture()->resourceId());
+        fore_track_->texture()->ResourceId());
   } else {
     scrollbar_layer->set_fore_track_resource_id(0);
   }
 
-  if (thumb_ && thumb_->texture()->haveBackingTexture())
-    scrollbar_layer->set_thumb_resource_id(thumb_->texture()->resourceId());
+  if (thumb_ && thumb_->texture()->have_backing_texture())
+    scrollbar_layer->set_thumb_resource_id(thumb_->texture()->ResourceId());
   else
     scrollbar_layer->set_thumb_resource_id(0);
 
@@ -317,14 +317,14 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
 
   // Skip painting and uploading if there are no invalidations and
   // we already have valid texture data.
-  if (resource->texture()->haveBackingTexture() &&
+  if (resource->texture()->have_backing_texture() &&
       resource->texture()->size() == rect.size() &&
       !is_dirty())
     return;
 
   // We should always have enough memory for UI.
-  DCHECK(resource->texture()->canAcquireBackingTexture());
-  if (!resource->texture()->canAcquireBackingTexture())
+  DCHECK(resource->texture()->can_acquire_backing_texture());
+  if (!resource->texture()->can_acquire_backing_texture())
     return;
 
   // Paint and upload the entire part.
@@ -336,7 +336,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                            &painted_opaque_rect,
                            stats);
   if (!painter->pixels_did_change() &&
-      resource->texture()->haveBackingTexture()) {
+      resource->texture()->have_backing_texture()) {
     TRACE_EVENT_INSTANT0("cc",
                          "ScrollbarLayer::updatePart no texture upload needed");
     return;
@@ -345,7 +345,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
   bool partial_updates_allowed =
       layer_tree_host()->settings().maxPartialTextureUpdates > 0;
   if (!partial_updates_allowed)
-    resource->texture()->returnBackingTexture();
+    resource->texture()->ReturnBackingTexture();
 
   gfx::Vector2d dest_offset(0, 0);
   resource->Update(queue, rect, dest_offset, partial_updates_allowed, stats);
@@ -375,21 +375,21 @@ void ScrollbarLayer::SetTexturePriorities(
 
   bool draws_to_root = !render_target()->parent();
   if (back_track_) {
-    back_track_->texture()->setDimensions(content_bounds(), texture_format_);
-    back_track_->texture()->setRequestPriority(
+    back_track_->texture()->SetDimensions(content_bounds(), texture_format_);
+    back_track_->texture()->set_request_priority(
         PriorityCalculator::UIPriority(draws_to_root));
   }
   if (fore_track_) {
-    fore_track_->texture()->setDimensions(content_bounds(), texture_format_);
-    fore_track_->texture()->setRequestPriority(
+    fore_track_->texture()->SetDimensions(content_bounds(), texture_format_);
+    fore_track_->texture()->set_request_priority(
         PriorityCalculator::UIPriority(draws_to_root));
   }
   if (thumb_) {
     gfx::Rect thumb_layer_rect = geometry_->thumbRect(scrollbar_.get());
     gfx::Size thumb_size =
         ScrollbarLayerRectToContentRect(thumb_layer_rect).size();
-    thumb_->texture()->setDimensions(thumb_size, texture_format_);
-    thumb_->texture()->setRequestPriority(
+    thumb_->texture()->SetDimensions(thumb_size, texture_format_);
+    thumb_->texture()->set_request_priority(
         PriorityCalculator::UIPriority(draws_to_root));
   }
 }

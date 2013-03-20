@@ -42,7 +42,7 @@ SkPictureContentLayerUpdater::Create(scoped_ptr<LayerPainter> painter) {
 scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::CreateResource(
     PrioritizedResourceManager* manager) {
   return scoped_ptr<LayerUpdater::Resource>(
-      new Resource(this, PrioritizedResource::create(manager)));
+      new Resource(this, PrioritizedResource::Create(manager)));
 }
 
 void SkPictureContentLayerUpdater::PrepareToUpdate(

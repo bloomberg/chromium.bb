@@ -126,9 +126,9 @@ protected:
         m_bitmap.allocPixels();
 
         for (int i = 0; i < 4; i++) {
-            m_textures[i] = PrioritizedResource::create(
+            m_textures[i] = PrioritizedResource::Create(
                 m_resourceManager.get(), gfx::Size(300, 150), GL_RGBA);
-            m_textures[i]->setRequestPriority(
+            m_textures[i]->set_request_priority(
                 PriorityCalculator::VisiblePriority(true));
         }
         m_resourceManager->prioritizeTextures();

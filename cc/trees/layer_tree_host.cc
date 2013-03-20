@@ -716,11 +716,11 @@ void LayerTreeHost::TriggerPrepaint() {
 void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {
   // Surfaces have a place holder for their memory since they are managed
   // independantly but should still be tracked and reduce other memory usage.
-  surface_memory_placeholder_->setTextureManager(
+  surface_memory_placeholder_->SetTextureManager(
       contents_texture_manager_.get());
-  surface_memory_placeholder_->setRequestPriority(
+  surface_memory_placeholder_->set_request_priority(
       PriorityCalculator::RenderSurfacePriority());
-  surface_memory_placeholder_->setToSelfManagedMemoryPlaceholder(
+  surface_memory_placeholder_->SetToSelfManagedMemoryPlaceholder(
       surface_memory_bytes);
 }
 

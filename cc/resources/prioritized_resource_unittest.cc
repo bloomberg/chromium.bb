@@ -46,14 +46,14 @@ public:
 
     bool validateTexture(scoped_ptr<PrioritizedResource>& texture, bool requestLate)
     {
-        resourceManagerAssertInvariants(texture->resourceManager());
+        resourceManagerAssertInvariants(texture->resource_manager());
         if (requestLate)
-            texture->requestLate();
-        resourceManagerAssertInvariants(texture->resourceManager());
+            texture->RequestLate();
+        resourceManagerAssertInvariants(texture->resource_manager());
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
-        bool success = texture->canAcquireBackingTexture();
+        bool success = texture->can_acquire_backing_texture();
         if (success)
-            texture->acquireBackingTexture(resourceProvider());
+            texture->AcquireBackingTexture(resourceProvider());
         return success;
     }
 
@@ -84,7 +84,7 @@ public:
 
     bool textureBackingIsAbovePriorityCutoff(PrioritizedResource* texture)
     {
-        return texture->m_backing->wasAbovePriorityCutoffAtLastPriorityUpdate();
+        return texture->backing()->was_above_priority_cutoff_at_last_priority_update();
     }
 
     size_t evictedBackingCount(PrioritizedResourceManager* resourceManager)
@@ -115,7 +115,7 @@ TEST_F(PrioritizedResourceTest, requestTextureExceedingMaxLimit)
 
     // Set decreasing priorities
     for (size_t i = 0; i < maxTextures*2; ++i)
-        textures[i]->setRequestPriority(100 + i);
+        textures[i]->set_request_priority(100 + i);
 
     // Only lower half should be available.
     prioritizeTexturesAndBackings(resourceManager.get());
@@ -126,7 +126,7 @@ TEST_F(PrioritizedResourceTest, requestTextureExceedingMaxLimit)
 
     // Set increasing priorities
     for (size_t i = 0; i < maxTextures*2; ++i)
-        textures[i]->setRequestPriority(100 - i);
+        textures[i]->set_request_priority(100 - i);
 
     // Only upper half should be available.
     prioritizeTexturesAndBackings(resourceManager.get());
@@ -151,7 +151,7 @@ TEST_F(PrioritizedResourceTest, changeMemoryLimits)
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = resourceManager->createTexture(m_textureSize, m_textureFormat);
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100 + i);
+        textures[i]->set_request_priority(100 + i);
 
     // Set max limit to 8 textures
     resourceManager->setMaxMemoryLimitBytes(texturesMemorySize(8));
@@ -205,7 +205,7 @@ TEST_F(PrioritizedResourceTest, changePriorityCutoff)
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = resourceManager->createTexture(m_textureSize, m_textureFormat);
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100 + i);
+        textures[i]->set_request_priority(100 + i);
 
     // Set the cutoff to drop two textures. Try to requestLate on all textures, and
     // make sure that requestLate doesn't work on a texture with equal priority to
@@ -274,7 +274,7 @@ TEST_F(PrioritizedResourceTest, resourceManagerPartialUpdateTextures)
     }
 
     for (size_t i = 0; i < numTextures; ++i)
-        textures[i]->setRequestPriority(200 + i);
+        textures[i]->set_request_priority(200 + i);
     prioritizeTexturesAndBackings(resourceManager.get());
 
     // Allocate textures which are currently high priority.
@@ -283,13 +283,13 @@ TEST_F(PrioritizedResourceTest, resourceManagerPartialUpdateTextures)
     EXPECT_TRUE(validateTexture(textures[2], false));
     EXPECT_TRUE(validateTexture(textures[3], false));
 
-    EXPECT_TRUE(textures[0]->haveBackingTexture());
-    EXPECT_TRUE(textures[1]->haveBackingTexture());
-    EXPECT_TRUE(textures[2]->haveBackingTexture());
-    EXPECT_TRUE(textures[3]->haveBackingTexture());
+    EXPECT_TRUE(textures[0]->have_backing_texture());
+    EXPECT_TRUE(textures[1]->have_backing_texture());
+    EXPECT_TRUE(textures[2]->have_backing_texture());
+    EXPECT_TRUE(textures[3]->have_backing_texture());
 
     for (size_t i = 0; i < numTextures; ++i)
-        moreTextures[i]->setRequestPriority(100 + i);
+        moreTextures[i]->set_request_priority(100 + i);
     prioritizeTexturesAndBackings(resourceManager.get());
 
     // Textures are now below cutoff.
@@ -299,10 +299,10 @@ TEST_F(PrioritizedResourceTest, resourceManagerPartialUpdateTextures)
     EXPECT_FALSE(validateTexture(textures[3], false));
 
     // But they are still valid to use.
-    EXPECT_TRUE(textures[0]->haveBackingTexture());
-    EXPECT_TRUE(textures[1]->haveBackingTexture());
-    EXPECT_TRUE(textures[2]->haveBackingTexture());
-    EXPECT_TRUE(textures[3]->haveBackingTexture());
+    EXPECT_TRUE(textures[0]->have_backing_texture());
+    EXPECT_TRUE(textures[1]->have_backing_texture());
+    EXPECT_TRUE(textures[2]->have_backing_texture());
+    EXPECT_TRUE(textures[3]->have_backing_texture());
 
     // Higher priority textures are finally needed.
     EXPECT_TRUE(validateTexture(moreTextures[0], false));
@@ -311,10 +311,10 @@ TEST_F(PrioritizedResourceTest, resourceManagerPartialUpdateTextures)
     EXPECT_TRUE(validateTexture(moreTextures[3], false));
 
     // Lower priority have been fully evicted.
-    EXPECT_FALSE(textures[0]->haveBackingTexture());
-    EXPECT_FALSE(textures[1]->haveBackingTexture());
-    EXPECT_FALSE(textures[2]->haveBackingTexture());
-    EXPECT_FALSE(textures[3]->haveBackingTexture());
+    EXPECT_FALSE(textures[0]->have_backing_texture());
+    EXPECT_FALSE(textures[1]->have_backing_texture());
+    EXPECT_FALSE(textures[2]->have_backing_texture());
+    EXPECT_FALSE(textures[3]->have_backing_texture());
 
     DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     resourceManager->clearAllMemory(resourceProvider());
@@ -331,9 +331,9 @@ TEST_F(PrioritizedResourceTest, resourceManagerPrioritiesAreEqual)
 
     // All 16 textures have the same priority except 2 higher priority.
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100);
-    textures[0]->setRequestPriority(99);
-    textures[1]->setRequestPriority(99);
+        textures[i]->set_request_priority(100);
+    textures[0]->set_request_priority(99);
+    textures[1]->set_request_priority(99);
 
     // Set max limit to 8 textures
     resourceManager->setMaxMemoryLimitBytes(texturesMemorySize(8));
@@ -366,14 +366,14 @@ TEST_F(PrioritizedResourceTest, resourceManagerDestroyedFirst)
     scoped_ptr<PrioritizedResource> texture = resourceManager->createTexture(m_textureSize, m_textureFormat);
 
     // Texture is initially invalid, but it will become available.
-    EXPECT_FALSE(texture->haveBackingTexture());
+    EXPECT_FALSE(texture->have_backing_texture());
 
-    texture->setRequestPriority(100);
+    texture->set_request_priority(100);
     prioritizeTexturesAndBackings(resourceManager.get());
 
     EXPECT_TRUE(validateTexture(texture, false));
-    EXPECT_TRUE(texture->canAcquireBackingTexture());
-    EXPECT_TRUE(texture->haveBackingTexture());
+    EXPECT_TRUE(texture->can_acquire_backing_texture());
+    EXPECT_TRUE(texture->have_backing_texture());
 
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
@@ -381,8 +381,8 @@ TEST_F(PrioritizedResourceTest, resourceManagerDestroyedFirst)
     }
     resourceManager.reset();
 
-    EXPECT_FALSE(texture->canAcquireBackingTexture());
-    EXPECT_FALSE(texture->haveBackingTexture());
+    EXPECT_FALSE(texture->can_acquire_backing_texture());
+    EXPECT_FALSE(texture->have_backing_texture());
 }
 
 TEST_F(PrioritizedResourceTest, textureMovedToNewManager)
@@ -392,16 +392,16 @@ TEST_F(PrioritizedResourceTest, textureMovedToNewManager)
     scoped_ptr<PrioritizedResource> texture = resourceManagerOne->createTexture(m_textureSize, m_textureFormat);
 
     // Texture is initially invalid, but it will become available.
-    EXPECT_FALSE(texture->haveBackingTexture());
+    EXPECT_FALSE(texture->have_backing_texture());
 
-    texture->setRequestPriority(100);
+    texture->set_request_priority(100);
     prioritizeTexturesAndBackings(resourceManagerOne.get());
 
     EXPECT_TRUE(validateTexture(texture, false));
-    EXPECT_TRUE(texture->canAcquireBackingTexture());
-    EXPECT_TRUE(texture->haveBackingTexture());
+    EXPECT_TRUE(texture->can_acquire_backing_texture());
+    EXPECT_TRUE(texture->have_backing_texture());
 
-    texture->setTextureManager(0);
+    texture->SetTextureManager(0);
 
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
@@ -409,16 +409,16 @@ TEST_F(PrioritizedResourceTest, textureMovedToNewManager)
     }
     resourceManagerOne.reset();
 
-    EXPECT_FALSE(texture->canAcquireBackingTexture());
-    EXPECT_FALSE(texture->haveBackingTexture());
+    EXPECT_FALSE(texture->can_acquire_backing_texture());
+    EXPECT_FALSE(texture->have_backing_texture());
 
-    texture->setTextureManager(resourceManagerTwo.get());
+    texture->SetTextureManager(resourceManagerTwo.get());
 
     prioritizeTexturesAndBackings(resourceManagerTwo.get());
 
     EXPECT_TRUE(validateTexture(texture, false));
-    EXPECT_TRUE(texture->canAcquireBackingTexture());
-    EXPECT_TRUE(texture->haveBackingTexture());
+    EXPECT_TRUE(texture->can_acquire_backing_texture());
+    EXPECT_TRUE(texture->have_backing_texture());
 
     DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     resourceManagerTwo->clearAllMemory(resourceProvider());
@@ -431,8 +431,8 @@ TEST_F(PrioritizedResourceTest, renderSurfacesReduceMemoryAvailableOutsideRootSu
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
     scoped_ptr<PrioritizedResource> renderSurfacePlaceHolder = resourceManager->createTexture(m_textureSize, m_textureFormat);
-    renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
-    renderSurfacePlaceHolder->setRequestPriority(PriorityCalculator::RenderSurfacePriority());
+    renderSurfacePlaceHolder->SetToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
+    renderSurfacePlaceHolder->set_request_priority(PriorityCalculator::RenderSurfacePriority());
 
     // Create textures to fill our memory limit.
     scoped_ptr<PrioritizedResource> textures[maxTextures];
@@ -442,7 +442,7 @@ TEST_F(PrioritizedResourceTest, renderSurfacesReduceMemoryAvailableOutsideRootSu
 
     // Set decreasing non-visible priorities outside root surface.
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100 + i);
+        textures[i]->set_request_priority(100 + i);
 
     // Only lower half should be available.
     prioritizeTexturesAndBackings(resourceManager.get());
@@ -453,7 +453,7 @@ TEST_F(PrioritizedResourceTest, renderSurfacesReduceMemoryAvailableOutsideRootSu
 
     // Set increasing non-visible priorities outside root surface.
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100 - i);
+        textures[i]->set_request_priority(100 - i);
 
     // Only upper half should be available.
     prioritizeTexturesAndBackings(resourceManager.get());
@@ -477,8 +477,8 @@ TEST_F(PrioritizedResourceTest, renderSurfacesReduceMemoryAvailableForRequestLat
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
     scoped_ptr<PrioritizedResource> renderSurfacePlaceHolder = resourceManager->createTexture(m_textureSize, m_textureFormat);
-    renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
-    renderSurfacePlaceHolder->setRequestPriority(PriorityCalculator::RenderSurfacePriority());
+    renderSurfacePlaceHolder->SetToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
+    renderSurfacePlaceHolder->set_request_priority(PriorityCalculator::RenderSurfacePriority());
 
     // Create textures to fill our memory limit.
     scoped_ptr<PrioritizedResource> textures[maxTextures];
@@ -488,7 +488,7 @@ TEST_F(PrioritizedResourceTest, renderSurfacesReduceMemoryAvailableForRequestLat
 
     // Set equal priorities.
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100);
+        textures[i]->set_request_priority(100);
 
     // The first four to be requested late will be available.
     prioritizeTexturesAndBackings(resourceManager.get());
@@ -514,8 +514,8 @@ TEST_F(PrioritizedResourceTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAvai
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
     scoped_ptr<PrioritizedResource> renderSurfacePlaceHolder = resourceManager->createTexture(m_textureSize, m_textureFormat);
-    renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
-    renderSurfacePlaceHolder->setRequestPriority(PriorityCalculator::RenderSurfacePriority());
+    renderSurfacePlaceHolder->SetToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
+    renderSurfacePlaceHolder->set_request_priority(PriorityCalculator::RenderSurfacePriority());
 
     // Create textures to fill our memory limit.
     scoped_ptr<PrioritizedResource> textures[maxTextures];
@@ -525,9 +525,9 @@ TEST_F(PrioritizedResourceTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAvai
 
     // Set 6 visible textures in the root surface, and 2 in a child surface.
     for (size_t i = 0; i < 6; ++i)
-        textures[i]->setRequestPriority(PriorityCalculator::VisiblePriority(true));
+        textures[i]->set_request_priority(PriorityCalculator::VisiblePriority(true));
     for (size_t i = 6; i < 8; ++i)
-        textures[i]->setRequestPriority(PriorityCalculator::VisiblePriority(false));
+        textures[i]->set_request_priority(PriorityCalculator::VisiblePriority(false));
 
     prioritizeTexturesAndBackings(resourceManager.get());
 
@@ -560,7 +560,7 @@ TEST_F(PrioritizedResourceTest, requestLateBackingsSorting)
 
     // Set equal priorities, and allocate backings for all textures.
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100);
+        textures[i]->set_request_priority(100);
     prioritizeTexturesAndBackings(resourceManager.get());
     for (unsigned i = 0; i < maxTextures; ++i)
         EXPECT_TRUE(validateTexture(textures[i], false));
@@ -572,7 +572,7 @@ TEST_F(PrioritizedResourceTest, requestLateBackingsSorting)
 
     // Push half of them back over the limit.
     for (size_t i = 0; i < maxTextures; i += 2)
-        EXPECT_TRUE(textures[i]->requestLate());
+        EXPECT_TRUE(textures[i]->RequestLate());
 
     // Push the priorities to the backings array and sort the backings array
     resourceManagerUpdateBackingsPriorities(resourceManager.get());
@@ -583,7 +583,7 @@ TEST_F(PrioritizedResourceTest, requestLateBackingsSorting)
 
     // Make sure that we have backings for all of the textures.
     for (size_t i = 0; i < maxTextures; ++i)
-        EXPECT_TRUE(textures[i]->haveBackingTexture());
+        EXPECT_TRUE(textures[i]->have_backing_texture());
 
     // Make sure that only the requestLate textures are above the priority cutoff
     for (size_t i = 0; i < maxTextures; i += 2)
@@ -610,7 +610,7 @@ TEST_F(PrioritizedResourceTest, clearUploadsToEvictedResources)
 
     // Set equal priorities, and allocate backings for all textures.
     for (size_t i = 0; i < maxTextures; ++i)
-        textures[i]->setRequestPriority(100);
+        textures[i]->set_request_priority(100);
     prioritizeTexturesAndBackings(resourceManager.get());
     for (unsigned i = 0; i < maxTextures; ++i)
         EXPECT_TRUE(validateTexture(textures[i], false));
@@ -625,7 +625,7 @@ TEST_F(PrioritizedResourceTest, clearUploadsToEvictedResources)
 
     // Make sure that we have backings for all of the textures.
     for (size_t i = 0; i < maxTextures; ++i)
-        EXPECT_TRUE(textures[i]->haveBackingTexture());
+        EXPECT_TRUE(textures[i]->have_backing_texture());
 
     queue.clearUploadsToEvictedResources();
     EXPECT_EQ(4, queue.fullUploadSize());
@@ -650,11 +650,11 @@ TEST_F(PrioritizedResourceTest, usageStatistics)
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = resourceManager->createTexture(m_textureSize, m_textureFormat);
 
-    textures[0]->setRequestPriority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
-    textures[1]->setRequestPriority(PriorityCalculator::AllowVisibleOnlyCutoff());
-    textures[2]->setRequestPriority(PriorityCalculator::AllowVisibleAndNearbyCutoff() - 1);
-    textures[3]->setRequestPriority(PriorityCalculator::AllowVisibleAndNearbyCutoff());
-    textures[4]->setRequestPriority(PriorityCalculator::AllowVisibleAndNearbyCutoff() + 1);
+    textures[0]->set_request_priority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
+    textures[1]->set_request_priority(PriorityCalculator::AllowVisibleOnlyCutoff());
+    textures[2]->set_request_priority(PriorityCalculator::AllowVisibleAndNearbyCutoff() - 1);
+    textures[3]->set_request_priority(PriorityCalculator::AllowVisibleAndNearbyCutoff());
+    textures[4]->set_request_priority(PriorityCalculator::AllowVisibleAndNearbyCutoff() + 1);
 
     // Set max limit to 2 textures.
     resourceManager->setMaxMemoryLimitBytes(texturesMemorySize(2));
@@ -675,11 +675,11 @@ TEST_F(PrioritizedResourceTest, usageStatistics)
     }
 
     // Re-prioritize the textures, but do not push the values to backings.
-    textures[0]->setRequestPriority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
-    textures[1]->setRequestPriority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
-    textures[2]->setRequestPriority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
-    textures[3]->setRequestPriority(PriorityCalculator::AllowVisibleAndNearbyCutoff() - 1);
-    textures[4]->setRequestPriority(PriorityCalculator::AllowVisibleAndNearbyCutoff());
+    textures[0]->set_request_priority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
+    textures[1]->set_request_priority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
+    textures[2]->set_request_priority(PriorityCalculator::AllowVisibleOnlyCutoff() - 1);
+    textures[3]->set_request_priority(PriorityCalculator::AllowVisibleAndNearbyCutoff() - 1);
+    textures[4]->set_request_priority(PriorityCalculator::AllowVisibleAndNearbyCutoff());
     resourceManager->prioritizeTextures();
 
     // Verify that we still see the old values.

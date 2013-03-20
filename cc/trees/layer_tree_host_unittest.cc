@@ -1495,7 +1495,7 @@ public:
     virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
     virtual void SetTexturePriorities(const PriorityCalculator&) OVERRIDE;
 
-    bool haveBackingTexture() const { return m_texture.get() ? m_texture->haveBackingTexture() : false; }
+    bool haveBackingTexture() const { return m_texture.get() ? m_texture->have_backing_texture() : false; }
 
 private:
     EvictionTestLayer() : Layer() { }
@@ -1505,8 +1505,8 @@ private:
     {
         if (m_texture.get())
             return;
-        m_texture = PrioritizedResource::create(layer_tree_host()->contents_texture_manager());
-        m_texture->setDimensions(gfx::Size(10, 10), GL_RGBA);
+        m_texture = PrioritizedResource::Create(layer_tree_host()->contents_texture_manager());
+        m_texture->SetDimensions(gfx::Size(10, 10), GL_RGBA);
         m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     }
 
@@ -1544,7 +1544,7 @@ void EvictionTestLayer::SetTexturePriorities(const PriorityCalculator&)
     createTextureIfNeeded();
     if (!m_texture.get())
         return;
-    m_texture->setRequestPriority(PriorityCalculator::UIPriority(true));
+    m_texture->set_request_priority(PriorityCalculator::UIPriority(true));
 }
 
 void EvictionTestLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracker*, RenderingStats*)
@@ -1569,7 +1569,7 @@ void EvictionTestLayer::PushPropertiesTo(LayerImpl* layerImpl)
     Layer::PushPropertiesTo(layerImpl);
 
     EvictionTestLayerImpl* testLayerImpl = static_cast<EvictionTestLayerImpl*>(layerImpl);
-    testLayerImpl->setHasTexture(m_texture->haveBackingTexture());
+    testLayerImpl->setHasTexture(m_texture->have_backing_texture());
 }
 
 class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {

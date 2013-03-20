@@ -70,7 +70,7 @@ void FakeLayerUpdater::setRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer
 
 scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::CreateResource(PrioritizedResourceManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::Create(manager)));
 }
 
 FakeTiledLayerImpl::FakeTiledLayerImpl(LayerTreeImpl* treeImpl, int id)

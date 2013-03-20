@@ -44,7 +44,7 @@ void ResourceUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpda
     while (temp.size()) {
         ResourceUpdate upload = temp.front();
         temp.pop_front();
-        if (!upload.texture->backingResourceWasEvicted())
+        if (!upload.texture->BackingResourceWasEvicted())
             entryQueue.push_back(upload);
     }
 }

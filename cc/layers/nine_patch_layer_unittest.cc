@@ -110,8 +110,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
         DebugScopedSetMainThreadBlocked mainThreadBlocked(proxy());
         outputSurface = createFakeOutputSurface();
         resourceProvider = ResourceProvider::Create(outputSurface.get());
-        params.texture->acquireBackingTexture(resourceProvider.get());
-        ASSERT_TRUE(params.texture->haveBackingTexture());
+        params.texture->AcquireBackingTexture(resourceProvider.get());
+        ASSERT_TRUE(params.texture->have_backing_texture());
     }
 
     // Nothing changed, so no repeated upload.
@@ -134,7 +134,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
 
     // PrioritizedResourceManager clearing
     layer_tree_host_->contents_texture_manager()->unregisterTexture(params.texture);
-    EXPECT_EQ(NULL, params.texture->resourceManager());
+    EXPECT_EQ(NULL, params.texture->resource_manager());
     testLayer->SetTexturePriorities(calculator);
     ResourceUpdateQueue queue2;
     testLayer->Update(&queue2, &occlusionTracker, NULL);
@@ -142,7 +142,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_EQ(queue2.partialUploadSize(), 0);
     params = queue2.takeFirstFullUpload();
     EXPECT_TRUE(params.texture != NULL);
-    EXPECT_EQ(params.texture->resourceManager(), layer_tree_host_->contents_texture_manager());
+    EXPECT_EQ(params.texture->resource_manager(), layer_tree_host_->contents_texture_manager());
 }
 
 }  // namespace

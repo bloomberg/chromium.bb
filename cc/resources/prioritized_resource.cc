@@ -13,198 +13,194 @@
 
 namespace cc {
 
-PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager, gfx::Size size, GLenum format)
-    : m_size(size)
-    , m_format(format)
-    , m_bytes(0)
-    , m_contentsSwizzled(false)
-    , m_priority(PriorityCalculator::LowestPriority())
-    , m_isAbovePriorityCutoff(false)
-    , m_isSelfManaged(false)
-    , m_backing(0)
-    , m_manager(0)
-{
-    // m_manager is set in registerTexture() so validity can be checked.
-    DCHECK(format || size.IsEmpty());
-    if (format)
-        m_bytes = Resource::MemorySizeBytes(size, format);
-    if (manager)
-        manager->registerTexture(this);
+PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager,
+                                         gfx::Size size,
+                                         GLenum format)
+    : size_(size),
+      format_(format),
+      bytes_(0),
+      contents_swizzled_(false),
+      priority_(PriorityCalculator::LowestPriority()),
+      is_above_priority_cutoff_(false),
+      is_self_managed_(false),
+      backing_(NULL),
+      manager_(NULL) {
+  // manager_ is set in RegisterTexture() so validity can be checked.
+  DCHECK(format || size.IsEmpty());
+  if (format)
+    bytes_ = Resource::MemorySizeBytes(size, format);
+  if (manager)
+    manager->registerTexture(this);
 }
 
-PrioritizedResource::~PrioritizedResource()
-{
-    if (m_manager)
-        m_manager->unregisterTexture(this);
+PrioritizedResource::~PrioritizedResource() {
+  if (manager_)
+    manager_->unregisterTexture(this);
 }
 
-void PrioritizedResource::setTextureManager(PrioritizedResourceManager* manager)
-{
-    if (m_manager == manager)
-        return;
-    if (m_manager)
-        m_manager->unregisterTexture(this);
-    if (manager)
-        manager->registerTexture(this);
+void PrioritizedResource::SetTextureManager(
+    PrioritizedResourceManager* manager) {
+  if (manager_ == manager)
+    return;
+  if (manager_)
+    manager_->unregisterTexture(this);
+  if (manager)
+    manager->registerTexture(this);
 }
 
-void PrioritizedResource::setDimensions(gfx::Size size, GLenum format)
-{
-    if (m_format != format || m_size != size) {
-        m_isAbovePriorityCutoff = false;
-        m_format = format;
-        m_size = size;
-        m_bytes = Resource::MemorySizeBytes(size, format);
-        DCHECK(m_manager || !m_backing);
-        if (m_manager)
-            m_manager->returnBackingTexture(this);
-    }
+void PrioritizedResource::SetDimensions(gfx::Size size, GLenum format) {
+  if (format_ != format || size_ != size) {
+    is_above_priority_cutoff_ = false;
+    format_ = format;
+    size_ = size;
+    bytes_ = Resource::MemorySizeBytes(size, format);
+    DCHECK(manager_ || !backing_);
+    if (manager_)
+      manager_->returnBackingTexture(this);
+  }
 }
 
-bool PrioritizedResource::requestLate()
-{
-    if (!m_manager)
-        return false;
-    return m_manager->requestLate(this);
+bool PrioritizedResource::RequestLate() {
+  if (!manager_)
+    return false;
+  return manager_->requestLate(this);
 }
 
-bool PrioritizedResource::backingResourceWasEvicted() const
-{
-    return m_backing ? m_backing->resourceHasBeenDeleted() : false;
+bool PrioritizedResource::BackingResourceWasEvicted() const {
+  return backing_ ? backing_->ResourceHasBeenDeleted() : false;
 }
 
-void PrioritizedResource::acquireBackingTexture(ResourceProvider* resourceProvider)
-{
-    DCHECK(m_isAbovePriorityCutoff);
-    if (m_isAbovePriorityCutoff)
-        m_manager->acquireBackingTextureIfNeeded(this, resourceProvider);
+void PrioritizedResource::AcquireBackingTexture(
+    ResourceProvider* resource_provider) {
+  DCHECK(is_above_priority_cutoff_);
+  if (is_above_priority_cutoff_)
+    manager_->acquireBackingTextureIfNeeded(this, resource_provider);
 }
 
-ResourceProvider::ResourceId PrioritizedResource::resourceId() const
-{
-    if (m_backing)
-        return m_backing->id();
-    return 0;
+ResourceProvider::ResourceId PrioritizedResource::ResourceId() const {
+  if (backing_)
+    return backing_->id();
+  return 0;
 }
 
-void PrioritizedResource::setPixels(ResourceProvider* resourceProvider,
-                                   const uint8_t* image, const gfx::Rect& imageRect,
-                                   const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
-{
-    DCHECK(m_isAbovePriorityCutoff);
-    if (m_isAbovePriorityCutoff)
-        acquireBackingTexture(resourceProvider);
-    DCHECK(m_backing);
-    resourceProvider->SetPixels(resourceId(), image, imageRect, sourceRect, destOffset);
+void PrioritizedResource::SetPixels(ResourceProvider* resource_provider,
+                                    const uint8_t* image,
+                                    gfx::Rect image_rect,
+                                    gfx::Rect source_rect,
+                                    gfx::Vector2d dest_offset) {
+  DCHECK(is_above_priority_cutoff_);
+  if (is_above_priority_cutoff_)
+    AcquireBackingTexture(resource_provider);
+  DCHECK(backing_);
+  resource_provider->SetPixels(
+      ResourceId(), image, image_rect, source_rect, dest_offset);
 
-    // The component order may be bgra if we uploaded bgra pixels to rgba
-    // texture. Mark contents as swizzled if image component order is
-    // different than texture format.
-    m_contentsSwizzled = !PlatformColor::SameComponentOrder(m_format);
+  // The component order may be bgra if we uploaded bgra pixels to rgba
+  // texture. Mark contents as swizzled if image component order is
+  // different than texture format.
+  contents_swizzled_ = !PlatformColor::SameComponentOrder(format_);
 }
 
-void PrioritizedResource::link(Backing* backing)
-{
-    DCHECK(backing);
-    DCHECK(!backing->m_owner);
-    DCHECK(!m_backing);
+void PrioritizedResource::Link(Backing* backing) {
+  DCHECK(backing);
+  DCHECK(!backing->owner_);
+  DCHECK(!backing_);
 
-    m_backing = backing;
-    m_backing->m_owner = this;
+  backing_ = backing;
+  backing_->owner_ = this;
 }
 
-void PrioritizedResource::unlink()
-{
-    DCHECK(m_backing);
-    DCHECK(m_backing->m_owner == this);
+void PrioritizedResource::Unlink() {
+  DCHECK(backing_);
+  DCHECK(backing_->owner_ == this);
 
-    m_backing->m_owner = 0;
-    m_backing = 0;
+  backing_->owner_ = NULL;
+  backing_ = NULL;
 }
 
-void PrioritizedResource::setToSelfManagedMemoryPlaceholder(size_t bytes)
-{
-    setDimensions(gfx::Size(), GL_RGBA);
-    setIsSelfManaged(true);
-    m_bytes = bytes;
+void PrioritizedResource::SetToSelfManagedMemoryPlaceholder(size_t bytes) {
+  SetDimensions(gfx::Size(), GL_RGBA);
+  set_is_self_managed(true);
+  bytes_ = bytes;
 }
 
-PrioritizedResource::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, gfx::Size size, GLenum format)
-    : Resource(id, size, format)
-    , m_owner(0)
-    , m_priorityAtLastPriorityUpdate(PriorityCalculator::LowestPriority())
-    , m_wasAbovePriorityCutoffAtLastPriorityUpdate(false)
-    , m_inDrawingImplTree(false)
-    , m_resourceHasBeenDeleted(false)
+PrioritizedResource::Backing::Backing(unsigned id,
+                                      ResourceProvider* resource_provider,
+                                      gfx::Size size,
+                                      GLenum format)
+    : Resource(id, size, format),
+      owner_(NULL),
+      priority_at_last_priority_update_(PriorityCalculator::LowestPriority()),
+      was_above_priority_cutoff_at_last_priority_update_(false),
+      in_drawing_impl_tree_(false),
+      resource_has_been_deleted_(false)
 #ifndef NDEBUG
-    , m_resourceProvider(resourceProvider)
+      ,
+      resource_provider_(resource_provider)
 #endif
-{
+      {
 }
 
-PrioritizedResource::Backing::~Backing()
-{
-    DCHECK(!m_owner);
-    DCHECK(m_resourceHasBeenDeleted);
+PrioritizedResource::Backing::~Backing() {
+  DCHECK(!owner_);
+  DCHECK(resource_has_been_deleted_);
 }
 
-void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProvider)
-{
-    DCHECK(!proxy() || proxy()->IsImplThread());
-    DCHECK(!m_resourceHasBeenDeleted);
+void PrioritizedResource::Backing::DeleteResource(
+    ResourceProvider* resource_provider) {
+  DCHECK(!proxy() || proxy()->IsImplThread());
+  DCHECK(!resource_has_been_deleted_);
 #ifndef NDEBUG
-    DCHECK(resourceProvider == m_resourceProvider);
+  DCHECK(resource_provider == resource_provider_);
 #endif
 
-    resourceProvider->DeleteResource(id());
-    set_id(0);
-    m_resourceHasBeenDeleted = true;
+  resource_provider->DeleteResource(id());
+  set_id(0);
+  resource_has_been_deleted_ = true;
 }
 
-bool PrioritizedResource::Backing::resourceHasBeenDeleted() const
-{
-    DCHECK(!proxy() || proxy()->IsImplThread());
-    return m_resourceHasBeenDeleted;
+bool PrioritizedResource::Backing::ResourceHasBeenDeleted() const {
+  DCHECK(!proxy() || proxy()->IsImplThread());
+  return resource_has_been_deleted_;
 }
 
-bool PrioritizedResource::Backing::canBeRecycled() const
-{
-    DCHECK(!proxy() || proxy()->IsImplThread());
-    return !m_wasAbovePriorityCutoffAtLastPriorityUpdate && !m_inDrawingImplTree;
+bool PrioritizedResource::Backing::CanBeRecycled() const {
+  DCHECK(!proxy() || proxy()->IsImplThread());
+  return !was_above_priority_cutoff_at_last_priority_update_ &&
+         !in_drawing_impl_tree_;
 }
 
-void PrioritizedResource::Backing::updatePriority()
-{
-    DCHECK(!proxy() || proxy()->IsImplThread() && proxy()->IsMainThreadBlocked());
-    if (m_owner) {
-        m_priorityAtLastPriorityUpdate = m_owner->requestPriority();
-        m_wasAbovePriorityCutoffAtLastPriorityUpdate = m_owner->isAbovePriorityCutoff();
-    } else {
-        m_priorityAtLastPriorityUpdate = PriorityCalculator::LowestPriority();
-        m_wasAbovePriorityCutoffAtLastPriorityUpdate = false;
-    }
+void PrioritizedResource::Backing::UpdatePriority() {
+  DCHECK(!proxy() || proxy()->IsImplThread() && proxy()->IsMainThreadBlocked());
+  if (owner_) {
+    priority_at_last_priority_update_ = owner_->request_priority();
+    was_above_priority_cutoff_at_last_priority_update_ =
+        owner_->is_above_priority_cutoff();
+  } else {
+    priority_at_last_priority_update_ = PriorityCalculator::LowestPriority();
+    was_above_priority_cutoff_at_last_priority_update_ = false;
+  }
 }
 
-void PrioritizedResource::Backing::updateInDrawingImplTree()
-{
-    DCHECK(!proxy() || proxy()->IsImplThread() && proxy()->IsMainThreadBlocked());
-    m_inDrawingImplTree = !!owner();
-    if (!m_inDrawingImplTree)
-        DCHECK_EQ(m_priorityAtLastPriorityUpdate, PriorityCalculator::LowestPriority());
+void PrioritizedResource::Backing::UpdateInDrawingImplTree() {
+  DCHECK(!proxy() || proxy()->IsImplThread() && proxy()->IsMainThreadBlocked());
+  in_drawing_impl_tree_ = !!owner();
+  if (!in_drawing_impl_tree_) {
+    DCHECK_EQ(priority_at_last_priority_update_,
+              PriorityCalculator::LowestPriority());
+  }
 }
 
-void PrioritizedResource::returnBackingTexture()
-{
-    DCHECK(m_manager || !m_backing);
-    if (m_manager)
-        m_manager->returnBackingTexture(this);
+void PrioritizedResource::ReturnBackingTexture() {
+  DCHECK(manager_ || !backing_);
+  if (manager_)
+    manager_->returnBackingTexture(this);
 }
 
-const Proxy* PrioritizedResource::Backing::proxy() const
-{
-    if (!m_owner || !m_owner->resourceManager())
-        return 0;
-    return m_owner->resourceManager()->proxyForDebug();
+const Proxy* PrioritizedResource::Backing::proxy() const {
+  if (!owner_ || !owner_->resource_manager())
+    return NULL;
+  return owner_->resource_manager()->proxyForDebug();
 }
 
 }  // namespace cc

@@ -71,9 +71,9 @@ void PrioritizedResourceManager::prioritizeTextures()
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
         PrioritizedResource* texture = (*it);
         sortedTextures.push_back(texture);
-        if (PriorityCalculator::priority_is_higher(texture->requestPriority(), PriorityCalculator::AllowVisibleOnlyCutoff()))
+        if (PriorityCalculator::priority_is_higher(texture->request_priority(), PriorityCalculator::AllowVisibleOnlyCutoff()))
             m_memoryVisibleBytes += texture->bytes();
-        if (PriorityCalculator::priority_is_higher(texture->requestPriority(), PriorityCalculator::AllowVisibleAndNearbyCutoff()))
+        if (PriorityCalculator::priority_is_higher(texture->request_priority(), PriorityCalculator::AllowVisibleAndNearbyCutoff()))
             m_memoryVisibleAndNearbyBytes += texture->bytes();
     }
     std::sort(sortedTextures.begin(), sortedTextures.end(), compareTextures);
@@ -83,12 +83,12 @@ void PrioritizedResourceManager::prioritizeTextures()
     m_priorityCutoff = m_externalPriorityCutoff;
     size_t memoryBytes = 0;
     for (TextureVector::iterator it = sortedTextures.begin(); it != sortedTextures.end(); ++it) {
-        if ((*it)->isSelfManaged()) {
+        if ((*it)->is_self_managed()) {
             // Account for self-managed memory immediately by reducing the memory
             // available (since it never gets acquired).
             size_t newMemoryBytes = memoryBytes + (*it)->bytes();
             if (newMemoryBytes > m_memoryAvailableBytes) {
-                m_priorityCutoff = (*it)->requestPriority();
+                m_priorityCutoff = (*it)->request_priority();
                 m_memoryAvailableBytes = memoryBytes;
                 break;
             }
@@ -96,7 +96,7 @@ void PrioritizedResourceManager::prioritizeTextures()
         } else {
             size_t newMemoryBytes = memoryBytes + (*it)->bytes();
             if (newMemoryBytes > m_memoryAvailableBytes) {
-                m_priorityCutoff = (*it)->requestPriority();
+                m_priorityCutoff = (*it)->request_priority();
                 break;
             }
             memoryBytes = newMemoryBytes;
@@ -106,9 +106,9 @@ void PrioritizedResourceManager::prioritizeTextures()
     // Disallow any textures with priority below the external cutoff to have backings.
     for (TextureVector::iterator it = sortedTextures.begin(); it != sortedTextures.end(); ++it) {
         PrioritizedResource* texture = (*it);
-        if (!PriorityCalculator::priority_is_higher(texture->requestPriority(), m_externalPriorityCutoff) &&
-            texture->haveBackingTexture())
-            texture->unlink();
+        if (!PriorityCalculator::priority_is_higher(texture->request_priority(), m_externalPriorityCutoff) &&
+            texture->have_backing_texture())
+            texture->Unlink();
     }
 
     // Only allow textures if they are higher than the cutoff. All textures
@@ -116,9 +116,9 @@ void PrioritizedResourceManager::prioritizeTextures()
     // being partially allowed randomly.
     m_memoryAboveCutoffBytes = 0;
     for (TextureVector::iterator it = sortedTextures.begin(); it != sortedTextures.end(); ++it) {
-        bool isAbovePriorityCutoff = PriorityCalculator::priority_is_higher((*it)->requestPriority(), m_priorityCutoff);
-        (*it)->setAbovePriorityCutoff(isAbovePriorityCutoff);
-        if (isAbovePriorityCutoff && !(*it)->isSelfManaged())
+        bool is_above_priority_cutoff = PriorityCalculator::priority_is_higher((*it)->request_priority(), m_priorityCutoff);
+        (*it)->set_above_priority_cutoff(is_above_priority_cutoff);
+        if (is_above_priority_cutoff && !(*it)->is_self_managed())
             m_memoryAboveCutoffBytes += (*it)->bytes();
     }
     sortedTextures.clear();
@@ -134,7 +134,7 @@ void PrioritizedResourceManager::pushTexturePrioritiesToBackings()
 
     assertInvariants();
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it)
-        (*it)->updatePriority();
+        (*it)->UpdatePriority();
     sortBackings();
     assertInvariants();
 
@@ -151,7 +151,7 @@ void PrioritizedResourceManager::updateBackingsInDrawingImplTree()
     assertInvariants();
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
         PrioritizedResource::Backing* backing = (*it);
-        backing->updateInDrawingImplTree();
+        backing->UpdateInDrawingImplTree();
     }
     sortBackings();
     assertInvariants();
@@ -175,7 +175,7 @@ void PrioritizedResourceManager::clearPriorities()
         //        PriorityCalculator::lowestPriority() once we have priorities
         //        for all textures (we can't currently calculate distances for
         //        off-screen textures).
-        (*it)->setRequestPriority(PriorityCalculator::LingeringPriority((*it)->requestPriority()));
+        (*it)->set_request_priority(PriorityCalculator::LingeringPriority((*it)->request_priority()));
     }
 }
 
@@ -184,15 +184,15 @@ bool PrioritizedResourceManager::requestLate(PrioritizedResource* texture)
     DCHECK(m_proxy->IsMainThread());
 
     // This is already above cutoff, so don't double count it's memory below.
-    if (texture->isAbovePriorityCutoff())
+    if (texture->is_above_priority_cutoff())
         return true;
 
     // Allow textures that have priority equal to the cutoff, but not strictly lower.
-    if (PriorityCalculator::priority_is_lower(texture->requestPriority(), m_priorityCutoff))
+    if (PriorityCalculator::priority_is_lower(texture->request_priority(), m_priorityCutoff))
         return false;
 
     // Disallow textures that do not have a priority strictly higher than the external cutoff.
-    if (!PriorityCalculator::priority_is_higher(texture->requestPriority(), m_externalPriorityCutoff))
+    if (!PriorityCalculator::priority_is_higher(texture->request_priority(), m_externalPriorityCutoff))
         return false;
 
     size_t newMemoryBytes = m_memoryAboveCutoffBytes + texture->bytes();
@@ -200,16 +200,16 @@ bool PrioritizedResourceManager::requestLate(PrioritizedResource* texture)
         return false;
 
     m_memoryAboveCutoffBytes = newMemoryBytes;
-    texture->setAbovePriorityCutoff(true);
+    texture->set_above_priority_cutoff(true);
     return true;
 }
 
 void PrioritizedResourceManager::acquireBackingTextureIfNeeded(PrioritizedResource* texture, ResourceProvider* resourceProvider)
 {
     DCHECK(m_proxy->IsImplThread() && m_proxy->IsMainThreadBlocked());
-    DCHECK(!texture->isSelfManaged());
-    DCHECK(texture->isAbovePriorityCutoff());
-    if (texture->backing() || !texture->isAbovePriorityCutoff())
+    DCHECK(!texture->is_self_managed());
+    DCHECK(texture->is_above_priority_cutoff());
+    if (texture->backing() || !texture->is_above_priority_cutoff())
         return;
 
     // Find a backing below, by either recycling or allocating.
@@ -217,7 +217,7 @@ void PrioritizedResourceManager::acquireBackingTextureIfNeeded(PrioritizedResour
 
     // First try to recycle
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
-        if (!(*it)->canBeRecycled())
+        if (!(*it)->CanBeRecycled())
             break;
         if (resourceProvider->InUseByConsumer((*it)->id()))
             continue;
@@ -241,13 +241,13 @@ void PrioritizedResourceManager::acquireBackingTextureIfNeeded(PrioritizedResour
     // Move the used backing to the end of the eviction list, and note that
     // the tail is not sorted.
     if (backing->owner())
-        backing->owner()->unlink();
-    texture->link(backing);
+        backing->owner()->Unlink();
+    texture->Link(backing);
     m_backings.push_back(backing);
     m_backingsTailNotSorted = true;
 
     // Update the backing's priority from its new owner.
-    backing->updatePriority();
+    backing->UpdatePriority();
 }
 
 bool PrioritizedResourceManager::evictBackingsToReduceMemory(size_t limitBytes,
@@ -267,12 +267,12 @@ bool PrioritizedResourceManager::evictBackingsToReduceMemory(size_t limitBytes,
     while (m_backings.size() > 0) {
         PrioritizedResource::Backing* backing = m_backings.front();
         if (memoryUseBytes() <= limitBytes &&
-            PriorityCalculator::priority_is_higher(backing->requestPriorityAtLastPriorityUpdate(), priorityCutoff))
+            PriorityCalculator::priority_is_higher(backing->request_priority_at_last_priority_update(), priorityCutoff))
             break;
-        if (evictionPolicy == EvictOnlyRecyclable && !backing->canBeRecycled())
+        if (evictionPolicy == EvictOnlyRecyclable && !backing->CanBeRecycled())
             break;
         if (unlinkPolicy == UnlinkBackings && backing->owner())
-            backing->owner()->unlink();
+            backing->owner()->Unlink();
         evictFirstBackingResource(resourceProvider);
     }
     return true;
@@ -360,7 +360,7 @@ void PrioritizedResourceManager::unlinkAndClearEvictedBackings()
     for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
         PrioritizedResource::Backing* backing = (*it);
         if (backing->owner())
-            backing->owner()->unlink();
+            backing->owner()->Unlink();
         delete backing;
     }
     m_evictedBackings.clear();
@@ -381,11 +381,11 @@ void PrioritizedResourceManager::registerTexture(PrioritizedResource* texture)
 {
     DCHECK(m_proxy->IsMainThread());
     DCHECK(texture);
-    DCHECK(!texture->resourceManager());
+    DCHECK(!texture->resource_manager());
     DCHECK(!texture->backing());
     DCHECK(!ContainsKey(m_textures, texture));
 
-    texture->setManagerInternal(this);
+    texture->set_manager_internal(this);
     m_textures.insert(texture);
 
 }
@@ -397,16 +397,16 @@ void PrioritizedResourceManager::unregisterTexture(PrioritizedResource* texture)
     DCHECK(ContainsKey(m_textures, texture));
 
     returnBackingTexture(texture);
-    texture->setManagerInternal(0);
+    texture->set_manager_internal(0);
     m_textures.erase(texture);
-    texture->setAbovePriorityCutoff(false);
+    texture->set_above_priority_cutoff(false);
 }
 
 void PrioritizedResourceManager::returnBackingTexture(PrioritizedResource* texture)
 {
     DCHECK(m_proxy->IsMainThread() || (m_proxy->IsImplThread() && m_proxy->IsMainThreadBlocked()));
     if (texture->backing())
-        texture->unlink();
+        texture->Unlink();
 }
 
 PrioritizedResource::Backing* PrioritizedResourceManager::createBacking(gfx::Size size, GLenum format, ResourceProvider* resourceProvider)
@@ -430,7 +430,7 @@ void PrioritizedResourceManager::evictFirstBackingResource(ResourceProvider* res
     // delete the backing structure and its resource in two steps. This is because
     // we can delete the resource while the main thread is running, but we cannot
     // unlink backings while the main thread is running.
-    backing->deleteResource(resourceProvider);
+    backing->DeleteResource(resourceProvider);
     m_memoryUseBytes -= backing->bytes();
     m_backings.pop_front();
     base::AutoLock scoped_lock(m_evictedBackingsLock);
@@ -458,7 +458,7 @@ void PrioritizedResourceManager::assertInvariants()
         PrioritizedResource::Backing* backing = texture->backing();
         base::AutoLock scoped_lock(m_evictedBackingsLock);
         if (backing) {
-            if (backing->resourceHasBeenDeleted()) {
+            if (backing->ResourceHasBeenDeleted()) {
                 DCHECK(std::find(m_backings.begin(), m_backings.end(), backing) == m_backings.end());
                 DCHECK(std::find(m_evictedBackings.begin(), m_evictedBackings.end(), backing) != m_evictedBackings.end());
             } else {
@@ -476,14 +476,14 @@ void PrioritizedResourceManager::assertInvariants()
     PrioritizedResource::Backing* previous_backing = NULL;
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
         PrioritizedResource::Backing* backing = *it;
-        if (previous_backing && (!m_backingsTailNotSorted || !backing->wasAbovePriorityCutoffAtLastPriorityUpdate()))
+        if (previous_backing && (!m_backingsTailNotSorted || !backing->was_above_priority_cutoff_at_last_priority_update()))
             DCHECK(compareBackings(previous_backing, backing));
-        if (!backing->canBeRecycled())
+        if (!backing->CanBeRecycled())
             reachedUnrecyclable = true;
         if (reachedUnrecyclable)
-            DCHECK(!backing->canBeRecycled());
+            DCHECK(!backing->CanBeRecycled());
         else
-            DCHECK(backing->canBeRecycled());
+            DCHECK(backing->CanBeRecycled());
         previous_backing = backing;
     }
 #endif

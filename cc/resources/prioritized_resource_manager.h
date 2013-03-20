@@ -134,26 +134,26 @@ private:
     // Compare textures. Highest priority first.
     static inline bool compareTextures(PrioritizedResource* a, PrioritizedResource* b)
     {
-        if (a->requestPriority() == b->requestPriority())
+        if (a->request_priority() == b->request_priority())
             return a < b;
-        return PriorityCalculator::priority_is_higher(a->requestPriority(), b->requestPriority());
+        return PriorityCalculator::priority_is_higher(a->request_priority(), b->request_priority());
     }
     // Compare backings. Lowest priority first.
     static inline bool compareBackings(PrioritizedResource::Backing* a, PrioritizedResource::Backing* b)
     {
         // Make textures that can be recycled appear first
-        if (a->canBeRecycled() != b->canBeRecycled())
-            return (a->canBeRecycled() > b->canBeRecycled());
+        if (a->CanBeRecycled() != b->CanBeRecycled())
+            return (a->CanBeRecycled() > b->CanBeRecycled());
         // Then sort by being above or below the priority cutoff.
-        if (a->wasAbovePriorityCutoffAtLastPriorityUpdate() != b->wasAbovePriorityCutoffAtLastPriorityUpdate())
-            return (a->wasAbovePriorityCutoffAtLastPriorityUpdate() < b->wasAbovePriorityCutoffAtLastPriorityUpdate());
+        if (a->was_above_priority_cutoff_at_last_priority_update() != b->was_above_priority_cutoff_at_last_priority_update())
+            return (a->was_above_priority_cutoff_at_last_priority_update() < b->was_above_priority_cutoff_at_last_priority_update());
         // Then sort by priority (note that backings that no longer have owners will
         // always have the lowest priority)
-        if (a->requestPriorityAtLastPriorityUpdate() != b->requestPriorityAtLastPriorityUpdate())
-            return PriorityCalculator::priority_is_lower(a->requestPriorityAtLastPriorityUpdate(), b->requestPriorityAtLastPriorityUpdate());
+        if (a->request_priority_at_last_priority_update() != b->request_priority_at_last_priority_update())
+            return PriorityCalculator::priority_is_lower(a->request_priority_at_last_priority_update(), b->request_priority_at_last_priority_update());
         // Finally sort by being in the impl tree versus being completely unreferenced
-        if (a->inDrawingImplTree() != b->inDrawingImplTree())
-            return (a->inDrawingImplTree() < b->inDrawingImplTree());
+        if (a->in_drawing_impl_tree() != b->in_drawing_impl_tree())
+            return (a->in_drawing_impl_tree() < b->in_drawing_impl_tree());
         return a < b;
     }
 

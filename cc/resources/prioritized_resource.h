@@ -23,134 +23,154 @@ class PrioritizedResourceManager;
 class Proxy;
 
 class CC_EXPORT PrioritizedResource {
-public:
-    static scoped_ptr<PrioritizedResource> create(PrioritizedResourceManager* manager, gfx::Size size, GLenum format)
-    {
-        return make_scoped_ptr(new PrioritizedResource(manager, size, format));
+ public:
+  static scoped_ptr<PrioritizedResource>
+  Create(PrioritizedResourceManager* manager, gfx::Size size, GLenum format) {
+    return make_scoped_ptr(new PrioritizedResource(manager, size, format));
+  }
+  static scoped_ptr<PrioritizedResource> Create(
+      PrioritizedResourceManager* manager) {
+    return make_scoped_ptr(new PrioritizedResource(manager, gfx::Size(), 0));
+  }
+  ~PrioritizedResource();
+
+  // Texture properties. Changing these causes the backing texture to be lost.
+  // Setting these to the same value is a no-op.
+  void SetTextureManager(PrioritizedResourceManager* manager);
+  PrioritizedResourceManager* resource_manager() { return manager_; }
+  void SetDimensions(gfx::Size size, GLenum format);
+  GLenum format() const { return format_; }
+  gfx::Size size() const { return size_; }
+  size_t bytes() const { return bytes_; }
+  bool contents_swizzled() const { return contents_swizzled_; }
+
+  // Set priority for the requested texture.
+  void set_request_priority(int priority) { priority_ = priority; }
+  int request_priority() const { return priority_; }
+
+  // After PrioritizedResource::PrioritizeTextures() is called, this returns
+  // if the the request succeeded and this texture can be acquired for use.
+  bool can_acquire_backing_texture() const { return is_above_priority_cutoff_; }
+
+  // This returns whether we still have a backing texture. This can continue
+  // to be true even after CanAcquireBackingTexture() becomes false. In this
+  // case the texture can be used but shouldn't be updated since it will get
+  // taken away "soon".
+  bool have_backing_texture() const { return !!backing(); }
+
+  bool BackingResourceWasEvicted() const;
+
+  // If CanAcquireBackingTexture() is true AcquireBackingTexture() will acquire
+  // a backing texture for use. Call this whenever the texture is actually
+  // needed.
+  void AcquireBackingTexture(ResourceProvider* resource_provider);
+
+  // TODO(epenner): Request late is really a hack for when we are totally out of
+  // memory (all textures are visible) but we can still squeeze into the limit
+  // by not painting occluded textures. In this case the manager refuses all
+  // visible textures and RequestLate() will enable CanAcquireBackingTexture()
+  // on a call-order basis. We might want to just remove this in the future
+  // (carefully) and just make sure we don't regress OOMs situations.
+  bool RequestLate();
+
+  // Update pixels of backing resource from image. This functions will aquire
+  // the backing if needed.
+  void SetPixels(ResourceProvider* resource_provider,
+                 const uint8_t* image,
+                 gfx::Rect image_rect,
+                 gfx::Rect source_rect,
+                 gfx::Vector2d dest_offset);
+
+  ResourceProvider::ResourceId ResourceId() const;
+
+  // Self-managed textures are accounted for when prioritizing other textures,
+  // but they are not allocated/recycled/deleted, so this needs to be done
+  // externally. CanAcquireBackingTexture() indicates if the texture would have
+  // been allowed given its priority.
+  void set_is_self_managed(bool is_self_managed) {
+    is_self_managed_ = is_self_managed;
+  }
+  bool is_self_managed() { return is_self_managed_; }
+  void SetToSelfManagedMemoryPlaceholder(size_t bytes);
+
+  void ReturnBackingTexture();
+
+ private:
+  friend class PrioritizedResourceManager;
+  friend class PrioritizedResourceTest;
+
+  class Backing : public Resource {
+   public:
+    Backing(unsigned id,
+            ResourceProvider* resource_provider,
+            gfx::Size size,
+            GLenum format);
+    ~Backing();
+    void UpdatePriority();
+    void UpdateInDrawingImplTree();
+
+    PrioritizedResource* owner() { return owner_; }
+    bool CanBeRecycled() const;
+    int request_priority_at_last_priority_update() const {
+      return priority_at_last_priority_update_;
     }
-    static scoped_ptr<PrioritizedResource> create(PrioritizedResourceManager* manager)
-    {
-        return make_scoped_ptr(new PrioritizedResource(manager, gfx::Size(), 0));
+    bool was_above_priority_cutoff_at_last_priority_update() const {
+      return was_above_priority_cutoff_at_last_priority_update_;
     }
-    ~PrioritizedResource();
+    bool in_drawing_impl_tree() const { return in_drawing_impl_tree_; }
 
-    // Texture properties. Changing these causes the backing texture to be lost.
-    // Setting these to the same value is a no-op.
-    void setTextureManager(PrioritizedResourceManager*);
-    PrioritizedResourceManager* resourceManager() { return m_manager; }
-    void setDimensions(gfx::Size, GLenum format);
-    GLenum format() const { return m_format; }
-    gfx::Size size() const { return m_size; }
-    size_t bytes() const { return m_bytes; }
-    bool contentsSwizzled() const { return m_contentsSwizzled; }
+    void DeleteResource(ResourceProvider* resource_provider);
+    bool ResourceHasBeenDeleted() const;
 
-    // Set priority for the requested texture.
-    void setRequestPriority(int priority) { m_priority = priority; }
-    int requestPriority() const { return m_priority; }
+   private:
+    const Proxy* proxy() const;
 
-    // After PrioritizedResource::prioritizeTextures() is called, this returns
-    // if the the request succeeded and this texture can be acquired for use.
-    bool canAcquireBackingTexture() const { return m_isAbovePriorityCutoff; }
-
-    // This returns whether we still have a backing texture. This can continue
-    // to be true even after canAcquireBackingTexture() becomes false. In this
-    // case the texture can be used but shouldn't be updated since it will get
-    // taken away "soon".
-    bool haveBackingTexture() const { return !!backing(); }
-
-    bool backingResourceWasEvicted() const;
-
-    // If canAcquireBackingTexture() is true acquireBackingTexture() will acquire
-    // a backing texture for use. Call this whenever the texture is actually needed.
-    void acquireBackingTexture(ResourceProvider*);
-
-    // FIXME: Request late is really a hack for when we are totally out of memory
-    //        (all textures are visible) but we can still squeeze into the limit
-    //        by not painting occluded textures. In this case the manager
-    //        refuses all visible textures and requestLate() will enable
-    //        canAcquireBackingTexture() on a call-order basis. We might want to
-    //        just remove this in the future (carefully) and just make sure we don't
-    //        regress OOMs situations.
-    bool requestLate();
-
-    // Update pixels of backing resource from image. This functions will aquire the backing if needed.
-    void setPixels(ResourceProvider*, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
-
-    ResourceProvider::ResourceId resourceId() const;
-
-    // Self-managed textures are accounted for when prioritizing other textures,
-    // but they are not allocated/recycled/deleted, so this needs to be done
-    // externally. canAcquireBackingTexture() indicates if the texture would have
-    // been allowed given its priority.
-    void setIsSelfManaged(bool isSelfManaged) { m_isSelfManaged = isSelfManaged; }
-    bool isSelfManaged() { return m_isSelfManaged; }
-    void setToSelfManagedMemoryPlaceholder(size_t bytes);
-
-    void returnBackingTexture();
-
-private:
+    friend class PrioritizedResource;
     friend class PrioritizedResourceManager;
-    friend class PrioritizedResourceTest;
+    PrioritizedResource* owner_;
+    int priority_at_last_priority_update_;
+    bool was_above_priority_cutoff_at_last_priority_update_;
 
-    class Backing : public Resource {
-    public:
-        Backing(unsigned id, ResourceProvider*, gfx::Size, GLenum format);
-        ~Backing();
-        void updatePriority();
-        void updateInDrawingImplTree();
+    // Set if this is currently-drawing impl tree.
+    bool in_drawing_impl_tree_;
 
-        PrioritizedResource* owner() { return m_owner; }
-        bool canBeRecycled() const;
-        int requestPriorityAtLastPriorityUpdate() const { return m_priorityAtLastPriorityUpdate; }
-        bool wasAbovePriorityCutoffAtLastPriorityUpdate() const { return m_wasAbovePriorityCutoffAtLastPriorityUpdate; }
-        bool inDrawingImplTree() const { return m_inDrawingImplTree; }
-
-        void deleteResource(ResourceProvider*);
-        bool resourceHasBeenDeleted() const;
-
-    private:
-        const Proxy* proxy() const;
-
-        friend class PrioritizedResource;
-        friend class PrioritizedResourceManager;
-        PrioritizedResource* m_owner;
-        int m_priorityAtLastPriorityUpdate;
-        bool m_wasAbovePriorityCutoffAtLastPriorityUpdate;
-
-        // Set if this is currently-drawing impl tree.
-        bool m_inDrawingImplTree;
-
-        bool m_resourceHasBeenDeleted;
+    bool resource_has_been_deleted_;
 
 #ifndef NDEBUG
-        ResourceProvider* m_resourceProvider;
+    ResourceProvider* resource_provider_;
 #endif
-        DISALLOW_COPY_AND_ASSIGN(Backing);
-    };
+    DISALLOW_COPY_AND_ASSIGN(Backing);
+  };
 
-    PrioritizedResource(PrioritizedResourceManager*, gfx::Size, GLenum format);
+  PrioritizedResource(PrioritizedResourceManager* resource_manager,
+                      gfx::Size size,
+                      GLenum format);
 
-    bool isAbovePriorityCutoff() { return m_isAbovePriorityCutoff; }
-    void setAbovePriorityCutoff(bool isAbovePriorityCutoff) { m_isAbovePriorityCutoff = isAbovePriorityCutoff; }
-    void setManagerInternal(PrioritizedResourceManager* manager) { m_manager = manager; }
+  bool is_above_priority_cutoff() { return is_above_priority_cutoff_; }
+  void set_above_priority_cutoff(bool is_above_priority_cutoff) {
+    is_above_priority_cutoff_ = is_above_priority_cutoff;
+  }
+  void set_manager_internal(PrioritizedResourceManager* manager) {
+    manager_ = manager;
+  }
 
-    Backing* backing() const { return m_backing; }
-    void link(Backing*);
-    void unlink();
+  Backing* backing() const { return backing_; }
+  void Link(Backing* backing);
+  void Unlink();
 
-    gfx::Size m_size;
-    GLenum m_format;
-    size_t m_bytes;
-    bool m_contentsSwizzled;
+  gfx::Size size_;
+  GLenum format_;
+  size_t bytes_;
+  bool contents_swizzled_;
 
-    int m_priority;
-    bool m_isAbovePriorityCutoff;
-    bool m_isSelfManaged;
+  int priority_;
+  bool is_above_priority_cutoff_;
+  bool is_self_managed_;
 
-    Backing* m_backing;
-    PrioritizedResourceManager* m_manager;
+  Backing* backing_;
+  PrioritizedResourceManager* manager_;
 
-    DISALLOW_COPY_AND_ASSIGN(PrioritizedResource);
+  DISALLOW_COPY_AND_ASSIGN(PrioritizedResource);
 };
 
 }  // namespace cc

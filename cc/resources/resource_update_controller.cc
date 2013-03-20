@@ -117,17 +117,17 @@ void ResourceUpdateController::UpdateTexture(ResourceUpdate update) {
     gfx::Rect source_rect = update.source_rect;
     gfx::Vector2d dest_offset = update.dest_offset;
 
-    texture->acquireBackingTexture(resource_provider_);
-    DCHECK(texture->haveBackingTexture());
+    texture->AcquireBackingTexture(resource_provider_);
+    DCHECK(texture->have_backing_texture());
 
-    DCHECK(resource_provider_->GetResourceType(texture->resourceId()) ==
+    DCHECK(resource_provider_->GetResourceType(texture->ResourceId()) ==
            ResourceProvider::GLTexture);
 
     cc::ContextProvider* offscreen_contexts =
         resource_provider_->offscreen_context_provider();
 
     ResourceProvider::ScopedWriteLockGL lock(
-        resource_provider_, texture->resourceId());
+        resource_provider_, texture->ResourceId());
 
     // Flush the compositor context to ensure that textures there are available
     // in the shared context.  Do this after locking/creating the compositor
@@ -172,7 +172,7 @@ void ResourceUpdateController::UpdateTexture(ResourceUpdate update) {
 
   if (update.bitmap) {
     update.bitmap->lockPixels();
-    update.texture->setPixels(
+    update.texture->SetPixels(
         resource_provider_,
         static_cast<const uint8_t*>(update.bitmap->getPixels()),
         update.content_rect,
