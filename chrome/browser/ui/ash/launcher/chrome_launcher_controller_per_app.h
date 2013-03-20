@@ -339,6 +339,7 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
  private:
   friend class ChromeLauncherControllerPerAppTest;
   friend class LauncherPerAppAppBrowserTest;
+  friend class LauncherPlatformPerAppAppBrowserTest;
 
   // Creates a new app shortcut item and controller on the launcher at |index|.
    // Use kInsertItemAtEnd to add a shortcut as the last item.

@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
+#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -43,6 +44,41 @@
 using extensions::Extension;
 using content::WebContents;
 
+namespace {
+
+class TestShellWindowRegistryObserver
+    : public extensions::ShellWindowRegistry::Observer {
+ public:
+  explicit TestShellWindowRegistryObserver(Profile* profile)
+      : profile_(profile),
+        icon_updates_(0) {
+    extensions::ShellWindowRegistry::Get(profile_)->AddObserver(this);
+  }
+
+  virtual ~TestShellWindowRegistryObserver() {
+    extensions::ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
+  }
+
+  // Overridden from ShellWindowRegistry::Observer:
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE {}
+
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {
+    ++icon_updates_;
+  }
+
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE {}
+
+  int icon_updates() { return icon_updates_; }
+
+ private:
+  Profile* profile_;
+  int icon_updates_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestShellWindowRegistryObserver);
+};
+
+}  // namespace
+
 // TODO(skuhne): Change name back to LauncherPlatformAppBrowserTest when the
 // old launcher gets ripped out.
 class LauncherPlatformPerAppAppBrowserTest
@@ -55,14 +91,15 @@ class LauncherPlatformPerAppAppBrowserTest
 
   virtual ~LauncherPlatformPerAppAppBrowserTest() {}
 
-  ash::LauncherModel* launcher_model() {
-    return ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
-  }
-
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
-    controller_ = static_cast<ChromeLauncherController*>(launcher_->delegate());
+    controller_ =
+        static_cast<ChromeLauncherControllerPerApp*>(launcher_->delegate());
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
+  }
+
+  ash::LauncherModel* launcher_model() {
+    return ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
   }
 
   ash::LauncherID CreateAppShortcutLauncherItem(const std::string& name) {
@@ -70,8 +107,24 @@ class LauncherPlatformPerAppAppBrowserTest
         name, controller_->model()->item_count());
   }
 
+  const ash::LauncherItem& GetLastLauncherItem() {
+    // Unless there are any panels, the item at index [count - 1] will be
+    // the app list, and the item at [count - 2] will be the desired item.
+    return launcher_model()->items()[launcher_model()->item_count() - 2];
+  }
+
+  const ash::LauncherItem& GetLastLauncherPanelItem() {
+    // Panels show up on the right side of the launcher, so the desired item
+    // will be the last one.
+    return launcher_model()->items()[launcher_model()->item_count() - 1];
+  }
+
+  const LauncherItemController* GetItemController(ash::LauncherID id) {
+    return controller_->id_to_item_controller_map_[id];
+  }
+
   ash::Launcher* launcher_;
-  ChromeLauncherController* controller_;
+  ChromeLauncherControllerPerApp* controller_;
 
  private:
 
@@ -143,7 +196,7 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
         item_count);
     controller->PersistPinnedState();
     EXPECT_EQ(++item_count, model_->item_count());
-    ash::LauncherItem item = *model_->ItemByID(shortcut_id);
+    const ash::LauncherItem& item = *model_->ItemByID(shortcut_id);
     EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
     return item.id;
   }
@@ -181,8 +234,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, LaunchUnpinned) {
   ShellWindow* window = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
+  const ash::LauncherItem& item = GetLastLauncherItem();
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
   CloseShellWindow(window);
@@ -229,11 +281,10 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, PinRunning) {
   ShellWindow* window = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
-  ash::LauncherID id = item.id;
-  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  const ash::LauncherItem& item1 = GetLastLauncherItem();
+  ash::LauncherID id = item1.id;
+  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   // Create a shortcut. The app item should be after it.
   ash::LauncherID foo_id = CreateAppShortcutLauncherItem("foo");
@@ -245,9 +296,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, PinRunning) {
   // Pin the app. The item should remain.
   controller_->Pin(id);
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  item = *launcher_model()->ItemByID(id);
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  const ash::LauncherItem& item2 = *launcher_model()->ItemByID(id);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item2.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
 
   // New shortcuts should come after the item.
   ash::LauncherID bar_id = CreateAppShortcutLauncherItem("bar");
@@ -317,8 +368,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, MultipleWindows) {
   ShellWindow* window1 = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
+  const ash::LauncherItem& item = GetLastLauncherItem();
   ash::LauncherID item_id = item.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
@@ -327,15 +377,15 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, MultipleWindows) {
   ShellWindow* window2 = CreateShellWindow(extension);
   // Confirm item stays.
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  item = *launcher_model()->ItemByID(item_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  const ash::LauncherItem& item2 = *launcher_model()->ItemByID(item_id);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
 
   // Close second window.
   CloseShellWindow(window2);
   // Confirm item stays.
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  item = *launcher_model()->ItemByID(item_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  const ash::LauncherItem& item3 = *launcher_model()->ItemByID(item_id);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item3.status);
 
   // Close first window.
   CloseShellWindow(window1);
@@ -352,8 +402,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, MultipleApps) {
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item1 =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
+  const ash::LauncherItem& item1 = GetLastLauncherItem();
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -363,8 +412,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, MultipleApps) {
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item2 =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
+  const ash::LauncherItem& item2 = GetLastLauncherItem();
   ash::LauncherID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item2.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
@@ -398,8 +446,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item1 =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
+  const ash::LauncherItem& item1 = GetLastLauncherItem();
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -409,8 +456,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item2 =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
+  const ash::LauncherItem& item2 = GetLastLauncherItem();
   ash::LauncherID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item2.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
@@ -485,8 +531,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
   CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-  ash::LauncherItem item1 =
-      launcher_model()->items()[launcher_model()->item_count() - 2];
+  const ash::LauncherItem& item1 = GetLastLauncherItem();
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -494,6 +539,51 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
   ash::wm::ActivateWindow(browser()->window()->GetNativeWindow());
   EXPECT_EQ(ash::STATUS_RUNNING,
             launcher_model()->ItemByID(item_id1)->status);
+}
+
+// Test that opening an app sets the correct icon
+IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, SetIcon) {
+  TestShellWindowRegistryObserver test_observer(browser()->profile());
+
+  // Enable experimental APIs to allow panel creation.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  int base_launcher_item_count = launcher_model()->item_count();
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  ExtensionTestMessageListener completed_listener("Completed", false);
+  LoadAndLaunchPlatformApp("app_icon");
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(completed_listener.WaitUntilSatisfied());
+
+  // Now wait until the WebContent has decoded the icons and chrome has
+  // processed it. This needs to be in a loop since the renderer runs in a
+  // different process.
+  while (test_observer.icon_updates() < 3) {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+
+  // This test creates one shell window and one panel window.
+  int launcher_item_count = launcher_model()->item_count();
+  ASSERT_EQ(base_launcher_item_count + 2, launcher_item_count);
+  // The Panel will be the last item, the app list second-to-last, the app
+  // third from last.
+  const ash::LauncherItem& app_item =
+      launcher_model()->items()[launcher_item_count - 3];
+  const ash::LauncherItem& panel_item =
+      launcher_model()->items()[launcher_item_count - 1];
+  const LauncherItemController* app_item_controller =
+      GetItemController(app_item.id);
+  const LauncherItemController* panel_item_controller =
+      GetItemController(panel_item.id);
+  // Icons for Apps are set by the ShellWindowLauncherController, so
+  // image_set_by_controller() should be set.
+  EXPECT_TRUE(app_item_controller->image_set_by_controller());
+  EXPECT_TRUE(panel_item_controller->image_set_by_controller());
+  // Ensure icon heights are correct (see test.js in app_icon/ test directory)
+  EXPECT_EQ(48, app_item.image.height());
+  EXPECT_EQ(64, panel_item.image.height());
 }
 
 // Test that we can launch an app with a shortcut.
@@ -901,4 +991,3 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
 }
-
