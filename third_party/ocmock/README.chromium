@@ -16,4 +16,10 @@ This is only a partial inclusion of the OCMock tree. This only includes
 /Source/OCMock because the tests and other files are not necessary for Chromium.
 The License.txt and Changes.txt file are also present from /Source.
 
+Chromium can no longer sync to the tip-of-tree because upstream OCMock requires
+10.7 as of b5773084d56d2573caf6a2d98d5b56e301673de1.
+
 Chromium adds gtest_support.h/.mm and ocmock_extensions.h/.mm.
+
+Chromium alters all NSLogging of -[NSArray count] to compile under both 32 and
+64 bits.
