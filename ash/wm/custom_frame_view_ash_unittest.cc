@@ -363,6 +363,29 @@ TEST_F(CustomFrameViewAshTest, MaximizeButtonExternalShutDown) {
   widget->CloseNow();
 }
 
+// Test that maximizing the browser after hovering in does not crash the system
+// when the observer gets removed in the bubble destruction process.
+TEST_F(CustomFrameViewAshTest, MaximizeOnHoverThenClick) {
+  views::Widget* widget = CreateWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
+  CustomFrameViewAsh::TestApi test(frame);
+  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
+  maximize_button->set_bubble_appearance_delay_ms(0);
+  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
+  gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
+
+  aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
+  EXPECT_FALSE(maximize_button->maximizer());
+  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+
+  // Move the mouse cursor over the button to bring up the maximizer bubble.
+  generator.MoveMouseTo(button_pos);
+  EXPECT_TRUE(maximize_button->maximizer());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+}
+
 // Test that hovering over a button in the balloon dialog will show the phantom
 // window. Moving then away from the button will hide it again. Then check that
 // pressing and dragging the button itself off the button will also release the

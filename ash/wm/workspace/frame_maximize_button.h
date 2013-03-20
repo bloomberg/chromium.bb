@@ -148,8 +148,9 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   // Did the user drag far enough to trigger snapping?
   bool exceeded_drag_threshold_;
 
-  // This is the Window we are contained in.
-  aura::Window* window_;
+  // Remember the widget on which we have put some an observers,
+  // so that we can remove it upon destruction.
+  views::Widget* widget_;
 
   // Location of the press.
   gfx::Point press_location_;
