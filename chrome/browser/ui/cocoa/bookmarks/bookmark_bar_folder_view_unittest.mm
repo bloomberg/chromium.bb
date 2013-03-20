@@ -112,7 +112,7 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
      draggingAllowed:OCMOCK_ANY];
     [[[mock_controller stub] andReturnBool:show_indicator]
      shouldShowIndicatorShownForPoint:kPoint];
-    [[[mock_controller stub] andReturnFloat:kFakeIndicatorPos]
+    [[[mock_controller stub] andReturnCGFloat:kFakeIndicatorPos]
      indicatorPosForDragToPoint:kPoint];
     [[[mock_controller stub] andReturnValue:OCMOCK_VALUE(model)] bookmarkModel];
     return [mock_controller retain];
