@@ -766,12 +766,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
-    // We propagate the Chrome Frame command line here as well in case the
-    // renderer is not run in the sandbox.
     switches::kAudioBufferSize,
     switches::kAuditAllHandles,
     switches::kAuditHandles,
-    switches::kChromeFrame,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,
     switches::kDisableAcceleratedVideoDecode,

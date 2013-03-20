@@ -20,8 +20,6 @@ extern const char kAuditAllHandles[];
 CONTENT_EXPORT extern const char kBrowserAssertTest[];
 CONTENT_EXPORT extern const char kBrowserCrashTest[];
 CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
-// TODO(jam): this doesn't belong in content.
-CONTENT_EXPORT extern const char kChromeFrame[];
 CONTENT_EXPORT extern const char kDisable2dCanvasAntialiasing[];
 CONTENT_EXPORT extern const char kDisable3DAPIs[];
 CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];

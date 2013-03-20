@@ -161,8 +161,6 @@ bool UtilityProcessHostImpl::StartProcess() {
   std::string locale = GetContentClient()->browser()->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
-  if (browser_command_line.HasSwitch(switches::kChromeFrame))
-    cmd_line->AppendSwitch(switches::kChromeFrame);
   if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
     cmd_line->AppendSwitch(switches::kNoSandbox);
 #if defined(OS_MACOSX)

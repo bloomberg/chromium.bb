@@ -22,8 +22,8 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
-#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_frame_test {

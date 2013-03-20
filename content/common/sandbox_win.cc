@@ -590,13 +590,6 @@ base::ProcessHandle StartSandboxedProcess(
     in_sandbox = false;
   }
 
-  // Propagate the Chrome Frame flag to sandboxed processes if present.
-  if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
-    if (!cmd_line->HasSwitch(switches::kChromeFrame)) {
-      cmd_line->AppendSwitch(switches::kChromeFrame);
-    }
-  }
-
   // Propagate the --allow-no-job flag if present.
   if (browser_command_line.HasSwitch(switches::kAllowNoSandboxJob) &&
       !cmd_line->HasSwitch(switches::kAllowNoSandboxJob)) {

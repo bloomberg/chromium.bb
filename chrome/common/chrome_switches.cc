@@ -139,6 +139,10 @@ const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 const char kCheckCloudPrintConnectorPolicy[] =
     "check-cloud-print-connector-policy";
 
+// Run Chrome in Chrome Frame mode. This means that Chrome expects to be run
+// as a dependent process of the Chrome Frame plugin.
+const char kChromeFrame[]                   = "chrome-frame";
+
 // Tells Chrome to delay shutdown (for a specified number of seconds) when a
 // Chrome Frame automation channel is closed.
 const char kChromeFrameShutdownDelay[]      = "chrome-frame-shutdown-delay";

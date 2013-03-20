@@ -1084,6 +1084,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+
+  if (browser_command_line.HasSwitch(switches::kChromeFrame))
+    command_line->AppendSwitch(switches::kChromeFrame);
+
   if (process_type == switches::kRendererProcess) {
     base::FilePath user_data_dir =
         browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
