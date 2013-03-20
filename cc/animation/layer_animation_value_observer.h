@@ -9,11 +9,10 @@ namespace cc {
 
 class CC_EXPORT LayerAnimationValueObserver {
  public:
-  virtual ~LayerAnimationValueObserver() { }
+  virtual ~LayerAnimationValueObserver() {}
 
-  virtual void OnOpacityAnimated(float) = 0;
-  virtual void OnTransformAnimated(const gfx::Transform&) = 0;
-
+  virtual void OnOpacityAnimated(float opacity) = 0;
+  virtual void OnTransformAnimated(const gfx::Transform& transform) = 0;
   virtual bool IsActive() const = 0;
 };
 
