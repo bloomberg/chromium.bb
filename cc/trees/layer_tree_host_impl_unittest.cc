@@ -2022,7 +2022,7 @@ TEST_F(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(0u, numGutterQuads);
         EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
 
-        LayerTestCommon::verifyQuadsExactlyCoverRect(frame.render_passes[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
+        LayerTestCommon::VerifyQuadsExactlyCoverRect(frame.render_passes[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
         m_hostImpl->DidDrawAllLayers(frame);
     }
 
@@ -2045,7 +2045,7 @@ TEST_F(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(1u, numGutterQuads);
         EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
 
-        LayerTestCommon::verifyQuadsExactlyCoverRect(frame.render_passes[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
+        LayerTestCommon::VerifyQuadsExactlyCoverRect(frame.render_passes[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
         m_hostImpl->DidDrawAllLayers(frame);
     }
 
@@ -2068,7 +2068,7 @@ TEST_F(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(4u, numGutterQuads);
         EXPECT_EQ(5u, frame.render_passes[0]->quad_list.size());
 
-        LayerTestCommon::verifyQuadsExactlyCoverRect(frame.render_passes[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
+        LayerTestCommon::VerifyQuadsExactlyCoverRect(frame.render_passes[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
         m_hostImpl->DidDrawAllLayers(frame);
     }
 

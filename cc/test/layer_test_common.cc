@@ -15,45 +15,45 @@
 #include "ui/gfx/size_conversions.h"
 
 namespace cc {
-namespace LayerTestCommon {
 
-// Align with expected and actual output
-const char* quadString = "    Quad: ";
+// Align with expected and actual output.
+const char* LayerTestCommon::quad_string = "    Quad: ";
 
-bool canRectFBeSafelyRoundedToRect(const gfx::RectF& r)
-{
-    // Ensure that range of float values is not beyond integer range.
-    if (!r.IsExpressibleAsRect())
-        return false;
-
-    // Ensure that the values are actually integers.
-    if (gfx::ToFlooredPoint(r.origin()) == r.origin() && gfx::ToFlooredSize(r.size()) == r.size())
-        return true;
-
+static bool CanRectFBeSafelyRoundedToRect(gfx::RectF r) {
+  // Ensure that range of float values is not beyond integer range.
+  if (!r.IsExpressibleAsRect())
     return false;
+
+  // Ensure that the values are actually integers.
+  if (gfx::ToFlooredPoint(r.origin()) == r.origin() &&
+      gfx::ToFlooredSize(r.size()) == r.size())
+    return true;
+
+  return false;
 }
 
-void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
-                                 const gfx::Rect& rect) {
-    cc::Region remaining = rect;
+void LayerTestCommon::VerifyQuadsExactlyCoverRect(const cc::QuadList& quads,
+                                                  gfx::Rect rect) {
+  cc::Region remaining = rect;
 
-    for (size_t i = 0; i < quads.size(); ++i) {
-        cc::DrawQuad* quad = quads[i];
-        gfx::RectF quadRectF = cc::MathUtil::MapClippedRect(quad->quadTransform(), gfx::RectF(quad->rect));
+  for (size_t i = 0; i < quads.size(); ++i) {
+    cc::DrawQuad* quad = quads[i];
+    gfx::RectF quad_rectf =
+        cc::MathUtil::MapClippedRect(quad->quadTransform(),
+                                     gfx::RectF(quad->rect));
 
-        // Before testing for exact coverage in the integer world, assert that rounding
-        // will not round the rect incorrectly.
-        ASSERT_TRUE(canRectFBeSafelyRoundedToRect(quadRectF));
+    // Before testing for exact coverage in the integer world, assert that
+    // rounding will not round the rect incorrectly.
+    ASSERT_TRUE(CanRectFBeSafelyRoundedToRect(quad_rectf));
 
-        gfx::Rect quadRect = gfx::ToEnclosingRect(quadRectF);
+    gfx::Rect quad_rect = gfx::ToEnclosingRect(quad_rectf);
 
-        EXPECT_TRUE(rect.Contains(quadRect)) << quadString << i;
-        EXPECT_TRUE(remaining.Contains(quadRect)) << quadString << i;
-        remaining.Subtract(quadRect);
-    }
+    EXPECT_TRUE(rect.Contains(quad_rect)) << quad_string << i;
+    EXPECT_TRUE(remaining.Contains(quad_rect)) << quad_string << i;
+    remaining.Subtract(quad_rect);
+  }
 
-    EXPECT_TRUE(remaining.IsEmpty());
+  EXPECT_TRUE(remaining.IsEmpty());
 }
 
-}  // namespace LayerTestCommon
 }  // namespace cc

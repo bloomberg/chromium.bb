@@ -38,7 +38,7 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
   AppendQuadsData data;
   layer->AppendQuads(&quad_culler, &data);
 
-  LayerTestCommon::verifyQuadsExactlyCoverRect(quad_culler.quadList(),
+  LayerTestCommon::VerifyQuadsExactlyCoverRect(quad_culler.quadList(),
                                                visible_content_rect);
 }
 

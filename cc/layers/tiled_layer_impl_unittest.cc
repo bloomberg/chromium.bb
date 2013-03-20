@@ -192,7 +192,7 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
              layer_size,
              borders,
              gfx::Rect(gfx::Point(), layer_size));
-    LayerTestCommon::verifyQuadsExactlyCoverRect(
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(
         quads, gfx::Rect(gfx::Point(), layer_size));
   }
 
@@ -212,7 +212,7 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
              gfx::Size(250, 250),
              LayerTilingData::NO_BORDER_TEXELS,
              visible_content_rect);
-    LayerTestCommon::verifyQuadsExactlyCoverRect(quads, visible_content_rect);
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(quads, visible_content_rect);
   }
 
   void CoverageVisibleRectIntersectsBounds(
@@ -227,7 +227,7 @@ class TiledLayerImplBorderTest : public TiledLayerImplTest {
              layer_size,
              LayerTilingData::NO_BORDER_TEXELS,
              visible_content_rect);
-    LayerTestCommon::verifyQuadsExactlyCoverRect(quads, visible_content_rect);
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(quads, visible_content_rect);
   }
 };
 WITH_AND_WITHOUT_BORDER_TEST(CoverageVisibleRectOnTileBoundaries);
@@ -251,13 +251,13 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
   for (size_t i = 0; i < quads.size(); ++i) {
     const TileDrawQuad* quad = TileDrawQuad::MaterialCast(quads[i]);
 
-    EXPECT_NE(0u, quad->resource_id) << LayerTestCommon::quadString << i;
+    EXPECT_NE(0u, quad->resource_id) << LayerTestCommon::quad_string << i;
     EXPECT_EQ(gfx::RectF(gfx::PointF(), tile_size), quad->tex_coord_rect)
-        << LayerTestCommon::quadString << i;
-    EXPECT_EQ(tile_size, quad->texture_size) << LayerTestCommon::quadString
+        << LayerTestCommon::quad_string << i;
+    EXPECT_EQ(tile_size, quad->texture_size) << LayerTestCommon::quad_string
                                              << i;
     EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect)
-        << LayerTestCommon::quadString << i;
+        << LayerTestCommon::quad_string << i;
   }
 }
 
