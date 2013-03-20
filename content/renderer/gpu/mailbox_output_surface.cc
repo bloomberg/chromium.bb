@@ -117,7 +117,10 @@ void MailboxOutputSurface::SendFrameToParentCompositor(
 
   context3d_->framebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+// TODO(sievers): Remove ifdef (crbug.com/222018)
+#ifndef NDEBUG
   context3d_->bindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
   context3d_->bindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
   context3d_->produceTextureCHROMIUM(
       GL_TEXTURE_2D, current_backing_.mailbox.name);
