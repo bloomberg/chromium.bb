@@ -166,4 +166,19 @@
 // If available, it would look like:
 //   __attribute__((format(wprintf, format_param, dots_param)))
 
+
+// MemorySanitizer annotations.
+#ifdef MEMORY_SANITIZER
+extern "C" {
+void __msan_unpoison(const void *p, unsigned long s);
+}  // extern "C"
+
+// Mark a memory region fully initialized.
+// Use this to annotate code that deliberately reads uninitialized data, for
+// example a GC scavenging root set pointers from the stack.
+#define MSAN_UNPOISON(p, s)  __msan_unpoison(p, s)
+#else  // MEMORY_SANITIZER
+#define MSAN_UNPOISON(p, s)
+#endif  // MEMORY_SANITIZER
+
 #endif  // BASE_COMPILER_SPECIFIC_H_
