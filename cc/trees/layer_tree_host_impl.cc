@@ -1177,7 +1177,7 @@ void LayerTreeHostImpl::ActivatePendingTree() {
     RenderingStats stats;
     tile_manager_->GetRenderingStats(&stats);
     paint_time_counter_->SaveRasterizeTime(
-        stats.totalRasterizeTimeForNowBinsOnPendingTree,
+        stats.total_rasterize_time_for_now_bins_on_pending_tree,
         active_tree_->source_frame_number());
   }
 }
@@ -1796,12 +1796,12 @@ int LayerTreeHostImpl::SourceAnimationFrameNumber() const {
 }
 
 void LayerTreeHostImpl::CollectRenderingStats(RenderingStats* stats) const {
-  stats->numFramesSentToScreen = fps_counter_->current_frame_number();
-  stats->droppedFrameCount = fps_counter_->dropped_frame_count();
-  stats->numImplThreadScrolls = num_impl_thread_scrolls_;
-  stats->numMainThreadScrolls = num_main_thread_scrolls_;
-  stats->numLayersDrawn = cumulative_num_layers_drawn_;
-  stats->numMissingTiles = cumulative_num_missing_tiles_;
+  stats->screen_frame_count = fps_counter_->current_frame_number();
+  stats->dropped_frame_count = fps_counter_->dropped_frame_count();
+  stats->num_impl_thread_scrolls = num_impl_thread_scrolls_;
+  stats->num_main_thread_scrolls = num_main_thread_scrolls_;
+  stats->num_layers_drawn = cumulative_num_layers_drawn_;
+  stats->num_missing_tiles = cumulative_num_missing_tiles_;
 
   if (tile_manager_)
     tile_manager_->GetRenderingStats(stats);

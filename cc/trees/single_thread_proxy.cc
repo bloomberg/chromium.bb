@@ -172,8 +172,8 @@ bool SingleThreadProxy::RecreateOutputSurface() {
 }
 
 void SingleThreadProxy::CollectRenderingStats(RenderingStats* stats) {
-  stats->totalCommitTime = total_commit_time_;
-  stats->totalCommitCount = total_commit_count_;
+  stats->total_commit_time = total_commit_time_;
+  stats->total_commit_count = total_commit_count_;
   layer_tree_host_impl_->CollectRenderingStats(stats);
 }
 

@@ -102,8 +102,8 @@ void Picture::Record(ContentLayerClient* painter,
     begin_paint_time = base::TimeTicks::Now();
   painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
   if (stats) {
-    stats->totalPaintTime += base::TimeTicks::Now() - begin_paint_time;
-    stats->totalPixelsPainted +=
+    stats->total_paint_time += base::TimeTicks::Now() - begin_paint_time;
+    stats->total_pixels_painted +=
         layer_rect_.width() * layer_rect_.height();
   }
 

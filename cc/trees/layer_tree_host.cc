@@ -230,7 +230,7 @@ void LayerTreeHost::UpdateAnimations(base::TimeTicks frame_begin_time) {
   AnimateLayers(frame_begin_time);
   animating_ = false;
 
-  rendering_stats_.numAnimationFrames++;
+  rendering_stats_.animation_frame_count++;
 }
 
 void LayerTreeHost::DidStopFlinging() {
@@ -346,7 +346,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   }
 
   if (debug_state_.continuous_painting)
-    host_impl->SavePaintTime(rendering_stats_.totalPaintTime, commit_number());
+    host_impl->SavePaintTime(rendering_stats_.total_paint_time,
+                             commit_number());
 
   commit_number_++;
 }
