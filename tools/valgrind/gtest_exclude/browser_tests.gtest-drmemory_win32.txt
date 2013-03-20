@@ -231,7 +231,6 @@ WebIntentPickerControllerIncognitoBrowserTest.*
 GlobalErrorServiceBrowserTest.*
 PerformanceMonitorUncleanExitBrowserTest.*
 PerformanceMonitorSessionRestoreBrowserTest.*
-AppNotificationTest.*
 ExtensionCloudPrintPrivateApiTest.*
 ViewSourceTest.*
 CommandLineWebstoreInstall.*

@@ -283,7 +283,6 @@ gTestInclusions = {
          'ChromeAppAPITest.*',
          'AppApiTest.*',
          'BlockedAppApiTest.*',
-         'AppNotificationTest.*',
          'AppBackgroundPageApiTest.*',
          'WebNavigationApiTest.*',
          'UsbApiTest.*',

@@ -1253,15 +1253,6 @@ name=http://crbug.com/113847 (2)
 *!openDatabase
 *!sqlite3_open
 
-# Some unit tests must not be waiting for the file thread after deleting the
-# AppNotificationManager.
-LEAK
-name=http://crbug.com/115197
-...
-*!operator new
-*!AppNotificationStorage::Create
-*!AppNotificationManager::LoadOnFileThread
-
 LEAK
 name=http://crbug.com/115328
 ...

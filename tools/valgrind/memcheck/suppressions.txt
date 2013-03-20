@@ -3572,12 +3572,6 @@
    obj:*
 }
 {
-   bug_99166
-   Memcheck:Leak
-   ...
-   fun:_ZN22AppNotificationStorage6CreateE*
-}
-{
    bug_99304
    Memcheck:Leak
    fun:_Znw*

@@ -992,18 +992,6 @@
    fun:V8ValueConverterImplTest_WeirdTypes_Test::TestBody
 }
 {
-   bug_99166_a
-   Heapcheck:Leak
-   ...
-   fun:AppNotificationStorage::Create
-}
-{
-   bug_99166_b
-   Heapcheck:Leak
-   ...
-   fun:AppNotificationManager::Init
-}
-{
    bug_99304
    Heapcheck:Leak
    fun:v8::internal::SkipList::Update
