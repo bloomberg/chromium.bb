@@ -1043,7 +1043,10 @@ content::WebContents* AutofillDialogControllerImpl::web_contents() {
 // AutofillPopupDelegate implementation.
 
 void AutofillDialogControllerImpl::OnPopupShown(
-    content::KeyboardListener* listener) {}
+    content::KeyboardListener* listener) {
+  metric_logger_.LogDialogPopupEvent(
+      dialog_type_, AutofillMetrics::DIALOG_POPUP_SHOWN);
+}
 
 void AutofillDialogControllerImpl::OnPopupHidden(
     content::KeyboardListener* listener) {}
@@ -1066,6 +1069,9 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
       form_group,
       MutableRequestedFieldsForSection(section_showing_popup_));
   view_->UpdateSection(section_showing_popup_);
+
+  metric_logger_.LogDialogPopupEvent(
+      dialog_type_, AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
 
   // TODO(estade): not sure why it's necessary to do this explicitly.
   HidePopup();

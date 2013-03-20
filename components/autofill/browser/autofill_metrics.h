@@ -72,6 +72,16 @@ class AutofillMetrics {
     NUM_DIALOG_INITIAL_USER_STATE_METRICS
   };
 
+  // Events related to the Autofill popup shown in a requestAutocomplete or
+  // Autocheckout dialog.
+  enum DialogPopupEvent {
+    // An Autofill popup was shown.
+    DIALOG_POPUP_SHOWN = 0,
+    // The user chose to fill the form with a suggestion from the popup.
+    DIALOG_POPUP_FORM_FILLED,
+    NUM_DIALOG_POPUP_EVENTS
+  };
+
   // For measuring the frequency of security warnings or errors that can come
   // up as part of the requestAutocomplete flow.
   enum DialogSecurityMetric {
@@ -277,6 +287,10 @@ class AutofillMetrics {
   virtual void LogDialogInitialUserState(
       autofill::DialogType dialog_type,
       DialogInitialUserStateMetric user_type) const;
+
+  // Logs |event| to the popup events histogram for |dialog_type|.
+  virtual void LogDialogPopupEvent(autofill::DialogType dialog_type,
+                                   DialogPopupEvent event) const;
 
   // Logs |metric| to the security metrics histogram for |dialog_type|.
   virtual void LogDialogSecurityMetric(autofill::DialogType dialog_type,

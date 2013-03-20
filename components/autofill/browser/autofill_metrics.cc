@@ -304,6 +304,12 @@ void AutofillMetrics::LogDialogInitialUserState(
       name, user_type, NUM_DIALOG_INITIAL_USER_STATE_METRICS);
 }
 
+void AutofillMetrics::LogDialogPopupEvent(autofill::DialogType dialog_type,
+                                          DialogPopupEvent event) const {
+  std::string name = GetPrefixForDialogType(dialog_type) + ".PopupInDialog";
+  LogUMAHistogramEnumeration(name, event, NUM_DIALOG_POPUP_EVENTS);
+}
+
 void AutofillMetrics::LogDialogSecurityMetric(
     autofill::DialogType dialog_type,
     DialogSecurityMetric metric) const {
