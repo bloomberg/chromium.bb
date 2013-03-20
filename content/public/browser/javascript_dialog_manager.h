@@ -45,9 +45,12 @@ class CONTENT_EXPORT JavaScriptDialogManager {
                                      const DialogClosedCallback& callback) = 0;
 
   // Accepts or dismisses the active JavaScript dialog, which must be owned
-  // by the given |web_contents|. Returns true if the dialog was handled.
+  // by the given |web_contents|. If |prompt_override| is not null, the prompt
+  // text of the dialog should be set before accepting. Returns true if the
+  // dialog was handled.
   virtual bool HandleJavaScriptDialog(WebContents* web_contents,
-                                      bool accept);
+                                      bool accept,
+                                      const string16* prompt_override);
 
   // Cancels all pending dialogs and resets any saved JavaScript dialog state
   // for the given WebContents.

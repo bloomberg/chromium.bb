@@ -58,8 +58,10 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
       bool is_reload,
       const DialogClosedCallback& callback) OVERRIDE;
 
-  virtual bool HandleJavaScriptDialog(WebContents* web_contents,
-                                      bool accept) OVERRIDE;
+  virtual bool HandleJavaScriptDialog(
+      WebContents* web_contents,
+      bool accept,
+      const string16* prompt_override) OVERRIDE;
 
   virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
 
@@ -208,19 +210,23 @@ void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
 
 bool ChromeJavaScriptDialogManager::HandleJavaScriptDialog(
     WebContents* web_contents,
-    bool accept) {
+    bool accept,
+    const string16* prompt_override) {
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
   if (!dialog_queue->HasActiveDialog() ||
       !dialog_queue->active_dialog()->IsJavaScriptModalDialog() ||
       dialog_queue->active_dialog()->web_contents() != web_contents) {
     return false;
   }
-  NativeAppModalDialog* dialog = static_cast<JavaScriptAppModalDialog*>(
-      dialog_queue->active_dialog())->native_dialog();
-  if (accept)
-    dialog->AcceptAppModalDialog();
-  else
-    dialog->CancelAppModalDialog();
+  JavaScriptAppModalDialog* dialog = static_cast<JavaScriptAppModalDialog*>(
+      dialog_queue->active_dialog());
+  if (accept) {
+    if (prompt_override)
+      dialog->SetOverridePromptText(*prompt_override);
+    dialog->native_dialog()->AcceptAppModalDialog();
+  } else {
+    dialog->native_dialog()->CancelAppModalDialog();
+  }
   return true;
 }
 

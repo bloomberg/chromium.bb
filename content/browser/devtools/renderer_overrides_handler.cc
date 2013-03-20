@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -32,6 +33,7 @@ const char kDOMFileInputCommand[] = "DOM.setFileInputFiles";
 const char kDOMFileInputFilesParam[] = "files";
 const char kPageHandleDialogCommand[] = "Page.handleJavaScriptDialog";
 const char kPageHandleDialogAcceptParam[] = "accept";
+const char kPageHandleDialogPromptTextParam[] = "promptText";
 const char kPageNavigateCommand[] = "Page.navigate";
 const char kPageNavigateUrlParam[] = "url";
 
@@ -98,6 +100,12 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
         base::StringPrintf("Missing or invalid '%s' parameter",
                            kPageHandleDialogAcceptParam));
   }
+  string16 prompt_override;
+  string16* prompt_override_ptr = &prompt_override;
+  if (!params || !params->GetString(kPageHandleDialogPromptTextParam,
+                                    prompt_override_ptr)) {
+    prompt_override_ptr = NULL;
+  }
 
   RenderViewHost* host = agent_->GetRenderViewHost();
   if (host) {
@@ -105,8 +113,10 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
     if (web_contents) {
       JavaScriptDialogManager* manager =
           web_contents->GetDelegate()->GetJavaScriptDialogManager();
-      if (manager && manager->HandleJavaScriptDialog(web_contents, accept))
+      if (manager && manager->HandleJavaScriptDialog(
+              web_contents, accept, prompt_override_ptr)) {
         return scoped_ptr<DevToolsProtocol::Response>();
+      }
     }
   }
   return command->ErrorResponse(
