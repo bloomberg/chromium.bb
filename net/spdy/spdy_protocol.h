@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains some protocol structures for use with Spdy.
+// This file contains some protocol structures for use with SPDY 2 and 3
+// The SPDY 2 spec can be found at:
+// http://dev.chromium.org/spdy/spdy-protocol/spdy-protocol-draft2
+// The SPDY 3 spec can be found at:
+// http://dev.chromium.org/spdy/spdy-protocol/spdy-protocol-draft3
 
 #ifndef NET_SPDY_SPDY_PROTOCOL_H_
 #define NET_SPDY_SPDY_PROTOCOL_H_
 
-#include <limits>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -19,133 +23,6 @@
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
 #include "net/spdy/spdy_bitmasks.h"
-
-//  Data Frame Format
-//  +----------------------------------+
-//  |0|       Stream-ID (31bits)       |
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   |
-//  +----------------------------------+
-//  |               Data               |
-//  +----------------------------------+
-//
-//  Control Frame Format
-//  +----------------------------------+
-//  |1| Version(15bits) | Type(16bits) |
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   |
-//  +----------------------------------+
-//  |               Data               |
-//  +----------------------------------+
-//
-//  Control Frame: SYN_STREAM
-//  +----------------------------------+
-//  |1|000000000000001|0000000000000001|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   |  >= 12
-//  +----------------------------------+
-//  |X|       Stream-ID(31bits)        |
-//  +----------------------------------+
-//  |X|Associated-To-Stream-ID (31bits)|
-//  +----------------------------------+
-//  |Pri| unused      | Length (16bits)|
-//  +----------------------------------+
-//
-//  Control Frame: SYN_REPLY
-//  +----------------------------------+
-//  |1|000000000000001|0000000000000010|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   |  >= 8
-//  +----------------------------------+
-//  |X|       Stream-ID(31bits)        |
-//  +----------------------------------+
-//  | unused (16 bits)| Length (16bits)|
-//  +----------------------------------+
-//
-//  Control Frame: RST_STREAM
-//  +----------------------------------+
-//  |1|000000000000001|0000000000000011|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   |  >= 4
-//  +----------------------------------+
-//  |X|       Stream-ID(31bits)        |
-//  +----------------------------------+
-//  |        Status code (32 bits)     |
-//  +----------------------------------+
-//
-//  Control Frame: SETTINGS
-//  +----------------------------------+
-//  |1|000000000000001|0000000000000100|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   |
-//  +----------------------------------+
-//  |        # of entries (32)         |
-//  +----------------------------------+
-//
-//  Control Frame: NOOP
-//  +----------------------------------+
-//  |1|000000000000001|0000000000000101|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   | = 0
-//  +----------------------------------+
-//
-//  Control Frame: PING
-//  +----------------------------------+
-//  |1|000000000000001|0000000000000110|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   | = 4
-//  +----------------------------------+
-//  |        Unique id (32 bits)       |
-//  +----------------------------------+
-//
-//  Control Frame: GOAWAY
-//  +----------------------------------+
-//  |1|000000000000001|0000000000000111|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   | = 4
-//  +----------------------------------+
-//  |X|  Last-accepted-stream-id       |
-//  +----------------------------------+
-//
-//  Control Frame: HEADERS
-//  +----------------------------------+
-//  |1|000000000000001|0000000000001000|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   | >= 8
-//  +----------------------------------+
-//  |X|      Stream-ID (31 bits)       |
-//  +----------------------------------+
-//  | unused (16 bits)| Length (16bits)|
-//  +----------------------------------+
-//
-//  Control Frame: WINDOW_UPDATE
-//  +----------------------------------+
-//  |1|000000000000001|0000000000001001|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   | = 8
-//  +----------------------------------+
-//  |X|      Stream-ID (31 bits)       |
-//  +----------------------------------+
-//  |   Delta-Window-Size (32 bits)    |
-//  +----------------------------------+
-//
-//  Control Frame: CREDENTIAL
-//  +----------------------------------+
-//  |1|000000000000001|0000000000001010|
-//  +----------------------------------+
-//  | flags (8)  |  Length (24 bits)   | >= 12
-//  +----------------------------------+
-//  |  Slot (16 bits) |                |
-//  +-----------------+                |
-//  |      Proof Length (32 bits)      |
-//  +----------------------------------+
-//  |               Proof              |
-//  +----------------------------------+ <+
-//  |   Certificate Length (32 bits)   |  |
-//  +----------------------------------+  | Repeated until end of frame
-//  |            Certificate           |  |
-//  +----------------------------------+ <+
-//
 
 namespace net {
 
@@ -159,15 +36,10 @@ typedef uint32 SpdyStreamId;
 // flow control).
 const SpdyStreamId kSessionFlowControlStreamId = 0;
 
-// Initial window size for a Spdy stream
+// Initial window size for a Spdy stream.
 const int32 kSpdyStreamInitialWindowSize = 64 * 1024;  // 64 KBytes
 
-// Initial window size for a Spdy session
-//
-// TODO(akalin): Update this once we settle on the correct session
-// initial window size.
-//
-// TODO(akalin): Upstream this.
+// Initial window size for a Spdy session.
 const int32 kSpdySessionInitialWindowSize = 64 * 1024;  // 64 KBytes
 
 // Maximum window size for a Spdy stream or session.
@@ -376,7 +248,7 @@ const int kV3DictionarySize = arraysize(kV3Dictionary);
 
 // Note: all protocol data structures are on-the-wire format.  That means that
 //       data is stored in network-normalized order.  Readers must use the
-//       accessors provided or call ntohX() functions.
+//       accessors provided or call base::NetworkToHostX() functions.
 // TODO(hkhalil): remove above note.
 
 // Types of Spdy Control Frames.

@@ -4,10 +4,13 @@
 
 #include "net/spdy/spdy_protocol.h"
 
+#include <limits>
+
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_framer.h"
-#include "testing/platform_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -49,6 +52,7 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(7, GOAWAY);
   EXPECT_EQ(8, HEADERS);
   EXPECT_EQ(9, WINDOW_UPDATE);
+  EXPECT_EQ(std::numeric_limits<int32>::max(), kSpdyMaximumWindowSize);
 }
 
 class SpdyProtocolDeathTest : public SpdyProtocolTest {};
@@ -57,5 +61,22 @@ class SpdyProtocolDeathTest : public SpdyProtocolTest {};
 INSTANTIATE_TEST_CASE_P(SpdyProtocolDeathTests,
                         SpdyProtocolDeathTest,
                         ::testing::Values(SPDY2, SPDY3));
+
+#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
+TEST_P(SpdyProtocolDeathTest, TestSpdySettingsAndIdOutOfBounds) {
+  scoped_ptr<SettingsFlagsAndId> flags_and_id;
+
+  EXPECT_DEBUG_DEATH(
+      {
+        flags_and_id.reset(new SettingsFlagsAndId(1, ~0));
+      },
+      "SPDY setting ID too large.");
+  // Make sure that we get expected values in opt mode.
+  if (flags_and_id.get() != NULL) {
+    EXPECT_EQ(1, flags_and_id->flags());
+    EXPECT_EQ(static_cast<SpdyPingId>(0xffffff), flags_and_id->id());
+  }
+}
+#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
 }  // namespace net

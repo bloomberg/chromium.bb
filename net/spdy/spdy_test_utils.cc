@@ -4,10 +4,11 @@
 
 #include "net/spdy/spdy_test_utils.h"
 
-#include <algorithm>
+#include <cstring>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sys_byteorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -15,7 +16,7 @@ namespace net {
 namespace test {
 
 std::string HexDumpWithMarks(const unsigned char* data, int length,
-                        const bool* marks, int mark_length) {
+                             const bool* marks, int mark_length) {
   static const char kHexChars[] = "0123456789abcdef";
   static const int kColumns = 4;
 
@@ -102,7 +103,7 @@ void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version) {
     case 3:
       CHECK_EQ(0u, length & ~kLengthMask);
       {
-        int32 wire_length = htonl(length);
+        int32 wire_length = base::HostToNet32(length);
         // The length field in SPDY 2 and 3 is a 24-bit (3B) integer starting at
         // offset 5.
         memcpy(frame->data() + 5, reinterpret_cast<char*>(&wire_length) + 1, 3);
@@ -111,7 +112,7 @@ void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version) {
     case 4:
       CHECK_GT(1u<<16, length);
       {
-        int32 wire_length = htons(static_cast<uint16>(length));
+        int32 wire_length = base::HostToNet16(static_cast<uint16>(length));
         memcpy(frame->data(),
                reinterpret_cast<char*>(&wire_length),
                sizeof(uint16));
