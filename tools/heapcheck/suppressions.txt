@@ -223,8 +223,8 @@
    ...
    fun:gfx::GLApiBase::glCompileShaderFn
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
-   fun:cc::ProgramBindingBase::loadShader
-   fun:cc::ProgramBindingBase::init
+   fun:cc::ProgramBindingBase::LoadShader
+   fun:cc::ProgramBindingBase::Init
    fun:ProgramBinding
    ...
    fun:cc::SingleThreadProxy::CommitAndComposite
@@ -1834,4 +1834,12 @@
    Heapcheck:Leak
    ...
    fun:ProfileSigninConfirmationDialogTest_*_Test::TestBody
+}
+{
+   bug_222509
+   Heapcheck:Leak
+   ...
+   fun:OmniboxViewGtk::AdjustVerticalAlignmentOfInstantView
+   fun:OmniboxViewGtk::Init
+   fun:OmniboxViewGtkTest::SetUp
 }
