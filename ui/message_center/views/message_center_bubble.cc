@@ -481,6 +481,11 @@ size_t MessageCenterView::NumMessageViews() const {
 }
 
 void MessageCenterView::Layout() {
+  // Start with a layout so scroller_ has the right width to calculate its
+  // PreferredSize (fixes http://crrev.com/222221), then do another layout after
+  // scroller_ is resized to adjust the button_view_ location.
+  // TODO(dharcourt) Change how things are done so only one layout is required.
+  views::View::Layout();
   scroller_->SizeToPreferredSize();
   views::View::Layout();
   if (GetWidget())
