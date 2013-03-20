@@ -1264,6 +1264,8 @@
         'browser/ui/sad_tab_types.h',
         'browser/ui/screen_capture_infobar_delegate.cc',
         'browser/ui/screen_capture_infobar_delegate.h',
+        'browser/ui/screen_capture_notification_ui.h',
+        'browser/ui/screen_capture_notification_ui_stub.cc',
         'browser/ui/search/instant_commit_type.h',
         'browser/ui/search/instant_controller.cc',
         'browser/ui/search/instant_controller.h',
