@@ -58,9 +58,6 @@ const char kAshDisableNewNetworkStatusArea[] =
 // Disable the per application grouping version of the launcher.
 const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 
-// Disables immersive fullscreen mode.
-const char kAshDisableImmersiveMode[] = "ash-disable-immersive-mode";
-
 // Disables display rotation.
 const char kAshDisableDisplayRotation[] = "ash-disable-display-rotation";
 
@@ -93,6 +90,9 @@ const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
 // "100+200-1024x768" positions the window at 100,200.
 // "1024x768*2" sets the scale factor to 2 for a high DPI display.
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
+
+// Enable immersive fullscreen mode.
+const char kAshImmersiveFullscreen[] = "ash-immersive-fullscreen";
 
 // Hides the small tab indicators at the top of the screen during immersive
 // fullscreen mode.

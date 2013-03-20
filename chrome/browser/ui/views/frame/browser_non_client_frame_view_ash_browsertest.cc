@@ -76,6 +76,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, WindowHeader) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
+  if (!ImmersiveModeController::UseImmersiveFullscreen())
+    return;
   // We know we're using Views, so static cast.
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   Widget* widget = browser_view->GetWidget();

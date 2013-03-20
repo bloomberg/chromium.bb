@@ -179,7 +179,7 @@ bool ImmersiveModeController::UseImmersiveFullscreen() {
   // Kiosk mode needs the whole screen.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(switches::kKioskMode) &&
-      !command_line->HasSwitch(ash::switches::kAshDisableImmersiveMode);
+      command_line->HasSwitch(ash::switches::kAshImmersiveFullscreen);
 #endif
   return false;
 }
@@ -244,7 +244,7 @@ void ImmersiveModeController::MaybeStartReveal() {
 }
 
 void ImmersiveModeController::CancelReveal() {
-  EndReveal(ANIMATE_NO);
+  MaybeEndReveal(ANIMATE_NO);
 }
 
 ImmersiveModeController::RevealedLock*

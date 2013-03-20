@@ -6638,11 +6638,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WORKSPACE_SCRUBBING_DESCRIPTION" desc="Description for the flag to enable workspace scrubbing.">
         Enables workspace switching via 3 finger vertical scroll.
       </message>
-      <message name="IDS_FLAGS_ASH_DISABLE_IMMERSIVE_MODE_NAME" desc="Title for the flag for immersive mode.">
-        Disable immersive fullscreen
+      <message name="IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_NAME" desc="Title for the flag for immersive fullscreen mode.">
+        Immersive fullscreen
       </message>
-      <message name="IDS_FLAGS_ASH_DISABLE_IMMERSIVE_MODE_DESCRIPTION" desc="Description for the flag for immersive mode.">
-        Disables "immersive fullscreen" where the tab strip at the top and the app shelf at the bottom are still accessible in fullscreen.
+      <message name="IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_DESCRIPTION" desc="Description for the flag for immersive fullscreen mode.">
+        Enables "immersive fullscreen" where the tab strip at the top and the app shelf at the bottom are still accessible in fullscreen.
       </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor

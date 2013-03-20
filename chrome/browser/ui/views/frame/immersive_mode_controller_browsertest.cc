@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -32,11 +34,24 @@ gfx::Rect GetRectInWidget(views::View* view) {
 
 }  // namespace
 
-typedef InProcessBrowserTest ImmersiveModeControllerTest;
-
 // TODO(jamescook): If immersive mode becomes popular on CrOS, consider porting
 // it to other Aura platforms (win_aura, linux_aura).  http://crbug.com/163931
 #if defined(OS_CHROMEOS)
+
+class ImmersiveModeControllerTest : public InProcessBrowserTest {
+ public:
+  ImmersiveModeControllerTest() {}
+  virtual ~ImmersiveModeControllerTest() {}
+
+  // content::BrowserTestBase overrides:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(ash::switches::kAshImmersiveFullscreen);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerTest);
+};
+
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
