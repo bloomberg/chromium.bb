@@ -138,7 +138,7 @@ deps = {
     'src/tools/swarm_client':
         Var('git_url') + '/chromium/tools/swarm_client.git@5605e676de31f454caef95201f09b304fecc4f15',
     'src/v8':
-        Var('git_url') + '/external/v8.git@8718d7369b327b17a9881a04a366ede344f60d0d',
+        Var('git_url') + '/external/v8.git@7bd87f0fe09b5d7c12de8f1db0bdb759dc4130ac',
     'src/webkit/media/crypto/ppapi/cdm':
         Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
 }
@@ -335,6 +335,8 @@ deps_os = {
     {
         'src/chrome/tools/test/reference_build/chrome_linux':
             Var('git_url') + '/chromium/reference_builds/chrome_linux.git@53d4cfaf7032086779f2f4f40a9b6f21b7dbc3bf',
+        'src/third_party/chromite':
+            Var('git_url') + '/chromiumos/chromite.git@7cb5f04c5947792307c55487878f2a12bc7bfc76',
         'src/third_party/cros_dbus_cplusplus/source':
             Var('git_url') + '/chromiumos/third_party/dbus-cplusplus.git@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900',
         'src/third_party/cros_system_api':
@@ -351,6 +353,8 @@ deps_os = {
             Var('git_url') + '/chromiumos/platform/mtpd.git@132604f107368f617a3073ba2d515b78641ceeed',
         'src/third_party/openssl':
             Var('git_url') + '/chromium/deps/openssl.git@ecd56d84116e2acded8a6c4e0ea6ffdde09c2a78',
+        'src/third_party/pyelftools':
+            Var('git_url') + '/chromiumos/third_party/pyelftools.git@bdc1d380acd88d4bfaf47265008091483b0d614e',
         'src/third_party/swig/linux':
             Var('git_url') + '/chromium/deps/swig/linux.git@866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
         'src/third_party/xdg-utils':
