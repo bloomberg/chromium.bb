@@ -47,7 +47,7 @@ bool NaClBrokerHost::Init() {
   if (logging::DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
-  process_->Launch(base::FilePath(), cmd_line);
+  process_->Launch(NULL, cmd_line);
   return true;
 }
 

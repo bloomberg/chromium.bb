@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -46,6 +47,10 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "content/common/sandbox_win.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "sandbox/win/src/sandbox_policy.h"
 #include "ui/surface/accelerated_surface_win.h"
 #endif
 
@@ -163,6 +168,114 @@ void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
   AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id, timebase,
                                                        interval);
 }
+
+// NOTE: changes to this class need to be reviewed by the security team.
+class GpuSandboxedProcessLauncherDelegate
+    : public SandboxedProcessLauncherDelegate {
+ public:
+  explicit GpuSandboxedProcessLauncherDelegate(CommandLine* cmd_line)
+      : cmd_line_(cmd_line) {}
+  virtual ~GpuSandboxedProcessLauncherDelegate() {}
+
+  virtual void PreSandbox(bool* disable_default_policy,
+                          base::FilePath* exposed_dir) OVERRIDE {
+    *disable_default_policy = true;
+  }
+
+  // For the GPU process we gotten as far as USER_LIMITED. The next level
+  // which is USER_RESTRICTED breaks both the DirectX backend and the OpenGL
+  // backend. Note that the GPU process is connected to the interactive
+  // desktop.
+  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
+                              bool* success) {
+    if (base::win::GetVersion() > base::win::VERSION_XP) {
+      if (cmd_line_->GetSwitchValueASCII(switches::kUseGL) ==
+          gfx::kGLImplementationDesktopName) {
+        // Open GL path.
+        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                              sandbox::USER_LIMITED);
+        SetJobLevel(*cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+        policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+      } else {
+        if (cmd_line_->GetSwitchValueASCII(switches::kUseGL) ==
+                gfx::kGLImplementationSwiftShaderName ||
+            cmd_line_->HasSwitch(switches::kReduceGpuSandbox) ||
+            cmd_line_->HasSwitch(switches::kDisableImageTransportSurface)) {
+          // Swiftshader path.
+          policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                                sandbox::USER_LIMITED);
+        } else {
+          // Angle + DirectX path.
+          policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                                sandbox::USER_RESTRICTED);
+          // This is a trick to keep the GPU out of low-integrity processes. It
+          // starts at low-integrity for UIPI to work, then drops below
+          // low-integrity after warm-up.
+          policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
+        }
+
+        // UI restrictions break when we access Windows from outside our job.
+        // However, we don't want a proxy window in this process because it can
+        // introduce deadlocks where the renderer blocks on the gpu, which in
+        // turn blocks on the browser UI thread. So, instead we forgo a window
+        // message pump entirely and just add job restrictions to prevent child
+        // processes.
+        SetJobLevel(*cmd_line_,
+                    sandbox::JOB_LIMITED_USER,
+                    JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
+                    JOB_OBJECT_UILIMIT_DESKTOP |
+                    JOB_OBJECT_UILIMIT_EXITWINDOWS |
+                    JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
+                    policy);
+
+        policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+      }
+    } else {
+      SetJobLevel(*cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+      policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
+                            sandbox::USER_LIMITED);
+    }
+
+    // Allow the server side of GPU sockets, which are pipes that have
+    // the "chrome.gpu" namespace and an arbitrary suffix.
+    sandbox::ResultCode result = policy->AddRule(
+        sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+        sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+        L"\\\\.\\pipe\\chrome.gpu.*");
+    if (result != sandbox::SBOX_ALL_OK) {
+      *success = false;
+      return;
+    }
+
+#ifdef USE_AURA
+    // GPU also needs to add sections to the browser for aura
+    // TODO(jschuh): refactor the GPU channel to remove this. crbug.com/128786
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
+                             sandbox::TargetPolicy::HANDLES_DUP_BROKER,
+                             L"Section");
+    if (result != sandbox::SBOX_ALL_OK) {
+      *success = false;
+      return;
+    }
+#endif
+
+    if (cmd_line_->HasSwitch(switches::kEnableLogging)) {
+      string16 log_file_path = logging::GetLogFileFullPath();
+      if (!log_file_path.empty()) {
+        result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                                 sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                                 log_file_path.c_str());
+        if (result != sandbox::SBOX_ALL_OK) {
+          *success = false;
+          return;
+        }
+      }
+    }
+  }
+
+ private:
+  CommandLine* cmd_line_;
+};
 #endif  // defined(OS_WIN)
 
 }  // anonymous namespace
@@ -1061,6 +1174,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kReduceGpuSandbox,
     switches::kTestGLLib,
     switches::kTraceStartup,
+    switches::kUseExynosVda,
     switches::kV,
     switches::kVModule,
 #if defined(OS_MACOSX)
@@ -1069,7 +1183,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #if defined(USE_AURA)
     switches::kUIPrioritizeInGpuProcess,
 #endif
-    switches::kUseExynosVda,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
@@ -1091,19 +1204,13 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessSoftwareRendering", software_rendering_);
 
-#if defined(OS_WIN)
-  // Make GoogleDesktopNetwork3.dll think that the GPU process is a renderer
-  // process so the DLL unloads itself. http://crbug/129884
-  cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
-#endif
-
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())
     cmd_line->PrependWrapper(gpu_launcher);
 
   process_->Launch(
 #if defined(OS_WIN)
-      base::FilePath(),
+      new GpuSandboxedProcessLauncherDelegate(cmd_line),
 #elif defined(OS_POSIX)
       false,
       base::EnvironmentVector(),

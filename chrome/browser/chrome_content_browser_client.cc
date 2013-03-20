@@ -125,6 +125,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
+#include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
@@ -2092,6 +2093,33 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #if defined(OS_WIN)
 const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {
   return chrome::kBrowserResourcesDll;
+}
+
+void ChromeContentBrowserClient::PreSpawnRenderer(
+    sandbox::TargetPolicy* policy,
+    bool* success) {
+  // This code is duplicated in nacl_exe_win_64.cc.
+  // Allow the server side of a pipe restricted to the "chrome.nacl."
+  // namespace so that it cannot impersonate other system or other chrome
+  // service pipes.
+  sandbox::ResultCode result = policy->AddRule(
+      sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+      L"\\\\.\\pipe\\chrome.nacl.*");
+  if (result != sandbox::SBOX_ALL_OK) {
+    *success = false;
+    return;
+  }
+
+  // Renderers need to send named pipe handles and shared memory
+  // segment handles to NaCl loader processes.
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
+                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
+                           L"File");
+  if (result != sandbox::SBOX_ALL_OK) {
+    *success = false;
+    return;
+  }
 }
 #endif
 

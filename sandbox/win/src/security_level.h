@@ -5,6 +5,8 @@
 #ifndef SANDBOX_SRC_SECURITY_LEVEL_H_
 #define SANDBOX_SRC_SECURITY_LEVEL_H_
 
+#include "base/basictypes.h"
+
 namespace sandbox {
 
 // List of all the integrity levels supported in the sandbox. This is used

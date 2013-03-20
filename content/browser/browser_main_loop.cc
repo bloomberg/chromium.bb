@@ -68,7 +68,7 @@
 #include <shellapi.h>
 
 #include "content/browser/system_message_window_win.h"
-#include "content/common/sandbox_policy.h"
+#include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #endif

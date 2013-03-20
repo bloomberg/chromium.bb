@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/sandbox_util.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"

@@ -33,7 +33,7 @@
 
 #if defined(OS_WIN)
 #include "base/base_switches.h"
-#include "content/common/sandbox_policy.h"
+#include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_types.h"
 #elif defined(OS_MACOSX)

@@ -35,7 +35,6 @@
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/debug_flags.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,8 +51,28 @@
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/resource_type.h"
 
+#if defined(OS_WIN)
+#include "content/common/sandbox_win.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
+#endif
+
 namespace content {
 namespace {
+
+#if defined(OS_WIN)
+// NOTE: changes to this class need to be reviewed by the security team.
+class WorkerSandboxedProcessLauncherDelegate
+    : public content::SandboxedProcessLauncherDelegate {
+ public:
+  WorkerSandboxedProcessLauncherDelegate() {}
+  virtual ~WorkerSandboxedProcessLauncherDelegate() {}
+
+  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
+                              bool* success) {
+    AddBaseHandleClosePolicy(policy);
+  }
+};
+#endif  // OS_WIN
 
 // Helper class that we pass to SocketStreamDispatcherHost so that it can find
 // the right net::URLRequestContext for a request.
@@ -191,7 +210,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
 
   process_->Launch(
 #if defined(OS_WIN)
-      base::FilePath(),
+      new WorkerSandboxedProcessLauncherDelegate,
 #elif defined(OS_POSIX)
       use_zygote,
       base::EnvironmentVector(),

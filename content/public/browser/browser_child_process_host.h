@@ -22,6 +22,7 @@ namespace content {
 
 class BrowserChildProcessHostDelegate;
 class ChildProcessHost;
+class SandboxedProcessLauncherDelegate;
 struct ChildProcessData;
 
 // This represents child processes of the browser process, i.e. plugins. They
@@ -36,10 +37,10 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   virtual ~BrowserChildProcessHost() {}
 
   // Derived classes call this to launch the child process asynchronously.
-  // Takes ownership of |cmd_line|.
+  // Takes ownership of |cmd_line| and |delegate|.
   virtual void Launch(
 #if defined(OS_WIN)
-      const base::FilePath& exposed_dir,
+      SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::EnvironmentVector& environ,

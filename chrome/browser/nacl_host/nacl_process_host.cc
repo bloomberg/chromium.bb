@@ -61,6 +61,7 @@
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #include "chrome/common/nacl_debug_exception_handler_win.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #endif
 
 using content::BrowserThread;
@@ -75,7 +76,36 @@ bool RunningOnWOW64() {
   return (base::win::OSInfo::GetInstance()->wow64_status() ==
           base::win::OSInfo::WOW64_ENABLED);
 }
-#endif
+
+// NOTE: changes to this class need to be reviewed by the security team.
+class NaClSandboxedProcessLauncherDelegate
+    : public content::SandboxedProcessLauncherDelegate {
+ public:
+  NaClSandboxedProcessLauncherDelegate() {}
+  virtual ~NaClSandboxedProcessLauncherDelegate() {}
+
+  virtual void PostSpawnTarget(base::ProcessHandle process) {
+#if !defined(NACL_WIN64)
+    // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
+    // address space to prevent later failure due to address space fragmentation
+    // from .dll loading. The NaCl process will attempt to locate this space by
+    // scanning the address space using VirtualQuery.
+    // TODO(bbudge) Handle the --no-sandbox case.
+    // http://code.google.com/p/nativeclient/issues/detail?id=2131
+    const SIZE_T kOneGigabyte = 1 << 30;
+    void* nacl_mem = VirtualAllocEx(process,
+                                    NULL,
+                                    kOneGigabyte,
+                                    MEM_RESERVE,
+                                    PAGE_NOACCESS);
+    if (!nacl_mem) {
+      DLOG(WARNING) << "Failed to reserve address space for Native Client";
+    }
+#endif  // !defined(NACL_WIN64)
+  }
+};
+
+#endif  // OS_WIN
 
 void SetCloseOnExec(NaClHandle fd) {
 #if defined(OS_POSIX)
@@ -572,7 +602,8 @@ bool NaClProcessHost::LaunchSelLdr() {
       return false;
     }
   } else {
-    process_->Launch(base::FilePath(), cmd_line.release());
+    process_->Launch(new NaClSandboxedProcessLauncherDelegate,
+                     cmd_line.release());
   }
 #elif defined(OS_POSIX)
   process_->Launch(nacl_loader_prefix.empty(),  // use_zygote

@@ -129,6 +129,8 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/font_cache_dispatcher_win.h"
+#include "content/common/sandbox_win.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #endif
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -283,6 +285,22 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
   }
   return map;
 }
+
+#if defined(OS_WIN)
+// NOTE: changes to this class need to be reviewed by the security team.
+class RendererSandboxedProcessLauncherDelegate
+    : public content::SandboxedProcessLauncherDelegate {
+ public:
+  RendererSandboxedProcessLauncherDelegate() {}
+  virtual ~RendererSandboxedProcessLauncherDelegate() {}
+
+  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
+                              bool* success) {
+    AddBaseHandleClosePolicy(policy);
+    GetContentClient()->browser()->PreSpawnRenderer(policy, success);
+  }
+};
+#endif  // OS_WIN
 
 }  // namespace
 
@@ -488,7 +506,7 @@ bool RenderProcessHostImpl::Init() {
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
-        base::FilePath(),
+        new RendererSandboxedProcessLauncherDelegate,
 #elif defined(OS_POSIX)
         renderer_prefix.empty(),
         base::EnvironmentVector(),

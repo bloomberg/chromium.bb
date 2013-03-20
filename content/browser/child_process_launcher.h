@@ -13,6 +13,7 @@
 class CommandLine;
 
 namespace content {
+class SandboxedProcessLauncherDelegate;
 
 // Launches a process asynchronously and notifies the client of the process
 // handle when it's available.  It's used to avoid blocking the calling thread
@@ -36,7 +37,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // Takes ownership of cmd_line.
   ChildProcessLauncher(
 #if defined(OS_WIN)
-      const base::FilePath& exposed_dir,
+      SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::EnvironmentVector& environ,

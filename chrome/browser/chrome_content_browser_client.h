@@ -227,6 +227,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
 #if defined(OS_WIN)
   virtual const wchar_t* GetResourceDllName() OVERRIDE;
+  virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                bool* success) OVERRIDE;
 #endif
 #if defined(USE_NSS)
   virtual

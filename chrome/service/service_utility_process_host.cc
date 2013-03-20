@@ -27,8 +27,31 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
+#include "content/public/common/sandbox_init.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "printing/emf_win.h"
-#endif
+
+namespace {
+// NOTE: changes to this class need to be reviewed by the security team.
+class ServiceSandboxedProcessLauncherDelegate
+    : public content::SandboxedProcessLauncherDelegate {
+ public:
+  explicit ServiceSandboxedProcessLauncherDelegate(
+      const base::FilePath& exposed_dir)
+    : exposed_dir_(exposed_dir) {
+  }
+
+  virtual void PreSandbox(bool* disable_default_policy,
+                          base::FilePath* exposed_dir) OVERRIDE {
+    *exposed_dir = exposed_dir_;
+  }
+
+ private:
+  base::FilePath exposed_dir_;
+};
+}
+
+#endif  // OS_WIN
 
 using content::ChildProcessHost;
 
@@ -138,7 +161,8 @@ bool ServiceUtilityProcessHost::Launch(CommandLine* cmd_line,
     cmd_line->AppendSwitch(switches::kNoSandbox);
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle_);
   } else {
-    handle_ = content::StartProcessWithAccess(cmd_line, exposed_dir);
+    ServiceSandboxedProcessLauncherDelegate delegate(exposed_dir);
+    handle_ = content::StartSandboxedProcess(&delegate, cmd_line);
   }
   return (handle_ != base::kNullProcessHandle);
 #endif  // !defined(OS_WIN)

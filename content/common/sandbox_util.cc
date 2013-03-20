@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/sandbox_init.h"
+#include "content/common/sandbox_util.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>
 #endif
+
+#include "content/public/common/sandbox_init.h"
 
 namespace content {
 

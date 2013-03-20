@@ -20,7 +20,30 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
+#if defined(OS_WIN)
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
+#endif
+
 namespace content {
+
+#if defined(OS_WIN)
+// NOTE: changes to this class need to be reviewed by the security team.
+class UtilitySandboxedProcessLauncherDelegate
+    : public SandboxedProcessLauncherDelegate {
+ public:
+  explicit UtilitySandboxedProcessLauncherDelegate(
+    const base::FilePath& exposed_dir) : exposed_dir_(exposed_dir) {}
+  virtual ~UtilitySandboxedProcessLauncherDelegate() {}
+
+  virtual void PreSandbox(bool* disable_default_policy,
+                          base::FilePath* exposed_dir) OVERRIDE {
+    *exposed_dir = exposed_dir_;
+  }
+
+private:
+  base::FilePath exposed_dir_;
+};
+#endif
 
 UtilityProcessHost* UtilityProcessHost::Create(
     UtilityProcessHostClient* client,
@@ -170,7 +193,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 
   process_->Launch(
 #if defined(OS_WIN)
-      exposed_dir_,
+      new UtilitySandboxedProcessLauncherDelegate(exposed_dir_),
 #elif defined(OS_POSIX)
       use_zygote,
       env_,

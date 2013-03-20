@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "chrome/common/nacl_types.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
@@ -16,12 +17,17 @@ class Channel;
 
 // The BrokerThread class represents the thread that handles the messages from
 // the browser process and starts NaCl loader processes.
-class NaClBrokerListener : public IPC::Listener {
+class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
+                           public IPC::Listener {
  public:
   NaClBrokerListener();
   ~NaClBrokerListener();
 
   void Listen();
+
+  // content::SandboxedProcessLauncherDelegate implementation:
+  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
+                              bool* success) OVERRIDE;
 
   // IPC::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;

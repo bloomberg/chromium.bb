@@ -130,7 +130,7 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 
 void BrowserChildProcessHostImpl::Launch(
 #if defined(OS_WIN)
-    const base::FilePath& exposed_dir,
+    SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
     bool use_zygote,
     const base::EnvironmentVector& environ,
@@ -143,22 +143,22 @@ void BrowserChildProcessHostImpl::Launch(
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   static const char* kForwardSwitches[] = {
-#if defined(OS_POSIX)
-    switches::kChildCleanExit,
-#endif
     switches::kDisableLogging,
     switches::kEnableDCHECK,
     switches::kEnableLogging,
     switches::kLoggingLevel,
     switches::kV,
     switches::kVModule,
+#if defined(OS_POSIX)
+    switches::kChildCleanExit,
+#endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));
 
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
-      exposed_dir,
+      delegate,
 #elif defined(OS_POSIX)
       use_zygote,
       environ,

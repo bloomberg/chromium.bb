@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_policy.h"
+#include "content/common/sandbox_win.h"
 
 #include <string>
 
@@ -10,8 +10,6 @@
 #include "base/debug/debugger.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
-#include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -25,15 +23,16 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/win_utils.h"
-#include "ui/gl/gl_switches.h"
 
 static sandbox::BrokerServices* g_broker_services = NULL;
 static sandbox::TargetServices* g_target_services = NULL;
 
+namespace content {
 namespace {
 
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
@@ -109,12 +108,6 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"wblind.dll",                  // Stardock Object desktop.
   L"wbhelp.dll",                  // Stardock Object desktop.
   L"winstylerthemehelper.dll"     // Tuneup utilities 2006.
-};
-
-// The DLLs listed here are known (or under strong suspicion) of causing crashes
-// when they are loaded in the GPU process.
-const wchar_t* const kTroublesomeGpuDlls[] = {
-  L"cmsetac.dll",                 // Unknown (suspected malware).
 };
 
 // Adds the policy rules for the path and path\ with the semantic |access|.
@@ -232,14 +225,6 @@ void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
     BlacklistAddOneDll(kTroublesomeDlls[ix], true, policy);
 }
 
-// Same as AddGenericDllEvictionPolicy but specifically for the GPU process.
-// In this we add the blacklisted dlls even if they are not loaded in this
-// process.
-void AddGpuDllEvictionPolicy(sandbox::TargetPolicy* policy) {
-  for (int ix = 0; ix != arraysize(kTroublesomeGpuDlls); ++ix)
-    BlacklistAddOneDll(kTroublesomeGpuDlls[ix], false, policy);
-}
-
 // Returns the object path prepended with the current logon session.
 string16 PrependWindowsSessionPath(const char16* object) {
   // Cache this because it can't change after process creation.
@@ -291,29 +276,17 @@ bool ShouldSetJobLevel(const CommandLine& cmd_line) {
   return false;
 }
 
-void SetJobLevel(const CommandLine& cmd_line,
-                 sandbox::JobLevel job_level,
-                 uint32 ui_exceptions,
-                 sandbox::TargetPolicy* policy) {
-  if (ShouldSetJobLevel(cmd_line))
-    policy->SetJobLevel(job_level, ui_exceptions);
-  else
-    policy->SetJobLevel(sandbox::JOB_NONE, 0);
-}
-
-// Closes handles that are opened at process creation and initialization.
-void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
-  // Being able to manipulate anything BaseNamedObjects is bad.
-  string16 object_path = PrependWindowsSessionPath(L"\\BaseNamedObjects");
-  policy->AddKernelObjectToClose(L"Directory", object_path.data());
-  object_path = PrependWindowsSessionPath(
-      L"\\BaseNamedObjects\\windows_shell_global_counters");
-  policy->AddKernelObjectToClose(L"Section", object_path.data());
-}
-
 // Adds the generic policy rules to a sandbox TargetPolicy.
 bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   sandbox::ResultCode result;
+
+  // Renderers need to copy sections for plugin DIBs and GPU.
+  // GPU needs to copy sections to renderers.
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
+                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
+                           L"Section");
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
 
   // Add the policy for the client side of a pipe. It is just a file
   // in the \pipe\ namespace. We restrict it to pipes that start with
@@ -323,14 +296,7 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
                            L"\\??\\pipe\\chrome.*");
   if (result != sandbox::SBOX_ALL_OK)
     return false;
-  // Allow the server side of a pipe restricted to the "chrome.nacl."
-  // namespace so that it cannot impersonate other system or other chrome
-  // service pipes.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                           L"\\\\.\\pipe\\chrome.nacl.*");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
+
   // Allow the server side of sync sockets, which are pipes that have
   // the "chrome.sync" namespace and a randomly generated suffix.
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
@@ -360,128 +326,18 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 #endif  // NDEBUG
-  return true;
-}
-
-// For the GPU process we gotten as far as USER_LIMITED. The next level
-// which is USER_RESTRICTED breaks both the DirectX backend and the OpenGL
-// backend. Note that the GPU process is connected to the interactive
-// desktop.
-// TODO(cpu): Lock down the sandbox more if possible.
-bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
-#if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
-  if (base::win::GetVersion() > base::win::VERSION_XP) {
-    if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
-        gfx::kGLImplementationDesktopName) {
-      // Open GL path.
-      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                            sandbox::USER_LIMITED);
-      SetJobLevel(*cmd_line, sandbox::JOB_UNPROTECTED, 0, policy);
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-    } else {
-      if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
-          gfx::kGLImplementationSwiftShaderName ||
-          cmd_line->HasSwitch(switches::kReduceGpuSandbox) ||
-          cmd_line->HasSwitch(switches::kDisableImageTransportSurface)) {
-        // Swiftshader path.
-        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                              sandbox::USER_LIMITED);
-      } else {
-        // Angle + DirectX path.
-        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                              sandbox::USER_RESTRICTED);
-        // This is a trick to keep the GPU out of low-integrity processes. It
-        // starts at low-integrity for UIPI to work, then drops below
-        // low-integrity after warm-up.
-        policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
-      }
-
-      // UI restrictions break when we access Windows from outside our job.
-      // However, we don't want a proxy window in this process because it can
-      // introduce deadlocks where the renderer blocks on the gpu, which in
-      // turn blocks on the browser UI thread. So, instead we forgo a window
-      // message pump entirely and just add job restrictions to prevent child
-      // processes.
-      SetJobLevel(*cmd_line,
-                  sandbox::JOB_LIMITED_USER,
-                  JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
-                  JOB_OBJECT_UILIMIT_DESKTOP |
-                  JOB_OBJECT_UILIMIT_EXITWINDOWS |
-                  JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
-                  policy);
-
-      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-    }
-  } else {
-    SetJobLevel(*cmd_line, sandbox::JOB_UNPROTECTED, 0, policy);
-    policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
-                          sandbox::USER_LIMITED);
-  }
-
-  // Allow the server side of GPU sockets, which are pipes that have
-  // the "chrome.gpu" namespace and an arbitrary suffix.
-  sandbox::ResultCode result = policy->AddRule(
-      sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-      L"\\\\.\\pipe\\chrome.gpu.*");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
-  // GPU needs to copy sections to renderers.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"Section");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
-#ifdef USE_AURA
-  // GPU also needs to add sections to the browser for aura
-  // TODO(jschuh): refactor the GPU channel to remove this. crbug.com/128786
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_BROKER,
-                           L"Section");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-#endif
 
   AddGenericDllEvictionPolicy(policy);
-  AddGpuDllEvictionPolicy(policy);
 
-  if (cmd_line->HasSwitch(switches::kEnableLogging)) {
-    string16 log_file_path = logging::GetLogFileFullPath();
-    if (!log_file_path.empty()) {
-      result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                               sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                               log_file_path.c_str());
-      if (result != sandbox::SBOX_ALL_OK)
-        return false;
-    }
-  }
-#endif
   return true;
 }
 
-bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
-  // Renderers need to copy sections for plugin DIBs and GPU.
+bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
   sandbox::ResultCode result;
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"Section");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
   // Renderers need to share events with plugins.
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
                            sandbox::TargetPolicy::HANDLES_DUP_ANY,
                            L"Event");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
-  // Renderers need to send named pipe handles and shared memory
-  // segment handles to NaCl loader processes.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"File");
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
@@ -503,19 +359,7 @@ bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
     DLOG(WARNING) << "Failed to apply desktop security to the renderer";
   }
 
-  AddGenericDllEvictionPolicy(policy);
-
   return true;
-}
-
-// The Pepper process as locked-down as a renderer execpt that it can
-// create the server side of chrome pipes.
-bool AddPolicyForPepperPlugin(sandbox::TargetPolicy* policy) {
-  sandbox::ResultCode result;
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                           L"\\\\.\\pipe\\chrome.*");
-  return result == sandbox::SBOX_ALL_OK;
 }
 
 // This code is test only, and attempts to catch unsafe uses of
@@ -618,7 +462,26 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
 
 }  // namespace
 
-namespace content {
+void SetJobLevel(const CommandLine& cmd_line,
+                 sandbox::JobLevel job_level,
+                 uint32 ui_exceptions,
+                 sandbox::TargetPolicy* policy) {
+  if (ShouldSetJobLevel(cmd_line))
+    policy->SetJobLevel(job_level, ui_exceptions);
+  else
+    policy->SetJobLevel(sandbox::JOB_NONE, 0);
+}
+
+// TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
+// Just have to figure out what needs to be warmed up first.
+void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
+  // Being able to manipulate anything BaseNamedObjects is bad.
+  string16 object_path = PrependWindowsSessionPath(L"\\BaseNamedObjects");
+  policy->AddKernelObjectToClose(L"Directory", object_path.data());
+  object_path = PrependWindowsSessionPath(
+      L"\\BaseNamedObjects\\windows_shell_global_counters");
+  policy->AddKernelObjectToClose(L"Section", object_path.data());
+}
 
 bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   // TODO(abarth): DCHECK(CalledOnValidThread());
@@ -628,7 +491,7 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   sandbox::ResultCode result = broker_services->Init();
   g_broker_services = broker_services;
 
-// In non-official builds warn about dangerous uses of DuplicateHandle.
+  // In non-official builds warn about dangerous uses of DuplicateHandle.
   BOOL is_in_job = FALSE;
 #ifdef NACL_WIN64
   CHECK(::IsProcessInJob(::GetCurrentProcess(), NULL, &is_in_job));
@@ -662,8 +525,9 @@ bool InitTargetServices(sandbox::TargetServices* target_services) {
   return sandbox::SBOX_ALL_OK == result;
 }
 
-base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
-                                           const base::FilePath& exposed_dir) {
+base::ProcessHandle StartSandboxedProcess(
+    SandboxedProcessLauncherDelegate* delegate,
+    CommandLine* cmd_line) {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   ProcessType type;
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
@@ -773,30 +637,19 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   SetJobLevel(*cmd_line, sandbox::JOB_LOCKDOWN, 0, policy);
 
-  if (type == PROCESS_TYPE_GPU) {
-    if (!AddPolicyForGPU(cmd_line, policy))
-      return 0;
-  } else {
-    if (!AddPolicyForRenderer(policy))
-      return 0;
-    // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
-    // Just have to figure out what needs to be warmed up first.
-    if (type == PROCESS_TYPE_RENDERER ||
-        type == PROCESS_TYPE_WORKER) {
-      AddBaseHandleClosePolicy(policy);
-    // Pepper uses the renderer's policy, whith some tweaks.
-    } else if (type == PROCESS_TYPE_PPAPI_PLUGIN) {
-      if (!AddPolicyForPepperPlugin(policy))
-        return 0;
-    }
+  bool disable_default_policy = false;
+  base::FilePath exposed_dir;
+  if (delegate)
+    delegate->PreSandbox(&disable_default_policy, &exposed_dir);
 
+  if (!disable_default_policy && !AddPolicyForSandboxedProcess(policy))
+    return 0;
 
-    if (type_str != switches::kRendererProcess) {
-      // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
-      // this subprocess. See
-      // http://code.google.com/p/chromium/issues/detail?id=25580
-      cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
-    }
+  if (type_str != switches::kRendererProcess) {
+    // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
+    // this subprocess. See
+    // http://code.google.com/p/chromium/issues/detail?id=25580
+    cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
   }
 
   sandbox::ResultCode result;
@@ -827,6 +680,13 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     policy->SetStderrHandle(GetStdHandle(STD_ERROR_HANDLE));
   }
 
+  if (delegate) {
+    bool success = true;
+    delegate->PreSpawnTarget(policy, &success);
+    if (!success)
+      return 0;
+  }
+
   TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   result = g_broker_services->SpawnTarget(
@@ -842,25 +702,9 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
   }
 
-#if !defined(NACL_WIN64)
-  // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
-  // address space to prevent later failure due to address space fragmentation
-  // from .dll loading. The NaCl process will attempt to locate this space by
-  // scanning the address space using VirtualQuery.
-  // TODO(bbudge) Handle the --no-sandbox case.
-  // http://code.google.com/p/nativeclient/issues/detail?id=2131
-  if (type == PROCESS_TYPE_NACL_LOADER) {
-    const SIZE_T kOneGigabyte = 1 << 30;
-    void* nacl_mem = VirtualAllocEx(target.process_handle(),
-                                    NULL,
-                                    kOneGigabyte,
-                                    MEM_RESERVE,
-                                    PAGE_NOACCESS);
-    if (!nacl_mem) {
-      DLOG(WARNING) << "Failed to reserve address space for Native Client";
-    }
-  }
-#endif  // !defined(NACL_WIN64)
+  if (delegate)
+    delegate->PostSpawnTarget(target.process_handle());
+
 
   ResumeThread(target.thread_handle());
 

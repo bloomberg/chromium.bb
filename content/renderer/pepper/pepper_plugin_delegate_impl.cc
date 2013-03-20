@@ -28,12 +28,12 @@
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/quota_dispatcher.h"
+#include "content/common/sandbox_util.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/renderer_restrict_dispatch_group.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
@@ -1613,7 +1613,7 @@ IPC::PlatformFileForTransit PepperPluginDelegateImpl::ShareHandleWithRemote(
     base::PlatformFile handle,
     base::ProcessId target_process_id,
     bool should_close_source) const {
-  return content::BrokerGetFileHandleForProcess(
+  return BrokerGetFileHandleForProcess(
       handle,
       target_process_id,
       should_close_source);

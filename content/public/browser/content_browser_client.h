@@ -33,11 +33,6 @@ class GURL;
 namespace base {
 class FilePath;
 }
-
-namespace webkit_glue {
-struct WebPreferences;
-}
-
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
 }
@@ -58,8 +53,16 @@ class URLRequestContextGetter;
 class X509Certificate;
 }
 
+namespace sandbox {
+class TargetPolicy;
+}
+
 namespace ui {
 class SelectFilePolicy;
+}
+
+namespace webkit_glue {
+struct WebPreferences;
 }
 
 namespace content {
@@ -500,6 +503,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 #if defined(OS_WIN)
   // Returns the name of the dll that contains cursors and other resources.
   virtual const wchar_t* GetResourceDllName();
+
+  // This is called on the PROCESS_LAUNCHER thread before the renderer process
+  // is launched. It gives the embedder a chance to add loosen the sandbox
+  // policy.
+  virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                bool* success) {}
 #endif
 
 #if defined(USE_NSS)

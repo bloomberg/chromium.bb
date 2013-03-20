@@ -26,7 +26,34 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
+#if defined(OS_WIN)
+#include "content/common/sandbox_win.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "sandbox/win/src/sandbox_policy.h"
+#endif
+
 namespace content {
+
+#if defined(OS_WIN)
+// NOTE: changes to this class need to be reviewed by the security team.
+class PpapiPluginSandboxedProcessLauncherDelegate
+    : public content::SandboxedProcessLauncherDelegate {
+ public:
+  PpapiPluginSandboxedProcessLauncherDelegate() {}
+  virtual ~PpapiPluginSandboxedProcessLauncherDelegate() {}
+
+  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
+                              bool* success) {
+    // The Pepper process as locked-down as a renderer execpt that it can
+    // create the server side of chrome pipes.
+    sandbox::ResultCode result;
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+                             sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+                             L"\\\\.\\pipe\\chrome.*");
+    *success = (result == sandbox::SBOX_ALL_OK);
+  }
+};
+#endif  // OS_WIN
 
 class PpapiPluginProcessHost::PluginNetworkObserver
     : public net::NetworkChangeNotifier::IPAddressObserver,
@@ -284,7 +311,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #endif  // OS_POSIX
   process_->Launch(
 #if defined(OS_WIN)
-      base::FilePath(),
+      is_broker_ ? NULL : new PpapiPluginSandboxedProcessLauncherDelegate,
 #elif defined(OS_POSIX)
       use_zygote,
       base::EnvironmentVector(),

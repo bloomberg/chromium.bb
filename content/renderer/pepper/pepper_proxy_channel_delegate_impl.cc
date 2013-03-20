@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 
 #include "content/common/child_process.h"
-#include "content/public/common/sandbox_init.h"
+#include "content/common/sandbox_util.h"
 
 namespace content {
 

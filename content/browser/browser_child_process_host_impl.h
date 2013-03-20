@@ -42,7 +42,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual void Launch(
 #if defined(OS_WIN)
-      const base::FilePath& exposed_dir,
+      SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::EnvironmentVector& environ,

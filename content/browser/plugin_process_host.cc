@@ -237,7 +237,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
 
   process_->Launch(
 #if defined(OS_WIN)
-      base::FilePath(),
+      NULL,
 #elif defined(OS_POSIX)
       false,
       env,

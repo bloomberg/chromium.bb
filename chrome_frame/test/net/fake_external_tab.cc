@@ -967,8 +967,7 @@ int main(int argc, char** argv) {
   watchdog.AddObserver(&credentials, "Windows Security", "");
 
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  // This would normally be done, but is probably not needed for these tests.
-  // content::InitializeSandboxInfo(&sandbox_info);
+  content::InitializeSandboxInfo(&sandbox_info);
   FakeMainDelegate delegate;
   content::ContentMain(
       reinterpret_cast<HINSTANCE>(GetModuleHandle(NULL)),
