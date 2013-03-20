@@ -17,6 +17,7 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -50,6 +51,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ChromeBrowserProvider extends ContentProvider {
     private static final String TAG = "ChromeBrowserProvider";
+
+    // The permission required for using the bookmark folders API. Android build system does
+    // not generate Manifest.java for java libraries, hence use the permission name string. When
+    // making changes to this permission, also update the permission in AndroidManifest.xml.
+    private static final String
+            PERMISSION_READ_WRITE_BOOKMARKS = "com.android.chrome.READ_WRITE_BOOKMARK_FOLDERS";
 
     // Defines the API methods that the Client can call by name.
     static final String CLIENT_API_BOOKMARK_NODE_EXISTS = "BOOKMARK_NODE_EXISTS";
@@ -663,6 +670,11 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public Bundle call(String method, String arg, Bundle extras) {
+        // TODO(shashishekhar): Refactor this code into a separate class.
+
+        // Caller must have the READ_WRITE_BOOKMARK_FOLDERS permission.
+        getContext().enforcePermission(PERMISSION_READ_WRITE_BOOKMARKS, Binder.getCallingPid(),
+                                       Binder.getCallingUid(), TAG);
         if (isInUiThread()) return null;
         if (!ensureNativeChromeLoaded()) return null;
         if (method == null || extras == null) return null;
