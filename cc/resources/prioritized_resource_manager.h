@@ -22,14 +22,13 @@
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<cc::PrioritizedResource*> {
+template <> struct hash<cc::PrioritizedResource*> {
   size_t operator()(cc::PrioritizedResource* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
-} // namespace BASE_HASH_NAMESPACE
-#endif // COMPILER
+}  // namespace BASE_HASH_NAMESPACE
+#endif  // COMPILER
 
 namespace cc {
 
@@ -37,180 +36,199 @@ class PriorityCalculator;
 class Proxy;
 
 class CC_EXPORT PrioritizedResourceManager {
-public:
-    static scoped_ptr<PrioritizedResourceManager> create(const Proxy* proxy)
-    {
-        return make_scoped_ptr(new PrioritizedResourceManager(proxy));
-    }
-    scoped_ptr<PrioritizedResource> createTexture(gfx::Size size, GLenum format)
-    {
-        return make_scoped_ptr(new PrioritizedResource(this, size, format));
-    }
-    ~PrioritizedResourceManager();
+ public:
+  static scoped_ptr<PrioritizedResourceManager> Create(const Proxy* proxy) {
+    return make_scoped_ptr(new PrioritizedResourceManager(proxy));
+  }
+  scoped_ptr<PrioritizedResource> CreateTexture(gfx::Size size, GLenum format) {
+    return make_scoped_ptr(new PrioritizedResource(this, size, format));
+  }
+  ~PrioritizedResourceManager();
 
-    typedef std::list<PrioritizedResource::Backing*> BackingList;
+  typedef std::list<PrioritizedResource::Backing*> BackingList;
 
-    // FIXME (http://crbug.com/137094): This 64MB default is a straggler from the
-    // old texture manager and is just to give us a default memory allocation before
-    // we get a callback from the GPU memory manager. We should probaby either:
-    // - wait for the callback before rendering anything instead
-    // - push this into the GPU memory manager somehow.
-    static size_t defaultMemoryAllocationLimit() { return 64 * 1024 * 1024; }
+  // TODO (epenner): (http://crbug.com/137094) This 64MB default is a straggler
+  // from the old texture manager and is just to give us a default memory
+  // allocation before we get a callback from the GPU memory manager. We
+  // should probaby either:
+  // - wait for the callback before rendering anything instead
+  // - push this into the GPU memory manager somehow.
+  static size_t DefaultMemoryAllocationLimit() { return 64 * 1024 * 1024; }
 
-    // memoryUseBytes() describes the number of bytes used by existing allocated textures.
-    // memoryAboveCutoffBytes() describes the number of bytes that would be used if all
-    // textures that are above the cutoff were allocated.
-    // memoryUseBytes() <= memoryAboveCutoffBytes() should always be true.
-    size_t memoryUseBytes() const { return m_memoryUseBytes; }
-    size_t memoryAboveCutoffBytes() const { return m_memoryAboveCutoffBytes; }
-    size_t memoryForSelfManagedTextures() const { return m_maxMemoryLimitBytes - m_memoryAvailableBytes; }
+  // MemoryUseBytes() describes the number of bytes used by existing allocated
+  // textures. MemoryAboveCutoffBytes() describes the number of bytes that
+  // would be used if all textures that are above the cutoff were allocated.
+  // MemoryUseBytes() <= MemoryAboveCutoffBytes() should always be true.
+  size_t MemoryUseBytes() const { return memory_use_bytes_; }
+  size_t MemoryAboveCutoffBytes() const { return memory_above_cutoff_bytes_; }
+  size_t MemoryForSelfManagedTextures() const {
+    return max_memory_limit_bytes_ - memory_available_bytes_;
+  }
 
-    void setMaxMemoryLimitBytes(size_t bytes) { m_maxMemoryLimitBytes = bytes; }
-    size_t maxMemoryLimitBytes() const { return m_maxMemoryLimitBytes; }
+  void SetMaxMemoryLimitBytes(size_t bytes) { max_memory_limit_bytes_ = bytes; }
+  size_t MaxMemoryLimitBytes() const { return max_memory_limit_bytes_; }
 
-    // Sepecify a external priority cutoff. Only textures that have a strictly higher priority
-    // than this cutoff will be allowed.
-    void setExternalPriorityCutoff(int priorityCutoff) { m_externalPriorityCutoff = priorityCutoff; }
+  // Sepecify a external priority cutoff. Only textures that have a strictly
+  // higher priority than this cutoff will be allowed.
+  void SetExternalPriorityCutoff(int priority_cutoff) {
+    external_priority_cutoff_ = priority_cutoff;
+  }
 
-    // Return the amount of texture memory required at particular cutoffs.
-    size_t memoryVisibleBytes() const;
-    size_t memoryVisibleAndNearbyBytes() const;
+  // Return the amount of texture memory required at particular cutoffs.
+  size_t MemoryVisibleBytes() const;
+  size_t MemoryVisibleAndNearbyBytes() const;
 
-    void prioritizeTextures();
-    void clearPriorities();
+  void PrioritizeTextures();
+  void ClearPriorities();
 
-    // Delete contents textures' backing resources until they use only bytesLimit bytes. This may
-    // be called on the impl thread while the main thread is running. Returns true if resources are
-    // indeed evicted as a result of this call.
-    bool reduceMemoryOnImplThread(size_t limitBytes, int priorityCutoff, ResourceProvider*);
+  // Delete contents textures' backing resources until they use only
+  // bytesLimit bytes. This may be called on the impl thread while the main
+  // thread is running. Returns true if resources are indeed evicted as a
+  // result of this call.
+  bool ReduceMemoryOnImplThread(size_t limit_bytes,
+                                int priority_cutoff,
+                                ResourceProvider* resource_provider);
 
-    // Delete contents textures' backing resources that can be recycled. This
-    // may be called on the impl thread while the main thread is running.
-    void reduceWastedMemoryOnImplThread(ResourceProvider*);
+  // Delete contents textures' backing resources that can be recycled. This
+  // may be called on the impl thread while the main thread is running.
+  void ReduceWastedMemoryOnImplThread(ResourceProvider* resource_provider);
 
-    // Returns true if there exist any textures that are linked to backings that have had their
-    // resources evicted. Only when we commit a tree that has no textures linked to evicted backings
-    // may we allow drawing. After an eviction, this will not become true until
-    // unlinkAndClearEvictedBackings is called.
-    bool linkedEvictedBackingsExist() const;
+  // Returns true if there exist any textures that are linked to backings that
+  // have had their resources evicted. Only when we commit a tree that has no
+  // textures linked to evicted backings may we allow drawing. After an
+  // eviction, this will not become true until unlinkAndClearEvictedBackings
+  // is called.
+  bool LinkedEvictedBackingsExist() const;
 
-    // Unlink the list of contents textures' backings from their owning textures and delete the evicted
-    // backings' structures. This is called just before updating layers, and is only ever called on the
-    // main thread.
-    void unlinkAndClearEvictedBackings();
+  // Unlink the list of contents textures' backings from their owning textures
+  // and delete the evicted backings' structures. This is called just before
+  // updating layers, and is only ever called on the main thread.
+  void UnlinkAndClearEvictedBackings();
 
-    bool requestLate(PrioritizedResource*);
+  bool RequestLate(PrioritizedResource* texture);
 
-    void reduceWastedMemory(ResourceProvider*);
-    void reduceMemory(ResourceProvider*);
-    void clearAllMemory(ResourceProvider*);
+  void ReduceWastedMemory(ResourceProvider* resource_provider);
+  void ReduceMemory(ResourceProvider* resource_provider);
+  void ClearAllMemory(ResourceProvider* resource_provider);
 
-    void acquireBackingTextureIfNeeded(PrioritizedResource*, ResourceProvider*);
+  void AcquireBackingTextureIfNeeded(PrioritizedResource* texture,
+                                     ResourceProvider* resource_provider);
 
-    void registerTexture(PrioritizedResource*);
-    void unregisterTexture(PrioritizedResource*);
-    void returnBackingTexture(PrioritizedResource*);
+  void RegisterTexture(PrioritizedResource* texture);
+  void UnregisterTexture(PrioritizedResource* texture);
+  void ReturnBackingTexture(PrioritizedResource* texture);
 
-    // Update all backings' priorities from their owning texture.
-    void pushTexturePrioritiesToBackings();
+  // Update all backings' priorities from their owning texture.
+  void PushTexturePrioritiesToBackings();
 
-    // Mark all textures' backings as being in the drawing impl tree.
-    void updateBackingsInDrawingImplTree();
+  // Mark all textures' backings as being in the drawing impl tree.
+  void UpdateBackingsInDrawingImplTree();
 
-    const Proxy* proxyForDebug() const;
+  const Proxy* ProxyForDebug() const;
 
-private:
-    friend class PrioritizedResourceTest;
+ private:
+  friend class PrioritizedResourceTest;
 
-    enum EvictionPolicy {
-        EvictOnlyRecyclable,
-        EvictAnything,
-    };
-    enum UnlinkPolicy {
-        DoNotUnlinkBackings,
-        UnlinkBackings,
-    };
+  enum EvictionPolicy {
+    EVICT_ONLY_RECYCLABLE,
+    EVICT_ANYTHING,
+  };
+  enum UnlinkPolicy {
+    DO_NOT_UNLINK_BACKINGS,
+    UNLINK_BACKINGS,
+  };
 
-    // Compare textures. Highest priority first.
-    static inline bool compareTextures(PrioritizedResource* a, PrioritizedResource* b)
-    {
-        if (a->request_priority() == b->request_priority())
-            return a < b;
-        return PriorityCalculator::priority_is_higher(a->request_priority(), b->request_priority());
-    }
-    // Compare backings. Lowest priority first.
-    static inline bool compareBackings(PrioritizedResource::Backing* a, PrioritizedResource::Backing* b)
-    {
-        // Make textures that can be recycled appear first
-        if (a->CanBeRecycled() != b->CanBeRecycled())
-            return (a->CanBeRecycled() > b->CanBeRecycled());
-        // Then sort by being above or below the priority cutoff.
-        if (a->was_above_priority_cutoff_at_last_priority_update() != b->was_above_priority_cutoff_at_last_priority_update())
-            return (a->was_above_priority_cutoff_at_last_priority_update() < b->was_above_priority_cutoff_at_last_priority_update());
-        // Then sort by priority (note that backings that no longer have owners will
-        // always have the lowest priority)
-        if (a->request_priority_at_last_priority_update() != b->request_priority_at_last_priority_update())
-            return PriorityCalculator::priority_is_lower(a->request_priority_at_last_priority_update(), b->request_priority_at_last_priority_update());
-        // Finally sort by being in the impl tree versus being completely unreferenced
-        if (a->in_drawing_impl_tree() != b->in_drawing_impl_tree())
-            return (a->in_drawing_impl_tree() < b->in_drawing_impl_tree());
-        return a < b;
-    }
+  // Compare textures. Highest priority first.
+  static inline bool CompareTextures(PrioritizedResource* a,
+                                     PrioritizedResource* b) {
+    if (a->request_priority() == b->request_priority())
+      return a < b;
+    return PriorityCalculator::priority_is_higher(a->request_priority(),
+                                                  b->request_priority());
+  }
+  // Compare backings. Lowest priority first.
+  static inline bool CompareBackings(PrioritizedResource::Backing* a,
+                                     PrioritizedResource::Backing* b) {
+    // Make textures that can be recycled appear first
+    if (a->CanBeRecycled() != b->CanBeRecycled())
+      return (a->CanBeRecycled() > b->CanBeRecycled());
+    // Then sort by being above or below the priority cutoff.
+    if (a->was_above_priority_cutoff_at_last_priority_update() !=
+        b->was_above_priority_cutoff_at_last_priority_update())
+      return (a->was_above_priority_cutoff_at_last_priority_update() <
+              b->was_above_priority_cutoff_at_last_priority_update());
+    // Then sort by priority (note that backings that no longer have owners will
+    // always have the lowest priority)
+    if (a->request_priority_at_last_priority_update() !=
+        b->request_priority_at_last_priority_update())
+      return PriorityCalculator::priority_is_lower(
+          a->request_priority_at_last_priority_update(),
+          b->request_priority_at_last_priority_update());
+    // Finally sort by being in the impl tree versus being completely
+    // unreferenced
+    if (a->in_drawing_impl_tree() != b->in_drawing_impl_tree())
+      return (a->in_drawing_impl_tree() < b->in_drawing_impl_tree());
+    return a < b;
+  }
 
-    PrioritizedResourceManager(const Proxy* proxy);
+  PrioritizedResourceManager(const Proxy* proxy);
 
-    bool evictBackingsToReduceMemory(size_t limitBytes,
-                                     int priorityCutoff,
-                                     EvictionPolicy,
-                                     UnlinkPolicy,
-                                     ResourceProvider*);
-    PrioritizedResource::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
-    void evictFirstBackingResource(ResourceProvider*);
-    void sortBackings();
+  bool EvictBackingsToReduceMemory(size_t limit_bytes,
+                                   int priority_cutoff,
+                                   EvictionPolicy eviction_policy,
+                                   UnlinkPolicy unlink_policy,
+                                   ResourceProvider* resource_provider);
+  PrioritizedResource::Backing* CreateBacking(
+      gfx::Size size,
+      GLenum format,
+      ResourceProvider* resource_provider);
+  void EvictFirstBackingResource(ResourceProvider* resource_provider);
+  void SortBackings();
 
-    void assertInvariants();
+  void AssertInvariants();
 
-    size_t m_maxMemoryLimitBytes;
-    // The priority cutoff based on memory pressure. This is not a strict
-    // cutoff -- requestLate allows textures with priority equal to this
-    // cutoff to be allowed.
-    int m_priorityCutoff;
-    // The priority cutoff based on external memory policy. This is a strict
-    // cutoff -- no textures with priority equal to this cutoff will be allowed.
-    int m_externalPriorityCutoff;
-    size_t m_memoryUseBytes;
-    size_t m_memoryAboveCutoffBytes;
-    size_t m_memoryAvailableBytes;
+  size_t max_memory_limit_bytes_;
+  // The priority cutoff based on memory pressure. This is not a strict
+  // cutoff -- requestLate allows textures with priority equal to this
+  // cutoff to be allowed.
+  int priority_cutoff_;
+  // The priority cutoff based on external memory policy. This is a strict
+  // cutoff -- no textures with priority equal to this cutoff will be allowed.
+  int external_priority_cutoff_;
+  size_t memory_use_bytes_;
+  size_t memory_above_cutoff_bytes_;
+  size_t memory_available_bytes_;
 
-    typedef base::hash_set<PrioritizedResource*> TextureSet;
-    typedef std::vector<PrioritizedResource*> TextureVector;
+  typedef base::hash_set<PrioritizedResource*> TextureSet;
+  typedef std::vector<PrioritizedResource*> TextureVector;
 
-    const Proxy* m_proxy;
+  const Proxy* proxy_;
 
-    TextureSet m_textures;
-    // This list is always sorted in eviction order, with the exception the
-    // newly-allocated or recycled textures at the very end of the tail that 
-    // are not sorted by priority.
-    BackingList m_backings;
-    bool m_backingsTailNotSorted;
+  TextureSet textures_;
+  // This list is always sorted in eviction order, with the exception the
+  // newly-allocated or recycled textures at the very end of the tail that
+  // are not sorted by priority.
+  BackingList backings_;
+  bool backings_tail_not_sorted_;
 
-    // The list of backings that have been evicted, but may still be linked
-    // to textures. This can be accessed concurrently by the main and impl
-    // threads, and may only be accessed while holding m_evictedBackingsLock.
-    mutable base::Lock m_evictedBackingsLock;
-    BackingList m_evictedBackings;
+  // The list of backings that have been evicted, but may still be linked
+  // to textures. This can be accessed concurrently by the main and impl
+  // threads, and may only be accessed while holding evicted_backings_lock_.
+  mutable base::Lock evicted_backings_lock_;
+  BackingList evicted_backings_;
 
-    TextureVector m_tempTextureVector;
+  TextureVector temp_texture_vector_;
 
-    // Statistics about memory usage at priority cutoffs, computed at prioritizeTextures.
-    size_t m_memoryVisibleBytes;
-    size_t m_memoryVisibleAndNearbyBytes;
+  // Statistics about memory usage at priority cutoffs, computed at
+  // prioritizeTextures.
+  size_t memory_visible_bytes_;
+  size_t memory_visible_and_nearby_bytes_;
 
-    // Statistics copied at the time of pushTexturePrioritiesToBackings.
-    size_t m_memoryVisibleLastPushedBytes;
-    size_t m_memoryVisibleAndNearbyLastPushedBytes;
+  // Statistics copied at the time of pushTexturePrioritiesToBackings.
+  size_t memory_visible_last_pushed_bytes_;
+  size_t memory_visible_and_nearby_last_pushed_bytes_;
 
-    DISALLOW_COPY_AND_ASSIGN(PrioritizedResourceManager);
+  DISALLOW_COPY_AND_ASSIGN(PrioritizedResourceManager);
 };
 
 }  // namespace cc

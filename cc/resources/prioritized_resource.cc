@@ -30,12 +30,12 @@ PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager,
   if (format)
     bytes_ = Resource::MemorySizeBytes(size, format);
   if (manager)
-    manager->registerTexture(this);
+    manager->RegisterTexture(this);
 }
 
 PrioritizedResource::~PrioritizedResource() {
   if (manager_)
-    manager_->unregisterTexture(this);
+    manager_->UnregisterTexture(this);
 }
 
 void PrioritizedResource::SetTextureManager(
@@ -43,9 +43,9 @@ void PrioritizedResource::SetTextureManager(
   if (manager_ == manager)
     return;
   if (manager_)
-    manager_->unregisterTexture(this);
+    manager_->UnregisterTexture(this);
   if (manager)
-    manager->registerTexture(this);
+    manager->RegisterTexture(this);
 }
 
 void PrioritizedResource::SetDimensions(gfx::Size size, GLenum format) {
@@ -56,14 +56,14 @@ void PrioritizedResource::SetDimensions(gfx::Size size, GLenum format) {
     bytes_ = Resource::MemorySizeBytes(size, format);
     DCHECK(manager_ || !backing_);
     if (manager_)
-      manager_->returnBackingTexture(this);
+      manager_->ReturnBackingTexture(this);
   }
 }
 
 bool PrioritizedResource::RequestLate() {
   if (!manager_)
     return false;
-  return manager_->requestLate(this);
+  return manager_->RequestLate(this);
 }
 
 bool PrioritizedResource::BackingResourceWasEvicted() const {
@@ -74,7 +74,7 @@ void PrioritizedResource::AcquireBackingTexture(
     ResourceProvider* resource_provider) {
   DCHECK(is_above_priority_cutoff_);
   if (is_above_priority_cutoff_)
-    manager_->acquireBackingTextureIfNeeded(this, resource_provider);
+    manager_->AcquireBackingTextureIfNeeded(this, resource_provider);
 }
 
 ResourceProvider::ResourceId PrioritizedResource::ResourceId() const {
@@ -194,13 +194,13 @@ void PrioritizedResource::Backing::UpdateInDrawingImplTree() {
 void PrioritizedResource::ReturnBackingTexture() {
   DCHECK(manager_ || !backing_);
   if (manager_)
-    manager_->returnBackingTexture(this);
+    manager_->ReturnBackingTexture(this);
 }
 
 const Proxy* PrioritizedResource::Backing::proxy() const {
   if (!owner_ || !owner_->resource_manager())
     return NULL;
-  return owner_->resource_manager()->proxyForDebug();
+  return owner_->resource_manager()->ProxyForDebug();
 }
 
 }  // namespace cc

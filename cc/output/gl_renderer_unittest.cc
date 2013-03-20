@@ -110,11 +110,11 @@ private:
 class FakeRendererClient : public RendererClient {
 public:
     FakeRendererClient()
-        : m_hostImpl(&m_proxy)
+        : m_hostImpl(&proxy_)
         , m_setFullRootLayerDamageCount(0)
         , m_lastCallWasSetVisibility(0)
         , m_rootLayer(LayerImpl::Create(m_hostImpl.active_tree(), 1))
-        , m_memoryAllocationLimitBytes(PrioritizedResourceManager::defaultMemoryAllocationLimit())
+        , m_memoryAllocationLimitBytes(PrioritizedResourceManager::DefaultMemoryAllocationLimit())
     {
         m_rootLayer->CreateRenderSurface();
         RenderPass::Id renderPassId = m_rootLayer->render_surface()->RenderPassId();
@@ -146,7 +146,7 @@ public:
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
 
 private:
-    FakeImplProxy m_proxy;
+    FakeImplProxy proxy_;
     FakeLayerTreeHostImpl m_hostImpl;
     int m_setFullRootLayerDamageCount;
     bool* m_lastCallWasSetVisibility;

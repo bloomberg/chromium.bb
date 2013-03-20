@@ -63,9 +63,9 @@ private:
 class ResourceUpdateControllerTest : public Test {
 public:
     ResourceUpdateControllerTest()
-        : m_proxy(scoped_ptr<Thread>(NULL))
+        : proxy_(scoped_ptr<Thread>(NULL))
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
-        , m_resourceManager(PrioritizedResourceManager::create(&m_proxy))
+        , m_resourceManager(PrioritizedResourceManager::Create(&proxy_))
         , m_fullUploadCountExpected(0)
         , m_partialCountExpected(0)
         , m_totalUploadCountExpected(0)
@@ -81,8 +81,8 @@ public:
     virtual ~ResourceUpdateControllerTest()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
-            implThreadAndMainThreadBlocked(&m_proxy);
-        m_resourceManager->clearAllMemory(m_resourceProvider.get());
+            implThreadAndMainThreadBlocked(&proxy_);
+        m_resourceManager->ClearAllMemory(m_resourceProvider.get());
     }
 
 public:
@@ -126,12 +126,12 @@ protected:
         m_bitmap.allocPixels();
 
         for (int i = 0; i < 4; i++) {
-            m_textures[i] = PrioritizedResource::Create(
+            textures_[i] = PrioritizedResource::Create(
                 m_resourceManager.get(), gfx::Size(300, 150), GL_RGBA);
-            m_textures[i]->set_request_priority(
+            textures_[i]->set_request_priority(
                 PriorityCalculator::VisiblePriority(true));
         }
-        m_resourceManager->prioritizeTextures();
+        m_resourceManager->PrioritizeTextures();
 
         m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
     }
@@ -144,7 +144,7 @@ protected:
 
         const gfx::Rect rect(0, 0, 300, 150);
         const ResourceUpdate upload = ResourceUpdate::Create(
-            m_textures[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
+            textures_[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
             m_queue->appendFullUpload(upload);
     }
@@ -161,7 +161,7 @@ protected:
 
         const gfx::Rect rect(0, 0, 100, 100);
         const ResourceUpdate upload = ResourceUpdate::Create(
-            m_textures[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
+            textures_[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
             m_queue->appendPartialUpload(upload);
     }
@@ -179,11 +179,11 @@ protected:
     void updateTextures()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
-            implThreadAndMainThreadBlocked(&m_proxy);
+            implThreadAndMainThreadBlocked(&proxy_);
         scoped_ptr<ResourceUpdateController> updateController =
             ResourceUpdateController::Create(
                 NULL,
-                m_proxy.ImplThread(),
+                proxy_.ImplThread(),
                 m_queue.Pass(),
                 m_resourceProvider.get());
         updateController->Finalize();
@@ -196,11 +196,11 @@ protected:
 
 protected:
     // Classes required to interact and test the ResourceUpdateController
-    FakeProxy m_proxy;
+    FakeProxy proxy_;
     scoped_ptr<OutputSurface> m_outputSurface;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
-    scoped_ptr<PrioritizedResource> m_textures[4];
+    scoped_ptr<PrioritizedResource> textures_[4];
     scoped_ptr<PrioritizedResourceManager> m_resourceManager;
     SkBitmap m_bitmap;
     int m_queryResultsAvailable;
@@ -389,7 +389,7 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThreadAndMainThreadBlocked
-        implThreadAndMainThreadBlocked(&m_proxy);
+        implThreadAndMainThreadBlocked(&proxy_);
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::Create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
@@ -436,7 +436,7 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThreadAndMainThreadBlocked
-        implThreadAndMainThreadBlocked(&m_proxy);
+        implThreadAndMainThreadBlocked(&proxy_);
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::Create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
@@ -475,7 +475,7 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThreadAndMainThreadBlocked
-        implThreadAndMainThreadBlocked(&m_proxy);
+        implThreadAndMainThreadBlocked(&proxy_);
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::Create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(

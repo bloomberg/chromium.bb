@@ -199,7 +199,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     layer_tree_host_impl_->BeginCommit();
 
     layer_tree_host_->contents_texture_manager()->
-        pushTexturePrioritiesToBackings();
+        PushTexturePrioritiesToBackings();
     layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
 
     scoped_ptr<ResourceUpdateController> updateController =
@@ -304,7 +304,7 @@ bool SingleThreadProxy::ReduceContentsTextureMemoryOnImplThread(
   if (!layer_tree_host_->contents_texture_manager())
     return false;
 
-  return layer_tree_host_->contents_texture_manager()->reduceMemoryOnImplThread(
+  return layer_tree_host_->contents_texture_manager()->ReduceMemoryOnImplThread(
       limit_bytes, priority_cutoff, layer_tree_host_impl_->resource_provider());
 }
 
@@ -323,9 +323,9 @@ void SingleThreadProxy::SendManagedMemoryStats() {
   PrioritizedResourceManager* contents_texture_manager =
       layer_tree_host_->contents_texture_manager();
   layer_tree_host_impl_->SendManagedMemoryStats(
-      contents_texture_manager->memoryVisibleBytes(),
-      contents_texture_manager->memoryVisibleAndNearbyBytes(),
-      contents_texture_manager->memoryUseBytes());
+      contents_texture_manager->MemoryVisibleBytes(),
+      contents_texture_manager->MemoryVisibleAndNearbyBytes(),
+      contents_texture_manager->MemoryUseBytes());
 }
 
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
@@ -383,7 +383,7 @@ bool SingleThreadProxy::CommitAndComposite(base::TimeTicks frame_begin_time) {
       created_offscreen_context_provider_ = true;
   }
 
-  layer_tree_host_->contents_texture_manager()->unlinkAndClearEvictedBackings();
+  layer_tree_host_->contents_texture_manager()->UnlinkAndClearEvictedBackings();
 
   scoped_ptr<ResourceUpdateQueue> queue =
       make_scoped_ptr(new ResourceUpdateQueue);

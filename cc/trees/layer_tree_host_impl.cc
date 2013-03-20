@@ -157,7 +157,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings,
       device_scale_factor_(1.f),
       visible_(true),
       managed_memory_policy_(
-          PrioritizedResourceManager::defaultMemoryAllocationLimit(),
+          PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
           ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
           0,
           ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING),

@@ -163,9 +163,9 @@ void LayerTreeHost::InitializeRenderer() {
   }
   settings_.maxPartialTextureUpdates = max_partial_texture_updates;
 
-  contents_texture_manager_ = PrioritizedResourceManager::create(proxy_.get());
+  contents_texture_manager_ = PrioritizedResourceManager::Create(proxy_.get());
   surface_memory_placeholder_ =
-      contents_texture_manager_->createTexture(gfx::Size(), GL_RGBA);
+      contents_texture_manager_->CreateTexture(gfx::Size(), GL_RGBA);
 
   renderer_initialized_ = true;
 
@@ -212,7 +212,7 @@ void LayerTreeHost::DeleteContentsTexturesOnImplThread(
     ResourceProvider* resource_provider) {
   DCHECK(proxy_->IsImplThread());
   if (renderer_initialized_)
-    contents_texture_manager_->clearAllMemory(resource_provider);
+    contents_texture_manager_->ClearAllMemory(resource_provider);
 }
 
 void LayerTreeHost::AcquireLayerTextures() {
@@ -258,9 +258,9 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   // into the impl tree, so we can't draw yet. Determine this before clearing
   // all evicted backings.
   bool new_impl_tree_has_no_evicted_resources =
-      !contents_texture_manager_->linkedEvictedBackingsExist();
+      !contents_texture_manager_->LinkedEvictedBackingsExist();
 
-  contents_texture_manager_->updateBackingsInDrawingImplTree();
+  contents_texture_manager_->UpdateBackingsInDrawingImplTree();
 
   // In impl-side painting, synchronize to the pending tree so that it has
   // time to raster before being displayed.  If no pending tree is needed,
@@ -273,7 +273,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     host_impl->CreatePendingTree();
     sync_tree = host_impl->pending_tree();
   } else {
-    contents_texture_manager_->reduceMemory(host_impl->resource_provider());
+    contents_texture_manager_->ReduceMemory(host_impl->resource_provider());
     sync_tree = host_impl->active_tree();
   }
 
@@ -639,7 +639,7 @@ void LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue,
     return;
 
   if (memory_allocation_limit_bytes) {
-    contents_texture_manager_->setMaxMemoryLimitBytes(
+    contents_texture_manager_->SetMaxMemoryLimitBytes(
         memory_allocation_limit_bytes);
   }
 
@@ -749,7 +749,7 @@ void LayerTreeHost::SetPrioritiesForLayers(const LayerList& update_list) {
 
 void LayerTreeHost::PrioritizeTextures(
     const LayerList& render_surface_layer_list, OverdrawMetrics* metrics) {
-  contents_texture_manager_->clearPriorities();
+  contents_texture_manager_->ClearPriorities();
 
   size_t memory_for_render_surfaces_metric =
       CalculateMemoryForRenderSurfaces(render_surface_layer_list);
@@ -758,11 +758,11 @@ void LayerTreeHost::PrioritizeTextures(
   SetPrioritiesForSurfaces(memory_for_render_surfaces_metric);
 
   metrics->DidUseContentsTextureMemoryBytes(
-      contents_texture_manager_->memoryAboveCutoffBytes());
+      contents_texture_manager_->MemoryAboveCutoffBytes());
   metrics->DidUseRenderSurfaceTextureMemoryBytes(
       memory_for_render_surfaces_metric);
 
-  contents_texture_manager_->prioritizeTextures();
+  contents_texture_manager_->PrioritizeTextures();
 }
 
 size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(

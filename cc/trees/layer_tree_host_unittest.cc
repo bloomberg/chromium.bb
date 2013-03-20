@@ -2129,7 +2129,7 @@ public:
         // One backing should remain unevicted.
         EXPECT_EQ(
             100 * 100 * 4 * 1, 
-            m_layerTreeHost->contents_texture_manager()->memoryUseBytes());
+            m_layerTreeHost->contents_texture_manager()->MemoryUseBytes());
         // Make sure that contents textures are marked as having been
         // purged.
         EXPECT_TRUE(hostImpl->active_tree()->ContentsTexturesPurged());
@@ -2145,7 +2145,7 @@ public:
             // All three backings should have memory.
             EXPECT_EQ(
                 100 * 100 * 4 * 3, 
-                m_layerTreeHost->contents_texture_manager()->memoryUseBytes());
+                m_layerTreeHost->contents_texture_manager()->MemoryUseBytes());
             // Set a new policy that will kick out 1 of the 3 resources.
             // Because a resource was evicted, a commit will be kicked off.
             hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(
@@ -2158,7 +2158,7 @@ public:
             // Only two backings should have memory.
             EXPECT_EQ(
                 100 * 100 * 4 * 2, 
-                m_layerTreeHost->contents_texture_manager()->memoryUseBytes());
+                m_layerTreeHost->contents_texture_manager()->MemoryUseBytes());
             // Become backgrounded, which will cause 1 more resource to be
             // evicted.
             postSetVisibleToMainThread(false);

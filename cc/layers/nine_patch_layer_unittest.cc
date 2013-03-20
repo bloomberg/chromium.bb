@@ -100,8 +100,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_TRUE(params.texture != NULL);
 
     // Upload the texture.
-    layer_tree_host_->contents_texture_manager()->setMaxMemoryLimitBytes(1024 * 1024);
-    layer_tree_host_->contents_texture_manager()->prioritizeTextures();
+    layer_tree_host_->contents_texture_manager()->SetMaxMemoryLimitBytes(1024 * 1024);
+    layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
 
     scoped_ptr<OutputSurface> outputSurface;
     scoped_ptr<ResourceProvider> resourceProvider;
@@ -123,7 +123,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     {
         DebugScopedSetImplThread implThread(proxy());
         DebugScopedSetMainThreadBlocked mainThreadBlocked(proxy());
-        layer_tree_host_->contents_texture_manager()->clearAllMemory(resourceProvider.get());
+        layer_tree_host_->contents_texture_manager()->ClearAllMemory(resourceProvider.get());
     }
 
     // Reupload after eviction
@@ -133,7 +133,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_EQ(queue.partialUploadSize(), 0);
 
     // PrioritizedResourceManager clearing
-    layer_tree_host_->contents_texture_manager()->unregisterTexture(params.texture);
+    layer_tree_host_->contents_texture_manager()->UnregisterTexture(params.texture);
     EXPECT_EQ(NULL, params.texture->resource_manager());
     testLayer->SetTexturePriorities(calculator);
     ResourceUpdateQueue queue2;

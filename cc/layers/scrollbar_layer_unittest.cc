@@ -294,7 +294,7 @@ public:
         layerTreeRoot->AddChild(scrollbarLayer);
 
         m_layerTreeHost->InitializeRendererIfNeeded();
-        m_layerTreeHost->contents_texture_manager()->setMaxMemoryLimitBytes(1024 * 1024);
+        m_layerTreeHost->contents_texture_manager()->SetMaxMemoryLimitBytes(1024 * 1024);
         m_layerTreeHost->SetRootLayer(layerTreeRoot);
 
         scrollbarLayer->SetIsDrawable(true);
@@ -316,7 +316,7 @@ public:
         OcclusionTracker occlusionTracker(gfx::Rect(), false);
 
         scrollbarLayer->SetTexturePriorities(calculator);
-        m_layerTreeHost->contents_texture_manager()->prioritizeTextures();
+        m_layerTreeHost->contents_texture_manager()->PrioritizeTextures();
         scrollbarLayer->Update(&queue, &occlusionTracker, NULL);
         EXPECT_EQ(0, queue.fullUploadSize());
         EXPECT_EQ(expectedResources, queue.partialUploadSize());

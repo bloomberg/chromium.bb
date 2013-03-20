@@ -430,7 +430,7 @@ bool ThreadProxy::ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
     return false;
 
   bool reduce_result = layer_tree_host_->contents_texture_manager()->
-      reduceMemoryOnImplThread(limit_bytes,
+      ReduceMemoryOnImplThread(limit_bytes,
                                priority_cutoff,
                                layer_tree_host_impl_->resource_provider());
   if (!reduce_result)
@@ -451,7 +451,7 @@ void ThreadProxy::ReduceWastedContentsTextureMemoryOnImplThread() {
   if (!layer_tree_host_->contents_texture_manager())
     return;
 
-  layer_tree_host_->contents_texture_manager()->reduceWastedMemoryOnImplThread(
+  layer_tree_host_->contents_texture_manager()->ReduceWastedMemoryOnImplThread(
       layer_tree_host_impl_->resource_provider());
 }
 
@@ -469,10 +469,10 @@ void ThreadProxy::SendManagedMemoryStats() {
     return;
 
   layer_tree_host_impl_->SendManagedMemoryStats(
-      layer_tree_host_->contents_texture_manager()->memoryVisibleBytes(),
+      layer_tree_host_->contents_texture_manager()->MemoryVisibleBytes(),
       layer_tree_host_->contents_texture_manager()->
-          memoryVisibleAndNearbyBytes(),
-      layer_tree_host_->contents_texture_manager()->memoryUseBytes());
+          MemoryVisibleAndNearbyBytes(),
+      layer_tree_host_->contents_texture_manager()->MemoryUseBytes());
 }
 
 bool ThreadProxy::IsInsideDraw() { return inside_draw_; }
@@ -685,7 +685,7 @@ void ThreadProxy::BeginFrame(
   // re-paint them in updateLayers.
   if (layer_tree_host_->contents_texture_manager()) {
     layer_tree_host_->contents_texture_manager()->
-        unlinkAndClearEvictedBackings();
+        UnlinkAndClearEvictedBackings();
   }
 
   layer_tree_host_->Layout();
@@ -785,7 +785,7 @@ void ThreadProxy::BeginFrameCompleteOnImplThread(
       set_offscreen_context_provider(offscreen_context_provider);
 
   if (layer_tree_host_->contents_texture_manager()->
-          linkedEvictedBackingsExist()) {
+          LinkedEvictedBackingsExist()) {
     // Clear any uploads we were making to textures linked to evicted
     // resources
     queue->clearUploadsToEvictedResources();
@@ -795,7 +795,7 @@ void ThreadProxy::BeginFrameCompleteOnImplThread(
   }
 
   layer_tree_host_->contents_texture_manager()->
-      pushTexturePrioritiesToBackings();
+      PushTexturePrioritiesToBackings();
 
   current_resource_update_controller_on_impl_thread_ =
       ResourceUpdateController::Create(
