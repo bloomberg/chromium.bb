@@ -547,7 +547,10 @@ void WebKitTestRunner::CaptureDump() {
         static_cast<const unsigned char*>(audio_data->baseAddress()) +
             audio_data->byteLength());
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
-    Send(new ShellViewHostMsg_TestFinished(routing_id(), false));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebKitTestRunner::NavigateRenderViewAndNotify,
+                   base::Unretained(this)));
     return;
   }
 
@@ -590,6 +593,13 @@ void WebKitTestRunner::CaptureDump() {
     }
   }
 
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebKitTestRunner::NavigateRenderViewAndNotify,
+                 base::Unretained(this)));
+}
+
+void WebKitTestRunner::NavigateRenderViewAndNotify() {
   render_view()->GetWebView()->mainFrame()
       ->loadRequest(WebURLRequest(GURL("about:blank")));
   Send(new ShellViewHostMsg_TestFinished(routing_id(), false));
