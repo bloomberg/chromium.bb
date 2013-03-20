@@ -28,7 +28,7 @@ ARCHIVED_PEXE_TRANSLATOR_REV=10489
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-ARCHIVED_TOOLCHAIN_REV=10442
+ARCHIVED_TOOLCHAIN_REV=11011
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
