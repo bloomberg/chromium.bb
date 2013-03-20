@@ -24,6 +24,9 @@ class AutofillPopupController {
   // Called when the popup should get hidden.
   virtual void Hide() = 0;
 
+  // Called whent the popup view was destroyed.
+  virtual void ViewDestroyed() = 0;
+
   // Recalculates the height and width of the popup and triggers a redraw.
   virtual void UpdateBoundsAndRedrawPopup() = 0;
 

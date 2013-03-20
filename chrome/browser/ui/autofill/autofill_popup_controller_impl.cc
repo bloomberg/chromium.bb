@@ -176,6 +176,13 @@ void AutofillPopupControllerImpl::Hide() {
   delete this;
 }
 
+void AutofillPopupControllerImpl::ViewDestroyed() {
+  // The view has already been destroyed so clear the reference to it.
+  view_ = NULL;
+
+  Hide();
+}
+
 bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
   switch (event.windowsKeyCode) {

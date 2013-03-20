@@ -34,16 +34,18 @@ AutofillPopupViewViews::AutofillPopupViewViews(
       observing_widget_(NULL) {}
 
 AutofillPopupViewViews::~AutofillPopupViewViews() {
+  if (controller_) {
+    controller_->ViewDestroyed();
+
+    HideInternal();
+  }
 }
 
 void AutofillPopupViewViews::Hide() {
-  AutofillPopupView::Hide();
-
-  if (observing_widget_)
-    observing_widget_->RemoveObserver(this);
-
   // The controller is no longer valid after it hides us.
   controller_ = NULL;
+
+  HideInternal();
 
   if (GetWidget()) {
     // This deletes |this|.
@@ -54,13 +56,6 @@ void AutofillPopupViewViews::Hide() {
 }
 
 void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
-  // This can happen if we have a paint message in the queue when the popup
-  // is told to hide (so the controller is invalid at this point). Its ok to
-  // avoid drawing popup, sine we don't have access to the data anymore, and it
-  // should be hidden soon.
-  if (!controller_)
-    return;
-
   canvas->DrawColor(kPopupBackground);
   OnPaintBorder(canvas);
 
@@ -81,7 +76,7 @@ void AutofillPopupViewViews::OnMouseCaptureLost() {
 }
 
 bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
-  if (HitTestPoint(gfx::Point(event.x(), event.y()))) {
+  if (HitTestPoint(event.location())) {
     controller_->MouseHovered(event.x(), event.y());
 
     // We must return true in order to get future OnMouseDragged and
@@ -110,7 +105,7 @@ bool AutofillPopupViewViews::OnMousePressed(const ui::MouseEvent& event) {
 void AutofillPopupViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // We only care about the left click.
   if (event.IsOnlyLeftMouseButton() &&
-      HitTestPoint(gfx::Point(event.x(), event.y())))
+      HitTestPoint(event.location()))
     controller_->MouseClicked(event.x(), event.y());
 }
 
@@ -128,14 +123,9 @@ void AutofillPopupViewViews::Show() {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.delegate = this;
-    params.transparent = true;
-    // Note: since there is no parent specified, this popup must handle deleting
-    // itself.
-    params.context = controller_->container_view();
+    params.parent = controller_->container_view();
     widget->Init(params);
     widget->SetContentsView(this);
-    widget->SetBounds(controller_->popup_bounds());
-    widget->Show();
 
     // Setup an observer to check for when the browser moves or changes size,
     // since the popup should always be hidden in those cases.
@@ -147,6 +137,7 @@ void AutofillPopupViewViews::Show() {
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
 
   UpdateBoundsAndRedrawPopup();
+  GetWidget()->Show();
 }
 
 void AutofillPopupViewViews::InvalidateRow(size_t row) {
@@ -156,6 +147,13 @@ void AutofillPopupViewViews::InvalidateRow(size_t row) {
 void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
   GetWidget()->SetBounds(controller_->popup_bounds());
   SchedulePaint();
+}
+
+void AutofillPopupViewViews::HideInternal() {
+  AutofillPopupView::Hide();
+
+  if (observing_widget_)
+    observing_widget_->RemoveObserver(this);
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,

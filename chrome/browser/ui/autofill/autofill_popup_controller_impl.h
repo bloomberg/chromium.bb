@@ -50,6 +50,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // |delegate_|.
   virtual void Hide() OVERRIDE;
 
+  // Invoked when the view was destroyed by by someone other than this class.
+  virtual void ViewDestroyed() OVERRIDE;
+
   // KeyboardListener implementation.
   virtual bool HandleKeyPressEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;

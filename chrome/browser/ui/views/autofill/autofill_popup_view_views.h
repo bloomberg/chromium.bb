@@ -33,16 +33,20 @@ class AutofillPopupViewViews : public AutofillPopupView,
 
   // views:Views implementation.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-  // views::WidgetObserver implementation.
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+
+  // views::WidgetObserver implementation.
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
+
+  // Hide the popup (Since either Hide or ~AutofillPopupViewViews can need to
+  // hide the popup, the actually hiding code must be placed here).
+  void HideInternal();
 
   // Draw the given autofill entry in |entry_rect|.
   void DrawAutofillEntry(gfx::Canvas* canvas,

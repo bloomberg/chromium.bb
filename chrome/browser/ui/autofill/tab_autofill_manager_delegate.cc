@@ -193,7 +193,7 @@ void TabAutofillManagerDelegate::ShowAutofillPopup(
   popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
       popup_controller_,
       delegate,
-      web_contents()->GetView()->GetContentNativeView(),
+      web_contents()->GetView()->GetNativeView(),
       element_bounds_in_screen_space);
 
   popup_controller_->Show(values, labels, icons, identifiers);
