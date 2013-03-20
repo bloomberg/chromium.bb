@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,6 +18,7 @@ namespace extensions {
 using api::experimental_system_info_storage::ParseStorageUnitType;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::StorageUnitType;
+using chrome::test::TestStorageMonitor;
 using content::BrowserThread;
 using content::RunAllPendingInMessageLoop;
 using content::RunMessageLoop;
@@ -129,6 +131,7 @@ class TestStorageInfoProvider : public StorageInfoProvider {
 TestStorageInfoProvider::TestStorageInfoProvider(): checking_times_(0) {
   for (size_t i = 0; i < arraysize(kTestingData); ++i)
     testing_data_.push_back(kTestingData[i]);
+  SetWatchingIntervalForTesting(kWatchingIntervalMs);
 }
 
 TestStorageInfoProvider::~TestStorageInfoProvider() {}
@@ -190,6 +193,7 @@ class StorageInfoProviderTest : public testing::Test {
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<TestStorageInfoProvider> storage_info_provider_;
+  scoped_ptr<TestStorageMonitor> storage_test_notifications_;
 };
 
 StorageInfoProviderTest::StorageInfoProviderTest()
@@ -202,8 +206,8 @@ StorageInfoProviderTest::~StorageInfoProviderTest() {
 
 void StorageInfoProviderTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  storage_test_notifications_.reset(new TestStorageMonitor);
   storage_info_provider_= new TestStorageInfoProvider();
-  storage_info_provider_->set_watching_interval(kWatchingIntervalMs);
 }
 
 void StorageInfoProviderTest::TearDown() {

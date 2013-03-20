@@ -10,6 +10,7 @@
 
 #include "base/file_util.h"
 #include "base/stl_util.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -17,6 +18,7 @@ namespace extensions {
 using api::experimental_system_info_storage::ParseStorageUnitType;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::ToString;
+using chrome::test::TestStorageMonitor;
 
 namespace {
 
@@ -102,6 +104,7 @@ class StorageInfoProviderLinuxTest : public testing::Test {
     int bytes = file_util::WriteFile(mtab_file_, mtab_test_data,
                                      strlen(mtab_test_data));
     ASSERT_EQ(static_cast<int>(strlen(mtab_test_data)), bytes);
+    test_storage_notifications_.reset(new TestStorageMonitor);
     storage_info_provider_ = new StorageInfoProviderLinuxWrapper(mtab_file_);
   }
 
@@ -110,7 +113,10 @@ class StorageInfoProviderLinuxTest : public testing::Test {
   }
 
   scoped_refptr<StorageInfoProviderLinuxWrapper> storage_info_provider_;
+
+ private:
   base::FilePath mtab_file_;
+  scoped_ptr<TestStorageMonitor> test_storage_notifications_;
 };
 
 TEST_F(StorageInfoProviderLinuxTest, QueryInfo) {

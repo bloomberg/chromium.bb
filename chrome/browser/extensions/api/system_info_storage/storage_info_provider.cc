@@ -6,6 +6,8 @@
 
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
@@ -21,16 +23,23 @@ const char kStorageTypeRemovable[] = "removable";
 
 }  // namespace systeminfo
 
-// Default watching interval is 1000 ms.
 const int kDefaultPollingIntervalMs = 1000;
 const char kWatchingTokenName[] = "_storage_info_watching_token_";
 
 StorageInfoProvider::StorageInfoProvider()
     : observers_(new ObserverListThreadSafe<StorageInfoObserver>()),
       watching_interval_(kDefaultPollingIntervalMs) {
+  DCHECK(chrome::StorageMonitor::GetInstance());
+  chrome::StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 StorageInfoProvider::~StorageInfoProvider() {
+  // Note that StorageInfoProvider is defined as a LazyInstance which would be
+  // destroyed at process exiting, so its lifetime should be longer than the
+  // StorageMonitor instance that would be destroyed before
+  // StorageInfoProvider.
+  if (chrome::StorageMonitor::GetInstance())
+    chrome::StorageMonitor::GetInstance()->RemoveObserver(this);
 }
 
 void StorageInfoProvider::AddObserver(StorageInfoObserver* obs) {
@@ -39,6 +48,51 @@ void StorageInfoProvider::AddObserver(StorageInfoObserver* obs) {
 
 void StorageInfoProvider::RemoveObserver(StorageInfoObserver* obs) {
   observers_->RemoveObserver(obs);
+}
+
+void StorageInfoProvider::OnRemovableStorageAttached(
+    const chrome::StorageInfo& info) {
+  // Since the storage API uses the location as identifier, e.g.
+  // the drive letter on Windows while mount point on Posix. Here we has to
+  // convert the |info.location| to UTF-8 encoding.
+  //
+  // TODO(hongbo): use |info.device_id| instead of using |info.location|
+  // to keep the id persisting between device attachments, like
+  // StorageMonitor does.
+#if defined(OS_POSIX)
+  std::string id = info.location;
+#elif defined(OS_WIN)
+  std::string id = UTF16ToUTF8(info.location);
+#endif
+  // Post a task to blocking pool for querying the information.
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&StorageInfoProvider::QueryAttachedStorageInfoOnBlockingPool,
+                 this, id));
+}
+
+void StorageInfoProvider::QueryAttachedStorageInfoOnBlockingPool(
+    const std::string& id) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  StorageUnitInfo info;
+  if (!QueryUnitInfo(id, &info))
+    return;
+  observers_->Notify(&StorageInfoObserver::OnStorageAttached,
+                     info.id,
+                     info.type,
+                     info.capacity,
+                     info.available_capacity);
+}
+
+void StorageInfoProvider::OnRemovableStorageDetached(
+    const chrome::StorageInfo& info) {
+  // TODO(hongbo): Use |info.device_id| instead. Same as the above.
+#if defined(OS_POSIX)
+  std::string id = info.location;
+#elif defined(OS_WIN)
+  std::string id = UTF16ToUTF8(info.location);
+#endif
+  observers_->Notify(&StorageInfoObserver::OnStorageDetached, id);
 }
 
 void StorageInfoProvider::StartWatching(const std::string& id) {

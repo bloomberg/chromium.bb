@@ -16,6 +16,7 @@ class ChromeBrowserMainPartsLinux;
 class ChromeBrowserMainPartsMac;
 class MediaGalleriesPrivateApiTest;
 class MediaGalleriesPrivateEjectApiTest;
+class SystemInfoStorageApiTest;
 
 namespace chrome {
 
@@ -108,6 +109,7 @@ class StorageMonitor {
   friend class ::MediaGalleriesPrivateEjectApiTest;
   friend class MediaFileSystemRegistryTest;
   friend class TestRemovableStorageNotifications;
+  friend class ::SystemInfoStorageApiTest;
 
   virtual Receiver* receiver() const;
 

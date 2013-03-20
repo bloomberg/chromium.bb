@@ -76,8 +76,8 @@ const char kOnCpuUpdated[] = "experimental.systemInfo.cpu.onUpdated";
 const char kOnDisplayChanged[] = "systemInfo.display.onDisplayChanged";
 const char kOnStorageAvailableCapacityChanged[] =
     "experimental.systemInfo.storage.onAvailableCapacityChanged";
-const char kOnStorageAdded[] = "experimental.systemInfo.storage.onAdded";
-const char kOnStorageRemoved[] = "experimental.systemInfo.storage.onRemoved";
+const char kOnStorageAttached[] = "experimental.systemInfo.storage.onAttached";
+const char kOnStorageDetached[] = "experimental.systemInfo.storage.onDetached";
 
 const char kOnSystemIndicatorClicked[] = "systemIndicator.onClicked";
 

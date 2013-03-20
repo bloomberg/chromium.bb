@@ -11,6 +11,8 @@
 #include "base/timer.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_observer.h"
+#include "chrome/browser/storage_monitor/removable_storage_observer.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/common/extensions/api/experimental_system_info_storage.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,7 +36,9 @@ extern const char kStorageTypeRemovable[];
 typedef std::vector<linked_ptr<
     api::experimental_system_info_storage::StorageUnitInfo> > StorageInfo;
 
-class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
+class StorageInfoProvider
+    : public SystemInfoProvider<StorageInfo>,
+      public chrome::RemovableStorageObserver {
  public:
   // Get the single shared instance of StorageInfoProvider.
   static StorageInfoProvider* Get();
@@ -47,9 +51,6 @@ class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
   virtual void StartWatching(const std::string& id);
   virtual void StopWatching(const std::string& id);
 
-  // Set the watching time interval.
-  void set_watching_interval(size_t ms) { watching_interval_ = ms; }
-
   // Get the information for the storage unit specified by the |id| parameter,
   // and output the result to the |info|.
   virtual bool QueryUnitInfo(const std::string& id,
@@ -59,9 +60,19 @@ class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
   StorageInfoProvider();
   virtual ~StorageInfoProvider();
 
+  void SetWatchingIntervalForTesting(size_t ms) { watching_interval_ = ms; }
+
  private:
-  friend class TestStorageInfoProvider;
   typedef std::map<std::string, double> StorageIDToSizeMap;
+
+  // chrome::RemovableStorageObserver implementation.
+  virtual void OnRemovableStorageAttached(
+      const chrome::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const chrome::StorageInfo& info) OVERRIDE;
+
+  // Query the new attached removable storage info on the blocking pool.
+  void QueryAttachedStorageInfoOnBlockingPool(const std::string& id);
 
   // Posts a task to check for free space changes on the blocking pool.
   // Should be called on the UI thread.
@@ -96,6 +107,7 @@ class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
   scoped_refptr<ObserverListThreadSafe<StorageInfoObserver> > observers_;
 
   // The time interval for watching the free space change, in milliseconds.
+  // Only changed for testing purposes.
   size_t watching_interval_;
 };
 

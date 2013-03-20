@@ -41,9 +41,15 @@ namespace experimental.systemInfo.storage {
   };
 
   interface Events {
-    // Fired when the storage information is updated.
-    // |info|   : The changed information for the specified storage unit
+    // Fired when the storage device available capacity is changed.
+    // |info|: The changed information for the specified storage unit.
     static void onAvailableCapacityChanged(StorageChangeInfo info);
+
+    // Fired when a new removable storage is attached to the system.
+    static void onAttached(StorageUnitInfo info);
+
+    // Fired when a removable storage is detached from the system.
+    static void onDetached(DOMString id);
   };
  
 };

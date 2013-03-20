@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
@@ -31,6 +31,7 @@ namespace extensions {
 
 using api::experimental_system_info_cpu::CpuUpdateInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
+using api::experimental_system_info_storage::StorageUnitType;
 using api::experimental_system_info_storage::StorageChangeInfo;
 using content::BrowserThread;
 
@@ -38,67 +39,54 @@ namespace {
 
 // The display events use the "systemInfo" prefix.
 const char kSystemInfoEventPrefix[] = "systemInfo";
-const char kDisplayEventPrefix[] = "systemInfo.display";
-
 // The storage and cpu events still use the "experimental.systemInfo" prefix.
 const char kExperimentalSystemInfoEventPrefix[] = "experimental.systemInfo";
-const char kStorageEventPrefix[] = "experimental.systemInfo.storage";
-const char kCpuEventPrefix[] = "experimental.systemInfo.cpu";
 
-static bool IsDisplayEvent(const std::string& event_name) {
-  return StartsWithASCII(event_name, kDisplayEventPrefix, true);
+bool IsDisplayChangedEvent(const std::string& event_name) {
+  return event_name == event_names::kOnDisplayChanged;
 }
 
-static bool IsStorageEvent(const std::string& event_name) {
-  return StartsWithASCII(event_name, kStorageEventPrefix, true);
+bool IsAvailableCapacityChangedEvent(const std::string& event_name) {
+  return event_name == event_names::kOnStorageAvailableCapacityChanged;
 }
 
-static bool IsCpuEvent(const std::string& event_name) {
-  return StartsWithASCII(event_name, kCpuEventPrefix, true);
+bool IsCpuUpdatedEvent(const std::string& event_name) {
+  return event_name == event_names::kOnCpuUpdated;
 }
 
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
-// TODO(hongbo): It should derive from SystemMonitor::DevicesChangedObserver.
-// Since the system_monitor will be refactored along with media_gallery, once
-// http://crbug.com/145400 is fixed, we need to update SystemInfoEventRouter
-// accordingly.
 class SystemInfoEventRouter
     : public gfx::DisplayObserver, public StorageInfoObserver {
  public:
   static SystemInfoEventRouter* GetInstance();
 
-  // Add/remove event listener for the |event_name| event from |profile|.
+  SystemInfoEventRouter();
+  virtual ~SystemInfoEventRouter();
+
+  // Add/remove event listener for the |event_name| event.
   void AddEventListener(const std::string& event_name);
   void RemoveEventListener(const std::string& event_name);
 
   // Return true if the |event_name| is an event from systemInfo namespace.
   static bool IsSystemInfoEvent(const std::string& event_name);
 
-  // StorageInfoObserver implementation:
+ private:
+  // StorageInfoObserver:
   virtual void OnStorageFreeSpaceChanged(const std::string& id,
                                          double new_value,
                                          double old_value) OVERRIDE;
+  virtual void OnStorageAttached(
+      const std::string& id,
+      api::experimental_system_info_storage::StorageUnitType type,
+      double capacity,
+      double available_capacity) OVERRIDE;
+  virtual void OnStorageDetached(const std::string& id) OVERRIDE;
 
-  // TODO(hongbo): The following methods should be likely overriden from
-  // SystemMonitor::DevicesChangedObserver once the http://crbug.com/145400
-  // is fixed.
-  void OnRemovableStorageAttached(const std::string& id,
-                                  const string16& name,
-                                  const base::FilePath::StringType& location);
-  void OnRemovableStorageDetached(const std::string& id);
-
-  // gfx::DisplayObserver implementation.
+  // gfx::DisplayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
-
- private:
-  friend struct DefaultSingletonTraits<SystemInfoEventRouter>;
-  friend class base::RefCountedThreadSafe<SystemInfoEventRouter>;
-
-  SystemInfoEventRouter();
-  virtual ~SystemInfoEventRouter();
 
   // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.
@@ -123,15 +111,20 @@ class SystemInfoEventRouter
   DISALLOW_COPY_AND_ASSIGN(SystemInfoEventRouter);
 };
 
+static base::LazyInstance<SystemInfoEventRouter>::Leaky
+  g_system_info_event_router = LAZY_INSTANCE_INITIALIZER;
+
 // static
 SystemInfoEventRouter* SystemInfoEventRouter::GetInstance() {
-  return Singleton<SystemInfoEventRouter>::get();
+  return g_system_info_event_router.Pointer();
 }
 
 SystemInfoEventRouter::SystemInfoEventRouter() {
+  StorageInfoProvider::Get()->AddObserver(this);
 }
 
 SystemInfoEventRouter::~SystemInfoEventRouter() {
+  StorageInfoProvider::Get()->RemoveObserver(this);
 }
 
 void SystemInfoEventRouter::StartWatchingStorages(
@@ -162,10 +155,10 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
   watching_event_set_.insert(event_name);
   if (watching_event_set_.count(event_name) > 1)
     return;
+
   // Start watching the |event_name| event if the first event listener arrives.
   // For systemInfo.storage event.
-  if (IsStorageEvent(event_name)) {
-    StorageInfoProvider::Get()->AddObserver(this);
+  if (IsAvailableCapacityChangedEvent(event_name)) {
     StorageInfoProvider::Get()->StartQueryInfo(
         base::Bind(&SystemInfoEventRouter::StartWatchingStorages,
                    base::Unretained(this)));
@@ -173,7 +166,7 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
   }
 
   // For systemInfo.cpu event.
-  if (IsCpuEvent(event_name)) {
+  if (IsCpuUpdatedEvent(event_name)) {
     CpuInfoProvider::Get()->StartSampling(
         base::Bind(&SystemInfoEventRouter::OnNextCpuSampling,
                    base::Unretained(this)));
@@ -181,7 +174,7 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
   }
 
   // For systemInfo.display event.
-  if (IsDisplayEvent(event_name)) {
+  if (IsDisplayChangedEvent(event_name)) {
 #if defined(USE_ASH)
     ash::Shell::GetScreen()->AddObserver(this);
 #endif
@@ -198,18 +191,17 @@ void SystemInfoEventRouter::RemoveEventListener(
 
   // In case of the last event listener is removed, we need to stop watching
   // it to avoid unnecessary overhead.
-  if (IsStorageEvent(event_name)) {
+  if (IsAvailableCapacityChangedEvent(event_name)) {
     StorageInfoProvider::Get()->StartQueryInfo(
         base::Bind(&SystemInfoEventRouter::StopWatchingStorages,
                    base::Unretained(this)));
-    StorageInfoProvider::Get()->RemoveObserver(this);
   }
 
-  if (IsCpuEvent(event_name)) {
+  if (IsCpuUpdatedEvent(event_name)) {
     CpuInfoProvider::Get()->StopSampling();
   }
 
-  if (IsDisplayEvent(event_name)) {
+  if (IsDisplayChangedEvent(event_name)) {
 #if defined(USE_ASH)
     ash::Shell::GetScreen()->RemoveObserver(this);
 #endif
@@ -237,13 +229,27 @@ void SystemInfoEventRouter::OnStorageFreeSpaceChanged(
   DispatchEvent(event_names::kOnStorageAvailableCapacityChanged, args.Pass());
 }
 
-void SystemInfoEventRouter::OnRemovableStorageAttached(const std::string& id,
-    const string16& name,  const base::FilePath::StringType& location) {
-  // TODO(hongbo): Handle storage device arrival/removal event.
+void SystemInfoEventRouter::OnStorageAttached(const std::string& id,
+                                              StorageUnitType type,
+                                              double capacity,
+                                              double available_capacity) {
+  StorageUnitInfo info;
+  info.id = id;
+  info.type = type;
+  info.capacity = capacity;
+  info.available_capacity = available_capacity;
+
+  scoped_ptr<base::ListValue> args(new base::ListValue);
+  args->Append(info.ToValue().release());
+
+  DispatchEvent(event_names::kOnStorageAttached, args.Pass());
 }
 
-void SystemInfoEventRouter::OnRemovableStorageDetached(const std::string& id) {
-  // TODO(hongbo): Same as above.
+void SystemInfoEventRouter::OnStorageDetached(const std::string& id) {
+  scoped_ptr<base::ListValue> args(new base::ListValue);
+  args->Append(new base::StringValue(id));
+
+  DispatchEvent(event_names::kOnStorageDetached, args.Pass());
 }
 
 void SystemInfoEventRouter::OnDisplayBoundsChanged(
@@ -292,6 +298,10 @@ SystemInfoAPI::SystemInfoAPI(Profile* profile) : profile_(profile) {
       this, event_names::kOnCpuUpdated);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, event_names::kOnStorageAvailableCapacityChanged);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, event_names::kOnStorageAttached);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, event_names::kOnStorageDetached);
 }
 
 SystemInfoAPI::~SystemInfoAPI() {
