@@ -1409,12 +1409,13 @@
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
         {
-          'target_name': 'player_android_jni_headers',
+          'target_name': 'media_android_jni_headers',
           'type': 'none',
           'dependencies': [
             'media_player_jni_headers',
           ],
           'sources': [
+            'base/android/java/src/org/chromium/media/AudioManagerAndroid.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
           ],
@@ -1467,9 +1468,9 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
+            'media_android_jni_headers',
             'media_codec_jni_headers',
             'media_format_jni_headers',
-            'player_android_jni_headers',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/media',

@@ -20,6 +20,10 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
+
 namespace base {
 class Thread;
 }
@@ -93,6 +97,10 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
 
+#if defined(OS_ANDROID)
+  static bool RegisterAudioManager(JNIEnv* env);
+#endif
+
  protected:
   AudioManagerBase();
 
@@ -131,6 +139,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
  private:
   // Called by Shutdown().
   void ShutdownOnAudioThread();
+
+  void SetAudioMode(int mode);
 
   // Counts the number of active input streams to find out if something else
   // is currently recording in Chrome.
