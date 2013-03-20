@@ -15,9 +15,6 @@ if not env.Bit('bitcode'):
 if env.Bit('pnacl_generate_pexe'):
   Return()
 
-if env.Bit('built_elsewhere'):
-  Return()
-
 # This test is disabled for MIPS because we do not have a MIPS-enabled nacl-gcc
 # to test PNaCl against.
 if env.Bit('target_mips32'):
@@ -28,14 +25,22 @@ env_pnacl_cc.PNaClForceNative()
 # for ppapi headers which include other ppapi headers
 env_pnacl_cc.Append(CPPPATH='${SCONSTRUCT_DIR}/tests/callingconv_ppapi')
 
+if env.Bit('target_arm'):
+  pnacl_nativecc_flags = ['--pnacl-frontend-triple=armv7a-unknown-nacl-gnueabi',
+                          '-mfloat-abi=hard']
+elif env.Bit('target_x86_32'):
+  pnacl_nativecc_flags = ['--pnacl-frontend-triple=i686-unknown-nacl']
+elif env.Bit('target_x86_64'):
+  pnacl_nativecc_flags = ['--pnacl-frontend-triple=x86_64-unknown-nacl']
+
 env_pnacl_cc_calling = env_pnacl_cc.Clone()
 env_pnacl_cc_calling.Append(
-    CCFLAGS=['-Xtranslator', '--cc-rewrite'],
+    CCFLAGS=pnacl_nativecc_flags,
     # force invoked functions to have "gcc" prefix
     CPPDEFINES=['INVOCATION_PREFIX=gcc'])
 env_pnacl_cc_called = env_pnacl_cc.Clone()
 env_pnacl_cc_called.Append(
-    CCFLAGS=['-Xtranslator', '--cc-rewrite'],
+    CCFLAGS=pnacl_nativecc_flags,
     # force both defined and invoked functions to have the "pnacl" prefix
     CPPDEFINES=['FUNCTION_PREFIX=pnacl', 'INVOCATION_PREFIX=pnacl'])
 
