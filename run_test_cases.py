@@ -278,7 +278,7 @@ class QueueWithProgress(Queue.PriorityQueue):
                       self.unfinished_tasks)
         self.progress.print_update()
         logging.debug('Calling all_tasks_done.wait() at %s', time.time())
-        self.all_tasks_done.wait()
+        self.all_tasks_done.wait(60.)
       self.progress.print_update()
     finally:
       self.all_tasks_done.release()
