@@ -22,6 +22,18 @@ import scm
 import subprocess2
 
 
+if sys.platform in ('cygwin', 'win32'):
+  # Disable timeouts on Windows since we can't have shells with timeouts.
+  GLOBAL_TIMEOUT = None
+  FETCH_TIMEOUT = None
+else:
+  # Default timeout of 15 minutes.
+  GLOBAL_TIMEOUT = 15*60
+  # Use a larger timeout for checkout since it can be a genuinely slower
+  # operation.
+  FETCH_TIMEOUT = 30*60
+
+
 def get_code_review_setting(path, key,
     codereview_settings_file='codereview.settings'):
   """Parses codereview.settings and return the value for the key if present.
@@ -197,7 +209,8 @@ class RawCheckout(CheckoutBase):
                       cmd,
                       stdin=p.get(False),
                       stderr=subprocess2.STDOUT,
-                      cwd=self.project_path))
+                      cwd=self.project_path,
+                      timeout=GLOBAL_TIMEOUT))
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file.
               open(filepath, 'w').close()
@@ -276,6 +289,7 @@ class SvnMixIn(object):
     """Runs svn and throws an exception if the command failed."""
     kwargs.setdefault('cwd', self.project_path)
     kwargs.setdefault('stdout', self.VOID)
+    kwargs.setdefault('timeout', GLOBAL_TIMEOUT)
     return subprocess2.check_call_out(
         self._add_svn_flags(args, False), **kwargs)
 
@@ -288,6 +302,7 @@ class SvnMixIn(object):
     return subprocess2.check_output(
         self._add_svn_flags(args, True, credentials),
         stderr=subprocess2.STDOUT,
+        timeout=GLOBAL_TIMEOUT,
         **kwargs)
 
   @staticmethod
@@ -387,7 +402,10 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
               ]
               stdout.append(
                   subprocess2.check_output(
-                    cmd, stdin=p.get(False), cwd=self.project_path))
+                    cmd,
+                    stdin=p.get(False),
+                    cwd=self.project_path,
+                    timeout=GLOBAL_TIMEOUT))
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file if it doesn't
               # exist.
@@ -485,12 +503,14 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
 
     if os.path.isdir(self.project_path):
       # Revive files that were deleted in scm.SVN.Revert().
-      self._check_call_svn(['update', '--force'] + flags)
+      self._check_call_svn(['update', '--force'] + flags,
+                           timeout=FETCH_TIMEOUT)
     else:
       logging.info(
           'Directory %s is not present, checking it out.' % self.project_path)
       self._check_call_svn(
-          ['checkout', self.svn_url, self.project_path] + flags, cwd=None)
+          ['checkout', self.svn_url, self.project_path] + flags, cwd=None,
+          timeout=FETCH_TIMEOUT)
     return self._get_revision()
 
   def _get_revision(self):
@@ -652,16 +672,19 @@ class GitCheckoutBase(CheckoutBase):
   def _check_call_git(self, args, **kwargs):
     kwargs.setdefault('cwd', self.project_path)
     kwargs.setdefault('stdout', self.VOID)
+    kwargs.setdefault('timeout', GLOBAL_TIMEOUT)
     return subprocess2.check_call_out(['git'] + args, **kwargs)
 
   def _call_git(self, args, **kwargs):
     """Like check_call but doesn't throw on failure."""
     kwargs.setdefault('cwd', self.project_path)
     kwargs.setdefault('stdout', self.VOID)
+    kwargs.setdefault('timeout', GLOBAL_TIMEOUT)
     return subprocess2.call(['git'] + args, **kwargs)
 
   def _check_output_git(self, args, **kwargs):
     kwargs.setdefault('cwd', self.project_path)
+    kwargs.setdefault('timeout', GLOBAL_TIMEOUT)
     return subprocess2.check_output(
         ['git'] + args, stderr=subprocess2.STDOUT, **kwargs)
 
@@ -698,7 +721,8 @@ class GitCheckout(GitCheckoutBase):
   """Git checkout implementation."""
   def _fetch_remote(self):
     # git fetch is always verbose even with -q -q so redirect its output.
-    self._check_output_git(['fetch', self.remote, self.remote_branch])
+    self._check_output_git(['fetch', self.remote, self.remote_branch],
+                           timeout=FETCH_TIMEOUT)
 
 
 class ReadOnlyCheckout(object):
