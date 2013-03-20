@@ -128,6 +128,24 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kIdleActionImminentSignal,
+        base::Bind(
+            &PowerManagerClientImpl::IdleActionImminentReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kIdleActionDeferredSignal,
+        base::Bind(
+            &PowerManagerClientImpl::IdleActionDeferredReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
     RegisterSuspendDelay();
   }
 
@@ -603,6 +621,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
     num_pending_suspend_readiness_callbacks_ = 0;
     FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
     MaybeReportSuspendReadiness();
+  }
+
+  void IdleActionImminentReceived(dbus::Signal* signal) {
+    FOR_EACH_OBSERVER(Observer, observers_, IdleActionImminent());
+  }
+
+  void IdleActionDeferredReceived(dbus::Signal* signal) {
+    FOR_EACH_OBSERVER(Observer, observers_, IdleActionDeferred());
   }
 
   void InputEventReceived(dbus::Signal* signal) {

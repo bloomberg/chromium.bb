@@ -107,10 +107,12 @@ void PowerPolicyController::UpdatePolicyFromPrefs(
     const PrefService::Preference& ac_screen_dim_delay_ms_pref,
     const PrefService::Preference& ac_screen_off_delay_ms_pref,
     const PrefService::Preference& ac_screen_lock_delay_ms_pref,
+    const PrefService::Preference& ac_idle_warning_delay_ms_pref,
     const PrefService::Preference& ac_idle_delay_ms_pref,
     const PrefService::Preference& battery_screen_dim_delay_ms_pref,
     const PrefService::Preference& battery_screen_off_delay_ms_pref,
     const PrefService::Preference& battery_screen_lock_delay_ms_pref,
+    const PrefService::Preference& battery_idle_warning_delay_ms_pref,
     const PrefService::Preference& battery_idle_delay_ms_pref,
     const PrefService::Preference& idle_action_pref,
     const PrefService::Preference& lid_closed_action_pref,
@@ -124,6 +126,7 @@ void PowerPolicyController::UpdatePolicyFromPrefs(
   SET_DELAY_FROM_PREF(ac_screen_dim_delay_ms_pref, screen_dim_ms, delays);
   SET_DELAY_FROM_PREF(ac_screen_off_delay_ms_pref, screen_off_ms, delays);
   SET_DELAY_FROM_PREF(ac_screen_lock_delay_ms_pref, screen_lock_ms, delays);
+  SET_DELAY_FROM_PREF(ac_idle_warning_delay_ms_pref, idle_warning_ms, delays);
   SET_DELAY_FROM_PREF(ac_idle_delay_ms_pref, idle_ms, delays);
 
   delays = prefs_policy_.mutable_battery_delays();
@@ -131,6 +134,8 @@ void PowerPolicyController::UpdatePolicyFromPrefs(
   SET_DELAY_FROM_PREF(battery_screen_off_delay_ms_pref, screen_off_ms, delays);
   SET_DELAY_FROM_PREF(
       battery_screen_lock_delay_ms_pref, screen_lock_ms, delays);
+  SET_DELAY_FROM_PREF(
+      battery_idle_warning_delay_ms_pref, idle_warning_ms, delays);
   SET_DELAY_FROM_PREF(battery_idle_delay_ms_pref, idle_ms, delays);
 
   SET_ACTION_FROM_PREF(idle_action_pref, idle_action, &prefs_policy_);

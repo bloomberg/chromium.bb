@@ -833,12 +833,14 @@ const char kSessionStartTime[] = "session.start_time";
 const char kSessionLengthLimit[] = "session.length_limit";
 
 // Inactivity time in milliseconds while the system is on AC power before
-// the screen should be dimmed, turned off, or locked, or before
+// the screen should be dimmed, turned off, or locked, before an
+// IdleActionImminent D-Bus signal should be sent, or before
 // kPowerIdleAction should be performed.  0 disables the delay (N/A for
 // kPowerAcIdleDelayMs).
 const char kPowerAcScreenDimDelayMs[] = "power.ac_screen_dim_delay_ms";
 const char kPowerAcScreenOffDelayMs[] = "power.ac_screen_off_delay_ms";
 const char kPowerAcScreenLockDelayMs[] = "power.ac_screen_lock_delay_ms";
+const char kPowerAcIdleWarningDelayMs[] = "power.ac_idle_warning_delay_ms";
 const char kPowerAcIdleDelayMs[] = "power.ac_idle_delay_ms";
 
 // Similar delays while the system is on battery power.
@@ -848,6 +850,8 @@ const char kPowerBatteryScreenOffDelayMs[] =
     "power.battery_screen_off_delay_ms";
 const char kPowerBatteryScreenLockDelayMs[] =
     "power.battery_screen_lock_delay_ms";
+const char kPowerBatteryIdleWarningDelayMs[] =
+    "power.battery_idle_warning_delay_ms";
 const char kPowerBatteryIdleDelayMs[] =
     "power.battery_idle_delay_ms";
 

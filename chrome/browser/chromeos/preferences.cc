@@ -298,6 +298,9 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs,
                                 600000,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs,
+                                0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs,
                                 1800000,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -309,6 +312,9 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenLockDelayMs,
                                 600000,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleWarningDelayMs,
+                                0,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerBatteryIdleDelayMs,
                                 600000,
@@ -430,6 +436,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kPowerAcScreenOffDelayMs, prefs, callback);
   power_ac_screen_lock_delay_ms_.Init(
       prefs::kPowerAcScreenLockDelayMs, prefs, callback);
+  power_ac_idle_warning_delay_ms_.Init(
+      prefs::kPowerAcIdleWarningDelayMs, prefs, callback);
   power_ac_idle_delay_ms_.Init(prefs::kPowerAcIdleDelayMs, prefs, callback);
   power_battery_screen_dim_delay_ms_.Init(
       prefs::kPowerBatteryScreenDimDelayMs, prefs, callback);
@@ -437,6 +445,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kPowerBatteryScreenOffDelayMs, prefs, callback);
   power_battery_screen_lock_delay_ms_.Init(
       prefs::kPowerBatteryScreenLockDelayMs, prefs, callback);
+  power_battery_idle_warning_delay_ms_.Init(
+      prefs::kPowerBatteryIdleWarningDelayMs, prefs, callback);
   power_battery_idle_delay_ms_.Init(
       prefs::kPowerBatteryIdleDelayMs, prefs, callback);
   power_idle_action_.Init(prefs::kPowerIdleAction, prefs, callback);
@@ -736,10 +746,12 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       *pref_name == prefs::kPowerAcScreenDimDelayMs ||
       *pref_name == prefs::kPowerAcScreenOffDelayMs ||
       *pref_name == prefs::kPowerAcScreenLockDelayMs ||
+      *pref_name == prefs::kPowerAcIdleWarningDelayMs ||
       *pref_name == prefs::kPowerAcIdleDelayMs ||
       *pref_name == prefs::kPowerBatteryScreenDimDelayMs ||
       *pref_name == prefs::kPowerBatteryScreenOffDelayMs ||
       *pref_name == prefs::kPowerBatteryScreenLockDelayMs ||
+      *pref_name == prefs::kPowerBatteryIdleWarningDelayMs ||
       *pref_name == prefs::kPowerBatteryIdleDelayMs ||
       *pref_name == prefs::kPowerIdleAction ||
       *pref_name == prefs::kPowerLidClosedAction ||
@@ -750,10 +762,12 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
         *prefs_->FindPreference(prefs::kPowerAcScreenDimDelayMs),
         *prefs_->FindPreference(prefs::kPowerAcScreenOffDelayMs),
         *prefs_->FindPreference(prefs::kPowerAcScreenLockDelayMs),
+        *prefs_->FindPreference(prefs::kPowerAcIdleWarningDelayMs),
         *prefs_->FindPreference(prefs::kPowerAcIdleDelayMs),
         *prefs_->FindPreference(prefs::kPowerBatteryScreenDimDelayMs),
         *prefs_->FindPreference(prefs::kPowerBatteryScreenOffDelayMs),
         *prefs_->FindPreference(prefs::kPowerBatteryScreenLockDelayMs),
+        *prefs_->FindPreference(prefs::kPowerBatteryIdleWarningDelayMs),
         *prefs_->FindPreference(prefs::kPowerBatteryIdleDelayMs),
         *prefs_->FindPreference(prefs::kPowerIdleAction),
         *prefs_->FindPreference(prefs::kPowerLidClosedAction),

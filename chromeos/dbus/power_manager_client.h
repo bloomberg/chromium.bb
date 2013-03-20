@@ -94,6 +94,13 @@ class CHROMEOS_EXPORT PowerManagerClient {
 
     // Called when the system resumes from sleep.
     virtual void SystemResumed(const base::TimeDelta& sleep_duration) {}
+
+    // Called when the idle action will be performed soon.
+    virtual void IdleActionImminent() {}
+
+    // Called after IdleActionImminent() when the inactivity timer is reset
+    // before the idle action has been performed.
+    virtual void IdleActionDeferred() {}
   };
 
   enum UpdateRequestType {
