@@ -560,6 +560,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/media',
           ],
           'dependencies': [
+            'media_android_jni_headers',
             'video_capture_android_jni_headers',
           ],
         }],
