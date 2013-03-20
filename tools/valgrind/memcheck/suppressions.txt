@@ -6854,5 +6854,10 @@
    fun:_ZN4base26PostTaskAndReplyWithResultI10scoped_ptrIN20ManagedModeURLFilter8ContentsENS_14DefaultDeleterIS3_EEES6_EEbPNS_10TaskRunnerERKN15tracked_objects8LocationERKNS_8CallbackIFT_vEEERKNSD_IFvT0_EEE
    fun:_ZN20ManagedModeURLFilter14LoadWhitelistsE12ScopedVectorI19ManagedModeSiteListE
 }
-
+{
+   bug_222363
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18WebDatabaseService12LoadDatabaseERKN4base8CallbackIFvN3sql10InitStatusEEEE
+}
 
