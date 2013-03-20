@@ -35,6 +35,8 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   virtual ~PushMessagingInvalidationHandler();
 
   // PushMessagingInvalidationMapper implementation.
+  virtual void SuppressInitialInvalidationsForExtension(
+      const std::string& extension_id) OVERRIDE;
   virtual void RegisterExtension(const std::string& extension_id) OVERRIDE;
   virtual void UnregisterExtension(const std::string& extension_id) OVERRIDE;
 
@@ -54,6 +56,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   base::ThreadChecker thread_checker_;
   InvalidationFrontend* const service_;
   std::set<std::string> registered_extensions_;
+  syncer::ObjectIdSet suppressed_ids_;
   PushMessagingInvalidationHandlerDelegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingInvalidationHandler);

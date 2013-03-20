@@ -162,8 +162,17 @@ bool ProfileSyncServiceHarness::SetupSync() {
 
 bool ProfileSyncServiceHarness::SetupSync(
     syncer::ModelTypeSet synced_datatypes) {
-  if (!InitializeSync())
+  // Initialize the sync client's profile sync service object.
+  service_ =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  if (service_ == NULL) {
+    LOG(ERROR) << "SetupSync(): service_ is null.";
     return false;
+  }
+
+  // Subscribe sync client to notifications from the profile sync service.
+  if (!service_->HasObserver(this))
+    service_->AddObserver(this);
 
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
@@ -193,8 +202,6 @@ bool ProfileSyncServiceHarness::SetupSync(
     return false;
   }
 
-  DVLOG(2) << "Done waiting for sync backend";
-
   // Choose the datatypes to be synced. If all datatypes are to be synced,
   // set sync_everything to true; otherwise, set it to false.
   bool sync_everything =
@@ -223,10 +230,8 @@ bool ProfileSyncServiceHarness::SetupSync(
   }
 
   // Wait for initial sync cycle to be completed.
-  DCHECK(wait_state_ == WAITING_FOR_INITIAL_SYNC ||
-         wait_state_ == FULLY_SYNCED);
-  if (wait_state_ != FULLY_SYNCED &&
-      !AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+  DCHECK_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
+  if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
       "Waiting for initial sync cycle to complete.")) {
     LOG(ERROR) << "Initial sync cycle did not complete after "
                << kLiveSyncOperationTimeoutMs / 1000
@@ -253,33 +258,14 @@ bool ProfileSyncServiceHarness::SetupSync(
   return true;
 }
 
-bool ProfileSyncServiceHarness::InitializeSync() {
-  // Initialize the sync client's profile sync service object.
-  service_ =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  if (service_ == NULL) {
-    LOG(ERROR) << "InitializeSync(): service_ is null.";
-    return false;
-  }
-
-  // Subscribe sync client to notifications from the profile sync service.
-  if (!service_->HasObserver(this))
-    service_->AddObserver(this);
-
-  return true;
-}
-
 bool ProfileSyncServiceHarness::TryListeningToMigrationEvents() {
   browser_sync::BackendMigrator* migrator =
       service_->GetBackendMigratorForTest();
-
-  if (!migrator)
-    return false;
-
-  if (!migrator->HasMigrationObserver(this)) {
+  if (migrator && !migrator->HasMigrationObserver(this)) {
     migrator->AddMigrationObserver(this);
+    return true;
   }
-  return true;
+  return false;
 }
 
 void ProfileSyncServiceHarness::SignalStateCompleteWithNextState(

@@ -24,8 +24,8 @@ class SyncSetupHelper {
 
   ~SyncSetupHelper();
 
-  // Initialize sync clients and profiles for the case where we already
-  // have some valid sync data we wish to keep.
+  // Performs one-time initialization to enable sync for a profile. Does nothing
+  // if sync is already enabled for the profile.
   bool InitializeSync(Profile* profile);
 
   // Helper method used to read GAIA credentials from a local password file.

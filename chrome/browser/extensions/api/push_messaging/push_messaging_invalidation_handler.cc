@@ -91,6 +91,14 @@ PushMessagingInvalidationHandler::~PushMessagingInvalidationHandler() {
   service_->UnregisterInvalidationHandler(this);
 }
 
+void PushMessagingInvalidationHandler::SuppressInitialInvalidationsForExtension(
+    const std::string& extension_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const syncer::ObjectIdSet& suppressed_ids =
+      ExtensionIdToObjectIds(extension_id);
+  suppressed_ids_.insert(suppressed_ids.begin(), suppressed_ids.end());
+}
+
 void PushMessagingInvalidationHandler::RegisterExtension(
     const std::string& extension_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -118,6 +126,15 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
   DCHECK(thread_checker_.CalledOnValidThread());
   for (syncer::ObjectIdInvalidationMap::const_iterator it =
            invalidation_map.begin(); it != invalidation_map.end(); ++it) {
+    service_->AcknowledgeInvalidation(it->first, it->second.ack_handle);
+
+    syncer::ObjectIdSet::iterator suppressed_id =
+        suppressed_ids_.find(it->first);
+    if (suppressed_id != suppressed_ids_.end()) {
+      suppressed_ids_.erase(suppressed_id);
+      continue;
+    }
+
     std::string extension_id;
     int subchannel;
     if (ObjectIdToExtensionAndSubchannel(it->first,
@@ -125,7 +142,6 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
                                          &subchannel)) {
       delegate_->OnMessage(extension_id, subchannel, it->second.payload);
     }
-    service_->AcknowledgeInvalidation(it->first, it->second.ack_handle);
   }
 }
 

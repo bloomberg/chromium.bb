@@ -239,6 +239,8 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
 }
 
 PushMessagingAPI::PushMessagingAPI(Profile* profile) : profile_(profile) {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -283,6 +285,13 @@ void PushMessagingAPI::Observe(int type,
         pss, event_router_.get()));
   }
   switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+      const Extension* extension = content::Details<Extension>(details).ptr();
+      if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
+        handler_->SuppressInitialInvalidationsForExtension(extension->id());
+      }
+      break;
+    }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension = content::Details<Extension>(details).ptr();
       if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {

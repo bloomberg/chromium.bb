@@ -5,26 +5,20 @@
 var clientId = '';
 var clientSecret =  '';
 var refreshToken = '';
-const payload = 'Hello push messaging!';
+const testSubchannelId = 1;
+const randomPayload = String(Math.random());
 
 // As part of the canary test, verify that we got what we expected.
 function verifyDetails(details) {
-  chrome.test.assertEq(payload, details.payload);
-  chrome.test.assertEq(1, details.subchannelId);
-  console.log("push message arrived and matches expectations!");
-}
-
-// The test to be run.
-function testEventDispatch() {
-  chrome.pushMessaging.onMessage.addListener(
-      chrome.test.callbackPass(verifyDetails));
-  chrome.test.sendMessage('ready');
+  chrome.test.assertEq(testSubchannelId, details.subchannelId);
+  chrome.test.assertEq(randomPayload, details.payload);
 }
 
 function startTestWithCredentials(paramClientId, paramClientSecret,
                                   paramRefreshToken) {
-  console.log('startTestWithCredentials(' + paramClientId + ',  ' +
-              paramClientSecret + ',  ' + paramRefreshToken + ')' );
+  chrome.pushMessaging.onMessage.addListener(
+      chrome.test.callbackPass(verifyDetails));
+
   clientId = paramClientId;
   clientSecret = paramClientSecret;
   refreshToken = paramRefreshToken;
@@ -81,10 +75,9 @@ function getAccessToken(channelId) {
 function askServerToSendPushMessageWithToken(accessToken, channelId) {
   // Setup the push request, using the access token we just got.
 
-  var channelNum = 1;
   var pushURL ='https://www.googleapis.com/gcm_for_chrome/v1/messages';
-  var pushData = { "channelId": channelId, "subchannelId": channelNum,
-                   "payload": payload};
+  var pushData = { "channelId": channelId, "subchannelId": testSubchannelId,
+                   "payload": randomPayload};
   var pushRequest = new XMLHttpRequest();
   pushRequest.open('POST', pushURL, true);
   // Set the headers for the push request, including the parsed accessToken.
@@ -104,9 +97,7 @@ function askServerToSendPushMessageWithToken(accessToken, channelId) {
   }
 
   // Send the push request.
-  console.log("sending second XHR, data is " + pushData + " url is " + pushURL);
+  console.log("sending second XHR, data is " + JSON.stringify(pushData) +
+              ", and url is " + pushURL);
   pushRequest.send(JSON.stringify(pushData));
 }
-
-// Run the test
-chrome.test.runTests([testEventDispatch]);

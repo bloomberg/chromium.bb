@@ -27,38 +27,27 @@ SyncSetupHelper::SyncSetupHelper() {}
 
 SyncSetupHelper::~SyncSetupHelper() {}
 
-// Initialize sync clients and profiles for the case where we already
-// have some valid sync data we wish to keep.
 bool SyncSetupHelper::InitializeSync(Profile* profile) {
   profile_ = profile;
   client_.reset(new ProfileSyncServiceHarness(profile_, username_, password_));
 
-  // Hook up the sync listener.
-  if (!client_->InitializeSync()) {
-    LOG(ERROR) << "InitializeSync() failed.";
+  if (client_->service()->IsSyncEnabledAndLoggedIn())
+    return true;
+
+  if (!client_->SetupSync())
     return false;
-  }
-
-  // If the data is not already synced, setup sync.
-  if (!client_->IsDataSynced()) {
-    client_->SetupSync();
-  }
-
-  DVLOG(1) << "InitializeSync awaiting quiescence";
 
   // Because clients may modify sync data as part of startup (for example local
   // session-releated data is rewritten), we need to ensure all startup-based
   // changes have propagated between the clients.
   // This could take several seconds.
   AwaitQuiescence();
-
-  DVLOG(1) << "InitializeSync reached quiescence";
-
   return true;
 }
 
 // Read the sync signin credentials from a file on the machine.
 bool SyncSetupHelper::ReadPasswordFile(const base::FilePath& password_file) {
+  // TODO(dcheng): Convert format of config file to JSON.
   std::string file_contents;
   bool success = file_util::ReadFileToString(password_file, &file_contents);
   EXPECT_TRUE(success)

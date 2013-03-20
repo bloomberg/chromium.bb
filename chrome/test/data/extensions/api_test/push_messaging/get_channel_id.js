@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 function channelIdCallback(message) {
-  console.log("Background channel ID callback seen, channel Id is '" +
-              message.channelId + "'");
   chrome.test.assertEq(message.channelId, "");
 }
 

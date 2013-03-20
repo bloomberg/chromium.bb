@@ -9,21 +9,20 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/push_messaging/sync_setup_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/platform_app_launcher.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
-namespace switches {
+namespace {
+const char kTestExtensionId[] = "mfaehphpebmlbfdiegjnpidmibldjbjk";
 const char kPasswordFileForTest[] = "password-file-for-test";
 const char kOverrideUserDataDir[] = "override-user-data-dir";
-}
+}  // namespace
 
 namespace extensions {
 
@@ -43,11 +42,10 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
   virtual void SetUp() OVERRIDE {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-    if (command_line->HasSwitch(switches::kPasswordFileForTest)) {
-      base::FilePath password_file =
-          command_line->GetSwitchValuePath(switches::kPasswordFileForTest);
-      ASSERT_TRUE(sync_setup_helper_->ReadPasswordFile(password_file));
-    }
+    ASSERT_TRUE(command_line->HasSwitch(kPasswordFileForTest));
+    base::FilePath password_file =
+        command_line->GetSwitchValuePath(kPasswordFileForTest);
+    ASSERT_TRUE(sync_setup_helper_->ReadPasswordFile(password_file));
 
     // The test framework overrides any command line user-data-dir
     // argument with a /tmp/.org.chromium.Chromium.XXXXXX directory.
@@ -57,26 +55,19 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
     // Re-override the default data dir for our test so we can persist
     // the profile for this particular test so we can persist the max
     // invalidation version between runs.
-    base::FilePath user_data_dir =
-        command_line->GetSwitchValuePath(switches::kUserDataDir);
-    base::FilePath override_user_data_dir =
-        command_line->GetSwitchValuePath(switches::kOverrideUserDataDir);
-
-    if (!override_user_data_dir.empty() &&
-        override_user_data_dir != user_data_dir) {
-      CommandLine::SwitchMap switches =
-          CommandLine::ForCurrentProcess()->GetSwitches();
-      command_line->AppendSwitchPath(switches::kUserDataDir,
-                                     base::FilePath(override_user_data_dir));
-      LOG(INFO) << "command line file override switch is "
-                << override_user_data_dir.AsUTF8Unsafe();
-    }
+    const base::FilePath& override_user_data_dir =
+        command_line->GetSwitchValuePath(kOverrideUserDataDir);
+    ASSERT_TRUE(!override_user_data_dir.empty());
+    command_line->AppendSwitchPath(switches::kUserDataDir,
+                                   base::FilePath(override_user_data_dir));
+    LOG(INFO) << "command line file override switch is "
+              << override_user_data_dir.value();
 
     ExtensionApiTest::SetUp();
   }
 
-  void InitializeSync(Profile* profile) {
-    ASSERT_TRUE(sync_setup_helper_->InitializeSync(profile));
+  void InitializeSync() {
+    ASSERT_TRUE(sync_setup_helper_->InitializeSync(profile()));
   }
 
   // InProcessBrowserTest override. Destroys the sync client and sync
@@ -86,20 +77,8 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
     sync_setup_helper_.reset();
   }
 
-  void StartRunningTest() {
-    // Get the credentials from the setup helper.
-    const std::string& client_id = sync_setup_helper_->client_id();
-    const std::string& client_secret = sync_setup_helper_->client_secret();
-    const std::string& refresh_token = sync_setup_helper_->refresh_token();
-
-    // Construct a JS string to pass in the parameters and start the test.
-    std::string script_string = base::StringPrintf(
-        "startTestWithCredentials('%s', '%s', '%s');",
-        client_id.c_str(), client_secret.c_str(), refresh_token.c_str());
-    string16 script16 = UTF8ToUTF16(script_string);
-
-    browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-        ExecuteJavascriptInWebFrame(string16(), script16);
+  const SyncSetupHelper* sync_setup_helper() const {
+    return sync_setup_helper_.get();
   }
 
  protected:
@@ -154,31 +133,37 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
 // it requires network access, and it is not a good idea to run
 // this test as part of a checkin or nightly test.
 IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, DISABLED_ReceivesPush) {
+  InitializeSync();
+
+  const ExtensionSet* installed_extensions = extension_service()->extensions();
+  if (!installed_extensions->Contains(kTestExtensionId)) {
+    const Extension* extension =
+        LoadExtension(test_data_dir_.AppendASCII("push_messaging_canary"));
+    ASSERT_TRUE(extension);
+  }
+  ASSERT_TRUE(installed_extensions->Contains(kTestExtensionId));
+
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-  ExtensionTestMessageListener ready("ready", true);
+  catcher.RestrictToProfile(profile());
 
-  // Turn on sync so we can receive notifications over sync.
-  InitializeSync(browser()->profile());
-
-  const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("push_messaging_canary"));
+  const Extension* extension =
+      extension_service()->extensions()->GetByID(kTestExtensionId);
   ASSERT_TRUE(extension);
-
-  DVLOG(1) << "extension dir is " << test_data_dir_.value();
-
   ui_test_utils::NavigateToURL(
       browser(), extension->GetResourceURL("push_messaging_canary.html"));
 
-  EXPECT_TRUE(ready.WaitUntilSatisfied());
+  const std::string& client_id = sync_setup_helper()->client_id();
+  const std::string& client_secret = sync_setup_helper()->client_secret();
+  const std::string& refresh_token = sync_setup_helper()->refresh_token();
 
-  DVLOG(1) << "push_canary app done loading";
+  const string16& script_string = UTF8ToUTF16(base::StringPrintf(
+      "startTestWithCredentials('%s', '%s', '%s');",
+      client_id.c_str(), client_secret.c_str(), refresh_token.c_str()));
 
-  StartRunningTest();
+  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
+      ExecuteJavascriptInWebFrame(string16(), script_string);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  LOG(INFO) << "Exiting Push Messaging Canary test";
 }
 
 }  // namespace extensions

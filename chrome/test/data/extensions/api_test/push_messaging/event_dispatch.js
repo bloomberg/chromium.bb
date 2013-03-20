@@ -10,7 +10,6 @@ function verifyDetails(details) {
 function testEventDispatch() {
   chrome.pushMessaging.onMessage.addListener(
       chrome.test.callbackPass(verifyDetails));
-  chrome.test.sendMessage('ready');
 }
 
 chrome.test.runTests([testEventDispatch]);
