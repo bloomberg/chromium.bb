@@ -104,7 +104,11 @@ class ToastContentsView : public views::WidgetDelegateView {
   }
 
   virtual bool CanActivate() const OVERRIDE {
+#if defined(OS_WIN) && defined(USE_AURA)
+    return true;
+#else
     return false;
+#endif
   }
 
   // Overridden from views::View:
