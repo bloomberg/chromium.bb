@@ -473,12 +473,22 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
     const base::FilePath& suggested_path,
     bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const bool is_extension_download =
+      download_crx_util::IsExtensionDownload(download);
+
+  // User-initiated extension downloads from pref-whitelisted sources are not
+  // considered dangerous.
+  if (download.HasUserGesture() &&
+      is_extension_download &&
+      download_crx_util::OffStoreInstallAllowedByPrefs(profile_, download)) {
+    return false;
+  }
 
   // Extensions that are not from the gallery are considered dangerous.
   // When off-store install is disabled we skip this, since in this case, we
   // will not offer to install the extension.
   if (extensions::FeatureSwitch::easy_off_store_install()->IsEnabled() &&
-      download_crx_util::IsExtensionDownload(download) &&
+      is_extension_download &&
       !extensions::WebstoreInstaller::GetAssociatedApproval(download)) {
     return true;
   }

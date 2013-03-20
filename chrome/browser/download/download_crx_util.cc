@@ -4,7 +4,8 @@
 //
 // Download code which handles CRX files (extensions, themes, apps, ...).
 
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_crx_util.h"
+
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -55,25 +56,6 @@ ExtensionInstallPrompt* CreateExtensionInstallPrompt(
     }
     return new ExtensionInstallPrompt(web_contents);
   }
-}
-
-bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
-  extensions::ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(
-      profile)->extension_service()->extension_prefs();
-  CHECK(prefs);
-
-  extensions::URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
-
-  if (!url_patterns.MatchesURL(item.GetURL()))
-    return false;
-
-  // The referrer URL must also be whitelisted, unless the URL has the file
-  // scheme (there's no referrer for those URLs).
-  // TODO(aa): RefererURL is cleared in some cases, for example when going
-  // between secure and non-secure URLs. It would be better if DownloadItem
-  // tracked the initiating page explicitly.
-  return url_patterns.MatchesURL(item.GetReferrerUrl()) ||
-         item.GetURL().SchemeIsFile();
 }
 
 }  // namespace
@@ -140,6 +122,25 @@ bool IsExtensionDownload(const DownloadItem& download_item) {
   } else {
     return false;
   }
+}
+
+bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(
+      profile)->extension_service()->extension_prefs();
+  CHECK(prefs);
+
+  extensions::URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
+
+  if (!url_patterns.MatchesURL(item.GetURL()))
+    return false;
+
+  // The referrer URL must also be whitelisted, unless the URL has the file
+  // scheme (there's no referrer for those URLs).
+  // TODO(aa): RefererURL is cleared in some cases, for example when going
+  // between secure and non-secure URLs. It would be better if DownloadItem
+  // tracked the initiating page explicitly.
+  return url_patterns.MatchesURL(item.GetReferrerUrl()) ||
+         item.GetURL().SchemeIsFile();
 }
 
 }  // namespace download_crx_util

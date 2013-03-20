@@ -33,4 +33,10 @@ bool IsExtensionDownload(const DownloadItem& download_item) {
   return false;
 }
 
+bool OffStoreInstallAllowedByPrefs(Profile* profile,
+                                   const content::DownloadItem& item) {
+  // Extensions are not supported on Android, return the safe default.
+  return false;
+}
+
 }  // namespace download_crx_util

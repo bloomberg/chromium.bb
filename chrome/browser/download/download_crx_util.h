@@ -43,6 +43,11 @@ scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
 // scripts to be extension downloads, since we convert those automatically.
 bool IsExtensionDownload(const content::DownloadItem& download_item);
 
+// Checks whether an extension download should be allowed to proceed because the
+// installation site is whitelisted in prefs.
+bool OffStoreInstallAllowedByPrefs(Profile* profile,
+                                   const content::DownloadItem& item);
+
 }  // namespace download_crx_util
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CRX_UTIL_H_
