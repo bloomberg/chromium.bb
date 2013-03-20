@@ -748,9 +748,9 @@ void OnNoMemory() {
 
 }  // namespace
 
-extern "C" {
-#if !defined(USE_TCMALLOC) && !defined(ADDRESS_SANITIZER) && \
-    !defined(OS_ANDROID) && !defined(THREAD_SANITIZER)
+#if !defined(OS_ANDROID) && !defined(USE_TCMALLOC) && \
+    !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(THREAD_SANITIZER)
 
 extern "C" {
 void* __libc_malloc(size_t size);
@@ -759,7 +759,6 @@ void* __libc_calloc(size_t nmemb, size_t size);
 void* __libc_valloc(size_t size);
 void* __libc_pvalloc(size_t size);
 void* __libc_memalign(size_t alignment, size_t size);
-}  // extern "C"
 
 // Overriding the system memory allocation functions:
 //
@@ -829,8 +828,8 @@ int posix_memalign(void** ptr, size_t alignment, size_t size) {
   return 0;
 }
 
-#endif  // !defined(USE_TCMALLOC)
 }  // extern C
+#endif  // ANDROID, TCMALLOC, *_SANITIZER
 
 void EnableTerminationOnHeapCorruption() {
   // On Linux, there nothing to do AFAIK.
