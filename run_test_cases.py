@@ -336,7 +336,7 @@ class Progress(object):
         self.unfinished_commands.add(cmd)
       if 'finished after' in name:
         cmd_re = re.compile('.*[(*.)]*.')
-        cmd = cmd_re.match.group(1)
+        cmd = cmd_re.match(name).group(1)
         self.unfinished_commands.remove(cmd)
 
 
