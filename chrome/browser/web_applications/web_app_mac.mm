@@ -80,10 +80,23 @@ bool AddBitmapImageRepToIconFamily(IconFamily* icon_family,
   }
 }
 
+base::FilePath GetWritableApplicationsDirectory() {
+  base::FilePath path;
+  if (base::mac::GetLocalDirectory(NSApplicationDirectory, &path) &&
+      file_util::PathIsWritable(path)) {
+    return path;
+  }
+  if (base::mac::GetUserDirectory(NSApplicationDirectory, &path))
+    return path;
+  return base::FilePath();
+}
+
 }  // namespace
 
 
 namespace web_app {
+
+const char kChromeAppDirName[] = "Chrome Apps.localized";
 
 WebAppShortcutCreator::WebAppShortcutCreator(
     const base::FilePath& user_data_dir,
@@ -119,7 +132,15 @@ bool WebAppShortcutCreator::CreateShortcut() {
   if (!UpdateIcon(staging_path))
     return false;
 
-  base::FilePath dst_path = GetDestinationPath(app_file_name);
+  base::FilePath dst_path = GetDestinationPath();
+  if (dst_path.empty() || !file_util::DirectoryExists(dst_path.DirName())) {
+    LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
+    return false;
+  }
+  if (!file_util::CreateDirectory(dst_path)) {
+    LOG(ERROR) << "Creating directory " << dst_path.value() << " failed.";
+    return false;
+  }
   if (!file_util::CopyDirectory(staging_path, dst_path, true)) {
     LOG(ERROR) << "Copying app to dst path: " << dst_path.value() << " failed";
     return false;
@@ -137,18 +158,11 @@ base::FilePath WebAppShortcutCreator::GetAppLoaderPath() const {
       base::mac::NSToCFCast(@"app_mode_loader.app"));
 }
 
-base::FilePath WebAppShortcutCreator::GetDestinationPath(
-    const base::FilePath& app_file_name) const {
-  base::FilePath path;
-  if (base::mac::GetLocalDirectory(NSApplicationDirectory, &path) &&
-      file_util::PathIsWritable(path)) {
+base::FilePath WebAppShortcutCreator::GetDestinationPath() const {
+  base::FilePath path = GetWritableApplicationsDirectory();
+  if (path.empty())
     return path;
-  }
-
-  if (base::mac::GetUserDirectory(NSApplicationDirectory, &path))
-    return path;
-
-  return base::FilePath();
+  return path.Append(kChromeAppDirName);
 }
 
 bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {

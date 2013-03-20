@@ -38,7 +38,7 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
             UTF8ToUTF16("fake.cfbundleidentifier")) {
   }
 
-  MOCK_CONST_METHOD1(GetDestinationPath, base::FilePath(const base::FilePath&));
+  MOCK_CONST_METHOD0(GetDestinationPath, base::FilePath());
   MOCK_CONST_METHOD1(RevealGeneratedBundleInFinder,
                      void (const base::FilePath&));
 };
@@ -67,7 +67,7 @@ TEST(WebAppShortcutCreatorTest, CreateShortcut) {
   base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
+  EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(dst_folder));
   EXPECT_CALL(shortcut_creator, RevealGeneratedBundleInFinder(dst_path));
 
@@ -105,7 +105,7 @@ TEST(WebAppShortcutCreatorTest, RunShortcut) {
   base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
+  EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(dst_folder));
   EXPECT_CALL(shortcut_creator, RevealGeneratedBundleInFinder(dst_path));
 
@@ -126,7 +126,7 @@ TEST(WebAppShortcutCreatorTest, CreateFailure) {
       scoped_temp_dir.path().Append("not-existent").Append("name.app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(GetShortcutInfo());
-  EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
+  EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(non_existent_path));
   EXPECT_FALSE(shortcut_creator.CreateShortcut());
 }
