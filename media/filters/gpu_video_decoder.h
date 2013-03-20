@@ -74,6 +74,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
+  virtual bool HasOutputFrameAvailable() const OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void NotifyInitializeDone() OVERRIDE;
@@ -223,6 +224,10 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Indicates decoding error occurred.
   bool error_occured_;
+
+  // Set during ProvidePictureBuffers(), used for checking and implementing
+  // HasAvailableOutputFrames().
+  int available_pictures_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };

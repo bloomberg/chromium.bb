@@ -61,7 +61,8 @@ GpuVideoDecoder::GpuVideoDecoder(
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
-      error_occured_(false) {
+      error_occured_(false),
+      available_pictures_(-1) {
   DCHECK(factories_);
 }
 
@@ -336,6 +337,11 @@ bool GpuVideoDecoder::HasAlpha() const {
   return true;
 }
 
+bool GpuVideoDecoder::HasOutputFrameAvailable() const {
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
+  return available_pictures_ > 0;
+}
+
 void GpuVideoDecoder::NotifyInitializeDone() {
   NOTREACHED() << "GpuVideoDecodeAcceleratorHost::Initialize is synchronous!";
 }
@@ -360,6 +366,9 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
 
   if (!vda_.get())
     return;
+
+  CHECK_EQ(available_pictures_, -1);
+  available_pictures_ = count;
 
   std::vector<PictureBuffer> picture_buffers;
   for (size_t i = 0; i < texture_ids.size(); ++i) {
@@ -421,6 +430,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
                      gfx::Size(visible_rect.width(), visible_rect.height())),
           base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
                      picture.picture_buffer_id())));
+  CHECK_GT(available_pictures_, 0);
+  available_pictures_--;
 
   EnqueueFrameAndTriggerFrameDelivery(frame);
 }
@@ -452,6 +463,9 @@ void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
         &GpuVideoDecoder::ReusePictureBuffer, this, picture_buffer_id));
     return;
   }
+  CHECK_GE(available_pictures_, 0);
+  available_pictures_++;
+
   if (!vda_.get())
     return;
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(

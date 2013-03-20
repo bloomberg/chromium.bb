@@ -69,6 +69,12 @@ class MEDIA_EXPORT VideoDecoder
   // that return formats with an alpha channel.
   virtual bool HasAlpha() const;
 
+  // Returns true if the decoder currently has the ability to decode and return
+  // a VideoFrame. Most implementations can allocate a new VideoFrame and hence
+  // this will always return true. Override and return false for decoders that
+  // use a fixed set of VideoFrames for decoding.
+  virtual bool HasOutputFrameAvailable() const;
+
  protected:
   friend class base::RefCountedThreadSafe<VideoDecoder>;
   virtual ~VideoDecoder();

@@ -150,6 +150,8 @@ class MEDIA_EXPORT VideoRendererBase
                          scoped_ptr<VideoDecoderList> decoders,
                          PipelineStatus status);
 
+  void TransitionToPrerolled_Locked();
+
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<VideoRendererBase> weak_factory_;
   base::WeakPtr<VideoRendererBase> weak_this_;
