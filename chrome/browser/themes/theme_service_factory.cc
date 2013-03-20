@@ -82,3 +82,7 @@ void ThemeServiceFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 bool ThemeServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
+
+bool ThemeServiceFactory::ServiceIsCreatedWithProfile() const {
+  return true;
+}

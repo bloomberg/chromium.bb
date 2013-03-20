@@ -18,6 +18,9 @@
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/themes/theme_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -77,6 +80,7 @@ void WritePackToDiskCallback(BrowserThemePack* pack,
 ThemeService::ThemeService()
     : rb_(ResourceBundle::GetSharedInstance()),
       profile_(NULL),
+      ready_(false),
       number_of_infobars_(0) {
 }
 
@@ -88,7 +92,15 @@ void ThemeService::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
 
+  (new extensions::ThemeHandler)->Register();
+
   LoadThemePrefs();
+
+  if (!ready_) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSIONS_READY,
+                   content::Source<Profile>(profile_));
+  }
 
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
 }
@@ -198,6 +210,21 @@ base::RefCountedMemory* ThemeService::GetRawData(
   return data;
 }
 
+void ThemeService::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_EXTENSIONS_READY);
+  registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+      content::Source<Profile>(profile_));
+
+  MigrateTheme();
+  set_ready();
+
+  // Send notification in case anyone requested data and cached it when the
+  // theme service was not ready yet.
+  NotifyThemeChanged();
+}
+
 void ThemeService::SetTheme(const Extension* extension) {
   // Clear our image cache.
   FreePlatformCaches();
@@ -284,36 +311,31 @@ void ThemeService::LoadThemePrefs() {
   PrefService* prefs = profile_->GetPrefs();
 
   std::string current_id = GetThemeID();
-  if (current_id != kDefaultThemeID) {
-    bool loaded_pack = false;
+  if (current_id == kDefaultThemeID) {
+    set_ready();
+    return;
+  }
 
-    // If we don't have a file pack, we're updating from an old version.
-    base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
-    if (path != base::FilePath()) {
-      theme_pack_ = BrowserThemePack::BuildFromDataPack(path, current_id);
-      loaded_pack = theme_pack_.get() != NULL;
-    }
+  bool loaded_pack = false;
 
-    if (loaded_pack) {
-      content::RecordAction(UserMetricsAction("Themes.Loaded"));
-    } else {
-      // TODO(erg): We need to pop up a dialog informing the user that their
-      // theme is being migrated.
-      ExtensionService* service =
-          extensions::ExtensionSystem::Get(profile_)->extension_service();
-      if (service) {
-        const Extension* extension =
-            service->GetExtensionById(current_id, false);
-        if (extension) {
-          DLOG(ERROR) << "Migrating theme";
-          BuildFromExtension(extension);
-          content::RecordAction(UserMetricsAction("Themes.Migrated"));
-        } else {
-          DLOG(ERROR) << "Theme is mysteriously gone.";
-          ClearAllThemeData();
-          content::RecordAction(UserMetricsAction("Themes.Gone"));
-        }
-      }
+  // If we don't have a file pack, we're updating from an old version.
+  base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
+  if (path != base::FilePath()) {
+    theme_pack_ = BrowserThemePack::BuildFromDataPack(path, current_id);
+    loaded_pack = theme_pack_.get() != NULL;
+  }
+
+  if (loaded_pack) {
+    content::RecordAction(UserMetricsAction("Themes.Loaded"));
+    set_ready();
+  } else {
+    // TODO(erg): We need to pop up a dialog informing the user that their
+    // theme is being migrated.
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    if (service && service->is_ready()) {
+      MigrateTheme();
+      set_ready();
     }
   }
 }
@@ -341,6 +363,22 @@ void ThemeService::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }
 #endif
+
+void ThemeService::MigrateTheme() {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  const Extension* extension = service ?
+      service->GetExtensionById(GetThemeID(), false) : NULL;
+  if (extension) {
+    DLOG(ERROR) << "Migrating theme";
+    BuildFromExtension(extension);
+    content::RecordAction(UserMetricsAction("Themes.Migrated"));
+  } else {
+    DLOG(ERROR) << "Theme is mysteriously gone.";
+    ClearAllThemeData();
+    content::RecordAction(UserMetricsAction("Themes.Gone"));
+  }
+}
 
 void ThemeService::SavePackName(const base::FilePath& pack_path) {
   profile_->GetPrefs()->SetFilePath(

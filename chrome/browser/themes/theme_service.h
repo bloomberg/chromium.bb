@@ -15,6 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/theme_provider.h"
 
 class BrowserThemePack;
@@ -50,6 +52,7 @@ extern "C" NSString* const kBrowserThemeDidChangeNotification;
 #endif  // __OBJC__
 
 class ThemeService : public base::NonThreadSafe,
+                     public content::NotificationObserver,
                      public ProfileKeyedService,
                      public ui::ThemeProvider {
  public:
@@ -90,6 +93,11 @@ class ThemeService : public base::NonThreadSafe,
   // shared instances owned by the theme provider and should not be freed.
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const OVERRIDE;
 #endif
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Set the current theme to the theme defined in |extension|.
   // |extension| must already be added to this profile's
@@ -157,8 +165,14 @@ class ThemeService : public base::NonThreadSafe,
 
   Profile* profile() { return profile_; }
 
+  void set_ready() { ready_ = true; }
+
  private:
   friend class ThemeServiceTest;
+
+  // Migrate the theme to the new theme pack schema by recreating the data pack
+  // from the extension.
+  void MigrateTheme();
 
   // Saves the filename of the cached theme pack.
   void SavePackName(const base::FilePath& pack_path);
@@ -193,10 +207,17 @@ class ThemeService : public base::NonThreadSafe,
   ui::ResourceBundle& rb_;
   Profile* profile_;
 
+  // True if the theme service is ready to be used.
+  // TODO(pkotwicz): Add DCHECKS to the theme service's getters once
+  // ThemeSource no longer uses the ThemeService when it is not ready.
+  bool ready_;
+
   scoped_refptr<BrowserThemePack> theme_pack_;
 
   // The number of infobars currently displayed.
   int number_of_infobars_;
+
+  content::NotificationRegistrar registrar_;
 
   scoped_ptr<ThemeSyncableService> theme_syncable_service_;
 

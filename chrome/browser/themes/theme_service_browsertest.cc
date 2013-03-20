@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_service.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -22,7 +23,21 @@ bool UsingCustomTheme(const ThemeService& theme_service) {
          !theme_service.UsingDefaultTheme();
 }
 
-typedef ExtensionBrowserTest ThemeServiceBrowserTest;
+class ThemeServiceBrowserTest : public ExtensionBrowserTest {
+ public:
+  ThemeServiceBrowserTest() {
+  }
+  virtual ~ThemeServiceBrowserTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+    ExtensionBrowserTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ThemeServiceBrowserTest);
+};
 
 // Test that the theme is recreated from the extension when the data pack is
 // unavailable or invalid (such as when the theme pack version is incremented).

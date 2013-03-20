@@ -627,6 +627,7 @@ void GtkThemeService::ClearAllThemeData() {
 void GtkThemeService::LoadThemePrefs() {
   if (use_gtk_) {
     LoadGtkValues();
+    set_ready();
   } else {
     LoadDefaultValues();
     ThemeService::LoadThemePrefs();
