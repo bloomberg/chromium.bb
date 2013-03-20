@@ -372,12 +372,13 @@ class TrackerComm(object):
         raise TrackerInvalidUserError('Tracker user %s not found' % issue.owner)
       raise
 
-  def AppendTrackerIssueById(self, issue_id, comment):
+  def AppendTrackerIssueById(self, issue_id, comment, owner=None):
     """Append |comment| to issue |issue_id| in Tracker"""
     self.it_client.update_issue(project_name=self.project_name,
                                 issue_id=issue_id,
                                 author=self.author,
-                                comment=comment)
+                                comment=comment,
+                                owner=owner)
     return issue_id
 
 

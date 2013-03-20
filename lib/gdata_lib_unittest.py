@@ -952,7 +952,8 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
     mocked_itclient.update_issue(project_name=project_name,
                                  issue_id=issue_id,
                                  author=author,
-                                 comment=comment)
+                                 comment=comment,
+                                 owner=None)
     self.mox.ReplayAll()
 
     # Verify
