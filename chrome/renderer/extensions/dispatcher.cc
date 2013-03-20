@@ -977,11 +977,16 @@ void Dispatcher::DidCreateScriptContext(
     }
   }
 
+  bool is_within_platform_app = IsWithinPlatformApp(frame);
   // Inject custom JS into the platform app context.
-  if (IsWithinPlatformApp(frame))
+  if (is_within_platform_app)
     module_system->Require("platformApp");
 
-  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
+  // Only platform apps support the <webview> tag, because the "webView" and
+  // "denyWebView" modules will affect the performance of DOM modifications
+  // (http://crbug.com/196453).
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
+      is_within_platform_app) {
     // Note: setting up the WebView class here, not the chrome.webview API.
     // The API will be automatically set up when first used.
     if (extension->HasAPIPermission(APIPermission::kWebView)) {
