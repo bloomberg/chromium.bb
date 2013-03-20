@@ -455,6 +455,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       software_rendering_(false),
       kind_(kind),
       process_launched_(false),
+      initialized_(false),
       uma_memory_stats_received_(false) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
@@ -532,7 +533,8 @@ GpuProcessHost::~GpuProcessHost() {
       crashed_before = true;
       last_gpu_crash_time = current_time;
 
-      if (gpu_recent_crash_count >= kGpuMaxCrashCount) {
+      if (gpu_recent_crash_count >= kGpuMaxCrashCount ||
+          !initialized_) {
 #if !defined(OS_CHROMEOS)
         // The gpu process is too unstable to use. Disable it for current
         // session.
@@ -812,6 +814,7 @@ void GpuProcessHost::DeleteImage(int client_id,
 
 void GpuProcessHost::OnInitialized(bool result) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
+  initialized_ = result;
 }
 
 void GpuProcessHost::OnChannelEstablished(

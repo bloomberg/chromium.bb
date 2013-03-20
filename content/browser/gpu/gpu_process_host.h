@@ -233,6 +233,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Whether we actually launched a GPU process.
   bool process_launched_;
 
+  // Whether the GPU process successfully initialized.
+  bool initialized_;
+
   // Time Init started.  Used to log total GPU process startup time to UMA.
   base::TimeTicks init_start_time_;
 
