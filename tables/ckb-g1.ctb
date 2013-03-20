@@ -26,6 +26,6 @@
 
 include ckb-chardefs.cti
 include braille-patterns.cti
-include ckb-translation.ctb
+include ckb-translation.cti
 
 # ---------------------------------------------------------------------------------------

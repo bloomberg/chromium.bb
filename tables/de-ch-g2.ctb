@@ -30,4 +30,4 @@
 
 include de-ch-g0.utb
 letsign 6
-include de-g2-core.ctb
+include de-g2-core.cti

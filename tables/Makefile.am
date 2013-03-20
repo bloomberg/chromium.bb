@@ -19,14 +19,14 @@ table_files = \
 	chardefs-ueb.cti \
 	ckb-chardefs.cti \
 	ckb-g1.ctb \
-	ckb-translation.ctb \
-	compress.ctb \
+	ckb-translation.cti \
+	compress.cti \
 	controlchars.cti \
-	corrections.ctb \
+	corrections.cti \
 	countries.cti \
 	cs-chardefs.cti \
 	cs-g1.ctb \
-	cs-translation.ctb \
+	cs-translation.cti \
 	cy-cy-g1.utb \
 	cy-cy-g2.ctb \
 	Cz-Cz-g1.utb \
@@ -51,9 +51,9 @@ table_files = \
 	de-de-g2.ctb \
 	de-eurobrl6.dis \
 	de-eurobrl6u.dis \
-	de-g0-core.utb \
-	de-g1-core.ctb \
-	de-g2-core.ctb \
+	de-g0-core.uti \
+	de-g1-core.cti \
+	de-g2-core.cti \
 	devanagari.cti \
 	digits6DotsPlusDot6.uti \
 	digits6Dots.uti \
@@ -83,7 +83,7 @@ table_files = \
 	es-g1.ctb \
 	es-new.dis \
 	es-old.dis \
-	es-translation.ctb \
+	es-translation.cti \
 	et.ctb \
 	et-g0.utb \
 	ethio-g1.ctb \
@@ -212,7 +212,7 @@ table_files = \
 	spaces.ctb \
 	sr-chardefs.cti \
 	sr-g1.ctb \
-	sr-translation.ctb \
+	sr-translation.cti \
 	sv-1989.ctb \
 	sv-1996.ctb \
 	ta.ctb \
@@ -236,7 +236,7 @@ table_files = \
 	vi.ctb \
 	wiskunde-chardefs.cti \
 	wiskunde.ctb \
-	wiskunde-translation.ctb \
+	wiskunde-translation.cti \
 	zh-hk.ctb \
 	zh-tw.ctb 
 

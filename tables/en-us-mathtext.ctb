@@ -869,5 +869,5 @@ endword 't 3-2345
 endword 've 3-1236-15
 always -com =
 endword -to = pointed-to resource
-include corrections.ctb
+include corrections.cti
 

@@ -32,6 +32,6 @@
 
 include sr-chardefs.cti
 include braille-patterns.cti
-include sr-translation.ctb
+include sr-translation.cti
 
 # ---------------------------------------------------------------------------------------

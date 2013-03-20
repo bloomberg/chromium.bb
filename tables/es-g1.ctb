@@ -27,6 +27,6 @@
 
 include es-chardefs.cti
 include braille-patterns.cti
-include es-translation.ctb
+include es-translation.cti
 
 # ---------------------------------------------------------------------------------------

@@ -29,6 +29,6 @@
 include wiskunde-chardefs.cti
 include nl-BE-chardefs.cti
 include braille-patterns.cti
-include wiskunde-translation.ctb
+include wiskunde-translation.cti
 
 # ----------------------------------------------------------------------------------------------

@@ -30,6 +30,6 @@
 
 include cs-chardefs.cti
 include braille-patterns.cti
-include cs-translation.ctb
+include cs-translation.cti
 
 # -------------------------------------------------------------------------------
