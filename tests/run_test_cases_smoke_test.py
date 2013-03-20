@@ -270,6 +270,24 @@ class RunTestCases(unittest.TestCase):
             err.strip()),
         err)
 
+  def test_simple_pass_very_verbose(self):
+    # Ensure that the test still passes with maximum verbosity, but don't worry
+    # about what the output is.
+        # We take verbosity seriously so test it.
+    _, err, return_code = RunTest(
+        [
+          # Linearize execution.
+          '--clusters', '1',
+          '--jobs', '1',
+          '--verbose',
+          '--verbose',
+          '--verbose',
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
+        ])
+
+    self.assertEqual(0, return_code, err)
+
   def test_simple_fail(self):
     out, err, return_code = RunTest(
         [

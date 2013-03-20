@@ -332,10 +332,11 @@ class Progress(object):
       # Keep track of all the running commands, so we can list which ones
       # are unfinished.
       if 'Starting command' in name:
-        cmd = name.split()[2]
-        self.unfinished_commands.add(cmd)
+        match = re.match('^.*?(\[.*\]).*?$', name)
+        if match:
+          self.unfinished_commands.add(match.group(1))
       if 'finished after' in name:
-        match = re.match('.*\[(.*)\].*', name)
+        match = re.match('^.*?(\[.*\]).*?$', name)
         if match:
           self.unfinished_commands.remove(match.group(1))
 
@@ -759,9 +760,8 @@ class Runner(object):
         env=self.env)
 
     if self.verbose > 1:
-      self.progress.update_item('Command[%s] finished after %ss' % (cmd,
-                                                                    duration),
-
+      self.progress.update_item('Command %s finished after %ss' % (cmd,
+                                                                   duration),
                                 False, False)
 
     # It needs to be valid utf-8 otherwise it can't be stored.
