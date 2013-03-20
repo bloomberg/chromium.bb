@@ -233,6 +233,10 @@ class ChromeSDKCommand(cros.CrosCommand):
         help='Sets up the environment for building with clang.  Due to a bug '
              'with ninja, requires --make to be set.')
     parser.add_argument(
+        '--internal', action='store_true', default=False,
+        help='Sets up SDK for building official (internal) Chrome '
+             'Chrome, rather than Chromium.')
+    parser.add_argument(
         '--make', action='store_true', default=False,
         help='If set, gyp_chromium will generate Make files instead of Ninja '
              'files.  Note: Make files are spread out through the source tree, '
@@ -337,6 +341,13 @@ class ChromeSDKCommand(cros.CrosCommand):
       gyp_dict['werror'] = ''
       gyp_dict['clang_use_chrome_plugins'] = 0
       gyp_dict['linux_use_tcmalloc'] = 0
+    if options.internal:
+      gyp_dict['branding'] = 'Chrome'
+      gyp_dict['buildtype'] = 'Official'
+    else:
+      gyp_dict.pop('branding', None)
+      gyp_dict.pop('buildtype', None)
+
     env['GYP_DEFINES'] = chrome_util.DictToGypDefines(gyp_dict)
 
     # PS1 sets the command line prompt and xterm window caption.
