@@ -113,11 +113,11 @@ bool TabCaptureCaptureFunction::RunImpl() {
 
   extensions::TabCaptureRegistry* registry =
       extensions::TabCaptureRegistryFactory::GetForProfile(profile());
-  if (!registry->AddRequest(
-          std::make_pair(render_process_id, routing_id),
-          TabCaptureRegistry::TabCaptureRequest(
-              GetExtension()->id(), tab_id,
-              tab_capture::TAB_CAPTURE_STATE_NONE))) {
+  if (!registry->AddRequest(render_process_id,
+                            routing_id,
+                            GetExtension()->id(),
+                            tab_id,
+                            tab_capture::TAB_CAPTURE_STATE_NONE)) {
     error_ = kCapturingSameTab;
     return false;
   }
@@ -141,15 +141,15 @@ bool TabCaptureGetCapturedTabsFunction::RunImpl() {
   extensions::TabCaptureRegistry* registry =
       extensions::TabCaptureRegistryFactory::GetForProfile(profile());
 
-  const TabCaptureRegistry::CaptureRequestList& captured_tabs =
+  const TabCaptureRegistry::RegistryCaptureInfo& captured_tabs =
       registry->GetCapturedTabs(GetExtension()->id());
 
   base::ListValue *list = new base::ListValue();
-  for (TabCaptureRegistry::CaptureRequestList::const_iterator it =
+  for (TabCaptureRegistry::RegistryCaptureInfo::const_iterator it =
        captured_tabs.begin(); it != captured_tabs.end(); ++it) {
     scoped_ptr<tab_capture::CaptureInfo> info(new tab_capture::CaptureInfo());
-    info->tab_id = (*it)->tab_id;
-    info->status = (*it)->status;
+    info->tab_id = it->first;
+    info->status = it->second;
     list->Append(info->ToValue().release());
   }
 

@@ -19,6 +19,9 @@ namespace tabCapture {
 
     // The new capture status of the tab.
     TabCaptureState status;
+
+    // Whether an element in the tab being captured is in fullscreen mode.
+    boolean fullscreen;
   };
 
   // MediaTrackConstraints for the media streams that will be passed to WebRTC.

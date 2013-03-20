@@ -5,23 +5,22 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_TAB_CAPTURE_REGISTRY_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_TAB_CAPTURE_REGISTRY_H_
 
-#include <map>
 #include <string>
-#include <utility>
-#include <vector>
 
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/api/tab_capture.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/media_stream_request.h"
 
 class Profile;
 
 namespace extensions {
+
+struct TabCaptureRequest;
+class FullscreenObserver;
 
 namespace tab_capture = extensions::api::tab_capture;
 
@@ -29,32 +28,29 @@ class TabCaptureRegistry : public ProfileKeyedService,
                            public content::NotificationObserver,
                            public MediaCaptureDevicesDispatcher::Observer {
  public:
-  struct TabCaptureRequest {
-    TabCaptureRequest(const std::string& extension_id,
-                      const int tab_id,
-                      tab_capture::TabCaptureState status);
-    ~TabCaptureRequest();
-
-    const std::string extension_id;
-    const int tab_id;
-    tab_capture::TabCaptureState status;
-    tab_capture::TabCaptureState last_status;
-  };
-  typedef std::vector<linked_ptr<TabCaptureRequest> > CaptureRequestList;
+  typedef std::vector<std::pair<int, tab_capture::TabCaptureState> >
+      RegistryCaptureInfo;
 
   explicit TabCaptureRegistry(Profile* profile);
 
-  const CaptureRequestList GetCapturedTabs(
+  // List all pending, active and stopped capture requests.
+  const RegistryCaptureInfo GetCapturedTabs(
       const std::string& extension_id) const;
-  bool AddRequest(const std::pair<int, int>, const TabCaptureRequest& request);
+
+  // Add a tab capture request to the registry when a stream is requested
+  // through the API.
+  bool AddRequest(int render_process_id,
+                  int render_view_id,
+                  const std::string& extension_id,
+                  int tab_id,
+                  tab_capture::TabCaptureState status);
+
+  // The MediaStreamDevicesController will verify the request before creating
+  // the stream by checking the registry here.
   bool VerifyRequest(int render_process_id, int render_view_id);
-  void RemoveRequest(int render_process_id, int render_view_id);
 
  private:
-  // Maps device_id to information about the media stream request. This is
-  // expected to be small since maintaining a media stream is expensive.
-  typedef std::map<const std::pair<int, int>, TabCaptureRequest>
-      DeviceCaptureRequestMap;
+  friend class FullscreenObserver;
 
   virtual ~TabCaptureRegistry();
 
@@ -70,9 +66,16 @@ class TabCaptureRegistry : public ProfileKeyedService,
       const content::MediaStreamDevice& device,
       const content::MediaRequestState state) OVERRIDE;
 
+  void DispatchStatusChangeEvent(const TabCaptureRequest* request) const;
+
+  TabCaptureRequest* FindCaptureRequest(int render_process_id,
+                                        int render_view_id) const;
+
+  void DeleteCaptureRequest(int render_process_id, int render_view_id);
+
   content::NotificationRegistrar registrar_;
   Profile* const profile_;
-  DeviceCaptureRequestMap requests_;
+  ScopedVector<TabCaptureRequest> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(TabCaptureRegistry);
 };
