@@ -46,7 +46,8 @@ class TestShader : public SkShader {
 
   SkShader::BitmapType asABitmap(SkBitmap* bitmap,
                                  SkMatrix*, TileMode xy[2]) const {
-    *bitmap = *bitmap_;
+    if (bitmap)
+      *bitmap = *bitmap_;
     return SkShader::kDefault_BitmapType;
   }
 
@@ -92,7 +93,7 @@ TEST(AnalysisCanvasTest, ClearCanvas) {
 
   EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
+  EXPECT_FALSE(canvas.isCheap());
   EXPECT_EQ(outputColor, color);
 
   // Translucent color
@@ -101,7 +102,7 @@ TEST(AnalysisCanvasTest, ClearCanvas) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
+  EXPECT_FALSE(canvas.isCheap());
 
   // Test helper methods
   solidColorFill(canvas);
@@ -145,7 +146,7 @@ TEST(AnalysisCanvasTest, ComplexActions) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
+  EXPECT_FALSE(canvas.isCheap());
 
   // Draw oval test.
   solidColorFill(canvas);
@@ -153,7 +154,7 @@ TEST(AnalysisCanvasTest, ComplexActions) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
+  EXPECT_FALSE(canvas.isCheap());
 
   // Draw bitmap test.
   solidColorFill(canvas);
@@ -163,7 +164,7 @@ TEST(AnalysisCanvasTest, ComplexActions) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
+  EXPECT_FALSE(canvas.isCheap());
 }
 
 TEST(AnalysisCanvasTest, SimpleDrawRect) {
