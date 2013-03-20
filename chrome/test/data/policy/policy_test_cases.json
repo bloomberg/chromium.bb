@@ -1812,6 +1812,12 @@
   "DeviceLocalAccounts": {
   },
 
+  "DeviceLocalAccountAutoLoginId": {
+  },
+
+  "DeviceLocalAccountAutoLoginDelay": {
+  },
+
   "DeviceAllowRedeemChromeOsRegistrationOffers": {
   },
 

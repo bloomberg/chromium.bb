@@ -235,6 +235,15 @@ message DeviceLocalAccountsProto {
   // The list of device-local accounts (i.e. accounts without an associated
   // cloud-backed profile) that are available on the device.
   repeated DeviceLocalAccountInfoProto account = 1;
+
+  // The identifier of the device-local account to which the device
+  // should be logged in automatically.  Should be equal to one of the
+  // ids in DeviceLocalAccountInfoProto.
+  optional string auto_login_id = 2;
+
+  // The amount of time, in milliseconds, that should elapse at the signin
+  // screen without user interaction before automatically logging in.
+  optional int64 auto_login_delay = 3;
 }
 
 message AllowRedeemChromeOsRegistrationOffersProto {

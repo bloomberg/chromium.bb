@@ -100,6 +100,9 @@ class MockUserManager : public UserManager {
   // Sets a new User instance.
   void SetLoggedInUser(const std::string& email);
 
+  // Creates a new public session user.
+  User* CreatePublicAccountUser(const std::string& email);
+
   User* user_;
   scoped_ptr<MockUserImageManager> user_image_manager_;
   scoped_ptr<UserFlow> user_flow_;

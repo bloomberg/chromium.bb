@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -67,6 +68,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Invoked when a kiosk app launch is failed.
   void OnKioskAppLaunchFailed();
 
+  // Start the public session auto-login timer.
+  void StartPublicSessionAutoLoginTimer();
+
+  // Stop the public session auto-login timer when a login attempt begins.
+  void StopPublicSessionAutoLoginTimer();
+
   // LoginDisplay::Delegate: implementation
   virtual void CancelPasswordChangedFlow() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
@@ -81,9 +88,11 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
+  virtual void OnSigninScreenReady() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
   virtual void OnStartDeviceReset() OVERRIDE;
+  virtual void ResetPublicSessionAutoLoginTimer() OVERRIDE;
   virtual void ResyncUserData() OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void ShowWrongHWIDScreen() OVERRIDE;
@@ -113,7 +122,15 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
  private:
   friend class ExistingUserControllerTest;
+  friend class ExistingUserControllerAutoLoginTest;
+  friend class ExistingUserControllerPublicSessionTest;
   friend class MockLoginPerformerDelegate;
+
+  // Retrieve public session auto-login policy and update the timer.
+  void ConfigurePublicSessionAutoLogin();
+
+  // Trigger public session auto-login.
+  void OnPublicSessionAutoLoginTimerFire();
 
   // LoginPerformer::Delegate implementation:
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
@@ -195,6 +212,15 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Updates the |login_display_| attached to this controller.
   void UpdateLoginDisplay(const UserList& users);
 
+  // Public session auto-login timer.
+  scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;
+
+  // Public session auto-login timeout, in milliseconds.
+  int public_session_auto_login_delay_;
+
+  // Username for public session auto-login.
+  std::string public_session_auto_login_username_;
+
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;
 
@@ -254,6 +280,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // True if auto-enrollment should be performed before starting the user's
   // session.
   bool do_auto_enrollment_;
+
+  // Whether the sign-in UI is finished loading.
+  bool signin_screen_ready_;
 
   // The username used for auto-enrollment, if it was triggered.
   std::string auto_enrollment_username_;

@@ -117,8 +117,10 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 
   if (policy.has_device_local_accounts()) {
+    const em::DeviceLocalAccountsProto& container(
+        policy.device_local_accounts());
     const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
-        policy.device_local_accounts().account();
+        container.account();
     if (accounts.size() > 0) {
       ListValue* account_list = new ListValue();
       RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
@@ -130,6 +132,18 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
                     account_list);
+    }
+    if (container.has_auto_login_id()) {
+      policies->Set(key::kDeviceLocalAccountAutoLoginId,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateStringValue(container.auto_login_id()));
+    }
+    if (container.has_auto_login_delay()) {
+      policies->Set(key::kDeviceLocalAccountAutoLoginDelay,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    DecodeIntegerValue(container.auto_login_delay()));
     }
   }
 }

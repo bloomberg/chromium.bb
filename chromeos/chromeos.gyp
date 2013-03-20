@@ -242,6 +242,8 @@
         'chromeos_test_utils.h',
         'cryptohome/mock_async_method_caller.cc',
         'cryptohome/mock_async_method_caller.h',
+        'dbus/fake_session_manager_client.cc',
+        'dbus/fake_session_manager_client.h',
         'dbus/mock_bluetooth_adapter_client.cc',
         'dbus/mock_bluetooth_adapter_client.h',
         'dbus/mock_bluetooth_device_client.cc',

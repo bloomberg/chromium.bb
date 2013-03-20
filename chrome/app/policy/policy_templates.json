@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 193
+#   For your editing convenience: highest ID currently used: 195
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3541,6 +3541,46 @@
       'desc': '''Specifies the list of device-local accounts to be shown on the login screen.
 
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.''',
+    },
+    {
+      'name': 'DeviceLocalAccountAutoLoginId',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:26-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': "public@example.com",
+      'id': 194,
+      'caption': '''Public session for auto-login''',
+      'desc': '''A public session to auto-login after a delay.
+
+      If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
+
+      If this policy is unset, there will be no auto-login.''',
+    },
+    {
+      'name': 'DeviceLocalAccountAutoLoginDelay',
+      'type': 'int',
+      'schema': { 'type': 'integer' },
+      'supported_on': ['chrome_os:26-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 180000,
+      'id': 195,
+      'caption': '''Public session auto-login timer''',
+      'desc': '''The public session auto-login delay.
+
+      If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
+
+      If this policy is set, it determines the amount of time without user activity that should elapse before automatically logging into the public session specified by the |DeviceLocalAccountAutoLoginId| policy.
+
+      If this policy is unset, 0 milliseconds will be used as the timeout.
+
+      This policy is specified in milliseconds.'''
     },
     {
       'name': 'BackgroundModeEnabled',

@@ -41,10 +41,12 @@ namespace {
 const char* kKnownSettings[] = {
   kAccountsPrefAllowGuest,
   kAccountsPrefAllowNewUser,
+  kAccountsPrefDeviceLocalAccounts,
+  kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+  kAccountsPrefDeviceLocalAccountAutoLoginId,
   kAccountsPrefEphemeralUsersEnabled,
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefUsers,
-  kAccountsPrefDeviceLocalAccounts,
   kAllowRedeemChromeOsRegistrationOffers,
   kAppPack,
   kDeviceOwner,
@@ -235,6 +237,22 @@ void DeviceSettingsProvider::SetInPolicy() {
     } else {
       NOTREACHED();
     }
+  } else if (prop == kAccountsPrefDeviceLocalAccountAutoLoginId) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        device_settings_.mutable_device_local_accounts();
+    std::string id;
+    if (value->GetAsString(&id))
+      device_local_accounts->set_auto_login_id(id);
+    else
+      NOTREACHED();
+  } else if (prop == kAccountsPrefDeviceLocalAccountAutoLoginDelay) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        device_settings_.mutable_device_local_accounts();
+    int delay;
+    if (value->GetAsInteger(&delay))
+      device_local_accounts->set_auto_login_delay(delay);
+    else
+      NOTREACHED();
   } else if (prop == kSignedDataRoamingEnabled) {
     em::DataRoamingEnabledProto* roam =
         device_settings_.mutable_data_roaming_enabled();
@@ -411,8 +429,10 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
   base::ListValue* account_list = new base::ListValue();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableLocalAccounts)) {
+    const em::DeviceLocalAccountsProto device_local_accounts_proto =
+        policy.device_local_accounts();
     const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
-        policy.device_local_accounts().account();
+        device_local_accounts_proto.account();
     RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
     for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
       if (entry->has_id())
@@ -430,6 +450,19 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
       list->Append(new base::StringValue(*it));
     }
     new_values_cache->SetValue(kStartUpFlags, list);
+  }
+
+  if (policy.has_device_local_accounts()) {
+    if (policy.device_local_accounts().has_auto_login_id()) {
+      new_values_cache->SetString(
+          kAccountsPrefDeviceLocalAccountAutoLoginId,
+          policy.device_local_accounts().auto_login_id());
+    }
+    if (policy.device_local_accounts().has_auto_login_delay()) {
+      new_values_cache->SetInteger(
+          kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+          policy.device_local_accounts().auto_login_delay());
+    }
   }
 }
 
