@@ -272,8 +272,11 @@ void LocatedEvent::UpdateForRootTransform(
   // Transform has to be done at root level.
   gfx::Point3F p(location_);
   root_transform.TransformPointReverse(p);
-  // Use ToRoundedPoint so that the value -0.00001 becomes 0.
-  root_location_ = location_ = gfx::ToRoundedPoint(p.AsPointF());
+  // TODO(oshima): Translating a point using reversed matrix can
+  // results in small error like 0 -> -0.01, whose floored value
+  // is -1 instead of 0. Investigate the best way to handle this,
+  // instead of just rounding it.
+  root_location_ = location_ = gfx::ToFlooredPoint(p.AsPointF());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

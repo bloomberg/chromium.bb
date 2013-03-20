@@ -2089,6 +2089,24 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   w11.reset();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
+
+  // Make sure we don't synthesize events if the mouse
+  // is outside of the root window.
+  generator.MoveMouseTo(-10, -10);
+  EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
+
+  // Adding new windows.
+  w11.reset(CreateTestWindowWithDelegate(
+      &d11, 1, gfx::Rect(0, 0, 100, 100), w1.get()));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 0", d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
+
+  // Closing windows
+  w11.reset();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 0", d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
 }
 
 class StackingMadrigalLayoutManager : public LayoutManager {

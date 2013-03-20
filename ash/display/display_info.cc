@@ -177,7 +177,7 @@ void DisplayInfo::UpdateDisplaySize() {
     size_in_pixel_.SetSize(size_in_pixel_.height(), size_in_pixel_.width());
   gfx::SizeF size_f(size_in_pixel_);
   size_f.Scale(ui_scale_);
-  size_in_pixel_ = gfx::ToRoundedSize(size_f);
+  size_in_pixel_ = gfx::ToFlooredSize(size_f);
 }
 
 void DisplayInfo::SetOverscanInsets(bool custom,
