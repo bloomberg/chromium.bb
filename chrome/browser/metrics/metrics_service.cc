@@ -157,6 +157,7 @@
 #include "base/guid.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -219,7 +220,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes
-#include "sandbox/win/src/sandbox_types.h"  // For termination codes.
 #endif
 
 using base::Time;
@@ -314,60 +314,6 @@ int MapCrashExitCodeForHistogram(int exit_code) {
 #endif
 
   return std::abs(exit_code);
-}
-
-// Returns a list of all the likely exit codes for crashed renderer processes.
-// The exit codes are all positive, since that is what histograms expect.
-std::vector<int> GetAllCrashExitCodes() {
-  std::vector<int> codes;
-
-  // Chrome defines its own exit codes in the range
-  // 1 to RESULT_CODE_CHROME_LAST_CODE.
-  for (int i = 1; i < chrome::RESULT_CODE_CHROME_LAST_CODE; ++i)
-    codes.push_back(i);
-
-#if defined(OS_WIN)
-  // The exit code when crashing will be one of the Windows exception codes.
-  int kExceptionCodes[] = {
-    0xe06d7363,  // C++ EH exception
-    STATUS_ACCESS_VIOLATION,
-    STATUS_ARRAY_BOUNDS_EXCEEDED,
-    STATUS_BREAKPOINT,
-    STATUS_CONTROL_C_EXIT,
-    STATUS_DATATYPE_MISALIGNMENT,
-    STATUS_FLOAT_DENORMAL_OPERAND,
-    STATUS_FLOAT_DIVIDE_BY_ZERO,
-    STATUS_FLOAT_INEXACT_RESULT,
-    STATUS_FLOAT_INVALID_OPERATION,
-    STATUS_FLOAT_OVERFLOW,
-    STATUS_FLOAT_STACK_CHECK,
-    STATUS_FLOAT_UNDERFLOW,
-    STATUS_GUARD_PAGE_VIOLATION,
-    STATUS_ILLEGAL_INSTRUCTION,
-    STATUS_INTEGER_DIVIDE_BY_ZERO,
-    STATUS_INTEGER_OVERFLOW,
-    STATUS_INVALID_DISPOSITION,
-    STATUS_INVALID_HANDLE,
-    STATUS_INVALID_PARAMETER,
-    STATUS_IN_PAGE_ERROR,
-    STATUS_NONCONTINUABLE_EXCEPTION,
-    STATUS_NO_MEMORY,
-    STATUS_PRIVILEGED_INSTRUCTION,
-    STATUS_SINGLE_STEP,
-    STATUS_STACK_OVERFLOW,
-  };
-
-  for (size_t i = 0; i < arraysize(kExceptionCodes); ++i)
-    codes.push_back(MapCrashExitCodeForHistogram(kExceptionCodes[i]));
-
-  // Add the sandbox fatal termination codes.
-  for (int i = sandbox::SBOX_FATAL_INTEGRITY;
-       i <= sandbox::SBOX_FATAL_LAST; ++i) {
-    codes.push_back(MapCrashExitCodeForHistogram(i));
-  }
-#endif
-
-  return codes;
 }
 
 void MarkAppCleanShutdownAndCommit() {
@@ -1699,15 +1645,13 @@ void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
     if (was_extension_process) {
       IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
 
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION("CrashExitCodes.Extension",
-                                       MapCrashExitCodeForHistogram(exit_code),
-                                       GetAllCrashExitCodes());
+      UMA_HISTOGRAM_SPARSE_SLOWLY("CrashExitCodes.Extension",
+                                  MapCrashExitCodeForHistogram(exit_code));
     } else {
       IncrementPrefValue(prefs::kStabilityRendererCrashCount);
 
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION("CrashExitCodes.Renderer",
-                                       MapCrashExitCodeForHistogram(exit_code),
-                                       GetAllCrashExitCodes());
+      UMA_HISTOGRAM_SPARSE_SLOWLY("CrashExitCodes.Renderer",
+                                  MapCrashExitCodeForHistogram(exit_code));
     }
 
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
