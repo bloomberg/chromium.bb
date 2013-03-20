@@ -109,5 +109,9 @@ message PowerManagementPolicy {
   // unchanged.
   optional double presentation_idle_delay_factor = 7;
 
-  // Next ID to use: 8
+  // Human-readable description of the factors contributing to this policy.
+  // Logged by the power manager to aid in debugging.
+  optional string reason = 8;
+
+  // Next ID to use: 9
 }
