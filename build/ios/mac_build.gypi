@@ -54,6 +54,7 @@
     # Common syntax to rerun gyp to generate the Mac projects.
     're_run_gyp': [
       'build/gyp_chromium',
+      '--depth=.',
       # Don't use anything set for the iOS side of things.
       '--ignore-environment',
       # Generate for ninja
