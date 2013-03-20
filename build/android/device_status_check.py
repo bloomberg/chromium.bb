@@ -183,6 +183,8 @@ def main():
     msg = '\n'.join(err_msg)
     print msg
     SendDeviceStatusAlert(msg)
+
+  if not devices:
     return 1
 
 

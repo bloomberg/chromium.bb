@@ -268,7 +268,7 @@ def MainTestWrapper(options):
 
   # Device check and alert emails
   buildbot_report.PrintNamedStep('device_status_check')
-  RunCmd(['build/android/device_status_check.py'], flunk_on_failure=False)
+  RunCmd(['build/android/device_status_check.py'])
 
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
