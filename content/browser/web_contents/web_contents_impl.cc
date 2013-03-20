@@ -155,11 +155,13 @@ const char kDotGoogleDotCom[] = ".google.com";
 
 static int StartDownload(content::RenderViewHost* rvh,
                          const GURL& url,
+                         bool is_favicon,
                          int image_size) {
   static int g_next_favicon_download_id = 0;
   rvh->Send(new IconMsg_DownloadFavicon(rvh->GetRoutingID(),
                                         ++g_next_favicon_download_id,
                                         url,
+                                        is_favicon,
                                         image_size));
   return g_next_favicon_download_id;
 }
@@ -2038,10 +2040,12 @@ void WebContentsImpl::DidEndColorChooser(int color_chooser_id) {
   color_chooser_ = NULL;
 }
 
-int WebContentsImpl::DownloadFavicon(const GURL& url, int image_size,
-                                     const FaviconDownloadCallback& callback) {
+int WebContentsImpl::DownloadFavicon(const GURL& url,
+                              bool is_favicon,
+                              int image_size,
+                              const FaviconDownloadCallback& callback) {
   RenderViewHost* host = GetRenderViewHost();
-  int id = StartDownload(host, url, image_size);
+  int id = StartDownload(host, url, is_favicon, image_size);
   favicon_download_map_[id] = callback;
   return id;
 }

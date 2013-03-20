@@ -172,6 +172,7 @@ void UpdateShortcutWorker::DownloadIcon() {
 
   web_contents_->DownloadFavicon(
       unprocessed_icons_.back().url,
+      true,  // favicon
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),
       base::Bind(&UpdateShortcutWorker::DidDownloadFavicon,

@@ -24,9 +24,10 @@ IPC_STRUCT_TRAITS_END()
 
 // Requests the renderer to download the specified favicon image, decode it,
 // and send the image data back via IconHostMsg_DidDownloadFavicon.
-IPC_MESSAGE_ROUTED3(IconMsg_DownloadFavicon,
+IPC_MESSAGE_ROUTED4(IconMsg_DownloadFavicon,
                     int /* identifier for the request */,
                     GURL /* URL of the image */,
+                    bool /* is favicon (turn off cookies) */,
                     int /* Preferred favicon size. Passed on to
                            IconHostMsg_DidDownloadFavicon, unused otherwise */)
 

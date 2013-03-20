@@ -492,6 +492,7 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
 
   pending_download_id_ = web_contents_->DownloadFavicon(
       unprocessed_icons_.back().url,
+      true,
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),
       base::Bind(&CreateUrlApplicationShortcutView::DidDownloadFavicon,

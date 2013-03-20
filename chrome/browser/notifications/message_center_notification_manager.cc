@@ -308,6 +308,7 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
 
   contents->DownloadFavicon(
       url,
+      false,
       size,
       base::Bind(
           &MessageCenterNotificationManager::ImageDownloads::DownloadComplete,

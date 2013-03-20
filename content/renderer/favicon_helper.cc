@@ -85,6 +85,7 @@ FaviconHelper::~FaviconHelper() {
 
 void FaviconHelper::OnDownloadFavicon(int id,
                                       const GURL& image_url,
+                                      bool is_favicon,
                                       int image_size) {
   std::vector<SkBitmap> result_images;
   if (image_url.SchemeIs("data")) {
@@ -92,7 +93,7 @@ void FaviconHelper::OnDownloadFavicon(int id,
     if (!data_image.empty())
       result_images.push_back(data_image);
   } else {
-    if (DownloadFavicon(id, image_url, image_size)) {
+    if (DownloadFavicon(id, image_url, is_favicon, image_size)) {
       // Will complete asynchronously via FaviconHelper::DidDownloadFavicon
       return;
     }
@@ -107,14 +108,18 @@ void FaviconHelper::OnDownloadFavicon(int id,
 
 bool FaviconHelper::DownloadFavicon(int id,
                                     const GURL& image_url,
+                                    bool is_favicon,
                                     int image_size) {
   // Make sure webview was not shut down.
   if (!render_view()->GetWebView())
     return false;
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.push_back(new MultiResolutionImageResourceFetcher(
-      image_url, render_view()->GetWebView()->mainFrame(), id,
-      WebURLRequest::TargetIsFavicon,
+      image_url,
+      render_view()->GetWebView()->mainFrame(),
+      id,
+      is_favicon ? WebURLRequest::TargetIsFavicon :
+                   WebURLRequest::TargetIsImage,
       base::Bind(&FaviconHelper::DidDownloadFavicon,
                  base::Unretained(this), image_size)));
   return true;

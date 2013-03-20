@@ -132,9 +132,11 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
 }
 
 int FaviconTabHelper::StartDownload(const GURL& url, int image_size) {
-  return web_contents()->DownloadFavicon(url, image_size,
-      base::Bind(&FaviconTabHelper::DidDownloadFavicon,
-                 base::Unretained(this)));
+  return web_contents()->DownloadFavicon(
+      url,
+      true,
+      image_size,
+      base::Bind(&FaviconTabHelper::DidDownloadFavicon,base::Unretained(this)));
 }
 
 void FaviconTabHelper::NotifyFaviconUpdated(bool icon_url_changed) {

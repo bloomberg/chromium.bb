@@ -10,6 +10,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -41,16 +42,24 @@ class FaviconHelper : public RenderViewObserver {
   virtual ~FaviconHelper();
 
   // Message handler.
-  void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
+  void OnDownloadFavicon(int id,
+                         const GURL& image_url,
+                         bool is_favicon,
+                         int image_size);
 
   // Requests to download a favicon image. When done, the RenderView
   // is notified by way of DidDownloadFavicon. Returns true if the
   // request was successfully started, false otherwise. id is used to
   // uniquely identify the request and passed back to the
-  // DidDownloadFavicon method. If the image has multiple frames, the
+  // DidDownloadFavicon method. If the image is a favicon, cookies are
+  // not sent and not accepted during download.
+  // If the image has multiple frames, the
   // frame whose size is image_size is returned. If the image doesn't
   // have a frame at the specified size, the first is returned.
-  bool DownloadFavicon(int id, const GURL& image_url, int image_size);
+  bool DownloadFavicon(int id,
+                       const GURL& image_url,
+                       bool is_favicon,
+                       int image_size);
 
   // This callback is triggered when DownloadFavicon completes, either
   // succesfully or with a failure. See DownloadFavicon for more
