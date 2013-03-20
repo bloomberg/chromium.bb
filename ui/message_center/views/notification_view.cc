@@ -298,7 +298,7 @@ void NotificationButton::SetTitle(const string16& title) {
 }
 
 gfx::Size NotificationButton::GetPreferredSize() {
-  return gfx::Size(std::numeric_limits<int>::max(), kButtonHeight);
+  return gfx::Size(message_center::kNotificationWidth, kButtonHeight);
 }
 
 int NotificationButton::GetHeightForWidth(int width) {
