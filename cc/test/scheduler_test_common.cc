@@ -8,7 +8,7 @@
 
 namespace cc {
 
-void FakeTimeSourceClient::onTimerTick()
+void FakeTimeSourceClient::OnTimerTick()
 {
     m_tickCalled = true;
 }
@@ -49,32 +49,32 @@ bool FakeThread::BelongsToCurrentThread() const
     return true;
 }
 
-void FakeTimeSource::setClient(cc::TimeSourceClient* client)
+void FakeTimeSource::SetClient(TimeSourceClient* client)
 {
     m_client = client;
 }
 
-void FakeTimeSource::setActive(bool b)
+void FakeTimeSource::SetActive(bool b)
 {
     m_active = b;
 }
 
-bool FakeTimeSource::active() const
+bool FakeTimeSource::Active() const
 {
     return m_active;
 }
 
-base::TimeTicks FakeTimeSource::lastTickTime()
+base::TimeTicks FakeTimeSource::LastTickTime()
 {
     return base::TimeTicks();
 }
 
-base::TimeTicks FakeTimeSource::nextTickTime()
+base::TimeTicks FakeTimeSource::NextTickTime()
 {
     return base::TimeTicks();
 }
 
-base::TimeTicks FakeDelayBasedTimeSource::now() const
+base::TimeTicks FakeDelayBasedTimeSource::Now() const
 {
     return m_now;
 }

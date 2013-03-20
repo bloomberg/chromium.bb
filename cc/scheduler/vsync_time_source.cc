@@ -13,17 +13,17 @@ scoped_refptr<VSyncTimeSource> VSyncTimeSource::create(
 
 VSyncTimeSource::VSyncTimeSource(VSyncProvider* vsync_provider)
   : vsync_provider_(vsync_provider)
-  , client_(0)
+  , client_(NULL)
   , active_(false)
   , notification_requested_(false) {}
 
 VSyncTimeSource::~VSyncTimeSource() {}
 
-void VSyncTimeSource::setClient(TimeSourceClient* client) {
+void VSyncTimeSource::SetClient(TimeSourceClient* client) {
   client_ = client;
 }
 
-void VSyncTimeSource::setActive(bool active) {
+void VSyncTimeSource::SetActive(bool active) {
   if (active_ == active)
     return;
   active_ = active;
@@ -36,19 +36,19 @@ void VSyncTimeSource::setActive(bool active) {
   }
 }
 
-bool VSyncTimeSource::active() const {
+bool VSyncTimeSource::Active() const {
   return active_;
 }
 
-base::TimeTicks VSyncTimeSource::lastTickTime() {
+base::TimeTicks VSyncTimeSource::LastTickTime() {
   return last_tick_time_;
 }
 
-base::TimeTicks VSyncTimeSource::nextTickTime() {
-  return active() ? last_tick_time_ + interval_ : base::TimeTicks();
+base::TimeTicks VSyncTimeSource::NextTickTime() {
+  return Active() ? last_tick_time_ + interval_ : base::TimeTicks();
 }
 
-void VSyncTimeSource::setTimebaseAndInterval(base::TimeTicks,
+void VSyncTimeSource::SetTimebaseAndInterval(base::TimeTicks,
                                              base::TimeDelta interval) {
   interval_ = interval;
 }
@@ -63,7 +63,7 @@ void VSyncTimeSource::DidVSync(base::TimeTicks frame_time) {
     return;
   }
   if (client_)
-    client_->onTimerTick();
+    client_->OnTimerTick();
 }
 
 }  // namespace cc

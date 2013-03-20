@@ -14,66 +14,67 @@ namespace cc {
 class Thread;
 
 // This timer implements a time source that achieves the specified interval
-// in face of millisecond-precision delayed callbacks and random queueing delays.
+// in face of millisecond-precision delayed callbacks and random queueing
+// delays.
 class CC_EXPORT DelayBasedTimeSource : public TimeSource {
-public:
-    static scoped_refptr<DelayBasedTimeSource> create(base::TimeDelta interval, Thread* thread);
+ public:
+  static scoped_refptr<DelayBasedTimeSource> Create(base::TimeDelta interval,
+                                                    Thread* thread);
 
-    virtual void setClient(TimeSourceClient* client) OVERRIDE;
+  virtual void SetClient(TimeSourceClient* client) OVERRIDE;
 
-    // TimeSource implementation
-    virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
+  // TimeSource implementation
+  virtual void SetTimebaseAndInterval(base::TimeTicks timebase,
+                                      base::TimeDelta interval) OVERRIDE;
 
-    virtual void setActive(bool) OVERRIDE;
-    virtual bool active() const OVERRIDE;
+  virtual void SetActive(bool active) OVERRIDE;
+  virtual bool Active() const OVERRIDE;
 
-    // Get the last and next tick times. nextTimeTime() returns null when
-    // inactive.
-    virtual base::TimeTicks lastTickTime() OVERRIDE;
-    virtual base::TimeTicks nextTickTime() OVERRIDE;
+  // Get the last and next tick times. nextTimeTime() returns null when
+  // inactive.
+  virtual base::TimeTicks LastTickTime() OVERRIDE;
+  virtual base::TimeTicks NextTickTime() OVERRIDE;
 
+  // Virtual for testing.
+  virtual base::TimeTicks Now() const;
 
-    // Virtual for testing.
-    virtual base::TimeTicks now() const;
+ protected:
+  DelayBasedTimeSource(base::TimeDelta interval, Thread* thread);
+  virtual ~DelayBasedTimeSource();
 
-protected:
-    DelayBasedTimeSource(base::TimeDelta interval, Thread* thread);
-    virtual ~DelayBasedTimeSource();
+  base::TimeTicks NextTickTarget(base::TimeTicks now);
+  void PostNextTickTask(base::TimeTicks now);
+  void OnTimerFired();
 
-    base::TimeTicks nextTickTarget(base::TimeTicks now);
-    void postNextTickTask(base::TimeTicks now);
-    void onTimerFired();
+  enum State {
+    STATE_INACTIVE,
+    STATE_STARTING,
+    STATE_ACTIVE,
+  };
 
-    enum State {
-        STATE_INACTIVE,
-        STATE_STARTING,
-        STATE_ACTIVE,
-    };
+  struct Parameters {
+    Parameters(base::TimeDelta interval, base::TimeTicks tick_target)
+        : interval(interval), tick_target(tick_target) {}
+    base::TimeDelta interval;
+    base::TimeTicks tick_target;
+  };
 
-    struct Parameters {
-        Parameters(base::TimeDelta interval, base::TimeTicks tickTarget)
-            : interval(interval), tickTarget(tickTarget)
-        { }
-        base::TimeDelta interval;
-        base::TimeTicks tickTarget;
-    };
+  TimeSourceClient* client_;
+  bool has_tick_target_;
+  base::TimeTicks last_tick_time_;
 
-    TimeSourceClient* m_client;
-    bool m_hasTickTarget;
-    base::TimeTicks m_lastTickTime;
+  // current_parameters_ should only be written by PostNextTickTask.
+  // next_parameters_ will take effect on the next call to PostNextTickTask.
+  // Maintaining a pending set of parameters allows NextTickTime() to always
+  // reflect the actual time we expect OnTimerFired to be called.
+  Parameters current_parameters_;
+  Parameters next_parameters_;
 
-    // m_currentParameters should only be written by postNextTickTask.
-    // m_nextParameters will take effect on the next call to postNextTickTask.
-    // Maintaining a pending set of parameters allows nextTickTime() to always
-    // reflect the actual time we expect onTimerFired to be called.
-    Parameters m_currentParameters;
-    Parameters m_nextParameters;
+  State state_;
 
-    State m_state;
-
-    Thread* m_thread;
-    base::WeakPtrFactory<DelayBasedTimeSource> m_weakFactory;
-    DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSource);
+  Thread* thread_;
+  base::WeakPtrFactory<DelayBasedTimeSource> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSource);
 };
 
 }  // namespace cc

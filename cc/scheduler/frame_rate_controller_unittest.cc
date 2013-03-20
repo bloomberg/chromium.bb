@@ -50,12 +50,12 @@ TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck)
     controller.DidBeginFrame();
 
     // Tell the controller the frame ended 5ms later
-    timeSource->setNow(timeSource->now() + base::TimeDelta::FromMilliseconds(5));
+    timeSource->setNow(timeSource->Now() + base::TimeDelta::FromMilliseconds(5));
     controller.DidFinishFrame();
 
     // Trigger another frame, make sure vsync runs again
     elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
-    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    EXPECT_TRUE(elapsed >= timeSource->Now()); // Sanity check that previous code didn't move time backward.
     timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
@@ -87,7 +87,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
 
     // Trigger another frame, make sure vsync callback runs again
     elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
-    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    EXPECT_TRUE(elapsed >= timeSource->Now()); // Sanity check that previous code didn't move time backward.
     timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
@@ -98,13 +98,13 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
 
     // Trigger another frame. Since two frames are pending, we should not draw.
     elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
-    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    EXPECT_TRUE(elapsed >= timeSource->Now()); // Sanity check that previous code didn't move time backward.
     timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_FALSE(client.vsyncTicked());
 
     // Tell the controller the first frame ended 5ms later
-    timeSource->setNow(timeSource->now() + base::TimeDelta::FromMilliseconds(5));
+    timeSource->setNow(timeSource->Now() + base::TimeDelta::FromMilliseconds(5));
     controller.DidFinishFrame();
 
     // Tick should not have been called
@@ -112,7 +112,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
 
     // Trigger yet another frame. Since one frames is pending, another vsync callback should run.
     elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
-    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    EXPECT_TRUE(elapsed >= timeSource->Now()); // Sanity check that previous code didn't move time backward.
     timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());

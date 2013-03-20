@@ -98,25 +98,25 @@ TEST(SchedulerTest, RequestCommit) {
   scheduler->SetNeedsCommit();
   EXPECT_EQ(1, client.num_actions_());
   EXPECT_STREQ("ScheduledActionBeginFrame", client.Action(0));
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
   client.Reset();
 
   // BeginFrameComplete should commit
   scheduler->BeginFrameComplete();
   EXPECT_EQ(1, client.num_actions_());
   EXPECT_STREQ("ScheduledActionCommit", client.Action(0));
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
   client.Reset();
 
   // Tick should draw.
   time_source->tick();
   EXPECT_EQ(1, client.num_actions_());
   EXPECT_STREQ("ScheduledActionDrawAndSwapIfPossible", client.Action(0));
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
   client.Reset();
 
   // Timer should be off.
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
 }
 
 TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
@@ -149,7 +149,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
 
   // Tick should draw but then begin another frame.
   time_source->tick();
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
   EXPECT_EQ(2, client.num_actions_());
   EXPECT_STREQ("ScheduledActionDrawAndSwapIfPossible", client.Action(0));
   EXPECT_STREQ("ScheduledActionBeginFrame", client.Action(1));
@@ -177,11 +177,11 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
   client.Reset();
 
   // Compositor not scheduled to draw because textures are locked by main thread
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
 
   // Trigger the commit
   scheduler->BeginFrameComplete();
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
   client.Reset();
 
   // Between commit and draw, texture acquisition for main thread delayed,
@@ -281,18 +281,18 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
   EXPECT_EQ(0, client.num_draws());
 
   time_source->tick();
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
 
   time_source->tick();
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
 }
 
 // Test that requesting redraw inside a failed draw doesn't lose the request.
@@ -312,7 +312,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
@@ -323,14 +323,14 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   // request.
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
 
   // Fail the draw again.
   time_source->tick();
   EXPECT_EQ(2, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
@@ -338,7 +338,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
 }
 
 class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
@@ -388,17 +388,17 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_EQ(0, client.num_draws());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
 
   time_source->tick();
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   scheduler->BeginFrameComplete();
 
   time_source->tick();
   EXPECT_EQ(2, client.num_draws());
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
   EXPECT_FALSE(scheduler->RedrawPending());
 }
 
@@ -419,7 +419,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
@@ -430,14 +430,14 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   // request.
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
 
   // Fail the draw again.
   time_source->tick();
   EXPECT_EQ(2, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
@@ -445,7 +445,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(time_source->active());
+  EXPECT_FALSE(time_source->Active());
 }
 
 TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
@@ -468,7 +468,7 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
   EXPECT_EQ(0, client.num_draws());
 
   // Draw successfully, this starts a new frame.
@@ -480,7 +480,7 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
-  EXPECT_TRUE(time_source->active());
+  EXPECT_TRUE(time_source->Active());
 
   // Fail to draw, this should not start a frame.
   client.SetDrawWillHappen(false);

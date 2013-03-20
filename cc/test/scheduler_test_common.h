@@ -20,7 +20,8 @@ public:
     void reset() { m_tickCalled = false; }
     bool tickCalled() const { return m_tickCalled; }
 
-    virtual void onTimerTick() OVERRIDE;
+    // TimeSourceClient implementation.
+    virtual void OnTimerTick() OVERRIDE;
 
 protected:
     bool m_tickCalled;
@@ -71,18 +72,18 @@ public:
     {
     }
 
-    virtual void setClient(cc::TimeSourceClient* client) OVERRIDE;
-    virtual void setActive(bool b) OVERRIDE;
-    virtual bool active() const OVERRIDE;
-    virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE { }
-    virtual base::TimeTicks lastTickTime() OVERRIDE;
-    virtual base::TimeTicks nextTickTime() OVERRIDE;
+    virtual void SetClient(cc::TimeSourceClient* client) OVERRIDE;
+    virtual void SetActive(bool b) OVERRIDE;
+    virtual bool Active() const OVERRIDE;
+    virtual void SetTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE { }
+    virtual base::TimeTicks LastTickTime() OVERRIDE;
+    virtual base::TimeTicks NextTickTime() OVERRIDE;
 
     void tick()
     {
         ASSERT_TRUE(m_active);
         if (m_client)
-            m_client->onTimerTick();
+            m_client->OnTimerTick();
     }
 
     void setNextTickTime(base::TimeTicks nextTickTime) { m_nextTickTime = nextTickTime; }
@@ -103,7 +104,7 @@ public:
     }
 
     void setNow(base::TimeTicks time) { m_now = time; }
-    virtual base::TimeTicks now() const OVERRIDE;
+    virtual base::TimeTicks Now() const OVERRIDE;
 
 protected:
     FakeDelayBasedTimeSource(base::TimeDelta interval, cc::Thread* thread)

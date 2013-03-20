@@ -35,7 +35,7 @@ class VSyncTimeSourceTest : public testing::Test {
  public:
   VSyncTimeSourceTest()
       : timer_(VSyncTimeSource::create(&provider_)) {
-    timer_->setClient(&client_);
+    timer_->SetClient(&client_);
   }
 
  protected:
@@ -48,13 +48,13 @@ TEST_F(VSyncTimeSourceTest, TaskPostedAndTickCalled)
 {
   EXPECT_FALSE(provider_.IsVSyncNotificationEnabled());
 
-  timer_->setActive(true);
+  timer_->SetActive(true);
   EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
 
   base::TimeTicks frame_time = base::TimeTicks::Now();
   provider_.Trigger(frame_time);
   EXPECT_TRUE(client_.tickCalled());
-  EXPECT_EQ(timer_->lastTickTime(), frame_time);
+  EXPECT_EQ(timer_->LastTickTime(), frame_time);
 }
 
 TEST_F(VSyncTimeSourceTest, NotificationDisabledLazily)
@@ -62,14 +62,14 @@ TEST_F(VSyncTimeSourceTest, NotificationDisabledLazily)
   base::TimeTicks frame_time = base::TimeTicks::Now();
 
   // Enable timer and trigger sync once.
-  timer_->setActive(true);
+  timer_->SetActive(true);
   EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
   provider_.Trigger(frame_time);
   EXPECT_TRUE(client_.tickCalled());
 
   // Disabling the timer should not disable vsync notification immediately.
   client_.reset();
-  timer_->setActive(false);
+  timer_->SetActive(false);
   EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
 
   // At the next vsync the notification is disabled, but the timer isn't ticked.
@@ -89,14 +89,14 @@ TEST_F(VSyncTimeSourceTest, ValidNextTickTime)
   base::TimeTicks frame_time = base::TimeTicks::Now();
   base::TimeDelta interval = base::TimeDelta::FromSeconds(1);
 
-  ASSERT_EQ(timer_->nextTickTime(), base::TimeTicks());
+  ASSERT_EQ(timer_->NextTickTime(), base::TimeTicks());
 
-  timer_->setActive(true);
+  timer_->SetActive(true);
   provider_.Trigger(frame_time);
-  ASSERT_EQ(timer_->nextTickTime(), frame_time);
+  ASSERT_EQ(timer_->NextTickTime(), frame_time);
 
-  timer_->setTimebaseAndInterval(frame_time, interval);
-  ASSERT_EQ(timer_->nextTickTime(), frame_time + interval);
+  timer_->SetTimebaseAndInterval(frame_time, interval);
+  ASSERT_EQ(timer_->NextTickTime(), frame_time + interval);
 }
 
 }  // namespace

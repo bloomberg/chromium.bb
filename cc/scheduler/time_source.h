@@ -13,7 +13,7 @@ namespace cc {
 
 class TimeSourceClient {
  public:
-  virtual void onTimerTick() = 0;
+  virtual void OnTimerTick() = 0;
 
  protected:
   virtual ~TimeSourceClient() {}
@@ -22,17 +22,17 @@ class TimeSourceClient {
 // An generic interface for getting a reliably-ticking timesource of
 // a specified rate.
 //
-// Be sure to call setActive(false) before releasing your reference to the
+// Be sure to call SetActive(false) before releasing your reference to the
 // timer, or it will keep on ticking!
 class CC_EXPORT TimeSource : public base::RefCounted<TimeSource> {
  public:
-  virtual void setClient(TimeSourceClient*) = 0;
-  virtual void setActive(bool) = 0;
-  virtual bool active() const = 0;
-  virtual void setTimebaseAndInterval(base::TimeTicks timebase,
+  virtual void SetClient(TimeSourceClient* client) = 0;
+  virtual void SetActive(bool active) = 0;
+  virtual bool Active() const = 0;
+  virtual void SetTimebaseAndInterval(base::TimeTicks timebase,
                                       base::TimeDelta interval) = 0;
-  virtual base::TimeTicks lastTickTime() = 0;
-  virtual base::TimeTicks nextTickTime() = 0;
+  virtual base::TimeTicks LastTickTime() = 0;
+  virtual base::TimeTicks NextTickTime() = 0;
 
  protected:
   virtual ~TimeSource() {}

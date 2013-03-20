@@ -1081,7 +1081,7 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
   scoped_ptr<FrameRateController> frame_rate_controller;
   if (render_vsync_enabled_) {
     frame_rate_controller.reset(
-        new FrameRateController(DelayBasedTimeSource::create(
+        new FrameRateController(DelayBasedTimeSource::Create(
             displayRefreshInterval, Proxy::ImplThread())));
   } else {
     frame_rate_controller.reset(new FrameRateController(Proxy::ImplThread()));

@@ -21,7 +21,7 @@ class FrameRateControllerTimeSourceAdapter : public TimeSourceClient {
   }
   virtual ~FrameRateControllerTimeSourceAdapter() {}
 
-  virtual void onTimerTick() OVERRIDE { frame_rate_controller_->OnTimerTick(); }
+  virtual void OnTimerTick() OVERRIDE { frame_rate_controller_->OnTimerTick(); }
 
  private:
   explicit FrameRateControllerTimeSourceAdapter(
@@ -43,7 +43,7 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   time_source_client_adapter_ =
       FrameRateControllerTimeSourceAdapter::Create(this);
-  time_source_->setClient(time_source_client_adapter_.get());
+  time_source_->SetClient(time_source_client_adapter_.get());
 }
 
 FrameRateController::FrameRateController(Thread* thread)
@@ -58,7 +58,7 @@ FrameRateController::FrameRateController(Thread* thread)
 
 FrameRateController::~FrameRateController() {
   if (is_time_source_throttling_)
-    time_source_->setActive(false);
+    time_source_->SetActive(false);
 }
 
 void FrameRateController::SetActive(bool active) {
@@ -68,7 +68,7 @@ void FrameRateController::SetActive(bool active) {
   active_ = active;
 
   if (is_time_source_throttling_) {
-    time_source_->setActive(active);
+    time_source_->SetActive(active);
   } else {
     if (active)
       PostManualTick();
@@ -85,7 +85,7 @@ void FrameRateController::SetMaxFramesPending(int max_frames_pending) {
 void FrameRateController::SetTimebaseAndInterval(base::TimeTicks timebase,
                                                  base::TimeDelta interval) {
   if (is_time_source_throttling_)
-    time_source_->setTimebaseAndInterval(timebase, interval);
+    time_source_->SetTimebaseAndInterval(timebase, interval);
 }
 
 void FrameRateController::SetSwapBuffersCompleteSupported(bool supported) {
@@ -138,14 +138,14 @@ void FrameRateController::DidAbortAllPendingFrames() {
 
 base::TimeTicks FrameRateController::NextTickTime() {
   if (is_time_source_throttling_)
-    return time_source_->nextTickTime();
+    return time_source_->NextTickTime();
 
   return base::TimeTicks();
 }
 
 base::TimeTicks FrameRateController::LastTickTime() {
   if (is_time_source_throttling_)
-    return time_source_->lastTickTime();
+    return time_source_->LastTickTime();
 
   return base::TimeTicks::Now();
 }

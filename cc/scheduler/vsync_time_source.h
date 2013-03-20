@@ -36,13 +36,13 @@ class CC_EXPORT VSyncTimeSource : public TimeSource, public VSyncClient {
   static scoped_refptr<VSyncTimeSource> create(VSyncProvider* vsync_provider);
 
   // TimeSource implementation
-  virtual void setClient(TimeSourceClient* client) OVERRIDE;
-  virtual void setTimebaseAndInterval(base::TimeTicks timebase,
+  virtual void SetClient(TimeSourceClient* client) OVERRIDE;
+  virtual void SetTimebaseAndInterval(base::TimeTicks timebase,
                                       base::TimeDelta interval) OVERRIDE;
-  virtual void setActive(bool active) OVERRIDE;
-  virtual bool active() const OVERRIDE;
-  virtual base::TimeTicks lastTickTime() OVERRIDE;
-  virtual base::TimeTicks nextTickTime() OVERRIDE;
+  virtual void SetActive(bool active) OVERRIDE;
+  virtual bool Active() const OVERRIDE;
+  virtual base::TimeTicks LastTickTime() OVERRIDE;
+  virtual base::TimeTicks NextTickTime() OVERRIDE;
 
   // VSyncClient implementation
   virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE;

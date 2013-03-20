@@ -83,11 +83,11 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
                                                time_source));
   }
   virtual ~LayerTreeHostImplTimeSourceAdapter() {
-    time_source_->setClient(NULL);
-    time_source_->setActive(false);
+    time_source_->SetClient(NULL);
+    time_source_->SetActive(false);
   }
 
-  virtual void onTimerTick() OVERRIDE {
+  virtual void OnTimerTick() OVERRIDE {
     // In single threaded mode we attempt to simulate changing the current
     // thread by maintaining a fake thread id. When we switch from one
     // thread to another, we construct DebugScopedSetXXXThread objects that
@@ -114,8 +114,8 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
   }
 
   void SetActive(bool active) {
-    if (active != time_source_->active())
-      time_source_->setActive(active);
+    if (active != time_source_->Active())
+      time_source_->SetActive(active);
   }
 
  private:
@@ -124,7 +124,7 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
       scoped_refptr<DelayBasedTimeSource> time_source)
       : layer_tree_host_impl_(layer_tree_host_impl),
         time_source_(time_source) {
-    time_source_->setClient(this);
+    time_source_->SetClient(this);
   }
 
   LayerTreeHostImpl* layer_tree_host_impl_;
@@ -664,7 +664,7 @@ void LayerTreeHostImpl::SetBackgroundTickingEnabled(bool enabled) {
   if (!time_source_client_adapter_) {
     time_source_client_adapter_ = LayerTreeHostImplTimeSourceAdapter::Create(
         this,
-        DelayBasedTimeSource::create(LowFrequencyAnimationInterval(),
+        DelayBasedTimeSource::Create(LowFrequencyAnimationInterval(),
                                      proxy_->CurrentThread()));
   }
 
