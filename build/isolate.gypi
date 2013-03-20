@@ -79,13 +79,20 @@
             '<(DEPTH)/tools/swarm_client/isolate.py',
             '<(test_isolation_mode)',
             '--outdir', '<(test_isolation_outdir)',
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+            # Have a space after <(PRODUCT_DIR) or visual studio will
+            # escape the argument wrappping " with the \ and merge it into
+            # the following arguments.
+            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
             '--variable', 'OS', '<(OS)',
             '--variable', 'chromeos', '<(chromeos)',
             '--result', '<@(_outputs)',
             '--isolate', '<(RULE_INPUT_PATH)',
           ],
         }],
+        ['test_isolation_fail_on_missing == 0', {
+            'action': ['--ignore_broken_items'],
+          },
+        ],
       ],
 
       'msvs_cygwin_shell': 0,
