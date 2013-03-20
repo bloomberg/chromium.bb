@@ -44,6 +44,9 @@ const int kButtonIconTopPadding = 11;
 const int kButtonIconToTitlePadding = 16;
 const int kButtonTitleTopPadding = 0;
 
+const size_t kTitleCharacterLimit = 100;
+const size_t kMessageCharacterLimit = 200;
+
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
 // See view::Label's SetEnabledColor() and SetBackgroundColor() for details.
@@ -359,7 +362,8 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the title view if appropriate.
   title_view_ = NULL;
   if (!notification.title().empty()) {
-    title_view_ = new views::Label(notification.title());
+    title_view_ = new views::Label(
+        MaybeTruncateText( notification.title(), kTitleCharacterLimit));
     title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (is_expanded())
       title_view_->SetMultiLine(true);
@@ -375,7 +379,8 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the message view if appropriate.
   message_view_ = NULL;
   if (!notification.message().empty()) {
-    message_view_ = new views::Label(notification.message());
+    message_view_ = new views::Label(
+        MaybeTruncateText(notification.message(), kMessageCharacterLimit));
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
     message_view_->set_collapse_when_hidden(true);
     message_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -526,6 +531,16 @@ void NotificationView::ButtonPressed(views::Button* sender,
     PreferredSizeChanged();
     SchedulePaint();
   }
+}
+
+string16 NotificationView::MaybeTruncateText(const string16& text,
+                                             size_t limit) {
+  // Currently just truncate the text by the total number of characters.
+  // TODO(mukai): add better assumption like number of lines.
+  if (!is_expanded())
+    return text;
+
+  return ui::TruncateString(text, limit);
 }
 
 }  // namespace message_center

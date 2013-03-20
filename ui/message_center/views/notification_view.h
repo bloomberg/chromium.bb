@@ -47,6 +47,10 @@ class NotificationView : public MessageView {
                    NotificationChangeObserver* observer,
                    bool expanded);
 
+  // Truncate the very long text if we should. See crbug.com/222151 for the
+  // details.
+  string16 MaybeTruncateText(const string16& text, size_t limit);
+
   // Weak references to NotificationView descendants owned by their parents.
   views::View* background_view_;
   views::View* top_view_;
