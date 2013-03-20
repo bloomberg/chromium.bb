@@ -101,7 +101,7 @@ def GetRowDigest(rowdata, key):
   return sha1.hexdigest()[0:8]
 
 
-def WriteJson(filename, data, keys):
+def WriteJson(filename, data, keys, calculate_sha1=True):
   """Write a list of |keys| in |data| to the file specified in |filename|."""
   try:
     file = open(filename, 'w')
@@ -112,8 +112,12 @@ def WriteJson(filename, data, keys):
   jsondata = []
   for key in keys:
     rowdata = GetRowData(data, key)
-    # Include an updated checksum.
-    rowdata.append('"sha1": "%s"' % GetRowDigest(rowdata, key))
+    if calculate_sha1:
+      # Include an updated checksum.
+      rowdata.append('"sha1": "%s"' % GetRowDigest(rowdata, key))
+    else:
+      if 'sha1' in data[key]:
+        rowdata.append('"sha1": "%s"' % (data[key]['sha1']))
     jsondata.append('"%s": {%s}' % (key, ', '.join(rowdata)))
   jsondata.append('"load": true')
   jsontext = '{%s\n}' % ',\n '.join(jsondata)
