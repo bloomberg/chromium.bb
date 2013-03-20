@@ -335,7 +335,7 @@ class Progress(object):
         cmd = name.split()[2]
         self.unfinished_commands.add(cmd)
       if 'finished after' in name:
-        match = re.match('.*\[(.*)\].*', cmd)
+        match = re.match('.*\[(.*)\].*', name)
         if match:
           self.unfinished_commands.remove(match.group(1))
 
