@@ -4,3 +4,6 @@
 
 #define IDS_SERVICENAME       100
 #define IDR_CLOUDPRINTSERVICE 100
+
+#define IDI_ICON              201
+#define IDB_LOGO              202

@@ -18,6 +18,7 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 IDR_CLOUDPRINTSERVICE   REGISTRY                "resources\\cloud_print_service.rgs"
+IDI_ICON                ICON                    "resources\\cloudprint.ico"
 
 STRINGTABLE
 BEGIN
