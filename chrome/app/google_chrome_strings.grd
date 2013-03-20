@@ -690,6 +690,10 @@ For Google Chrome, processes used to display diagnostics information (such as th
       </message>
 
       <!-- Wrench menu -->
+      <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
+        Customize and control Google Chrome
+      </message>
+
       <if expr="pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;Google Chrome
