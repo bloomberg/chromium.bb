@@ -163,6 +163,11 @@ class ASH_EXPORT LauncherView : public views::View,
   // Toggles the overflow menu.
   void ToggleOverflowBubble();
 
+  // Update first launcher button's padding. This method adds padding to the
+  // first button to include the leading inset. It needs to be called once on
+  // button creation and every time when shelf alignment is changed.
+  void UpdateFirstButtonPadding();
+
   // Invoked after the fading out animation for item deletion is ended.
   void OnFadeOutAnimationEnded();
 

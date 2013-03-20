@@ -406,11 +406,13 @@ void LauncherView::Init() {
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
+  UpdateFirstButtonPadding();
 
   // We'll layout when our bounds change.
 }
 
 void LauncherView::OnShelfAlignmentChanged() {
+  UpdateFirstButtonPadding();
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
   for (int i=0; i < view_model_->view_size(); ++i) {
@@ -711,8 +713,14 @@ void LauncherView::AnimateToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
   for (int i = 0; i < view_model_->view_size(); ++i) {
-    bounds_animator_->AnimateViewTo(view_model_->view_at(i),
-                                    view_model_->ideal_bounds(i));
+    View* view = view_model_->view_at(i);
+    bounds_animator_->AnimateViewTo(view, view_model_->ideal_bounds(i));
+    // Now that the item animation starts, we have to make sure that the
+    // padding of the first gets properly transferred to the new first item.
+    if (i && view->border())
+      view->set_border(NULL);
+    else if (!i && !view->border())
+      UpdateFirstButtonPadding();
   }
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
@@ -934,6 +942,21 @@ void LauncherView::ToggleOverflowBubble() {
   overflow_bubble_->Show(overflow_button_, overflow_view);
 
   Shell::GetInstance()->UpdateShelfVisibility();
+}
+
+void LauncherView::UpdateFirstButtonPadding() {
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
+  // Creates an empty border for first launcher button to make included leading
+  // inset act as the button's padding. This is only needed on button creation
+  // and when shelf alignment changes.
+  if (view_model_->view_size() > 0) {
+    view_model_->view_at(0)->set_border(views::Border::CreateEmptyBorder(
+        shelf->PrimaryAxisValue(0, leading_inset()),
+        shelf->PrimaryAxisValue(leading_inset(), 0),
+        0,
+        0));
+  }
 }
 
 void LauncherView::OnFadeOutAnimationEnded() {
@@ -1419,6 +1442,12 @@ void LauncherView::ShowMenu(
     ash::ShelfAlignment align = RootWindowController::ForLauncher(
         GetWidget()->GetNativeView())->shelf()->GetAlignment();
     anchor_point = source->GetBoundsInScreen();
+
+    // Launcher items can have an asymmetrical border for spacing reasons.
+    // Adjust anchor location for this.
+    if (source->border())
+      anchor_point.Inset(source->border()->GetInsets());
+
     switch (align) {
       case ash::SHELF_ALIGNMENT_BOTTOM:
         menu_alignment = views::MenuItemView::BUBBLE_ABOVE;

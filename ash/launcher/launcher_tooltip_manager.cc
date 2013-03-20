@@ -40,8 +40,7 @@ const int kTooltipMaxWidth = 250;
 // The offset for the tooltip bubble - making sure that the bubble is flush
 // with the shelf. The offset includes the arrow size in pixels as well as
 // the activation bar and other spacing elements.
-const int kArrowOffsetLeft = 3;
-const int kArrowOffsetRight = 11;
+const int kArrowOffsetLeftRight = 11;
 const int kArrowOffsetTopBottom = 7;
 
 }  // namespace
@@ -76,10 +75,16 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     LauncherTooltipManager* host)
     : views::BubbleDelegateView(anchor, arrow_location),
       host_(host) {
-  set_anchor_insets(gfx::Insets(kArrowOffsetTopBottom,
-                                kArrowOffsetLeft,
-                                kArrowOffsetTopBottom,
-                                kArrowOffsetRight));
+  gfx::Insets insets = gfx::Insets(kArrowOffsetTopBottom,
+                                   kArrowOffsetLeftRight,
+                                   kArrowOffsetTopBottom,
+                                   kArrowOffsetLeftRight);
+  // Launcher items can have an asymmetrical border for spacing reasons.
+  // Adjust anchor location for this.
+  if (anchor->border())
+    insets += anchor->border()->GetInsets();
+
+  set_anchor_insets(insets);
   set_close_on_esc(false);
   set_close_on_deactivate(false);
   set_use_focusless(true);
