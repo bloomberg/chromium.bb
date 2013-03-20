@@ -95,7 +95,6 @@ ShellWindow::ShellWindow(Profile* profile,
     : profile_(profile),
       extension_(extension),
       window_type_(WINDOW_TYPE_DEFAULT),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)) {
 }
 
@@ -357,10 +356,14 @@ string16 ShellWindow::GetTitle() const {
 }
 
 void ShellWindow::SetAppIconUrl(const GURL& url) {
+  // Avoid using any previous app icons were are being downloaded.
+  image_loader_ptr_factory_.InvalidateWeakPtrs();
+
   app_icon_url_ = url;
-  web_contents()->DownloadFavicon(url, kPreferredIconSize,
-                                  base::Bind(&ShellWindow::DidDownloadFavicon,
-                                             weak_ptr_factory_.GetWeakPtr()));
+  web_contents()->DownloadFavicon(
+      url, kPreferredIconSize,
+      base::Bind(&ShellWindow::DidDownloadFavicon,
+                 image_loader_ptr_factory_.GetWeakPtr()));
 }
 
 void ShellWindow::UpdateDraggableRegions(
@@ -403,7 +406,7 @@ void ShellWindow::DidDownloadFavicon(int id,
 }
 
 void ShellWindow::UpdateExtensionAppIcon() {
-  // Ensure previously enqueued callbacks are ignored.
+  // Avoid using any previous app icons were are being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
   // Enqueue OnImageLoaded callback.

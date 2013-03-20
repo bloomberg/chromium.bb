@@ -268,8 +268,6 @@ class ShellWindow : public content::NotificationObserver,
   scoped_ptr<NativeAppWindow> native_app_window_;
   scoped_ptr<ShellWindowContents> shell_window_contents_;
 
-  base::WeakPtrFactory<ShellWindow> weak_ptr_factory_;
-
   base::WeakPtrFactory<ShellWindow> image_loader_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
