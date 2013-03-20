@@ -785,7 +785,7 @@
  "xp-release-dual-core/morejs/times/t": {"reva": 185548, "revb": 185594, "improve": -109.549999997, "regress": -63.65, "sha1": "94e6ce9f"},
  "xp-release-dual-core/moz-http/times/t": {"reva": 187305, "revb": 187580, "improve": -1.1666666655, "regress": 69.5333333415, "sha1": "e207c8ef"},
  "xp-release-dual-core/moz/times/t": {"reva": 186222, "revb": 186502, "improve": 73.888888891, "regress": 151.316666666, "sha1": "bb0f43f1"},
- "xp-release-dual-core/moz/ws_peak_b/ws_pk_b": {"reva": 186343, "revb": 186994, "improve": 9790259, "regress": 10945536, "sha1": "aaaee115"},
+ "xp-release-dual-core/moz/ws_peak_b/ws_pk_b": {"reva": 189224, "revb": 189309, "improve": 11408998, "regress": 13689447, "sha1": "5158cb51"},
  "xp-release-dual-core/moz/ws_peak_r/ws_pk_r": {"reva": 179508, "revb": 182006, "improve": -8524186, "regress": 61996032, "sha1": "53cd112a"},
  "xp-release-dual-core/startup/warm/t": {"reva": 76825, "revb": 77094, "improve": -107, "regress": 141, "sha1": "e0dcf672"},
  "xp-release-dual-core/v8_benchmark/score/score": {"reva": 162937, "revb": 163288, "improve": 284, "regress": -217, "sha1": "03a976f2"},
