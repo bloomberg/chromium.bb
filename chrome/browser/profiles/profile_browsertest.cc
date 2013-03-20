@@ -225,4 +225,11 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ExitType) {
   profile->SetExitType(Profile::EXIT_CRASHED);
   std::string final_value(prefs->GetString(prefs::kSessionExitType));
   EXPECT_EQ(crash_value, final_value);
+
+  // This test runs fast enough that the WebDataService may still be
+  // initializing (which uses the temp directory) when the test
+  // ends. Give it a chance to complete.
+  profile.reset();
+  content::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
 }

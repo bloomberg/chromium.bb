@@ -119,7 +119,6 @@ MATCHER_P(MatchProfiles, profile, "") {
   return (profile.Compare(arg) == 0);
 }
 
-
 class WebDatabaseFake : public WebDatabase {
  public:
   explicit WebDatabaseFake(AutofillTable* autofill_table)
@@ -155,10 +154,6 @@ class WebDataServiceFake : public WebDataService {
   WebDataServiceFake()
       : web_database_(NULL),
         syncable_service_created_or_destroyed_(false, false) {
-  }
-
-  static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile) {
-    return new WebDataServiceFake;
   }
 
   void SetDatabase(WebDatabase* web_database) {
@@ -219,8 +214,6 @@ class WebDataServiceFake : public WebDataService {
     return autofill_profile_syncable_service_;
   }
 
-  virtual void ShutdownOnUIThread() OVERRIDE {}
-
  private:
   virtual ~WebDataServiceFake() {}
 
@@ -247,6 +240,32 @@ class WebDataServiceFake : public WebDataService {
   AutocompleteSyncableService* autocomplete_syncable_service_;
   AutofillProfileSyncableService* autofill_profile_syncable_service_;
   WaitableEvent syncable_service_created_or_destroyed_;
+};
+
+class MockWebDataServiceWrapper : public WebDataServiceWrapper {
+ public:
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new MockWebDataServiceWrapper();
+  }
+
+  MockWebDataServiceWrapper() {
+    web_data_service_fake_ = new WebDataServiceFake();
+  }
+
+  void Shutdown() OVERRIDE {
+  }
+
+  scoped_refptr<WebDataService> GetWebData() OVERRIDE {
+    return web_data_service_fake_;
+  }
+
+  ~MockWebDataServiceWrapper() {
+    web_data_service_fake_ = NULL;
+  }
+
+ private:
+  scoped_refptr<WebDataServiceFake> web_data_service_fake_;
+
 };
 
 ACTION_P(MakeAutocompleteSyncComponents, wds) {
@@ -410,9 +429,12 @@ class ProfileSyncServiceAutofillTest
     profile_.reset(new ProfileMock());
     profile_->CreateRequestContext();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
-    web_data_service_ = static_cast<WebDataServiceFake*>(
-        WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), WebDataServiceFake::Build).get());
+    MockWebDataServiceWrapper* wrapper =
+        static_cast<MockWebDataServiceWrapper*>(
+            WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+                profile_.get(), MockWebDataServiceWrapper::Build));
+    web_data_service_ =
+        static_cast<WebDataServiceFake*>(wrapper->GetWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
     MockPersonalDataManagerService* personal_data_manager_service =

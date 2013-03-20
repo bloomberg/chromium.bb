@@ -7,8 +7,28 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
+
+WebDataServiceWrapper::WebDataServiceWrapper() {}
+
+WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
+  base::FilePath path = profile->GetPath();
+  path = path.Append(chrome::kWebDataFilename);
+  web_data_service_ = new WebDataService();
+  web_data_service_->Init(path);
+}
+
+WebDataServiceWrapper::~WebDataServiceWrapper() {
+}
+
+void WebDataServiceWrapper::Shutdown() {
+  web_data_service_->ShutdownOnUIThread();
+  web_data_service_ = NULL;
+}
+
+scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
+  return web_data_service_.get();
+}
 
 // static
 scoped_ptr<AutofillWebDataService> AutofillWebDataService::FromBrowserContext(
@@ -38,7 +58,7 @@ scoped_refptr<WebDataService> WebDataService::FromBrowserContext(
 }
 
 WebDataServiceFactory::WebDataServiceFactory()
-    : RefcountedProfileKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "WebDataService",
           ProfileDependencyManager::GetInstance()) {
   // WebDataServiceFactory has no dependecies.
@@ -53,8 +73,13 @@ scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfile(
   // DCHECK, we need to start taking it as a parameter to
   // AutofillWebDataServiceImpl::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
-  return static_cast<WebDataService*>(
-      GetInstance()->GetServiceForProfile(profile, true).get());
+  WebDataServiceWrapper* wrapper =
+      static_cast<WebDataServiceWrapper*>(
+          GetInstance()->GetServiceForProfile(profile, true));
+  if (wrapper)
+    return wrapper->GetWebData();
+  // |wrapper| can be NULL in Incognito mode.
+  return NULL;
 }
 
 // static
@@ -64,8 +89,13 @@ scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfileIfExists(
   // DCHECK, we need to start taking it as a parameter to
   // AutofillWebDataServiceImpl::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
-  return static_cast<WebDataService*>(
-      GetInstance()->GetServiceForProfile(profile, false).get());
+  WebDataServiceWrapper* wrapper =
+      static_cast<WebDataServiceWrapper*>(
+          GetInstance()->GetServiceForProfile(profile, true));
+  if (wrapper)
+    return wrapper->GetWebData();
+  // |wrapper| can be NULL in Incognito mode.
+  return NULL;
 }
 
 // static
@@ -77,16 +107,9 @@ bool WebDataServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-scoped_refptr<RefcountedProfileKeyedService>
+ProfileKeyedService*
 WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
-  DCHECK(profile);
-
-  base::FilePath path = profile->GetPath();
-  path = path.Append(chrome::kWebDataFilename);
-
-  scoped_refptr<WebDataService> wds(new WebDataService());
-  wds->Init(path);
-  return wds.get();
+  return new WebDataServiceWrapper(profile);
 }
 
 bool WebDataServiceFactory::ServiceIsNULLWhileTesting() const {

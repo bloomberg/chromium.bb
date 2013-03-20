@@ -23,7 +23,6 @@
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_base.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"
@@ -104,9 +103,10 @@ struct WDKeywordsResult {
 class WebDataServiceConsumer;
 
 class WebDataService
-    : public WebDataServiceBase,
-      public AutofillWebData,
-      public RefcountedProfileKeyedService {
+    : public base::RefCountedThreadSafe<WebDataService,
+          content::BrowserThread::DeleteOnUIThread>,
+      public WebDataServiceBase,
+      public AutofillWebData {
  public:
   // Retrieve a WebDataService for the given context.
   static scoped_refptr<WebDataService> FromBrowserContext(
@@ -125,10 +125,9 @@ class WebDataService
   // |web_data_service| may be NULL for testing purposes.
   static void NotifyOfMultipleAutofillChanges(WebDataService* web_data_service);
 
-  // RefcountedProfileKeyedService override:
   // Shutdown the web data service. The service can no longer be used after this
   // call.
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  void ShutdownOnUIThread();
 
   // Initializes the web data service.
   void Init(const base::FilePath& path);

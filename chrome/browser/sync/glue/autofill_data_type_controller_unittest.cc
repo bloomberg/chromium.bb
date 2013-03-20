@@ -59,10 +59,6 @@ class FakeWebDataService : public WebDataService {
     return is_database_loaded_;
   }
 
-  virtual void ShutdownOnUIThread() OVERRIDE {
-    ShutdownSyncableService();
-  }
-
   virtual AutocompleteSyncableService*
       GetAutocompleteSyncableService() const OVERRIDE {
     return autocomplete_syncable_service_;
@@ -129,6 +125,33 @@ class FakeWebDataService : public WebDataService {
   DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
 };
 
+class MockWebDataServiceWrapper : public WebDataServiceWrapper {
+ public:
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new MockWebDataServiceWrapper();
+  }
+
+  MockWebDataServiceWrapper() {
+    fake_web_data_service_ = new FakeWebDataService();
+  }
+
+  void Shutdown() OVERRIDE {
+    fake_web_data_service_->ShutdownSyncableService();
+  }
+
+  scoped_refptr<WebDataService> GetWebData() OVERRIDE {
+    return fake_web_data_service_;
+  }
+
+  ~MockWebDataServiceWrapper() {
+    fake_web_data_service_ = NULL;
+  }
+
+ private:
+  scoped_refptr<FakeWebDataService> fake_web_data_service_;
+
+};
+
 class SyncAutofillDataTypeControllerTest : public testing::Test {
  public:
   SyncAutofillDataTypeControllerTest()
@@ -147,7 +170,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
         WillRepeatedly(Return(change_processor_.get()));
 
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, BuildWebDataService);
+        &profile_, MockWebDataServiceWrapper::Build);
 
     autofill_dtc_ =
         new AutofillDataTypeController(&profile_sync_factory_,
@@ -173,11 +196,6 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   virtual void TearDown() {
     autofill_dtc_ = NULL;
     change_processor_ = NULL;
-  }
-
-  static scoped_refptr<RefcountedProfileKeyedService>
-      BuildWebDataService(Profile* profile) {
-    return new FakeWebDataService();
   }
 
   void BlockForDBThread() {
