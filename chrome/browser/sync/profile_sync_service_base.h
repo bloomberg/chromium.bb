@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
-#define CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
+#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
+#define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
 
-#include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace content {
@@ -45,4 +45,4 @@ class ProfileSyncServiceBase {
   virtual bool HasObserver(Observer* observer) const = 0;
 };
 
-#endif  // CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
+#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_BASE_H_

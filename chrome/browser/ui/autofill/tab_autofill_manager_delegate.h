@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents_observer.h"

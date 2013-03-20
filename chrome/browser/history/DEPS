@@ -20,6 +20,7 @@ include_rules = [
   "!chrome/browser/autocomplete/url_prefix.h",
   "!chrome/browser/bookmarks/bookmark_model.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
+  "!chrome/browser/bookmarks/bookmark_service.h",
   "!chrome/browser/browser_process.h",
   "!chrome/browser/chromeos/login/existing_user_controller.h",
   "!chrome/browser/content_settings/cookie_settings.h",

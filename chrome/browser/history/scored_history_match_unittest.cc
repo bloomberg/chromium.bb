@@ -6,7 +6,7 @@
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/bookmarks/bookmark_service.h"
+#include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/history/scored_history_match.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

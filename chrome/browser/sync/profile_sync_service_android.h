@@ -10,7 +10,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class Profile;

@@ -5,9 +5,9 @@
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile_manager.h"

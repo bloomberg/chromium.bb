@@ -5,7 +5,7 @@
 #include "chrome/browser/history/android/android_provider_backend.h"
 
 #include "base/i18n/case_conversion.h"
-#include "chrome/browser/api/bookmarks/bookmark_service.h"
+#include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/history/android/android_time.h"
 #include "chrome/browser/history/android/android_urls_sql_handler.h"
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"

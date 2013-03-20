@@ -59,10 +59,3 @@ bool BookmarkModelFactory::ServiceRedirectedInIncognito() const {
 bool BookmarkModelFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
-
-// static
-BookmarkService* BookmarkService::FromBrowserContext(
-    content::BrowserContext* browser_context) {
-  return BookmarkModelFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context));
-}

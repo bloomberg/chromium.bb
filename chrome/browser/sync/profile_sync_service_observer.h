@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
-#define CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
+#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
+#define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
 
 // Various UI components such as the New Tab page can be driven by observing
 // the ProfileSyncService through this interface.
@@ -20,4 +20,4 @@ class ProfileSyncServiceObserver {
   virtual ~ProfileSyncServiceObserver() { }
 };
 
-#endif  // CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
+#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_

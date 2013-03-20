@@ -47,13 +47,6 @@ ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
       GetInstance()->GetServiceForProfile(profile, true));
 }
 
-// static
-ProfileSyncServiceBase* ProfileSyncServiceBase::FromBrowserContext(
-    content::BrowserContext* context) {
-  return ProfileSyncServiceFactory::GetForProfile(
-      static_cast<Profile*>(context));
-}
-
 ProfileSyncServiceFactory::ProfileSyncServiceFactory()
     : ProfileKeyedServiceFactory("ProfileSyncService",
                                  ProfileDependencyManager::GetInstance()) {
