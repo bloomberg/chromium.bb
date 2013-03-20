@@ -1084,7 +1084,7 @@ void TabStrip::MaybeStartDrag(
   // . Real mouse event and control is down. This is mostly for testing.
   DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
          event.type() == ui::ET_GESTURE_BEGIN);
-  if (adjust_layout_ &&
+  if (touch_layout_.get() &&
       ((event.type() == ui::ET_MOUSE_PRESSED &&
         (((event.flags() & ui::EF_FROM_TOUCH) &&
           static_cast<const ui::MouseEvent&>(event).IsLeftMouseButton()) ||
