@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -60,9 +61,14 @@ class FakeWebDataService : public WebDataService {
     return is_database_loaded_;
   }
 
-  virtual AutocompleteSyncableService*
-      GetAutocompleteSyncableService() const OVERRIDE {
-    return autocomplete_syncable_service_;
+  virtual void ShutdownOnUIThread() OVERRIDE {
+    // The storage for syncable services must be destructed on the DB
+    // thread.
+    base::RunLoop run_loop;
+    BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
+        base::Bind(&FakeWebDataService::ShutdownOnDBThread,
+                   base::Unretained(this)), run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void StartSyncableService() {
@@ -75,19 +81,10 @@ class FakeWebDataService : public WebDataService {
     run_loop.Run();
   }
 
-  void ShutdownSyncableService() {
-    // The |autofill_profile_syncable_service_| must be destructed on the DB
-    // thread.
-    base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
-        base::Bind(&FakeWebDataService::DestroySyncableService,
-                   base::Unretained(this)), run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
   void GetAutofillCullingValue(bool* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    *result = autocomplete_syncable_service_->cull_expired_entries();
+    *result = AutocompleteSyncableService::FromWebDataService(
+        this)->cull_expired_entries();
   }
 
   bool CheckAutofillCullingValue() {
@@ -102,24 +99,13 @@ class FakeWebDataService : public WebDataService {
 
  private:
   virtual ~FakeWebDataService() {
-    DCHECK(!autocomplete_syncable_service_);
   }
 
   void CreateSyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().
-    autocomplete_syncable_service_ = new AutocompleteSyncableService(this);
+    AutocompleteSyncableService::CreateForWebDataService(this);
   }
-
-  void DestroySyncableService() {
-    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    delete autocomplete_syncable_service_;
-    autocomplete_syncable_service_ = NULL;
-  }
-
-  // We own the syncable services, but don't use a |scoped_ptr| because the
-  // lifetime must be managed on the DB thread.
-  AutocompleteSyncableService* autocomplete_syncable_service_;
 
   bool is_database_loaded_;
 
@@ -138,7 +124,7 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
 
   void Shutdown() OVERRIDE {
     static_cast<FakeWebDataService*>(
-        fake_web_data_service_.get())->ShutdownSyncableService();
+        fake_web_data_service_.get())->ShutdownOnUIThread();
   }
 
  private:

@@ -79,6 +79,13 @@ bool MergeTimestamps(const sync_pb::AutofillSpecifics& autofill,
   }
 }
 
+void* UserDataKey() {
+  // Use the address of a static that COMDAT folding won't ever fold
+  // with something else.
+  static int user_data_key = 0;
+  return reinterpret_cast<void*>(&user_data_key);
+}
+
 }  // namespace
 
 AutocompleteSyncableService::AutocompleteSyncableService(
@@ -94,6 +101,20 @@ AutocompleteSyncableService::AutocompleteSyncableService(
 
 AutocompleteSyncableService::~AutocompleteSyncableService() {
   DCHECK(CalledOnValidThread());
+}
+
+// static
+void AutocompleteSyncableService::CreateForWebDataService(
+    WebDataService* web_data) {
+  web_data->GetDBUserData()->SetUserData(
+      UserDataKey(), new AutocompleteSyncableService(web_data));
+}
+
+// static
+AutocompleteSyncableService* AutocompleteSyncableService::FromWebDataService(
+    WebDataService* web_data) {
+  return static_cast<AutocompleteSyncableService*>(
+      web_data->GetDBUserData()->GetUserData(UserDataKey()));
 }
 
 AutocompleteSyncableService::AutocompleteSyncableService()

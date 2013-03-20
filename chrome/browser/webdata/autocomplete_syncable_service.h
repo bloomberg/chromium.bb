@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -40,12 +41,22 @@ class AutofillSpecifics;
 // TODO(georgey) : remove reliance on the notifications and make it to be called
 // from web_data_service directly.
 class AutocompleteSyncableService
-    : public syncer::SyncableService,
+    : public base::SupportsUserData::Data,
+      public syncer::SyncableService,
       public content::NotificationObserver,
       public base::NonThreadSafe {
  public:
-  explicit AutocompleteSyncableService(WebDataService* web_data_service);
   virtual ~AutocompleteSyncableService();
+
+  // TODO(joi): Change this to key off AutofillWebDataService instead
+  // of WebDataService, once it is truly separate.
+
+  // Creates a new AutocompleteSyncableService and hangs it off of
+  // |web_data|, which takes ownership.
+  static void CreateForWebDataService(WebDataService* web_data);
+  // Retrieves the AutocompleteSyncableService stored on |web_data|.
+  static AutocompleteSyncableService* FromWebDataService(
+      WebDataService* web_data);
 
   static syncer::ModelType model_type() { return syncer::AUTOFILL; }
 
@@ -73,6 +84,8 @@ class AutocompleteSyncableService
   bool cull_expired_entries() const { return cull_expired_entries_; }
 
  protected:
+  explicit AutocompleteSyncableService(WebDataService* web_data_service);
+
   // Helper to query WebDatabase for the current autocomplete state.
   // Made virtual for ease of mocking in the unit-test.
   virtual bool LoadAutofillData(std::vector<AutofillEntry>* entries) const;

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/webdata/autofill_change.h"
@@ -29,6 +30,7 @@ class AutofillTable;
 class FormGroup;
 class ProfileSyncServiceAutofillTest;
 class WebDataService;
+class WebDataServiceBase;
 
 extern const char kAutofillProfileTag[];
 
@@ -37,12 +39,22 @@ extern const char kAutofillProfileTag[];
 // local->cloud syncs. Then for each cloud change we receive
 // ProcessSyncChanges() and for each local change Observe() is called.
 class AutofillProfileSyncableService
-    : public syncer::SyncableService,
+    : public base::SupportsUserData::Data,
+      public syncer::SyncableService,
       public content::NotificationObserver,
       public base::NonThreadSafe {
  public:
-  explicit AutofillProfileSyncableService(WebDataService* web_data_service);
   virtual ~AutofillProfileSyncableService();
+
+  // TODO(joi): Change this to key off AutofillWebDataService instead
+  // of WebDataService, once it is truly separate.
+
+  // Creates a new AutofillProfileSyncableService and hangs it off of
+  // |web_data|, which takes ownership.
+  static void CreateForWebDataService(WebDataService* web_data);
+  // Retrieves the AutofillProfileSyncableService stored on |web_data|.
+  static AutofillProfileSyncableService* FromWebDataService(
+      WebDataService* web_data);
 
   static syncer::ModelType model_type() { return syncer::AUTOFILL_PROFILE; }
 
@@ -65,6 +77,8 @@ class AutofillProfileSyncableService
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
+  explicit AutofillProfileSyncableService(WebDataService* web_data_service);
+
   // A convenience wrapper of a bunch of state we pass around while
   // associating models, and send to the WebDatabase for persistence.
   // We do this so we hold the write lock for only a small period.

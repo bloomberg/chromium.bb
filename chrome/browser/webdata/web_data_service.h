@@ -109,10 +109,6 @@ class WebDataService
 
   explicit WebDataService(const ProfileErrorCallback& callback);
 
-  // WebDataServiceBase implementation.
-  virtual void ShutdownOnUIThread() OVERRIDE;
-  virtual void Init(const base::FilePath& path) OVERRIDE;
-
   // Notifies listeners on the UI thread that multiple changes have been made to
   // to Autofill records of the database.
   // NOTE: This method is intended to be called from the DB thread.  It
@@ -289,16 +285,6 @@ class WebDataService
   void RemoveFormElementsAddedBetween(const base::Time& delete_begin,
                                       const base::Time& delete_end);
 
-  // Returns the syncable service for Autofill addresses and credit cards stored
-  // in this table. The returned service is owned by |this| object.
-  virtual AutofillProfileSyncableService*
-      GetAutofillProfileSyncableService() const;
-
-  // Returns the syncable service for field autocomplete stored in this table.
-  // The returned service is owned by |this| object.
-  virtual AutocompleteSyncableService*
-      GetAutocompleteSyncableService() const;
-
  protected:
   // TODO(caitkp): We probably don't need these anymore.
   friend class TemplateURLServiceTest;
@@ -311,17 +297,12 @@ class WebDataService
 
   virtual ~WebDataService();
 
+ private:
   //////////////////////////////////////////////////////////////////////////////
   //
   // The following methods are only invoked in the web data service thread.
   //
   //////////////////////////////////////////////////////////////////////////////
- private:
-  // Initialize any syncable services.
-  void InitializeSyncableServices();
-
-  // Deletes the syncable services.
-  void ShutdownSyncableServices();
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -440,14 +421,6 @@ class WebDataService
   // cancelled.
   void DestroyAutofillProfileResult(const WDTypedResult* result);
   void DestroyAutofillCreditCardResult(const WDTypedResult* result);
-
-  // Syncable services for the database data.  We own the services, but don't
-  // use |scoped_ptr|s because the lifetimes must be managed on the database
-  // thread.
-  // Currently only Autocomplete and Autofill profiles use the new Sync API, but
-  // all the database data should migrate to this API over time.
-  AutocompleteSyncableService* autocomplete_syncable_service_;
-  AutofillProfileSyncableService* autofill_profile_syncable_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataService);
 };

@@ -8,10 +8,15 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
+#include "chrome/browser/webdata/autocomplete_syncable_service.h"
+#include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -20,6 +25,15 @@ void ProfileErrorCallback(sql::InitStatus status) {
   ShowProfileErrorDialog(
       (status == sql::INIT_FAILURE) ?
       IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+}
+
+void InitSyncableServicesOnDBThread(scoped_refptr<WebDataService> web_data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  // Currently only Autocomplete and Autofill profiles use the new Sync API, but
+  // all the database data should migrate to this API over time.
+  AutocompleteSyncableService::CreateForWebDataService(web_data);
+  AutofillProfileSyncableService::CreateForWebDataService(web_data);
 }
 
 }  // namespace
@@ -31,6 +45,10 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   path = path.Append(chrome::kWebDataFilename);
   web_data_service_ = new WebDataService(base::Bind(&ProfileErrorCallback));
   web_data_service_->Init(path);
+
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+                          base::Bind(&InitSyncableServicesOnDBThread,
+                                     web_data_service_));
 }
 
 WebDataServiceWrapper::~WebDataServiceWrapper() {

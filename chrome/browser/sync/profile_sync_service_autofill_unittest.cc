@@ -193,21 +193,7 @@ class WebDataServiceFake : public WebDataService {
     return 0;
   }
 
-  virtual AutocompleteSyncableService*
-      GetAutocompleteSyncableService() const OVERRIDE {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    EXPECT_TRUE(autocomplete_syncable_service_);
-
-    return autocomplete_syncable_service_;
-  }
-
-  virtual AutofillProfileSyncableService*
-      GetAutofillProfileSyncableService() const OVERRIDE {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    EXPECT_TRUE(autofill_profile_syncable_service_);
-
-    return autofill_profile_syncable_service_;
-  }
+  virtual void ShutdownOnUIThread() OVERRIDE {}
 
  private:
   virtual ~WebDataServiceFake() {}
@@ -215,25 +201,19 @@ class WebDataServiceFake : public WebDataService {
   void CreateSyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().
-    autocomplete_syncable_service_ = new AutocompleteSyncableService(this);
-    autofill_profile_syncable_service_ =
-        new AutofillProfileSyncableService(this);
+    AutocompleteSyncableService::CreateForWebDataService(this);
+    AutofillProfileSyncableService::CreateForWebDataService(this);
     syncable_service_created_or_destroyed_.Signal();
   }
 
   void DestroySyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    delete autofill_profile_syncable_service_;
-    delete autocomplete_syncable_service_;
+    WebDataServiceBase::ShutdownOnDBThread();
     syncable_service_created_or_destroyed_.Signal();
   }
 
   WebDatabase* web_database_;
 
-  // We own the syncable services, but don't use a |scoped_ptr| because the
-  // lifetime must be managed on the DB thread.
-  AutocompleteSyncableService* autocomplete_syncable_service_;
-  AutofillProfileSyncableService* autofill_profile_syncable_service_;
   WaitableEvent syncable_service_created_or_destroyed_;
 };
 
@@ -245,7 +225,7 @@ ACTION_P(MakeAutocompleteSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
     return base::WeakPtr<syncer::SyncableService>();
-  return wds->GetAutocompleteSyncableService()->AsWeakPtr();
+  return AutocompleteSyncableService::FromWebDataService(wds)->AsWeakPtr();
 }
 
 ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
@@ -274,7 +254,7 @@ ACTION_P(MakeAutofillProfileSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
     return base::WeakPtr<syncer::SyncableService>();;
-  return wds->GetAutofillProfileSyncableService()->AsWeakPtr();
+  return AutofillProfileSyncableService::FromWebDataService(wds)->AsWeakPtr();
 }
 
 class AbstractAutofillFactory {

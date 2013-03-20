@@ -107,7 +107,7 @@ void AutofillDataTypeController::UpdateAutofillCullingSettings(
     bool cull_expired_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutocompleteSyncableService* service =
-    web_data_service_->GetAutocompleteSyncableService();
+      AutocompleteSyncableService::FromWebDataService(web_data_service_);
   if (!service) {
     DVLOG(1) << "Can't update culling, no AutocompleteSyncableService.";
     return;
