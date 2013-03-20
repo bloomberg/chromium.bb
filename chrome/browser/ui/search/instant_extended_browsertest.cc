@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -1081,13 +1082,30 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_FALSE(instant()->IsOverlayingSearchResults());
 
   // Create an observer to wait for the commit.
-  content::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver commit_observer(
       chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::NotificationService::AllSources());
 
   // Typing in the omnibox should show the overlay. Don't wait for the overlay
   // to show however.
   SetOmniboxText("query");
+
+  // The autocomplete controller isn't done until all the providers are done.
+  // Though we don't care about the SearchProvider when we send autocomplete
+  // results to the page, we do need to cause it to be "done" to make this test
+  // work. Setting the suggestion calls SearchProvider::FinalizeInstantQuery(),
+  // thus causing it to be done.
+  omnibox()->model()->SetInstantSuggestion(
+      InstantSuggestion(ASCIIToUTF16("query"),
+                        INSTANT_COMPLETE_NOW,
+                        INSTANT_SUGGESTION_SEARCH,
+                        ASCIIToUTF16("query")));
+  while (!omnibox()->model()->autocomplete_controller()->done()) {
+    content::WindowedNotificationObserver autocomplete_observer(
+        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        content::NotificationService::AllSources());
+    autocomplete_observer.Wait();
+  }
 
   // Explicitly unfocus the omnibox without triggering a click. Note that this
   // doesn't actually change the focus state of the omnibox, only what the
@@ -1096,7 +1114,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   omnibox()->model()->OnKillFocus();
 
   // Wait for the overlay to show.
-  observer.Wait();
+  commit_observer.Wait();
 
   // Confirm that the overlay has been committed.
   content::WebContents* active_tab =
@@ -1120,7 +1138,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TransientEntrySet) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::NotificationService::AllSources());
-  SetOmniboxText("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   browser()->window()->GetLocationBar()->AcceptInput();
   observer.Wait();
 
@@ -1165,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_TransientEntryRemoved) {
       ));
 
   // Commit the overlay.
-  SetOmniboxText("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   browser()->window()->GetLocationBar()->AcceptInput();
   observer.Wait();
 
@@ -1255,4 +1273,21 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
                               "apiHandle.value",
                               &result));
   EXPECT_EQ(kQueryString, result);
+}
+
+// Test that autocomplete results are sent to the page only when all the
+// providers are done.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AutocompleteProvidersDone) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(UpdateSearchState(overlay));
+  EXPECT_EQ(0, on_native_suggestions_calls_);
+
+  SetOmniboxTextAndWaitForOverlayToShow("railroad");
+
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
+  EXPECT_TRUE(UpdateSearchState(overlay));
+  EXPECT_EQ(1, on_native_suggestions_calls_);
 }

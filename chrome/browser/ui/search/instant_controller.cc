@@ -544,6 +544,11 @@ void InstantController::HandleAutocompleteResults(
     // Skip SearchProvider, since it only echoes suggestions.
     if ((*provider)->type() == AutocompleteProvider::TYPE_SEARCH)
       continue;
+    // Only send autocomplete results when all the providers are done.
+    if (!(*provider)->done()) {
+      DVLOG(1) << "Waiting for " << (*provider)->GetName();
+      return;
+    }
     for (ACMatches::const_iterator match = (*provider)->matches().begin();
          match != (*provider)->matches().end(); ++match) {
       InstantAutocompleteResult result;
