@@ -13,6 +13,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/defaults.h"
@@ -63,6 +64,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -840,7 +842,7 @@ void ChromeLauncherControllerPerApp::SetRefocusURLPatternForTest(
 }
 
 const Extension* ChromeLauncherControllerPerApp::GetExtensionForAppID(
-    const std::string& app_id) {
+    const std::string& app_id) const {
   return profile_->GetExtensionService()->GetInstalledExtension(app_id);
 }
 
@@ -1098,13 +1100,31 @@ bool ChromeLauncherControllerPerApp::IsWebContentHandledByApplication(
 
 gfx::Image ChromeLauncherControllerPerApp::GetAppListIcon(
     content::WebContents* web_contents) const {
-  if (IsIncognito(web_contents)) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (IsIncognito(web_contents))
     return rb.GetImageNamed(IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER);
-  }
   FaviconTabHelper* favicon_tab_helper =
       FaviconTabHelper::FromWebContents(web_contents);
-  return favicon_tab_helper->GetFavicon();
+  gfx::Image result = favicon_tab_helper->GetFavicon();
+  if (result.IsEmpty())
+    return rb.GetImageNamed(IDR_DEFAULT_FAVICON);
+  return result;
+}
+
+string16 ChromeLauncherControllerPerApp::GetAppListTitle(
+    content::WebContents* web_contents) const {
+  string16 title = web_contents->GetTitle();
+  if (!title.empty())
+    return title;
+  WebContentsToAppIDMap::const_iterator iter =
+      web_contents_to_app_id_.find(web_contents);
+  if (iter != web_contents_to_app_id_.end()) {
+    std::string app_id = iter->second;
+    const extensions::Extension* extension = GetExtensionForAppID(app_id);
+    if (extension)
+      return UTF8ToUTF16(extension->name());
+  }
+  return l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
 }
 
 gfx::Image ChromeLauncherControllerPerApp::GetBrowserListIcon(
@@ -1113,6 +1133,14 @@ gfx::Image ChromeLauncherControllerPerApp::GetBrowserListIcon(
   return rb.GetImageNamed(IsIncognito(web_contents) ?
       IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER :
       IDR_AURA_LAUNCHER_LIST_BROWSER);
+}
+
+string16 ChromeLauncherControllerPerApp::GetBrowserListTitle(
+    content::WebContents* web_contents) const {
+  string16 title = web_contents->GetTitle();
+  if (!title.empty())
+    return title;
+  return l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
 }
 
 void ChromeLauncherControllerPerApp::OnBrowserRemoved(Browser* browser) {
@@ -1484,23 +1512,19 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList(
       WebContents* web_contents =
           tab_strip->GetWebContentsAt(tab_strip->active_index());
       gfx::Image app_icon = GetBrowserListIcon(web_contents);
+      string16 title = GetBrowserListTitle(web_contents);
       items.push_back(new ChromeLauncherAppMenuItemBrowser(
-          web_contents->GetTitle(),
-          app_icon.IsEmpty() ? NULL : &app_icon,
-          browser,
-          items.size() == 1));
+          title, &app_icon, browser, items.size() == 1));
     } else {
       for (int index = 0; index  < tab_strip->count(); ++index) {
         content::WebContents* web_contents =
             tab_strip->GetWebContentsAt(index);
         gfx::Image app_icon = GetAppListIcon(web_contents);
+        string16 title = GetAppListTitle(web_contents);
         // Check if we need to insert a separator in front.
         bool leading_separator = !index;
         items.push_back(new ChromeLauncherAppMenuItemTab(
-            web_contents->GetTitle(),
-            app_icon.IsEmpty() ? NULL : &app_icon,
-            web_contents,
-            leading_separator));
+            title, &app_icon, web_contents, leading_separator));
       }
     }
   }

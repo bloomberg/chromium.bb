@@ -234,7 +234,7 @@ class ChromeLauncherControllerPerBrowser : public ash::LauncherModelObserver,
 
   // Returns the extension identified by |app_id|.
   virtual const extensions::Extension* GetExtensionForAppID(
-      const std::string& app_id) OVERRIDE;
+      const std::string& app_id) const OVERRIDE;
 
   // ash::LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;

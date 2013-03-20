@@ -122,11 +122,9 @@ AppShortcutLauncherItemController::GetApplicationList() {
     content::WebContents* web_contents = content_list[i];
     // Get the icon.
     gfx::Image app_icon = app_controller_->GetAppListIcon(web_contents);
+    string16 title = app_controller_->GetAppListTitle(web_contents);
     items.push_back(new ChromeLauncherAppMenuItemTab(
-        web_contents->GetTitle(),
-        app_icon.IsEmpty() ? NULL : &app_icon,
-        web_contents,
-        i == 0));
+        title, &app_icon, web_contents, i == 0));
   }
   return items.Pass();
 }

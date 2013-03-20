@@ -244,7 +244,7 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
 
   // Returns the extension identified by |app_id|.
   virtual const extensions::Extension* GetExtensionForAppID(
-      const std::string& app_id) OVERRIDE;
+      const std::string& app_id) const OVERRIDE;
 
   // ash::LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
@@ -308,13 +308,22 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   bool IsWebContentHandledByApplication(content::WebContents* web_contents,
                                         const std::string& app_id);
 
-  // Get the favicon for the application list by giving the |web_contents|.
+  // Get the favicon for the application list entry for |web_contents|.
   // Note that for incognito windows the incognito icon will be returned.
+  // If |web_contents| has not loaded, returns the default favicon.
   gfx::Image GetAppListIcon(content::WebContents* web_contents) const;
 
-  // Get the favicon for the browser list by giving the |web_contents|.
+  // Get the title for the applicatoin list entry for |web_contents|.
+  // If |web_contents| has not loaded, returns "Net Tab".
+  string16 GetAppListTitle(content::WebContents* web_contents) const;
+
+  // Get the favicon for the browser list entry for |web_contents|.
   // Note that for incognito windows the incognito icon will be returned.
   gfx::Image GetBrowserListIcon(content::WebContents* web_contents) const;
+
+  // Get the title for the browser list entry for |web_contents|.
+  // If |web_contents| has not loaded, returns "Net Tab".
+  string16 GetBrowserListTitle(content::WebContents* web_contents) const;
 
   // Overridden from chrome::BrowserListObserver.
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;

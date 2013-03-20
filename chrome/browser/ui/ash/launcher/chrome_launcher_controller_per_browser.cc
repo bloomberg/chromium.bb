@@ -824,7 +824,7 @@ void ChromeLauncherControllerPerBrowser::SetRefocusURLPatternForTest(
 }
 
 const Extension* ChromeLauncherControllerPerBrowser::GetExtensionForAppID(
-    const std::string& app_id) {
+    const std::string& app_id) const {
   return profile_->GetExtensionService()->GetInstalledExtension(app_id);
 }
 

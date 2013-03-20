@@ -254,7 +254,7 @@ class ChromeLauncherController
 
   // Returns the extension identified by |app_id|.
   virtual const extensions::Extension* GetExtensionForAppID(
-      const std::string& app_id) = 0;
+      const std::string& app_id) const = 0;
 
   // ash::LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE = 0;
