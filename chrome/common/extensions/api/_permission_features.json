@@ -314,6 +314,11 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "power": {
+    "channel": "dev",
+    "platform": "chromeos",
+    "extension_types": ["extension", "hosted_app", "packaged_app"]
+  },
   "privacy": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

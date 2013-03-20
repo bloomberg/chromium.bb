@@ -671,6 +671,7 @@ TEST_F(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kIdle);
   skip.insert(APIPermission::kNotification);
   skip.insert(APIPermission::kPointerLock);
+  skip.insert(APIPermission::kPower);
   skip.insert(APIPermission::kPushMessaging);
   skip.insert(APIPermission::kSessionRestore);
   skip.insert(APIPermission::kScreensaver);

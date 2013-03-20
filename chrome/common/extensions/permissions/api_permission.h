@@ -93,6 +93,7 @@ class APIPermission {
     kPageCapture,
     kPointerLock,
     kPlugin,
+    kPower,
     kPrivacy,
     kProxy,
     kPushMessaging,

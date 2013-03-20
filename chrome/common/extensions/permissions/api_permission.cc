@@ -216,6 +216,7 @@ void APIPermissionInfo::RegisterAllPermissions(
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       PermissionMessage::kManagement },
     { APIPermission::kNativeMessaging, "nativeMessaging" },
+    { APIPermission::kPower, "power", },
     { APIPermission::kPrivacy, "privacy", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_PRIVACY,
       PermissionMessage::kPrivacy },
