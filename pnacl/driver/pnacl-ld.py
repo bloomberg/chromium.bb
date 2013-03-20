@@ -329,11 +329,16 @@ def main(argv):
     chain = DriverChain(inputs, output, tng)
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
     if env.getbool('STATIC') and len(native_objects) == 0:
+      # ABI simplification passes.
       chain.add(DoExpandCtorsAndTls, 'expand_ctors_and_tls.' + bitcode_type)
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
+    if env.getbool('STATIC'):
+      # ABI simplification pass.  This should come last because other
+      # LLVM passes might reintroduce ConstantExprs.
+      chain.add(DoExpandConstantExprs, 'expand_constant_exprs.' + bitcode_type)
   else:
     chain = DriverChain('', output, tng)
 
@@ -434,6 +439,10 @@ def CheckInputsArch(inputs):
 def DoExpandCtorsAndTls(infile, outfile):
   RunDriver('opt', ['-nacl-expand-ctors',
                     '-nacl-expand-tls',
+                    infile, '-o', outfile])
+
+def DoExpandConstantExprs(infile, outfile):
+  RunDriver('opt', ['-expand-constant-expr',
                     infile, '-o', outfile])
 
 def DoOPT(infile, outfile):
