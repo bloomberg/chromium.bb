@@ -97,10 +97,9 @@ void TokenServiceTestHarness::TearDown() {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
-
-  db_thread_.Stop();
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
+  db_thread_.Stop();
 }
 
 void TokenServiceTestHarness::WaitForDBLoadCompletion() {

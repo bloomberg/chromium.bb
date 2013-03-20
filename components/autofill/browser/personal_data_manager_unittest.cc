@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -79,9 +80,15 @@ class PersonalDataManagerTest : public testing::Test {
     personal_data_.reset(NULL);
     profile_.reset(NULL);
 
-    db_thread_.Stop();
+    // Schedule another task on the DB thread to notify us that it's safe to
+    // stop the thread.
+    base::WaitableEvent done(false, false);
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+    done.Wait();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
+    db_thread_.Stop();
   }
 
   void ResetPersonalDataManager() {
