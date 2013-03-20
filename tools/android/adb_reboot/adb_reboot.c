@@ -15,6 +15,10 @@ int main(int argc, char ** argv) {
   if (i > 0)
     return 0;
 
+  int j;
+  for (j = 0; j < getdtablesize(); j++)
+    close(j);
+
   /* child (daemon) continues */
   setsid(); /* obtain a new process group */
 
