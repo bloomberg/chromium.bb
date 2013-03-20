@@ -369,7 +369,7 @@ NotificationView::NotificationView(const Notification& notification,
       title_view_->SetMultiLine(true);
     else
       title_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    title_view_->SetFont(title_view_->font().DeriveFont(4));
+    title_view_->SetFont(title_view_->font().DeriveFont(2));
     title_view_->SetEnabledColor(kRegularTextColor);
     title_view_->SetBackgroundColor(kRegularTextBackgroundColor);
     title_view_->set_border(MakeBorder(kTextTopPadding, 3));
