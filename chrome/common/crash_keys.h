@@ -26,8 +26,9 @@ extern const char kFirstNSExceptionTrace[];
 extern const char kLastNSException[];
 extern const char kLastNSExceptionTrace[];
 
-// Records the current NSException as it's being created.
+// Records the current NSException as it is being created, and its backtrace.
 extern const char kNSException[];
+extern const char kNSExceptionTrace[];
 
 // In the CrApplication, records information about the current event's
 // target-action.

@@ -55,6 +55,7 @@ size_t RegisterChromeCrashKeys() {
     { mac::kLastNSException, kMediumSize },
     { mac::kLastNSExceptionTrace, kMediumSize },
     { mac::kNSException, kMediumSize },
+    { mac::kNSExceptionTrace, kMediumSize },
     { mac::kSendAction, kMediumSize },
     { mac::kZombie, kMediumSize },
     { mac::kZombieTrace, kMediumSize },
@@ -80,6 +81,7 @@ const char kLastNSException[] = "lastexception";
 const char kLastNSExceptionTrace[] = "lastexception_bt";
 
 const char kNSException[] = "nsexception";
+const char kNSExceptionTrace[] = "nsexception_bt";
 
 const char kSendAction[] = "sendaction";
 
