@@ -1,0 +1,11 @@
+Name: Rietveld's upload.py
+Short Name: rietveld
+URL: https://code.google.com/p/rietveld
+Revision: 4b839e2a9f91
+License: Apache 2.0
+
+Description:
+Used for authentication only until we get OAuth2 sorted out and self-packaged.
+
+Local Modifications:
+None.
