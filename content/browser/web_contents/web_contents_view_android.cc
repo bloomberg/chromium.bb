@@ -166,6 +166,9 @@ void WebContentsViewAndroid::RenderViewCreated(RenderViewHost* host) {
 void WebContentsViewAndroid::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
+void WebContentsViewAndroid::SetOverscrollControllerEnabled(bool enabled) {
+}
+
 void WebContentsViewAndroid::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {

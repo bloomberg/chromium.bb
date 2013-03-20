@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
@@ -1278,6 +1279,16 @@ void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
   if (navigation_overlay_.get() && navigation_overlay_->has_window()) {
     navigation_overlay_->StartObservingView(static_cast<
         RenderWidgetHostViewAura*>(host->GetView()));
+  }
+}
+
+void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  if (host) {
+    host->SetOverscrollControllerEnabled(enabled);
+    if (enabled)
+      host->overscroll_controller()->set_delegate(this);
   }
 }
 

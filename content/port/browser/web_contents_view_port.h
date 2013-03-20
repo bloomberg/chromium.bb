@@ -45,6 +45,9 @@ class CONTENT_EXPORT WebContentsViewPort : public WebContentsView {
   // swapped in.
   virtual void RenderViewSwappedIn(RenderViewHost* host) = 0;
 
+  // Invoked to enable/disable overscroll gesture navigation.
+  virtual void SetOverscrollControllerEnabled(bool enabled) = 0;
+
 #if defined(OS_MACOSX)
   // If we close the tab while a UI control is in an event-tracking
   // loop, the control may message freed objects and crash.

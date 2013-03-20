@@ -64,6 +64,7 @@ class TestWebContentsView : public WebContentsViewPort,
   virtual void SetPageTitle(const string16& title) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
+  virtual void SetOverscrollControllerEnabled(bool enabled) OVERRIDE;
 #if defined(OS_MACOSX)
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;

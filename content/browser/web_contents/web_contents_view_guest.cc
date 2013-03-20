@@ -116,6 +116,10 @@ void WebContentsViewGuest::RenderViewSwappedIn(RenderViewHost* host) {
   platform_view_->RenderViewSwappedIn(host);
 }
 
+void WebContentsViewGuest::SetOverscrollControllerEnabled(bool enabled) {
+  // This should never override the setting of the embedder view.
+}
+
 #if defined(OS_MACOSX)
 bool WebContentsViewGuest::IsEventTracking() const {
   return false;

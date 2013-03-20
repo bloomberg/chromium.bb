@@ -69,6 +69,7 @@ class CONTENT_EXPORT WebContentsViewGtk
   virtual void SetPageTitle(const string16& title) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
+  virtual void SetOverscrollControllerEnabled(bool enabled) OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(

@@ -268,6 +268,9 @@ void WebContentsViewGtk::RenderViewSwappedIn(RenderViewHost* host) {
   UpdateDragDest(host);
 }
 
+void WebContentsViewGtk::SetOverscrollControllerEnabled(bool enabled) {
+}
+
 WebContents* WebContentsViewGtk::web_contents() {
   return web_contents_;
 }

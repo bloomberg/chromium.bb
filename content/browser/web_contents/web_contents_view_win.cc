@@ -240,6 +240,9 @@ void WebContentsViewWin::RenderViewCreated(RenderViewHost* host) {
 void WebContentsViewWin::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
+void WebContentsViewWin::SetOverscrollControllerEnabled(bool enabled) {
+}
+
 void WebContentsViewWin::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {

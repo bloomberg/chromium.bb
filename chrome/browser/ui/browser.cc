@@ -1152,8 +1152,18 @@ bool Browser::CanOverscrollContent() const {
 #if defined(USE_AURA)
   bool overscroll_enabled = !CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableOverscrollHistoryNavigation);
-  return overscroll_enabled ? !is_app() && !is_devtools() && is_type_tabbed() :
-                              false;
+  if (!overscroll_enabled)
+    return false;
+  if (is_app() || is_devtools() || !is_type_tabbed())
+    return false;
+
+  // The detached bookmark bar has appearance of floating above the
+  // web-contents. This does not play nicely with overscroll navigation
+  // gestures. So disable overscroll navigation when the bookmark bar is in the
+  // detached state.
+  if (bookmark_bar_state_ == BookmarkBar::DETACHED)
+    return false;
+  return true;
 #else
   return false;
 #endif

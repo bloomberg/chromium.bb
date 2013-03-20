@@ -765,9 +765,8 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
   if (delegate_) {
     delegate_->Attach(this);
     // Ensure the visible RVH reflects the new delegate's preferences.
-    RenderViewHostImpl* host = render_manager_.current_host();
-    if (host)
-      host->SetOverscrollControllerEnabled(delegate->CanOverscrollContent());
+    if (view_)
+      view_->SetOverscrollControllerEnabled(delegate->CanOverscrollContent());
   }
 }
 
@@ -2713,10 +2712,8 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   if (static_cast<RenderViewHostImpl*>(render_view_host)->is_swapped_out())
     return;
 
-  if (delegate_) {
-    static_cast<RenderViewHostImpl*>(render_view_host)->
-        SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
-  }
+  if (delegate_)
+    view_->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
 
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
@@ -2861,8 +2858,10 @@ void WebContentsImpl::DidNavigate(
   // Run post-commit tasks.
   if (details.is_main_frame) {
     DidNavigateMainFramePostCommit(details, params);
-    if (delegate_)
+    if (delegate_) {
       delegate_->DidNavigateMainFramePostCommit(this);
+      view_->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
+    }
   }
   DidNavigateAnyFramePostCommit(rvh, details, params);
 }
@@ -3374,11 +3373,8 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* rvh) {
   NotifySwapped(rvh);
 
   // Make sure the visible RVH reflects the new delegate's preferences.
-  if (delegate_) {
-    RenderViewHostImpl* host = render_manager_.current_host();
-    if (host)
-      host->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
-  }
+  if (delegate_)
+    view_->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
 
   view_->RenderViewSwappedIn(render_manager_.current_host());
 }

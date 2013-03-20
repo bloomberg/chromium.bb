@@ -112,6 +112,9 @@ void TestWebContentsView::RenderViewCreated(RenderViewHost* host) {
 void TestWebContentsView::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
+void TestWebContentsView::SetOverscrollControllerEnabled(bool enabled) {
+}
+
 #if defined(OS_MACOSX)
 bool TestWebContentsView::IsEventTracking() const {
   return false;

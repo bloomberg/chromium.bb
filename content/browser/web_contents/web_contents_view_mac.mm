@@ -342,6 +342,9 @@ void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
 void WebContentsViewMac::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
+void WebContentsViewMac::SetOverscrollControllerEnabled(bool enabled) {
+}
+
 bool WebContentsViewMac::IsEventTracking() const {
   return base::MessagePumpMac::IsHandlingSendEvent();
 }
