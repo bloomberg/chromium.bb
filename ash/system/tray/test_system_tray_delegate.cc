@@ -335,5 +335,11 @@ base::TimeDelta TestSystemTrayDelegate::GetSessionLengthLimit() {
   return base::TimeDelta();
 }
 
+int TestSystemTrayDelegate::GetSystemTrayMenuWidth() {
+  // This is the default width for English languages.
+  return 300;
+}
+
+
 }  // namespace test
 }  // namespace ash

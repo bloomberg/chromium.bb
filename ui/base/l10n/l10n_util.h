@@ -147,6 +147,9 @@ UI_EXPORT void GetAcceptLanguagesForLocale(
     const std::string& display_locale,
     std::vector<std::string>* locale_codes);
 
+// Returns the preferred size of the contents view of a window based on
+// designer given constraints which might dependent on the language used.
+UI_EXPORT int GetLocalizedContentsWidthInPixels(int pixel_resource_id);
 
 }  // namespace l10n_util
 

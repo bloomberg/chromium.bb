@@ -846,4 +846,11 @@ void GetAcceptLanguagesForLocale(const std::string& display_locale,
   }
 }
 
+int GetLocalizedContentsWidthInPixels(int pixel_resource_id) {
+  int width = 0;
+  base::StringToInt(l10n_util::GetStringUTF8(pixel_resource_id), &width);
+  DCHECK_GT(width, 0);
+  return width;
+}
+
 }  // namespace l10n_util

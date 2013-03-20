@@ -96,6 +96,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using drive::DriveSystemService;
@@ -909,6 +910,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual base::TimeDelta GetSessionLengthLimit() OVERRIDE {
     return session_length_limit_;
+  }
+
+  virtual int GetSystemTrayMenuWidth() OVERRIDE {
+    return l10n_util::GetLocalizedContentsWidthInPixels(
+        IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
   }
 
  private:

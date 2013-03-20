@@ -334,6 +334,9 @@ class SystemTrayDelegate {
   // length limit is set.
   virtual base::TimeDelta GetSessionLengthLimit() = 0;
 
+  // Get the system tray menu size in pixels (dependent on the language).
+  virtual int GetSystemTrayMenuWidth() = 0;
+
   // Creates a dummy delegate for testing.
   static SystemTrayDelegate* CreateDummyDelegate();
 };

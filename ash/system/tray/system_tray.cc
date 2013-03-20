@@ -63,6 +63,9 @@ using views::TrayBubbleView;
 
 namespace ash {
 
+// The minimum width of the system tray menu width.
+const int kMinimumSystemTrayMenuWidth = 300;
+
 namespace internal {
 
 // Class to initialize and manage the SystemTrayBubble and TrayBubbleWrapper
@@ -372,9 +375,13 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     system_bubble_->bubble()->UpdateView(items, bubble_type);
   } else {
+    // The menu width is fixed, and it is a per language setting.
+    int menu_width = std::max(kMinimumSystemTrayMenuWidth,
+        Shell::GetInstance()->system_tray_delegate()->GetSystemTrayMenuWidth());
+
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            GetAnchorAlignment(),
-                                           kTrayPopupMinWidth,
+                                           menu_width,
                                            kTrayPopupMaxWidth);
     init_params.can_activate = can_activate;
     if (detailed) {

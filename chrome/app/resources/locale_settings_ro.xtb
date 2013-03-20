@@ -5,6 +5,7 @@
 <translation id="IDS_DEFAULT_ENCODING">ISO-8859-2</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">ro</translation>
+<translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">350</translation>
 <translation id="IDS_OPTIONS_DIALOG_LEFT_COLUMN_WIDTH_CHARS">26</translation>
 <translation id="IDS_OPTIONS_RESET_CONFIRM_BOX_WIDTH_CHARS">80</translation>
 <translation id="IDS_URLPICKER_DIALOG_WIDTH_CHARS">80</translation>

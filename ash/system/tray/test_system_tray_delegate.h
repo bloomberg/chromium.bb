@@ -103,6 +103,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
       scoped_ptr<VolumeControlDelegate> delegate) OVERRIDE;
   virtual base::Time GetSessionStartTime() OVERRIDE;
   virtual base::TimeDelta GetSessionLengthLimit() OVERRIDE;
+  virtual int GetSystemTrayMenuWidth() OVERRIDE;
 
  private:
   bool wifi_enabled_;
