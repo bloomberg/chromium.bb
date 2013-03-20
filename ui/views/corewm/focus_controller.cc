@@ -285,9 +285,6 @@ void FocusController::SetActiveWindow(aura::Window* window) {
     active_window_->parent()->StackChildAtTop(active_window_);
   }
 
-  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
-                    activation_observers_,
-                    OnWindowActivated(active_window_, lost_activation));
   aura::client::ActivationChangeObserver* observer =
       aura::client::GetActivationChangeObserver(lost_activation);
   if (observer)
@@ -295,6 +292,9 @@ void FocusController::SetActiveWindow(aura::Window* window) {
   observer = aura::client::GetActivationChangeObserver(active_window_);
   if (observer)
     observer->OnWindowActivated(active_window_, lost_activation);
+  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
+                    activation_observers_,
+                    OnWindowActivated(active_window_, lost_activation));
 }
 
 void FocusController::WindowLostFocusFromDispositionChange(

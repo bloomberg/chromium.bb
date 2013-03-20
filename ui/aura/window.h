@@ -428,11 +428,14 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Methods implementing visibility change notifications. See WindowObserver
   // for more details.
   void NotifyWindowVisibilityChanged(aura::Window* target, bool visible);
-  // Notifies this window's observers.
-  void NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
+  // Notifies this window's observers. Returns false if |this| was deleted
+  // during the call (by an observer), otherwise true.
+  bool NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
                                                bool visible);
-  // Notifies this window and its child hierarchy.
-  void NotifyWindowVisibilityChangedDown(aura::Window* target, bool visible);
+  // Notifies this window and its child hierarchy. Returns false if
+  // |this| was deleted during the call (by an observer), otherwise
+  // true.
+  bool NotifyWindowVisibilityChangedDown(aura::Window* target, bool visible);
   // Notifies this window and its parent hierarchy.
   void NotifyWindowVisibilityChangedUp(aura::Window* target, bool visible);
 

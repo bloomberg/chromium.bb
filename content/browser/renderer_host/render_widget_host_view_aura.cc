@@ -48,6 +48,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_destruction_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -2034,8 +2035,17 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
     if (host_tracker_.get() && !host_tracker_->windows().empty()) {
       aura::Window* host = *(host_tracker_->windows().begin());
       aura::client::FocusClient* client = aura::client::GetFocusClient(host);
-      if (client)
+      if (client) {
+        // Calling host->Focus() may delete |this|. We create a local
+        // observer for that. In that case we exit without further
+        // access to any members.
+        aura::WindowDestructionObserver destruction_observer(window_);
         host->Focus();
+        if (destruction_observer.destroyed()) {
+          event->SetHandled();
+          return;
+        }
+      }
     }
     if (!in_shutdown_) {
       in_shutdown_ = true;

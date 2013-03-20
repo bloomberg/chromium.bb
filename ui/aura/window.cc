@@ -23,6 +23,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_destruction_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/compositor/compositor.h"
@@ -982,29 +983,52 @@ void Window::NotifyWindowHierarchyChangeAtReceiver(
 
 void Window::NotifyWindowVisibilityChanged(aura::Window* target,
                                            bool visible) {
-  NotifyWindowVisibilityChangedDown(target, visible);
+  if (!NotifyWindowVisibilityChangedDown(target, visible)) {
+    return; // |this| has been deleted.
+  }
   NotifyWindowVisibilityChangedUp(target, visible);
 }
 
-void Window::NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
+bool Window::NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
                                                      bool visible) {
+  // |this| may be deleted during a call to OnWindowVisibilityChanged
+  // on one of the observers. We create an local observer for that. In
+  // that case we exit without further access to any members.
+  WindowDestructionObserver destruction_observer(this);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanged(target, visible));
+  return !destruction_observer.destroyed();
 }
 
-void Window::NotifyWindowVisibilityChangedDown(aura::Window* target,
+bool Window::NotifyWindowVisibilityChangedDown(aura::Window* target,
                                                bool visible) {
-  NotifyWindowVisibilityChangedAtReceiver(target, visible);
-  for (Window::Windows::const_iterator it = children_.begin();
-       it != children_.end(); ++it) {
-    (*it)->NotifyWindowVisibilityChangedDown(target, visible);
-  }
+  if (!NotifyWindowVisibilityChangedAtReceiver(target, visible))
+    return false; // |this| was deleted.
+  std::set<const Window*> child_already_processed;
+  bool child_destroyed = false;
+  do {
+    child_destroyed = false;
+    for (Window::Windows::const_iterator it = children_.begin();
+         it != children_.end(); ++it) {
+      if (!child_already_processed.insert(*it).second)
+        continue;
+      if (!(*it)->NotifyWindowVisibilityChangedDown(target, visible)) {
+        // |*it| was deleted, |it| is invalid and |children_| has changed.
+        // We exit the current for-loop and enter a new one.
+        child_destroyed = true;
+        break;
+      }
+    }
+  } while (child_destroyed);
+  return true;
 }
 
 void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
                                              bool visible) {
-  for (Window* window = this; window; window = window->parent())
-    window->NotifyWindowVisibilityChangedAtReceiver(target, visible);
+  for (Window* window = this; window; window = window->parent()) {
+    bool ret = window->NotifyWindowVisibilityChangedAtReceiver(target, visible);
+    DCHECK(ret);
+  }
 }
 
 void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
