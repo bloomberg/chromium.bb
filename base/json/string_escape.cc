@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 namespace base {
 

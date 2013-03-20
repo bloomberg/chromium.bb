@@ -32,8 +32,8 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/string_piece.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 
 namespace base {
 class Value;
