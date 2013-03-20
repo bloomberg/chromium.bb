@@ -17,7 +17,7 @@
             '<(DEPTH)/chrome/chrome.gyp:chrome_dll',
           ],
           'variables': {
-            'dest_dir': '<(PRODUCT_DIR)\\syzygy',
+            'dest_dir': '<(PRODUCT_DIR)/syzygy',
           },
           'conditions': [
             ['asan!=1', {
@@ -30,18 +30,18 @@
                   'action_name': 'Reorder Chrome with Syzygy',
                   'msvs_cygwin_shell': 0,
                   'inputs': [
-                    '<(PRODUCT_DIR)\\chrome.dll',
-                    '<(PRODUCT_DIR)\\chrome.dll.pdb',
+                    '<(PRODUCT_DIR)/chrome.dll',
+                    '<(PRODUCT_DIR)/chrome.dll.pdb',
                   ],
                   'outputs': [
-                    '<(dest_dir)\\chrome.dll',
-                    '<(dest_dir)\\chrome.dll.pdb',
+                    '<(dest_dir)/chrome.dll',
+                    '<(dest_dir)/chrome.dll.pdb',
                   ],
                   'action': [
                     'python',
                     '<(DEPTH)/chrome/tools/build/win/syzygy_reorder.py',
-                    '--input_executable', '<(PRODUCT_DIR)\\chrome.dll',
-                    '--input_symbol', '<(PRODUCT_DIR)\\chrome.dll.pdb',
+                    '--input_executable', '<(PRODUCT_DIR)/chrome.dll',
+                    '--input_symbol', '<(PRODUCT_DIR)/chrome.dll.pdb',
                     '--destination_dir', '<(dest_dir)',
                   ],
                 },
@@ -53,21 +53,23 @@
                   'action_name': 'Instrument Chrome with SyzyAsan',
                   'msvs_cygwin_shell': 0,
                   'inputs': [
-                    '<(PRODUCT_DIR)\\chrome.dll',
-                    '<(PRODUCT_DIR)\\chrome.dll.pdb',
+                    '<(PRODUCT_DIR)/chrome.dll',
+                    '<(PRODUCT_DIR)/chrome.dll.pdb',
+                    '<(DEPTH)/chrome/tools/build/win/win-syzyasan-filter.txt',
                   ],
                   'outputs': [
-                    '<(dest_dir)\\chrome.dll',
-                    '<(dest_dir)\\chrome.dll.pdb',
+                    '<(dest_dir)/chrome.dll',
+                    '<(dest_dir)/chrome.dll.pdb',
+                    '<(dest_dir)/win-syzyasan-filter.txt.json',
                   ],
                   'action': [
                     'python',
                     '<(DEPTH)/chrome/tools/build/win/syzygy_instrument.py',
                     '--mode', 'asan',
-                    '--agent_dll', '<(DEPTH)\\third_party\\syzygy\\binaries'
-                        '\\exe\\asan_rtl.dll',
-                    '--input_executable', '<(PRODUCT_DIR)\\chrome.dll',
-                    '--input_symbol', '<(PRODUCT_DIR)\\chrome.dll.pdb',
+                    '--input_executable', '<(PRODUCT_DIR)/chrome.dll',
+                    '--input_symbol', '<(PRODUCT_DIR)/chrome.dll.pdb',
+                    '--filter',
+                    '<(DEPTH)/chrome/tools/build/win/win-syzyasan-filter.txt',
                     '--destination_dir', '<(dest_dir)',
                   ],
                 },
