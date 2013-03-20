@@ -7,13 +7,25 @@
 
 setlocal
 
+:: Windows freaks out if a file is overwritten while it's being executed.  Copy
+:: this script off to a temporary location and reinvoke from there before
+:: running any svn or git commands.
+IF %~nx0==update_depot_tools.bat (
+  COPY /Y %~dp0update_depot_tools.bat %TEMP%\update_depot_tools_tmp.bat >nul
+  if errorlevel 1 goto :EOF
+  %TEMP%\update_depot_tools_tmp.bat %~dp0 %*
+)
+
+set DEPOT_TOOLS_DIR=%1
+SHIFT
+
 set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 :: Will download svn and python.
 :: If you don't want to install the depot_tools version of these tools, remove
 :: the 'force' option on the next command. The tools will be installed only if
 :: not already in the PATH environment variable.
-call "%~dp0bootstrap\win\win_tools.bat" force
+call "%DEPOT_TOOLS_DIR%bootstrap\win\win_tools.bat" force
 if errorlevel 1 goto :EOF
 :: Now clear errorlevel so it can be set by other programs later.
 set errorlevel=
@@ -22,19 +34,19 @@ set errorlevel=
 IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :EOF
 
 :: We need either .\.svn\. or .\.git\. to be able to sync.
-IF EXIST "%~dp0.svn\." GOTO :SVN_UPDATE
-IF EXIST "%~dp0.git\." GOTO :GIT_UPDATE
+IF EXIST "%DEPOT_TOOLS_DIR%.svn\." GOTO :SVN_UPDATE
+IF EXIST "%DEPOT_TOOLS_DIR%.git\." GOTO :GIT_UPDATE
 echo Error updating depot_tools, no revision tool found.
 goto :EOF
 
 
 :SVN_UPDATE
-call svn up -q "%~dp0."
+call svn up -q "%DEPOT_TOOLS_DIR%."
 goto :EOF
 
 
 :GIT_UPDATE
-cd /d "%~dp0."
+cd /d "%DEPOT_TOOLS_DIR%."
 call git config remote.origin.fetch > NUL
 if errorlevel 1 goto :GIT_SVN_UPDATE
 for /F %%x in ('git config --get remote.origin.url') DO (
@@ -51,6 +63,6 @@ call git rebase -q origin/master > NUL
 goto :EOF
 
 :GIT_SVN_UPDATE
-cd /d "%~dp0."
+cd /d "%DEPOT_TOOLS_DIR%."
 call git svn rebase -q -q
 goto :EOF
