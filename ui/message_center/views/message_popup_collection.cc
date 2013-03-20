@@ -13,7 +13,6 @@
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
@@ -64,8 +63,8 @@ class ToastContentsView : public views::WidgetDelegateView {
     views::Widget* widget = GetWidget();
     if (widget) {
       gfx::Rect bounds = widget->GetWindowBoundsInScreen();
-      bounds.set_width(kWebNotificationWidth);
-      bounds.set_height(view->GetHeightForWidth(kWebNotificationWidth));
+      bounds.set_width(kNotificationWidth);
+      bounds.set_height(view->GetHeightForWidth(kNotificationWidth));
       widget->SetBounds(bounds);
     }
     Layout();
@@ -125,8 +124,8 @@ class ToastContentsView : public views::WidgetDelegateView {
     if (child_count() == 0)
       return gfx::Size();
 
-    return gfx::Size(kWebNotificationWidth,
-                     child_at(0)->GetHeightForWidth(kWebNotificationWidth));
+    return gfx::Size(kNotificationWidth,
+                     child_at(0)->GetHeightForWidth(kNotificationWidth));
   }
 
  private:
@@ -177,14 +176,14 @@ void MessagePopupCollection::UpdatePopups() {
   }
 
   int bottom = work_area.bottom() - kMarginBetweenItems;
-  int left = work_area.right() - kWebNotificationWidth - kMarginBetweenItems;
+  int left = work_area.right() - kNotificationWidth - kMarginBetweenItems;
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
            popups.rbegin(); iter != popups.rend(); ++iter) {
     MessageView* view =
         NotificationView::Create(*(*iter), message_center_, true);
-    int view_height = view->GetHeightForWidth(kWebNotificationWidth);
+    int view_height = view->GetHeightForWidth(kNotificationWidth);
     if (bottom - view_height - kMarginBetweenItems < 0) {
       delete view;
       break;

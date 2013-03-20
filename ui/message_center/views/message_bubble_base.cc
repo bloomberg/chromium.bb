@@ -5,8 +5,8 @@
 #include "ui/message_center/views/message_bubble_base.h"
 
 #include "base/bind.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_util.h"
-#include "ui/message_center/views/message_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -76,8 +76,8 @@ views::TrayBubbleView::InitParams MessageBubbleBase::GetDefaultInitParams(
   views::TrayBubbleView::InitParams init_params(
       views::TrayBubbleView::ANCHOR_TYPE_TRAY,
       anchor_alignment,
-      kWebNotificationWidth,
-      kWebNotificationWidth);
+      kNotificationWidth,
+      kNotificationWidth);
   init_params.arrow_color = kHeaderBackgroundColorDark;
   return init_params;
 }

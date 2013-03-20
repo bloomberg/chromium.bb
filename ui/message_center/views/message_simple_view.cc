@@ -6,6 +6,7 @@
 
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -95,7 +96,7 @@ void MessageSimpleView::SetUpView(const Notification& notification) {
   columns->AddPaddingColumn(0, padding_width);
 
   // Notification message text.
-  const int message_width = kWebNotificationWidth - kWebNotificationIconSize -
+  const int message_width = kNotificationWidth - kWebNotificationIconSize -
       kWebNotificationButtonWidth - (padding_width * 3) -
       (scroller() ? scroller()->GetScrollBarWidth() : 0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,

@@ -11,7 +11,9 @@ const int kNotificationPreferredImageSize = 300;
 const int kNotificationButtonIconSize = 16;
 const int kSettingsIconSize = 16;
 
-const int kNotificationMaximumImageHeight = 300;
+const int kNotificationWidth = 300;
+
+const int kNotificationMaximumImageHeight = kNotificationWidth;
 const size_t kNotificationMaximumItems = 8;
 
 const int kAutocloseHighPriorityDelaySeconds = 25;
