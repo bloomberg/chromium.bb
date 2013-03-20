@@ -353,6 +353,10 @@ are declared in build/common.gypi.
         Show Full History
       </message>
 
+      <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
+        Customize and control <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      </message>
+
       <message name="IDS_ALTERNATE_NAV_URL_VIEW_LABEL" desc="Label displayed in an infobar when a user searches for a term he may have meant to navigate to.">
         Did you mean to go to <ph name="SITE">$1<ex>http://intranetsite/</ex></ph>?
       </message>

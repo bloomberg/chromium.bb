@@ -284,7 +284,9 @@ void ToolbarView::Init() {
   app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);
   app_menu_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
-  app_menu_->SetTooltipText(l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));
+  app_menu_->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_APPMENU_TOOLTIP,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Add any necessary badges to the menu item based on the system state.

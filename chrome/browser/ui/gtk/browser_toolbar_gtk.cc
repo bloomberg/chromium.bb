@@ -229,7 +229,8 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
 
   gtk_widget_set_tooltip_text(
       wrench_button,
-      l10n_util::GetStringUTF8(IDS_APPMENU_TOOLTIP).c_str());
+      l10n_util::GetStringFUTF8(IDS_APPMENU_TOOLTIP,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
   g_signal_connect(wrench_button, "button-press-event",
                    G_CALLBACK(OnMenuButtonPressEventThunk), this);
   gtk_widget_set_can_focus(wrench_button, FALSE);
