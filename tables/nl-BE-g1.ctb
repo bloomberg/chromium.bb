@@ -30,6 +30,6 @@
 
 include nl-BE-chardefs.cti
 include braille-patterns.cti
-include nl-BE-translation.ctb
+include nl-BE-translation.cti
 
 # ---------------------------------------------------------------------------------------

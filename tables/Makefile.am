@@ -173,7 +173,7 @@ table_files = \
 	nl-BE.dis \
 	nl-BE-g1.ctb \
 	nl-be-g1.utb \
-	nl-BE-translation.ctb \
+	nl-BE-translation.cti \
 	Nl-Nl-g1.utb \
 	no-no.ctb \
 	no-no.dis \
