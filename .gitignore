@@ -168,6 +168,7 @@ v8.log
 /third_party/cacheinvalidation/src
 /third_party/chromeos_login_manager
 /third_party/chromeos_text_input
+/third_party/chromite
 /third_party/cros
 /third_party/cros_dbus_cplusplus/source
 /third_party/cros_system_api
@@ -230,6 +231,7 @@ v8.log
 /third_party/ppapi
 /third_party/psyco_win32
 /third_party/pthreads-win32
+/third_party/pyelftools
 /third_party/pyftpdlib/src
 /third_party/pylib
 /third_party/pymox/src
