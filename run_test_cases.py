@@ -428,23 +428,25 @@ def filter_bad_tests(tests, disabled, fails, flaky):
   return [test for test in tests if valid(test)]
 
 
-def chromium_filter_bad_tests(tests, disabled, fails, flaky, pre, manual):
-  """Filters out PRE_, MANUAL_, and other weird Chromium-specific test cases."""
+def chromium_valid(test, pre, manual):
+  """Returns True if the test case is valid to be selected."""
   def starts_with(a, b, prefix):
     return a.startswith(prefix) or b.startswith(prefix)
 
-  def valid(test):
-    fixture, case = test.split('.', 1)
-    if not pre and starts_with(fixture, case, 'PRE_'):
-      return False
-    if not manual and starts_with(fixture, case, 'MANUAL_'):
-      return False
-    if test == 'InProcessBrowserTest.Empty':
-      return False
-    return True
+  fixture, case = test.split('.', 1)
+  if not pre and starts_with(fixture, case, 'PRE_'):
+    return False
+  if not manual and starts_with(fixture, case, 'MANUAL_'):
+    return False
+  if test == 'InProcessBrowserTest.Empty':
+    return False
+  return True
 
+
+def chromium_filter_bad_tests(tests, disabled, fails, flaky, pre, manual):
+  """Filters out PRE_, MANUAL_, and other weird Chromium-specific test cases."""
   tests = filter_bad_tests(tests, disabled, fails, flaky)
-  return [test for test in tests if valid(test)]
+  return [test for test in tests if chromium_valid(test, pre, manual)]
 
 
 def parse_gtest_cases(out, seed):
@@ -687,6 +689,11 @@ def process_output(output, test_cases, duration, returncode):
   return data
 
 
+def chromium_filter_tests(data):
+  """Removes funky PRE_ chromium-specific tests."""
+  return [d for d in data if chromium_valid(d['test_case'], False, True)]
+
+
 class Runner(object):
   """Immutable settings to run many test cases in a loop."""
   def __init__(
@@ -755,6 +762,8 @@ class Runner(object):
           'output': utf8_output,
         }
       ]
+
+    data = chromium_filter_tests(data)
 
     if sys.platform == 'win32':
       output = output.replace('\r\n', '\n')
