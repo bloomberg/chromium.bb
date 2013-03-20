@@ -18,7 +18,8 @@ PowerSupplyStatus::PowerSupplyStatus()
       averaged_battery_time_to_empty(0),
       averaged_battery_time_to_full(0),
       battery_percentage(0),
-      is_calculating_battery_time(false) {}
+      is_calculating_battery_time(false),
+      battery_energy_rate(0) {}
 
 std::string PowerSupplyStatus::ToString() const {
   std::string result;
@@ -49,6 +50,9 @@ std::string PowerSupplyStatus::ToString() const {
   base::StringAppendF(&result,
                       "is_calculating_battery_time = %s ",
                       is_calculating_battery_time ? "true" : "false");
+  base::StringAppendF(&result,
+                      "battery_energy_rate = %f ",
+                      battery_energy_rate);
 
   return result;
 }

@@ -36,6 +36,9 @@ struct ASH_EXPORT PowerSupplyStatus {
 
   bool is_calculating_battery_time;
 
+  // Rate of charge/discharge of the battery, in W.
+  double battery_energy_rate;
+
   PowerSupplyStatus();
   std::string ToString() const;
 };
