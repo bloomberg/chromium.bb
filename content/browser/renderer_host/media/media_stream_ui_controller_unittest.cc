@@ -24,10 +24,12 @@ class MediaStreamDeviceUIControllerTest
  public:
   MediaStreamDeviceUIControllerTest() {}
 
-  // Mock implementation of SettingsRequester;
+  // Mock implementation of SettingsRequester.
+  // TODO(sergeyu): Move mock SettingsRequester to a separate class.
   MOCK_METHOD2(DevicesAccepted, void(
       const std::string&, const StreamDeviceInfoArray&));
   MOCK_METHOD1(SettingsError, void(const std::string&));
+  MOCK_METHOD1(StopStreamFromUI, void(const std::string&));
   void GetAvailableDevices(MediaStreamDevices* devices) OVERRIDE {
     devices->push_back(MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE,
                                          "mic",

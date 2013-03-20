@@ -21,7 +21,9 @@ class CONTENT_EXPORT MediaStreamRequester {
   virtual void StreamGenerated(const std::string& label,
                                const StreamDeviceInfoArray& audio_devices,
                                const StreamDeviceInfoArray& video_devices) = 0;
-  // Called if GenerateStream failed.
+  // Called if GenerateStream failed or if stream has been stopped by the user.
+  // TODO(sergeyu): Rename this method and corresponding IPC message or maybe
+  // add a separate IPC message.
   virtual void StreamGenerationFailed(const std::string& label) = 0;
 
   // Called as a reply of a successful call to EnumerateDevices.

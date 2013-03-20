@@ -153,11 +153,11 @@ MediaCaptureDevicesDispatcher::GetAudioStreamIndicator() {
 void MediaCaptureDevicesDispatcher::OnCaptureDevicesOpened(
     int render_process_id,
     int render_view_id,
-    const content::MediaStreamDevices& devices) {
+    const content::MediaStreamDevices& devices,
+    const base::Closure& close_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  media_stream_capture_indicator_->CaptureDevicesOpened(render_process_id,
-                                                        render_view_id,
-                                                        devices);
+  media_stream_capture_indicator_->CaptureDevicesOpened(
+      render_process_id, render_view_id, devices, close_callback);
 }
 
 void MediaCaptureDevicesDispatcher::OnCaptureDevicesClosed(

@@ -440,13 +440,13 @@ std::string MediaStreamManager::OpenDevice(
 }
 
 void MediaStreamManager::NotifyUIDevicesOpened(
+    const std::string& label,
     int render_process_id,
     int render_view_id,
     const MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ui_controller_->NotifyUIIndicatorDevicesOpened(render_process_id,
-                                                 render_view_id,
-                                                 devices);
+  ui_controller_->NotifyUIIndicatorDevicesOpened(
+      label, render_process_id, render_view_id, devices);
 }
 
 void MediaStreamManager::NotifyUIDevicesClosed(
@@ -454,9 +454,8 @@ void MediaStreamManager::NotifyUIDevicesClosed(
     int render_view_id,
     const MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ui_controller_->NotifyUIIndicatorDevicesClosed(render_process_id,
-                                                 render_view_id,
-                                                 devices);
+  ui_controller_->NotifyUIIndicatorDevicesClosed(
+      render_process_id, render_view_id, devices);
 }
 
 void MediaStreamManager::SendCachedDeviceList(
@@ -564,7 +563,11 @@ void MediaStreamManager::HandleRequest(const std::string& label) {
       audio_type == MEDIA_TAB_AUDIO_CAPTURE ||
       video_type == MEDIA_TAB_VIDEO_CAPTURE;
 
+  bool is_screen_capure =
+      video_type == MEDIA_SCREEN_VIDEO_CAPTURE;
+
   if (!is_web_contents_capture &&
+      !is_screen_capure &&
       ((IsAudioMediaType(audio_type) && !audio_enumeration_cache_.valid) ||
        (IsVideoMediaType(video_type) && !video_enumeration_cache_.valid))) {
     // Enumerate the devices if there is no valid device lists to be used.
@@ -686,7 +689,7 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
       }
 
       request->requester->StreamGenerated(label, audio_devices, video_devices);
-      NotifyDevicesOpened(*request);
+      NotifyDevicesOpened(label, *request);
       break;
     }
     default:
@@ -923,6 +926,20 @@ void MediaStreamManager::SettingsError(const std::string& label) {
   requests_.erase(it);
 }
 
+void MediaStreamManager::StopStreamFromUI(const std::string& label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  DeviceRequests::iterator it = requests_.find(label);
+  if (it == requests_.end())
+    return;
+
+  // Notify renderers that the stream has been stopped.
+  if (it->second->requester)
+    it->second->requester->StreamGenerationFailed(label);
+
+  StopGeneratedStream(label);
+}
+
 void MediaStreamManager::GetAvailableDevices(MediaStreamDevices* devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(audio_enumeration_cache_.valid || video_enumeration_cache_.valid);
@@ -970,16 +987,16 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   ui_controller_.reset();
 }
 
-void MediaStreamManager::NotifyDevicesOpened(const DeviceRequest& request) {
+void MediaStreamManager::NotifyDevicesOpened(const std::string& label,
+                                             const DeviceRequest& request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   MediaStreamDevices opened_devices;
   DevicesFromRequest(request, &opened_devices);
   if (opened_devices.empty())
     return;
 
-  NotifyUIDevicesOpened(request.render_process_id,
-                        request.render_view_id,
-                        opened_devices);
+  NotifyUIDevicesOpened(
+      label, request.render_process_id, request.render_view_id, opened_devices);
 }
 
 void MediaStreamManager::NotifyDevicesClosed(const DeviceRequest& request) {
@@ -989,9 +1006,8 @@ void MediaStreamManager::NotifyDevicesClosed(const DeviceRequest& request) {
   if (closed_devices.empty())
     return;
 
-  NotifyUIDevicesClosed(request.render_process_id,
-                        request.render_view_id,
-                        closed_devices);
+  NotifyUIDevicesClosed(
+      request.render_process_id, request.render_view_id, closed_devices);
 }
 
 void MediaStreamManager::DevicesFromRequest(

@@ -233,14 +233,16 @@ void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
 void MediaStreamCaptureIndicator::CaptureDevicesOpened(
     int render_process_id,
     int render_view_id,
-    const content::MediaStreamDevices& devices) {
+    const content::MediaStreamDevices& devices,
+    const base::Closure& close_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!devices.empty());
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread,
-                 this, render_process_id, render_view_id, devices));
+                 this, render_process_id, render_view_id, devices,
+                 close_callback));
 }
 
 void MediaStreamCaptureIndicator::CaptureDevicesClosed(
@@ -259,10 +261,11 @@ void MediaStreamCaptureIndicator::CaptureDevicesClosed(
 void MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread(
     int render_process_id,
     int render_view_id,
-    const content::MediaStreamDevices& devices) {
+    const content::MediaStreamDevices& devices,
+    const base::Closure& close_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  AddCaptureDevices(render_process_id, render_view_id, devices);
+  AddCaptureDevices(render_process_id, render_view_id, devices, close_callback);
 }
 
 void MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread(
@@ -457,7 +460,8 @@ WebContents* MediaStreamCaptureIndicator::LookUpByKnownAlias(
 void MediaStreamCaptureIndicator::AddCaptureDevices(
     int render_process_id,
     int render_view_id,
-    const content::MediaStreamDevices& devices) {
+    const content::MediaStreamDevices& devices,
+    const base::Closure& close_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   WebContents* const web_contents =

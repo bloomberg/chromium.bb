@@ -174,6 +174,7 @@ void MediaStreamUIController::PostResponse(
 }
 
 void MediaStreamUIController::NotifyUIIndicatorDevicesOpened(
+    const std::string& label,
     int render_process_id,
     int render_view_id,
     const MediaStreamDevices& devices) {
@@ -184,9 +185,12 @@ void MediaStreamUIController::NotifyUIIndicatorDevicesOpened(
   if (media_observer == NULL)
     return;
 
-  media_observer->OnCaptureDevicesOpened(render_process_id,
-                                         render_view_id,
-                                         devices);
+  media_observer->OnCaptureDevicesOpened(
+      render_process_id, render_view_id, devices,
+      media::BindToLoop(
+          base::MessageLoopProxy::current(),
+          base::Bind(&MediaStreamUIController::OnStopStreamFromUI,
+                     weak_ptr_factory_.GetWeakPtr(), label)));
 }
 
 void MediaStreamUIController::NotifyUIIndicatorDevicesClosed(
@@ -302,6 +306,11 @@ void MediaStreamUIController::PostRequestToFakeUI(const std::string& label) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&MediaStreamUIController::PostResponse,
                  weak_ptr_factory_.GetWeakPtr(), label, devices_to_use));
+}
+
+void MediaStreamUIController::OnStopStreamFromUI(const std::string& label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  requester_->StopStreamFromUI(label);
 }
 
 }  // namespace content

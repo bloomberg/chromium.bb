@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -44,7 +45,8 @@ class MediaStreamCaptureIndicator
   // Called on IO thread when MediaStream opens new capture devices.
   void CaptureDevicesOpened(int render_process_id,
                             int render_view_id,
-                            const content::MediaStreamDevices& devices);
+                            const content::MediaStreamDevices& devices,
+                            const base::Closure& close_callback);
 
   // Called on IO thread when MediaStream closes the opened devices.
   void CaptureDevicesClosed(int render_process_id,
@@ -71,7 +73,8 @@ class MediaStreamCaptureIndicator
   // Called by the public functions, executed on UI thread.
   void DoDevicesOpenedOnUIThread(int render_process_id,
                                  int render_view_id,
-                                 const content::MediaStreamDevices& devices);
+                                 const content::MediaStreamDevices& devices,
+                                 const base::Closure& close_callback);
   void DoDevicesClosedOnUIThread(int render_process_id,
                                  int render_view_id,
                                  const content::MediaStreamDevices& devices);
@@ -96,7 +99,8 @@ class MediaStreamCaptureIndicator
   // Adds devices to usage map and triggers necessary UI updates.
   void AddCaptureDevices(int render_process_id,
                          int render_view_id,
-                         const content::MediaStreamDevices& devices);
+                         const content::MediaStreamDevices& devices,
+                         const base::Closure& close_callback);
 
   // Removes devices from the usage map and triggers necessary UI updates.
   void RemoveCaptureDevices(int render_process_id,
