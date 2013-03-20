@@ -34,7 +34,7 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("foo/bar/"), AutocompleteInput::URL },
     { ASCIIToUTF16("foo/bar baz\\"), AutocompleteInput::URL },
     { ASCIIToUTF16("foo.com/bar"), AutocompleteInput::URL },
-    { ASCIIToUTF16("foo;bar"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("foo;bar"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("foo/bar baz"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("foo bar.com"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("foo bar"), AutocompleteInput::QUERY },
