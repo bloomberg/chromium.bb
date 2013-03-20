@@ -47,11 +47,7 @@ v8::Handle<v8::Value> FileBrowserHandlerCustomBindings::GetExternalFileEntry(
     WebKit::WebFrame* webframe =
         WebKit::WebFrame::frameForContext(v8_context());
     return webframe->createFileEntry(
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
         WebKit::WebFileSystemTypeExternal,
-#else
-        WebKit::WebFileSystem::TypeExternal,
-#endif
         WebKit::WebString::fromUTF8(file_system_name.c_str()),
         WebKit::WebString::fromUTF8(file_system_path.c_str()),
         WebKit::WebString::fromUTF8(file_full_path.c_str()),

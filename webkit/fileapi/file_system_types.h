@@ -25,7 +25,6 @@ enum FileSystemType {
   // They are sandboxed filesystems; all the files in the filesystems are
   // placed under the profile directory with path obfuscation and quota
   // enforcement.
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
   kFileSystemTypeTemporary = WebKit::WebFileSystemTypeTemporary,
   kFileSystemTypePersistent = WebKit::WebFileSystemTypePersistent,
 
@@ -36,18 +35,6 @@ enum FileSystemType {
   // profile directory (thus called 'external' filesystem).
   // This filesystem is used only by Chrome OS as of writing.
   kFileSystemTypeExternal = WebKit::WebFileSystemTypeExternal,
-#else
-  kFileSystemTypeTemporary = WebKit::WebFileSystem::TypeTemporary,
-  kFileSystemTypePersistent = WebKit::WebFileSystem::TypePersistent,
-
-  // Indicates non-sandboxed isolated filesystem.
-  kFileSystemTypeIsolated = WebKit::WebFileSystem::TypeIsolated,
-
-  // Indicates non-sandboxed filesystem where files are placed outside the
-  // profile directory (thus called 'external' filesystem).
-  // This filesystem is used only by Chrome OS as of writing.
-  kFileSystemTypeExternal = WebKit::WebFileSystem::TypeExternal,
-#endif
 
   // ------------------------------------------------------------------------
   // Private FileSystem types, that should not appear in filesystem: URL as

@@ -641,20 +641,12 @@ class CONTENT_EXPORT RenderViewImpl
                                          int active_match_ordinal,
                                          const WebKit::WebRect& sel);
   virtual void openFileSystem(WebKit::WebFrame* frame,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
                               WebKit::WebFileSystemType type,
-#else
-                              WebKit::WebFileSystem::Type type,
-#endif
                               long long size,
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
   virtual void deleteFileSystem(WebKit::WebFrame* frame,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
                                 WebKit::WebFileSystemType type,
-#else
-                                WebKit::WebFileSystem::Type type,
-#endif
                                 WebKit::WebFileSystemCallbacks* callbacks);
   virtual void queryStorageUsageAndQuota(
       WebKit::WebFrame* frame,

@@ -76,11 +76,7 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
   virtual void openFileSystem(
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
                               WebKit::WebFileSystemType type,
-#else
-                              WebKit::WebFileSystem::Type type,
-#endif
                               long long size,
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);

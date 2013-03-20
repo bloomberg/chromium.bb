@@ -806,11 +806,7 @@ bool TestWebViewDelegate::allowScript(WebFrame* frame,
 
 void TestWebViewDelegate::openFileSystem(
     WebFrame* frame,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     WebKit::WebFileSystemType type,
-#else
-    WebFileSystem::Type type,
-#endif
     long long size, bool create,
     WebFileSystemCallbacks* callbacks) {
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(

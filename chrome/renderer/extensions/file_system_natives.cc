@@ -59,11 +59,7 @@ v8::Handle<v8::Value> FileSystemNatives::GetIsolatedFileSystem(
       optional_root_name));
 
   return webframe->createFileSystem(
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
       WebKit::WebFileSystemTypeIsolated,
-#else
-      WebKit::WebFileSystem::TypeIsolated,
-#endif
       WebKit::WebString::fromUTF8(name),
       WebKit::WebString::fromUTF8(root));
 }
@@ -73,11 +69,7 @@ v8::Handle<v8::Value> FileSystemNatives::GetFileEntry(
   DCHECK(args.Length() == 5);
   DCHECK(args[0]->IsString());
   std::string type_string = *v8::String::Utf8Value(args[0]->ToString());
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
   WebKit::WebFileSystemType type;
-#else
-  WebKit::WebFileSystem::Type type;
-#endif
   bool is_valid_type = fileapi::GetFileSystemPublicType(type_string, &type);
   DCHECK(is_valid_type);
   if (is_valid_type == false) {

@@ -161,11 +161,7 @@ bool WebSharedWorkerClientProxy::allowFileSystem() {
 }
 
 void WebSharedWorkerClientProxy::openFileSystem(
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     WebKit::WebFileSystemType type,
-#else
-    WebKit::WebFileSystem::Type type,
-#endif
     long long size,
     bool create,
     WebKit::WebFileSystemCallbacks* callbacks) {

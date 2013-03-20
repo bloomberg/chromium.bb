@@ -270,20 +270,12 @@ WebKit::WebURL GetDevToolsPathAsURL();
 
 // - FileSystem
 void OpenFileSystem(WebKit::WebFrame* frame,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
                     WebKit::WebFileSystemType type,
-#else
-                    WebKit::WebFileSystem::Type type,
-#endif
                     long long size,
                     bool create,
                     WebKit::WebFileSystemCallbacks* callbacks);
 void DeleteFileSystem(WebKit::WebFrame* frame,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
                       WebKit::WebFileSystemType type,
-#else
-                      WebKit::WebFileSystem::Type type,
-#endif
                       WebKit::WebFileSystemCallbacks* callbacks);
 
 // Returns a filesystem ID for the newly created isolated filesystem.

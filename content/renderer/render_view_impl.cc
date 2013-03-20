@@ -4201,11 +4201,7 @@ void RenderViewImpl::reportFindInPageSelection(int request_id,
 
 void RenderViewImpl::openFileSystem(
     WebFrame* frame,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     WebKit::WebFileSystemType type,
-#else
-    WebFileSystem::Type type,
-#endif
     long long size,
     bool create,
     WebFileSystemCallbacks* callbacks) {
@@ -4225,11 +4221,7 @@ void RenderViewImpl::openFileSystem(
 
 void RenderViewImpl::deleteFileSystem(
     WebFrame* frame,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     WebKit::WebFileSystemType type ,
-#else
-    WebFileSystem::Type type ,
-#endif
     WebFileSystemCallbacks* callbacks) {
   DCHECK(callbacks);
 

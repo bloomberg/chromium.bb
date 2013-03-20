@@ -291,43 +291,23 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
 
 bool GetFileSystemPublicType(
     const std::string type_string,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     WebKit::WebFileSystemType* type
-#else
-    WebKit::WebFileSystem::Type* type
-#endif
 ) {
   DCHECK(type);
   if (type_string == "Temporary") {
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     *type = WebKit::WebFileSystemTypeTemporary;
-#else
-    *type = WebKit::WebFileSystem::TypeTemporary;
-#endif
     return true;
   }
   if (type_string == "Persistent") {
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     *type = WebKit::WebFileSystemTypePersistent;
-#else
-    *type = WebKit::WebFileSystem::TypePersistent;
-#endif
     return true;
   }
   if (type_string == "Isolated") {
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     *type = WebKit::WebFileSystemTypeIsolated;
-#else
-    *type = WebKit::WebFileSystem::TypeIsolated;
-#endif
     return true;
   }
   if (type_string == "External") {
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
     *type = WebKit::WebFileSystemTypeExternal;
-#else
-    *type = WebKit::WebFileSystem::TypeExternal;
-#endif
     return true;
   }
   NOTREACHED();

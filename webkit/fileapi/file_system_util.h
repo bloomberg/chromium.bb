@@ -115,12 +115,7 @@ WEBKIT_STORAGE_EXPORT std::string GetFileSystemTypeString(FileSystemType type);
 // Returns false if the |type_string| is invalid.
 WEBKIT_STORAGE_EXPORT bool GetFileSystemPublicType(
     std::string type_string,
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
-    WebKit::WebFileSystemType* type
-#else
-    WebKit::WebFileSystem::Type* type
-#endif
-);
+    WebKit::WebFileSystemType* type);
 
 // Encodes |file_path| to a string.
 // Following conditions should be held:

@@ -61,11 +61,7 @@ v8::Handle<v8::Value> MediaGalleriesCustomBindings::GetMediaFileSystemObject(
       fileapi::GetIsolatedFileSystemRootURIString(
           origin, fsid, extension_misc::kMediaFileSystemPathPart);
   return webframe->createFileSystem(
-#ifdef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
                                     WebKit::WebFileSystemTypeIsolated,
-#else
-                                    WebKit::WebFileSystem::TypeIsolated,
-#endif
                                     WebKit::WebString::fromUTF8(name),
                                     WebKit::WebString::fromUTF8(root_url));
 }
