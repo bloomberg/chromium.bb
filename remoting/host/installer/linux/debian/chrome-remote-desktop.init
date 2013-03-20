@@ -49,43 +49,39 @@ run_with_timeout() {
 run_and_ignore_error() {
   user=$1
   shift
-
-  su_command=su
-  if [ "$1" = "--login" ]; then
-    su_command="su --login"
-    shift
-  fi
+  exec=$1
+  shift
 
   set +e
   if [ "$(whoami)" = "$user" ]; then
-    $@
+    "$exec" "$@"
   else
-    $su_command $user --command "$@"
+    start-stop-daemon --chuid "$user" --exec "$exec" --start -- "$@"
   fi
 }
 
 do_start() {
   log_begin_msg "Starting Chrome Remote Desktop host for $1..."
-  run_and_ignore_error $1 --login "$HOST_PATH --start"
+  run_and_ignore_error $1 "$HOST_PATH" --start
   log_end_msg $?
 }
 
 do_stop() {
   log_begin_msg "Stopping Chrome Remote Desktop host for $1..."
-  run_with_timeout run_and_ignore_error $1 "$HOST_PATH --stop"
+  run_with_timeout run_and_ignore_error $1 "$HOST_PATH" --stop
   log_end_msg $?
 }
 
 do_reload() {
   log_begin_msg "Reloading Chrome Remote Desktop host configuration for $1..."
-  run_and_ignore_error $1 "$HOST_PATH --reload"
+  run_and_ignore_error $1 "$HOST_PATH" --reload
   log_end_msg $?
 }
 
 do_restart() {
   log_begin_msg "Restarting Chrome Remote Desktop host for $1..."
-  run_and_ignore_error $1 "$HOST_PATH --stop"
-  run_and_ignore_error $1 --login "$HOST_PATH --start"
+  run_and_ignore_error $1 "$HOST_PATH" --stop
+  run_and_ignore_error $1 "$HOST_PATH" --start
   log_end_msg $?
 }
 
