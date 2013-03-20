@@ -65,6 +65,11 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
                              ACMatches::const_iterator end,
                              base::DictionaryValue* output);
 
+  // Looks up whether the hostname is a typed host (i.e., has received
+  // typed visits).  Return true if the lookup succeeded; if so, the
+  // value of |is_typed_host| is set appropriately.
+  bool LookupIsTypedHost(const string16& host, bool* is_typed_host) const;
+
   // Re-initializes the AutocompleteController in preparation for the
   // next query.
   void ResetController();

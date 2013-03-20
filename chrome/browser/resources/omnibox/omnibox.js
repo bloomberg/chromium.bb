@@ -268,6 +268,8 @@ cr.define('omniboxDebug', function() {
    * {
    *   'done': false,
    *   'time_since_omnibox_started_ms': 15,
+   *   'host': 'mai',
+   *   'is_typed_host': false,
    *   'combined_results' : {
    *     'num_items': 4,
    *     'item_0': {
@@ -321,6 +323,15 @@ cr.define('omniboxDebug', function() {
       var p2 = document.createElement('p');
       p2.textContent = 'all providers done = ' + result.done;
       output.appendChild(p2);
+      var p3 = document.createElement('p');
+      p3.textContent = 'host = ' + result.host;
+      if ('is_typed_host' in result) {
+        // Only output the is_typed_host information if available.  (It may
+        // be missing if the history database lookup failed.)
+        p3.textContent = p3.textContent + ' has is_typed_host = ' +
+            result.is_typed_host;
+      }
+      output.appendChild(p3);
     }
 
     // Combined results go after the lines below.
