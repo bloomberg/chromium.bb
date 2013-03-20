@@ -23,8 +23,8 @@ V8ValueConverterImpl::V8ValueConverterImpl()
     : date_allowed_(false),
       reg_exp_allowed_(false),
       function_allowed_(false),
-      strip_null_from_objects_(false) {
-}
+      strip_null_from_objects_(false),
+      avoid_identity_hash_for_testing_(false) {}
 
 void V8ValueConverterImpl::SetDateAllowed(bool val) {
   date_allowed_ = val;
@@ -54,8 +54,8 @@ Value* V8ValueConverterImpl::FromV8Value(
     v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
-  std::set<int> unique_set;
-  return FromV8ValueImpl(val, &unique_set);
+  HashToHandleMap unique_map;
+  return FromV8ValueImpl(val, &unique_map);
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
@@ -154,7 +154,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
 }
 
 Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
-    std::set<int>* unique_set) const {
+    HashToHandleMap* unique_map) const {
   CHECK(!val.IsEmpty());
 
   if (val->IsNull())
@@ -182,7 +182,7 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
     if (!date_allowed_)
       // JSON.stringify would convert this to a string, but an object is more
       // consistent within this class.
-      return FromV8Object(val->ToObject(), unique_set);
+      return FromV8Object(val->ToObject(), unique_map);
     v8::Date* date = v8::Date::Cast(*val);
     return new base::FundamentalValue(date->NumberValue() / 1000.0);
   }
@@ -190,19 +190,19 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
   if (val->IsRegExp()) {
     if (!reg_exp_allowed_)
       // JSON.stringify converts to an object.
-      return FromV8Object(val->ToObject(), unique_set);
+      return FromV8Object(val->ToObject(), unique_map);
     return new base::StringValue(*v8::String::Utf8Value(val->ToString()));
   }
 
   // v8::Value doesn't have a ToArray() method for some reason.
   if (val->IsArray())
-    return FromV8Array(val.As<v8::Array>(), unique_set);
+    return FromV8Array(val.As<v8::Array>(), unique_map);
 
   if (val->IsFunction()) {
     if (!function_allowed_)
       // JSON.stringify refuses to convert function(){}.
       return NULL;
-    return FromV8Object(val->ToObject(), unique_set);
+    return FromV8Object(val->ToObject(), unique_map);
   }
 
   if (val->IsObject()) {
@@ -210,7 +210,7 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
     if (binary_value) {
       return binary_value;
     } else {
-      return FromV8Object(val->ToObject(), unique_set);
+      return FromV8Object(val->ToObject(), unique_map);
     }
   }
 
@@ -219,8 +219,8 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
 }
 
 Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
-    std::set<int>* unique_set) const {
-  if (unique_set && unique_set->count(val->GetIdentityHash()))
+    HashToHandleMap* unique_map) const {
+  if (!UpdateAndCheckUniqueness(unique_map, val))
     return base::Value::CreateNullValue();
 
   scoped_ptr<v8::Context::Scope> scope;
@@ -232,8 +232,6 @@ Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
 
   base::ListValue* result = new base::ListValue();
 
-  if (unique_set)
-    unique_set->insert(val->GetIdentityHash());
   // Only fields with integer keys are carried over to the ListValue.
   for (uint32 i = 0; i < val->Length(); ++i) {
     v8::TryCatch try_catch;
@@ -246,7 +244,7 @@ Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
     if (!val->HasRealIndexedProperty(i))
       continue;
 
-    base::Value* child = FromV8ValueImpl(child_v8, unique_set);
+    base::Value* child = FromV8ValueImpl(child_v8, unique_map);
     if (child)
       result->Append(child);
     else
@@ -284,8 +282,8 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
 
 Value* V8ValueConverterImpl::FromV8Object(
     v8::Handle<v8::Object> val,
-    std::set<int>* unique_set) const {
-  if (unique_set && unique_set->count(val->GetIdentityHash()))
+    HashToHandleMap* unique_map) const {
+  if (!UpdateAndCheckUniqueness(unique_map, val))
     return base::Value::CreateNullValue();
   scoped_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
@@ -296,9 +294,6 @@ Value* V8ValueConverterImpl::FromV8Object(
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Handle<v8::Array> property_names(val->GetOwnPropertyNames());
-
-  if (unique_set)
-    unique_set->insert(val->GetIdentityHash());
 
   for (uint32 i = 0; i < property_names->Length(); ++i) {
     v8::Handle<v8::Value> key(property_names->Get(i));
@@ -326,7 +321,7 @@ Value* V8ValueConverterImpl::FromV8Object(
       child_v8 = v8::Null();
     }
 
-    scoped_ptr<base::Value> child(FromV8ValueImpl(child_v8, unique_set));
+    scoped_ptr<base::Value> child(FromV8ValueImpl(child_v8, unique_map));
     if (!child.get())
       // JSON.stringify skips properties whose values don't serialize, for
       // example undefined and functions. Emulate that behavior.
@@ -360,6 +355,26 @@ Value* V8ValueConverterImpl::FromV8Object(
   }
 
   return result.release();
+}
+
+bool V8ValueConverterImpl::UpdateAndCheckUniqueness(
+    HashToHandleMap* map,
+    v8::Handle<v8::Object> handle) const {
+  typedef HashToHandleMap::const_iterator Iterator;
+
+  int hash = avoid_identity_hash_for_testing_ ? 0 : handle->GetIdentityHash();
+  // We only compare using == with handles to objects with the same identity
+  // hash. Different hash obviously means different objects, but two objects in
+  // a couple of thousands could have the same identity hash.
+  std::pair<Iterator, Iterator> range = map->equal_range(hash);
+  for (Iterator it = range.first; it != range.second; ++it) {
+    // Operator == for handles actually compares the underlying objects.
+    if (it->second == handle)
+      return false;
+  }
+
+  map->insert(std::pair<int, v8::Handle<v8::Object> >(hash, handle));
+  return true;
 }
 
 }  // namespace content

@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
 #define CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
 
-#include <set>
+#include <map>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -37,6 +38,9 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
       v8::Handle<v8::Context> context) const OVERRIDE;
 
  private:
+  friend class ScopedAvoidIdentityHashForTesting;
+  typedef std::multimap<int, v8::Handle<v8::Object> > HashToHandleMap;
+
   v8::Handle<v8::Value> ToV8ValueImpl(const base::Value* value) const;
   v8::Handle<v8::Value> ToV8Array(const base::ListValue* list) const;
   v8::Handle<v8::Value> ToV8Object(
@@ -44,9 +48,9 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   v8::Handle<v8::Value> ToArrayBuffer(const base::BinaryValue* value) const;
 
   base::Value* FromV8ValueImpl(v8::Handle<v8::Value> value,
-                               std::set<int>* unique_set) const;
+                               HashToHandleMap* unique_map) const;
   base::Value* FromV8Array(v8::Handle<v8::Array> array,
-                           std::set<int>* unique_set) const;
+                           HashToHandleMap* unique_map) const;
 
   // This will convert objects of type ArrayBuffer or any of the
   // ArrayBufferView subclasses. The return value will be NULL if |value| is
@@ -54,7 +58,15 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   base::BinaryValue* FromV8Buffer(v8::Handle<v8::Value> value) const;
 
   base::Value* FromV8Object(v8::Handle<v8::Object> object,
-                            std::set<int>* unique_set) const;
+                            HashToHandleMap* unique_map) const;
+
+  // If |handle| is not in |map|, then add it to |map| and return true.
+  // Otherwise do nothing and return false. Here "A is unique" means that no
+  // other handle B in the map points to the same object as A. Note that A can
+  // be unique even if there already is another handle with the same identity
+  // hash (key) in the map, because two objects can have the same hash.
+  bool UpdateAndCheckUniqueness(HashToHandleMap* map,
+                                v8::Handle<v8::Object> handle) const;
 
   // If true, we will convert Date JavaScript objects to doubles.
   bool date_allowed_;
@@ -68,6 +80,10 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   // If true, undefined and null values are ignored when converting v8 objects
   // into Values.
   bool strip_null_from_objects_;
+
+  bool avoid_identity_hash_for_testing_;
+
+  DISALLOW_COPY_AND_ASSIGN(V8ValueConverterImpl);
 };
 
 }  // namespace content
