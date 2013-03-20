@@ -22,7 +22,7 @@ scoped_ptr<LayerImpl> ScrollbarLayer::CreateLayerImpl(
   return ScrollbarLayerImpl::Create(
       tree_impl,
       id(),
-      ScrollbarGeometryFixedThumb::create(make_scoped_ptr(geometry_->clone())))
+      ScrollbarGeometryFixedThumb::Create(make_scoped_ptr(geometry_->clone())))
       .PassAs<LayerImpl>();
 }
 

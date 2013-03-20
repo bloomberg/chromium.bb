@@ -22,7 +22,7 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
   virtual void SetUp() {
     scroll_layer_ = LayerImpl::Create(host_impl_.active_tree(), 1);
     scoped_ptr<ScrollbarGeometryFixedThumb> geometry(
-        ScrollbarGeometryFixedThumb::create(
+        ScrollbarGeometryFixedThumb::Create(
             FakeWebScrollbarThemeGeometry::create(false)));
     scrollbar_layer_ = ScrollbarLayerImpl::Create(
         host_impl_.active_tree(), 2, geometry.Pass());

@@ -83,7 +83,7 @@ void ScrollbarLayerImpl::SetThumbSize(gfx::Size size) {
     DCHECK(layer_tree_impl()->IsPendingTree());
     return;
   }
-  geometry_->setThumbSize(size);
+  geometry_->set_thumb_size(size);
 }
 
 void ScrollbarLayerImpl::SetViewportWithinScrollableArea(

@@ -16,22 +16,28 @@ namespace cc {
 // the total size of the scrollable area, changing the thumb length) while not
 // requiring the thumb resource to be repainted.
 class CC_EXPORT ScrollbarGeometryFixedThumb : public ScrollbarGeometryStub {
-public:
-    static scoped_ptr<ScrollbarGeometryFixedThumb> create(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
-    virtual ~ScrollbarGeometryFixedThumb();
+ public:
+  static scoped_ptr<ScrollbarGeometryFixedThumb> Create(
+      scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry);
+  virtual ~ScrollbarGeometryFixedThumb();
 
-    void setThumbSize(gfx::Size size) { m_thumbSize = size; }
+  void set_thumb_size(gfx::Size size) { thumb_size_ = size; }
 
-    // WebScrollbarThemeGeometry interface
-    virtual WebKit::WebScrollbarThemeGeometry* clone() const OVERRIDE;
-    virtual int thumbLength(WebKit::WebScrollbar*) OVERRIDE;
-    virtual int thumbPosition(WebKit::WebScrollbar*) OVERRIDE;
-    virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE;
+  // WebScrollbarThemeGeometry interface
+  virtual WebKit::WebScrollbarThemeGeometry* clone() const OVERRIDE;
+  virtual int thumbLength(WebKit::WebScrollbar* scrollbar) OVERRIDE;
+  virtual int thumbPosition(WebKit::WebScrollbar* scrollbar) OVERRIDE;
+  virtual void splitTrack(WebKit::WebScrollbar* scrollbar,
+                          const WebKit::WebRect& track,
+                          WebKit::WebRect& start_track,
+                          WebKit::WebRect& thumb,
+                          WebKit::WebRect& end_track) OVERRIDE;
 
-private:
-    explicit ScrollbarGeometryFixedThumb(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
+ private:
+  explicit ScrollbarGeometryFixedThumb(
+      scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry);
 
-    gfx::Size m_thumbSize;
+  gfx::Size thumb_size_;
 };
 
 }
