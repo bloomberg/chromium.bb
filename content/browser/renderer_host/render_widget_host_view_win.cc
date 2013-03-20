@@ -2094,8 +2094,11 @@ bool WebTouchState::UpdateTouchPoint(
   int radius_x = 1;
   int radius_y = 1;
   if (touch_input->dwMask & TOUCHINPUTMASKF_CONTACTAREA) {
-    radius_x = TOUCH_COORD_TO_PIXEL(touch_input->cxContact);
-    radius_y = TOUCH_COORD_TO_PIXEL(touch_input->cyContact);
+    // Some touch drivers send a contact area of "-1", yet flag it as valid.
+    radius_x = std::max(1,
+        static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cxContact)));
+    radius_y = std::max(1,
+        static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cyContact)));
   }
 
   // Detect and exclude stationary moves.
