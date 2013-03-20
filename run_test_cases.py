@@ -303,6 +303,7 @@ class Progress(object):
     self.start = time.time()
     self.size = size
     self.use_cr_only = True
+    self.unfinished_commands = set()
 
     # To be used in all threads.
     self.queued_lines = Queue.Queue()
@@ -327,6 +328,17 @@ class Progress(object):
         name, index, size = self.queued_lines.get_nowait()
       except Queue.Empty:
         break
+
+      # Keep track of all the running commands, so we can list which ones
+      # are unfinished.
+      if 'Starting command' in name:
+        cmd = name.split()[2]
+        self.unfinished_commands.add(cmd)
+      if 'finished after' in name:
+        cmd_re = re.compile('.*[(*.)]*.')
+        cmd = cmd_re.match.group(1)
+        self.unfinished_commands.remove(cmd)
+
 
       if size:
         self.size += 1
@@ -354,6 +366,11 @@ class Progress(object):
         self.last_printed_line = ''
 
       sys.stdout.write(line)
+
+    if self.unfinished_commands:
+      logging.debug('Waiting for the following commands to finish:\n%s',
+                    '\n'.join(self.unfinished_commands))
+
     # Ensure that all the output is flush to prevent it from getting mixed with
     # other output streams (like the logging streams).
     sys.stdout.flush()
@@ -728,11 +745,13 @@ class Runner(object):
     if '--gtest_print_time' not in cmd:
       cmd.append('--gtest_print_time')
 
-    if self.verbose > 1:
-      self.progress.update_item('Starting command %s' % cmd, False, False)
-
     # TODO(maruel): Use a distribution model.
     timeout = self.timeout * len(test_cases)
+
+    if self.verbose > 1:
+      self.progress.update_item('Starting command %s with a timeout of %ss' %
+                                (cmd, timeout), False, False)
+
     output, returncode, duration = call_with_timeout(
         cmd,
         timeout,
