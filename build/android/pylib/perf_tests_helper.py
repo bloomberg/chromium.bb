@@ -179,20 +179,3 @@ class PerfControl(object):
       scaling_governor_file = PerfControl._SCALING_GOVERNOR_FMT % cpu
       if self._adb.FileExistsOnDevice(scaling_governor_file):
         self._adb.SetProtectedFileContents(scaling_governor_file, value)
-
-
-class PerfTestSetup(PerfControl):
-  """Provides methods for setting up a device for perf testing.
-
-     TODO(aberent): remove once all tests have been moved to the new classes
-  """
-
-  def DropRamCaches(self):
-    CacheControl(self._adb).DropRamCaches()
-
-  def SetUp(self):
-    self.SetHighPerfMode()
-    self.DropRamCaches()
-
-  def TearDown(self):
-    self.ResetOriginalPerfMode()
