@@ -1208,17 +1208,17 @@ class OptionParserWithLogging(optparse.OptionParser):
     logging_console.setFormatter(logging.Formatter(
         '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
     logging_console.setLevel(level)
+    logging.getLogger().setLevel(level)
     logging.getLogger().addHandler(logging_console)
 
     if options.log_file:
       logging_rotating_file = logging.handlers.RotatingFileHandler(
           options.log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
       logging_rotating_file.setLevel(logging.DEBUG)
+      logging.getLogger().setLevel(logging.DEBUG)
       logging_rotating_file.setFormatter(logging.Formatter(
           '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
       logging.getLogger().addHandler(logging_rotating_file)
-
-    logging.getLogger().setLevel(logging.DEBUG)
 
     return options, args
 
