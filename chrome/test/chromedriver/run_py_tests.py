@@ -54,7 +54,7 @@ _ANDROID_FILTER['org.chromium.chrome.testshell'] = [
     'ChromeDriverTest.testHoverOverElement',
     'ChromeDriverTest.testClickElement',
     'ChromeDriverTest.testClearElement',
-    # chromedriver:259
+    # https://code.google.com/p/chromedriver/issues/detail?id=259
     #'ChromeDriverTest.testSendKeysToElement',
     'ChromeDriverTest.testGetCurrentUrl',
     'ChromeDriverTest.testGoBackAndGoForward',
@@ -65,9 +65,11 @@ _ANDROID_FILTER['org.chromium.chrome.testshell'] = [
     'ChromeDriverTest.testMouseDoubleClick']
 _ANDROID_FILTER['com.google.android.apps.chrome'] = (
     _ANDROID_FILTER['org.chromium.chrome.testshell'] + [
-    'ChromeDriverTest.testCloseWindow',
-    'ChromeDriverTest.testGetWindowHandles',
-    'ChromeDriverTest.testSwitchToWindow'])
+    # https://code.google.com/p/chromedriver/issues/detail?id=262
+    #'ChromeDriverTest.testCloseWindow',
+    #'ChromeDriverTest.testGetWindowHandles',
+    #'ChromeDriverTest.testSwitchToWindow'
+    ])
 
 def Skip(func):
   pass
