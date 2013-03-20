@@ -29,6 +29,11 @@
       }, {
         'use_alsa%': 0,
       }],
+      ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android" and chromeos != 1', {
+        'use_pulseaudio%': 1,
+      }, {
+        'use_pulseaudio%': 0,
+      }],
     ],
   },
   'targets': [
@@ -648,7 +653,7 @@
             'audio/cras/cras_output.h',
           ],
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android" and chromeos != 1', {
+        ['use_pulseaudio==1', {
           'defines': [
             'USE_PULSEAUDIO',
           ],
@@ -704,7 +709,7 @@
               },
             }],
           ],
-        }, {  # else: OS=="win or OS == "mac" or OS == "ios" or OS == "android" or chromeos == 1
+        }, {  # else: use_pulseaudio==1
           'sources!': [
             'audio/pulse/audio_manager_pulse.cc',
             'audio/pulse/audio_manager_pulse.h',
