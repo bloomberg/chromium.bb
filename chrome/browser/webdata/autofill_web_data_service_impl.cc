@@ -85,3 +85,11 @@ content::NotificationSource
 AutofillWebDataServiceImpl::GetNotificationSource() {
   return service_->GetNotificationSource();
 }
+
+bool AutofillWebDataServiceImpl::IsDatabaseLoaded() {
+  return service_->IsDatabaseLoaded();
+}
+
+WebDatabase* AutofillWebDataServiceImpl::GetDatabase() {
+  return service_->GetDatabase();
+}

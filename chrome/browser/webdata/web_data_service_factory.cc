@@ -31,8 +31,8 @@ scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
 }
 
 // static
-scoped_ptr<AutofillWebDataService> AutofillWebDataService::FromBrowserContext(
-    content::BrowserContext* context) {
+scoped_refptr<AutofillWebDataService>
+AutofillWebDataService::FromBrowserContext(content::BrowserContext* context) {
   // For this service, the implicit/explicit distinction doesn't
   // really matter; it's just used for a DCHECK.  So we currently
   // cheat and always say EXPLICIT_ACCESS.
@@ -40,10 +40,10 @@ scoped_ptr<AutofillWebDataService> AutofillWebDataService::FromBrowserContext(
       static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
 
   if (service.get()) {
-    return scoped_ptr<AutofillWebDataService>(
+    return scoped_refptr<AutofillWebDataService>(
         new AutofillWebDataServiceImpl(service));
   } else {
-    return scoped_ptr<AutofillWebDataService>(NULL);
+    return scoped_refptr<AutofillWebDataService>(NULL);
   }
 }
 

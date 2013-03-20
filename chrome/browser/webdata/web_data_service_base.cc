@@ -1,0 +1,122 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/api/webdata/web_data_service_base.h"
+
+#include "base/bind.h"
+#include "base/message_loop.h"
+#include "base/stl_util.h"
+#include "base/threading/thread.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/profile_error_dialog.h"
+#include "chrome/browser/webdata/web_database_service.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
+#ifdef DEBUG
+#include "content/public/browser/browser_thread.h"
+#endif
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// WebDataServiceBase implementation.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+using base::Bind;
+using base::Time;
+using content::BrowserThread;
+
+WebDataServiceBase::WebDataServiceBase()
+    : db_loaded_(false) {
+  // WebDataService requires DB thread if instantiated.
+  // Set WebDataServiceFactory::GetInstance()->SetTestingFactory(&profile, NULL)
+  // if you do not want to instantiate WebDataService in your test.
+  DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
+}
+
+void WebDataServiceBase::ShutdownOnUIThread() {
+  db_loaded_ = false;
+  ShutdownDatabase();
+}
+
+void WebDataServiceBase::Init(const base::FilePath& path) {
+  wdbs_.reset(new WebDatabaseService(path));
+  wdbs_->LoadDatabase(Bind(&WebDataServiceBase::DatabaseInitOnDB, this));
+}
+
+void WebDataServiceBase::UnloadDatabase() {
+  if (!wdbs_)
+    return;
+  wdbs_->UnloadDatabase();
+}
+
+void WebDataServiceBase::ShutdownDatabase() {
+  if (!wdbs_)
+    return;
+  wdbs_->ShutdownDatabase();
+}
+
+void WebDataServiceBase::CancelRequest(Handle h) {
+  if (!wdbs_)
+    return;
+  wdbs_->CancelRequest(h);
+}
+
+content::NotificationSource WebDataServiceBase::GetNotificationSource() {
+  return content::Source<WebDataServiceBase>(this);
+}
+
+bool WebDataServiceBase::IsDatabaseLoaded() {
+  return db_loaded_;
+}
+
+WebDatabase* WebDataServiceBase::GetDatabase() {
+  if (!wdbs_)
+    return NULL;
+  return wdbs_->GetDatabaseOnDB();
+}
+
+WebDataServiceBase::~WebDataServiceBase() {
+  wdbs_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// The following methods are executed on the DB thread.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void WebDataServiceBase::DBInitFailed(sql::InitStatus sql_status) {
+  ShowProfileErrorDialog(
+      (sql_status == sql::INIT_FAILURE) ?
+      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+}
+
+void WebDataServiceBase::NotifyDatabaseLoadedOnUIThread() {
+  db_loaded_ = true;
+  // Notify that the database has been initialized.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_DATABASE_LOADED,
+      content::Source<WebDataServiceBase>(this),
+      content::NotificationService::NoDetails());
+}
+
+void WebDataServiceBase::DatabaseInitOnDB(sql::InitStatus status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  if (status == sql::INIT_OK) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&WebDataServiceBase::NotifyDatabaseLoadedOnUIThread, this));
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&WebDataServiceBase::DBInitFailed, this, status));
+  }
+}
+

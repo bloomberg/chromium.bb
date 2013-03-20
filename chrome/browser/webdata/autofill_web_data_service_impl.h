@@ -15,7 +15,6 @@ class WebDataService;
 class AutofillWebDataServiceImpl : public AutofillWebDataService {
  public:
   explicit AutofillWebDataServiceImpl(scoped_refptr<WebDataService> service);
-  virtual ~AutofillWebDataServiceImpl();
 
   // AutofillWebData implementation.
   virtual void AddFormFields(
@@ -39,9 +38,17 @@ class AutofillWebDataServiceImpl : public AutofillWebDataService {
   virtual WebDataServiceBase::Handle
       GetCreditCards(WebDataServiceConsumer* consumer) OVERRIDE;
 
-  // WebDataServiceBase implementation.
+  // WebDataServiceBase overrides.
+  // TODO(caitkp): remove these when we decouple
+  // WebDatabaseService life cycle from WebData).
   virtual void CancelRequest(Handle h) OVERRIDE;
   virtual content::NotificationSource GetNotificationSource() OVERRIDE;
+  virtual bool IsDatabaseLoaded() OVERRIDE;
+  virtual WebDatabase* GetDatabase() OVERRIDE;
+
+
+ protected:
+  virtual ~AutofillWebDataServiceImpl();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceImpl);

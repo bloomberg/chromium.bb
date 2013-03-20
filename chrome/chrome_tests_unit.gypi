@@ -1483,6 +1483,7 @@
         'browser/webdata/keyword_table_unittest.cc',
         'browser/webdata/token_service_table_unittest.cc',
         'browser/webdata/web_apps_table_unittest.cc',
+        'browser/webdata/web_data_service_test_util.cc',
         'browser/webdata/web_data_service_test_util.h',
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_migration_unittest.cc',

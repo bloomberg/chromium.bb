@@ -17,6 +17,7 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_service.h"
@@ -125,31 +126,23 @@ class FakeWebDataService : public WebDataService {
   DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
 };
 
-class MockWebDataServiceWrapper : public WebDataServiceWrapper {
+class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
  public:
   static ProfileKeyedService* Build(Profile* profile) {
-    return new MockWebDataServiceWrapper();
+    return new MockWebDataServiceWrapperSyncable();
   }
 
-  MockWebDataServiceWrapper() {
-    fake_web_data_service_ = new FakeWebDataService();
+  MockWebDataServiceWrapperSyncable()
+      : MockWebDataServiceWrapper(new FakeWebDataService()) {
   }
 
   void Shutdown() OVERRIDE {
-    fake_web_data_service_->ShutdownSyncableService();
-  }
-
-  scoped_refptr<WebDataService> GetWebData() OVERRIDE {
-    return fake_web_data_service_;
-  }
-
-  ~MockWebDataServiceWrapper() {
-    fake_web_data_service_ = NULL;
+    static_cast<FakeWebDataService*>(
+        fake_web_data_service_.get())->ShutdownSyncableService();
   }
 
  private:
-  scoped_refptr<FakeWebDataService> fake_web_data_service_;
-
+  DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapperSyncable);
 };
 
 class SyncAutofillDataTypeControllerTest : public testing::Test {
@@ -170,7 +163,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
         WillRepeatedly(Return(change_processor_.get()));
 
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, MockWebDataServiceWrapper::Build);
+        &profile_, MockWebDataServiceWrapperSyncable::Build);
 
     autofill_dtc_ =
         new AutofillDataTypeController(&profile_sync_factory_,

@@ -67,7 +67,7 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   void CancelPendingQuery();
 
   content::BrowserContext* browser_context_;
-  scoped_ptr<AutofillWebDataService> autofill_data_;
+  scoped_refptr<AutofillWebDataService> autofill_data_;
 
   BooleanPrefMember autofill_enabled_;
 

@@ -2116,6 +2116,7 @@
         'browser/webdata/web_data_request_manager.h',
         'browser/webdata/web_data_service.cc',
         'browser/webdata/web_data_service.h',
+        'browser/webdata/web_data_service_base.cc',
         'browser/webdata/web_data_service_factory.cc',
         'browser/webdata/web_data_service_factory.h',
         'browser/webdata/web_data_service_win.cc',

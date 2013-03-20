@@ -26,10 +26,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"
-#include "chrome/browser/webdata/web_data_request_manager.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "content/public/browser/browser_thread.h"
-#include "sql/init_status.h"
 
 class AutocompleteSyncableService;
 class AutofillChange;
@@ -103,9 +100,7 @@ struct WDKeywordsResult {
 class WebDataServiceConsumer;
 
 class WebDataService
-    : public base::RefCountedThreadSafe<WebDataService,
-          content::BrowserThread::DeleteOnUIThread>,
-      public WebDataServiceBase,
+    : public WebDataServiceBase,
       public AutofillWebData {
  public:
   // Retrieve a WebDataService for the given context.
@@ -115,8 +110,8 @@ class WebDataService
   WebDataService();
 
   // WebDataServiceBase implementation.
-  virtual void CancelRequest(Handle h) OVERRIDE;
-  virtual content::NotificationSource GetNotificationSource() OVERRIDE;
+  virtual void ShutdownOnUIThread() OVERRIDE;
+  virtual void Init(const base::FilePath& path) OVERRIDE;
 
   // Notifies listeners on the UI thread that multiple changes have been made to
   // to Autofill records of the database.
@@ -125,28 +120,7 @@ class WebDataService
   // |web_data_service| may be NULL for testing purposes.
   static void NotifyOfMultipleAutofillChanges(WebDataService* web_data_service);
 
-  // Shutdown the web data service. The service can no longer be used after this
-  // call.
-  void ShutdownOnUIThread();
 
-  // Initializes the web data service.
-  void Init(const base::FilePath& path);
-
-  // Unloads the database without actually shutting down the service.  This can
-  // be used to temporarily reduce the browser process' memory footprint.
-  void UnloadDatabase();
-
-  // Unloads the database permanently and shuts down service.
-  void ShutdownDatabase();
-
-  // Returns true if the database load has completetd successfully, and
-  // ShutdownOnUIThread has not yet been called.
-  virtual bool IsDatabaseLoaded();
-
-  // Returns a pointer to the DB (used by SyncableServices). May return NULL if
-  // the database is not loaded or otherwise unavailable. Must be called on
-  // DBThread.
-  virtual WebDatabase* GetDatabase();
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -326,6 +300,7 @@ class WebDataService
       GetAutocompleteSyncableService() const;
 
  protected:
+  // TODO(caitkp): We probably don't need these anymore.
   friend class TemplateURLServiceTest;
   friend class TemplateURLServiceTestingProfile;
   friend class WebDataServiceTest;
@@ -339,19 +314,11 @@ class WebDataService
   //
   //////////////////////////////////////////////////////////////////////////////
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<WebDataService>;
-
   // Initialize any syncable services.
   void InitializeSyncableServices();
 
   // Deletes the syncable services.
   void ShutdownSyncableServices();
-
-  void DBInitFailed(sql::InitStatus sql_status);
-  void NotifyDatabaseLoadedOnUIThread();
-  void DatabaseInitOnDB(sql::InitStatus status);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -470,12 +437,6 @@ class WebDataService
   // cancelled.
   void DestroyAutofillProfileResult(const WDTypedResult* result);
   void DestroyAutofillCreditCardResult(const WDTypedResult* result);
-
-  // Our database service.
-  scoped_ptr<WebDatabaseService> wdbs_;
-
-  // True if we've received a notification that the WebDatabase has loaded.
-  bool db_loaded_;
 
   // Syncable services for the database data.  We own the services, but don't
   // use |scoped_ptr|s because the lifetimes must be managed on the database

@@ -42,6 +42,7 @@
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autofill_common_test.h"
@@ -242,31 +243,9 @@ class WebDataServiceFake : public WebDataService {
   WaitableEvent syncable_service_created_or_destroyed_;
 };
 
-class MockWebDataServiceWrapper : public WebDataServiceWrapper {
- public:
-  static ProfileKeyedService* Build(Profile* profile) {
-    return new MockWebDataServiceWrapper();
-  }
-
-  MockWebDataServiceWrapper() {
-    web_data_service_fake_ = new WebDataServiceFake();
-  }
-
-  void Shutdown() OVERRIDE {
-  }
-
-  scoped_refptr<WebDataService> GetWebData() OVERRIDE {
-    return web_data_service_fake_;
-  }
-
-  ~MockWebDataServiceWrapper() {
-    web_data_service_fake_ = NULL;
-  }
-
- private:
-  scoped_refptr<WebDataServiceFake> web_data_service_fake_;
-
-};
+ProfileKeyedService* BuildMockWebDataServiceWrapper(Profile* profile) {
+  return new MockWebDataServiceWrapper(new WebDataServiceFake());
+}
 
 ACTION_P(MakeAutocompleteSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
@@ -432,7 +411,7 @@ class ProfileSyncServiceAutofillTest
     MockWebDataServiceWrapper* wrapper =
         static_cast<MockWebDataServiceWrapper*>(
             WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile_.get(), MockWebDataServiceWrapper::Build));
+                profile_.get(), BuildMockWebDataServiceWrapper));
     web_data_service_ =
         static_cast<WebDataServiceFake*>(wrapper->GetWebData().get());
     web_data_service_->SetDatabase(web_database_.get());

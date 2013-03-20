@@ -4,15 +4,7 @@
 
 #include "chrome/browser/webdata/web_data_service.h"
 
-#include "base/bind.h"
-#include "base/command_line.h"
-#include "base/message_loop.h"
-#include "base/stl_util.h"
-#include "base/threading/thread.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -24,20 +16,14 @@
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_database_service.h"
 #include "chrome/browser/webdata/web_intents_table.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/common/form_field_data.h"
-#ifdef DEBUG
-#include "content/public/browser/browser_thread.h"
-#endif
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,13 +64,8 @@ WDKeywordsResult::WDKeywordsResult()
 WDKeywordsResult::~WDKeywordsResult() {}
 
 WebDataService::WebDataService()
-    : db_loaded_(false),
-      autocomplete_syncable_service_(NULL),
+    : autocomplete_syncable_service_(NULL),
       autofill_profile_syncable_service_(NULL) {
-  // WebDataService requires DB thread if instantiated.
-  // Set WebDataServiceFactory::GetInstance()->SetTestingFactory(&profile, NULL)
-  // if you do not want to instantiate WebDataService in your test.
-  DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
 }
 
 // static
@@ -102,50 +83,15 @@ void WebDataService::NotifyOfMultipleAutofillChanges(
 }
 
 void WebDataService::ShutdownOnUIThread() {
-  db_loaded_ = false;
-  ShutdownDatabase();
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       Bind(&WebDataService::ShutdownSyncableServices, this));
+  WebDataServiceBase::ShutdownOnUIThread();
 }
 
 void WebDataService::Init(const base::FilePath& path) {
-  wdbs_.reset(new WebDatabaseService(path));
-  wdbs_->LoadDatabase(Bind(&WebDataService::DatabaseInitOnDB, this));
-
+  WebDataServiceBase::Init(path);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       Bind(&WebDataService::InitializeSyncableServices, this));
-}
-
-void WebDataService::UnloadDatabase() {
-  if (!wdbs_)
-    return;
-  wdbs_->UnloadDatabase();
-}
-
-void WebDataService::ShutdownDatabase() {
-  if (!wdbs_)
-    return;
-  wdbs_->ShutdownDatabase();
-}
-
-void WebDataService::CancelRequest(Handle h) {
-  if (!wdbs_)
-    return;
-  wdbs_->CancelRequest(h);
-}
-
-content::NotificationSource WebDataService::GetNotificationSource() {
-  return content::Source<WebDataService>(this);
-}
-
-bool WebDataService::IsDatabaseLoaded() {
-  return db_loaded_;
-}
-
-WebDatabase* WebDataService::GetDatabase() {
-  if (!wdbs_)
-    return NULL;
-  return wdbs_->GetDatabaseOnDB();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -330,7 +276,6 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
 }
 
 WebDataService::~WebDataService() {
-  wdbs_.reset();
   DCHECK(!autocomplete_syncable_service_);
   DCHECK(!autofill_profile_syncable_service_);
 }
@@ -340,34 +285,6 @@ WebDataService::~WebDataService() {
 // The following methods are executed on the DB thread.
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-void WebDataService::DBInitFailed(sql::InitStatus sql_status) {
-  ShowProfileErrorDialog(
-      (sql_status == sql::INIT_FAILURE) ?
-      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
-}
-
-void WebDataService::NotifyDatabaseLoadedOnUIThread() {
-  db_loaded_ = true;
-  // Notify that the database has been initialized.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-      content::Source<WebDataService>(this),
-      content::NotificationService::NoDetails());
-}
-
-void WebDataService::DatabaseInitOnDB(sql::InitStatus status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (status == sql::INIT_OK) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebDataService::NotifyDatabaseLoadedOnUIThread, this));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebDataService::DBInitFailed, this, status));
-  }
-}
 
 void WebDataService::InitializeSyncableServices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));

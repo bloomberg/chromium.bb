@@ -121,7 +121,7 @@ void PersonalDataManager::Init(BrowserContext* browser_context) {
   browser_context_ = browser_context;
   metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
 
   // WebDataService may not be available in tests.
@@ -197,7 +197,7 @@ void PersonalDataManager::Observe(int type,
   DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED);
 
   if (DCHECK_IS_ON()) {
-    scoped_ptr<AutofillWebDataService> autofill_data(
+    scoped_refptr<AutofillWebDataService> autofill_data(
         AutofillWebDataService::FromBrowserContext(browser_context_));
 
     DCHECK(autofill_data.get() &&
@@ -337,7 +337,7 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()))
     return;
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get())
     return;
@@ -365,7 +365,7 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
     return;
   }
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get())
     return;
@@ -398,7 +398,7 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   if (FindByGUID<CreditCard>(credit_cards_, credit_card.guid()))
     return;
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get())
     return;
@@ -426,7 +426,7 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
     return;
   }
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get())
     return;
@@ -448,7 +448,7 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (!is_credit_card && !is_profile)
     return;
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get())
     return;
@@ -720,7 +720,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
       address_of<AutofillProfile>);
   AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get())
     return;
@@ -772,7 +772,7 @@ void PersonalDataManager::SetCreditCards(
           std::mem_fun_ref(&CreditCard::IsEmpty)),
       credit_cards->end());
 
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get())
     return;
@@ -812,7 +812,7 @@ void PersonalDataManager::SetCreditCards(
 }
 
 void PersonalDataManager::LoadProfiles() {
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get()) {
     NOTREACHED();
@@ -832,7 +832,7 @@ void PersonalDataManager::LoadAuxiliaryProfiles() {
 #endif
 
 void PersonalDataManager::LoadCreditCards() {
-  scoped_ptr<AutofillWebDataService> autofill_data(
+  scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
   if (!autofill_data.get()) {
     NOTREACHED();
@@ -883,7 +883,7 @@ void PersonalDataManager::ReceiveLoadedCreditCards(
 void PersonalDataManager::CancelPendingQuery(
     WebDataServiceBase::Handle* handle) {
   if (*handle) {
-    scoped_ptr<AutofillWebDataService> autofill_data(
+    scoped_refptr<AutofillWebDataService> autofill_data(
         AutofillWebDataService::FromBrowserContext(browser_context_));
     if (!autofill_data.get()) {
       NOTREACHED();
