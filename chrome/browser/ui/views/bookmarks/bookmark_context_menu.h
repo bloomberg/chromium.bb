@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_CONTEXT_MENU_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_context_menu_controller_views.h"
+#include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class Browser;
@@ -30,7 +30,7 @@ class BookmarkContextMenuObserver {
   virtual ~BookmarkContextMenuObserver() {}
 };
 
-class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
+class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
                             public views::MenuDelegate {
  public:
   // |browser| is used to open the bookmark manager, and is NULL in tests.
@@ -62,17 +62,15 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
   virtual bool ShouldCloseAllMenusOnExecute(int id) OVERRIDE;
 
-  // Overridden from BookmarkContextMenuControllerViewsDelegate:
+  // Overridden from BookmarkContextMenuControllerDelegate:
   virtual void CloseMenu() OVERRIDE;
-  virtual void AddItemWithStringId(int command_id, int string_id) OVERRIDE;
-  virtual void AddSeparator() OVERRIDE;
-  virtual void AddCheckboxItem(int command_id, int string_id) OVERRIDE;
-  virtual void WillRemoveBookmarks(
+  virtual void WillExecuteCommand(
+      int command_id,
       const std::vector<const BookmarkNode*>& bookmarks) OVERRIDE;
-  virtual void DidRemoveBookmarks() OVERRIDE;
+  virtual void DidExecuteCommand(int command_id) OVERRIDE;
 
  private:
-  scoped_ptr<BookmarkContextMenuControllerViews> controller_;
+  scoped_ptr<BookmarkContextMenuController> controller_;
 
   // The parent of dialog boxes opened from the context menu.
   views::Widget* parent_widget_;

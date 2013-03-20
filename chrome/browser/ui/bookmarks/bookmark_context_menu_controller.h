@@ -30,10 +30,12 @@ class BookmarkContextMenuControllerDelegate {
   virtual void CloseMenu() = 0;
 
   // Sent before any command from the menu is executed.
-  virtual void WillExecuteCommand() {}
+  virtual void WillExecuteCommand(
+      int command_id,
+      const std::vector<const BookmarkNode*>& bookmarks) {}
 
   // Sent after any command from the menu is executed.
-  virtual void DidExecuteCommand() {}
+  virtual void DidExecuteCommand(int command_id) {}
 };
 
 // BookmarkContextMenuController creates and manages state for the context menu
@@ -57,8 +59,6 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
       const std::vector<const BookmarkNode*>& selection);
   virtual ~BookmarkContextMenuController();
 
-  void BuildMenu();
-
   ui::SimpleMenuModel* menu_model() { return menu_model_.get(); }
 
   // ui::SimpleMenuModel::Delegate implementation:
@@ -69,7 +69,22 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
+  void set_navigator(content::PageNavigator* navigator) {
+    navigator_ = navigator;
+  }
+
  private:
+  // A hook so that platform-specific implementations can report which commands
+  // are enabled. Returns true if |enabled| was set by the platform-specific
+  // implementation.
+  bool IsPlatformCommandIdEnabled(int command_id, bool* enabled) const;
+
+  // A hook to execute platform-specific commands. Returns true if the command
+  // has been handled and should no longer be processed.
+  bool ExecutePlatformCommand(int command_id, int event_flags);
+
+  void BuildMenu();
+
   // Adds a IDC_* style command to the menu with a localized string.
   void AddItem(int id, int localization_id);
   // Adds a separator to the menu.

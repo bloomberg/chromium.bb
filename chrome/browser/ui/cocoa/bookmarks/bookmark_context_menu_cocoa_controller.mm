@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
 
+#include <vector>
+
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -29,7 +31,9 @@ class BookmarkContextMenuDelegateBridge :
     [controller_ cancelTracking];
   }
 
-  virtual void WillExecuteCommand() OVERRIDE {
+  virtual void WillExecuteCommand(
+      int command_id,
+      const std::vector<const BookmarkNode*>& bookmarks) OVERRIDE {
     [controller_ willExecuteCommand];
   }
 

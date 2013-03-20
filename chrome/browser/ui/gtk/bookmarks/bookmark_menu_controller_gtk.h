@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_MENU_CONTROLLER_GTK_H_
 
 #include <map>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -54,7 +55,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                                           const BookmarkNode* node) OVERRIDE;
 
   // Overridden from BookmarkContextMenuController::Delegate:
-  virtual void WillExecuteCommand() OVERRIDE;
+  virtual void WillExecuteCommand(
+      int command_id,
+      const std::vector<const BookmarkNode*>& bookmarks) OVERRIDE;
   virtual void CloseMenu() OVERRIDE;
 
  private:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bookmarks/bookmark_context_menu_controller_views_win.h"
+#include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -11,16 +11,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
-#include "ui/views/widget/widget.h"
 #include "win8/util/win8_util.h"
 
 using content::OpenURLParams;
+using content::PageNavigator;
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -29,7 +27,7 @@ namespace {
 // A PageNavigator implementation that creates a new Browser. This is used when
 // opening a url and there is no Browser open. The Browser is created the first
 // time the PageNavigator method is invoked.
-class NewBrowserPageNavigator : public content::PageNavigator {
+class NewBrowserPageNavigator : public PageNavigator {
  public:
   explicit NewBrowserPageNavigator(Profile* profile)
       : profile_(profile),
@@ -64,48 +62,37 @@ class NewBrowserPageNavigator : public content::PageNavigator {
 
 }  // namespace
 
-// static
-BookmarkContextMenuControllerViews* BookmarkContextMenuControllerViews::Create(
-      views::Widget* parent_widget,
-      BookmarkContextMenuControllerViewsDelegate* delegate,
-      Browser* browser,
-      Profile* profile,
-      content::PageNavigator* navigator,
-      const BookmarkNode* parent,
-      const std::vector<const BookmarkNode*>& selection) {
-  return new BookmarkContextMenuControllerViewsWin(parent_widget, delegate,
-                                                   browser, profile, navigator,
-                                                   parent, selection);
-}
-
-BookmarkContextMenuControllerViewsWin::BookmarkContextMenuControllerViewsWin(
-      views::Widget* parent_widget,
-      BookmarkContextMenuControllerViewsDelegate* delegate,
-      Browser* browser,
-      Profile* profile,
-      content::PageNavigator* navigator,
-      const BookmarkNode* parent,
-      const std::vector<const BookmarkNode*>& selection)
-    : BookmarkContextMenuControllerViews(parent_widget, delegate, browser,
-                                         profile, navigator, parent,
-                                         selection) {
-}
-
-BookmarkContextMenuControllerViewsWin
-    ::~BookmarkContextMenuControllerViewsWin() {
-}
-
-void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
+bool BookmarkContextMenuController::IsPlatformCommandIdEnabled(
+    int command_id,
+    bool* enabled) const {
+  // In Windows 8 metro mode no new window option on a regular chrome window
+  // and no new incognito window option on an incognito chrome window.
   if (win8::IsSingleWindowMetroMode()) {
-    switch (id) {
+    if (command_id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW &&
+        !profile_->IsOffTheRecord()) {
+      *enabled = false;
+      return true;
+    } else if (command_id == IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO &&
+               profile_->IsOffTheRecord()) {
+      *enabled = false;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool BookmarkContextMenuController::ExecutePlatformCommand(int command_id,
+                                                           int event_flags) {
+  if (win8::IsSingleWindowMetroMode()) {
+    switch (command_id) {
       // We need to handle the open in new window and open in incognito window
       // commands to ensure that they first look for an existing browser object
       // to handle the request. If we find one then a new foreground tab is
       // opened, else a new browser object is created.
       case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW:
       case IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO: {
-        Profile* profile_to_use = profile();
-        if (id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW) {
+        Profile* profile_to_use = profile_;
+        if (command_id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW) {
           if (profile_to_use->IsOffTheRecord())
             profile_to_use = profile_to_use->GetOriginalProfile();
 
@@ -127,7 +114,7 @@ void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
             chrome::FindTabbedBrowser(profile_to_use,
                                       false,
                                       chrome::HOST_DESKTOP_TYPE_NATIVE);
-        content::PageNavigator* navigator = NULL;
+        PageNavigator* navigator = NULL;
         if (!browser || !browser->tab_strip_model()->GetActiveWebContents()) {
           navigator = &navigator_impl;
         } else {
@@ -135,31 +122,17 @@ void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
           navigator = browser->tab_strip_model()->GetActiveWebContents();
         }
 
-        chrome::OpenAll(parent_widget()->GetNativeWindow(), navigator,
-                        selection(), NEW_FOREGROUND_TAB, profile_to_use);
+        chrome::OpenAll(parent_window_, navigator, selection_,
+                        NEW_FOREGROUND_TAB, profile_to_use);
         bookmark_utils::RecordBookmarkLaunch(
             bookmark_utils::LAUNCH_CONTEXT_MENU);
-        return;
+        return true;
       }
 
       default:
         break;
     }
   }
-  BookmarkContextMenuControllerViews::ExecuteCommand(id);
-}
 
-bool BookmarkContextMenuControllerViewsWin::IsCommandEnabled(int id) const {
-  // In Windows 8 metro mode no new window option on a regular chrome window
-  // and no new incognito window option on an incognito chrome window.
-  if (win8::IsSingleWindowMetroMode()) {
-    if (id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW &&
-        !profile()->IsOffTheRecord()) {
-      return false;
-    } else if (id == IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO &&
-               profile()->IsOffTheRecord()) {
-      return false;
-    }
-  }
-  return BookmarkContextMenuControllerViews::IsCommandEnabled(id);
+  return false;
 }

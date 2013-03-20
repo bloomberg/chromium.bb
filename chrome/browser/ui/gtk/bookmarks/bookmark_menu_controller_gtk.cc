@@ -122,7 +122,9 @@ void BookmarkMenuController::BookmarkNodeFaviconChanged(
     SetImageMenuItem(it->second, node, model);
 }
 
-void BookmarkMenuController::WillExecuteCommand() {
+void BookmarkMenuController::WillExecuteCommand(
+      int command_id,
+      const std::vector<const BookmarkNode*>& bookmarks) {
   gtk_menu_popdown(GTK_MENU(menu_));
 }
 

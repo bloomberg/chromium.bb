@@ -18,6 +18,16 @@
 
 using content::PageNavigator;
 
+namespace {
+
+// Returns true if |command_id| corresponds to a command that causes one or more
+// bookmarks to be removed.
+bool IsRemoveBookmarksCommand(int command_id) {
+  return command_id == IDC_CUT || command_id == IDC_BOOKMARK_BAR_REMOVE;
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // BookmarkContextMenu, public:
 
@@ -30,15 +40,21 @@ BookmarkContextMenu::BookmarkContextMenu(
     const std::vector<const BookmarkNode*>& selection,
     bool close_on_remove)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          controller_(BookmarkContextMenuControllerViews::Create(parent_widget,
-              this, browser, profile, page_navigator, parent, selection))),
+          controller_(new BookmarkContextMenuController(
+              parent_widget ? parent_widget->GetNativeWindow() : NULL, this,
+              browser, profile, page_navigator, parent, selection))),
       parent_widget_(parent_widget),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
       menu_runner_(new views::MenuRunner(menu_)),
       parent_node_(parent),
       observer_(NULL),
       close_on_remove_(close_on_remove) {
-  controller_->BuildMenu();
+
+  ui::SimpleMenuModel* menu_model = controller_->menu_model();
+  for (int i = 0; i < menu_model->GetItemCount(); ++i) {
+    menu_->AppendMenuItemFromModel(
+        menu_model, i, menu_model->GetCommandIdAt(i));
+  }
 }
 
 BookmarkContextMenu::~BookmarkContextMenu() {
@@ -67,15 +83,15 @@ void BookmarkContextMenu::SetPageNavigator(PageNavigator* navigator) {
 // BookmarkContextMenu, views::MenuDelegate implementation:
 
 void BookmarkContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  controller_->ExecuteCommand(command_id);
+  controller_->ExecuteCommand(command_id, event_flags);
 }
 
 bool BookmarkContextMenu::IsItemChecked(int command_id) const {
-  return controller_->IsItemChecked(command_id);
+  return controller_->IsCommandIdChecked(command_id);
 }
 
 bool BookmarkContextMenu::IsCommandEnabled(int command_id) const {
-  return controller_->IsCommandEnabled(command_id);
+  return controller_->IsCommandIdEnabled(command_id);
 }
 
 bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
@@ -83,35 +99,21 @@ bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BookmarkContextMenu, BookmarkContextMenuControllerViewsDelegate
+// BookmarkContextMenuControllerDelegate
 // implementation:
 
 void BookmarkContextMenu::CloseMenu() {
   menu_->Cancel();
 }
 
-void BookmarkContextMenu::AddItemWithStringId(int command_id, int string_id) {
-  menu_->AppendMenuItemWithLabel(command_id,
-                                 l10n_util::GetStringUTF16(string_id));
-}
-
-void BookmarkContextMenu::AddSeparator() {
-  menu_->AppendSeparator();
-}
-
-void BookmarkContextMenu::AddCheckboxItem(int command_id, int string_id) {
-  menu_->AppendMenuItem(command_id,
-                        l10n_util::GetStringUTF16(string_id),
-                        views::MenuItemView::CHECKBOX);
-}
-
-void BookmarkContextMenu::WillRemoveBookmarks(
+void BookmarkContextMenu::WillExecuteCommand(
+    int command_id,
     const std::vector<const BookmarkNode*>& bookmarks) {
-  if (observer_)
+  if (observer_ && IsRemoveBookmarksCommand(command_id))
     observer_->WillRemoveBookmarks(bookmarks);
 }
 
-void BookmarkContextMenu::DidRemoveBookmarks() {
-  if (observer_)
+void BookmarkContextMenu::DidExecuteCommand(int command_id) {
+  if (observer_ && IsRemoveBookmarksCommand(command_id))
     observer_->DidRemoveBookmarks();
 }
