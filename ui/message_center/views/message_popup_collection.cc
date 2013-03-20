@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
@@ -25,7 +26,7 @@ namespace message_center {
 class ToastContentsView : public views::WidgetDelegateView {
  public:
   ToastContentsView(const Notification* notification,
-                    MessagePopupCollection* collection)
+                    base::WeakPtr<MessagePopupCollection> collection)
       : collection_(collection) {
     DCHECK(collection_);
 
@@ -108,11 +109,13 @@ class ToastContentsView : public views::WidgetDelegateView {
 
   // Overridden from views::View:
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
-    collection_->OnMouseEntered();
+    if (collection_)
+      collection_->OnMouseEntered();
   }
 
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
-    collection_->OnMouseExited();
+    if (collection_)
+      collection_->OnMouseExited();
   }
 
   virtual void Layout() OVERRIDE {
@@ -132,7 +135,7 @@ class ToastContentsView : public views::WidgetDelegateView {
   base::TimeDelta delay_;
   base::Time start_time_;
   base::OneShotTimer<views::Widget> timer_;
-  MessagePopupCollection* collection_;
+  base::WeakPtr<MessagePopupCollection> collection_;
 
   DISALLOW_COPY_AND_ASSIGN(ToastContentsView);
 };
@@ -198,7 +201,7 @@ void MessagePopupCollection::UpdatePopups() {
       // image loads.
       toast_iter->second->SetContents(view);
     } else {
-      ToastContentsView* toast = new ToastContentsView(*iter, this);
+      ToastContentsView* toast = new ToastContentsView(*iter, AsWeakPtr());
       widget = toast->CreateWidget(context_);
       toast->SetContents(view);
       widget->AddObserver(this);

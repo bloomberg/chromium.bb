@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/views/widget/widget_observer.h"
@@ -33,7 +34,8 @@ class ToastContentsView;
 // contents of each toast are for the message center and layout strategy would
 // be slightly different.
 class MESSAGE_CENTER_EXPORT MessagePopupCollection
-    : public views::WidgetObserver {
+    : public views::WidgetObserver,
+      public base::SupportsWeakPtr<MessagePopupCollection> {
  public:
   // |context| specifies the context to create toast windows. It can be NULL
   // for non-aura environment. See comments in ui/views/widget/widget.h.
