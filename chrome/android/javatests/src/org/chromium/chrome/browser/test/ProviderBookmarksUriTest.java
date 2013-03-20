@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.testshell;
+package org.chromium.chrome.browser.test;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -15,7 +15,7 @@ import java.util.Date;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
-import org.chromium.chrome.testshell.util.BookmarkUtils;
+import org.chromium.chrome.browser.test.util.BookmarkUtils;
 
 /**
  * Tests the use of the Bookmark URI as part of the Android provider public API.

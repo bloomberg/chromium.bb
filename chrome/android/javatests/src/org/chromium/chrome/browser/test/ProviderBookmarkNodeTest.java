@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.testshell;
+package org.chromium.chrome.browser.test;
 
 import android.os.Parcel;
 import android.test.FlakyTest;
@@ -13,7 +13,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProvider.Type;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.chrome.testshell.util.BookmarkUtils;
+import org.chromium.chrome.browser.test.util.BookmarkUtils;
 
 import java.util.Random;
 

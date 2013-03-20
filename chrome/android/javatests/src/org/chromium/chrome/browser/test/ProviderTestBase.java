@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.testshell;
+package org.chromium.chrome.browser.test;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -10,6 +10,7 @@ import android.test.IsolatedContext;
 import android.test.mock.MockContentResolver;
 
 import org.chromium.chrome.browser.ChromeBrowserProvider;
+import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 
 /**
