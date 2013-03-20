@@ -119,6 +119,9 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
                                        gfx::NativeView context) {
   if (!settings_view_) {
     settings_view_ = NotifierSettingsView::Create(provider, context);
+  } else {
+    settings_view_->GetWidget()->StackAtTop();
+    settings_view_->GetWidget()->Activate();
   }
   return settings_view_;
 }
