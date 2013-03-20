@@ -40,6 +40,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SuccessfulLoadUMA, {
     histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
     histograms.ExpectTotalCount("NaCl.Perf.Size.Nexe", 1);
   } else {
+    histograms.ExpectTotalCount("NaCl.Options.PNaCl.OptLevel", 1);
     histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
     histograms.ExpectTotalCount("NaCl.Perf.Size.Pexe", 1);
     histograms.ExpectTotalCount("NaCl.Perf.Size.PNaClTranslatedNexe", 1);

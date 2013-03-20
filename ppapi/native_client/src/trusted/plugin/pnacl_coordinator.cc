@@ -189,11 +189,17 @@ const int32_t kKBPSMin = 1;
 const int32_t kKBPSMax = 30*1000;          // max of 30 MB / sec.
 const uint32_t kKBPSBuckets = 100;
 
+const PPB_UMA_Private* uma_interface = NULL;
+
 const PPB_UMA_Private* GetUMAInterface() {
+  if (uma_interface != NULL) {
+    return uma_interface;
+  }
   pp::Module *module = pp::Module::Get();
   DCHECK(module);
-  return static_cast<const PPB_UMA_Private*>(
+  uma_interface = static_cast<const PPB_UMA_Private*>(
       module->GetBrowserInterface(PPB_UMA_PRIVATE_INTERFACE));
+  return uma_interface;
 }
 
 void HistogramTime(const std::string& name, int64_t ms) {
@@ -249,6 +255,19 @@ void HistogramEnumerateTranslationCache(bool hit) {
   if (ptr == NULL) return;
   ptr->HistogramEnumeration(pp::Var("NaCl.Perf.PNaClCache.IsHit").pp_var(),
                             hit, 2);
+}
+
+// Opt level is expected to be 0 to 3.  Treating 4 as unknown.
+const int8_t kOptUnknown = 4;
+
+void HistogramOptLevel(int8_t opt_level) {
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+  if (opt_level < 0 || opt_level > 3) {
+    opt_level = kOptUnknown;
+  }
+  ptr->HistogramEnumeration(pp::Var("NaCl.Options.PNaCl.OptLevel").pp_var(),
+                            opt_level, kOptUnknown+1);
 }
 
 }  // namespace
@@ -416,6 +435,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   }
 
   // If there are no errors, report stats from this thread (the main thread).
+  HistogramOptLevel(pnacl_options_.opt_level());
   const plugin::PnaclTimeStats& time_stats = translate_thread_->GetTimeStats();
   HistogramTime("NaCl.Perf.PNaClLoadTime.LoadCompiler",
                 time_stats.pnacl_llc_load_time / NACL_MICROS_PER_MILLI);
