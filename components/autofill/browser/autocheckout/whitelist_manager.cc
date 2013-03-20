@@ -27,7 +27,7 @@ const int kDownloadIntervalSeconds = 86400;  // 1 day
 const int kInitialDownloadDelaySeconds = 3;
 
 const char kWhitelistUrl[] =
-    "http://www.gstatic.com/commerce/autocheckout/whitelist.csv";
+    "https://www.gstatic.com/commerce/autocheckout/whitelist.csv";
 
 const char kWhiteListKeyName[] = "autocheckout_whitelist_manager";
 
@@ -147,4 +147,3 @@ void WhitelistManager::BuildWhitelist(const std::string& data) {
 
 }  // namespace autocheckout
 }  // namespace autofill
-
