@@ -956,12 +956,6 @@ DialogType.isModal = function(type) {
   FileManager.prototype.initSidebar_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
-
-    this.directoryTree_.addEventListener('change', function() {
-      var currentPath = this.directoryTree_.getCurrentPath() ||
-                        this.directoryModel_.getDefaultDirectory();
-      this.directoryModel_.changeDirectory(currentPath);
-    }.bind(this));
   };
 
   FileManager.prototype.updateStartupPrefs_ = function() {

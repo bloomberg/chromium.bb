@@ -56,8 +56,7 @@ function isDummyEntry(dirEntry) {
 }
 
 /**
- * A directory in the tree. One this element represents one directory. Each
- * element represents one director.
+ * A directory in the tree. Each element represents one directory.
  *
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
@@ -138,10 +137,10 @@ DirectoryItem.prototype.decorate = function(
 
   // Sets hasChildren=true tentatively. This will be overridden after
   // scanning sub-directories in updateSubElementsFromList.
-  this.hasChildren = true;
+  // Special search does not have children.
+  this.hasChildren = !PathUtil.isSpecialSearchRoot(path);
 
   this.addEventListener('expand', this.onExpand_.bind(this), true);
-
   var volumeManager = VolumeManager.getInstance();
   var icon = this.querySelector('.icon');
   if (PathUtil.isRootPath(path)) {
@@ -189,6 +188,7 @@ DirectoryItem.prototype.onExpand_ = function(e) {
 DirectoryItem.prototype.updateSubDirectories_ = function(opt_errorCallback) {
   // Tries to retrieve new entry if the cached entry is dummy.
   if (isDummyEntry(this.dirEntry_)) {
+    // Fake Drive root.
     this.directoryModel_.resolveDirectory(
         this.fullPath,
         function(entry) {
@@ -240,6 +240,13 @@ DirectoryItem.prototype.redrawSubDirectoryList_ = function() {
 };
 
 /**
+ * Executes the assigned action. DirectoryItem performs changeDirectory.
+ */
+DirectoryItem.prototype.doAction = function() {
+  this.directoryModel_.changeDirectory(this.fullPath);
+};
+
+/**
  * Tree of directories on the sidebar. This element is also the root of items,
  * in other words, this is the parent of the top-level items.
  *
@@ -277,6 +284,18 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
   this.rootsList_.addEventListener('permuted',
                                    this.onRootsListChanged_.bind(this));
   this.onRootsListChanged_();
+
+  // Add a handler for directory change.
+  this.addEventListener('change', function() {
+    if (this.selectedItem) {
+      this.selectedItem.doAction();
+      return;
+    }
+
+    // Fallback to the default directory.
+    this.directoryModel_.changeDirectory(
+        this.directoryModel_.getDefaultDirectory());
+  }.bind(this));
 };
 
 /**

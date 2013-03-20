@@ -683,6 +683,11 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  * failed.
  */
 DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
+  if (PathUtil.isSpecialSearchRoot(path)) {
+    this.specialSearch(path, '');
+    return;
+  }
+
   this.resolveDirectory(path, function(directoryEntry) {
     this.changeDirectoryEntry_(false, directoryEntry);
   }.bind(this), function(error) {
@@ -708,12 +713,6 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
         errorCallback({ code: FileError.NOT_FOUND_ERR });
       return;
     }
-  } else if (PathUtil.getRootType(path) == RootType.DRIVE_OFFLINE) {
-    if (path == DirectoryModel.fakeDriveOfflineEntry_.fullPath)
-      successCallback(DirectoryModel.fakeDriveOfflineEntry_);
-    else  // Subdirectory.
-      errorCallback({ code: FileError.NOT_FOUND_ERR });
-    return;
   }
 
   if (path == '/') {
@@ -759,23 +758,15 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
                                                           opt_callback) {
-  var needsDrive = dirEntry == DirectoryModel.fakeDriveEntry_ ||
-                   dirEntry == DirectoryModel.fakeDriveOfflineEntry_;
-  if (needsDrive &&
+  if (dirEntry == DirectoryModel.fakeDriveEntry_ &&
       this.volumeManager_.getDriveStatus() ==
           VolumeManager.DriveStatus.UNMOUNTED) {
     this.volumeManager_.mountDrive(function() {}, function() {});
   }
 
   var previous = this.currentDirContents_.getDirectoryEntry();
-  if (dirEntry == DirectoryModel.fakeDriveOfflineEntry_) {
-    // This fake root is representing a special search.
-    this.getDriveOfflineFiles('');
-  } else {
-    // Ordinary directory change.
-    this.clearSearch_();
-    this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
-  }
+  this.clearSearch_();
+  this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
 
   var e = new cr.Event('directory-changed');
   e.previousDirEntry = previous;
@@ -977,7 +968,8 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
     downloads: null,
     archives: null,
     removables: null,
-    drive: null
+    drive: null,
+    driveFakeRoots: null
   };
   var self = this;
 
@@ -989,6 +981,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
 
     callback(groups.downloads.
              concat(groups.drive).
+             concat(groups.driveFakeRoots).
              concat(groups.archives).
              concat(groups.removables));
     metrics.recordInterval('Load.Roots');
@@ -1024,6 +1017,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
                      append.bind(this, 'removables'));
 
   if (this.driveEnabled_) {
+    groups.driveFakeRoots = [DirectoryModel.fakeDriveOfflineEntry_];
     var fake = [DirectoryModel.fakeDriveEntry_];
     if (this.isDriveMounted()) {
       readSingle(DirectoryModel.fakeDriveEntry_.fullPath, 'drive', fake);
@@ -1031,8 +1025,8 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
       groups.drive = fake;
       done();
     }
-    // TODO(haruki): Add DirectoryModel.fakeDriveOfflineEntry_ to show the tab.
   } else {
+    groups.driveFakeRoots = [];
     groups.drive = [];
     done();
   }
@@ -1087,15 +1081,13 @@ DirectoryModel.prototype.onDriveStatusChanged_ = function() {
       var currentDirEntry = this.getCurrentDirEntry();
       if (currentDirEntry == DirectoryModel.fakeDriveEntry_) {
         this.changeDirectoryEntrySilent_(entry);
-      } else if (currentDirEntry == DirectoryModel.fakeDriveOfflineEntry_) {
-        // Need to update the results for offline available files.
-        this.getDriveOfflineFiles('');
+      } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
+        this.rescan();
       }
     }
     this.root_.getDirectory(
         DirectoryModel.fakeDriveEntry_.fullPath, {},
         onGotDirectory.bind(this));
-    // TODO(haruki): support "other" root.
   } else {
     var rootType = this.getCurrentRootType();
     if (rootType != RootType.DRIVE && rootType != RootType.DRIVE_OFFLINE)
@@ -1193,8 +1185,8 @@ DirectoryModel.isMountableRoot = function(path) {
 DirectoryModel.prototype.search = function(query,
                                            onSearchRescan,
                                            onClearSearch) {
-  if (this.getCurrentRootType() === RootType.DRIVE_OFFLINE) {
-    this.getDriveOfflineFiles(query);
+  if (PathUtil.isSpecialSearchRoot(this.getCurrentDirPath())) {
+    this.specialSearch(this.getCurrentDirPath(), query);
     return;
   }
 
@@ -1234,12 +1226,22 @@ DirectoryModel.prototype.search = function(query,
   this.clearAndScan_(newDirContents);
 };
 
-
 /**
- * Performs search and displays results for the Drive files available offline.
- * @param {string} query Query that will be searched for.
+ * Performs special search and displays results. e.g. Drive files available
+ * offline, shared-with-me files, recently modified files.
+ * @param {string} path Path string representing special search. See fake
+ *     entries in PathUtil.RootDirectory.
+ * @param {string=} opt_query Query string used for the search.
  */
-DirectoryModel.prototype.getDriveOfflineFiles = function(query) {
+DirectoryModel.prototype.specialSearch = function(path, opt_query) {
+  // Any special search needs Drive mounted.
+  if (this.volumeManager_.getDriveStatus() ==
+        VolumeManager.DriveStatus.UNMOUNTED) {
+    this.volumeManager_.mountDrive(function() {}, function() {});
+  }
+
+  var query = opt_query || '';
+
   this.clearSearch_();
 
   this.onSearchCompleted_ = null;
@@ -1252,12 +1254,30 @@ DirectoryModel.prototype.getDriveOfflineFiles = function(query) {
     driveRoot = null;
   }
 
-  var newDirContents = new DirectoryContentsDriveOffline(
-      this.currentFileListContext_,
-      driveRoot,
-      DirectoryModel.fakeDriveOfflineEntry_,
-      query);
+  var specialSearchType = PathUtil.getRootType(path);
+  var newDirContents;
+  var dirEntry;
+  if (specialSearchType == RootType.DRIVE_OFFLINE) {
+    newDirContents = new DirectoryContentsDriveOffline(
+        this.currentFileListContext_,
+        driveRoot,
+        DirectoryModel.fakeDriveOfflineEntry_,
+        query);
+    dirEntry = DirectoryModel.fakeDriveOfflineEntry_;
+  } else {
+    // Unknown path.
+    this.changeDirectory(thid.getDefaultDirectory());
+    return;
+  }
+
+  var previous = this.currentDirContents_.getDirectoryEntry();
   this.clearAndScan_(newDirContents);
+
+  var e = new cr.Event('directory-changed');
+  e.previousDirEntry = previous;
+  e.newDirEntry = dirEntry;
+  e.initial = false;
+  this.dispatchEvent(e);
 };
 
 /**

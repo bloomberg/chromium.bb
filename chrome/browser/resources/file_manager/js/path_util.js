@@ -39,6 +39,17 @@ var DriveSubRootDirectory = {
 var PathUtil = {};
 
 /**
+ * Checks if the given path represents a special search. Fake entries in
+ * RootDirectory correspond to special searches.
+ * @param {string} path Path to check.
+ * @return {boolean} True if the given path represents a special search.
+ */
+PathUtil.isSpecialSearchRoot = function(path) {
+  var type = PathUtil.getRootType(path);
+  return type == RootType.DRIVE_OFFLINE;
+};
+
+/**
  * @param {string} path Path starting with '/'.
  * @return {string} Top directory (starting with '/').
  */
