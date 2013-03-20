@@ -26,6 +26,11 @@ bool IsValidCreditCardNumber(const string16& text);
 // Returns true if |text| looks like a valid credit card security code.
 bool IsValidCreditCardSecurityCode(const string16& text);
 
+// Returns true if |code| looks like a valid credit card security code
+// for the type of credit card designated by |number|.
+bool IsValidCreditCardSecurityCode(const string16& code,
+                                   const string16& number);
+
 // Returns true if |text| looks like a valid e-mail address.
 bool IsValidEmailAddress(const string16& text);
 

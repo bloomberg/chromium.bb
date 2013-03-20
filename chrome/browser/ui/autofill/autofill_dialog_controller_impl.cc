@@ -790,11 +790,21 @@ std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
   if (field_values.count(CREDIT_CARD_EXP_MONTH)) {
     DCHECK(field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
     if (!autofill::IsValidCreditCardExpirationDate(
-        field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
-        field_values[CREDIT_CARD_EXP_MONTH],
-        base::Time::Now())) {
+            field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
+            field_values[CREDIT_CARD_EXP_MONTH],
+            base::Time::Now())) {
       invalid_fields.push_back(CREDIT_CARD_EXP_MONTH);
       invalid_fields.push_back(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+    }
+  }
+
+  // If there is a credit card number and a CVC, validate them together.
+  if (field_values.count(CREDIT_CARD_NUMBER) &&
+      field_values.count(CREDIT_CARD_VERIFICATION_CODE)) {
+    if (!autofill::IsValidCreditCardSecurityCode(
+            field_values[CREDIT_CARD_VERIFICATION_CODE],
+            field_values[CREDIT_CARD_NUMBER])) {
+      invalid_fields.push_back(CREDIT_CARD_VERIFICATION_CODE);
     }
   }
 
@@ -803,7 +813,6 @@ std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
   invalid_fields.erase(std::unique(
       invalid_fields.begin(), invalid_fields.end()), invalid_fields.end());
 
-  // TODO(groby): Add cross-field validation for CVC/CC type.
   return invalid_fields;
 }
 

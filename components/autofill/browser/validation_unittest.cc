@@ -72,6 +72,10 @@ const char* const kInvalidEmailAddress[] = {
   "user@",
   "user@=example.com"
 };
+const char kAmericanExpressCard[] = "341111111111111";
+const char kVisaCard[] = "4111111111111111";
+const char kAmericanExpressCVC[] = "1234";
+const char kVisaCVC[] = "123";
 }  // namespace
 
 TEST(AutofillValidation, IsValidCreditCardNumber) {
@@ -140,4 +144,17 @@ TEST(AutofillValidation, IsValidEmailAddress) {
   }
 }
 
-
+TEST(AutofillValidation, IsValidCreditCardSecurityCodeWithNumber) {
+  EXPECT_TRUE(autofill::IsValidCreditCardSecurityCode(
+      ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kAmericanExpressCard)));
+  EXPECT_TRUE(autofill::IsValidCreditCardSecurityCode(
+      ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kVisaCard)));
+  EXPECT_FALSE(autofill::IsValidCreditCardSecurityCode(
+      ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kAmericanExpressCard)));
+  EXPECT_FALSE(autofill::IsValidCreditCardSecurityCode(
+      ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kVisaCard)));
+  EXPECT_TRUE(autofill::IsValidCreditCardSecurityCode(
+      ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kInvalidNumbers[0])));
+  EXPECT_FALSE(autofill::IsValidCreditCardSecurityCode(
+      ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kInvalidNumbers[0])));
+}

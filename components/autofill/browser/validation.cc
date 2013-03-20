@@ -91,6 +91,17 @@ bool IsValidCreditCardSecurityCode(const string16& text) {
   return true;
 }
 
+bool IsValidCreditCardSecurityCode(const string16& code,
+                                   const string16& number) {
+  CreditCard card;
+  card.SetRawInfo(CREDIT_CARD_NUMBER, number);
+  size_t required_length = 3;
+  if (card.type() == kAmericanExpressCard)
+    required_length = 4;
+
+  return code.length() == required_length;
+}
+
 bool IsValidEmailAddress(const string16& text) {
   // E-Mail pattern as defined by the WhatWG. (4.10.7.1.5 E-Mail state)
   const string16 kEmailPattern = ASCIIToUTF16(
