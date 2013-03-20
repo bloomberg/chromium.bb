@@ -350,7 +350,7 @@ gfx::Transform computeScrollCompensationForThisLayer(LayerImpl* scrollingLayer, 
     return scrollCompensationForThisLayer;
 }
 
-gfx::Transform computeScrollCompensationMatrixForChildren(Layer* currentLayer, const gfx::Transform& currentParentMatrix, const gfx::Transform& currentScrollCompensation)
+gfx::Transform computeScrollCompensationMatrixForChildren(Layer* current_layer, const gfx::Transform& currentParentMatrix, const gfx::Transform& currentScrollCompensation)
 {
     // The main thread (i.e. Layer) does not need to worry about scroll compensation.
     // So we can just return an identity matrix here.
@@ -1127,20 +1127,20 @@ static bool pointHitsRegion(gfx::PointF screenSpacePoint, const gfx::Transform& 
 
 static bool pointIsClippedBySurfaceOrClipRect(const gfx::PointF& screenSpacePoint, LayerImpl* layer)
 {
-    LayerImpl* currentLayer = layer;
+    LayerImpl* current_layer = layer;
 
     // Walk up the layer tree and hit-test any renderSurfaces and any layer clipRects that are active.
-    while (currentLayer) {
-        if (currentLayer->render_surface() && !pointHitsRect(screenSpacePoint, currentLayer->render_surface()->screen_space_transform(), currentLayer->render_surface()->content_rect()))
+    while (current_layer) {
+        if (current_layer->render_surface() && !pointHitsRect(screenSpacePoint, current_layer->render_surface()->screen_space_transform(), current_layer->render_surface()->content_rect()))
             return true;
 
         // Note that drawableContentRects are actually in targetSurface space, so the transform we
         // have to provide is the target surface's screenSpaceTransform.
-        LayerImpl* renderTarget = currentLayer->render_target();
-        if (layerClipsSubtree(currentLayer) && !pointHitsRect(screenSpacePoint, renderTarget->render_surface()->screen_space_transform(), currentLayer->drawable_content_rect()))
+        LayerImpl* renderTarget = current_layer->render_target();
+        if (layerClipsSubtree(current_layer) && !pointHitsRect(screenSpacePoint, renderTarget->render_surface()->screen_space_transform(), current_layer->drawable_content_rect()))
             return true;
 
-        currentLayer = currentLayer->parent();
+        current_layer = current_layer->parent();
     }
 
     // If we have finished walking all ancestors without having already exited, then the point is not clipped by any ancestors.
@@ -1152,30 +1152,30 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& scr
     LayerImpl* foundLayer = 0;
 
     typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> LayerIteratorType;
-    LayerIteratorType end = LayerIteratorType::end(&renderSurfaceLayerList);
+    LayerIteratorType end = LayerIteratorType::End(&renderSurfaceLayerList);
 
-    for (LayerIteratorType it = LayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
+    for (LayerIteratorType it = LayerIteratorType::Begin(&renderSurfaceLayerList); it != end; ++it) {
         // We don't want to consider renderSurfaces for hit testing.
-        if (!it.representsItself())
+        if (!it.represents_itself())
             continue;
 
-        LayerImpl* currentLayer = (*it);
+        LayerImpl* current_layer = (*it);
 
-        gfx::RectF contentRect(gfx::PointF(), currentLayer->content_bounds());
-        if (!pointHitsRect(screenSpacePoint, currentLayer->screen_space_transform(), contentRect))
+        gfx::RectF contentRect(gfx::PointF(), current_layer->content_bounds());
+        if (!pointHitsRect(screenSpacePoint, current_layer->screen_space_transform(), contentRect))
             continue;
 
         // At this point, we think the point does hit the layer, but we need to walk up
         // the parents to ensure that the layer was not clipped in such a way that the
         // hit point actually should not hit the layer.
-        if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, currentLayer))
+        if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, current_layer))
             continue;
 
         // Skip the HUD layer.
-        if (currentLayer == currentLayer->layer_tree_impl()->hud_layer())
+        if (current_layer == current_layer->layer_tree_impl()->hud_layer())
             continue;
 
-        foundLayer = currentLayer;
+        foundLayer = current_layer;
         break;
     }
 
@@ -1188,19 +1188,19 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(co
     LayerImpl* foundLayer = 0;
 
     typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> LayerIteratorType;
-    LayerIteratorType end = LayerIteratorType::end(&renderSurfaceLayerList);
+    LayerIteratorType end = LayerIteratorType::End(&renderSurfaceLayerList);
 
-    for (LayerIteratorType it = LayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
+    for (LayerIteratorType it = LayerIteratorType::Begin(&renderSurfaceLayerList); it != end; ++it) {
         // We don't want to consider renderSurfaces for hit testing.
-        if (!it.representsItself())
+        if (!it.represents_itself())
             continue;
 
-        LayerImpl* currentLayer = (*it);
+        LayerImpl* current_layer = (*it);
 
-        if (!layerHasTouchEventHandlersAt(screenSpacePoint, currentLayer))
+        if (!layerHasTouchEventHandlersAt(screenSpacePoint, current_layer))
             continue;
 
-        foundLayer = currentLayer;
+        foundLayer = current_layer;
         break;
     }
 

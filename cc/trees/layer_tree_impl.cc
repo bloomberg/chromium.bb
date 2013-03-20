@@ -334,10 +334,10 @@ bool LayerTreeImpl::AreVisibleResourcesReady() const {
                         std::vector<LayerImpl*>,
                         RenderSurfaceImpl,
                         LayerIteratorActions::BackToFront> LayerIteratorType;
-  LayerIteratorType end = LayerIteratorType::end(&render_surface_layer_list_);
-  for (LayerIteratorType it = LayerIteratorType::begin(
+  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
+  for (LayerIteratorType it = LayerIteratorType::Begin(
            &render_surface_layer_list_); it != end; ++it) {
-    if (it.representsItself() && !(*it)->AreVisibleResourcesReady())
+    if (it.represents_itself() && !(*it)->AreVisibleResourcesReady())
       return false;
   }
 
@@ -534,10 +534,10 @@ scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
                         std::vector<LayerImpl*>,
                         RenderSurfaceImpl,
                         LayerIteratorActions::BackToFront> LayerIteratorType;
-  LayerIteratorType end = LayerIteratorType::end(&render_surface_layer_list_);
-  for (LayerIteratorType it = LayerIteratorType::begin(
+  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
+  for (LayerIteratorType it = LayerIteratorType::Begin(
            &render_surface_layer_list_); it != end; ++it) {
-    if (!it.representsItself())
+    if (!it.represents_itself())
       continue;
     state->Append((*it)->AsValue().release());
   }

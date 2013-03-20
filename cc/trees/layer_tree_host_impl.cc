@@ -541,13 +541,13 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   bool draw_frame = true;
 
   LayerIteratorType end =
-      LayerIteratorType::end(frame->render_surface_layer_list);
+      LayerIteratorType::End(frame->render_surface_layer_list);
   for (LayerIteratorType it =
-           LayerIteratorType::begin(frame->render_surface_layer_list);
+           LayerIteratorType::Begin(frame->render_surface_layer_list);
        it != end;
        ++it) {
     RenderPass::Id target_render_pass_id =
-        it.targetRenderSurfaceLayer()->render_surface()->RenderPassId();
+        it.target_render_surface_layer()->render_surface()->RenderPassId();
     RenderPass* target_render_pass =
         frame->render_passes_by_id[target_render_pass_id];
 
@@ -555,7 +555,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
     AppendQuadsData append_quads_data(target_render_pass->id);
 
-    if (it.representsContributingRenderSurface()) {
+    if (it.represents_contributing_render_surface()) {
       RenderPass::Id contributing_render_pass_id =
           it->render_surface()->RenderPassId();
       RenderPass* contributing_render_pass =
@@ -565,7 +565,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
                                        contributing_render_pass,
                                        occlusion_tracker,
                                        &append_quads_data);
-    } else if (it.representsItself() && !it->visible_content_rect().IsEmpty()) {
+    } else if (it.represents_itself() && !it->visible_content_rect().IsEmpty()) {
       bool has_occlusion_from_outside_target_surface;
       bool impl_draw_transform_is_unknown = false;
       if (occlusion_tracker.Occluded(

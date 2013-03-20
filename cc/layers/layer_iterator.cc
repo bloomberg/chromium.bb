@@ -11,137 +11,209 @@
 
 namespace cc {
 
-template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void LayerIteratorActions::BackToFront::begin(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
-{
-    it.m_targetRenderSurfaceLayerIndex = 0;
-    it.m_currentLayerIndex = LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface;
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename ActionType>
+void LayerIteratorActions::BackToFront::Begin(
+    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
+  it->target_render_surface_layer_index_ = 0;
+  it->current_layer_index_ =
+      LayerIteratorValue::kLayerIndexRepresentingTargetRenderSurface;
 
-    m_highestTargetRenderSurfaceLayer = 0;
+  highest_target_render_surface_layer_ = 0;
 }
 
-template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void LayerIteratorActions::BackToFront::end(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
-{
-    it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
-    it.m_currentLayerIndex = 0;
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename ActionType>
+void LayerIteratorActions::BackToFront::End(
+    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
+  it->target_render_surface_layer_index_ =
+      LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
+  it->current_layer_index_ = 0;
 }
 
-template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void LayerIteratorActions::BackToFront::next(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
-{
-    // If the current layer has a RS, move to its layer list. Otherwise, visit the next layer in the current RS layer list.
-    if (it.currentLayerRepresentsContributingRenderSurface()) {
-        // Save our position in the childLayer list for the RenderSurfaceImpl, then jump to the next RenderSurfaceImpl. Save where we
-        // came from in the next RenderSurfaceImpl so we can get back to it.
-        it.targetRenderSurface()->current_layer_index_history_ = it.m_currentLayerIndex;
-        int previousTargetRenderSurfaceLayer = it.m_targetRenderSurfaceLayerIndex;
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename ActionType>
+void LayerIteratorActions::BackToFront::Next(
+    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
+  // If the current layer has a RS, move to its layer list. Otherwise,
+  // visit the next layer in the current RS layer list.
+  if (it->current_layer_represents_contributing_render_surface()) {
+    // Save our position in the childLayer list for the RenderSurface,
+    // then jump to the next RenderSurface. Save where we
+    // came from in the next RenderSurface so we can get back to it.
+    it->target_render_surface()->current_layer_index_history_ =
+        it->current_layer_index_;
+    int previous_target_render_surface_layer =
+        it->target_render_surface_layer_index_;
 
-        it.m_targetRenderSurfaceLayerIndex = ++m_highestTargetRenderSurfaceLayer;
-        it.m_currentLayerIndex = LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface;
+    it->target_render_surface_layer_index_ =
+        ++highest_target_render_surface_layer_;
+    it->current_layer_index_ =
+        LayerIteratorValue::kLayerIndexRepresentingTargetRenderSurface;
 
-        it.targetRenderSurface()->target_render_surface_layer_index_history_ = previousTargetRenderSurfaceLayer;
-    } else {
-        ++it.m_currentLayerIndex;
+    it->target_render_surface()->target_render_surface_layer_index_history_ =
+        previous_target_render_surface_layer;
+  } else {
+    ++it->current_layer_index_;
 
-        int targetRenderSurfaceNumChildren = it.targetRenderSurfaceChildren().size();
-        while (it.m_currentLayerIndex == targetRenderSurfaceNumChildren) {
-            // Jump back to the previous RenderSurfaceImpl, and get back the position where we were in that list, and move to the next position there.
-            if (!it.m_targetRenderSurfaceLayerIndex) {
-                // End of the list
-                it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
-                it.m_currentLayerIndex = 0;
-                return;
-            }
-            it.m_targetRenderSurfaceLayerIndex = it.targetRenderSurface()->target_render_surface_layer_index_history_;
-            it.m_currentLayerIndex = it.targetRenderSurface()->current_layer_index_history_ + 1;
-
-            targetRenderSurfaceNumChildren = it.targetRenderSurfaceChildren().size();
-        }
-    }
-}
-
-template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void LayerIteratorActions::FrontToBack::begin(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
-{
-    it.m_targetRenderSurfaceLayerIndex = 0;
-    it.m_currentLayerIndex = it.targetRenderSurfaceChildren().size() - 1;
-    goToHighestInSubtree(it);
-}
-
-template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void LayerIteratorActions::FrontToBack::end(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
-{
-    it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
-    it.m_currentLayerIndex = 0;
-}
-
-template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void LayerIteratorActions::FrontToBack::next(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
-{
-    // Moves to the previous layer in the current RS layer list. Then we check if the
-    // new current layer has its own RS, in which case there are things in that RS layer list that are higher, so
-    // we find the highest layer in that subtree.
-    // If we move back past the front of the list, we jump up to the previous RS layer list, picking up again where we
-    // had previously recursed into the current RS layer list.
-
-    if (!it.currentLayerRepresentsTargetRenderSurface()) {
-        // Subtracting one here will eventually cause the current layer to become that layer
-        // representing the target render surface.
-        --it.m_currentLayerIndex;
-        goToHighestInSubtree(it);
-    } else {
-        while (it.currentLayerRepresentsTargetRenderSurface()) {
-            if (!it.m_targetRenderSurfaceLayerIndex) {
-                // End of the list
-                it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
-                it.m_currentLayerIndex = 0;
-                return;
-            }
-            it.m_targetRenderSurfaceLayerIndex = it.targetRenderSurface()->target_render_surface_layer_index_history_;
-            it.m_currentLayerIndex = it.targetRenderSurface()->current_layer_index_history_;
-        }
-    }
-}
-
-template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
-{
-    if (it.currentLayerRepresentsTargetRenderSurface())
+    int target_render_surface_num_children =
+        it->target_render_surface_children().size();
+    while (it->current_layer_index_ == target_render_surface_num_children) {
+      // Jump back to the previous RenderSurface,
+      // and get back the position where we were in that list,
+      // and move to the next position there.
+      if (!it->target_render_surface_layer_index_) {
+        // End of the list
+        it->target_render_surface_layer_index_ =
+            LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
+        it->current_layer_index_ = 0;
         return;
-    while (it.currentLayerRepresentsContributingRenderSurface()) {
-        // Save where we were in the current target surface, move to the next one, and save the target surface that we
-        // came from there so we can go back to it.
-        it.targetRenderSurface()->current_layer_index_history_ = it.m_currentLayerIndex;
-        int previousTargetRenderSurfaceLayer = it.m_targetRenderSurfaceLayerIndex;
+      }
+      it->target_render_surface_layer_index_ = it->target_render_surface()
+          ->target_render_surface_layer_index_history_;
+      it->current_layer_index_ =
+          it->target_render_surface()->current_layer_index_history_ + 1;
 
-        for (LayerType* layer = it.currentLayer(); it.targetRenderSurfaceLayer() != layer; ++it.m_targetRenderSurfaceLayerIndex) { }
-        it.m_currentLayerIndex = it.targetRenderSurfaceChildren().size() - 1;
-
-        it.targetRenderSurface()->target_render_surface_layer_index_history_ = previousTargetRenderSurfaceLayer;
+      target_render_surface_num_children =
+          it->target_render_surface_children().size();
     }
+  }
+}
+
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename ActionType>
+void LayerIteratorActions::FrontToBack::Begin(
+    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
+  it->target_render_surface_layer_index_ = 0;
+  it->current_layer_index_ = it->target_render_surface_children().size() - 1;
+  GoToHighestInSubtree(it);
+}
+
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename ActionType>
+void LayerIteratorActions::FrontToBack::End(
+    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
+  it->target_render_surface_layer_index_ =
+      LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
+  it->current_layer_index_ = 0;
+}
+
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename ActionType>
+void LayerIteratorActions::FrontToBack::Next(
+    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
+  // Moves to the previous layer in the current RS layer list.
+  // Then we check if the new current layer has its own RS,
+  // in which case there are things in that RS layer list that are higher,
+  // so we find the highest layer in that subtree.
+  // If we move back past the front of the list,
+  // we jump up to the previous RS layer list, picking up again where we
+  // had previously recursed into the current RS layer list.
+
+  if (!it->current_layer_represents_target_render_surface()) {
+    // Subtracting one here will eventually cause the current layer
+    // to become that layer representing the target render surface.
+    --it->current_layer_index_;
+    GoToHighestInSubtree(it);
+  } else {
+    while (it->current_layer_represents_target_render_surface()) {
+      if (!it->target_render_surface_layer_index_) {
+        // End of the list
+        it->target_render_surface_layer_index_ =
+            LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
+        it->current_layer_index_ = 0;
+        return;
+      }
+      it->target_render_surface_layer_index_ = it->target_render_surface()
+          ->target_render_surface_layer_index_history_;
+      it->current_layer_index_ =
+          it->target_render_surface()->current_layer_index_history_;
+    }
+  }
+}
+
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename ActionType>
+void LayerIteratorActions::FrontToBack::GoToHighestInSubtree(
+    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
+  if (it->current_layer_represents_target_render_surface())
+    return;
+  while (it->current_layer_represents_contributing_render_surface()) {
+    // Save where we were in the current target surface, move to the next one,
+    // and save the target surface that we came from there
+    // so we can go back to it.
+    it->target_render_surface()->current_layer_index_history_ =
+        it->current_layer_index_;
+    int previous_target_render_surface_layer =
+        it->target_render_surface_layer_index_;
+
+    for (LayerType* layer = it->current_layer();
+         it->target_render_surface_layer() != layer;
+         ++it->target_render_surface_layer_index_) {
+    }
+    it->current_layer_index_ = it->target_render_surface_children().size() - 1;
+
+    it->target_render_surface()->target_render_surface_layer_index_history_ =
+        previous_target_render_surface_layer;
+  }
 }
 
 typedef std::vector<scoped_refptr<Layer> > LayerList;
 typedef std::vector<LayerImpl*> LayerImplList;
 
-// Declare each of the above functions for Layer and LayerImpl classes so that they are linked.
-template CC_EXPORT void LayerIteratorActions::BackToFront::begin(LayerIterator<Layer, LayerList, RenderSurface, BackToFront> &);
-template CC_EXPORT void LayerIteratorActions::BackToFront::end(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
-template CC_EXPORT void LayerIteratorActions::BackToFront::next(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
+// Declare each of the above functions for Layer and LayerImpl classes
+// so that they are linked.
+template CC_EXPORT void LayerIteratorActions::BackToFront::Begin(
+    LayerIterator<Layer, LayerList, RenderSurface, BackToFront>* it);
+template CC_EXPORT void LayerIteratorActions::BackToFront::End(
+    LayerIterator<Layer, LayerList, RenderSurface, BackToFront>* it);
+template CC_EXPORT void LayerIteratorActions::BackToFront::Next(
+    LayerIterator<Layer, LayerList, RenderSurface, BackToFront>* it);
 
-template CC_EXPORT void LayerIteratorActions::BackToFront::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
-template CC_EXPORT void LayerIteratorActions::BackToFront::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
-template CC_EXPORT void LayerIteratorActions::BackToFront::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
+template CC_EXPORT void LayerIteratorActions::BackToFront::Begin(
+    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>*
+        it);
+template CC_EXPORT void LayerIteratorActions::BackToFront::End(
+    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>*
+        it);
+template CC_EXPORT void LayerIteratorActions::BackToFront::Next(
+    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>*
+        it);
 
-template CC_EXPORT void LayerIteratorActions::FrontToBack::next(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
-template CC_EXPORT void LayerIteratorActions::FrontToBack::end(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
-template CC_EXPORT void LayerIteratorActions::FrontToBack::begin(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
-template CC_EXPORT void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::Next(
+    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::End(
+    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::Begin(
+    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::GoToHighestInSubtree(
+    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
 
-template CC_EXPORT void LayerIteratorActions::FrontToBack::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
-template CC_EXPORT void LayerIteratorActions::FrontToBack::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
-template CC_EXPORT void LayerIteratorActions::FrontToBack::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
-template CC_EXPORT void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::Next(
+    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>*
+        it);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::End(
+    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>*
+        it);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::Begin(
+    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>*
+        it);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::GoToHighestInSubtree(
+    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>*
+        it);
 
 }  // namespace cc

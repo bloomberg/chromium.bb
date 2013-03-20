@@ -732,13 +732,13 @@ void LayerTreeHost::SetPrioritiesForLayers(const LayerList& update_list) {
                         LayerIteratorActions::BackToFront> LayerIteratorType;
 
   PriorityCalculator calculator;
-  LayerIteratorType end = LayerIteratorType::end(&update_list);
-  for (LayerIteratorType it = LayerIteratorType::begin(&update_list);
+  LayerIteratorType end = LayerIteratorType::End(&update_list);
+  for (LayerIteratorType it = LayerIteratorType::Begin(&update_list);
        it != end;
        ++it) {
-    if (it.representsItself()) {
+    if (it.represents_itself()) {
       it->SetTexturePriorities(calculator);
-    } else if (it.representsTargetRenderSurface()) {
+    } else if (it.represents_target_render_surface()) {
       if (it->mask_layer())
         it->mask_layer()->SetTexturePriorities(calculator);
       if (it->replica_layer() && it->replica_layer()->mask_layer())
@@ -847,18 +847,18 @@ bool LayerTreeHost::PaintLayerContents(
   RenderingStats* stats = debug_state_.RecordRenderingStats() ?
                           &rendering_stats_ : NULL;
 
-  LayerIteratorType end = LayerIteratorType::end(&render_surface_layer_list);
+  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
   for (LayerIteratorType it =
-           LayerIteratorType::begin(&render_surface_layer_list);
+           LayerIteratorType::Begin(&render_surface_layer_list);
        it != end;
        ++it) {
     occlusion_tracker.EnterLayer(it);
 
-    if (it.representsTargetRenderSurface()) {
+    if (it.represents_target_render_surface()) {
       DCHECK(it->render_surface()->draw_opacity() ||
              it->render_surface()->draw_opacity_is_animating());
       need_more_updates |= PaintMasksForRenderSurface(*it, queue);
-    } else if (it.representsItself()) {
+    } else if (it.represents_itself()) {
       DCHECK(!it->bounds().IsEmpty());
       it->Update(queue, &occlusion_tracker, stats);
       need_more_updates |= it->NeedMoreUpdates();

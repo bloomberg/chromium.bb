@@ -29,24 +29,24 @@ OcclusionTrackerBase<LayerType, RenderSurfaceType>::~OcclusionTrackerBase() {}
 template <typename LayerType, typename RenderSurfaceType>
 void OcclusionTrackerBase<LayerType, RenderSurfaceType>::EnterLayer(
     const LayerIteratorPosition<LayerType>& layer_iterator) {
-  LayerType* render_target = layer_iterator.targetRenderSurfaceLayer;
+  LayerType* render_target = layer_iterator.target_render_surface_layer;
 
-  if (layer_iterator.representsItself)
+  if (layer_iterator.represents_itself)
     EnterRenderTarget(render_target);
-  else if (layer_iterator.representsTargetRenderSurface)
+  else if (layer_iterator.represents_target_render_surface)
     FinishedRenderTarget(render_target);
 }
 
 template <typename LayerType, typename RenderSurfaceType>
 void OcclusionTrackerBase<LayerType, RenderSurfaceType>::LeaveLayer(
     const LayerIteratorPosition<LayerType>& layer_iterator) {
-  LayerType* render_target = layer_iterator.targetRenderSurfaceLayer;
+  LayerType* render_target = layer_iterator.target_render_surface_layer;
 
-  if (layer_iterator.representsItself)
-    MarkOccludedBehindLayer(layer_iterator.currentLayer);
+  if (layer_iterator.represents_itself)
+    MarkOccludedBehindLayer(layer_iterator.current_layer);
   // TODO(danakj): This should be done when entering the contributing surface,
   // but in a way that the surface's own occlusion won't occlude itself.
-  else if (layer_iterator.representsContributingRenderSurface)
+  else if (layer_iterator.represents_contributing_render_surface)
     LeaveToRenderTarget(render_target);
 }
 

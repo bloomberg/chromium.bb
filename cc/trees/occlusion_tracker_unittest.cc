@@ -278,7 +278,7 @@ protected:
 
         LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, false, m_renderSurfaceLayerListImpl, false);
 
-        m_layerIterator = m_layerIteratorBegin = Types::TestLayerIterator::begin(&m_renderSurfaceLayerListImpl);
+        m_layerIterator = m_layerIteratorBegin = Types::TestLayerIterator::Begin(&m_renderSurfaceLayerListImpl);
     }
 
     void calcDrawEtc(TestContentLayer* root)
@@ -290,20 +290,20 @@ protected:
 
         LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, false, m_renderSurfaceLayerList);
 
-        m_layerIterator = m_layerIteratorBegin = Types::TestLayerIterator::begin(&m_renderSurfaceLayerList);
+        m_layerIterator = m_layerIteratorBegin = Types::TestLayerIterator::Begin(&m_renderSurfaceLayerList);
     }
 
     void EnterLayer(typename Types::LayerType* layer, typename Types::OcclusionTrackerType& occlusion)
     {
         ASSERT_EQ(layer, *m_layerIterator);
-        ASSERT_TRUE(m_layerIterator.representsItself());
+        ASSERT_TRUE(m_layerIterator.represents_itself());
         occlusion.EnterLayer(m_layerIterator);
     }
 
     void LeaveLayer(typename Types::LayerType* layer, typename Types::OcclusionTrackerType& occlusion)
     {
         ASSERT_EQ(layer, *m_layerIterator);
-        ASSERT_TRUE(m_layerIterator.representsItself());
+        ASSERT_TRUE(m_layerIterator.represents_itself());
         occlusion.LeaveLayer(m_layerIterator);
         ++m_layerIterator;
     }
@@ -317,18 +317,18 @@ protected:
     void enterContributingSurface(typename Types::LayerType* layer, typename Types::OcclusionTrackerType& occlusion)
     {
         ASSERT_EQ(layer, *m_layerIterator);
-        ASSERT_TRUE(m_layerIterator.representsTargetRenderSurface());
+        ASSERT_TRUE(m_layerIterator.represents_target_render_surface());
         occlusion.EnterLayer(m_layerIterator);
         occlusion.LeaveLayer(m_layerIterator);
         ++m_layerIterator;
-        ASSERT_TRUE(m_layerIterator.representsContributingRenderSurface());
+        ASSERT_TRUE(m_layerIterator.represents_contributing_render_surface());
         occlusion.EnterLayer(m_layerIterator);
     }
 
     void leaveContributingSurface(typename Types::LayerType* layer, typename Types::OcclusionTrackerType& occlusion)
     {
         ASSERT_EQ(layer, *m_layerIterator);
-        ASSERT_TRUE(m_layerIterator.representsContributingRenderSurface());
+        ASSERT_TRUE(m_layerIterator.represents_contributing_render_surface());
         occlusion.LeaveLayer(m_layerIterator);
         ++m_layerIterator;
     }
