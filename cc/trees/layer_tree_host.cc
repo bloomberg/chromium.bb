@@ -93,7 +93,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       has_transparent_background_(false),
       partial_texture_update_requests_(0) {
   if (settings_.acceleratedAnimationEnabled)
-    animation_registrar_ = AnimationRegistrar::create();
+    animation_registrar_ = AnimationRegistrar::Create();
   s_num_layer_tree_instances++;
 }
 

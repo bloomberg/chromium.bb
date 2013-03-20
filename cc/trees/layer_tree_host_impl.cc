@@ -173,7 +173,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings,
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
       last_sent_memory_use_bytes_(0),
-      animation_registrar_(AnimationRegistrar::create()) {
+      animation_registrar_(AnimationRegistrar::Create()) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 

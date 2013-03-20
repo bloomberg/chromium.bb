@@ -654,7 +654,7 @@ TEST_F(LayerTest,
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 
-  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
+  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
   impl_layer->layer_animation_controller()->SetAnimationRegistrar(
       registrar.get());
 
@@ -692,7 +692,7 @@ TEST_F(LayerTest,
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 
-  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
+  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
   impl_layer->layer_animation_controller()->SetAnimationRegistrar(
       registrar.get());
 
@@ -988,7 +988,7 @@ TEST(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
   // animation should not be accepted.
   EXPECT_FALSE(AddTestAnimation(layer.get()));
 
-  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
+  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
   layer->layer_animation_controller()->SetAnimationRegistrar(registrar.get());
 
   // Case 2: with an AnimationRegistrar, the animation should be accepted.

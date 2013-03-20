@@ -18,7 +18,7 @@ class CC_EXPORT AnimationRegistrar {
  public:
   typedef base::hash_map<int, LayerAnimationController*> AnimationControllerMap;
 
-  static scoped_ptr<AnimationRegistrar> create() {
+  static scoped_ptr<AnimationRegistrar> Create() {
     return make_scoped_ptr(new AnimationRegistrar());
   }
 
@@ -30,18 +30,18 @@ class CC_EXPORT AnimationRegistrar {
 
   // Registers the given animation controller as active. An active animation
   // controller is one that has a running animation that needs to be ticked.
-  void DidActivateAnimationController(LayerAnimationController*);
+  void DidActivateAnimationController(LayerAnimationController* controller);
 
   // Unregisters the given animation controller. When this happens, the
   // animation controller will no longer be ticked (since it's not active). It
   // is not an error to call this function with a deactivated controller.
-  void DidDeactivateAnimationController(LayerAnimationController*);
+  void DidDeactivateAnimationController(LayerAnimationController* controller);
 
   // Registers the given controller as alive.
-  void RegisterAnimationController(LayerAnimationController*);
+  void RegisterAnimationController(LayerAnimationController* controller);
 
   // Unregisters the given controller as alive.
-  void UnregisterAnimationController(LayerAnimationController*);
+  void UnregisterAnimationController(LayerAnimationController* controller);
 
   const AnimationControllerMap& active_animation_controllers() const {
     return active_animation_controllers_;
