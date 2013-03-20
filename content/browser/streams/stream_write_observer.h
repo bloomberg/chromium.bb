@@ -15,6 +15,9 @@ class StreamWriteObserver {
   // resume writing.
   virtual void OnSpaceAvailable(Stream* stream) = 0;
 
+  // Sent when the stream is closed, and the writer should stop sending data.
+  virtual void OnClose(Stream* stream) = 0;
+
  protected:
   virtual ~StreamWriteObserver() {}
 };

@@ -4,6 +4,8 @@
 
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
+#include "content/public/browser/stream_handle.h"
+
 namespace content {
 
 bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
@@ -68,6 +70,23 @@ bool ResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url,
     const std::string& mime_type) {
   return false;
+}
+
+bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
+    content::ResourceContext* resource_context,
+    const GURL& url,
+    const std::string& mime_type,
+    GURL* security_origin,
+    std::string* target_id) {
+  return false;
+}
+
+void ResourceDispatcherHostDelegate::OnStreamCreated(
+    content::ResourceContext* resource_context,
+    int render_process_id,
+    int render_view_id,
+    const std::string& target_id,
+    scoped_ptr<StreamHandle> stream) {
 }
 
 void ResourceDispatcherHostDelegate::OnResponseStarted(

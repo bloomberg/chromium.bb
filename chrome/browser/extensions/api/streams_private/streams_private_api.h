@@ -19,18 +19,37 @@
 
 class Profile;
 
+namespace content {
+class StreamHandle;
+}
+
 namespace extensions {
 
-class StreamsPrivateAPI : public ProfileKeyedAPI {
+class StreamsPrivateAPI : public ProfileKeyedAPI,
+                          public content::NotificationObserver {
  public:
+  // Convenience method to get the StreamsPrivateAPI for a profile.
+  static StreamsPrivateAPI* Get(Profile* profile);
+
   explicit StreamsPrivateAPI(Profile* profile);
   virtual ~StreamsPrivateAPI();
+
+  void ExecuteMimeTypeHandler(const std::string& extension_id,
+                              scoped_ptr<content::StreamHandle> stream);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<StreamsPrivateAPI>* GetFactoryInstance();
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   friend class ProfileKeyedAPIFactory<StreamsPrivateAPI>;
+  typedef std::map<std::string,
+                   std::map<GURL,
+                            linked_ptr<content::StreamHandle> > > StreamMap;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
@@ -39,6 +58,9 @@ class StreamsPrivateAPI : public ProfileKeyedAPI {
   static const bool kServiceIsNULLWhileTesting = true;
 
   Profile* const profile_;
+  content::NotificationRegistrar registrar_;
+  StreamMap streams_;
+  base::WeakPtrFactory<StreamsPrivateAPI> weak_ptr_factory_;
 };
 
 }  // namespace extensions

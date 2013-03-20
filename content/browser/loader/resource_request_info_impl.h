@@ -52,6 +52,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       ResourceType::Type resource_type,
       PageTransition transition_type,
       bool is_download,
+      bool is_stream,
       bool allow_download,
       bool has_user_gesture,
       WebKit::WebReferrerPolicy referrer_policy,
@@ -103,6 +104,10 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool is_download() const { return is_download_; }
   void set_is_download(bool download) { is_download_ = download; }
 
+  // Whether this is a stream.
+  bool is_stream() const { return is_stream_; }
+  void set_is_stream(bool stream) { is_stream_ = stream; }
+
   void set_was_ignored_by_handler(bool value) {
     was_ignored_by_handler_ = value;
   }
@@ -133,6 +138,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool parent_is_main_frame_;
   int64 parent_frame_id_;
   bool is_download_;
+  bool is_stream_;
   bool allow_download_;
   bool has_user_gesture_;
   bool was_ignored_by_handler_;

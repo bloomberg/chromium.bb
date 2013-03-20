@@ -470,7 +470,7 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   // WebKit will send us a cancel for downloads since it no longer handles
   // them.  In this case, ignore the cancel since we handle downloads in the
   // browser.
-  if (from_renderer && info->is_download())
+  if (from_renderer && (info->is_download() || info->is_stream()))
     return;
 
   // TODO(darin): Perhaps we should really be looking to see if the status is

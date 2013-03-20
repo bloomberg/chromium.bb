@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "webkit/glue/resource_type.h"
 
@@ -21,6 +22,7 @@ class AppCacheService;
 namespace content {
 class ResourceContext;
 class ResourceThrottle;
+class StreamHandle;
 struct Referrer;
 struct ResourceResponse;
 }
@@ -106,6 +108,30 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Otherwise, the content layer decides.
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type);
+
+  // Returns true and sets |security_origin| and |target_id| if a Stream should
+  // be created for the resource.
+  // If true is returned, a new Stream will be created and OnStreamCreated will
+  // be called with the |target_id| returned by this function and a URL to read
+  // the Stream which is accessible from the |security_origin| returned by this
+  // function.
+  virtual bool ShouldInterceptResourceAsStream(
+      content::ResourceContext* resource_context,
+      const GURL& url,
+      const std::string& mime_type,
+      GURL* security_origin,
+      std::string* target_id);
+
+  // Informs the delegate that a stream was created. |target_id| will be filled
+  // with the parameter returned by ShouldInterceptResourceAsStream(). The
+  // Stream can be read from the blob URL owned by |stream|, but can only be
+  // read once.
+  virtual void OnStreamCreated(
+      content::ResourceContext* resource_context,
+      int render_process_id,
+      int render_view_id,
+      const std::string& target_id,
+      scoped_ptr<StreamHandle> stream);
 
   // Informs the delegate that a response has started.
   virtual void OnResponseStarted(

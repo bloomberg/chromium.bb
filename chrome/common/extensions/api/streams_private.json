@@ -23,6 +23,11 @@
             "name": "originalUrl",
             "type": "string",
             "description": "The original URL that was intercepted."
+          },
+          {
+            "name": "streamUrl",
+            "type": "string",
+            "description": "The URL that the stream can be read from."
           }
         ]
       }

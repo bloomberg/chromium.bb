@@ -36,6 +36,7 @@
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/loader/sync_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/transfer_navigation_resource_throttle.h"
@@ -43,6 +44,9 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/streams/stream.h"
+#include "content/browser/streams/stream_context.h"
+#include "content/browser/streams/stream_registry.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/ssl_status_serialization.h"
@@ -55,6 +59,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/browser/stream_handle.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -553,6 +558,42 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
   return handler.Pass();
 }
 
+scoped_ptr<ResourceHandler>
+ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
+                                                   ResourceResponse* response) {
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
+  const std::string& mime_type = response->head.mime_type;
+
+  GURL security_origin;
+  std::string target_id;
+  if (!delegate_ ||
+      !delegate_->ShouldInterceptResourceAsStream(info->GetContext(),
+                                                  request->url(),
+                                                  mime_type,
+                                                  &security_origin,
+                                                  &target_id)) {
+    return scoped_ptr<ResourceHandler>();
+  }
+
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(info->GetContext());
+
+
+  scoped_ptr<StreamResourceHandler> handler(
+      new StreamResourceHandler(request,
+                                stream_context->registry(),
+                                security_origin));
+
+  info->set_is_stream(true);
+  delegate_->OnStreamCreated(
+      info->GetContext(),
+      info->GetChildID(),
+      info->GetRouteID(),
+      target_id,
+      handler->stream()->CreateHandle(request->url(), mime_type));
+  return (scoped_ptr<ResourceHandler>(handler.release())).Pass();
+}
+
 void ResourceDispatcherHostImpl::ClearSSLClientAuthHandlerForRequest(
     net::URLRequest* request) {
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
@@ -951,6 +992,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           request_data.resource_type,
           request_data.transition_type,
           false,  // is download
+          false,  // is stream
           allow_download,
           request_data.has_user_gesture,
           request_data.referrer_policy,
@@ -1119,6 +1161,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       ResourceType::SUB_RESOURCE,
       PAGE_TRANSITION_LINK,
       download,  // is_download
+      false,  // is_stream
       download,  // allow_download
       false,     // has_user_gesture
       WebKit::WebReferrerPolicyDefault,

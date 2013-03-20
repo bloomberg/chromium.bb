@@ -84,8 +84,7 @@ class CONTENT_EXPORT ResourceHandler
   // Data (*bytes_read bytes) was written into the buffer provided by
   // OnWillRead.  A return value of false cancels the request, true continues
   // reading data.  Set |*defer| to true to defer reading more response data.
-  // Call ResourceDispatcherHostImpl::ResumeDeferredRequest to continue reading
-  // response data.
+  // Call controller()->Resume() to continue reading response data.
   virtual bool OnReadCompleted(int request_id, int bytes_read,
                                bool* defer) = 0;
 

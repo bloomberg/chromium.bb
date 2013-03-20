@@ -219,6 +219,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       scoped_ptr<DownloadSaveInfo> save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 
+  // Must be called after the ResourceRequestInfo has been created
+  // and associated with the request.
+  scoped_ptr<ResourceHandler> MaybeInterceptAsStream(
+      net::URLRequest* request,
+      ResourceResponse* response);
+
   void ClearSSLClientAuthHandlerForRequest(net::URLRequest* request);
 
   ResourceScheduler* scheduler() { return scheduler_.get(); }

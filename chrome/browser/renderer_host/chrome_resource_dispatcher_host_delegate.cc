@@ -13,7 +13,8 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/api/streams_private/streams_resource_throttle.h"
+#include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/google/google_util.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
@@ -31,7 +33,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/mime_types_handler.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,6 +42,8 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/stream_handle.h"
+#include "extensions/common/constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_config_service.h"
@@ -69,6 +73,7 @@ using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceDispatcherHostLoginDelegate;
 using content::ResourceRequestInfo;
+using extensions::Extension;
 
 namespace {
 
@@ -82,6 +87,52 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
       chrome::NOTIFICATION_DOWNLOAD_INITIATED,
       content::Source<RenderViewHost>(rvh),
       content::NotificationService::NoDetails());
+}
+
+// Goes through the extension's file browser handlers and checks if there is one
+// that can handle the |mime_type|.
+// |extension| must not be NULL.
+bool ExtensionCanHandleMimeType(const Extension* extension,
+                                const std::string& mime_type) {
+  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+  if (!handler)
+    return false;
+
+  return handler->CanHandleMIMEType(mime_type);
+}
+
+// Retrieves Profile for a render view host specified by |render_process_id| and
+// |render_view_id|.
+Profile* GetProfile(int render_process_id, int render_view_id) {
+  content::RenderViewHost* render_view_host =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return NULL;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(render_view_host);
+  if (!web_contents)
+    return NULL;
+
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  if (!browser_context)
+    return NULL;
+
+  return Profile::FromBrowserContext(browser_context);
+}
+
+void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
+                                     int render_process_id,
+                                     int render_view_id,
+                                     const std::string& extension_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  Profile* profile = GetProfile(render_process_id, render_view_id);
+  if (!profile)
+    return;
+
+  extensions::StreamsPrivateAPI::Get(profile)->ExecuteMimeTypeHandler(
+      extension_id, stream.Pass());
 }
 
 }  // end namespace
@@ -228,16 +279,6 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
-#if !defined(OS_ANDROID)
-    if (!must_download) {
-      ProfileIOData* io_data =
-          ProfileIOData::FromResourceContext(resource_context);
-      throttles->push_back(StreamsResourceThrottle::Create(
-          child_id, route_id, request, io_data->is_incognito(),
-          io_data->GetExtensionInfoMap()));
-    }
-#endif
-
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, child_id, route_id, request_id,
         request->method()));
@@ -386,6 +427,58 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {
   // Special-case user scripts to get downloaded instead of viewed.
   return extensions::UserScript::IsURLUserScript(url, mime_type);
+}
+
+bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
+    content::ResourceContext* resource_context,
+    const GURL& url,
+    const std::string& mime_type,
+    GURL* security_origin,
+    std::string* target_id) {
+#if !defined(OS_ANDROID)
+  ProfileIOData* io_data =
+      ProfileIOData::FromResourceContext(resource_context);
+  bool profile_is_incognito = io_data->is_incognito();
+  const scoped_refptr<const ExtensionInfoMap> extension_info_map(
+      io_data->GetExtensionInfoMap());
+  std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
+  // Go through the white-listed extensions and try to use them to intercept
+  // the URL request.
+  for (size_t i = 0; i < whitelist.size(); ++i) {
+    const char* extension_id = whitelist[i].c_str();
+    const Extension* extension =
+        extension_info_map->extensions().GetByID(extension_id);
+    // The white-listed extension may not be installed, so we have to NULL check
+    // |extension|.
+    if (!extension ||
+        (profile_is_incognito &&
+         !extension_info_map->IsIncognitoEnabled(extension_id))) {
+      continue;
+    }
+
+    if (ExtensionCanHandleMimeType(extension, mime_type)) {
+      *security_origin = Extension::GetBaseURLFromExtensionId(extension_id);
+      *target_id = extension_id;
+      return true;
+    }
+  }
+#endif
+  return false;
+}
+
+void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
+    content::ResourceContext* resource_context,
+    int render_process_id,
+    int render_view_id,
+    const std::string& target_id,
+    scoped_ptr<content::StreamHandle> stream) {
+#if !defined(OS_ANDROID)
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&SendExecuteMimeTypeHandlerEvent, base::Passed(&stream),
+                 render_process_id, render_view_id,
+                 target_id));
+#endif
 }
 
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(

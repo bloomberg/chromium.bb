@@ -74,6 +74,18 @@ class ChromeResourceDispatcherHostDelegate
                                       int route_id) OVERRIDE;
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type) OVERRIDE;
+  virtual bool ShouldInterceptResourceAsStream(
+      content::ResourceContext* resource_context,
+      const GURL& url,
+      const std::string& mime_type,
+      GURL* security_origin,
+      std::string* target_id) OVERRIDE;
+  virtual void OnStreamCreated(
+      content::ResourceContext* resource_context,
+      int render_process_id,
+      int render_view_id,
+      const std::string& target_id,
+      scoped_ptr<content::StreamHandle> stream) OVERRIDE;
   virtual void OnResponseStarted(
       net::URLRequest* request,
       content::ResourceContext* resource_context,

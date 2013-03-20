@@ -79,6 +79,7 @@ void DispatchEventOnUIThread(const std::string& mime_type,
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(new base::StringValue(mime_type));
   event_args->Append(new base::StringValue(request_url.spec()));
+  event_args->Append(new base::StringValue(request_url.spec()));
 
   scoped_ptr<Event> event(new Event(kOnExecuteMimeTypeHandlerEvent,
                                     event_args.Pass()));

@@ -320,6 +320,11 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     if (net::IsSupportedMimeType(mime_type))
       return true;
 
+    scoped_ptr<ResourceHandler> handler(
+        host_->MaybeInterceptAsStream(request_, response_));
+    if (handler)
+      return UseAlternateNextHandler(handler.Pass());
+
 #if defined(ENABLE_PLUGINS)
     bool stale;
     bool has_plugin = HasSupportingPlugin(&stale);

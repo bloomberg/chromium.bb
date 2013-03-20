@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "content/browser/streams/stream_handle_impl.h"
 #include "content/browser/streams/stream_read_observer.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/streams/stream_write_observer.h"
@@ -30,6 +31,7 @@ Stream::Stream(StreamRegistry* registry,
       registry_(registry),
       read_observer_(NULL),
       write_observer_(write_observer),
+      stream_handle_(NULL),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   CreateByteStream(base::MessageLoopProxy::current(),
                    base::MessageLoopProxy::current(),
@@ -59,6 +61,11 @@ bool Stream::SetReadObserver(StreamReadObserver* observer) {
 void Stream::RemoveReadObserver(StreamReadObserver* observer) {
   DCHECK(observer == read_observer_);
   read_observer_ = NULL;
+}
+
+void Stream::RemoveWriteObserver(StreamWriteObserver* observer) {
+  DCHECK(observer == write_observer_);
+  write_observer_ = NULL;
 }
 
 void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {
@@ -103,9 +110,27 @@ Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,
   return STREAM_HAS_DATA;
 }
 
+scoped_ptr<StreamHandle> Stream::CreateHandle(const GURL& original_url,
+                                              const std::string& mime_type) {
+  CHECK(!stream_handle_);
+  stream_handle_ = new StreamHandleImpl(weak_ptr_factory_.GetWeakPtr(),
+                                        original_url,
+                                        mime_type);
+  return scoped_ptr<StreamHandle>(stream_handle_).Pass();
+}
+
+void Stream::CloseHandle() {
+  CHECK(stream_handle_);
+  stream_handle_ = NULL;
+  registry_->UnregisterStream(url());
+  if (write_observer_)
+    write_observer_->OnClose(this);
+}
+
 void Stream::OnSpaceAvailable() {
   can_add_data_ = true;
-  write_observer_->OnSpaceAvailable(this);
+  if (write_observer_)
+    write_observer_->OnSpaceAvailable(this);
 }
 
 void Stream::OnDataAvailable() {

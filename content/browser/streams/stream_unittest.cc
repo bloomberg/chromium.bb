@@ -82,6 +82,9 @@ class TestStreamWriter : public StreamWriteObserver {
 
   virtual void OnSpaceAvailable(Stream* stream) OVERRIDE {
   }
+
+  virtual void OnClose(Stream* stream) OVERRIDE {
+  }
 };
 
 TEST_F(StreamTest, SetReadObserver) {
