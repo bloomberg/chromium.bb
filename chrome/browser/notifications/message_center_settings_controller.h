@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_SETTINGS_CONTROLLER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_SETTINGS_CONTROLLER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/common/content_settings.h"
 #include "ui/message_center/notifier_settings.h"
 
 class CancelableTaskTracker;
@@ -54,6 +56,8 @@ class MessageCenterSettingsController
   scoped_ptr<CancelableTaskTracker> favicon_tracker_;
 
   scoped_ptr<extensions::AppIconLoader> app_icon_loader_;
+
+  std::map<string16, ContentSettingsPattern> patterns_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsController);
 };

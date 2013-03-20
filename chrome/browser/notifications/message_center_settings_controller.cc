@@ -61,6 +61,7 @@ void MessageCenterSettingsController::GetNotifierList(
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
   favicon_tracker_.reset(new CancelableTaskTracker());
+  patterns_.clear();
   for (ContentSettingsForOneType::const_iterator iter = settings.begin();
        iter != settings.end(); ++iter) {
     if (iter->primary_pattern == ContentSettingsPattern::Wildcard() &&
@@ -70,11 +71,13 @@ void MessageCenterSettingsController::GetNotifierList(
     }
 
     std::string url_pattern = iter->primary_pattern.ToString();
+    string16 name = UTF8ToUTF16(url_pattern);
     GURL url(url_pattern);
     notifiers->push_back(new message_center::Notifier(
         url,
-        UTF8ToUTF16(url_pattern),
+        name,
         notification_service->GetContentSetting(url) == CONTENT_SETTING_ALLOW));
+    patterns_[name] = iter->primary_pattern;
     FaviconService::FaviconForURLParams favicon_params(
         profile, url, history::FAVICON | history::TOUCH_ICON,
         message_center::kSettingsIconSize);
@@ -118,12 +121,13 @@ void MessageCenterSettingsController::SetNotifierEnabled(
           LOG(ERROR) << "Invalid url pattern: " << notifier.url.spec();
         }
       } else {
-        ContentSettingsPattern pattern =
-            ContentSettingsPattern::FromURL(notifier.url);
-        if (pattern.IsValid())
-          notification_service->ClearSetting(pattern);
-        else
+        std::map<string16, ContentSettingsPattern>::const_iterator iter =
+            patterns_.find(notifier.name);
+        if (iter != patterns_.end()) {
+          notification_service->ClearSetting(iter->second);
+        } else {
           LOG(ERROR) << "Invalid url pattern: " << notifier.url.spec();
+        }
       }
       break;
     }
@@ -134,6 +138,7 @@ void MessageCenterSettingsController::OnNotifierSettingsClosing() {
   delegate_ = NULL;
   DCHECK(favicon_tracker_.get());
   favicon_tracker_->TryCancelAll();
+  patterns_.clear();
 }
 
 void MessageCenterSettingsController::OnFaviconLoaded(
