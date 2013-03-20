@@ -491,6 +491,9 @@ const char kEnableExperimentalExtensionApis[] =
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";
 
+const char kEnableExtensionActivityLogTesting[] =
+    "enable-extension-activity-log-testing";
+
 // Enables the extension activity UI.
 const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
 

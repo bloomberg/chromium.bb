@@ -148,6 +148,17 @@ ActivityLog::ActivityLog(Profile* profile) {
   log_activity_to_ui_ = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableExtensionActivityUI);
 
+  // enable-extension-activity-log-testing
+  // Currently, this just controls whether arguments are collected. In the
+  // future, it may also control other optional activity log features.
+  log_arguments_ = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableExtensionActivityLogTesting);
+  if (!log_arguments_) {
+    for (int i = 0; i < APIAction::kSizeAlwaysLog; i++) {
+      arg_whitelist_api_.insert(std::string(APIAction::kAlwaysLog[i]));
+    }
+  }
+
   // If the database cannot be initialized for some reason, we keep
   // chugging along but nothing will get recorded. If the UI is
   // available, things will still get sent to the UI even if nothing
@@ -230,10 +241,17 @@ void ActivityLog::LogAPIActionInternal(const Extension* extension,
 // A wrapper around LogAPIActionInternal, but we know it's an API call.
 void ActivityLog::LogAPIAction(const Extension* extension,
                                const std::string& api_call,
-                               const ListValue* args,
+                               ListValue* args,
                                const std::string& extra) {
   if (!IsLogEnabled()) return;
-  LogAPIActionInternal(extension, api_call, args, extra, APIAction::CALL);
+  if (!log_arguments_ &&
+      arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
+    args->Clear();
+  LogAPIActionInternal(extension,
+                       api_call,
+                       args,
+                       extra,
+                       APIAction::CALL);
 }
 
 // A wrapper around LogAPIActionInternal, but we know it's actually an event
@@ -242,9 +260,12 @@ void ActivityLog::LogAPIAction(const Extension* extension,
 // handle them. Right now they're being handled almost the same.
 void ActivityLog::LogEventAction(const Extension* extension,
                                  const std::string& api_call,
-                                 const ListValue* args,
+                                 ListValue* args,
                                  const std::string& extra) {
   if (!IsLogEnabled()) return;
+  if (!log_arguments_ &&
+      arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
+    args->Clear();
   LogAPIActionInternal(extension,
                        api_call,
                        args,
@@ -254,10 +275,13 @@ void ActivityLog::LogEventAction(const Extension* extension,
 
 void ActivityLog::LogBlockedAction(const Extension* extension,
                                    const std::string& blocked_call,
-                                   const ListValue* args,
+                                   ListValue* args,
                                    const char* reason,
                                    const std::string& extra) {
   if (!IsLogEnabled()) return;
+  if (!log_arguments_ &&
+      arg_whitelist_api_.find(blocked_call) == arg_whitelist_api_.end())
+    args->Clear();
   scoped_refptr<BlockedAction> action = new BlockedAction(extension->id(),
                                                           base::Time::Now(),
                                                           blocked_call,

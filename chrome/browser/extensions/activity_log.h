@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
@@ -78,7 +79,7 @@ class ActivityLog : public ProfileKeyedService,
   // (Note: implemented as a wrapper for LogAPIActionInternal.)
   void LogAPIAction(const Extension* extension,
                     const std::string& name,    // e.g., tabs.get
-                    const ListValue* args,      // the argument values e.g. 46
+                    ListValue* args,            // the argument values e.g. 46
                     const std::string& extra);  // any extra logging info
 
   // Log an event notification delivered to an extension.
@@ -86,14 +87,14 @@ class ActivityLog : public ProfileKeyedService,
   // (Note: implemented as a wrapper for LogAPIActionInternal.)
   void LogEventAction(const Extension* extension,
                       const std::string& name,    // e.g., tabs.onUpdate
-                      const ListValue* args,      // arguments to the callback
+                      ListValue* args,            // arguments to the callback
                       const std::string& extra);  // any extra logging info
 
   // Log a blocked API call made by an extension.
   // This will create a BlockedAction for storage in the database.
   void LogBlockedAction(const Extension* extension,
                         const std::string& blocked_call,  // e.g., tabs.get
-                        const ListValue* args,            // argument values
+                        ListValue* args,                  // argument values
                         const char* reason,               // why it's blocked
                         const std::string& extra);        // extra logging info
 
@@ -198,6 +199,13 @@ class ActivityLog : public ProfileKeyedService,
   // Whether to log activity to stdout or the UI. These are set by switches.
   bool log_activity_to_stdout_;
   bool log_activity_to_ui_;
+
+  // log_arguments controls whether to log API call arguments. By default, we
+  // don't log most arguments to avoid saving too much data. In testing mode,
+  // argument collection is enabled. We also whitelist some arguments for
+  // collection regardless of whether this bool is true.
+  bool log_arguments_;
+  base::hash_set<std::string> arg_whitelist_api_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };
