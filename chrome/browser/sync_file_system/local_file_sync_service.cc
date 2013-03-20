@@ -84,12 +84,10 @@ void LocalFileSyncService::OriginChangeMap::SetOriginChangeCount(
 
 void LocalFileSyncService::OriginChangeMap::SetOriginEnabled(
     const GURL& origin, bool enabled) {
-  if (enabled) {
-    DCHECK(ContainsKey(disabled_origins_, origin));
+  if (enabled)
     disabled_origins_.erase(origin);
-  } else {
+  else
     disabled_origins_.insert(origin);
-  }
 }
 
 // LocalFileSyncService -------------------------------------------------------

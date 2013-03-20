@@ -412,6 +412,9 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     return;
   }
 
+  // TODO(nhiroki): Add helper function to forget remote changes for the given
+  // origin like "ForgetRemoteChangesForOrigin(origin)".
+  // http://crbug.com/211600
   OriginToChangesMap::iterator found = origin_to_changes_map_.find(origin);
   if (found != origin_to_changes_map_.end()) {
     for (PathToChangeMap::iterator itr = found->second.begin();
@@ -422,7 +425,59 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
   pending_batch_sync_origins_.erase(origin);
 
   metadata_store_->RemoveOrigin(origin, base::Bind(
-      &DriveFileSyncService::DidRemoveOriginOnMetadataStore,
+      &DriveFileSyncService::DidChangeOriginOnMetadataStore,
+      AsWeakPtr(), base::Passed(&token), callback));
+}
+
+void DriveFileSyncService::EnableOriginForTrackingChanges(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  if (!metadata_store_->IsOriginDisabled(origin))
+    return;
+
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DATABASE, ""));
+  if (!token) {
+    pending_tasks_.push_back(base::Bind(
+        &DriveFileSyncService::EnableOriginForTrackingChanges,
+        AsWeakPtr(), origin, callback));
+    return;
+  }
+
+  metadata_store_->EnableOrigin(origin, base::Bind(
+      &DriveFileSyncService::DidChangeOriginOnMetadataStore,
+      AsWeakPtr(), base::Passed(&token), callback));
+  pending_batch_sync_origins_.insert(origin);
+}
+
+void DriveFileSyncService::DisableOriginForTrackingChanges(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  if (!metadata_store_->IsBatchSyncOrigin(origin) &&
+      !metadata_store_->IsIncrementalSyncOrigin(origin))
+    return;
+
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DATABASE, ""));
+  if (!token) {
+    pending_tasks_.push_back(base::Bind(
+        &DriveFileSyncService::DisableOriginForTrackingChanges,
+        AsWeakPtr(), origin, callback));
+    return;
+  }
+
+  // TODO(nhiroki): Add helper function to forget remote changes for the given
+  // origin like "ForgetRemoteChangesForOrigin(origin)".
+  // http://crbug.com/211600
+  OriginToChangesMap::iterator found = origin_to_changes_map_.find(origin);
+  if (found != origin_to_changes_map_.end()) {
+    for (PathToChangeMap::iterator itr = found->second.begin();
+         itr != found->second.end(); ++itr)
+      pending_changes_.erase(itr->second.position_in_queue);
+    origin_to_changes_map_.erase(found);
+  }
+  pending_batch_sync_origins_.erase(origin);
+
+  metadata_store_->DisableOrigin(origin, base::Bind(
+      &DriveFileSyncService::DidChangeOriginOnMetadataStore,
       AsWeakPtr(), base::Passed(&token), callback));
 }
 
@@ -855,8 +910,7 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
-  // Remove any origins that are not installed or enabled.
-  UnregisterInactiveExtensionsIds();
+  UpdateRegisteredOrigins();
 
   largest_fetched_changestamp_ = metadata_store_->GetLargestChangeStamp();
 
@@ -888,29 +942,64 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   RegisterDriveNotifications();
 }
 
-void DriveFileSyncService::UnregisterInactiveExtensionsIds() {
+void DriveFileSyncService::UpdateRegisteredOrigins() {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!extension_service)
     return;
-  std::vector<GURL> tracked_origins;
-  metadata_store_->GetAllOrigins(&tracked_origins);
 
-  for (std::vector<GURL>::const_iterator itr = tracked_origins.begin();
-       itr != tracked_origins.end();
-       ++itr) {
-    // Make sure the registered extension is installed and enabled.
+  // TODO(nhiroki): clean up these loops with similar bodies.
+  // http://crbug.com/211600
+
+  std::vector<GURL> disabled_origins;
+  metadata_store_->GetDisabledOrigins(&disabled_origins);
+  for (std::vector<GURL>::const_iterator itr = disabled_origins.begin();
+       itr != disabled_origins.end(); ++itr) {
     std::string extension_id = itr->host();
-    const extensions::Extension* installed_extension =
-        extension_service->GetExtensionById(extension_id,
-                                            false /* include_disabled */);
-    if (installed_extension != NULL)
-      continue;
+    GURL origin =
+        extensions::Extension::GetBaseURLFromExtensionId(extension_id);
 
-    // Extension is either disabled or uninstalled. Unregister origin.
-    GURL origin = extensions::Extension::GetBaseURLFromExtensionId(
-        extension_id);
-    metadata_store_->RemoveOrigin(origin, base::Bind(&DidRemoveOrigin, origin));
+    if (!extension_service->GetInstalledExtension(extension_id)) {
+      // Extension is uninstalled. Unregister origin.
+      metadata_store_->RemoveOrigin(
+          origin, base::Bind(&DidRemoveOrigin, origin));
+      continue;
+    }
+
+    if (extension_service->IsExtensionEnabled(extension_id)) {
+      // Extension is enabled. Enable origin.
+      metadata_store_->EnableOrigin(
+          origin, base::Bind(&EmptyStatusCallback));
+      pending_batch_sync_origins_.insert(origin);
+      continue;
+    }
+
+    // Extension is still disabled.
+  }
+
+  std::vector<GURL> enabled_origins;
+  metadata_store_->GetEnabledOrigins(&enabled_origins);
+  for (std::vector<GURL>::const_iterator itr = enabled_origins.begin();
+       itr != enabled_origins.end(); ++itr) {
+    std::string extension_id = itr->host();
+    GURL origin =
+        extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+
+    if (!extension_service->GetInstalledExtension(extension_id)) {
+      // Extension is uninstalled. Unregister origin.
+      metadata_store_->RemoveOrigin(
+          origin, base::Bind(&DidRemoveOrigin, origin));
+      continue;
+    }
+
+    if (!extension_service->IsExtensionEnabled(extension_id)) {
+      // Extension is disabled. Disable origin.
+      metadata_store_->DisableOrigin(
+          origin, base::Bind(&EmptyStatusCallback));
+      continue;
+    }
+
+    // Extension is still enabled.
   }
 }
 
@@ -966,6 +1055,7 @@ void DriveFileSyncService::StartBatchSyncForOrigin(
       GetToken(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving largest changestamp"));
   DCHECK(token);
   DCHECK(GetCurrentState() == REMOTE_SERVICE_OK || may_have_unfetched_changes_);
+  DCHECK(!metadata_store_->IsOriginDisabled(origin));
 
   DVLOG(1) << "Start batch sync for:" << origin.spec();
 
@@ -996,6 +1086,7 @@ void DriveFileSyncService::GetDriveDirectoryForOrigin(
     callback.Run(SYNC_STATUS_OK);
     return;
   }
+  DCHECK(!metadata_store_->IsOriginDisabled(origin));
 
   DCHECK(!sync_root_resource_id.empty());
   sync_client_->GetDriveDirectoryForOrigin(
@@ -1111,7 +1202,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
 }
 
-void DriveFileSyncService::DidRemoveOriginOnMetadataStore(
+void DriveFileSyncService::DidChangeOriginOnMetadataStore(
     scoped_ptr<TaskToken> token,
     const SyncStatusCallback& callback,
     SyncStatusCode status) {

@@ -53,18 +53,37 @@ SyncEventObserver::SyncServiceState RemoteStateToSyncServiceState(
   return SyncEventObserver::SYNC_SERVICE_DISABLED;
 }
 
-void DidHandleOriginForExtensionEvent(
+void DidHandleOriginForExtensionUnloadedEvent(
+    int type,
+    extension_misc::UnloadedExtensionReason reason,
+    const GURL& origin,
+    SyncStatusCode code) {
+  DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type);
+  DCHECK(extension_misc::UNLOAD_REASON_DISABLE == reason ||
+         extension_misc::UNLOAD_REASON_UNINSTALL == reason);
+  if (code != SYNC_STATUS_OK) {
+    switch (reason) {
+      case extension_misc::UNLOAD_REASON_DISABLE:
+        LOG(WARNING) << "Disabling origin for UNLOAD(DISABLE) failed: "
+                     << origin.spec();
+        break;
+      case extension_misc::UNLOAD_REASON_UNINSTALL:
+        LOG(WARNING) << "Unregistering origin for UNLOAD(UNINSTALL) failed: "
+                     << origin.spec();
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+void DidHandleOriginForExtensionEnabledEvent(
     int type,
     const GURL& origin,
     SyncStatusCode code) {
-  if (code != SYNC_STATUS_OK) {
-    DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type ||
-           chrome::NOTIFICATION_EXTENSION_LOADED == type);
-    const char* event =
-        (chrome::NOTIFICATION_EXTENSION_UNLOADED == type) ? "UNLOAD" : "LOAD";
-    LOG(WARNING) << "Register/Unregistering origin for " << event << " failed:"
-                 << origin.spec();
-  }
+  DCHECK(chrome::NOTIFICATION_EXTENSION_ENABLED == type);
+  if (code != SYNC_STATUS_OK)
+    LOG(WARNING) << "Enabling origin for ENABLED failed: " << origin.spec();
 }
 
 }  // namespace
@@ -194,7 +213,7 @@ void SyncFileSystemService::Initialize(
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<Profile>(profile_));
 }
 
@@ -398,27 +417,67 @@ void SyncFileSystemService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (chrome::NOTIFICATION_EXTENSION_UNLOADED == type) {
-    // Unregister origin for remote synchronization.
-    std::string extension_id =
-        content::Details<const extensions::UnloadedExtensionInfo>(
-            details)->extension->id();
-    GURL app_origin = extensions::Extension::GetBaseURLFromExtensionId(
-        extension_id);
-    remote_file_service_->UnregisterOriginForTrackingChanges(
-        app_origin, base::Bind(&DidHandleOriginForExtensionEvent,
-                               type, app_origin));
-    local_file_service_->SetOriginEnabled(app_origin, false);
-  } else if (chrome::NOTIFICATION_EXTENSION_LOADED == type) {
-    std::string extension_id =
-        content::Details<const extensions::Extension>(
-            details)->id();
-    GURL app_origin = extensions::Extension::GetBaseURLFromExtensionId(
-        extension_id);
-    local_file_service_->SetOriginEnabled(app_origin, true);
-  } else {
-    NOTREACHED() << "Unknown notification.";
+  switch (type) {
+    // Delivered when an app is disabled, reloaded or restarted.
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+      HandleExtensionUnloaded(type, details);
+      break;
+    // Delivered when an app is enabled, reloaded or restarted.
+    case chrome::NOTIFICATION_EXTENSION_ENABLED:
+      HandleExtensionEnabled(type, details);
+      break;
+    default:
+      NOTREACHED() << "Unknown notification.";
+      break;
   }
+}
+
+void SyncFileSystemService::HandleExtensionUnloaded(
+    int type,
+    const content::NotificationDetails& details) {
+  content::Details<const extensions::UnloadedExtensionInfo> info =
+      content::Details<const extensions::UnloadedExtensionInfo>(details);
+  std::string extension_id = info->extension->id();
+  GURL app_origin =
+      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+
+  switch (info->reason) {
+    case extension_misc::UNLOAD_REASON_DISABLE:
+      DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE): "
+               << app_origin;
+      remote_file_service_->DisableOriginForTrackingChanges(
+          app_origin,
+          base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
+                     type, info->reason, app_origin));
+      local_file_service_->SetOriginEnabled(app_origin, false);
+      break;
+    case extension_misc::UNLOAD_REASON_UNINSTALL:
+      DVLOG(1) << "Handle extension notification for UNLOAD(UNINSTALL): "
+               << app_origin;
+      remote_file_service_->UnregisterOriginForTrackingChanges(
+          app_origin,
+          base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
+                     type, info->reason, app_origin));
+      local_file_service_->SetOriginEnabled(app_origin, false);
+      break;
+    default:
+      // Nothing to do.
+      break;
+  }
+}
+
+void SyncFileSystemService::HandleExtensionEnabled(
+    int type,
+    const content::NotificationDetails& details) {
+  std::string extension_id =
+      content::Details<const extensions::Extension>(details)->id();
+  GURL app_origin =
+      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+  DVLOG(1) << "Handle extension notification for ENABLED: " << app_origin;
+  remote_file_service_->EnableOriginForTrackingChanges(
+      app_origin,
+      base::Bind(&DidHandleOriginForExtensionEnabledEvent, type, app_origin));
+  local_file_service_->SetOriginEnabled(app_origin, true);
 }
 
 void SyncFileSystemService::OnStateChanged() {

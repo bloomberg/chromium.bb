@@ -81,6 +81,12 @@ class DriveFileSyncService
   virtual void UnregisterOriginForTrackingChanges(
       const GURL& origin,
       const SyncStatusCallback& callback) OVERRIDE;
+  virtual void EnableOriginForTrackingChanges(
+      const GURL& origin,
+      const SyncStatusCallback& callback) OVERRIDE;
+  virtual void DisableOriginForTrackingChanges(
+      const GURL& origin,
+      const SyncStatusCallback& callback) OVERRIDE;
   virtual void DeleteOriginDirectory(
       const GURL& origin,
       const SyncStatusCallback& callback) OVERRIDE;
@@ -273,7 +279,7 @@ class DriveFileSyncService
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   SyncStatusCode status,
                                   bool created);
-  void UnregisterInactiveExtensionsIds();
+  void UpdateRegisteredOrigins();
 
   void GetSyncRootDirectory(scoped_ptr<TaskToken> token,
                             const ResourceIdCallback& callback);
@@ -310,7 +316,7 @@ class DriveFileSyncService
       int64 largest_changestamp,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> feed);
-  void DidRemoveOriginOnMetadataStore(
+  void DidChangeOriginOnMetadataStore(
       scoped_ptr<TaskToken> token,
       const SyncStatusCallback& callback,
       SyncStatusCode status);
