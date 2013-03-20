@@ -111,6 +111,10 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     return DecideOnJob(job, SyncSchedulerImpl::NORMAL_PRIORITY);
   }
 
+  bool ShouldPoll() {
+    return scheduler_->ShouldPoll();
+  }
+
   SyncSessionContext* context() { return context_.get(); }
 
  private:
@@ -174,23 +178,27 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueNudge) {
   EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
 }
 
-TEST_F(SyncSchedulerWhiteboxTest, DropPoll) {
-  InitializeSyncerOnNormalMode();
-  SetMode(SyncScheduler::CONFIGURATION_MODE);
-
-  SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::POLL);
-
-  EXPECT_EQ(decision, SyncSchedulerImpl::DROP);
-}
-
 TEST_F(SyncSchedulerWhiteboxTest, ContinuePoll) {
   InitializeSyncerOnNormalMode();
+  EXPECT_TRUE(ShouldPoll());
+}
 
-  SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::POLL);
+TEST_F(SyncSchedulerWhiteboxTest, DropPollInConfigureMode) {
+  InitializeSyncerOnNormalMode();
+  SetMode(SyncScheduler::CONFIGURATION_MODE);
+  EXPECT_FALSE(ShouldPoll());
+}
 
-  EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
+TEST_F(SyncSchedulerWhiteboxTest, DropPollWhenThrottled) {
+  InitializeSyncerOnNormalMode();
+  SetWaitIntervalToThrottled();
+  EXPECT_FALSE(ShouldPoll());
+}
+
+TEST_F(SyncSchedulerWhiteboxTest, DropPollInBackoff) {
+  InitializeSyncerOnNormalMode();
+  SetWaitIntervalToExponentialBackoff();
+  EXPECT_FALSE(ShouldPoll());
 }
 
 TEST_F(SyncSchedulerWhiteboxTest, ContinueConfiguration) {

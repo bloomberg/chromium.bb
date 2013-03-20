@@ -343,14 +343,12 @@ SyncSchedulerImpl::DecideWhileInWaitInterval(const SyncSessionJob& job,
                                              JobPriority priority) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(wait_interval_.get());
+  DCHECK_NE(job.purpose(), SyncSessionJob::POLL);
 
   SDVLOG(2) << "DecideWhileInWaitInterval with WaitInterval mode "
             << WaitInterval::GetModeString(wait_interval_->mode)
             << (wait_interval_->had_nudge ? " (had nudge)" : "")
             << ((priority == CANARY_PRIORITY) ? " (canary)" : "");
-
-  if (job.purpose() == SyncSessionJob::POLL)
-    return DROP;
 
   // If we save a job while in a WaitInterval, there is a well-defined moment
   // in time in the future when it makes sense for that SAVE-worthy job to try
@@ -383,6 +381,10 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
     JobPriority priority) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
+  // POLL jobs do not call this function.
+  DCHECK(job.purpose() == SyncSessionJob::NUDGE ||
+         job.purpose() == SyncSessionJob::CONFIGURATION);
+
   // See if our type is throttled.
   ModelTypeSet throttled_types =
       session_context_->throttled_data_type_tracker()->GetThrottledTypes();
@@ -412,10 +414,8 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
   if (mode_ == CONFIGURATION_MODE) {
     if (job.purpose() == SyncSessionJob::NUDGE)
       return SAVE;  // Running requires a mode switch.
-    else if (job.purpose() == SyncSessionJob::CONFIGURATION)
+    else  // Implies job.purpose() == SyncSessionJob::CONFIGURATION.
       return CONTINUE;
-    else
-      return DROP;
   }
 
   // We are in normal mode.
@@ -427,26 +427,16 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
   // It's possible at this point that |job| is known to be unnecessary, and
   // dropping it would be perfectly safe and correct. Consider
   //
-  // 1) |job| is a POLL with a |scheduled_start| time that is less than
-  //    the time that the last successful all-datatype NUDGE completed.
-  //
-  // 2) |job| is a NUDGE (for any combination of types) with a
+  // 1) |job| is a NUDGE (for any combination of types) with a
   //    |scheduled_start| time that is less than the time that the last
   //    successful all-datatype NUDGE completed, and it has a NOTIFICATION
   //    GetUpdatesCallerInfo value yet offers no new notification hint.
   //
-  // 3) |job| is a NUDGE with a |scheduled_start| time that is less than
+  // 2) |job| is a NUDGE with a |scheduled_start| time that is less than
   //    the time that the last successful matching-datatype NUDGE completed,
   //    and payloads (hints) are identical to that last successful NUDGE.
   //
-  //  Case 1 can occur if the POLL timer fires *after* a call to
-  //  ScheduleSyncSessionJob for a NUDGE, but *before* the thread actually
-  //  picks the resulting posted task off of the MessageLoop. The NUDGE will
-  //  run first and complete at a time greater than the POLL scheduled_start.
-  //  However, this case (and POLLs in general) is so rare that we ignore it (
-  //  and avoid the required bookeeping to simplify code).
-  //
-  //  We avoid cases 2 and 3 by externally synchronizing NUDGE requests --
+  //  We avoid cases 1 and 2 by externally synchronizing NUDGE requests --
   //  scheduling a NUDGE requires command of the sync thread, which is
   //  impossible* from outside of SyncScheduler if a NUDGE is taking place.
   //  And if you have command of the sync thread when scheduling a NUDGE and a
@@ -564,6 +554,9 @@ void SyncSchedulerImpl::ScheduleNudgeWithStatesAsync(
                                        nudge_location);
 }
 
+
+// TODO(zea): Consider adding separate throttling/backoff for datatype
+// refresh requests.
 void SyncSchedulerImpl::ScheduleNudgeImpl(
     const TimeDelta& delay,
     GetUpdatesCallerInfo::GetUpdatesSource source,
@@ -571,6 +564,11 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(!invalidation_map.empty()) << "Nudge scheduled for no types!";
+
+  if (no_scheduling_allowed_) {
+    NOTREACHED() << "Illegal to schedule job while session in progress.";
+    return;
+  }
 
   if (!started_) {
     SDVLOG_LOC(nudge_location, 2)
@@ -631,9 +629,20 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     DCHECK(!wait_interval_ || !wait_interval_->had_nudge);
   }
 
-  // TODO(zea): Consider adding separate throttling/backoff for datatype
-  // refresh requests.
-  ScheduleSyncSessionJob(nudge_location, job.Pass());
+  TimeDelta run_delay = job->scheduled_start() - TimeTicks::Now();
+  if (run_delay < TimeDelta::FromMilliseconds(0))
+    run_delay = TimeDelta::FromMilliseconds(0);
+  SDVLOG_LOC(nudge_location, 2)
+      << "Scheduling a nudge with "
+      << run_delay.InMilliseconds() << " ms delay";
+
+  pending_nudge_ = job.get();
+  PostDelayedTask(nudge_location, "DoSyncSessionJob",
+      base::Bind(base::IgnoreResult(&SyncSchedulerImpl::DoSyncSessionJob),
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    base::Passed(&job),
+                                    NORMAL_PRIORITY),
+      run_delay);
 }
 
 const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
@@ -679,40 +688,6 @@ void SyncSchedulerImpl::PostDelayedTask(
   sync_loop_->PostDelayedTask(from_here, task, delay);
 }
 
-void SyncSchedulerImpl::ScheduleSyncSessionJob(
-    const tracked_objects::Location& loc,
-    scoped_ptr<SyncSessionJob> job) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (no_scheduling_allowed_) {
-    NOTREACHED() << "Illegal to schedule job while session in progress.";
-    return;
-  }
-
-  TimeDelta delay = job->scheduled_start() - TimeTicks::Now();
-  if (delay < TimeDelta::FromMilliseconds(0))
-    delay = TimeDelta::FromMilliseconds(0);
-  SDVLOG_LOC(loc, 2)
-      << "In ScheduleSyncSessionJob with "
-      << SyncSessionJob::GetPurposeString(job->purpose())
-      << " job and " << delay.InMilliseconds() << " ms delay";
-
-  DCHECK(job->purpose() == SyncSessionJob::NUDGE ||
-         job->purpose() == SyncSessionJob::POLL);
-  if (job->purpose() == SyncSessionJob::NUDGE) {
-    SDVLOG_LOC(loc, 2) << "Resetting pending_nudge to ";
-    DCHECK(!pending_nudge_ || pending_nudge_->session() ==
-           job->session());
-    pending_nudge_ = job.get();
-  }
-
-  PostDelayedTask(loc, "DoSyncSessionJob",
-      base::Bind(base::IgnoreResult(&SyncSchedulerImpl::DoSyncSessionJob),
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    base::Passed(&job),
-                                    NORMAL_PRIORITY),
-      delay);
-}
-
 bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job,
                                          JobPriority priority) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -756,7 +731,78 @@ bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job,
                                             job->end_step());
   SDVLOG(2) << "Done SyncShare, returned: " << premature_exit;
 
-  return FinishSyncSessionJob(job.Pass(), premature_exit);
+  bool success = FinishSyncSessionJob(job.get(), premature_exit);
+
+  if (IsSyncingCurrentlySilenced()) {
+    SDVLOG(2) << "We are currently throttled; scheduling Unthrottle.";
+    // If we're here, it's because |job| was silenced until a server specified
+    // time. (Note, it had to be |job|, because DecideOnJob would not permit
+    // any job through while in WaitInterval::THROTTLED).
+    scoped_ptr<SyncSessionJob> clone = job->Clone();
+    if (clone->purpose() == SyncSessionJob::NUDGE)
+      pending_nudge_ = clone.get();
+    else if (clone->purpose() == SyncSessionJob::CONFIGURATION)
+      wait_interval_->pending_configure_job = clone.get();
+    else
+      NOTREACHED();
+
+    RestartWaiting(clone.Pass());
+    return success;
+  }
+
+  if (!success)
+    ScheduleNextSync(job.Pass());
+
+  return success;
+}
+
+bool SyncSchedulerImpl::ShouldPoll() {
+  if (wait_interval_.get()) {
+    SDVLOG(2) << "Not running poll in wait interval.";
+    return false;
+  }
+
+  if (mode_ == CONFIGURATION_MODE) {
+    SDVLOG(2) << "Not running poll in configuration mode.";
+    return false;
+  }
+
+  // TODO(rlarocque): Refactor decision-making logic common to all types
+  // of jobs into a shared function.
+
+  if (session_context_->connection_manager()->HasInvalidAuthToken()) {
+    SDVLOG(2) << "Not running poll because auth token is invalid.";
+    return false;
+  }
+
+  return true;
+}
+
+void SyncSchedulerImpl::DoPollSyncSessionJob(scoped_ptr<SyncSessionJob> job) {
+  DCHECK_EQ(job->purpose(), SyncSessionJob::POLL);
+
+  base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
+
+  if (!ShouldPoll())
+    return;
+
+  SDVLOG(2) << "Calling SyncShare with "
+            << SyncSessionJob::GetPurposeString(job->purpose()) << " job";
+  bool premature_exit = !syncer_->SyncShare(job->mutable_session(),
+                                            job->start_step(),
+                                            job->end_step());
+  SDVLOG(2) << "Done SyncShare, returned: " << premature_exit;
+
+  FinishSyncSessionJob(job.get(), premature_exit);
+
+  if (IsSyncingCurrentlySilenced()) {
+    // This will start the countdown to unthrottle.  Other kinds of jobs would
+    // schedule themselves as the post-unthrottle canary.  A poll job is not
+    // that urgent, so it does not get to be the canary.  We still need to start
+    // the timer regardless.  Otherwise there could be no one to clear the
+    // WaitInterval when the throttling expires.
+    RestartWaiting(scoped_ptr<SyncSessionJob>());
+  }
 }
 
 void SyncSchedulerImpl::UpdateNudgeTimeRecords(const SyncSourceInfo& info) {
@@ -784,7 +830,7 @@ void SyncSchedulerImpl::UpdateNudgeTimeRecords(const SyncSourceInfo& info) {
   }
 }
 
-bool SyncSchedulerImpl::FinishSyncSessionJob(scoped_ptr<SyncSessionJob> job,
+bool SyncSchedulerImpl::FinishSyncSessionJob(SyncSessionJob* job,
                                              bool exited_prematurely) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
@@ -796,15 +842,8 @@ bool SyncSchedulerImpl::FinishSyncSessionJob(scoped_ptr<SyncSessionJob> job,
   }
 
   SDVLOG(2) << "Updating the next polling time after SyncMain";
-  ScheduleNextSync(job.Pass(), succeeded);
-  return succeeded;
-}
 
-void SyncSchedulerImpl::ScheduleNextSync(
-    scoped_ptr<SyncSessionJob> finished_job, bool succeeded) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-
-  AdjustPolling(finished_job.get());
+  AdjustPolling(job);
 
   if (succeeded) {
     // No job currently supported by the scheduler could succeed without
@@ -813,29 +852,16 @@ void SyncSchedulerImpl::ScheduleNextSync(
     wait_interval_.reset();
     NotifyRetryTime(base::Time());
     SDVLOG(2) << "Job succeeded so not scheduling more jobs";
-    return;
   }
 
-  if (IsSyncingCurrentlySilenced()) {
-    SDVLOG(2) << "We are currently throttled; scheduling Unthrottle.";
-    // If we're here, it's because |job| was silenced until a server specified
-    // time. (Note, it had to be |job|, because DecideOnJob would not permit
-    // any job through while in WaitInterval::THROTTLED).
-    scoped_ptr<SyncSessionJob> clone = finished_job->Clone();
-    if (clone->purpose() == SyncSessionJob::NUDGE)
-      pending_nudge_ = clone.get();
-    else if (clone->purpose() == SyncSessionJob::CONFIGURATION)
-      wait_interval_->pending_configure_job = clone.get();
-    else
-      clone.reset();  // Unthrottling is enough, no need to force a canary.
+  return succeeded;
+}
 
-    RestartWaiting(clone.Pass());
-    return;
-  }
-
-  if (finished_job->purpose() == SyncSessionJob::POLL) {
-    return; // We don't retry POLL jobs.
-  }
+void SyncSchedulerImpl::ScheduleNextSync(
+    scoped_ptr<SyncSessionJob> finished_job) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK(finished_job->purpose() == SyncSessionJob::CONFIGURATION
+         || finished_job->purpose() == SyncSessionJob::NUDGE);
 
   // TODO(rlarocque): There's no reason why we should blindly backoff and retry
   // if we don't succeed.  Some types of errors are not likely to disappear on
@@ -980,7 +1006,7 @@ void SyncSchedulerImpl::DoCanaryJob(scoped_ptr<SyncSessionJob> to_be_canary) {
         pending_nudge_->session() != to_be_canary->session()) {
       // |job| is abandoned.
       SDVLOG(2) << "Dropping a nudge in "
-                << "DoSyncSessionJob because another nudge was scheduled";
+                << "DoCanaryJob because another nudge was scheduled";
       return;
     }
     DCHECK_EQ(pending_nudge_->session(), to_be_canary->session());
@@ -1035,7 +1061,18 @@ void SyncSchedulerImpl::PollTimerCallback() {
                                                     TimeTicks::Now(),
                                                     s.Pass(),
                                                     ConfigurationParams()));
-  ScheduleSyncSessionJob(FROM_HERE, job.Pass());
+  if (no_scheduling_allowed_) {
+    // The no_scheduling_allowed_ flag is set by a function-scoped AutoReset in
+    // functions that are called only on the sync thread.  This function is also
+    // called only on the sync thread, and only when it is posted by an expiring
+    // timer.  If we find that no_scheduling_allowed_ is set here, then
+    // something is very wrong.  Maybe someone mistakenly called us directly, or
+    // mishandled the book-keeping for no_scheduling_allowed_.
+    NOTREACHED() << "Illegal to schedule job while session in progress.";
+    return;
+  }
+
+  DoPollSyncSessionJob(job.Pass());
 }
 
 void SyncSchedulerImpl::Unthrottle(scoped_ptr<SyncSessionJob> to_be_canary) {
