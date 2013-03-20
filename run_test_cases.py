@@ -367,13 +367,13 @@ class Progress(object):
 
       sys.stdout.write(line)
 
-    if self.unfinished_commands:
-      logging.debug('Waiting for the following commands to finish:\n%s',
-                    '\n'.join(self.unfinished_commands))
-
     # Ensure that all the output is flush to prevent it from getting mixed with
     # other output streams (like the logging streams).
     sys.stdout.flush()
+
+    if self.unfinished_commands:
+      logging.debug('Waiting for the following commands to finish:\n%s',
+                    '\n'.join(self.unfinished_commands))
 
 
 def setup_gtest_env():
