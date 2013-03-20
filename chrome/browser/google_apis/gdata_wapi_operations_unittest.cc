@@ -466,8 +466,9 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallbackAndQuit,
-                 &result_code, &result_data),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)),
       true);  // Include installed apps.
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -505,8 +506,9 @@ TEST_F(GDataWapiOperationsTest,
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallbackAndQuit,
-                 &result_code, &result_data),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)),
       false);  // Exclude installed apps.
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));

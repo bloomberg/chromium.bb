@@ -67,21 +67,6 @@ GURL GetBaseUrlForTesting(int port);
 // chrome/test/data.
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
-// Copies the results from GetAccountMetadataCallback.
-void CopyResultsFromGetAccountMetadataCallback(
-    GDataErrorCode* error_out,
-    scoped_ptr<AccountMetadata>* account_metadata_out,
-    GDataErrorCode error_in,
-    scoped_ptr<AccountMetadata> account_metadata_in);
-
-// Copies the results from GetAccountMetadataCallback and quit the message
-// loop.
-void CopyResultsFromGetAccountMetadataCallbackAndQuit(
-    GDataErrorCode* error_out,
-    scoped_ptr<AccountMetadata>* account_metadata_out,
-    GDataErrorCode error_in,
-    scoped_ptr<AccountMetadata> account_metadata_in);
-
 // Copies the results from GetAboutResourceCallback.
 void CopyResultsFromGetAboutResourceCallback(
     GDataErrorCode* error_out,

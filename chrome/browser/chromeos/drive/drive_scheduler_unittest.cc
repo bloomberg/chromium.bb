@@ -188,10 +188,8 @@ TEST_F(DriveSchedulerTest, GetAccountMetadata) {
   scoped_ptr<google_apis::AccountMetadata> account_metadata;
 
   scheduler_->GetAccountMetadata(
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
-          &error,
-          &account_metadata));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &account_metadata));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -423,11 +421,8 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularDisabled) {
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
-          &metadata_error,
-          &account_metadata));
-
+      google_apis::test_util::CreateCopyResultCallback(
+          &metadata_error, &account_metadata));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata
@@ -481,11 +476,8 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxDisabled) {
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
-          &metadata_error,
-          &account_metadata));
-
+      google_apis::test_util::CreateCopyResultCallback(
+          &metadata_error, &account_metadata));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata
@@ -539,11 +531,8 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularEnabled) {
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
-          &metadata_error,
-          &account_metadata));
-
+      google_apis::test_util::CreateCopyResultCallback(
+          &metadata_error, &account_metadata));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata
@@ -589,11 +578,8 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(
-      base::Bind(
-          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
-          &metadata_error,
-          &account_metadata));
-
+      google_apis::test_util::CreateCopyResultCallback(
+          &metadata_error, &account_metadata));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the metadata

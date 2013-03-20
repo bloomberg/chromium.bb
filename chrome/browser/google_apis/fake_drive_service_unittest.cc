@@ -384,9 +384,7 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AccountMetadata> account_metadata;
   fake_service_.GetAccountMetadata(
-      base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallback,
-                 &error,
-                 &account_metadata));
+      test_util::CreateCopyResultCallback(&error, &account_metadata));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -405,9 +403,7 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AccountMetadata> account_metadata;
   fake_service_.GetAccountMetadata(
-      base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallback,
-                 &error,
-                 &account_metadata));
+      test_util::CreateCopyResultCallback(&error, &account_metadata));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
