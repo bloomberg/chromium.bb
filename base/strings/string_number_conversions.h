@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_STRING_NUMBER_CONVERSIONS_H_
-#define BASE_STRING_NUMBER_CONVERSIONS_H_
+#ifndef BASE_STRINGS_STRING_NUMBER_CONVERSIONS_H_
+#define BASE_STRINGS_STRING_NUMBER_CONVERSIONS_H_
 
 #include <string>
 #include <vector>
@@ -111,5 +111,5 @@ BASE_EXPORT bool HexStringToBytes(const std::string& input,
 
 }  // namespace base
 
-#endif  // BASE_STRING_NUMBER_CONVERSIONS_H_
+#endif  // BASE_STRINGS_STRING_NUMBER_CONVERSIONS_H_
 
