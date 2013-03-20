@@ -85,6 +85,11 @@ const uint32 kGTalkPluginPermissions = ppapi::PERMISSION_PRIVATE |
 #if defined(WIDEVINE_CDM_AVAILABLE)
 const char kWidevineCdmPluginExtension[] = "";
 const uint32 kWidevineCdmPluginPermissions = ppapi::PERMISSION_PRIVATE |
+#if defined(OS_CHROMEOS)
+// TODO(xhwang): Make permission requirements the same on all OS.
+// See http://crbug.com/222252
+                                             ppapi::PERMISSION_FLASH |
+#endif  // !defined(OS_CHROMEOS)
                                              ppapi::PERMISSION_DEV;
 #endif  // WIDEVINE_CDM_AVAILABLE
 
