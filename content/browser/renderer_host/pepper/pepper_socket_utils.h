@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_SOCKET_UTILS_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_SOCKET_UTILS_H_
 
+#include "content/public/common/process_type.h"
 #include "content/public/common/socket_permission_request.h"
 
 struct PP_NetAddress_Private;
@@ -19,7 +20,7 @@ SocketPermissionRequest CreateSocketPermissionRequest(
     SocketPermissionRequest::OperationType type,
     const PP_NetAddress_Private& net_addr);
 
-bool CanUseSocketAPIs(bool external_plugin,
+bool CanUseSocketAPIs(ProcessType plugin_process_type,
                       const SocketPermissionRequest& params,
                       RenderViewHost* render_view_host);
 

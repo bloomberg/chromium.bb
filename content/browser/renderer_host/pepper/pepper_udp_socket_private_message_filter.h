@@ -110,7 +110,7 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
 
   net::IPEndPoint recvfrom_address_;
 
-  bool external_plugin_;
+  ProcessType plugin_process_type_;
   int render_process_id_;
   int render_view_id_;
 

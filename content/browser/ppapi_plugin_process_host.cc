@@ -202,11 +202,13 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   process_.reset(new BrowserChildProcessHostImpl(
       PROCESS_TYPE_PPAPI_PLUGIN, this));
 
-  filter_ = new PepperMessageFilter(permissions_, host_resolver);
+  filter_ = new PepperMessageFilter(process_->GetData().type,
+                                    permissions_,
+                                    host_resolver);
 
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_, info.name,
                                             profile_data_directory,
-                                            false));
+                                            process_->GetData().type));
 
   process_->GetHost()->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(host_impl_->message_filter());
@@ -230,7 +232,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
   base::FilePath profile_data_directory;
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions, plugin_name,
                                             profile_data_directory,
-                                            false));
+                                            process_->GetData().type));
 }
 
 bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {

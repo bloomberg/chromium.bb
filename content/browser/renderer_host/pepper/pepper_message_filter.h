@@ -58,17 +58,22 @@ class PepperMessageFilter
     : public BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  // Constructor when used in the context of a render process.
-  PepperMessageFilter(int process_id,
+  // Constructor when used in the context of a render process (the argument is
+  // provided for sanity checking and must be PROCESS_TYPE_RENDERER).
+  PepperMessageFilter(ProcessType process_type,
+                      int process_id,
                       BrowserContext* browser_context);
 
-  // Constructor when used in the context of a PPAPI process..
-  PepperMessageFilter(const ppapi::PpapiPermissions& permissions,
+  // Constructor when used in the context of a PPAPI process (the argument is
+  // provided for sanity checking and must be PROCESS_TYPE_PPAPI_PLUGIN).
+  PepperMessageFilter(ProcessType process_type,
+                      const ppapi::PpapiPermissions& permissions,
                       net::HostResolver* host_resolver);
 
-  // Constructor when used in the context of an external plugin, i.e. created by
-  // the embedder using BrowserPpapiHost::CreateExternalPluginProcess.
-  PepperMessageFilter(const ppapi::PpapiPermissions& permissions,
+  // Constructor when used in the context of a NaCl process (the argument is
+  // provided for sanity checking and must be PROCESS_TYPE_NACL_LOADER).
+  PepperMessageFilter(ProcessType process_type,
+                      const ppapi::PpapiPermissions& permissions,
                       net::HostResolver* host_resolver,
                       int process_id,
                       int render_view_id);
@@ -181,15 +186,7 @@ class PepperMessageFilter
   void DoGetNetworkList();
   void SendNetworkList(scoped_ptr<net::NetworkInterfaceList> list);
 
-  enum PluginType {
-    PLUGIN_TYPE_IN_PROCESS,
-    PLUGIN_TYPE_OUT_OF_PROCESS,
-    // External plugin means it was created through
-    // BrowserPpapiHost::CreateExternalPluginProcess.
-    PLUGIN_TYPE_EXTERNAL_PLUGIN,
-  };
-
-  PluginType plugin_type_;
+  ProcessType process_type_;
 
   // When attached to an out-of-process plugin (be it native or NaCl) this
   // will have the Pepper permissions for the plugin. When attached to the
@@ -200,10 +197,10 @@ class PepperMessageFilter
   // Render process ID.
   int process_id_;
 
-  // External plugin RenderView id to determine private API access. Normally, we
-  // handle messages coming from multiple RenderViews, but external plugins
-  // always creates a new PepperMessageFilter for each RenderView.
-  int external_plugin_render_view_id_;
+  // NACL RenderView id to determine private API access. Normally, we handle
+  // messages coming from multiple RenderViews, but NaClProcessHost always
+  // creates a new PepperMessageFilter for each RenderView.
+  int nacl_render_view_id_;
 
   // When non-NULL, this should be used instead of the host_resolver_.
   ResourceContext* const resource_context_;

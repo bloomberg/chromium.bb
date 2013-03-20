@@ -74,7 +74,7 @@ class CONTENT_EXPORT PepperHostResolverPrivateMessageFilter
                         const ppapi::host::ReplyMessageContext& context);
   void SendResolveError(const ppapi::host::ReplyMessageContext& context);
 
-  bool external_plugin_;
+  ProcessType plugin_process_type_;
   int render_process_id_;
   int render_view_id_;
 
