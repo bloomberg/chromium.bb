@@ -71,6 +71,10 @@ WebKit::WebHyphenator* ContentRendererClient::OverrideWebHyphenator() {
   return NULL;
 }
 
+WebKit::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
+  return NULL;
+}
+
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }

@@ -35,6 +35,7 @@ using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebRTCPeerConnectionHandler;
 using WebKit::WebRTCPeerConnectionHandlerClient;
+using WebKit::WebThemeEngine;
 using WebTestRunner::WebTestDelegate;
 using WebTestRunner::WebTestInterfaces;
 using WebTestRunner::WebTestProxyBase;
@@ -151,6 +152,14 @@ WebHyphenator* ShellContentRendererClient::OverrideWebHyphenator() {
     hyphenator_.reset(new webkit_glue::MockWebHyphenator);
   return hyphenator_.get();
 
+}
+
+WebThemeEngine* ShellContentRendererClient::OverrideThemeEngine() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+  // TODO(jochen): return the TestRunner library's theme engine once WebKit has
+  // rolled.
+  return NULL;
 }
 
 void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,

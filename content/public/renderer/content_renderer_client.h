@@ -37,6 +37,7 @@ class WebPlugin;
 class WebPluginContainer;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
+class WebThemeEngine;
 class WebURLRequest;
 struct WebPluginParams;
 struct WebURLError;
@@ -150,6 +151,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to override the WebKit::WebHyphenator used. If it
   // returns NULL the content layer will handle hyphenation.
   virtual WebKit::WebHyphenator* OverrideWebHyphenator();
+
+  // Allows the embedder to override the WebThemeEngine used. If it returns NULL
+  // the content layer will provide an engine.
+  virtual WebKit::WebThemeEngine* OverrideThemeEngine();
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

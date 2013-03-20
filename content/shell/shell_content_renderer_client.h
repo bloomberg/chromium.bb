@@ -54,6 +54,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual WebKit::WebClipboard* OverrideWebClipboard() OVERRIDE;
   virtual WebKit::WebMimeRegistry* OverrideWebMimeRegistry() OVERRIDE;
   virtual WebKit::WebHyphenator* OverrideWebHyphenator() OVERRIDE;
+  virtual WebKit::WebThemeEngine* OverrideThemeEngine() OVERRIDE;
   virtual bool AllowBrowserPlugin(
       WebKit::WebPluginContainer* container) const OVERRIDE;
 
