@@ -298,12 +298,9 @@ void LauncherButton::AddState(State state) {
           icon_view_->layer()->GetAnimator());
       scoped_setter.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kHopUpMS));
-      state_ |= state;
-      UpdateState();
-    } else {
-      state_ |= state;
-      UpdateState();
     }
+    state_ |= state;
+    UpdateState();
     if (state & STATE_ATTENTION)
       bar_->ShowAttention(true);
   }
@@ -317,12 +314,9 @@ void LauncherButton::ClearState(State state) {
       scoped_setter.SetTweenType(ui::Tween::LINEAR);
       scoped_setter.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kHopDownMS));
-      state_ &= ~state;
-      UpdateState();
-    } else {
-      state_ &= ~state;
-      UpdateState();
     }
+    state_ &= ~state;
+    UpdateState();
     if (state & STATE_ATTENTION)
       bar_->ShowAttention(false);
   }
@@ -398,18 +392,17 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void LauncherButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-  int x_offset = 0, y_offset = 0;
-  gfx::Rect icon_bounds;
 
-  if (shelf_layout_manager_->IsHorizontalAlignment()) {
-    icon_bounds.SetRect(
-        button_bounds.x(), button_bounds.y() + kIconPad,
-        button_bounds.width(), kIconSize);
-  } else {
-    icon_bounds.SetRect(
-        button_bounds.x() + kIconPad, button_bounds.y(),
-        kIconSize, button_bounds.height());
-  }
+  int x_offset = shelf_layout_manager_->SelectValueForShelfAlignment(
+      0, kIconPad, kIconPad, 0);
+  int y_offset = shelf_layout_manager_->SelectValueForShelfAlignment(
+      kIconPad, 0, 0, kIconPad);
+
+  int icon_width = std::min(kIconSize, button_bounds.width() - x_offset);
+  int icon_height = std::min(kIconSize, button_bounds.height() - y_offset);
+
+  x_offset = std::max(x_offset, (button_bounds.width() - icon_width) / 2);
+  y_offset = std::max(y_offset, (button_bounds.height() - icon_height) / 2);
 
   if (ShouldHop(state_)) {
     x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
@@ -418,9 +411,14 @@ void LauncherButton::Layout() {
         -kHopSpacing, 0, 0, kHopSpacing);
   }
 
-  icon_bounds.Offset(x_offset, y_offset);
+  gfx::Rect icon_bounds(
+        button_bounds.x() + x_offset,
+        button_bounds.y() + y_offset,
+        icon_width,
+        icon_height);
   icon_view_->SetBoundsRect(icon_bounds);
   bar_->SetBarBoundsRect(GetContentsBounds());
+  UpdateState();
 }
 
 void LauncherButton::ChildPreferredSizeChanged(views::View* child) {
@@ -508,12 +506,17 @@ void LauncherButton::UpdateState() {
               SkBitmapOperations::ROTATION_180_CW)));
     bar_->SetVisible(true);
   }
-  bool rtl = base::i18n::IsRTL();
+  icon_view_->SetHorizontalAlignment(
+      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::CENTER,
+                                              views::ImageView::LEADING));
+  icon_view_->SetVerticalAlignment(
+      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::LEADING,
+                                              views::ImageView::CENTER));
   bar_->SetHorizontalAlignment(
       shelf_layout_manager_->SelectValueForShelfAlignment(
           views::ImageView::CENTER,
-          rtl ? views::ImageView::TRAILING : views::ImageView::LEADING,
-          rtl ? views::ImageView::LEADING : views::ImageView::TRAILING,
+          views::ImageView::LEADING,
+          views::ImageView::TRAILING,
           views::ImageView::CENTER));
   bar_->SetVerticalAlignment(
       shelf_layout_manager_->SelectValueForShelfAlignment(
@@ -521,10 +524,6 @@ void LauncherButton::UpdateState() {
           views::ImageView::CENTER,
           views::ImageView::CENTER,
           views::ImageView::LEADING));
-
-  // Force bar to layout as alignment may have changed but not bounds.
-  bar_->Layout();
-  Layout();
   bar_->SchedulePaint();
   SchedulePaint();
 }

@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -175,7 +176,7 @@ TEST_F(LauncherViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
 }
 
 TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
-  ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf();
+  ash::ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf();
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   gfx::Size shelf_size =
       shelf->GetWindowBoundsInScreen().size();
@@ -302,6 +303,19 @@ class LauncherViewTest : public AshTestBase {
       ++map_index;
     }
     ASSERT_EQ(map_index, id_map.size());
+  }
+
+  void VerifyLauncherItemBoundsAreValid() {
+    for (int i=0;i <= test_api_->GetLastVisibleIndex(); ++i) {
+      if (test_api_->GetButton(i)) {
+        gfx::Rect launcher_view_bounds = launcher_view_->GetLocalBounds();
+        gfx::Rect item_bounds = test_api_->GetBoundsByIndex(i);
+        EXPECT_TRUE(item_bounds.x() >= 0);
+        EXPECT_TRUE(item_bounds.y() >= 0);
+        EXPECT_TRUE(item_bounds.right() <= launcher_view_bounds.width());
+        EXPECT_TRUE(item_bounds.bottom() <= launcher_view_bounds.height());
+      }
+    }
   }
 
   views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
@@ -705,6 +719,19 @@ TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
   item.status = ash::STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
+}
+
+// Confirm that launcher item bounds are correctly updated on shelf changes.
+TEST_F(LauncherViewTest, LauncherItemBoundsCheck) {
+  internal::ShelfLayoutManager* shelf_layout_manager =
+      Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
+  VerifyLauncherItemBoundsAreValid();
+  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  VerifyLauncherItemBoundsAreValid();
+  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  VerifyLauncherItemBoundsAreValid();
 }
 
 TEST_F(LauncherViewTest, LauncherTooltipTest) {

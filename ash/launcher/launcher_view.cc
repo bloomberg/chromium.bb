@@ -35,6 +35,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_search.h"
@@ -412,6 +413,25 @@ void LauncherView::Init() {
 void LauncherView::OnShelfAlignmentChanged() {
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
+  for (int i=0; i < view_model_->view_size(); ++i) {
+    // TODO: remove when AppIcon is a Launcher Button.
+    if (TYPE_APP_LIST == model_->items()[i].type) {
+      ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+      static_cast<AppListButton*>(view_model_->view_at(i))->SetImageAlignment(
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_CENTER,
+              views::ImageButton::ALIGN_LEFT,
+              views::ImageButton::ALIGN_RIGHT,
+              views::ImageButton::ALIGN_CENTER),
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_TOP,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_BOTTOM));
+    }
+    if (i >= first_visible_index_ && i <= last_visible_index_)
+      view_model_->view_at(i)->Layout();
+  }
   tooltip_->UpdateArrowLocation();
   if (overflow_bubble_.get())
     overflow_bubble_->Hide();
@@ -429,7 +449,8 @@ gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
   gfx::Rect icon_bounds = button->GetIconBounds();
   return gfx::Rect(ideal_bounds.x() + icon_bounds.x(),
                    ideal_bounds.y() + icon_bounds.y(),
-                   icon_bounds.width(), icon_bounds.height());
+                   icon_bounds.width(),
+                   icon_bounds.height());
 }
 
 void LauncherView::UpdatePanelIconPosition(LauncherID id,
@@ -523,15 +544,14 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   // launcher (eg top edge on bottom-aligned launcher).
   int x = shelf->SelectValueForShelfAlignment(
       leading_inset(),
-      width() - kLauncherPreferredSize,
-      std::max(width() - kLauncherPreferredSize,
-               ShelfLayoutManager::kAutoHideSize + 1),
+      0,
+      0,
       leading_inset());
   int y = shelf->SelectValueForShelfAlignment(
       0,
       leading_inset(),
       leading_inset(),
-      height() - kLauncherPreferredSize);
+      0);
   int w = shelf->PrimaryAxisValue(kLauncherPreferredSize, width());
   int h = shelf->PrimaryAxisValue(height(), kLauncherPreferredSize);
   for (int i = 0; i < view_model_->view_size(); ++i) {
@@ -562,15 +582,13 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   // leading inset (if there is one).
   if (view_model_->view_size() > 0) {
     view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
-        shelf->PrimaryAxisValue(leading_inset() + kLauncherPreferredSize,
-                                width()),
-        shelf->PrimaryAxisValue(height(),
-                                leading_inset() + kLauncherPreferredSize))));
+        shelf->PrimaryAxisValue(leading_inset() + w, w),
+        shelf->PrimaryAxisValue(h, leading_inset() + h))));
   }
 
   // Right aligned icons.
   int end_position = available_size - kButtonSpacing;
-  x = shelf->PrimaryAxisValue(end_position, leading_inset());
+  x = shelf->PrimaryAxisValue(end_position, 0);
   y = shelf->PrimaryAxisValue(0, end_position);
   for (int i = view_model_->view_size() - 1;
        i >= first_panel_index; --i) {
@@ -593,8 +611,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     end_position = std::max(end_position, reserved_icon_space);
 
   bounds->overflow_bounds.set_size(gfx::Size(
-      shelf->PrimaryAxisValue(kLauncherPreferredSize, width()),
-      shelf->PrimaryAxisValue(height(), kLauncherPreferredSize)));
+      shelf->PrimaryAxisValue(w, width()),
+      shelf->PrimaryAxisValue(height(), h)));
   last_visible_index_ = DetermineLastVisibleIndex(
       end_position - leading_inset() - 2 * kLauncherPreferredSize);
   last_hidden_index_ = DetermineFirstVisiblePanelIndex(end_position) - 1;
@@ -614,15 +632,14 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     if (last_visible_index_ == -1) {
       x = shelf->SelectValueForShelfAlignment(
           leading_inset(),
-          width() - kLauncherPreferredSize,
-          std::max(width() - kLauncherPreferredSize,
-                   ShelfLayoutManager::kAutoHideSize + 1),
+          0,
+          0,
           leading_inset());
       y = shelf->SelectValueForShelfAlignment(
           0,
           leading_inset(),
           leading_inset(),
-          height() - kLauncherPreferredSize);
+          0);
     } else if (last_visible_index_ == app_list_index) {
       x = view_model_->ideal_bounds(last_visible_index_).x();
       y = view_model_->ideal_bounds(last_visible_index_).y();
@@ -642,8 +659,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     for (int i = first_panel_index; i <= last_hidden_index_; ++i)
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
 
-    x = shelf->PrimaryAxisValue(x + kLauncherPreferredSize + kButtonSpacing, x);
-    y = shelf->PrimaryAxisValue(y, y + kLauncherPreferredSize + kButtonSpacing);
+    x = shelf->PrimaryAxisValue(x + w + kButtonSpacing, x);
+    y = shelf->PrimaryAxisValue(y, y + h + kButtonSpacing);
     app_list_bounds.set_x(x);
     app_list_bounds.set_y(y);
     view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
@@ -733,6 +750,18 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_APP_LIST: {
       // TODO(dave): turn this into a LauncherButton too.
       AppListButton* button = new AppListButton(this, this);
+      ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+      button->SetImageAlignment(
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_CENTER,
+              views::ImageButton::ALIGN_LEFT,
+              views::ImageButton::ALIGN_RIGHT,
+              views::ImageButton::ALIGN_CENTER),
+          shelf->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_TOP,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_BOTTOM));
       view = button;
       break;
     }
