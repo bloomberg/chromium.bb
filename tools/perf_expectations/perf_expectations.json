@@ -416,7 +416,7 @@
  "linux-release/sizes/nacl_helper_bootstrap/nacl_helper_bootstrap": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 8776, "regress": 9700, "sha1": "3f284fed"},
  "linux-release/sizes/totals-textrel/textrel": {"reva": 140550, "revb": 140550, "type": "absolute", "better": "lower", "improve": 5669, "regress": 6267, "sha1": "104bb554"},
  "linux-release/startup/warm/t": {"improve": -15, "regress": 15, "sha1": "9e17e65d"},
- "mac-release-10.6/dhtml/times/t": {"reva": 182110, "revb": 182834, "improve": 3.6944444455, "regress": 106.633333338, "sha1": "fad8160c"},
+ "mac-release-10.6/dhtml/times/t": {"reva": 189236, "revb": 189376, "improve": 47.3944444455, "regress": 125.650000004, "sha1": "398e0a73"},
  "mac-release-10.6/dom_perf/Total/score": {"reva": 169426, "revb": 169978, "improve": 223, "regress": 134, "sha1": "7b808d4d"},
  "mac-release-10.6/intl1/times/t": {"reva": 182931, "revb": 183271, "improve": 281.094444446, "regress": 1613.03333334, "sha1": "a9de6d0b"},
  "mac-release-10.6/intl2/times/t": {"reva": 165939, "revb": 166315, "improve": -4756, "regress": -2807, "sha1": "a82df4d4"},
