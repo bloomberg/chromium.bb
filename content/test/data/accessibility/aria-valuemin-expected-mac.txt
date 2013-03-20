@@ -1,4 +1,4 @@
-AXWebArea minValue='0'
+AXWebArea
     AXProgressIndicator minValue='1'
     AXScrollBar minValue='2'
     AXSlider minValue='3'

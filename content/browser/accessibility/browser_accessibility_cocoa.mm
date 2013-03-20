@@ -836,11 +836,15 @@ NSDictionary* attributeToMethodNameMap = nil;
   return [delegate_ window];
 }
 
+- (NSString*)methodNameForAttribute:(NSString*)attribute {
+  return [attributeToMethodNameMap objectForKey:attribute];
+}
+
 // Returns the accessibility value for the given attribute.  If the value isn't
 // supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   SEL selector =
-      NSSelectorFromString([attributeToMethodNameMap objectForKey:attribute]);
+      NSSelectorFromString([self methodNameForAttribute:attribute]);
   if (selector)
     return [self performSelector:selector];
 
@@ -1011,6 +1015,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSAccessibilityWindowAttribute,
       NSAccessibilityURLAttribute,
       @"AXAccessKey",
+      @"AXInvalid",
       @"AXRequired",
       @"AXVisited",
       nil];
@@ -1055,7 +1060,23 @@ NSDictionary* attributeToMethodNameMap = nil;
         NSAccessibilityDisclosureLevelAttribute,
         NSAccessibilityDisclosedRowsAttribute,
         nil]];
+  } else if ([role isEqualToString:NSAccessibilityRowRole]) {
+    if (browserAccessibility_->parent()) {
+      string16 parentRole;
+      browserAccessibility_->parent()->GetHtmlAttribute(
+          "role", &parentRole);
+      const string16 treegridRole(ASCIIToUTF16("treegrid"));
+      if (parentRole == treegridRole) {
+        [ret addObjectsFromArray:[NSArray arrayWithObjects:
+            NSAccessibilityDisclosingAttribute,
+            NSAccessibilityDisclosedByRowAttribute,
+            NSAccessibilityDisclosureLevelAttribute,
+            NSAccessibilityDisclosedRowsAttribute,
+            nil]];
+      }
+    }
   }
+
 
   // Live regions.
   string16 s;

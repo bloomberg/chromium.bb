@@ -16,14 +16,11 @@ namespace content {
 
 namespace {
 
-string16 Format(BrowserAccessibility* node,
-                const char *prefix,
-                SEL selector,
+string16 Format(const char *prefix,
+                id value,
                 const char *suffix) {
-  BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
-  id value = [cocoa_node performSelector:selector];
-  if (!value)
-    return string16();
+  if (value == nil)
+    return UTF8ToUTF16("");
   NSString* format_str =
       [NSString stringWithFormat:@"%s%%@%s", prefix, suffix];
   NSString* tmp = [NSString stringWithFormat:format_str, value];
@@ -71,41 +68,64 @@ void AccessibilityTreeFormatter::Initialize() {}
 string16 AccessibilityTreeFormatter::ToString(BrowserAccessibility* node,
                                                char* prefix) {
   StartLine();
-  Add(true, Format(node, "", @selector(role), ""));
-  Add(false, Format(node, "subrole=", @selector(subrole), ""));
-  Add(false, Format(node, "roleDescription='",
-                          @selector(roleDescription),
-                          "'"));
-  Add(true, Format(node, "title='", @selector(title), "'"));
-  Add(true, Format(node, "value='", @selector(value), "'"));
-  Add(false, Format(node, "minValue='", @selector(minValue), "'"));
-  Add(false, Format(node, "maxValue='", @selector(maxValue), "'"));
-  Add(false, Format(node, "valueDescription='", @selector(valueDescription),
-                    "'"));
-  Add(false, Format(node, "description='", @selector(description), "'"));
-  Add(false, Format(node, "help='", @selector(help), "'"));
-  Add(false, Format(node, "invalid='", @selector(invalid), "'"));
-  Add(false, Format(node, "disclosing='", @selector(disclosing), "'"));
-  Add(false, Format(node, "disclosureLevel='", @selector(disclosureLevel),
-                    "'"));
-  Add(false, Format(node, "accessKey='", @selector(accessKey), "'"));
-  Add(false, Format(node, "ariaAtomic='", @selector(ariaAtomic), "'"));
-  Add(false, Format(node, "ariaBusy='", @selector(ariaBusy), "'"));
-  Add(false, Format(node, "ariaLive='", @selector(ariaLive), "'"));
-  Add(false, Format(node, "ariaRelevant='", @selector(ariaRelevant), "'"));
-  Add(false, Format(node, "enabled='", @selector(enabled), "'"));
-  Add(false, Format(node, "focused='", @selector(focused), "'"));
-  Add(false, Format(node, "loaded='", @selector(loaded), "'"));
-  Add(false, Format(node, "loadingProgress='", @selector(loadingProgress),
-                    "'"));
-  Add(false, Format(node, "numberOfCharacters='",
-                    @selector(numberOfCharacters), "'"));
-  Add(false, Format(node, "orientation='", @selector(orientation), "'"));
-  Add(false, Format(node, "required='", @selector(required), "'"));
-  Add(false, Format(node, "url='", @selector(url), "'"));
-  Add(false, Format(node, "visibleCharacterRange='",
-                    @selector(visibleCharacterRange), "'"));
-  Add(false, Format(node, "visited='", @selector(visited), "'"));
+  NSArray* requestedAttributes = [NSArray arrayWithObjects:
+      NSAccessibilityRoleDescriptionAttribute,
+      NSAccessibilityTitleAttribute,
+      NSAccessibilityValueAttribute,
+      NSAccessibilityMinValueAttribute,
+      NSAccessibilityMaxValueAttribute,
+      NSAccessibilityValueDescriptionAttribute,
+      NSAccessibilityDescriptionAttribute,
+      NSAccessibilityHelpAttribute,
+      @"AXInvalid",
+      NSAccessibilityDisclosingAttribute,
+      NSAccessibilityDisclosureLevelAttribute,
+      @"AXAccessKey",
+      @"AXARIAAtomic",
+      @"AXARIABusy",
+      @"AXARIALive",
+      @"AXARIARelevant",
+      NSAccessibilityEnabledAttribute,
+      NSAccessibilityFocusedAttribute,
+      @"AXLoaded",
+      @"AXLoadingProcess",
+      NSAccessibilityNumberOfCharactersAttribute,
+      NSAccessibilityOrientationAttribute,
+      @"AXRequired",
+      NSAccessibilityURLAttribute,
+      NSAccessibilityVisibleCharacterRangeAttribute,
+      @"AXVisited",
+      nil];
+
+  NSArray* defaultAttributes = [NSArray arrayWithObjects:
+      NSAccessibilityTitleAttribute,
+      NSAccessibilityValueAttribute,
+      nil];
+
+  BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
+  NSArray* supportedAttributes = [cocoa_node accessibilityAttributeNames];
+
+  Add(true,
+      Format("", [cocoa_node accessibilityAttributeValue:
+                      NSAccessibilityRoleAttribute],
+             ""));
+  Add(false,
+      Format("subrole=", [cocoa_node accessibilityAttributeValue:
+                              NSAccessibilitySubroleAttribute],
+             ""));
+  for (NSString* requestedAttribute in requestedAttributes) {
+    if (![supportedAttributes containsObject:requestedAttribute]) {
+      continue;
+    }
+    NSString* methodName =
+        [cocoa_node methodNameForAttribute:requestedAttribute];
+    Add([defaultAttributes containsObject:requestedAttribute],
+        Format([[NSString stringWithFormat:@"%@='", methodName]
+                   cStringUsingEncoding:NSUTF8StringEncoding],
+               [cocoa_node accessibilityAttributeValue:
+                    requestedAttribute],
+               "'"));
+  }
   Add(false, FormatPosition(node));
   Add(false, FormatSize(node));
 

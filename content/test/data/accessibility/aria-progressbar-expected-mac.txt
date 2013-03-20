@@ -1,3 +1,3 @@
-AXWebArea roleDescription='HTML content' minValue='0' maxValue='0'
+AXWebArea roleDescription='HTML content'
     AXProgressIndicator roleDescription='progress indicator' value='3' minValue='1' maxValue='37'
-    AXProgressIndicator roleDescription='progress indicator' minValue='1' maxValue='96' valueDescription='three'
+    AXProgressIndicator roleDescription='progress indicator' value='0' minValue='1' maxValue='96' valueDescription='three'

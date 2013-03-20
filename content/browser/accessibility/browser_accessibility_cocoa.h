@@ -37,6 +37,9 @@
 // from browserAccessibility_.
 - (content::AccessibilityNodeData::Role)internalRole;
 
+// Return the method name for the given attribute. For testing only.
+- (NSString*)methodNameForAttribute:(NSString*)attribute;
+
 // Internally-used method.
 @property(nonatomic, readonly) NSPoint origin;
 
