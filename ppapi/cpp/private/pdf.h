@@ -28,8 +28,7 @@ class PDF {
       const InstanceHandle& instance,
       const PP_FontDescription_Dev* description,
       PP_PrivateFontCharset charset);
-  static bool GetFontTableForPrivateFontFile(const InstanceHandle& instance,
-                                             PP_Resource font_file,
+  static bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                              uint32_t table,
                                              void* output,
                                              uint32_t* output_length);

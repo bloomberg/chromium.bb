@@ -59,8 +59,7 @@ PP_Resource PDF::GetFontFileWithFallback(
 }
 
 // static
-bool PDF::GetFontTableForPrivateFontFile(const InstanceHandle& /*instance*/,
-                                         PP_Resource font_file,
+bool PDF::GetFontTableForPrivateFontFile(PP_Resource font_file,
                                          uint32_t table,
                                          void* output,
                                          uint32_t* output_length) {
