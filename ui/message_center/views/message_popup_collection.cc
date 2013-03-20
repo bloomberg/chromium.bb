@@ -145,6 +145,7 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView context,
     : context_(context),
       message_center_(message_center) {
   DCHECK(message_center_);
+  UpdatePopups();
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
