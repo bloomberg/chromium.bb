@@ -12,8 +12,7 @@ namespace {
 
 class FakeVSyncProvider : public VSyncProvider {
  public:
-  FakeVSyncProvider()
-    : client_(NULL) {}
+  FakeVSyncProvider() : client_(NULL) {}
 
   // VSyncProvider implementation.
   virtual void RequestVSyncNotification(VSyncClient* client) OVERRIDE {
@@ -33,8 +32,7 @@ class FakeVSyncProvider : public VSyncProvider {
 
 class VSyncTimeSourceTest : public testing::Test {
  public:
-  VSyncTimeSourceTest()
-      : timer_(VSyncTimeSource::create(&provider_)) {
+  VSyncTimeSourceTest() : timer_(VSyncTimeSource::create(&provider_)) {
     timer_->SetClient(&client_);
   }
 
@@ -44,8 +42,7 @@ class VSyncTimeSourceTest : public testing::Test {
   scoped_refptr<VSyncTimeSource> timer_;
 };
 
-TEST_F(VSyncTimeSourceTest, TaskPostedAndTickCalled)
-{
+TEST_F(VSyncTimeSourceTest, TaskPostedAndTickCalled) {
   EXPECT_FALSE(provider_.IsVSyncNotificationEnabled());
 
   timer_->SetActive(true);
@@ -57,8 +54,7 @@ TEST_F(VSyncTimeSourceTest, TaskPostedAndTickCalled)
   EXPECT_EQ(timer_->LastTickTime(), frame_time);
 }
 
-TEST_F(VSyncTimeSourceTest, NotificationDisabledLazily)
-{
+TEST_F(VSyncTimeSourceTest, NotificationDisabledLazily) {
   base::TimeTicks frame_time = base::TimeTicks::Now();
 
   // Enable timer and trigger sync once.
@@ -84,8 +80,7 @@ TEST_F(VSyncTimeSourceTest, NotificationDisabledLazily)
   EXPECT_FALSE(client_.tickCalled());
 }
 
-TEST_F(VSyncTimeSourceTest, ValidNextTickTime)
-{
+TEST_F(VSyncTimeSourceTest, ValidNextTickTime) {
   base::TimeTicks frame_time = base::TimeTicks::Now();
   base::TimeDelta interval = base::TimeDelta::FromSeconds(1);
 
