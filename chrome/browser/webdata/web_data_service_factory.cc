@@ -4,17 +4,32 @@
 
 #include "chrome/browser/webdata/web_data_service_factory.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/common/chrome_constants.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+
+namespace {
+
+// Callback to show error dialog on profile load error.
+void ProfileErrorCallback(sql::InitStatus status) {
+  ShowProfileErrorDialog(
+      (status == sql::INIT_FAILURE) ?
+      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+}
+
+}  // namespace
 
 WebDataServiceWrapper::WebDataServiceWrapper() {}
 
 WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath path = profile->GetPath();
   path = path.Append(chrome::kWebDataFilename);
-  web_data_service_ = new WebDataService();
+  web_data_service_ = new WebDataService(base::Bind(&ProfileErrorCallback));
   web_data_service_->Init(path);
 }
 

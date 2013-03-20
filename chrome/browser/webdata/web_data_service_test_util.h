@@ -55,7 +55,8 @@ class MockWebDataServiceWrapperBase : public WebDataServiceWrapper {
 // serve it up via GetWebData().
 class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
  public:
-  MockWebDataServiceWrapper(scoped_refptr<WebDataService> fake_service);
+  explicit MockWebDataServiceWrapper(
+      scoped_refptr<WebDataService> fake_service);
   virtual ~MockWebDataServiceWrapper();
 
   virtual scoped_refptr<WebDataService> GetWebData() OVERRIDE;

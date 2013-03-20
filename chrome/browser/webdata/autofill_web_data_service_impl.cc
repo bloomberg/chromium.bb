@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
+AutofillWebDataService::AutofillWebDataService()
+    : WebDataServiceBase(WebDataServiceBase::ProfileErrorCallback()) {
+}
+
 AutofillWebDataServiceImpl::AutofillWebDataServiceImpl(
     scoped_refptr<WebDataService> service)
     : service_(service) {

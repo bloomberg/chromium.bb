@@ -107,7 +107,7 @@ class WebDataService
   static scoped_refptr<WebDataService> FromBrowserContext(
       content::BrowserContext* context);
 
-  WebDataService();
+  explicit WebDataService(const ProfileErrorCallback& callback);
 
   // WebDataServiceBase implementation.
   virtual void ShutdownOnUIThread() OVERRIDE;
@@ -305,6 +305,9 @@ class WebDataService
   friend class TemplateURLServiceTestingProfile;
   friend class WebDataServiceTest;
   friend class WebDataRequest;
+
+  // For unit tests, passes a null callback.
+  WebDataService();
 
   virtual ~WebDataService();
 

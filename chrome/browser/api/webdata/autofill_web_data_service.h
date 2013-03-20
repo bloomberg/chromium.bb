@@ -16,6 +16,10 @@ class AutofillWebDataService
     : public AutofillWebData,
       public WebDataServiceBase {
  public:
+  // TODO(joi): This should take a ProfileErrorCallback once this
+  // class doesn't simply delegate to WebDataService.
+  AutofillWebDataService();
+
   // Retrieve an AutofillWebDataService for the given context.
   //
   // Can return NULL in some contexts.

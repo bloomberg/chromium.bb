@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_BASE_H_
 #define CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_BASE_H_
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,7 +28,16 @@ class WebDataServiceBase
   // All requests return an opaque handle of the following type.
   typedef int Handle;
 
-  WebDataServiceBase();
+  // Users of this class may provide a callback to handle errors
+  // (e.g. by showing a UI). The callback is called only on error, and
+  // takes a single parameter, the sql::InitStatus value from trying
+  // to open the database.
+  // TODO(joi): Should we combine this with WebDatabaseService::InitCallback?
+  typedef base::Callback<void(sql::InitStatus)> ProfileErrorCallback;
+
+  // |callback| will only be invoked on error, and only if
+  // |callback.is_null()| evaluates to false.
+  explicit WebDataServiceBase(const ProfileErrorCallback& callback);
 
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.
@@ -73,6 +83,8 @@ class WebDataServiceBase
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebDataServiceBase>;
+
+  ProfileErrorCallback profile_error_callback_;
 
   void DBInitFailed(sql::InitStatus sql_status);
   void NotifyDatabaseLoadedOnUIThread();

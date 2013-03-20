@@ -63,8 +63,9 @@ WDKeywordsResult::WDKeywordsResult()
 
 WDKeywordsResult::~WDKeywordsResult() {}
 
-WebDataService::WebDataService()
-    : autocomplete_syncable_service_(NULL),
+WebDataService::WebDataService(const ProfileErrorCallback& callback)
+    : WebDataServiceBase(callback),
+      autocomplete_syncable_service_(NULL),
       autofill_profile_syncable_service_(NULL) {
 }
 
@@ -273,6 +274,12 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
   wdbs_->ScheduleDBTask(FROM_HERE, Bind(
       &WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl,
       this, delete_begin, delete_end));
+}
+
+WebDataService::WebDataService()
+    : WebDataServiceBase(ProfileErrorCallback()),
+      autocomplete_syncable_service_(NULL),
+      autofill_profile_syncable_service_(NULL) {
 }
 
 WebDataService::~WebDataService() {

@@ -76,7 +76,7 @@ class WebDataServiceTest : public testing::Test {
     db_thread_.Start();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    wds_ = new WebDataService();
+    wds_ = new WebDataService(WebDataServiceBase::ProfileErrorCallback());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
     wds_->Init(path);
   }

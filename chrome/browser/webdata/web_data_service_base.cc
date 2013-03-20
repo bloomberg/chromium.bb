@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/web_database_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -19,8 +18,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -32,8 +29,9 @@ using base::Bind;
 using base::Time;
 using content::BrowserThread;
 
-WebDataServiceBase::WebDataServiceBase()
-    : db_loaded_(false) {
+WebDataServiceBase::WebDataServiceBase(const ProfileErrorCallback& callback)
+    : db_loaded_(false),
+      profile_error_callback_(callback) {
   // WebDataService requires DB thread if instantiated.
   // Set WebDataServiceFactory::GetInstance()->SetTestingFactory(&profile, NULL)
   // if you do not want to instantiate WebDataService in your test.
@@ -93,9 +91,8 @@ WebDataServiceBase::~WebDataServiceBase() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void WebDataServiceBase::DBInitFailed(sql::InitStatus sql_status) {
-  ShowProfileErrorDialog(
-      (sql_status == sql::INIT_FAILURE) ?
-      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+  if (!profile_error_callback_.is_null())
+    profile_error_callback_.Run(sql_status);
 }
 
 void WebDataServiceBase::NotifyDatabaseLoadedOnUIThread() {
