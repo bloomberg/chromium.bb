@@ -3,27 +3,19 @@
   "pages": [
     {
       "url": "file:///tough_texture_upload_cases/background_color_animation.html",
-      "smoothness": {
-          "action": "scrolling_action"
-      }
+      "smoothness": { "action": "scroll" }
     },
     {
       "url": "file:///tough_texture_upload_cases/background_color_animation_and_transform_animation.html",
-      "smoothness": {
-          "action": "scrolling_action"
-      }
+      "smoothness": { "action": "scroll" }
     },
     {
       "url": "file:///tough_texture_upload_cases/background_color_animation_with_gradient.html",
-      "smoothness": {
-          "action": "scrolling_action"
-      }
+      "smoothness": { "action": "scroll" }
     },
     {
       "url": "file:///tough_texture_upload_cases/background_color_animation_with_gradient_and_transform_animation.html",
-      "smoothness": {
-          "action": "scrolling_action"
-      }
+      "smoothness": { "action": "scroll" }
     }
   ]
 }

@@ -1,9 +1,7 @@
 {
-    "description": "RoboHornet Pro benchmark",
-    "archive_data_file": "../data/robohornetpro.json",
-    "pages": [
-        {
-            "url": "http://ie.microsoft.com/testdrive/performance/robohornetpro/"
-        }
-    ]
+  "description": "RoboHornet Pro benchmark",
+  "archive_data_file": "../data/robohornetpro.json",
+  "pages": [
+    { "url": "http://ie.microsoft.com/testdrive/performance/robohornetpro/" }
+  ]
 }

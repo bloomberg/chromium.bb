@@ -4,38 +4,22 @@
     {
       "url": "file:///tough_animation_cases/keyframed_animations.html",
       "why": "Tests various keyframed animations.",
-      "smoothness": {
-        "action": "wait_action",
-        "condition": "duration",
-        "seconds": 5
-      }
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
     },
     {
       "url": "file:///tough_animation_cases/transform_transitions.html",
       "why": "Tests various transitions.",
-      "smoothness": {
-        "action": "wait_action",
-        "condition": "duration",
-        "seconds": 5
-      }
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
     },
     {
       "url": "http://ie.microsoft.com/testdrive/performance/robohornetpro/",
       "why": "Login page is slow because of ineffecient transform operations",
-      "smoothness": {
-        "action": "wait_action",
-        "condition": "duration",
-        "seconds": 5
-      }
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
     },
     {
       "url": "file:///tough_animation_cases/transform_transition_js_block.html",
       "why": "JS execution blocks CSS transition unless initial transform is set",
-      "smoothness": {
-        "action": "wait_action",
-        "condition": "duration",
-        "seconds": 5
-      }
+      "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 }
     }
   ]
 }

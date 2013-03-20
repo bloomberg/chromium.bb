@@ -9,8 +9,7 @@ class MemoryBenchmarkUnitTest(
 
   def testMemoryBenchmark(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('page_with_link.html')
-    ps.pages[0].stress_memory = {'action': 'click_element_action',
-                                 'text': 'Click me'}
+    ps.pages[0].stress_memory = {'action': 'click_element', 'text': 'Click me'}
 
     benchmark = memory_benchmark.MemoryBenchmark()
     all_results = self.RunBenchmark(benchmark, ps)
