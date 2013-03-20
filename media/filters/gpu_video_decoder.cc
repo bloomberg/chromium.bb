@@ -138,7 +138,7 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
     bool hw_large_video_support =
         cpu.vendor_name() == "GenuineIntel" && cpu.model() >= 58;
     bool os_large_video_support = true;
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
     os_large_video_support = false;
 #endif
     if (!(os_large_video_support && hw_large_video_support)) {
