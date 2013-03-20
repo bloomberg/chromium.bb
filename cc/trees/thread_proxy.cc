@@ -288,8 +288,8 @@ void ThreadProxy::CollectRenderingStats(RenderingStats* stats) {
                  impl_thread_weak_ptr_,
                  &completion,
                  stats));
-  stats->total_commit_time = total_commit_time_;
-  stats->total_commit_count = total_commit_count_;
+  stats->totalCommitTime = total_commit_time_;
+  stats->totalCommitCount = total_commit_count_;
 
   completion.Wait();
 }

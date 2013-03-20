@@ -891,7 +891,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
       base::TimeDelta paint_time =
           base::TimeTicks::HighResNow() - paint_begin_ticks;
       if (!is_accelerated_compositing_active_)
-        software_stats_.total_paint_time += paint_time;
+        software_stats_.totalPaintTime += paint_time;
     }
   } else {
     // Normal painting case.
@@ -905,7 +905,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
       base::TimeDelta paint_time =
           base::TimeTicks::HighResNow() - paint_begin_ticks;
       if (!is_accelerated_compositing_active_)
-        software_stats_.total_paint_time += paint_time;
+        software_stats_.totalPaintTime += paint_time;
     }
 
     // Flush to underlying bitmap.  TODO(darin): is this needed?
@@ -917,8 +917,8 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
 
   if (kEnableGpuBenchmarking) {
     int64 num_pixels_processed = rect.width() * rect.height();
-    software_stats_.total_pixels_painted += num_pixels_processed;
-    software_stats_.total_pixels_rasterized += num_pixels_processed;
+    software_stats_.totalPixelsPainted += num_pixels_processed;
+    software_stats_.totalPixelsRasterized += num_pixels_processed;
   }
 }
 
@@ -1122,8 +1122,8 @@ void RenderWidget::DoDeferredUpdate() {
   last_do_deferred_update_time_ = frame_begin_ticks;
 
   if (!is_accelerated_compositing_active_) {
-    software_stats_.animation_frame_count++;
-    software_stats_.screen_frame_count++;
+    software_stats_.numAnimationFrames++;
+    software_stats_.numFramesSentToScreen++;
   }
 
   // OK, save the pending update to a local since painting may cause more
@@ -2190,18 +2190,18 @@ void RenderWidget::GetRenderingStats(
   if (compositor_)
     compositor_->GetRenderingStats(&stats.rendering_stats);
 
-  stats.rendering_stats.animation_frame_count +=
-      software_stats_.animation_frame_count;
-  stats.rendering_stats.screen_frame_count +=
-      software_stats_.screen_frame_count;
-  stats.rendering_stats.total_paint_time +=
-      software_stats_.total_paint_time;
-  stats.rendering_stats.total_pixels_painted +=
-      software_stats_.total_pixels_painted;
-  stats.rendering_stats.total_rasterize_time +=
-      software_stats_.total_rasterize_time;
-  stats.rendering_stats.total_pixels_rasterized +=
-      software_stats_.total_pixels_rasterized;
+  stats.rendering_stats.numAnimationFrames +=
+      software_stats_.numAnimationFrames;
+  stats.rendering_stats.numFramesSentToScreen +=
+      software_stats_.numFramesSentToScreen;
+  stats.rendering_stats.totalPaintTime +=
+      software_stats_.totalPaintTime;
+  stats.rendering_stats.totalPixelsPainted +=
+      software_stats_.totalPixelsPainted;
+  stats.rendering_stats.totalRasterizeTime +=
+      software_stats_.totalRasterizeTime;
+  stats.rendering_stats.totalPixelsRasterized +=
+      software_stats_.totalPixelsRasterized;
 }
 
 bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {

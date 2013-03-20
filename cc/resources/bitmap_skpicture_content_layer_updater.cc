@@ -36,7 +36,7 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
     paint_begin_time = base::TimeTicks::Now();
   updater_->PaintContentsRect(&canvas, source_rect, stats);
   if (stats)
-    stats->total_paint_time += base::TimeTicks::Now() - paint_begin_time;
+    stats->totalPaintTime += base::TimeTicks::Now() - paint_begin_time;
 
   ResourceUpdate upload = ResourceUpdate::Create(
       texture(), &bitmap_, source_rect, source_rect, dest_offset);
@@ -77,8 +77,8 @@ void BitmapSkPictureContentLayerUpdater::PaintContentsRect(
     rasterize_begin_time = base::TimeTicks::Now();
   DrawPicture(canvas);
   if (stats) {
-    stats->total_rasterize_time += base::TimeTicks::Now() - rasterize_begin_time;
-    stats->total_pixels_rasterized += source_rect.width() * source_rect.height();
+    stats->totalRasterizeTime += base::TimeTicks::Now() - rasterize_begin_time;
+    stats->totalPixelsRasterized += source_rect.width() * source_rect.height();
   }
 }
 

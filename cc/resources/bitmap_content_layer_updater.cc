@@ -60,7 +60,7 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
   }
 
   if (stats) {
-    stats->total_pixels_rasterized +=
+    stats->totalPixelsRasterized +=
         content_rect.width() * content_rect.height();
   }
 

@@ -58,8 +58,8 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
     paint_begin_time = base::TimeTicks::Now();
   painter_->Paint(canvas, layer_rect, &opaque_layer_rect);
   if (stats) {
-    stats->total_paint_time += base::TimeTicks::Now() - paint_begin_time;
-    stats->total_pixels_painted += content_rect.width() * content_rect.height();
+    stats->totalPaintTime += base::TimeTicks::Now() - paint_begin_time;
+    stats->totalPixelsPainted += content_rect.width() * content_rect.height();
   }
   canvas->restore();
 
