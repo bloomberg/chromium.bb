@@ -21,33 +21,60 @@
 #include "ui/gfx/image/image.h"
 
 @interface FakeEditSearchEngineController : EditSearchEngineCocoaController
-@property(nonatomic, readonly) NSTextField* nameField;
-@property(nonatomic, readonly) NSTextField* keywordField;
-@property(nonatomic, readonly) NSTextField* urlField;
-@property(nonatomic, readonly) NSImageView* nameImage;
-@property(nonatomic, readonly) NSImageView* keywordImage;
-@property(nonatomic, readonly) NSImageView* urlImage;
-@property(nonatomic, readonly) NSButton* doneButton;
-@property(nonatomic, readonly) NSImage* goodImage;
-@property(nonatomic, readonly) NSImage* badImage;
+
+- (NSTextField*)nameField;
+- (NSTextField*)keywordField;
+- (NSTextField*)urlField;
+- (NSImageView*)nameImage;
+- (NSImageView*)keywordImage;
+- (NSImageView*)urlImage;
+- (NSButton*)doneButton;
+
+- (NSImage*)goodImage;
+- (NSImage*)badImage;
+
 @end
 
 @implementation FakeEditSearchEngineController
-@synthesize nameField = nameField_;
-@synthesize keywordField = keywordField_;
-@synthesize urlField = urlField_;
-@synthesize nameImage = nameImage_;
-@synthesize keywordImage = keywordImage_;
-@synthesize urlImage = urlImage_;
-@synthesize doneButton = doneButton_;
+
+- (NSTextField*)nameField {
+  return nameField_;
+}
+
+- (NSTextField*)keywordField {
+  return keywordField_;
+}
+
+- (NSTextField*)urlField {
+  return urlField_;
+}
+
+- (NSImageView*)nameImage {
+  return nameImage_;
+}
+
+- (NSImageView*)keywordImage {
+  return keywordImage_;
+}
+
+- (NSImageView*)urlImage {
+  return urlImage_;
+}
+
+- (NSButton*)doneButton {
+  return doneButton_;
+}
+
 - (NSImage*)goodImage {
   ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(IDR_INPUT_GOOD).ToNSImage();
 }
+
 - (NSImage*)badImage {
   ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(IDR_INPUT_ALERT).ToNSImage();
 }
+
 @end
 
 namespace {
