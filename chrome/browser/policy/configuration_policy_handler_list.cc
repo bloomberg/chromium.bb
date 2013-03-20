@@ -328,6 +328,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kHideWebStoreIcon,
     prefs::kHideWebStoreIcon,
     Value::TYPE_BOOLEAN },
+  { key::kVariationsRestrictParameter,
+    prefs::kVariationsRestrictParameter,
+    Value::TYPE_STRING },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

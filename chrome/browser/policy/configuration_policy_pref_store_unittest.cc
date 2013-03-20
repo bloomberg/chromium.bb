@@ -156,7 +156,9 @@ INSTANTIATE_TEST_CASE_P(
         PolicyAndPref(key::kGSSAPILibraryName,
                       prefs::kGSSAPILibraryName),
         PolicyAndPref(key::kDiskCacheDir,
-                      prefs::kDiskCacheDir)));
+                      prefs::kDiskCacheDir),
+        PolicyAndPref(key::kVariationsRestrictParameter,
+                      prefs::kVariationsRestrictParameter)));
 
 #if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

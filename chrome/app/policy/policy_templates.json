@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 195
+#   For your editing convenience: highest ID currently used: 196
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4434,6 +4434,25 @@
       When this policy is set to false, no automatic reboot is scheduled after applying a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update. The update process is completed when the user next reboots the device.
 
       If you set this policy, users cannot change or override it.''',
+    },
+    {
+      'name': 'VariationsRestrictParameter',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:27-', 'chrome_os:27-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'restricted',
+      'id': 196,
+      'future': True,
+      'caption': '''Set the restriction on the fetching of the Variations seed''',
+      'desc': '''Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
+
+      If not specified, will not modify the Variations seed URL.''',
     },
   ],
   'messages': {
