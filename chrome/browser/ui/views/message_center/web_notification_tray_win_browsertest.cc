@@ -166,8 +166,10 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, WebNotificationPopupBubble) {
 
 using message_center::NotificationList;
 
+// Mark as FLAKY due to a performance issue.
+// TODO(mukai): enable it when crrev.com/12782008 is done.
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest,
-                       ManyMessageCenterNotifications) {
+                       FLAKY_ManyMessageCenterNotifications) {
   scoped_ptr<WebNotificationTrayWin> tray(new WebNotificationTrayWin());
   message_center::MessageCenter* message_center = tray->message_center();
   scoped_ptr<TestDelegate> delegate(new TestDelegate(message_center));
