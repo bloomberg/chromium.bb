@@ -13,8 +13,6 @@ DriveResourceMetadataStorageMemory::DriveResourceMetadataStorageMemory() {
 }
 
 DriveResourceMetadataStorageMemory::~DriveResourceMetadataStorageMemory() {
-  DCHECK(resource_map_.empty());
-  DCHECK(child_maps_.empty());
 }
 
 void DriveResourceMetadataStorageMemory::PutEntry(

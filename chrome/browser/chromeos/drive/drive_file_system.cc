@@ -218,12 +218,14 @@ DriveFileSystem::DriveFileSystem(
     google_apis::DriveServiceInterface* drive_service,
     google_apis::DriveUploaderInterface* uploader,
     DriveWebAppsRegistry* webapps_registry,
+    DriveResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),
       uploader_(uploader),
       drive_service_(drive_service),
       webapps_registry_(webapps_registry),
+      resource_metadata_(resource_metadata),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       last_update_check_error_(DRIVE_FILE_OK),
       hide_hosted_docs_(false),
@@ -237,18 +239,23 @@ DriveFileSystem::DriveFileSystem(
 }
 
 void DriveFileSystem::Reload() {
-  ResetResourceMetadata();
-
-  change_list_loader_->LoadFromServerIfNeeded(
-      DirectoryFetchInfo(),
-      base::Bind(&DriveFileSystem::OnUpdateChecked,
-                 weak_ptr_factory_.GetWeakPtr()));
+  resource_metadata_->Reset(base::Bind(&DriveFileSystem::ReloadAfterReset,
+                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ResetResourceMetadata();
+  SetupChangeListLoader();
+
+  // Allocate the drive operation handlers.
+  drive_operations_.Init(scheduler_.get(),
+                         this,  // DriveFileSystemInterface
+                         cache_,
+                         resource_metadata_,
+                         uploader_,
+                         blocking_task_runner_,
+                         this);  // OperationObserver
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
@@ -258,24 +265,21 @@ void DriveFileSystem::Initialize() {
   InitializePreferenceObserver();
 }
 
-void DriveFileSystem::ResetResourceMetadata() {
-  resource_metadata_.reset(
-      new DriveResourceMetadata(drive_service_->GetRootResourceId(),
-                                blocking_task_runner_));
-  change_list_loader_.reset(new ChangeListLoader(resource_metadata_.get(),
+void DriveFileSystem::ReloadAfterReset() {
+  SetupChangeListLoader();
+
+  change_list_loader_->LoadFromServerIfNeeded(
+      DirectoryFetchInfo(),
+      base::Bind(&DriveFileSystem::OnUpdateChecked,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveFileSystem::SetupChangeListLoader() {
+  change_list_loader_.reset(new ChangeListLoader(resource_metadata_,
                                                  scheduler_.get(),
                                                  webapps_registry_,
                                                  cache_));
   change_list_loader_->AddObserver(this);
-
-  // Allocate the drive operation handlers.
-  drive_operations_.Init(scheduler_.get(),
-                         this,  // DriveFileSystemInterface
-                         cache_,
-                         resource_metadata_.get(),
-                         uploader_,
-                         blocking_task_runner_,
-                         this);  // OperationObserver
 }
 
 void DriveFileSystem::CheckForUpdates() {

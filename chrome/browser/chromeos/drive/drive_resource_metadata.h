@@ -136,9 +136,16 @@ class DriveResourceMetadata {
       const std::string& root_resource_id,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
+  // Initializes this object.
+  // This method should be called before any other methods.
+  void Initialize(const FileOperationCallback& callback);
+
   // Destroys this object.  This method posts a task to |blocking_task_runner_|
   // to safely delete this object.
   void Destroy();
+
+  // Resets this object.
+  void Reset(const base::Closure& callback);
 
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
@@ -241,9 +248,6 @@ class DriveResourceMetadata {
 
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
-
-  // Clears root_ and the resource map.
-  void ClearRoot();
 
   // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
   // asynchronously fetched. This fetches the second DriveEntry only if the

@@ -153,6 +153,12 @@ class DriveResourceMetadataTest : public testing::Test {
 
 // static
 void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata->Initialize(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+
   int sequence_id = 1;
   ASSERT_TRUE(AddDriveEntryProto(
       resource_metadata, sequence_id++, true, kTestRootResourceId));
@@ -178,7 +184,6 @@ void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
   ASSERT_TRUE(AddDriveEntryProto(
       resource_metadata, sequence_id++, false, "resource_id:dir3"));
 
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata->SetLargestChangestamp(
       kTestChangestamp,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
@@ -249,6 +254,12 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
                                                   blocking_task_runner_));
 
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata->Initialize(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+
   std::string serialized_proto;
   EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is empty.
@@ -281,9 +292,13 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
                                                   blocking_task_runner_));
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata->Initialize(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
 
   int64 in_changestamp = 123456;
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata->SetLargestChangestamp(
       in_changestamp,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
@@ -303,8 +318,12 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
                                                   blocking_task_runner_));
-
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata->Initialize(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+
   base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
@@ -1205,8 +1224,12 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_original(new DriveResourceMetadata(
           kTestRootResourceId, blocking_task_runner_));
-
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata_original->Initialize(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+
   resource_metadata_original->SetLargestChangestamp(
       kNewChangestamp,
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -1231,6 +1254,10 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
                                                   blocking_task_runner_));
+  resource_metadata->Initialize(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
 
   // Load. This should propagate the largest changestamp to every directory.
   resource_metadata->Load(
@@ -1267,9 +1294,13 @@ TEST_F(DriveResourceMetadataTest, SaveAndLoad) {
 
   resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId,
                                                      blocking_task_runner_));
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata_->Initialize(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
 
   // Load metadata.
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata_->Load(
       temp_dir_.path(),
       google_apis::test_util::CreateCopyResultCallback(&error));

@@ -62,6 +62,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                   google_apis::DriveServiceInterface* drive_service,
                   google_apis::DriveUploaderInterface* uploader,
                   DriveWebAppsRegistry* webapps_registry,
+                  DriveResourceMetadata* resource_metadata,
                   base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveFileSystem();
 
@@ -171,9 +172,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
 
-  // Initializes DriveResourceMetadata and related instances (ChangeListLoader
-  // and DriveOperations). This is a part of the initialization.
-  void ResetResourceMetadata();
+  // Used to implement Reload().
+  void ReloadAfterReset();
+
+  // Sets up ChangeListLoader.
+  void SetupChangeListLoader();
 
   // Called on preference change.
   void OnDisableDriveHostedFilesChanged();
@@ -453,8 +456,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
 
-  scoped_ptr<DriveResourceMetadata, util::DestroyHelper> resource_metadata_;
-
   // The profile hosts the DriveFileSystem via DriveSystemService.
   Profile* profile_;
 
@@ -469,6 +470,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // The webapps registry owned by DriveSystemService.
   DriveWebAppsRegistry* webapps_registry_;
+
+  DriveResourceMetadata* resource_metadata_;
 
   // Periodic timer for checking updates.
   base::Timer update_timer_;

@@ -223,12 +223,17 @@ class DriveFileSystemTest : public testing::Test {
     fake_uploader_.reset(new FakeDriveUploader);
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
+    resource_metadata_.reset(new DriveResourceMetadata(
+        fake_drive_service_->GetRootResourceId(),
+        blocking_task_runner_));
+
     ASSERT_FALSE(file_system_);
     file_system_ = new DriveFileSystem(profile_.get(),
                                        cache_.get(),
                                        fake_drive_service_,
                                        fake_uploader_.get(),
                                        drive_webapps_registry_.get(),
+                                       resource_metadata_.get(),
                                        blocking_task_runner_);
 
     mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
@@ -240,6 +245,12 @@ class DriveFileSystemTest : public testing::Test {
     file_system_->Initialize();
     cache_->RequestInitializeForTesting();
     google_apis::test_util::RunBlockingPoolTask();
+
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    resource_metadata_->Initialize(
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(DRIVE_FILE_OK, error);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -403,6 +414,12 @@ class DriveFileSystemTest : public testing::Test {
                                                     blocking_task_runner_));
 
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    resource_metadata->Initialize(
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
+
     resource_metadata->SetLargestChangestamp(
         param == USE_SERVER_TIMESTAMP ? 654321 : 1,
         google_apis::test_util::CreateCopyResultCallback(&error));
@@ -530,6 +547,8 @@ class DriveFileSystemTest : public testing::Test {
   DriveFileSystem* file_system_;
   google_apis::FakeDriveService* fake_drive_service_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
+  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;

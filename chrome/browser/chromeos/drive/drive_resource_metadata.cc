@@ -255,23 +255,40 @@ DriveResourceMetadata::DriveResourceMetadata(
       largest_changestamp_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void DriveResourceMetadata::Initialize(const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   DriveEntryProto root;
   root.mutable_file_info()->set_is_directory(true);
-  root.set_resource_id(root_resource_id);
+  root.set_resource_id(root_resource_id_);
   root.set_title(util::kDriveGrandRootDirName);
   storage_->PutEntry(CreateEntryWithProperBaseName(root));
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, DRIVE_FILE_OK));
 }
 
 void DriveResourceMetadata::Destroy() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ClearRoot();
   weak_ptr_factory_.InvalidateWeakPtrs();
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveResourceMetadata::DestroyOnBlockingPool,
                  base::Unretained(this)));
+}
+
+void DriveResourceMetadata::Reset(const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  RemoveDirectoryChildren(root_resource_id_);
+  last_serialized_ = base::Time();
+  serialized_size_ = 0;
+  largest_changestamp_ = 0;
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
 }
 
 DriveResourceMetadata::~DriveResourceMetadata() {
@@ -281,15 +298,6 @@ DriveResourceMetadata::~DriveResourceMetadata() {
 void DriveResourceMetadata::DestroyOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   delete this;
-}
-
-void DriveResourceMetadata::ClearRoot() {
-  if (root_resource_id_.empty())
-    return;
-
-  RemoveDirectoryChildren(root_resource_id_);
-  storage_->RemoveEntry(root_resource_id_);
-  root_resource_id_.clear();
 }
 
 void DriveResourceMetadata::GetLargestChangestamp(

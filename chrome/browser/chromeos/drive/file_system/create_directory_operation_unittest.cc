@@ -50,6 +50,12 @@ class CreateDirectoryOperationTest
         new DriveResourceMetadata(fake_drive_service_->GetRootResourceId(),
                                   blocking_task_runner_));
 
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    metadata_->Initialize(
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(DRIVE_FILE_OK, error);
+
     scheduler_.reset(
         new DriveScheduler(profile_.get(), fake_drive_service_.get(), NULL));
     scheduler_->Initialize();
@@ -65,7 +71,6 @@ class CreateDirectoryOperationTest
         metadata_.get(), scheduler_.get(), drive_web_apps_registry_.get(),
         cache_.get()));
 
-    DriveFileError error = DRIVE_FILE_OK;
     change_list_loader_->LoadFromServerIfNeeded(
         DirectoryFetchInfo(),
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,

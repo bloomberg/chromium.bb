@@ -36,6 +36,7 @@ class DriveFileSystemProxy;
 class DriveWebAppsRegistry;
 class DriveSyncClient;
 class DrivePrefetcher;
+class DriveResourceMetadata;
 class EventLogger;
 class FileWriteHelper;
 class StaleCacheFilesRemover;
@@ -109,7 +110,11 @@ class DriveSystemService : public ProfileKeyedService,
 
   // Called when cache initialization is done. Continues initialization if
   // the cache initialization is successful.
-  void OnCacheInitialized(bool success);
+  void InitializeAfterCacheInitialized(bool success);
+
+  // Called when resource metadata initialization is done. Continues
+  // initialization if resource metadata initialization is successful.
+  void InitializeAfterResourceMetadataInitialized(DriveFileError error);
 
   // Disables Drive. Used to disable Drive when needed (ex. initialization of
   // the Drive cache failed).
@@ -131,6 +136,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
+  scoped_ptr<DriveResourceMetadata, util::DestroyHelper> resource_metadata_;
   scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DriveDownloadHandler> download_handler_;
