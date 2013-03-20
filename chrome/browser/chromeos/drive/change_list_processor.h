@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "googleurl/src/gurl.h"
 
 namespace google_apis {
@@ -52,9 +53,9 @@ class ChangeListProcessor {
   // TODO(achuith): Change the type of on_complete_callback to
   // FileOperationCallback instead.
   void ApplyFeeds(
+      scoped_ptr<google_apis::AboutResource> about_resource,
       const ScopedVector<google_apis::ResourceList>& feed_list,
       bool is_delta_feed,
-      int64 root_feed_changestamp,
       const base::Closure& on_complete_callback);
 
   // Converts list of document feeds from collected feeds into a

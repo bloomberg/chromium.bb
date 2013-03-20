@@ -109,12 +109,13 @@ class ChangeListLoader {
   // Record file statistics as UMA histograms.
   //
   // See comments at ChangeListProcessor::ApplyFeeds() for
-  // |is_delta_feed| and |root_feed_changestamp|.
+  // |about_resource| and |is_delta_feed|.
   // |update_finished_callback| must not be null.
-  void UpdateFromFeed(const ScopedVector<google_apis::ResourceList>& feed_list,
-                      bool is_delta_feed,
-                      int64 root_feed_changestamp,
-                      const base::Closure& update_finished_callback);
+  void UpdateFromFeed(
+      scoped_ptr<google_apis::AboutResource> about_resource,
+      const ScopedVector<google_apis::ResourceList>& feed_list,
+      bool is_delta_feed,
+      const base::Closure& update_finished_callback);
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing() const { return refreshing_; }
@@ -188,29 +189,29 @@ class ChangeListLoader {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
-  // Compares |remote_changestamp| and |local_changestamp| and triggers
-  // LoadFromServer if necessary.
+  // Compares the largetst_change_id in |about_resource| and |local_changestamp|
+  // and triggers LoadFromServer if necessary.
   void CompareChangestampsAndLoadIfNeeded(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
-      int64 remote_changestamp,
+      scoped_ptr<google_apis::AboutResource> about_resource,
       int64 local_changestamp);
 
   // Starts loading the change list since |start_changestamp|, or the full
-  // resource list if |start_changestamp| is zero. |remote_changestamp| will
-  // be stored in DriveResourceMetadata, once loading is done.
-  // callback must not be null.
+  // resource list if |start_changestamp| is zero. For full update, the
+  // largest_change_id and root_folder_id from |about_resource| will be used.
+  // |callback| must not be null.
   void LoadChangeListFromServer(
+      scoped_ptr<google_apis::AboutResource> about_resource,
       int64 start_changestamp,
-      int64 remote_changestamp,
       const FileOperationCallback& callback);
 
   // Starts loading the change list from the server. Called after the
   // directory contents are "fast-fetch"ed.
   void StartLoadChangeListFromServer(
     const DirectoryFetchInfo& directory_fetch_info,
+    scoped_ptr<google_apis::AboutResource> about_resource,
     int64 start_changestamp,
-    int64 remote_changestamp,
     const FileOperationCallback& callback,
     DriveFileError error);
 
@@ -226,8 +227,8 @@ class ChangeListLoader {
   // the content of the refreshed directory object and continue initially
   // started FindEntryByPath() request.
   void UpdateMetadataFromFeedAfterLoadFromServer(
+      scoped_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_feed,
-      int64 feed_changestamp,
       const FileOperationCallback& callback,
       const ScopedVector<google_apis::ResourceList>& feed_list,
       DriveFileError error);

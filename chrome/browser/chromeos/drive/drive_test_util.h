@@ -167,6 +167,7 @@ void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
 bool LoadChangeFeed(const std::string& relative_path,
                     ChangeListLoader* change_list_loader,
                     bool is_delta_feed,
+                    const std::string& root_resource_id,
                     int64 root_feed_changestamp);
 
 // Helper to destroy objects which needs Destroy() to be called on destruction.

@@ -70,20 +70,35 @@ ChangeListProcessor::~ChangeListProcessor() {
 }
 
 void ChangeListProcessor::ApplyFeeds(
+    scoped_ptr<google_apis::AboutResource> about_resource,
     const ScopedVector<google_apis::ResourceList>& feed_list,
     bool is_delta_feed,
-    int64 root_feed_changestamp,
     const base::Closure& on_complete_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!on_complete_callback.is_null());
+  DCHECK(is_delta_feed || about_resource.get());
 
   int64 delta_feed_changestamp = 0;
   ChangeListToEntryProtoMapUMAStats uma_stats;
   FeedToEntryProtoMap(feed_list, &delta_feed_changestamp, &uma_stats);
   // Note FeedToEntryProtoMap calls Clear() which resets on_complete_callback_.
   on_complete_callback_ = on_complete_callback;
-  largest_changestamp_ =
-      is_delta_feed ? delta_feed_changestamp : root_feed_changestamp;
+  largest_changestamp_ = 0;
+  if (is_delta_feed) {
+    largest_changestamp_ = delta_feed_changestamp;
+  } else if (about_resource.get()) {
+    largest_changestamp_ = about_resource->largest_change_id();
+
+    DVLOG(1) << "Root folder ID is " << about_resource->root_folder_id();
+    DCHECK(!about_resource->root_folder_id().empty());
+  } else {
+    // A full update without AboutResouce will have no effective changestamp.
+    NOTREACHED();
+  }
+
+  // TODO(haruki): Add pseudo tree structure for "drive"/root" and "drive/other"
+  // when we start using those namespaces. The root folder ID is necessary for
+  // full feed update.
   ApplyEntryProtoMap(is_delta_feed);
 
   // Shouldn't record histograms when processing delta feeds.

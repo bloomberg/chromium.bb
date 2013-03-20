@@ -282,6 +282,7 @@ class DriveFileSystemTest : public testing::Test {
     if (!test_util::LoadChangeFeed(filename,
                                    file_system_->change_list_loader(),
                                    is_delta_feed,
+                                   fake_drive_service_->GetRootResourceId(),
                                    root_feed_changestamp_)) {
       return false;
     }

@@ -115,6 +115,7 @@ class CreateDirectoryOperationTest
     return test_util::LoadChangeFeed(filename,
                                      change_list_loader_.get(),
                                      false,  // is_delta_feed
+                                     fake_drive_service_->GetRootResourceId(),
                                      0);
   }
 

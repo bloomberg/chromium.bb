@@ -202,6 +202,7 @@ void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
 bool LoadChangeFeed(const std::string& relative_path,
                     ChangeListLoader* change_list_loader,
                     bool is_delta_feed,
+                    const std::string& root_resource_id,
                     int64 root_feed_changestamp) {
   scoped_ptr<Value> document =
       google_apis::test_util::LoadJSONFile(relative_path);
@@ -218,10 +219,15 @@ bool LoadChangeFeed(const std::string& relative_path,
   ScopedVector<google_apis::ResourceList> feed_list;
   feed_list.push_back(document_feed.release());
 
+  scoped_ptr<google_apis::AboutResource> about_resource(
+      new google_apis::AboutResource);
+  about_resource->set_largest_change_id(root_feed_changestamp);
+  about_resource->set_root_folder_id(root_resource_id);
+
   change_list_loader->UpdateFromFeed(
+      about_resource.Pass(),
       feed_list,
       is_delta_feed,
-      root_feed_changestamp,
       base::Bind(&base::DoNothing));
   // ChangeListLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
   google_apis::test_util::RunBlockingPoolTask();
