@@ -7,60 +7,89 @@
 
 #include <string>
 
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/cpp/dev/var_dictionary_dev.h"
+#include "ppapi/cpp/extensions/from_var_converter.h"
 #include "ppapi/cpp/extensions/optional.h"
+#include "ppapi/cpp/extensions/to_var_converter.h"
+#include "ppapi/cpp/var.h"
 
 namespace pp {
-
-class Var;
-
 namespace ext {
 
 template <class T>
 class DictField {
  public:
-  explicit DictField(const std::string& in_key) : key(in_key), value() {
+  explicit DictField(const std::string& key) : key_(key), value_() {
   }
 
   ~DictField() {
   }
 
+  const std::string& key() const { return key_; }
+
+  T& value() { return value_; }
+  const T& value() const { return value_; }
+
   // Adds this field to the dictionary var.
-  bool AddTo(Var* /* var */) const {
-    // TODO(yzshen): change Var to DictionaryVar and add support.
+  bool AddTo(VarDictionary_Dev* dict) const {
+    if (!dict)
+      return false;
+
+    internal::ToVarConverter<T> converter(value_);
+    return PP_ToBool(dict->Set(Var(key_), converter.var()));
+  }
+
+  bool Populate(const VarDictionary_Dev& dict) {
+    Var value_var = dict.Get(Var(key_));
+    if (value_var.is_undefined())
+      return false;
+
+    internal::FromVarConverter<T> converter(value_var.pp_var());
+    value_ = converter.value();
     return true;
   }
 
-  bool Populate(const Var& /* var */) {
-    // TODO(yzshen): change Var to DictionaryVar and add support.
-    return true;
-  }
-
-  const std::string key;
-  T value;
+ private:
+  std::string key_;
+  T value_;
 };
 
 template <class T>
 class OptionalDictField {
  public:
-  explicit OptionalDictField(const std::string& in_key) : key(in_key) {
+  explicit OptionalDictField(const std::string& key) : key_(key) {
   }
 
   ~OptionalDictField() {
   }
 
+  const std::string& key() const { return key_; }
+
+  Optional<T>& value() { return value_; }
+  const Optional<T>& value() const { return value_; }
+
   // Adds this field to the dictionary var, if |value| has been set.
-  bool MayAddTo(Var* /* var */) const {
-    // TODO(yzshen): change Var to DictionaryVar and add support
+  bool MayAddTo(VarDictionary_Dev* dict) const {
+    if (!dict)
+      return false;
+    if (!value_.IsSet())
+      return true;
+
+    internal::ToVarConverter<T> converter(*value_);
+    return PP_ToBool(dict->Set(Var(key_), converter.var()));
+  }
+
+  bool Populate(const VarDictionary_Dev& dict) {
+    Var value_var = dict.Get(Var(key_));
+    internal::FromVarConverter<Optional<T> > converter(value_var.pp_var());
+    value_.Swap(&converter.value());
     return true;
   }
 
-  bool Populate(const Var& /* var */) {
-    // TODO(yzshen): change Var to DictionaryVar and add support.
-    return true;
-  }
-
-  const std::string key;
-  Optional<T> value;
+ private:
+  std::string key_;
+  Optional<T> value_;
 };
 
 }  // namespace ext

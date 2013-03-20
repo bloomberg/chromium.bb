@@ -6,6 +6,7 @@
 #define PPAPI_CPP_DEV_VAR_DICTIONARY_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/cpp/dev/var_array_dev.h"
 #include "ppapi/cpp/var.h"
 
 /// @file
@@ -24,6 +25,12 @@ class VarDictionary_Dev : public Var {
   ///
   /// @param[in] var A dictionary var.
   explicit VarDictionary_Dev(const Var& var);
+
+  /// Contructs a <code>VarDictionary_Dev</code> given a <code>PP_Var</code>
+  /// of type PP_VARTYPE_DICTIONARY.
+  ///
+  /// @param[in] var A <code>PP_Var</code> of type PP_VARTYPE_DICTIONARY.
+  explicit VarDictionary_Dev(const PP_Var& var);
 
   /// Copy constructor.
   VarDictionary_Dev(const VarDictionary_Dev& other);
@@ -77,9 +84,8 @@ class VarDictionary_Dev : public Var {
   /// Gets all the keys in the dictionary.
   ///
   /// @return An array var which contains all the keys of the dictionary.
-  /// The elements are string vars. Returns a null var if failed.
-  /// TODO(yzshen): Change Var to VarArray_Dev once it is supported.
-  Var GetKeys() const;
+  /// The elements are string vars. Returns an empty array var if failed.
+  VarArray_Dev GetKeys() const;
 };
 
 }  // namespace pp

@@ -34,6 +34,15 @@ VarDictionary_Dev::VarDictionary_Dev(const Var& var) : Var(var) {
   }
 }
 
+VarDictionary_Dev::VarDictionary_Dev(const PP_Var& var) : Var(var) {
+  if (var.type != PP_VARTYPE_DICTIONARY) {
+    PP_NOTREACHED();
+
+    // This takes care of releasing the reference that this object holds.
+    Var::operator=(Var(Null()));
+  }
+}
+
 VarDictionary_Dev::VarDictionary_Dev(const VarDictionary_Dev& other)
     : Var(other) {
 }
@@ -86,12 +95,16 @@ PP_Bool VarDictionary_Dev::HasKey(const Var& key) const {
   return get_interface<PPB_VarDictionary_Dev_0_1>()->HasKey(var_, key.pp_var());
 }
 
-Var VarDictionary_Dev::GetKeys() const {
+VarArray_Dev VarDictionary_Dev::GetKeys() const {
   if (!has_interface<PPB_VarDictionary_Dev_0_1>())
-    return Var(Null());
+    return VarArray_Dev();
 
-  return Var(PASS_REF,
+  Var result(PASS_REF,
              get_interface<PPB_VarDictionary_Dev_0_1>()->GetKeys(var_));
+  if (result.is_array())
+    return VarArray_Dev(result);
+  else
+    return VarArray_Dev();
 }
 
 }  // namespace pp

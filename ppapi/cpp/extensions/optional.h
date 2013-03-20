@@ -81,6 +81,12 @@ class Optional {
     delete value;
   }
 
+  void Swap(Optional<T>* other) {
+    T* temp = value_;
+    value_ = other->value_;
+    other->value_ = temp;
+  }
+
  private:
   T* value_;
 };

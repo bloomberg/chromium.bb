@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/dev/var_array_dev.h"
 #include "ppapi/cpp/extensions/from_var_converter.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/pass_ref.h"
@@ -42,7 +43,8 @@ class VarOutputAdapterWithStorage {
   PP_Var& pp_var() { return pp_var_; }
 
   T& output() {
-    converter_.Set(PASS_REF, pp_var_);
+    Var auto_release(PASS_REF, pp_var_);
+    converter_.Set(pp_var_);
     pp_var_ = PP_MakeUndefined();
     return converter_.value();
   }
@@ -92,10 +94,18 @@ class ArrayVarOutputAdapterWithStorage {
   std::vector<T>& output() {
     PP_DCHECK(output_storage_.empty());
 
-    // TODO(yzshen): Add support for ArrayVar and read the contents from
-    // |pp_var_| and put into |output_storage_|.
-    Var auto_release(PASS_REF, pp_var_);
+    Var var(PASS_REF, pp_var_);
     pp_var_ = PP_MakeUndefined();
+    if (var.is_array()) {
+      VarArray_Dev array(var);
+
+      uint32_t length = array.GetLength();
+      output_storage_.reserve(length);
+      for (uint32_t i = 0; i < length; ++i) {
+        FromVarConverter<T> converter(array.Get(i).pp_var());
+        output_storage_.push_back(converter.value());
+      }
+    }
 
     return output_storage_;
   }

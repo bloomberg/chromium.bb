@@ -5,8 +5,10 @@
 #include "ppapi/cpp/extensions/dev/alarms_dev.h"
 
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/extensions/to_var_converter.h"
+#include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module_impl.h"
 
 namespace pp {
@@ -36,23 +38,26 @@ Alarm_Dev::~Alarm_Dev() {
 }
 
 bool Alarm_Dev::Populate(const PP_Ext_Alarms_Alarm_Dev& value) {
-  Var var(value);
+  if (value.type != PP_VARTYPE_DICTIONARY)
+    return false;
 
-  bool result = name.Populate(var);
-  result = scheduled_time.Populate(var) && result;
-  result = period_in_minutes.Populate(var) && result;
+  VarDictionary_Dev dict(value);
+  bool result = name.Populate(dict);
+  result = scheduled_time.Populate(dict) && result;
+  result = period_in_minutes.Populate(dict) && result;
 
   return result;
 }
 
 Var Alarm_Dev::CreateVar() const {
-  Var var;
+  VarDictionary_Dev dict;
 
-  name.AddTo(&var);
-  scheduled_time.AddTo(&var);
-  period_in_minutes.MayAddTo(&var);
+  bool result = name.AddTo(&dict);
+  result = scheduled_time.AddTo(&dict) && result;
+  result = period_in_minutes.MayAddTo(&dict) && result;
+  PP_DCHECK(result);
 
-  return var;
+  return dict;
 }
 
 const char* const AlarmCreateInfo_Dev::kWhen = "when";
@@ -70,23 +75,26 @@ AlarmCreateInfo_Dev::~AlarmCreateInfo_Dev() {
 
 bool AlarmCreateInfo_Dev::Populate(
     const PP_Ext_Alarms_AlarmCreateInfo_Dev& value) {
-  Var var(value);
+  if (value.type != PP_VARTYPE_DICTIONARY)
+    return false;
 
-  bool result = when.Populate(var);
-  result = delay_in_minutes.Populate(var) && result;
-  result = period_in_minutes.Populate(var) && result;
+  VarDictionary_Dev dict(value);
+  bool result = when.Populate(dict);
+  result = delay_in_minutes.Populate(dict) && result;
+  result = period_in_minutes.Populate(dict) && result;
 
   return result;
 }
 
 Var AlarmCreateInfo_Dev::CreateVar() const {
-  Var var;
+  VarDictionary_Dev dict;
 
-  when.MayAddTo(&var);
-  delay_in_minutes.MayAddTo(&var);
-  period_in_minutes.MayAddTo(&var);
+  bool result = when.MayAddTo(&dict);
+  result = delay_in_minutes.MayAddTo(&dict) && result;
+  result = period_in_minutes.MayAddTo(&dict) && result;
+  PP_DCHECK(result);
 
-  return var;
+  return dict;
 }
 
 Alarms_Dev::Alarms_Dev(const InstanceHandle& instance) : instance_(instance) {

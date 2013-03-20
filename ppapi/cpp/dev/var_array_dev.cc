@@ -34,6 +34,15 @@ VarArray_Dev::VarArray_Dev(const Var& var) : Var(var) {
   }
 }
 
+VarArray_Dev::VarArray_Dev(const PP_Var& var) : Var(var) {
+  if (var.type != PP_VARTYPE_ARRAY) {
+    PP_NOTREACHED();
+
+    // This takes care of releasing the reference that this object holds.
+    Var::operator=(Var(Null()));
+  }
+}
+
 VarArray_Dev::VarArray_Dev(const VarArray_Dev& other) : Var(other) {
 }
 

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/logging.h"
-#include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/var.h"
 
 namespace pp {
@@ -41,19 +41,41 @@ class FromVarConverter : public FromVarConverterBase<T> {
   }
 
   FromVarConverter(const PP_Var& var) {
-    Set(PASS_REF, Var(var).Detach());
+    Set(var);
   }
 
   ~FromVarConverter() {
   }
 
-  void Set(PassRef pass_ref, const PP_Var& var) {
-    Var auto_release(pass_ref, var);
-
+  void Set(const PP_Var& var) {
     bool succeeded = FromVarConverterBase<T>::value_.Populate(var);
     // Suppress unused variable warnings.
     static_cast<void>(succeeded);
     PP_DCHECK(succeeded);
+  }
+};
+
+template <class T>
+class FromVarConverter<Optional<T> >
+    : public FromVarConverterBase<Optional<T> > {
+ public:
+  FromVarConverter() {
+  }
+
+  FromVarConverter(const PP_Var& var) {
+    Set(var);
+  }
+
+  ~FromVarConverter() {
+  }
+
+  void Set(const PP_Var& var) {
+    if (var.type == PP_VARTYPE_UNDEFINED) {
+      FromVarConverterBase<Optional<T> >::value_.Reset();
+    } else {
+      FromVarConverter<T> converter(var);
+      FromVarConverterBase<Optional<T> >::value_ = converter.value();
+    }
   }
 };
 
@@ -64,14 +86,14 @@ class FromVarConverter<std::string> : public FromVarConverterBase<std::string> {
   }
 
   FromVarConverter(const PP_Var& var) {
-    Set(PASS_REF, Var(var).Detach());
+    Set(var);
   }
 
   ~FromVarConverter() {
   }
 
-  void Set(PassRef pass_ref, const PP_Var& var) {
-    FromVarConverterBase<std::string>::value_ = Var(pass_ref, var).AsString();
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<std::string>::value_ = Var(var).AsString();
   }
 };
 
@@ -82,14 +104,14 @@ class FromVarConverter<double> : public FromVarConverterBase<double> {
   }
 
   FromVarConverter(const PP_Var& var) {
-    Set(PASS_REF, Var(var).Detach());
+    Set(var);
   }
 
   ~FromVarConverter() {
   }
 
-  void Set(PassRef pass_ref, const PP_Var& var) {
-    FromVarConverterBase<double>::value_ = Var(pass_ref, var).AsDouble();
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<double>::value_ = Var(var).AsDouble();
   }
 };
 

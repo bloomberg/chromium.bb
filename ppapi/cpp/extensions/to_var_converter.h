@@ -21,6 +21,10 @@ class ToVarConverterBase {
     return var_.pp_var();
   }
 
+  const Var& var() const {
+    return var_;
+  }
+
  protected:
   ToVarConverterBase() {
   }

@@ -26,6 +26,12 @@ class VarArray_Dev : public Var {
   /// @param[in] var An array var.
   explicit VarArray_Dev(const Var& var);
 
+  /// Contructs a <code>VarArray_Dev</code> given a <code>PP_Var</code> of type
+  /// PP_VARTYPE_ARRAY.
+  ///
+  /// @param[in] var A <code>PP_Var</code> of type PP_VARTYPE_ARRAY.
+  explicit VarArray_Dev(const PP_Var& var);
+
   /// Copy constructor.
   VarArray_Dev(const VarArray_Dev& other);
 
