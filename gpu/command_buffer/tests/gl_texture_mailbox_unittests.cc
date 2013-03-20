@@ -27,6 +27,13 @@ uint32 ReadTexel(GLuint id, GLint x, GLint y) {
                          GL_TEXTURE_2D,
                          id,
                          0);
+  // Some drivers (NVidia/SGX) require texture settings to be a certain way or
+  // they won't report FRAMEBUFFER_COMPLETE.
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 

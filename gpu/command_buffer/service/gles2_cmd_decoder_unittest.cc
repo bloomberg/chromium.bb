@@ -7042,11 +7042,11 @@ TEST_F(GLES2DecoderWithShaderTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, BeingQueryEXTDisabled) {
+TEST_F(GLES2DecoderTest, BeginQueryEXTDisabled) {
   // Test something fails if off.
 }
 
-TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXT) {
+TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   InitDecoder(
       "GL_EXT_occlusion_query_boolean",      // extensions
       true,    // has alpha
@@ -7168,7 +7168,7 @@ static void CheckBeginEndQueryBadMemoryFails(
       .RetiresOnSaturation();
 }
 
-TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXTBadMemoryIdFails) {
+TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
   InitDecoder(
       "GL_EXT_occlusion_query_boolean",      // extensions
       true,    // has alpha
@@ -7184,7 +7184,7 @@ TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXTBadMemoryIdFails) {
       kInvalidSharedMemoryId, kSharedMemoryOffset);
 }
 
-TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXTBadMemoryOffsetFails) {
+TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
   InitDecoder(
       "GL_EXT_occlusion_query_boolean",      // extensions
       true,    // has alpha
@@ -7200,7 +7200,7 @@ TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXTBadMemoryOffsetFails) {
       kSharedMemoryId, kInvalidSharedMemoryOffset);
 }
 
-TEST_F(GLES2DecoderTest, BeingEndQueryEXTCommandsIssuedCHROMIUM) {
+TEST_F(GLES2DecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   BeginQueryEXT begin_cmd;
 
   GenHelper<GenQueriesEXTImmediate>(kNewClientId);
@@ -7224,6 +7224,40 @@ TEST_F(GLES2DecoderTest, BeingEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_FALSE(query->pending());
+}
+
+TEST_F(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
+  BeginQueryEXT begin_cmd;
+
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  // Test valid parameters work.
+  begin_cmd.Init(
+      GL_GET_ERROR_QUERY_CHROMIUM, kNewClientId,
+      kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != NULL);
+  EXPECT_FALSE(query->pending());
+
+  // Test end succeeds
+  QuerySync* sync = static_cast<QuerySync*>(shared_memory_address_);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_INVALID_VALUE))
+      .RetiresOnSaturation();
+
+  EndQueryEXT end_cmd;
+  end_cmd.Init(GL_GET_ERROR_QUERY_CHROMIUM, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_FALSE(query->pending());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE),
+            static_cast<GLenum>(sync->result));
 }
 
 TEST_F(GLES2DecoderTest, GenMailboxCHROMIUM) {

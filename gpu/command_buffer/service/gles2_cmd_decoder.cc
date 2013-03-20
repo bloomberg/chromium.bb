@@ -9314,11 +9314,13 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
+    case GL_GET_ERROR_QUERY_CHROMIUM:
       break;
     default:
       if (!features().occlusion_query_boolean) {
         LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, "glBeginQueryEXT", "not enabled");
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for occlusion queries");
         return error::kNoError;
       }
       break;

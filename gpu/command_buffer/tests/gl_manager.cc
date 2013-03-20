@@ -24,6 +24,11 @@
 
 namespace gpu {
 
+int GLManager::use_count_;
+scoped_refptr<gfx::GLShareGroup>* GLManager::base_share_group_;
+scoped_refptr<gfx::GLSurface>* GLManager::base_surface_;
+scoped_refptr<gfx::GLContext>* GLManager::base_context_;
+
 GLManager::Options::Options()
     : size(4, 4),
       share_group_manager(NULL),
@@ -35,9 +40,25 @@ GLManager::Options::Options()
 
 GLManager::GLManager()
     : context_lost_allowed_(false) {
+  SetupBaseContext();
 }
 
 GLManager::~GLManager() {
+  --use_count_;
+  if (!use_count_) {
+    if (base_share_group_) {
+      delete base_context_;
+      base_context_ = NULL;
+    }
+    if (base_surface_) {
+      delete base_surface_;
+      base_surface_ = NULL;
+    }
+    if (base_context_) {
+      delete base_context_;
+      base_context_ = NULL;
+    }
+  }
 }
 
 void GLManager::Initialize(const GLManager::Options& options) {
@@ -73,7 +94,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
 
   gfx::GLContext* real_gl_context = NULL;
   if (options.virtual_manager) {
-    options.virtual_manager->context();
+    real_gl_context = options.virtual_manager->context();
   }
 
   // From <EGL/egl.h>.
@@ -133,9 +154,16 @@ void GLManager::Initialize(const GLManager::Options& options) {
     ASSERT_TRUE(context_->Initialize(
         surface_.get(), gfx::PreferIntegratedGpu));
   } else {
-    context_ = gfx::GLContext::CreateGLContext(share_group_.get(),
-                                               surface_.get(),
-                                               gpu_preference);
+    if (base_context_) {
+      context_ = scoped_refptr<gfx::GLContext>(new gpu::GLContextVirtual(
+          share_group_.get(), base_context_->get(), decoder_->AsWeakPtr()));
+      ASSERT_TRUE(context_->Initialize(
+          surface_.get(), gfx::PreferIntegratedGpu));
+    } else {
+      context_ = gfx::GLContext::CreateGLContext(share_group_.get(),
+                                                 surface_.get(),
+                                                 gpu_preference);
+    }
   }
   ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
 
@@ -176,6 +204,24 @@ void GLManager::Initialize(const GLManager::Options& options) {
       kMaxTransferBufferSize)) << "Could not init GLES2Implementation";
 
   MakeCurrent();
+}
+
+void GLManager::SetupBaseContext() {
+  if (use_count_) {
+    #if defined(OS_ANDROID)
+      base_share_group_ = new scoped_refptr<gfx::GLShareGroup>(
+          new gfx::GLShareGroup);
+      gfx::Size size(4, 4);
+      base_surface_ = new scoped_refptr<gfx::GLSurface>(
+          gfx::GLSurface::CreateOffscreenGLSurface(false, size));
+      gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
+      base_context_ = new scoped_refptr<gfx::GLContext>(
+          gfx::GLContext::CreateGLContext(base_share_group_->get(),
+                                          base_surface_->get(),
+                                          gpu_preference));
+     #endif
+  }
+  ++use_count_;
 }
 
 void GLManager::MakeCurrent() {
