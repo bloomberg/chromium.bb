@@ -21,8 +21,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/image/image.h"
 
-const int kButtonPadding = 8;
-const int kIconAndTextPadding = 5;
+const int kButtonPadding = 5;
 
 // 'Glint' is a glowing light animation on the titlebar to attract user's
 // attention. Numbers are arbitrary, based on several tries.
@@ -329,15 +328,19 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 - (void)updateCustomButtonsLayout {
   NSRect bounds = [self bounds];
   NSRect closeButtonFrame = [customCloseButton_ frame];
+  closeButtonFrame.size.width = panel::kPanelButtonSize;
+  closeButtonFrame.size.height = panel::kPanelButtonSize;
   closeButtonFrame.origin.x =
-      NSWidth(bounds) - NSWidth(closeButtonFrame) - kButtonPadding;
+      NSWidth(bounds) - NSWidth(closeButtonFrame) - panel::kButtonPadding;
   closeButtonFrame.origin.y =
       (NSHeight(bounds) - NSHeight(closeButtonFrame)) / 2;
   [customCloseButton_ setFrame:closeButtonFrame];
 
   NSRect buttonFrame = [minimizeButton_ frame];
+  buttonFrame.size.width = panel::kPanelButtonSize;
+  buttonFrame.size.height = panel::kPanelButtonSize;
   buttonFrame.origin.x =
-      closeButtonFrame.origin.x - NSWidth(buttonFrame) - kButtonPadding;
+      closeButtonFrame.origin.x - NSWidth(buttonFrame) - panel::kButtonPadding;
   buttonFrame.origin.y = (NSHeight(bounds) - NSHeight(buttonFrame)) / 2;
   [minimizeButton_ setFrame:buttonFrame];
   [restoreButton_ setFrame:buttonFrame];
@@ -357,18 +360,20 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   // Place the icon and title at the left edge of the titlebar.
   int iconWidth = NSWidth(iconFrame);
   int titleWidth = NSWidth(titleFrame);
-  int availableWidth = minimizeRestoreButtonFrame.origin.x - kButtonPadding;
+  int availableWidth = minimizeRestoreButtonFrame.origin.x -
+      panel::kTitleAndButtonPadding;
 
-  if (2 * kIconAndTextPadding + iconWidth + titleWidth > availableWidth)
-    titleWidth = availableWidth - iconWidth - 2 * kIconAndTextPadding;
+  int paddings = panel::kTitlebarLeftPadding + panel::kIconAndTitlePadding;
+  if (paddings + iconWidth + titleWidth > availableWidth)
+    titleWidth = availableWidth - iconWidth - paddings;
   if (titleWidth < 0)
     titleWidth = 0;
 
-  iconFrame.origin.x = kIconAndTextPadding;
+  iconFrame.origin.x = panel::kTitlebarLeftPadding;
   iconFrame.origin.y = (NSHeight(bounds) - NSHeight(iconFrame)) / 2;
   [icon_ setFrame:iconFrame];
 
-  titleFrame.origin.x = 2 * kIconAndTextPadding + iconWidth;
+  titleFrame.origin.x = paddings + iconWidth;
   // In bottom-heavy text labels, let's compensate for occasional integer
   // rounding to avoid text label to feel too low.
   titleFrame.origin.y = (NSHeight(bounds) - NSHeight(titleFrame)) / 2 + 2;

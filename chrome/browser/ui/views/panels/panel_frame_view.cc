@@ -40,9 +40,6 @@ namespace {
 // paint a frame in order to differentiate the client area from the background.
 const int kNonAeroBorderThickness = 1;
 
-// The spacing in pixels between the icon and the left border.
-const int kIconAndBorderSpacing = 4;
-
 // The height and width in pixels of the icon.
 const int kIconSize = 16;
 
@@ -50,16 +47,8 @@ const int kIconSize = 16;
 const char* kTitleFontName = "Arial Bold";
 const int kTitleFontSize = 14;
 
-// The spacing in pixels between the title and the icon on the left, or the
-// button on the right.
-const int kTitleSpacing = 11;
-
-// The spacing in pixels between the close button and the right border.
-const int kCloseButtonAndBorderSpacing = 11;
-
-// The spacing in pixels between the close button and the minimize/restore
-// button.
-const int kMinimizeButtonAndCloseButtonSpacing = 5;
+// The extra padding between the button and the top edge.
+const int kExtraPaddingBetweenButtonAndTop = 1;
 
 // Colors used to draw titlebar background under default theme.
 const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3d, 0x3d);
@@ -285,6 +274,8 @@ void PanelFrameView::Init() {
                           rb.GetImageSkiaNamed(IDR_PANEL_CLOSE_H));
   close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                           rb.GetImageSkiaNamed(IDR_PANEL_CLOSE_C));
+  close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                   views::ImageButton::ALIGN_MIDDLE);
   string16 tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_CLOSE_TOOLTIP);
   close_button_->SetTooltipText(tooltip_text);
   close_button_->SetAccessibleName(tooltip_text);
@@ -300,6 +291,8 @@ void PanelFrameView::Init() {
   tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_MINIMIZE_TOOLTIP);
   minimize_button_->SetTooltipText(tooltip_text);
   minimize_button_->SetAccessibleName(tooltip_text);
+  minimize_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                      views::ImageButton::ALIGN_MIDDLE);
   AddChildView(minimize_button_);
 
   restore_button_ = new views::ImageButton(this);
@@ -309,6 +302,8 @@ void PanelFrameView::Init() {
                             rb.GetImageSkiaNamed(IDR_PANEL_RESTORE_H));
   restore_button_->SetImage(views::CustomButton::STATE_PRESSED,
                             rb.GetImageSkiaNamed(IDR_PANEL_RESTORE_C));
+  restore_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                     views::ImageButton::ALIGN_MIDDLE);
   tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_RESTORE_TOOLTIP);
   restore_button_->SetTooltipText(tooltip_text);
   restore_button_->SetAccessibleName(tooltip_text);
@@ -532,40 +527,40 @@ void PanelFrameView::Layout() {
 
   // Layout the close button.
   int right = width();
-  gfx::Size close_button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
-      width() - kCloseButtonAndBorderSpacing - close_button_size.width(),
-      (TitlebarHeight() - close_button_size.height()) / 2,
-      close_button_size.width(),
-      close_button_size.height());
+      width() - panel::kTitlebarRightPadding - panel::kPanelButtonSize,
+      (TitlebarHeight() - panel::kPanelButtonSize) / 2 +
+          kExtraPaddingBetweenButtonAndTop,
+      panel::kPanelButtonSize,
+      panel::kPanelButtonSize);
   right = close_button_->x();
 
   // Layout the minimize and restore button. Both occupy the same space,
   // but at most one is visible at any time.
-  gfx::Size button_size = minimize_button_->GetPreferredSize();
   minimize_button_->SetBounds(
-      right - kMinimizeButtonAndCloseButtonSpacing - button_size.width(),
-      (TitlebarHeight() - button_size.height()) / 2,
-      button_size.width(),
-      button_size.height());
+      right - panel::kButtonPadding - panel::kPanelButtonSize,
+      (TitlebarHeight() - panel::kPanelButtonSize) / 2 +
+          kExtraPaddingBetweenButtonAndTop,
+      panel::kPanelButtonSize,
+      panel::kPanelButtonSize);
   restore_button_->SetBoundsRect(minimize_button_->bounds());
   right = minimize_button_->x();
 
   // Layout the icon.
   int icon_y = (TitlebarHeight() - kIconSize) / 2;
   title_icon_->SetBounds(
-      kIconAndBorderSpacing,
+      panel::kTitlebarLeftPadding,
       icon_y,
       kIconSize,
       kIconSize);
 
   // Layout the title.
-  int title_x = title_icon_->bounds().right() + kTitleSpacing;
+  int title_x = title_icon_->bounds().right() + panel::kIconAndTitlePadding;
   int title_height = GetTitleFont().GetHeight();
   title_label_->SetBounds(
       title_x,
       icon_y + ((kIconSize - title_height - 1) / 2),
-      std::max(0, right - kTitleSpacing - title_x),
+      std::max(0, right - panel::kTitleAndButtonPadding - title_x),
       title_height);
 }
 

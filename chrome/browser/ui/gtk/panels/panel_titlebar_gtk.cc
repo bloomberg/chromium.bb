@@ -22,10 +22,16 @@
 namespace {
 
 // Padding around the titlebar.
-const int kPanelTitlebarPaddingTop = 11;
-const int kPanelTitlebarPaddingBottom = 11;
-const int kPanelTitlebarPaddingLeft = 4;
-const int kPanelTitlebarPaddingRight = 8;
+const int kPanelTitlebarPaddingTop = 4;
+const int kPanelTitlebarPaddingBottom = 8;
+const int kPanelTitlebarPaddingLeft = 6;
+const int kPanelTitlebarPaddingRight = 0;
+
+// Padding around the box containing icon and title.
+const int kPanelIconTitlePaddingTop = 3;
+const int kPanelIconTitlePaddingBottom = 0;
+const int kPanelIconTitlePaddingLeft = 0;
+const int kPanelIconTitlePaddingRight = 0;
 
 // Spacing between buttons of panel's titlebar.
 const int kPanelButtonSpacing = 5;
@@ -80,9 +86,18 @@ void PanelTitlebarGtk::Init() {
                    FALSE, FALSE, 0);
   BuildButtons();
 
+  // Add an extra alignment to control the paddings for icon and title.
+  GtkWidget* icon_title_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_container_add(GTK_CONTAINER(container_hbox), icon_title_alignment);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(icon_title_alignment),
+                            kPanelIconTitlePaddingTop,
+                            kPanelIconTitlePaddingBottom,
+                            kPanelIconTitlePaddingLeft,
+                            kPanelIconTitlePaddingRight);
+
   // Add hbox for holding icon and title.
   GtkWidget* icon_title_hbox = gtk_hbox_new(FALSE, kPanelIconTitleSpacing);
-  gtk_box_pack_start(GTK_BOX(container_hbox), icon_title_hbox, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(icon_title_alignment), icon_title_hbox);
 
   // Add icon. We use the app logo as a placeholder image so the title doesn't
   // jump around.
@@ -134,6 +149,9 @@ CustomDrawButton* PanelTitlebarGtk::CreateButton(
                                                   pressed_image_id,
                                                   hover_image_id,
                                                   0);
+  gtk_widget_set_size_request(button->widget(),
+                              panel::kPanelButtonSize,
+                              panel::kPanelButtonSize);
   gtk_widget_add_events(GTK_WIDGET(button->widget()), GDK_POINTER_MOTION_MASK);
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnButtonClickedThunk), this);

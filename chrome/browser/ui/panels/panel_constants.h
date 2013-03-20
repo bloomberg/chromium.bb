@@ -22,10 +22,29 @@ const int kPanelMinHeight = 30;
 static const int kMinimizedPanelHeight = 4;
 
 // The height in pixels of the titlebar.
-static const int kTitlebarHeight = 40;
+static const int kTitlebarHeight = 36;
 
 // The size (width or height) of the app icon (taskbar icon).
 static const int kPanelAppIconSize = 32;
+
+// The size (width or height) of the button, which is also the size of the
+// hit target area.
+static const int kPanelButtonSize = 24;
+
+// The padding in pixeles between the icon and the left border.
+const int kTitlebarLeftPadding = 10;
+
+// The padding in pixeles between the close button and the right border.
+const int kTitlebarRightPadding = 6;
+
+// The padding in piexles between the icon and the title text.
+const int kIconAndTitlePadding = 11;
+
+// The padding in piexles between the title text and the button.
+const int kTitleAndButtonPadding = 11;
+
+// The padding in pixeles between buttons.
+static const int kButtonPadding = 5;
 
 // Different types of buttons that can be shown on panel's titlebar.
 enum TitlebarButtonType {
