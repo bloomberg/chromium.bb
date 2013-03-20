@@ -452,8 +452,10 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     initialized_workaround = true;
   }
 
-  bool use_glfinish_workaround = (IsVendorIntel() || force_on_workaround) &&
-      !force_off_workaround;
+  const bool workaround_needed =
+      IsVendorIntel() && !base::mac::IsOSMountainLionOrLater();
+  const bool use_glfinish_workaround =
+      (workaround_needed || force_on_workaround) && !force_off_workaround;
 
   if (use_glfinish_workaround) {
     TRACE_EVENT0("gpu", "glFinish");
@@ -461,6 +463,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     // MacBook Air with Intel HD graphics, and possibly on other models,
     // by forcing the graphics pipeline to be completely drained at this
     // point.
+    // This workaround is not necessary on Mountain Lion.
     glFinish();
   }
 
