@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_file_io_host.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util_proxy.h"
@@ -345,6 +347,11 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
     return PP_ERROR_FAILED;
 
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
+#if defined(OS_MACOSX)
+    // Call PluginDelegate::SetLength to relays SetLength operation to the
+    // browser process, since MacOS X sandbox architecture does not allow
+    // ftruncate call on the opened file descriptor.
+    // TODO(tzik): Move FileIOHost to the browser process to remove this #ifdef.
     if (!plugin_delegate_->SetLength(
             file_system_url_, length,
             new PlatformGeneralCallbackTranslator(
@@ -352,6 +359,24 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
                            weak_factory_.GetWeakPtr(),
                            context->MakeReplyMessageContext()))))
       return PP_ERROR_FAILED;
+#else
+    if (quota_file_io_) {
+      if (!quota_file_io_->SetLength(
+              length,
+              base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
+                         weak_factory_.GetWeakPtr(),
+                         context->MakeReplyMessageContext())))
+        return PP_ERROR_FAILED;
+    } else {
+      if (!plugin_delegate_->SetLength(
+              file_system_url_, length,
+              new PlatformGeneralCallbackTranslator(
+                  base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
+                             weak_factory_.GetWeakPtr(),
+                             context->MakeReplyMessageContext()))))
+        return PP_ERROR_FAILED;
+    }
+#endif
   } else {
     // TODO(nhiroki): fix a failure of FileIO.SetLength for an external
     // filesystem on Mac due to sandbox restrictions (http://crbug.com/156077).
@@ -569,4 +594,3 @@ void PepperFileIOHost::ExecutePlatformWillWriteCallback(
 }
 
 }  // namespace content
-
