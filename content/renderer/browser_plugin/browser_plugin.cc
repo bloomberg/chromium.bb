@@ -426,6 +426,7 @@ void BrowserPlugin::SetInstanceID(int instance_id, bool new_guest) {
   BrowserPluginHostMsg_CreateGuest_Params create_guest_params;
   create_guest_params.focused = ShouldGuestBeFocused();
   create_guest_params.visible = visible_;
+  create_guest_params.name = GetNameAttribute();
   GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
                                 &create_guest_params.resize_guest_params);
 
@@ -438,7 +439,6 @@ void BrowserPlugin::SetInstanceID(int instance_id, bool new_guest) {
 
   create_guest_params.storage_partition_id = storage_partition_id_;
   create_guest_params.persist_storage = persist_storage_;
-  create_guest_params.name = GetNameAttribute();
   create_guest_params.src = GetSrcAttribute();
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_CreateGuest(render_view_routing_id_,

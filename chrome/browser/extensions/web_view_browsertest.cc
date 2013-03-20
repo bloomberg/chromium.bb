@@ -847,3 +847,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccess) {
       "platform_apps/web_view/geolocation/embedder_has_permission"))
           << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, NewWindow) {
+  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/newwindow"))
+      << message_;
+}

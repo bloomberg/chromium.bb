@@ -186,7 +186,8 @@ void BrowserPluginGuest::Initialize(
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
   focused_ = params.focused;
   guest_visible_ = params.visible;
-  name_ = params.name;
+  if (!params.name.empty())
+    name_ = params.name;
   auto_size_enabled_ = params.auto_size_params.enable;
   max_auto_size_ = params.auto_size_params.max_size;
   min_auto_size_ = params.auto_size_params.min_size;
@@ -327,12 +328,14 @@ bool BrowserPluginGuest::HandleContextMenu(
 
 void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
                                             int64 source_frame_id,
+                                            const string16& frame_name,
                                             const GURL& target_url,
                                             WebContents* new_contents) {
   WebContentsImpl* new_contents_impl =
       static_cast<WebContentsImpl*>(new_contents);
   BrowserPluginGuest* guest = new_contents_impl->GetBrowserPluginGuest();
   guest->opener_ = this;
+  guest->name_ = UTF16ToUTF8(frame_name);
   // Take ownership of the new guest until it is attached to the embedder's DOM
   // tree to avoid leaking a guest if this guest is destroyed before attaching
   // the new guest.
@@ -693,6 +696,12 @@ void BrowserPluginGuest::Attach(
   // lifetime of the new guest is no longer managed by the opener guest.
   opener()->pending_new_windows_.erase(this);
 
+  // The guest's frame name takes precedence over the BrowserPlugin's name.
+  // The guest's frame name is assigned in
+  // BrowserPluginGuest::WebContentsCreated.
+  if (!name_.empty())
+    params.name.clear();
+
   Initialize(embedder_web_contents, params);
 
   // We initialize the RenderViewHost after a BrowserPlugin has been attached
@@ -701,6 +710,12 @@ void BrowserPluginGuest::Attach(
   if (!GetWebContents()->GetRenderViewHost()->IsRenderViewLive()) {
     static_cast<RenderViewHostImpl*>(
         GetWebContents()->GetRenderViewHost())->Init();
+  }
+
+  // Inform the embedder BrowserPlugin of the attached guest.
+  if (!name_.empty()) {
+    SendMessageToEmbedder(
+        new BrowserPluginMsg_UpdatedName(instance_id_, name_));
   }
 }
 

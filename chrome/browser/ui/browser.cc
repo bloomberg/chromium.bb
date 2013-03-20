@@ -1450,6 +1450,7 @@ bool Browser::ShouldCreateWebContents(
 
 void Browser::WebContentsCreated(WebContents* source_contents,
                                  int64 source_frame_id,
+                                 const string16& frame_name,
                                  const GURL& target_url,
                                  WebContents* new_contents) {
   // Adopt the WebContents now, so all observers are in place, as the network
