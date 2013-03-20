@@ -50,4 +50,8 @@
 
 crbug.com/181700 fast/writing-mode/Kusa-Makura-background-canvas.html [ ImageOnlyFailure ]
 
+crbug.com/222382 platform/chromium/virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
+crbug.com/222382 platform/chromium/virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
+crbug.com/222382 platform/chromium/virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
