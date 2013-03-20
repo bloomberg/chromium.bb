@@ -278,6 +278,13 @@ ca-t3/pk-g4-4.0.1-r333
     commands.BuildImage(self._buildroot, self._board, None)
     self.assertCommandContains(['./build_image'])
 
+  def testGenerateAuZip(self):
+    """Test Basic generate_au_zip Command."""
+    with mock.patch.object(git, 'ReinterpretPathForChroot',
+                           side_effect=lambda x: x):
+      commands.GenerateAuZip(self._buildroot, '/tmp/taco', None)
+    self.assertCommandContains(['./build_library/generate_au_zip.py'])
+
   def testCompleteBuildImage(self):
     """Test Complete BuildImage Command."""
     images_to_build = ['bob', 'carol', 'ted', 'alice']

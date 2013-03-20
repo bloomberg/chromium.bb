@@ -346,6 +346,22 @@ def BuildImage(buildroot, board, images_to_build, version=None,
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
+def GenerateAuZip(buildroot, image_dir, extra_env=None):
+  """Run the script which generates au-generator.zip.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    image_dir: The directory in which to store au-generator.zip.
+    extra_env: A dictionary of environmental variables to set during generation.
+
+  Raises:
+    results_lib.BuildScriptFailure if the called script fails.
+  """
+  chroot_image_dir = git.ReinterpretPathForChroot(image_dir)
+  cmd = ['./build_library/generate_au_zip.py', '-o', chroot_image_dir]
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+
+
 def BuildVMImageForTesting(buildroot, board, extra_env=None, disk_layout=None):
   cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image']
   if disk_layout:

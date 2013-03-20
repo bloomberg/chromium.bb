@@ -29,6 +29,7 @@ from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -863,7 +864,8 @@ class BuildImageStageMock(ArchivingMock):
   """Partial mock for BuildImageStage."""
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.BuildImageStage'
-  ATTRS = ('_BuildAutotestTarballs', '_BuildImages',) + ArchivingMock.ATTRS
+  ATTRS = ArchivingMock.ATTRS + ('_BuildAutotestTarballs', '_BuildImages',
+                                 '_GenerateAuZip')
 
   def _BuildAutotestTarballs(self, *args, **kwargs):
     with patches(
@@ -876,6 +878,10 @@ class BuildImageStageMock(ArchivingMock):
         patch(os, 'symlink'),
         patch(os, 'readlink', return_value='foo.txt')):
       self.backup['_BuildImages'](*args, **kwargs)
+
+  def _GenerateAuZip(self, *args, **kwargs):
+    with patch(git, 'ReinterpretPathForChroot', return_value='/chroot/path'):
+      self.backup['_GenerateAuZip'](*args, **kwargs)
 
 
 class BuildImageStageTest(BuildPackagesStageTest):
@@ -906,6 +912,8 @@ class BuildImageStageTest(BuildPackagesStageTest):
         canary = (cfg['build_type'] == constants.CANARY_TYPE)
         rc.assertCommandContains(['--full_payload'], expected=hw and not canary)
         rc.assertCommandContains(['--nplus1'], expected=hw and canary)
+        cmd = ['./build_library/generate_au_zip.py', '-o', '/chroot/path']
+        rc.assertCommandContains(cmd, expected=cfg['images'])
 
   def RunTestsWithConfig(self, bot_id):
     """Test the specified config."""

@@ -1281,7 +1281,9 @@ class BuildImageStage(ArchivingStage, BuildPackagesStage):
 
     os.symlink(latest_image, cbuildbot_image_link)
 
-    parallel.RunParallelSteps([self._BuildVMImage, self.ArchivePayloads])
+    parallel.RunParallelSteps(
+        [self._BuildVMImage, self.ArchivePayloads,
+         lambda: self._GenerateAuZip(cbuildbot_image_link)])
 
   def _BuildVMImage(self):
     if self._build_config['vm_tests']:
@@ -1309,6 +1311,12 @@ class BuildImageStage(ArchivingStage, BuildPackagesStage):
 
           for payload in os.listdir(tempdir):
             queue.put([os.path.join(tempdir, payload)])
+
+  def _GenerateAuZip(self, image_dir):
+    """Create au-generator.zip."""
+    commands.GenerateAuZip(self._build_root,
+                           image_dir,
+                           extra_env=self._env)
 
   def _BuildAutotestTarballs(self):
     with osutils.TempDir(prefix='cbuildbot-autotest') as tempdir:
