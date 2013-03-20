@@ -32,13 +32,15 @@ SocketPermissionRequest CreateSocketPermissionRequest(
   return SocketPermissionRequest(type, host, port);
 }
 
-bool CanUseSocketAPIs(ProcessType plugin_process_type,
+bool CanUseSocketAPIs(bool external_plugin,
                       const SocketPermissionRequest& params,
                       RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (plugin_process_type == PROCESS_TYPE_PPAPI_PLUGIN) {
-    // Always allow socket APIs for out-process plugins (except NACL).
+  if (!external_plugin) {
+    // Always allow socket APIs for out-process plugins (other than external
+    // plugins instantiated by the embeeder through
+    // BrowserPpapiHost::CreateExternalPluginProcess).
     return true;
   }
 

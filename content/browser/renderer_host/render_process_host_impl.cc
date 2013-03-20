@@ -596,8 +596,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new MediaStreamDispatcherHost(GetID()));
 #endif
 #if defined(ENABLE_PLUGINS)
-  channel_->AddFilter(new PepperMessageFilter(PROCESS_TYPE_RENDERER,
-                                              GetID(), browser_context));
+  channel_->AddFilter(new PepperMessageFilter(GetID(), browser_context));
 #endif
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new InputTagSpeechDispatcherHost(

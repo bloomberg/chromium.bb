@@ -35,13 +35,13 @@ namespace content {
 namespace {
 
 bool CanUseSocketAPIs(const SocketPermissionRequest& request,
-                      ProcessType plugin_process_type,
+                      bool external_plugin,
                       int render_process_id,
                       int render_view_id) {
   RenderViewHost* render_view_host = RenderViewHost::FromID(render_process_id,
                                                             render_view_id);
   return render_view_host &&
-      pepper_socket_utils::CanUseSocketAPIs(plugin_process_type,
+      pepper_socket_utils::CanUseSocketAPIs(external_plugin,
                                             request,
                                             render_view_host);
 }
@@ -54,7 +54,7 @@ PepperUDPSocketPrivateMessageFilter::PepperUDPSocketPrivateMessageFilter(
     : allow_address_reuse_(false),
       allow_broadcast_(false),
       closed_(false),
-      plugin_process_type_(host->plugin_process_type()),
+      external_plugin_(host->external_plugin()),
       render_process_id_(0),
       render_view_id_(0) {
   DCHECK(host);
@@ -142,7 +142,7 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgBind(
   SocketPermissionRequest request =
       pepper_socket_utils::CreateSocketPermissionRequest(
           SocketPermissionRequest::UDP_BIND, addr);
-  if (!CanUseSocketAPIs(request, plugin_process_type_,
+  if (!CanUseSocketAPIs(request, external_plugin_,
                         render_process_id_, render_view_id_)) {
     return PP_ERROR_FAILED;
   }
@@ -192,7 +192,7 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgSendTo(
   SocketPermissionRequest request =
       pepper_socket_utils::CreateSocketPermissionRequest(
           SocketPermissionRequest::UDP_SEND_TO, addr);
-  if (!CanUseSocketAPIs(request, plugin_process_type_,
+  if (!CanUseSocketAPIs(request, external_plugin_,
                         render_process_id_, render_view_id_)) {
     return PP_ERROR_FAILED;
   }
