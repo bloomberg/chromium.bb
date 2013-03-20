@@ -1063,6 +1063,13 @@
    fun:_ZN4base42StatisticsRecorderTest_NotInitialized_Test8TestBodyEv
 }
 {
+   Intentional leak for SampleMap (stores SparseHistogram counts).
+   Memcheck:Leak
+   ...
+   fun:_ZN4base9SampleMap10AccumulateEii
+   fun:_ZN4base15SparseHistogram3AddEi
+}
+{
    Intentional leak for list<const BucketRanges*>(in StatisticsRecorderTest, RegisterBucketRanges).
    Memcheck:Leak
    fun:_Znw*
@@ -6859,16 +6866,4 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN18WebDatabaseService12LoadDatabaseERKN4base8CallbackIFvN3sql10InitStatusEEEE
-}
-{
-   bug_222491
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKiiEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeIiSt4pairIKiiESt10_Select1stIS2_ESt4lessIiESaIS2_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeIiSt4pairIKiiESt10_Select1stIS2_ESt4lessIiESaIS2_EE14_M_create_nodeERKS2_
-   ...
-   fun:_ZNSt3mapIiiSt4lessIiESaISt4pairIKiiEEEixERS3_
-   fun:_ZN4base9SampleMap10AccumulateEii
-   fun:_ZN4base15SparseHistogram3AddEi
 }
