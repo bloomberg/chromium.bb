@@ -886,7 +886,10 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kVideoThreads,
     switches::kVModule,
     switches::kWebCoreLogChannels,
+    // Please keep these in alphabetical order. Compositor switches here should
+    // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
+    cc::switches::kCompositeToMailbox,
     cc::switches::kDisableImplSidePainting,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableCompositorFrameMessage,
@@ -915,7 +918,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTraceOverdraw,
     cc::switches::kUseCheapnessEstimator,
     cc::switches::kUseColorEstimator,
-    cc::switches::kCompositeToMailbox,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
