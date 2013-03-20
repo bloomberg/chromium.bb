@@ -39,7 +39,8 @@ class PPAPI_PROXY_EXPORT GamepadResource
   virtual thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
 
   // PPB_Gamepad_API.
-  virtual void Sample(PP_GamepadsSampleData* data) OVERRIDE;
+  virtual void Sample(PP_Instance instance,
+                      PP_GamepadsSampleData* data) OVERRIDE;
 
  private:
   void OnPluginMsgSendMemory(const ResourceMessageReplyParams& params);

@@ -491,7 +491,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
     explicit GamepadImpl(PluginDelegate* delegate);
     // Resource implementation.
     virtual ::ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
-    virtual void Sample(PP_GamepadsSampleData* data) OVERRIDE;
+    virtual void Sample(PP_Instance instance,
+                        PP_GamepadsSampleData* data) OVERRIDE;
    private:
     PluginDelegate* delegate_;
   };

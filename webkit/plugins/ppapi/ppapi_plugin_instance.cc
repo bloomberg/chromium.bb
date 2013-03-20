@@ -328,7 +328,8 @@ PPB_Gamepad_API* PluginInstance::GamepadImpl::AsPPB_Gamepad_API() {
   return this;
 }
 
-void PluginInstance::GamepadImpl::Sample(PP_GamepadsSampleData* data) {
+void PluginInstance::GamepadImpl::Sample(PP_Instance /* instance */,
+                                         PP_GamepadsSampleData* data) {
   WebKit::WebGamepads webkit_data;
   delegate_->SampleGamepads(&webkit_data);
   ConvertWebKitGamepadData(

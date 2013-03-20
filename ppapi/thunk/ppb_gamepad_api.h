@@ -17,7 +17,8 @@ class PPAPI_THUNK_EXPORT PPB_Gamepad_API {
  public:
   virtual ~PPB_Gamepad_API() {}
 
-  virtual void Sample(PP_GamepadsSampleData* data) = 0;
+  virtual void Sample(PP_Instance instance,
+                      PP_GamepadsSampleData* data) = 0;
 
   static const SingletonResourceID kSingletonResourceID = GAMEPAD_SINGLETON_ID;
 };

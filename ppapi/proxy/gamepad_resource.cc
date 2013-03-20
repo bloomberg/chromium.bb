@@ -62,7 +62,8 @@ thunk::PPB_Gamepad_API* GamepadResource::AsPPB_Gamepad_API() {
   return this;
 }
 
-void GamepadResource::Sample(PP_GamepadsSampleData* data) {
+void GamepadResource::Sample(PP_Instance /* instance */,
+                             PP_GamepadsSampleData* data) {
   if (!buffer_) {
     // Browser hasn't sent back our shared memory, give the plugin gamepad
     // data corresponding to "not connected".

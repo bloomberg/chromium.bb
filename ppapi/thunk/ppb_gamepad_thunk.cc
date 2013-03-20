@@ -19,7 +19,7 @@ namespace {
 void SampleGamepads(PP_Instance instance, PP_GamepadsSampleData* data) {
   EnterInstanceAPI<PPB_Gamepad_API> enter(instance);
   if (enter.succeeded()) {
-    enter.functions()->Sample(data);
+    enter.functions()->Sample(instance, data);
     return;
   }
   // Failure, zero out.
