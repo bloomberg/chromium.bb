@@ -1126,7 +1126,7 @@ void ThreadProxy::InitializeRendererOnImplThread(
     int maxFramesPending = layer_tree_host_impl_->output_surface()->
         capabilities().max_frames_pending;
     if (maxFramesPending <= 0)
-      maxFramesPending = FrameRateController::kDefaultMaxFramesPending;
+      maxFramesPending = FrameRateController::DEFAULT_MAX_FRAMES_PENDING;
     if (layer_tree_host_impl_->output_surface()->capabilities().
             has_parent_compositor)
       maxFramesPending = 1;

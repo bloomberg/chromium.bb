@@ -104,7 +104,7 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
   base::TimeTicks LastVSyncTime();
 
   // FrameRateControllerClient implementation
-  virtual void vsyncTick(bool throttled) OVERRIDE;
+  virtual void VSyncTick(bool throttled) OVERRIDE;
 
  private:
   Scheduler(SchedulerClient* client,

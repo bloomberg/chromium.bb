@@ -17,7 +17,7 @@ public:
     void reset() { m_vsyncTicked = false; }
     bool vsyncTicked() const { return m_vsyncTicked; }
 
-    virtual void vsyncTick(bool throttled) OVERRIDE {
+    virtual void VSyncTick(bool throttled) OVERRIDE {
       m_vsyncTicked = !throttled;
     }
 
@@ -34,8 +34,8 @@ TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck)
     scoped_refptr<FakeDelayBasedTimeSource> timeSource = FakeDelayBasedTimeSource::create(interval, &thread);
     FrameRateController controller(timeSource);
 
-    controller.setClient(&client);
-    controller.setActive(true);
+    controller.SetClient(&client);
+    controller.SetActive(true);
 
     base::TimeTicks elapsed; // Muck around with time a bit
 
@@ -47,11 +47,11 @@ TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck)
     client.reset();
 
     // Tell the controller we drew
-    controller.didBeginFrame();
+    controller.DidBeginFrame();
 
     // Tell the controller the frame ended 5ms later
     timeSource->setNow(timeSource->now() + base::TimeDelta::FromMilliseconds(5));
-    controller.didFinishFrame();
+    controller.DidFinishFrame();
 
     // Trigger another frame, make sure vsync runs again
     elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
@@ -69,9 +69,9 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
     scoped_refptr<FakeDelayBasedTimeSource> timeSource = FakeDelayBasedTimeSource::create(interval, &thread);
     FrameRateController controller(timeSource);
 
-    controller.setClient(&client);
-    controller.setActive(true);
-    controller.setMaxFramesPending(2);
+    controller.SetClient(&client);
+    controller.SetActive(true);
+    controller.SetMaxFramesPending(2);
 
     base::TimeTicks elapsed; // Muck around with time a bit
 
@@ -83,7 +83,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
     client.reset();
 
     // Tell the controller we drew
-    controller.didBeginFrame();
+    controller.DidBeginFrame();
 
     // Trigger another frame, make sure vsync callback runs again
     elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
@@ -94,7 +94,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
     client.reset();
 
     // Tell the controller we drew, again.
-    controller.didBeginFrame();
+    controller.DidBeginFrame();
 
     // Trigger another frame. Since two frames are pending, we should not draw.
     elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
@@ -105,7 +105,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
 
     // Tell the controller the first frame ended 5ms later
     timeSource->setNow(timeSource->now() + base::TimeDelta::FromMilliseconds(5));
-    controller.didFinishFrame();
+    controller.DidFinishFrame();
 
     // Tick should not have been called
     EXPECT_FALSE(client.vsyncTicked());
@@ -124,11 +124,11 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled)
     FakeFrameRateControllerClient client;
     FrameRateController controller(&thread);
 
-    controller.setClient(&client);
-    controller.setMaxFramesPending(2);
+    controller.SetClient(&client);
+    controller.SetMaxFramesPending(2);
 
     // setActive triggers 1st frame, make sure the vsync callback is called
-    controller.setActive(true);
+    controller.SetActive(true);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
     client.reset();
@@ -145,13 +145,13 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled)
     client.reset();
 
     // didBeginFrame triggers 2nd frame, make sure the vsync callback is called
-    controller.didBeginFrame();
+    controller.DidBeginFrame();
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
     client.reset();
 
     // didBeginFrame triggers 3rd frame (> maxFramesPending), make sure the vsync callback is NOT called
-    controller.didBeginFrame();
+    controller.DidBeginFrame();
     thread.runPendingTask();
     EXPECT_FALSE(client.vsyncTicked());
     client.reset();
@@ -160,7 +160,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled)
     EXPECT_FALSE(thread.hasPendingTask());
 
     // didFinishFrame triggers a frame, make sure the vsync callback is called
-    controller.didFinishFrame();
+    controller.DidFinishFrame();
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
 }

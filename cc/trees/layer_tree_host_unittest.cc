@@ -2078,7 +2078,7 @@ public:
         if (m_delegatingRenderer)
             EXPECT_EQ(1, proxy->MaxFramesPendingForTesting());
         else
-            EXPECT_EQ(FrameRateController::kDefaultMaxFramesPending, proxy->MaxFramesPendingForTesting());
+            EXPECT_EQ(FrameRateController::DEFAULT_MAX_FRAMES_PENDING, proxy->MaxFramesPendingForTesting());
         endTest();
     }
 

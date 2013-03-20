@@ -13,152 +13,141 @@
 namespace cc {
 
 class FrameRateControllerTimeSourceAdapter : public TimeSourceClient {
-public:
-    static scoped_ptr<FrameRateControllerTimeSourceAdapter> Create(FrameRateController* frameRateController) {
-        return make_scoped_ptr(new FrameRateControllerTimeSourceAdapter(frameRateController));
-    }
-    virtual ~FrameRateControllerTimeSourceAdapter() {}
+ public:
+  static scoped_ptr<FrameRateControllerTimeSourceAdapter> Create(
+      FrameRateController* frame_rate_controller) {
+    return make_scoped_ptr(
+        new FrameRateControllerTimeSourceAdapter(frame_rate_controller));
+  }
+  virtual ~FrameRateControllerTimeSourceAdapter() {}
 
-    virtual void onTimerTick() OVERRIDE {
-      m_frameRateController->onTimerTick();
-    }
+  virtual void onTimerTick() OVERRIDE { frame_rate_controller_->OnTimerTick(); }
 
-private:
-    explicit FrameRateControllerTimeSourceAdapter(FrameRateController* frameRateController)
-        : m_frameRateController(frameRateController) {}
+ private:
+  explicit FrameRateControllerTimeSourceAdapter(
+      FrameRateController* frame_rate_controller)
+      : frame_rate_controller_(frame_rate_controller) {}
 
-    FrameRateController* m_frameRateController;
+  FrameRateController* frame_rate_controller_;
 };
 
 FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
-    : m_client(0)
-    , m_numFramesPending(0)
-    , m_maxFramesPending(0)
-    , m_timeSource(timer)
-    , m_active(false)
-    , m_swapBuffersCompleteSupported(true)
-    , m_isTimeSourceThrottling(true)
-    , m_thread(0)
-    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
-{
-    m_timeSourceClientAdapter = FrameRateControllerTimeSourceAdapter::Create(this);
-    m_timeSource->setClient(m_timeSourceClientAdapter.get());
+    : client_(NULL),
+      num_frames_pending_(0),
+      max_frames_pending_(0),
+      time_source_(timer),
+      active_(false),
+      swap_buffers_complete_supported_(true),
+      is_time_source_throttling_(true),
+      thread_(NULL),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  time_source_client_adapter_ =
+      FrameRateControllerTimeSourceAdapter::Create(this);
+  time_source_->setClient(time_source_client_adapter_.get());
 }
 
 FrameRateController::FrameRateController(Thread* thread)
-    : m_client(0)
-    , m_numFramesPending(0)
-    , m_maxFramesPending(0)
-    , m_active(false)
-    , m_swapBuffersCompleteSupported(true)
-    , m_isTimeSourceThrottling(false)
-    , m_thread(thread)
-    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
-{
+    : client_(NULL),
+      num_frames_pending_(0),
+      max_frames_pending_(0),
+      active_(false),
+      swap_buffers_complete_supported_(true),
+      is_time_source_throttling_(false),
+      thread_(thread),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+
+FrameRateController::~FrameRateController() {
+  if (is_time_source_throttling_)
+    time_source_->setActive(false);
 }
 
-FrameRateController::~FrameRateController()
-{
-    if (m_isTimeSourceThrottling)
-        m_timeSource->setActive(false);
+void FrameRateController::SetActive(bool active) {
+  if (active_ == active)
+    return;
+  TRACE_EVENT1("cc", "FrameRateController::SetActive", "active", active);
+  active_ = active;
+
+  if (is_time_source_throttling_) {
+    time_source_->setActive(active);
+  } else {
+    if (active)
+      PostManualTick();
+    else
+      weak_factory_.InvalidateWeakPtrs();
+  }
 }
 
-void FrameRateController::setActive(bool active)
-{
-    if (m_active == active)
-        return;
-    TRACE_EVENT1("cc", "FrameRateController::setActive", "active", active);
-    m_active = active;
-
-    if (m_isTimeSourceThrottling)
-        m_timeSource->setActive(active);
-    else {
-        if (active)
-            postManualTick();
-        else
-            m_weakFactory.InvalidateWeakPtrs();
-    }
+void FrameRateController::SetMaxFramesPending(int max_frames_pending) {
+  DCHECK_GE(max_frames_pending, 0);
+  max_frames_pending_ = max_frames_pending;
 }
 
-void FrameRateController::setMaxFramesPending(int maxFramesPending)
-{
-    DCHECK_GE(maxFramesPending, 0);
-    m_maxFramesPending = maxFramesPending;
+void FrameRateController::SetTimebaseAndInterval(base::TimeTicks timebase,
+                                                 base::TimeDelta interval) {
+  if (is_time_source_throttling_)
+    time_source_->setTimebaseAndInterval(timebase, interval);
 }
 
-void FrameRateController::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
-{
-    if (m_isTimeSourceThrottling)
-        m_timeSource->setTimebaseAndInterval(timebase, interval);
+void FrameRateController::SetSwapBuffersCompleteSupported(bool supported) {
+  swap_buffers_complete_supported_ = supported;
 }
 
-void FrameRateController::setSwapBuffersCompleteSupported(bool supported)
-{
-    m_swapBuffersCompleteSupported = supported;
+void FrameRateController::OnTimerTick() {
+  DCHECK(active_);
+
+  // Check if we have too many frames in flight.
+  bool throttled =
+      max_frames_pending_ && num_frames_pending_ >= max_frames_pending_;
+  TRACE_COUNTER_ID1("cc", "ThrottledVSyncInterval", thread_, throttled);
+
+  if (client_)
+    client_->VSyncTick(throttled);
+
+  if (swap_buffers_complete_supported_ && !is_time_source_throttling_ &&
+      !throttled)
+    PostManualTick();
 }
 
-void FrameRateController::onTimerTick()
-{
-    DCHECK(m_active);
-
-    // Check if we have too many frames in flight.
-    bool throttled = m_maxFramesPending && m_numFramesPending >= m_maxFramesPending;
-    TRACE_COUNTER_ID1("cc", "ThrottledVSyncInterval", m_thread, throttled);
-
-    if (m_client)
-        m_client->vsyncTick(throttled);
-
-    if (m_swapBuffersCompleteSupported && !m_isTimeSourceThrottling && !throttled)
-        postManualTick();
+void FrameRateController::PostManualTick() {
+  if (active_) {
+    thread_->PostTask(base::Bind(&FrameRateController::ManualTick,
+                                 weak_factory_.GetWeakPtr()));
+  }
 }
 
-void FrameRateController::postManualTick()
-{
-    if (m_active)
-        m_thread->PostTask(base::Bind(&FrameRateController::manualTick, m_weakFactory.GetWeakPtr()));
+void FrameRateController::ManualTick() { OnTimerTick(); }
+
+void FrameRateController::DidBeginFrame() {
+  if (swap_buffers_complete_supported_)
+    num_frames_pending_++;
+  else if (!is_time_source_throttling_)
+    PostManualTick();
 }
 
-void FrameRateController::manualTick()
-{
-    onTimerTick();
+void FrameRateController::DidFinishFrame() {
+  DCHECK(swap_buffers_complete_supported_);
+
+  num_frames_pending_--;
+  if (!is_time_source_throttling_)
+    PostManualTick();
 }
 
-void FrameRateController::didBeginFrame()
-{
-    if (m_swapBuffersCompleteSupported)
-        m_numFramesPending++;
-    else if (!m_isTimeSourceThrottling)
-        postManualTick();
+void FrameRateController::DidAbortAllPendingFrames() {
+  num_frames_pending_ = 0;
 }
 
-void FrameRateController::didFinishFrame()
-{
-    DCHECK(m_swapBuffersCompleteSupported);
+base::TimeTicks FrameRateController::NextTickTime() {
+  if (is_time_source_throttling_)
+    return time_source_->nextTickTime();
 
-    m_numFramesPending--;
-    if (!m_isTimeSourceThrottling)
-        postManualTick();
+  return base::TimeTicks();
 }
 
-void FrameRateController::didAbortAllPendingFrames()
-{
-    m_numFramesPending = 0;
-}
+base::TimeTicks FrameRateController::LastTickTime() {
+  if (is_time_source_throttling_)
+    return time_source_->lastTickTime();
 
-base::TimeTicks FrameRateController::nextTickTime()
-{
-    if (m_isTimeSourceThrottling)
-        return m_timeSource->nextTickTime();
-
-    return base::TimeTicks();
-}
-
-base::TimeTicks FrameRateController::lastTickTime()
-{
-    if (m_isTimeSourceThrottling)
-        return m_timeSource->lastTickTime();
-
-    return base::TimeTicks::Now();
+  return base::TimeTicks::Now();
 }
 
 }  // namespace cc

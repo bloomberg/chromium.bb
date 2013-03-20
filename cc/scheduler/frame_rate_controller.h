@@ -17,73 +17,74 @@ class Thread;
 class TimeSource;
 
 class CC_EXPORT FrameRateControllerClient {
-public:
-    // Throttled is true when we have a maximum number of frames pending.
-    virtual void vsyncTick(bool throttled) = 0;
+ public:
+  // Throttled is true when we have a maximum number of frames pending.
+  virtual void VSyncTick(bool throttled) = 0;
 
-protected:
-    virtual ~FrameRateControllerClient() {}
+ protected:
+  virtual ~FrameRateControllerClient() {}
 };
 
 class FrameRateControllerTimeSourceAdapter;
 
 class CC_EXPORT FrameRateController {
-public:
-    enum {
-        kDefaultMaxFramesPending = 2
-    };
+ public:
+  enum {
+    DEFAULT_MAX_FRAMES_PENDING = 2
+  };
 
-    explicit FrameRateController(scoped_refptr<TimeSource>);
-    // Alternate form of FrameRateController with unthrottled frame-rate.
-    explicit FrameRateController(Thread*);
-    virtual ~FrameRateController();
+  explicit FrameRateController(scoped_refptr<TimeSource> timer);
+  // Alternate form of FrameRateController with unthrottled frame-rate.
+  explicit FrameRateController(Thread* thread);
+  virtual ~FrameRateController();
 
-    void setClient(FrameRateControllerClient* client) { m_client = client; }
+  void SetClient(FrameRateControllerClient* client) { client_ = client; }
 
-    void setActive(bool);
+  void SetActive(bool active);
 
-    // Use the following methods to adjust target frame rate.
-    //
-    // Multiple frames can be in-progress, but for every didBeginFrame, a
-    // didFinishFrame should be posted.
-    //
-    // If the rendering pipeline crashes, call didAbortAllPendingFrames.
-    void didBeginFrame();
-    void didFinishFrame();
-    void didAbortAllPendingFrames();
-    void setMaxFramesPending(int); // 0 for unlimited.
-    int maxFramesPending() const { return m_maxFramesPending; }
+  // Use the following methods to adjust target frame rate.
+  //
+  // Multiple frames can be in-progress, but for every DidBeginFrame, a
+  // DidFinishFrame should be posted.
+  //
+  // If the rendering pipeline crashes, call DidAbortAllPendingFrames.
+  void DidBeginFrame();
+  void DidFinishFrame();
+  void DidAbortAllPendingFrames();
+  void SetMaxFramesPending(int max_frames_pending);  // 0 for unlimited.
+  int MaxFramesPending() const { return max_frames_pending_; }
 
-    // This returns null for unthrottled frame-rate.
-    base::TimeTicks nextTickTime();
+  // This returns null for unthrottled frame-rate.
+  base::TimeTicks NextTickTime();
 
-    // This returns now for unthrottled frame-rate.
-    base::TimeTicks lastTickTime();
+  // This returns now for unthrottled frame-rate.
+  base::TimeTicks LastTickTime();
 
-    void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval);
-    void setSwapBuffersCompleteSupported(bool);
+  void SetTimebaseAndInterval(base::TimeTicks timebase,
+                              base::TimeDelta interval);
+  void SetSwapBuffersCompleteSupported(bool supported);
 
-protected:
-    friend class FrameRateControllerTimeSourceAdapter;
-    void onTimerTick();
+ protected:
+  friend class FrameRateControllerTimeSourceAdapter;
+  void OnTimerTick();
 
-    void postManualTick();
-    void manualTick();
+  void PostManualTick();
+  void ManualTick();
 
-    FrameRateControllerClient* m_client;
-    int m_numFramesPending;
-    int m_maxFramesPending;
-    scoped_refptr<TimeSource> m_timeSource;
-    scoped_ptr<FrameRateControllerTimeSourceAdapter> m_timeSourceClientAdapter;
-    bool m_active;
-    bool m_swapBuffersCompleteSupported;
+  FrameRateControllerClient* client_;
+  int num_frames_pending_;
+  int max_frames_pending_;
+  scoped_refptr<TimeSource> time_source_;
+  scoped_ptr<FrameRateControllerTimeSourceAdapter> time_source_client_adapter_;
+  bool active_;
+  bool swap_buffers_complete_supported_;
 
-    // Members for unthrottled frame-rate.
-    bool m_isTimeSourceThrottling;
-    base::WeakPtrFactory<FrameRateController> m_weakFactory;
-    Thread* m_thread;
+  // Members for unthrottled frame-rate.
+  bool is_time_source_throttling_;
+  base::WeakPtrFactory<FrameRateController> weak_factory_;
+  Thread* thread_;
 
-    DISALLOW_COPY_AND_ASSIGN(FrameRateController);
+  DISALLOW_COPY_AND_ASSIGN(FrameRateController);
 };
 
 }  // namespace cc

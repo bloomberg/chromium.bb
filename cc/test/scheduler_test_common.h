@@ -119,7 +119,7 @@ class FakeFrameRateController : public cc::FrameRateController {
 public:
     FakeFrameRateController(scoped_refptr<cc::TimeSource> timer) : cc::FrameRateController(timer) { }
 
-    int numFramesPending() const { return m_numFramesPending; }
+    int numFramesPending() const { return num_frames_pending_; }
 };
 
 }  // namespace cc
