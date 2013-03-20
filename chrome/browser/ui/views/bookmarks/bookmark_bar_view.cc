@@ -45,6 +45,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
@@ -1142,8 +1143,16 @@ void BookmarkBarView::OnMenuButtonClicked(views::View* view,
 
 void BookmarkBarView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
+  WindowOpenDisposition disposition_from_event_flags =
+      ui::DispositionFromEventFlags(event.flags());
+
   if (sender->tag() == kAppsShortcutButtonTag) {
-    chrome::ShowAppLauncherPage(browser_);
+    OpenURLParams params(GURL(chrome::kChromeUIAppsURL),
+                         Referrer(),
+                         disposition_from_event_flags,
+                         content::PAGE_TRANSITION_AUTO_BOOKMARK,
+                         false);
+    page_navigator_->OpenURL(params);
     bookmark_utils::RecordAppsPageOpen(GetBookmarkLaunchLocation());
     return;
   }
@@ -1157,9 +1166,6 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     node = model_->bookmark_bar_node()->GetChild(index);
   }
   DCHECK(page_navigator_);
-
-  WindowOpenDisposition disposition_from_event_flags =
-      ui::DispositionFromEventFlags(event.flags());
 
   if (node->is_url()) {
     RecordAppLaunch(browser_->profile(), node->url());

@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -1224,7 +1225,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (void)openAppsPage:(id)sender {
-  chrome::ShowAppLauncherPage(browser_);
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  [self openURL:GURL(chrome::kChromeUIAppsURL) disposition:disposition];
   bookmark_utils::RecordAppsPageOpen([self bookmarkLaunchLocation]);
 }
 

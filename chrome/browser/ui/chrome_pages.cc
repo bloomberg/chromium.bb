@@ -56,13 +56,6 @@ void NavigateToSingletonTab(Browser* browser, const GURL& url) {
 
 }  // namespace
 
-void ShowAppLauncherPage(Browser* browser) {
-  content::RecordAction(UserMetricsAction("ShowAppLauncherPage"));
-  ShowSingletonTabOverwritingNTP(
-      browser,
-      GetSingletonTabNavigateParams(browser, GURL(kChromeUIAppsURL)));
-}
-
 void ShowBookmarkManager(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
   content::RecordAction(UserMetricsAction("ShowBookmarks"));
