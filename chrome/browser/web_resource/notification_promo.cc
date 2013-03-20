@@ -7,6 +7,7 @@
 #include <cmath>
 #include <vector>
 
+#include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -395,11 +396,21 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
   ntp_promo->GetBoolean(kPrefPromoClosed, &closed_);
 }
 
+bool NotificationPromo::CheckAppLauncher() const {
+  bool is_app_launcher_promo = false;
+  if (!promo_payload_->GetBoolean("is_app_launcher_promo",
+                                  &is_app_launcher_promo))
+    return true;
+  return !is_app_launcher_promo ||
+         !prefs_->GetBoolean(apps::prefs::kAppLauncherIsEnabled);
+}
+
 bool NotificationPromo::CanShow() const {
   return !closed_ &&
          !promo_text_.empty() &&
          !ExceedsMaxGroup() &&
          !ExceedsMaxViews() &&
+         CheckAppLauncher() &&
          base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
          base::Time::FromDoubleT(EndTime()) > base::Time::Now();
 }

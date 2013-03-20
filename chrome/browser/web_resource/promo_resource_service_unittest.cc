@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "apps/pref_names.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -334,6 +335,8 @@ class NotificationPromoTest {
     EXPECT_TRUE(notification_promo_.CanShow());
   }
 
+  const NotificationPromo& promo() const { return notification_promo_; }
+
  private:
   NotificationPromo notification_promo_;
   bool received_notification_;
@@ -529,4 +532,50 @@ TEST_F(PromoResourceServiceTest, PromoServerURLTest) {
   EXPECT_TRUE(promo_server_url.is_valid());
   EXPECT_TRUE(promo_server_url.SchemeIs(chrome::kHttpsScheme));
   // TODO(achuith): Test this better.
+}
+
+TEST_F(PromoResourceServiceTest, AppLauncherPromoTest) {
+  // Check that prefs are set correctly.
+  NotificationPromoTest promo_test;
+
+  // Set up start date and promo line in a Dictionary as if parsed from the
+  // service. date[0].end is replaced with a date 1 year in the future.
+  promo_test.Init("{"
+                  "  \"ntp_notification_promo\": ["
+                  "    {"
+                  "      \"date\":"
+                  "        ["
+                  "          {"
+                  "            \"start\":\"3 Aug 1999 9:26:06 GMT\","
+                  "            \"end\":\"$1\""
+                  "          }"
+                  "        ],"
+                  "      \"grouping\":"
+                  "        {"
+                  "          \"buckets\":1000,"
+                  "          \"segment\":200,"
+                  "          \"increment\":100,"
+                  "          \"increment_frequency\":3600,"
+                  "          \"increment_max\":400"
+                  "        },"
+                  "      \"payload\":"
+                  "        {"
+                  "          \"promo_message_short\":"
+                  "              \"What do you think of Chrome?\","
+                  "          \"days_active\":7,"
+                  "          \"install_age_days\":21,"
+                  "          \"is_app_launcher_promo\":true"
+                  "        },"
+                  "      \"max_views\":30"
+                  "    }"
+                  "  ]"
+                  "}",
+                  "What do you think of Chrome?",
+                  // The starting date is in 1999 to make tests pass
+                  // on Android devices with incorrect or unset date/time.
+                  933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
+                  1000, 200, 100, 3600, 400, 30);
+  promo_test.InitPromoFromJson(true);
+  local_state_.Get()->SetBoolean(apps::prefs::kAppLauncherIsEnabled, true);
+  EXPECT_FALSE(promo_test.promo().CanShow());
 }
