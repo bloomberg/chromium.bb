@@ -78,8 +78,7 @@ class FakeDriveServiceTest : public testing::Test {
     GDataErrorCode error;
     scoped_ptr<AboutResource> about_resource;
     fake_service_.GetAboutResource(
-        base::Bind(&test_util::CopyResultsFromGetAboutResourceCallback,
-                   &error, &about_resource));
+        test_util::CreateCopyResultCallback(&error, &about_resource));
     message_loop_.RunUntilIdle();
     return about_resource->largest_change_id();
   }
@@ -417,8 +416,7 @@ TEST_F(FakeDriveServiceTest, GetAboutResource) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;
   fake_service_.GetAboutResource(
-      base::Bind(&test_util::CopyResultsFromGetAboutResourceCallback,
-                 &error, &about_resource));
+      test_util::CreateCopyResultCallback(&error, &about_resource));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -438,8 +436,7 @@ TEST_F(FakeDriveServiceTest, GetAboutResource_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;
   fake_service_.GetAboutResource(
-      base::Bind(&test_util::CopyResultsFromGetAboutResourceCallback,
-                 &error, &about_resource));
+      test_util::CreateCopyResultCallback(&error, &about_resource));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -453,9 +450,7 @@ TEST_F(FakeDriveServiceTest, GetAppList) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AppList> app_list;
   fake_service_.GetAppList(
-      base::Bind(&test_util::CopyResultsFromGetAppListCallback,
-                 &error,
-                 &app_list));
+      test_util::CreateCopyResultCallback(&error, &app_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -471,9 +466,7 @@ TEST_F(FakeDriveServiceTest, GetAppList_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AppList> app_list;
   fake_service_.GetAppList(
-      base::Bind(&test_util::CopyResultsFromGetAppListCallback,
-                 &error,
-                 &app_list));
+      test_util::CreateCopyResultCallback(&error, &app_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);

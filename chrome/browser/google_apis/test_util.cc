@@ -101,24 +101,6 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   return value.Pass();
 }
 
-void CopyResultsFromGetAboutResourceCallback(
-    GDataErrorCode* error_out,
-    scoped_ptr<AboutResource>* about_resource_out,
-    GDataErrorCode error_in,
-    scoped_ptr<AboutResource> about_resource_in) {
-  *error_out = error_in;
-  *about_resource_out = about_resource_in.Pass();
-}
-
-void CopyResultsFromGetAppListCallback(
-    GDataErrorCode* error_out,
-    scoped_ptr<AppList>* app_list_out,
-    GDataErrorCode error_in,
-    scoped_ptr<AppList> app_list_in) {
-  *app_list_out = app_list_in.Pass();
-  *error_out = error_in;
-}
-
 void CopyResultsFromDownloadActionCallback(
     GDataErrorCode* error_out,
     base::FilePath* temp_file_out,
