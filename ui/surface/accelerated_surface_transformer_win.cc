@@ -417,6 +417,100 @@ bool AcceleratedSurfaceTransformer::TransformRGBToYV12(
   }
 }
 
+bool AcceleratedSurfaceTransformer::ReadFast(IDirect3DSurface9* gpu_surface,
+                                             uint8* dst,
+                                             int dst_bytes_per_row,
+                                             int dst_num_rows,
+                                             int dst_stride) {
+  // TODO(nick): Compared to GetRenderTargetData, LockRect+memcpy is 50% faster
+  // on some systems, but 100x slower on others. We should have logic here to
+  // choose the best path, probably by adaptively trying both and picking the
+  // faster one. http://crbug.com/168532
+  return ReadByGetRenderTargetData(gpu_surface, dst, dst_bytes_per_row,
+                                   dst_num_rows, dst_stride);
+}
+
+bool AcceleratedSurfaceTransformer::ReadByLockAndCopy(
+    IDirect3DSurface9* gpu_surface,
+    uint8* dst,
+    int dst_bytes_per_row,
+    int dst_num_rows,
+    int dst_stride) {
+  D3DLOCKED_RECT locked_rect;
+  {
+    TRACE_EVENT0("gpu", "LockRect");
+    HRESULT hr = gpu_surface->LockRect(&locked_rect, NULL,
+                                       D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to lock surface";
+      return false;
+    }
+  }
+
+  {
+    TRACE_EVENT0("gpu", "memcpy");
+    uint8* dst_row = dst;
+    uint8* src_row = reinterpret_cast<uint8*>(locked_rect.pBits);
+    for (int i = 0; i < dst_num_rows; i++) {
+      memcpy(dst_row, src_row, dst_bytes_per_row);
+      src_row += locked_rect.Pitch;
+      dst_row += dst_stride;
+    }
+  }
+  gpu_surface->UnlockRect();
+  return true;
+}
+
+bool AcceleratedSurfaceTransformer::ReadByGetRenderTargetData(
+    IDirect3DSurface9* gpu_surface,
+    uint8* dst,
+    int dst_bytes_per_row,
+    int dst_num_rows,
+    int dst_stride) {
+  HRESULT hr = 0;
+  base::win::ScopedComPtr<IDirect3DSurface9> system_surface;
+  gfx::Size src_size = d3d_utils::GetSize(gpu_surface);
+
+  // Depending on pitch and alignment, we might be able to wrap |dst| in an
+  // offscreen- plain surface for a direct copy.
+  const bool direct_copy = (dst_stride == dst_bytes_per_row &&
+                            src_size.width() * 4 == dst_bytes_per_row &&
+                            dst_num_rows >= src_size.height());
+
+  {
+    TRACE_EVENT0("gpu", "CreateOffscreenPlainSurface");
+    HANDLE handle = reinterpret_cast<HANDLE>(dst);
+    hr = device()->CreateOffscreenPlainSurface(src_size.width(),
+                                               src_size.height(),
+                                               D3DFMT_A8R8G8B8,
+                                               D3DPOOL_SYSTEMMEM,
+                                               system_surface.Receive(),
+                                               direct_copy ? &handle : NULL);
+    if (!SUCCEEDED(hr)) {
+      LOG(ERROR) << "Failed to create offscreen plain surface.";
+      return false;
+    }
+  }
+
+  {
+    TRACE_EVENT0("gpu", "GetRenderTargetData");
+    hr = device()->GetRenderTargetData(gpu_surface, system_surface);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed GetRenderTargetData";
+      return false;
+    }
+  }
+
+  if (direct_copy) {
+    // We're done: |system_surface| is a wrapper around |dst|.
+    return true;
+  } else {
+    // Extra memcpy required from |system_surface| to |dst|.
+    return ReadByLockAndCopy(system_surface, dst, dst_bytes_per_row,
+                             dst_num_rows, dst_stride);
+  }
+}
+
 bool AcceleratedSurfaceTransformer::AllocYUVBuffers(
     const gfx::Size& dst_size,
     gfx::Size* y_size,

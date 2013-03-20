@@ -55,29 +55,15 @@ bool DoAllShowPresentWithGDI() {
       switches::kDoAllShowPresentWithGDI);
 }
 
-// Lock a D3D surface, and invoke a VideoFrame copier on the result.
-bool LockAndCopyPlane(IDirect3DSurface9* src_surface,
-                      media::VideoFrame* dst_frame,
-                      size_t plane_id) {
-  gfx::Size src_size = d3d_utils::GetSize(src_surface);
-
-  D3DLOCKED_RECT locked_rect;
-  {
-    TRACE_EVENT0("gpu", "LockRect");
-    HRESULT hr = src_surface->LockRect(&locked_rect, NULL,
-                                       D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK);
-    if (FAILED(hr))
-      return false;
-  }
-
-  {
-    TRACE_EVENT0("gpu", "memcpy");
-    uint8* src = reinterpret_cast<uint8*>(locked_rect.pBits);
-    int src_stride = locked_rect.Pitch;
-    media::CopyPlane(plane_id, src, src_stride, src_size.height(), dst_frame);
-  }
-  src_surface->UnlockRect();
-  return true;
+// Use a SurfaceReader to copy into one plane of the VideoFrame.
+bool CopyPlane(AcceleratedSurfaceTransformer* gpu_ops,
+               IDirect3DSurface9* src_surface,
+               media::VideoFrame* dst_frame,
+               size_t plane_id) {
+  int width_in_bytes = dst_frame->row_bytes(plane_id);
+  return gpu_ops->ReadFast(src_surface, dst_frame->data(plane_id),
+                           width_in_bytes, dst_frame->rows(plane_id),
+                           dst_frame->row_bytes(plane_id));
 }
 
 }  // namespace
@@ -477,39 +463,18 @@ bool AcceleratedPresenter::DoCopyToARGB(const gfx::Rect& requested_src_subrect,
     }
   }
 
-  D3DLOCKED_RECT locked_rect;
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                    dst_size.width(), dst_size.height());
+  if (!bitmap->allocPixels())
+    return false;
+  bitmap->setIsOpaque(true);
 
-  // Empirical evidence seems to suggest that LockRect and memcpy are faster
-  // than would be GetRenderTargetData to an offscreen surface wrapping *buf.
-  {
-    TRACE_EVENT0("gpu", "LockRect");
-    hr = final_surface->LockRect(&locked_rect, NULL,
-                                 D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to lock surface";
-      return false;
-    }
-  }
-
-  {
-    TRACE_EVENT0("gpu", "memcpy");
-
-    bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                      dst_size.width(), dst_size.height(),
-                      locked_rect.Pitch);
-    if (!bitmap->allocPixels()) {
-      final_surface->UnlockRect();
-      return false;
-    }
-    bitmap->setIsOpaque(true);
-
-    memcpy(reinterpret_cast<int8*>(bitmap->getPixels()),
-           reinterpret_cast<int8*>(locked_rect.pBits),
-           locked_rect.Pitch * dst_size.height());
-  }
-  final_surface->UnlockRect();
-
-  return true;
+  // Copy |final_surface| to |bitmap|. This is always a synchronous operation.
+  return gpu_ops->ReadFast(final_surface,
+                           reinterpret_cast<uint8*>(bitmap->getPixels()),
+                           bitmap->width() * bitmap->bytesPerPixel(),
+                           bitmap->height(),
+                           static_cast<int>(bitmap->rowBytes()));
 }
 
 bool AcceleratedPresenter::DoCopyToYUV(
@@ -590,11 +555,11 @@ bool AcceleratedPresenter::DoCopyToYUV(
     }
   }
 
-  if (!LockAndCopyPlane(y, frame, media::VideoFrame::kYPlane))
+  if (!CopyPlane(gpu_ops, y, frame, media::VideoFrame::kYPlane))
     return false;
-  if (!LockAndCopyPlane(u, frame, media::VideoFrame::kUPlane))
+  if (!CopyPlane(gpu_ops, u, frame, media::VideoFrame::kUPlane))
     return false;
-  if (!LockAndCopyPlane(v, frame, media::VideoFrame::kVPlane))
+  if (!CopyPlane(gpu_ops, v, frame, media::VideoFrame::kVPlane))
     return false;
   return true;
 }

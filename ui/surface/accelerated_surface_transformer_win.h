@@ -91,6 +91,29 @@ class SURFACE_EXPORT AcceleratedSurfaceTransformer {
       IDirect3DSurface9** dst_u,
       IDirect3DSurface9** dst_v);
 
+  // Synchronously copy from a D3D surface into a caller-allocated buffer. This
+  // will dispatch to one of a couple techniques, depending on which is
+  // determined to be the faster method for the current device.
+  bool ReadFast(IDirect3DSurface9* gpu_surface,
+                uint8* dst,
+                int dst_bytes_per_row,
+                int dst_num_rows,
+                int dst_stride);
+
+  // Do a read using a particular technique. Which of these is faster depends on
+  // the hardware. Intended for testing; production code ought to call
+  // ReadFast().
+  bool ReadByLockAndCopy(IDirect3DSurface9* gpu_surface,
+                         uint8* dst,
+                         int dst_bytes_per_row,
+                         int dst_num_rows,
+                         int dst_stride);
+  bool ReadByGetRenderTargetData(IDirect3DSurface9* gpu_surface,
+                                 uint8* dst,
+                                 int dst_bytes_per_row,
+                                 int dst_num_rows,
+                                 int dst_stride);
+
  private:
   friend class AcceleratedSurfaceTransformerTest;
   FRIEND_TEST_ALL_PREFIXES(AcceleratedSurfaceTransformerTest, Init);
