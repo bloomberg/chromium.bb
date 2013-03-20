@@ -494,10 +494,9 @@ void MessageCenterView::RemoveAllNotifications() {
 }
 
 void MessageCenterView::AddNotification(const Notification& notification) {
-  // Always expand the first (topmost) notification.
-  bool expanded = (notification.is_expanded() || message_views_.empty());
-  MessageView* view = NotificationView::Create(notification, observer_,
-                                               expanded);
+  // NotificationViews are expanded by default here until
+  // http://crbug.com/217902 is fixed. TODO(dharcourt): Fix.
+  MessageView* view = NotificationView::Create(notification, observer_, true);
   view->set_scroller(scroller_);
   message_views_[notification.id()] = view;
   message_list_view_->AddChildView(view);
