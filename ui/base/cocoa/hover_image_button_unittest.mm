@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
+#import "ui/base/cocoa/hover_image_button.h"
 
-#include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/hover_image_button.h"
-#include "grit/theme_resources.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
+#import "base/memory/scoped_nsobject.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 
 namespace {
 
-class HoverImageButtonTest : public CocoaTest {
+class HoverImageButtonTest : public ui::CocoaTest {
  public:
   HoverImageButtonTest() {
     NSRect content_frame = [[test_window() contentView] frame];
@@ -35,9 +30,8 @@ class HoverImageButtonTest : public CocoaTest {
 
 // Test mouse events.
 TEST_F(HoverImageButtonTest, ImageSwap) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNativeImageNamed(IDR_HOME).ToNSImage();
-  NSImage* hover = rb.GetNativeImageNamed(IDR_BACK).ToNSImage();
+  NSImage* image = [NSImage imageNamed:NSImageNameStatusAvailable];
+  NSImage* hover = [NSImage imageNamed:NSImageNameStatusNone];
   [button_ setDefaultImage:image];
   [button_ setHoverImage:hover];
 
@@ -52,8 +46,7 @@ TEST_F(HoverImageButtonTest, ImageSwap) {
 
 // Test mouse events.
 TEST_F(HoverImageButtonTest, Opacity) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNativeImageNamed(IDR_HOME).ToNSImage();
+  NSImage* image = [NSImage imageNamed:NSImageNameStatusAvailable];
   [button_ setDefaultImage:image];
   [button_ setDefaultOpacity:0.5];
   [button_ setHoverImage:image];

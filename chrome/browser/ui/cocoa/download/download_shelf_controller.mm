@@ -19,11 +19,11 @@
 #include "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #include "chrome/browser/ui/cocoa/download/download_shelf_mac.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_view.h"
-#import "chrome/browser/ui/cocoa/hover_button.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "ui/base/cocoa/hover_button.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::DownloadItem;

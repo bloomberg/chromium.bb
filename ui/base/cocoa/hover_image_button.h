@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_BASE_COCOA_HOVER_IMAGE_BUTTON_H_
+#define UI_BASE_COCOA_HOVER_IMAGE_BUTTON_H_
+
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/hover_button.h"
+#import "base/memory/scoped_nsobject.h"
+#import "ui/base/cocoa/hover_button.h"
 
 // A button that changes images when you hover over it and click it.
 @interface HoverImageButton : HoverButton {
@@ -38,3 +41,5 @@
 - (void)setPressedOpacity:(float)opacity;
 
 @end
+
+#endif  // UI_BASE_COCOA_HOVER_IMAGE_BUTTON_H_

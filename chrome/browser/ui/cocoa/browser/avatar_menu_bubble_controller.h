@@ -14,7 +14,6 @@
 
 class AvatarMenuModel;
 class Browser;
-@class HoverImageButton;
 
 // This window controller manages the bubble that displays a "menu" of profiles.
 // It is brought open by clicking on the avatar icon in the window frame.

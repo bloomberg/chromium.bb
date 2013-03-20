@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
 #import "chrome/browser/ui/panels/panel_constants.h"
@@ -17,6 +16,7 @@
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/image/image.h"

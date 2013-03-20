@@ -112,6 +112,7 @@
         'base/cocoa/events_mac_unittest.mm',
         'base/cocoa/focus_tracker_unittest.mm',
         'base/cocoa/fullscreen_window_manager_unittest.mm',
+        'base/cocoa/hover_image_button_unittest.mm',
         'base/cocoa/tracking_area_unittest.mm',
         'base/events/event_dispatcher_unittest.cc',
         'base/events/event_unittest.cc',

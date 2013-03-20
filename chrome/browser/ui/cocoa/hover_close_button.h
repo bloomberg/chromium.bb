@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/hover_button.h"
+#ifndef CHROME_BROWSER_UI_COCOA_HOVER_CLOSE_BUTTON_H_
+#define CHROME_BROWSER_UI_COCOA_HOVER_CLOSE_BUTTON_H_
 
+#import <Cocoa/Cocoa.h>
+
+#import "ui/base/cocoa/hover_button.h"
 
 @class GTMKeyValueAnimation;
 
@@ -21,3 +25,5 @@
 // look.
 @interface WebUIHoverCloseButton : HoverCloseButton
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_HOVER_CLOSE_BUTTON_H_

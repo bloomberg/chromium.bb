@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_HOVER_BUTTON_
-#define CHROME_BROWSER_UI_COCOA_HOVER_BUTTON_
+#ifndef UI_BASE_COCOA_HOVER_BUTTON_
+#define UI_BASE_COCOA_HOVER_BUTTON_
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 // A button that changes when you hover over it and click it.
@@ -41,4 +41,4 @@
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_HOVER_BUTTON_
+#endif  // UI_BASE_COCOA_HOVER_BUTTON_

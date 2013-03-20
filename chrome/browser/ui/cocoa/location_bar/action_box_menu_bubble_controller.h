@@ -13,7 +13,6 @@
 #import "ui/base/cocoa/tracking_area.h"
 
 class ActionBoxMenuModel;
-@class HoverImageButton;
 class ExtensionIconLoaderBridge;
 class Profile;
 

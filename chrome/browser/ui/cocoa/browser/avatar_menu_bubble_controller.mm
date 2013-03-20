@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
-#import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
