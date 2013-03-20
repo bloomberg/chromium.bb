@@ -31,23 +31,7 @@ namespace {
 
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/static/%s/devtools.html";
-
-std::string GetChannelPrefix() {
-  switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN: return "chromium";
-    case chrome::VersionInfo::CHANNEL_CANARY: return "chrome_canary";
-    case chrome::VersionInfo::CHANNEL_DEV: return "chrome_dev";
-    case chrome::VersionInfo::CHANNEL_BETA: return "chrome_beta";
-    case chrome::VersionInfo::CHANNEL_STABLE: return "chrome";
-    default:
-      NOTREACHED() << "Unknown channel " << chrome::VersionInfo::GetChannel();
-      return "";
-  }
-}
-
-std::string GetDefaultSocketName() {
-  return GetChannelPrefix() + "_devtools_remote";
-}
+const char kSocketName[] = "chrome_devtools_remote";
 
 // Delegate implementation for the devtools http handler on android. A new
 // instance of this gets created each time devtools is enabled.
@@ -119,7 +103,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 
 DevToolsServer::DevToolsServer()
     : use_bundled_frontend_resources_(false),
-      socket_name_(GetDefaultSocketName()),
+      socket_name_(kSocketName),
       protocol_handler_(NULL) {
 }
 
