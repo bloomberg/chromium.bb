@@ -20,18 +20,15 @@ import traceback
 
 
 PackageInfo = collections.namedtuple('PackageInfo', ['activity', 'socket'])
+CHROME_INFO = PackageInfo('Main', 'chrome_devtools_remote')
 PACKAGE_INFO = {
     'org.chromium.chrome.testshell':
         PackageInfo('ChromiumTestShellActivity',
                     'chromium_testshell_devtools_remote'),
-    'com.google.android.apps.chrome':
-        PackageInfo('Main', 'chromium_devtools_remote'),
-    'com.chrome.dev':
-        PackageInfo('Main', 'chrome_dev_devtools_remote'),
-    'com.chrome.beta':
-        PackageInfo('Main', 'chrome_beta_devtools_remote'),
-    'com.android.chrome':
-        PackageInfo('Main', 'chrome_devtools_remote'),
+    'com.google.android.apps.chrome': CHROME_INFO,
+    'com.chrome.dev': CHROME_INFO,
+    'com.chrome.beta': CHROME_INFO,
+    'com.android.chrome': CHROME_INFO,
 }
 
 
