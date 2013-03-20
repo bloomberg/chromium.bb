@@ -1089,6 +1089,10 @@ enum NotificationType {
   // the Instant API or not.
   NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
 
+  // Sent when the Instant Controller determines whether an Instant tab supports
+  // the Instant API or not.
+  NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+
   // Sent when the Instant Controller determines whether the NTP supports the
   // Instant API or not.
   NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,

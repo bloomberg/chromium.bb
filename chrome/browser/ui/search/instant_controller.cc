@@ -447,8 +447,17 @@ bool InstantController::Update(const AutocompleteMatch& match,
     search_mode_.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
 
   if (instant_tab_) {
-    instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
-  } else {
+    // If we have an |instant_tab_| but it doesn't support Instant yet, sever
+    // the connection to it so we use the overlay instead. This ensures that the
+    // user interaction will be responsive and handles cases where
+    // |instant_tab_| never responds about whether it supports Instant.
+    if (instant_tab_->supports_instant())
+      instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
+    else
+      instant_tab_.reset();
+  }
+
+  if (!instant_tab_) {
     if (first_interaction_time_.is_null())
       first_interaction_time_ = base::Time::Now();
     allow_overlay_to_show_search_suggestions_ = true;
@@ -1005,6 +1014,11 @@ void InstantController::InstantSupportDetermined(
   if (IsContentsFrom(instant_tab(), contents)) {
     if (!supports_instant)
       MessageLoop::current()->DeleteSoon(FROM_HERE, instant_tab_.release());
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+        content::Source<InstantController>(this),
+        content::NotificationService::NoDetails());
   } else if (IsContentsFrom(ntp(), contents)) {
     if (supports_instant)
       RemoveFromBlacklist(ntp_->instant_url());

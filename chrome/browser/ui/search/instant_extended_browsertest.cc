@@ -356,10 +356,16 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
   // Do a search and commit it.
   SetOmniboxTextAndWaitForOverlayToShow("hello k");
   EXPECT_EQ(ASCIIToUTF16("hello k"), omnibox()->GetText());
   browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
 
   // With a committed results page, do a search by unfocusing the omnibox and
   // focusing the contents.
