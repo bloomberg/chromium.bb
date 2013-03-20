@@ -404,8 +404,11 @@ void ParamTraits<std::vector<unsigned char> >::Log(const param_type& p,
 
 void ParamTraits<std::vector<bool> >::Write(Message* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.size()));
+  // Cast to bool below is required because libc++'s
+  // vector<bool>::const_reference is different from bool, and we want to avoid
+  // writing an extra specialization of ParamTraits for it.
   for (size_t i = 0; i < p.size(); i++)
-    WriteParam(m, p[i]);
+    WriteParam(m, static_cast<bool>(p[i]));
 }
 
 bool ParamTraits<std::vector<bool> >::Read(const Message* m,
@@ -429,7 +432,7 @@ void ParamTraits<std::vector<bool> >::Log(const param_type& p, std::string* l) {
   for (size_t i = 0; i < p.size(); ++i) {
     if (i != 0)
       l->push_back(' ');
-    LogParam((p[i]), l);
+    LogParam(static_cast<bool>(p[i]), l);
   }
 }
 
