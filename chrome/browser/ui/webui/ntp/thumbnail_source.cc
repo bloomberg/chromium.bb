@@ -24,7 +24,6 @@ using content::BrowserThread;
 // Set ThumbnailService now as Profile isn't thread safe.
 ThumbnailSource::ThumbnailSource(Profile* profile)
     : thumbnail_service_(ThumbnailServiceFactory::GetForProfile(profile)),
-      current_request_(NULL),
       profile_(profile) {
 }
 
@@ -40,11 +39,16 @@ void ThumbnailSource::StartDataRequest(
     bool is_incognito,
     const content::URLDataSource::GotDataCallback& callback) {
   // Translate to regular path if |raw_path| is of the form
-  // chrome-search://favicon/<rid>, where rid is a uint64.
+  // chrome-search://favicon/<id> or chrome-search://thumb/<id>, where <id> is
+  // an integer.
   std::string path = raw_path;
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    path = InstantService::MaybeTranslateInstantPathOnIO(
-        current_request_, raw_path);
+    std::map<std::string, std::string>::iterator it =
+        id_to_url_map_.find(raw_path);
+    if (it != id_to_url_map_.end()) {
+      path = id_to_url_map_[raw_path];
+      id_to_url_map_.erase(it);
+    }
   } else if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     path = InstantService::MaybeTranslateInstantPathOnUI(profile_, raw_path);
   }
@@ -56,7 +60,6 @@ void ThumbnailSource::StartDataRequest(
   } else {
     callback.Run(default_thumbnail_);
   }
-  current_request_ = NULL;
 }
 
 std::string ThumbnailSource::GetMimeType(const std::string&) const {
@@ -74,10 +77,22 @@ MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
 
 bool ThumbnailSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
-  current_request_ = request;
   if (request->url().SchemeIs(chrome::kChromeSearchScheme)) {
-    return InstantService::IsInstantPath(request->url()) &&
-        InstantIOContext::ShouldServiceRequest(request);
+    if (InstantService::IsInstantPath(request->url()) &&
+        InstantIOContext::ShouldServiceRequest(request)) {
+      // If this request will be serviced on the IO thread, then do the
+      // translation from raw_path to path here, where we have the |request|
+      // object in-hand, saving the result for later use.
+
+      // Strip leading slash from path.
+      std::string raw_path = request->url().path().substr(1);
+      if (!MessageLoopForRequestPath(raw_path)) {
+        id_to_url_map_[raw_path] =
+            InstantService::MaybeTranslateInstantPathOnIO(request, raw_path);
+      }
+      return true;
+    }
+    return false;
   }
   return URLDataSource::ShouldServiceRequest(request);
 }
