@@ -23,7 +23,7 @@ import org.chromium.content.browser.ContentViewCore;
  *
  * This class takes the place android.webkit.WebView would have in the production configuration.
  */
-class AwTestContainerView extends FrameLayout {
+public class AwTestContainerView extends FrameLayout {
     private AwContents mAwContents;
     private AwContents.InternalAccessDelegate mInternalAccessDelegate;
 

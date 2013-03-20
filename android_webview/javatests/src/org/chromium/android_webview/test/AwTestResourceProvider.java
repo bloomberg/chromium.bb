@@ -11,7 +11,7 @@ import org.chromium.android_webview.AwResource;
 public class AwTestResourceProvider {
     private static boolean sInitialized;
 
-    static void registerResources(Context context) {
+    public static void registerResources(Context context) {
         if (sInitialized) {
             return;
         }

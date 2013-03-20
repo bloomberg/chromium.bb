@@ -26,7 +26,7 @@ import org.chromium.android_webview.JsResultReceiver;
  * As a convience for tests that only care about specefic callbacks, this class provides
  * empty implementations of all abstract methods.
  */
-class NullContentsClient extends AwContentsClient {
+public class NullContentsClient extends AwContentsClient {
     @Override
     public boolean shouldIgnoreNavigation(String url) {
         return false;

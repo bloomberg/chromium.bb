@@ -45,7 +45,6 @@ public class AndroidWebViewTestBase
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                AwTestResourceProvider.registerResources(context);
                 AwBrowserProcess.start(context);
              }
         });

@@ -4,20 +4,33 @@
 {
   'targets': [
     {
-      'target_name': 'android_webview_test_apk',
+      'target_name': 'android_webview_test_java',
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_java_test_support',
         '../content/content.gyp:content_java_test_support',
         '../net/net.gyp:net_java_test_support',
-       'android_webview_java',
+        'android_webview_java',
         'libwebviewchromium',
       ],
       'variables': {
-        'apk_name': 'AndroidWebViewTest',
         'java_in_dir': '../android_webview/javatests',
-        'resource_dir': 'res',
-        'is_test_apk': 1,
+        'has_java_resources': 1,
+        'R_package': 'org.chromium.android_webview.test',
+        'R_package_relpath': 'org/chromium/android_webview/test',
+      },
+      'includes': [ '../build/java.gypi' ],
+    },
+    {
+      'target_name': 'android_webview_test_apk',
+      'type': 'none',
+      'dependencies': [
+        'android_webview_test_java',
+      ],
+      'variables': {
+        'apk_name': 'AndroidWebViewTest',
+        'java_in_dir': '../android_webview/test_apk',
+        'is_test_apk': 0, # We want resources from android_webview_test_java.
         'additional_input_paths': [
           '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_file.html',
           '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_icon.png',
@@ -34,6 +47,25 @@
           ],
         },
       ],
+      'includes': [ '../build/java_apk.gypi' ],
+    },
+    {
+      'target_name': 'android_webview_shell_apk',
+      'type': 'none',
+      'dependencies': [
+        'android_webview_test_java',
+        'android_webview_pak',
+      ],
+      'variables': {
+        'apk_name': 'AndroidWebViewShell',
+        'java_in_dir': '../android_webview/shell_apk',
+        'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebviewchromium.so'],
+        'resource_dir': 'res',
+        'asset_location': '<(ant_build_out)/android_webview_apk/assets',
+        'additional_input_paths': [
+          '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
+        ],
+      },
       'includes': [ '../build/java_apk.gypi' ],
     },
     {
