@@ -53,6 +53,7 @@ class ImageData : public ppapi::Resource,
   // Resource overrides.
   virtual ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
   virtual void LastPluginRefWasDeleted() OVERRIDE;
+  virtual void InstanceWasDeleted() OVERRIDE;
 
   // PPB_ImageData API.
   virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;

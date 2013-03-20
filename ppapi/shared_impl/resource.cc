@@ -59,6 +59,10 @@ void Resource::NotifyLastPluginRefWasDeleted() {
 }
 
 void Resource::NotifyInstanceWasDeleted() {
+  // Hold a reference, because InstanceWasDeleted() may cause us to be
+  // destroyed.
+  scoped_refptr<Resource> keep_alive(this);
+
   // Notify subclasses.
   InstanceWasDeleted();
 

@@ -237,6 +237,8 @@ class ImageDataCache {
   // Notification from the renderer that the given image data is usable.
   void ImageDataUsable(ImageData* image_data);
 
+  void DidDeleteInstance(PP_Instance instance);
+
  private:
   friend struct LeakySingletonTraits<ImageDataCache>;
 
@@ -286,6 +288,10 @@ void ImageDataCache::ImageDataUsable(ImageData* image_data) {
   CacheMap::iterator found = cache_.find(image_data->pp_instance());
   if (found != cache_.end())
     found->second.ImageDataUsable(image_data);
+}
+
+void ImageDataCache::DidDeleteInstance(PP_Instance instance) {
+  cache_.erase(instance);
 }
 
 void ImageDataCache::OnTimer(PP_Instance instance) {
@@ -342,6 +348,10 @@ void ImageData::LastPluginRefWasDeleted() {
   // will send back ImageDataUsable messages for.
   if (used_in_replace_contents_)
     ImageDataCache::GetInstance()->Add(this);
+}
+
+void ImageData::InstanceWasDeleted() {
+  ImageDataCache::GetInstance()->DidDeleteInstance(pp_instance());
 }
 
 PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
