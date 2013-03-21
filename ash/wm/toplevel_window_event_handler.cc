@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -62,14 +63,23 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
+  virtual void OnWindowHierarchyChanging(
+      const HierarchyChangeParams& params) OVERRIDE;
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
+  void AddHandlers(aura::Window* container);
+  void RemoveHandlers();
+
   ToplevelWindowEventHandler* handler_;
   scoped_ptr<WindowResizer> resizer_;
+
+  // If not NULL, this is an additional container that the dragged window has
+  // moved to which ScopedWindowResizer has temporarily added observers on.
+  aura::Window* target_container_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowResizer);
 };
@@ -78,14 +88,29 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     ToplevelWindowEventHandler* handler,
     WindowResizer* resizer)
     : handler_(handler),
-      resizer_(resizer) {
+      resizer_(resizer),
+      target_container_(NULL) {
   if (resizer_.get())
     resizer_->GetTarget()->AddObserver(this);
 }
 
 ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
+  RemoveHandlers();
   if (resizer_.get())
     resizer_->GetTarget()->RemoveObserver(this);
+}
+
+void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
+    const HierarchyChangeParams& params) {
+  if (params.receiver != resizer_->GetTarget())
+    return;
+
+  if (params.receiver->GetProperty(internal::kContinueDragAfterReparent)) {
+    params.receiver->SetProperty(internal::kContinueDragAfterReparent, false);
+    AddHandlers(params.new_parent);
+  } else {
+    handler_->CompleteDrag(DRAG_COMPLETE, 0);
+  }
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowPropertyChanged(
@@ -103,11 +128,30 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
   handler_->ResizerWindowDestroyed();
 }
 
+void ToplevelWindowEventHandler::ScopedWindowResizer::AddHandlers(
+    aura::Window* container) {
+  RemoveHandlers();
+  if (!handler_->owner()->Contains(container)) {
+    container->AddPreTargetHandler(handler_);
+    container->AddPostTargetHandler(handler_);
+    target_container_ = container;
+  }
+}
+
+void ToplevelWindowEventHandler::ScopedWindowResizer::RemoveHandlers() {
+  if (target_container_) {
+    target_container_->RemovePreTargetHandler(handler_);
+    target_container_->RemovePostTargetHandler(handler_);
+    target_container_ = NULL;
+  }
+}
+
 
 // ToplevelWindowEventHandler --------------------------------------------------
 
 ToplevelWindowEventHandler::ToplevelWindowEventHandler(aura::Window* owner)
-    : in_move_loop_(false),
+    : owner_(owner),
+      in_move_loop_(false),
       move_cancelled_(false),
       in_gesture_drag_(false),
       destroyed_(NULL) {

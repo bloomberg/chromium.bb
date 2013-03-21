@@ -37,6 +37,8 @@ class ASH_EXPORT ToplevelWindowEventHandler
   explicit ToplevelWindowEventHandler(aura::Window* owner);
   virtual ~ToplevelWindowEventHandler();
 
+  const aura::Window* owner() const { return owner_; }
+
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
@@ -84,6 +86,9 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // Invoked from ScopedWindowResizer if the window is destroyed.
   void ResizerWindowDestroyed();
+
+  // The container which this event handler is handling events on.
+  aura::Window* owner_;
 
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;

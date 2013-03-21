@@ -105,6 +105,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     scoped_ptr<aura::Window> window(
         CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
     EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
+    EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
     DragStart(window.get());
     gfx::Rect initial_bounds = window->bounds();
 
@@ -122,6 +123,8 @@ class PanelWindowResizerTest : public test::AshTestBase {
     // The panel should be detached when the drag completes.
     DragEnd();
     EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
+    EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+              window->parent()->id());
 
     DragStart(window.get());
     // Drag the panel down.
@@ -133,6 +136,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
     EXPECT_EQ(initial_bounds.x(), window->bounds().x());
     EXPECT_EQ(initial_bounds.y(), window->bounds().y());
+    EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
   }
 
   void TestWindowOrder(const std::vector<aura::Window*>& window_order) {
@@ -219,6 +223,25 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_TOP, shell->GetPrimaryRootWindow());
   DetachReattachTest(0, 1);
+}
+
+TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
+  scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+  DragStart(window.get());
+  DragMove(0, -100);
+  DragEnd();
+  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+            window->parent()->id());
+
+  // While moving the panel window should be moved to the panel container.
+  DragStart(window.get());
+  DragMove(20, 0);
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
+  DragEnd();
+
+  // When dropped it should return to the default container.
+  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+            window->parent()->id());
 }
 
 TEST_F(PanelWindowResizerTest, DragReordersPanelsHorizontal) {

@@ -36,8 +36,8 @@ PanelWindowResizer::~PanelWindowResizer() {
 // static
 PanelWindowResizer*
 PanelWindowResizer::Create(aura::Window* window,
-                             const gfx::Point& location,
-                             int window_component) {
+                           const gfx::Point& location,
+                           int window_component) {
   Details details(window, location, window_component);
   return details.is_resizable ? new PanelWindowResizer(details) : NULL;
 }
@@ -59,7 +59,8 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void PanelWindowResizer::CompleteDrag(int event_flags) {
-  if (should_attach_ != was_attached_) {
+  if (details_.window->GetProperty(internal::kPanelAttachedKey) !=
+      should_attach_) {
     details_.window->SetProperty(internal::kPanelAttachedKey, should_attach_);
     details_.window->SetDefaultParentByRootWindow(
             details_.window->GetRootWindow(),
@@ -142,13 +143,21 @@ bool PanelWindowResizer::AttachToLauncher(gfx::Rect* bounds) {
 }
 
 void PanelWindowResizer::StartedDragging() {
-  if (was_attached_)
-    panel_layout_manager_->StartDragging(details_.window);
+  // Tell the panel layout manager that we are dragging this panel before
+  // attaching it so that it does not get repositioned.
+  panel_layout_manager_->StartDragging(details_.window);
+  if (!was_attached_) {
+    // Attach the panel while dragging placing it in front of other panels.
+    details_.window->SetProperty(internal::kContinueDragAfterReparent, true);
+    details_.window->SetProperty(internal::kPanelAttachedKey, true);
+    details_.window->SetDefaultParentByRootWindow(
+            details_.window->GetRootWindow(),
+            details_.window->bounds());
+  }
 }
 
 void PanelWindowResizer::FinishDragging() {
-  if (was_attached_)
-    panel_layout_manager_->FinishDragging();
+  panel_layout_manager_->FinishDragging();
 }
 
 void PanelWindowResizer::UpdateLauncherPosition() {

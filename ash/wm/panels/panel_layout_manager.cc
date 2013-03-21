@@ -238,7 +238,6 @@ void PanelLayoutManager::Shutdown() {
 
 void PanelLayoutManager::StartDragging(aura::Window* panel) {
   DCHECK(!dragged_panel_);
-  DCHECK(panel->parent() == panel_container_);
   dragged_panel_ = panel;
   Relayout();
 }
@@ -566,6 +565,8 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
   }
 
   panel_container_->StackChildAtTop(active_panel);
+  if (dragged_panel_ && dragged_panel_->parent() == panel_container_)
+    panel_container_->StackChildAtTop(dragged_panel_);
   last_active_panel_ = active_panel;
 }
 

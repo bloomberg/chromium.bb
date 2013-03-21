@@ -29,6 +29,10 @@ class RootWindowController;
 extern const aura::WindowProperty<internal::AlwaysOnTopController*>* const
     kAlwaysOnTopControllerKey;
 
+// A property key to indicate that an in progress drag should be continued
+// after the window is reparented to another container.
+extern const aura::WindowProperty<bool>* const kContinueDragAfterReparent;
+
 // A property key to indicate that the user is cycling through workspaces.
 // The property should only be set on the root window.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
