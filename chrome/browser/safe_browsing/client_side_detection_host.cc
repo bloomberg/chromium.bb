@@ -43,6 +43,9 @@ using content::WebContents;
 
 namespace safe_browsing {
 
+const int ClientSideDetectionHost::kMaxHostsPerIP = 20;
+const int ClientSideDetectionHost::kMaxIPsPerBrowse = 200;
+
 namespace {
 
 void EmptyUrlCheckCallback(bool processed) {
@@ -376,22 +379,32 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
       !weak_factory_.HasWeakPtrs() &&
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
-      verdict->IsInitialized() &&
-      // We only send the verdict to the server if the verdict is phishing or if
-      // a SafeBrowsing interstitial was already shown for this site.  E.g., a
-      // malware or phishing interstitial was shown but the user clicked
-      // through.
-      (verdict->is_phishing() || DidShowSBInterstitial())) {
-    if (DidShowSBInterstitial()) {
-      browse_info_->unsafe_resource.reset(unsafe_resource_.release());
-    }
-    // Start browser-side feature extraction.  Once we're done it will send
-    // the client verdict request.
-    feature_extractor_->ExtractFeatures(
+      verdict->IsInitialized()) {
+    scoped_ptr<ClientMalwareRequest> malware_verdict(new ClientMalwareRequest);
+    // Start browser-side malware feature extraction.  Once we're done it will
+    // send the malware client verdict request.
+    malware_verdict->set_url(verdict->url());
+    feature_extractor_->ExtractMalwareFeatures(
         browse_info_.get(),
-        verdict.release(),
-        base::Bind(&ClientSideDetectionHost::FeatureExtractionDone,
-                   weak_factory_.GetWeakPtr()));
+        malware_verdict.get());
+    MalwareFeatureExtractionDone(malware_verdict.Pass());
+
+    // We only send phishing verdict to the server if the verdict is phishing or
+    // if a SafeBrowsing interstitial was already shown for this site.  E.g., a
+    // malware or phishing interstitial was shown but the user clicked
+    // through.
+    if (verdict->is_phishing() || DidShowSBInterstitial()) {
+      if (DidShowSBInterstitial()) {
+        browse_info_->unsafe_resource.reset(unsafe_resource_.release());
+      }
+      // Start browser-side feature extraction.  Once we're done it will send
+      // the client verdict request.
+      feature_extractor_->ExtractFeatures(
+          browse_info_.get(),
+          verdict.release(),
+          base::Bind(&ClientSideDetectionHost::FeatureExtractionDone,
+                     weak_factory_.GetWeakPtr()));
+    }
   }
   browse_info_.reset();
 }
@@ -446,6 +459,42 @@ void ClientSideDetectionHost::FeatureExtractionDone(
       callback);
 }
 
+void ClientSideDetectionHost::MalwareFeatureExtractionDone(
+    scoped_ptr<ClientMalwareRequest> request) {
+  if (!request) {
+    DLOG(FATAL) << "Invalid request object in MalwareFeatureExtractionDone";
+    return;
+  }
+  VLOG(2) << "Malware Feature extraction done for URL: " << request->url()
+          << ", with features count:" << request->feature_map_size();
+
+  // Send ping if there is matching features.
+  if (request->feature_map_size() > 0) {
+    VLOG(1) << "Start sending client malware request.";
+    ClientSideDetectionService::ClientReportMalwareRequestCallback callback;
+    csd_service_->SendClientReportMalwareRequest(
+        request.release(),  // The service takes ownership of the request object
+        callback);  // no action after request sent for now
+  }
+}
+
+void ClientSideDetectionHost::UpdateIPHostMap(const std::string& ip,
+                                              const std::string& host) {
+  if (ip.empty() || host.empty())
+    return;
+
+  IPHostMap::iterator it = browse_info_->ips.find(ip);
+  if (it == browse_info_->ips.end()) {
+    if (int(browse_info_->ips.size()) < kMaxIPsPerBrowse) {
+      std::set<std::string> hosts;
+      hosts.insert(host);
+      browse_info_->ips.insert(make_pair(ip, hosts));
+    }
+  } else if (int(it->second.size()) < kMaxHostsPerIP) {
+    it->second.insert(host);
+  }
+}
+
 void ClientSideDetectionHost::Observe(
     int type,
     const content::NotificationSource& source,
@@ -455,7 +504,8 @@ void ClientSideDetectionHost::Observe(
   const ResourceRequestDetails* req = content::Details<ResourceRequestDetails>(
       details).ptr();
   if (req && browse_info_.get()) {
-    browse_info_->ips.insert(req->socket_address.host());
+    UpdateIPHostMap(req->socket_address.host() /* ip */,
+                    req->url.host()  /* url host */);
   }
 }
 

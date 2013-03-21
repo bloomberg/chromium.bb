@@ -87,6 +87,41 @@ message ClientPhishingResponse {
   repeated string OBSOLETE_whitelist_expression = 2;
 }
 
+message ClientMalwareRequest {
+  // URL that the client visited.  The CGI parameters are stripped by the
+  // client.
+  required string url = 1;
+
+  message Feature {
+    // Feature name.  E.g., 'BadIpFetch='.
+    required string name = 1;
+
+    // Feature value is always in the range [0.0, 1.0].  Boolean features
+    // have value 1.0.
+    required double value = 2;
+
+    // Optional meta information about this feature
+    repeated string metainfo = 3;
+  }
+
+  // List of features that were extracted.
+  repeated Feature feature_map = 2;
+
+  // Field 3 is only used on the server.
+
+  // The referrer URL.  This field might not be set, for example, in the case
+  // where the referrer uses HTTPS.
+  optional string referrer_url = 4;
+}
+
+message ClientMalwareResponse {
+    required bool blacklist = 1;
+    // The confirmed blacklisted bad IP, which will be shown in malware warning.
+    // This IP string could be either in IPv4 or IPv6 format, which is the same
+    // as the ones client sent to server.
+    optional string bad_ip = 2;
+}
+
 message ClientDownloadRequest {
   // The final URL of the download (after all redirects).
   required string url = 1;
