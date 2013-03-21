@@ -220,7 +220,10 @@ input.common[type='checkbox']::after {
   opacity: .8;
 }
 
-.buttonbar button.action {
+.buttonbar button.action,
+.buttonbar button.action:focus,
+.buttonbar button.action:hover,
+.buttonbar button.action:active {
   background-color: rgb(209, 72, 54);
   background-image: -webkit-gradient(linear,
       left top, left bottom, from(rgb(221, 75, 57)), to(rgb(209, 72, 54)));
