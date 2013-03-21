@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "content/browser/byte_stream.h"
 #include "content/browser/download/base_file.h"
-#include "content/browser/download/byte_stream.h"
 #include "content/public/browser/download_save_info.h"
 #include "net/base/net_log.h"
 

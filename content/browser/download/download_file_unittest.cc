@@ -7,7 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/download/byte_stream.h"
+#include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_request_handle.h"

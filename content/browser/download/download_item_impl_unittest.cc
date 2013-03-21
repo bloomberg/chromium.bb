@@ -6,7 +6,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
-#include "content/browser/download/byte_stream.h"
+#include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_impl.h"

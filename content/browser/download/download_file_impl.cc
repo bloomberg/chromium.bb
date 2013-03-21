@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
-#include "content/browser/download/byte_stream.h"
+#include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"

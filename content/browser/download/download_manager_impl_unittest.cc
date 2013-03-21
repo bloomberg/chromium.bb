@@ -16,7 +16,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "content/browser/download/byte_stream.h"
+#include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"

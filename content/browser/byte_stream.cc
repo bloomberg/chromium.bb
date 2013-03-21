@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/byte_stream.h"
+#include "content/browser/byte_stream.h"
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/weak_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 
 namespace content {

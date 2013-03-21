@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_BYTE_STREAM_H_
-#define CONTENT_BROWSER_DOWNLOAD_BYTE_STREAM_H_
+#ifndef CONTENT_BROWSER_BYTE_STREAM_H_
+#define CONTENT_BROWSER_BYTE_STREAM_H_
 
+#include <deque>
 #include <set>
 #include <utility>
-#include <deque>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -196,4 +196,4 @@ CONTENT_EXPORT void CreateByteStream(
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_BYTE_STREAM_H_
+#endif  // CONTENT_BROWSER_BYTE_STREAM_H_
