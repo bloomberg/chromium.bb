@@ -26,7 +26,7 @@ const int kBookmarkBarHeight = 26;
 // Height of the bookmark bar on the new tab page when instant extended is
 // enabled. TODO(sail): Remove this and update chrome::kNTPBookmarkBarHeight
 // instead.
-static const int kSearchNewTabBookmarkBarHeight = 36;
+static const int kSearchNewTabBookmarkBarHeight = 40;
 
 // The amount of space between the inner bookmark bar and the outer toolbar on
 // new tab pages.
