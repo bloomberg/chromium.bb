@@ -4,6 +4,7 @@
 
 // Custom bindings for the downloads API.
 
+var binding = require('binding').Binding.create('downloads');
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 chromeHidden.Event.registerArgumentMassager(
@@ -46,3 +47,4 @@ chromeHidden.Event.registerArgumentMassager(
     throw e;
   }
 });
+exports.binding = binding.generate();
