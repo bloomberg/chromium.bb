@@ -5691,12 +5691,13 @@ void RenderViewImpl::OnSetActive(bool active) {
 
 void RenderViewImpl::OnSetNavigationStartTime(
     const base::TimeTicks& browser_navigation_start) {
-  if (!webview())
-    return;
-
   // Only the initial navigation can be a cross-renderer navigation. If we've
   // already navigated away from that page, we can ignore this message.
   if (page_id_ != -1)
+    return;
+
+  if (!webview() || !webview()->mainFrame() ||
+      !webview()->mainFrame()->provisionalDataSource())
     return;
 
   // browser_navigation_start is likely before this process existed, so we can't
