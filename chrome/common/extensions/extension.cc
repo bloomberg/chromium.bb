@@ -219,8 +219,11 @@ const char Extension::kMimeType[] = "application/x-chrome-extension";
 const int Extension::kValidWebExtentSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
 
-const int Extension::kValidHostPermissionSchemes =
-    UserScript::kValidUserScriptSchemes | URLPattern::SCHEME_CHROMEUI;
+const int Extension::kValidHostPermissionSchemes = URLPattern::SCHEME_CHROMEUI |
+                                                   URLPattern::SCHEME_HTTP |
+                                                   URLPattern::SCHEME_HTTPS |
+                                                   URLPattern::SCHEME_FILE |
+                                                   URLPattern::SCHEME_FTP;
 
 Extension::Requirements::Requirements()
     : webgl(false),
@@ -592,26 +595,50 @@ bool Extension::ParsePermissions(const char* key,
       URLPattern pattern = URLPattern(kAllowedSchemes);
       URLPattern::ParseResult parse_result = pattern.Parse(permission_str);
       if (parse_result == URLPattern::PARSE_SUCCESS) {
+        // The path component is not used for host permissions, so we force it
+        // to match all paths.
+        pattern.SetPath("/*");
+        int valid_schemes = pattern.valid_schemes();
+        if (pattern.MatchesScheme(chrome::kFileScheme) &&
+            !CanExecuteScriptEverywhere()) {
+          wants_file_access_ = true;
+          if (!(creation_flags_ & ALLOW_FILE_ACCESS))
+            valid_schemes &= ~URLPattern::SCHEME_FILE;
+        }
+
+        if (pattern.scheme() != chrome::kChromeUIScheme &&
+            !CanExecuteScriptEverywhere()) {
+          // Keep chrome:// in allowed schemes only if it's explicitly requested
+          // or CanExecuteScriptEverywhere is true. If the
+          // extensions_on_chrome_urls flag is not set, CanSpecifyHostPermission
+          // will fail, so don't check the flag here.
+          valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;
+        }
+        pattern.SetValidSchemes(valid_schemes);
+
         if (!CanSpecifyHostPermission(pattern, *api_permissions)) {
+          // TODO(aboxhall): make a warning (see line 633)
           *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidPermissionScheme, permission_str);
           return false;
         }
 
-        // The path component is not used for host permissions, so we force it
-        // to match all paths.
-        pattern.SetPath("/*");
+        host_permissions->AddPattern(pattern);
 
-        if (pattern.MatchesScheme(chrome::kFileScheme) &&
-            !CanExecuteScriptEverywhere()) {
-          wants_file_access_ = true;
-          if (!(creation_flags_ & ALLOW_FILE_ACCESS)) {
-            pattern.SetValidSchemes(
-                pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+        // We need to make sure all_urls matches chrome://favicon and
+        // (maybe) chrome://thumbnail, so add them back in to host_permissions
+        // separately.
+        if (pattern.match_all_urls()) {
+          host_permissions->AddPattern(
+              URLPattern(URLPattern::SCHEME_CHROMEUI,
+                         chrome::kChromeUIFaviconURL));
+          if (api_permissions->find(APIPermission::kExperimental) !=
+              api_permissions->end()) {
+            host_permissions->AddPattern(
+                URLPattern(URLPattern::SCHEME_CHROMEUI,
+                           chrome::kChromeUIThumbnailURL));
           }
         }
-
-        host_permissions->AddPattern(pattern);
         continue;
       }
 
@@ -666,13 +693,6 @@ bool Extension::CanSilentlyIncreasePermissions() const {
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {
-  if (url.SchemeIs(chrome::kChromeUIScheme) &&
-      url.host() != chrome::kChromeUIFaviconHost &&
-      url.host() != chrome::kChromeUIThumbnailHost &&
-      location() != Manifest::COMPONENT) {
-    return false;
-  }
-
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions()->
       HasExplicitAccessToOrigin(url);
@@ -805,9 +825,12 @@ bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
     return false;
   }
 
-  if (document_url.SchemeIs(chrome::kChromeUIScheme) &&
-      !CanExecuteScriptEverywhere()) {
-    return false;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kExtensionsOnChromeURLs)) {
+    if (document_url.SchemeIs(chrome::kChromeUIScheme) &&
+        !CanExecuteScriptEverywhere()) {
+      return false;
+    }
   }
 
   if (top_frame_url.SchemeIs(extensions::kExtensionScheme) &&
@@ -1964,6 +1987,7 @@ bool Extension::LoadExtensionFeatures(string16* error) {
 bool Extension::LoadContentScripts(string16* error) {
   if (!manifest_->HasKey(keys::kContentScripts))
     return true;
+
   const ListValue* list_value;
   if (!manifest_->GetList(keys::kContentScripts, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidContentScriptsList);
@@ -1981,6 +2005,7 @@ bool Extension::LoadContentScripts(string16* error) {
     UserScript script;
     if (!LoadUserScriptHelper(content_script, i, error, &script))
       return false;  // Failed to parse script context definition.
+
     script.set_extension_id(id());
     if (converted_from_user_script_) {
       script.set_emulate_greasemonkey(true);
@@ -2106,9 +2131,8 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       return false;
     }
 
-    URLPattern pattern(UserScript::kValidUserScriptSchemes);
-    if (CanExecuteScriptEverywhere())
-      pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
+    URLPattern pattern(
+        UserScript::ValidUserScriptSchemes(CanExecuteScriptEverywhere()));
 
     URLPattern::ParseResult parse_result = pattern.Parse(match_str);
     if (parse_result != URLPattern::PARSE_SUCCESS) {
@@ -2118,6 +2142,17 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
           base::IntToString(j),
           URLPattern::GetParseResultString(parse_result));
       return false;
+    }
+
+    // TODO(aboxhall): check for webstore
+    if (!CanExecuteScriptEverywhere() &&
+        pattern.scheme() != chrome::kChromeUIScheme) {
+      // Exclude SCHEME_CHROMEUI unless it's been explicitly requested.
+      // If the --extensions-on-chrome-urls flag has not been passed, requesting
+      // a chrome:// url will cause a parse failure above, so there's no need to
+      // check the flag here.
+      pattern.SetValidSchemes(
+          pattern.valid_schemes() & ~URLPattern::SCHEME_CHROMEUI);
     }
 
     if (pattern.MatchesScheme(chrome::kFileScheme) &&
@@ -2153,9 +2188,9 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
         return false;
       }
 
-      URLPattern pattern(UserScript::kValidUserScriptSchemes);
-      if (CanExecuteScriptEverywhere())
-        pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
+      int valid_schemes =
+          UserScript::ValidUserScriptSchemes(CanExecuteScriptEverywhere());
+      URLPattern pattern(valid_schemes);
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);
       if (parse_result != URLPattern::PARSE_SUCCESS) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -2359,6 +2394,12 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
     if (CanExecuteScriptEverywhere())
       return true;
 
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExtensionsOnChromeURLs))
+      return true;
+
+    // TODO(aboxhall): return from_webstore() when webstore handles blocking
+    // extensions which request chrome:// urls
     return false;
   }
 

@@ -3,7 +3,8 @@
   "version": "1",
   "content_scripts": [
     {
-      "matches": ["chrome://newtab/"]
+      "matches": ["chrome://newtab/"],
+      "js": ["javascript.js"]
     }
   ]
 }

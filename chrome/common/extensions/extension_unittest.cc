@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/extension.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
@@ -13,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
@@ -657,11 +659,10 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
 };
 
 TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
-  scoped_refptr<Extension> extension;
-
   // Test <all_urls> for regular extensions.
-  extension = LoadManifestStrict("script_and_capture",
+  scoped_refptr<Extension> extension = LoadManifestStrict("script_and_capture",
       "extension_regular_all.json");
+
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Allowed(extension, https_url));
   EXPECT_TRUE(Blocked(extension, file_url));
@@ -712,6 +713,103 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
       "extension_chrome_favicon_wildcard.json");
   EXPECT_TRUE(Blocked(extension, settings_url));
   EXPECT_TRUE(CaptureOnly(extension, favicon_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(extension->HasHostPermission(favicon_url));
+
+  // Having http://favicon should not give you chrome://favicon
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_http_favicon.json");
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Blocked(extension, favicon_url));
+
+  // Component extensions with <all_urls> should get everything.
+  extension = LoadManifest("script_and_capture", "extension_component_all.json",
+      Manifest::COMPONENT, Extension::NO_FLAGS);
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Allowed(extension, https_url));
+  EXPECT_TRUE(Allowed(extension, settings_url));
+  EXPECT_TRUE(Allowed(extension, about_url));
+  EXPECT_TRUE(Allowed(extension, favicon_url));
+  EXPECT_TRUE(extension->HasHostPermission(favicon_url));
+
+  // Component extensions should only get access to what they ask for.
+  extension = LoadManifest("script_and_capture",
+      "extension_component_google.json", Manifest::COMPONENT,
+      Extension::NO_FLAGS);
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Blocked(extension, https_url));
+  EXPECT_TRUE(Blocked(extension, file_url));
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Blocked(extension, favicon_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(Blocked(extension, extension_url));
+  EXPECT_FALSE(extension->HasHostPermission(settings_url));
+}
+
+
+TEST_F(ExtensionScriptAndCaptureVisibleTest, PermissionsWithChromeURLsEnabled) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kExtensionsOnChromeURLs);
+
+  scoped_refptr<Extension> extension;
+
+  // Test <all_urls> for regular extensions.
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_regular_all.json");
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Allowed(extension, https_url));
+  EXPECT_TRUE(Blocked(extension, file_url));
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Allowed(extension, favicon_url));  // chrome:// requested
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(Blocked(extension, extension_url));
+
+  // Test access to iframed content.
+  GURL within_extension_url = extension->GetResourceURL("page.html");
+  EXPECT_TRUE(AllowedScript(extension, http_url, http_url_with_path));
+  EXPECT_TRUE(AllowedScript(extension, https_url, http_url_with_path));
+  EXPECT_TRUE(AllowedScript(extension, http_url, within_extension_url));
+  EXPECT_TRUE(AllowedScript(extension, https_url, within_extension_url));
+  EXPECT_TRUE(BlockedScript(extension, http_url, extension_url));
+  EXPECT_TRUE(BlockedScript(extension, https_url, extension_url));
+
+  EXPECT_FALSE(extension->HasHostPermission(settings_url));
+  EXPECT_FALSE(extension->HasHostPermission(about_url));
+  EXPECT_TRUE(extension->HasHostPermission(favicon_url));
+
+  // Test * for scheme, which implies just the http/https schemes.
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_wildcard.json");
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Allowed(extension, https_url));
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(Blocked(extension, file_url));
+  EXPECT_TRUE(Blocked(extension, favicon_url));
+  extension = LoadManifest("script_and_capture",
+      "extension_wildcard_settings.json");
+  EXPECT_TRUE(Blocked(extension, settings_url));
+
+  // Having chrome://*/ should work for regular extensions with the flag
+  // enabled.
+  std::string error;
+  extension = LoadManifestUnchecked("script_and_capture",
+                                    "extension_wildcard_chrome.json",
+                                    Manifest::INTERNAL, Extension::NO_FLAGS,
+                                    &error);
+  EXPECT_FALSE(extension == NULL);
+  EXPECT_TRUE(Blocked(extension, http_url));
+  EXPECT_TRUE(Blocked(extension, https_url));
+  EXPECT_TRUE(Allowed(extension, settings_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(Blocked(extension, file_url));
+  EXPECT_TRUE(Allowed(extension, favicon_url));  // chrome:// requested
+
+  // Having chrome://favicon/* should not give you chrome://*
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_chrome_favicon_wildcard.json");
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Allowed(extension, favicon_url));  // chrome:// requested
   EXPECT_TRUE(Blocked(extension, about_url));
   EXPECT_TRUE(extension->HasHostPermission(favicon_url));
 

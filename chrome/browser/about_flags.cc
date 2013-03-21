@@ -467,6 +467,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalExtensionApis)
   },
   {
+    "extensions-on-chrome-urls",
+    IDS_FLAGS_EXTENSIONS_ON_CHROME_URLS_NAME,
+    IDS_FLAGS_EXTENSIONS_ON_CHROME_URLS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kExtensionsOnChromeURLs)
+  },
+  {
     "action-box",
     IDS_FLAGS_ACTION_BOX_NAME,
     IDS_FLAGS_ACTION_BOX_DESCRIPTION,

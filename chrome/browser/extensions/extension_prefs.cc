@@ -544,7 +544,7 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
   URLPatternSet scriptable_hosts;
   ReadExtensionPrefURLPatternSet(
       extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
-      &scriptable_hosts, UserScript::kValidUserScriptSchemes);
+      &scriptable_hosts, UserScript::ValidUserScriptSchemes());
 
   return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
 }

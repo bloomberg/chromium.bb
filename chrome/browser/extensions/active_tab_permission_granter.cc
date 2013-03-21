@@ -41,7 +41,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   if (IsGranted(extension))
     return;
 
-  URLPattern pattern(UserScript::kValidUserScriptSchemes);
+  URLPattern pattern(UserScript::ValidUserScriptSchemes());
   if (pattern.Parse(web_contents()->GetURL().spec()) !=
           URLPattern::PARSE_SUCCESS) {
     // Pattern parsing could fail if this is an unsupported URL e.g. chrome://.

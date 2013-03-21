@@ -4,8 +4,10 @@
 
 #include "chrome/common/extensions/user_script.h"
 
+#include "base/command_line.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace {
 
@@ -24,6 +26,15 @@ bool UrlMatchesGlobs(const std::vector<std::string>* globs,
 
 namespace extensions {
 
+// The bitmask for valid user script injectable schemes used by URLPattern.
+enum {
+  kValidUserScriptSchemes = URLPattern::SCHEME_CHROMEUI |
+                            URLPattern::SCHEME_HTTP |
+                            URLPattern::SCHEME_HTTPS |
+                            URLPattern::SCHEME_FILE |
+                            URLPattern::SCHEME_FTP
+};
+
 // static
 const char UserScript::kFileExtension[] = ".user.js";
 
@@ -31,6 +42,18 @@ bool UserScript::IsURLUserScript(const GURL& url,
                                  const std::string& mime_type) {
   return EndsWith(url.ExtractFileName(), kFileExtension, false) &&
       mime_type != "text/html";
+}
+
+// static
+int UserScript::ValidUserScriptSchemes(bool canExecuteScriptEverywhere) {
+  if (canExecuteScriptEverywhere)
+    return URLPattern::SCHEME_ALL;
+  int valid_schemes = kValidUserScriptSchemes;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kExtensionsOnChromeURLs)) {
+    valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;
+  }
+  return valid_schemes;
 }
 
 UserScript::File::File(const base::FilePath& extension_root,
@@ -184,20 +207,16 @@ void UserScript::UnpickleURLPatternSet(const ::Pickle& pickle,
   for (uint64 i = 0; i < num_patterns; ++i) {
     int valid_schemes;
     CHECK(pickle.ReadInt(iter, &valid_schemes));
+
     std::string pattern_str;
-    URLPattern pattern(valid_schemes);
     CHECK(pickle.ReadString(iter, &pattern_str));
 
-    // We remove the file scheme if it's not actually allowed (see Extension::
-    // LoadUserScriptHelper), but we need it temporarily while loading the
-    // pattern so that it's valid.
-    bool had_file_scheme = (valid_schemes & URLPattern::SCHEME_FILE) != 0;
-    if (!had_file_scheme)
-      pattern.SetValidSchemes(valid_schemes | URLPattern::SCHEME_FILE);
-    CHECK(URLPattern::PARSE_SUCCESS == pattern.Parse(pattern_str));
-    if (!had_file_scheme)
-      pattern.SetValidSchemes(valid_schemes);
+    URLPattern pattern(kValidUserScriptSchemes);
+    URLPattern::ParseResult result = pattern.Parse(pattern_str);
+    CHECK(URLPattern::PARSE_SUCCESS == result) <<
+        URLPattern::GetParseResultString(result) << " " << pattern_str.c_str();
 
+    pattern.SetValidSchemes(valid_schemes);
     pattern_list->AddPattern(pattern);
   }
 }

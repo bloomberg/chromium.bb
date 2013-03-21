@@ -271,7 +271,7 @@ void ExtensionAPI::LoadSchema(const std::string& name,
         std::string pattern;
         CHECK(matches->GetString(i, &pattern));
         pattern_set.AddPattern(
-            URLPattern(UserScript::kValidUserScriptSchemes, pattern));
+            URLPattern(UserScript::ValidUserScriptSchemes(), pattern));
       }
       url_matching_apis_[schema_namespace] = pattern_set;
     }

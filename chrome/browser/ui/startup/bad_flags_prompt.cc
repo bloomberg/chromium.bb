@@ -27,6 +27,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // Browser plugin is dangerous on regular pages because it breaks the Same
     // Origin Policy.
     switches::kEnableBrowserPluginForAllViewTypes,
+    switches::kExtensionsOnChromeURLs,
     NULL
   };
 

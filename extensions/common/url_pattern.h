@@ -188,6 +188,9 @@ class URLPattern {
   // Get an error string for a ParseResult.
   static const char* GetParseResultString(URLPattern::ParseResult parse_result);
 
+  // Checks whether the bit is set for the given scheme in the given scheme mask
+  static bool IsSchemeBitSet(const std::string& scheme, const int mask);
+
  private:
   // Returns true if any of the |schemes| items matches our scheme.
   bool MatchesAnyScheme(const std::vector<std::string>& schemes) const;
@@ -206,8 +209,7 @@ class URLPattern {
 
   // A bitmask containing the schemes which are considered valid for this
   // pattern. Parse() uses this to decide whether a pattern contains a valid
-  // scheme. MatchesScheme uses this to decide whether a wildcard scheme_
-  // matches a given test scheme.
+  // scheme.
   int valid_schemes_;
 
   // True if this is a special-case "<all_urls>" pattern.
