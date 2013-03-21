@@ -201,7 +201,21 @@ class Popen(subprocess.Popen):
 
   def recv_any(self, maxsize=None, timeout=None):
     """Reads from stderr and if empty, from stdout."""
-    return self._recv_any(maxsize, timeout)
+    pipes = [
+      x for x in ((self.stderr, 'stderr'), (self.stdout, 'stdout')) if x[0]
+    ]
+    if not pipes:
+      return None, None
+    conns, names = zip(*pipes)
+    index, data = recv_multi_impl(conns, max(maxsize or 1024, 1), timeout or 0)
+    if index is None:
+      return index, data
+    if not data:
+      self._close(names[index])
+      return None, None
+    if self.universal_newlines:
+      data = self._translate_newlines(data)
+    return names[index], data
 
   def recv_out(self, maxsize=None, timeout=None):
     """Reads from stdout asynchronously."""
@@ -225,23 +239,6 @@ class Popen(subprocess.Popen):
     if self.universal_newlines:
       data = self._translate_newlines(data)
     return data
-
-  def _recv_any(self, maxsize, timeout):
-    pipes = [
-      x for x in ((self.stderr, 'stderr'), (self.stdout, 'stdout')) if x[0]
-    ]
-    if not pipes:
-      return None, None
-    conns, names = zip(*pipes)
-    index, data = recv_multi_impl(conns, max(maxsize or 1024, 1), timeout or 0)
-    if index is None:
-      return index, data
-    if not data:
-      self._close(names[index])
-      return None, None
-    if self.universal_newlines:
-      data = self._translate_newlines(data)
-    return names[index], data
 
 
 def call_with_timeout(cmd, timeout, **kwargs):
