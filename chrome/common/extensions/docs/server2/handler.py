@@ -201,6 +201,10 @@ class Handler(webapp.RequestHandler):
   def _HandleGet(self, path):
     channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
 
+    if channel_name == _DEFAULT_CHANNEL:
+      self.redirect('/%s' % real_path)
+      return
+
     # TODO: Detect that these are directories and serve index.html out of them.
     if real_path.strip('/') == 'apps':
       real_path = 'apps/index.html'

@@ -157,9 +157,11 @@ except ImportError:
       def __init__(self, request, response):
         self.request = request
         self.response = response
+        self.response.status = 200
 
-      def redirect(self, path):
-        self.request.path = path
+      def redirect(self, path, permanent=False):
+        self.response.status = 301 if permanent else 302
+        self.response.headers['Location'] = path
 
   class _Db_Result(object):
     def __init__(self, data):
