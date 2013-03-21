@@ -12,6 +12,12 @@ SK_API void SetSkiaEnsureTypefaceAccessible(SkiaEnsureTypefaceAccessible func) {
   // This function is supposed to be called once in process life time.
   SkASSERT(g_skia_ensure_typeface_accessible == NULL);
   g_skia_ensure_typeface_accessible = func;
+
+  // This is not hooked up in skia (yet), but soon it will replace having
+  // SkFontHost::EnsureTypefaceAccessible(). So for now we do both, but after
+  // the next skia DEPS roll, we will remove our global and our impl of
+  // SkFontHost::EnsureTypefaceAccessible().
+  SkTypeface_SetEnsureLOGFONTAccessibleProc(func);
 }
 
 // static
