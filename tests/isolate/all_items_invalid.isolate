@@ -11,11 +11,15 @@
       # A single valid file so the command is valid and exits without an error.
       'empty.py',
       # File doesn't exist.
-      'A_file_that_do_not_exist',
+      'A_file_that_does_not_exist',
     ],
     'isolate_dependency_untracked': [
       # Directory missing trailing slash.
       'files1',
+    ],
+    'isolate_dependency_touched': [
+      # File doesn't exist.
+      'A_file_that_does_not_exist_either',
     ],
   },
 }

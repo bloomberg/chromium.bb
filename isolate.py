@@ -1552,6 +1552,15 @@ class CompleteState(object):
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x),
         ignore_broken_items)
 
+    # If we ignore broken items then remove any missing touched items.
+    if ignore_broken_items:
+      original_touched_count = len(touched)
+      touched = [touch for touch in touched if os.path.exists(touch)]
+
+      if len(touched) != original_touched_count:
+        logging.info('warning: removed %d invalid touched entries',
+                     len(touched) - original_touched_count)
+
     # Finally, update the new data to be able to generate the foo.isolated file,
     # the file that is used by run_isolated.py.
     self.saved_state.update_isolated(
