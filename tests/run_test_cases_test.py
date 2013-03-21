@@ -20,6 +20,8 @@ OUTPUT = os.path.join(ROOT_DIR, 'tests', 'run_test_cases', 'output.py')
 
 
 def to_native_eol(string):
+  if string is None:
+    return string
   if sys.platform == 'win32':
     return string.replace('\n', '\r\n')
   return string
@@ -55,42 +57,68 @@ class RunTestCases(unittest.TestCase):
   def test_call_with_timeout(self):
     timedout = 1 if sys.platform == 'win32' else -9
     # Format is:
-    # ( (cmd, timeout), (stdout, returncode) ), ...
+    # ( (cmd, stderr_pipe, timeout), (stdout, stderr, returncode) ), ...
     test_data = [
       # 0 means no timeout, like None.
       (
-        (['out_sleeping', '0.001', 'out_slept'], 0),
-        ('Sleeping.\nSlept.\n', 0),
+        (['out_sleeping', '0.001', 'out_slept', 'err_print'], None, 0),
+        ('Sleeping.\nSlept.\n', None, 0),
+      ),
+      (
+        (['err_print'], subprocess.STDOUT, 0),
+        ('printing', None, 0),
+      ),
+      (
+        (['err_print'], subprocess.PIPE, 0),
+        ('', 'printing', 0),
       ),
 
       # On a loaded system, this can be tight.
       (
-        (['out_sleeping', 'out_flush', '100', 'out_slept'], 0.5),
-        ('Sleeping.\n', timedout),
+        (['out_sleeping', 'out_flush', '100', 'out_slept'], None, 0.5),
+        ('Sleeping.\n', '', timedout),
+      ),
+      (
+        (
+          # Note that err_flush is necessary on Windows but not on the other
+          # OSes. This means the likelihood of missing stderr output from a
+          # killed child process on Windows is much higher than on other OSes.
+          [
+            'out_sleeping', 'out_flush', 'err_print', 'err_flush', '100',
+            'out_slept',
+          ],
+          subprocess.PIPE,
+          0.5),
+        ('Sleeping.\n', 'printing', timedout),
       ),
 
       (
-        (['out_sleeping', '0.001', 'out_slept'], 100),
-        ('Sleeping.\nSlept.\n', 0),
+        (['out_sleeping', '0.001', 'out_slept'], None, 100),
+        ('Sleeping.\nSlept.\n', '', 0),
       ),
     ]
     for i, (data, expected) in enumerate(test_data):
-      stdout, code, duration = run_test_cases.call_with_timeout(
+      stdout, stderr, code, duration = run_test_cases.call_with_timeout(
           [sys.executable, OUTPUT] + data[0],
-          timeout=data[1])
+          stderr=data[1],
+          timeout=data[2])
       self.assertTrue(duration > 0.0001, (data, duration))
       self.assertEqual(
-          (i, stdout, code),
-          (i, to_native_eol(expected[0]), expected[1]))
+          (i, stdout, stderr, code),
+          (i,
+            to_native_eol(expected[0]),
+            to_native_eol(expected[1]),
+            expected[2]))
 
       # Try again with universal_newlines=True.
-      stdout, code, duration = run_test_cases.call_with_timeout(
+      stdout, stderr, code, duration = run_test_cases.call_with_timeout(
           [sys.executable, OUTPUT] + data[0],
-          timeout=data[1],
+          stderr=data[1],
+          timeout=data[2],
           universal_newlines=True)
       self.assertTrue(duration > 0.0001, (data, duration))
       self.assertEqual(
-          (i, stdout, code),
+          (i, stdout, stderr, code),
           (i,) + expected)
 
   def test_recv_any(self):

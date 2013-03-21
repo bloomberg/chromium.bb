@@ -204,6 +204,8 @@ class Popen(subprocess.Popen):
     pipes = [
       x for x in ((self.stderr, 'stderr'), (self.stdout, 'stdout')) if x[0]
     ]
+    if len(pipes) == 2 and self.stderr.fileno() == self.stdout.fileno():
+      pipes.pop(0)
     if not pipes:
       return None, None
     conns, names = zip(*pipes)
@@ -249,12 +251,16 @@ def call_with_timeout(cmd, timeout, **kwargs):
       stdout=subprocess.PIPE,
       **kwargs)
   if timeout:
-    output = ''
+    out = ''
+    err = ''
     while proc.poll() is None:
       remaining = max(timeout - proc.duration(), 0.001)
-      data = proc.recv_out(timeout=remaining)
+      t, data = proc.recv_any(timeout=remaining)
       if data:
-        output += data
+        if t == 'stdout':
+          out += data
+        else:
+          err += data
       if proc.duration() >= timeout:
         break
     if proc.poll() is None and proc.duration() >= timeout:
@@ -263,14 +269,17 @@ def call_with_timeout(cmd, timeout, **kwargs):
     proc.wait()
     # Try reading a last time.
     while True:
-      data = proc.recv_out()
+      t, data = proc.recv_any()
       if not data:
         break
-      output += data
+      if t == 'stdout':
+        out += data
+      else:
+        err += data
   else:
     # This code path is much faster.
-    output = proc.communicate()[0]
-  return output, proc.returncode, proc.duration()
+    out, err = proc.communicate()
+  return out, err, proc.returncode, proc.duration()
 
 
 class QueueWithProgress(Queue.PriorityQueue):
@@ -429,16 +438,20 @@ def gtest_list_tests(cmd, cwd):
   cmd = cmd[:]
   cmd.append('--gtest_list_tests')
   env = setup_gtest_env()
+  timeout = 60.
   try:
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         env=env, cwd=cwd)
+    out, err, returncode, _ = call_with_timeout(
+        cmd,
+        timeout,
+        stderr=subprocess.PIPE,
+        env=env,
+        cwd=cwd)
   except OSError, e:
     raise Failure('Failed to run %s\ncwd=%s\n%s' % (' '.join(cmd), cwd, str(e)))
-  out, err = p.communicate()
-  if p.returncode:
+  if returncode:
     raise Failure(
         'Failed to run %s\nstdout:\n%s\nstderr:\n%s' %
-          (' '.join(cmd), out, err), p.returncode)
+          (' '.join(cmd), out, err), returncode)
   # pylint: disable=E1103
   if err and not err.startswith('Xlib:  extension "RANDR" missing on display '):
     logging.error('Unexpected spew in gtest_list_tests:\n%s\n%s', err, cmd)
@@ -785,7 +798,7 @@ class Runner(object):
       self.progress.update_item('Starting command %s with a timeout of %ss' %
                                 (cmd, timeout), False, False)
 
-    output, returncode, duration = call_with_timeout(
+    output, _, returncode, duration = call_with_timeout(
         cmd,
         timeout,
         cwd=self.cwd_dir,
