@@ -77,7 +77,7 @@ def TraverseTree(state, final_callback, prefix, anyfield=0x01):
     TraverseTree(
         state.forward_transitions[0].to_state,
         final_callback,
-        prefix + ',' + hex(anyfield),
+        prefix + [anyfield],
         anyfield=anyfield + 0x11)
     # We add 0x11 each time to get sequence 01 12 23 etc.
 
@@ -90,7 +90,7 @@ def TraverseTree(state, final_callback, prefix, anyfield=0x01):
       TraverseTree(
           t.to_state,
           final_callback,
-          prefix + ',' + hex(byte))
+          prefix + [byte])
 
 
 def RoughlyEqual(s1, s2):
@@ -107,7 +107,7 @@ class WorkerState(object):
   ]
 
   def __init__(self, prefix):
-    self._file_prefix = 'check_decoder_%s_' % prefix.replace(',', '_')
+    self._file_prefix = 'check_decoder_%s_' % '_'.join(map(hex, prefix))
     self.total_instructions = 0
 
     self._StartNewFile()
@@ -121,13 +121,14 @@ class WorkerState(object):
     self._asm_file.write('.text\n')
     self._num_instructions = 0
 
-  def ReceiveInstruction(self, s):
+  def ReceiveInstruction(self, bytes):
     # We do not disassemble x87 instructions prefixed with fwait as objdump
     # does. To avoid such situations in enumeration test, we insert nop after
     # fwait.
-    if re.match(r'(0x4[0-9a-f],)?0x9b$', s):
-      s += ',0x90'
-    self._asm_file.write('  .byte ' + s + '\n')
+    if (bytes == [0x9b] or
+        len(bytes) == 2 and bytes[1] == 0x9b and 0x40 <= bytes[0] < 0x4f):
+      bytes = bytes + [0x90]
+    self._asm_file.write('  .byte %s\n' % ','.join(map(hex, bytes)))
     self.total_instructions += 1
     self._num_instructions += 1
     if self._num_instructions == 1000000:
@@ -251,11 +252,11 @@ def main():
   for byte1, t1 in sorted(initial_state.forward_transitions.items()):
     state1 = t1.to_state
     if state1.any_byte or state1.is_accepting or num_suffixes[state1] < 10**7:
-      tasks.append((hex(byte1), states.index(state1)))
+      tasks.append(([byte1], states.index(state1)))
       continue
     for byte2, t2 in sorted(state1.forward_transitions.items()):
       state2 = t2.to_state
-      tasks.append((hex(byte1) + ',' + hex(byte2), states.index(state2)))
+      tasks.append(([byte1, byte2], states.index(state2)))
 
   print len(tasks), 'tasks'
 
@@ -265,7 +266,7 @@ def main():
 
   total = 0
   for prefix, count in results:
-    print prefix
+    print ', '.join(map(hex, prefix))
     total += count
 
   print total, 'instructions were processed'
