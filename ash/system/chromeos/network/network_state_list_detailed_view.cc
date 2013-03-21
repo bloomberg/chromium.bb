@@ -233,11 +233,12 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
         flimflam::kTypeWifi, true,
         chromeos::network_handler::ErrorCallback());
   } else if (sender == button_mobile_) {
-    bool enabled = handler->TechnologyEnabled(
-        NetworkStateHandler::kMatchTypeMobile);
-    handler->SetTechnologyEnabled(
-        NetworkStateHandler::kMatchTypeMobile, !enabled,
-        chromeos::network_handler::ErrorCallback());
+    // TODO: This needs to be fixed to use
+    // NetworkStateHandler::SetTechnologyEnabled instead. Currently
+    // ToggleMobile has code to handle the locked SIM case, which cannot
+    // be moved here yet due to dependencies on src/chrome/* - see,
+    // crbug.com/222540.
+    delegate->ToggleMobile();
   } else if (sender == settings_) {
     delegate->ShowNetworkSettings();
   } else if (sender == proxy_settings_) {
