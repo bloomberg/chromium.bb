@@ -7,7 +7,7 @@
 //  {BUG#} {MODIFIERS} : {TEST_NAME} = {PASS,FAIL,FLAKY,TIMEOUT,SKIP}
 //
 // MODIFIERS can be a combination of the below list:
-//  WIN XP VISTA WIN7 MAC LEOPARD SNOWLEOPARD LION LINUX CHROMEOS
+//  WIN XP VISTA WIN7 MAC LEOPARD SNOWLEOPARD LION LINUX CHROMEOS MOUNTAINLION
 //  NVIDIA AMD INTEL
 //  0x**** (this is a gpu's PCI device ID)
 //  DEBUG RELEASE
@@ -142,7 +142,8 @@ UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer_offsets = FAIL
 UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer = FAIL
 UNFILED MAC AMD : conformance_misc_type_conversion_test = FAIL
 UNFILED MAC AMD : conformance_renderbuffers_framebuffer_object_attachment = FAIL
-UNFILED MAC AMD : conformance_textures_copy_tex_image_and_sub_image_2d = FAIL
+196706 MOUNTAINLION AMD : conformance_textures_copy_tex_image_and_sub_image_2d = FAIL
+196706 LION : conformance_textures_copy_tex_image_and_sub_image_2d = FAIL
 UNFILED MAC AMD : conformance_typedarrays_array_unit_tests = FAIL
 UNFILED MAC AMD : conformance_glsl_functions_glsl_function_distance = FAIL
 UNFILED MAC AMD : conformance_glsl_functions_glsl_function_dot = FAIL
