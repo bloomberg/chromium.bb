@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_LABEL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -221,6 +222,10 @@ class VIEWS_EXPORT Label : public View {
   // Updates any colors that have not been explicitly set from the theme.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);
 
+  // Resets |cached_heights_| and |cached_heights_cursor_| and mark
+  // |text_size_valid_| as false.
+  void ResetCachedSize();
+
   string16 text_;
   gfx::Font font_;
   SkColor requested_enabled_color_;
@@ -262,6 +267,10 @@ class VIEWS_EXPORT Label : public View {
 
   // Should a shadow be drawn behind the text?
   bool has_shadow_;
+
+  // The cached heights to avoid recalculation in GetHeightForWidth().
+  std::vector<gfx::Size> cached_heights_;
+  int cached_heights_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(Label);
 };
