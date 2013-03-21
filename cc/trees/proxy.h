@@ -22,7 +22,6 @@ class Vector2d;
 namespace cc {
 
 class Thread;
-struct RenderingStats;
 struct RendererCapabilities;
 
 // Abstract class responsible for proxying commands from the main-thread side of
@@ -77,8 +76,6 @@ class CC_EXPORT Proxy {
   // Attempts to recreate the context and layer renderer after a context lost.
   // Returns false if the renderer couldn't be reinitialized.
   virtual bool RecreateOutputSurface() = 0;
-
-  virtual void CollectRenderingStats(RenderingStats* stats) = 0;
 
   virtual const RendererCapabilities& GetRendererCapabilities() const = 0;
 

@@ -9,7 +9,6 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/simple_thread.h"
-#include "cc/debug/rendering_stats.h"
 
 #if defined(OS_ANDROID)
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
@@ -29,13 +28,12 @@ class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
   virtual bool IsCheap() OVERRIDE { return false; }
 
-  virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
-    task_.Run(rendering_stats);
+  virtual void Run() OVERRIDE {
+    task_.Run();
   }
 
-  virtual void RunOnThread(
-      RenderingStats* rendering_stats, unsigned thread_index) OVERRIDE {
-    task_.Run(rendering_stats);
+  virtual void RunOnThread(unsigned thread_index) OVERRIDE {
+    task_.Run();
   }
 
  private:
@@ -70,10 +68,6 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   virtual ~Inner();
 
   void Shutdown();
-
-  void SetRecordRenderingStats(bool record_rendering_stats);
-
-  void GetRenderingStats(RenderingStats* stats);
 
   void PostTask(scoped_ptr<internal::WorkerPoolTask> task, bool signal_workers);
 
@@ -149,8 +143,6 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   TaskDeque pending_tasks_;
   TaskDeque completed_tasks_;
 
-  scoped_ptr<RenderingStats> rendering_stats_;
-
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
 
   DISALLOW_COPY_AND_ASSIGN(Inner);
@@ -220,22 +212,6 @@ void WorkerPool::Inner::Shutdown() {
   }
 }
 
-void WorkerPool::Inner::SetRecordRenderingStats(bool record_rendering_stats) {
-  base::AutoLock lock(lock_);
-
-  if (record_rendering_stats)
-    rendering_stats_.reset(new RenderingStats);
-  else
-    rendering_stats_.reset();
-}
-
-void WorkerPool::Inner::GetRenderingStats(RenderingStats* stats) {
-  base::AutoLock lock(lock_);
-
-  if (rendering_stats_)
-    stats->Add(*rendering_stats_);
-}
-
 void WorkerPool::Inner::PostTask(scoped_ptr<internal::WorkerPoolTask> task,
                                  bool signal_workers) {
   base::AutoLock lock(lock_);
@@ -279,28 +255,19 @@ bool WorkerPool::Inner::RunCheapTasksUntilTimeLimit(
       break;
     }
 
-    scoped_ptr<RenderingStats> rendering_stats;
-    // Collect rendering stats if |rendering_stats_| is set.
-    if (rendering_stats_)
-      rendering_stats = make_scoped_ptr(new RenderingStats);
-
     // Increment |running_task_count_| before starting to run task.
     running_task_count_++;
 
     {
       base::AutoUnlock unlock(lock_);
 
-      task->Run(rendering_stats.get());
+      task->Run();
 
       // Append tasks directly to worker pool's completed tasks queue.
       worker_pool_on_origin_thread_->completed_tasks_.push_back(task.Pass());
       if (need_on_task_completed_callback_)
         worker_pool_on_origin_thread_->OnTaskCompleted();
     }
-
-    // Add rendering stat results to |rendering_stats_|.
-    if (rendering_stats && rendering_stats_)
-      rendering_stats_->Add(*rendering_stats);
 
     // Decrement |running_task_count_| now that we are done running task.
     running_task_count_--;
@@ -405,11 +372,6 @@ void WorkerPool::Inner::Run() {
       // Get next task.
       scoped_ptr<internal::WorkerPoolTask> task = pending_tasks_.take_front();
 
-      scoped_ptr<RenderingStats> rendering_stats;
-      // Collect rendering stats if |rendering_stats_| is set.
-      if (rendering_stats_)
-        rendering_stats = make_scoped_ptr(new RenderingStats);
-
       // Increment |running_task_count_| before starting to run task.
       running_task_count_++;
 
@@ -420,14 +382,10 @@ void WorkerPool::Inner::Run() {
       {
         base::AutoUnlock unlock(lock_);
 
-        task->RunOnThread(rendering_stats.get(), thread_index);
+        task->RunOnThread(thread_index);
       }
 
       completed_tasks_.push_back(task.Pass());
-
-      // Add rendering stat results to |rendering_stats_|.
-      if (rendering_stats && rendering_stats_)
-        rendering_stats_->Add(*rendering_stats);
 
       // Decrement |running_task_count_| now that we are done running task.
       running_task_count_--;
@@ -490,14 +448,6 @@ void WorkerPool::SetRunCheapTasksTimeLimit(
     base::TimeTicks run_cheap_tasks_time_limit) {
   run_cheap_tasks_time_limit_ = run_cheap_tasks_time_limit;
   ScheduleRunCheapTasks();
-}
-
-void WorkerPool::SetRecordRenderingStats(bool record_rendering_stats) {
-  inner_->SetRecordRenderingStats(record_rendering_stats);
-}
-
-void WorkerPool::GetRenderingStats(RenderingStats* stats) {
-  inner_->GetRenderingStats(stats);
 }
 
 void WorkerPool::OnIdle() {

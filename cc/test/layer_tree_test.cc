@@ -69,19 +69,27 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       TestHooks* test_hooks,
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* host_impl_client,
-      Proxy* proxy) {
-    return make_scoped_ptr(new LayerTreeHostImplForTesting(test_hooks,
-                                                           settings,
-                                                           host_impl_client,
-                                                           proxy));
+      Proxy* proxy,
+      RenderingStatsInstrumentation* stats_instrumentation) {
+    return make_scoped_ptr(
+        new LayerTreeHostImplForTesting(test_hooks,
+                                        settings,
+                                        host_impl_client,
+                                        proxy,
+                                        stats_instrumentation));
   }
 
  protected:
-  LayerTreeHostImplForTesting(TestHooks* test_hooks,
-                              const LayerTreeSettings& settings,
-                              LayerTreeHostImplClient* host_impl_client,
-                              Proxy* proxy)
-      : LayerTreeHostImpl(settings, host_impl_client, proxy),
+  LayerTreeHostImplForTesting(
+      TestHooks* test_hooks,
+      const LayerTreeSettings& settings,
+      LayerTreeHostImplClient* host_impl_client,
+      Proxy* proxy,
+      RenderingStatsInstrumentation* stats_instrumentation)
+      : LayerTreeHostImpl(settings,
+                          host_impl_client,
+                          proxy,
+                          stats_instrumentation),
         test_hooks_(test_hooks) {}
 
   virtual void BeginCommit() OVERRIDE {
@@ -191,7 +199,8 @@ class LayerTreeHostForTesting : public cc::LayerTreeHost {
         test_hooks_,
         settings(),
         host_impl_client,
-        proxy()).PassAs<cc::LayerTreeHostImpl>();
+        proxy(),
+        rendering_stats_instrumentation()).PassAs<cc::LayerTreeHostImpl>();
   }
 
   virtual void SetNeedsCommit() OVERRIDE {

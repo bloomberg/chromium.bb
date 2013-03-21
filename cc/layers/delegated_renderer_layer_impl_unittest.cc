@@ -15,6 +15,7 @@
 #include "cc/test/fake_layer_tree_host_impl_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/render_pass_test_common.h"
@@ -37,7 +38,10 @@ class DelegatedRendererLayerImplTest : public testing::Test {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
 
-    host_impl_ = LayerTreeHostImpl::Create(settings, &client_, &proxy_);
+    host_impl_ = LayerTreeHostImpl::Create(settings,
+                                           &client_,
+                                           &proxy_,
+                                           &stats_instrumentation_);
     host_impl_->InitializeRenderer(createFakeOutputSurface());
     host_impl_->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
   }
@@ -47,6 +51,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
   FakeLayerTreeHostImplClient client_;
   DebugScopedSetImplThreadAndMainThreadBlocked
       always_impl_thread_and_main_thread_blocked_;
+  FakeRenderingStatsInstrumentation stats_instrumentation_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 
