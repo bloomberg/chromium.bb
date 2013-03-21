@@ -148,6 +148,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="cros/status/status_power_small_all.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="cros/status/status_power_small_all_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SESSION_LENGTH_LIMIT_TIMER" file="cros/status/status_session_length_limit_timer.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="cros/status/status_settings.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_hover.png" />
