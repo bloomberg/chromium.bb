@@ -72,6 +72,9 @@ class LauncherItemController {
   // Returns true if this item is open.
   virtual bool IsOpen() const = 0;
 
+  // Returns true if this item is visible (e.g. not minimized).
+  virtual bool IsVisible() const = 0;
+
   // Launches a new instance of the app associated with this item.
   virtual void Launch(int event_flags) = 0;
 

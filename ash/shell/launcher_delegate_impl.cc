@@ -65,5 +65,9 @@ bool LauncherDelegateImpl::IsDraggable(const ash::LauncherItem& item) {
   return true;
 }
 
+bool LauncherDelegateImpl::ShouldShowTooltip(const ash::LauncherItem& item) {
+  return true;
+}
+
 }  // namespace shell
 }  // namespace ash

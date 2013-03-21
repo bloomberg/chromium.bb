@@ -92,6 +92,10 @@ class AppShortcutLauncherItemController : public LauncherItemController {
     return false;
   }
 
+  virtual bool IsVisible() const OVERRIDE {
+    return false;
+  }
+
   virtual void Launch(int event_flags) OVERRIDE {
     launcher_controller()->LaunchApp(app_id(), event_flags);
   }
@@ -893,6 +897,14 @@ ash::LauncherID ChromeLauncherControllerPerBrowser::GetIDByWindow(
 bool ChromeLauncherControllerPerBrowser::IsDraggable(
     const ash::LauncherItem& item) {
   return item.type == ash::TYPE_APP_SHORTCUT ? CanPin() : true;
+}
+
+bool ChromeLauncherControllerPerBrowser::ShouldShowTooltip(
+    const ash::LauncherItem& item) {
+  if (item.type == ash::TYPE_APP_PANEL &&
+      id_to_item_controller_map_[item.id]->IsVisible())
+    return false;
+  return true;
 }
 
 void ChromeLauncherControllerPerBrowser::LauncherItemAdded(int index) {

@@ -242,6 +242,12 @@ class ASH_EXPORT LauncherView : public views::View,
   // which triggered this event.
   bool IsUsableEvent(const ui::Event& event);
 
+  // Convenience accessor to model_->items().
+  const LauncherItem* LauncherItemForView(const views::View* view) const;
+
+  // Returns true if a tooltip should be shown for |view|.
+  bool ShouldShowTooltipForView(const views::View* view) const;
+
   // The model; owned by Launcher.
   LauncherModel* model_;
 

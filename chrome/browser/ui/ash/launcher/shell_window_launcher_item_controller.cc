@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
@@ -82,6 +83,16 @@ void ShellWindowLauncherItemController::SetActiveWindow(
 }
 
 string16 ShellWindowLauncherItemController::GetTitle() {
+  // For panels return the title of the contents if set.
+  // Otherwise return the title of the app.
+  if (type() == TYPE_APP_PANEL && !shell_windows_.empty()) {
+    ShellWindow* shell_window = shell_windows_.front();
+    if (shell_window->web_contents()) {
+      string16 title = shell_window->web_contents()->GetTitle();
+      if (!title.empty())
+        return title;
+    }
+  }
   return GetAppTitle();
 }
 
@@ -95,6 +106,16 @@ bool ShellWindowLauncherItemController::HasWindow(
 
 bool ShellWindowLauncherItemController::IsOpen() const {
   return !shell_windows_.empty();
+}
+
+bool ShellWindowLauncherItemController::IsVisible() const {
+  // Return true if any windows are visible.
+  for (ShellWindowList::const_iterator iter = shell_windows_.begin();
+       iter != shell_windows_.end(); ++iter) {
+    if ((*iter)->GetNativeWindow()->IsVisible())
+      return true;
+  }
+  return false;
 }
 
 void ShellWindowLauncherItemController::Launch(

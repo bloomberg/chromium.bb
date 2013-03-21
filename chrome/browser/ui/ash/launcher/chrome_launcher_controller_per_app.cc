@@ -921,6 +921,14 @@ bool ChromeLauncherControllerPerApp::IsDraggable(
           item.type == ash::TYPE_WINDOWED_APP) ? CanPin() : true;
 }
 
+bool ChromeLauncherControllerPerApp::ShouldShowTooltip(
+    const ash::LauncherItem& item) {
+  if (item.type == ash::TYPE_APP_PANEL &&
+      id_to_item_controller_map_[item.id]->IsVisible())
+    return false;
+  return true;
+}
+
 void ChromeLauncherControllerPerApp::LauncherItemAdded(int index) {
 }
 

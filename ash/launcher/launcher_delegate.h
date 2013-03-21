@@ -84,6 +84,9 @@ class ASH_EXPORT LauncherDelegate {
 
   // Whether the given launcher item is draggable.
   virtual bool IsDraggable(const LauncherItem& item) = 0;
+
+  // Returns true if a tooltip should be shown for the item.
+  virtual bool ShouldShowTooltip(const LauncherItem& item) = 0;
 };
 
 }  // namespace ash

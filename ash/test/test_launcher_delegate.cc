@@ -116,5 +116,9 @@ bool TestLauncherDelegate::IsDraggable(const ash::LauncherItem& item) {
   return true;
 }
 
+bool TestLauncherDelegate::ShouldShowTooltip(const ash::LauncherItem& item) {
+  return true;
+}
+
 }  // namespace test
 }  // namespace ash

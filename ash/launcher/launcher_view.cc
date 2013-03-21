@@ -991,10 +991,7 @@ bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
     views::View* child = child_at(i);
     if (child == overflow_button_)
       continue;
-
-    // The tooltip shouldn't show over the app-list window.
-    if (child == GetAppListButtonView() &&
-        Shell::GetInstance()->GetAppListWindow())
+    if (!ShouldShowTooltipForView(child))
       continue;
 
     gfx::Rect child_bounds = child->GetMirroredBounds();
@@ -1259,10 +1256,7 @@ void LauncherView::PointerReleasedOnButton(views::View* view,
 }
 
 void LauncherView::MouseMovedOverButton(views::View* view) {
-  // Mouse cursor moves doesn't make effects on the app-list button if
-  // app-list bubble is already visible.
-  if (view == GetAppListButtonView() &&
-      Shell::GetInstance()->GetAppListWindow())
+  if (!ShouldShowTooltipForView(view))
     return;
 
   if (!tooltip_->IsVisible())
@@ -1270,10 +1264,7 @@ void LauncherView::MouseMovedOverButton(views::View* view) {
 }
 
 void LauncherView::MouseEnteredButton(views::View* view) {
-  // If mouse cursor enters to the app-list button but app-list bubble is
-  // already visible, we should not show the bubble in that case.
-  if (view == GetAppListButtonView() &&
-      Shell::GetInstance()->GetAppListWindow())
+  if (!ShouldShowTooltipForView(view))
     return;
 
   if (tooltip_->IsVisible()) {
@@ -1499,6 +1490,22 @@ bool LauncherView::IsUsableEvent(const ui::Event& event) {
   // TODO(skuhne): This time seems excessive, but it appears that the reposting
   // takes that long.  Need to come up with a better way of doing this.
   return (delta.InMilliseconds() < 0 || delta.InMilliseconds() > 130);
+}
+
+const LauncherItem* LauncherView::LauncherItemForView(
+    const views::View* view) const {
+  int view_index = view_model_->GetIndexOfView(view);
+  if (view_index == -1)
+    return NULL;
+  return &(model_->items()[view_index]);
+}
+
+bool LauncherView::ShouldShowTooltipForView(const views::View* view) const {
+  if (view == GetAppListButtonView() &&
+      Shell::GetInstance()->GetAppListWindow())
+    return false;
+  const LauncherItem* item = LauncherItemForView(view);
+  return (!item || delegate_->ShouldShowTooltip(*item));
 }
 
 }  // namespace internal

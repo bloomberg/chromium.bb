@@ -269,6 +269,7 @@ class ChromeLauncherController
       int event_flags) OVERRIDE = 0;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE = 0;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE = 0;
+  virtual bool ShouldShowTooltip(const ash::LauncherItem& item) OVERRIDE = 0;
 
   // extensions::AppIconLoader overrides:
   virtual void SetAppImage(const std::string& app_id,
