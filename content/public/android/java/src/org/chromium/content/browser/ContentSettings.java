@@ -94,6 +94,7 @@ public class ContentSettings {
     private boolean mUseWideViewport = false;
     private boolean mLoadWithOverviewMode = false;
     private boolean mMediaPlaybackRequiresUserGesture = true;
+    private String mDefaultVideoPosterURL;
 
     // Not accessed by the native side.
     private boolean mSupportZoom = true;
@@ -1215,6 +1216,30 @@ public class ContentSettings {
         }
     }
 
+    /**
+     * Set the default video poster URL.
+     * @param url The url of default video poster.
+     */
+    public void setDefaultVideoPosterURL(String url) {
+        assert mCanModifySettings;
+        synchronized (mContentSettingsLock) {
+            if (mDefaultVideoPosterURL != null && !mDefaultVideoPosterURL.equals(url) ||
+                    mDefaultVideoPosterURL == null && url != null) {
+                mDefaultVideoPosterURL = url;
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    /**
+     * Get the default video poster URL.
+     */
+    public String getDefaultVideoPosterURL() {
+        synchronized (mContentSettingsLock) {
+            return mDefaultVideoPosterURL;
+        }
+    }
+
     private int clipFontSize(int size) {
         if (size < MINIMUM_FONT_SIZE) {
             return MINIMUM_FONT_SIZE;
@@ -1263,6 +1288,7 @@ public class ContentSettings {
         setBuiltInZoomControls(settings.getBuiltInZoomControls());
         setDisplayZoomControls(settings.getDisplayZoomControls());
         setMediaPlaybackRequiresUserGesture(settings.getMediaPlaybackRequiresUserGesture());
+        setDefaultVideoPosterURL(settings.getDefaultVideoPosterURL());
     }
 
     /**

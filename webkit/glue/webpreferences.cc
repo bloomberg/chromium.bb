@@ -473,6 +473,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDoubleTapToZoomEnabled(double_tap_to_zoom_enabled);
   settings->setMediaPlaybackRequiresUserGesture(
       user_gesture_required_for_media_playback);
+  settings->setDefaultVideoPosterURL(
+        ASCIIToUTF16(default_video_poster_url.spec()));
 #endif
 
   WebNetworkStateNotifier::setOnLine(is_online);

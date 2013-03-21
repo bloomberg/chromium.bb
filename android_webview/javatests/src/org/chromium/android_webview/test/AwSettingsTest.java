@@ -19,6 +19,7 @@ import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
@@ -38,6 +39,7 @@ import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
@@ -2587,6 +2589,42 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     public void testMediaPlaybackWithUserGesture() throws Throwable {
         // Wait for 5 second to see if video played.
         assertFalse(runVideoTest(true, 5000));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testDefaultVideoPosterURL() throws Throwable {
+        final CallbackHelper videoPosterAccessedCallbackHelper = new CallbackHelper();
+        final String DEFAULT_VIDEO_POSTER_URL = "http://default_video_poster/";
+        TestAwContentsClient client = new TestAwContentsClient() {
+            @Override
+            public InterceptedRequestData shouldInterceptRequest(String url) {
+                if (url.equals(DEFAULT_VIDEO_POSTER_URL)) {
+                    videoPosterAccessedCallbackHelper.notifyCalled();
+                }
+                return null;
+            }
+        };
+        final AwContents awContents = createAwTestContainerViewOnMainSync(client).getAwContents();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                ContentSettings contentSettings =
+                        awContents.getContentViewCore().getContentSettings();
+                contentSettings.setDefaultVideoPosterURL(DEFAULT_VIDEO_POSTER_URL);
+            }
+        });
+        VideoTestWebServer webServer = new VideoTestWebServer(getInstrumentation().getContext());
+        try {
+            String data = "<html><head><body>" +
+                "<video id='video' control src='" +
+                webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
+            loadDataAsync(awContents, data, "text/html", false);
+            videoPosterAccessedCallbackHelper.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
+        } finally {
+            if (webServer.getTestWebServer() != null)
+                webServer.getTestWebServer().shutdown();
+        }
     }
 
     static class ViewPair {

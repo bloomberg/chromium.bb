@@ -202,6 +202,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(force_enable_zoom)
   IPC_STRUCT_TRAITS_MEMBER(double_tap_to_zoom_enabled)
   IPC_STRUCT_TRAITS_MEMBER(user_gesture_required_for_media_playback)
+  IPC_STRUCT_TRAITS_MEMBER(default_video_poster_url)
 #endif
 IPC_STRUCT_TRAITS_END()
 

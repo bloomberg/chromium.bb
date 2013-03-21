@@ -88,6 +88,8 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mLoadWithOverviewMode", "Z");
     media_playback_requires_user_gesture =
         GetFieldID(env, clazz, "mMediaPlaybackRequiresUserGesture", "Z");
+    default_video_poster_url =
+        GetFieldID(env, clazz, "mDefaultVideoPosterURL", kStringClassName);
   }
 
   // Field ids
@@ -116,6 +118,7 @@ struct ContentSettings::FieldIds {
   jfieldID use_wide_viewport;
   jfieldID load_with_overview_mode;
   jfieldID media_playback_requires_user_gesture;
+  jfieldID default_video_poster_url;
 };
 
 ContentSettings::ContentSettings(JNIEnv* env,
@@ -286,12 +289,17 @@ void ContentSettings::SyncFromNativeImpl() {
       obj,
       field_ids_->load_with_overview_mode,
       prefs.initialize_at_minimum_page_scale);
+  CheckException(env);
 
   env->SetBooleanField(
       obj,
       field_ids_->media_playback_requires_user_gesture,
       prefs.user_gesture_required_for_media_playback);
+  CheckException(env);
 
+  str.Reset(
+      ConvertUTF8ToJavaString(env, prefs.default_video_poster_url.spec()));
+  env->SetObjectField(obj, field_ids_->default_video_poster_url, str.obj());
   CheckException(env);
 }
 
@@ -413,6 +421,11 @@ void ContentSettings::SyncToNativeImpl() {
 
   prefs.user_gesture_required_for_media_playback = env->GetBooleanField(
       obj, field_ids_->media_playback_requires_user_gesture);
+
+  str.Reset(
+      env, static_cast<jstring>(
+          env->GetObjectField(obj, field_ids_->default_video_poster_url)));
+  prefs.default_video_poster_url = GURL(ConvertJavaStringToUTF8(str));
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }
