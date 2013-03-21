@@ -199,6 +199,31 @@ class Popen(subprocess.Popen):
       self.end = time.time()
     return ret
 
+  def yield_any(self, timeout=None):
+    """Yields output until the process terminates or is killed by a timeout.
+
+    Yielded values are in the form (pipename, data).
+    """
+    remaining = 0
+    while self.poll() is None:
+      if timeout:
+        remaining = max(timeout - self.duration(), 0.001)
+      t, data = self.recv_any(timeout=remaining)
+      if data:
+        yield (t, data)
+      if timeout and self.duration() >= timeout:
+        break
+    if self.poll() is None and timeout and self.duration() >= timeout:
+      logging.debug('Kill %s %s', self.duration(), timeout)
+      self.kill()
+    self.wait()
+    # Read all remaining output in the pipes.
+    while True:
+      t, data = self.recv_any()
+      if not data:
+        break
+      yield (t, data)
+
   def recv_any(self, maxsize=None, timeout=None):
     """Reads from stderr and if empty, from stdout."""
     pipes = [
@@ -253,25 +278,7 @@ def call_with_timeout(cmd, timeout, **kwargs):
   if timeout:
     out = ''
     err = ''
-    while proc.poll() is None:
-      remaining = max(timeout - proc.duration(), 0.001)
-      t, data = proc.recv_any(timeout=remaining)
-      if data:
-        if t == 'stdout':
-          out += data
-        else:
-          err += data
-      if proc.duration() >= timeout:
-        break
-    if proc.poll() is None and proc.duration() >= timeout:
-      logging.debug('Kill %s %s', proc.duration(), timeout)
-      proc.kill()
-    proc.wait()
-    # Try reading a last time.
-    while True:
-      t, data = proc.recv_any()
-      if not data:
-        break
+    for t, data in proc.yield_any(timeout):
       if t == 'stdout':
         out += data
       else:
