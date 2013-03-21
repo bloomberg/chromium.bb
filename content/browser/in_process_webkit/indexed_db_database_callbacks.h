@@ -22,8 +22,6 @@ class IndexedDBDatabaseCallbacks : public WebKit::WebIDBDatabaseCallbacks {
   virtual void onForcedClose();
   virtual void onVersionChange(long long old_version,
                                long long new_version);
-  virtual void onVersionChange(const WebKit::WebString& requested_version);
-
   virtual void onAbort(long long host_transaction_id,
                        const WebKit::WebIDBDatabaseError&);
   virtual void onComplete(long long host_transaction_id);

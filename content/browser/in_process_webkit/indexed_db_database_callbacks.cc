@@ -36,14 +36,6 @@ void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
                                                          new_version));
 }
 
-void IndexedDBDatabaseCallbacks::onVersionChange(
-    const WebKit::WebString& requested_version) {
-  dispatcher_host_->Send(
-      new IndexedDBMsg_DatabaseCallbacksVersionChange(ipc_thread_id_,
-                                                      ipc_database_id_,
-                                                      requested_version));
-}
-
 void IndexedDBDatabaseCallbacks::onAbort(
     long long host_transaction_id,
     const WebKit::WebIDBDatabaseError& error) {

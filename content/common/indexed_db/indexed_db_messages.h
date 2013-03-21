@@ -354,11 +354,6 @@ IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksUpgradeNeeded,
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksForcedClose,
                      int32, /* ipc_thread_id */
                      int32) /* ipc_database_id */
-IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksVersionChange,
-                     int32, /* ipc_thread_id */
-                     int32, /* ipc_database_id */
-                     string16) /* new_version */
-
 IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
                      int32, /* ipc_thread_id */
                      int32, /* ipc_database_id */

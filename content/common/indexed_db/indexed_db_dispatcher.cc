@@ -159,8 +159,6 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnForcedClose)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
                         OnIntVersionChange)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksVersionChange,
-                        OnVersionChange)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksComplete, OnComplete)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -767,19 +765,6 @@ void IndexedDBDispatcher::OnIntVersionChange(int32 ipc_thread_id,
   if (!callbacks)
     return;
   callbacks->onVersionChange(old_version, new_version);
-}
-
-void IndexedDBDispatcher::OnVersionChange(int32 ipc_thread_id,
-                                          int32 ipc_database_id,
-                                          const string16& newVersion) {
-  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
-  WebIDBDatabaseCallbacks* callbacks =
-      pending_database_callbacks_.Lookup(ipc_database_id);
-  // callbacks would be NULL if a versionchange event is received after close
-  // has been called.
-  if (!callbacks)
-    return;
-  callbacks->onVersionChange(newVersion);
 }
 
 void IndexedDBDispatcher::ResetCursorPrefetchCaches(

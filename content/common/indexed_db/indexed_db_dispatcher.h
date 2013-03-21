@@ -250,9 +250,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
                   int32 ipc_database_id,
                   int64 transaction_id);
   void OnForcedClose(int32 ipc_thread_id, int32 ipc_database_id);
-  void OnVersionChange(int32 ipc_thread_id,
-                       int32 ipc_database_id,
-                       const string16& newVersion);
   void OnIntVersionChange(int32 ipc_thread_id,
                           int32 ipc_database_id,
                           int64 old_version,
