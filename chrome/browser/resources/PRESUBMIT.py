@@ -44,14 +44,22 @@ def _CommonChecks(input_api, output_api):
     sys.path = [resources] + old_path
     from web_dev_style import css_checker, js_checker
 
-    def is_resource(maybe_resource):
-      f = maybe_resource.AbsoluteLocalPath()
-      return f.endswith(('.css', '.html', '.js')) and f.startswith(resources)
+    def _html_css_js_resource(p):
+      return p.endswith(('.html', '.css', '.js')) and p.startswith(resources)
 
-    results.extend(css_checker.CSSChecker(input_api, output_api,
-                                          file_filter=is_resource).RunChecks())
-    results.extend(js_checker.JSChecker(input_api, output_api,
-                                        file_filter=is_resource).RunChecks())
+    def is_resource(maybe_resource):
+      return _html_css_js_resource(maybe_resource.AbsoluteLocalPath())
+
+    # TODO(samarth): remove this exception <http://crbug.com/222642>.
+    instant_path = path.join(resources, 'local_omnibox_popup')
+    def is_resource_no_instant(maybe_resource):
+      f = maybe_resource.AbsoluteLocalPath()
+      return _html_css_js_resource(f) and not f.startswith(instant_path)
+
+    results.extend(css_checker.CSSChecker(
+        input_api, output_api, file_filter=is_resource_no_instant).RunChecks())
+    results.extend(js_checker.JSChecker(
+        input_api, output_api, file_filter=is_resource).RunChecks())
   finally:
     sys.path = old_path
 
