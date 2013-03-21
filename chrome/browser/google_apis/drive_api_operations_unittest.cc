@@ -576,8 +576,9 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
           kTestContent.size(),
           "parent_resource_id",  // The resource id of the parent directory.
           "new file title",  // The title of the file being uploaded.
-          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
-                     &error, &upload_url));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -668,8 +669,9 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
           0,
           "parent_resource_id",  // The resource id of the parent directory.
           "new file title",  // The title of the file being uploaded.
-          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
-                     &error, &upload_url));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -757,8 +759,9 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
           kTestContent.size(),
           "parent_resource_id",  // The resource id of the parent directory.
           "new file title",  // The title of the file being uploaded.
-          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
-                     &error, &upload_url));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -865,8 +868,9 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
           kTestContent.size(),
           "resource_id",  // The resource id of the file to be overwritten.
           "",  // No etag.
-          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
-                     &error, &upload_url));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -951,8 +955,9 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
           kTestContent.size(),
           "resource_id",  // The resource id of the file to be overwritten.
           kTestETag,
-          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
-                     &error, &upload_url));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -1037,8 +1042,9 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETagConflicting) {
           kTestContent.size(),
           "resource_id",  // The resource id of the file to be overwritten.
           "Conflicting-etag",
-          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
-                     &error, &upload_url));
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();

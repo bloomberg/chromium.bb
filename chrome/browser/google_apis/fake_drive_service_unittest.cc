@@ -1132,9 +1132,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
       13,
       "folder:1_folder_resource_id",
       "new file.foo",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -1153,9 +1151,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
       13,
       "non_existent",
       "new file.foo",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -1174,9 +1170,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
       13,
       "folder:1_folder_resource_id",
       "new file.foo",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -1198,9 +1192,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
       13,
       "file:2_file_resource_id",
       "",  // etag
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -1219,9 +1211,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
       13,
       "non_existent",
       "",  // etag
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -1240,9 +1230,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
       13,
       "file:2_file_resource_id",
       "invalid_etag",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_PRECONDITION, error);
@@ -1261,9 +1249,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
       13,
       "file:2_file_resource_id",
       "\"HhMOFgxXHit7ImBr\"",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -1283,9 +1269,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
       15,
       "folder:1_folder_resource_id",
       "new file.foo",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -1323,9 +1307,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
       15,
       "folder:1_folder_resource_id",
       "new file.foo",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   ASSERT_EQ(HTTP_SUCCESS, error);
@@ -1358,9 +1340,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       15,
       "file:2_file_resource_id",
       "\"HhMOFgxXHit7ImBr\"",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   ASSERT_EQ(HTTP_SUCCESS, error);
@@ -1408,9 +1388,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       15,
       "folder:1_folder_resource_id",
       "new file.foo",
-      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
-                 &error,
-                 &upload_location));
+      test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
