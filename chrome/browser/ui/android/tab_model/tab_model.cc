@@ -33,7 +33,9 @@ TabModel::TabModel(Profile* profile)
     // incognito tabs. We therefore must listen for when this happens, and
     // remove our pointer to the profile accordingly.
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::Source<Profile>(profile_));
+                   content::Source<Profile>(profile_));
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                   content::NotificationService::AllSources());
   } else {
     is_off_the_record_ = false;
   }
@@ -116,6 +118,17 @@ void TabModel::Observe(
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
       // Our profile just got destroyed, so we delete our pointer to it.
       profile_ = NULL;
+      break;
+    case chrome::NOTIFICATION_PROFILE_CREATED:
+      // Our incognito tab model out lives the profile, so we need to recapture
+      // the pointer if ours was previously deleted.
+      // NOTIFICATION_PROFILE_DESTROYED is not sent for every destruction, so
+      // we overwrite the pointer regardless of whether it's NULL.
+      if (is_off_the_record_) {
+        Profile* profile = content::Source<Profile>(source).ptr();
+        if (profile && profile->IsOffTheRecord())
+          profile_ = profile;
+      }
       break;
     default:
       NOTREACHED();
