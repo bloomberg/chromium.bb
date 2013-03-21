@@ -97,6 +97,7 @@
 //<include src="main.js"/>
 
 // Exports
+window.util = util;
 window.FileCopyManagerWrapper = FileCopyManagerWrapper;
 
 // Exports
