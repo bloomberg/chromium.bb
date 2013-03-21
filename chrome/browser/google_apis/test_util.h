@@ -120,9 +120,7 @@ bool ParseContentRangeHeader(const std::string& value,
 //   EXPECT_EQ(expected_result2, result2);
 //                     :
 //
-// Note: The max arity of the supported function is 3. The limitation comes
-//   from the max arity of base::Callback, which is 7. A created callback
-//   consumes two arguments for each input type.
+// Note: The max arity of the supported function is 4 based on the usage.
 // TODO(hidehiko): Use replace CopyResultFromXxxCallback method defined above
 //   by this one. (crbug.com/180569).
 namespace internal {
@@ -205,6 +203,33 @@ void CopyResultCallback(
   *out3 = CopyResultCallbackHelper<T3>::Move(&in3);
 }
 
+// Holds the pointers for output. This is introduced for the workaround of
+// the arity limitation of Callback.
+template<typename T1, typename T2, typename T3, typename T4>
+struct OutputParams {
+  OutputParams(T1* out1, T2* out2, T3* out3, T4* out4)
+      : out1(out1), out2(out2), out3(out3), out4(out4) {}
+  T1* out1;
+  T2* out2;
+  T3* out3;
+  T4* out4;
+};
+
+// Copies the |in1|'s value to |output->out1|, |in2|'s to |output->out2|,
+// and so on.
+template<typename T1, typename T2, typename T3, typename T4>
+void CopyResultCallback(
+    const OutputParams<T1, T2, T3, T4>& output,
+    typename CopyResultCallbackHelper<T1>::InType in1,
+    typename CopyResultCallbackHelper<T2>::InType in2,
+    typename CopyResultCallbackHelper<T3>::InType in3,
+    typename CopyResultCallbackHelper<T4>::InType in4) {
+  *output.out1 = CopyResultCallbackHelper<T1>::Move(&in1);
+  *output.out2 = CopyResultCallbackHelper<T2>::Move(&in2);
+  *output.out3 = CopyResultCallbackHelper<T3>::Move(&in3);
+  *output.out4 = CopyResultCallbackHelper<T4>::Move(&in4);
+}
+
 }  // namespace internal
 
 template<typename T1>
@@ -227,6 +252,17 @@ base::Callback<void(typename internal::CopyResultCallbackHelper<T1>::InType,
 CreateCopyResultCallback(T1* out1, T2* out2, T3* out3) {
   return base::Bind(
       &internal::CopyResultCallback<T1, T2, T3>, out1, out2, out3);
+}
+
+template<typename T1, typename T2, typename T3, typename T4>
+base::Callback<void(typename internal::CopyResultCallbackHelper<T1>::InType,
+                    typename internal::CopyResultCallbackHelper<T2>::InType,
+                    typename internal::CopyResultCallbackHelper<T3>::InType,
+                    typename internal::CopyResultCallbackHelper<T4>::InType)>
+CreateCopyResultCallback(T1* out1, T2* out2, T3* out3, T4* out4) {
+  return base::Bind(
+      &internal::CopyResultCallback<T1, T2, T3, T4>,
+      internal::OutputParams<T1, T2, T3, T4>(out1, out2, out3, out4));
 }
 
 }  // namespace test_util
