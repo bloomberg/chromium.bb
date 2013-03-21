@@ -2475,7 +2475,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7content11ChildThread4InitEv
-   fun:_ZN7content11ChildThreadC2ERKSs
+   fun:_ZN7content11ChildThreadC*
    ...
    fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
 }
@@ -2484,7 +2484,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7content16RenderThreadImpl4InitEv
-   fun:_ZN7content16RenderThreadImplC1ERKSs
+   fun:_ZN7content16RenderThreadImplC*
    ...
    fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
 }
@@ -6632,7 +6632,7 @@
    fun:png_create_read_struct_2
    obj:/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so
    obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
-   fun:gdk_pixbuf_loader_close
+   fun:gdk_pixbuf_loader*
 }
 {
    bug_176889_b

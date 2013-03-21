@@ -31,3 +31,6 @@ NativeMessagingTest.*
 
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
+
+# Crashing. http://crbug.com/222681
+MergeSessionLoadPageTest.*
