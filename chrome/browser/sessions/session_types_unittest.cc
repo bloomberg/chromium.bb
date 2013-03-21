@@ -240,8 +240,6 @@ TEST(TabNavigationTest, ToNavigationEntry) {
   EXPECT_EQ(kSearchTerms,
             chrome::search::GetSearchTermsFromNavigationEntry(
                 new_navigation_entry.get()));
-  EXPECT_TRUE(new_navigation_entry->GetFavicon().valid);
-  EXPECT_EQ(kFaviconURL, new_navigation_entry->GetFavicon().url);
 }
 
 // Create a NavigationEntry, convert it to a TabNavigation, then

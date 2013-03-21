@@ -348,11 +348,6 @@ scoped_ptr<NavigationEntry> TabNavigation::ToNavigationEntry(
   entry->SetTimestamp(timestamp_);
   entry->SetExtraData(chrome::search::kInstantExtendedSearchTermsKey,
                       search_terms_);
-  if (favicon_url_.is_valid()) {
-    content::FaviconStatus& favicon_status = entry->GetFavicon();
-    favicon_status.valid = true;
-    favicon_status.url = favicon_url_;
-  }
 
   return entry.Pass();
 }
