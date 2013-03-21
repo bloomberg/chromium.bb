@@ -848,7 +848,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccess) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, NewWindow) {
+// Disabled on win debug bots due to flaky timeouts.
+// See http://crbug.com/222618 .
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_NewWindow DISABLED_NewWindow
+#else
+#define MAYBE_NewWindow NewWindow
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_NewWindow) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/newwindow"))
       << message_;
