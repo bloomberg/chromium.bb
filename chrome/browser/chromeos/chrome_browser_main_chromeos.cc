@@ -100,9 +100,9 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/power/power_state_override.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/network_change_notifier.h"
@@ -617,8 +617,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
   suspend_observer_.reset(new SuspendObserver());
   if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    power_state_override_ = new PowerStateOverride(
-        PowerStateOverride::BLOCK_DISPLAY_SLEEP);
+    retail_mode_power_save_blocker_ = content::PowerSaveBlocker::Create(
+        content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+        "Retail mode");
   }
   chromeos::accessibility::Initialize();
 
@@ -717,7 +718,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   resume_observer_.reset();
   brightness_observer_.reset();
   output_observer_.reset();
-  power_state_override_ = NULL;
+  retail_mode_power_save_blocker_.reset();
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.

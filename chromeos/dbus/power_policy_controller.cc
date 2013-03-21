@@ -14,35 +14,43 @@ namespace {
 
 // If |pref|, a PrefService::Preference containing an integer, has been
 // explicitly set to 0 or a positive value, assigns it to |proto_field|, a
-// int32 field in |proto|, a google::protobuf::MessageLite*.
-#define SET_DELAY_FROM_PREF(pref, proto_field, proto)                          \
+// int32 field in |proto|, a google::protobuf::MessageLite*.  If |proto|
+// was updated, |got_prefs|, a bool*, is set to true; otherwise it is left
+// unchanged.
+#define SET_DELAY_FROM_PREF(pref, proto_field, proto, got_prefs)               \
     {                                                                          \
       int value = GetIntPrefValue(pref);                                       \
-      if (value >= 0)                                                          \
+      if (value >= 0) {                                                        \
         (proto)->set_##proto_field(value);                                     \
+        *got_prefs = true;                                                     \
+      }                                                                        \
     }
 
 // Similar to SET_DELAY_FROM_PREF() but sets a
 // power_manager::PowerManagementPolicy_Action field instead.
-#define SET_ACTION_FROM_PREF(pref, proto_field, proto)                         \
+#define SET_ACTION_FROM_PREF(pref, proto_field, proto, got_prefs)              \
     {                                                                          \
       int value = GetIntPrefValue(pref);                                       \
       if (value >= 0) {                                                        \
         (proto)->set_##proto_field(                                            \
             static_cast<power_manager::PowerManagementPolicy_Action>(value));  \
+        *got_prefs = true;                                                     \
       }                                                                        \
     }
 
-// If |pref|, a PrefService::Preference containing a bool, has been
-// set, assigns it to |proto_field|, a bool field in |proto|, a
-// google::protobuf::MessageLite*.
-#define SET_BOOL_FROM_PREF(pref, proto_field, proto)                           \
+// If |pref|, a PrefService::Preference containing a bool, has been set,
+// assigns it to |proto_field|, a bool field in |proto|, a
+// google::protobuf::MessageLite*.  If |proto| was updated, |got_prefs|, a
+// bool*, is set to true; otherwise it is left unchanged.
+#define SET_BOOL_FROM_PREF(pref, proto_field, proto, got_prefs)                \
     if (!pref.IsDefaultValue()) {                                              \
       bool value = false;                                                      \
-      if (pref.GetValue()->GetAsBoolean(&value))                               \
+      if (pref.GetValue()->GetAsBoolean(&value)) {                             \
         (proto)->set_##proto_field(value);                                     \
-      else                                                                     \
+        *got_prefs = true;                                                     \
+      } else {                                                                 \
         LOG(DFATAL) << pref.name() << " pref has non-boolean value";           \
+      }                                                                        \
     }
 
 // Returns a zero or positive integer value from |pref|.  Returns -1 if the
@@ -86,7 +94,9 @@ power_manager::PowerManagementPolicy_Action GetProtoAction(
 PowerPolicyController::PowerPolicyController(DBusThreadManager* manager,
                                              PowerManagerClient* client)
     : manager_(manager),
-      client_(client) {
+      client_(client),
+      prefs_were_set_(false),
+      next_block_id_(1) {
   manager_->AddObserver(this);
   client_->AddObserver(this);
   SendEmptyPolicy();
@@ -120,44 +130,75 @@ void PowerPolicyController::UpdatePolicyFromPrefs(
     const PrefService::Preference& use_video_activity_pref,
     const PrefService::Preference& presentation_idle_delay_factor_pref) {
   prefs_policy_.Clear();
+  bool got_prefs = false;
 
   power_manager::PowerManagementPolicy::Delays* delays =
       prefs_policy_.mutable_ac_delays();
-  SET_DELAY_FROM_PREF(ac_screen_dim_delay_ms_pref, screen_dim_ms, delays);
-  SET_DELAY_FROM_PREF(ac_screen_off_delay_ms_pref, screen_off_ms, delays);
-  SET_DELAY_FROM_PREF(ac_screen_lock_delay_ms_pref, screen_lock_ms, delays);
-  SET_DELAY_FROM_PREF(ac_idle_warning_delay_ms_pref, idle_warning_ms, delays);
-  SET_DELAY_FROM_PREF(ac_idle_delay_ms_pref, idle_ms, delays);
+  SET_DELAY_FROM_PREF(
+      ac_screen_dim_delay_ms_pref, screen_dim_ms, delays, &got_prefs);
+  SET_DELAY_FROM_PREF(
+      ac_screen_off_delay_ms_pref, screen_off_ms, delays, &got_prefs);
+  SET_DELAY_FROM_PREF(
+      ac_screen_lock_delay_ms_pref, screen_lock_ms, delays, &got_prefs);
+  SET_DELAY_FROM_PREF(
+      ac_idle_warning_delay_ms_pref, idle_warning_ms, delays, &got_prefs);
+  SET_DELAY_FROM_PREF(ac_idle_delay_ms_pref, idle_ms, delays, &got_prefs);
 
   delays = prefs_policy_.mutable_battery_delays();
-  SET_DELAY_FROM_PREF(battery_screen_dim_delay_ms_pref, screen_dim_ms, delays);
-  SET_DELAY_FROM_PREF(battery_screen_off_delay_ms_pref, screen_off_ms, delays);
   SET_DELAY_FROM_PREF(
-      battery_screen_lock_delay_ms_pref, screen_lock_ms, delays);
+      battery_screen_dim_delay_ms_pref, screen_dim_ms, delays, &got_prefs);
   SET_DELAY_FROM_PREF(
-      battery_idle_warning_delay_ms_pref, idle_warning_ms, delays);
-  SET_DELAY_FROM_PREF(battery_idle_delay_ms_pref, idle_ms, delays);
+      battery_screen_off_delay_ms_pref, screen_off_ms, delays, &got_prefs);
+  SET_DELAY_FROM_PREF(
+      battery_screen_lock_delay_ms_pref, screen_lock_ms, delays, &got_prefs);
+  SET_DELAY_FROM_PREF(
+      battery_idle_warning_delay_ms_pref, idle_warning_ms, delays, &got_prefs);
+  SET_DELAY_FROM_PREF(battery_idle_delay_ms_pref, idle_ms, delays, &got_prefs);
 
-  SET_ACTION_FROM_PREF(idle_action_pref, idle_action, &prefs_policy_);
   SET_ACTION_FROM_PREF(
-      lid_closed_action_pref, lid_closed_action, &prefs_policy_);
+      idle_action_pref, idle_action, &prefs_policy_, &got_prefs);
+  SET_ACTION_FROM_PREF(
+      lid_closed_action_pref, lid_closed_action, &prefs_policy_, &got_prefs);
 
   SET_BOOL_FROM_PREF(
-      use_audio_activity_pref, use_audio_activity, &prefs_policy_);
+      use_audio_activity_pref, use_audio_activity, &prefs_policy_, &got_prefs);
   SET_BOOL_FROM_PREF(
-      use_video_activity_pref, use_video_activity, &prefs_policy_);
+      use_video_activity_pref, use_video_activity, &prefs_policy_, &got_prefs);
 
   if (!presentation_idle_delay_factor_pref.IsDefaultValue()) {
     double value = 0.0;
     if (presentation_idle_delay_factor_pref.GetValue()->GetAsDouble(&value)) {
       prefs_policy_.set_presentation_idle_delay_factor(value);
+      got_prefs = true;
     } else {
       LOG(DFATAL) << presentation_idle_delay_factor_pref.name()
                   << " pref has non-double value";
     }
   }
 
+  prefs_were_set_ = got_prefs;
   SendCurrentPolicy();
+}
+
+int PowerPolicyController::AddScreenBlock(const std::string& reason) {
+  int id = next_block_id_++;
+  screen_blocks_[id] = reason;
+  SendCurrentPolicy();
+  return id;
+}
+
+int PowerPolicyController::AddSuspendBlock(const std::string& reason) {
+  int id = next_block_id_++;
+  suspend_blocks_[id] = reason;
+  SendCurrentPolicy();
+  return id;
+}
+
+void PowerPolicyController::RemoveBlock(int id) {
+  if (!screen_blocks_.erase(id) && !suspend_blocks_.erase(id))
+    LOG(WARNING) << "Ignoring request to remove nonexistent block " << id;
+  else
+    SendCurrentPolicy();
 }
 
 void PowerPolicyController::OnDBusThreadManagerDestroying(
@@ -171,9 +212,38 @@ void PowerPolicyController::PowerManagerRestarted() {
 }
 
 void PowerPolicyController::SendCurrentPolicy() {
-  // TODO(derat): Incorporate other information into the policy that is
-  // sent, e.g. from content::PowerSaveBlocker.
-  client_->SetPolicy(prefs_policy_);
+  std::string reason;
+
+  power_manager::PowerManagementPolicy policy = prefs_policy_;
+  if (prefs_were_set_)
+    reason = "Prefs";
+
+  if (!screen_blocks_.empty()) {
+    policy.mutable_ac_delays()->set_screen_dim_ms(0);
+    policy.mutable_ac_delays()->set_screen_off_ms(0);
+    policy.mutable_battery_delays()->set_screen_dim_ms(0);
+    policy.mutable_battery_delays()->set_screen_off_ms(0);
+  }
+
+  if ((!screen_blocks_.empty() || !suspend_blocks_.empty()) &&
+      (!policy.has_idle_action() || policy.idle_action() ==
+       power_manager::PowerManagementPolicy_Action_SUSPEND)) {
+    policy.set_idle_action(
+        power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  }
+
+  for (BlockMap::const_iterator it = screen_blocks_.begin();
+       it != screen_blocks_.end(); ++it) {
+    reason += (reason.empty() ? "" : ", ") + it->second;
+  }
+  for (BlockMap::const_iterator it = suspend_blocks_.begin();
+       it != suspend_blocks_.end(); ++it) {
+    reason += (reason.empty() ? "" : ", ") + it->second;
+  }
+
+  if (!reason.empty())
+    policy.set_reason(reason);
+  client_->SetPolicy(policy);
 }
 
 void PowerPolicyController::SendEmptyPolicy() {

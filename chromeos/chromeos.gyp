@@ -23,7 +23,6 @@
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
         'power_manager_proto',
-        'power_state_control_proto',
         'power_supply_properties_proto',
         'video_activity_update_proto',
       ],
@@ -198,8 +197,6 @@
         'network/shill_property_handler.h',
         'network/sms_watcher.cc',
         'network/sms_watcher.h',
-        'power/power_state_override.cc',
-        'power/power_state_override.h',
         'process_proxy/process_output_watcher.cc',
         'process_proxy/process_output_watcher.h',
         'process_proxy/process_proxy.cc',
@@ -346,11 +343,13 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'chromeos_test_support',
+        'power_manager_proto',
       ],
       'sources': [
         'attestation/attestation_flow_unittest.cc',
         'display/output_configurator_unittest.cc',
         'dbus/blocking_method_caller_unittest.cc',
+        'dbus/power_policy_controller_unittest.cc',
         'dbus/shill_client_unittest_base.cc',
         'dbus/shill_client_unittest_base.h',
         'dbus/shill_device_client_unittest.cc',
@@ -375,7 +374,7 @@
         'disks/disk_mount_manager_unittest.cc',
         'network/cros_network_functions_unittest.cc',
         'network/geolocation_handler_unittest.cc',
-	'network/network_change_notifier_chromeos_unittest.cc',
+        'network/network_change_notifier_chromeos_unittest.cc',
         'network/network_configuration_handler_unittest.cc',
         'network/network_event_log_unittest.cc',
         'network/network_sms_handler_unittest.cc',
@@ -388,7 +387,6 @@
         'network/onc/onc_utils_unittest.cc',
         'network/onc/onc_validator_unittest.cc',
         'network/shill_property_handler_unittest.cc',
-        'power/power_state_override_unittest.cc',
         'process_proxy/process_output_watcher_unittest.cc',
         'process_proxy/process_proxy_unittest.cc',
       ],
@@ -417,20 +415,6 @@
       'variables': {
         'proto_in_dir': '../third_party/cros_system_api/dbus/power_manager',
         'proto_out_dir': 'chromeos/dbus/power_manager',
-      },
-      'includes': ['../build/protoc.gypi'],
-    },
-    {
-      # Protobuf compiler / generator for the PowerSupplyProperties protocol
-      # buffer.
-      'target_name': 'power_state_control_proto',
-      'type': 'static_library',
-      'sources': [
-        '../third_party/cros_system_api/dbus/power_state_control.proto',
-      ],
-      'variables': {
-        'proto_in_dir': '../third_party/cros_system_api/dbus',
-        'proto_out_dir': 'chromeos/dbus',
       },
       'includes': ['../build/protoc.gypi'],
     },

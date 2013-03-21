@@ -47,6 +47,7 @@ MATCHER_P(PowerManagementPolicyMatches, expected_power_management_policy,
   pm::PowerManagementPolicy actual(arg);
   actual.mutable_ac_delays();
   actual.mutable_battery_delays();
+  actual.clear_reason();
   return actual.SerializeAsString() == expected.SerializeAsString();
 }
 

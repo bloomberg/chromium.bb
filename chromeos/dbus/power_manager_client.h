@@ -26,7 +26,6 @@ class PowerManagementPolicy;
 namespace chromeos {
 
 typedef base::Callback<void(void)> IdleNotificationCallback;
-typedef base::Callback<void(uint32)> PowerStateRequestIdCallback;
 
 // Callback used for getting the current screen brightness.  The param is in the
 // range [0.0, 100.0].
@@ -106,13 +105,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     UPDATE_POLL      // Update requested by poll signal.
   };
 
-  enum PowerStateOverrideType {
-    DISABLE_IDLE_DIM         = 1 << 0,  // Disable screen dimming on idle.
-    DISABLE_IDLE_BLANK       = 1 << 1,  // Disable screen blanking on idle.
-    DISABLE_IDLE_SUSPEND     = 1 << 2,  // Disable suspend on idle.
-    DISABLE_LID_SUSPEND      = 1 << 3,  // Disable suspend on lid closed.
-  };
-
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -172,23 +164,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // Tells the power manager to begin using |policy|.
   virtual void SetPolicy(
       const power_manager::PowerManagementPolicy& policy) = 0;
-
-  // Override the current power state on the machine. The overrides will be
-  // applied to the request ID specified. To specify a new request; use 0 as the
-  // request id and the method will call the provided callback with the new
-  // request ID for use with further calls.  |duration| will be rounded down to
-  // the nearest second.  The overrides parameter will & out the
-  // PowerStateOverrideType types to allow specific selection of overrides. For
-  // example, to override just dim and suspending but leaving blanking in, set
-  // overrides to, DISABLE_IDLE_DIM | DISABLE_IDLE_SUSPEND.
-  virtual void RequestPowerStateOverrides(
-      uint32 request_id,
-      base::TimeDelta duration,
-      int overrides,
-      const PowerStateRequestIdCallback& callback) = 0;
-
-  // Cancels the power state override request specified by request_id.
-  virtual void CancelPowerStateOverrides(uint32 request_id) = 0;
 
   // Tells powerd whether or not we are in a projecting mode.  This is used to
   // adjust idleness thresholds and derived, on this side, from the number of

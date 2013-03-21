@@ -35,12 +35,6 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD1(NotifyUserActivity, void(const base::TimeTicks&));
   MOCK_METHOD2(NotifyVideoActivity, void(const base::TimeTicks&, bool));
   MOCK_METHOD1(SetPolicy, void(const power_manager::PowerManagementPolicy&));
-  MOCK_METHOD4(RequestPowerStateOverrides,
-               void(uint32,
-                    base::TimeDelta,
-                    int,
-                    const PowerStateRequestIdCallback&));
-  MOCK_METHOD1(CancelPowerStateOverrides, void(uint32));
   MOCK_METHOD1(SetIsProjecting, void(bool));
   MOCK_METHOD0(GetSuspendReadinessCallback, base::Closure(void));
 };
