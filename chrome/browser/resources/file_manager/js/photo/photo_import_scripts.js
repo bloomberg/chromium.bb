@@ -46,4 +46,8 @@
 //<include src="tile_view.js"/>
 //<include src="photo_import.js"/>
 
+// Exports
+window.ImageUtil = ImageUtil;
+window.Gallery = Gallery;
+
 })();

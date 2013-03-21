@@ -327,6 +327,8 @@ DialogType.isModal = function(type) {
    * FileManager initially created hidden to prevent flickering.
    * When DOM is almost constructed it need to be shown. Cancels
    * delayed show.
+   *
+   * @private
    */
   FileManager.prototype.show_ = function() {
     if (this.showDelayTimeout_) {
@@ -345,6 +347,7 @@ DialogType.isModal = function(type) {
    * the page must show immediatelly.
    *
    * @param {number} delay In milliseconds.
+   * @private
    */
   FileManager.prototype.delayShow_ = function(delay) {
     if (!this.showDelayTimeout_) {
@@ -406,8 +409,10 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * @param {Object} prefs Preferences.
    * Continue initializing the file manager after resolving roots.
+   *
+   * @param {Object} prefs Preferences.
+   * @private
    */
   FileManager.prototype.init_ = function(prefs) {
     metrics.startInterval('Load.DOM');
@@ -430,7 +435,7 @@ DialogType.isModal = function(type) {
     // Get the 'allowRedeemOffers' preference before launching
     // FileListBannerController.
     this.getPreferences_(function(pref) {
-      /* @type {boolean} */
+      /** @type {boolean} */
       var showOffers = pref['allowRedeemOffers'];
       self.bannersController_ = new FileListBannerController(
           self.directoryModel_, self.volumeManager_, self.document_,
@@ -498,11 +503,17 @@ DialogType.isModal = function(type) {
     metrics.recordInterval('Load.Total');
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.initDateTimeFormatters_ = function() {
     var use12hourClock = !this.preferences_['use24hourClock'];
     this.table_.setDateTimeFormat(use12hourClock);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.initDataTransferOperations_ = function() {
     this.copyManager_ = new FileCopyManagerWrapper.getInstance(
         this.filesystem_.root);
@@ -537,8 +548,9 @@ DialogType.isModal = function(type) {
   };
 
   /**
-     * One-time initialization of context menus.
-     */
+   * One-time initialization of context menus.
+   * @private
+   */
   FileManager.prototype.initContextMenus_ = function() {
     this.fileContextMenu_ = this.dialogDom_.querySelector('#file-context-menu');
     cr.ui.Menu.decorate(this.fileContextMenu_);
@@ -572,6 +584,7 @@ DialogType.isModal = function(type) {
 
   /**
    * One-time initialization of commands.
+   * @private
    */
   FileManager.prototype.initCommands_ = function() {
     var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
@@ -662,7 +675,9 @@ DialogType.isModal = function(type) {
 
   /**
    * Registers cut, copy, paste and delete commands on input element.
+   *
    * @param {Node} node Text input element to register on.
+   * @private
    */
   FileManager.prototype.registerInputCommands_ = function(node) {
     var defaultCommand = Commands.defaultCommand;
@@ -674,6 +689,7 @@ DialogType.isModal = function(type) {
 
   /**
    * One-time initialization of dialogs.
+   * @private
    */
   FileManager.prototype.initDialogs_ = function() {
     var d = cr.ui.dialogs;
@@ -688,6 +704,7 @@ DialogType.isModal = function(type) {
 
   /**
    * One-time initialization of various DOM nodes.
+   * @private
    */
   FileManager.prototype.initDom_ = function() {
     this.dialogDom_.addEventListener('drop', function(e) {
@@ -868,13 +885,18 @@ DialogType.isModal = function(type) {
     i18nTemplate.process(this.document_, loadTimeData);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.onBreadcrumbClick_ = function(event) {
     this.directoryModel_.changeDirectory(event.path);
   };
 
   /**
    * Constructs table and grid (heavy operation).
+   *
    * @param {Object} prefs Preferences.
+   * @private
    **/
   FileManager.prototype.initFileList_ = function(prefs) {
     // Always sharing the data model between the detail/thumb views confuses
@@ -958,11 +980,17 @@ DialogType.isModal = function(type) {
                today.getTime() + MILLISECONDS_IN_DAY - Date.now() + 1000);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.initSidebar_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.updateStartupPrefs_ = function() {
     var sortStatus = this.directoryModel_.getFileList().sortStatus;
     var prefs = {
@@ -993,9 +1021,11 @@ DialogType.isModal = function(type) {
       this.currentList_.focus();
   };
 
-  /*
+  /**
    * File list focus handler. Used to select the top most element on the list
    * if nothing was selected.
+   *
+   * @private
    */
   FileManager.prototype.onFileListFocus_ = function() {
     // Do not select default item if focused using mouse.
@@ -1009,8 +1039,10 @@ DialogType.isModal = function(type) {
     this.directoryModel_.selectIndex(0);
   };
 
-  /*
+  /**
    * File list blur handler.
+   *
+   * @private
    */
   FileManager.prototype.onFileListBlur_ = function() {
     this.suppressFocus_ = false;
@@ -1018,7 +1050,9 @@ DialogType.isModal = function(type) {
 
   /**
    * Index of selected item in the typeList of the dialog params.
+   *
    * @return {number} 1-based index of selected type or 0 if no type selected.
+   * @private
    */
   FileManager.prototype.getSelectedFilterIndex_ = function() {
     var index = Number(this.fileTypeSelector_.selectedIndex);
@@ -1078,7 +1112,9 @@ DialogType.isModal = function(type) {
 
   /**
    * Initialize the file list table or grid.
+   *
    * @param {cr.ui.List} list The list.
+   * @private
    */
   FileManager.prototype.initList_ = function(list) {
     // Overriding the default role 'list' to 'listbox' for better accessibility
@@ -1087,6 +1123,9 @@ DialogType.isModal = function(type) {
     list.addEventListener('click', this.onDetailClick_.bind(this));
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.onCopyProgress_ = function(event) {
     if (event.reason === 'ERROR' &&
         event.error.reason === 'FILESYSTEM_ERROR' &&
@@ -1115,10 +1154,14 @@ DialogType.isModal = function(type) {
   /**
    * Handler of file manager operations. Update directory model
    * to reflect operation result immediatelly (not waiting directory
-   * update event).
+   * update event). Also, preloads thumbnails for the copied images.
+   *
+   * @param {Event} Operation completion event.
+   * @private
    */
   FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
     var currentPath = this.directoryModel_.getCurrentDirPath();
+    console.log(event);
     if (this.isOnDrive() && this.directoryModel_.isSearching())
       return;
 
@@ -1128,15 +1171,34 @@ DialogType.isModal = function(type) {
                                        entry.name.length - 1);
       return dirPath == currentPath;
     };
+    console.log(event);
+    console.log(event.reason);
     for (var i = 0; i < event.affectedEntries.length; i++) {
       var entry = event.affectedEntries[i];
-      if (inCurrentDirectory(entry))
+      if (inCurrentDirectory(entry)) {
         this.directoryModel_.onEntryChanged(entry.name);
+      } else if (event.reason == 'copied' && FileType.isImage(entry)) {
+        // Preload a thumbnail if the new copied entry an image.
+        console.log('Preloading!');
+        var metadata = entry.getMetadata(function(metadata) {
+          var url = entry.toURL();
+          var thumbnailLoader_ = new ThumbnailLoader(
+              url,
+              ThumbnailLoader.LoaderType.CANVAS,
+              metadata,
+              undefined,  // Media type.
+              FileType.isOnDrive(url) ?
+                  ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+                  ThumbnailLoader.UseEmbedded.NO_EMBEDDED);
+              thumbnailLoader_.loadDetachedImage(function(success) {});
+        });
+      }
     }
   };
 
   /**
    * Fills the file type list or hides it.
+   * @private
    */
   FileManager.prototype.initFileTypeFilter_ = function() {
     if (this.params_.includeAllFiles) {
@@ -1193,6 +1255,7 @@ DialogType.isModal = function(type) {
 
   /**
    * Filters file according to the selected file type.
+   * @private
    */
   FileManager.prototype.updateFileTypeFilter_ = function() {
     this.directoryModel_.removeFilter('fileType');
@@ -1210,18 +1273,25 @@ DialogType.isModal = function(type) {
 
   /**
    * Respond to the back and forward buttons.
+   * @param {Event} event Pop state event.
+   * @private
    */
   FileManager.prototype.onPopState_ = function(event) {
     this.closeFilePopup_();
     this.setupCurrentDirectory_(false /* page loading */);
   };
 
-  FileManager.prototype.requestResize_ = function(timeout) {
-    setTimeout(this.onResize_.bind(this), timeout || 0);
+  /**
+   * @param {number=} opt_timeout Timeout in milliseconds.
+   * @private
+   */
+  FileManager.prototype.requestResize_ = function(opt_timeout) {
+    setTimeout(this.onResize_.bind(this), opt_timeout || 0);
   };
 
   /**
    * Resize details and thumb views to fit the new window size.
+   * @private
    */
   FileManager.prototype.onResize_ = function() {
     if (this.listType_ == FileManager.ListType.THUMBNAIL) {
@@ -1242,6 +1312,9 @@ DialogType.isModal = function(type) {
     this.updateWindowState_();
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.updateWindowState_ = function() {
     util.platform.getWindowStatus(function(wnd) {
       if (wnd.state == 'maximized') {
@@ -1267,7 +1340,8 @@ DialogType.isModal = function(type) {
    * window has neither.
    *
    * @param {boolean} pageLoading True if the page is loading,
-                                  false if popping state.
+   *                              false if popping state.
+   * @private
    */
   FileManager.prototype.setupCurrentDirectory_ = function(pageLoading) {
     var path = location.hash ?  // Location hash has the highest priority.
@@ -1340,6 +1414,8 @@ DialogType.isModal = function(type) {
    * @param {string} path Path to setup.
    * @param {boolean} invokeHandlers If thrue and |path| points to a file
    *     then default handler is triggered.
+   *
+   * @private
    */
   FileManager.prototype.finishSetupCurrentDirectory_ = function(
       path, invokeHandlers) {
@@ -1413,6 +1489,8 @@ DialogType.isModal = function(type) {
   /**
    * Tweak the UI to become a particular kind of dialog, as determined by the
    * dialog type parameter passed to the constructor.
+   *
+   * @private
    */
   FileManager.prototype.initDialogType_ = function() {
     var defaultTitle;
@@ -1462,6 +1540,9 @@ DialogType.isModal = function(type) {
     this.volumeManager_.unmount(path, function() {}, onError.bind(this));
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
     var entries = this.directoryModel_.getFileList().slice();
     var directoryEntry = this.directoryModel_.getCurrentDirEntry();
@@ -1490,6 +1571,9 @@ DialogType.isModal = function(type) {
     this.metadataCache_.get(visibleEntries, 'thumbnail', null);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.dailyUpdateModificationTime_ = function() {
     var fileList = this.directoryModel_.getFileList();
     var urls = [];
@@ -1504,6 +1588,13 @@ DialogType.isModal = function(type) {
                MILLISECONDS_IN_DAY);
   };
 
+  /**
+   * @param {string} type Type of metadata changed.
+   * @param {Array.<string>} urls Array of urls.
+   * @param {Object<string, Object>} props Map from entry URLs to metadata
+   *     props.
+   * @private
+   */
   FileManager.prototype.updateMetadataInUI_ = function(
       type, urls, properties) {
     var propertyByUrl = urls.reduce(function(map, url, index) {
@@ -1525,6 +1616,8 @@ DialogType.isModal = function(type) {
    * While refreshing file list it gets repopulated with new file entries.
    * There is not a big difference whether DOM items stay the same or not.
    * Except for the item that the user is renaming.
+   *
+   * @private
    */
   FileManager.prototype.restoreItemBeingRenamed_ = function() {
     if (!this.isRenamingInProgress())
@@ -1548,7 +1641,7 @@ DialogType.isModal = function(type) {
 
   /**
    * @return {boolean} True if the current directory content is from Google
-   * Drive.
+   *     Drive.
    */
   FileManager.prototype.isOnDrive = function() {
     return this.directoryModel_.getCurrentRootType() === RootType.DRIVE ||
@@ -1557,8 +1650,7 @@ DialogType.isModal = function(type) {
 
   /**
    * @return {boolean} True if the "Available offline" column should be shown in
-   * the table layout.
-   * @private
+   *     the table layout.
    */
   FileManager.prototype.shouldShowOfflineColumn = function() {
     return this.directoryModel_.getCurrentRootType() === RootType.DRIVE;
@@ -1568,7 +1660,9 @@ DialogType.isModal = function(type) {
    * Overrides default handling for clicks on hyperlinks.
    * Opens them in a separate tab and if it's an open/save dialog
    * closes it.
+   *
    * @param {Event} event Click event.
+   * @private
    */
   FileManager.prototype.onExternalLinkClick_ = function(event) {
     if (event.target.tagName != 'A' || !event.target.href)
@@ -1590,6 +1684,7 @@ DialogType.isModal = function(type) {
    * Task combobox handler.
    *
    * @param {Object} event Event containing task which was clicked.
+   * @private
    */
   FileManager.prototype.onTaskItemClicked_ = function(event) {
     var selection = this.getSelection();
@@ -1628,7 +1723,9 @@ DialogType.isModal = function(type) {
 
   /**
    * Sets the given task as default, when this task is applicable.
+   *
    * @param {Object} task Task to set as default.
+   * @private
    */
   FileManager.prototype.onDefaultTaskDone_ = function(task) {
     // TODO(dgozman): move this method closer to tasks.
@@ -1642,6 +1739,10 @@ DialogType.isModal = function(type) {
     this.selectionHandler_.onFileSelectionChanged();
   };
 
+  /**
+   * @param {function()} callback Completion callback.
+   * @private
+   */
   FileManager.prototype.updateNetworkStateAndPreferences_ = function(
       callback) {
     var self = this;
@@ -1661,6 +1762,9 @@ DialogType.isModal = function(type) {
     });
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.onNetworkStateOrPreferencesChanged_ = function() {
     var self = this;
     this.updateNetworkStateAndPreferences_(function() {
@@ -1742,6 +1846,10 @@ DialogType.isModal = function(type) {
     return this.directoryModel_.isReadOnly();
   };
 
+  /**
+   * @param {Event} Unmount event.
+   * @private
+   */
   FileManager.prototype.onExternallyUnmounted_ = function(event) {
     if (event.mountPath == this.directoryModel_.getCurrentRootPath()) {
       if (this.closeOnUnmount_) {
@@ -1758,6 +1866,8 @@ DialogType.isModal = function(type) {
    *
    * @param {HTMLElement} popup Popup element.
    * @param {function} closeCallback Function to call after the popup is closed.
+   *
+   * @private
    */
   FileManager.prototype.openFilePopup_ = function(popup, closeCallback) {
     this.closeFilePopup_();
@@ -1768,6 +1878,9 @@ DialogType.isModal = function(type) {
     this.document_.body.setAttribute('overlay-visible', '');
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.closeFilePopup_ = function() {
     if (this.filePopup_) {
       this.document_.body.removeAttribute('overlay-visible');
@@ -1802,6 +1915,9 @@ DialogType.isModal = function(type) {
     return !!this.renameInput_.currentEntry;
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.focusCurrentList_ = function() {
     if (this.listType_ == FileManager.ListType.DETAIL)
       this.table_.focus();
@@ -1850,6 +1966,10 @@ DialogType.isModal = function(type) {
     }
   };
 
+  /**
+   * @param {Element} listItem List item element.
+   * @private
+   */
   FileManager.prototype.blinkListItem_ = function(listItem) {
     listItem.classList.add('blink');
     setTimeout(function() {
@@ -1857,6 +1977,9 @@ DialogType.isModal = function(type) {
     }, 100);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.selectDefaultPathInFilenameInput_ = function() {
     var input = this.filenameInput_;
     input.focus();
@@ -1873,7 +1996,9 @@ DialogType.isModal = function(type) {
 
   /**
    * Handles mouse click or tap.
+   *
    * @param {Event} event The click event.
+   * @private
    */
   FileManager.prototype.onDetailClick_ = function(event) {
     if (this.isRenamingInProgress()) {
@@ -1910,6 +2035,9 @@ DialogType.isModal = function(type) {
     }
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.dispatchSelectionAction_ = function() {
     if (this.dialogType == DialogType.FULL_PAGE) {
       var tasks = this.getSelection().tasks;
@@ -1945,6 +2073,7 @@ DialogType.isModal = function(type) {
 
   /**
    * Update the tab title.
+   * @private
    */
   FileManager.prototype.updateTitle_ = function() {
     if (this.dialogType != DialogType.FULL_PAGE)
@@ -1958,6 +2087,7 @@ DialogType.isModal = function(type) {
 
   /**
    * Updates search box value when directory gets changed.
+   * @private
    */
   FileManager.prototype.updateSearchBoxOnDirChange_ = function() {
     var searchBox = this.dialogDom_.querySelector('#search-box');
@@ -1967,6 +2097,7 @@ DialogType.isModal = function(type) {
 
   /**
    * Update the gear menu.
+   * @private
    */
   FileManager.prototype.updateGearMenu_ = function() {
     this.syncButton.hidden = !this.isOnDrive();
@@ -1982,6 +2113,7 @@ DialogType.isModal = function(type) {
   /**
    * Refreshes space info of the current volume.
    * @param {boolean} showLoadingCaption Whether show loading caption or not.
+   * @private
    */
    FileManager.prototype.refreshRemainingSpace_ = function(showLoadingCaption) {
     var volumeSpaceInfoLabel =
@@ -2014,6 +2146,7 @@ DialogType.isModal = function(type) {
    * Update the UI when the current directory changes.
    *
    * @param {cr.Event} event The directory-changed event.
+   * @private
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.selectionHandler_.onFileSelectionChanged();
@@ -2073,6 +2206,8 @@ DialogType.isModal = function(type) {
    * Unload handler for the page.  May be called manually for the file picker
    * dialog, because it closes by calling extension API functions that do not
    * return.
+   *
+   * @private
    */
   FileManager.prototype.onUnload_ = function() {
     this.fileWatcher_.stop();
@@ -2107,6 +2242,10 @@ DialogType.isModal = function(type) {
     input.currentEntry = this.currentList_.dataModel.item(item.listIndex);
   };
 
+  /**
+   * @type {Event} Key event.
+   * @private
+   */
   FileManager.prototype.onRenameInputKeyDown_ = function(event) {
     if (!this.isRenamingInProgress())
       return;
@@ -2129,11 +2268,18 @@ DialogType.isModal = function(type) {
     }
   };
 
+  /**
+   * @type {Event} Blur event.
+   * @private
+   */
   FileManager.prototype.onRenameInputBlur_ = function(event) {
     if (this.isRenamingInProgress() && !this.renameInput_.validation_)
       this.commitRename_();
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.commitRename_ = function() {
     var input = this.renameInput_;
     var entry = input.currentEntry;
@@ -2187,6 +2333,9 @@ DialogType.isModal = function(type) {
                            validationDone.bind(this));
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.cancelRename_ = function() {
     this.renameInput_.currentEntry = null;
 
@@ -2198,6 +2347,10 @@ DialogType.isModal = function(type) {
     this.refocus();
   };
 
+  /**
+   * @param {Event} Key event.
+   * @private
+   */
   FileManager.prototype.onFilenameInputKeyDown_ = function(event) {
     var enabled = this.selectionHandler_.updateOkButton();
     if (enabled &&
@@ -2205,6 +2358,10 @@ DialogType.isModal = function(type) {
       this.onOk_();
   };
 
+  /**
+   * @param {Event} Focus event.
+   * @private
+   */
   FileManager.prototype.onFilenameInputFocus_ = function(event) {
     var input = this.filenameInput_;
 
@@ -2222,6 +2379,9 @@ DialogType.isModal = function(type) {
     }, 0);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.onScanStarted_ = function() {
     this.breadcrumbs_.update(
         this.directoryModel_.getCurrentRootPath(),
@@ -2233,6 +2393,9 @@ DialogType.isModal = function(type) {
         setTimeout(this.showSpinner_.bind(this, true), 500);
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.cancelSpinnerTimeout_ = function() {
     if (this.showSpinnerTimeout_) {
       clearTimeout(this.showSpinnerTimeout_);
@@ -2240,12 +2403,19 @@ DialogType.isModal = function(type) {
     }
   };
 
+  /**
+   * @private
+   */
   FileManager.prototype.hideSpinnerLater_ = function() {
     this.cancelSpinnerTimeout_();
     this.showSpinnerTimeout_ =
         setTimeout(this.showSpinner_.bind(this, false), 100);
   };
 
+  /**
+   * @param {boolean} on True to show, false to hide.
+   * @private
+   */
   FileManager.prototype.showSpinner_ = function(on) {
     if (on && this.directoryModel_ && this.directoryModel_.isScanning()) {
       if (this.directoryModel_.isSearching()) {
@@ -2319,11 +2489,19 @@ DialogType.isModal = function(type) {
     tryCreate();
   };
 
+  /**
+   * @param {Event} event Click event.
+   * @private
+   */
   FileManager.prototype.onDetailViewButtonClick_ = function(event) {
     this.setListType(FileManager.ListType.DETAIL);
     this.currentList_.focus();
   };
 
+  /**
+   * @param {Event} event Click event.
+   * @private
+   */
   FileManager.prototype.onThumbnailViewButtonClick_ = function(event) {
     this.setListType(FileManager.ListType.THUMBNAIL);
     this.currentList_.focus();
@@ -2331,6 +2509,8 @@ DialogType.isModal = function(type) {
 
   /**
    * KeyDown event handler for the document.
+   * @param {Event} event Key event.
+   * @private
    */
   FileManager.prototype.onKeyDown_ = function(event) {
     if (event.srcElement === this.renameInput_) {
@@ -2374,6 +2554,8 @@ DialogType.isModal = function(type) {
 
   /**
    * KeyUp event handler for the document.
+   * @param {Event} event Key event.
+   * @private
    */
   FileManager.prototype.onKeyUp_ = function(event) {
     if (event.srcElement === this.renameInput_) {
@@ -2390,6 +2572,8 @@ DialogType.isModal = function(type) {
 
   /**
    * KeyDown event handler for the div#list-container element.
+   * @param {Event} event Key event.
+   * @private
    */
   FileManager.prototype.onListKeyDown_ = function(event) {
     if (event.srcElement.tagName == 'INPUT') {
@@ -2438,6 +2622,7 @@ DialogType.isModal = function(type) {
   /**
    * Suppress/restore hover highlighting in the list container.
    * @param {boolean} on True to temporarity hide hover state.
+   * @private
    */
   FileManager.prototype.setNoHover_ = function(on) {
     if (on) {
@@ -2449,6 +2634,8 @@ DialogType.isModal = function(type) {
 
   /**
    * KeyPress event handler for the div#list-container element.
+   * @param {Event} event Key event.
+   * @private
    */
   FileManager.prototype.onListKeyPress_ = function(event) {
     if (event.srcElement.tagName == 'INPUT') {
@@ -2470,6 +2657,8 @@ DialogType.isModal = function(type) {
 
   /**
    * Mousemove event handler for the div#list-container element.
+   * @param {Event} event Mouse event.
+   * @private
    */
   FileManager.prototype.onListMouseMove_ = function(event) {
     // The user grabbed the mouse, restore the hover highlighting.
@@ -2479,6 +2668,7 @@ DialogType.isModal = function(type) {
   /**
    * Performs a 'text search' - selects a first list entry with name
    * starting with entered text (case-insensitive).
+   * @private
    */
   FileManager.prototype.doTextSearch_ = function() {
     var text = this.textSearchState_.text;
@@ -2502,6 +2692,7 @@ DialogType.isModal = function(type) {
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    *
    * @param {Event} event The click event.
+   * @private
    */
   FileManager.prototype.onCancel_ = function(event) {
     chrome.fileBrowserPrivate.cancelDialog();
@@ -2517,6 +2708,7 @@ DialogType.isModal = function(type) {
    *
    * @param {Array.<string>} fileUrls Drive URLs.
    * @param {function(Array.<string>)} callback To be called with fixed URLs.
+   * @private
    */
   FileManager.prototype.resolveSelectResults_ = function(fileUrls, callback) {
     if (this.isOnDrive()) {
@@ -2534,6 +2726,7 @@ DialogType.isModal = function(type) {
    * Closes this modal dialog with some files selected.
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
+   * @private
    */
   FileManager.prototype.callSelectFilesApiAndClose_ = function(selection) {
     var self = this;
@@ -2556,6 +2749,7 @@ DialogType.isModal = function(type) {
    * Tries to close this modal dialog with some files selected.
    * Performs preprocessing if needed (e.g. for Drive).
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
+   * @private
    */
   FileManager.prototype.selectFilesAndClose_ = function(selection) {
     if (!this.isOnDrive() ||
@@ -2666,6 +2860,7 @@ DialogType.isModal = function(type) {
    * in code it's always referred to as 'ok'.
    *
    * @param {Event} event The click event.
+   * @private
    */
   FileManager.prototype.onOk_ = function(event) {
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
@@ -2796,6 +2991,7 @@ DialogType.isModal = function(type) {
    * @param {function} onDone Function to invoke when user closes the
    *    warning box or immediatelly if file name is correct. If the name was
    *    valid it is passed true, and false otherwise.
+   * @private
    */
   FileManager.prototype.validateFileName_ = function(parentUrl, name, onDone) {
     var msg;
@@ -2831,9 +3027,11 @@ DialogType.isModal = function(type) {
 
   /**
    * Handler invoked on preference setting in drive context menu.
+   *
    * @param {string} pref  The preference to alter.
    * @param {boolean} inverted Invert the value if true.
    * @param {Event}  event The click event.
+   * @private
    */
   FileManager.prototype.onDrivePrefClick_ = function(pref, inverted, event) {
     var newValue = !event.target.hasAttribute('checked');
@@ -2876,6 +3074,7 @@ DialogType.isModal = function(type) {
   /**
    * Requests autocomplete suggestions for files on Drive.
    * Once the suggestions are returned, the autocomplete popup will show up.
+   *
    * @param {string} query The text to autocomplete from.
    * @private
    */
@@ -2901,6 +3100,7 @@ DialogType.isModal = function(type) {
 
   /**
    * Creates a ListItem element for autocomple.
+   *
    * @param {Object} item An object representing a suggestion.
    * @return {HTMLElement} Element containing the autocomplete suggestions.
    * @private

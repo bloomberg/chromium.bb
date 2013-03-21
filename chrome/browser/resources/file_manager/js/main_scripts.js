@@ -99,4 +99,7 @@
 // Exports
 window.FileCopyManagerWrapper = FileCopyManagerWrapper;
 
+// Exports
+window.util = util;
+
 })();

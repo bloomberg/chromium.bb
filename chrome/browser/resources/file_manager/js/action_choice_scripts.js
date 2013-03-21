@@ -34,4 +34,8 @@
 
 //<include src="action_choice.js"/>
 
+// Exports
+window.ImageUtil = ImageUtil;
+window.Gallery = Gallery;
+
 })();

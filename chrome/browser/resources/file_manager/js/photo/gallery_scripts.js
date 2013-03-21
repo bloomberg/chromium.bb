@@ -61,4 +61,8 @@
 
 //<include src="gallery_testapi.js">
 
+// Exports
+window.ImageUtil = ImageUtil;
+window.Gallery = Gallery;
+
 })();
