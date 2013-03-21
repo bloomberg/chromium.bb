@@ -6881,3 +6881,32 @@
    ...
    fun:_ZN7content12_GLOBAL__N_127CaptureTestSourceController10OnShutdownEv
 }
+{
+   bug_222687a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN6chrome12_GLOBAL__N_18ReadMtabERKN4base8FilePathERKSt3setISsSt4lessISsESaISsEEPSt3mapIS2_S2_S6_IS2_ESaISt4pairIS3_S2_EEE
+   fun:_ZN6chrome19StorageMonitorLinux10UpdateMtabEv
+   fun:_ZN6chrome19StorageMonitorLinux16InitOnFileThreadEv
+}
+{
+   bug_222687b
+   Memcheck:Leak
+   ...
+   fun:_ZN6chrome12_GLOBAL__N_113GetDeviceInfoERKN4base8FilePathES4_PSsPSbItNS1_20string16_char_traitsESaItEEPbPmS9_S9_S9_
+   fun:_ZN6chrome19StorageMonitorLinux11AddNewMountERKN4base8FilePathES4_
+   fun:_ZN6chrome19StorageMonitorLinux10UpdateMtabEv
+   fun:_ZN6chrome19StorageMonitorLinux16InitOnFileThreadEv
+}
+{
+   bug_222687c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN6chrome19StorageMonitorLinux*
+   fun:_ZN6chrome19StorageMonitorLinux4InitEv
+   fun:_ZN27ChromeBrowserMainPartsLinux15PostProfileInitEv
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
+   fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
+   fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
+}
