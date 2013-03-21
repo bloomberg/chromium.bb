@@ -892,10 +892,16 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
       http_transaction_factory()->GetCache();
   DCHECK(cache);
 
+  // Use the same priority for the metadata write as for script
+  // resources (see defaultPriorityForResourceType() in WebKit's
+  // CachedResource.cpp). Note that WebURLRequest::PriorityMedium
+  // corresponds to net::LOW (see ConvertWebKitPriorityToNetPriority()
+  // in weburlloader_impl.cc).
+  const net::RequestPriority kPriority = net::LOW;
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
   memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(
-      url, net::DEFAULT_PRIORITY,
+      url, kPriority,
       base::Time::FromDoubleT(expected_response_time), buf, data.size());
 }
 
