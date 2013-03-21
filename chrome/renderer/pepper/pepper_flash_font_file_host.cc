@@ -57,11 +57,12 @@ int32_t PepperFlashFontFileHost::OnGetFontTable(
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   if (fd_ != -1) {
     size_t length = 0;
-    if (content::GetFontTable(fd_, table, NULL, &length)) {
+    if (content::GetFontTable(fd_, table, 0 /* offset */, NULL, &length)) {
       contents.resize(length);
       uint8_t* contents_ptr =
           reinterpret_cast<uint8_t*>(const_cast<char*>(contents.c_str()));
-      if (content::GetFontTable(fd_, table, contents_ptr, &length)) {
+      if (content::GetFontTable(fd_, table, 0 /* offset */,
+                                contents_ptr, &length)) {
         result = PP_OK;
       } else {
         contents.clear();
