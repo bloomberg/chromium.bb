@@ -101,15 +101,6 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   return value.Pass();
 }
 
-void CopyResultsFromUploadRangeCallback(
-    UploadRangeResponse* response_out,
-    scoped_ptr<ResourceEntry>* entry_out,
-    const UploadRangeResponse& response_in,
-    scoped_ptr<ResourceEntry> entry_in) {
-  *response_out = response_in;
-  *entry_out = entry_in.Pass();
-}
-
 // Returns a HttpResponse created from the given file path.
 scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path) {
