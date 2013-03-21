@@ -23,7 +23,7 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
     public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, NativeWindow nativeWindow) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
 
-        mAutofillDialog = new AutofillDialog(nativeWindow.getContext());
+        mAutofillDialog = new AutofillDialog(nativeWindow.getContext(), this);
         mAutofillDialog.show();
     }
 
@@ -46,6 +46,23 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
     private void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
             AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
         mAutofillDialog.updateSection(section, visible, dialogInputs, menuItems, selectedMenuItem);
+    }
+
+    /**
+     * Notifies the dialog that the underlying model is changed and all sections will be updated.
+     * @param fetchingIsActive If true, the data is being fetched and is not yet available.
+     */
+    private void modelChanged(boolean fetchingIsActive) {
+        mAutofillDialog.modelChanged(fetchingIsActive);
+    }
+
+    /**
+     * Updates the account chooser of Autofill dialog.
+     * @param accountNames List of accounts to be shown.
+     * @param selectedAccountIndex Index of the currently selected account.
+     */
+    private void updateAccountChooser(String[] accountNames, int selectedAccountIndex) {
+        mAutofillDialog.updateAccountChooserAndAddTitle(accountNames, selectedAccountIndex);
     }
 
     @CalledByNative

@@ -4,14 +4,12 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
 import android.content.DialogInterface.OnClickListener;
+import android.content.res.Resources;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +19,10 @@ import android.widget.ScrollView;
 
 import org.chromium.chrome.R;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This is the dialog that will act as the java side controller between the
  * AutofillDialogGlue object and the UI elements on the page. It contains the
@@ -28,12 +30,19 @@ import org.chromium.chrome.R;
  */
 public class AutofillDialog extends AlertDialog
         implements OnClickListener, OnItemSelectedListener {
+    private static final int ADD_MENU_ITEM_INDEX = -1;
+    private static final int EDIT_MENU_ITEM_INDEX = -2;
+
     private AutofillDialogContentView mContentView;
     private AutofillDialogTitleView mTitleView;
     private AutofillDialogField[][] mAutofillSectionFieldData =
             new AutofillDialogField[AutofillDialogConstants.NUM_SECTIONS][];
     private AutofillDialogMenuItem[][] mAutofillSectionMenuData =
             new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
+    private final List<String> mDefaultAccountItems = new ArrayList<String>();
+    private final AutofillDialogMenuItem[][] mDefaultMenuItems =
+            new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
+    private AutofillDialogDelegate mDelegate;
     private boolean mWillDismiss = false;
 
     /**
@@ -87,8 +96,9 @@ public class AutofillDialog extends AlertDialog
         public void dialogCancel();
     }
 
-    protected AutofillDialog(Context context) {
+    protected AutofillDialog(Context context, AutofillDialogDelegate delegate) {
         super(context);
+        mDelegate = delegate;
 
         addTitleWithPlaceholders();
 
@@ -97,13 +107,33 @@ public class AutofillDialog extends AlertDialog
                 inflate(R.layout.autofill_dialog_content, null);
         scroll.addView(mContentView);
         setView(scroll);
+        Resources resources = context.getResources();
 
         setButton(AlertDialog.BUTTON_NEGATIVE,
-                getContext().getResources().getString(R.string.autofill_negative_button), this);
+                resources.getString(R.string.autofill_negative_button), this);
         setButton(AlertDialog.BUTTON_POSITIVE,
                 getContext().getResources().getString(R.string.autofill_positive_button), this);
 
         mContentView.setOnItemSelectedListener(this);
+
+        AutofillDialogMenuItem[] billingItems = {
+                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_new_billing)),
+                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_edit_billing))
+        };
+        AutofillDialogMenuItem[] shippingItems = {
+                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_new_shipping)),
+                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_edit_shipping))
+        };
+
+        mDefaultMenuItems[AutofillDialogConstants.SECTION_CC_BILLING] = billingItems;
+        mDefaultMenuItems[AutofillDialogConstants.SECTION_SHIPPING] = shippingItems;
+
+        mDefaultAccountItems.add(resources.getString(R.string.autofill_new_account));
+        mDefaultAccountItems.add(resources.getString(R.string.autofill_use_local));
     }
 
     @Override
@@ -113,10 +143,18 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        if (mContentView.getCurrentLayout() == AutofillDialogContentView.LAYOUT_STEADY) {
+        if (!mContentView.isInEditingMode()) {
             mWillDismiss = true;
+            if (which == AlertDialog.BUTTON_POSITIVE) mDelegate.dialogSubmit();
+            else mDelegate.dialogCancel();
             return;
         }
+
+        int section = mContentView.getCurrentSection();
+        assert(section != AutofillDialogUtils.INVALID_SECTION);
+
+        if (which == AlertDialog.BUTTON_POSITIVE) mDelegate.editingComplete(section);
+        else mDelegate.editingCancel(section);
 
         mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_STEADY);
         getButton(BUTTON_POSITIVE).setText(R.string.autofill_positive_button);
@@ -124,24 +162,21 @@ public class AutofillDialog extends AlertDialog
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> spinner, View view, int position,
-            long id) {
-        if (spinner.getId() == R.id.accounts_spinner) {
-            if (spinner.getItemAtPosition(position).toString().equals(
-                    getContext().getResources().getString(R.string.autofill_use_local))) {
-                mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_STEADY);
-            } else {
-                mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_FETCHING);
-            }
-            return;
-        }
+    public void onItemSelected(AdapterView<?> spinner, View view, int position, long id) {
+        if (spinner.getId() == R.id.accounts_spinner) return;
 
         int section = AutofillDialogUtils.getSectionForSpinnerID(spinner.getId());
 
-        if (!mContentView.selectionShouldChangeLayout(spinner, section, position)) return;
+        if (!selectionShouldChangeLayout(spinner, section, position)) {
+            mDelegate.itemSelected(section, position);
+            return;
+        }
 
+        mDelegate.editingStart(section);
+        AutofillDialogMenuItem currentItem =
+                (AutofillDialogMenuItem) spinner.getItemAtPosition(position);
+        if (currentItem.mIndex == ADD_MENU_ITEM_INDEX) clearAutofillSectionFieldValues(section);
         mContentView.changeLayoutTo(AutofillDialogContentView.getLayoutModeForSection(section));
-        spinner.setSelection(0);
         getButton(BUTTON_POSITIVE).setText(R.string.autofill_positive_button_editing);
     }
 
@@ -149,26 +184,59 @@ public class AutofillDialog extends AlertDialog
     public void onNothingSelected(AdapterView<?> spinner) {
     }
 
+    /**
+     * @param spinner The dropdown that was selected by the user.
+     * @param section The section  that the dropdown corresponds to.
+     * @param position The position for the selected item in the dropdown.
+     * @return Whether the selection should cause a layout state change.
+     */
+    private boolean selectionShouldChangeLayout(AdapterView<?> spinner, int section, int position) {
+        int numDefaultItems = mDefaultMenuItems[section] != null ?
+                mDefaultMenuItems[section].length : 0;
+        return position >= spinner.getCount() - numDefaultItems;
+    }
+
     //TODO(yusufo): Remove this. updateAccountChooserAndAddTitle will get initiated from glue.
     private void addTitleWithPlaceholders() {
-        List<String> accounts = new ArrayList<String>();
-        accounts.add("placeholder@gmail.com");
-        accounts.add("placeholder@google.com");
-        updateAccountChooserAndAddTitle(accounts);
+       String[] accounts = {
+               "placeholder@gmail.com",
+               "placeholder@google.com"
+       };
+       updateAccountChooserAndAddTitle(accounts, 0);
     }
 
     /**
      * Update account chooser dropdown with given accounts and create the title view if needed.
      * @param accounts The accounts to be used for the dropdown.
+     * @param selectedAccountIndex The index of a currently selected account or -1
+     *                             if the local payments should be used.
      */
-    public void updateAccountChooserAndAddTitle(List<String> accounts) {
+    public void updateAccountChooserAndAddTitle(String[] accounts, int selectedAccountIndex) {
+        ArrayList<String> combinedItems =
+                new ArrayList<String>(accounts.length + mDefaultAccountItems.size());
+        combinedItems.addAll(Arrays.asList(accounts));
+        combinedItems.addAll(mDefaultAccountItems);
         if (mTitleView == null) {
-            mTitleView = new AutofillDialogTitleView(getContext(), accounts);
+            mTitleView = new AutofillDialogTitleView(getContext(), combinedItems);
             mTitleView.setOnItemSelectedListener(this);
             setCustomTitle(mTitleView);
             return;
         }
-        // TODO(yusufo): Add code to update accounts after title is created.
+        mTitleView.updateAccountsAndSelect(combinedItems, selectedAccountIndex);
+    }
+
+    /**
+     * Notifies the dialog that the underlying model is changed and all sections will be updated.
+     * Any editing should be invalidated.
+     * The dialog should either go to the FETCHING or to the STEADY mode.
+     * @param fetchingIsActive If true, the data is being fetched and is not yet available.
+     */
+    public void modelChanged(boolean fetchingIsActive) {
+        if (fetchingIsActive) {
+            mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_FETCHING);
+        } else {
+            mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_STEADY);
+        }
     }
 
     /**
@@ -195,7 +263,16 @@ public class AutofillDialog extends AlertDialog
         }
         mAutofillSectionFieldData[section] = dialogInputs;
         mContentView.setVisibilityForSection(section, visible);
-        mContentView.updateMenuItemsForSection(section, menuItems);
+        List<AutofillDialogMenuItem> combinedItems;
+        if (mDefaultMenuItems[section] == null) {
+            combinedItems = Arrays.asList(menuItems);
+        } else {
+            combinedItems = new ArrayList<AutofillDialogMenuItem>(
+                    menuItems.length + mDefaultMenuItems[section].length);
+            combinedItems.addAll(Arrays.asList(menuItems));
+            combinedItems.addAll(Arrays.asList(mDefaultMenuItems[section]));
+        }
+        mContentView.updateMenuItemsForSection(section, combinedItems);
         mAutofillSectionMenuData[section] = menuItems;
     }
 
@@ -203,11 +280,25 @@ public class AutofillDialog extends AlertDialog
      * Clears the field values for the given section.
      * @param section The section to clear the field values for.
      */
-    public void clearAutofillSectionFieldValues(int section) {
+    public void clearAutofillSectionFieldData(int section) {
         AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
         if (fieldData == null) return;
 
         for (int i = 0; i < fieldData.length; i++) fieldData[i].setValue("");
+    }
+
+    private void clearAutofillSectionFieldValues(int section) {
+        AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
+        if (fieldData == null) return;
+
+        EditText currentField;
+        for (int i = 0; i < fieldData.length; i++) {
+            currentField = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
+                    section, fieldData[i].mFieldType));
+            if (currentField == null) continue;
+
+            currentField.setText("");
+        }
     }
 
     /**

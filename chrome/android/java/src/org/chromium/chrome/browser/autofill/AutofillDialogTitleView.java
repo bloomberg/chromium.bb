@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -24,9 +23,8 @@ import org.chromium.chrome.R;
  * the content.
  */
 public class AutofillDialogTitleView extends FrameLayout {
-    private static final List<String> mConstantItems = new ArrayList<String>();
 
-    private List<String> mAccountNames;
+    private ArrayList<String> mAccountNames;
     private ArrayAdapter<String> mAdapter;
 
     /**
@@ -35,17 +33,12 @@ public class AutofillDialogTitleView extends FrameLayout {
      */
     public AutofillDialogTitleView(Context context) {
         super(context);
-        if (mConstantItems.isEmpty()) {
-            mConstantItems.add(getResources().getString(R.string.autofill_new_account));
-            mConstantItems.add(getResources().getString(R.string.autofill_use_local));
-        }
 
         LayoutInflater.from(context).inflate(R.layout.autofill_dialog_title, this, true);
-        Spinner accounts_spinner = (Spinner)findViewById(R.id.accounts_spinner);
+        Spinner accountsSpinner = (Spinner)findViewById(R.id.accounts_spinner);
         mAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mAdapter.addAll(mConstantItems);
-        accounts_spinner.setAdapter(mAdapter);
+        accountsSpinner.setAdapter(mAdapter);
     }
 
     /**
@@ -53,12 +46,28 @@ public class AutofillDialogTitleView extends FrameLayout {
      * @param context The context to create the title within.
      * @param accountNames The dropdown items to be listed.
      */
-    public AutofillDialogTitleView(Context context, List<String> accountNames) {
+    public AutofillDialogTitleView(Context context, ArrayList<String> accountNames) {
         this(context);
-        mAccountNames = accountNames;
+        updateAccountsAndSelect(accountNames, 0);
+    }
+
+    /**
+     * Update account chooser dropdown with given accounts and create the title view if needed.
+     * @param accountNames The dropdown items to be listed.
+     * @param selectedAccountIndex The index of a currently selected account or -1
+     *                             if the local payments should be used.
+     */
+    public void updateAccountsAndSelect(ArrayList<String> accountNames,
+            int selectedAccountIndex) {
         mAdapter.clear();
+        mAccountNames = accountNames;
         mAdapter.addAll(mAccountNames);
-        mAdapter.addAll(mConstantItems);
+        Spinner accountsSpinner = (Spinner)findViewById(R.id.accounts_spinner);
+        if (selectedAccountIndex >= 0) {
+            accountsSpinner.setSelection(selectedAccountIndex);
+        } else {
+            accountsSpinner.setSelection(accountsSpinner.getCount() - 1);
+        }
     }
 
     /**

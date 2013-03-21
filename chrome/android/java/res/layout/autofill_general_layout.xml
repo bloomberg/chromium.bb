@@ -57,6 +57,7 @@
      <CheckBox
         android:id="@+id/check_box"
         android:layout_margin="5dp"
+        android:visibility="gone"
         android:textSize="12sp"
         android:text="@string/autofill_use_wallet"
         android:layout_columnSpan="4"/>
@@ -68,6 +69,7 @@
     <Button
         android:text="@string/autofill_terms_of_service"
         android:padding="10dp"
+        android:visibility="gone"
         android:id="@+id/terms_info"
         android:textSize="11sp"
         android:background="?android:attr/selectableItemBackground"
