@@ -39,7 +39,7 @@ scoped_ptr<LayerImpl> layerImplForScrollAreaAndScrollbar(
 {
     scoped_refptr<Layer> layerTreeRoot = Layer::Create();
     scoped_refptr<Layer> child1 = Layer::Create();
-    scoped_refptr<Layer> child2 = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), child1->id());
+    scoped_refptr<Layer> child2 = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::Create(true), child1->id());
     layerTreeRoot->AddChild(child1);
     layerTreeRoot->InsertChild(child2, reverse_order ? 0 : 1);
     scoped_ptr<LayerImpl> layerImpl = TreeSynchronizer::SynchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), host_impl->active_tree());
@@ -109,7 +109,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
     scoped_refptr<Layer> layerTreeRoot = Layer::Create();
     scoped_refptr<Layer> contentLayer = Layer::Create();
-    scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), layerTreeRoot->id());
+    scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::Create(true), layerTreeRoot->id());
     layerTreeRoot->AddChild(contentLayer);
     layerTreeRoot->AddChild(scrollbarLayer);
 
@@ -222,7 +222,7 @@ public:
         layer_tree_host()->InitializeRendererIfNeeded();
 
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
-        m_scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), 1);
+        m_scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::Create(true), 1);
         m_scrollbarLayer->SetLayerTreeHost(layer_tree_host());
         m_scrollbarLayer->SetBounds(bounds_);
         layer_tree_host()->root_layer()->AddChild(m_scrollbarLayer);
@@ -289,7 +289,7 @@ public:
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
         scoped_refptr<Layer> layerTreeRoot = Layer::Create();
         scoped_refptr<Layer> contentLayer = Layer::Create();
-        scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), layerTreeRoot->id());
+        scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::Create(true), layerTreeRoot->id());
         layerTreeRoot->AddChild(contentLayer);
         layerTreeRoot->AddChild(scrollbarLayer);
 
@@ -355,13 +355,13 @@ TEST(ScrollbarLayerTest, pinchZoomScrollbarUpdates)
     scoped_refptr<Layer> scrollbarLayerHorizontal =
         ScrollbarLayer::Create(scrollbar1.Pass(),
         FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(),
-        FakeWebScrollbarThemeGeometry::create(true),
+        FakeWebScrollbarThemeGeometry::Create(true),
         Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID);
     scoped_ptr<WebKit::WebScrollbar> scrollbar2(FakeWebScrollbar::Create());
     scoped_refptr<Layer> scrollbarLayerVertical =
         ScrollbarLayer::Create(scrollbar2.Pass(),
         FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(),
-        FakeWebScrollbarThemeGeometry::create(true),
+        FakeWebScrollbarThemeGeometry::Create(true),
         Layer::PINCH_ZOOM_ROOT_SCROLL_LAYER_ID);
 
     layerTreeRoot->AddChild(contentLayer);

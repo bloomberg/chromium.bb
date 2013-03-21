@@ -17,7 +17,7 @@ FakeScrollbarLayer::FakeScrollbarLayer(bool paint_during_update,
     : ScrollbarLayer(FakeWebScrollbar::Create().PassAs<WebKit::WebScrollbar>(),
                      FakeScrollbarThemePainter::Create(paint_during_update).
                          PassAs<ScrollbarThemePainter>(),
-                     FakeWebScrollbarThemeGeometry::create(has_thumb).
+                     FakeWebScrollbarThemeGeometry::Create(has_thumb).
                          PassAs<WebKit::WebScrollbarThemeGeometry>(),
                      scrolling_layer_id),
       update_count_(0),
