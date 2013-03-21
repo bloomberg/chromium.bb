@@ -77,8 +77,6 @@ void DeleteTemporaryFile(const base::FilePath& file_path) {
                << file_path.value();
 }
 
-void EmptyResourceIdCallback(SyncStatusCode status,
-                             const std::string& resource_id) {}
 void EmptyStatusCallback(SyncStatusCode status) {}
 
 void DidRemoveOrigin(const GURL& origin, SyncStatusCode status) {
@@ -395,10 +393,30 @@ void DriveFileSyncService::RegisterOriginForTrackingChanges(
     return;
   }
 
-  GetSyncRootDirectory(
-      token.Pass(),
-      base::Bind(&DriveFileSyncService::DidGetSyncRootForRegisterOrigin,
-                 AsWeakPtr(), origin, callback));
+  if (metadata_store_->sync_root_directory().empty()) {
+    GetSyncRootDirectory(
+        token.Pass(),
+        base::Bind(&DriveFileSyncService::DidGetSyncRootForRegisterOrigin,
+                   AsWeakPtr(), origin, callback));
+    return;
+  }
+  sync_client_->EnsureSyncRootIsNotInMyDrive(
+      metadata_store_->sync_root_directory());
+
+  if (metadata_store_->IsIncrementalSyncOrigin(origin) ||
+      metadata_store_->IsBatchSyncOrigin(origin)) {
+    token->ResetTask(FROM_HERE);
+    NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+  DCHECK(!metadata_store_->IsOriginDisabled(origin));
+
+  DCHECK(!metadata_store_->sync_root_directory().empty());
+  sync_client_->GetDriveDirectoryForOrigin(
+      metadata_store_->sync_root_directory(), origin,
+      base::Bind(&DriveFileSyncService::DidGetDriveDirectoryForOrigin,
+                 AsWeakPtr(), base::Passed(&token), origin, callback));
 }
 
 void DriveFileSyncService::UnregisterOriginForTrackingChanges(
@@ -924,6 +942,14 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     pending_batch_sync_origins_.insert(itr->first);
   }
 
+  if (metadata_store_->sync_root_directory().empty()) {
+    // It's ok to fail, so we pass EmptyResourceIdCallback here.
+    GetSyncRootDirectory(token.Pass(), base::Bind(&EmptyStatusCallback));
+    return;
+  }
+  sync_client_->EnsureSyncRootIsNotInMyDrive(
+      metadata_store_->sync_root_directory());
+
   DriveMetadataStore::URLAndResourceIdList to_be_fetched_files;
   status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
   DCHECK_EQ(SYNC_STATUS_OK, status);
@@ -936,9 +962,7 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     AppendFetchChange(url.origin(), url.path(), resource_id);
   }
 
-  // It's ok to fail, so we pass EmptyResourceIdCallback here.
-  GetSyncRootDirectory(token.Pass(), base::Bind(&EmptyResourceIdCallback));
-
+  NotifyTaskDone(status, token.Pass());
   RegisterDriveNotifications();
 }
 
@@ -1005,7 +1029,12 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
 
 void DriveFileSyncService::GetSyncRootDirectory(
     scoped_ptr<TaskToken> token,
-    const ResourceIdCallback& callback) {
+    const SyncStatusCallback& callback) {
+  DCHECK(metadata_store_->sync_root_directory().empty());
+  DCHECK(metadata_store_->batch_sync_origins().empty());
+  DCHECK(metadata_store_->incremental_sync_origins().empty());
+  DCHECK(metadata_store_->disabled_origins().empty());
+
   token->UpdateTask(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving drive root");
   sync_client_->GetDriveDirectoryForSyncRoot(
       base::Bind(&DriveFileSyncService::DidGetSyncRootDirectory,
@@ -1014,38 +1043,32 @@ void DriveFileSyncService::GetSyncRootDirectory(
 
 void DriveFileSyncService::DidGetSyncRootDirectory(
     scoped_ptr<TaskToken> token,
-    const ResourceIdCallback& callback,
+    const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const std::string& sync_root_resource_id) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_CREATED) {
     NotifyTaskDone(status, token.Pass());
-    callback.Run(status, std::string());
+    callback.Run(status);
     return;
   }
 
-  // TODO(nhiroki): Remove this (http://crbug.com/181507).
   metadata_store_->SetSyncRootDirectory(sync_root_resource_id);
 
-  // TODO(nhiroki): Reset local files and metadata if |error|==HTTP_CREATED or
-  // the sync root directory has different resource ID from one in the metadata
-  // store.
-
   NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
-  callback.Run(status, sync_root_resource_id);
+  callback.Run(status);
 }
 
 void DriveFileSyncService::DidGetSyncRootForRegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback,
-    SyncStatusCode status,
-    const std::string& sync_root_resource_id) {
+    SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
   }
-  GetDriveDirectoryForOrigin(origin, callback, sync_root_resource_id);
+  RegisterOriginForTrackingChanges(origin, callback);
 }
 
 void DriveFileSyncService::StartBatchSyncForOrigin(
@@ -1064,35 +1087,6 @@ void DriveFileSyncService::StartBatchSyncForOrigin(
                  AsWeakPtr(), base::Passed(&token), origin, resource_id));
 
   may_have_unfetched_changes_ = false;
-}
-
-void DriveFileSyncService::GetDriveDirectoryForOrigin(
-    const GURL& origin,
-    const SyncStatusCallback& callback,
-    const std::string& sync_root_resource_id) {
-  scoped_ptr<TaskToken> token(GetToken(
-      FROM_HERE, TASK_TYPE_DRIVE, "Retrieving origin metadata"));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::GetDriveDirectoryForOrigin,
-        AsWeakPtr(), origin, callback, sync_root_resource_id));
-    return;
-  }
-
-  if (metadata_store_->IsIncrementalSyncOrigin(origin) ||
-      metadata_store_->IsBatchSyncOrigin(origin)) {
-    token->ResetTask(FROM_HERE);
-    NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
-  DCHECK(!metadata_store_->IsOriginDisabled(origin));
-
-  DCHECK(!sync_root_resource_id.empty());
-  sync_client_->GetDriveDirectoryForOrigin(
-      sync_root_resource_id, origin,
-      base::Bind(&DriveFileSyncService::DidGetDriveDirectoryForOrigin,
-                 AsWeakPtr(), base::Passed(&token), origin, callback));
 }
 
 void DriveFileSyncService::DidGetDriveDirectoryForOrigin(

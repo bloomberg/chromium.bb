@@ -119,9 +119,6 @@ class DriveMetadataStore
   // an incremental sync origin.
   std::string GetResourceIdForOrigin(const GURL& origin) const;
 
-  // TODO(nhiroki): Remove functions related to the sync root directory from
-  // DriveMetadataStore and DriveMetadataDB since these are no longer necessary.
-  // http://crbug.com/181507.
   const std::string& sync_root_directory() const {
     DCHECK(CalledOnValidThread());
     return sync_root_directory_resource_id_;

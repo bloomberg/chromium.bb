@@ -459,6 +459,7 @@ SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
 void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
   DCHECK(CalledOnValidThread());
   DCHECK(!resource_id.empty());
+  DCHECK(sync_root_directory_resource_id_.empty());
 
   sync_root_directory_resource_id_ = resource_id;
 

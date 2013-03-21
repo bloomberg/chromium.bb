@@ -49,9 +49,6 @@ class DriveFileSyncService
       public base::NonThreadSafe,
       public syncer::InvalidationHandler {
  public:
-  typedef base::Callback<void(SyncStatusCode status,
-                              const std::string& resource_id)>
-      ResourceIdCallback;
   static const char kServiceName[];
   static ConflictResolutionPolicy kDefaultPolicy;
 
@@ -282,21 +279,17 @@ class DriveFileSyncService
   void UpdateRegisteredOrigins();
 
   void GetSyncRootDirectory(scoped_ptr<TaskToken> token,
-                            const ResourceIdCallback& callback);
+                            const SyncStatusCallback& callback);
   void DidGetSyncRootDirectory(scoped_ptr<TaskToken> token,
-                               const ResourceIdCallback& callback,
+                               const SyncStatusCallback& callback,
                                google_apis::GDataErrorCode error,
                                const std::string& sync_root_resource_id);
   void DidGetSyncRootForRegisterOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback,
-      SyncStatusCode status,
-      const std::string& sync_root_resource_id);
+      SyncStatusCode status);
   void StartBatchSyncForOrigin(const GURL& origin,
                                const std::string& resource_id);
-  void GetDriveDirectoryForOrigin(const GURL& origin,
-                                  const SyncStatusCallback& callback,
-                                  const std::string& sync_root_resource_id);
   void DidGetDriveDirectoryForOrigin(scoped_ptr<TaskToken> token,
                                      const GURL& origin,
                                      const SyncStatusCallback& callback,

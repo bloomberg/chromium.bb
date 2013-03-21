@@ -237,7 +237,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
     // Expect to call GetRootResourceId and RemoveResourceFromDirectory to
     // ensure the sync root directory is not in 'My Drive' directory.
-    SetUpDriveServiceExpectCallsForGetSyncRoot();
     EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
         .WillRepeatedly(Return(kRootResourceId));
     EXPECT_CALL(*mock_drive_service(),
@@ -563,6 +562,8 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 #if !defined(OS_ANDROID)
 
 TEST_F(DriveFileSyncServiceMockTest, GetSyncRoot) {
+  SetUpDriveServiceExpectCallsForGetSyncRoot();
+
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(1);
@@ -602,10 +603,6 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
 
   InSequence sequence;
 
-  EXPECT_CALL(*mock_remote_observer(),
-              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
-      .Times(1);
-
   SetUpDriveServiceExpectCallsForGetAboutResource();
   SetUpDriveServiceExpectCallsForGetResourceList(
       "chromeos/sync_file_system/listing_files_in_directory.json",
@@ -641,10 +638,6 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
       .Times(AtLeast(1));
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .Times(AnyNumber());
-
-  // Expect to call GetResourceList for the sync root from
-  // RegisterOriginForTrackingChanges.
-  SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   SetUpDriveServiceExpectCallsForGetResourceList(
       "chromeos/sync_file_system/origin_directory_found.json",
@@ -696,10 +689,6 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
       .Times(AnyNumber());
 
   InSequence sequence;
-
-  // Expect to call GetResourceList for the sync root from
-  // RegisterOriginForTrackingChanges.
-  SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   // We already have a directory for the origin.
   SetUpDriveServiceExpectCallsForGetResourceList(
@@ -784,6 +773,8 @@ TEST_F(DriveFileSyncServiceMockTest, ResolveLocalSyncOperationType) {
       base::FilePath().AppendASCII("path/to/file"));
   const std::string kResourceId("123456");
   const int64 kChangestamp = 654321;
+
+  SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
@@ -1014,10 +1005,6 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterOriginWithSyncDisabled) {
       .Times(AnyNumber());
 
   InSequence sequence;
-
-  // Expect to call GetResourceList for the sync root from
-  // RegisterOriginForTrackingChanges.
-  SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   SetUpDriveServiceExpectCallsForGetResourceList(
       "chromeos/sync_file_system/origin_directory_found.json",
