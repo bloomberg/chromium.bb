@@ -8,7 +8,7 @@
 #include "base/string16.h"
 #include "ui/gfx/point.h"
 
-@class BrowserWindowController;
+class Browser;
 class FindBarBridge;
 @class FindBarTextField;
 class FindNotificationDetails;
@@ -32,8 +32,7 @@ class FindNotificationDetails;
   // Needed to call methods on FindBarController.
   FindBarBridge* findBarBridge_;  // weak
 
-  // Needed to request a layout of the FindBar view.
-  BrowserWindowController* browserWindowController_;  // weak
+  Browser* browser_;
 
   scoped_nsobject<FocusTracker> focusTracker_;
 
@@ -63,10 +62,9 @@ class FindNotificationDetails;
 };
 
 // Initializes a new FindBarCocoaController.
-- (id)init;
+- (id)initWithBrowser:(Browser*)browser;
 
 - (void)setFindBarBridge:(FindBarBridge*)findBar;
-- (void)setBrowserWindowController:(BrowserWindowController*)controller;
 
 - (IBAction)close:(id)sender;
 

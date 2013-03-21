@@ -43,7 +43,7 @@ class FindBarCocoaControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
-    controller_.reset([[FindBarCocoaController alloc] init]);
+    controller_.reset([[FindBarCocoaController alloc] initWithBrowser:nil]);
     [[test_window() contentView] addSubview:[controller_ view]];
   }
 
@@ -111,7 +111,7 @@ TEST_F(FindBarCocoaControllerTest, ResultLabelUpdatesCorrectly) {
 
 TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
   scoped_nsobject<FindBarCocoaController> otherController(
-      [[FindBarCocoaController alloc] init]);
+      [[FindBarCocoaController alloc] initWithBrowser:nil]);
   [[test_window() contentView] addSubview:[otherController view]];
 
   // Setting the text in one controller should update the other controller's

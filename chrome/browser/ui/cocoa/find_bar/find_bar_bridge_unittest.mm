@@ -14,14 +14,14 @@ class FindBarBridgeTest : public CocoaTest {
 TEST_F(FindBarBridgeTest, Creation) {
   // Make sure the FindBarBridge constructor doesn't crash and
   // properly initializes its FindBarCocoaController.
-  FindBarBridge bridge;
+  FindBarBridge bridge(NULL);
   EXPECT_TRUE(bridge.find_bar_cocoa_controller() != NULL);
 }
 
 TEST_F(FindBarBridgeTest, Accessors) {
   // Get/SetFindBarController are virtual methods implemented in
   // FindBarBridge, so we test them here.
-  FindBarBridge* bridge = new FindBarBridge();
+  FindBarBridge* bridge = new FindBarBridge(NULL);
   FindBarController controller(bridge);  // takes ownership of |bridge|.
   bridge->SetFindBarController(&controller);
 

@@ -611,7 +611,7 @@ TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
-  FindBarBridge bridge;
+  FindBarBridge bridge(NULL);
   [controller_ addFindBar:bridge.find_bar_cocoa_controller()];
 
   // Test that the Z-order of the find bar is on top of everything.

@@ -637,7 +637,7 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
   // constructor or the FindBarCocoaController init, but that makes
   // unit testing difficult, since we would also require a
   // BrowserWindow object.
-  FindBarBridge* bridge = new FindBarBridge();
+  FindBarBridge* bridge = new FindBarBridge(browser_);
   AddFindBar(bridge->find_bar_cocoa_controller());
   return bridge;
 }

@@ -1510,10 +1510,6 @@ enum {
       NSMinY([[bookmarkBarController_ view] frame]);
   CGFloat maxWidth = NSWidth([[[self window] contentView] frame]);
   [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
-
-  // This allows the FindBarCocoaController to call |layoutSubviews| and get
-  // its position adjusted.
-  [findBarCocoaController_ setBrowserWindowController:self];
 }
 
 - (NSWindow*)createFullscreenWindow {

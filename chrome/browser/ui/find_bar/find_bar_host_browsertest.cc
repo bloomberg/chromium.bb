@@ -1534,3 +1534,18 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   browser()->tab_strip_model()->ActivateTabAt(0, false);
   EXPECT_EQ(ASCIIToUTF16(""), GetMatchCountText());
 }
+
+// Verify that Incognito window doesn't propagate find string to other widows.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, GlobalPasteboardIncognito) {
+  Browser* browser_incognito = CreateIncognitoBrowser();
+  WebContents* web_contents_1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  FindInPageWchar(web_contents_1, L"page", kFwd, kIgnoreCase, NULL);
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+  WebContents* web_contents_2 =
+      browser_incognito->tab_strip_model()->GetActiveWebContents();
+  FindInPageWchar(web_contents_2, L"Incognito", kFwd, kIgnoreCase, NULL);
+  EXPECT_EQ(ASCIIToUTF16("Incognito"),
+      GetFindBarTextForBrowser(browser_incognito));
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+}
