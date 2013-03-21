@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -29,6 +30,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/test/test_server.h"
+
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -450,3 +453,140 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
 }
 
 #endif  // !defined(USE_AURA)
+
+#if defined(ENABLE_PLUGINS)
+
+class PepperContentSettingsTest : public ContentSettingsTest {
+ public:
+  PepperContentSettingsTest() {}
+
+ protected:
+  static const char* const kExternalClearKeyMimeType;
+
+  // Registers any CDM plugins not registered by default.
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Platform-specific filename relative to the chrome executable.
+#if defined(OS_WIN)
+    const wchar_t kLibraryName[] = L"clearkeycdmadapter.dll";
+    const std::wstring external_clear_key_mime_type =
+        ASCIIToWide(kExternalClearKeyMimeType);
+#else  // !defined(OS_WIN)
+    const char* external_clear_key_mime_type = kExternalClearKeyMimeType;
+#if defined(OS_MACOSX)
+    const char kLibraryName[] = "clearkeycdmadapter.plugin";
+#elif defined(OS_POSIX)
+    const char kLibraryName[] = "libclearkeycdmadapter.so";
+#endif
+#endif  // defined(OS_WIN)
+
+    // Append the switch to register the External Clear Key CDM.
+    base::FilePath plugin_dir;
+    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
+    base::FilePath plugin_lib = plugin_dir.Append(kLibraryName);
+    EXPECT_TRUE(file_util::PathExists(plugin_lib));
+    base::FilePath::StringType pepper_plugin = plugin_lib.value();
+    pepper_plugin.append(FILE_PATH_LITERAL(
+        "#Clear Key CDM#Clear Key CDM 0.1.0.0#0.1.0.0;"));
+    pepper_plugin.append(external_clear_key_mime_type);
+    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
+                                     pepper_plugin);
+#if !defined(DISABLE_NACL)
+    // Ensure NaCl can run.
+    command_line->AppendSwitch(switches::kEnableNaCl);
+#endif
+  }
+
+  void RunLoadPepperPluginTest(const char* mime_type, bool expect_loaded) {
+    const char* expected_result = expect_loaded ? "Loaded" : "Not Loaded";
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    string16 expected_title(ASCIIToUTF16(expected_result));
+    content::TitleWatcher title_watcher(web_contents, expected_title);
+
+    // GetTestUrl assumes paths, so we must append query parameters to result.
+    GURL file_url = ui_test_utils::GetTestUrl(
+        base::FilePath(),
+        base::FilePath().AppendASCII("load_pepper_plugin.html"));
+    GURL url(file_url.spec() +
+             base::StringPrintf("?mimetype=%s", mime_type));
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+    EXPECT_EQ(!expect_loaded,
+              TabSpecificContentSettings::FromWebContents(web_contents)->
+                  IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+  }
+
+  void RunJavaScriptBlockedTest(const char* html_file,
+                                bool expect_is_javascript_content_blocked) {
+    // Because JavaScript is disabled, <title> will be the only title set.
+    // Checking for it ensures that the page loaded.
+    const char* const kExpectedTitle = "Initial Title";
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    TabSpecificContentSettings* tab_settings =
+        TabSpecificContentSettings::FromWebContents(web_contents);
+    string16 expected_title(ASCIIToUTF16(kExpectedTitle));
+    content::TitleWatcher title_watcher(web_contents, expected_title);
+
+    GURL url = ui_test_utils::GetTestUrl(
+        base::FilePath(), base::FilePath().AppendASCII(html_file));
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+    EXPECT_EQ(expect_is_javascript_content_blocked,
+              tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+    EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+  }
+};
+
+const char* const PepperContentSettingsTest::kExternalClearKeyMimeType =
+    "application/x-ppapi-clearkey-cdm";
+
+// Tests Pepper plugins that use JavaScript instead of Plug-ins settings.
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
+  HostContentSettingsMap* content_settings =
+      browser()->profile()->GetHostContentSettingsMap();
+
+  // First, verify that this plugin can be loaded.
+  content_settings->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
+
+  RunLoadPepperPluginTest(kExternalClearKeyMimeType, true);
+
+  // Next, test behavior when plug-ins are blocked.
+  content_settings->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+
+  // The plugin we loaded above does not load now.
+  RunLoadPepperPluginTest(kExternalClearKeyMimeType, false);
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
+#endif
+
+#if !defined(DISABLE_NACL)
+  RunLoadPepperPluginTest("application/x-nacl", true);
+#endif
+
+  // Finally, test behavior when (just) JavaScript is blocked.
+  content_settings->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
+  content_settings->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+
+  // This plugin has no special behavior and does not require JavaScript.
+  RunJavaScriptBlockedTest("load_clearkey_no_js.html", false);
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
+#endif
+
+#if !defined(DISABLE_NACL)
+  RunJavaScriptBlockedTest("load_nacl_no_js.html", true);
+#endif
+}
+
+#endif  // defined(ENABLE_PLUGINS)

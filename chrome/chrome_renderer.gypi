@@ -23,6 +23,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
         '../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
         '../webkit/support/webkit_support.gyp:glue',
@@ -31,6 +32,8 @@
       ],
       'include_dirs': [
         '..',
+        # Needed by chrome_content_renderer_client.cc.
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'defines': [
         '<@(nacl_defines)',

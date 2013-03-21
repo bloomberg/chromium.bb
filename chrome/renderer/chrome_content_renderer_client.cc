@@ -101,6 +101,8 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
 #if defined(ENABLE_AUTOMATION)
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #endif
@@ -186,6 +188,28 @@ bool SpellCheckReplacer::Visit(content::RenderView* render_view) {
   DCHECK(provider);
   provider->set_spellcheck(spellcheck_);
   return true;
+}
+
+// For certain sandboxed Pepper plugins, use the JavaScript Content Settings.
+bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
+  if (plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
+      plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) {
+    return false;
+  }
+
+  // Treat Native Client invocations like JavaScript.
+  if (plugin.name == ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName))
+    return true;
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  // Treat CDM invocations like JavaScript.
+  if (plugin.name == ASCIIToUTF16(kWidevineCdmPluginName)) {
+    DCHECK(plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
+    return true;
+  }
+#endif  // WIDEVINE_CDM_AVAILABLE
+
+  return false;
 }
 
 }  // namespace
@@ -448,7 +472,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     const WebPluginParams& original_params,
     const ChromeViewHostMsg_GetPluginInfo_Output& output) {
   const ChromeViewHostMsg_GetPluginInfo_Status& status = output.status;
-  const webkit::WebPluginInfo& plugin = output.plugin;
+  const WebPluginInfo& plugin = output.plugin;
   const std::string& actual_mime_type = output.actual_mime_type;
   const string16& group_name = output.group_name;
   const std::string& identifier = output.group_identifier;
@@ -494,12 +518,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     ContentSettingsObserver* observer =
         ContentSettingsObserver::Get(render_view);
 
-    bool is_nacl_plugin =
-        plugin.name ==
-            ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
-    ContentSettingsType content_type =
-        is_nacl_plugin ? CONTENT_SETTINGS_TYPE_JAVASCRIPT :
-                         CONTENT_SETTINGS_TYPE_PLUGINS;
+    const ContentSettingsType content_type =
+        ShouldUseJavaScriptSettingForPlugin(plugin) ?
+            CONTENT_SETTINGS_TYPE_JAVASCRIPT :
+            CONTENT_SETTINGS_TYPE_PLUGINS;
 
     if ((status_value ==
              ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
@@ -524,7 +546,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
         const char* kNaClMimeType = "application/x-nacl";
-        bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
+        const bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
+        const bool is_nacl_plugin =
+            plugin.name ==
+            ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
         bool is_nacl_unrestricted;
         if (is_nacl_plugin) {
           is_nacl_unrestricted = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -662,7 +687,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 //  static
 GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
     const std::string& actual_mime_type,
-    const webkit::WebPluginInfo& plugin) {
+    const WebPluginInfo& plugin) {
   // Look for the manifest URL among the MIME type's additonal parameters.
   const char* kNaClPluginManifestAttribute = "nacl";
   string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);

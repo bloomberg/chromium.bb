@@ -25,12 +25,40 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #endif
 
 using content::PluginService;
 using webkit::WebPluginInfo;
+
+namespace {
+
+// For certain sandboxed Pepper plugins, use the JavaScript Content Settings.
+bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
+  if (plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
+      plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) {
+    return false;
+  }
+
+  // Treat Native Client invocations like JavaScript.
+  if (plugin.name == ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName))
+    return true;
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  // Treat CDM invocations like JavaScript.
+  if (plugin.name == ASCIIToUTF16(kWidevineCdmPluginName)) {
+    DCHECK(plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
+    return true;
+  }
+#endif  // WIDEVINE_CDM_AVAILABLE
+
+  return false;
+}
+
+}  // namespace
 
 PluginInfoMessageFilter::Context::Context(int render_process_id,
                                           Profile* profile)
@@ -261,14 +289,11 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
     const std::string& resource,
     ContentSetting* setting,
     bool* uses_default_content_setting) const {
-  // Treat Native Client invocations like Javascript.
-  bool is_nacl_plugin = (plugin.name == ASCIIToUTF16(
-      chrome::ChromeContentClient::kNaClPluginName));
 
   scoped_ptr<base::Value> value;
   content_settings::SettingInfo info;
   bool uses_plugin_specific_setting = false;
-  if (is_nacl_plugin) {
+  if (ShouldUseJavaScriptSettingForPlugin(plugin)) {
     value.reset(
         host_content_settings_map_->GetWebsiteSetting(
             policy_url, policy_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,

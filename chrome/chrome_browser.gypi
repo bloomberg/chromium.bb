@@ -45,6 +45,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
@@ -56,7 +57,8 @@
       'include_dirs': [
         '..',
         '<(INTERMEDIATE_DIR)',
-        # Needed by pepper_flash_component_installer.cc.
+        # Needed by chrome_content_renderer_client.cc. &
+        # plugin_info_message_filter.cc.
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'export_dependent_settings': [
