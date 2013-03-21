@@ -58,6 +58,14 @@ void ExecuteCommandLines(chromeos::SystemLogsResponse* response) {
       CommandLine(base::FilePath("/opt/google/touchpad/generate_userfeedback"));
   commands.push_back(std::make_pair("hack-33025-touchpad_activity", command));
 
+  // Get a list of file sizes for the logged in user (excluding the names of
+  // the files in the Downloads directory for privay reasons).
+  command = CommandLine(base::FilePath("/bin/sh"));
+  command.AppendArg("-c");
+  command.AppendArg("/usr/bin/du -h /home/chronos/user |"
+                    " grep -v -e \\/home\\/chronos\\/user\\/Downloads\\/");
+  commands.push_back(std::make_pair("user_files", command));
+
   for (size_t i = 0; i < commands.size(); ++i) {
     std::string output;
     base::GetAppOutput(commands[i].second, &output);
