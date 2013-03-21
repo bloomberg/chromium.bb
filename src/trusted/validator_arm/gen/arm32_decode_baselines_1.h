@@ -3158,11 +3158,14 @@ class MCRR_cccc11000100ttttttttccccoooommmm_case_0
 // MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0:
 //
 //   {defs: {},
+//    inst: inst,
 //    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //    rule: MCR,
 //    safety: [true => FORBIDDEN],
 //    true: true,
-//    uses: {}}
+//    uses: {},
+//    violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//     error('Consider using DSB (defined in ARMv7) for memory barrier')]}
 class MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0
      : public ClassDecoder {
  public:
@@ -3171,6 +3174,19 @@ class MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
+  virtual void generate_diagnostics(
+      ViolationSet violations,
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::ProblemSink* out) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0);

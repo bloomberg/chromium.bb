@@ -309,8 +309,8 @@ def generate_actuals_h(decoder, decoder_name, filename, out, cl_args):
   out.write(ACTUAL_H_FOOTER % values)
 
 ACTUAL_CC_HEADER="""%(FILE_HEADER)s
-#include "native_client/src/trusted/validator_arm/inst_classes.h"
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_actuals.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
 
 namespace nacl_arm_dec {
 """

@@ -1668,16 +1668,6 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
-//    defs: {},
-//    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
-//    rule: MCR,
-//    safety: [true => FORBIDDEN],
-//    true: true,
-//    uses: {}}
-//
-// Baseline:
-//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0,
 //    defs: {},
@@ -4381,6 +4371,53 @@ class Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1);
+};
+
+// Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => FORBIDDEN],
+//    uses: {},
+//    violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//     error('Consider using DSB (defined in ARMv7) for memory barrier')]}
+//
+// Baseline:
+//   {actual: Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1,
+//    baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
+//    defs: {},
+//    inst: inst,
+//    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
+//    rule: MCR,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {},
+//    violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//     error('Consider using DSB (defined in ARMv7) for memory barrier')]}
+class Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1
+     : public ClassDecoder {
+ public:
+  Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
+  virtual void generate_diagnostics(
+      ViolationSet violations,
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::ProblemSink* out) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1);
 };
 
 // Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1

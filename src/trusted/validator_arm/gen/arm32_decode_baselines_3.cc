@@ -7,7 +7,7 @@
 // DO NOT EDIT: GENERATED CODE
 
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_baselines.h"
-#include "native_client/src/trusted/validator_arm/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
 
 namespace nacl_arm_dec {
 

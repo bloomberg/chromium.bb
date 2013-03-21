@@ -963,6 +963,31 @@ class ParenthesizedExp(BitExpr):
   def neutral_repr(self):
     return '(%s)' % neutral_repr(self._exp)
 
+class QuotedString(BitExpr):
+  """Models a quoted string."""
+
+  def __init__(self, text, name=None):
+    if not isinstance(text, str):
+      raise Exception("Can't create a quoted string from %s" % text)
+    self._text = text
+    if name == None: name = repr(text)
+    self._name = name
+
+  def name(self):
+    return self._name
+
+  def text(self):
+    return self._text
+
+  def __repr__(self):
+    return self.name()
+
+  def to_cstring(self):
+    return '"%s"' % self._text
+
+  def neutral_repr(self):
+    return self.name()
+
 class Literal(BitExpr):
   """Models a literal unsigned integer."""
 
@@ -980,9 +1005,6 @@ class Literal(BitExpr):
     return self._value
 
   def to_uint32(self, options={}):
-    return repr(self._value)
-
-  def __repr__(self):
     return repr(self._value)
 
   def must_be_in_range(self, min_include, max_exclude):
@@ -1190,6 +1212,38 @@ class SafetyAction(BitExpr):
 
   def neutral_repr(self):
     return '%s => %s' % (neutral_repr(self._test), self._action)
+
+class Violation(BitExpr):
+  """Models a (conditional) violation."""
+
+  def __init__(self, test, print_args):
+    self._test = test
+    self._print_args = print_args
+
+  def test(self):
+    return self._test
+
+  def violation_type(self):
+    return self._violation_type
+
+  def print_args(self):
+    return list(self._print_args)
+
+  def to_bool(self, options={}):
+    return self.test().to_bool(options)
+
+  def sub_bit_exprs(self):
+    return [self._test] + self._print_args
+
+  def __repr__(self):
+    return '%s =>\n   error(%s)' % (
+        self._test,
+        ', '.join([repr(a) for a in self._print_args]))
+
+  def neutral_repr(self):
+    return '%s =>\n   error(%s)' % (
+        neutral_repr(self._test),
+        ', '.join([neutral_repr(a) for a in self._print_args]))
 
 _INHERITS_SYMBOL = '$inherits$'
 _INHERITS_EXCLUDES_SYMBOL = '$inherits-excludes$'

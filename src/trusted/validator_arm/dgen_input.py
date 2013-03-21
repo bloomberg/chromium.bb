@@ -19,12 +19,14 @@ action_option  ::= (action_rule |
                     action_pattern |
                     action_safety |
                     action_arch |
+                    action_violations |
                     action_other) ';'
 action_other   ::= word ':=' bit_expr
 action_pattern ::= 'pattern' ':=' bitpattern
 action_safety  ::= 'safety' ':=' ('super.safety' | safety_check)
                             ('&' safety_check)*
 action_rule    ::= 'rule' ':=' id
+action_violations ::= 'violations' ':=' violation ('&' violation)*
 arch           ::= '(' word+ ')'
 bit_expr       ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?  # conditional
 bit_expr1      ::= bit_expr2 (('&' bit_expr2)* | ('|' bit_expr2)*)?
@@ -65,11 +67,13 @@ parenthesized_exp ::= '(' (word | punctuation)+ ')'
 pat_bit_set        ::= '{' (bitpattern (',' bitpattern)*)? '}'
 pat_row        ::= pattern+ action
 pattern        ::= bitpattern | '-' | '"'
+quoted_string  := word      (where word text enclosed in quotes('))
 row            ::= '|' (pat_row | default_row)
-safety_check   ::= bit_expr1 '=>' id
+safety_check   ::= bit_expr '=>' id
 table          ::= table_desc table_actions header row+ footer
 table_actions  ::= (decoder_actions footer)?
 table_desc     ::= '+' '-' '-' id citation?
+violation      ::= bit_expr '=>' 'error' '(' quoted_string (',' bit_expr)* ')'
 """
 
 import re
@@ -143,6 +147,7 @@ _DECIMAL_PATTERN = re.compile(r'^([0-9]+)$')
 _HEXIDECIMAL_PATTERN = re.compile(r'^0x([0-9a-fA-F]+)$')
 _BITSTRING_PATTERN = re.compile(r'^\'([01]+)\'$')
 _ID_PATTERN = re.compile(r'^[a-zA-z][a-zA-z0-9_]*$')
+_STRING_PATTERN = re.compile(r'^\'(.*)\'$')
 
 # When true, catch all bugs when parsing and report line.
 _CATCH_EXCEPTIONS = True
@@ -243,7 +248,8 @@ class Parser(object):
 
   def _action_option(self, context):
     """action_option  ::= (action_rule | action_pattern |
-                           action_safety | action_arch) ';'
+                           action_safety | action_arch |
+                           action_violation | action_other) ';'
 
        Returns the specified architecture, or None if other option.
        """
@@ -255,6 +261,8 @@ class Parser(object):
       self._action_safety(context)
     elif self._is_keyword('arch'):
       self._action_arch(context)
+    elif self._is_keyword('violations'):
+      self._action_violations(context)
     elif self._next_token().kind == 'word':
       self._action_other(context)
     else:
@@ -268,8 +276,7 @@ class Parser(object):
        """
     name = self._read_token('word').value
     self._read_token(':=')
-    if not context.define(name, self._bit_expr(context), False):
-      raise Exception('%s: multiple definitions.' % name)
+    self._define(name, self._bit_expr(context), context)
 
   def _action_pattern(self, context):
     """action_pattern ::= 'pattern' ':=' bitpattern
@@ -278,8 +285,7 @@ class Parser(object):
        """
     self._read_keyword('pattern')
     self._read_token(':=')
-    if not context.define('pattern', self._bitpattern32(), False):
-      raise Exception('pattern: multiple definitions.')
+    self._define('pattern', self._bitpattern32(), context)
 
   def _action_safety(self, context):
     """action_safety  ::=
@@ -302,8 +308,7 @@ class Parser(object):
     while self._next_token().kind == '&':
       self._read_token('&')
       checks.append(self._safety_check(context))
-    if not context.define('safety', checks, False):
-      self._unexpected('safety: multiple definitions')
+    self._define('safety', checks, context)
 
   def _action_rule(self, context):
     """action_rule    ::= 'rule' ':=' id
@@ -312,8 +317,17 @@ class Parser(object):
        """
     self._read_keyword('rule')
     self._read_token(':=')
-    if not context.define('rule', self._id(), False):
-      raise Exception('rule: multiple definitions')
+    self._define('rule', self._id(), context)
+
+  def _action_violations(self, context):
+    """action_violations ::= 'violations' ':=' violation ('&' violation)*"""
+    self._read_keyword('violations')
+    self._read_token(':=')
+    violations = [ self._violation(context) ]
+    while self._next_token().kind == '&':
+      self._read_token('&')
+      violations.append(self._violation(context))
+    self._define('violations', violations, context)
 
   def _arch(self):
     """ arch ::= '(' word+ ')' """
@@ -737,7 +751,7 @@ class Parser(object):
       l = dgen_core.Literal(int(text, 2), name=word)
       return dgen_core.BitField(l, len(text) - 1, 0)
 
-    raise Exception('Nondecimal integer expected but not found: %s' % word)
+    self._unexpected('Nondecimal integer expected but not found: %s' % word)
 
   def _int(self):
     """ int ::= word
@@ -840,6 +854,19 @@ class Parser(object):
       return self._read_token().value
     return self._bitpattern()
 
+  def _quoted_string(self):
+    """quoted_string := word
+
+       where word is text enclosed in quotes(')."""
+    word = self._read_token('word').value
+
+    match = _STRING_PATTERN.match(word)
+    if match:
+      text = match.group(1)
+      return dgen_core.QuotedString(text, name=word)
+
+    self._unexpected('Quoted string expected but not found: "%s"' % word)
+
   def _row(self, table, starred_actions, last_patterns=None, last_action=None):
     """ row ::= '|' (pat_row | default_row)
 
@@ -864,7 +891,7 @@ class Parser(object):
 
        Parses safety check and returns it.
        """
-    check = self._bit_expr1(context)
+    check = self._bit_expr(context)
     self._read_token('=>')
     name = self._id()
     return dgen_core.SafetyAction(check, name)
@@ -899,6 +926,21 @@ class Parser(object):
     if self._next_token().kind == '(':
       citation = self._citation()
     return dgen_core.Table(name, citation)
+
+  def _violation(self, context):
+    """violation ::= bit_expr '=>' 'error' '(' quoted_string (',' bit_expr)* ')'
+
+       Parses a (conditional) violation and returns it."""
+    check = self._bit_expr(context)
+    self._read_token('=>')
+    self._read_keyword('error')
+    self._read_token('(')
+    args = [ self._quoted_string() ]
+    while self._next_token().kind == ',':
+      self._read_token(',')
+      args.append(self._bit_expr(context))
+    self._read_token(')')
+    return dgen_core.Violation(check, args)
 
   #------ Syntax checks ------
 
@@ -1087,11 +1129,16 @@ class Parser(object):
     # If no more tokens left on the current line. read
     # input till more tokens are found
     while not self._reached_eof and not self._words:
-      self._words = self._read_line().split()
+      self._words = self._extract_words(self._read_line())
 
     if self._words:
       # More tokens found. Convert the first word to a token.
       word = self._words.pop(0)
+
+      # Quoted strings must not be split!
+      if word[0] == "'":
+        self._token = Token('word', word)
+        return self._token
 
       # First remove any applicable punctuation.
       for p in self._punctuation:
@@ -1123,6 +1170,50 @@ class Parser(object):
       # No more tokens found, assume eof.
       self._token = Token('eof')
     return self._token
+
+  def _extract_words(self, line):
+    """Returns the list of words in the given line. Words, in this
+       context include any non-commented text that is separated by
+       whitespace, and do not appear in quotes.
+       Note: This code assumes that comments have already been removed."""
+    words = []
+    start_index = 0;
+    line_length = len(line)
+    for i in range(0, line_length):
+      # Skip over matched text.
+      if i < start_index: continue
+
+      # See if word separator, and process accordingly.
+      ch = line[i]
+      if ch in [' ', '\t', '\n', "'"]:
+        #  Word separator. Add word and skip over separator.
+        if start_index < i:
+          # non-empty text found. add as word.
+          words.append(line[start_index:i])
+        if ch == "'":
+          text = self._extract_quoted_string(ch, i, line)
+          words.append(text)
+          start_index = i + len(text)
+        else:
+          start_index = i + 1
+
+    # All text processed. Add word if non-empty text at end of line.
+    if start_index < line_length:
+      words.append(line[start_index:line_length])
+    return words
+
+  def _extract_quoted_string(self, quote, start_index, line):
+    i = start_index + 1
+    line_length = len(line)
+    while i < line_length:
+      ch = line[i]
+      i += 1
+      if ch == quote:
+        return line[start_index:i]
+    # If reached, did not find end of quoted string.
+    self._unexpected(
+        "Can't find matching quote for string starting with quote %s" %
+        quote)
 
   def _pushback(self, word):
     """Puts word back onto the list of words."""

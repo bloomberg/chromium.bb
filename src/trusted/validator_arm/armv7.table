@@ -1710,6 +1710,10 @@
           *Forbidden
            pattern := cccc1110ooo0nnnnttttccccooo1mmmm;
            rule := MCR;
+           # Following defines advice for "mcr p15, 0, rx, c7, c10, 5"
+           # (memory barrier).
+           violations := inst=cccc111000000111tttt111110111010 =>
+                  error('Consider using DSB (defined in ARMv7) for memory barrier');
 |  "            10xxx1     1     -          -      =
           *Forbidden
            pattern := cccc1110ooo1nnnnttttccccooo1mmmm;

@@ -6,8 +6,8 @@
 
 // DO NOT EDIT: GENERATED CODE
 
-#include "native_client/src/trusted/validator_arm/inst_classes.h"
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_actuals.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
 
 namespace nacl_arm_dec {
 
@@ -2589,6 +2589,84 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register((inst.Bits() & 0x0000000F)));
 }
+
+// Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => FORBIDDEN],
+//    uses: {},
+//    violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//     error('Consider using DSB (defined in ARMv7) for memory barrier')]}
+
+RegisterList Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+ViolationSet Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+  const Instruction& inst = second.inst();
+
+  // inst(31:0)=xxxx111000000111xxxx111110111010 =>
+  //   error('Consider using DSB (defined in ARMv7) for memory barrier')
+  if ((inst.Bits() & 0x0FFF0FFF)  ==
+          0x0E070FBA)
+     violations = ViolationUnion(violations, ViolationBit(OTHER_VIOLATION));
+
+  return violations;
+}
+
+
+void Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1::
+generate_diagnostics(ViolationSet violations,
+                     const nacl_arm_val::DecodedInstruction& first,
+                     const nacl_arm_val::DecodedInstruction& second,
+                     const nacl_arm_val::SfiValidator& sfi,
+                     nacl_arm_val::ProblemSink* out) const {
+  ClassDecoder::generate_diagnostics(violations, first, second, sfi, out);
+  const Instruction& inst = second.inst();
+  if (ContainsViolation(violations, OTHER_VIOLATION)) {
+
+    // inst(31:0)=xxxx111000000111xxxx111110111010 =>
+    //   error('Consider using DSB (defined in ARMv7) for memory barrier')
+    if ((inst.Bits() & 0x0FFF0FFF)  ==
+          0x0E070FBA) {
+      out->ReportProblemDiagnostic(OTHER_VIOLATION, second.addr(),
+         "Consider using DSB (defined in ARMv7) for memory barrier");
+    }
+
+  }
+}
+
 
 // Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1
 //

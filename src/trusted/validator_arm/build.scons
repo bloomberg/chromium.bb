@@ -254,6 +254,7 @@ validator_tests = {
   'test_vector_stores': 1,
   'test_loads': 1,
   'test_vector_loads': 1,
+  'test_mcr_viol': 1,
 }
 
 # The following tests generate ARM nexes from assembly and validate the

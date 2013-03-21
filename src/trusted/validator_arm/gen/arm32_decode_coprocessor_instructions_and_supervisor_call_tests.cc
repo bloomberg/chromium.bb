@@ -111,14 +111,16 @@ bool MRRC_cccc11000101ttttttttccccoooommmm_case_0TesterCase1
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    = {actual: Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //       defs: {},
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
 //       safety: [true => FORBIDDEN],
 //       true: true,
-//       uses: {}}
+//       uses: {},
+//       violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//        error('Consider using DSB (defined in ARMv7) for memory barrier')]}
 class MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0TesterCase2
     : public Arm32DecoderTester {
  public:
@@ -489,14 +491,16 @@ class MRRC_cccc11000101ttttttttccccoooommmm_case_0Tester_Case1
 };
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    = {actual: Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //       defs: {},
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
 //       safety: [true => FORBIDDEN],
 //       true: true,
-//       uses: {}}
+//       uses: {},
+//       violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//        error('Consider using DSB (defined in ARMv7) for memory barrier')]}
 class MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0Tester_Case2
     : public MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0TesterCase2 {
  public:
@@ -675,18 +679,20 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    = {actual: Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1,
 //       baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //       defs: {},
 //       pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //       rule: MCR,
 //       safety: [true => FORBIDDEN],
 //       true: true,
-//       uses: {}}
+//       uses: {},
+//       violations: [inst(31:0)=xxxx111000000111xxxx111110111010 =>
+//        error('Consider using DSB (defined in ARMv7) for memory barrier')]}
 TEST_F(Arm32DecoderStateTests,
        MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0Tester_Case2_TestCase2) {
   MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0Tester_Case2 baseline_tester;
-  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MCR actual;
+  NamedActual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1_MCR actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1110ooo0nnnnttttccccooo1mmmm");
 }

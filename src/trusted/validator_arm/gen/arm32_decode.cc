@@ -52,6 +52,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1_instance_()
   , Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1_instance_()
   , Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_()
+  , Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1_instance_()
   , Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1_instance_()
   , Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_instance_()
   , Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1_instance_()
@@ -568,6 +569,24 @@ const ClassDecoder& Arm32DecoderState::decode_coprocessor_instructions_and_super
 
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000A00 /* coproc(11:8)=~101x */ &&
+      (inst.Bits() & 0x03100000)  ==
+          0x02000000 /* op1(25:20)=10xxx0 */ &&
+      (inst.Bits() & 0x00000010)  ==
+          0x00000010 /* op(4)=1 */) {
+    return Actual_MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000E00)  !=
+          0x00000A00 /* coproc(11:8)=~101x */ &&
+      (inst.Bits() & 0x03100000)  ==
+          0x02100000 /* op1(25:20)=10xxx1 */ &&
+      (inst.Bits() & 0x00000010)  ==
+          0x00000010 /* op(4)=1 */) {
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000E00)  !=
+          0x00000A00 /* coproc(11:8)=~101x */ &&
       (inst.Bits() & 0x02100000)  ==
           0x00000000 /* op1(25:20)=0xxxx0 */ &&
       (inst.Bits() & 0x03B00000)  !=
@@ -587,7 +606,9 @@ const ClassDecoder& Arm32DecoderState::decode_coprocessor_instructions_and_super
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000A00 /* coproc(11:8)=~101x */ &&
       (inst.Bits() & 0x03000000)  ==
-          0x02000000 /* op1(25:20)=10xxxx */) {
+          0x02000000 /* op1(25:20)=10xxxx */ &&
+      (inst.Bits() & 0x00000010)  ==
+          0x00000000 /* op(4)=0 */) {
     return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 

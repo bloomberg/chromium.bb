@@ -492,5 +492,115 @@ def _DefineUses(out, uses, values):
 _METHODS_MAP['uses'] = [_DeclareUses, _DefineUses]
 dgen_core.DefineDecoderFieldType('uses', 'register_list')
 
+
+VIOLATIONS_HEADER="""
+  virtual ViolationSet get_violations(
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::AddressSet* branches,
+      nacl_arm_val::AddressSet* critical,
+      uint32_t* next_inst_addr) const;
+  virtual void generate_diagnostics(
+      ViolationSet violations,
+      const nacl_arm_val::DecodedInstruction& first,
+      const nacl_arm_val::DecodedInstruction& second,
+      const nacl_arm_val::SfiValidator& sfi,
+      nacl_arm_val::ProblemSink* out) const;"""
+
+VIOLATIONS_GET_HEADER="""
+ViolationSet %(decoder_name)s::
+get_violations(const nacl_arm_val::DecodedInstruction& first,
+               const nacl_arm_val::DecodedInstruction& second,
+               const nacl_arm_val::SfiValidator& sfi,
+               nacl_arm_val::AddressSet* branches,
+               nacl_arm_val::AddressSet* critical,
+               uint32_t* next_inst_addr) const {
+  ViolationSet violations = ClassDecoder::get_violations(
+      first, second, sfi, branches, critical, next_inst_addr);
+  const Instruction& inst = second.inst();
+"""
+
+VIOLATIONS_GET_CHECK="""
+  // %(neutral_rep)s
+  if (%(violation_test)s)
+     violations = ViolationUnion(violations, ViolationBit(OTHER_VIOLATION));
+"""
+
+VIOLATIONS_GET_FOOTER="""
+  return violations;
+}
+
+"""
+
+VIOLATIONS_DIAGNOSTICS_HEADER="""
+void %(decoder_name)s::
+generate_diagnostics(ViolationSet violations,
+                     const nacl_arm_val::DecodedInstruction& first,
+                     const nacl_arm_val::DecodedInstruction& second,
+                     const nacl_arm_val::SfiValidator& sfi,
+                     nacl_arm_val::ProblemSink* out) const {
+  ClassDecoder::generate_diagnostics(violations, first, second, sfi, out);
+  const Instruction& inst = second.inst();
+  if (ContainsViolation(violations, OTHER_VIOLATION)) {
+"""
+
+VIOLATIONS_DIAGNOSTICS_ADD_HEADER="""
+    // %(neutral_rep)s
+    if (%(violation_test)s) {
+      out->ReportProblemDiagnostic(OTHER_VIOLATION, second.addr()"""
+
+VIOLATIONS_DIAGNOSTICS_ADD_PRINTF_ARG=""",
+         %(printf_arg)s"""
+
+VIOLATIONS_DIAGNOSTICS_ADD_FOOTER=""");
+    }
+"""
+
+VIOLATIONS_DIAGNOSTICS_FOOTER="""
+  }
+}
+
+"""
+
+def _DeclareViolations(out, values):
+  out.write(VIOLATIONS_HEADER % values)
+
+def _TypeCheckViolations(violations):
+  for v in violations:
+    v.test().to_bool()
+    v.print_args()[0].to_cstring()
+    for a in v.print_args()[1:]:
+      a.to_uint32()
+
+def _DefineViolations(out, violations, values):
+  out.write(VIOLATIONS_GET_HEADER % values)
+  for v in violations:
+    values['neutral_rep'] = dgen_output.commented_string(
+        '%s' % v.neutral_repr(), '  ')
+    values['violation_test'] = v.test().to_bool()
+    out.write(VIOLATIONS_GET_CHECK % values)
+  out.write(VIOLATIONS_GET_FOOTER % values)
+
+  out.write(VIOLATIONS_DIAGNOSTICS_HEADER % values)
+  for v in violations:
+    values['neutral_rep'] = dgen_output.commented_string(
+        '%s' % v.neutral_repr(), '    ')
+    values['violation_test'] = v.test().to_bool()
+    out.write(VIOLATIONS_DIAGNOSTICS_ADD_HEADER % values)
+    is_first = True
+    for arg in v.print_args():
+      if is_first:
+        values['printf_arg'] = arg.to_cstring()
+        is_first = False
+      else:
+        values['printf_arg'] = arg.to_uint32()
+      out.write(VIOLATIONS_DIAGNOSTICS_ADD_PRINTF_ARG % values)
+    out.write(VIOLATIONS_DIAGNOSTICS_ADD_FOOTER % values)
+  out.write(VIOLATIONS_DIAGNOSTICS_FOOTER % values)
+
+_METHODS_MAP['violations'] = [_DeclareViolations, _DefineViolations]
+dgen_core.DefineDecoderFieldType('violations', _TypeCheckViolations)
+
 """Defines the set of method fields."""
 METHODS = sorted(set(_METHODS_MAP.keys() + _OPTIONAL_METHODS_MAP.keys()))
