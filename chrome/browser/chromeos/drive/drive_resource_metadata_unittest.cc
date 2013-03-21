@@ -94,6 +94,7 @@ class DriveResourceMetadataTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
+    base::ThreadRestrictions::SetIOAllowed(false);  // For strict thread check.
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
@@ -105,6 +106,7 @@ class DriveResourceMetadataTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     resource_metadata_.reset();
+    base::ThreadRestrictions::SetIOAllowed(true);
   }
 
   // Gets the entry info by path synchronously. Returns NULL on failure.
@@ -138,7 +140,17 @@ class DriveResourceMetadataTest : public testing::Test {
 
   bool ParseMetadataFromString(DriveResourceMetadata* resource_metadata,
                                const std::string& serialized_proto) {
-    return resource_metadata->ParseFromString(serialized_proto);
+    // ParseFromString should run on the blocking pool.
+    bool result = false;
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&DriveResourceMetadata::ParseFromString,
+                   base::Unretained(resource_metadata),
+                   serialized_proto),
+        google_apis::test_util::CreateCopyResultCallback(&result));
+    google_apis::test_util::RunBlockingPoolTask();
+    return result;
   }
 
   base::ScopedTempDir temp_dir_;

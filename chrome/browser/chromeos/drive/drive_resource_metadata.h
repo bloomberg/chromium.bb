@@ -246,8 +246,67 @@ class DriveResourceMetadata {
   // Note: Use Destroy() to delete this object.
   virtual ~DriveResourceMetadata();
 
+  // Used to implement Initialize();
+  DriveFileError InitializeOnBlockingPool();
+
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
+
+  // Used to implement Reset().
+  void ResetOnBlockingPool();
+
+  // Used to implement GetLargestChangestamp().
+  int64 GetLargestChangestampOnBlockingPool();
+
+  // Used to implement SetLargestChangestamp().
+  DriveFileError SetLargestChangestampOnBlockingPool(int64 value);
+
+  // Used to implement AddEntry().
+  FileMoveResult AddEntryOnBlockingPool(const DriveEntryProto& entry_proto);
+
+  // Used to implement MoveEntryToDirectory().
+  FileMoveResult MoveEntryToDirectoryOnBlockingPool(
+      const base::FilePath& file_path,
+      const base::FilePath& directory_path);
+
+  // Used to implement RenameEntry().
+  FileMoveResult RenameEntryOnBlockingPool(
+      const base::FilePath& file_path,
+      const base::FilePath::StringType& new_name);
+
+  // Used to implement RemoveEntry().
+  FileMoveResult RemoveEntryOnBlockingPool(const std::string& resource_id);
+
+  // Used to implement GetEntryInfoByResourceId().
+  scoped_ptr<GetEntryInfoWithFilePathResult>
+      GetEntryInfoByResourceIdOnBlockingPool(const std::string& resource_id);
+
+  // Used to implement GetEntryInfoByPath().
+  scoped_ptr<GetEntryInfoResult> GetEntryInfoByPathOnBlockingPool(
+      const base::FilePath& file_path);
+
+  // Used to implement ReadDirectoryByPath().
+  scoped_ptr<ReadDirectoryResult> ReadDirectoryByPathOnBlockingPool(
+      const base::FilePath& file_path);
+
+  // Used to implement RefreshEntry().
+  scoped_ptr<GetEntryInfoWithFilePathResult> RefreshEntryOnBlockingPool(
+      const DriveEntryProto& entry_proto);
+
+  // Used to implement RefreshDirectory().
+  FileMoveResult RefreshDirectoryOnBlockingPool(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const DriveEntryProtoMap& entry_proto_map);
+
+  // Used to implement GetChildDirectories().
+  scoped_ptr<std::set<base::FilePath> > GetChildDirectoriesOnBlockingPool(
+      const std::string& resource_id);
+
+  // Used to implement RemoveAll().
+  void RemoveAllOnBlockingPool();
+
+  // Used to implement MaybeSave().
+  void MaybeSaveOnBlockingPool(const base::FilePath& directory_path);
 
   // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
   // asynchronously fetched. This fetches the second DriveEntry only if the
@@ -311,10 +370,7 @@ class DriveResourceMetadata {
       const std::string& directory_resource_id);
 
   // Used to implement Load().
-  void OnProtoLoaded(const FileOperationCallback& callback,
-                     base::Time* last_modified,
-                     std::string* serialized_proto,
-                     bool read_succeeded);
+  DriveFileError LoadOnBlockingPool(const base::FilePath& directory_path);
 
   // Parses metadata from string and set up directory structure.
   bool ParseFromString(const std::string& serialized_proto);

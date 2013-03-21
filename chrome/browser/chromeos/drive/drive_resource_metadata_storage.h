@@ -20,7 +20,6 @@ class DriveEntryProto;
 // Interface of a storage for DriveResourceMetadata which is responsible to
 // manage entry info and child-parent relationships between entries.
 // TODO(hashimoto): Add tests for this class.
-// TODO(hashimoto): Stop accessing this class on UI thread.
 // TODO(hashimoto): Implement DB version of this class.
 // TODO(hashimoto): Move data save/load code to this class.
 class DriveResourceMetadataStorage {

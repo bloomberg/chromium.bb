@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
 
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 
 namespace drive {
@@ -13,6 +14,7 @@ DriveResourceMetadataStorageMemory::DriveResourceMetadataStorageMemory() {
 }
 
 DriveResourceMetadataStorageMemory::~DriveResourceMetadataStorageMemory() {
+  base::ThreadRestrictions::AssertIOAllowed();
 }
 
 void DriveResourceMetadataStorageMemory::PutEntry(
@@ -23,7 +25,9 @@ void DriveResourceMetadataStorageMemory::PutEntry(
 
 scoped_ptr<DriveEntryProto> DriveResourceMetadataStorageMemory::GetEntry(
     const std::string& resource_id) {
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
+
   ResourceMap::const_iterator iter = resource_map_.find(resource_id);
   scoped_ptr<DriveEntryProto> entry;
   if (iter != resource_map_.end())
@@ -33,7 +37,9 @@ scoped_ptr<DriveEntryProto> DriveResourceMetadataStorageMemory::GetEntry(
 
 void DriveResourceMetadataStorageMemory::RemoveEntry(
     const std::string& resource_id) {
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
+
   const size_t result = resource_map_.erase(resource_id);
   DCHECK_EQ(1u, result);  // resource_id was found in the map.
 }
@@ -42,12 +48,15 @@ void DriveResourceMetadataStorageMemory::PutChild(
     const std::string& parent_resource_id,
     const base::FilePath::StringType& child_name,
     const std::string& child_resource_id) {
+  base::ThreadRestrictions::AssertIOAllowed();
   child_maps_[parent_resource_id][child_name] = child_resource_id;
 }
 
 std::string DriveResourceMetadataStorageMemory::GetChild(
     const std::string& parent_resource_id,
     const base::FilePath::StringType& child_name) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   ChildMaps::const_iterator iter = child_maps_.find(parent_resource_id);
   if (iter == child_maps_.end())
     return std::string();
@@ -61,6 +70,8 @@ std::string DriveResourceMetadataStorageMemory::GetChild(
 void DriveResourceMetadataStorageMemory::GetChildren(
     const std::string& parent_resource_id,
     std::vector<std::string>* children) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   ChildMaps::const_iterator iter = child_maps_.find(parent_resource_id);
   if (iter == child_maps_.end())
     return;
@@ -74,6 +85,8 @@ void DriveResourceMetadataStorageMemory::GetChildren(
 void DriveResourceMetadataStorageMemory::RemoveChild(
     const std::string& parent_resource_id,
     const base::FilePath::StringType& child_name) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   ChildMaps::iterator iter = child_maps_.find(parent_resource_id);
   DCHECK(iter != child_maps_.end());
 
