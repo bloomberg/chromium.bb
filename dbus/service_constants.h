@@ -740,6 +740,7 @@ const char kErrorDetailsProperty[] = "ErrorDetails";
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 const char kIPConfigProperty[] = "IPConfig";
 const char kL2tpIpsecCaCertPemProperty[] = "L2TPIPsec.CACertPEM";
+const char kL2tpIpsecTunnelGroupProperty[] = "L2TPIPsec.TunnelGroup";
 const char kOpenVPNCaCertPemProperty[] = "OpenVPN.CACertPEM";
 const char kOutOfCreditsProperty[] = "Cellular.OutOfCredits";
 const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
