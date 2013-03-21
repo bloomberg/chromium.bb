@@ -11,6 +11,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/views/controls/label.h"
@@ -41,6 +42,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(
     // We don't want the link to alter tab navigation.
     import_link_->set_focusable(false);
     import_link_->set_listener(this);
+    import_link_->set_context_menu_controller(this);
     import_link_->SetAutoColorReadabilityEnabled(false);
     AddChildView(import_link_);
   }
@@ -104,6 +106,13 @@ void BookmarkBarInstructionsView::GetAccessibleState(
 void BookmarkBarInstructionsView::LinkClicked(views::Link* source,
                                               int event_flags) {
   delegate_->ShowImportDialog();
+}
+
+void BookmarkBarInstructionsView::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point) {
+  // Do nothing here, we don't want to show the Bookmarks context menu when
+  // the user right clicks on the "Import bookmarks now" link.
 }
 
 void BookmarkBarInstructionsView::UpdateColors() {

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 
@@ -26,7 +26,8 @@ class Link;
 // with a link to import bookmarks. Clicking the link results in notifying the
 // delegate.
 class BookmarkBarInstructionsView : public views::View,
-                                    public views::LinkListener {
+                                    public views::LinkListener,
+                                    public views::ContextMenuController {
  public:
   explicit BookmarkBarInstructionsView(
       chrome::BookmarkBarInstructionsDelegate* delegate);
@@ -44,6 +45,9 @@ class BookmarkBarInstructionsView : public views::View,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& point) OVERRIDE;
+
   void UpdateColors();
 
   chrome::BookmarkBarInstructionsDelegate* delegate_;

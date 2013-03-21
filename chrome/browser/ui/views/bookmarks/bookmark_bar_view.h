@@ -412,8 +412,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // Visible if not all the bookmark buttons fit.
   views::MenuButton* overflow_button_;
 
-  // BookmarkBarInstructionsView that is visible if there are no bookmarks on
-  // the bookmark bar.
+  // Shows a text and a link to import bookmarks if there are no bookmarks in
+  // the Bookmarks Bar.
   views::View* instructions_;
 
   ButtonSeparatorView* bookmarks_separator_view_;
