@@ -868,7 +868,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_NoChange) {
 }
 
 TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Busy) {
-  const GURL kOrigin("chrome-extension://example");
+  const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const base::FilePath::StringType kFileName(FPL("File 1.mp3"));

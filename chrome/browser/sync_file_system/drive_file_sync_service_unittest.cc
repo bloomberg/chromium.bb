@@ -121,7 +121,7 @@ TEST_F(DriveFileSyncServiceTest, DeleteOriginDirectory) {
                                        origin_dir_resource_id);
   // Delete the origin directory.
   bool done = false;
-  sync_service()->DeleteOriginDirectory(
+  sync_service()->UninstallOrigin(
       origin_gurl,
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   message_loop()->RunUntilIdle();

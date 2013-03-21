@@ -32,7 +32,7 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
   ON_CALL(*this, UnregisterOriginForTrackingChanges(_, _))
       .WillByDefault(
           Invoke(this, &self::UnregisterOriginForTrackingChangesStub));
-  ON_CALL(*this, DeleteOriginDirectory(_, _))
+  ON_CALL(*this, UninstallOrigin(_, _))
       .WillByDefault(
           Invoke(this, &self::DeleteOriginDirectoryStub));
   ON_CALL(*this, ProcessRemoteChange(_))

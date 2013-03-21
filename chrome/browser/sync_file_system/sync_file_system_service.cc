@@ -68,7 +68,7 @@ void DidHandleOriginForExtensionUnloadedEvent(
                      << origin.spec();
         break;
       case extension_misc::UNLOAD_REASON_UNINSTALL:
-        LOG(WARNING) << "Unregistering origin for UNLOAD(UNINSTALL) failed: "
+        LOG(WARNING) << "Uninstall origin for UNLOAD(UNINSTALL) failed: "
                      << origin.spec();
         break;
       default:
@@ -454,7 +454,7 @@ void SyncFileSystemService::HandleExtensionUnloaded(
     case extension_misc::UNLOAD_REASON_UNINSTALL:
       DVLOG(1) << "Handle extension notification for UNLOAD(UNINSTALL): "
                << app_origin;
-      remote_file_service_->UnregisterOriginForTrackingChanges(
+      remote_file_service_->UninstallOrigin(
           app_origin,
           base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
                      type, info->reason, app_origin));

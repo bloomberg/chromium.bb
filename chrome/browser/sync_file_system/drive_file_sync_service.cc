@@ -79,7 +79,7 @@ void DeleteTemporaryFile(const base::FilePath& file_path) {
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
-void DidRemoveOrigin(const GURL& origin, SyncStatusCode status) {
+void DidHandleUnregisteredOrigin(const GURL& origin, SyncStatusCode status) {
   // TODO(calvinlo): Disable syncing if status not ok (http://crbug.com/171611).
   DCHECK_EQ(SYNC_STATUS_OK, status);
   if (status != SYNC_STATUS_OK) {
@@ -499,15 +499,24 @@ void DriveFileSyncService::DisableOriginForTrackingChanges(
       AsWeakPtr(), base::Passed(&token), callback));
 }
 
-void DriveFileSyncService::DeleteOriginDirectory(
+void DriveFileSyncService::UninstallOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   scoped_ptr<TaskToken> token(GetToken(
-      FROM_HERE, TASK_TYPE_DATABASE, "Delete Origin Directory"));
+      FROM_HERE, TASK_TYPE_DATABASE, "Uninstall Origin"));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::DeleteOriginDirectory,
+        &DriveFileSyncService::UninstallOrigin,
         AsWeakPtr(), origin, callback));
+    return;
+  }
+
+  // If origin is not in metadata_store_ then it means the extension was never
+  // run and thus no origin directory on the remote drive was created.
+  if (!metadata_store_->IsBatchSyncOrigin(origin) &&
+      !metadata_store_->IsIncrementalSyncOrigin(origin) &&
+      !metadata_store_->IsOriginDisabled(origin)) {
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
@@ -517,8 +526,8 @@ void DriveFileSyncService::DeleteOriginDirectory(
   sync_client_->DeleteFile(
       resource_id,
       std::string(),
-      base::Bind(&DriveFileSyncService::DidDeleteOriginDirectory,
-                 AsWeakPtr(), base::Passed(&token), callback));
+      base::Bind(&DriveFileSyncService::DidUninstallOrigin,
+                 AsWeakPtr(), base::Passed(&token), origin, callback));
 }
 
 void DriveFileSyncService::ProcessRemoteChange(
@@ -908,9 +917,9 @@ void DriveFileSyncService::UpdateServiceState() {
     // Unexpected status code. They should be explicitly added to one of the
     // above three cases.
     default:
-      NOTREACHED();
       LOG(WARNING) << "Unexpected status returned: " << last_operation_status_;
       state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
+      NOTREACHED();
       break;
   }
 }
@@ -984,9 +993,7 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
         extensions::Extension::GetBaseURLFromExtensionId(extension_id);
 
     if (!extension_service->GetInstalledExtension(extension_id)) {
-      // Extension is uninstalled. Unregister origin.
-      metadata_store_->RemoveOrigin(
-          origin, base::Bind(&DidRemoveOrigin, origin));
+      UninstallOrigin(origin, base::Bind(&DidHandleUnregisteredOrigin, origin));
       continue;
     }
 
@@ -1010,9 +1017,7 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
         extensions::Extension::GetBaseURLFromExtensionId(extension_id);
 
     if (!extension_service->GetInstalledExtension(extension_id)) {
-      // Extension is uninstalled. Unregister origin.
-      metadata_store_->RemoveOrigin(
-          origin, base::Bind(&DidRemoveOrigin, origin));
+      UninstallOrigin(origin, base::Bind(&DidHandleUnregisteredOrigin, origin));
       continue;
     }
 
@@ -1111,13 +1116,17 @@ void DriveFileSyncService::DidGetDriveDirectoryForOrigin(
   callback.Run(SYNC_STATUS_OK);
 }
 
-void DriveFileSyncService::DidDeleteOriginDirectory(
+void DriveFileSyncService::DidUninstallOrigin(
     scoped_ptr<TaskToken> token,
+    const GURL& origin,
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   NotifyTaskDone(status, token.Pass());
-  callback.Run(status);
+
+  // Origin directory has been removed so it's now safe to remove the origin
+  // from the metadata store.
+  UnregisterOriginForTrackingChanges(origin, callback);
 }
 
 void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
