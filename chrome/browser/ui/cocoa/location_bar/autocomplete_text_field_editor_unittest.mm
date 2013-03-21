@@ -191,7 +191,7 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
 TEST_F(AutocompleteTextFieldEditorTest, InstantSuggestion) {
   [editor_ display];
   EXPECT_FALSE([editor_ needsDisplay]);
-  [editor_ setInstantSuggestion:@"foo" textColor:[NSColor redColor]];
+  [field_ setInstantSuggestion:@"foo" textColor:[NSColor redColor]];
   EXPECT_TRUE([editor_ needsDisplay]);
   [editor_ display];
 }

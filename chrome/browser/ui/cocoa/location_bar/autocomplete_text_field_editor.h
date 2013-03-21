@@ -37,8 +37,6 @@ class AutocompleteTextFieldObserver;
 
   // Indicates if the text has been changed by key events.
   BOOL textChangedByKeyEvents_;
-
-  scoped_nsobject<NSTextView> suggestTextView_;
 }
 
 // The delegate is always an AutocompleteTextField*.  Override the superclass
@@ -49,12 +47,6 @@ class AutocompleteTextFieldObserver;
 // Sets attributed string programatically through the field editor's text
 // storage object.
 - (void)setAttributedString:(NSAttributedString*)aString;
-
-// Sets the suggest text that shows at the end of the field's normal text.
-// This can't be simply appended to the field's text storage because that
-// will end any pending IME session.
-- (void)setInstantSuggestion:(NSString*)instantSuggestion
-                   textColor:(NSColor*)textColor;
 
 @end
 

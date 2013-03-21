@@ -218,6 +218,15 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 }
 
+// Test setting instant suggestion, mostly to ensure nothing leaks or crashes.
+TEST_F(AutocompleteTextFieldTest, InstantSuggestion) {
+  [field_ display];
+  EXPECT_FALSE([field_ needsDisplay]);
+  [field_ setInstantSuggestion:@"foo" textColor:[NSColor redColor]];
+  EXPECT_TRUE([field_ needsDisplay]);
+  [field_ display];
+}
+
 TEST_F(AutocompleteTextFieldObserverTest, FlagsChanged) {
   InSequence dummy;  // Call mock in exactly the order specified.
 

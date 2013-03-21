@@ -607,11 +607,11 @@ gfx::NativeView OmniboxViewMac::GetRelativeWindowForPopup() const {
 }
 
 void OmniboxViewMac::SetInstantSuggestion(const string16& suggest_text) {
+  if (suggest_text == suggest_text_)
+    return;
   suggest_text_ = suggest_text;
-  AutocompleteTextFieldEditor* field_editor =
-      base::mac::ObjCCast<AutocompleteTextFieldEditor>([field_ currentEditor]);
-  [field_editor setInstantSuggestion:base::SysUTF16ToNSString(suggest_text)
-                           textColor:SuggestTextColor()];
+  [field_ setInstantSuggestion:base::SysUTF16ToNSString(suggest_text)
+                     textColor:SuggestTextColor()];
 }
 
 string16 OmniboxViewMac::GetInstantSuggestion() const {
@@ -981,5 +981,5 @@ NSUInteger OmniboxViewMac::GetTextLength() const {
 
 bool OmniboxViewMac::IsCaretAtEnd() const {
   const NSRange selection = GetSelectedRange();
-  return selection.length == 0 && selection.location == GetTextLength();
+  return NSMaxRange(selection) == GetTextLength();
 }

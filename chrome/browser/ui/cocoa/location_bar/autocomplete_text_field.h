@@ -125,6 +125,9 @@ class AutocompleteTextFieldObserver {
 
   // Holds current tooltip strings, to keep them from being dealloced.
   scoped_nsobject<NSMutableArray> currentToolTips_;
+
+  scoped_nsobject<NSString> suggestText_;
+  scoped_nsobject<NSColor> suggestColor_;
 }
 
 @property(nonatomic) AutocompleteTextFieldObserver* observer;
@@ -152,6 +155,26 @@ class AutocompleteTextFieldObserver {
 // via -[NSView addToolTipRect:owner:userData:].
 - (void)addToolTip:(NSString*)tooltip forRect:(NSRect)aRect;
 
+// Sets the suggest text that shows at the end of the field's normal text.
+// This can't be simply appended to the field's text storage because that
+// will end any pending IME session.
+- (void)setInstantSuggestion:(NSString*)suggestText
+                   textColor:(NSColor*)suggestColor;
+
+- (NSString*)suggestText;
+- (NSColor*)suggestColor;
+
 @end
+
+namespace autocomplete_text_field {
+
+// Draw instant suggestion text in |controlView|.
+void DrawInstantSuggestion(NSAttributedString* mainText,
+                           NSString* suggestText,
+                           NSColor* suggestColor,
+                           NSView* controlView,
+                           NSRect frame);
+
+}  // namespace autocomplete_text_field
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_
