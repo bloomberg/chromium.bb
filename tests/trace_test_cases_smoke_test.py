@@ -130,7 +130,7 @@ class TraceTestCases(unittest.TestCase):
       expected_output = (
           'Note: Google Test filter = %s\n' % test_case +
           '\n' +
-          gtest_fake_base.get_test_output(test_case) +
+          gtest_fake_base.get_test_output(test_case, 'Fail' in test_case) +
           '\n' +
           gtest_fake_base.get_footer(1, 1) +
           '\n')

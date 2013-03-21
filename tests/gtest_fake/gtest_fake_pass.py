@@ -47,13 +47,13 @@ def main():
     # Simulate running one test.
     print 'Note: Google Test filter = %s\n' % options.gtest_filter
     for i in options.gtest_filter.split(':'):
-      print gtest_fake_base.get_test_output(i)
+      print gtest_fake_base.get_test_output(i, False)
     print gtest_fake_base.get_footer(1, 1)
     return 0
 
   for fixture, cases in TESTS.iteritems():
     for case in cases:
-      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case))
+      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case), False)
   print gtest_fake_base.get_footer(TOTAL, TOTAL)
   return 0
 

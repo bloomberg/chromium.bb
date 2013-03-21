@@ -8,7 +8,7 @@
 [----------] Global test environment set-up.
 [----------] 1 test from Foo
 [ RUN      ] Foo.Bar1
-[       OK ] Foo.Bar1 (100 ms)
+[  FAILED  ] Foo.Bar1 (100 ms)
 [----------] 1 test from Foo (100 ms total)
 
 
@@ -28,7 +28,7 @@
 [----------] Global test environment set-up.
 [----------] 1 test from Foo
 [ RUN      ] Foo.Bar5
-[       OK ] Foo.Bar5 (100 ms)
+[  FAILED  ] Foo.Bar5 (100 ms)
 [----------] 1 test from Foo (100 ms total)
 
 
@@ -48,7 +48,7 @@
 [----------] Global test environment set-up.
 [----------] 1 test from Foo
 [ RUN      ] Foo.Bar4
-[       OK ] Foo.Bar4 (100 ms)
+[  FAILED  ] Foo.Bar4 (100 ms)
 [----------] 1 test from Foo (100 ms total)
 
 

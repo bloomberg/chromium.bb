@@ -42,14 +42,15 @@ def main():
   if options.gtest_filter:
     # Simulate running one test.
     print 'Note: Google Test filter = %s\n' % options.gtest_filter
-    print gtest_fake_base.get_test_output(options.gtest_filter)
+    should_fail = options.gtest_filter == 'Baz.Fail'
+    print gtest_fake_base.get_test_output(options.gtest_filter, should_fail)
     print gtest_fake_base.get_footer(1, 1)
     # Make Baz.Fail fail.
-    return options.gtest_filter == 'Baz.Fail'
+    return int(should_fail)
 
   for fixture, cases in TESTS.iteritems():
     for case in cases:
-      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case))
+      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case), False)
   print gtest_fake_base.get_footer(TOTAL, TOTAL)
   return 1
 

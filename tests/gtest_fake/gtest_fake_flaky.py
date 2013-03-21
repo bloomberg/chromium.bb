@@ -45,13 +45,13 @@ def main():
 
   if options.gtest_filter:
     # Simulate running one test.
-    print 'Note: Google Test filter = %s\n' % options.gtest_filter
-    print gtest_fake_base.get_test_output(options.gtest_filter)
-    print gtest_fake_base.get_footer(1, 1)
     filename = os.path.join(temp_dir, options.gtest_filter)
-
     # Fails on first run, succeeds on the second.
-    if not os.path.isfile(filename):
+    should_fail = not os.path.isfile(filename)
+    print 'Note: Google Test filter = %s\n' % options.gtest_filter
+    print gtest_fake_base.get_test_output(options.gtest_filter, should_fail)
+    print gtest_fake_base.get_footer(1, 1)
+    if should_fail:
       with open(filename, 'w') as f:
         f.write('bang')
       return 1
@@ -59,7 +59,7 @@ def main():
 
   for fixture, cases in TESTS.iteritems():
     for case in cases:
-      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case))
+      print gtest_fake_base.get_test_output('%s.%s' % (fixture, case), False)
   print gtest_fake_base.get_footer(TOTAL, TOTAL)
   return 1
 

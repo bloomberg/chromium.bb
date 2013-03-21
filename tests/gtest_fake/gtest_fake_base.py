@@ -7,18 +7,19 @@
 http://code.google.com/p/googletest/
 """
 
-def get_test_output(test_name):
+def get_test_output(test_name, failed):
   fixture, case = test_name.split('.', 1)
   return (
     '[==========] Running 1 test from 1 test case.\n'
     '[----------] Global test environment set-up.\n'
     '[----------] 1 test from %(fixture)s\n'
     '[ RUN      ] %(fixture)s.%(case)s\n'
-    '[       OK ] %(fixture)s.%(case)s (100 ms)\n'
+    '%(result)s %(fixture)s.%(case)s (100 ms)\n'
     '[----------] 1 test from %(fixture)s (100 ms total)\n'
     '\n') % {
       'fixture': fixture,
       'case': case,
+      'result': '[  FAILED  ]' if failed else '[       OK ]',
     }
 
 

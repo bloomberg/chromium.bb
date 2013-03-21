@@ -29,20 +29,22 @@ def RunTest(arguments):
   ] + arguments
 
   logging.debug(' '.join(cmd))
+  # Do not use universal_newline=True since run_test_cases uses CR extensively.
   proc = subprocess.Popen(
       cmd,
       stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
+
   # pylint is confused.
   out, err = proc.communicate() or ('', '')
   if sys.platform == 'win32':
     # Downgrade CRLF to LF.
     out = out.replace('\r\n', '\n')
     err = err.replace('\r\n', '\n')
-
-  # Upgrade CR to LF.
-  out = out.replace('\r', '\n')
-  err = err.replace('\r', '\n')
+  else:
+    # Upgrade CR to LF.
+    out = out.replace('\r', '\n')
+    err = err.replace('\r', '\n')
 
   return (out, err, proc.returncode)
 
@@ -116,9 +118,9 @@ class RunTestCases(unittest.TestCase):
       if not lines:
         self.fail((expected_out_re[index:], err))
       line = lines.pop(0)
-      self.assertTrue(
-          re.match('^%s$' % expected_out_re[index], line),
-          '%d\n%r\n%r\n%s' % (
+      if not re.match('^%s$' % expected_out_re[index], line):
+        self.fail(
+          '\nIndex: %d\nExpected: %r\nLine: %r\nNext lines: %s' % (
            index,
            expected_out_re[index],
            line,
@@ -247,7 +249,7 @@ class RunTestCases(unittest.TestCase):
       expected_out_re.append('')
       expected_out_re.extend(
           re.escape(l) for l in
-            gtest_fake_base.get_test_output(name).splitlines())
+            gtest_fake_base.get_test_output(name, False).splitlines())
       expected_out_re.append('')
       expected_out_re.extend(
           re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines())
@@ -305,7 +307,7 @@ class RunTestCases(unittest.TestCase):
       r'',
     ] + [
       re.escape(l) for l in
-      gtest_fake_base.get_test_output('Baz.Fail').splitlines()
+      gtest_fake_base.get_test_output('Baz.Fail', True).splitlines()
     ] + [
       '',
     ] + [
@@ -386,7 +388,7 @@ class RunTestCases(unittest.TestCase):
       expected_out_re.append('')
       expected_out_re.extend(
           re.escape(l) for l in
-            gtest_fake_base.get_test_output(name).splitlines())
+            gtest_fake_base.get_test_output(name, 'Fail' in name).splitlines())
       expected_out_re.append('')
       expected_out_re.extend(
           re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines())
