@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/common/net/net_error_tracker.h"

@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/files/file_path.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 
 class PrefRegistrySyncable;
 class PrefService;

@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"

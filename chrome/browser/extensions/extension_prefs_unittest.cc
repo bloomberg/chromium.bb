@@ -8,7 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/prefs/mock_pref_change_callback.h"
-#include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"

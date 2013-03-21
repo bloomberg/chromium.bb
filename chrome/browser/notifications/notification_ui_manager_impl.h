@@ -11,7 +11,7 @@
 
 #include "base/id_map.h"
 #include "base/memory/linked_ptr.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "base/timer.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "content/public/browser/notification_observer.h"

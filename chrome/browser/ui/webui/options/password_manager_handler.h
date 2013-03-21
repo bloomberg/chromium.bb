@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"

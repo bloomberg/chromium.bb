@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GPU_GPU_MODE_MANAGER_H_
 #define CHROME_BROWSER_GPU_GPU_MODE_MANAGER_H_
 
-#include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/pref_change_registrar.h"
 
 class PrefRegistrySimple;
 

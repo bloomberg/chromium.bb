@@ -6,9 +6,9 @@
 
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/mock_pref_change_callback.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_value_store.h"
-#include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/values.h"

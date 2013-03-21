@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NET_NET_PREF_OBSERVER_H_
 
 #include "base/basictypes.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 
 namespace chrome_browser_net {
 class Predictor;

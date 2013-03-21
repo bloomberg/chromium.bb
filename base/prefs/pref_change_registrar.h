@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_PUBLIC_PREF_CHANGE_REGISTRAR_H_
-#define BASE_PREFS_PUBLIC_PREF_CHANGE_REGISTRAR_H_
+#ifndef BASE_PREFS_PREF_CHANGE_REGISTRAR_H_
+#define BASE_PREFS_PREF_CHANGE_REGISTRAR_H_
 
 #include <map>
 #include <string>
@@ -77,4 +77,4 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
   DISALLOW_COPY_AND_ASSIGN(PrefChangeRegistrar);
 };
 
-#endif  // BASE_PREFS_PUBLIC_PREF_CHANGE_REGISTRAR_H_
+#endif  // BASE_PREFS_PREF_CHANGE_REGISTRAR_H_

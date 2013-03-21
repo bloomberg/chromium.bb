@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"

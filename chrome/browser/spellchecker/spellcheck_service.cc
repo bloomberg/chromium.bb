@@ -5,8 +5,8 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
 #include "base/platform_file.h"
+#include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/public/pref_member.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/profiles/profile.h"

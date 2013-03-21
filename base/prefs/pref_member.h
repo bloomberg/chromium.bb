@@ -21,8 +21,8 @@
 // notify MyClass of changes. Note that if you use SetValue(), the observer
 // will not be notified.
 
-#ifndef BASE_PREFS_PUBLIC_PREF_MEMBER_H_
-#define BASE_PREFS_PUBLIC_PREF_MEMBER_H_
+#ifndef BASE_PREFS_PREF_MEMBER_H_
+#define BASE_PREFS_PREF_MEMBER_H_
 
 #include <string>
 #include <vector>
@@ -351,4 +351,4 @@ typedef PrefMember<base::FilePath> FilePathPrefMember;
 // This preference member is expensive for large string arrays.
 typedef PrefMember<std::vector<std::string> > StringListPrefMember;
 
-#endif  // BASE_PREFS_PUBLIC_PREF_MEMBER_H_
+#endif  // BASE_PREFS_PREF_MEMBER_H_

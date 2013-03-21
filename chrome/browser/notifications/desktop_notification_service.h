@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "base/string16.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

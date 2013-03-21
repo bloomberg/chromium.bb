@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/public/pref_change_registrar.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Pointee;

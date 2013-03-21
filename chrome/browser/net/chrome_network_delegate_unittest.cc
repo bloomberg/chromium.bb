@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

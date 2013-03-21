@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/prefs/mock_pref_change_callback.h"
-#include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/user_prefs/pref_registry_syncable.h"

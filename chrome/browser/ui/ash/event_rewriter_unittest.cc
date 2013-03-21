@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "base/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"

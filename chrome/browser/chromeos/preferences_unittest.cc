@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
-#include "base/prefs/public/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
