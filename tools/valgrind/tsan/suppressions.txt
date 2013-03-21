@@ -98,7 +98,6 @@
   ThreadSanitizer:Race
   fun:__strncasecmp_l_ssse3
   fun:base::strncasecmp
-  fun:StartsWithASCII
 }
 
 {
