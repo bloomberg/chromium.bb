@@ -51,6 +51,8 @@ RendererAccessibilityTest.SendFullAccessibilityTreeOnReload
 RendererAccessibilityTest.HideAccessibilityObject
 RendererAccessibilityTest.ShowAccessibilityObject
 RenderWidgetTest.OnMsgPaintAtSize
+PasswordFormConversionUtilsTest.ValidWebFormElementToPasswordForm
+PasswordFormConversionUtilsTest.InvalidWebFormElementToPasswordForm
 
 # Multiple test servers support: http://crbug/187570
 RenderViewHostManagerTest.*
