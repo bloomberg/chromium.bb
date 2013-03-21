@@ -105,17 +105,20 @@ void PDF::SetContentRestriction(const InstanceHandle& instance,
 }
 
 // static
-void PDF::HistogramPDFPageCount(const InstanceHandle& /*instance*/,
+void PDF::HistogramPDFPageCount(const InstanceHandle& instance,
                                 int count) {
   if (has_interface<PPB_PDF>())
-    get_interface<PPB_PDF>()->HistogramPDFPageCount(count);
+    get_interface<PPB_PDF>()->HistogramPDFPageCount(instance.pp_instance(),
+                                                    count);
 }
 
 // static
-void PDF::UserMetricsRecordAction(const InstanceHandle& /*instance*/,
+void PDF::UserMetricsRecordAction(const InstanceHandle& instance,
                                   const Var& action) {
-  if (has_interface<PPB_PDF>())
-    get_interface<PPB_PDF>()->UserMetricsRecordAction(action.pp_var());
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->UserMetricsRecordAction(instance.pp_instance(),
+                                                      action.pp_var());
+  }
 }
 
 // static
@@ -137,10 +140,11 @@ void PDF::Print(const InstanceHandle& instance) {
 }
 
 // static
-bool PDF::IsFeatureEnabled(const InstanceHandle& /* instance, */,
+bool PDF::IsFeatureEnabled(const InstanceHandle& instance,
                            PP_PDFFeature feature) {
   if (has_interface<PPB_PDF>())
-    return PP_ToBool(get_interface<PPB_PDF>()->IsFeatureEnabled(feature));
+    return PP_ToBool(get_interface<PPB_PDF>()->IsFeatureEnabled(
+        instance.pp_instance(), feature));
   return false;
 }
 

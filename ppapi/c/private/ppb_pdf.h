@@ -133,10 +133,10 @@ struct PPB_PDF {
   void (*SetContentRestriction)(PP_Instance instance, int restrictions);
 
   // Use UMA so we know average pdf page count.
-  void (*HistogramPDFPageCount)(int count);
+  void (*HistogramPDFPageCount)(PP_Instance instance, int count);
 
   // Notifies the browser that the given action has been performed.
-  void (*UserMetricsRecordAction)(struct PP_Var action);
+  void (*UserMetricsRecordAction)(PP_Instance instance, struct PP_Var action);
 
   // Notifies the browser that the PDF has an unsupported feature.
   void (*HasUnsupportedFeature)(PP_Instance instance);
@@ -147,7 +147,7 @@ struct PPB_PDF {
   // Invoke Print dialog for plugin.
   void (*Print)(PP_Instance instance);
 
-  PP_Bool(*IsFeatureEnabled)(PP_PDFFeature feature);
+  PP_Bool(*IsFeatureEnabled)(PP_Instance instance, PP_PDFFeature feature);
 
   // Returns a resource image appropriate for a device with |scale| density.
   // Returns 0 (NULL resource) if there is no resource at that scale

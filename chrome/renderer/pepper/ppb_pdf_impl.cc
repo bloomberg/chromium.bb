@@ -280,11 +280,11 @@ void SetContentRestriction(PP_Instance instance_id, int restrictions) {
   instance->delegate()->SetContentRestriction(restrictions);
 }
 
-void HistogramPDFPageCount(int count) {
+void HistogramPDFPageCount(PP_Instance /*instance*/, int count) {
   UMA_HISTOGRAM_COUNTS_10000("PDF.PageCount", count);
 }
 
-void UserMetricsRecordAction(PP_Var action) {
+void UserMetricsRecordAction(PP_Instance /*instance*/, PP_Var action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
   if (action_str)
@@ -315,7 +315,7 @@ void SaveAs(PP_Instance instance_id) {
   instance->delegate()->SaveURLAs(instance->plugin_url());
 }
 
-PP_Bool IsFeatureEnabled(PP_PDFFeature feature) {
+PP_Bool IsFeatureEnabled(PP_Instance /*instance*/, PP_PDFFeature feature) {
   PP_Bool result = PP_FALSE;
   switch (feature) {
     case PP_PDFFEATURE_HIDPI:
