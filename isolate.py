@@ -205,9 +205,11 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
   filepath = os.path.join(indir, relfile)
   native_filepath = trace_inputs.get_native_path_case(filepath)
   if filepath != native_filepath:
-    raise run_isolated.MappingError('File path doesn\'t equal native file '
-                                    'path\n%s!=%s' % (filepath,
-                                                      native_filepath))
+    # Special case './'.
+    if filepath != native_filepath + '.' + os.path.sep:
+      raise run_isolated.MappingError(
+          'File path doesn\'t equal native file path\n%s != %s' %
+          (filepath, native_filepath))
 
   relfile, symlinks = expand_symlinks(indir, relfile)
 
@@ -216,6 +218,9 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
       raise run_isolated.MappingError(
           '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
 
+    # Special case './'.
+    if relfile.startswith('.' + os.path.sep):
+      relfile = relfile[2:]
     outfiles = symlinks
     try:
       for filename in os.listdir(infile):
