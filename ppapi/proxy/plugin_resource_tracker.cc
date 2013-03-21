@@ -17,7 +17,7 @@
 namespace ppapi {
 namespace proxy {
 
-PluginResourceTracker::PluginResourceTracker() : ResourceTracker(THREAD_SAFE) {
+PluginResourceTracker::PluginResourceTracker() {
 }
 
 PluginResourceTracker::~PluginResourceTracker() {

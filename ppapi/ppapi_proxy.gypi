@@ -69,7 +69,6 @@
           'proxy/interface_list.h',
           'proxy/interface_proxy.cc',
           'proxy/interface_proxy.h',
-          'proxy/locking_resource_releaser.h',
           'proxy/plugin_array_buffer_var.cc',
           'proxy/plugin_array_buffer_var.h',
           'proxy/plugin_dispatcher.cc',

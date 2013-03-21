@@ -137,6 +137,7 @@ class TestCase {
   // Run the given test method on a background thread and return the result.
   template <class T>
   std::string RunOnThread(std::string(T::*test_to_run)()) {
+#ifdef ENABLE_PEPPER_THREADING
     if (!testing_interface_) {
       return "Testing blocking callbacks requires the testing interface. In "
              "Chrome, use the --enable-pepper-testing flag.";
@@ -151,6 +152,10 @@ class TestCase {
     RunOnThreadInternal(&ThreadedTestRunner<T>::ThreadFunction, &runner,
                         testing_interface_);
     return runner.result();
+#else
+    // If threading's not enabled, just treat it as success.
+    return std::string();
+#endif
   }
 
   // Pointer to the instance that owns us.

@@ -16,7 +16,7 @@ namespace ppapi {
 
 class TestVarTracker : public VarTracker {
  public:
-  TestVarTracker() : VarTracker(THREAD_SAFE) {}
+  TestVarTracker() {}
   virtual ~TestVarTracker() {}
   virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE {
     return NULL;

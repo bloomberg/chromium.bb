@@ -31,7 +31,7 @@ bool PluginVarTracker::HostVar::operator<(const HostVar& other) const {
   return host_object_id < other.host_object_id;
 }
 
-PluginVarTracker::PluginVarTracker() : VarTracker(THREAD_SAFE) {
+PluginVarTracker::PluginVarTracker() {
 }
 
 PluginVarTracker::~PluginVarTracker() {
@@ -39,7 +39,7 @@ PluginVarTracker::~PluginVarTracker() {
 
 PP_Var PluginVarTracker::ReceiveObjectPassRef(const PP_Var& host_var,
                                               PluginDispatcher* dispatcher) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
   DCHECK(host_var.type == PP_VARTYPE_OBJECT);
 
   // Get the object.
@@ -65,7 +65,7 @@ PP_Var PluginVarTracker::ReceiveObjectPassRef(const PP_Var& host_var,
 PP_Var PluginVarTracker::TrackObjectWithNoReference(
     const PP_Var& host_var,
     PluginDispatcher* dispatcher) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
   DCHECK(host_var.type == PP_VARTYPE_OBJECT);
 
   // Get the object.
@@ -83,7 +83,7 @@ PP_Var PluginVarTracker::TrackObjectWithNoReference(
 
 void PluginVarTracker::StopTrackingObjectWithNoReference(
     const PP_Var& plugin_var) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
   DCHECK(plugin_var.type == PP_VARTYPE_OBJECT);
 
   VarMap::iterator found = GetLiveVar(plugin_var);
@@ -98,7 +98,8 @@ void PluginVarTracker::StopTrackingObjectWithNoReference(
 }
 
 PP_Var PluginVarTracker::GetHostObject(const PP_Var& plugin_object) const {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+
   if (plugin_object.type != PP_VARTYPE_OBJECT) {
     NOTREACHED();
     return PP_MakeUndefined();
@@ -119,7 +120,8 @@ PP_Var PluginVarTracker::GetHostObject(const PP_Var& plugin_object) const {
 
 PluginDispatcher* PluginVarTracker::DispatcherForPluginObject(
     const PP_Var& plugin_object) const {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
+
   if (plugin_object.type != PP_VARTYPE_OBJECT)
     return NULL;
 
@@ -135,7 +137,7 @@ PluginDispatcher* PluginVarTracker::DispatcherForPluginObject(
 
 void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
                                          const PP_Var& host_object) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
   DCHECK(host_object.type == PP_VARTYPE_OBJECT);
 
   // Convert the host object to a normal var valid in the plugin.

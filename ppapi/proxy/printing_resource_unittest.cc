@@ -7,11 +7,11 @@
 #include "base/message_loop.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/proxy/locking_resource_releaser.h"
 #include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/thunk/thunk.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 
 namespace ppapi {
 namespace proxy {
@@ -47,12 +47,13 @@ TEST_F(PrintingResourceTest, GetDefaultPrintSettings) {
 
   const PPB_Printing_Dev_0_7* printing_iface =
       thunk::GetPPB_Printing_Dev_0_7_Thunk();
-  LockingResourceReleaser res(printing_iface->Create(pp_instance()));
+  ScopedPPResource res(ScopedPPResource::PassRef(),
+                       printing_iface->Create(pp_instance()));
 
   PP_PrintSettings_Dev output_settings;
 
   int32_t result = printing_iface->GetDefaultPrintSettings(
-      res.get(), &output_settings, PP_MakeCompletionCallback(&Callback, NULL));
+      res, &output_settings, PP_MakeCompletionCallback(&Callback, NULL));
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
   // Should have sent a "GetDefaultPrintSettings" message.

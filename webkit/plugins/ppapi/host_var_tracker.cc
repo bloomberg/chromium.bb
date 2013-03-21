@@ -16,9 +16,7 @@ using ppapi::NPObjectVar;
 namespace webkit {
 namespace ppapi {
 
-HostVarTracker::HostVarTracker()
-  : VarTracker(SINGLE_THREADED),
-    last_shared_memory_map_id_(0) {
+HostVarTracker::HostVarTracker() : last_shared_memory_map_id_(0) {
 }
 
 HostVarTracker::~HostVarTracker() {
@@ -35,7 +33,7 @@ ArrayBufferVar* HostVarTracker::CreateShmArrayBuffer(
 }
 
 void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
 
   InstanceMap::iterator found_instance = instance_map_.find(
       object_var->pp_instance());
@@ -55,7 +53,7 @@ void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
 }
 
 void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
 
   InstanceMap::iterator found_instance = instance_map_.find(
       object_var->pp_instance());
@@ -80,7 +78,7 @@ void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
 
 NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
                                                     NPObject* np_object) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
 
   InstanceMap::iterator found_instance = instance_map_.find(instance);
   if (found_instance == instance_map_.end())
@@ -95,7 +93,7 @@ NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
 }
 
 int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
 
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
@@ -104,7 +102,7 @@ int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
 }
 
 void HostVarTracker::DidDeleteInstance(PP_Instance instance) {
-  CheckThreadingPreconditions();
+  DCHECK(CalledOnValidThread());
 
   InstanceMap::iterator found_instance = instance_map_.find(instance);
   if (found_instance == instance_map_.end())

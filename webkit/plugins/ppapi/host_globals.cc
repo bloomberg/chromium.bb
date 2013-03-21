@@ -25,7 +25,6 @@
 using ppapi::CheckIdType;
 using ppapi::MakeTypedId;
 using ppapi::PPIdType;
-using ppapi::ResourceTracker;
 using WebKit::WebConsoleMessage;
 using WebKit::WebString;
 
@@ -75,17 +74,14 @@ WebConsoleMessage MakeLogMessage(PP_LogLevel level,
 
 HostGlobals* HostGlobals::host_globals_ = NULL;
 
-HostGlobals::HostGlobals()
-    : ::ppapi::PpapiGlobals(),
-      resource_tracker_(ResourceTracker::SINGLE_THREADED) {
+HostGlobals::HostGlobals() : ::ppapi::PpapiGlobals() {
   DCHECK(!host_globals_);
   host_globals_ = this;
 }
 
 HostGlobals::HostGlobals(
     ::ppapi::PpapiGlobals::PerThreadForTest per_thread_for_test)
-    : ::ppapi::PpapiGlobals(per_thread_for_test),
-      resource_tracker_(ResourceTracker::SINGLE_THREADED) {
+    : ::ppapi::PpapiGlobals(per_thread_for_test) {
   DCHECK(!host_globals_);
 }
 
