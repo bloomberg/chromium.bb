@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import collections
+import copy
 import json
 import optparse
 import os
@@ -81,6 +82,7 @@ def GetBotStepMap():
   std_build_steps = ['bb_compile', 'bb_zip_build']
   std_test_steps = ['bb_extract_build']
   std_tests = ['ui', 'unit']
+  flakiness_server = '--upload-to-flakiness-server'
 
   B = BotConfig
   def T(tests, extra_args=None):
@@ -95,7 +97,8 @@ def GetBotStepMap():
         ['bb_compile', 'bb_zip_build'], None, None),
       B('main-clang-builder', compile_step, None, None),
       B('main-clobber', compile_step, None, None),
-      B('main-tests', std_test_steps, T(std_tests), None),
+      B('main-tests', std_test_steps, T(std_tests, [flakiness_server]),
+        None),
 
       # Other waterfalls
       B('asan-builder', std_build_steps, None, None),
@@ -109,10 +112,8 @@ def GetBotStepMap():
       B('fyi-builder-rel',
         ['bb_compile', 'bb_compile_experimental', 'bb_zip_build'], None, None),
       B('fyi-tests', std_test_steps,
-        T(std_tests, ['--experimental', '--upload-to-flakiness-server']), None),
+        T(std_tests, ['--experimental', flakiness_server]), None),
       B('perf-tests-rel', std_test_steps, T([], ['--install=ContentShell']),
-        None),
-      B('try-fyi-tests', std_test_steps, T(std_tests, ['--experimental']),
         None),
       B('webkit-latest-webkit-tests', std_test_steps,
         T(['webkit_layout', 'webkit']), None),
@@ -131,13 +132,21 @@ def GetBotStepMap():
       ('try-clang-builder', 'main-clang-builder'),
       ('try-fyi-builder-dbg', 'fyi-builder-dbg'),
       ('try-tests', 'main-tests'),
+      ('try-fyi-tests', 'fyi-tests'),
       ('webkit-latest-tests', 'main-tests'),
   ]
   for to_id, from_id in copy_map:
     assert to_id not in bot_map
     # pylint: disable=W0212
-    bot_map[to_id] = bot_map[from_id]._replace(bot_id=to_id)
+    bot_map[to_id] = copy.deepcopy(bot_map[from_id])._replace(bot_id=to_id)
 
+    # Trybots do not upload to flakiness dashboard. They should be otherwise
+    # identical in configuration to their trunk building counterparts.
+    test_obj = bot_map[to_id].test_obj
+    if to_id.startswith('try') and test_obj:
+      extra_args = test_obj.extra_args
+      if extra_args and flakiness_server in extra_args:
+        extra_args.remove(flakiness_server)
   return bot_map
 
 
