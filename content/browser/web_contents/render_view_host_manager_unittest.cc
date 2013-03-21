@@ -599,6 +599,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
                                 web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
+  EXPECT_FALSE(manager.current_host()->IsRenderViewLive());
 
   const GURL kUrl("chrome://foo");
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl,
@@ -607,13 +608,16 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
                             false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry);
 
+  // We commit the pending RenderViewHost immediately because the previous
+  // RenderViewHost was not live.  We test a case where it is live in
+  // WebUIInNewTab.
   EXPECT_TRUE(host);
-  EXPECT_TRUE(host == manager.current_host());
+  EXPECT_EQ(host, manager.current_host());
   EXPECT_FALSE(manager.pending_render_view_host());
 
   // It's important that the site instance get set on the Web UI page as soon
   // as the navigation starts, rather than lazily after it commits, so we don't
-  // try to re-use the SiteInstance/process for non DOM-UI things that may
+  // try to re-use the SiteInstance/process for non Web UI things that may
   // get loaded in between.
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
@@ -627,6 +631,66 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   // Commit.
   manager.DidNavigateMainFrame(host);
   EXPECT_TRUE(host->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+}
+
+// Tests that we can open a WebUI link in a new tab from a WebUI page and still
+// grant the correct bindings.  http://crbug.com/189101.
+TEST_F(RenderViewHostManagerTest, WebUIInNewTab) {
+  set_should_create_webui(true);
+  SiteInstance* blank_instance = SiteInstance::Create(browser_context());
+
+  // Create a blank tab.
+  scoped_ptr<TestWebContents> web_contents1(
+      TestWebContents::Create(browser_context(), blank_instance));
+  RenderViewHostManager manager1(web_contents1.get(), web_contents1.get(),
+                                 web_contents1.get());
+  manager1.Init(browser_context(), blank_instance, MSG_ROUTING_NONE);
+  // Test the case that new RVH is considered live.
+  manager1.current_host()->CreateRenderView(string16(), -1, -1);
+
+  // Navigate to a WebUI page.
+  const GURL kUrl1("chrome://foo");
+  NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
+                             Referrer(), string16() /* title */,
+                             PAGE_TRANSITION_TYPED,
+                             false /* is_renderer_init */);
+  RenderViewHost* host1 = manager1.Navigate(entry1);
+
+  // We should have a pending navigation to the WebUI RenderViewHost.
+  // It should already have bindings.
+  EXPECT_EQ(host1, manager1.pending_render_view_host());
+  EXPECT_NE(host1, manager1.current_host());
+  EXPECT_TRUE(host1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+
+  // Commit and ensure we still have bindings.
+  manager1.DidNavigateMainFrame(host1);
+  SiteInstance* webui_instance = host1->GetSiteInstance();
+  EXPECT_EQ(host1, manager1.current_host());
+  EXPECT_TRUE(host1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+
+  // Now simulate clicking a link that opens in a new tab.
+  scoped_ptr<TestWebContents> web_contents2(
+      TestWebContents::Create(browser_context(), webui_instance));
+  RenderViewHostManager manager2(web_contents2.get(), web_contents2.get(),
+                                 web_contents2.get());
+  manager2.Init(browser_context(), webui_instance, MSG_ROUTING_NONE);
+  // Make sure the new RVH is considered live.  This is usually done in
+  // RenderWidgetHost::Init when opening a new tab from a link.
+  manager2.current_host()->CreateRenderView(string16(), -1, -1);
+
+  const GURL kUrl2("chrome://foo/bar");
+  NavigationEntryImpl entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
+                             Referrer(), string16() /* title */,
+                             PAGE_TRANSITION_LINK,
+                             true /* is_renderer_init */);
+  RenderViewHost* host2 = manager2.Navigate(entry2);
+
+  // No cross-process transition happens because we are already in the right
+  // SiteInstance.  We should grant bindings immediately.
+  EXPECT_EQ(host2, manager2.current_host());
+  EXPECT_TRUE(host2->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
+
+  manager2.DidNavigateMainFrame(host2);
 }
 
 // Tests that we don't end up in an inconsistent state if a page does a back and
