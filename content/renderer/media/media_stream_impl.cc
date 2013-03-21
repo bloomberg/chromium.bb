@@ -278,7 +278,7 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
   if (!renderer) {
     renderer = CreateRemoteAudioRenderer(extra_data->stream());
 
-    if (renderer && !audio_device->SetRenderer(renderer))
+    if (renderer && !audio_device->SetAudioRenderer(renderer))
       renderer = NULL;
   }
   return renderer;

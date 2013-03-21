@@ -268,7 +268,7 @@ void WebRtcAudioRenderer::Stop() {
   if (state_ == UNINITIALIZED)
     return;
 
-  source_->RemoveRenderer(this);
+  source_->RemoveAudioRenderer(this);
   source_ = NULL;
   sink_->Stop();
   state_ = UNINITIALIZED;

@@ -372,6 +372,8 @@
         'renderer/media/webrtc_audio_capturer.h',
         'renderer/media/webrtc_audio_device_impl.cc',
         'renderer/media/webrtc_audio_device_impl.h',
+        'renderer/media/webrtc_audio_device_not_impl.cc',
+        'renderer/media/webrtc_audio_device_not_impl.h',
         'renderer/media/webrtc_audio_renderer.cc',
         'renderer/media/webrtc_audio_renderer.h',
         'renderer/media/webrtc_local_audio_renderer.cc',
