@@ -2143,8 +2143,8 @@ protected:
         EXPECT_EQ(gfx::Rect(50, 50, 200, 200).ToString(), occlusion.occlusion_from_inside_target().ToString());
 
         // Clear any stored occlusion.
-        occlusion.setOcclusionFromOutsideTarget(Region());
-        occlusion.setOcclusionFromInsideTarget(Region());
+        occlusion.set_occlusion_from_outside_target(Region());
+        occlusion.set_occlusion_from_inside_target(Region());
 
         this->visitLayer(surface, occlusion);
         this->visitContributingSurface(surface, occlusion);
