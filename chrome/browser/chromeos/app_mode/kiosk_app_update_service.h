@@ -33,7 +33,7 @@ class KioskAppUpdateService : public ProfileKeyedService,
 
   // extensions::UpdateObserver overrides:
   virtual void OnAppUpdateAvailable(const std::string& app_id) OVERRIDE;
-  virtual void OnChromeUpdateAvailable() OVERRIDE;
+  virtual void OnChromeUpdateAvailable() OVERRIDE {}
 
   // ProfileKeyedService overrides:
   virtual void Shutdown() OVERRIDE;

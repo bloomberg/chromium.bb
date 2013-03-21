@@ -9,10 +9,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 
@@ -48,10 +47,6 @@ void KioskAppUpdateService::OnAppUpdateAvailable(const std::string& app_id) {
   StartRestartTimer();
 }
 
-void KioskAppUpdateService::OnChromeUpdateAvailable() {
-  StartRestartTimer();
-}
-
 void KioskAppUpdateService::StartRestartTimer() {
   if (restart_timer_.IsRunning())
     return;
@@ -63,7 +58,9 @@ void KioskAppUpdateService::StartRestartTimer() {
 }
 
 void KioskAppUpdateService::ForceRestart() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  // Force a chrome restart (not a logout or reboot) by closing all browsers.
+  LOG(WARNING) << "Force closing all browsers to update kiosk app.";
+  chrome::CloseAllBrowsers();
 }
 
 KioskAppUpdateServiceFactory::KioskAppUpdateServiceFactory()

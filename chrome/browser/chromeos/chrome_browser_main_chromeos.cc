@@ -228,10 +228,16 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
     if (KioskModeSettings::Get()->IsKioskModeEnabled())
       InitializeKioskModeScreensaver();
 
-    // If app mode is enabled, reset auto launch suppression flag when
-    // login screen is shown.
-    if (parsed_command_line.HasSwitch(::switches::kEnableAppMode))
+    // If app mode is enabled, reset auto launch suppression flag and reboot
+    // after update flag when login screen is shown.
+    if (parsed_command_line.HasSwitch(::switches::kEnableAppMode)) {
       KioskAppManager::Get()->SetSuppressAutoLaunch(false);
+      if (!g_browser_process->browser_policy_connector()->
+          IsEnterpriseManaged()) {
+        PrefService* local_state = g_browser_process->local_state();
+        local_state->ClearPref(prefs::kRebootAfterUpdate);
+      }
+    }
   } else if (parsed_command_line.HasSwitch(::switches::kLoginUser) &&
              parsed_command_line.HasSwitch(::switches::kLoginPassword)) {
     BootTimesLoader::Get()->RecordLoginAttempted();

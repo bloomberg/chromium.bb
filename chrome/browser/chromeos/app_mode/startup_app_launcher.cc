@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 
 #include "ash/shell.h"
+#include "base/prefs/pref_service.h"
 #include "base/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
@@ -13,8 +15,10 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -116,6 +120,12 @@ void StartupAppLauncher::Launch() {
   DCHECK(update_service);
   if (update_service)
     update_service->set_app_id(app_id_);
+
+  // If the device is not enterprise managed, set prefs to reboot after update.
+  if (!g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    PrefService* local_state = g_browser_process->local_state();
+    local_state->SetBoolean(prefs::kRebootAfterUpdate, true);
+  }
 
   // Always open the app in a window.
   chrome::OpenApplication(chrome::AppLaunchParams(profile_,
