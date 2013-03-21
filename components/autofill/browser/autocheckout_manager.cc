@@ -198,12 +198,13 @@ void AutocheckoutManager::MaybeShowAutocheckoutDialog(
   if (!show_dialog)
     return;
 
+  FormData form = BuildAutocheckoutFormData();
+  form.ssl_status = ssl_status;
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutocheckoutManager::ReturnAutocheckoutData,
                  weak_ptr_factory_.GetWeakPtr());
   autofill_manager_->ShowRequestAutocompleteDialog(
-      BuildAutocheckoutFormData(), frame_url, ssl_status,
-      DIALOG_TYPE_AUTOCHECKOUT, callback);
+      form, frame_url, DIALOG_TYPE_AUTOCHECKOUT, callback);
 }
 
 bool AutocheckoutManager::IsStartOfAutofillableFlow() const {

@@ -39,7 +39,6 @@
 #include "components/autofill/common/form_field_data.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/ssl_status.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -3299,8 +3298,7 @@ TEST_F(AutofillManagerTest, DisabledAutofillDispatchesError) {
 
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->OnRequestAutocomplete(FormData(),
-                                           GURL(),
-                                           content::SSLStatus());
+                                           GURL());
 
   EXPECT_EQ(1U, autofill_manager_->request_autocomplete_results().size());
   EXPECT_EQ(WebFormElement::AutocompleteResultErrorDisabled,

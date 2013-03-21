@@ -78,7 +78,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
       : AutofillDialogControllerImpl(contents,
                                      form_data,
                                      GURL(),
-                                     content::SSLStatus(),
                                      metric_logger,
                                      dialog_type,
                                      base::Bind(&MockCallback)) {

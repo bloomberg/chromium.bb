@@ -155,7 +155,6 @@ void TabAutofillManagerDelegate::HideAutocheckoutBubble() {
 void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    const content::SSLStatus& ssl_status,
     const AutofillMetrics& metric_logger,
     DialogType dialog_type,
     const base::Callback<void(const FormStructure*)>& callback) {
@@ -165,7 +164,6 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
       new autofill::AutofillDialogControllerImpl(web_contents_,
                                                  form,
                                                  source_url,
-                                                 ssl_status,
                                                  metric_logger,
                                                  dialog_type,
                                                  callback);

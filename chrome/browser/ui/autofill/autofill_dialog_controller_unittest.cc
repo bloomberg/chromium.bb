@@ -120,14 +120,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const content::SSLStatus& ssl_status,
       const AutofillMetrics& metric_logger,
       const DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      source_url,
-                                     ssl_status,
                                      metric_logger,
                                      dialog_type,
                                      callback),
@@ -210,7 +208,6 @@ class AutofillDialogControllerTest : public testing::Test {
         test_web_contents_.get(),
         form_data,
         GURL(),
-        content::SSLStatus(),
         metric_logger_,
         DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
         callback);

@@ -45,7 +45,6 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const content::SSLStatus& ssl_status,
       const AutofillMetrics& metric_logger,
       DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback) OVERRIDE;

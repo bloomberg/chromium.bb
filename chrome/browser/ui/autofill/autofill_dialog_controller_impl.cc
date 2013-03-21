@@ -223,7 +223,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form,
     const GURL& source_url,
-    const content::SSLStatus& ssl_status,
     const AutofillMetrics& metric_logger,
     DialogType dialog_type,
     const base::Callback<void(const FormStructure*)>& callback)
@@ -232,7 +231,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       form_structure_(form, std::string()),
       invoked_from_same_origin_(true),
       source_url_(source_url),
-      ssl_status_(ssl_status),
+      ssl_status_(form.ssl_status),
       callback_(callback),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           account_chooser_model_(this, profile_->GetPrefs())),

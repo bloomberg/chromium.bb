@@ -232,10 +232,9 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidFillAutofillFormData,
                     base::TimeTicks /* timestamp */)
 
 // Sent when a form receives a request to do interactive autocomplete.
-IPC_MESSAGE_ROUTED3(AutofillHostMsg_RequestAutocomplete,
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_RequestAutocomplete,
                     FormData /* form_data */,
-                    GURL /* frame_url */,
-                    content::SSLStatus /* ssl_status */)
+                    GURL /* frame_url */)
 
 // Instructs the browser to remove the specified Autocomplete entry from the
 // database.
