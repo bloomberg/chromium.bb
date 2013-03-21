@@ -202,6 +202,10 @@
     "title": "More",
     "items": [
       {
+        "title": "FAQ",
+        "fileName": "faq.html"
+      },
+      {
         "title": "Chrome Web Store",
         "fileName": "http://code.google.com/chrome/webstore/docs/index.html"
       },

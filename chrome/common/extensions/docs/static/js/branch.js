@@ -3,24 +3,31 @@
 // found in the LICENSE file.
 
 (function() {
-  var branchChooser = document.getElementById('branchChooser');
-  // No branch chooser on stable (for example).
-  if (!branchChooser)
-    return;
 
-  branchChooser.addEventListener('change', function() {
-    var value = event.target.value;
-    if (!value)
-      return;
-    var current_branch = window.bootstrap.branchInfo.current;
-    var path = window.location.pathname.split('/');
-    if (path[0] == '')
-      path = path.slice(1);
-    var index = path.indexOf(current_branch);
-    if (index != -1)
-      path[index] = value;
-    else
-      path.splice(0, 0, value);
-    window.location = '/' + path.join('/');
+function init() {
+  var branchChooser = document.getElementById('branch-chooser-popup');
+  Array.prototype.forEach.call(branchChooser.getElementsByTagName('button'),
+                               function(button) {
+    button.addEventListener('click', function(event) {
+      choose(button.className);
+      event.stopPropagation();
+    });
   });
+}
+
+function choose(branch) {
+  var currentBranch = window.bootstrap.branchInfo.current;
+  var path = window.location.pathname.split('/');
+  if (path[0] == '')
+    path = path.slice(1);
+  var index = path.indexOf(currentBranch);
+  if (index != -1)
+    path[index] = branch;
+  else
+    path.splice(0, 0, branch);
+  window.location.pathname = '/' + path.join('/');
+}
+
+init();
+
 })()

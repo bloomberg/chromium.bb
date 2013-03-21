@@ -343,7 +343,7 @@ class Handler(webapp.RequestHandler):
     path = path.split('/')
     if len(path) > 0 and path[0] == 'chrome':
       path.pop(0)
-    for channel in BRANCH_UTILITY.GetAllBranchNames():
+    for channel in BranchUtility.GetAllBranchNames():
       if channel in path:
         position = path.index(channel)
         path.pop(position)

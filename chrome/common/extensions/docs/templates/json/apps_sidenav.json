@@ -160,11 +160,20 @@
     ]
   },
   {
-    "title": "Samples",
-    "fileName": "samples.html"
-  },
-  {
-    "title": "Known Issues",
-    "fileName": "app_known_issues.html"
+    "title": "More",
+    "items": [
+      {
+        "title": "FAQ",
+        "fileName": "faq.html"
+      },
+      {
+        "title": "Samples",
+        "fileName": "samples.html"
+      },
+      {
+        "title": "Known Issues",
+        "fileName": "app_known_issues.html"
+      }
+    ]
   }
 ]

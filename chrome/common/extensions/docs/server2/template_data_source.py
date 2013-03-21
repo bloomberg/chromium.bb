@@ -4,6 +4,7 @@
 
 import logging
 
+from branch_utility import BranchUtility
 from docs_server_utils import FormatKey
 import compiled_file_system as compiled_fs
 from file_system import FileNotFoundError
@@ -11,21 +12,19 @@ from third_party.handlebar import Handlebar
 import url_constants
 
 # Increment this if there are changes to the data stored about templates.
-_VERSION = 1
+_VERSION = 2
 
 EXTENSIONS_URL = '/chrome/extensions'
 
 def _MakeChannelDict(channel_name):
-  return {
-    'showWarning': channel_name != 'stable',
-    'channels': [
-      { 'name': 'Stable', 'path': 'stable' },
-      { 'name': 'Dev',    'path': 'dev' },
-      { 'name': 'Beta',   'path': 'beta' },
-      { 'name': 'Trunk',  'path': 'trunk' }
-    ],
+  channel_dict = {
+    'channels': [{'name': name} for name in BranchUtility.GetAllBranchNames()],
     'current': channel_name
   }
+  for channel in channel_dict['channels']:
+    if channel['name'] == channel_name:
+      channel['isCurrent'] = True
+  return channel_dict
 
 class TemplateDataSource(object):
   """Renders Handlebar templates, providing them with the context in which to
@@ -76,11 +75,8 @@ class TemplateDataSource(object):
     def Create(self, request, path):
       """Returns a new TemplateDataSource bound to |request|.
       """
-      branch_info = self._branch_info.copy()
-      branch_info['showWarning'] = (not path.startswith('apps') and
-                                    branch_info['showWarning'])
       return TemplateDataSource(
-          branch_info,
+          self._branch_info,
           self._api_data_source_factory.Create(request),
           self._api_list_data_source_factory.Create(),
           self._intro_data_source_factory.Create(),
@@ -138,6 +134,8 @@ class TemplateDataSource(object):
       'partials': self,
       'samples': self._samples_data_source,
       'static': self._static_resources,
+      'app': 'app',
+      'extension': 'extension',
       'apps_title': 'Apps',
       'extensions_title': 'Extensions',
       'apps_samples_url': url_constants.GITHUB_BASE,
