@@ -58,27 +58,29 @@ class TestFileSystemTest(unittest.TestCase):
   def testNonemptySuccess(self):
     fs = TestFileSystem(_CreateTestData())
     self.assertEqual('404.html contents', fs.ReadSingle('404.html'))
+    self.assertEqual('404.html contents', fs.ReadSingle('/404.html'))
     self.assertEqual('a11y.html contents', fs.ReadSingle('apps/a11y.html'))
-    self.assertEqual(['a11y.html', 'about_apps.html', 'fakedir'],
-                     fs.ReadSingle('apps/'))
-    self.assertEqual({'404.html': '404.html contents',
-                      'apps/': ['a11y.html', 'about_apps.html', 'fakedir']},
-                     fs.Read(['404.html', 'apps/']).Get())
+    self.assertEqual({'404.html', 'apps/', 'extensions/'},
+                     set(fs.ReadSingle('/')))
+    self.assertEqual({'a11y.html', 'about_apps.html', 'fakedir/'},
+                     set(fs.ReadSingle('apps/')))
+    self.assertEqual({'a11y.html', 'about_apps.html', 'fakedir/'},
+                     set(fs.ReadSingle('/apps/')))
 
   def testStat(self):
     fs = TestFileSystem(_CreateTestData())
     self.assertRaises(FileNotFoundError, fs.Stat, 'foo')
     self.assertRaises(FileNotFoundError, fs.Stat, '404.html/')
-    self.assertEquals(StatInfo(0), fs.Stat('404.html'))
-    self.assertEquals(StatInfo(0, child_versions={
-                        'activeTab.html': 0,
-                        'alarms.html': 0
+    self.assertEquals(StatInfo('0'), fs.Stat('404.html'))
+    self.assertEquals(StatInfo('0', child_versions={
+                        'activeTab.html': '0',
+                        'alarms.html': '0',
                       }), fs.Stat('extensions/'))
     fs.IncrementStat()
-    self.assertEquals(StatInfo(1), fs.Stat('404.html'))
-    self.assertEquals(StatInfo(1, child_versions={
-                        'activeTab.html': 1,
-                        'alarms.html': 1
+    self.assertEquals(StatInfo('1'), fs.Stat('404.html'))
+    self.assertEquals(StatInfo('1', child_versions={
+                        'activeTab.html': '1',
+                        'alarms.html': '1',
                       }), fs.Stat('extensions/'))
 
 if __name__ == '__main__':

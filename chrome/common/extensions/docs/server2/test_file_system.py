@@ -26,6 +26,8 @@ class TestFileSystem(FileSystem):
 
   def _ResolvePath(self, path):
     def Resolve(parts):
+      '''Resolves |parts| of a path info |self._obj|.
+      '''
       result = self._obj.get(parts[0])
       for part in parts[1:]:
         if not isinstance(result, dict):
@@ -34,6 +36,23 @@ class TestFileSystem(FileSystem):
               (path, part, result))
         result = result.get(part)
       return result
+
+    def GetPaths(obj):
+      '''Lists the paths within |obj|; this is basially keys() but with
+      directory paths (i.e. dicts) with a trailing /.
+      '''
+      def ToPath(k, v):
+        if isinstance(v, basestring):
+          return k
+        if isinstance(v, dict):
+          return '%s/' % k
+        raise ValueError('Cannot convert type % to path', type(v))
+      return [ToPath(k, v) for k, v in obj.items()]
+
+    path = path.lstrip('/')
+
+    if path == '':
+      return GetPaths(self._obj)
 
     parts = path.split('/')
     if parts[-1] != '':
@@ -50,13 +69,13 @@ class TestFileSystem(FileSystem):
           '%s (%s) did not resolve to a dict, instead %s' %
           (path, parts, dir_contents))
 
-    return dir_contents.keys()
+    return GetPaths(dir_contents)
 
   def Stat(self, path):
     read_result = self.ReadSingle(path)
-    stat_result = StatInfo(self._stat)
+    stat_result = StatInfo(str(self._stat))
     if isinstance(read_result, list):
-      stat_result.child_versions = dict((file_result, self._stat)
+      stat_result.child_versions = dict((file_result, str(self._stat))
                                         for file_result in read_result)
     return stat_result
 
