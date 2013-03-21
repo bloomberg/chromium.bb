@@ -585,9 +585,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
       base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
-      base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
-                 &error,
-                 &output_file_path),
+      test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback());
   message_loop_.RunUntilIdle();
 
@@ -615,9 +613,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
       base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
-      base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
-                 &error,
-                 &output_file_path),
+      test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback());
   message_loop_.RunUntilIdle();
 
@@ -641,9 +637,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
       base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
-      base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
-                 &error,
-                 &output_file_path),
+      test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback());
   message_loop_.RunUntilIdle();
 

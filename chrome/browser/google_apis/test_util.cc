@@ -101,15 +101,6 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   return value.Pass();
 }
 
-void CopyResultsFromDownloadActionCallback(
-    GDataErrorCode* error_out,
-    base::FilePath* temp_file_out,
-    GDataErrorCode error_in,
-    const base::FilePath& temp_file_in) {
-  *error_out = error_in;
-  *temp_file_out = temp_file_in;
-}
-
 void CopyResultsFromInitiateUploadCallback(
     GDataErrorCode* error_out,
     GURL* url_out,

@@ -405,9 +405,8 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularDisabled) {
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
-      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
-                 &download_error,
-                 &output_file_path),
+      google_apis::test_util::CreateCopyResultCallback(
+          &download_error, &output_file_path),
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
@@ -460,9 +459,8 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxDisabled) {
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
-      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
-                 &download_error,
-                 &output_file_path),
+      google_apis::test_util::CreateCopyResultCallback(
+          &download_error, &output_file_path),
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
@@ -515,9 +513,8 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularEnabled) {
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
-      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
-                 &download_error,
-                 &output_file_path),
+      google_apis::test_util::CreateCopyResultCallback(
+          &download_error, &output_file_path),
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
@@ -562,9 +559,8 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
-      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
-                 &download_error,
-                 &output_file_path),
+      google_apis::test_util::CreateCopyResultCallback(
+          &download_error, &output_file_path),
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
