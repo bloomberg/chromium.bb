@@ -585,3 +585,13 @@ void TaskManagerMac::Show(bool highlight_background_resources) {
                                  highlight_background_resources);
   instance_->model_->StartUpdating();
 }
+
+namespace chrome {
+
+// Declared in browser_dialogs.h.
+void ShowTaskManager(Browser* browser, bool highlight_background_resources) {
+  TaskManagerMac::Show(highlight_background_resources);
+}
+
+}  // namespace chrome
+

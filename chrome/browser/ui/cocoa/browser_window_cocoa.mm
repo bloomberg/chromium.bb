@@ -470,14 +470,6 @@ void BrowserWindowCocoa::ShowUpdateChromeDialog() {
   restart_browser::RequestRestart(window());
 }
 
-void BrowserWindowCocoa::ShowTaskManager() {
-  TaskManagerMac::Show(false);
-}
-
-void BrowserWindowCocoa::ShowBackgroundPages() {
-  TaskManagerMac::Show(true);
-}
-
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
                                             bool already_bookmarked) {
   [controller_ showBookmarkBubbleForURL:url

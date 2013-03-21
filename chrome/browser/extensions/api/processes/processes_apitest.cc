@@ -8,6 +8,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -49,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   EXPECT_EQ(TaskManagerModel::TASK_PENDING, model->update_state_);
 
   // Now show the task manager and wait for it to be ready
-  TaskManagerBrowserTestUtil::ShowTaskManagerAndWaitForReady(browser());
+  chrome::ShowTaskManager(browser(), false);
 
   EXPECT_EQ(2, model->update_requests_);
   EXPECT_EQ(TaskManagerModel::TASK_PENDING, model->update_state_);

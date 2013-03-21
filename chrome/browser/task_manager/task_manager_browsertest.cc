@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -79,7 +80,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
-    browser()->window()->ShowTaskManager();
+    chrome::ShowTaskManager(browser(), false);
 
     // New Tab Page.
     TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);

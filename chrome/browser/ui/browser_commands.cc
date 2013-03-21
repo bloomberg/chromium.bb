@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
@@ -886,10 +887,7 @@ bool CanOpenTaskManager() {
 
 void OpenTaskManager(Browser* browser, bool highlight_background_resources) {
   content::RecordAction(UserMetricsAction("TaskManager"));
-  if (highlight_background_resources)
-    browser->window()->ShowBackgroundPages();
-  else
-    browser->window()->ShowTaskManager();
+  chrome::ShowTaskManager(browser, highlight_background_resources);
 }
 
 void OpenFeedbackDialog(Browser* browser) {

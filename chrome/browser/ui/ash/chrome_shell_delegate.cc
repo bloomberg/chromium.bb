@@ -165,10 +165,7 @@ bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
 }
 
 void ChromeShellDelegate::ShowTaskManager() {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
-  chrome::OpenTaskManager(browser, false);
+  chrome::OpenTaskManager(NULL, false);
 }
 
 content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {

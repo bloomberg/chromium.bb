@@ -963,14 +963,6 @@ void BrowserWindowGtk::ShowUpdateChromeDialog() {
   UpdateRecommendedDialog::Show(window_);
 }
 
-void BrowserWindowGtk::ShowTaskManager() {
-  TaskManagerGtk::Show(false);
-}
-
-void BrowserWindowGtk::ShowBackgroundPages() {
-  TaskManagerGtk::Show(true);
-}
-
 void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
                                           bool already_bookmarked) {
   toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);

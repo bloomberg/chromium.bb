@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -50,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager.
-  browser()->window()->ShowTaskManager();
+  chrome::ShowTaskManager(browser(), false);
   // Expect to see the browser and the New Tab Page renderer.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 

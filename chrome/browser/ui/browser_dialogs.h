@@ -63,6 +63,10 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
 void ShowHungRendererDialog(content::WebContents* contents);
 void HideHungRendererDialog(content::WebContents* contents);
 
+// Shows the Task Manager. If |highlight_background_resources| is set, the
+// backgroundpages will be shown. |browser| can be NULL when called from ASH.
+void ShowTaskManager(Browser* browser, bool highlight_background_resources);
+
 #if !defined(OS_MACOSX)
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,

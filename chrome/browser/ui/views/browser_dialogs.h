@@ -50,12 +50,6 @@ bool IsChromeToMobileBubbleViewShowing();
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
 
-// Shows the Task Manager.
-void ShowTaskManager(Browser* browser);
-
-// Shows the Task Manager, highlighting the background pages.
-void ShowBackgroundPages(Browser* browser);
-
 // Shows a dialog box that allows a search engine to be edited. |template_url|
 // is the search engine being edited. If it is NULL, then the dialog will add a
 // new search engine with the data the user supplies. |delegate| is an object

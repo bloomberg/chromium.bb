@@ -1209,14 +1209,6 @@ void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetWidget()->GetNativeWindow());
 }
 
-void BrowserView::ShowTaskManager() {
-  chrome::ShowTaskManager(browser());
-}
-
-void BrowserView::ShowBackgroundPages() {
-  chrome::ShowBackgroundPages(browser());
-}
-
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   chrome::ShowBookmarkBubbleView(GetToolbarView()->GetBookmarkBubbleAnchor(),
                                  bookmark_bar_view_.get(), browser_->profile(),

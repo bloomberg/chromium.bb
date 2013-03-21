@@ -965,3 +965,12 @@ gboolean TaskManagerGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
 
   return TRUE;
 }
+
+namespace chrome {
+
+// Declared in browser_dialogs.h.
+void ShowTaskManager(Browser* browser, bool highlight_background_resources) {
+  TaskManagerGtk::Show(highlight_background_resources);
+}
+
+}  // namespace chrome
