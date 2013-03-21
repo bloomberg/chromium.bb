@@ -60,7 +60,6 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layer_tree_host,
       next_frame_is_newly_committed_frame_on_impl_thread_(false),
       render_vsync_enabled_(layer_tree_host->settings().renderVSyncEnabled),
       inside_draw_(false),
-      total_commit_count_(0),
       defer_commits_(false),
       renew_tree_priority_on_impl_thread_pending_(false) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
@@ -276,22 +275,6 @@ bool ThreadProxy::RecreateOutputSurface() {
   if (recreate_succeeded)
     renderer_capabilities_main_thread_copy_ = capabilities;
   return recreate_succeeded;
-}
-
-void ThreadProxy::CollectRenderingStats(RenderingStats* stats) {
-  DCHECK(IsMainThread());
-
-  DebugScopedSetMainThreadBlocked main_thread_blocked(this);
-  CompletionEvent completion;
-  Proxy::ImplThread()->PostTask(
-      base::Bind(&ThreadProxy::RenderingStatsOnImplThread,
-                 impl_thread_weak_ptr_,
-                 &completion,
-                 stats));
-  stats->totalCommitTime = total_commit_time_;
-  stats->totalCommitCount = total_commit_count_;
-
-  completion.Wait();
 }
 
 const RendererCapabilities& ThreadProxy::GetRendererCapabilities() const {
@@ -742,7 +725,10 @@ void ThreadProxy::BeginFrame(
 
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
-    base::TimeTicks start_time = base::TimeTicks::HighResNow();
+    RenderingStatsInstrumentation* stats_instrumentation =
+        layer_tree_host_->rendering_stats_instrumentation();
+    base::TimeTicks start_time = stats_instrumentation->StartRecording();
+
     CompletionEvent completion;
     Proxy::ImplThread()->PostTask(
         base::Bind(&ThreadProxy::BeginFrameCompleteOnImplThread,
@@ -752,9 +738,8 @@ void ThreadProxy::BeginFrame(
                    offscreen_context_provider));
     completion.Wait();
 
-    base::TimeTicks end_time = base::TimeTicks::HighResNow();
-    total_commit_time_ += end_time - start_time;
-    total_commit_count_++;
+    base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
+    stats_instrumentation->AddCommit(duration);
   }
 
   layer_tree_host_->CommitComplete();
@@ -1181,13 +1166,6 @@ void ThreadProxy::RecreateOutputSurfaceOnImplThread(
   } else if (offscreen_context_provider) {
     offscreen_context_provider->VerifyContexts();
   }
-  completion->Signal();
-}
-
-void ThreadProxy::RenderingStatsOnImplThread(CompletionEvent* completion,
-                                             RenderingStats* stats) {
-  DCHECK(IsImplThread());
-  layer_tree_host_impl_->CollectRenderingStats(stats);
   completion->Signal();
 }
 

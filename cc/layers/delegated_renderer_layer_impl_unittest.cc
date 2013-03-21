@@ -37,7 +37,13 @@ class DelegatedRendererLayerImplTest : public testing::Test {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
 
-    host_impl_ = LayerTreeHostImpl::Create(settings, &client_, &proxy_);
+    scoped_ptr<RenderingStatsInstrumentation> stats_instrumentation =
+        RenderingStatsInstrumentation::Create();
+
+    host_impl_ = LayerTreeHostImpl::Create(settings,
+                                           &client_,
+                                           &proxy_,
+                                           stats_instrumentation.get());
     host_impl_->InitializeRenderer(createFakeOutputSurface());
     host_impl_->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
   }

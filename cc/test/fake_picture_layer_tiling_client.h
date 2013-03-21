@@ -31,6 +31,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   gfx::Size TileSize() const { return tile_size_; }
 
  protected:
+  scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
   FakeTileManagerClient tile_manager_client_;
   TileManager tile_manager_;
   scoped_refptr<PicturePileImpl> pile_;
