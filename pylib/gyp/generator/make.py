@@ -1984,7 +1984,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'flock_index': 2,
         'extra_commands': SHARED_HEADER_SUN_COMMANDS,
     })
-  elif flavor in ['freebsd', 'openbsd']:
+  elif flavor == 'freebsd':
+    # Note: OpenBSD has sysutils/flock. lockf seems to be FreeBSD specific.
     header_params.update({
         'flock': 'lockf',
     })
