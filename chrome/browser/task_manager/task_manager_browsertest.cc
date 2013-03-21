@@ -37,7 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 
 // If crashing, mark disabled and update http://crbug.com/63589.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, JavaScriptURLPermissions) {

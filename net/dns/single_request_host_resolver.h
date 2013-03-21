@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_SINGLE_REQUEST_HOST_RESOLVER_H_
-#define NET_BASE_SINGLE_REQUEST_HOST_RESOLVER_H_
+#ifndef NET_DNS_SINGLE_REQUEST_HOST_RESOLVER_H_
+#define NET_DNS_SINGLE_REQUEST_HOST_RESOLVER_H_
 
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 
 namespace net {
 
@@ -53,4 +53,4 @@ class NET_EXPORT SingleRequestHostResolver {
 
 }  // namespace net
 
-#endif  // NET_BASE_SINGLE_REQUEST_HOST_RESOLVER_H_
+#endif  // NET_DNS_SINGLE_REQUEST_HOST_RESOLVER_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_MAPPED_HOST_RESOLVER_H_
-#define NET_BASE_MAPPED_HOST_RESOLVER_H_
+#ifndef NET_DNS_MAPPED_HOST_RESOLVER_H_
+#define NET_DNS_MAPPED_HOST_RESOLVER_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/host_mapping_rules.h"
-#include "net/base/host_resolver.h"
 #include "net/base/net_export.h"
+#include "net/dns/host_resolver.h"
 
 namespace net {
 
@@ -69,4 +69,4 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
 
 }  // namespace net
 
-#endif  // NET_BASE_MAPPED_HOST_RESOLVER_H_
+#endif  // NET_DNS_MAPPED_HOST_RESOLVER_H_

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DNS_HOST_RESOLVER_WRAPPER_H_
 
 #include "base/memory/singleton.h"
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 
 namespace extensions {
 

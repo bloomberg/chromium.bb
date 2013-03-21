@@ -66,7 +66,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_HOST_RESOLVER_IMPL_H_
-#define NET_BASE_HOST_RESOLVER_IMPL_H_
+#ifndef NET_DNS_HOST_RESOLVER_IMPL_H_
+#define NET_DNS_HOST_RESOLVER_IMPL_H_
 
 #include <map>
 
@@ -16,11 +16,11 @@
 #include "base/time.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/host_cache.h"
-#include "net/base/host_resolver.h"
-#include "net/base/host_resolver_proc.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/prioritized_dispatcher.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_proc.h"
 
 namespace net {
 
@@ -284,4 +284,4 @@ class NET_EXPORT HostResolverImpl
 
 }  // namespace net
 
-#endif  // NET_BASE_HOST_RESOLVER_IMPL_H_
+#endif  // NET_DNS_HOST_RESOLVER_IMPL_H_

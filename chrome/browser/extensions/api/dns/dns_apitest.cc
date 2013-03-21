@@ -10,9 +10,9 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/common/chrome_switches.h"
-#include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/dns/mock_host_resolver.h"
 
 using extension_function_test_utils::CreateEmptyExtension;
 using extension_function_test_utils::RunFunctionAndReturnSingleResult;

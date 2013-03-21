@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_MOCK_HOST_RESOLVER_H_
-#define NET_BASE_MOCK_HOST_RESOLVER_H_
+#ifndef NET_DNS_MOCK_HOST_RESOLVER_H_
+#define NET_DNS_MOCK_HOST_RESOLVER_H_
 
 #include <list>
 #include <map>
@@ -11,8 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/non_thread_safe.h"
-#include "net/base/host_resolver.h"
-#include "net/base/host_resolver_proc.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_proc.h"
 
 namespace net {
 
@@ -251,4 +251,4 @@ class ScopedDefaultHostResolverProc {
 
 }  // namespace net
 
-#endif  // NET_BASE_MOCK_HOST_RESOLVER_H_
+#endif  // NET_DNS_MOCK_HOST_RESOLVER_H_

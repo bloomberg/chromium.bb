@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/socket.h"
 #include "net/base/address_list.h"
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
 
 #include <string>

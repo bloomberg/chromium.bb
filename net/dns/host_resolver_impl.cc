@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/host_resolver_impl.h"
+#include "net/dns/host_resolver_impl.h"
 
 #if defined(OS_WIN)
 #include <Winsock2.h>
@@ -34,7 +34,6 @@
 #include "net/base/address_list.h"
 #include "net/base/dns_reloader.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/host_resolver_proc.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
@@ -44,6 +43,7 @@
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
+#include "net/dns/host_resolver_proc.h"
 
 #if defined(OS_WIN)
 #include "net/base/winsock_init.h"

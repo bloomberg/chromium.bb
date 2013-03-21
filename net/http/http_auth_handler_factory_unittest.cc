@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/mock_allow_url_security_manager.h"

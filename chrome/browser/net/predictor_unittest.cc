@@ -18,8 +18,8 @@
 #include "chrome/common/net/predictor_common.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/address_list.h"
-#include "net/base/mock_host_resolver.h"
 #include "net/base/winsock_init.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

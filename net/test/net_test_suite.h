@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 
 class MessageLoop;
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/base/host_cache.h"
-#include "net/base/host_resolver_impl.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
+#include "net/dns/host_resolver_impl.h"
 
 namespace net {
 

@@ -11,7 +11,7 @@
 #include "base/threading/worker_pool.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/ssl/default_server_bound_cert_store.h"

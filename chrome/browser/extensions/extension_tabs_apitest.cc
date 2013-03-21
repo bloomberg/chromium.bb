@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 
 // Possible race in ChromeURLDataManager. http://crbug.com/59198
 #if defined(OS_MACOSX) || defined(OS_LINUX)

@@ -6,7 +6,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "net/base/cert_verifier.h"
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"

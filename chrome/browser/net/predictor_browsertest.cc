@@ -10,9 +10,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "net/base/host_resolver_proc.h"
-#include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
+#include "net/dns/host_resolver_proc.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserThread;

@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/string_util.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"

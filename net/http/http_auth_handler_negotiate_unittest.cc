@@ -6,9 +6,9 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_url_security_manager.h"
 #if defined(OS_WIN)

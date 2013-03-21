@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/host_resolver.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/dns/host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"

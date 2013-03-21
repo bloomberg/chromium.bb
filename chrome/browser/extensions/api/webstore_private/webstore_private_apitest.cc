@@ -28,7 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 #include "ui/gl/gl_switches.h"
 
 using content::GpuFeatureType;

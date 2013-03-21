@@ -16,7 +16,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
-#include "net/base/mock_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace {
 const char kTestExtensionId[] = "mfaehphpebmlbfdiegjnpidmibldjbjk";

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/mapped_host_resolver.h"
+#include "net/dns/mapped_host_resolver.h"
 
 #include "base/string_util.h"
 #include "net/base/host_port_pair.h"

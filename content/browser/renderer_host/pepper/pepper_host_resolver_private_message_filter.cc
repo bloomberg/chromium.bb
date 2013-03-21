@@ -15,7 +15,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/address_list.h"
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"

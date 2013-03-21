@@ -11,7 +11,7 @@
 #include "chrome/browser/io_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 
 class IOThread;
 

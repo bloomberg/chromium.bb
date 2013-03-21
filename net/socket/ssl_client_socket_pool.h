@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "net/base/host_resolver.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_response_info.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/client_socket_pool.h"

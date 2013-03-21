@@ -10,13 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
 #include "base/template_util.h"
+#include "base/time.h"
 #include "net/base/completion_callback.h"
-#include "net/base/host_resolver.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
+#include "net/dns/host_resolver.h"
 
 namespace base {
 class DictionaryValue;

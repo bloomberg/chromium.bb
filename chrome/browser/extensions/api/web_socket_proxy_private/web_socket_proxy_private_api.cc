@@ -20,7 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
-#include "net/base/single_request_host_resolver.h"
+#include "net/dns/single_request_host_resolver.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"

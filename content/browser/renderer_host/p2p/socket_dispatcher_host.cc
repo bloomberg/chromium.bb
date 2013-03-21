@@ -7,14 +7,14 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
-#include "content/public/browser/resource_context.h"
 #include "content/common/p2p_messages.h"
+#include "content/public/browser/resource_context.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
-#include "net/base/single_request_host_resolver.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/dns/single_request_host_resolver.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

@@ -40,6 +40,7 @@ include_rules = [
   "+crypto",
   "+net/base",
   "+net/cookies",
+  "+net/dns",
   "+net/ftp",
   "+net/http",
   "+net/proxy",
