@@ -50,7 +50,7 @@ class RemoteTryJob(object):
   # In version 4, cherry-picking is the norm, thus multiple patches are
   # generated.
   TRYJOB_FORMAT_VERSION = 4
-  TRYSERVER_URL = 'http://chromegw/p/tryserver.chromiumos'
+  TRYSERVER_URL = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
   TRYJOB_FORMAT_FILE = '.tryjob_minimal_format_version'
 
   def __init__(self, options, bots, local_patches):
