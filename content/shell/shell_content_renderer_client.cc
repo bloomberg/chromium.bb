@@ -157,9 +157,8 @@ WebHyphenator* ShellContentRendererClient::OverrideWebHyphenator() {
 WebThemeEngine* ShellContentRendererClient::OverrideThemeEngine() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return NULL;
-  // TODO(jochen): return the TestRunner library's theme engine once WebKit has
-  // rolled.
-  return NULL;
+  return ShellRenderProcessObserver::GetInstance()->test_interfaces()
+      ->themeEngine();
 }
 
 void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
