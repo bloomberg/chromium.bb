@@ -85,7 +85,7 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   void OnSpaceAvailable();
   void OnDataAvailable();
 
-  size_t bytes_read_;
+  size_t data_bytes_read_;
   bool can_add_data_;
 
   GURL security_origin_;

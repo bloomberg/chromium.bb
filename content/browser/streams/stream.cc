@@ -5,6 +5,7 @@
 #include "content/browser/streams/stream.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "content/browser/streams/stream_handle_impl.h"
 #include "content/browser/streams/stream_read_observer.h"
@@ -23,7 +24,7 @@ Stream::Stream(StreamRegistry* registry,
                StreamWriteObserver* write_observer,
                const GURL& security_origin,
                const GURL& url)
-    : bytes_read_(0),
+    : data_bytes_read_(0),
       can_add_data_(true),
       security_origin_(security_origin),
       url_(url),
@@ -76,15 +77,19 @@ void Stream::Finalize() {
   writer_->Close(DOWNLOAD_INTERRUPT_REASON_NONE);
   writer_.reset(NULL);
 
-  OnDataAvailable();
+  // Continue asynchronously.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
 }
 
 Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,
                                         int buf_size,
                                         int* bytes_read) {
+  *bytes_read = 0;
   if (!data_) {
     data_length_ = 0;
-    bytes_read_ = 0;
+    data_bytes_read_ = 0;
     ByteStreamReader::StreamState state = reader_->Read(&data_, &data_length_);
     switch (state) {
       case ByteStreamReader::STREAM_HAS_DATA:
@@ -97,13 +102,13 @@ Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,
     }
   }
 
-  size_t remaining_bytes = data_length_ - bytes_read_;
+  const size_t remaining_bytes = data_length_ - data_bytes_read_;
   size_t to_read =
       static_cast<size_t>(buf_size) < remaining_bytes ?
       buf_size : remaining_bytes;
-  memcpy(buf->data(), data_->data() + bytes_read_, to_read);
-  bytes_read_ += to_read;
-  if (bytes_read_ >= data_length_)
+  memcpy(buf->data(), data_->data() + data_bytes_read_, to_read);
+  data_bytes_read_ += to_read;
+  if (data_bytes_read_ >= data_length_)
     data_ = NULL;
 
   *bytes_read = to_read;
