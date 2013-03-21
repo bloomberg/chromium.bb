@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -364,6 +365,8 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
     const extensions::Extension* extension =
         GetExtensionByURL(profile_, match.destination_url);
     if (extension) {
+      AppLauncherHandler::RecordAppLaunchType(
+        extension_misc::APP_LAUNCH_APP_LIST_SEARCH);
       content::RecordAction(
           content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
       list_controller_->ActivateApp(profile_, extension, event_flags);

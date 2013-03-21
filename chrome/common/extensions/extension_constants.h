@@ -221,6 +221,12 @@ namespace extension_misc {
     // User clicked [+] icon in apps page.
     APP_LAUNCH_NTP_WEBSTORE_PLUS_ICON,
 
+    // User clicked icon in app launcher main view.
+    APP_LAUNCH_APP_LIST_MAIN,
+
+    // User clicked app launcher search result.
+    APP_LAUNCH_APP_LIST_SEARCH,
+
     APP_LAUNCH_BUCKET_BOUNDARY,
     APP_LAUNCH_BUCKET_INVALID
   };
