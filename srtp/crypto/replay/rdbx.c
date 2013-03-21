@@ -153,7 +153,7 @@ index_guess(const xtd_seq_num_t *local,
   } else {
     if (local_seq - seq_num_median > s) {
       guess_roc = local_roc + 1;
-      difference = seq_num_max - local_seq + s;
+      difference = s - local_seq + seq_num_max;
     } else {
       guess_roc = local_roc;
       difference = s - local_seq;
