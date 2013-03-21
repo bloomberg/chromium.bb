@@ -12,12 +12,18 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/browser/wallet/instrument.h"
+#include "components/autofill/browser/wallet/wallet_address.h"
+#include "components/autofill/browser/wallet/wallet_client.h"
+#include "components/autofill/browser/wallet/wallet_test_util.h"
 #include "components/autofill/common/form_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
 
 namespace autofill {
 
@@ -75,6 +81,39 @@ class TestPersonalDataManager : public PersonalDataManager {
   std::vector<AutofillProfile*> profiles_;
 };
 
+class TestWalletClient : public wallet::WalletClient {
+ public:
+  TestWalletClient(net::URLRequestContextGetter* context,
+                   wallet::WalletClientDelegate* delegate)
+      : wallet::WalletClient(context, delegate) {}
+  virtual ~TestWalletClient() {}
+
+  MOCK_METHOD3(AcceptLegalDocuments,
+      void(const std::vector<std::string>& document_ids,
+           const std::string& google_transaction_id,
+           const GURL& source_url));
+
+  MOCK_METHOD1(GetFullWallet,
+      void(const wallet::WalletClient::FullWalletRequest& request));
+
+  MOCK_METHOD2(SaveAddress,
+      void(const wallet::Address& address, const GURL& source_url));
+
+  MOCK_METHOD3(SaveInstrument,
+      void(const wallet::Instrument& instrument,
+           const std::string& obfuscated_gaia_id,
+           const GURL& source_url));
+
+  MOCK_METHOD4(SaveInstrumentAndAddress,
+      void(const wallet::Instrument& instrument,
+           const wallet::Address& address,
+           const std::string& obfuscated_gaia_id,
+           const GURL& source_url));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWalletClient);
+};
+
 class TestAutofillDialogController : public AutofillDialogControllerImpl {
  public:
   TestAutofillDialogController(
@@ -91,7 +130,11 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      ssl_status,
                                      metric_logger,
                                      dialog_type,
-                                     callback) {}
+                                     callback),
+        ALLOW_THIS_IN_INITIALIZER_LIST(test_wallet_client_(
+            Profile::FromBrowserContext(contents->GetBrowserContext())->
+                GetRequestContext(), this)),
+        is_paying_with_wallet_(false) {}
   virtual ~TestAutofillDialogController() {}
 
   virtual AutofillDialogView* CreateView() OVERRIDE {
@@ -106,13 +149,31 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_manager_;
   }
 
+  TestWalletClient* GetTestingWalletClient() {
+    return &test_wallet_client_;
+  }
+
+  void set_is_paying_with_wallet(bool is_paying_with_wallet) {
+    is_paying_with_wallet_ = is_paying_with_wallet;
+  }
+
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
   }
 
+  virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
+    return &test_wallet_client_;
+  }
+
+  virtual bool IsPayingWithWallet() const OVERRIDE {
+    return is_paying_with_wallet_;
+  }
+
  private:
   TestPersonalDataManager test_manager_;
+  testing::StrictMock<TestWalletClient> test_wallet_client_;
+  bool is_paying_with_wallet_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
@@ -267,6 +328,69 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail2, inputs[0].autofilled_value);
+}
+
+TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
+  controller()->set_is_paying_with_wallet(true);
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              AcceptLegalDocuments(_, _, _)).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetFullWallet(_)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnSubmit();
+}
+
+TEST_F(AutofillDialogControllerTest, SaveAddress) {
+  controller()->set_is_paying_with_wallet(true);
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveAddress(_, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnSubmit();
+}
+
+TEST_F(AutofillDialogControllerTest, SaveInstrument) {
+  controller()->set_is_paying_with_wallet(true);
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveInstrument(_, _, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnSubmit();
+}
+
+TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
+  controller()->set_is_paying_with_wallet(true);
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveInstrumentAndAddress(_, _, _, _)).Times(1);
+
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnSubmit();
+}
+
+TEST_F(AutofillDialogControllerTest, Cancel) {
+  controller()->set_is_paying_with_wallet(true);
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnCancel();
 }
 
 }  // namespace autofill

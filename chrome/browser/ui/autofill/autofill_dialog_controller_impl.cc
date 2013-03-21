@@ -385,7 +385,7 @@ void AutofillDialogControllerImpl::Show() {
   // Request sugar info after the view is showing to simplify code for now.
   if (IsPayingWithWallet()) {
     // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
-    wallet_client_.GetWalletItems(
+    GetWalletClient()->GetWalletItems(
         source_url_,
         std::vector<wallet::WalletClient::RiskCapability>());
   }
@@ -1100,7 +1100,7 @@ void AutofillDialogControllerImpl::Observe(
     EndSignInFlow();
     if (IsPayingWithWallet()) {
       // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
-      wallet_client_.GetWalletItems(
+      GetWalletClient()->GetWalletItems(
           source_url_,
           std::vector<wallet::WalletClient::RiskCapability>());
     }
@@ -1241,7 +1241,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
 
   if (IsPayingWithWallet() && !wallet_items_) {
     // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
-    wallet_client_.GetWalletItems(
+    GetWalletClient()->GetWalletItems(
         source_url_,
         std::vector<wallet::WalletClient::RiskCapability>());
   }
@@ -1282,13 +1282,17 @@ PersonalDataManager* AutofillDialogControllerImpl::GetManager() {
   return PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
+wallet::WalletClient* AutofillDialogControllerImpl::GetWalletClient() {
+  return &wallet_client_;
+}
+
 bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
   return account_chooser_model_.WalletIsSelected();
 }
 
 void AutofillDialogControllerImpl::DisableWallet() {
   account_chooser_model_.SetHadWalletError();
-  wallet_client_.CancelPendingRequests();
+  GetWalletClient()->CancelPendingRequests();
   wallet_items_.reset();
 
   GenerateSuggestionsModels();
@@ -1625,9 +1629,8 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
     for (size_t i = 0; i < wallet_items_->legal_documents().size(); ++i) {
       doc_ids.push_back(wallet_items_->legal_documents()[i]->document_id());
     }
-    wallet_client_.AcceptLegalDocuments(doc_ids,
-                                        wallet_items_->google_transaction_id(),
-                                        source_url_);
+    GetWalletClient()->AcceptLegalDocuments(
+        doc_ids, wallet_items_->google_transaction_id(), source_url_);
   }
 
   scoped_ptr<wallet::Instrument> new_instrument;
@@ -1659,16 +1662,17 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   }
 
   if (new_instrument.get() && new_address.get()) {
-    wallet_client_.SaveInstrumentAndAddress(*new_instrument,
-                                            *new_address,
-                                            wallet_items_->obfuscated_gaia_id(),
-                                            source_url_);
+    GetWalletClient()->SaveInstrumentAndAddress(
+        *new_instrument,
+        *new_address,
+        wallet_items_->obfuscated_gaia_id(),
+        source_url_);
   } else if (new_instrument.get()) {
-    wallet_client_.SaveInstrument(*new_instrument,
-                                  wallet_items_->obfuscated_gaia_id(),
-                                  source_url_);
+    GetWalletClient()->SaveInstrument(*new_instrument,
+                                      wallet_items_->obfuscated_gaia_id(),
+                                      source_url_);
   } else if (new_address.get()) {
-    wallet_client_.SaveAddress(*new_address, source_url_);
+    GetWalletClient()->SaveAddress(*new_address, source_url_);
   } else {
     GetFullWallet();
   }
@@ -1681,7 +1685,7 @@ void AutofillDialogControllerImpl::GetFullWallet() {
   DCHECK(!active_instrument_id_.empty());
   DCHECK(!active_address_id_.empty());
 
-  wallet_client_.GetFullWallet(wallet::WalletClient::FullWalletRequest(
+  GetWalletClient()->GetFullWallet(wallet::WalletClient::FullWalletRequest(
       active_instrument_id_,
       active_address_id_,
       source_url_,

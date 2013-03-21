@@ -9,7 +9,9 @@
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/autofill/browser/wallet/instrument.h"
+#include "components/autofill/browser/wallet/required_action.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
 
 namespace autofill {
@@ -33,7 +35,14 @@ scoped_ptr<Instrument> GetTestInstrument() {
                                                12,
                                                2012,
                                                Instrument::VISA,
-                                               GetTestAddress().Pass()));
+                                               GetTestAddress()));
+}
+
+scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument() {
+  base::DictionaryValue dict;
+  dict.SetString("legal_document_id", "document_id");
+  dict.SetString("display_name", "display_name");
+  return wallet::WalletItems::LegalDocument::CreateLegalDocument(dict);
 }
 
 scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument() {
@@ -46,7 +55,20 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument() {
                                         2012,
                                         GetTestAddress(),
                                         WalletItems::MaskedInstrument::EXPIRED,
-                                        std::string()));
+                                        "instrument_id"));
+}
+
+scoped_ptr<Address> GetTestSaveableAddress() {
+  return scoped_ptr<Address>(new Address(
+      "save_country_name_code",
+      ASCIIToUTF16("save_recipient_name"),
+      ASCIIToUTF16("save_address_line_1"),
+      ASCIIToUTF16("save_address_line_2"),
+      ASCIIToUTF16("save_locality_name"),
+      ASCIIToUTF16("save_admin_area_name"),
+      ASCIIToUTF16("save_postal_code_number"),
+      ASCIIToUTF16("save_phone_number"),
+      std::string()));
 }
 
 scoped_ptr<Address> GetTestShippingAddress() {
@@ -59,7 +81,16 @@ scoped_ptr<Address> GetTestShippingAddress() {
       ASCIIToUTF16("ship_admin_area_name"),
       ASCIIToUTF16("ship_postal_code_number"),
       ASCIIToUTF16("ship_phone_number"),
-      std::string()));
+      "address_id"));
+}
+
+scoped_ptr<WalletItems> GetTestWalletItems() {
+  return scoped_ptr<WalletItems>(
+      new wallet::WalletItems(std::vector<RequiredAction>(),
+                              "google_transaction_id",
+                              "default_instrument_id",
+                              "default_address_id",
+                              "obfuscated_gaia_id"));
 }
 
 }  // namespace wallet

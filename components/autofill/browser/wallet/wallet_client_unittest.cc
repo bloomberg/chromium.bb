@@ -130,7 +130,7 @@ const char kGetWalletItemsValidResponse[] =
 
 const char kSaveAddressValidResponse[] =
     "{"
-    "  \"shipping_address_id\":\"shipping_address_id\""
+    "  \"shipping_address_id\":\"saved_address_id\""
     "}";
 
 const char kSaveAddressWithRequiredActionsValidResponse[] =
@@ -173,8 +173,8 @@ const char kSaveInstrumentWithRequiredActionsValidResponse[] =
 
 const char kSaveInstrumentAndAddressValidResponse[] =
     "{"
-    "  \"shipping_address_id\":\"shipping_address_id\","
-    "  \"instrument_id\":\"instrument_id\""
+    "  \"shipping_address_id\":\"saved_address_id\","
+    "  \"instrument_id\":\"saved_instrument_id\""
     "}";
 
 const char kSaveInstrumentAndAddressWithRequiredActionsValidResponse[] =
@@ -193,7 +193,7 @@ const char kSaveInstrumentAndAddressMissingAddressResponse[] =
 
 const char kSaveInstrumentAndAddressMissingInstrumentResponse[] =
     "{"
-    "  \"shipping_address_id\":\"shipping_address_id\""
+    "  \"shipping_address_id\":\"saved_address_id\""
     "}";
 
 const char kUpdateInstrumentValidResponse[] =
@@ -355,19 +355,19 @@ const char kSaveAddressValidRequest[] =
         "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
-            "\"phone_number\":\"ship_phone_number\","
+            "\"phone_number\":\"save_phone_number\","
             "\"postal_address\":"
             "{"
                 "\"address_line\":"
                 "["
-                    "\"ship_address_line_1\","
-                    "\"ship_address_line_2\""
+                    "\"save_address_line_1\","
+                    "\"save_address_line_2\""
                 "],"
-                "\"administrative_area_name\":\"ship_admin_area_name\","
-                "\"country_name_code\":\"ship_country_name_code\","
-                "\"locality_name\":\"ship_locality_name\","
-                "\"postal_code_number\":\"ship_postal_code_number\","
-                "\"recipient_name\":\"ship_recipient_name\""
+                "\"administrative_area_name\":\"save_admin_area_name\","
+                "\"country_name_code\":\"save_country_name_code\","
+                "\"locality_name\":\"save_locality_name\","
+                "\"postal_code_number\":\"save_postal_code_number\","
+                "\"recipient_name\":\"save_recipient_name\""
             "}"
         "}"
     "}";
@@ -436,19 +436,19 @@ const char kSaveInstrumentAndAddressValidRequest[] =
         "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
-            "\"phone_number\":\"ship_phone_number\","
+            "\"phone_number\":\"save_phone_number\","
             "\"postal_address\":"
             "{"
                 "\"address_line\":"
                 "["
-                    "\"ship_address_line_1\","
-                    "\"ship_address_line_2\""
+                    "\"save_address_line_1\","
+                    "\"save_address_line_2\""
                 "],"
-                "\"administrative_area_name\":\"ship_admin_area_name\","
-                "\"country_name_code\":\"ship_country_name_code\","
-                "\"locality_name\":\"ship_locality_name\","
-                "\"postal_code_number\":\"ship_postal_code_number\","
-                "\"recipient_name\":\"ship_recipient_name\""
+                "\"administrative_area_name\":\"save_admin_area_name\","
+                "\"country_name_code\":\"save_country_name_code\","
+                "\"locality_name\":\"save_locality_name\","
+                "\"postal_code_number\":\"save_postal_code_number\","
+                "\"recipient_name\":\"save_recipient_name\""
             "}"
         "}"
     "}";
@@ -1015,12 +1015,12 @@ TEST_F(WalletClientTest, GetWalletItemsWithRiskCapabilites) {
 TEST_F(WalletClientTest, SaveAddressSucceeded) {
   MockWalletClientDelegate delegate;
   EXPECT_CALL(delegate,
-              OnDidSaveAddress("shipping_address_id",
+              OnDidSaveAddress("saved_address_id",
                                std::vector<RequiredAction>())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
@@ -1043,7 +1043,7 @@ TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
 
   net::TestURLFetcherFactory factory;
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
@@ -1059,7 +1059,7 @@ TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
 
   net::TestURLFetcherFactory factory;
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
@@ -1075,7 +1075,7 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
 
   net::TestURLFetcherFactory factory;
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveAddress(*address, GURL(kMerchantUrl));
@@ -1240,15 +1240,15 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
   MockWalletClientDelegate delegate;
   EXPECT_CALL(delegate,
               OnDidSaveInstrumentAndAddress(
-                  "instrument_id",
-                  "shipping_address_id",
+                  "saved_instrument_id",
+                  "saved_address_id",
                   std::vector<RequiredAction>())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveInstrumentAndAddress(*instrument,
@@ -1284,7 +1284,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveInstrumentAndAddress(*instrument,
@@ -1312,7 +1312,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveInstrumentAndAddress(*instrument,
@@ -1341,7 +1341,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveInstrumentAndAddress(*instrument,
@@ -1364,7 +1364,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveInstrumentAndAddress(*instrument,
@@ -1387,7 +1387,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveInstrumentAndAddress(*instrument,
@@ -1415,7 +1415,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
+  scoped_ptr<Address> address = GetTestSaveableAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext(), &delegate);
   wallet_client.SaveInstrumentAndAddress(*instrument,

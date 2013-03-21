@@ -203,14 +203,18 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Returns the PersonalDataManager for |profile_|.
   virtual PersonalDataManager* GetManager();
 
+  // Returns the WalletClient* this class uses to talk to Online Wallet. Exposed
+  // for testing.
+  virtual wallet::WalletClient* GetWalletClient();
+
   // Call to disable communication to Online Wallet for this dialog.
   // Exposed for testing.
   void DisableWallet();
 
- private:
-  // Returns whether Wallet is the current data source.
-  bool IsPayingWithWallet() const;
+  // Returns whether Wallet is the current data source. Exposed for testing.
+  virtual bool IsPayingWithWallet() const;
 
+ private:
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
 

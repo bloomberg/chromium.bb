@@ -233,6 +233,7 @@ class WalletItems {
 
  private:
   friend class WalletItemsTest;
+  friend scoped_ptr<WalletItems> GetTestWalletItems();
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest,
                            CreateWalletItemsWithRequiredActions);
