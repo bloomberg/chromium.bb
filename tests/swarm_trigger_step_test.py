@@ -85,21 +85,6 @@ def GenerateExpectedJSON(options):
     'restart_on_failure': True,
     'cleanup': 'root'
   }
-
-  if options.os_image == 'win32':
-    expected['tests'].append(
-      {
-        'action': [
-          'python',
-          'kill_processes.py',
-          '--handle_exe',
-          'handle.exe'
-        ],
-        'test_name': 'Kill Processes',
-        'time_out': 600
-      }
-    )
-
   return expected
 
 

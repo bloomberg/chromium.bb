@@ -26,22 +26,10 @@ import run_isolated
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_PATH = os.path.join(ROOT_DIR, 'tools')
-BUILD_ROOT_PATH = os.path.join(ROOT_DIR, '..', '..')
 
 # TODO(maruel): This shouldn't be necessary here.
 CLEANUP_SCRIPT_NAME = 'swarm_cleanup.py'
 CLEANUP_SCRIPT_PATH = os.path.join(TOOLS_PATH, CLEANUP_SCRIPT_NAME)
-
-# TODO(maruel): This script shouldn't be necessary on swarm slave. Swarm slaves
-# need to make sure they don't have zombie processes left by themselves. Figure
-# out a way to make this cleaner.
-WINDOWS_SCRIPT_NAME = 'kill_processes.py'
-WINDOWS_SCRIPT_PATH = os.path.join(
-    BUILD_ROOT_PATH, 'scripts', 'slave', WINDOWS_SCRIPT_NAME)
-
-HANDLE_EXE = 'handle.exe'
-HANDLE_EXE_PATH = os.path.join(
-    BUILD_ROOT_PATH, 'third_party', 'psutils', HANDLE_EXE)
 
 RUN_TEST_NAME = 'run_isolated.py'
 RUN_TEST_PATH = os.path.join(ROOT_DIR, RUN_TEST_NAME)
@@ -96,11 +84,6 @@ class Manifest(object):
     zip_file.write(RUN_TEST_PATH, RUN_TEST_NAME)
     zip_file.write(CLEANUP_SCRIPT_PATH, CLEANUP_SCRIPT_NAME)
 
-    if self.target_platform == 'Windows':
-      # TODO(maruel): Users with src.git checkout don't have these files.
-      zip_file.write(WINDOWS_SCRIPT_PATH, WINDOWS_SCRIPT_NAME)
-      zip_file.write(HANDLE_EXE_PATH, HANDLE_EXE)
-
     zip_file.close()
     print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
 
@@ -143,12 +126,6 @@ class Manifest(object):
 
     # Clean up
     self.add_task('Clean Up', ['python', CLEANUP_SCRIPT_NAME])
-
-    # Call kill_processes.py if on windows
-    if self.target_platform == 'Windows':
-      self.add_task('Kill Processes',
-          ['python', WINDOWS_SCRIPT_NAME,
-           '--handle_exe', HANDLE_EXE])
 
     # This separation of vlans isn't required anymore, but it is
     # still a useful separation to keep.
