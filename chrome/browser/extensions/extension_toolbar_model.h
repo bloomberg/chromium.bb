@@ -82,10 +82,6 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   int IncognitoIndexToOriginal(int incognito_index);
   int OriginalIndexToIncognito(int original_index);
 
-  const extensions::ExtensionList& action_box_menu_items() const {
-    return action_box_menu_items_;
-  }
-
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -94,32 +90,27 @@ class ExtensionToolbarModel : public content::NotificationObserver {
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service
-  // and constructs |toolbar_items_| and |action_box_items_| from these data.
-  void InitializeExtensionLists();
-  void PopulateForActionBoxMode();
-  void PopulateForNonActionBoxMode();
+  // and constructs |toolbar_items_| from these data.
+  void InitializeExtensionList();
+  void Populate();
 
   // Fills |list| with extensions based on provided |order|.
-  void FillExtensionList(
-      const extensions::ExtensionIdList& order,
-      extensions::ExtensionList* list);
+  void FillExtensionList(const extensions::ExtensionIdList& order);
 
   // Save the model to prefs.
   void UpdatePrefs();
 
+  // Finds the last known visible position of the icon for an |extension|. The
+  // value returned is a zero-based index into the vector of visible items.
+  size_t FindNewPositionFromLastKnownGood(
+      const extensions::Extension* extension);
+
   // Our observers.
   ObserverList<Observer> observers_;
 
-  void AddExtension(const extensions::Extension* extension,
-                    extensions::ExtensionList* list);
-  void RemoveExtension(const extensions::Extension* extension,
-                       extensions::ExtensionList* list);
-
-  // Searches for the given |extension| in |toolbar_items_| and
-  // |action_box_menu_items_| and returns pointer to the list with it
-  // or NULL if not found.
-  extensions::ExtensionList* FindListWithExtension(
-      const extensions::Extension* extension);
+  void AddExtension(const extensions::Extension* extension);
+  void RemoveExtension(const extensions::Extension* extension);
+  void UninstalledExtension(const extensions::Extension* extension);
 
   // Our ExtensionService, guaranteed to outlive us.
   ExtensionService* service_;
@@ -132,14 +123,7 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   // Ordered list of browser action buttons.
   extensions::ExtensionList toolbar_items_;
 
-  // List of browser action buttons visible in an action box menu.
-  extensions::ExtensionList action_box_menu_items_;
-
-  // Keeps track of what the last extension to get disabled was.
-  std::string last_extension_removed_;
-
-  // Keeps track of where the last extension to get disabled was in the list.
-  size_t last_extension_removed_index_;
+  extensions::ExtensionIdList last_known_positions_;
 
   // The number of icons visible (the rest should be hidden in the overflow
   // chevron).

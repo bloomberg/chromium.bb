@@ -98,15 +98,6 @@ const char kPrefDisableReasons[] = "disable_reasons";
 // object stored in the Preferences file. The extensions are stored by ID.
 const char kExtensionToolbar[] = "extensions.toolbar";
 
-// A preference that tracks the order of extensions in an action box
-// (list of extension ids).
-const char kExtensionActionBox[] = "extensions.action_box_order";
-
-// A preference that tracks the order of extensions in a toolbar when
-// action box is enabled (list of extension ids).
-const char kExtensionActionBoxBar[] =
-    "extensions.toolbar_order_with_action_box";
-
 // The key for a serialized Time value indicating the start of the day (from the
 // server's perspective) an extension last included a "ping" parameter during
 // its update check.
@@ -321,11 +312,6 @@ bool ScopeToPrefKey(ExtensionPrefsScope scope, std::string* result) {
   }
   NOTREACHED();
   return false;
-}
-
-const char* GetToolbarOrderKeyName() {
-  return FeatureSwitch::extensions_in_action_box()->IsEnabled() ?
-      kExtensionActionBoxBar : kExtensionToolbar;
 }
 
 // Reads a boolean pref from |ext| with key |pref_key|.
@@ -1443,19 +1429,11 @@ bool ExtensionPrefs::IsExtensionDisabled(
 }
 
 ExtensionIdList ExtensionPrefs::GetToolbarOrder() {
-  return GetExtensionPrefAsVector(GetToolbarOrderKeyName());
+  return GetExtensionPrefAsVector(kExtensionToolbar);
 }
 
 void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
-  SetExtensionPrefFromVector(GetToolbarOrderKeyName(), extension_ids);
-}
-
-ExtensionIdList ExtensionPrefs::GetActionBoxOrder() {
-  return GetExtensionPrefAsVector(kExtensionActionBox);
-}
-
-void ExtensionPrefs::SetActionBoxOrder(const ExtensionIdList& extension_ids) {
-  SetExtensionPrefFromVector(kExtensionActionBox, extension_ids);
+  SetExtensionPrefFromVector(kExtensionToolbar, extension_ids);
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
@@ -1502,11 +1480,6 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
-  if (FeatureSwitch::extensions_in_action_box()->IsEnabled()) {
-    ExtensionIdList ids = GetToolbarOrder();
-    return find(ids.begin(), ids.end(), extension->id()) != ids.end();
-  }
-
   const DictionaryValue* extension_prefs = GetExtensionPref(extension->id());
   if (!extension_prefs)
     return true;
@@ -1523,14 +1496,8 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
   if (GetBrowserActionVisibility(extension) == visible)
     return;
 
-  if (FeatureSwitch::extensions_in_action_box()->IsEnabled()) {
-    ExtensionIdList ids = GetToolbarOrder();
-    ids.push_back(extension->id());
-    SetToolbarOrder(ids);
-  } else {
-    UpdateExtensionPref(extension->id(), kBrowserActionVisible,
+  UpdateExtensionPref(extension->id(), kBrowserActionVisible,
                         Value::CreateBooleanValue(visible));
-  }
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(this),
@@ -2249,10 +2216,6 @@ void ExtensionPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kExtensionsPref,
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(kExtensionToolbar,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(kExtensionActionBox,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(kExtensionActionBoxBar,
                              PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kExtensionToolbarSize,
                                 -1,  // default value

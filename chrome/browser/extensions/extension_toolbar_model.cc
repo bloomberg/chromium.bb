@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 
 using extensions::Extension;
+using extensions::ExtensionIdList;
 using extensions::ExtensionList;
 
 namespace {
@@ -51,6 +52,8 @@ ExtensionToolbarModel::ExtensionToolbarModel(ExtensionService* service)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(service_->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                 content::Source<Profile>(service_->profile()));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(service_->profile()));
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
@@ -80,12 +83,22 @@ void ExtensionToolbarModel::MoveBrowserAction(const Extension* extension,
   }
   toolbar_items_.erase(pos);
 
+  ExtensionIdList::iterator pos_id;
+  pos_id = std::find(last_known_positions_.begin(),
+                     last_known_positions_.end(), extension->id());
+  if (pos_id != last_known_positions_.end())
+    last_known_positions_.erase(pos_id);
+
   int i = 0;
   bool inserted = false;
   for (ExtensionList::iterator iter = toolbar_items_.begin();
        iter != toolbar_items_.end();
        ++iter, ++i) {
     if (i == index) {
+      pos_id = std::find(last_known_positions_.begin(),
+                         last_known_positions_.end(), (*iter)->id());
+      last_known_positions_.insert(pos_id, extension->id());
+
       toolbar_items_.insert(iter, make_scoped_refptr(extension));
       inserted = true;
       break;
@@ -97,6 +110,7 @@ void ExtensionToolbarModel::MoveBrowserAction(const Extension* extension,
     index = toolbar_items_.size();
 
     toolbar_items_.push_back(make_scoped_refptr(extension));
+    last_known_positions_.push_back(extension->id());
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, BrowserActionMoved(extension, index));
@@ -150,7 +164,7 @@ void ExtensionToolbarModel::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
-    InitializeExtensionLists();
+    InitializeExtensionList();
     return;
   }
 
@@ -164,96 +178,114 @@ void ExtensionToolbarModel::Observe(
   } else {
     extension = content::Details<const Extension>(details).ptr();
   }
-  ExtensionList* list_with_extension = FindListWithExtension(extension);
   if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
     // We don't want to add the same extension twice. It may have already been
     // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
     // hides the browser action and then disables and enables the extension.
-    if (list_with_extension)
-      return;
-    if (extensions::FeatureSwitch::extensions_in_action_box()->IsEnabled())
-      AddExtension(extension, &action_box_menu_items_);
-    else if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
-      AddExtension(extension, &toolbar_items_);
+    for (size_t i = 0; i < toolbar_items_.size(); i++) {
+      if (toolbar_items_[i].get() == extension)
+        return;  // Already exists.
+    }
+    if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
+      AddExtension(extension);
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
-    if (list_with_extension)
-      RemoveExtension(extension, list_with_extension);
+    RemoveExtension(extension);
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED) {
+    UninstalledExtension(extension);
   } else if (type ==
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    if (extensions::FeatureSwitch::extensions_in_action_box()->IsEnabled()) {
-      // TODO(yefim): Implement this when implementing drag & drop
-      // for action box menu.
-    } else if (
-      service_->extension_prefs()->GetBrowserActionVisibility(extension)) {
-      AddExtension(extension, &toolbar_items_);
-    } else {
-      RemoveExtension(extension, &toolbar_items_);
-    }
+    if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
+      AddExtension(extension);
+    else
+      RemoveExtension(extension);
   } else {
     NOTREACHED() << "Received unexpected notification";
   }
 }
 
-void ExtensionToolbarModel::AddExtension(const Extension* extension,
-                                         ExtensionList* list) {
+size_t ExtensionToolbarModel::FindNewPositionFromLastKnownGood(
+    const Extension* extension) {
+  // See if we have last known good position for this extension.
+  size_t new_index = 0;
+  // Loop through the ID list of known positions, to count the number of visible
+  // browser action icons preceding |extension|.
+  for (ExtensionIdList::const_iterator iter_id = last_known_positions_.begin();
+       iter_id < last_known_positions_.end(); ++iter_id) {
+    if ((*iter_id) == extension->id())
+      return new_index;  // We've found the right position.
+    // Found an id, need to see if it is visible.
+    for (ExtensionList::const_iterator iter_ext = toolbar_items_.begin();
+         iter_ext < toolbar_items_.end(); ++iter_ext) {
+      if ((*iter_ext)->id().compare(*iter_id) == 0) {
+        // This extension is visible, update the index value.
+        ++new_index;
+        break;
+      }
+    }
+  }
+
+  return -1;
+}
+
+void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   // We only care about extensions with browser actions.
   if (!extensions::ExtensionActionManager::Get(service_->profile())->
       GetBrowserAction(*extension)) {
     return;
   }
 
-  if (extension->id() == last_extension_removed_ &&
-      last_extension_removed_index_ < list->size()) {
-    list->insert(list->begin() + last_extension_removed_index_,
-                 make_scoped_refptr(extension));
-    // TODO: figure out the right long term solution.
-    if (list == &toolbar_items_) {
-      FOR_EACH_OBSERVER(Observer, observers_,
-          BrowserActionAdded(extension, last_extension_removed_index_));
+  size_t new_index = -1;
+
+  // See if we have a last known good position for this extension.
+  ExtensionIdList::iterator last_pos = std::find(last_known_positions_.begin(),
+                                                 last_known_positions_.end(),
+                                                 extension->id());
+  if (last_pos != last_known_positions_.end()) {
+    new_index = FindNewPositionFromLastKnownGood(extension);
+    if (new_index != toolbar_items_.size()) {
+      toolbar_items_.insert(toolbar_items_.begin() + new_index,
+                            make_scoped_refptr(extension));
+    } else {
+      toolbar_items_.push_back(make_scoped_refptr(extension));
     }
   } else {
-    list->push_back(make_scoped_refptr(extension));
-    // TODO: figure out the right long term solution.
-    if (list == &toolbar_items_) {
-      FOR_EACH_OBSERVER(Observer, observers_,
-                        BrowserActionAdded(extension, list->size() - 1));
-    }
+    // This is a never before seen extension, that was added to the end. Make
+    // sure to reflect that.
+    toolbar_items_.push_back(make_scoped_refptr(extension));
+    last_known_positions_.push_back(extension->id());
+    new_index = toolbar_items_.size() - 1;
+    UpdatePrefs();
   }
 
-  last_extension_removed_ = "";
-  last_extension_removed_index_ = -1;
-
-  UpdatePrefs();
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    BrowserActionAdded(extension, new_index));
 }
 
-void ExtensionToolbarModel::RemoveExtension(const Extension* extension,
-                                            ExtensionList* list) {
+void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
   ExtensionList::iterator pos =
-      std::find(list->begin(), list->end(), extension);
-  if (pos == list->end())
+      std::find(toolbar_items_.begin(), toolbar_items_.end(), extension);
+  if (pos == toolbar_items_.end())
     return;
 
-  last_extension_removed_ = extension->id();
-  last_extension_removed_index_ = pos - list->begin();
-
-  list->erase(pos);
-  // TODO: figure out the right long term solution.
-  if (list == &toolbar_items_) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      BrowserActionRemoved(extension));
-  }
+  toolbar_items_.erase(pos);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    BrowserActionRemoved(extension));
 
   UpdatePrefs();
 }
 
-extensions::ExtensionList* ExtensionToolbarModel::FindListWithExtension(
-    const Extension* extension) {
-  if (IsInExtensionList(extension, toolbar_items_))
-    return &toolbar_items_;
-  return IsInExtensionList(extension, action_box_menu_items_) ?
-      &action_box_menu_items_ : NULL;
-}
+void ExtensionToolbarModel::UninstalledExtension(const Extension* extension) {
+  // Remove the extension id from the ordered list, if it exists (the extension
+  // might not be represented in the list because it might not have an icon).
+  ExtensionIdList::iterator pos =
+      std::find(last_known_positions_.begin(),
+                last_known_positions_.end(), extension->id());
 
+  if (pos != last_known_positions_.end()) {
+    last_known_positions_.erase(pos);
+    UpdatePrefs();
+  }
+}
 
 // Combine the currently enabled extensions that have browser actions (which
 // we get from the ExtensionService) with the ordering we get from the
@@ -262,55 +294,21 @@ extensions::ExtensionList* ExtensionToolbarModel::FindListWithExtension(
 // have holes.
 // 2. Create a vector of extensions that did not have a pref value.
 // 3. Remove holes from the sorted vector and append the unsorted vector.
-void ExtensionToolbarModel::InitializeExtensionLists() {
+void ExtensionToolbarModel::InitializeExtensionList() {
   DCHECK(service_->is_ready());
 
-  if (extensions::FeatureSwitch::extensions_in_action_box()->IsEnabled())
-    PopulateForActionBoxMode();
-  else
-    PopulateForNonActionBoxMode();
-
+  Populate();
   UpdatePrefs();
 
   extensions_initialized_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, ModelLoaded());
 }
 
-void ExtensionToolbarModel::PopulateForActionBoxMode() {
-  const extensions::ExtensionIdList toolbar_order =
-      service_->extension_prefs()->GetToolbarOrder();
-  extensions::ExtensionIdList action_box_order =
-      service_->extension_prefs()->GetActionBoxOrder();
-
-  extensions::ExtensionActionManager* extension_action_manager =
-      extensions::ExtensionActionManager::Get(service_->profile());
-
-  // Add all browser actions not already in the toolbar or action box
-  // to the action box (the prefs list may omit some extensions).
-  for (ExtensionSet::const_iterator iter = service_->extensions()->begin();
-       iter != service_->extensions()->end(); ++iter) {
-    const Extension* extension = *iter;
-    if (!extension_action_manager->GetBrowserAction(*extension))
-      continue;
-
-    if (std::find(toolbar_order.begin(), toolbar_order.end(),
-                  extension->id()) != toolbar_order.end())
-      continue;
-
-    if (std::find(action_box_order.begin(), action_box_order.end(),
-                  extension->id()) != action_box_order.end())
-      continue;
-
-    action_box_order.push_back(extension->id());
-  }
-
-  FillExtensionList(action_box_order, &action_box_menu_items_);
-  FillExtensionList(toolbar_order, &toolbar_items_);
-}
-
-void ExtensionToolbarModel::PopulateForNonActionBoxMode() {
+void ExtensionToolbarModel::Populate() {
   const extensions::ExtensionIdList pref_order =
       service_->extension_prefs()->GetToolbarOrder();
+  last_known_positions_ = pref_order;
+
   // Items that have a pref for their position.
   ExtensionList sorted;
   sorted.resize(pref_order.size(), NULL);
@@ -362,15 +360,14 @@ void ExtensionToolbarModel::PopulateForNonActionBoxMode() {
 }
 
 void ExtensionToolbarModel::FillExtensionList(
-    const extensions::ExtensionIdList& order,
-    ExtensionList* list) {
-  list->clear();
-  list->reserve(order.size());
+    const extensions::ExtensionIdList& order) {
+  toolbar_items_.clear();
+  toolbar_items_.reserve(order.size());
   for (size_t i = 0; i < order.size(); ++i) {
     const extensions::Extension* extension =
         service_->GetExtensionById(order[i], false);
     if (extension)
-      AddExtension(extension, list);
+      AddExtension(extension);
   }
 }
 
@@ -378,17 +375,7 @@ void ExtensionToolbarModel::UpdatePrefs() {
   if (!service_->extension_prefs())
     return;
 
-  extensions::ExtensionIdList toolbar_ids;
-  toolbar_ids.reserve(toolbar_items_.size());
-  for (size_t i = 0; i < toolbar_items_.size(); ++i)
-    toolbar_ids.push_back(toolbar_items_[i]->id());
-  service_->extension_prefs()->SetToolbarOrder(toolbar_ids);
-
-  extensions::ExtensionIdList action_box_ids;
-  action_box_ids.reserve(action_box_menu_items_.size());
-  for (size_t i = 0; i < action_box_menu_items_.size(); ++i)
-    action_box_ids.push_back(action_box_menu_items_[i]->id());
-  service_->extension_prefs()->SetActionBoxOrder(action_box_ids);
+  service_->extension_prefs()->SetToolbarOrder(last_known_positions_);
 }
 
 int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {

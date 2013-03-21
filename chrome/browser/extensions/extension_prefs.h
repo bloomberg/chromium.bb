@@ -136,10 +136,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   ExtensionIdList GetToolbarOrder();
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
-  // Get/Set the order that the browser actions appear in the action box.
-  ExtensionIdList GetActionBoxOrder();
-  void SetActionBoxOrder(const ExtensionIdList& extension_ids);
-
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is an invalid ordinal, then a page will be found
   // for the App.

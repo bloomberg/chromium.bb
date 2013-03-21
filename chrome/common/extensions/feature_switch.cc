@@ -23,9 +23,6 @@ class CommonSwitches {
         easy_off_store_install(
             switches::kEasyOffStoreExtensionInstall,
             FeatureSwitch::DEFAULT_DISABLED),
-        extensions_in_action_box(
-            switches::kExtensionsInActionBox,
-            FeatureSwitch::DEFAULT_DISABLED),
         script_badges(
             switches::kScriptBadges,
             FeatureSwitch::DEFAULT_DISABLED),
@@ -46,17 +43,10 @@ class CommonSwitches {
 #endif
         tab_capture(
             switches::kTabCapture,
-            FeatureSwitch::DEFAULT_ENABLED)
-  {
-    if (!action_box.IsEnabled()){
-      extensions_in_action_box.SetOverrideValue(
-          FeatureSwitch::OVERRIDE_DISABLED);
-    }
-  }
+            FeatureSwitch::DEFAULT_ENABLED) {}
 
   FeatureSwitch action_box;
   FeatureSwitch easy_off_store_install;
-  FeatureSwitch extensions_in_action_box;
   FeatureSwitch script_badges;
   FeatureSwitch script_bubble;
   FeatureSwitch sideload_wipeout;
@@ -75,9 +65,6 @@ FeatureSwitch* FeatureSwitch::action_box() {
 }
 FeatureSwitch* FeatureSwitch::easy_off_store_install() {
   return &g_common_switches.Get().easy_off_store_install;
-}
-FeatureSwitch* FeatureSwitch::extensions_in_action_box() {
-  return &g_common_switches.Get().extensions_in_action_box;
 }
 FeatureSwitch* FeatureSwitch::script_badges() {
   return &g_common_switches.Get().script_badges;
