@@ -10,8 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "google_apis/gaia/oauth2_mint_token_consumer.h"
-#include "google_apis/gaia/oauth2_mint_token_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GoogleServiceAuthError;

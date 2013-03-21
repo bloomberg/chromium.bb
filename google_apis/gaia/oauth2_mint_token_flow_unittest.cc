@@ -141,7 +141,6 @@ class MockMintTokenFlow : public OAuth2MintTokenFlow {
   ~MockMintTokenFlow() {}
 
   MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher*());
-  MOCK_METHOD0(CreateMintTokenFetcher, OAuth2MintTokenFetcher*());
 };
 
 }  // namespace

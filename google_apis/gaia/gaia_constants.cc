@@ -29,10 +29,6 @@ const char kCloudPrintService[] = "cloudprint";
 const char kDeviceManagementServiceOAuth[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
 
-// OAuth scopes for chrome web store.
-const char kCWSNotificationScope[] =
-    "https://www.googleapis.com/auth/chromewebstore.notification";
-
 // Service for LSO endpoint of Google that exposes OAuth APIs.
 const char kLSOService[] = "lso";
 

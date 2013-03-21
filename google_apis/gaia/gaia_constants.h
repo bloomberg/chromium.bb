@@ -20,8 +20,6 @@ extern const char kSyncService[];
 extern const char kRemotingService[];
 extern const char kCloudPrintService[];
 extern const char kDeviceManagementServiceOAuth[];
-extern const char kCWSService[];
-extern const char kCWSNotificationScope[];
 extern const char kLSOService[];
 
 // Used with uber auth tokens when needed.
