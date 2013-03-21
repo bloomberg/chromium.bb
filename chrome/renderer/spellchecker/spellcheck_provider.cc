@@ -313,14 +313,17 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
     WebTextCheckingCompletion* completion) {
   size_t last_length = last_request_.length();
 
-  // Cancel this spellcheck request if the cached text is a substring of the
-  // given text and the given text is the middle of a possible word.
+  // Send back the |last_results_| if the |last_request_| is a substring of
+  // |text| and |text| does not have more words to check. Provider cannot cancel
+  // the spellcheck request here, because WebKit might have discarded the
+  // previous spellcheck results and erased the spelling markers in response to
+  // the user editing the text.
   string16 request(text);
   size_t text_length = request.length();
   if (text_length >= last_length &&
       !request.compare(0, last_length, last_request_)) {
     if (text_length == last_length || !HasWordCharacters(text, last_length)) {
-      completion->didCancelCheckingText();
+      completion->didFinishCheckingText(last_results_);
       return true;
     }
     int code = 0;
@@ -328,7 +331,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
     U16_PREV(text.data(), 0, length, code);
     UErrorCode error = U_ZERO_ERROR;
     if (uscript_getScript(code, &error) != USCRIPT_COMMON) {
-      completion->didCancelCheckingText();
+      completion->didFinishCheckingText(last_results_);
       return true;
     }
   }

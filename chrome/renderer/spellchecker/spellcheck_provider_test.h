@@ -31,7 +31,6 @@ class FakeTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
 
   size_t completion_count_;
   size_t cancellation_count_;
-  WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
 };
 
 // Faked test target, which stores sent message for verification.
@@ -50,6 +49,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
   int offset_;
   string16 text_;
   std::vector<IPC::Message*> messages_;
+  size_t spelling_service_call_count_;
 };
 
 // SpellCheckProvider test fixture.

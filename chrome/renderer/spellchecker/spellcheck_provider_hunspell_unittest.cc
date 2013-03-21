@@ -83,28 +83,31 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird   Fourth."), provider_.text_);
 }
 
-// Tests that the SpellCheckProvider class cancels incoming spellcheck requests
-// when it does not need to handle them.
+// Tests that the SpellCheckProvider class does not send requests to the
+// spelling service when not necessary.
 TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   FakeTextCheckingCompletion completion;
   provider_.RequestTextChecking(WebKit::WebString("hello."),
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.cancellation_count_, 0U);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
 
-  // Test that the SpellCheckProvider class cancels an incoming request with the
-  // text same as above.
+  // Test that the SpellCheckProvider does not send a request with the same text
+  // as above.
   provider_.RequestTextChecking(WebKit::WebString("hello."),
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 2U);
-  EXPECT_EQ(completion.cancellation_count_, 1U);
+  EXPECT_EQ(completion.cancellation_count_, 0U);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
 
   // Test that the SpellCheckProvider class cancels an incoming request that
   // does not include any words.
   provider_.RequestTextChecking(WebKit::WebString(":-)"),
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 3U);
-  EXPECT_EQ(completion.cancellation_count_, 2U);
+  EXPECT_EQ(completion.cancellation_count_, 1U);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
 
   // Test that the SpellCheckProvider class sends a request when it receives a
   // Russian word.
@@ -112,7 +115,30 @@ TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   provider_.RequestTextChecking(WebKit::WebString(WideToUTF16(kRussianWord)),
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 4U);
-  EXPECT_EQ(completion.cancellation_count_, 2U);
+  EXPECT_EQ(completion.cancellation_count_, 1U);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 2U);
+}
+
+// Tests that the SpellCheckProvider calls didFinishCheckingText() when
+// necessary.
+TEST_F(SpellCheckProviderTest, CompleteNecessaryRequests) {
+  FakeTextCheckingCompletion completion;
+
+  string16 text = ASCIIToUTF16("Icland is an icland ");
+  provider_.RequestTextChecking(WebKit::WebString(text), &completion);
+  EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
+                                                << text << "\"";
+
+  const int kSubstringLength = 18;
+  string16 substring = text.substr(0, kSubstringLength);
+  provider_.RequestTextChecking(WebKit::WebString(substring),
+                                &completion);
+  EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
+                                                << substring << "\"";
+
+  provider_.RequestTextChecking(WebKit::WebString(text), &completion);
+  EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
+                                                << text << "\"";
 }
 
 }  // namespace
