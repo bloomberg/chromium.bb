@@ -15,6 +15,37 @@ namespace {
 const int kMinFrameRate = 1;
 const int kMaxFrameRate = 30;
 
+struct Resolution {
+  int width;
+  int height;
+};
+
+const Resolution kWellSupportedResolutions[] = {
+   { 320, 240 },
+   { 640, 480 },
+   { 1280, 720 },
+};
+
+// TODO(ronghuawu): Replace this with CapabilityList::GetBestMatchedCapability.
+void GetBestMatchSupportedResolution(int* width, int* height) {
+  int min_diff = kint32max;
+  int matched_width = *width;
+  int matched_height = *height;
+  int desired_res_area = *width * *height;
+  for (size_t i = 0; i < arraysize(kWellSupportedResolutions); ++i) {
+    int area = kWellSupportedResolutions[i].width *
+               kWellSupportedResolutions[i].height;
+    int diff = std::abs(desired_res_area - area);
+    if (diff < min_diff) {
+      min_diff = diff;
+      matched_width = kWellSupportedResolutions[i].width;
+      matched_height = kWellSupportedResolutions[i].height;
+    }
+  }
+  *width = matched_width;
+  *height = matched_height;
+}
+
 }
 
 namespace media {
@@ -59,6 +90,12 @@ void VideoCaptureDeviceMac::Allocate(int width, int height, int frame_rate,
   if (state_ != kIdle) {
     return;
   }
+
+  // QTKit can scale captured frame to any size requested, which would lead to
+  // undesired aspect ratio change. Tries to open the camera with a natively
+  // supported format and let the client to crop/pad the captured frames.
+  GetBestMatchSupportedResolution(&width, &height);
+
   observer_ = observer;
   NSString* deviceId =
       [NSString stringWithUTF8String:device_name_.unique_id.c_str()];

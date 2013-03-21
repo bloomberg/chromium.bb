@@ -41,6 +41,10 @@ cricket::CaptureState RtcVideoCapturer::Start(
   delegate_->StartCapture(cap,
       base::Bind(&RtcVideoCapturer::OnFrameCaptured, base::Unretained(this)),
       base::Bind(&RtcVideoCapturer::OnStateChange, base::Unretained(this)));
+  // Update the desired aspect ratio so that later the video frame can be
+  // cropped to meet the requirement if the camera returns a different
+  // resolution than the |cap|.
+  UpdateAspectRatio(cap.width, cap.height);
   return cricket::CS_STARTING;
 }
 
