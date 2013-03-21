@@ -62,6 +62,9 @@ InstantService::InstantService(Profile* profile)
                    profile->GetResourceContext(), instant_io_context_));
   }
 
+/* TODO(dhollowa): Temporarily disabling to diagnose perf regression.
+   http://crbug.com/189163.
+
   // Set up the data sources that Instant uses on the NTP.
 #if defined(ENABLE_THEMES)
   content::URLDataSource::Add(profile, new ThemeSource(profile));
@@ -69,6 +72,7 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile, new ThumbnailSource(profile));
   content::URLDataSource::Add(profile, new FaviconSource(
       profile, FaviconSource::FAVICON));
+*/
   content::URLDataSource::Add(profile, new LocalOmniboxPopupSource());
 }
 
