@@ -416,6 +416,12 @@ void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
   // download manager as well.
   if (original_notifier_.get() && original_notifier_->GetManager())
     original_notifier_->GetManager()->RemoveAllDownloads();
+
+  // downloads.js always clears the display and relies on HandleClearAll to
+  // ScheduleSendCurrentDownloads(). If any downloads are removed, then
+  // OnDownloadRemoved() will call it, but if no downloads are actually removed,
+  // then HandleClearAll needs to call it manually.
+  ScheduleSendCurrentDownloads();
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(
