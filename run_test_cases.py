@@ -110,21 +110,25 @@ if subprocess.mswindows:
 
   def recv_impl(conn, maxsize, timeout):
     """Reads from a pipe without blocking."""
+    return recv_multi_impl([conn], maxsize, timeout)[1]
+
+  def recv_multi_impl(conns, maxsize, timeout):
     if timeout:
       start = time.time()
-    x = msvcrt.get_osfhandle(conn.fileno())
+    handles = [msvcrt.get_osfhandle(conn.fileno()) for conn in conns]
     try:
       while True:
-        avail = min(PeekNamedPipe(x), maxsize)
-        if avail:
-          return ReadFile(x, avail)[1]
+        for i, handle in enumerate(handles):
+          avail = min(PeekNamedPipe(handle), maxsize)
+          if avail:
+            return i, ReadFile(handle, avail)[1]
         if not timeout or (time.time() - start) >= timeout:
-          return
+          return None, None
         # Polling rocks.
         time.sleep(0.001)
     except OSError:
       # Not classy but fits our needs.
-      return None
+      return None, None
 
 else:
   import fcntl  # pylint: disable=F0401
@@ -145,6 +149,17 @@ else:
     finally:
       if not conn.closed:
         fcntl.fcntl(conn, fcntl.F_SETFL, flags)
+
+  def recv_multi_impl(conns, maxsize, timeout):
+    """Reads from the first available pipe without blocking."""
+    if timeout:
+      start = time.time()
+    r, _, _ = select.select(conns, [], [], timeout)
+    if not r:
+      return None, None
+    if timeout:
+      timeout = min(0, timeout - (time.time() - start))
+    return conns.index(r[0]), recv_impl(r[0], maxsize, timeout)
 
 
 class Failure(Exception):
@@ -184,7 +199,11 @@ class Popen(subprocess.Popen):
       self.end = time.time()
     return ret
 
-  def recv(self, maxsize=None, timeout=None):
+  def recv_any(self, maxsize=None, timeout=None):
+    """Reads from stderr and if empty, from stdout."""
+    return self._recv_any(maxsize, timeout)
+
+  def recv_out(self, maxsize=None, timeout=None):
     """Reads from stdout asynchronously."""
     return self._recv('stdout', maxsize, timeout)
 
@@ -207,6 +226,23 @@ class Popen(subprocess.Popen):
       data = self._translate_newlines(data)
     return data
 
+  def _recv_any(self, maxsize, timeout):
+    pipes = [
+      x for x in ((self.stderr, 'stderr'), (self.stdout, 'stdout')) if x[0]
+    ]
+    if not pipes:
+      return None, None
+    conns, names = zip(*pipes)
+    index, data = recv_multi_impl(conns, max(maxsize or 1024, 1), timeout or 0)
+    if index is None:
+      return index, data
+    if not data:
+      self._close(names[index])
+      return None, None
+    if self.universal_newlines:
+      data = self._translate_newlines(data)
+    return names[index], data
+
 
 def call_with_timeout(cmd, timeout, **kwargs):
   """Runs an executable with an optional timeout."""
@@ -219,7 +255,7 @@ def call_with_timeout(cmd, timeout, **kwargs):
     output = ''
     while proc.poll() is None:
       remaining = max(timeout - proc.duration(), 0.001)
-      data = proc.recv(timeout=remaining)
+      data = proc.recv_out(timeout=remaining)
       if data:
         output += data
       if proc.duration() >= timeout:
@@ -230,7 +266,7 @@ def call_with_timeout(cmd, timeout, **kwargs):
     proc.wait()
     # Try reading a last time.
     while True:
-      data = proc.recv()
+      data = proc.recv_out()
       if not data:
         break
       output += data

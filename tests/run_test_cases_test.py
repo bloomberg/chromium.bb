@@ -6,6 +6,7 @@
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -15,6 +16,7 @@ sys.path.insert(0, ROOT_DIR)
 
 import run_test_cases
 
+OUTPUT = os.path.join(ROOT_DIR, 'tests', 'run_test_cases', 'output.py')
 SLEEP = os.path.join(ROOT_DIR, 'tests', 'run_test_cases', 'sleep.py')
 
 
@@ -90,6 +92,91 @@ class RunTestCases(unittest.TestCase):
       self.assertTrue(duration > 0.0001, data)
       self.assertEqual(data['stdout'], stdout, data)
       self.assertEqual(data['returncode'], code, data)
+
+  def test_recv_any(self):
+    combinations = [
+      {
+        'cmd': ['out_print', 'err_print'],
+        'stdout': None,
+        'stderr': None,
+        'expected': {},
+      },
+      {
+        'cmd': ['out_print', 'err_print'],
+        'stdout': None,
+        'stderr': subprocess.STDOUT,
+        'expected': {},
+      },
+
+      {
+        'cmd': ['out_print'],
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.PIPE,
+        'expected': {'stdout': 'printing'},
+      },
+      {
+        'cmd': ['out_print'],
+        'stdout': subprocess.PIPE,
+        'stderr': None,
+        'expected': {'stdout': 'printing'},
+      },
+      {
+        'cmd': ['out_print'],
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+        'expected': {'stdout': 'printing'},
+      },
+
+      {
+        'cmd': ['err_print'],
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.PIPE,
+        'expected': {'stderr': 'printing'},
+      },
+      {
+        'cmd': ['err_print'],
+        'stdout': None,
+        'stderr': subprocess.PIPE,
+        'expected': {'stderr': 'printing'},
+      },
+      {
+        'cmd': ['err_print'],
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+        'expected': {'stdout': 'printing'},
+      },
+
+      {
+        'cmd': ['out_print', 'err_print'],
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.PIPE,
+        'expected': {'stderr': 'printing', 'stdout': 'printing'},
+      },
+      {
+        'cmd': ['out_print', 'err_print'],
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+        'expected': {'stdout': 'printingprinting'},
+      },
+    ]
+    for data in combinations:
+      cmd = [sys.executable, OUTPUT] + data['cmd']
+      p = run_test_cases.Popen(
+          cmd, stdout=data['stdout'], stderr=data['stderr'])
+      actual = {}
+      while p.poll() is None:
+        got = p.recv_any()
+        if got[0] is not None:
+          actual.setdefault(got[0], '')
+          actual[got[0]] += got[1]
+      while True:
+        got = p.recv_any()
+        if got[0] is None:
+          break
+        actual.append(got)
+      self.assertEqual(data['expected'], actual)
+      self.assertEqual((None, None), p.recv_any())
+      self.assertEquals(0, p.returncode)
 
   def test_gtest_filter(self):
     old = run_test_cases.run_test_cases
