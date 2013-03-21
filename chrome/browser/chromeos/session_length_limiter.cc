@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/session_length_limiter.h"
+#include "chrome/browser/chromeos/session_length_limiter.h"
 
 #include <algorithm>
 
@@ -34,7 +34,7 @@ class SessionLengthLimiterDelegateImpl : public SessionLengthLimiter::Delegate {
   SessionLengthLimiterDelegateImpl();
   virtual ~SessionLengthLimiterDelegateImpl();
 
-  virtual const base::Time GetCurrentTime() const OVERRIDE;
+  virtual const base::TimeTicks GetCurrentTime() const OVERRIDE;
   virtual void StopSession() OVERRIDE;
 
  private:
@@ -47,8 +47,8 @@ SessionLengthLimiterDelegateImpl::SessionLengthLimiterDelegateImpl() {
 SessionLengthLimiterDelegateImpl::~SessionLengthLimiterDelegateImpl() {
 }
 
-const base::Time SessionLengthLimiterDelegateImpl::GetCurrentTime() const {
-  return base::Time::Now();
+const base::TimeTicks SessionLengthLimiterDelegateImpl::GetCurrentTime() const {
+  return base::TimeTicks::Now();
 }
 
 void SessionLengthLimiterDelegateImpl::StopSession() {
@@ -74,18 +74,19 @@ SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,
   // If this is a user login, set the session start time in local state to the
   // current time. If this a browser restart after a crash, set the session
   // start time only if its current value appears corrupted (value unset, value
-  // lying in the future, zero value).
+  // lying in the future).
   PrefService* local_state = g_browser_process->local_state();
   int64 session_start_time = local_state->GetInt64(prefs::kSessionStartTime);
-  int64 now = delegate_->GetCurrentTime().ToInternalValue();
+  const int64 now = delegate_->GetCurrentTime().ToInternalValue();
   if (!browser_restarted ||
-      session_start_time <= 0 || session_start_time > now) {
+      !local_state->HasPrefPath(prefs::kSessionStartTime) ||
+      session_start_time > now) {
     local_state->SetInt64(prefs::kSessionStartTime, now);
     // Ensure that the session start time is persisted to local state.
     local_state->CommitPendingWrite();
     session_start_time = now;
   }
-  session_start_time_ = base::Time::FromInternalValue(session_start_time);
+  session_start_time_ = base::TimeTicks::FromInternalValue(session_start_time);
 
   // Listen for changes to the session length limit.
   pref_change_registrar_.Init(local_state);

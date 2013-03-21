@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/session_length_limiter.h"
+#include "chrome/browser/chromeos/session_length_limiter.h"
 
 #include <queue>
 #include <utility>
@@ -34,7 +34,7 @@ namespace {
 
 class MockSessionLengthLimiterDelegate : public SessionLengthLimiter::Delegate {
  public:
-  MOCK_CONST_METHOD0(GetCurrentTime, const base::Time(void));
+  MOCK_CONST_METHOD0(GetCurrentTime, const base::TimeTicks(void));
   MOCK_METHOD0(StopSession, void(void));
 };
 
@@ -54,7 +54,7 @@ class MockTimeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
       const base::Closure& task,
       base::TimeDelta delay) OVERRIDE;
 
-  const base::Time& GetCurrentTime() const;
+  const base::TimeTicks& GetCurrentTime() const;
 
   void FastForwardBy(int64 milliseconds);
   void FastForwardUntilNoTasksRemain();
@@ -64,15 +64,15 @@ class MockTimeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
   class TemporalOrder {
    public:
     bool operator()(
-        const std::pair<base::Time, base::Closure>& first_task,
-        const std::pair<base::Time, base::Closure>& second_task) const;
+        const std::pair<base::TimeTicks, base::Closure>& first_task,
+        const std::pair<base::TimeTicks, base::Closure>& second_task) const;
   };
 
   virtual ~MockTimeSingleThreadTaskRunner();
 
-  base::Time now_;
-  std::priority_queue<std::pair<base::Time, base::Closure>,
-                      std::vector<std::pair<base::Time, base::Closure> >,
+  base::TimeTicks now_;
+  std::priority_queue<std::pair<base::TimeTicks, base::Closure>,
+                      std::vector<std::pair<base::TimeTicks, base::Closure> >,
                       TemporalOrder> tasks_;
 };
 
@@ -97,18 +97,15 @@ class SessionLengthLimiterTest : public testing::Test {
 
   TestingPrefServiceSimple local_state_;
   scoped_refptr<MockTimeSingleThreadTaskRunner> runner_;
-  base::Time session_start_time_;
-  base::Time session_end_time_;
+  base::TimeTicks session_start_time_;
+  base::TimeTicks session_end_time_;
 
   MockSessionLengthLimiterDelegate* delegate_;  // Owned by
                                                 // session_length_limiter_.
   scoped_ptr<SessionLengthLimiter> session_length_limiter_;
 };
 
-MockTimeSingleThreadTaskRunner::MockTimeSingleThreadTaskRunner()
-    // Initialize the mock clock to a fixed value, ensuring that timezone
-    // differences or DST changes do not affect the test.
-    : now_(base::Time::UnixEpoch() + base::TimeDelta::FromDays(40 * 365)) {
+MockTimeSingleThreadTaskRunner::MockTimeSingleThreadTaskRunner() {
 }
 
 bool MockTimeSingleThreadTaskRunner::RunsTasksOnCurrentThread() const {
@@ -119,7 +116,7 @@ bool MockTimeSingleThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  tasks_.push(std::pair<base::Time, base::Closure>(now_ + delay, task));
+  tasks_.push(std::pair<base::TimeTicks, base::Closure>(now_ + delay, task));
   return true;
 }
 
@@ -131,12 +128,13 @@ bool MockTimeSingleThreadTaskRunner::PostNonNestableDelayedTask(
   return false;
 }
 
-const base::Time& MockTimeSingleThreadTaskRunner::GetCurrentTime() const {
+const base::TimeTicks& MockTimeSingleThreadTaskRunner::GetCurrentTime() const {
   return now_;
 }
 
 void MockTimeSingleThreadTaskRunner::FastForwardBy(int64 delta) {
-  const base::Time latest = now_ + base::TimeDelta::FromMilliseconds(delta);
+  const base::TimeTicks latest =
+      now_ + base::TimeDelta::FromMilliseconds(delta);
   while (!tasks_.empty() && tasks_.top().first <= latest) {
     now_ = tasks_.top().first;
     base::Closure task = tasks_.top().second;
@@ -156,8 +154,8 @@ void MockTimeSingleThreadTaskRunner::FastForwardUntilNoTasksRemain() {
 }
 
 bool MockTimeSingleThreadTaskRunner::TemporalOrder::operator()(
-    const std::pair<base::Time, base::Closure>& first_task,
-    const std::pair<base::Time, base::Closure>& second_task) const {
+    const std::pair<base::TimeTicks, base::Closure>& first_task,
+    const std::pair<base::TimeTicks, base::Closure>& second_task) const {
   return first_task.first >= second_task.first;
 }
 
@@ -192,7 +190,7 @@ void SessionLengthLimiterTest::SetSessionStartTimePref(
 }
 
 void SessionLengthLimiterTest::VerifySessionStartTimePref() {
-  base::Time session_start_time(base::Time::FromInternalValue(
+  base::TimeTicks session_start_time(base::TimeTicks::FromInternalValue(
       local_state_.GetInt64(prefs::kSessionStartTime)));
   EXPECT_EQ(session_start_time_, session_start_time);
 }
@@ -233,14 +231,6 @@ TEST_F(SessionLengthLimiterTest, StartWithSessionStartTimeUnset) {
 }
 
 // Verifies that the session start time in local state is updated during login
-// if an invalid session start time has been stored before.
-TEST_F(SessionLengthLimiterTest, StartWithSessionStartTimeInvalid) {
-  SetSessionStartTimePref(0);
-  CreateSessionLengthLimiter(false);
-  VerifySessionStartTimePref();
-}
-
-// Verifies that the session start time in local state is updated during login
 // if a session start time lying in the future has been stored before.
 TEST_F(SessionLengthLimiterTest, StartWithSessionStartTimeFuture) {
   SetSessionStartTimePref(
@@ -261,14 +251,6 @@ TEST_F(SessionLengthLimiterTest, StartWithSessionStartTimeValid) {
 // Verifies that the session start time in local state is updated during restart
 // after a crash if no session start time has been stored before.
 TEST_F(SessionLengthLimiterTest, RestartWithSessionStartTimeUnset) {
-  CreateSessionLengthLimiter(true);
-  VerifySessionStartTimePref();
-}
-
-// Verifies that the session start time in local state is updated during restart
-// after a crash if an invalid session start time has been stored before.
-TEST_F(SessionLengthLimiterTest, RestartWithSessionStartTimeInvalid) {
-  SetSessionStartTimePref(0);
   CreateSessionLengthLimiter(true);
   VerifySessionStartTimePref();
 }

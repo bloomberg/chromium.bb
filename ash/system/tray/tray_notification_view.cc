@@ -14,12 +14,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/grid_layout.h"
 
-namespace {
-
-const int kNotificationButtonWidth = 32;
-
-}  // namespace
-
 namespace ash {
 namespace internal {
 

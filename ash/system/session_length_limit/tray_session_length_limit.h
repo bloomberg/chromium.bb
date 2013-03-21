@@ -9,11 +9,15 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time.h"
+#include "base/timer.h"
 
 namespace ash {
 namespace internal {
 
 namespace tray {
+class RemainingSessionTimeNotificationView;
 class RemainingSessionTimeTrayView;
 }
 
@@ -21,23 +25,43 @@ class RemainingSessionTimeTrayView;
 class TraySessionLengthLimit : public SystemTrayItem,
                                public SessionLengthLimitObserver {
  public:
+  enum LimitState {
+    LIMIT_NONE,
+    LIMIT_SET,
+    LIMIT_EXPIRING_SOON
+  };
+
   explicit TraySessionLengthLimit(SystemTray* system_tray);
   virtual ~TraySessionLengthLimit();
 
   // SystemTrayItem:
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateNotificationView(
+      user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
+  virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
 
   // SessionLengthLimitObserver:
-  virtual void OnSessionStartTimeChanged(
-      const base::Time& start_time) OVERRIDE;
-  virtual void OnSessionLengthLimitChanged(
-      const base::TimeDelta& limit) OVERRIDE;
+  virtual void OnSessionStartTimeChanged() OVERRIDE;
+  virtual void OnSessionLengthLimitChanged() OVERRIDE;
+
+  LimitState GetLimitState() const;
+  base::TimeDelta GetRemainingSessionTime() const;
 
  private:
+  void ShowAndSpeakNotification();
+  void Update();
+
   tray::RemainingSessionTimeTrayView* tray_view_;
+  tray::RemainingSessionTimeNotificationView* notification_view_;
+
+  LimitState limit_state_;
+  base::TimeTicks session_start_time_;
+  base::TimeDelta limit_;
+  base::TimeDelta remaining_session_time_;
+  scoped_ptr<base::RepeatingTimer<TraySessionLengthLimit> > timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimit);
 };

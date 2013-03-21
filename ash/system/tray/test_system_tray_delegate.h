@@ -101,9 +101,14 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE;
   virtual void SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate> delegate) OVERRIDE;
-  virtual base::Time GetSessionStartTime() OVERRIDE;
-  virtual base::TimeDelta GetSessionLengthLimit() OVERRIDE;
+  virtual bool GetSessionStartTime(
+      base::TimeTicks* session_start_time) OVERRIDE;
+  virtual bool GetSessionLengthLimit(
+      base::TimeDelta* session_length_limit) OVERRIDE;
   virtual int GetSystemTrayMenuWidth() OVERRIDE;
+  virtual string16 FormatTimeDuration(
+      const base::TimeDelta& delta) const OVERRIDE;
+  virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE;
 
  private:
   bool wifi_enabled_;

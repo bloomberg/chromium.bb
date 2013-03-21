@@ -11,6 +11,8 @@
 #include "ash/volume_control_delegate.h"
 #include "base/utf_string_conversions.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
+#include "base/time.h"
 
 namespace ash {
 namespace test {
@@ -327,12 +329,14 @@ void TestSystemTrayDelegate::SetVolumeControlDelegate(
   volume_control_delegate_ = delegate.Pass();
 }
 
-base::Time TestSystemTrayDelegate::GetSessionStartTime() {
-  return base::Time();
+bool TestSystemTrayDelegate::GetSessionStartTime(
+    base::TimeTicks* session_start_time) {
+  return false;
 }
 
-base::TimeDelta TestSystemTrayDelegate::GetSessionLengthLimit() {
-  return base::TimeDelta();
+bool TestSystemTrayDelegate::GetSessionLengthLimit(
+     base::TimeDelta* session_length_limit) {
+  return false;
 }
 
 int TestSystemTrayDelegate::GetSystemTrayMenuWidth() {
@@ -340,6 +344,13 @@ int TestSystemTrayDelegate::GetSystemTrayMenuWidth() {
   return 300;
 }
 
+string16 TestSystemTrayDelegate::FormatTimeDuration(
+    const base::TimeDelta& delta) const {
+  return string16();
+}
+
+void TestSystemTrayDelegate::MaybeSpeak(const std::string& utterance) const {
+}
 
 }  // namespace test
 }  // namespace ash

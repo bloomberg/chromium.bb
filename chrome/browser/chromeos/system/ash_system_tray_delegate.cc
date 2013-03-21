@@ -81,6 +81,7 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -230,6 +231,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         clock_type_(base::k24HourClock),
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),
+        have_session_start_time_(false),
+        have_session_length_limit_(false),
         data_promo_notification_(new DataPromoNotification()),
         cellular_activating_(false),
         cellular_out_of_credits_(false),
@@ -904,17 +907,30 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     volume_control_delegate_.swap(delegate);
   }
 
-  virtual base::Time GetSessionStartTime() OVERRIDE {
-    return session_start_time_;
+  virtual bool GetSessionStartTime(
+      base::TimeTicks* session_start_time) OVERRIDE {
+    *session_start_time = session_start_time_;
+    return have_session_start_time_;
   }
 
-  virtual base::TimeDelta GetSessionLengthLimit() OVERRIDE {
-    return session_length_limit_;
+  virtual bool GetSessionLengthLimit(
+      base::TimeDelta* session_length_limit) OVERRIDE {
+    *session_length_limit = session_length_limit_;
+    return have_session_length_limit_;
   }
 
   virtual int GetSystemTrayMenuWidth() OVERRIDE {
     return l10n_util::GetLocalizedContentsWidthInPixels(
         IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
+  }
+
+  virtual string16 FormatTimeDuration(
+      const base::TimeDelta& delta) const OVERRIDE {
+    return TimeFormat::TimeDurationLong(delta);
+  }
+
+  virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE {
+    accessibility::MaybeSpeak(utterance);
   }
 
  private:
@@ -984,26 +1000,31 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void UpdateSessionStartTime() {
-    session_start_time_ = base::Time::FromInternalValue(
-        local_state_registrar_.prefs()->GetInt64(prefs::kSessionStartTime));
-    GetSystemTrayNotifier()->NotifySessionStartTimeChanged(session_start_time_);
+    const PrefService* local_state = local_state_registrar_.prefs();
+    if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
+      have_session_start_time_ = true;
+      session_start_time_ = base::TimeTicks::FromInternalValue(
+          local_state->GetInt64(prefs::kSessionStartTime));
+    } else {
+      have_session_start_time_ = false;
+      session_start_time_ = base::TimeTicks();
+    }
+    GetSystemTrayNotifier()->NotifySessionStartTimeChanged();
   }
 
   void UpdateSessionLengthLimit() {
-    const PrefService::Preference* session_length_limit_pref =
-        local_state_registrar_.prefs()->
-            FindPreference(prefs::kSessionLengthLimit);
-    int limit;
-    if (session_length_limit_pref->IsDefaultValue() ||
-        !session_length_limit_pref->GetValue()->GetAsInteger(&limit)) {
-      session_length_limit_ = base::TimeDelta();
-    } else {
+    const PrefService* local_state = local_state_registrar_.prefs();
+    if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {
+      have_session_length_limit_ = true;
       session_length_limit_ = base::TimeDelta::FromMilliseconds(
-          std::min(std::max(limit, kSessionLengthLimitMinMs),
-              kSessionLengthLimitMaxMs));
+          std::min(std::max(local_state->GetInteger(prefs::kSessionLengthLimit),
+                            kSessionLengthLimitMinMs),
+                   kSessionLengthLimitMaxMs));
+    } else {
+      have_session_length_limit_ = false;
+      session_length_limit_ = base::TimeDelta();
     }
-    GetSystemTrayNotifier()->NotifySessionLengthLimitChanged(
-        session_length_limit_);
+    GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
   }
 
   void NotifyRefreshNetwork() {
@@ -1482,7 +1503,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
   bool screen_locked_;
-  base::Time session_start_time_;
+  bool have_session_start_time_;
+  base::TimeTicks session_start_time_;
+  bool have_session_length_limit_;
   base::TimeDelta session_length_limit_;
   std::string enterprise_domain_;
 

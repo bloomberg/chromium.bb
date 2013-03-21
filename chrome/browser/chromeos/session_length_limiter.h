@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POWER_SESSION_LENGTH_LIMITER_H_
-#define CHROME_BROWSER_CHROMEOS_POWER_SESSION_LENGTH_LIMITER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SESSION_LENGTH_LIMITER_H_
+#define CHROME_BROWSER_CHROMEOS_SESSION_LENGTH_LIMITER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,7 +25,7 @@ class SessionLengthLimiter {
    public:
     virtual ~Delegate();
 
-    virtual const base::Time GetCurrentTime() const = 0;
+    virtual const base::TimeTicks GetCurrentTime() const = 0;
     virtual void StopSession() = 0;
   };
 
@@ -44,11 +44,11 @@ class SessionLengthLimiter {
   PrefChangeRegistrar pref_change_registrar_;
 
   scoped_ptr<base::OneShotTimer<SessionLengthLimiter::Delegate> > timer_;
-  base::Time session_start_time_;
+  base::TimeTicks session_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionLengthLimiter);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_POWER_SESSION_LENGTH_LIMITER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SESSION_LENGTH_LIMITER_H_

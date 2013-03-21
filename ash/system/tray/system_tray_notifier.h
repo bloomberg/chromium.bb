@@ -27,7 +27,6 @@
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "base/observer_list.h"
-#include "base/time.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/network/network_observer.h"
@@ -116,8 +115,8 @@ public:
                            const std::string& from_locale,
                            const std::string& to_locale);
   void NotifyPowerStatusChanged(const PowerSupplyStatus& power_status);
-  void NotifySessionStartTimeChanged(const base::Time& session_start_time);
-  void NotifySessionLengthLimitChanged(const base::TimeDelta& limit);
+  void NotifySessionStartTimeChanged();
+  void NotifySessionLengthLimitChanged();
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
   void NotifyUserUpdate();
 #if defined(OS_CHROMEOS)

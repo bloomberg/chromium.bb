@@ -15,8 +15,12 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "base/time.h"
 #include "ui/gfx/image/image_skia.h"
+
+namespace base {
+class TimeDelta;
+class TimeTicks;
+}
 
 namespace ash {
 
@@ -326,16 +330,22 @@ class SystemTrayDelegate {
   virtual void SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate> delegate) = 0;
 
-  // Returns the session start time, or a zero base::Time if no session start
-  // time is set.
-  virtual base::Time GetSessionStartTime() = 0;
+  // Retrieves the session start time. Returns |false| if the time is not set.
+  virtual bool GetSessionStartTime(base::TimeTicks* session_start_time) = 0;
 
-  // Returns the session length limit, or a zero base::TimeDelta if no session
-  // length limit is set.
-  virtual base::TimeDelta GetSessionLengthLimit() = 0;
+  // Retrieves the session length limit. Returns |false| if no limit is set.
+  virtual bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) = 0;
 
   // Get the system tray menu size in pixels (dependent on the language).
   virtual int GetSystemTrayMenuWidth() = 0;
+
+  // Returns the duration formatted as a localized string.
+  // TODO(stevenjb): Move TimeFormat from src/chrome to src/ui so that it can be
+  // accessed without going through the delegate. crbug.com/222697
+  virtual string16 FormatTimeDuration(const base::TimeDelta& delta) const = 0;
+
+  // Speaks the given text if spoken feedback is enabled.
+  virtual void MaybeSpeak(const std::string& utterance) const = 0;
 
   // Creates a dummy delegate for testing.
   static SystemTrayDelegate* CreateDummyDelegate();

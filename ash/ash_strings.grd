@@ -425,6 +425,9 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME" desc="The time remaining until the end of the session. Shown if the session length is limited.">
         <ph name="hours">$1<ex>01</ex></ph>:<ph name="minutes">$2<ex>35</ex></ph>:<ph name="seconds">$3<ex>12</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME_NOTIFICATION" desc="Notification shown to inform the user that the session length is limited.">
+        This session will end in <ph name="session_time_remaining">$1<ex>15 minutes</ex></ph>. You will be automatically signed out.
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">
         Previous menu

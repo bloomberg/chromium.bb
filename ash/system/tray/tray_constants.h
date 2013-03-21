@@ -57,6 +57,7 @@ extern const SkColor kHeaderTextColorHover;
 extern const int kTrayPopupMinWidth;
 extern const int kTrayPopupMaxWidth;
 extern const int kNotificationIconWidth;
+extern const int kNotificationButtonWidth;
 extern const int kTrayNotificationContentsWidth;
 
 extern const int kTraySpacing;

@@ -57,10 +57,10 @@ const SkColor kHeaderTextColorHover = SkColorSetARGB(0xd3, 0, 0, 0);
 const int kTrayPopupMinWidth = 300;
 const int kTrayPopupMaxWidth = 500;
 const int kNotificationIconWidth = 40;
-// TODO(stevenjb): This calculation is wrong (http://crbug.com/163402).
+const int kNotificationButtonWidth = 32;
 const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
-    (kNotificationIconWidth + kTrayPopupPaddingHorizontal) * 2;
-
+    (kNotificationIconWidth + kNotificationButtonWidth +
+     (kTrayPopupPaddingHorizontal / 2) * 3);
 const int kTraySpacing = 8;
 
 }  // namespace ash
