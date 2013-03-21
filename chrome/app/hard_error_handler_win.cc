@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "chrome/common/env_vars.h"
 
 namespace {
 const DWORD kExceptionModuleNotFound = VcppException(ERROR_SEVERITY_ERROR,
@@ -35,6 +36,10 @@ DWORD FacilityFromException(DWORD exception_code) {
 // before attempting to use this function.
 void RaiseHardErrorMsg(long nt_status, const std::string& p1,
                                        const std::string& p2) {
+  // If headless just exit silently.
+  if (::GetEnvironmentVariableA(env_vars::kHeadless, NULL, 0))
+    return;
+
   HMODULE ntdll = ::GetModuleHandleA("NTDLL.DLL");
   wchar_t* msg_template = NULL;
   size_t count = ::FormatMessage(
