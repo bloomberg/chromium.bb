@@ -364,7 +364,7 @@ MessageListView::MessageListView(views::View* container)
     set_border(views::Border::CreateEmptyBorder(
         kMarginBetweenItems - shadow_insets.top(), /* top */
         kMarginBetweenItems - shadow_insets.left(), /* left */
-        0,  /* bottom */
+        kMarginBetweenItems - shadow_insets.bottom(),  /* bottom */
         kMarginBetweenItems - shadow_insets.right() /* right */ ));
   } else {
     views::BoxLayout* layout =
