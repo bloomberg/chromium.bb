@@ -44,6 +44,7 @@ class WebMediaPlayerProxyImplAndroid
   virtual void DestroyPlayer(int player_id) OVERRIDE;
   virtual void EnterFullscreen(int player_id) OVERRIDE;
   virtual void ExitFullscreen(int player_id) OVERRIDE;
+  virtual void RequestExternalSurface(int player_id) OVERRIDE;
 
  private:
   webkit_media::WebMediaPlayerImplAndroid* GetWebMediaPlayer(int player_id);

@@ -95,6 +95,7 @@ class WebMediaPlayerInProcessAndroid : public WebMediaPlayerAndroid {
   virtual float GetCurrentTimeInternal() const OVERRIDE;
   virtual void ReleaseResourcesInternal() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+  virtual void RequestExternalSurface() OVERRIDE;
 
   WebKit::WebFrame* const frame_;
 

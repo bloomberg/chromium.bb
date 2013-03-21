@@ -170,4 +170,7 @@ public class ContentViewClient {
             Log.w(TAG, "No application can handle " + intentUrl);
         }
     }
+
+    public void onExternalVideoSurfaceRequested(int playerId) {
+    }
 }

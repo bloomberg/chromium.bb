@@ -129,6 +129,11 @@ void WebMediaPlayerImplAndroid::Destroy() {
   proxy_ = NULL;
 }
 
+void WebMediaPlayerImplAndroid::RequestExternalSurface() {
+  if (proxy_)
+    proxy_->RequestExternalSurface(player_id());
+}
+
 void WebMediaPlayerImplAndroid::SetVideoSurface(jobject j_surface) {}
 
 }  // namespace webkit_media

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/android/media_resource_getter_impl.h"
+#include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
@@ -24,7 +25,8 @@ MediaPlayerManagerAndroid::MediaPlayerManagerAndroid(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
       ALLOW_THIS_IN_INITIALIZER_LIST(video_view_(this)),
-      fullscreen_player_id_(-1) {
+      fullscreen_player_id_(-1),
+      web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
 }
 
 MediaPlayerManagerAndroid::~MediaPlayerManagerAndroid() {}
@@ -43,6 +45,8 @@ bool MediaPlayerManagerAndroid::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_RequestExternalSurface,
+                        OnRequestExternalSurface)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -196,6 +200,28 @@ void MediaPlayerManagerAndroid::DestroyAllMediaPlayers() {
   if (fullscreen_player_id_ != -1) {
     video_view_.DestroyContentVideoView();
     fullscreen_player_id_ = -1;
+  }
+}
+
+void MediaPlayerManagerAndroid::AttachExternalVideoSurface(int player_id,
+                                                           jobject surface) {
+  MediaPlayerBridge* player = GetPlayer(player_id);
+  if (player)
+    player->SetVideoSurface(surface);
+}
+
+void MediaPlayerManagerAndroid::DetachExternalVideoSurface(int player_id) {
+  MediaPlayerBridge* player = GetPlayer(player_id);
+  if (player)
+    player->SetVideoSurface(NULL);
+}
+
+void MediaPlayerManagerAndroid::OnRequestExternalSurface(int player_id) {
+  if (web_contents_) {
+    WebContentsViewAndroid* view =
+        static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+    if (view)
+      view->RequestExternalVideoSurface(player_id);
   }
 }
 

@@ -16,6 +16,7 @@
 #include "cc/layers/layer.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
+#include "content/browser/android/media_player_manager_android.h"
 #include "content/browser/android/sync_input_event_filter.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -586,6 +587,17 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                obj.obj(),
                                                rect_object.obj(),
                                                java_bitmap.obj());
+}
+
+void ContentViewCoreImpl::RequestExternalVideoSurface(int player_id) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_ContentViewCore_requestExternalVideoSurface(
+      env, obj.obj(), static_cast<jint>(player_id));
 }
 
 gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
@@ -1175,6 +1187,29 @@ jboolean ContentViewCoreImpl::ConsumePendingRendererFrame(JNIEnv* env,
   bool had_pending_frame = renderer_frame_pending_;
   renderer_frame_pending_ = false;
   return had_pending_frame;
+}
+
+void ContentViewCoreImpl::AttachExternalVideoSurface(JNIEnv* env,
+                                                     jobject obj,
+                                                     jint player_id,
+                                                     jobject jsurface) {
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  if (rvhi && rvhi->media_player_manager()) {
+    rvhi->media_player_manager()->AttachExternalVideoSurface(
+        static_cast<int>(player_id), jsurface);
+  }
+}
+
+void ContentViewCoreImpl::DetachExternalVideoSurface(JNIEnv* env,
+                                                     jobject obj,
+                                                     jint player_id) {
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  if (rvhi && rvhi->media_player_manager()) {
+    rvhi->media_player_manager()->DetachExternalVideoSurface(
+        static_cast<int>(player_id));
+  }
 }
 
 jboolean ContentViewCoreImpl::IsRenderWidgetHostViewReady(JNIEnv* env,

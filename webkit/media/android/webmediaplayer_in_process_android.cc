@@ -186,4 +186,8 @@ void WebMediaPlayerInProcessAndroid::OnTimeUpdate(
 
 void WebMediaPlayerInProcessAndroid::Destroy() {}
 
+void WebMediaPlayerInProcessAndroid::RequestExternalSurface() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace webkit_media

@@ -19,6 +19,8 @@
 
 namespace content {
 
+class WebContents;
+
 // This class manages all the MediaPlayerBridge objects. It receives
 // control operations from the the render process, and forwards
 // them to corresponding MediaPlayerBridge object. Callbacks from
@@ -62,6 +64,9 @@ class MediaPlayerManagerAndroid
   // Release all the players managed by this object.
   void DestroyAllMediaPlayers();
 
+  void AttachExternalVideoSurface(int player_id, jobject surface);
+  void DetachExternalVideoSurface(int player_id);
+
   media::MediaPlayerBridge* GetFullscreenPlayer();
   media::MediaPlayerBridge* GetPlayer(int player_id);
 
@@ -76,6 +81,7 @@ class MediaPlayerManagerAndroid
   void OnPause(int player_id);
   void OnReleaseResources(int player_id);
   void OnDestroyPlayer(int player_id);
+  void OnRequestExternalSurface(int player_id);
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerBridge> players_;
@@ -85,6 +91,8 @@ class MediaPlayerManagerAndroid
 
   // Player ID of the fullscreen media player.
   int fullscreen_player_id_;
+
+  WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerManagerAndroid);
 };

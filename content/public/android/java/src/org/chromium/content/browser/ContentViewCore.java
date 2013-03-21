@@ -2558,6 +2558,23 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         return new Rect(x, y, right, bottom);
     }
 
+    public void attachExternalVideoSurface(int playerId, Surface surface) {
+        if (mNativeContentViewCore != 0) {
+            nativeAttachExternalVideoSurface(mNativeContentViewCore, playerId, surface);
+        }
+    }
+
+    public void detachExternalVideoSurface(int playerId) {
+        if (mNativeContentViewCore != 0) {
+            nativeDetachExternalVideoSurface(mNativeContentViewCore, playerId);
+        }
+    }
+
+    @CalledByNative
+    private void requestExternalVideoSurface(int playerId) {
+        getContentViewClient().onExternalVideoSurfaceRequested(playerId);
+    }
+
     private native int nativeInit(boolean hardwareAccelerated, boolean inputEventsDeliveredAtVSync,
             int webContentsPtr, int windowAndroidPtr);
 
@@ -2721,4 +2738,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             int nativeContentViewCoreImpl, boolean enable);
 
     private native void nativeShowImeIfNeeded(int nativeContentViewCoreImpl);
+
+    private native void nativeAttachExternalVideoSurface(
+            int nativeContentViewCoreImpl, int playerId, Surface surface);
+
+    private native void nativeDetachExternalVideoSurface(
+            int nativeContentViewCoreImpl, int playerId);
 }

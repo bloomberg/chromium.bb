@@ -181,6 +181,9 @@ class WebMediaPlayerAndroid
 
   WebMediaPlayerManagerAndroid* manager() const { return manager_; }
 
+  // Request external surface for out-of-band composition.
+  virtual void RequestExternalSurface() = 0;
+
  private:
   void ReallocateVideoFrame();
 
@@ -244,6 +247,9 @@ class WebMediaPlayerAndroid
   // Object for calling back the compositor thread to repaint the video when a
   // frame available. It should be initialized on the compositor thread.
   scoped_ptr<StreamTextureProxy> stream_texture_proxy_;
+
+  // Whether media player needs external surface.
+  bool needs_external_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

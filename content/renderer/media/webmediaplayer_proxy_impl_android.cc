@@ -177,6 +177,10 @@ void WebMediaPlayerProxyImplAndroid::ExitFullscreen(int player_id) {
   Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
 }
 
+void WebMediaPlayerProxyImplAndroid::RequestExternalSurface(int player_id) {
+  Send(new MediaPlayerHostMsg_RequestExternalSurface(routing_id(), player_id));
+}
+
 webkit_media::WebMediaPlayerImplAndroid*
     WebMediaPlayerProxyImplAndroid::GetWebMediaPlayer(int player_id) {
   return static_cast<webkit_media::WebMediaPlayerImplAndroid*>(

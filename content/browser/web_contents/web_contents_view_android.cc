@@ -54,6 +54,11 @@ void WebContentsViewAndroid::SetContentViewCore(
   }
 }
 
+void WebContentsViewAndroid::RequestExternalVideoSurface(int player_id) {
+  if (content_view_core_)
+    content_view_core_->RequestExternalVideoSurface(player_id);
+}
+
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
   return content_view_core_;
 }

@@ -44,6 +44,9 @@ class WebMediaPlayerProxyAndroid {
 
   // Request the player to exit fullscreen.
   virtual void ExitFullscreen(int player_id) = 0;
+
+  // Request an external surface for out-of-band compositing.
+  virtual void RequestExternalSurface(int player_id) = 0;
 };
 
 }  // namespace webkit_media

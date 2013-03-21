@@ -211,6 +211,12 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   jboolean ConsumePendingRendererFrame(JNIEnv* env, jobject obj);
 
+  void AttachExternalVideoSurface(JNIEnv* env,
+                                  jobject obj,
+                                  jint player_id,
+                                  jobject jsurface);
+  void DetachExternalVideoSurface(JNIEnv* env, jobject obj, jint player_id);
+
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
@@ -257,6 +263,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // |zoomed_bitmap| --> magnified image of potential touch targets
   void ShowDisambiguationPopup(
       const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
+
+  void RequestExternalVideoSurface(int player_id);
 
   // --------------------------------------------------------------------------
   // Methods called from native code

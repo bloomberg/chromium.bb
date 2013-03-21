@@ -4,6 +4,7 @@
 
 #include "webkit/media/android/webmediaplayer_android.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "media/base/android/media_player_bridge.h"
@@ -12,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "webkit/media/android/stream_texture_factory_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
+#include "webkit/media/media_switches.h"
 #include "webkit/media/webmediaplayer_util.h"
 #include "webkit/media/webvideoframe_impl.h"
 
@@ -44,12 +46,18 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       is_playing_(false),
       needs_establish_peer_(true),
       has_size_info_(false),
-      stream_texture_factory_(factory) {
+      stream_texture_factory_(factory),
+      needs_external_surface_(false) {
   main_loop_->AddDestructionObserver(this);
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
 
-  if (stream_texture_factory_.get()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseExternalVideoSurface)) {
+    needs_external_surface_ = true;
+    SetNeedsEstablishPeer(false);
+    ReallocateVideoFrame();
+  } else if (stream_texture_factory_.get()) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
     stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
     ReallocateVideoFrame();
@@ -87,6 +95,10 @@ void WebMediaPlayerAndroid::cancelLoad() {
 }
 
 void WebMediaPlayerAndroid::play() {
+  if (hasVideo() && needs_external_surface_) {
+    DCHECK(!needs_establish_peer_);
+    RequestExternalSurface();
+  }
   if (hasVideo() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
 
@@ -401,7 +413,17 @@ void WebMediaPlayerAndroid::Detach() {
 }
 
 void WebMediaPlayerAndroid::ReallocateVideoFrame() {
-  if (texture_id_) {
+  if (needs_external_surface_) {
+    // VideoFrame::CreateHoleFrame is only defined under GOOGLE_TV.
+#if defined(GOOGLE_TV)
+    if (!natural_size_.isEmpty()) {
+      web_video_frame_.reset(new WebVideoFrameImpl(VideoFrame::CreateHoleFrame(
+          natural_size_)));
+    }
+#else
+    NOTIMPLEMENTED() << "Hole punching not supported outside of Google TV";
+#endif
+  } else if (texture_id_) {
     web_video_frame_.reset(new WebVideoFrameImpl(VideoFrame::WrapNativeTexture(
         texture_id_, kGLTextureExternalOES, natural_size_,
         gfx::Rect(natural_size_), natural_size_, base::TimeDelta(),
@@ -412,7 +434,7 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
 
 WebVideoFrame* WebMediaPlayerAndroid::getCurrentFrame() {
   if (stream_texture_proxy_.get() && !stream_texture_proxy_->IsInitialized()
-      && stream_id_) {
+      && stream_id_ && !needs_external_surface_) {
     gfx::Size natural_size = web_video_frame_->video_frame->natural_size();
     stream_texture_proxy_->Initialize(
         stream_id_, natural_size.width(), natural_size.height());

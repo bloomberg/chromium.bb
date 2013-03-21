@@ -112,3 +112,7 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen,
 // Request the player to exit fullscreen.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen,
                     int /* player_id */)
+
+// Request the player to use external surface for rendering.
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestExternalSurface,
+                    int /* player_id */)
