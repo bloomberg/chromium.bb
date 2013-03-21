@@ -4,8 +4,6 @@
 
 'use strict';
 
-var fileCopyManagerWrapper = null;
-
 /**
  * While FileCopyManager is run in the background page, this class is used to
  * communicate with it.
@@ -49,10 +47,10 @@ FileCopyManagerWrapper.prototype.__proto__ = cr.EventTarget.prototype;
  * @return {FileCopyManagerWrapper}  A FileCopyManagerWrapper instance.
  */
 FileCopyManagerWrapper.getInstance = function(root) {
-  if (fileCopyManagerWrapper === null) {
-    fileCopyManagerWrapper = new FileCopyManagerWrapper(root);
-  }
-  return fileCopyManagerWrapper;
+  if (!FileCopyManagerWrapper.instance_)
+    FileCopyManagerWrapper.instance_ = new FileCopyManagerWrapper(root);
+
+  return FileCopyManagerWrapper.instance_;
 };
 
 /**

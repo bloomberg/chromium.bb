@@ -96,4 +96,7 @@
 // // the last include to include.
 //<include src="main.js"/>
 
+// Exports
+window.FileCopyManagerWrapper = FileCopyManagerWrapper;
+
 })();

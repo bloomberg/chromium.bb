@@ -305,8 +305,8 @@ FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
   var windows = getContentWindows();
   for (var i = 0; i < windows.length; i++) {
     var w = windows[i];
-    if (w.fileCopyManagerWrapper)
-      w.fileCopyManagerWrapper.onEvent(eventName, eventArgs);
+    if (w.FileCopyManagerWrapper)
+      w.FileCopyManagerWrapper.getInstance().onEvent(eventName, eventArgs);
   }
 };
 
