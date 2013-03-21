@@ -293,15 +293,30 @@ html[oobe=old] .pod.focused .action-box-area {
 .pod.public-account .name,
 .side-pane-name {
   -webkit-padding-end: 16px;
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
-  background-position: right;
-  background-repeat: no-repeat;
   outline: none;
 }
 
-html[dir=rtl] .pod.public-account .name,
-html[dir=rtl] .side-pane-name {
-  background-position: left;
+.learn-more,
+.side-pane-learn-more {
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
+  height: 16px;
+  position: absolute;
+  width: 16px;
+}
+
+.learn-more:hover,
+.side-pane-learn-more:hover {
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+}
+
+.learn-more {
+  right: 10px;
+  top: 189px;
+}
+
+html[dir=rtl] .learn-more {
+  left: 10px;
+  right: auto;
 }
 
 .side-pane-divider,
@@ -352,6 +367,16 @@ html[dir=rtl] .side-pane-contents {
   -webkit-transform: translateX(0);
 }
 
+.side-pane-learn-more {
+  right: 0;
+  top: 2px;
+}
+
+html[dir=rtl] .side-pane-learn-more {
+  left: 2px;
+  right: auto;
+}
+
 .side-pane-container .info,
 .side-pane-container .reminder {
   font-size: 12px;
@@ -383,7 +408,8 @@ html[dir=rtl] .side-pane-container .enter-button {
   width: 400px;
 }
 
-.pod.public-account.expanded .name {
+.pod.public-account.expanded .name,
+.pod.public-account.expanded .learn-more {
   display: none;
 }
 

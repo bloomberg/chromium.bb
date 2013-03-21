@@ -51,6 +51,13 @@ cr.define('login', function() {
   var POD_ROW_IMAGES_LOAD_TIMEOUT_MS = 3000;
 
   /**
+   * Public session help topic identifier.
+   * @type {number}
+   * @const
+   */
+  var HELP_TOPIC_PUBLIC_SESSION = 3017014;
+
+  /**
    * Oauth token status. These must match UserManager::OAuthTokenStatus.
    * @enum {number}
    * @const
@@ -631,6 +638,15 @@ cr.define('login', function() {
         }
       }).bind(this));
 
+      var learnMore = this.querySelector('.learn-more');
+      learnMore.addEventListener('mousedown', stopEventPropagation);
+      learnMore.addEventListener('click', this.handleLearnMoreEvent);
+      learnMore.addEventListener('keydown', this.handleLearnMoreEvent);
+
+      learnMore = this.querySelector('.side-pane-learn-more');
+      learnMore.addEventListener('click', this.handleLearnMoreEvent);
+      learnMore.addEventListener('keydown', this.handleLearnMoreEvent);
+
       this.enterButtonElement.addEventListener('click', (function(e) {
         chrome.send('launchPublicAccount', [this.user.username]);
       }).bind(this));
@@ -679,7 +695,36 @@ cr.define('login', function() {
       this.parentNode.activatedPod = this;
       // Prevent default so that we don't trigger 'focus' event.
       e.preventDefault();
-    }
+    },
+
+    /**
+     * Handle mouse and keyboard events for the learn more button.
+     * Triggering the button causes information about public sessions to be
+     * shown.
+     * @param {Event} event Mouse or keyboard event.
+     */
+    handleLearnMoreEvent: function(event) {
+      switch (event.type) {
+        // Show informaton on left click. Let any other clicks propagate.
+        case 'click':
+          if (event.button != 0)
+            return;
+          break;
+        // Show informaton when <Return> or <Space> is pressed. Let any other
+        // key presses propagate.
+        case 'keydown':
+          switch (event.keyCode) {
+            case 13:  // Return.
+            case 32:  // Space.
+              break;
+            default:
+              return;
+          }
+          break;
+      }
+      chrome.send('launchHelpApp', [HELP_TOPIC_PUBLIC_SESSION]);
+      stopEventPropagation(event);
+    },
   };
 
   /**
