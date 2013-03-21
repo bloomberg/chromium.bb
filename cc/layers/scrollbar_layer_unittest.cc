@@ -318,8 +318,8 @@ public:
         scrollbarLayer->SetTexturePriorities(calculator);
         m_layerTreeHost->contents_texture_manager()->PrioritizeTextures();
         scrollbarLayer->Update(&queue, &occlusionTracker, NULL);
-        EXPECT_EQ(0, queue.fullUploadSize());
-        EXPECT_EQ(expectedResources, queue.partialUploadSize());
+        EXPECT_EQ(0, queue.FullUploadSize());
+        EXPECT_EQ(expectedResources, queue.PartialUploadSize());
 
         testing::Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
     }

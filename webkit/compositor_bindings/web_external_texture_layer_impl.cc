@@ -75,7 +75,7 @@ class WebTextureUpdaterImpl : public WebKit::WebTextureUpdater {
                           WebKit::WebSize size) OVERRIDE {
     cc::TextureCopier::Parameters copy = { source_texture, destination_texture,
                                            size };
-    queue_->appendCopy(copy);
+    queue_->AppendCopy(copy);
   }
 
  private:

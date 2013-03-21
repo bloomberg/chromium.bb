@@ -69,7 +69,7 @@ void NinePatchLayer::Update(ResourceUpdateQueue* queue,
                                                    contentRect,
                                                    contentRect,
                                                    gfx::Vector2d());
-    queue->appendFullUpload(upload);
+    queue->AppendFullUpload(upload);
     bitmap_dirty_ = false;
   }
 }

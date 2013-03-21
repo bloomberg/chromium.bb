@@ -107,7 +107,7 @@ void ResourceUpdateController::PerformMoreUpdates(
 }
 
 void ResourceUpdateController::DiscardUploadsToEvictedResources() {
-  queue_->clearUploadsToEvictedResources();
+  queue_->ClearUploadsToEvictedResources();
 }
 
 void ResourceUpdateController::UpdateTexture(ResourceUpdate update) {
@@ -183,18 +183,18 @@ void ResourceUpdateController::UpdateTexture(ResourceUpdate update) {
 }
 
 void ResourceUpdateController::Finalize() {
-  while (queue_->fullUploadSize())
-    UpdateTexture(queue_->takeFirstFullUpload());
+  while (queue_->FullUploadSize())
+    UpdateTexture(queue_->TakeFirstFullUpload());
 
-  while (queue_->partialUploadSize())
-    UpdateTexture(queue_->takeFirstPartialUpload());
+  while (queue_->PartialUploadSize())
+    UpdateTexture(queue_->TakeFirstPartialUpload());
 
   resource_provider_->FlushUploads();
 
-  if (queue_->copySize()) {
+  if (queue_->CopySize()) {
     TextureCopier* copier = resource_provider_->texture_copier();
-    while (queue_->copySize())
-      copier->CopyTexture(queue_->takeFirstCopy());
+    while (queue_->CopySize())
+      copier->CopyTexture(queue_->TakeFirstCopy());
 
     // If we've performed any texture copies, we need to insert a flush
     // here into the compositor context before letting the main thread
@@ -234,7 +234,7 @@ base::TimeDelta ResourceUpdateController::PendingUpdateTime() const {
 
 bool ResourceUpdateController::UpdateMoreTexturesIfEnoughTimeRemaining() {
   while (resource_provider_->NumBlockingUploads() < MaxBlockingUpdates()) {
-    if (!queue_->fullUploadSize())
+    if (!queue_->FullUploadSize())
       return false;
 
     if (!time_limit_.is_null()) {
@@ -261,13 +261,13 @@ bool ResourceUpdateController::UpdateMoreTexturesIfEnoughTimeRemaining() {
 
 void ResourceUpdateController::UpdateMoreTexturesNow() {
   size_t uploads = std::min(
-      queue_->fullUploadSize(), UpdateMoreTexturesSize());
+      queue_->FullUploadSize(), UpdateMoreTexturesSize());
 
   if (!uploads)
     return;
 
-  while (queue_->fullUploadSize() && uploads--)
-    UpdateTexture(queue_->takeFirstFullUpload());
+  while (queue_->FullUploadSize() && uploads--)
+    UpdateTexture(queue_->TakeFirstFullUpload());
 
   resource_provider_->FlushUploads();
 }

@@ -76,9 +76,9 @@ void SkPictureContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
   ResourceUpdate upload = ResourceUpdate::CreateFromPicture(
       texture, &picture_, content_rect(), source_rect, dest_offset);
   if (partial_update)
-    queue->appendPartialUpload(upload);
+    queue->AppendPartialUpload(upload);
   else
-    queue->appendFullUpload(upload);
+    queue->AppendFullUpload(upload);
 }
 
 void SkPictureContentLayerUpdater::SetOpaque(bool opaque) {

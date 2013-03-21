@@ -8,71 +8,60 @@
 
 namespace cc {
 
-ResourceUpdateQueue::ResourceUpdateQueue()
-{
+ResourceUpdateQueue::ResourceUpdateQueue() {}
+
+ResourceUpdateQueue::~ResourceUpdateQueue() {}
+
+void ResourceUpdateQueue::AppendFullUpload(const ResourceUpdate& upload) {
+  full_entries_.push_back(upload);
 }
 
-ResourceUpdateQueue::~ResourceUpdateQueue()
-{
+void ResourceUpdateQueue::AppendPartialUpload(const ResourceUpdate& upload) {
+  partial_entries_.push_back(upload);
 }
 
-void ResourceUpdateQueue::appendFullUpload(const ResourceUpdate& upload)
-{
-    m_fullEntries.push_back(upload);
+void ResourceUpdateQueue::AppendCopy(TextureCopier::Parameters copy) {
+  copy_entries_.push_back(copy);
 }
 
-void ResourceUpdateQueue::appendPartialUpload(const ResourceUpdate& upload)
-{
-    m_partialEntries.push_back(upload);
+void ResourceUpdateQueue::ClearUploadsToEvictedResources() {
+  ClearUploadsToEvictedResources(&full_entries_);
+  ClearUploadsToEvictedResources(&partial_entries_);
 }
 
-void ResourceUpdateQueue::appendCopy(TextureCopier::Parameters copy)
-{
-    m_copyEntries.push_back(copy);
+void ResourceUpdateQueue::ClearUploadsToEvictedResources(
+    std::deque<ResourceUpdate>* entry_queue) {
+  std::deque<ResourceUpdate> temp;
+  entry_queue->swap(temp);
+  while (temp.size()) {
+    ResourceUpdate upload = temp.front();
+    temp.pop_front();
+    if (!upload.texture->BackingResourceWasEvicted())
+      entry_queue->push_back(upload);
+  }
 }
 
-void ResourceUpdateQueue::clearUploadsToEvictedResources()
-{
-    clearUploadsToEvictedResources(m_fullEntries);
-    clearUploadsToEvictedResources(m_partialEntries);
+ResourceUpdate ResourceUpdateQueue::TakeFirstFullUpload() {
+  ResourceUpdate first = full_entries_.front();
+  full_entries_.pop_front();
+  return first;
 }
 
-void ResourceUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue)
-{
-    std::deque<ResourceUpdate> temp;
-    entryQueue.swap(temp);
-    while (temp.size()) {
-        ResourceUpdate upload = temp.front();
-        temp.pop_front();
-        if (!upload.texture->BackingResourceWasEvicted())
-            entryQueue.push_back(upload);
-    }
+ResourceUpdate ResourceUpdateQueue::TakeFirstPartialUpload() {
+  ResourceUpdate first = partial_entries_.front();
+  partial_entries_.pop_front();
+  return first;
 }
 
-ResourceUpdate ResourceUpdateQueue::takeFirstFullUpload()
-{
-    ResourceUpdate first = m_fullEntries.front();
-    m_fullEntries.pop_front();
-    return first;
+TextureCopier::Parameters ResourceUpdateQueue::TakeFirstCopy() {
+  TextureCopier::Parameters first = copy_entries_.front();
+  copy_entries_.pop_front();
+  return first;
 }
 
-ResourceUpdate ResourceUpdateQueue::takeFirstPartialUpload()
-{
-    ResourceUpdate first = m_partialEntries.front();
-    m_partialEntries.pop_front();
-    return first;
-}
-
-TextureCopier::Parameters ResourceUpdateQueue::takeFirstCopy()
-{
-    TextureCopier::Parameters first = m_copyEntries.front();
-    m_copyEntries.pop_front();
-    return first;
-}
-
-bool ResourceUpdateQueue::hasMoreUpdates() const
-{
-    return m_fullEntries.size() || m_partialEntries.size() || m_copyEntries.size();
+bool ResourceUpdateQueue::HasMoreUpdates() const {
+  return !full_entries_.empty() || !partial_entries_.empty() ||
+         !copy_entries_.empty();
 }
 
 }  // namespace cc

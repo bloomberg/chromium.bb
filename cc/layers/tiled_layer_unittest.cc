@@ -911,11 +911,11 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
                                    std::numeric_limits<size_t>::max());
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->active_tree(), 1));
-        EXPECT_EQ(6, m_queue->fullUploadSize());
-        EXPECT_EQ(0, m_queue->partialUploadSize());
+        EXPECT_EQ(6, m_queue->FullUploadSize());
+        EXPECT_EQ(0, m_queue->PartialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -926,11 +926,11 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->active_tree(), 1));
-        EXPECT_EQ(3, m_queue->fullUploadSize());
-        EXPECT_EQ(3, m_queue->partialUploadSize());
+        EXPECT_EQ(3, m_queue->FullUploadSize());
+        EXPECT_EQ(3, m_queue->PartialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -941,11 +941,11 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->active_tree(), 1));
         layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
-        EXPECT_EQ(2, m_queue->fullUploadSize());
-        EXPECT_EQ(4, m_queue->partialUploadSize());
+        EXPECT_EQ(2, m_queue->FullUploadSize());
+        EXPECT_EQ(4, m_queue->PartialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -964,11 +964,11 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->active_tree(), 1));
         layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
-        EXPECT_EQ(6, m_queue->fullUploadSize());
-        EXPECT_EQ(0, m_queue->partialUploadSize());
+        EXPECT_EQ(6, m_queue->FullUploadSize());
+        EXPECT_EQ(0, m_queue->PartialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -979,11 +979,11 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->active_tree(), 1));
         layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
-        EXPECT_EQ(0, m_queue->fullUploadSize());
-        EXPECT_EQ(4, m_queue->partialUploadSize());
+        EXPECT_EQ(0, m_queue->FullUploadSize());
+        EXPECT_EQ(4, m_queue->PartialUploadSize());
         updateTextures();
         EXPECT_EQ(4, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -1471,7 +1471,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         EXPECT_EQ(6, root->fakeLayerUpdater()->updateCount());
         EXPECT_EQ(3, child->fakeLayerUpdater()->updateCount());
         EXPECT_EQ(3, child2->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
 
         root->fakeLayerUpdater()->clearUpdateCount();
         child->fakeLayerUpdater()->clearUpdateCount();
@@ -1505,7 +1505,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         EXPECT_EQ(6, root->fakeLayerUpdater()->updateCount());
         EXPECT_EQ(0, child->fakeLayerUpdater()->updateCount());
         EXPECT_EQ(0, child2->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
 
         root->fakeLayerUpdater()->clearUpdateCount();
         child->fakeLayerUpdater()->clearUpdateCount();
@@ -1540,7 +1540,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         EXPECT_EQ(0, root->fakeLayerUpdater()->updateCount());
         EXPECT_EQ(0, child->fakeLayerUpdater()->updateCount());
         EXPECT_EQ(0, child2->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        EXPECT_FALSE(m_queue->HasMoreUpdates());
 
         root->fakeLayerUpdater()->clearUpdateCount();
         child->fakeLayerUpdater()->clearUpdateCount();

@@ -33,12 +33,12 @@ FakeScrollbarLayer::~FakeScrollbarLayer() {}
 void FakeScrollbarLayer::Update(ResourceUpdateQueue* queue,
                                 const OcclusionTracker* occlusion,
                                 RenderingStats* stats) {
-  size_t full = queue->fullUploadSize();
-  size_t partial = queue->partialUploadSize();
+  size_t full = queue->FullUploadSize();
+  size_t partial = queue->PartialUploadSize();
   ScrollbarLayer::Update(queue, occlusion, stats);
   update_count_++;
-  last_update_full_upload_size_ = queue->fullUploadSize() - full;
-  last_update_partial_upload_size_ = queue->partialUploadSize() - partial;
+  last_update_full_upload_size_ = queue->FullUploadSize() - full;
+  last_update_partial_upload_size_ = queue->PartialUploadSize() - partial;
 }
 
 }  // namespace cc

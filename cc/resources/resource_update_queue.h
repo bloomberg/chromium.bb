@@ -14,33 +14,33 @@
 namespace cc {
 
 class CC_EXPORT ResourceUpdateQueue {
-public:
-    ResourceUpdateQueue();
-    virtual ~ResourceUpdateQueue();
+ public:
+  ResourceUpdateQueue();
+  virtual ~ResourceUpdateQueue();
 
-    void appendFullUpload(const ResourceUpdate&);
-    void appendPartialUpload(const ResourceUpdate&);
-    void appendCopy(TextureCopier::Parameters);
+  void AppendFullUpload(const ResourceUpdate& upload);
+  void AppendPartialUpload(const ResourceUpdate& upload);
+  void AppendCopy(TextureCopier::Parameters copy);
 
-    void clearUploadsToEvictedResources();
+  void ClearUploadsToEvictedResources();
 
-    ResourceUpdate takeFirstFullUpload();
-    ResourceUpdate takeFirstPartialUpload();
-    TextureCopier::Parameters takeFirstCopy();
+  ResourceUpdate TakeFirstFullUpload();
+  ResourceUpdate TakeFirstPartialUpload();
+  TextureCopier::Parameters TakeFirstCopy();
 
-    size_t fullUploadSize() const { return m_fullEntries.size(); }
-    size_t partialUploadSize() const { return m_partialEntries.size(); }
-    size_t copySize() const { return m_copyEntries.size(); }
+  size_t FullUploadSize() const { return full_entries_.size(); }
+  size_t PartialUploadSize() const { return partial_entries_.size(); }
+  size_t CopySize() const { return copy_entries_.size(); }
 
-    bool hasMoreUpdates() const;
+  bool HasMoreUpdates() const;
 
-private:
-    void clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue);
-    std::deque<ResourceUpdate> m_fullEntries;
-    std::deque<ResourceUpdate> m_partialEntries;
-    std::deque<TextureCopier::Parameters> m_copyEntries;
+ private:
+  void ClearUploadsToEvictedResources(std::deque<ResourceUpdate>* entry_queue);
+  std::deque<ResourceUpdate> full_entries_;
+  std::deque<ResourceUpdate> partial_entries_;
+  std::deque<TextureCopier::Parameters> copy_entries_;
 
-    DISALLOW_COPY_AND_ASSIGN(ResourceUpdateQueue);
+  DISALLOW_COPY_AND_ASSIGN(ResourceUpdateQueue);
 };
 
 }

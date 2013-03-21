@@ -788,7 +788,7 @@ void ThreadProxy::BeginFrameCompleteOnImplThread(
           LinkedEvictedBackingsExist()) {
     // Clear any uploads we were making to textures linked to evicted
     // resources
-    queue->clearUploadsToEvictedResources();
+    queue->ClearUploadsToEvictedResources();
     // Some textures in the layer tree are invalid. Kick off another commit
     // to fill them again.
     SetNeedsCommitOnImplThread();

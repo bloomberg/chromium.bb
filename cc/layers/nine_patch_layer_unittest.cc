@@ -84,8 +84,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     // No bitmap set should not trigger any uploads.
     testLayer->SetTexturePriorities(calculator);
     testLayer->Update(&queue, &occlusionTracker, NULL);
-    EXPECT_EQ(queue.fullUploadSize(), 0);
-    EXPECT_EQ(queue.partialUploadSize(), 0);
+    EXPECT_EQ(queue.FullUploadSize(), 0);
+    EXPECT_EQ(queue.PartialUploadSize(), 0);
 
     // Setting a bitmap set should trigger a single full upload.
     SkBitmap bitmap;
@@ -94,9 +94,9 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     testLayer->SetBitmap(bitmap, gfx::Rect(5, 5, 1, 1));
     testLayer->SetTexturePriorities(calculator);
     testLayer->Update(&queue, &occlusionTracker, NULL);
-    EXPECT_EQ(queue.fullUploadSize(), 1);
-    EXPECT_EQ(queue.partialUploadSize(), 0);
-    ResourceUpdate params = queue.takeFirstFullUpload();
+    EXPECT_EQ(queue.FullUploadSize(), 1);
+    EXPECT_EQ(queue.PartialUploadSize(), 0);
+    ResourceUpdate params = queue.TakeFirstFullUpload();
     EXPECT_TRUE(params.texture != NULL);
 
     // Upload the texture.
@@ -117,8 +117,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     // Nothing changed, so no repeated upload.
     testLayer->SetTexturePriorities(calculator);
     testLayer->Update(&queue, &occlusionTracker, NULL);
-    EXPECT_EQ(queue.fullUploadSize(), 0);
-    EXPECT_EQ(queue.partialUploadSize(), 0);
+    EXPECT_EQ(queue.FullUploadSize(), 0);
+    EXPECT_EQ(queue.PartialUploadSize(), 0);
 
     {
         DebugScopedSetImplThread implThread(proxy());
@@ -129,8 +129,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     // Reupload after eviction
     testLayer->SetTexturePriorities(calculator);
     testLayer->Update(&queue, &occlusionTracker, NULL);
-    EXPECT_EQ(queue.fullUploadSize(), 1);
-    EXPECT_EQ(queue.partialUploadSize(), 0);
+    EXPECT_EQ(queue.FullUploadSize(), 1);
+    EXPECT_EQ(queue.PartialUploadSize(), 0);
 
     // PrioritizedResourceManager clearing
     layer_tree_host_->contents_texture_manager()->UnregisterTexture(params.texture);
@@ -138,9 +138,9 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     testLayer->SetTexturePriorities(calculator);
     ResourceUpdateQueue queue2;
     testLayer->Update(&queue2, &occlusionTracker, NULL);
-    EXPECT_EQ(queue2.fullUploadSize(), 1);
-    EXPECT_EQ(queue2.partialUploadSize(), 0);
-    params = queue2.takeFirstFullUpload();
+    EXPECT_EQ(queue2.FullUploadSize(), 1);
+    EXPECT_EQ(queue2.PartialUploadSize(), 0);
+    params = queue2.TakeFirstFullUpload();
     EXPECT_TRUE(params.texture != NULL);
     EXPECT_EQ(params.texture->resource_manager(), layer_tree_host_->contents_texture_manager());
 }

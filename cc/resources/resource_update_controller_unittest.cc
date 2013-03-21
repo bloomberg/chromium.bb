@@ -146,7 +146,7 @@ protected:
         const ResourceUpdate upload = ResourceUpdate::Create(
             textures_[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
-            m_queue->appendFullUpload(upload);
+            m_queue->AppendFullUpload(upload);
     }
 
     void appendFullUploadsToUpdateQueue(int count)
@@ -163,7 +163,7 @@ protected:
         const ResourceUpdate upload = ResourceUpdate::Create(
             textures_[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
-            m_queue->appendPartialUpload(upload);
+            m_queue->AppendPartialUpload(upload);
     }
 
     void appendPartialUploadsToUpdateQueue(int count)

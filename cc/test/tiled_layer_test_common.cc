@@ -33,9 +33,9 @@ void FakeLayerUpdater::Resource::Update(ResourceUpdateQueue* queue, gfx::Rect so
     ResourceUpdate upload = ResourceUpdate::Create(
         texture(), &m_bitmap, rect, rect, gfx::Vector2d());
     if (partialUpdate)
-        queue->appendPartialUpload(upload);
+        queue->AppendPartialUpload(upload);
     else
-        queue->appendFullUpload(upload);
+        queue->AppendFullUpload(upload);
 
     m_layer->update();
 }

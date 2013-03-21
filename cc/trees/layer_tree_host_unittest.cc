@@ -1443,7 +1443,7 @@ void EvictionTestLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracke
     gfx::Rect fullRect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
         m_texture.get(), &m_bitmap, fullRect, fullRect, gfx::Vector2d());
-    queue->appendFullUpload(upload);
+    queue->AppendFullUpload(upload);
 }
 
 scoped_ptr<LayerImpl> EvictionTestLayer::CreateLayerImpl(LayerTreeImpl* treeImpl)

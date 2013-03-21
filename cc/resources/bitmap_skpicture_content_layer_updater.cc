@@ -41,9 +41,9 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
   ResourceUpdate upload = ResourceUpdate::Create(
       texture(), &bitmap_, source_rect, source_rect, dest_offset);
   if (partial_update)
-    queue->appendPartialUpload(upload);
+    queue->AppendPartialUpload(upload);
   else
-    queue->appendFullUpload(upload);
+    queue->AppendFullUpload(upload);
 }
 
 scoped_refptr<BitmapSkPictureContentLayerUpdater>

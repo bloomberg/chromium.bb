@@ -681,28 +681,27 @@ TEST_F(PrioritizedResourceTest, ClearUploadsToEvictedResources) {
     for (size_t i = 0; i < max_textures; ++i) {
         const ResourceUpdate upload = ResourceUpdate::Create(
             textures[i].get(), NULL, gfx::Rect(), gfx::Rect(), gfx::Vector2d());
-        queue.appendFullUpload(upload);
+        queue.AppendFullUpload(upload);
     }
 
     // Make sure that we have backings for all of the textures.
     for (size_t i = 0; i < max_textures; ++i)
         EXPECT_TRUE(textures[i]->have_backing_texture());
 
-    queue.clearUploadsToEvictedResources();
-    EXPECT_EQ(4, queue.fullUploadSize());
+    queue.ClearUploadsToEvictedResources();
+    EXPECT_EQ(4, queue.FullUploadSize());
 
     resource_manager->ReduceMemoryOnImplThread(
         TexturesMemorySize(1),
         PriorityCalculator::AllowEverythingCutoff(),
         ResourceProvider());
-    queue.clearUploadsToEvictedResources();
-    EXPECT_EQ(1, queue.fullUploadSize());
+    queue.ClearUploadsToEvictedResources();
+    EXPECT_EQ(1, queue.FullUploadSize());
 
     resource_manager->ReduceMemoryOnImplThread(
         0, PriorityCalculator::AllowEverythingCutoff(), ResourceProvider());
-    queue.clearUploadsToEvictedResources();
-    EXPECT_EQ(0, queue.fullUploadSize());
-
+    queue.ClearUploadsToEvictedResources();
+    EXPECT_EQ(0, queue.FullUploadSize());
 }
 
 TEST_F(PrioritizedResourceTest, UsageStatistics) {

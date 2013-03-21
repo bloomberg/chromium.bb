@@ -52,9 +52,9 @@ void ImageLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
   ResourceUpdate upload = ResourceUpdate::Create(
       texture, &bitmap_, image_rect, clipped_source_rect, clipped_dest_offset);
   if (partial_update)
-    queue->appendPartialUpload(upload);
+    queue->AppendPartialUpload(upload);
   else
-    queue->appendFullUpload(upload);
+    queue->AppendFullUpload(upload);
 }
 
 }

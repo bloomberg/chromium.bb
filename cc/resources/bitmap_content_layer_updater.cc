@@ -84,9 +84,9 @@ void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                              source_rect,
                              dest_offset);
   if (partial_update)
-    queue->appendPartialUpload(upload);
+    queue->AppendPartialUpload(upload);
   else
-    queue->appendFullUpload(upload);
+    queue->AppendFullUpload(upload);
 }
 
 void BitmapContentLayerUpdater::SetOpaque(bool opaque) {
