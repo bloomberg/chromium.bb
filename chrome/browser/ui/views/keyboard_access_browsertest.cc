@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -80,24 +81,47 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
 
 class SendKeysMenuListener : public views::MenuListener {
  public:
-  SendKeysMenuListener(ToolbarView* toolbar_view, Browser* browser)
-      : toolbar_view_(toolbar_view), browser_(browser) {
+  SendKeysMenuListener(ToolbarView* toolbar_view,
+                       Browser* browser,
+                       bool test_dismiss_menu)
+      : toolbar_view_(toolbar_view), browser_(browser), menu_open_count_(0),
+        test_dismiss_menu_(test_dismiss_menu) {
     toolbar_view_->AddMenuListener(this);
   }
 
-  virtual ~SendKeysMenuListener() {}
+  virtual ~SendKeysMenuListener() {
+    if (test_dismiss_menu_)
+      toolbar_view_->RemoveMenuListener(this);
+  }
+
+  int menu_open_count() const {
+    return menu_open_count_;
+  }
 
  private:
   // Overridden from views::MenuListener:
   virtual void OnMenuOpened() OVERRIDE {
-    toolbar_view_->RemoveMenuListener(this);
-    // Press DOWN to select the first item, then RETURN to select it.
-    SendKeyPress(browser_, ui::VKEY_DOWN);
-    SendKeyPress(browser_, ui::VKEY_RETURN);
+    menu_open_count_++;
+    if (!test_dismiss_menu_) {
+      toolbar_view_->RemoveMenuListener(this);
+      // Press DOWN to select the first item, then RETURN to select it.
+      SendKeyPress(browser_, ui::VKEY_DOWN);
+      SendKeyPress(browser_, ui::VKEY_RETURN);
+    } else {
+      SendKeyPress(browser_, ui::VKEY_ESCAPE);
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, MessageLoop::QuitClosure(),
+          base::TimeDelta::FromMilliseconds(200));
+    }
   }
 
   ToolbarView* toolbar_view_;
   Browser* browser_;
+  // Keeps track of the number of times the menu was opened.
+  int menu_open_count_;
+  // If this is set then on receiving a notification that the menu was opened
+  // we dismiss it by sending the ESC key.
+  bool test_dismiss_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(SendKeysMenuListener);
 };
@@ -143,6 +167,13 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   void TestSystemMenuWithKeyboard();
 #endif
 
+#if defined(USE_AURA)
+  // Uses the keyboard to select the wrench menu i.e. with the F10 key.
+  // It verifies that the menu when dismissed by sending the ESC key it does
+  // not display twice.
+  void TestMenuKeyboardAccessAndDismiss();
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardAccessTest);
 };
 
@@ -169,7 +200,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
   ToolbarView* toolbar_view = browser_view->GetToolbarView();
-  SendKeysMenuListener menu_listener(toolbar_view, browser());
+  SendKeysMenuListener menu_listener(toolbar_view, browser(), false);
 
   if (focus_omnibox)
     browser()->window()->GetLocationBar()->FocusLocation(false);
@@ -269,6 +300,34 @@ void KeyboardAccessTest::TestSystemMenuWithKeyboard() {
 }
 #endif
 
+#if defined(USE_AURA)
+void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
+  ui_test_utils::NavigateToURL(browser(), GURL("about:"));
+
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  int original_view_id = GetFocusedViewID();
+
+  BrowserView* browser_view = reinterpret_cast<BrowserView*>(
+      browser()->window());
+  ToolbarView* toolbar_view = browser_view->GetToolbarView();
+  SendKeysMenuListener menu_listener(toolbar_view, browser(), true);
+
+  browser()->window()->GetLocationBar()->FocusLocation(false);
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_F10, false, false, false, false));
+
+  WaitForFocusedViewIDToChange(original_view_id);
+
+  SendKeyPress(browser(), ui::VKEY_DOWN);
+  content::RunMessageLoop();
+  ASSERT_EQ(1, menu_listener.menu_open_count());
+}
+#endif
+
 // http://crbug.com/62310.
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
@@ -310,6 +369,12 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
 
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestSystemMenuWithKeyboard) {
   TestSystemMenuWithKeyboard();
+}
+#endif
+
+#if defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestMenuKeyboardOpenDismiss) {
+  TestMenuKeyboardAccessAndDismiss();
 }
 #endif
 
