@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 git grep -n -e "$@" -- "*.h" "*.hpp" "*.cpp" "*.c" "*.cc" "*.cpp" "*.inl"\
-   "*.grd" "*.idl" "*.m" "*.mm" "*.py" "*.sh" "*.cfg" "*.tac" "*.go"\
+   "*.grd" "*.grdp" "*.idl" "*.m" "*.mm" "*.py" "*.sh" "*.cfg" "*.tac" "*.go"\
    "*SConscript" "SConscript*" "*.scons" "*.vcproj" "*.vsprops" "*.make"\
    "*.gyp" "*.gypi" "*.isolate" "*.java" "*.js" "*.html" "*.css" "*.ebuild" \
    "*.pl" "*.pm" "*.yaml"
