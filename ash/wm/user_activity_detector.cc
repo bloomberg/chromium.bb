@@ -41,7 +41,7 @@ void UserActivityDetector::OnDisplayPowerChanging() {
 }
 
 void UserActivityDetector::OnKeyEvent(ui::KeyEvent* event) {
-  MaybeNotify();
+  HandleActivity();
 }
 
 void UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {
@@ -51,27 +51,28 @@ void UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {
       GetCurrentTime() < honor_mouse_events_time_)
     return;
 
-  MaybeNotify();
+  HandleActivity();
 }
 
 void UserActivityDetector::OnScrollEvent(ui::ScrollEvent* event) {
-  MaybeNotify();
+  HandleActivity();
 }
 
 void UserActivityDetector::OnTouchEvent(ui::TouchEvent* event) {
-  MaybeNotify();
+  HandleActivity();
 }
 
 void UserActivityDetector::OnGestureEvent(ui::GestureEvent* event) {
-  MaybeNotify();
+  HandleActivity();
 }
 
 base::TimeTicks UserActivityDetector::GetCurrentTime() const {
   return !now_for_test_.is_null() ? now_for_test_ : base::TimeTicks::Now();
 }
 
-void UserActivityDetector::MaybeNotify() {
+void UserActivityDetector::HandleActivity() {
   base::TimeTicks now = GetCurrentTime();
+  last_activity_time_ = now;
   if (last_observer_notification_time_.is_null() ||
       (now - last_observer_notification_time_).InMillisecondsF() >=
       kNotifyIntervalMs) {

@@ -244,17 +244,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     SimpleMethodCallToPowerManager(power_manager::kRequestShutdownMethod);
   }
 
-  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback)
-      OVERRIDE {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kGetIdleTime);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnGetIdleTime,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
   virtual void RequestIdleNotification(int64 threshold) OVERRIDE {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kRequestIdleNotification);
@@ -478,28 +467,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     VLOG(1) << "Power status: " << status.ToString();
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
-  }
-
-  void OnGetIdleTime(const CalculateIdleTimeCallback& callback,
-                     dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Error calling " << power_manager::kGetIdleTime;
-      return;
-    }
-    dbus::MessageReader reader(response);
-    int64 idle_time_ms = 0;
-    if (!reader.PopInt64(&idle_time_ms)) {
-      LOG(ERROR) << "Error reading response from powerd: "
-                 << response->ToString();
-      callback.Run(-1);
-      return;
-    }
-    if (idle_time_ms < 0) {
-      LOG(ERROR) << "Power manager failed to calculate idle time.";
-      callback.Run(-1);
-      return;
-    }
-    callback.Run(idle_time_ms/1000);
   }
 
   void OnPowerStateOverride(const PowerStateRequestIdCallback& callback,
@@ -870,11 +837,6 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   virtual void RequestRestart() OVERRIDE {}
   virtual void RequestShutdown() OVERRIDE {}
-
-  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback)
-      OVERRIDE {
-    callback.Run(0);
-  }
 
   virtual void RequestIdleNotification(int64 threshold) OVERRIDE {
     MessageLoop::current()->PostDelayedTask(

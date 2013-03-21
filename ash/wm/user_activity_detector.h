@@ -29,6 +29,8 @@ class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
   UserActivityDetector();
   virtual ~UserActivityDetector();
 
+  base::TimeTicks last_activity_time() const { return last_activity_time_; }
+
   void set_now_for_test(base::TimeTicks now) { now_for_test_ = now; }
 
   bool HasObserver(UserActivityObserver* observer) const;
@@ -49,10 +51,15 @@ class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
   // Returns |now_for_test_| if set or base::TimeTicks::Now() otherwise.
   base::TimeTicks GetCurrentTime() const;
 
-  // Notifies observers if enough time has passed since the last notification.
-  void MaybeNotify();
+  // Updates |last_activity_time_|.  Additionally notifies observers and
+  // updates |last_observer_notification_time_| if enough time has passed
+  // since the last notification.
+  void HandleActivity();
 
   ObserverList<UserActivityObserver> observers_;
+
+  // Last time at which user activity was observed.
+  base::TimeTicks last_activity_time_;
 
   // Last time at which we notified observers that the user was active.
   base::TimeTicks last_observer_notification_time_;

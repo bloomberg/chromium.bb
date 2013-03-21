@@ -25,9 +25,6 @@ class PowerManagementPolicy;
 
 namespace chromeos {
 
-// Callback used for processing the idle time.  The int64 param is the number of
-// seconds the user has been idle.
-typedef base::Callback<void(int64)> CalculateIdleTimeCallback;
 typedef base::Callback<void(void)> IdleNotificationCallback;
 typedef base::Callback<void(uint32)> PowerStateRequestIdCallback;
 
@@ -153,11 +150,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
   virtual void RequestShutdown() = 0;
 
   // Idle management functions:
-
-  // Calculates idle time asynchronously, after the idle time request has
-  // replied.  It passes the idle time in seconds to |callback|.  If it
-  // encounters some error, it passes -1 to |callback|.
-  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback) = 0;
 
   // Requests notification for Idle at a certain threshold.
   // NOTE: This notification is one shot, once the machine has been idle for
