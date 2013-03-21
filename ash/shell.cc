@@ -417,15 +417,15 @@ bool Shell::IsLauncherPerDisplayEnabled() {
 
 void Shell::Init() {
 #if defined(OS_CHROMEOS)
+  output_configurator_animation_.reset(
+      new internal::OutputConfiguratorAnimation());
+  output_configurator_->AddObserver(output_configurator_animation_.get());
   if (base::chromeos::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new internal::DisplayChangeObserverX11);
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
     output_configurator_->AddObserver(display_change_observer_.get());
-    output_configurator_animation_.reset(
-        new internal::OutputConfiguratorAnimation());
     display_error_observer_.reset(new internal::DisplayErrorObserver());
-    output_configurator_->AddObserver(output_configurator_animation_.get());
     output_configurator_->AddObserver(display_error_observer_.get());
     display_change_observer_->OnDisplayModeChanged();
   }

@@ -40,6 +40,8 @@ public:
   AshNativeCursorManager* ash_native_cursor_manager();
   LauncherModel* launcher_model();
 
+  void DisableOutputConfiguratorAnimation();
+
  private:
   Shell* shell_;  // not owned
 

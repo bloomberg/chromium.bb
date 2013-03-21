@@ -76,9 +76,8 @@ void NotifyDisplayLayoutChanged() {
   PrefService* local_state = g_browser_process->local_state();
   ash::DisplayController* display_controller = GetDisplayController();
 
-  ash::DisplayLayout default_layout(
-      static_cast<ash::DisplayLayout::Position>(local_state->GetInteger(
-          prefs::kSecondaryDisplayLayout)),
+  ash::DisplayLayout default_layout = ash::DisplayLayout::FromInts(
+      local_state->GetInteger(prefs::kSecondaryDisplayLayout),
       local_state->GetInteger(prefs::kSecondaryDisplayOffset));
   display_controller->SetDefaultDisplayLayout(default_layout);
 
@@ -144,10 +143,10 @@ void NotifyDisplayOverscans() {
   }
 }
 
-void StoreDisplayLayoutPref(int64 id1,
-                            int64 id2,
+void StoreDisplayLayoutPref(const ash::DisplayIdPair& pair,
                             const ash::DisplayLayout& display_layout) {
-  std::string name = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
+  std::string name =
+      base::Int64ToString(pair.first) + "," + base::Int64ToString(pair.second);
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, prefs::kSecondaryDisplays);
@@ -160,10 +159,6 @@ void StoreDisplayLayoutPref(int64 id1,
   }
   if (ash::DisplayLayout::ConvertToValue(display_layout, layout_value.get()))
     pref_data->Set(name, layout_value.release());
-  local_state->SetInteger(prefs::kSecondaryDisplayLayout,
-                          static_cast<int>(display_layout.position));
-  local_state->SetInteger(prefs::kSecondaryDisplayOffset,
-                          display_layout.offset);
 }
 
 void StoreCurrentDisplayLayoutPrefs() {
@@ -171,11 +166,10 @@ void StoreCurrentDisplayLayoutPrefs() {
     return;
 
   ash::DisplayController* display_controller = GetDisplayController();
-  ash::DisplayLayout display_layout =
-      display_controller->GetCurrentDisplayLayout();
   ash::DisplayIdPair pair = display_controller->GetCurrentDisplayIdPair();
-
-  StoreDisplayLayoutPref(pair.first, pair.second, display_layout);
+  ash::DisplayLayout display_layout =
+      display_controller->GetRegisteredDisplayLayout(pair);
+  StoreDisplayLayoutPref(pair, display_layout);
 }
 
 
@@ -220,19 +214,22 @@ void StoreDisplayPrefs() {
   }
 }
 
-void SetAndStoreDisplayLayoutPref(int layout, int offset) {
-  ash::DisplayLayout display_layout(
-      static_cast<ash::DisplayLayout::Position>(layout), offset);
-  ash::Shell::GetInstance()->display_controller()->
-      SetLayoutForCurrentDisplays(display_layout);
-  StoreCurrentDisplayLayoutPrefs();
-}
+void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout) {
+  ash::DisplayController* display_controller = GetDisplayController();
+  display_controller->SetLayoutForCurrentDisplays(layout);
 
-void StoreDisplayLayoutPref(int64 id1, int64 id2,
-                            int layout, int offset) {
-  ash::DisplayLayout display_layout(
-      static_cast<ash::DisplayLayout::Position>(layout), offset);
-  StoreDisplayLayoutPref(id1, id2, display_layout);
+  if (IsValidUser()) {
+    PrefService* local_state = g_browser_process->local_state();
+    ash::DisplayIdPair pair = display_controller->GetCurrentDisplayIdPair();
+    // Use registered layout as the layout might have been inverted when
+    // the displays are swapped.
+    ash::DisplayLayout display_layout =
+        display_controller->GetRegisteredDisplayLayout(pair);
+    local_state->SetInteger(prefs::kSecondaryDisplayLayout,
+                            static_cast<int>(display_layout.position));
+    local_state->SetInteger(prefs::kSecondaryDisplayOffset,
+                            display_layout.offset);
+  }
 }
 
 void SetAndStoreDisplayOverscan(const gfx::Display& display,
@@ -252,18 +249,19 @@ void SetAndStoreDisplayOverscan(const gfx::Display& display,
       display.id(), insets);
 }
 
-void SetAndStorePrimaryDisplayIDPref(int64 display_id) {
-  StorePrimaryDisplayIDPref(display_id);
-  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
-      display_id);
-}
-
 void NotifyDisplayLocalStatePrefChanged() {
   PrefService* local_state = g_browser_process->local_state();
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
       local_state->GetInt64(prefs::kPrimaryDisplayID));
   NotifyDisplayLayoutChanged();
   NotifyDisplayOverscans();
+}
+
+// Stores the display layout for given display pairs.
+void StoreDisplayLayoutPrefForTest(int64 id1,
+                                   int64 id2,
+                                   const ash::DisplayLayout& layout) {
+  StoreDisplayLayoutPref(std::make_pair(id1, id2), layout);
 }
 
 }  // namespace chromeos

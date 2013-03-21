@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "ash/display/display_controller.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "ui/gfx/display_observer.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,7 +20,7 @@ namespace options {
 
 // Display options overlay page UI handler.
 class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
-                              public gfx::DisplayObserver {
+                              public ash::DisplayController::Observer {
  public:
   DisplayOptionsHandler();
   virtual ~DisplayOptionsHandler();
@@ -33,15 +33,14 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // gfx::DisplayObserver implementation.
-  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  // ash::DisplayController::Observer implementation.
+  virtual void OnDisplayConfigurationChanging() OVERRIDE;
+  virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
  private:
   // Updates the display section visibility based on the current display
-  // configurations. Specify the number of display.
-  void UpdateDisplaySectionVisibility(size_t num_displays);
+  // configurations.
+  void UpdateDisplaySectionVisibility();
 
   // Sends all of the current display information to the web_ui of options page.
   void SendAllDisplayInfo();

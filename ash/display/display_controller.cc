@@ -199,6 +199,11 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
 ////////////////////////////////////////////////////////////////////////////////
 // DisplayLayout
 
+// static
+DisplayLayout DisplayLayout::FromInts(int position, int offsets) {
+  return DisplayLayout(static_cast<Position>(position), offsets);
+}
+
 DisplayLayout::DisplayLayout()
     : position(RIGHT),
       offset(0) {}
@@ -532,12 +537,10 @@ DisplayIdPair DisplayController::GetCurrentDisplayIdPair() const {
   DisplayIdPair pair;
   if (primary.IsInternal() ||
       GetDisplayManager()->first_display_id() == primary.id()) {
-    pair.first = primary.id();
-    pair.second = secondary.id();
+    pair = std::make_pair(primary.id(), secondary.id());
   } else {
     // Display has been Swapped.
-    pair.first = secondary.id();
-    pair.second = primary.id();
+    pair = std::make_pair(secondary.id(), primary.id());
   }
   return pair;
 }
@@ -864,9 +867,7 @@ void DisplayController::RegisterLayoutForDisplayIdPairInternal(
     int64 id2,
     const DisplayLayout& layout,
     bool override) {
-  DisplayIdPair pair;
-  pair.first = id1;
-  pair.second = id2;
+  DisplayIdPair pair = std::make_pair(id1, id2);
   if (override || paired_layouts_.find(pair) == paired_layouts_.end())
     paired_layouts_[pair] = layout;
 }

@@ -425,6 +425,7 @@ class ASH_EXPORT Shell
   void DoInitialWorkspaceAnimation();
 
 #if defined(OS_CHROMEOS)
+  // TODO(oshima): Move these objects to DisplayController.
   chromeos::OutputConfigurator* output_configurator() {
     return output_configurator_.get();
   }
@@ -465,11 +466,6 @@ class ASH_EXPORT Shell
   // Initializes the root window and root window controller so that it
   // can host browser windows.
   void InitRootWindowController(internal::RootWindowController* root);
-
-  // Initializes the layout managers and event filters specific for
-  // primary display.
-  void InitLayoutManagersForPrimaryDisplay(
-      internal::RootWindowController* root_window_controller);
 
   // ash::internal::SystemModalContainerEventFilterDelegate overrides:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;

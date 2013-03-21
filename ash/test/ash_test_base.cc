@@ -13,6 +13,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/command_line.h"
@@ -119,6 +120,7 @@ void AshTestBase::SetUp() {
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   shell->cursor_manager()->EnableMouseEvents();
+  ShellTestApi(shell).DisableOutputConfiguratorAnimation();
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {

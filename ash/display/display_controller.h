@@ -44,6 +44,9 @@ struct ASH_EXPORT DisplayLayout {
     BOTTOM,
     LEFT
   };
+  // Factory method to create DisplayLayout from int values.
+  // Used for persistence and webui.
+  static DisplayLayout FromInts(int position, int offsets);
 
   DisplayLayout();
   DisplayLayout(Position position, int offset);

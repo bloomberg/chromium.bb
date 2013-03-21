@@ -9,6 +9,10 @@
 
 class PrefRegistrySimple;
 
+namespace ash {
+struct DisplayLayout;
+}
+
 namespace gfx {
 class Display;
 class Insets;
@@ -24,15 +28,8 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry);
 // dispay layout).
 void StoreDisplayPrefs();
 
-// Sets the display layout for the current displays and store them.
-void SetAndStoreDisplayLayoutPref(int layout, int offset);
-
-// Stores the display layout for given display pairs.
-void StoreDisplayLayoutPref(int64 id1, int64 id2, int layout, int offset);
-
-// Sets and stores the primary display device by its ID, and notifies
-// the update to the system.
-void SetAndStorePrimaryDisplayIDPref(int64 display_id);
+// Sets the display layout for the current displays and default.
+void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout);
 
 // Sets and saves the overscan preference for the specified |display| to Local
 // State.
@@ -42,6 +39,11 @@ void SetAndStoreDisplayOverscan(const gfx::Display& display,
 // Checks the current display settings in Local State and notifies them to the
 // system.
 void NotifyDisplayLocalStatePrefChanged();
+
+// Stores the display layout for given display pairs.
+void StoreDisplayLayoutPrefForTest(int64 id1,
+                                   int64 id2,
+                                   const ash::DisplayLayout& layout);
 
 }  // namespace chromeos
 

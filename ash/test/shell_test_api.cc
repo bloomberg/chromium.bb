@@ -7,6 +7,11 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/display/output_configurator_animation.h"
+#include "chromeos/display/output_configurator.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -41,6 +46,16 @@ AshNativeCursorManager* ShellTestApi::ash_native_cursor_manager() {
 
 LauncherModel* ShellTestApi::launcher_model() {
   return shell_->launcher_model_.get();
+}
+
+void ShellTestApi::DisableOutputConfiguratorAnimation() {
+#if defined(OS_CHROMEOS)
+  if (shell_->output_configurator_animation_.get()) {
+    shell_->output_configurator_->RemoveObserver(
+        shell_->output_configurator_animation_.get());
+    shell_->output_configurator_animation_.reset();
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace test
