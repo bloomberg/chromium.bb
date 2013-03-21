@@ -392,7 +392,6 @@ const char kEapCaCertIDProperty[] = "EAP.CACertID";
 const char kEapUseSystemCAsProperty[] = "EAP.UseSystemCAs";
 const char kEAPPINProperty[] = "EAP.PIN";
 
-
 // Flimflam Cellular Service property names.
 const char kTechnologyFamilyProperty[] = "Cellular.Family";
 const char kActivationStateProperty[] = "Cellular.ActivationState";
@@ -1331,5 +1330,30 @@ const char kSystemClockServiceName[] = "org.torproject.tlsdate";
 // Signals.
 const char kSystemClockUpdated[] = "TimeUpdated";
 }  // namespace system_clock
+
+namespace cras {
+const char kCrasInterface[] = "org.chromium.cras";
+const char kCrasPath[] = "/org/chromium/cras";
+const char kCrasServiceName[] = "org.chromium.cras";
+
+// Methods.
+const char kSetOutputVolume[] = "SetOutputVolume";
+const char kSetOutputMute[] = "SetOutputMute";
+const char kSetInputGain[] = "SetInputGain";
+const char kSetInputMute[] = "SetInputMute";
+const char kGetVolumeState[] = "GetVolumeState";
+const char kGetNodes[] = "GetNodes";
+const char kSetActiveOutputNode[] = "SetActiveOutputNode";
+const char kSetActiveInputNode[] = "SetActiveInputNode";
+
+// Signals.
+const char kOutputVolumeChanged[] = "OutputVolumeChanged";
+const char kOutputMuteChanged[] = "OutputMuteChanged";
+const char kInputGainChanged[] = "InputGainChanged";
+const char kInputMuteChanged[] = "InputMuteChanged";
+const char kNodesChanged[] = "NodesChanged";
+const char kActiveOutputNodeChanged[] = "ActiveOutputNodeChanged";
+const char kActiveInputNodeChanged[] = "ActiveInputNodeChanged";
+}  // namespace cras
 
 #endif  // DBUS_SERVICE_CONSTANTS_H_
