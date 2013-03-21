@@ -86,53 +86,54 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
-  settings.acceleratePainting =
+  settings.accelerate_painting =
       cmd->HasSwitch(switches::kEnableAcceleratedPainting);
-  settings.renderVSyncEnabled = !cmd->HasSwitch(switches::kDisableGpuVsync);
-  settings.perTilePaintingEnabled =
+  settings.render_vsync_enabled = !cmd->HasSwitch(switches::kDisableGpuVsync);
+  settings.per_tile_painting_enabled =
       cmd->HasSwitch(cc::switches::kEnablePerTilePainting);
-  settings.acceleratedAnimationEnabled =
+  settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
 
-  int default_tile_width = settings.defaultTileSize.width();
+  int default_tile_width = settings.default_tile_size.width();
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
     GetSwitchValueAsInt(*cmd, switches::kDefaultTileWidth, 1,
                         std::numeric_limits<int>::max(), &default_tile_width);
   }
-  int default_tile_height = settings.defaultTileSize.height();
+  int default_tile_height = settings.default_tile_size.height();
   if (cmd->HasSwitch(switches::kDefaultTileHeight)) {
     GetSwitchValueAsInt(*cmd, switches::kDefaultTileHeight, 1,
                         std::numeric_limits<int>::max(), &default_tile_height);
   }
-  settings.defaultTileSize = gfx::Size(default_tile_width, default_tile_height);
+  settings.default_tile_size = gfx::Size(default_tile_width,
+                                         default_tile_height);
 
-  int max_untiled_layer_width = settings.maxUntiledLayerSize.width();
+  int max_untiled_layer_width = settings.max_untiled_layer_size.width();
   if (cmd->HasSwitch(switches::kMaxUntiledLayerWidth)) {
     GetSwitchValueAsInt(*cmd, switches::kMaxUntiledLayerWidth, 1,
                         std::numeric_limits<int>::max(),
                         &max_untiled_layer_width);
   }
-  int max_untiled_layer_height = settings.maxUntiledLayerSize.height();
+  int max_untiled_layer_height = settings.max_untiled_layer_size.height();
   if (cmd->HasSwitch(switches::kMaxUntiledLayerHeight)) {
     GetSwitchValueAsInt(*cmd, switches::kMaxUntiledLayerHeight, 1,
                         std::numeric_limits<int>::max(),
                         &max_untiled_layer_height);
   }
 
-  settings.maxUntiledLayerSize = gfx::Size(max_untiled_layer_width,
+  settings.max_untiled_layer_size = gfx::Size(max_untiled_layer_width,
                                            max_untiled_layer_height);
 
-  settings.rightAlignedSchedulingEnabled =
+  settings.right_aligned_scheduling_enabled =
       cmd->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
-  settings.implSidePainting = cc::switches::IsImplSidePaintingEnabled();
-  settings.useCheapnessEstimator =
+  settings.impl_side_painting = cc::switches::IsImplSidePaintingEnabled();
+  settings.use_cheapness_estimator =
       cmd->HasSwitch(cc::switches::kUseCheapnessEstimator);
-  settings.useColorEstimator =
+  settings.use_color_estimator =
       cmd->HasSwitch(cc::switches::kUseColorEstimator);
-  settings.predictionBenchmarking =
+  settings.prediction_benchmarking =
       cmd->HasSwitch(cc::switches::kEnablePredictionBenchmarking);
 
-  settings.calculateTopControlsPosition =
+  settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
   if (cmd->HasSwitch(cc::switches::kTopControlsHeight)) {
     std::string controls_height_str =
@@ -140,17 +141,18 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     double controls_height;
     if (base::StringToDouble(controls_height_str, &controls_height) &&
         controls_height > 0)
-      settings.topControlsHeight = controls_height;
+      settings.top_controls_height = controls_height;
   }
 
-  settings.compositorFrameMessage =
+  settings.compositor_frame_message =
       cmd->HasSwitch(cc::switches::kEnableCompositorFrameMessage);
 
-  if (settings.calculateTopControlsPosition &&
-      (settings.topControlsHeight <= 0 || !settings.compositorFrameMessage)) {
+  if (settings.calculate_top_controls_position &&
+      (settings.top_controls_height <= 0 ||
+       !settings.compositor_frame_message)) {
     DCHECK(false) << "Top controls repositioning enabled without valid height "
-                     "or compositorFrameMessage set.";
-    settings.calculateTopControlsPosition = false;
+                     "or compositor_frame_message set.";
+    settings.calculate_top_controls_position = false;
   }
 
   if (cmd->HasSwitch(cc::switches::kTopControlsShowThreshold)) {
@@ -159,7 +161,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       double show_threshold;
       if (base::StringToDouble(top_threshold_str, &show_threshold) &&
           show_threshold >= 0.f && show_threshold <= 1.f)
-        settings.topControlsShowThreshold = show_threshold;
+        settings.top_controls_show_threshold = show_threshold;
   }
 
   if (cmd->HasSwitch(cc::switches::kTopControlsHideThreshold)) {
@@ -168,41 +170,41 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       double hide_threshold;
       if (base::StringToDouble(top_threshold_str, &hide_threshold) &&
           hide_threshold >= 0.f && hide_threshold <= 1.f)
-        settings.topControlsHideThreshold = hide_threshold;
+        settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  settings.partialSwapEnabled = widget->AllowPartialSwap() &&
+  settings.partial_swap_enabled = widget->AllowPartialSwap() &&
       cmd->HasSwitch(cc::switches::kEnablePartialSwap);
-  settings.backgroundColorInsteadOfCheckerboard =
+  settings.background_color_instead_of_checkerboard =
       cmd->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
-  settings.showOverdrawInTracing =
+  settings.show_overdraw_in_tracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
 
   // These flags should be mirrored by UI versions in ui/compositor/.
-  settings.initialDebugState.show_debug_borders =
+  settings.initial_debug_state.show_debug_borders =
       cmd->HasSwitch(cc::switches::kShowCompositedLayerBorders);
-  settings.initialDebugState.show_fps_counter =
+  settings.initial_debug_state.show_fps_counter =
       cmd->HasSwitch(cc::switches::kShowFPSCounter);
-  settings.initialDebugState.show_paint_rects =
+  settings.initial_debug_state.show_paint_rects =
       cmd->HasSwitch(switches::kShowPaintRects);
-  settings.initialDebugState.show_platform_layer_tree =
+  settings.initial_debug_state.show_platform_layer_tree =
       cmd->HasSwitch(cc::switches::kShowCompositedLayerTree);
-  settings.initialDebugState.show_property_changed_rects =
+  settings.initial_debug_state.show_property_changed_rects =
       cmd->HasSwitch(cc::switches::kShowPropertyChangedRects);
-  settings.initialDebugState.show_surface_damage_rects =
+  settings.initial_debug_state.show_surface_damage_rects =
       cmd->HasSwitch(cc::switches::kShowSurfaceDamageRects);
-  settings.initialDebugState.show_screen_space_rects =
+  settings.initial_debug_state.show_screen_space_rects =
       cmd->HasSwitch(cc::switches::kShowScreenSpaceRects);
-  settings.initialDebugState.show_replica_screen_space_rects =
+  settings.initial_debug_state.show_replica_screen_space_rects =
       cmd->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
-  settings.initialDebugState.show_occluding_rects =
+  settings.initial_debug_state.show_occluding_rects =
       cmd->HasSwitch(cc::switches::kShowOccludingRects);
-  settings.initialDebugState.show_non_occluding_rects =
+  settings.initial_debug_state.show_non_occluding_rects =
       cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
 
-  settings.initialDebugState.SetRecordRenderingStats(
+  settings.initial_debug_state.SetRecordRenderingStats(
       cmd->HasSwitch(switches::kEnableGpuBenchmarking));
-  settings.initialDebugState.trace_all_rendered_frames =
+  settings.initial_debug_state.trace_all_rendered_frames =
       cmd->HasSwitch(cc::switches::kTraceAllRenderedFrames);
 
   if (cmd->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
@@ -213,7 +215,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         cc::switches::kSlowDownRasterScaleFactor,
         kMinSlowDownScaleFactor,
         kMaxSlowDownScaleFactor,
-        &settings.initialDebugState.slow_down_raster_scale_factor);
+        &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
   if (cmd->HasSwitch(cc::switches::kNumRasterThreads)) {
@@ -223,26 +225,26 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     if (GetSwitchValueAsInt(*cmd, cc::switches::kNumRasterThreads,
                             kMinRasterThreads, kMaxRasterThreads,
                             &num_raster_threads))
-      settings.numRasterThreads = num_raster_threads;
+      settings.num_raster_threads = num_raster_threads;
   }
 
   if (cmd->HasSwitch(cc::switches::kLowResolutionContentsScaleFactor)) {
-    const int kMinScaleFactor = settings.minimumContentsScale;
+    const int kMinScaleFactor = settings.minimum_contents_scale;
     const int kMaxScaleFactor = 1;
     GetSwitchValueAsFloat(*cmd,
                           cc::switches::kLowResolutionContentsScaleFactor,
                           kMinScaleFactor, kMaxScaleFactor,
-                          &settings.lowResContentsScaleFactor);
+                          &settings.low_res_contents_scale_factor);
   }
 
 #if defined(OS_ANDROID)
   // TODO(danakj): Move these to the android code.
-  settings.canUseLCDText = false;
-  settings.maxPartialTextureUpdates = 0;
-  settings.useLinearFadeScrollbarAnimator = true;
-  settings.solidColorScrollbars = true;
-  settings.solidColorScrollbarColor = SkColorSetARGB(128, 128, 128, 128);
-  settings.solidColorScrollbarThicknessDIP = 3;
+  settings.can_use_lcd_text = false;
+  settings.max_partial_texture_updates = 0;
+  settings.use_linear_fade_scrollbar_animator = true;
+  settings.solid_color_scrollbars = true;
+  settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+  settings.solid_color_scrollbar_thickness_dip = 3;
 #endif
 
   if (!compositor->initialize(settings))

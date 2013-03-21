@@ -995,7 +995,7 @@ TEST(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
   EXPECT_TRUE(AddTestAnimation(layer.get()));
 
   LayerTreeSettings settings;
-  settings.acceleratedAnimationEnabled = false;
+  settings.accelerated_animation_enabled = false;
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create(settings);
   layer_tree_host->SetRootLayer(layer);

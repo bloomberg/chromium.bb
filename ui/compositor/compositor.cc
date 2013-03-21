@@ -418,33 +418,33 @@ Compositor::Compositor(CompositorDelegate* delegate,
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
-  settings.refreshRate =
+  settings.refresh_rate =
       g_test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
-  settings.partialSwapEnabled =
+  settings.partial_swap_enabled =
       command_line->HasSwitch(cc::switches::kUIEnablePartialSwap);
-  settings.perTilePaintingEnabled =
+  settings.per_tile_painting_enabled =
       command_line->HasSwitch(cc::switches::kUIEnablePerTilePainting);
 
   // These flags should be mirrored by renderer versions in content/renderer/.
-  settings.initialDebugState.show_debug_borders =
+  settings.initial_debug_state.show_debug_borders =
       command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders);
-  settings.initialDebugState.show_fps_counter =
+  settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
-  settings.initialDebugState.show_paint_rects =
+  settings.initial_debug_state.show_paint_rects =
       command_line->HasSwitch(switches::kUIShowPaintRects);
-  settings.initialDebugState.show_platform_layer_tree =
+  settings.initial_debug_state.show_platform_layer_tree =
       command_line->HasSwitch(cc::switches::kUIShowCompositedLayerTree);
-  settings.initialDebugState.show_property_changed_rects =
+  settings.initial_debug_state.show_property_changed_rects =
       command_line->HasSwitch(cc::switches::kUIShowPropertyChangedRects);
-  settings.initialDebugState.show_surface_damage_rects =
+  settings.initial_debug_state.show_surface_damage_rects =
       command_line->HasSwitch(cc::switches::kUIShowSurfaceDamageRects);
-  settings.initialDebugState.show_screen_space_rects =
+  settings.initial_debug_state.show_screen_space_rects =
       command_line->HasSwitch(cc::switches::kUIShowScreenSpaceRects);
-  settings.initialDebugState.show_replica_screen_space_rects =
+  settings.initial_debug_state.show_replica_screen_space_rects =
       command_line->HasSwitch(cc::switches::kUIShowReplicaScreenSpaceRects);
-  settings.initialDebugState.show_occluding_rects =
+  settings.initial_debug_state.show_occluding_rects =
       command_line->HasSwitch(cc::switches::kUIShowOccludingRects);
-  settings.initialDebugState.show_non_occluding_rects =
+  settings.initial_debug_state.show_non_occluding_rects =
       command_line->HasSwitch(cc::switches::kUIShowNonOccludingRects);
 
   scoped_ptr<cc::Thread> thread;

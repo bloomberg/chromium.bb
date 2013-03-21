@@ -606,7 +606,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->set_update_rect(update_rect_);
 
-  if (layer->layer_tree_impl()->settings().implSidePainting) {
+  if (layer->layer_tree_impl()->settings().impl_side_painting) {
     DCHECK(layer->layer_tree_impl()->IsPendingTree());
     LayerImpl* active_twin =
         layer->layer_tree_impl()->FindActiveTreeLayerById(id());

@@ -282,7 +282,7 @@ InputHandlerClient::ScrollStatus LayerImpl::TryScroll(
 
 bool LayerImpl::DrawCheckerboardForMissingTiles() const {
   return draw_checkerboard_for_missing_tiles_ &&
-         !layer_tree_impl()->settings().backgroundColorInsteadOfCheckerboard;
+      !layer_tree_impl()->settings().background_color_instead_of_checkerboard;
 }
 
 gfx::Rect LayerImpl::LayerRectToContentRect(
@@ -915,7 +915,7 @@ CreateScrollbarAnimationControllerWithFade(LayerImpl* layer) {
 }
 
 void LayerImpl::DidBecomeActive() {
-  if (!layer_tree_impl_->settings().useLinearFadeScrollbarAnimator)
+  if (!layer_tree_impl_->settings().use_linear_fade_scrollbar_animator)
     return;
 
   bool need_scrollbar_animation_controller = horizontal_scrollbar_layer_ ||

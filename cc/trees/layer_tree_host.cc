@@ -82,7 +82,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       output_surface_lost_(false),
       num_failed_recreate_attempts_(0),
       settings_(settings),
-      debug_state_(settings.initialDebugState),
+      debug_state_(settings.initial_debug_state),
       device_scale_factor_(1.f),
       visible_(true),
       page_scale_factor_(1.f),
@@ -92,7 +92,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
       partial_texture_update_requests_(0) {
-  if (settings_.acceleratedAnimationEnabled)
+  if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   s_num_layer_tree_instances++;
 }
@@ -150,18 +150,18 @@ void LayerTreeHost::InitializeRenderer() {
   }
 
   // Update settings_ based on capabilities that we got back from the renderer.
-  settings_.acceleratePainting =
+  settings_.accelerate_painting =
       proxy_->GetRendererCapabilities().using_accelerated_painting;
 
   // Update settings_ based on partial update capability.
   size_t max_partial_texture_updates = 0;
   if (proxy_->GetRendererCapabilities().allow_partial_texture_updates &&
-      !settings_.implSidePainting) {
+      !settings_.impl_side_painting) {
     max_partial_texture_updates = std::min(
-        settings_.maxPartialTextureUpdates,
+        settings_.max_partial_texture_updates,
         proxy_->MaxPartialTextureUpdates());
   }
-  settings_.maxPartialTextureUpdates = max_partial_texture_updates;
+  settings_.max_partial_texture_updates = max_partial_texture_updates;
 
   contents_texture_manager_ = PrioritizedResourceManager::Create(proxy_.get());
   surface_memory_placeholder_ =
@@ -170,12 +170,12 @@ void LayerTreeHost::InitializeRenderer() {
   renderer_initialized_ = true;
 
   int max_texture_size = proxy_->GetRendererCapabilities().max_texture_size;
-  settings_.defaultTileSize = gfx::Size(
-      std::min(settings_.defaultTileSize.width(), max_texture_size),
-      std::min(settings_.defaultTileSize.height(), max_texture_size));
-  settings_.maxUntiledLayerSize = gfx::Size(
-      std::min(settings_.maxUntiledLayerSize.width(), max_texture_size),
-      std::min(settings_.maxUntiledLayerSize.height(), max_texture_size));
+  settings_.default_tile_size = gfx::Size(
+      std::min(settings_.default_tile_size.width(), max_texture_size),
+      std::min(settings_.default_tile_size.height(), max_texture_size));
+  settings_.max_untiled_layer_size = gfx::Size(
+      std::min(settings_.max_untiled_layer_size.width(), max_texture_size),
+      std::min(settings_.max_untiled_layer_size.height(), max_texture_size));
 }
 
 LayerTreeHost::RecreateResult LayerTreeHost::RecreateOutputSurface() {
@@ -267,7 +267,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   // synchronization can happen directly to the active tree and
   // unlinked contents resources can be reclaimed immediately.
   LayerTreeImpl* sync_tree;
-  if (settings_.implSidePainting) {
+  if (settings_.impl_side_painting) {
     // Commits should not occur while there is already a pending tree.
     DCHECK(!host_impl->pending_tree());
     host_impl->CreatePendingTree();
@@ -302,7 +302,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->FindRootScrollLayer();
 
   float page_scale_delta, sent_page_scale_delta;
-  if (settings_.implSidePainting) {
+  if (settings_.impl_side_painting) {
     // Update the delta from the active tree, which may have
     // adjusted its delta prior to the pending tree being created.
     // This code is equivalent to that in LayerTreeImpl::SetPageScaleDelta.
@@ -339,7 +339,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
       pinch_zoom_scrollbar_vertical_ ?
           pinch_zoom_scrollbar_vertical_->id() : Layer::INVALID_ID);
 
-  if (!settings_.implSidePainting) {
+  if (!settings_.impl_side_painting) {
     // If we're not in impl-side painting, the tree is immediately
     // considered active.
     sync_tree->DidBecomeActive();
@@ -410,7 +410,7 @@ void LayerTreeHost::CreateAndAddPinchZoomScrollbars() {
 void LayerTreeHost::WillCommit() {
   client_->WillCommit();
 
-  if (settings().usePinchZoomScrollbars)
+  if (settings().use_pinch_zoom_scrollbars)
     CreateAndAddPinchZoomScrollbars();
 }
 
@@ -444,7 +444,7 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
   DCHECK(proxy_->IsImplThread());
   scoped_ptr<LayerTreeHostImpl> host_impl =
       LayerTreeHostImpl::Create(settings_, client, proxy_.get());
-  if (settings_.calculateTopControlsPosition &&
+  if (settings_.calculate_top_controls_position &&
       host_impl->top_controls_manager()) {
     top_controls_manager_weak_ptr_ =
         host_impl->top_controls_manager()->AsWeakPtr();
@@ -551,7 +551,7 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
 
 void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
   LayerTreeDebugState new_debug_state =
-      LayerTreeDebugState::Unite(settings_.initialDebugState, debug_state);
+      LayerTreeDebugState::Unite(settings_.initial_debug_state, debug_state);
 
   if (LayerTreeDebugState::Equal(debug_state_, new_debug_state))
     return;
@@ -684,7 +684,7 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
         device_scale_factor_,
         page_scale_factor_,
         GetRendererCapabilities().max_texture_size,
-        settings_.canUseLCDText,
+        settings_.can_use_lcd_text,
         update_list);
   }
 
@@ -833,13 +833,13 @@ bool LayerTreeHost::PaintLayerContents(
 
   bool need_more_updates = false;
   bool record_metrics_for_frame =
-      settings_.showOverdrawInTracing &&
+      settings_.show_overdraw_in_tracing &&
       base::debug::TraceLog::GetInstance() &&
       base::debug::TraceLog::GetInstance()->IsEnabled();
   OcclusionTracker occlusion_tracker(
       root_layer_->render_surface()->content_rect(), record_metrics_for_frame);
   occlusion_tracker.set_minimum_tracking_size(
-      settings_.minimumOcclusionTrackingSize);
+      settings_.minimum_occlusion_tracking_size);
 
   PrioritizeTextures(render_surface_layer_list,
                      occlusion_tracker.overdraw_metrics());
@@ -931,7 +931,7 @@ void LayerTreeHost::RateLimit() {
 }
 
 bool LayerTreeHost::RequestPartialTextureUpdate() {
-  if (partial_texture_update_requests_ >= settings_.maxPartialTextureUpdates)
+  if (partial_texture_update_requests_ >= settings_.max_partial_texture_updates)
     return false;
 
   partial_texture_update_requests_++;
@@ -947,7 +947,7 @@ void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
 }
 
 void LayerTreeHost::EnableHidingTopControls(bool enable) {
-  if (!settings_.calculateTopControlsPosition)
+  if (!settings_.calculate_top_controls_position)
     return;
 
   proxy_->ImplThread()->PostTask(
@@ -968,7 +968,7 @@ scoped_ptr<base::Value> LayerTreeHost::AsValue() const {
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks time) {
-  if (!settings_.acceleratedAnimationEnabled ||
+  if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty())
     return;
 

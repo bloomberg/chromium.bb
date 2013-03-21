@@ -56,7 +56,7 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
 class ImplSidePaintingSettings : public LayerTreeSettings {
  public:
   ImplSidePaintingSettings() {
-    implSidePainting = true;
+    impl_side_painting = true;
   }
 };
 
@@ -68,7 +68,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
     scoped_refptr<TestablePicturePileImpl> pile(new TestablePicturePileImpl());
     pile->tiling().SetTotalSize(layer_bounds);
     pile->tiling().SetMaxTextureSize(tile_size);
-    pile->SetTileGridSize(ImplSidePaintingSettings().defaultTileSize);
+    pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
     for (int x = 0; x < pile->tiling().num_tiles_x(); ++x) {
       for (int y = 0; y < pile->tiling().num_tiles_y(); ++y)
         pile->AddRecordingAt(x, y);
@@ -83,7 +83,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
     scoped_refptr<TestablePicturePileImpl> pile(new TestablePicturePileImpl());
     pile->tiling().SetTotalSize(layer_bounds);
     pile->tiling().SetMaxTextureSize(tile_size);
-    pile->SetTileGridSize(ImplSidePaintingSettings().defaultTileSize);
+    pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
     pile->UpdateRecordedRegion();
     return pile;
   }
@@ -218,8 +218,8 @@ class PictureLayerImplTest : public testing::Test {
     // Layer to span 4 raster tiles in x and in y
     ImplSidePaintingSettings settings;
     gfx::Size layer_size(
-        settings.defaultTileSize.width() * 7 / 2,
-        settings.defaultTileSize.height() * 7 / 2);
+        settings.default_tile_size.width() * 7 / 2,
+        settings.default_tile_size.height() * 7 / 2);
 
     scoped_refptr<TestablePicturePileImpl> pending_pile =
         TestablePicturePileImpl::CreateFilledPile(layer_size, layer_size);
@@ -514,7 +514,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
 
-  float low_res_factor = host_impl_.settings().lowResContentsScaleFactor;
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
   // These are included in the scale given to the layer.
@@ -601,7 +601,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
 
-  float low_res_factor = host_impl_.settings().lowResContentsScaleFactor;
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
   // These are included in the scale given to the layer.

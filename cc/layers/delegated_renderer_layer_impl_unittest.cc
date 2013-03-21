@@ -35,7 +35,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
       : proxy_(scoped_ptr<Thread>(NULL))
       , always_impl_thread_and_main_thread_blocked_(&proxy_) {
     LayerTreeSettings settings;
-    settings.minimumOcclusionTrackingSize = gfx::Size();
+    settings.minimum_occlusion_tracking_size = gfx::Size();
 
     host_impl_ = LayerTreeHostImpl::Create(settings, &client_, &proxy_);
     host_impl_->InitializeRenderer(createFakeOutputSurface());

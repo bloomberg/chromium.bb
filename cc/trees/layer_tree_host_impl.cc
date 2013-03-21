@@ -177,17 +177,17 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings,
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
-  SetDebugState(settings.initialDebugState);
+  SetDebugState(settings.initial_debug_state);
 
-  if (settings.calculateTopControlsPosition) {
+  if (settings.calculate_top_controls_position) {
     top_controls_manager_ =
         TopControlsManager::Create(this,
-                                   settings.topControlsHeight,
-                                   settings.topControlsShowThreshold,
-                                   settings.topControlsHideThreshold);
+                                   settings.top_controls_height,
+                                   settings.top_controls_show_threshold,
+                                   settings.top_controls_hide_threshold);
   }
 
-  SetDebugState(settings.initialDebugState);
+  SetDebugState(settings.initial_debug_state);
 
   // LTHI always has an active tree.
   active_tree_ = LayerTreeImpl::create(this);
@@ -216,7 +216,7 @@ void LayerTreeHostImpl::CommitComplete() {
   // Impl-side painting needs an update immediately post-commit to have the
   // opportunity to create tilings.  Other paths can call UpdateDrawProperties
   // more lazily when needed prior to drawing.
-  if (settings_.implSidePainting) {
+  if (settings_.impl_side_painting) {
     pending_tree_->set_needs_update_draw_properties();
     pending_tree_->UpdateDrawProperties(LayerTreeImpl::UPDATE_PENDING_TREE);
   } else {
@@ -509,14 +509,14 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   }
 
   bool record_metrics_for_frame =
-      settings_.showOverdrawInTracing &&
+      settings_.show_overdraw_in_tracing &&
       base::debug::TraceLog::GetInstance() &&
       base::debug::TraceLog::GetInstance()->IsEnabled();
   OcclusionTrackerImpl occlusion_tracker(
       active_tree_->root_layer()->render_surface()->content_rect(),
       record_metrics_for_frame);
   occlusion_tracker.set_minimum_tracking_size(
-      settings_.minimumOcclusionTrackingSize);
+      settings_.minimum_occlusion_tracking_size);
 
   if (debug_state_.show_occluding_rects) {
     occlusion_tracker.set_occluding_screen_space_rects_container(
@@ -871,7 +871,7 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
 }
 
 bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
-  return settings_.shouldClearRootRenderPass;
+  return settings_.should_clear_root_render_pass;
 }
 
 void LayerTreeHostImpl::SetManagedMemoryPolicy(
@@ -1022,7 +1022,7 @@ gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
   // The clip layer should be used if non-overlay scrollbars may exist since
   // it adjusts for them.
   LayerImpl* clip_layer = active_tree_->RootClipLayer();
-  if (!Settings().solidColorScrollbars && clip_layer &&
+  if (!Settings().solid_color_scrollbars && clip_layer &&
       clip_layer->masks_to_bounds())
     dip_size = clip_layer->bounds();
 
@@ -1229,13 +1229,13 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (!resource_provider)
     return false;
 
-  if (settings_.implSidePainting) {
+  if (settings_.impl_side_painting) {
     tile_manager_.reset(new TileManager(this,
                                         resource_provider.get(),
-                                        settings_.numRasterThreads,
-                                        settings_.useCheapnessEstimator,
-                                        settings_.useColorEstimator,
-                                        settings_.predictionBenchmarking));
+                                        settings_.num_raster_threads,
+                                        settings_.use_cheapness_estimator,
+                                        settings_.use_color_estimator,
+                                        settings_.prediction_benchmarking));
     tile_manager_->SetRecordRenderingStats(debug_state_.RecordRenderingStats());
   }
 
@@ -1390,7 +1390,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   // allow bringing the top controls back into view.
   if (!potentially_scrolling_layer_impl && top_controls_manager_ &&
       top_controls_manager_->content_top_offset() !=
-      settings_.topControlsHeight) {
+      settings_.top_controls_height) {
     potentially_scrolling_layer_impl = RootScrollLayer();
   }
 
@@ -1695,7 +1695,7 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
                                       base::Time wall_clock_time) {
-  if (!settings_.acceleratedAnimationEnabled ||
+  if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty() ||
       !active_tree_->root_layer())
     return;
@@ -1719,7 +1719,7 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
 }
 
 void LayerTreeHostImpl::UpdateAnimationState() {
-  if (!settings_.acceleratedAnimationEnabled ||
+  if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty() ||
       !active_tree_->root_layer())
     return;

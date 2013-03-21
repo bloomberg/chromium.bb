@@ -490,7 +490,7 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
 class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->implSidePainting = true;
+    settings->impl_side_painting = true;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {

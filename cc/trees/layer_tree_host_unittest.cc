@@ -898,9 +898,9 @@ public:
     virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE
     {
         // Make sure partial texture updates are turned off.
-        settings->maxPartialTextureUpdates = 0;
+        settings->max_partial_texture_updates = 0;
         // Linear fade animator prevents scrollbars from drawing immediately.
-        settings->useLinearFadeScrollbarAnimator = false;
+        settings->use_linear_fade_scrollbar_animator = false;
     }
 
     virtual void SetupTree() OVERRIDE
@@ -928,7 +928,8 @@ public:
 
     virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        ASSERT_EQ(0u, layer_tree_host()->settings().maxPartialTextureUpdates);
+        ASSERT_EQ(0u,
+                  layer_tree_host()->settings().max_partial_texture_updates);
 
         TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->output_surface()->context3d());
 
@@ -1019,9 +1020,9 @@ public:
     virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE
     {
         // Allow one partial texture update.
-        settings->maxPartialTextureUpdates = 1;
+        settings->max_partial_texture_updates = 1;
         // Linear fade animator prevents scrollbars from drawing immediately.
-        settings->useLinearFadeScrollbarAnimator = false;
+        settings->use_linear_fade_scrollbar_animator = false;
     }
 
     virtual void SetupTree() OVERRIDE
@@ -1061,7 +1062,8 @@ public:
 
     virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        ASSERT_EQ(1u, layer_tree_host()->settings().maxPartialTextureUpdates);
+        ASSERT_EQ(1u,
+                  layer_tree_host()->settings().max_partial_texture_updates);
 
         TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->output_surface()->context3d());
 
@@ -1295,7 +1297,7 @@ public:
 
     virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE
     {
-        settings->cacheRenderPassContents = true;
+        settings->cache_render_pass_contents = true;
     }
 
     virtual void BeginTest() OVERRIDE
@@ -1767,12 +1769,12 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
         proxy->SetMaxPartialTextureUpdates(5);
 
         LayerTreeSettings settings;
-        settings.maxPartialTextureUpdates = 10;
+        settings.max_partial_texture_updates = 10;
 
         LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
         EXPECT_TRUE(host.InitializeRendererIfNeeded());
 
-        EXPECT_EQ(0u, host.settings().maxPartialTextureUpdates);
+        EXPECT_EQ(0u, host.settings().max_partial_texture_updates);
     }
 
     // When partial updates are allowed, max updates should be limited by the proxy.
@@ -1784,12 +1786,12 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
         proxy->SetMaxPartialTextureUpdates(5);
 
         LayerTreeSettings settings;
-        settings.maxPartialTextureUpdates = 10;
+        settings.max_partial_texture_updates = 10;
 
         LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
         EXPECT_TRUE(host.InitializeRendererIfNeeded());
 
-        EXPECT_EQ(5u, host.settings().maxPartialTextureUpdates);
+        EXPECT_EQ(5u, host.settings().max_partial_texture_updates);
     }
 
     // When partial updates are allowed, max updates should also be limited by the settings.
@@ -1801,12 +1803,12 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
         proxy->SetMaxPartialTextureUpdates(20);
 
         LayerTreeSettings settings;
-        settings.maxPartialTextureUpdates = 10;
+        settings.max_partial_texture_updates = 10;
 
         LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
         EXPECT_TRUE(host.InitializeRendererIfNeeded());
 
-        EXPECT_EQ(10u, host.settings().maxPartialTextureUpdates);
+        EXPECT_EQ(10u, host.settings().max_partial_texture_updates);
     }
 }
 
@@ -1815,11 +1817,11 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer)
     FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
     LayerTreeSettings settings;
-    settings.maxPartialTextureUpdates = 4;
+    settings.max_partial_texture_updates = 4;
 
     scoped_ptr<LayerTreeHost> host = LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
     EXPECT_TRUE(host->InitializeRendererIfNeeded());
-    EXPECT_EQ(4u, host->settings().maxPartialTextureUpdates);
+    EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
 
 TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer)
@@ -1827,11 +1829,11 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer)
     FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_SOFTWARE);
 
     LayerTreeSettings settings;
-    settings.maxPartialTextureUpdates = 4;
+    settings.max_partial_texture_updates = 4;
 
     scoped_ptr<LayerTreeHost> host = LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
     EXPECT_TRUE(host->InitializeRendererIfNeeded());
-    EXPECT_EQ(4u, host->settings().maxPartialTextureUpdates);
+    EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
 
 TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent)
@@ -1839,11 +1841,11 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent)
     FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DELEGATED_3D);
 
     LayerTreeSettings settings;
-    settings.maxPartialTextureUpdates = 4;
+    settings.max_partial_texture_updates = 4;
 
     scoped_ptr<LayerTreeHost> host = LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
     EXPECT_TRUE(host->InitializeRendererIfNeeded());
-    EXPECT_EQ(0u, host->settings().maxPartialTextureUpdates);
+    EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
 }
 
 TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndSoftwareContent)
@@ -1851,11 +1853,11 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndSoftwareContent)
     FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DELEGATED_SOFTWARE);
 
     LayerTreeSettings settings;
-    settings.maxPartialTextureUpdates = 4;
+    settings.max_partial_texture_updates = 4;
 
     scoped_ptr<LayerTreeHost> host = LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
     EXPECT_TRUE(host->InitializeRendererIfNeeded());
-    EXPECT_EQ(0u, host->settings().maxPartialTextureUpdates);
+    EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
 }
 
 class LayerTreeHostTestCapturePicture : public LayerTreeHostTest {
@@ -1868,7 +1870,7 @@ public:
 
     virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE
     {
-        settings->implSidePainting = true;
+        settings->impl_side_painting = true;
     }
 
     class FillRectContentLayerClient : public ContentLayerClient {
@@ -2071,7 +2073,7 @@ public:
 
     virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE
     {
-        settings->usePinchZoomScrollbars = true;
+        settings->use_pinch_zoom_scrollbars = true;
     }
 
     virtual void BeginTest() OVERRIDE
@@ -2126,7 +2128,7 @@ public:
 
     virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE
     {
-        settings->usePinchZoomScrollbars = true;
+        settings->use_pinch_zoom_scrollbars = true;
     }
 
     virtual void BeginTest() OVERRIDE
@@ -2191,7 +2193,7 @@ public:
 
     virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE
     {
-        settings->usePinchZoomScrollbars = true;
+        settings->use_pinch_zoom_scrollbars = true;
     }
 
     virtual void BeginTest() OVERRIDE

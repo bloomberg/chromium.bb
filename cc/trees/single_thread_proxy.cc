@@ -36,7 +36,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host)
   DCHECK(layer_tree_host);
 
   // Impl-side painting not supported without threaded compositing.
-  CHECK(!layer_tree_host->settings().implSidePainting);
+  CHECK(!layer_tree_host->settings().impl_side_painting);
 }
 
 void SingleThreadProxy::Start() {

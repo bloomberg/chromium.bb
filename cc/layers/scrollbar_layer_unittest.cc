@@ -151,8 +151,8 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
 TEST(ScrollbarLayerTest, solidColorDrawQuads)
 {
     LayerTreeSettings layerTreeSettings;
-    layerTreeSettings.solidColorScrollbars = true;
-    layerTreeSettings.solidColorScrollbarThicknessDIP = 3;
+    layerTreeSettings.solid_color_scrollbars = true;
+    layerTreeSettings.solid_color_scrollbar_thickness_dip = 3;
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(layerTreeSettings, &proxy);
 
@@ -332,13 +332,13 @@ protected:
 
 TEST_F(ScrollbarLayerTestResourceCreation, resourceUpload)
 {
-    m_layerTreeSettings.solidColorScrollbars = false;
+    m_layerTreeSettings.solid_color_scrollbars = false;
     testResourceUpload(2);
 }
 
 TEST_F(ScrollbarLayerTestResourceCreation, solidColorNoResourceUpload)
 {
-    m_layerTreeSettings.solidColorScrollbars = true;
+    m_layerTreeSettings.solid_color_scrollbars = true;
     testResourceUpload(0);
 }
 

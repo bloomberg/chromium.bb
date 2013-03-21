@@ -93,7 +93,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     LayerTreeHostImpl::CommitComplete();
     test_hooks_->CommitCompleteOnThread(this);
 
-    if (!settings().implSidePainting)
+    if (!settings().impl_side_painting)
       test_hooks_->TreeActivatedOnThread(this);
   }
 

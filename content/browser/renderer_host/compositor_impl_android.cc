@@ -184,16 +184,16 @@ void CompositorImpl::SetVisible(bool visible) {
     host_.reset();
   } else if (!host_.get()) {
     cc::LayerTreeSettings settings;
-    settings.refreshRate = 60.0;
-    settings.implSidePainting = false;
-    settings.calculateTopControlsPosition = false;
-    settings.topControlsHeight = 0.f;
-    settings.useMemoryManagement = false;
+    settings.refresh_rate = 60.0;
+    settings.impl_side_painting = false;
+    settings.calculate_top_controls_position = false;
+    settings.top_controls_height = 0.f;
+    settings.use_memory_management = false;
 
     // Do not clear the framebuffer when rendering into external GL contexts
     // like Android View System's.
     if (UsesDirectGL())
-      settings.shouldClearRootRenderPass = false;
+      settings.should_clear_root_render_pass = false;
 
     scoped_ptr<cc::Thread> impl_thread;
     if (g_impl_thread)

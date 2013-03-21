@@ -225,7 +225,7 @@ gfx::Transform LayerTreeImpl::ImplTransform() const {
 }
 
 void LayerTreeImpl::UpdateSolidColorScrollbars() {
-  DCHECK(settings().solidColorScrollbars);
+  DCHECK(settings().solid_color_scrollbars);
 
   LayerImpl* root_scroll = RootScrollLayer();
   DCHECK(root_scroll);
@@ -257,7 +257,7 @@ struct UpdateTilePrioritiesForLayer {
 };
 
 void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
-  if (settings().solidColorScrollbars && IsActiveTree() && RootScrollLayer()) {
+  if (settings().solid_color_scrollbars && IsActiveTree() && RootScrollLayer()) {
     UpdateSolidColorScrollbars();
 
     // The top controls manager is incompatible with the WebKit-created cliprect
@@ -305,7 +305,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
         device_scale_factor(),
         total_page_scale_factor(),
         MaxTextureSize(),
-        settings().canUseLCDText,
+        settings().can_use_lcd_text,
         render_surface_layer_list_,
         update_tile_priorities);
   }

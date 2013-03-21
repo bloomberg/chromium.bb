@@ -1143,7 +1143,7 @@ class ImplSidePaintingLayerTreeHostContextTest
     : public LayerTreeHostContextTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->implSidePainting = true;
+    settings->impl_side_painting = true;
   }
 };
 

@@ -58,7 +58,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layer_tree_host,
       completion_event_for_commit_held_on_tree_activation_(NULL),
       texture_acquisition_completion_event_on_impl_thread_(NULL),
       next_frame_is_newly_committed_frame_on_impl_thread_(false),
-      render_vsync_enabled_(layer_tree_host->settings().renderVSyncEnabled),
+      render_vsync_enabled_(layer_tree_host->settings().render_vsync_enabled),
       inside_draw_(false),
       total_commit_count_(0),
       defer_commits_(false),
@@ -465,7 +465,7 @@ void ThreadProxy::SendManagedMemoryStats() {
   // If we are using impl-side painting, then sendManagedMemoryStats is called
   // directly after the tile manager's manage function, and doesn't need to
   // interact with main thread's layer tree.
-  if (layer_tree_host_->settings().implSidePainting)
+  if (layer_tree_host_->settings().impl_side_painting)
     return;
 
   layer_tree_host_impl_->SendManagedMemoryStats(
@@ -835,7 +835,7 @@ void ThreadProxy::ScheduledActionCommit() {
 
   next_frame_is_newly_committed_frame_on_impl_thread_ = true;
 
-  if (layer_tree_host_->settings().implSidePainting &&
+  if (layer_tree_host_->settings().impl_side_painting &&
       layer_tree_host_->BlocksPendingCommit()) {
     // For some layer types in impl-side painting, the commit is held until
     // the pending tree is activated.
@@ -926,7 +926,7 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   if (completion_event_for_commit_held_on_tree_activation_ &&
       !layer_tree_host_impl_->pending_tree()) {
     TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation");
-    DCHECK(layer_tree_host_impl_->settings().implSidePainting);
+    DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
     completion_event_for_commit_held_on_tree_activation_->Signal();
     completion_event_for_commit_held_on_tree_activation_ = NULL;
   }
@@ -1088,7 +1088,7 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
   }
   SchedulerSettings scheduler_settings;
   scheduler_settings.impl_side_painting =
-      layer_tree_host_->settings().implSidePainting;
+      layer_tree_host_->settings().impl_side_painting;
   scheduler_on_impl_thread_ = Scheduler::Create(this,
                                                 frame_rate_controller.Pass(),
                                                 scheduler_settings);

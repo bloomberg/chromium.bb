@@ -122,7 +122,7 @@ bool GLRenderer::Initialize() {
   std::set<std::string> extensions(extensions_list.begin(),
                                    extensions_list.end());
 
-  if (Settings().acceleratePainting &&
+  if (Settings().accelerate_painting &&
       extensions.count("GL_EXT_texture_format_BGRA8888") &&
       extensions.count("GL_EXT_read_format_bgra"))
     capabilities_.using_accelerated_painting = true;
@@ -130,7 +130,7 @@ bool GLRenderer::Initialize() {
     capabilities_.using_accelerated_painting = false;
 
   capabilities_.using_partial_swap =
-      Settings().partialSwapEnabled &&
+      Settings().partial_swap_enabled &&
       extensions.count("GL_CHROMIUM_post_sub_buffer");
 
   // Use the SwapBuffers callback only with the threaded proxy.
@@ -148,7 +148,7 @@ bool GLRenderer::Initialize() {
 
   capabilities_.using_gpu_memory_manager =
       extensions.count("GL_CHROMIUM_gpu_memory_manager") &&
-      Settings().useMemoryManagement;
+      Settings().use_memory_management;
   if (capabilities_.using_gpu_memory_manager)
     context_->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
@@ -1529,7 +1529,7 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame& frame) {
   GLC(context_, context_->disable(GL_BLEND));
   blend_shadow_ = false;
 
-  if (Settings().compositorFrameMessage) {
+  if (Settings().compositor_frame_message) {
     CompositorFrame compositor_frame;
     compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
     output_surface_->SendFrameToParentCompositor(&compositor_frame);

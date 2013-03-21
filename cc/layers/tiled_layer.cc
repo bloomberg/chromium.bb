@@ -100,9 +100,9 @@ scoped_ptr<LayerImpl> TiledLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 void TiledLayer::UpdateTileSizeAndTilingOption() {
   DCHECK(layer_tree_host());
 
-  gfx::Size default_tile_size = layer_tree_host()->settings().defaultTileSize;
+  gfx::Size default_tile_size = layer_tree_host()->settings().default_tile_size;
   gfx::Size max_untiled_layer_size =
-      layer_tree_host()->settings().maxUntiledLayerSize;
+      layer_tree_host()->settings().max_untiled_layer_size;
   int layer_width = content_bounds().width();
   int layer_height = content_bounds().height();
 

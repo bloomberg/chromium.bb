@@ -52,7 +52,8 @@ bool WebLayerTreeViewImplForTesting::initialize(
   cc::LayerTreeSettings settings;
   // Accelerated animations are disabled for layout tests, but enabled for unit
   // tests.
-  settings.acceleratedAnimationEnabled = type_ == webkit_support::FAKE_CONTEXT;
+  settings.accelerated_animation_enabled =
+      type_ == webkit_support::FAKE_CONTEXT;
   layer_tree_host_ =
       cc::LayerTreeHost::Create(this, settings, compositor_thread.Pass());
   if (!layer_tree_host_.get())

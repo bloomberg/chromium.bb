@@ -158,10 +158,10 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-  if (layer_tree_impl()->settings().solidColorScrollbars) {
+  if (layer_tree_impl()->settings().solid_color_scrollbars) {
     gfx::Rect track_rect = geometry_->trackRect(&scrollbar_);
     int thickness_override =
-        layer_tree_impl()->settings().solidColorScrollbarThicknessDIP;
+        layer_tree_impl()->settings().solid_color_scrollbar_thickness_dip;
     gfx::RectF thumb_rect;
     if (scrollbar_.orientation() == WebScrollbar::Horizontal) {
       track_rect.set_y(track_rect.y() + vertical_adjust_);
@@ -186,7 +186,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
     quad->SetNew(shared_quad_state,
                  quad_rect,
-                 layer_tree_impl()->settings().solidColorScrollbarColor);
+                 layer_tree_impl()->settings().solid_color_scrollbar_color);
     quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
     return;
   }

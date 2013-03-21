@@ -92,9 +92,9 @@ void ContentLayer::CreateUpdaterIfNeeded() {
     return;
   scoped_ptr<LayerPainter> painter =
       ContentLayerPainter::Create(client_).PassAs<LayerPainter>();
-  if (layer_tree_host()->settings().acceleratePainting)
+  if (layer_tree_host()->settings().accelerate_painting)
     updater_ = SkPictureContentLayerUpdater::Create(painter.Pass());
-  else if (layer_tree_host()->settings().perTilePaintingEnabled)
+  else if (layer_tree_host()->settings().per_tile_painting_enabled)
     updater_ = BitmapSkPictureContentLayerUpdater::Create(painter.Pass());
   else
     updater_ = BitmapContentLayerUpdater::Create(painter.Pass());

@@ -106,7 +106,7 @@ bool DelegatingRenderer::Initialize() {
     DCHECK(hasARBTextureRect);
 
   capabilities_.using_accelerated_painting =
-      Settings().acceleratePainting &&
+      Settings().accelerate_painting &&
       capabilities_.best_texture_format == GL_BGRA_EXT &&
       hasReadBGRA;
 

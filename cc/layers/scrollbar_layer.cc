@@ -75,7 +75,7 @@ int ScrollbarLayer::MaxTextureSize() {
 }
 
 float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
-  if (layer_tree_host()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solid_color_scrollbars)
     return scale;
 
   // If the scaled content_bounds() is bigger than the max texture size of the
@@ -259,7 +259,7 @@ void ScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
 }
 
 void ScrollbarLayer::CreateUpdaterIfNeeded() {
-  if (layer_tree_host()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solid_color_scrollbars)
     return;
 
   texture_format_ =
@@ -312,7 +312,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                                 gfx::Rect rect,
                                 ResourceUpdateQueue* queue,
                                 RenderingStats* stats) {
-  if (layer_tree_host()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solid_color_scrollbars)
     return;
 
   // Skip painting and uploading if there are no invalidations and
@@ -343,7 +343,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
   }
 
   bool partial_updates_allowed =
-      layer_tree_host()->settings().maxPartialTextureUpdates > 0;
+      layer_tree_host()->settings().max_partial_texture_updates > 0;
   if (!partial_updates_allowed)
     resource->texture()->ReturnBackingTexture();
 
@@ -363,7 +363,7 @@ gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
 
 void ScrollbarLayer::SetTexturePriorities(
     const PriorityCalculator& priority_calc) {
-  if (layer_tree_host()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solid_color_scrollbars)
     return;
 
   if (content_bounds().IsEmpty())

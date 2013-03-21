@@ -843,7 +843,7 @@ public:
     virtual const LayerTreeSettings& Settings() const OVERRIDE
     {
         static LayerTreeSettings fakeSettings;
-        fakeSettings.partialSwapEnabled = true;
+        fakeSettings.partial_swap_enabled = true;
         return fakeSettings;
     }
 };
@@ -862,7 +862,7 @@ public:
     virtual const LayerTreeSettings& Settings() const OVERRIDE
     {
         static LayerTreeSettings fakeSettings;
-        fakeSettings.compositorFrameMessage = true;
+        fakeSettings.compositor_frame_message = true;
         return fakeSettings;
     }
 };

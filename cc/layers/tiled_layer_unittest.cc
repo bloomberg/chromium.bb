@@ -52,7 +52,7 @@ public:
         , m_fakeLayerImplTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)
         , m_occlusion(0)
     {
-        m_settings.maxPartialTextureUpdates = std::numeric_limits<size_t>::max();
+        m_settings.max_partial_texture_updates = std::numeric_limits<size_t>::max();
     }
 
     virtual void SetUp()
@@ -887,7 +887,7 @@ class TiledLayerPartialUpdateTest : public TiledLayerTest {
 public:
     TiledLayerPartialUpdateTest()
     {
-        m_settings.maxPartialTextureUpdates = 4;
+        m_settings.max_partial_texture_updates = 4;
     }
 };
 

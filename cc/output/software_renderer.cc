@@ -106,7 +106,7 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame& frame) {
   current_framebuffer_lock_.reset();
   current_canvas_ = NULL;
   root_canvas_ = NULL;
-  if (Settings().compositorFrameMessage) {
+  if (Settings().compositor_frame_message) {
     compositor_frame_.metadata = client_->MakeCompositorFrameMetadata();
     output_device_->EndPaint(compositor_frame_.software_frame_data.get());
   } else {
@@ -115,7 +115,7 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame& frame) {
 }
 
 bool SoftwareRenderer::SwapBuffers() {
-  if (Settings().compositorFrameMessage)
+  if (Settings().compositor_frame_message)
     output_surface_->SendFrameToParentCompositor(&compositor_frame_);
   return true;
 }

@@ -90,7 +90,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 
   void set_needs_filter_context() { needs_filter_context_ = true; }
   bool needs_offscreen_context() const {
-    return needs_filter_context_ || settings_.acceleratePainting;
+    return needs_filter_context_ || settings_.accelerate_painting;
   }
 
   // LayerTreeHost interface to Proxy.
@@ -208,7 +208,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   virtual void RateLimit() OVERRIDE;
 
   bool buffered_updates() const {
-    return settings_.maxPartialTextureUpdates !=
+    return settings_.max_partial_texture_updates !=
         std::numeric_limits<size_t>::max();
   }
   bool RequestPartialTextureUpdate();

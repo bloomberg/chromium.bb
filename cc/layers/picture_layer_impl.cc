@@ -349,9 +349,9 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
         std::min(max_size, content_bounds.height()));
   }
 
-  gfx::Size default_tile_size = layer_tree_impl()->settings().defaultTileSize;
+  gfx::Size default_tile_size = layer_tree_impl()->settings().default_tile_size;
   gfx::Size max_untiled_content_size =
-      layer_tree_impl()->settings().maxUntiledLayerSize;
+      layer_tree_impl()->settings().max_untiled_layer_size;
 
   bool any_dimension_too_large =
       content_bounds.width() > max_untiled_content_size.width() ||
@@ -689,7 +689,7 @@ void PictureLayerImpl::CalculateRasterContentsScale(
   }
 
   float low_res_factor =
-      layer_tree_impl()->settings().lowResContentsScaleFactor;
+      layer_tree_impl()->settings().low_res_contents_scale_factor;
   *low_res_raster_contents_scale = std::max(
       *raster_contents_scale * low_res_factor,
       MinimumContentsScale());
@@ -723,7 +723,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   }
 
   float low_res_factor =
-      layer_tree_impl()->settings().lowResContentsScaleFactor;
+      layer_tree_impl()->settings().low_res_contents_scale_factor;
 
   float min_acceptable_low_res_scale =
       low_res_factor * min_acceptable_high_res_scale;
@@ -778,7 +778,7 @@ PictureLayerImpl* PictureLayerImpl::ActiveTwin() const {
 }
 
 float PictureLayerImpl::MinimumContentsScale() const {
-  float setting_min = layer_tree_impl()->settings().minimumContentsScale;
+  float setting_min = layer_tree_impl()->settings().minimum_contents_scale;
 
   // If the contents scale is less than 1 / width (also for height),
   // then it will end up having less than one pixel of content in that
