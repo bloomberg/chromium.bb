@@ -27,7 +27,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
  public:
   LayerTreeHostPerfTest()
       : num_draws_(0) {
-    fake_content_layer_client_.setPaintAllOpaque(true);
+    fake_content_layer_client_.set_paint_all_opaque(true);
   }
 
   virtual void BeginTest() OVERRIDE {

@@ -14,22 +14,23 @@
 namespace cc {
 
 class FakeContentLayerClient : public cc::ContentLayerClient {
-public:
-    FakeContentLayerClient();
-    virtual ~FakeContentLayerClient();
+ public:
+  FakeContentLayerClient();
+  virtual ~FakeContentLayerClient();
 
-    virtual void PaintContents(SkCanvas* canvas, gfx::Rect rect,
-        gfx::RectF* opaque_rect) OVERRIDE;
+  virtual void PaintContents(SkCanvas* canvas,
+                             gfx::Rect rect,
+                             gfx::RectF* opaque_rect) OVERRIDE;
 
-    void setPaintAllOpaque(bool opaque) { paint_all_opaque_ = opaque; }
+  void set_paint_all_opaque(bool opaque) { paint_all_opaque_ = opaque; }
 
-    void addDrawRect(const gfx::Rect& rect) { draw_rects_.push_back(rect); }
+  void add_draw_rect(const gfx::Rect& rect) { draw_rects_.push_back(rect); }
 
-private:
-    typedef std::vector<gfx::Rect> RectVector;
+ private:
+  typedef std::vector<gfx::Rect> RectVector;
 
-    bool paint_all_opaque_;
-    RectVector draw_rects_;
+  bool paint_all_opaque_;
+  RectVector draw_rects_;
 };
 
 }  // namespace cc

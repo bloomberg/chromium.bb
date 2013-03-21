@@ -121,8 +121,8 @@ class TestablePicturePileImpl : public PicturePileImpl {
     UpdateRecordedRegion();
   }
 
-  void addDrawRect(const gfx::Rect& rect) {
-    client_.addDrawRect(rect);
+  void add_draw_rect(const gfx::Rect& rect) {
+    client_.add_draw_rect(rect);
   }
 
  protected:
@@ -243,7 +243,7 @@ class PictureLayerImplTest : public testing::Test {
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
       gfx::Point tile_center = (*tile_iter)->content_rect().CenterPoint();
       gfx::Rect rect(tile_center.x(), tile_center.y(), 1, 1);
-      active_pile->addDrawRect(rect);
+      active_pile->add_draw_rect(rect);
       rects.push_back(SkRect::MakeXYWH(rect.x(), rect.y(), 1, 1));
     }
     // Force re-record with newly injected content
