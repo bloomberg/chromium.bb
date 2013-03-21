@@ -14,6 +14,8 @@ message DevicePolicyRefreshRateProto {
 }
 
 message UserWhitelistProto {
+  // If a UserWhitelistProto is included in the ChromeDeviceSettingsProto but
+  // the user_whitelist field is empty then no user can sign-in.
   repeated string user_whitelist = 1;
 }
 
@@ -262,7 +264,10 @@ message StartUpFlagsProto {
 
 message UptimeLimitProto {
   // Sets the length of device uptime after which an automatic reboot is
-  // scheduled. The policy value should be specified in seconds.
+  // scheduled. An automatic reboot is scheduled at the selected time but may be
+  // delayed on the device by up to 24 hours, e.g. if a user is currently using
+  // the device or an app/extension has requested reboots to be inhibited
+  // temporarily. The policy value should be specified in seconds.
   optional int64 uptime_limit = 1;
 }
 
