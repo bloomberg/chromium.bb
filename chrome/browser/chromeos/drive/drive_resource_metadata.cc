@@ -237,7 +237,6 @@ DriveResourceMetadata::DriveResourceMetadata(
       storage_(new DriveResourceMetadataStorageMemory),
       root_resource_id_(root_resource_id),
       serialized_size_(0),
-      largest_changestamp_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -282,6 +281,11 @@ DriveResourceMetadata::~DriveResourceMetadata() {
 DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
+  // Initialize the storage.
+  if (!storage_->Initialize())
+    return DRIVE_FILE_ERROR_FAILED;
+
+  // Initialize the root entry.
   DriveEntryProto root;
   root.mutable_file_info()->set_is_directory(true);
   root.set_resource_id(root_resource_id_);
@@ -302,7 +306,7 @@ void DriveResourceMetadata::ResetOnBlockingPool() {
   RemoveDirectoryChildren(root_resource_id_);
   last_serialized_ = base::Time();
   serialized_size_ = 0;
-  largest_changestamp_ = 0;
+  storage_->SetLargestChangestamp(0);
 }
 
 void DriveResourceMetadata::GetLargestChangestamp(
@@ -519,13 +523,13 @@ void DriveResourceMetadata::Load(const base::FilePath& directory_path,
 
 int64 DriveResourceMetadata::GetLargestChangestampOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  return largest_changestamp_;
+  return storage_->GetLargestChangestamp();
 }
 
 DriveFileError DriveResourceMetadata::SetLargestChangestampOnBlockingPool(
     int64 value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  largest_changestamp_ = value;
+  storage_->SetLargestChangestamp(value);
   return DRIVE_FILE_OK;
 }
 
@@ -894,14 +898,15 @@ void DriveResourceMetadata::MaybeSaveOnBlockingPool(
     const base::FilePath& directory_path) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!ShouldSerializeFileSystemNow(serialized_size_, last_serialized_))
+  if (storage_->IsPersistentStorage() ||
+      !ShouldSerializeFileSystemNow(serialized_size_, last_serialized_))
     return;
 
   const base::FilePath path = directory_path.Append(kProtoFileName);
 
   DriveRootDirectoryProto proto;
   DirectoryToProto(root_resource_id_, proto.mutable_drive_directory());
-  proto.set_largest_changestamp(largest_changestamp_);
+  proto.set_largest_changestamp(storage_->GetLargestChangestamp());
   proto.set_version(kProtoVersion);
 
   scoped_ptr<std::string> serialized_proto(new std::string());
@@ -1111,6 +1116,13 @@ DriveFileError DriveResourceMetadata::LoadOnBlockingPool(
     const base::FilePath& directory_path) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
+  // If the storage is persistent, do nothing and just return whether the stored
+  // data is non-trivial.
+  if (storage_->IsPersistentStorage()) {
+    return storage_->GetLargestChangestamp() > 0 ?
+        DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
+  }
+
   const base::FilePath path = directory_path.Append(kProtoFileName);
   base::Time last_modified;
   std::string serialized_proto;
@@ -1161,7 +1173,7 @@ bool DriveResourceMetadata::ParseFromString(
       CreateEntryWithProperBaseName(proto.drive_directory().drive_entry()));
   AddDescendantsFromProto(proto.drive_directory());
 
-  largest_changestamp_ = proto.largest_changestamp();
+  storage_->SetLargestChangestamp(proto.largest_changestamp());
 
   return true;
 }

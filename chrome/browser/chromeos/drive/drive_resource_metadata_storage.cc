@@ -10,15 +10,39 @@
 
 namespace drive {
 
-DriveResourceMetadataStorageMemory::DriveResourceMetadataStorageMemory() {
+DriveResourceMetadataStorageMemory::DriveResourceMetadataStorageMemory()
+    : largest_changestamp_(0) {
 }
 
 DriveResourceMetadataStorageMemory::~DriveResourceMetadataStorageMemory() {
   base::ThreadRestrictions::AssertIOAllowed();
 }
 
+bool DriveResourceMetadataStorageMemory::Initialize() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  // Do nothing.
+  return true;
+}
+
+bool DriveResourceMetadataStorageMemory::IsPersistentStorage() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return false;
+}
+
+void DriveResourceMetadataStorageMemory::SetLargestChangestamp(
+    int64 largest_changestamp) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  largest_changestamp_ = largest_changestamp;
+}
+
+int64 DriveResourceMetadataStorageMemory::GetLargestChangestamp() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return largest_changestamp_;
+}
+
 void DriveResourceMetadataStorageMemory::PutEntry(
     const DriveEntryProto& entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!entry.resource_id().empty());
   resource_map_[entry.resource_id()] = entry;
 }

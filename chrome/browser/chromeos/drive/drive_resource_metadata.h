@@ -384,7 +384,6 @@ class DriveResourceMetadata {
 
   base::Time last_serialized_;
   size_t serialized_size_;
-  int64 largest_changestamp_;  // Stored in the serialized proto.
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

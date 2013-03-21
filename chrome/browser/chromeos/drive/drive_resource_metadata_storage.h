@@ -16,6 +16,7 @@
 namespace drive {
 
 class DriveEntryProto;
+class DriveResourceMetadataHeader;
 
 // Interface of a storage for DriveResourceMetadata which is responsible to
 // manage entry info and child-parent relationships between entries.
@@ -25,6 +26,18 @@ class DriveEntryProto;
 class DriveResourceMetadataStorage {
  public:
   virtual ~DriveResourceMetadataStorage() {}
+
+  // Initializes this object.
+  virtual bool Initialize() = 0;
+
+  // Returns true if the data remains persistent even after this object's death.
+  virtual bool IsPersistentStorage() = 0;
+
+  // Sets the largest changestamp.
+  virtual void SetLargestChangestamp(int64 largest_changestamp) = 0;
+
+  // Gets the largest changestamp.
+  virtual int64 GetLargestChangestamp() = 0;
 
   // Puts the entry to this storage.
   virtual void PutEntry(const DriveEntryProto& entry) = 0;
@@ -63,6 +76,10 @@ class DriveResourceMetadataStorageMemory
   virtual ~DriveResourceMetadataStorageMemory();
 
   // DriveResourceMetadataStorage overrides:
+  virtual bool Initialize() OVERRIDE;
+  virtual bool IsPersistentStorage() OVERRIDE;
+  virtual void SetLargestChangestamp(int64 largest_changestamp) OVERRIDE;
+  virtual int64 GetLargestChangestamp() OVERRIDE;
   virtual void PutEntry(const DriveEntryProto& entry) OVERRIDE;
   virtual scoped_ptr<DriveEntryProto> GetEntry(
       const std::string& resource_id) OVERRIDE;
@@ -88,6 +105,8 @@ class DriveResourceMetadataStorageMemory
 
   // Map from resource id to ChildMap.
   typedef std::map<std::string, ChildMap> ChildMaps;
+
+  int64 largest_changestamp_;
 
   // Entries stored in this storage.
   ResourceMap resource_map_;
