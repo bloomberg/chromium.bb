@@ -122,6 +122,20 @@ struct CC_EXPORT TilePriority {
                                         float time_delta,
                                         const gfx::RectF& target_bounds);
 
+  bool operator ==(const TilePriority& other) const {
+    if (is_live != other.is_live) return false;
+    if (!is_live) return true;  // All non-live priorities are the same.
+    return resolution == other.resolution &&
+        time_to_visible_in_seconds == other.time_to_visible_in_seconds &&
+        distance_to_visible_in_pixels == other.distance_to_visible_in_pixels;
+    // No need to compare current_screen_quad which is for debug only and
+    // never changes by itself.
+  }
+
+  bool operator !=(const TilePriority& other) const {
+    return !(*this == other);
+  }
+
   // If a tile is not live, then all other fields are invalid.
   bool is_live;
   TileResolution resolution;

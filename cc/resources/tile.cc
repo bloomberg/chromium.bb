@@ -46,6 +46,9 @@ scoped_ptr<base::Value> Tile::AsValue() const {
 }
 
 void Tile::SetPriority(WhichTree tree, const TilePriority& priority) {
+  if (priority_[tree] == priority)
+    return;
+
   tile_manager_->WillModifyTilePriority(this, tree, priority);
   priority_[tree] = priority;
 }
