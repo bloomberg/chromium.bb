@@ -88,24 +88,28 @@ void SyncControlVSyncProvider::GetVSyncParameters(
     system_time -= interval_in_microseconds;
     media_stream_counter--;
   }
+  if (monotonic_time_in_microseconds - system_time >
+      base::Time::kMicrosecondsPerSecond)
+    return;
 
   timebase = base::TimeTicks::FromInternalValue(system_time);
 
   int32 numerator, denominator;
+  base::TimeDelta new_interval;
   if (GetMscRate(&numerator, &denominator)) {
-    last_good_interval_ =
+    new_interval =
         base::TimeDelta::FromSeconds(denominator) / numerator;
   } else if (!last_timebase_.is_null()) {
     base::TimeDelta timebase_diff = timebase - last_timebase_;
     uint64 counter_diff = media_stream_counter -
         last_media_stream_counter_;
     if (counter_diff > 0 && timebase > last_timebase_)
-      last_good_interval_ = timebase_diff / counter_diff;
+      new_interval = timebase_diff / counter_diff;
   }
-  if (last_good_interval_.InMicroseconds() < kMinVsyncIntervalUs ||
-      last_good_interval_.InMicroseconds() > kMaxVsyncIntervalUs) {
-    LOG(FATAL) << "Calculated bogus refresh interval of "
-               << last_good_interval_.InMicroseconds() << " us. "
+  if (new_interval.InMicroseconds() < kMinVsyncIntervalUs ||
+      new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
+    LOG(ERROR) << "Calculated bogus refresh interval of "
+               << new_interval.InMicroseconds() << " us. "
                << "Last time base of "
                << last_timebase_.ToInternalValue() << " us. "
                << "Current time base of "
@@ -114,6 +118,8 @@ void SyncControlVSyncProvider::GetVSyncParameters(
                << last_media_stream_counter_ << ". "
                << "Current media stream count of "
                << media_stream_counter << ".";
+  } else {
+    last_good_interval_ = new_interval;
   }
 
   last_timebase_ = timebase;
