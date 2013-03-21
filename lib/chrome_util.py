@@ -13,6 +13,7 @@ import functools
 import glob
 import logging
 import os
+import re
 import shlex
 import shutil
 
@@ -114,8 +115,10 @@ class Copier(object):
   Provides destination stripping and permission setting functionality.
   """
 
+  DEFAULT_BLACKLIST = (r'(^|.*/)\.svn($|/.*)',)
+
   def __init__(self, strip_bin=None, strip_flags=None, default_mode=0644,
-               dir_mode=0755, exe_mode=0755):
+               dir_mode=0755, exe_mode=0755, blacklist=None):
     """Initialization.
 
     Arguments:
@@ -125,17 +128,27 @@ class Copier(object):
       default_mode: Default permissions to set on files.
       dir_mode: Mode to set for directories.
       exe_mode: Permissions to set on executables.
+      blacklist: A list of path patterns to ignore during the copy.
     """
     self.strip_bin = strip_bin
     self.strip_flags = strip_flags
     self.default_mode = default_mode
     self.dir_mode = dir_mode
     self.exe_mode = exe_mode
+    self.blacklist = blacklist
+    if self.blacklist is None:
+      self.blacklist = self.DEFAULT_BLACKLIST
 
   @staticmethod
   def Log(src, dest, directory):
     sep = ' [d] -> ' if directory else ' -> '
     logging.debug('%s %s %s', src, sep, dest)
+
+  def _PathIsBlacklisted(self, path):
+    for pattern in self.blacklist:
+      if re.match(pattern, path):
+        return True
+    return False
 
   def _CopyFile(self, src, dest, path):
     """Perform the copy.
@@ -215,6 +228,8 @@ class Copier(object):
           for sub_path in osutils.DirectoryIterator(p):
             rel_path = os.path.relpath(sub_path, p)
             sub_dest = os.path.join(dest, rel_path)
+            if self._PathIsBlacklisted(rel_path):
+              continue
             if sub_path.endswith('/'):
               osutils.SafeMakedirs(sub_dest, mode=self.dir_mode)
             else:

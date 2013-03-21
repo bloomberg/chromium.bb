@@ -197,7 +197,9 @@ class DirCopyTest(FileCopyTest):
   ELEMENT_SRC_NAME = 'monkey1/'
   ELEMENT_SRC = Dir(ELEMENT_SRC_NAME, FILES)
   ELEMENTS_SRC = [
-      Dir('monkey1', FILES) , Dir('monkey2', FILES), Dir('monkey3', FILES),
+      # Add .svn directory to test black list functionality.
+      Dir('monkey1', FILES + [Dir('.svn', FILES)]) , Dir('monkey2', FILES),
+      Dir('monkey3', FILES),
       Dir('foon1', []), Dir('foon2', []), Dir('foon3', [])]
   ELEMENTS_GLOB = 'monkey*'
   DIR_SRC_NAME = 'dir_src'
