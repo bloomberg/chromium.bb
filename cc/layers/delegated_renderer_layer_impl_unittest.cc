@@ -494,7 +494,7 @@ class DelegatedRendererLayerImplTestTransform
           RenderPass::Id(10, 7),
           child_pass_rect,
           gfx::Transform());
-      MockQuadCuller quad_sink(pass->quad_list, pass->shared_quad_state_list);
+      MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
       AppendQuadsData data(pass->id);
       SharedQuadState* shared_quad_state = quad_sink.UseSharedQuadState(
           SharedQuadState::Create());
@@ -529,7 +529,7 @@ class DelegatedRendererLayerImplTestTransform
         RenderPass::Id(9, 6),
         root_pass_rect,
         gfx::Transform());
-    MockQuadCuller quad_sink(pass->quad_list, pass->shared_quad_state_list);
+    MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
     AppendQuadsData data(pass->id);
     SharedQuadState* shared_quad_state =
         quad_sink.UseSharedQuadState(SharedQuadState::Create());
@@ -891,7 +891,7 @@ class DelegatedRendererLayerImplTestClip
           RenderPass::Id(10, 7),
           child_pass_rect,
           gfx::Transform());
-      MockQuadCuller quad_sink(pass->quad_list, pass->shared_quad_state_list);
+      MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
       AppendQuadsData data(pass->id);
       SharedQuadState* shared_quad_state =
           quad_sink.UseSharedQuadState(SharedQuadState::Create());
@@ -924,7 +924,7 @@ class DelegatedRendererLayerImplTestClip
         RenderPass::Id(9, 6),
         root_pass_rect,
         gfx::Transform());
-    MockQuadCuller quad_sink(pass->quad_list, pass->shared_quad_state_list);
+    MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
     AppendQuadsData data(pass->id);
     SharedQuadState* shared_quad_state =
         quad_sink.UseSharedQuadState(SharedQuadState::Create());

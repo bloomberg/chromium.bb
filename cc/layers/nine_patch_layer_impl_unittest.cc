@@ -59,7 +59,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     layer->AppendQuads(&quadCuller, &data);
 
     // Verify quad rects
-    const QuadList& quads = quadCuller.quadList();
+    const QuadList& quads = quadCuller.quad_list();
     EXPECT_EQ(8, quads.size());
     Region remaining(visibleContentRect);
     for (size_t i = 0; i < quads.size(); ++i) {
@@ -114,7 +114,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuadsForSqueezedLayer)
     layer->AppendQuads(&quadCuller, &data);
 
     // Verify corner rects fill the layer and don't overlap
-    const QuadList& quads = quadCuller.quadList();
+    const QuadList& quads = quadCuller.quad_list();
     EXPECT_EQ(4, quads.size());
     Region filled;
     for (size_t i = 0; i < quads.size(); ++i) {

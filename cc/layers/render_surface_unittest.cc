@@ -97,7 +97,7 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
     QuadList quadList;
     SharedQuadStateList sharedStateList;
-    MockQuadCuller mockQuadCuller(quadList, sharedStateList);
+    MockQuadCuller mockQuadCuller(&quadList, &sharedStateList);
     AppendQuadsData appendQuadsData;
 
     bool forReplica = false;

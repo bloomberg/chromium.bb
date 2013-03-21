@@ -65,7 +65,7 @@ class TiledLayerImplTest : public testing::Test {
     layer->draw_properties().visible_content_rect = visible_content_rect;
     layer->SetBounds(layer_size);
 
-    MockQuadCuller quad_culler(*quads, *shared_states);
+    MockQuadCuller quad_culler(quads, shared_states);
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
   }
@@ -90,7 +90,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
     unsigned num_tiles = num_tiles_x * num_tiles_y;
-    EXPECT_EQ(quad_culler.quadList().size(), num_tiles);
+    EXPECT_EQ(quad_culler.quad_list().size(), num_tiles);
   }
 
   // Layer with empty visible layer rect produces no quads
@@ -102,7 +102,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     MockQuadCuller quad_culler;
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
-    EXPECT_EQ(quad_culler.quadList().size(), 0u);
+    EXPECT_EQ(quad_culler.quad_list().size(), 0u);
   }
 
   // Layer with non-intersecting visible layer rect produces no quads
@@ -116,7 +116,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     MockQuadCuller quad_culler;
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
-    EXPECT_EQ(quad_culler.quadList().size(), 0u);
+    EXPECT_EQ(quad_culler.quad_list().size(), 0u);
   }
 
   // Layer with skips draw produces no quads
@@ -128,7 +128,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     MockQuadCuller quad_culler;
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
-    EXPECT_EQ(quad_culler.quadList().size(), 0u);
+    EXPECT_EQ(quad_culler.quad_list().size(), 0u);
   }
 }
 
@@ -147,11 +147,11 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     MockQuadCuller quad_culler;
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
-    EXPECT_EQ(quad_culler.quadList().size(), 4u);
+    EXPECT_EQ(quad_culler.quad_list().size(), 4u);
     EXPECT_EQ(0u, data.numMissingTiles);
 
-    for (size_t i = 0; i < quad_culler.quadList().size(); ++i)
-      EXPECT_EQ(quad_culler.quadList()[i]->material, DrawQuad::TILED_CONTENT);
+    for (size_t i = 0; i < quad_culler.quad_list().size(); ++i)
+      EXPECT_EQ(quad_culler.quad_list()[i]->material, DrawQuad::TILED_CONTENT);
   }
 
   for (int i = 0; i < num_tiles_x; ++i)
@@ -164,9 +164,9 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
     EXPECT_LT(0u, data.numMissingTiles);
-    EXPECT_EQ(quad_culler.quadList().size(), 4u);
-    for (size_t i = 0; i < quad_culler.quadList().size(); ++i)
-      EXPECT_NE(quad_culler.quadList()[i]->material, DrawQuad::TILED_CONTENT);
+    EXPECT_EQ(quad_culler.quad_list().size(), 4u);
+    for (size_t i = 0; i < quad_culler.quad_list().size(); ++i)
+      EXPECT_NE(quad_culler.quad_list()[i]->material, DrawQuad::TILED_CONTENT);
   }
 }
 

@@ -170,7 +170,7 @@ TEST(ScrollbarLayerTest, solidColorDrawQuads)
         AppendQuadsData data;
         scrollbarLayerImpl->AppendQuads(&quadCuller, &data);
 
-        const QuadList& quads = quadCuller.quadList();
+        const QuadList& quads = quadCuller.quad_list();
         ASSERT_EQ(1, quads.size());
         EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
         EXPECT_RECT_EQ(gfx::Rect(1, 0, 4, 3), quads[0]->rect);
@@ -184,7 +184,7 @@ TEST(ScrollbarLayerTest, solidColorDrawQuads)
         AppendQuadsData data;
         scrollbarLayerImpl->AppendQuads(&quadCuller, &data);
 
-        const QuadList& quads = quadCuller.quadList();
+        const QuadList& quads = quadCuller.quad_list();
         ASSERT_EQ(1, quads.size());
         EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
         EXPECT_RECT_EQ(gfx::Rect(2, 0, 8, 6), quads[0]->rect);
@@ -201,7 +201,7 @@ TEST(ScrollbarLayerTest, solidColorDrawQuads)
         AppendQuadsData data;
         scrollbarLayerImpl->AppendQuads(&quadCuller, &data);
 
-        const QuadList& quads = quadCuller.quadList();
+        const QuadList& quads = quadCuller.quad_list();
         ASSERT_EQ(1, quads.size());
         EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
         EXPECT_RECT_EQ(gfx::Rect(4, 0, 2, 3), quads[0]->rect);

@@ -38,7 +38,7 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
   AppendQuadsData data;
   layer->AppendQuads(&quad_culler, &data);
 
-  LayerTestCommon::VerifyQuadsExactlyCoverRect(quad_culler.quadList(),
+  LayerTestCommon::VerifyQuadsExactlyCoverRect(quad_culler.quad_list(),
                                                visible_content_rect);
 }
 
@@ -63,8 +63,8 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   AppendQuadsData data;
   layer->AppendQuads(&quad_culler, &data);
 
-  ASSERT_EQ(quad_culler.quadList().size(), 1U);
-  EXPECT_EQ(SolidColorDrawQuad::MaterialCast(quad_culler.quadList()[0])->color,
+  ASSERT_EQ(quad_culler.quad_list().size(), 1U);
+  EXPECT_EQ(SolidColorDrawQuad::MaterialCast(quad_culler.quad_list()[0])->color,
             test_color);
 }
 
@@ -89,9 +89,9 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   AppendQuadsData data;
   layer->AppendQuads(&quad_culler, &data);
 
-  ASSERT_EQ(quad_culler.quadList().size(), 1U);
+  ASSERT_EQ(quad_culler.quad_list().size(), 1U);
   EXPECT_EQ(opacity,
-            SolidColorDrawQuad::MaterialCast(quad_culler.quadList()[0])
+            SolidColorDrawQuad::MaterialCast(quad_culler.quad_list()[0])
                 ->opacity());
 }
 
@@ -132,9 +132,9 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     AppendQuadsData data;
     layer_impl->AppendQuads(&quad_culler, &data);
 
-    ASSERT_EQ(quad_culler.quadList().size(), 1U);
+    ASSERT_EQ(quad_culler.quad_list().size(), 1U);
     EXPECT_EQ(visible_content_rect.ToString(),
-              quad_culler.quadList()[0]->opaque_rect.ToString());
+              quad_culler.quad_list()[0]->opaque_rect.ToString());
   }
 
   EXPECT_TRUE(layer->contents_opaque());
@@ -156,9 +156,9 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     AppendQuadsData data;
     layer_impl->AppendQuads(&quad_culler, &data);
 
-    ASSERT_EQ(quad_culler.quadList().size(), 1U);
+    ASSERT_EQ(quad_culler.quad_list().size(), 1U);
     EXPECT_EQ(gfx::Rect().ToString(),
-              quad_culler.quadList()[0]->opaque_rect.ToString());
+              quad_culler.quad_list()[0]->opaque_rect.ToString());
   }
 }
 

@@ -13,24 +13,29 @@
 namespace cc {
 
 class MockQuadCuller : public QuadSink {
-public:
-    MockQuadCuller();
-    virtual ~MockQuadCuller();
+ public:
+  MockQuadCuller();
+  virtual ~MockQuadCuller();
 
-    MockQuadCuller(QuadList& externalQuadList, SharedQuadStateList& externalSharedQuadStateList);
+  MockQuadCuller(QuadList* external_quad_list,
+                 SharedQuadStateList* external_shared_quad_state_list);
 
-    virtual bool Append(scoped_ptr<DrawQuad> draw_quad, AppendQuadsData* append_quads_data) OVERRIDE;
+  // QuadSink interface.
+  virtual bool Append(scoped_ptr<DrawQuad> draw_quad,
+                      AppendQuadsData* append_quads_data) OVERRIDE;
+  virtual SharedQuadState* UseSharedQuadState(
+      scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
 
-    virtual SharedQuadState* UseSharedQuadState(scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
+  const QuadList& quad_list() const { return *active_quad_list_; }
+  const SharedQuadStateList& shared_quad_state_list() const {
+    return *active_shared_quad_state_list_;
+  }
 
-    const QuadList& quadList() const { return m_activeQuadList; };
-    const SharedQuadStateList& sharedQuadStateList() const { return m_activeSharedQuadStateList; };
-
-private:
-    QuadList& m_activeQuadList;
-    QuadList m_quadListStorage;
-    SharedQuadStateList& m_activeSharedQuadStateList;
-    SharedQuadStateList m_sharedQuadStateStorage;
+ private:
+  QuadList* active_quad_list_;
+  QuadList quad_list_storage_;
+  SharedQuadStateList* active_shared_quad_state_list_;
+  SharedQuadStateList shared_quad_state_storage_;
 };
 
 }  // namespace cc
