@@ -1173,6 +1173,7 @@ _arm_release.add_config('spring-release',
 _factory_release = _release.derive(
   prebuilts=False,
   upload_hw_test_artifacts=False,
+  upload_symbols=False,
   hw_tests=[],
   description='Factory Builds',
 )
@@ -1190,6 +1191,7 @@ _firmware_release = _release.derive(
   prebuilts=False,
   dev_installer_prebuilts=False,
   upload_hw_test_artifacts=False,
+  upload_symbols=False,
   signer_tests=False,
   trybot_list=False,
   description='Firmware Builds',
