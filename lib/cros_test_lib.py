@@ -700,7 +700,7 @@ class _RunCommandMock(mox.MockObject):
     return mox.MockObject.__call__(self, *args, **kwds)
 
 
-class LessAnnoyingMox(mox.Mox):
+class _LessAnnoyingMox(mox.Mox):
   """Mox derivative that slips in our suppressions to mox.
 
   This is used by default via MoxTestCase; namely, this suppresses
@@ -744,7 +744,7 @@ class MoxTestCase(TestCase):
   mox_suppress_verify_all = False
 
   def setUp(self):
-    self.mox = LessAnnoyingMox()
+    self.mox = _LessAnnoyingMox()
     self.stubs = mox.stubout.StubOutForTesting()
 
   def tearDown(self):
