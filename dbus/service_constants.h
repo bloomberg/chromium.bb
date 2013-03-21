@@ -1123,6 +1123,10 @@ const char kCancel[] = "Cancel";
 // Bluetooth Profile property names.
 const char kVersionProperty[] = "Version";
 const char kFeaturesProperty[] = "Features";
+
+// Bluetooth Profile errors.
+const char kErrorRejected[] = "org.bluez.Error.Rejected";
+const char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_profile
 
 namespace cros_disks {
