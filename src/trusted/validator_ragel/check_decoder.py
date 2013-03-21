@@ -20,6 +20,14 @@ import dfa_parser
 import dfa_traversal
 
 
+FWAIT = 0x9b
+NOP = 0x90
+
+
+def IsRexPrefix(byte):
+  return 0x40 <= byte < 0x50
+
+
 def RoughlyEqual(s1, s2):
   """Check whether lines are equal up to whitespaces."""
   return s1.split() == s2.split()
@@ -52,9 +60,9 @@ class WorkerState(object):
     # We do not disassemble x87 instructions prefixed with fwait as objdump
     # does. To avoid such situations in enumeration test, we insert nop after
     # fwait.
-    if (bytes == [0x9b] or
-        len(bytes) == 2 and bytes[1] == 0x9b and 0x40 <= bytes[0] < 0x4f):
-      bytes = bytes + [0x90]
+    if (bytes == [FWAIT] or
+        len(bytes) == 2 and IsRexPrefix(bytes[0]) and bytes[1] == FWAIT):
+      bytes = bytes + [NOP]
     self._asm_file.write('  .byte %s\n' % ','.join(map(hex, bytes)))
     self.total_instructions += 1
     self._num_instructions += 1

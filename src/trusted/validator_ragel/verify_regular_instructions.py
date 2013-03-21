@@ -8,23 +8,116 @@ Generate all acceptable regular instructions by traversing validator DFA
 and run objdump, new and old validator on them.
 """
 
+import itertools
 import multiprocessing
 import optparse
+import os
+import subprocess
+import tempfile
 
 import dfa_parser
 import dfa_traversal
 import validator
 
 
+FWAIT = 0x9b
+NOP = 0x90
+
+
+def IsRexPrefix(byte):
+  return 0x40 <= byte < 0x50
+
+
 class WorkerState(object):
   def __init__(self, prefix):
     self.total_instructions = 0
+    self._file_prefix = 'check_validator_%s_' % '_'.join(map(hex, prefix))
+    self._instructions = []
 
-  def ReceiveInstruction(self, s):
-    pass
+  def ReceiveInstruction(self, bytes):
+    self._instructions.append(bytes)
+
+    # Objdump prints crazy stuff when x87 instructions are prefixed with
+    # fwait (especially when REX prefixes are involved). To avoid that,
+    # we insert nops after each fwait.
+    if (bytes == [FWAIT] or
+        len(bytes) == 2 and IsRexPrefix(bytes[0]) and bytes[1] == FWAIT):
+      self._instructions.append([NOP])
+
+    if len(self._instructions) >= 1000000:
+      self.Finish()
+      self._instructions = []
 
   def Finish(self):
-    pass
+    # Check instructions accumulated so far.
+    try:
+      asm_file = tempfile.NamedTemporaryFile(
+          mode='wt',
+          prefix=self._file_prefix,
+          suffix='.s',
+          delete=False)
+      asm_file.write('.text\n')
+      for instr in self._instructions:
+        asm_file.write('  .byte %s\n' % ','.join(map(hex, instr)))
+      asm_file.close()
+
+      object_file = tempfile.NamedTemporaryFile(
+          prefix=self._file_prefix,
+          suffix='.o',
+          delete=False)
+      object_file.close()
+      subprocess.check_call([
+          options.gas,
+          '--%s' % options.bitness,
+          asm_file.name,
+          '-o', object_file.name])
+
+      objdump_proc = subprocess.Popen(
+          [options.objdump,
+           '-d', object_file.name,
+           '--insn-width', '15'],
+          stdout=subprocess.PIPE)
+
+      # Objdump prints few lines about file and section before disassembly
+      # listing starts, so we have to skip that.
+      objdump_header_size = 7
+
+      objdump_iter = iter(objdump_proc.stdout)
+      for i in range(objdump_header_size):
+        next(objdump_iter)
+
+      for instr in self._instructions:
+        # Objdump prints fwait with REX prefix in this ridiculous way:
+        #   0: 41    fwait
+        #   0: 9b    fwait
+        # So in such cases we expect two lines from objdump.
+        if len(instr) == 2 and IsRexPrefix(instr[0]) and instr[1] == FWAIT:
+          expected_lines = 2
+        else:
+          expected_lines = 1
+
+        bytes = []
+        for _ in range(expected_lines):
+          line = next(objdump_iter)
+          # Parse tab-separated line of the form
+          # 0:  f2 40 0f 10 00        rex movsd (%rax),%xmm0
+          addr, more_bytes, disassembly = line.strip().split('\t')
+          more_bytes = [int(b, 16) for b in more_bytes.split()]
+          bytes += more_bytes
+
+        assert bytes == instr, (map(hex, bytes), map(hex, instr))
+        self.total_instructions += 1
+
+      # Make sure we read objdump output to the end.
+      end = next(objdump_iter, None)
+      assert end is None, end
+
+      return_code = objdump_proc.wait()
+      assert return_code == 0
+
+    finally:
+      os.remove(asm_file.name)
+      os.remove(object_file.name)
 
 
 def Worker((prefix, state_index)):

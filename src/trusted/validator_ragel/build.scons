@@ -324,6 +324,9 @@ if ragel_involved:
          '--objdump', objdump,
          '--validator_dll', validator_dll])
 
+      # Never run decoder tests in parallel because they can take all CPU.
+      SideEffect('check_validator', regular_instructions_test)
+
       env.AlwaysBuild(env.Alias(
         'dfacheckvalidator',
         [superinstruction_verified, regular_instructions_test]))
