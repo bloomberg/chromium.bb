@@ -6,6 +6,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/test/base/model_test_utils.h"
 
 @implementation FakeAppDelegate
 
