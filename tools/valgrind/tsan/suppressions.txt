@@ -1061,3 +1061,20 @@
    ...
    fun:base::debug::TraceSamplingThread::ThreadMain
 }
+{
+  bug_222601a
+  ThreadSanitizer:Race
+  fun:XFixesFindDisplay
+  fun:XFixesQueryExtension
+  fun:media::::ScreenCapturerLinux::Init
+}
+{
+  bug_222601b
+  ThreadSanitizer:Race
+  fun:XextFindDisplay
+  ...
+  fun:XShmQueryVersion
+  fun:media::XServerPixelBuffer::InitShm
+  fun:media::XServerPixelBuffer::Init
+  fun:media::::ScreenCapturerLinux::Init
+}

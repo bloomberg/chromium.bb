@@ -2476,8 +2476,16 @@
    fun:_Znw*
    fun:_ZN7content11ChildThread4InitEv
    fun:_ZN7content11ChildThreadC2ERKSs
-   fun:_ZN7content16RenderThreadImplC2ERKSs
+   ...
+   fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
+}
+{
+   bug_65940_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content16RenderThreadImpl4InitEv
    fun:_ZN7content16RenderThreadImplC1ERKSs
+   ...
    fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
 }
 {
@@ -6866,4 +6874,10 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN18WebDatabaseService12LoadDatabaseERKN4base8CallbackIFvN3sql10InitStatusEEEE
+}
+{
+   bug_222532
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN7content12_GLOBAL__N_127CaptureTestSourceController10OnShutdownEv
 }
