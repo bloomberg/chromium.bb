@@ -40,6 +40,7 @@ static inline bool IsEndOfStream(int result, int decoded_size,
 FFmpegAudioDecoder::FFmpegAudioDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop)
     : message_loop_(message_loop),
+      weak_factory_(this),
       codec_context_(NULL),
       bits_per_channel_(0),
       channel_layout_(CHANNEL_LAYOUT_NONE),
@@ -68,6 +69,7 @@ void FFmpegAudioDecoder::Initialize(
     CHECK(false);
   }
 
+  weak_this_ = weak_factory_.GetWeakPtr();
   demuxer_stream_ = stream;
 
   if (!ConfigureDecoder()) {
@@ -131,7 +133,8 @@ FFmpegAudioDecoder::~FFmpegAudioDecoder() {
 
 void FFmpegAudioDecoder::ReadFromDemuxerStream() {
   DCHECK(!read_cb_.is_null());
-  demuxer_stream_->Read(base::Bind(&FFmpegAudioDecoder::BufferReady, this));
+  demuxer_stream_->Read(base::Bind(
+      &FFmpegAudioDecoder::BufferReady, weak_this_));
 }
 
 void FFmpegAudioDecoder::BufferReady(

@@ -112,7 +112,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  scoped_refptr<FFmpegAudioDecoder> decoder_;
+  scoped_ptr<FFmpegAudioDecoder> decoder_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;
 

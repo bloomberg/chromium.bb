@@ -202,10 +202,15 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   audio_source_provider_ = new WebAudioSourceProviderImpl(
       params.audio_renderer_sink() ? params.audio_renderer_sink() :
       new media::NullAudioSink(media_thread_.message_loop_proxy()));
+
+  ScopedVector<media::AudioDecoder> audio_decoders;
+  AddDefaultAudioDecoders(media_thread_.message_loop_proxy(), &audio_decoders);
+
   scoped_ptr<media::AudioRenderer> audio_renderer(
       new media::AudioRendererImpl(
         media_thread_.message_loop_proxy(),
         audio_source_provider_,
+        audio_decoders.Pass(),
         set_decryptor_ready_cb));
   filter_collection_->SetAudioRenderer(audio_renderer.Pass());
 }

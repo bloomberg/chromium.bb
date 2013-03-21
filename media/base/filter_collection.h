@@ -13,7 +13,6 @@
 
 namespace media {
 
-class AudioDecoder;
 class AudioRenderer;
 class Demuxer;
 class VideoDecoder;
@@ -26,7 +25,6 @@ class VideoRenderer;
 // http://crbug.com/110800
 class MEDIA_EXPORT FilterCollection {
  public:
-  typedef std::list<scoped_refptr<AudioDecoder> > AudioDecoderList;
   typedef std::list<scoped_refptr<VideoDecoder> > VideoDecoderList;
 
   FilterCollection();
@@ -44,12 +42,10 @@ class MEDIA_EXPORT FilterCollection {
   // Remove remaining filters.
   void Clear();
 
-  AudioDecoderList* GetAudioDecoders();
   VideoDecoderList* GetVideoDecoders();
 
  private:
   scoped_refptr<Demuxer> demuxer_;
-  AudioDecoderList audio_decoders_;
   VideoDecoderList video_decoders_;
   scoped_ptr<AudioRenderer> audio_renderer_;
   scoped_ptr<VideoRenderer> video_renderer_;

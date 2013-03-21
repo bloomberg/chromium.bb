@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_manager.h"
@@ -112,8 +113,6 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
   collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source,
                                                   need_key_cb));
-  collection->GetAudioDecoders()->push_back(new media::FFmpegAudioDecoder(
-      message_loop));
   collection->GetVideoDecoders()->push_back(new media::FFmpegVideoDecoder(
       message_loop));
 
@@ -126,9 +125,12 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       true));
   collection->SetVideoRenderer(video_renderer.Pass());
 
+  ScopedVector<media::AudioDecoder> audio_decoders;
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(message_loop));
   scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
       message_loop,
       new media::NullAudioSink(message_loop),
+      audio_decoders.Pass(),
       media::SetDecryptorReadyCB()));
   collection->SetAudioRenderer(audio_renderer.Pass());
 

@@ -28,11 +28,13 @@ namespace media {
 AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::AudioRendererSink* sink,
+    ScopedVector<AudioDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : message_loop_(message_loop),
       weak_factory_(this),
       sink_(sink),
-      set_decryptor_ready_cb_(set_decryptor_ready_cb),
+      decoder_selector_(new AudioDecoderSelector(
+          message_loop, decoders.Pass(), set_decryptor_ready_cb)),
       now_cb_(base::Bind(&base::Time::Now)),
       state_(kUninitialized),
       pending_read_(false),
@@ -179,7 +181,6 @@ void AudioRendererImpl::Preroll(base::TimeDelta time,
 }
 
 void AudioRendererImpl::Initialize(const scoped_refptr<DemuxerStream>& stream,
-                                   const AudioDecoderList& decoders,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const base::Closure& underflow_cb,
@@ -189,7 +190,6 @@ void AudioRendererImpl::Initialize(const scoped_refptr<DemuxerStream>& stream,
                                    const PipelineStatusCB& error_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(stream);
-  DCHECK(!decoders.empty());
   DCHECK_EQ(stream->type(), DemuxerStream::AUDIO);
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
@@ -210,39 +210,29 @@ void AudioRendererImpl::Initialize(const scoped_refptr<DemuxerStream>& stream,
   disabled_cb_ = disabled_cb;
   error_cb_ = error_cb;
 
-  scoped_ptr<AudioDecoderSelector> decoder_selector(
-      new AudioDecoderSelector(base::MessageLoopProxy::current(),
-                               decoders,
-                               set_decryptor_ready_cb_));
-
-  // To avoid calling |decoder_selector| methods and passing ownership of
-  // |decoder_selector| in the same line.
-  AudioDecoderSelector* decoder_selector_ptr = decoder_selector.get();
-
-  decoder_selector_ptr->SelectAudioDecoder(
+  decoder_selector_->SelectAudioDecoder(
       stream,
       statistics_cb,
-      base::Bind(&AudioRendererImpl::OnDecoderSelected, weak_this_,
-                 base::Passed(&decoder_selector)));
+      base::Bind(&AudioRendererImpl::OnDecoderSelected, weak_this_));
 }
 
 void AudioRendererImpl::OnDecoderSelected(
-    scoped_ptr<AudioDecoderSelector> decoder_selector,
-    const scoped_refptr<AudioDecoder>& selected_decoder,
+    scoped_ptr<AudioDecoder> decoder,
     const scoped_refptr<DecryptingDemuxerStream>& decrypting_demuxer_stream) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  scoped_ptr<AudioDecoderSelector> deleter(decoder_selector_.Pass());
 
   if (state_ == kStopped) {
     DCHECK(!sink_);
     return;
   }
 
-  if (!selected_decoder) {
+  if (!decoder) {
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
-  decoder_ = selected_decoder;
+  decoder_ = decoder.Pass();
   decrypting_demuxer_stream_ = decrypting_demuxer_stream;
 
   int sample_rate = decoder_->samples_per_second();

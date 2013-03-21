@@ -918,7 +918,6 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
   audio_renderer_ = filter_collection_->GetAudioRenderer();
   audio_renderer_->Initialize(
       stream,
-      *filter_collection_->GetAudioDecoders(),
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, this),
       base::Bind(&Pipeline::OnAudioUnderflow, this),
@@ -926,7 +925,6 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
       base::Bind(&Pipeline::OnAudioRendererEnded, this),
       base::Bind(&Pipeline::OnAudioDisabled, this),
       base::Bind(&Pipeline::SetError, this));
-  filter_collection_->GetAudioDecoders()->clear();
 }
 
 void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {

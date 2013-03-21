@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -38,11 +39,7 @@ class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
-      : renderer_(new AudioRendererImpl(
-            message_loop_.message_loop_proxy(),
-            new NiceMock<MockAudioRendererSink>(),
-            SetDecryptorReadyCB())),
-        demuxer_stream_(new MockDemuxerStream()),
+      : demuxer_stream_(new MockDemuxerStream()),
         decoder_(new MockAudioDecoder()),
         audio_config_(kCodecVorbis, kSampleFormatPlanarF32,
                       CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false) {
@@ -50,10 +47,6 @@ class AudioRendererImplTest : public ::testing::Test {
         .WillRepeatedly(Return(DemuxerStream::AUDIO));
     EXPECT_CALL(*demuxer_stream_, audio_decoder_config())
         .WillRepeatedly(ReturnRef(audio_config_));
-
-    // Stub out time.
-    renderer_->set_now_cb_for_testing(base::Bind(
-        &AudioRendererImplTest::GetTime, base::Unretained(this)));
 
     // Used to save callbacks and run them at a later time.
     EXPECT_CALL(*decoder_, Read(_))
@@ -66,6 +59,19 @@ class AudioRendererImplTest : public ::testing::Test {
         .WillRepeatedly(Return(CHANNEL_LAYOUT_MONO));
     EXPECT_CALL(*decoder_, samples_per_second())
         .WillRepeatedly(Return(audio_config_.samples_per_second()));
+
+    ScopedVector<AudioDecoder> decoders;
+    decoders.push_back(decoder_);
+
+    renderer_.reset(new AudioRendererImpl(
+        message_loop_.message_loop_proxy(),
+        new NiceMock<MockAudioRendererSink>(),
+        decoders.Pass(),
+        SetDecryptorReadyCB()));
+
+    // Stub out time.
+    renderer_->set_now_cb_for_testing(base::Bind(
+        &AudioRendererImplTest::GetTime, base::Unretained(this)));
   }
 
   virtual ~AudioRendererImplTest() {
@@ -114,13 +120,10 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void InitializeWithStatus(PipelineStatus expected) {
     SCOPED_TRACE(base::StringPrintf("InitializeWithStatus(%d)", expected));
-    AudioRendererImpl::AudioDecoderList decoders;
-    decoders.push_back(decoder_);
 
     WaitableMessageLoopEvent event;
     renderer_->Initialize(
         demuxer_stream_,
-        decoders,
         event.GetPipelineStatusCB(),
         base::Bind(&AudioRendererImplTest::OnStatistics,
                    base::Unretained(this)),
@@ -364,7 +367,7 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   scoped_refptr<MockDemuxerStream> demuxer_stream_;
-  scoped_refptr<MockAudioDecoder> decoder_;
+  MockAudioDecoder* decoder_;
 
   // Used for stubbing out time in the audio callback thread.
   base::Lock lock_;

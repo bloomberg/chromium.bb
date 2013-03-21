@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
@@ -36,6 +37,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   DecryptingAudioDecoder(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
+  virtual ~DecryptingAudioDecoder();
 
   // AudioDecoder implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -46,9 +48,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   virtual int bits_per_channel() OVERRIDE;
   virtual ChannelLayout channel_layout() OVERRIDE;
   virtual int samples_per_second() OVERRIDE;
-
- protected:
-  virtual ~DecryptingAudioDecoder();
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok
@@ -88,11 +87,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
                     Decryptor::Status status,
                     const Decryptor::AudioBuffers& frames);
 
-  // Carries out the frame delivery operation scheduled by DeliverFrame().
-  void DoDeliverFrame(int buffer_size,
-                      Decryptor::Status status,
-                      const Decryptor::AudioBuffers& frames);
-
   // Callback for the |decryptor_| to notify this object that a new key has been
   // added.
   void OnKeyAdded();
@@ -112,6 +106,8 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   base::TimeDelta NumberOfSamplesToDuration(int number_of_samples) const;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_;
+  base::WeakPtr<DecryptingAudioDecoder> weak_this_;
 
   State state_;
 

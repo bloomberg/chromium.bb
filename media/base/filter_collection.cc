@@ -5,7 +5,6 @@
 #include "media/base/filter_collection.h"
 
 #include "base/logging.h"
-#include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
 #include "media/base/video_decoder.h"
@@ -44,14 +43,9 @@ scoped_ptr<VideoRenderer> FilterCollection::GetVideoRenderer() {
 }
 
 void FilterCollection::Clear() {
-  audio_decoders_.clear();
   video_decoders_.clear();
   audio_renderer_.reset();
   video_renderer_.reset();
-}
-
-FilterCollection::AudioDecoderList* FilterCollection::GetAudioDecoders() {
-  return &audio_decoders_;
 }
 
 FilterCollection::VideoDecoderList* FilterCollection::GetVideoDecoders() {

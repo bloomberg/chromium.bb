@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
 
@@ -30,6 +31,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
  public:
   explicit FFmpegAudioDecoder(
       const scoped_refptr<base::MessageLoopProxy>& message_loop);
+  virtual ~FFmpegAudioDecoder();
 
   // AudioDecoder implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -40,9 +42,6 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   virtual ChannelLayout channel_layout() OVERRIDE;
   virtual int samples_per_second() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-
- protected:
-  virtual ~FFmpegAudioDecoder();
 
  private:
   // Reads from the demuxer stream with corresponding callback method.
@@ -57,6 +56,8 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
                      bool skip_eos_append);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<FFmpegAudioDecoder> weak_factory_;
+  base::WeakPtr<FFmpegAudioDecoder> weak_this_;
 
   scoped_refptr<DemuxerStream> demuxer_stream_;
   StatisticsCB statistics_cb_;

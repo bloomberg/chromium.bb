@@ -220,7 +220,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
                                 const scoped_refptr<DataBuffer>&));
 
   MessageLoop message_loop_;
-  scoped_refptr<DecryptingAudioDecoder> decoder_;
+  scoped_ptr<DecryptingAudioDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;

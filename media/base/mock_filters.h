@@ -164,8 +164,7 @@ class MockAudioRenderer : public AudioRenderer {
   virtual ~MockAudioRenderer();
 
   // AudioRenderer implementation.
-  MOCK_METHOD9(Initialize, void(const scoped_refptr<DemuxerStream>& stream,
-                                const AudioDecoderList& decoders,
+  MOCK_METHOD8(Initialize, void(const scoped_refptr<DemuxerStream>& stream,
                                 const PipelineStatusCB& init_cb,
                                 const StatisticsCB& statistics_cb,
                                 const base::Closure& underflow_cb,

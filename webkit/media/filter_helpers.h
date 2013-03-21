@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 // TODO(fgalligan): Remove the dependency on FFmpeg.
 #include "media/filters/ffmpeg_demuxer.h"
 
@@ -15,13 +16,18 @@ class MessageLoopProxy;
 }
 
 namespace media {
+class AudioDecoder;
 class ChunkDemuxer;
 class DataSource;
-class FFmpegVideoDecoder;
 class FilterCollection;
 }
 
 namespace webkit_media {
+
+// Creates and adds the default set of audio decoders to |audio_decoders|.
+void AddDefaultAudioDecoders(
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    ScopedVector<media::AudioDecoder>* audio_decoders);
 
 // Builds the required filters for handling media source URLs, adds them to
 // |filter_collection|.

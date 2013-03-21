@@ -5,6 +5,7 @@
 #include "media/filters/pipeline_integration_test_base.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
 #include "media/base/media_log.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
@@ -221,16 +222,10 @@ PipelineIntegrationTestBase::CreateFilterCollection(
     Decryptor* decryptor) {
   scoped_ptr<FilterCollection> collection(new FilterCollection());
   collection->SetDemuxer(demuxer);
-  scoped_refptr<AudioDecoder> audio_decoder = new FFmpegAudioDecoder(
-      message_loop_.message_loop_proxy());
-  scoped_refptr<OpusAudioDecoder> opus_decoder = new OpusAudioDecoder(
-      message_loop_.message_loop_proxy());
   scoped_refptr<VideoDecoder> video_decoder = new FFmpegVideoDecoder(
       message_loop_.message_loop_proxy());
   scoped_refptr<VpxVideoDecoder> vpx_decoder = new VpxVideoDecoder(
       message_loop_.message_loop_proxy());
-  collection->GetAudioDecoders()->push_back(audio_decoder);
-  collection->GetAudioDecoders()->push_back(opus_decoder);
   collection->GetVideoDecoders()->push_back(video_decoder);
   collection->GetVideoDecoders()->push_back(vpx_decoder);
 
@@ -247,9 +242,17 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   collection->SetVideoRenderer(renderer.Pass());
 
   audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
+
+  ScopedVector<AudioDecoder> audio_decoders;
+  audio_decoders.push_back(
+      new FFmpegAudioDecoder(message_loop_.message_loop_proxy()));
+  audio_decoders.push_back(
+      new OpusAudioDecoder(message_loop_.message_loop_proxy()));
+
   AudioRendererImpl* audio_renderer_impl = new AudioRendererImpl(
       message_loop_.message_loop_proxy(),
       audio_sink_,
+      audio_decoders.Pass(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this), decryptor));
   // Disable underflow if hashing is enabled.
