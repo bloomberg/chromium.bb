@@ -90,8 +90,7 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
 
 void LayerTreePixelTest::RunPixelTest(
     scoped_refptr<Layer> content_root,
-    base::FilePath file_name)
-{
+    base::FilePath file_name) {
   content_root_ = content_root;
   ref_file_ = file_name;
   RunTest(true);
