@@ -58,16 +58,11 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
         os.path.join(TEST_DATA_DIR, f)) for f in files)
     body = ''.join(binascii.unhexlify(h) for h in file_hashes)
 
-    for _ in range(3):
-      # Cope with eventual consistency.
-      response = isolateserver_archive.url_open(
-          contains_hash_url,
-          body,
-          content_type='application/octet-stream').read()
-      if response == chr(1) * len(files):
-        break
-      print('Warning: only eventually consistent')
-      time.sleep(0.1)
+    response = isolateserver_archive.url_open(
+        contains_hash_url,
+        body,
+        retry_404=True,
+        content_type='application/octet-stream').read()
 
     for i in range(len(response)):
       self.assertEqual(chr(1), response[i],
