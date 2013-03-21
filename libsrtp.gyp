@@ -17,25 +17,33 @@
       'srtp/crypto/include',
     ],
     'conditions': [
-      ['target_arch=="x64" and OS!="win"', {
+      ['os_posix==1', {
         'defines': [
-          'CPU_CISC',
-          'SIZEOF_UNSIGNED_LONG=8',
-          'SIZEOF_UNSIGNED_LONG_LONG=8',
+          'HAVE_INT16_T',
+          'HAVE_INT32_T',
+          'HAVE_INT8_T',
+          'HAVE_UINT16_T',
+          'HAVE_UINT32_T',
+          'HAVE_UINT64_T',
+          'HAVE_UINT8_T',
+          'HAVE_STDINT_H',
+          'HAVE_INTTYPES_H',
+          'HAVE_NETINET_IN_H',
+          'INLINE=inline',
         ],
       }],
-      ['target_arch=="x64" and OS=="win"', {
+      ['OS=="win"', {
         'defines': [
-          'CPU_CISC',
+          'INLINE=__inline',
+          'HAVE_BYTESWAP_METHODS_H',
+          # All Windows architectures are this way.
           'SIZEOF_UNSIGNED_LONG=4',
           'SIZEOF_UNSIGNED_LONG_LONG=8',
-        ],
+         ],
       }],
-      ['target_arch=="ia32"', {
+      ['target_arch=="x64" or target_arch=="ia32"', {
         'defines': [
           'CPU_CISC',
-          'SIZEOF_UNSIGNED_LONG=4',
-          'SIZEOF_UNSIGNED_LONG_LONG=8',
         ],
       }],
       ['target_arch=="arm"', {
@@ -46,50 +54,11 @@
           # just work just fine, it has been tested on android/arm with srtp
           # test applications and libjingle.
           'CPU_CISC',
-          'HAVE_INT16_T',
-          'HAVE_INT32_T',
-          'HAVE_INT8_T',
-          'HAVE_UINT16_T',
-          'HAVE_UINT32_T',
-          'HAVE_UINT64_T',
-          'HAVE_UINT8_T',
-          'SIZEOF_UNSIGNED_LONG=4',
-          'SIZEOF_UNSIGNED_LONG_LONG=8',
         ],
       }],
       ['target_arch=="mipsel"', {
         'defines': [
           'CPU_RISC',
-          'HAVE_INT16_T',
-          'HAVE_INT32_T',
-          'HAVE_INT8_T',
-          'HAVE_UINT16_T',
-          'HAVE_UINT32_T',
-          'HAVE_UINT64_T',
-          'HAVE_UINT8_T',
-          'SIZEOF_UNSIGNED_LONG=4',
-          'SIZEOF_UNSIGNED_LONG_LONG=8',
-        ],
-      }],
-      ['OS!="win"', {
-        'defines': [
-          'HAVE_STDINT_H',
-          'HAVE_INTTYPES_H',
-          'HAVE_NETINET_IN_H',
-          'INLINE=inline',
-         ],
-      }],
-      ['OS=="win"', {
-        'defines': [
-          'INLINE=__inline',
-          'HAVE_BYTESWAP_METHODS_H',
-         ],
-      }],
-      ['OS=="mac"', {
-        'defines': [
-          # Use system defined types. This ensures that the correct types
-          # are being used on both 32-bit and 64-bit builds. 
-          'HAVE_UINT64_T',
         ],
       }],
     ],
@@ -100,28 +69,7 @@
         'srtp/crypto/include',
       ],
       'conditions': [
-        ['target_arch=="x64" and OS!="win"', {
-          'defines': [
-            'CPU_CISC',
-            'SIZEOF_UNSIGNED_LONG=8',
-            'SIZEOF_UNSIGNED_LONG_LONG=8',
-          ],
-        }],
-        ['target_arch=="x64" and OS=="win"', {
-          'defines': [
-            'CPU_CISC',
-            'SIZEOF_UNSIGNED_LONG=4',
-            'SIZEOF_UNSIGNED_LONG_LONG=8',
-          ],
-        }],
-        ['target_arch=="ia32"', {
-          'defines': [
-            'CPU_CISC',
-            'SIZEOF_UNSIGNED_LONG=4',
-            'SIZEOF_UNSIGNED_LONG_LONG=8',
-          ],
-        }],
-        ['target_arch=="arm"', {
+        ['os_posix==1', {
           'defines': [
             'HAVE_INT16_T',
             'HAVE_INT32_T',
@@ -130,26 +78,6 @@
             'HAVE_UINT32_T',
             'HAVE_UINT64_T',
             'HAVE_UINT8_T',
-            'SIZEOF_UNSIGNED_LONG=4',
-            'SIZEOF_UNSIGNED_LONG_LONG=8',
-          ],
-        }],
-        ['target_arch=="mipsel"', {
-          'defines': [
-            'CPU_RISC',
-            'HAVE_INT16_T',
-            'HAVE_INT32_T',
-            'HAVE_INT8_T',
-            'HAVE_UINT16_T',
-            'HAVE_UINT32_T',
-            'HAVE_UINT64_T',
-            'HAVE_UINT8_T',
-            'SIZEOF_UNSIGNED_LONG=4',
-            'SIZEOF_UNSIGNED_LONG_LONG=8',
-          ],
-        }],
-        ['OS!="win"', {
-          'defines': [
             'HAVE_STDINT_H',
             'HAVE_INTTYPES_H',
             'HAVE_NETINET_IN_H',
@@ -160,13 +88,19 @@
           'defines': [
             'INLINE=__inline',
             'HAVE_BYTESWAP_METHODS_H',
+            # All Windows architectures are this way.
+            'SIZEOF_UNSIGNED_LONG=4',
+            'SIZEOF_UNSIGNED_LONG_LONG=8',
+           ],
+        }],
+        ['target_arch=="x64" or target_arch=="ia32"', {
+          'defines': [
+            'CPU_CISC',
           ],
         }],
-        ['OS=="mac"', {
+        ['target_arch=="mipsel"', {
           'defines': [
-            # Use system defined types. This ensures that the correct types
-            # are being used on both 32-bit and 64-bit builds. 
-            'HAVE_UINT64_T',
+            'CPU_RISC',
           ],
         }],
       ],
