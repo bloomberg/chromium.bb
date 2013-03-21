@@ -103,8 +103,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Records the given type of app launch for UMA.
-  static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket,
-                                  extensions::Manifest::Type app_type);
+  static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket);
 
  private:
   struct AppInstallInfo {
@@ -122,6 +121,10 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Records a web store launch in the appropriate histograms.
   static void RecordWebStoreLaunch();
+
+  // Records an app launch in the corresponding |bucket| of the app launch
+  // histogram. |promo_active| specifies if the web store promotion was active.
+  static void RecordAppLaunchByID(extension_misc::AppLaunchBucket bucket);
 
   // Records an app launch in the corresponding |bucket| of the app launch
   // histogram if the |escaped_url| corresponds to an installed app.

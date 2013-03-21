@@ -132,12 +132,9 @@ Profile* BrowserInstantController::profile() const {
 void BrowserInstantController::CommitInstant(
     scoped_ptr<content::WebContents> overlay,
     bool in_new_tab) {
-  const extensions::Extension* extension =
-      profile()->GetExtensionService()->GetInstalledApp(overlay->GetURL());
-  if (extension) {
+  if (profile()->GetExtensionService()->IsInstalledApp(overlay->GetURL())) {
     AppLauncherHandler::RecordAppLaunchType(
-        extension_misc::APP_LAUNCH_OMNIBOX_INSTANT,
-        extension->GetType());
+        extension_misc::APP_LAUNCH_OMNIBOX_INSTANT);
   }
   if (in_new_tab) {
     // TabStripModel takes ownership of |overlay|.

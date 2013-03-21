@@ -437,8 +437,7 @@ bool ManagementLaunchAppFunction::RunImpl() {
                                                   NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)
   AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_EXTENSION_API,
-      extension->GetType());
+      extension_misc::APP_LAUNCH_EXTENSION_API);
 #endif
 
   return true;

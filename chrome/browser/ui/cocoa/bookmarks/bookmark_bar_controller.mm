@@ -137,14 +137,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 void RecordAppLaunch(Profile* profile, GURL url) {
   DCHECK(profile->GetExtensionService());
-  const extensions::Extension* extension =
-      profile->GetExtensionService()->GetInstalledApp(url);
-  if (!extension)
+  if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
   AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_BOOKMARK_BAR,
-      extension->GetType());
+      extension_misc::APP_LAUNCH_BOOKMARK_BAR);
 }
 
 }  // namespace

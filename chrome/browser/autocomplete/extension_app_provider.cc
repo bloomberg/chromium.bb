@@ -54,8 +54,7 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
     return;
 
   AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_OMNIBOX_APP,
-      extension->GetType());
+      extension_misc::APP_LAUNCH_OMNIBOX_APP);
 
   chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, disposition));
