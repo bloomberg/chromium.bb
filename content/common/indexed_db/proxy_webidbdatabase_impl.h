@@ -18,7 +18,8 @@ namespace content {
 
 class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
  public:
-  explicit RendererWebIDBDatabaseImpl(int32 ipc_database_id);
+  explicit RendererWebIDBDatabaseImpl(int32 ipc_database_id,
+                                      int32 ipc_database_callbacks_id);
   virtual ~RendererWebIDBDatabaseImpl();
 
   // WebKit::WebIDBDatabase
@@ -94,6 +95,7 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
 
  private:
   int32 ipc_database_id_;
+  int32 ipc_database_callbacks_id_;
 };
 
 }  // namespace content

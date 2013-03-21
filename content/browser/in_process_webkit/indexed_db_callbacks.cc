@@ -40,12 +40,14 @@ IndexedDBCallbacksDatabase::IndexedDBCallbacksDatabase(
     IndexedDBDispatcherHost* dispatcher_host,
     int32 ipc_thread_id,
     int32 ipc_response_id,
+    int32 ipc_database_callbacks_id,
     int64 host_transaction_id,
     const GURL& origin_url)
     : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id, ipc_response_id),
       host_transaction_id_(host_transaction_id),
       origin_url_(origin_url),
-      ipc_database_id_(kDatabaseNotAdded) {
+      ipc_database_id_(kDatabaseNotAdded),
+      ipc_database_callbacks_id_(ipc_database_callbacks_id) {
 }
 
 void IndexedDBCallbacksDatabase::onSuccess(
@@ -65,6 +67,7 @@ void IndexedDBCallbacksDatabase::onSuccess(
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessIDBDatabase(ipc_thread_id(),
                                                    ipc_response_id(),
+                                                   ipc_database_callbacks_id_,
                                                    ipc_object_id,
                                                    idb_metadata));
 }
@@ -77,14 +80,14 @@ void IndexedDBCallbacksDatabase::onUpgradeNeeded(
   int32 ipc_database_id = dispatcher_host()->Add(database, ipc_thread_id(),
                                                  origin_url_);
   ipc_database_id_ = ipc_database_id;
-  IndexedDBDatabaseMetadata idb_metadata =
-          IndexedDBDispatcherHost::ConvertMetadata(metadata);
-  dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksUpgradeNeeded(
-          ipc_thread_id(), ipc_response_id(),
-          ipc_database_id,
-          old_version,
-          idb_metadata));
+  IndexedDBMsg_CallbacksUpgradeNeeded_Params params;
+  params.ipc_thread_id = ipc_thread_id();
+  params.ipc_response_id = ipc_response_id();
+  params.ipc_database_id = ipc_database_id;
+  params.ipc_database_callbacks_id = ipc_database_callbacks_id_;
+  params.old_version = old_version;
+  params.idb_metadata = IndexedDBDispatcherHost::ConvertMetadata(metadata);
+  dispatcher_host()->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(

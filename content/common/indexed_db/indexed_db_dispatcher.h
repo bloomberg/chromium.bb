@@ -24,6 +24,7 @@ struct IndexedDBDatabaseMetadata;
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
 struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
 struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
+struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
 
 namespace WebKit {
 class WebData;
@@ -116,7 +117,8 @@ class CONTENT_EXPORT IndexedDBDispatcher
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBDatabaseClose(
-      int32 ipc_database_id);
+      int32 ipc_database_id,
+      int32 ipc_database_callbacks_id);
 
   void RequestIDBDatabaseCreateTransaction(
       int32 ipc_database_id,
@@ -198,6 +200,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
   // IDBCallback message handlers.
   void OnSuccessIDBDatabase(int32 ipc_thread_id,
                             int32 ipc_response_id,
+                            int32 ipc_database_callbacks_id,
                             int32 ipc_object_id,
                             const IndexedDBDatabaseMetadata& idb_metadata);
   void OnSuccessIndexedDBKey(int32 ipc_thread_id,
@@ -236,11 +239,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
                const string16& message);
   void OnIntBlocked(int32 ipc_thread_id, int32 ipc_response_id,
                     int64 existing_version);
-  void OnUpgradeNeeded(int32 ipc_thread_id,
-                       int32 ipc_response_id,
-                       int32 ipc_database_id,
-                       int64 old_version,
-                       const IndexedDBDatabaseMetadata& metdata);
+  void OnUpgradeNeeded(const IndexedDBMsg_CallbacksUpgradeNeeded_Params& p);
   void OnAbort(int32 ipc_thread_id,
                int32 ipc_database_id,
                int64 transaction_id,

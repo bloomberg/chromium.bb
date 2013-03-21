@@ -335,13 +335,15 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
   Send(new IndexedDBHostMsg_FactoryDeleteDatabase(params));
 }
 
-void IndexedDBDispatcher::RequestIDBDatabaseClose(int32 ipc_database_id) {
+void IndexedDBDispatcher::RequestIDBDatabaseClose(
+    int32 ipc_database_id,
+    int32 ipc_database_callbacks_id) {
   ResetCursorPrefetchCaches();
   Send(new IndexedDBHostMsg_DatabaseClose(ipc_database_id));
   // There won't be pending database callbacks if the transaction was aborted in
   // the initial upgradeneeded event handler.
-  if (pending_database_callbacks_.Lookup(ipc_database_id))
-    pending_database_callbacks_.Remove(ipc_database_id);
+  if (pending_database_callbacks_.Lookup(ipc_database_callbacks_id))
+    pending_database_callbacks_.Remove(ipc_database_callbacks_id);
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseCreateTransaction(
@@ -520,6 +522,7 @@ void IndexedDBDispatcher::DatabaseDestroyed(int32 ipc_database_id) {
 void IndexedDBDispatcher::OnSuccessIDBDatabase(
     int32 ipc_thread_id,
     int32 ipc_response_id,
+    int32 ipc_database_callbacks_id,
     int32 ipc_object_id,
     const IndexedDBDatabaseMetadata& idb_metadata) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
@@ -529,7 +532,8 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(
   WebIDBMetadata metadata(ConvertMetadata(idb_metadata));
   // If an upgrade was performed, count will be non-zero.
   if (!databases_.count(ipc_object_id))
-    databases_[ipc_object_id] = new RendererWebIDBDatabaseImpl(ipc_object_id);
+    databases_[ipc_object_id] = new RendererWebIDBDatabaseImpl(
+        ipc_object_id, ipc_database_callbacks_id);
   DCHECK_EQ(databases_.count(ipc_object_id), 1u);
   callbacks->onSuccess(databases_[ipc_object_id], metadata);
   pending_callbacks_.Remove(ipc_response_id);
@@ -693,20 +697,17 @@ void IndexedDBDispatcher::OnIntBlocked(int32 ipc_thread_id,
 }
 
 void IndexedDBDispatcher::OnUpgradeNeeded(
-    int32 ipc_thread_id,
-    int32 ipc_response_id,
-    int32 ipc_database_id,
-    int64 old_version,
-    const IndexedDBDatabaseMetadata& idb_metadata) {
-  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
+    const IndexedDBMsg_CallbacksUpgradeNeeded_Params& p) {
+  DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(p.ipc_response_id);
   DCHECK(callbacks);
-  WebIDBMetadata metadata(ConvertMetadata(idb_metadata));
-  DCHECK(!databases_.count(ipc_database_id));
-  databases_[ipc_database_id] = new RendererWebIDBDatabaseImpl(ipc_database_id);
+  WebIDBMetadata metadata(ConvertMetadata(p.idb_metadata));
+  DCHECK(!databases_.count(p.ipc_database_id));
+  databases_[p.ipc_database_id] = new RendererWebIDBDatabaseImpl(
+      p.ipc_database_id, p.ipc_database_callbacks_id);
   callbacks->onUpgradeNeeded(
-      old_version,
-      databases_[ipc_database_id],
+      p.old_version,
+      databases_[p.ipc_database_id],
       metadata);
 }
 

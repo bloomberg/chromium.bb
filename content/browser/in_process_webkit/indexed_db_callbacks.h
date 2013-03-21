@@ -56,6 +56,7 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
       IndexedDBDispatcherHost* dispatcher_host,
       int32 ipc_thread_id,
       int32 ipc_response_id,
+      int32 ipc_database_callbacks_id,
       int64 host_transaction_id,
       const GURL& origin_url);
 
@@ -71,6 +72,7 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
   int64 host_transaction_id_;
   GURL origin_url_;
   int32 ipc_database_id_;
+  int32 ipc_database_callbacks_id_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksDatabase);
 };
 

@@ -170,6 +170,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ValueSizeTest) {
   SimpleTest(GetTestUrl("indexeddb", "value_size_test.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CallbackAccounting) {
+  SimpleTest(GetTestUrl("indexeddb", "callback_accounting.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(GetTestUrl("indexeddb", "transaction_run_forever.html"));
   CrashTab(shell()->web_contents());

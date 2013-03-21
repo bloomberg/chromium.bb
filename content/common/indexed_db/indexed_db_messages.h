@@ -282,6 +282,15 @@ IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksUpgradeNeeded_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  IPC_STRUCT_MEMBER(int64, old_version)
+  IPC_STRUCT_MEMBER(IndexedDBDatabaseMetadata, idb_metadata)
+IPC_STRUCT_END()
+
 // Indexed DB messages sent from the browser to the renderer.
 
 // The thread_id needs to be the first parameter in these messages.  In the IO
@@ -301,9 +310,10 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorAdvance,
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
                      IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
 
-IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksSuccessIDBDatabase,
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
+                     int32 /* ipc_database_callbacks_id */,
                      int32 /* ipc_database_id */,
                      IndexedDBDatabaseMetadata)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
@@ -343,12 +353,8 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksIntBlocked,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
                      int64 /* existing_version */)
-IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksUpgradeNeeded,
-                     int32, /* ipc_thread_id */
-                     int32, /* ipc_response_id */
-                     int32, /* ipc_database_id */
-                     int64, /* old_version */
-                     IndexedDBDatabaseMetadata) /* metadata */
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksUpgradeNeeded,
+                     IndexedDBMsg_CallbacksUpgradeNeeded_Params)
 
 // IDBDatabaseCallback message handlers
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksForcedClose,

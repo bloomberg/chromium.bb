@@ -260,6 +260,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       host_transaction_id,
       new IndexedDBCallbacksDatabase(this, params.ipc_thread_id,
                                      params.ipc_response_id,
+                                     params.ipc_database_response_id,
                                      host_transaction_id,
                                      origin_url),
       new IndexedDBDatabaseCallbacks(this, params.ipc_thread_id,
