@@ -191,15 +191,13 @@ Version DisplayLinkVersion() {
 bool IsLenovoDCuteInstalled() {
   base::win::RegKey key;
 
-  if (FAILED(key.Open(
-      HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))) {
-    return false;
-  }
-
-  if (FAILED(key.OpenKey(L"Lenovo", KEY_READ | KEY_WOW64_64KEY)))
+  if (key.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))
     return false;
 
-  if (FAILED(key.OpenKey(L"Lenovo dCute", KEY_READ | KEY_WOW64_64KEY)))
+  if (key.OpenKey(L"Lenovo", KEY_READ | KEY_WOW64_64KEY))
+    return false;
+
+  if (key.OpenKey(L"Lenovo dCute", KEY_READ | KEY_WOW64_64KEY))
     return false;
 
   return true;
@@ -371,7 +369,7 @@ namespace gpu_info_collector {
 
 #if !defined(GOOGLE_CHROME_BUILD)
 AMDVideoCardType GetAMDVideocardType() {
-  return UNKNOWN;
+  return STANDALONE;
 }
 #else
 // This function has a real implementation for official builds that can
