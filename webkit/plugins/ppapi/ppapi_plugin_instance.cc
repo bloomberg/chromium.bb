@@ -2136,6 +2136,7 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
     case ::ppapi::FLASH_FILE_SINGLETON_ID:
     case ::ppapi::FLASH_FULLSCREEN_SINGLETON_ID:
     case ::ppapi::FLASH_SINGLETON_ID:
+    case ::ppapi::PDF_SINGLETON_ID:
     case ::ppapi::TRUETYPE_FONT_SINGLETON_ID:
       NOTIMPLEMENTED();
       return NULL;

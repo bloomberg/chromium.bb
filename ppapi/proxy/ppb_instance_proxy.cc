@@ -379,12 +379,16 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
       new_singleton = new FlashResource(connection, instance,
           static_cast<PluginDispatcher*>(dispatcher()));
       break;
+    case PDF_SINGLETON_ID:
+      // TODO(raymes): fill this in.
+      break;
 #else
     case BROWSER_FONT_SINGLETON_ID:
     case FLASH_CLIPBOARD_SINGLETON_ID:
     case FLASH_FILE_SINGLETON_ID:
     case FLASH_FULLSCREEN_SINGLETON_ID:
     case FLASH_SINGLETON_ID:
+    case PDF_SINGLETON_ID:
       NOTREACHED();
       break;
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
