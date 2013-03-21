@@ -12,6 +12,7 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/pending_task.h"
+#include "media/audio/mac/audio_low_latency_output_mac.h"
 
 namespace media {
 
@@ -104,7 +105,16 @@ OSStatus AudioDeviceListenerMac::OnDefaultDeviceChanged(
         addresses[i].mScope == kDeviceChangePropertyAddress.mScope &&
         addresses[i].mElement == kDeviceChangePropertyAddress.mElement &&
         context) {
-      static_cast<AudioDeviceListenerMac*>(context)->listener_cb_.Run();
+      AudioDeviceListenerMac* p_this =
+          static_cast<AudioDeviceListenerMac*>(context);
+      // Device changes on Mac are risky, the OSX API is not thread safe, so
+      // only change devices if we have to.  Again, see http://crbug.com/158170.
+      // TODO(crogers): Remove this once the AUHAL output driver is in.
+      int sample_rate = AUAudioOutputStream::HardwareSampleRate();
+      if (p_this->current_sample_rate_ != sample_rate) {
+        p_this->current_sample_rate_ = sample_rate;
+        p_this->listener_cb_.Run();
+      }
       break;
     }
   }
@@ -115,7 +125,8 @@ OSStatus AudioDeviceListenerMac::OnDefaultDeviceChanged(
 AudioDeviceListenerMac::AudioDeviceListenerMac(const base::Closure& listener_cb)
     : listener_block_(NULL),
       add_listener_block_func_(NULL),
-      remove_listener_block_func_(NULL) {
+      remove_listener_block_func_(NULL),
+      current_sample_rate_(AUAudioOutputStream::HardwareSampleRate()) {
   // Device changes are hard, lets go shopping!  Sadly OSX does not handle
   // property listener callbacks in a thread safe manner.  On 10.6 we can set
   // kAudioHardwarePropertyRunLoop to account for this.  On 10.7 this is broken

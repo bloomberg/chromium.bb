@@ -68,6 +68,10 @@ class MEDIA_EXPORT AudioDeviceListenerMac {
   // thread.
   base::ThreadChecker thread_checker_;
 
+  // If the sample rate hasn't changed, don't fire a device change.  OSX will
+  // handle the routing under the hood.
+  int current_sample_rate_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerMac);
 };
 

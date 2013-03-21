@@ -63,6 +63,8 @@ class AudioDeviceListenerMacTest : public testing::Test {
         kAudioObjectPropertyElementMaster }
     };
 
+    // Force sample rate change so the listener fires.
+    output_device_listener_->current_sample_rate_++;
     return noErr == output_device_listener_->OnDefaultDeviceChanged(
         kAudioObjectSystemObject, 1, addresses, output_device_listener_.get());
   }
