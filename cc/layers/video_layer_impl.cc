@@ -41,7 +41,7 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
 VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       frame_(NULL),
-      format_(GL_INVALID_VALUE),
+      format_(media::VideoFrame::INVALID),
       convert_yuv_(false),
       external_texture_resource_(0) {}
 
@@ -56,7 +56,7 @@ VideoLayerImpl::~VideoLayerImpl() {
     DCHECK(layer_tree_impl()->proxy()->IsMainThreadBlocked());
     provider_client_impl_->Stop();
   }
-  FreePlaneData(layer_tree_impl()->resource_provider());
+  FreeFramePlanes(layer_tree_impl()->resource_provider());
 
 #ifndef NDEBUG
   for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i)
@@ -81,38 +81,6 @@ void VideoLayerImpl::DidBecomeActive() {
   provider_client_impl_->set_active_video_layer(this);
 }
 
-// Convert media::VideoFrame::Format to OpenGL enum values.
-static GLenum ConvertVFCFormatToGLenum(const media::VideoFrame& frame) {
-  switch (frame.format()) {
-    case media::VideoFrame::YV12:
-    case media::VideoFrame::YV16:
-      return GL_LUMINANCE;
-    case media::VideoFrame::NATIVE_TEXTURE:
-      return frame.texture_target();
-#if defined(GOOGLE_TV)
-    case media::VideoFrame::HOLE:
-      return GL_INVALID_VALUE;
-#endif
-    case media::VideoFrame::INVALID:
-    case media::VideoFrame::RGB32:
-    case media::VideoFrame::EMPTY:
-    case media::VideoFrame::I420:
-      NOTREACHED();
-      break;
-  }
-  return GL_INVALID_VALUE;
-}
-
-size_t VideoLayerImpl::NumPlanes() const {
-  if (!frame_)
-    return 0;
-
-  if (convert_yuv_)
-    return 1;
-
-  return media::VideoFrame::NumPlanes(frame_->format());
-}
-
 void VideoLayerImpl::WillDraw(ResourceProvider* resource_provider) {
   LayerImpl::WillDraw(resource_provider);
 
@@ -127,7 +95,7 @@ void VideoLayerImpl::WillDraw(ResourceProvider* resource_provider) {
   frame_ = provider_client_impl_->AcquireLockAndCurrentFrame();
 
   WillDrawInternal(resource_provider);
-  FreeUnusedPlaneData(resource_provider);
+  FreeUnusedFramePlanes(resource_provider);
 
   if (!frame_)
     provider_client_impl_->ReleaseLock();
@@ -144,7 +112,7 @@ void VideoLayerImpl::WillDrawInternal(ResourceProvider* resource_provider) {
     return;
 #endif
 
-  format_ = ConvertVFCFormatToGLenum(*frame_);
+  format_ = frame_->format();
 
   // If these fail, we'll have to add draw logic that handles offset bitmap/
   // texture UVs.  For now, just expect (0, 0) offset, since all our decoders
@@ -152,7 +120,7 @@ void VideoLayerImpl::WillDrawInternal(ResourceProvider* resource_provider) {
   DCHECK_EQ(frame_->visible_rect().x(), 0);
   DCHECK_EQ(frame_->visible_rect().y(), 0);
 
-  if (format_ == GL_INVALID_VALUE) {
+  if (format_ == media::VideoFrame::INVALID) {
     provider_client_impl_->PutCurrentFrame(frame_);
     frame_ = NULL;
     return;
@@ -164,25 +132,20 @@ void VideoLayerImpl::WillDrawInternal(ResourceProvider* resource_provider) {
   // starts shaping up.
   convert_yuv_ =
       resource_provider->default_resource_type() == ResourceProvider::Bitmap &&
-      (frame_->format() == media::VideoFrame::YV12 ||
-       frame_->format() == media::VideoFrame::YV16);
+      (format_ == media::VideoFrame::YV12 ||
+       format_ == media::VideoFrame::YV16);
 
   if (convert_yuv_)
-    format_ = GL_RGBA;
+    format_ = media::VideoFrame::RGB32;
 
-  if (!AllocatePlaneData(resource_provider)) {
+  if (!SetupFramePlanes(resource_provider)) {
     provider_client_impl_->PutCurrentFrame(frame_);
     frame_ = NULL;
     return;
   }
 
-  if (!CopyPlaneData(resource_provider)) {
-    provider_client_impl_->PutCurrentFrame(frame_);
-    frame_ = NULL;
-    return;
-  }
-
-  if (format_ == GL_TEXTURE_2D) {
+  if (format_ == media::VideoFrame::NATIVE_TEXTURE &&
+      frame_->texture_target() == GL_TEXTURE_2D) {
     external_texture_resource_ =
         resource_provider->CreateResourceFromExternalTexture(
             frame_->texture_id());
@@ -235,7 +198,8 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
 #endif
 
   switch (format_) {
-    case GL_LUMINANCE: {
+    case media::VideoFrame::YV12:
+    case media::VideoFrame::YV16: {
       // YUV software decoder.
       const FramePlane& y_plane = frame_planes_[media::VideoFrame::kYPlane];
       const FramePlane& u_plane = frame_planes_[media::VideoFrame::kUPlane];
@@ -252,8 +216,8 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }
-    case GL_RGBA: {
-      // RGBA software decoder.
+    case media::VideoFrame::RGB32: {
+      // RGBA software decoder: a converted YUV frame (see: convert_yuv_).
       const FramePlane& plane = frame_planes_[media::VideoFrame::kRGBPlane];
       bool premultiplied_alpha = true;
       gfx::PointF uv_top_left(0.f, 0.f);
@@ -273,56 +237,69 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }
-    case GL_TEXTURE_2D: {
-      // NativeTexture hardware decoder.
-      bool premultiplied_alpha = true;
-      gfx::PointF uv_top_left(0.f, 0.f);
-      gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
-      float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
-      bool flipped = false;
-      scoped_ptr<TextureDrawQuad> texture_quad = TextureDrawQuad::Create();
-      texture_quad->SetNew(shared_quad_state,
-                           quad_rect,
-                           opaque_rect,
-                           external_texture_resource_,
-                           premultiplied_alpha,
-                           uv_top_left,
-                           uv_bottom_right,
-                           opacity,
-                           flipped);
-      quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
+    case media::VideoFrame::NATIVE_TEXTURE:
+      switch (frame_->texture_target()) {
+        case GL_TEXTURE_2D: {
+          // NativeTexture hardware decoder.
+          bool premultiplied_alpha = true;
+          gfx::PointF uv_top_left(0.f, 0.f);
+          gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+          float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+          bool flipped = false;
+          scoped_ptr<TextureDrawQuad> texture_quad = TextureDrawQuad::Create();
+          texture_quad->SetNew(shared_quad_state,
+                               quad_rect,
+                               opaque_rect,
+                               external_texture_resource_,
+                               premultiplied_alpha,
+                               uv_top_left,
+                               uv_bottom_right,
+                               opacity,
+                               flipped);
+          quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
+          break;
+        }
+        case GL_TEXTURE_RECTANGLE_ARB: {
+          gfx::Size visible_size(visible_rect.width(), visible_rect.height());
+          scoped_ptr<IOSurfaceDrawQuad> io_surface_quad =
+              IOSurfaceDrawQuad::Create();
+          io_surface_quad->SetNew(shared_quad_state,
+                                  quad_rect,
+                                  opaque_rect,
+                                  visible_size,
+                                  frame_->texture_id(),
+                                  IOSurfaceDrawQuad::UNFLIPPED);
+          quad_sink->Append(io_surface_quad.PassAs<DrawQuad>(),
+                            append_quads_data);
+          break;
+        }
+        case GL_TEXTURE_EXTERNAL_OES: {
+          // StreamTexture hardware decoder.
+          gfx::Transform transform(
+              provider_client_impl_->stream_texture_matrix());
+          transform.Scale(tex_width_scale, tex_height_scale);
+          scoped_ptr<StreamVideoDrawQuad> stream_video_quad =
+              StreamVideoDrawQuad::Create();
+          stream_video_quad->SetNew(shared_quad_state,
+                                    quad_rect,
+                                    opaque_rect,
+                                    frame_->texture_id(),
+                                    transform);
+          quad_sink->Append(stream_video_quad.PassAs<DrawQuad>(),
+                            append_quads_data);
+          break;
+        }
+        default:
+          NOTREACHED();
+          break;
+      }
       break;
-    }
-    case GL_TEXTURE_RECTANGLE_ARB: {
-      gfx::Size visible_size(visible_rect.width(), visible_rect.height());
-      scoped_ptr<IOSurfaceDrawQuad> io_surface_quad =
-          IOSurfaceDrawQuad::Create();
-      io_surface_quad->SetNew(shared_quad_state,
-                              quad_rect,
-                              opaque_rect,
-                              visible_size,
-                              frame_->texture_id(),
-                              IOSurfaceDrawQuad::UNFLIPPED);
-      quad_sink->Append(io_surface_quad.PassAs<DrawQuad>(), append_quads_data);
-      break;
-    }
-    case GL_TEXTURE_EXTERNAL_OES: {
-      // StreamTexture hardware decoder.
-      gfx::Transform transform(provider_client_impl_->stream_texture_matrix());
-      transform.Scale(tex_width_scale, tex_height_scale);
-      scoped_ptr<StreamVideoDrawQuad> stream_video_quad =
-          StreamVideoDrawQuad::Create();
-      stream_video_quad->SetNew(shared_quad_state,
-                                quad_rect,
-                                opaque_rect,
-                                frame_->texture_id(),
-                                transform);
-      quad_sink->Append(stream_video_quad.PassAs<DrawQuad>(),
-                        append_quads_data);
-      break;
-    }
-    default:
-      // Someone updated ConvertVFCFormatToGLenum() above but update this!
+    case media::VideoFrame::INVALID:
+    case media::VideoFrame::EMPTY:
+    case media::VideoFrame::I420:
+#if defined(GOOGLE_TV)
+    case media::VideoFrame::HOLE:
+#endif
       NOTREACHED();
       break;
   }
@@ -334,7 +311,8 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   if (!frame_)
     return;
 
-  if (format_ == GL_TEXTURE_2D) {
+  if (format_ == media::VideoFrame::NATIVE_TEXTURE &&
+      frame_->texture_target() == GL_TEXTURE_2D) {
     DCHECK(external_texture_resource_);
     // TODO: the following assert will not be true when sending resources to a
     // parent compositor. We will probably need to hold on to frame_ for
@@ -387,9 +365,45 @@ void VideoLayerImpl::FramePlane::FreeData(ResourceProvider* resource_provider) {
   resource_id = 0;
 }
 
-bool VideoLayerImpl::AllocatePlaneData(ResourceProvider* resource_provider) {
-  int max_texture_size = resource_provider->max_texture_size();
-  size_t plane_count = NumPlanes();
+// Convert media::VideoFrame::Format to OpenGL enum values.
+static GLenum ConvertVFCFormatToGLenum(const media::VideoFrame& frame) {
+  switch (frame.format()) {
+    case media::VideoFrame::YV12:
+    case media::VideoFrame::YV16:
+      return GL_LUMINANCE;
+    case media::VideoFrame::NATIVE_TEXTURE:
+      return frame.texture_target();
+#if defined(GOOGLE_TV)
+    case media::VideoFrame::HOLE:
+      return GL_INVALID_VALUE;
+#endif
+    case media::VideoFrame::INVALID:
+    case media::VideoFrame::RGB32:
+    case media::VideoFrame::EMPTY:
+    case media::VideoFrame::I420:
+      NOTREACHED();
+      break;
+  }
+  return GL_INVALID_VALUE;
+}
+
+size_t VideoLayerImpl::NumPlanes() const {
+  if (!frame_)
+    return 0;
+
+  if (convert_yuv_)
+    return 1;
+
+  return media::VideoFrame::NumPlanes(frame_->format());
+}
+
+bool VideoLayerImpl::SetupFramePlanes(ResourceProvider* resource_provider) {
+  const size_t plane_count = NumPlanes();
+  if (!plane_count)
+    return true;
+
+  const int max_texture_size = resource_provider->max_texture_size();
+  const GLenum pixel_format = ConvertVFCFormatToGLenum(*frame_);
   for (size_t plane_index = 0; plane_index < plane_count; ++plane_index) {
     VideoLayerImpl::FramePlane* plane = &frame_planes_[plane_index];
 
@@ -401,22 +415,15 @@ bool VideoLayerImpl::AllocatePlaneData(ResourceProvider* resource_provider) {
         required_texture_size.height() > max_texture_size)
       return false;
 
-    if (plane->size != required_texture_size || plane->format != format_) {
+    if (plane->size != required_texture_size || plane->format != pixel_format) {
       plane->FreeData(resource_provider);
       plane->size = required_texture_size;
-      plane->format = format_;
+      plane->format = pixel_format;
     }
 
     if (!plane->AllocateData(resource_provider))
       return false;
   }
-  return true;
-}
-
-bool VideoLayerImpl::CopyPlaneData(ResourceProvider* resource_provider) {
-  size_t plane_count = NumPlanes();
-  if (!plane_count)
-    return true;
 
   if (convert_yuv_) {
     if (!video_renderer_)
@@ -434,7 +441,7 @@ bool VideoLayerImpl::CopyPlaneData(ResourceProvider* resource_provider) {
 
   for (size_t plane_index = 0; plane_index < plane_count; ++plane_index) {
     const VideoLayerImpl::FramePlane& plane = frame_planes_[plane_index];
-    // Only non-FormatNativeTexture planes should need upload.
+    // Only planar formats planes should need upload.
     DCHECK_EQ(plane.format, GL_LUMINANCE);
     const uint8_t* software_plane_pixels = frame_->data(plane_index);
     gfx::Rect image_rect(0,
@@ -451,19 +458,19 @@ bool VideoLayerImpl::CopyPlaneData(ResourceProvider* resource_provider) {
   return true;
 }
 
-void VideoLayerImpl::FreePlaneData(ResourceProvider* resource_provider) {
+void VideoLayerImpl::FreeFramePlanes(ResourceProvider* resource_provider) {
   for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i)
     frame_planes_[i].FreeData(resource_provider);
 }
 
-void VideoLayerImpl::FreeUnusedPlaneData(ResourceProvider* resource_provider) {
+void VideoLayerImpl::FreeUnusedFramePlanes(ResourceProvider* resource_provider) {
   size_t first_unused_plane = NumPlanes();
   for (size_t i = first_unused_plane; i < media::VideoFrame::kMaxPlanes; ++i)
     frame_planes_[i].FreeData(resource_provider);
 }
 
 void VideoLayerImpl::DidLoseOutputSurface() {
-  FreePlaneData(layer_tree_impl()->resource_provider());
+  FreeFramePlanes(layer_tree_impl()->resource_provider());
 }
 
 void VideoLayerImpl::SetNeedsRedraw() {

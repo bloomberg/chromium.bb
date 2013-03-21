@@ -63,16 +63,15 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
   void WillDrawInternal(ResourceProvider* resource_provider);
-  bool AllocatePlaneData(ResourceProvider* resource_provider);
-  bool CopyPlaneData(ResourceProvider* resource_provider);
-  void FreePlaneData(ResourceProvider* resource_provider);
-  void FreeUnusedPlaneData(ResourceProvider* resource_provider);
+  bool SetupFramePlanes(ResourceProvider* resource_provider);
+  void FreeFramePlanes(ResourceProvider* resource_provider);
+  void FreeUnusedFramePlanes(ResourceProvider* resource_provider);
   size_t NumPlanes() const;
 
   scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl_;
 
   media::VideoFrame* frame_;
-  GLenum format_;
+  media::VideoFrame::Format format_;
   bool convert_yuv_;
   ResourceProvider::ResourceId external_texture_resource_;
   scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
