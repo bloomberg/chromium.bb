@@ -29,7 +29,7 @@ readonly QEMU_PREFIX_HOOK=${QEMU_PREFIX_HOOK:-}
 #                  -strace
 #                  -d out_asm,in_asm,op,int,exec,cpu
 #       c.f.  cpu_log_items in qemu-XXX/exec.c
-readonly QEMU_ARGS="-cpu cortex-a8"
+readonly QEMU_ARGS="-cpu cortex-a9"
 readonly QEMU_ARGS_DEBUG="-d in_asm,int,exec,cpu"
 readonly QEMU_ARGS_DEBUG_SR="-d in_asm,int,exec,cpu,service_runtime"
 

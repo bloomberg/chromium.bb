@@ -148,7 +148,7 @@ ARM_GCC = arm-linux-gnueabi-gcc
 endif
 
 ifndef ARM_ARCH_FLAGS
-ARM_ARCH_FLAGS = -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -marm
+ARM_ARCH_FLAGS = -march=armv7-a -mcpu=cortex-a9 -mfpu=neon -marm
 endif
 
 ifndef ARM_LINK_FLAGS

@@ -225,7 +225,7 @@ def main(argv):
 def RunSelLdr(args):
   prefix = []
   if GetBuildArch().find('arm') == -1 and env.arch == 'arm':
-    prefix = [ env.qemu_arm, '-cpu', 'cortex-a8']
+    prefix = [ env.qemu_arm, '-cpu', 'cortex-a9']
     if env.trace:
       prefix += ['-d', 'in_asm,op,exec,cpu']
     args = ['-Q'] + args

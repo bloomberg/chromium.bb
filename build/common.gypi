@@ -321,7 +321,7 @@
                   ['armv7==1', {
                       'cflags': [
                           '-march=armv7-a',
-                          '-mtune=cortex-a8',
+                          '-mtune=cortex-a9',
                           '-mfloat-abi=<(arm_float_abi)',
                       ],
                       'conditions': [

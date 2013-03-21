@@ -116,7 +116,7 @@ EXTRA_ENV = {
   'LLC_FLAGS_ARM'    :
     ('-arm-reserve-r9 -sfi-disable-cp ' +
      '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data ' +
-     '-no-inline-jumptables -float-abi=hard'),
+     '-no-inline-jumptables -float-abi=hard -mattr=+neon'),
 
   'LLC_FLAGS_X8632' : '',
   'LLC_FLAGS_X8664' : '',
@@ -156,7 +156,7 @@ EXTRA_ENV = {
   # do auto feature detection based on CPUID, but constrained by what is
   # accepted by NaCl validators.
   'LLC_MCPU'        : '-mcpu=${LLC_MCPU_%ARCH%}',
-  'LLC_MCPU_ARM'    : 'cortex-a8',
+  'LLC_MCPU_ARM'    : 'cortex-a9',
   'LLC_MCPU_X8632'  : 'pentium4',
   'LLC_MCPU_X8664'  : 'core2',
   'LLC_MCPU_MIPS32' : 'mips32r2',
@@ -169,6 +169,7 @@ EXTRA_ENV = {
   # for testing. Defaults to 1Gbps (effectively unlimited).
   'BITCODE_STREAM_RATE' : '1000000000',
 }
+
 
 TranslatorPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),

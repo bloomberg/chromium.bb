@@ -19,8 +19,8 @@ EXTRA_ENV = {
   'OUTPUT'      : '',
 
   'MC_FLAGS'       : '-assemble -filetype=obj ${MC_FLAGS_%ARCH%}',
-  # maybe add the equivalent of -mfpu=vfp
-  'MC_FLAGS_ARM'   : '-arch=arm -triple=armv7a-nacl -mcpu=cortex-a8',
+  'MC_FLAGS_ARM'   : ('-arch=arm -triple=armv7a-nacl -mcpu=cortex-a9 ' +
+                      '-mattr=+neon'),
   'MC_FLAGS_X8632' : '-arch=x86 -triple=i686-nacl',
   'MC_FLAGS_X8664' : '-arch=x86-64 -triple=x86_64-nacl',
   'MC_FLAGS_MIPS32': '-arch=mipsel -triple=mipsel-nacl',
@@ -121,4 +121,3 @@ OPTIONS:
   --version        Display version information
   -help | -h       Output this help.
 """
-
