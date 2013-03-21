@@ -13,6 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace leveldb {
+class DB;
+}
+
 namespace drive {
 
 class DriveEntryProto;
@@ -20,9 +24,6 @@ class DriveResourceMetadataHeader;
 
 // Interface of a storage for DriveResourceMetadata which is responsible to
 // manage entry info and child-parent relationships between entries.
-// TODO(hashimoto): Add tests for this class.
-// TODO(hashimoto): Implement DB version of this class.
-// TODO(hashimoto): Move data save/load code to this class.
 class DriveResourceMetadataStorage {
  public:
   virtual ~DriveResourceMetadataStorage() {}
@@ -115,6 +116,59 @@ class DriveResourceMetadataStorageMemory
   ChildMaps child_maps_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveResourceMetadataStorageMemory);
+};
+
+// Implementation of DriveResourceMetadataStorage with leveldb.
+class DriveResourceMetadataStorageDB
+    : public DriveResourceMetadataStorage {
+ public:
+  // This should be incremented when incompatibility change is made to DB
+  // format.
+  static const int kDBVersion = 1;
+
+  explicit DriveResourceMetadataStorageDB(const base::FilePath& directory_path);
+  virtual ~DriveResourceMetadataStorageDB();
+
+  // DriveResourceMetadataStorage overrides:
+  virtual bool Initialize() OVERRIDE;
+  virtual bool IsPersistentStorage() OVERRIDE;
+  virtual void SetLargestChangestamp(int64 largest_changestamp) OVERRIDE;
+  virtual int64 GetLargestChangestamp() OVERRIDE;
+  virtual void PutEntry(const DriveEntryProto& entry) OVERRIDE;
+  virtual scoped_ptr<DriveEntryProto> GetEntry(
+      const std::string& resource_id) OVERRIDE;
+  virtual void RemoveEntry(const std::string& resource_id) OVERRIDE;
+  virtual void PutChild(const std::string& parent_resource_id,
+                        const base::FilePath::StringType& child_name,
+                        const std::string& child_resource_id) OVERRIDE;
+  virtual std::string GetChild(
+      const std::string& parent_resource_id,
+      const base::FilePath::StringType& child_name) OVERRIDE;
+  virtual void GetChildren(const std::string& parent_resource_id,
+                           std::vector<std::string>* children) OVERRIDE;
+  virtual void RemoveChild(
+      const std::string& parent_resource_id,
+      const base::FilePath::StringType& child_name) OVERRIDE;
+
+ private:
+  friend class DriveResourceMetadataStorageTest;
+
+  // Puts header.
+  void PutHeader(const DriveResourceMetadataHeader& header);
+
+  // Gets header.
+  scoped_ptr<DriveResourceMetadataHeader> GetHeader();
+
+  // Path to the directory where the data is stored.
+  base::FilePath directory_path_;
+
+  // Entries stored in this storage.
+  scoped_ptr<leveldb::DB> resource_map_;
+
+  // Parent-child relationship between entries.
+  scoped_ptr<leveldb::DB> child_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveResourceMetadataStorageDB);
 };
 
 }  // namespace drive

@@ -108,8 +108,17 @@ message DriveRootDirectoryProto {
   optional int64 largest_changestamp = 4;
   // Monotonically increasing version number, which is changed when
   // incompatible change is made in the proto file.
-  // kProtoVersion in drive_files.h defines the current version.
+  // kProtoVersion in drive_resource_metadata.h defines the current version.
   optional int32 version = 3;
+}
+
+// Container for the header part of DriveResourceMetadata.
+message DriveResourceMetadataHeader {
+  // Monotonically increasing version number, which is changed when
+  // incompatible change is made to the DB format. kDBVersion in
+  // drive_resource_metadata_storage.h defines the current version.
+  optional int32 version = 1;
+  optional int64 largest_changestamp = 2;
 }
 
 // Message to store information of an existing cache file.
