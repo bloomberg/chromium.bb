@@ -17,6 +17,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/debug/rendering_stats.h"
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/rate_limiter.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -50,12 +51,10 @@ class LayerTreeHostImplClient;
 class PrioritizedResourceManager;
 class PrioritizedResource;
 class Region;
-class RenderingStatsInstrumentation;
 class ResourceProvider;
 class ResourceUpdateQueue;
 class ScrollbarLayer;
 class TopControlsManager;
-struct RenderingStats;
 struct ScrollAndScaleSet;
 
 // Provides information on an Impl's rendering capabilities back to the
@@ -148,10 +147,6 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   int commit_number() const { return commit_number_; }
 
   void CollectRenderingStats(RenderingStats* stats) const;
-
-  RenderingStatsInstrumentation* rendering_stats_instrumentation() const {
-    return rendering_stats_instrumentation_.get();
-  }
 
   const RendererCapabilities& GetRendererCapabilities() const;
 
@@ -252,8 +247,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   bool PaintLayerContents(const LayerList& render_surface_layer_list,
                           ResourceUpdateQueue* quue);
   bool PaintMasksForRenderSurface(Layer* render_surface_layer,
-                                  ResourceUpdateQueue* queue,
-                                  RenderingStats* stats);
+                                  ResourceUpdateQueue* queue);
 
   void UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
   void UpdateHudLayer();
@@ -281,7 +275,7 @@ class CC_EXPORT LayerTreeHost : public RateLimiterClient {
   scoped_ptr<Proxy> proxy_;
 
   int commit_number_;
-  scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
+  RenderingStats rendering_stats_;
 
   bool renderer_initialized_;
   bool output_surface_lost_;

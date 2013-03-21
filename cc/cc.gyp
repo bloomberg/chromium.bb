@@ -211,8 +211,6 @@
       'output/renderer.h',
       'debug/rendering_stats.cc',
       'debug/rendering_stats.h',
-      'debug/rendering_stats_instrumentation.cc',
-      'debug/rendering_stats_instrumentation.h',
       'resources/resource.cc',
       'resources/resource.h',
       'resources/resource_pool.cc',

@@ -171,6 +171,12 @@ bool SingleThreadProxy::RecreateOutputSurface() {
   return initialized;
 }
 
+void SingleThreadProxy::CollectRenderingStats(RenderingStats* stats) {
+  stats->totalCommitTime = total_commit_time_;
+  stats->totalCommitCount = total_commit_count_;
+  layer_tree_host_impl_->CollectRenderingStats(stats);
+}
+
 const RendererCapabilities& SingleThreadProxy::GetRendererCapabilities() const {
   DCHECK(renderer_initialized_);
   // Note: this gets called during the commit by the "impl" thread.
@@ -189,10 +195,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     DebugScopedSetImplThread impl(this);
 
-    RenderingStatsInstrumentation* stats_instrumentation =
-        layer_tree_host_->rendering_stats_instrumentation();
-    base::TimeTicks startTime = stats_instrumentation->StartRecording();
-
+    base::TimeTicks startTime = base::TimeTicks::HighResNow();
     layer_tree_host_impl_->BeginCommit();
 
     layer_tree_host_->contents_texture_manager()->
@@ -219,8 +222,9 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     DCHECK(!scrollInfo->scrolls.size());
 #endif
 
-    base::TimeDelta duration = stats_instrumentation->EndRecording(startTime);
-    stats_instrumentation->AddCommit(duration);
+    base::TimeTicks endTime = base::TimeTicks::HighResNow();
+    total_commit_time_ += endTime - startTime;
+    total_commit_count_++;
   }
   layer_tree_host_->CommitComplete();
   next_frame_is_newly_committed_frame_ = true;

@@ -35,11 +35,11 @@ class LayerTreeImpl;
 class PageScaleAnimation;
 class PaintTimeCounter;
 class MemoryHistory;
-class RenderingStatsInstrumentation;
 class RenderPassDrawQuad;
 class ResourceProvider;
 class TopControlsManager;
 struct RendererCapabilities;
+struct RenderingStats;
 
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
@@ -81,8 +81,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   static scoped_ptr<LayerTreeHostImpl> Create(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
-      Proxy* proxy,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+      Proxy* proxy);
   virtual ~LayerTreeHostImpl();
 
   // InputHandlerClient implementation
@@ -239,6 +238,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
     return !animation_registrar_->active_animation_controllers().empty();
   }
 
+  void CollectRenderingStats(RenderingStats* stats) const;
+
   void SendManagedMemoryStats(
       size_t memory_visible_bytes,
       size_t memory_visible_and_nearby_bytes,
@@ -328,11 +329,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   bool page_scale_animation_active() const { return !!page_scale_animation_; }
 
  protected:
-  LayerTreeHostImpl(
-      const LayerTreeSettings& settings,
-      LayerTreeHostImplClient* client,
-      Proxy* proxy,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+  LayerTreeHostImpl(const LayerTreeSettings& settings,
+                    LayerTreeHostImplClient* client,
+                    Proxy* proxy);
   void ActivatePendingTree();
 
   // Virtual for testing.
@@ -448,8 +447,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   base::TimeTicks current_frame_time_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
-
-  RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

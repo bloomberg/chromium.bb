@@ -15,6 +15,7 @@
 #include "cc/base/scoped_ptr_deque.h"
 
 namespace cc {
+struct RenderingStats;
 
 namespace internal {
 
@@ -24,9 +25,10 @@ class WorkerPoolTask {
 
   virtual bool IsCheap() = 0;
 
-  virtual void Run() = 0;
+  virtual void Run(RenderingStats* rendering_stats) = 0;
 
-  virtual void RunOnThread(unsigned thread_index) = 0;
+  virtual void RunOnThread(
+      RenderingStats* rendering_stats, unsigned thread_index) = 0;
 
   void DidComplete();
 
@@ -50,7 +52,7 @@ class CC_EXPORT WorkerPoolClient {
 // of all pending tasks at shutdown.
 class WorkerPool {
  public:
-  typedef base::Callback<void()> Callback;
+  typedef base::Callback<void(RenderingStats*)> Callback;
 
   virtual ~WorkerPool();
 
@@ -75,6 +77,12 @@ class WorkerPool {
 
   // Set time limit for running cheap tasks.
   void SetRunCheapTasksTimeLimit(base::TimeTicks run_cheap_tasks_time_limit);
+
+  // Toggle rendering stats collection.
+  void SetRecordRenderingStats(bool record_rendering_stats);
+
+  // Collect rendering stats of all completed tasks.
+  void GetRenderingStats(RenderingStats* stats);
 
  protected:
   WorkerPool(WorkerPoolClient* client,

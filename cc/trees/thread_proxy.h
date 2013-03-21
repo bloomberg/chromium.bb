@@ -48,6 +48,7 @@ class ThreadProxy : public Proxy,
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual bool InitializeRenderer() OVERRIDE;
   virtual bool RecreateOutputSurface() OVERRIDE;
+  virtual void CollectRenderingStats(RenderingStats* stats) OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
@@ -173,6 +174,8 @@ class ThreadProxy : public Proxy,
       scoped_refptr<cc::ContextProvider> offscreen_context_provider,
       bool* recreate_succeeded,
       RendererCapabilities* capabilities);
+  void RenderingStatsOnImplThread(CompletionEvent* completion,
+                                  RenderingStats* stats);
   ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapInternal(
       bool forced_draw);
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
@@ -250,6 +253,9 @@ class ThreadProxy : public Proxy,
   bool render_vsync_enabled_;
 
   bool inside_draw_;
+
+  base::TimeDelta total_commit_time_;
+  size_t total_commit_count_;
 
   bool defer_commits_;
   scoped_ptr<BeginFrameAndCommitState> pending_deferred_commit_;

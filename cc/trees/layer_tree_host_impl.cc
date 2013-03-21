@@ -19,7 +19,7 @@
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/paint_time_counter.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/debug/rendering_stats.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/append_quads_data.h"
@@ -141,20 +141,13 @@ LayerTreeHostImpl::FrameData::~FrameData() {}
 scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     const LayerTreeSettings& settings,
     LayerTreeHostImplClient* client,
-    Proxy* proxy,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
-  return make_scoped_ptr(
-      new LayerTreeHostImpl(settings,
-                            client,
-                            proxy,
-                            rendering_stats_instrumentation));
+    Proxy* proxy) {
+  return make_scoped_ptr(new LayerTreeHostImpl(settings, client, proxy));
 }
 
-LayerTreeHostImpl::LayerTreeHostImpl(
-    const LayerTreeSettings& settings,
-    LayerTreeHostImplClient* client,
-    Proxy* proxy,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
+LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings,
+                                     LayerTreeHostImplClient* client,
+                                     Proxy* proxy)
     : client_(client),
       proxy_(proxy),
       did_lock_scrolling_layer_(false),
@@ -173,11 +166,14 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
+      num_impl_thread_scrolls_(0),
+      num_main_thread_scrolls_(0),
+      cumulative_num_layers_drawn_(0),
+      cumulative_num_missing_tiles_(0),
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
       last_sent_memory_use_bytes_(0),
-      animation_registrar_(AnimationRegistrar::Create()),
-      rendering_stats_instrumentation_(rendering_stats_instrumentation) {
+      animation_registrar_(AnimationRegistrar::Create()) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
@@ -544,8 +540,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // texture suddenly appearing in the future.
   bool draw_frame = true;
 
-  int layers_drawn = 0;
-
   LayerIteratorType end =
       LayerIteratorType::End(frame->render_surface_layer_list);
   for (LayerIteratorType it =
@@ -614,15 +608,14 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
                             &append_quads_data);
       }
 
-      ++layers_drawn;
+      ++cumulative_num_layers_drawn_;
     }
 
     if (append_quads_data.hadOcclusionFromOutsideTargetSurface)
       target_render_pass->has_occlusion_from_outside_target_surface = true;
 
     if (append_quads_data.numMissingTiles) {
-      rendering_stats_instrumentation_->AddMissingTiles(
-          append_quads_data.numMissingTiles);
+      cumulative_num_missing_tiles_ += append_quads_data.numMissingTiles;
       bool layer_has_animating_transform =
           it->screen_space_transform_is_animating() ||
           it->draw_transform_is_animating();
@@ -635,8 +628,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
     occlusion_tracker.LeaveLayer(it);
   }
-
-  rendering_stats_instrumentation_->AddLayersDrawn(layers_drawn);
 
 #ifndef NDEBUG
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
@@ -953,11 +944,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   fps_counter_->SaveTimeStamp(frame_begin_time);
 
-  rendering_stats_instrumentation_->SetScreenFrameCount(
-      fps_counter_->current_frame_number());
-  rendering_stats_instrumentation_->SetDroppedFrameCount(
-      fps_counter_->dropped_frame_count());
-
   if (tile_manager_) {
     memory_history_->SaveEntry(
         tile_manager_->memory_stats_from_last_assign());
@@ -1188,8 +1174,8 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   client_->RenewTreePriority();
 
   if (tile_manager_ && debug_state_.continuous_painting) {
-    RenderingStats stats =
-        rendering_stats_instrumentation_->GetRenderingStats();
+    RenderingStats stats;
+    tile_manager_->GetRenderingStats(&stats);
     paint_time_counter_->SaveRasterizeTime(
         stats.totalRasterizeTimeForNowBinsOnPendingTree,
         active_tree_->source_frame_number());
@@ -1249,8 +1235,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                         settings_.numRasterThreads,
                                         settings_.useCheapnessEstimator,
                                         settings_.useColorEstimator,
-                                        settings_.predictionBenchmarking,
-                                        rendering_stats_instrumentation_));
+                                        settings_.predictionBenchmarking));
+    tile_manager_->SetRecordRenderingStats(debug_state_.RecordRenderingStats());
   }
 
   if (output_surface->capabilities().has_parent_compositor) {
@@ -1375,7 +1361,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     // thread.
     ScrollStatus status = layer_impl->TryScroll(device_viewport_point, type);
     if (status == ScrollOnMainThread) {
-      rendering_stats_instrumentation_->IncrementMainThreadScrolls();
+      num_main_thread_scrolls_++;
       UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
       active_tree()->DidBeginScroll();
       return ScrollOnMainThread;
@@ -1389,7 +1375,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
     // If any layer wants to divert the scroll event to the main thread, abort.
     if (status == ScrollOnMainThread) {
-      rendering_stats_instrumentation_->IncrementMainThreadScrolls();
+      num_main_thread_scrolls_++;
       UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
       active_tree()->DidBeginScroll();
       return ScrollOnMainThread;
@@ -1413,7 +1399,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         potentially_scrolling_layer_impl);
     should_bubble_scrolls_ = (type != NonBubblingGesture);
     wheel_scrolling_ = (type == Wheel);
-    rendering_stats_instrumentation_->IncrementImplThreadScrolls();
+    num_impl_thread_scrolls_++;
     client_->RenewTreePriority();
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
     active_tree()->DidBeginScroll();
@@ -1809,6 +1795,18 @@ int LayerTreeHostImpl::SourceAnimationFrameNumber() const {
   return fps_counter_->current_frame_number();
 }
 
+void LayerTreeHostImpl::CollectRenderingStats(RenderingStats* stats) const {
+  stats->numFramesSentToScreen = fps_counter_->current_frame_number();
+  stats->droppedFrameCount = fps_counter_->dropped_frame_count();
+  stats->numImplThreadScrolls = num_impl_thread_scrolls_;
+  stats->numMainThreadScrolls = num_main_thread_scrolls_;
+  stats->numLayersDrawn = cumulative_num_layers_drawn_;
+  stats->numMissingTiles = cumulative_num_missing_tiles_;
+
+  if (tile_manager_)
+    tile_manager_->GetRenderingStats(stats);
+}
+
 void LayerTreeHostImpl::SendManagedMemoryStats(
     size_t memory_visible_bytes,
     size_t memory_visible_and_nearby_bytes,
@@ -1963,6 +1961,9 @@ void LayerTreeHostImpl::SetDebugState(const LayerTreeDebugState& debug_state) {
     paint_time_counter_->ClearHistory();
 
   debug_state_ = debug_state;
+
+  if (tile_manager_)
+    tile_manager_->SetRecordRenderingStats(debug_state_.RecordRenderingStats());
 }
 
 void LayerTreeHostImpl::SavePaintTime(const base::TimeDelta& total_paint_time,

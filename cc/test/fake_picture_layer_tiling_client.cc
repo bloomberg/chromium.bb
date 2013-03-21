@@ -20,14 +20,7 @@ class FakeInfinitePicturePileImpl : public PicturePileImpl {
 };
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
-    : rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
-      tile_manager_(&tile_manager_client_,
-                    NULL,
-                    1,
-                    false,
-                    false,
-                    false,
-                    rendering_stats_instrumentation_.get()),
+    : tile_manager_(&tile_manager_client_, NULL, 1, false, false, false),
       pile_(new FakeInfinitePicturePileImpl()) {
 }
 

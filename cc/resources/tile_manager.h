@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/worker_pool.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/debug/rendering_stats.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/resource_pool.h"
@@ -78,8 +78,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
               size_t num_raster_threads,
               bool use_cheapess_estimator,
               bool use_color_estimator,
-              bool prediction_benchmarking,
-              RenderingStatsInstrumentation* rendering_stats_instrumentation);
+              bool prediction_benchmarking);
   virtual ~TileManager();
 
   const GlobalStateThatImpactsTilePriority& GlobalState() const {
@@ -95,9 +94,11 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
-  void GetMemoryStats(size_t* memoryRequiredBytes,
-                      size_t* memoryNiceToHaveBytes,
-                      size_t* memoryUsedBytes) const;
+  void GetMemoryStats(size_t* memory_required_bytes,
+                      size_t* memory_nice_to_have_bytes,
+                      size_t* memory_used_bytes) const;
+  void SetRecordRenderingStats(bool record_rendering_stats);
+  void GetRenderingStats(RenderingStats* stats);
   bool HasPendingWorkScheduled(WhichTree tree) const;
 
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
@@ -164,16 +165,14 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
                             WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
 
-  static void RunRasterTask(
-      uint8* buffer,
-      const gfx::Rect& rect,
-      float contents_scale,
-      const RasterTaskMetadata& metadata,
-      RenderingStatsInstrumentation* stats_instrumentation,
-      PicturePileImpl* picture_pile);
-  static void RunImageDecodeTask(
-      skia::LazyPixelRef* pixel_ref,
-      RenderingStatsInstrumentation* stats_instrumentation);
+  static void RunRasterTask(uint8* buffer,
+                            const gfx::Rect& rect,
+                            float contents_scale,
+                            const RasterTaskMetadata& metadata,
+                            PicturePileImpl* picture_pile,
+                            RenderingStats* stats);
+  static void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,
+                                 RenderingStats* stats);
 
   static void RecordCheapnessPredictorResults(bool is_predicted_cheap,
                                               bool is_actually_cheap);
@@ -212,7 +211,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
 
-  RenderingStatsInstrumentation* rendering_stats_instrumentation_;
+  bool record_rendering_stats_;
+  RenderingStats rendering_stats_;
 
   bool use_cheapness_estimator_;
   bool use_color_estimator_;

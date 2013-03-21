@@ -15,7 +15,6 @@
 #include "cc/base/math_util.h"
 #include "cc/base/thread.h"
 #include "cc/debug/overdraw_metrics.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/pinch_zoom_scrollbar.h"
 #include "cc/input/pinch_zoom_scrollbar_geometry.h"
 #include "cc/input/pinch_zoom_scrollbar_painter.h"
@@ -78,7 +77,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       needs_filter_context_(false),
       client_(client),
       commit_number_(0),
-      rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
+      rendering_stats_(),
       renderer_initialized_(false),
       output_surface_lost_(false),
       num_failed_recreate_attempts_(0),
@@ -96,9 +95,6 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
   if (settings_.acceleratedAnimationEnabled)
     animation_registrar_ = AnimationRegistrar::Create();
   s_num_layer_tree_instances++;
-
-  rendering_stats_instrumentation_->set_record_rendering_stats(
-      debug_state_.RecordRenderingStats());
 }
 
 bool LayerTreeHost::Initialize(scoped_ptr<Thread> impl_thread) {
@@ -234,7 +230,7 @@ void LayerTreeHost::UpdateAnimations(base::TimeTicks frame_begin_time) {
   AnimateLayers(frame_begin_time);
   animating_ = false;
 
-  rendering_stats_instrumentation_->IncrementAnimationFrameCount();
+  rendering_stats_.numAnimationFrames++;
 }
 
 void LayerTreeHost::DidStopFlinging() {
@@ -349,12 +345,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->DidBecomeActive();
   }
 
-  if (debug_state_.continuous_painting) {
-    host_impl->SavePaintTime(
-      rendering_stats_instrumentation_->GetRenderingStats().totalPaintTime,
-      commit_number()
-    );
-  }
+  if (debug_state_.continuous_painting)
+    host_impl->SavePaintTime(rendering_stats_.totalPaintTime, commit_number());
 
   commit_number_++;
 }
@@ -451,10 +443,7 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(proxy_->IsImplThread());
   scoped_ptr<LayerTreeHostImpl> host_impl =
-      LayerTreeHostImpl::Create(settings_,
-                                client,
-                                proxy_.get(),
-                                rendering_stats_instrumentation_.get());
+      LayerTreeHostImpl::Create(settings_, client, proxy_.get());
   if (settings_.calculateTopControlsPosition &&
       host_impl->top_controls_manager()) {
     top_controls_manager_weak_ptr_ =
@@ -493,7 +482,8 @@ void LayerTreeHost::DidDeferCommit() {}
 
 void LayerTreeHost::CollectRenderingStats(RenderingStats* stats) const {
   CHECK(debug_state_.RecordRenderingStats());
-  *stats = rendering_stats_instrumentation_->GetRenderingStats();
+  *stats = rendering_stats_;
+  proxy_->CollectRenderingStats(stats);
 }
 
 const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
@@ -567,10 +557,6 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
     return;
 
   debug_state_ = new_debug_state;
-
-  rendering_stats_instrumentation_->set_record_rendering_stats(
-      debug_state_.RecordRenderingStats());
-
   SetNeedsCommit();
 }
 
@@ -810,12 +796,14 @@ size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
 }
 
 bool LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
-                                               ResourceUpdateQueue* queue,
-                                               RenderingStats* stats) {
+                                               ResourceUpdateQueue* queue) {
   // Note: Masks and replicas only exist for layers that own render surfaces. If
   // we reach this point in code, we already know that at least something will
   // be drawn into this render surface, so the mask and replica should be
   // painted.
+
+  RenderingStats* stats =
+      debug_state_.RecordRenderingStats() ? &rendering_stats_ : NULL;
 
   bool need_more_updates = false;
   Layer* mask_layer = render_surface_layer->mask_layer();
@@ -856,10 +844,8 @@ bool LayerTreeHost::PaintLayerContents(
   PrioritizeTextures(render_surface_layer_list,
                      occlusion_tracker.overdraw_metrics());
 
-  // TODO(egraether): Use RenderingStatsInstrumentation in Layer::update()
-  RenderingStats stats;
-  RenderingStats* stats_ptr =
-      debug_state_.RecordRenderingStats() ? &stats : NULL;
+  RenderingStats* stats = debug_state_.RecordRenderingStats() ?
+                          &rendering_stats_ : NULL;
 
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
   for (LayerIteratorType it =
@@ -871,17 +857,15 @@ bool LayerTreeHost::PaintLayerContents(
     if (it.represents_target_render_surface()) {
       DCHECK(it->render_surface()->draw_opacity() ||
              it->render_surface()->draw_opacity_is_animating());
-      need_more_updates |= PaintMasksForRenderSurface(*it, queue, stats_ptr);
+      need_more_updates |= PaintMasksForRenderSurface(*it, queue);
     } else if (it.represents_itself()) {
       DCHECK(!it->bounds().IsEmpty());
-      it->Update(queue, &occlusion_tracker, stats_ptr);
+      it->Update(queue, &occlusion_tracker, stats);
       need_more_updates |= it->NeedMoreUpdates();
     }
 
     occlusion_tracker.LeaveLayer(it);
   }
-
-  rendering_stats_instrumentation_->AddStats(stats);
 
   occlusion_tracker.overdraw_metrics()->RecordMetrics(this);
 

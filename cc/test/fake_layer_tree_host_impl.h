@@ -26,7 +26,6 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   using LayerTreeHostImpl::ActivatePendingTree;
 
  private:
-  scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
   FakeLayerTreeHostImplClient client_;
 };
 

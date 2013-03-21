@@ -163,6 +163,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Fills in a WebRenderingStatsImpl struct containing information about
   // rendering, e.g. count of frames rendered, time spent painting.
+  // This call is relatively expensive in threaded compositing mode,
+  // as it blocks on the compositor thread.
   void GetRenderingStats(WebKit::WebRenderingStatsImpl&) const;
 
   // Fills in a GpuRenderingStats struct containing information about
