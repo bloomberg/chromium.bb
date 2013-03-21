@@ -559,6 +559,6 @@ if __name__ == '__main__':
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
   ChromeDriverTest.GlobalSetUp()
-  result = unittest.TextTestRunner(stream=sys.stdout).run(tests)
+  result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
   ChromeDriverTest.GlobalTearDown()
   sys.exit(len(result.failures) + len(result.errors))
