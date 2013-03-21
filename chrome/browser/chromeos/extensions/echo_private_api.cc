@@ -123,11 +123,9 @@ void EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
   if (status == chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
-  bool allow;
-  if (!chromeos::CrosSettings::Get()->GetBoolean(
-          chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow)) {
-    allow = true;
-  }
+  bool allow = true;
+  chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow);
   results_ = echo_api::CheckAllowRedeemOffers::Results::Create(allow);
   SendResponse(true);
 }
@@ -165,18 +163,14 @@ void EchoPrivateGetUserConsentFunction::CheckRedeemOffersAllowed() {
       chromeos::CrosSettings::Get()->PrepareTrustedValues(base::Bind(
           &EchoPrivateGetUserConsentFunction::CheckRedeemOffersAllowed,
           this));
-    if (status == chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
-      return;
+  if (status == chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+    return;
 
-    bool allow;
-    if (!chromeos::CrosSettings::Get()->GetBoolean(
-            chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow)) {
-      // The echo should be disabled only when
-      // kAllowRedeemChromeOsRegistrationOffers is explicitly set to false.
-      allow = true;
-    }
+  bool allow = true;
+  chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow);
 
-    OnRedeemOffersAllowedChecked(allow);
+  OnRedeemOffersAllowedChecked(allow);
 }
 
 void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(

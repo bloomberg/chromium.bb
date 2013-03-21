@@ -316,7 +316,7 @@ void DeviceSettingsProvider::SetInPolicy() {
   } else if (prop == kAllowRedeemChromeOsRegistrationOffers) {
     em::AllowRedeemChromeOsRegistrationOffersProto* allow_redeem_offers =
         device_settings_.mutable_allow_redeem_offers();
-    bool allow_redeem_offers_value = true;
+    bool allow_redeem_offers_value;
     if (value->GetAsBoolean(&allow_redeem_offers_value)) {
       allow_redeem_offers->set_allow_redeem_offers(
           allow_redeem_offers_value);
@@ -613,7 +613,7 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
   } else {
     new_values_cache->SetBoolean(
         kAllowRedeemChromeOsRegistrationOffers,
-        true);
+        !g_browser_process->browser_policy_connector()->IsEnterpriseManaged());
   }
 }
 

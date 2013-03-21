@@ -251,7 +251,7 @@ message AllowRedeemChromeOsRegistrationOffersProto {
   // to redeem electronic offers provided by service provider.
   // This value determines if users are allowed to redeem offers through
   // Chrome OS Registration service.
-  optional bool allow_redeem_offers = 1 [default = true];
+  optional bool allow_redeem_offers = 1 [default = false];
 }
 
 message StartUpFlagsProto {

@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace utils = extension_function_test_utils;
@@ -26,7 +28,6 @@ class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
     // provider.
     command_line->AppendSwitch(switches::kStubCrosSettings);
   }
-
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest, EchoTest) {
@@ -60,13 +61,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
       browser()));
 
   ASSERT_TRUE(result.get());
-  ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
 
   bool result_as_boolean = false;
   EXPECT_TRUE(result->GetAsBoolean(&result_as_boolean));
   EXPECT_FALSE(result_as_boolean);
 
-  EXPECT_TRUE(function->redeem_offers_allowed());
+  EXPECT_EQ(!g_browser_process->browser_policy_connector()
+                ->IsEnterpriseManaged(),
+            function->redeem_offers_allowed());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
@@ -85,7 +87,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
       browser()));
 
   ASSERT_TRUE(result.get());
-  ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
 
   bool result_as_boolean = false;
   EXPECT_TRUE(result->GetAsBoolean(&result_as_boolean));
@@ -111,7 +112,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
       browser()));
 
   ASSERT_TRUE(result.get());
-  ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
 
   bool result_as_boolean = false;
   EXPECT_TRUE(result->GetAsBoolean(&result_as_boolean));
