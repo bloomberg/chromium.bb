@@ -303,7 +303,6 @@ void WebRtcAudioCapturer::SetCapturerSource(
     media::ChannelLayout channel_layout,
     float sample_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK_GT(session_id_, 0);
   DVLOG(1) << "SetCapturerSource(channel_layout=" << channel_layout << ","
            << "sample_rate=" << sample_rate << ")";
   scoped_refptr<media::AudioCapturerSource> old_source;
