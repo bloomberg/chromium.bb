@@ -17,80 +17,7 @@ import subprocess
 import tempfile
 
 import dfa_parser
-
-
-def GetNumSuffixes(start_state):
-  """Compute number of minimal suffixes automaton accepts from each state.
-
-  For each state reachable from given state, compute number of paths in the
-  automaton that start from that state, end in the accepting state and do not
-  pass through accepting states in between.
-
-  It is assumed that there are no cyclic paths going entirely through
-  non-accepting states.
-
-  Args:
-    start_state: start state.
-
-  Returns:
-    Dictionary from reachable states to numbers of suffixes.
-  """
-  num_suffixes = {}
-
-  def ComputeNumSuffixes(state):
-    if state in num_suffixes:
-      return
-
-    if state.is_accepting:
-      num_suffixes[state] = 1
-
-      # Even though the state itself is accepting, there may be more reachable
-      # states behind it.
-      for t in state.forward_transitions.values():
-        ComputeNumSuffixes(t.to_state)
-
-      return
-
-    if state.any_byte:
-      next_state = state.forward_transitions[0].to_state
-      ComputeNumSuffixes(next_state)
-      num_suffixes[state] = num_suffixes[next_state]
-      return
-
-    count = 0
-    for t in state.forward_transitions.values():
-      ComputeNumSuffixes(t.to_state)
-      count += num_suffixes[t.to_state]
-    num_suffixes[state] = count
-
-  ComputeNumSuffixes(start_state)
-  return num_suffixes
-
-
-def TraverseTree(state, final_callback, prefix, anyfield=0x01):
-  if state.is_accepting:
-    final_callback(prefix)
-    return
-
-  if state.any_byte:
-    assert anyfield < 256
-    TraverseTree(
-        state.forward_transitions[0].to_state,
-        final_callback,
-        prefix + [anyfield],
-        anyfield=anyfield + 0x11)
-    # We add 0x11 each time to get sequence 01 12 23 etc.
-
-    # TODO(shcherbina): change it to much nicer 0x22 once
-    # http://code.google.com/p/nativeclient/issues/detail?id=3164 is fixed
-    # (right now we want to keep immediates small to avoid problem with sign
-    # extension).
-  else:
-    for byte, t in state.forward_transitions.iteritems():
-      TraverseTree(
-          t.to_state,
-          final_callback,
-          prefix + [byte])
+import dfa_traversal
 
 
 def RoughlyEqual(s1, s2):
@@ -189,9 +116,10 @@ def Worker((prefix, state_index)):
   worker_state = WorkerState(prefix)
 
   try:
-    TraverseTree(states[state_index],
-                 final_callback=worker_state.ReceiveInstruction,
-                 prefix=prefix)
+    dfa_traversal.TraverseTree(
+        states[state_index],
+        final_callback=worker_state.ReceiveInstruction,
+        prefix=prefix)
   finally:
     worker_state.Finish()
 
@@ -225,11 +153,9 @@ def ParseOptions():
   return options, xml_file
 
 
-# We are doing it here, not inside main, because we need options in subprocesses
-# spawned by multiprocess.
 options, xml_file = ParseOptions()
-# And we don't want states graph to be passed again for each task - it's too
-# slow for some reason.
+# We are doing it here to share state graph between workers spawned by
+# multiprocess. Passing it every time is slow.
 states, initial_state = dfa_parser.ParseXml(xml_file)
 
 
@@ -240,24 +166,14 @@ def main():
 
   assert not initial_state.any_byte
 
-  num_suffixes = GetNumSuffixes(initial_state)
+  num_suffixes = dfa_traversal.GetNumSuffixes(initial_state)
   # We can't just write 'num_suffixes[initial_state]' because
   # initial state is accepting.
   total_instructions = sum(num_suffixes[t.to_state]
                            for t in initial_state.forward_transitions.values())
   print total_instructions, 'instructions total'
 
-  # We parallelize by first two bytes.
-  tasks = []
-  for byte1, t1 in sorted(initial_state.forward_transitions.items()):
-    state1 = t1.to_state
-    if state1.any_byte or state1.is_accepting or num_suffixes[state1] < 10**7:
-      tasks.append(([byte1], states.index(state1)))
-      continue
-    for byte2, t2 in sorted(state1.forward_transitions.items()):
-      state2 = t2.to_state
-      tasks.append(([byte1, byte2], states.index(state2)))
-
+  tasks = dfa_traversal.CreateTraversalTasks(states, initial_state)
   print len(tasks), 'tasks'
 
   pool = multiprocessing.Pool()

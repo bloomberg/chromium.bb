@@ -314,4 +314,16 @@ if ragel_involved:
          '--validator_dll', validator_dll,
          superinstruction])
 
-      env.AlwaysBuild(env.Alias('dfacheckvalidator', superinstruction_verified))
+      regular_instructions_test = env.AutoDepsCommand(
+        'regular_instructions_test_x86_%s.out' % bitness,
+        ['${PYTHON}',
+         env.File('verify_regular_instructions.py'),
+         xml,
+         '--bitness', bitness,
+         '--gas', gas,
+         '--objdump', objdump,
+         '--validator_dll', validator_dll])
+
+      env.AlwaysBuild(env.Alias(
+        'dfacheckvalidator',
+        [superinstruction_verified, regular_instructions_test]))

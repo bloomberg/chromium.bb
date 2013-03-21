@@ -158,4 +158,3 @@ def ParseXml(xml_file):
   start_state = states[int(start_states[0].text)]
 
   return states, start_state
-
