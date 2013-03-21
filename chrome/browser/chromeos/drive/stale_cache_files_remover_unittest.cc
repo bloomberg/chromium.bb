@@ -81,6 +81,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
     resource_metadata_.reset(new DriveResourceMetadata(
         fake_drive_service_->GetRootResourceId(),
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
     ASSERT_FALSE(file_system_);

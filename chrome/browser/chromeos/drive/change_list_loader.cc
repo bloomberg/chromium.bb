@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
@@ -106,15 +105,12 @@ struct ChangeListLoader::GetResourceListUiState {
   base::WeakPtrFactory<GetResourceListUiState> weak_ptr_factory;
 };
 
-ChangeListLoader::ChangeListLoader(
-    DriveResourceMetadata* resource_metadata,
-    DriveScheduler* scheduler,
-    DriveWebAppsRegistry* webapps_registry,
-    DriveCache* cache)
+ChangeListLoader::ChangeListLoader(DriveResourceMetadata* resource_metadata,
+                                   DriveScheduler* scheduler,
+                                   DriveWebAppsRegistry* webapps_registry)
     : resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       webapps_registry_(webapps_registry),
-      cache_(cache),
       refreshing_(false),
       last_known_remote_changestamp_(0),
       loaded_(false),
@@ -692,16 +688,13 @@ void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
   // loading from the server is complete.
   refreshing_ = true;
 
-  resource_metadata_->Load(
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
-      callback);
+  resource_metadata_->Load(callback);
 }
 
 void ChangeListLoader::SaveFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->MaybeSave(
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META));
+  resource_metadata_->MaybeSave();
 }
 
 void ChangeListLoader::UpdateFromFeed(

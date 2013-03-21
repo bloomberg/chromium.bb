@@ -277,8 +277,7 @@ void DriveFileSystem::ReloadAfterReset() {
 void DriveFileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new ChangeListLoader(resource_metadata_,
                                                  scheduler_.get(),
-                                                 webapps_registry_,
-                                                 cache_));
+                                                 webapps_registry_));
   change_list_loader_->AddObserver(this);
 }
 

@@ -100,6 +100,7 @@ class DriveResourceMetadataTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
     resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId,
+                                                       temp_dir_.path(),
                                                        blocking_task_runner_));
     Init(resource_metadata_.get());
   }
@@ -264,6 +265,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
 
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  temp_dir_.path(),
                                                   blocking_task_runner_));
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
@@ -303,6 +305,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
 TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  temp_dir_.path(),
                                                   blocking_task_runner_));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata->Initialize(
@@ -329,6 +332,7 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  temp_dir_.path(),
                                                   blocking_task_runner_));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata->Initialize(
@@ -1235,7 +1239,7 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
 
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_original(new DriveResourceMetadata(
-          kTestRootResourceId, blocking_task_runner_));
+          kTestRootResourceId, temp_dir_.path(), blocking_task_runner_));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata_original->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -1260,11 +1264,12 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   // At this point, both the root and the sub directory do not contain the
   // per-directory changestamp.
-  resource_metadata_original->MaybeSave(temp_dir_.path());
+  resource_metadata_original->MaybeSave();
   google_apis::test_util::RunBlockingPoolTask();
 
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
+                                                  temp_dir_.path(),
                                                   blocking_task_runner_));
   resource_metadata->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -1273,7 +1278,6 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
 
   // Load. This should propagate the largest changestamp to every directory.
   resource_metadata->Load(
-      temp_dir_.path(),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1302,9 +1306,10 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
 
 TEST_F(DriveResourceMetadataTest, SaveAndLoad) {
   // Save metadata and reset.
-  resource_metadata_->MaybeSave(temp_dir_.path());
+  resource_metadata_->MaybeSave();
 
   resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId,
+                                                     temp_dir_.path(),
                                                      blocking_task_runner_));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata_->Initialize(
@@ -1314,7 +1319,6 @@ TEST_F(DriveResourceMetadataTest, SaveAndLoad) {
 
   // Load metadata.
   resource_metadata_->Load(
-      temp_dir_.path(),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);

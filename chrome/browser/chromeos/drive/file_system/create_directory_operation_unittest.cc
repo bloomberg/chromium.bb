@@ -46,9 +46,17 @@ class CreateDirectoryOperationTest
         "chromeos/gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
-    metadata_.reset(
-        new DriveResourceMetadata(fake_drive_service_->GetRootResourceId(),
-                                  blocking_task_runner_));
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
+    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+                                blocking_task_runner_,
+                                fake_free_disk_space_getter_.get()));
+    cache_->RequestInitializeForTesting();
+    google_apis::test_util::RunBlockingPoolTask();
+
+    metadata_.reset(new DriveResourceMetadata(
+        fake_drive_service_->GetRootResourceId(),
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+        blocking_task_runner_));
 
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     metadata_->Initialize(
@@ -62,20 +70,13 @@ class CreateDirectoryOperationTest
 
     drive_web_apps_registry_.reset(new DriveWebAppsRegistry);
 
-    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
-    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
-                                blocking_task_runner_,
-                                fake_free_disk_space_getter_.get()));
-
     change_list_loader_.reset(new ChangeListLoader(
-        metadata_.get(), scheduler_.get(), drive_web_apps_registry_.get(),
-        cache_.get()));
+        metadata_.get(), scheduler_.get(), drive_web_apps_registry_.get()));
 
     change_list_loader_->LoadFromServerIfNeeded(
         DirectoryFetchInfo(),
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
                    &error));
-    cache_->RequestInitializeForTesting();
     google_apis::test_util::RunBlockingPoolTask();
 
     operation_.reset(

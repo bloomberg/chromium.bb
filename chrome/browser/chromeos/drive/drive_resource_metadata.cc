@@ -232,8 +232,10 @@ struct DriveResourceMetadata::ReadDirectoryResult {
 
 DriveResourceMetadata::DriveResourceMetadata(
     const std::string& root_resource_id,
+    const base::FilePath& data_directory_path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : blocking_task_runner_(blocking_task_runner),
+    : data_directory_path_(data_directory_path),
+      blocking_task_runner_(blocking_task_runner),
       storage_(new DriveResourceMetadataStorageMemory),
       root_resource_id_(root_resource_id),
       serialized_size_(0),
@@ -499,25 +501,22 @@ void DriveResourceMetadata::RemoveAll(const base::Closure& callback) {
       callback);
 }
 
-void DriveResourceMetadata::MaybeSave(const base::FilePath& directory_path) {
+void DriveResourceMetadata::MaybeSave() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveResourceMetadata::MaybeSaveOnBlockingPool,
-                 base::Unretained(this),
-                 directory_path));
+                 base::Unretained(this)));
 }
 
-void DriveResourceMetadata::Load(const base::FilePath& directory_path,
-                                 const FileOperationCallback& callback) {
+void DriveResourceMetadata::Load(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveResourceMetadata::LoadOnBlockingPool,
-                 base::Unretained(this),
-                 directory_path),
+                 base::Unretained(this)),
       callback);
 }
 
@@ -894,15 +893,14 @@ void DriveResourceMetadata::RemoveAllOnBlockingPool() {
   RemoveDirectoryChildren(root_resource_id_);
 }
 
-void DriveResourceMetadata::MaybeSaveOnBlockingPool(
-    const base::FilePath& directory_path) {
+void DriveResourceMetadata::MaybeSaveOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (storage_->IsPersistentStorage() ||
       !ShouldSerializeFileSystemNow(serialized_size_, last_serialized_))
     return;
 
-  const base::FilePath path = directory_path.Append(kProtoFileName);
+  const base::FilePath path = data_directory_path_.Append(kProtoFileName);
 
   DriveRootDirectoryProto proto;
   DirectoryToProto(root_resource_id_, proto.mutable_drive_directory());
@@ -1112,8 +1110,7 @@ DriveResourceMetadata::DirectoryChildrenToProtoVector(
   return entries.Pass();
 }
 
-DriveFileError DriveResourceMetadata::LoadOnBlockingPool(
-    const base::FilePath& directory_path) {
+DriveFileError DriveResourceMetadata::LoadOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   // If the storage is persistent, do nothing and just return whether the stored
@@ -1123,7 +1120,7 @@ DriveFileError DriveResourceMetadata::LoadOnBlockingPool(
         DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
   }
 
-  const base::FilePath path = directory_path.Append(kProtoFileName);
+  const base::FilePath path = data_directory_path_.Append(kProtoFileName);
   base::Time last_modified;
   std::string serialized_proto;
   const bool read_succeeded =

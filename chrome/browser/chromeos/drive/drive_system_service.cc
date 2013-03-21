@@ -131,9 +131,14 @@ DriveSystemService::DriveSystemService(
                               NULL /* free_disk_space_getter */));
   uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
+
+  // We can call DriveCache::GetCacheDirectoryPath safely even before the cache
+  // gets initialized.
   resource_metadata_.reset(new DriveResourceMetadata(
       drive_service_->GetRootResourceId(),
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
       blocking_task_runner_));
+
   file_system_.reset(test_file_system ? test_file_system :
                      new DriveFileSystem(profile_,
                                          cache(),

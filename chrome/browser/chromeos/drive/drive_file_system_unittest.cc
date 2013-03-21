@@ -225,6 +225,7 @@ class DriveFileSystemTest : public testing::Test {
 
     resource_metadata_.reset(new DriveResourceMetadata(
         fake_drive_service_->GetRootResourceId(),
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
     ASSERT_FALSE(file_system_);
@@ -411,8 +412,10 @@ class DriveFileSystemTest : public testing::Test {
     const std::string root_resource_id =
         fake_drive_service_->GetRootResourceId();
     scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-        resource_metadata(new DriveResourceMetadata(root_resource_id,
-                                                    blocking_task_runner_));
+        resource_metadata(new DriveResourceMetadata(
+            root_resource_id,
+            cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+            blocking_task_runner_));
 
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     resource_metadata->Initialize(
@@ -506,11 +509,7 @@ class DriveFileSystemTest : public testing::Test {
       return false;
 
     // Write resource metadata.
-    base::FilePath cache_dir_path =
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
-    if (!file_util::CreateDirectory(cache_dir_path))
-      return false;
-    resource_metadata->MaybeSave(cache_dir_path);
+    resource_metadata->MaybeSave();
     google_apis::test_util::RunBlockingPoolTask();
 
     return true;

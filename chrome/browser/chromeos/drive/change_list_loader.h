@@ -29,7 +29,6 @@ class ResourceList;
 
 namespace drive {
 
-class DriveCache;
 class ChangeListLoaderObserver;
 class ChangeListProcessor;
 class DriveScheduler;
@@ -46,8 +45,7 @@ class ChangeListLoader {
  public:
   ChangeListLoader(DriveResourceMetadata* resource_metadata,
                    DriveScheduler* scheduler,
-                   DriveWebAppsRegistry* webapps_registry,
-                   DriveCache* cache);
+                   DriveWebAppsRegistry* webapps_registry);
   ~ChangeListLoader();
 
   // Adds and removes the observer.
@@ -279,7 +277,6 @@ class ChangeListLoader {
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
-  DriveCache* cache_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
   scoped_ptr<ChangeListProcessor> change_list_processor_;
   typedef std::map<std::string, std::vector<FileOperationCallback> >

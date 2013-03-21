@@ -134,6 +134,7 @@ class DriveResourceMetadata {
   // |root_resource_id| is the resource id for the root directory.
   DriveResourceMetadata(
       const std::string& root_resource_id,
+      const base::FilePath& data_directory_path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   // Initializes this object.
@@ -228,12 +229,11 @@ class DriveResourceMetadata {
   // Removes all files/directories under root (not including root).
   void RemoveAll(const base::Closure& callback);
 
-  // Saves metadata to the specified directory when appropriate.
-  void MaybeSave(const base::FilePath& directory_path);
+  // Saves metadata to the data directory when appropriate.
+  void MaybeSave();
 
-  // Loads metadata from the specified directory.
-  void Load(const base::FilePath& directory_path,
-            const FileOperationCallback& callback);
+  // Loads metadata from the data directory.
+  void Load(const FileOperationCallback& callback);
 
  private:
   friend class DriveResourceMetadataTest;
@@ -306,7 +306,7 @@ class DriveResourceMetadata {
   void RemoveAllOnBlockingPool();
 
   // Used to implement MaybeSave().
-  void MaybeSaveOnBlockingPool(const base::FilePath& directory_path);
+  void MaybeSaveOnBlockingPool();
 
   // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
   // asynchronously fetched. This fetches the second DriveEntry only if the
@@ -370,12 +370,13 @@ class DriveResourceMetadata {
       const std::string& directory_resource_id);
 
   // Used to implement Load().
-  DriveFileError LoadOnBlockingPool(const base::FilePath& directory_path);
+  DriveFileError LoadOnBlockingPool();
 
   // Parses metadata from string and set up directory structure.
   bool ParseFromString(const std::string& serialized_proto);
 
-  // Private data members.
+  const base::FilePath data_directory_path_;
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   scoped_ptr<DriveResourceMetadataStorage> storage_;
