@@ -49,17 +49,15 @@ const uint32 kInvalidSocketID = 0;
 
 }  // namespace
 
-PepperMessageFilter::PepperMessageFilter(ProcessType process_type,
-                                         int process_id,
+PepperMessageFilter::PepperMessageFilter(int process_id,
                                          BrowserContext* browser_context)
-    : process_type_(process_type),
+    : plugin_type_(PLUGIN_TYPE_IN_PROCESS),
       permissions_(),
       process_id_(process_id),
-      nacl_render_view_id_(0),
+      external_plugin_render_view_id_(0),
       resource_context_(browser_context->GetResourceContext()),
       host_resolver_(NULL),
       next_socket_id_(1) {
-  DCHECK(process_type == PROCESS_TYPE_RENDERER);
   DCHECK(browser_context);
   // Keep BrowserContext data in FILE-thread friendly storage.
   browser_path_ = browser_context->GetPath();
@@ -68,35 +66,31 @@ PepperMessageFilter::PepperMessageFilter(ProcessType process_type,
 }
 
 PepperMessageFilter::PepperMessageFilter(
-    ProcessType process_type,
     const ppapi::PpapiPermissions& permissions,
     net::HostResolver* host_resolver)
-    : process_type_(process_type),
+    : plugin_type_(PLUGIN_TYPE_OUT_OF_PROCESS),
       permissions_(permissions),
       process_id_(0),
-      nacl_render_view_id_(0),
+      external_plugin_render_view_id_(0),
       resource_context_(NULL),
       host_resolver_(host_resolver),
       next_socket_id_(1),
       incognito_(false) {
-  DCHECK(process_type == PROCESS_TYPE_PPAPI_PLUGIN);
   DCHECK(host_resolver);
 }
 
 PepperMessageFilter::PepperMessageFilter(
-    ProcessType process_type,
     const ppapi::PpapiPermissions& permissions,
     net::HostResolver* host_resolver,
     int process_id,
     int render_view_id)
-    : process_type_(process_type),
+    : plugin_type_(PLUGIN_TYPE_EXTERNAL_PLUGIN),
       permissions_(permissions),
       process_id_(process_id),
-      nacl_render_view_id_(render_view_id),
+      external_plugin_render_view_id_(render_view_id),
       resource_context_(NULL),
       host_resolver_(host_resolver),
       next_socket_id_(1) {
-  DCHECK(process_type == PROCESS_TYPE_NACL_LOADER);
   DCHECK(host_resolver);
 }
 
@@ -407,7 +401,7 @@ void PepperMessageFilter::OnTCPServerAccept(int32 tcp_client_socket_routing_id,
 
 void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
-  if (process_type_ != PROCESS_TYPE_RENDERER &&
+  if (plugin_type_ != PLUGIN_TYPE_IN_PROCESS &&
       !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
     return;
   }
@@ -421,7 +415,7 @@ void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
 
 void PepperMessageFilter::OnNetworkMonitorStop(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
-  if (process_type_ != PROCESS_TYPE_RENDERER &&
+  if (plugin_type_ != PLUGIN_TYPE_IN_PROCESS &&
       !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
     return;
   }
@@ -470,16 +464,19 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
     const content::SocketPermissionRequest& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // NACL plugins always get their own PepperMessageFilter, initialized with
+  // External plugins always get their own PepperMessageFilter, initialized with
   // a render view id. Use this instead of the one that came with the message,
   // which is actually an API ID.
-  if (process_type_ == PROCESS_TYPE_NACL_LOADER)
-    render_id = nacl_render_view_id_;
+  bool external_plugin = false;
+  if (plugin_type_ == PLUGIN_TYPE_EXTERNAL_PLUGIN) {
+    external_plugin = true;
+    render_id = external_plugin_render_view_id_;
+  }
 
   RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(process_id_, render_id);
 
-  return pepper_socket_utils::CanUseSocketAPIs(process_type_,
+  return pepper_socket_utils::CanUseSocketAPIs(external_plugin,
                                                params,
                                                render_view_host);
 }

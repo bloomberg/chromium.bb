@@ -27,11 +27,13 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   // The creator is responsible for calling set_plugin_process_handle as soon
   // as it is known (we start the process asynchronously so it won't be known
   // when this object is created).
+  // |external_plugin| signfies that this is a proxy created for an embedder's
+  // plugin, i.e. using BrowserPpapiHost::CreateExternalPluginProcess.
   BrowserPpapiHostImpl(IPC::Sender* sender,
                        const ppapi::PpapiPermissions& permissions,
                        const std::string& plugin_name,
                        const base::FilePath& profile_data_directory,
-                       ProcessType plugin_process_type);
+                       bool external_plugin);
   virtual ~BrowserPpapiHostImpl();
 
   // BrowserPpapiHost.
@@ -50,7 +52,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     plugin_process_handle_ = handle;
   }
 
-  ProcessType plugin_process_type() { return plugin_process_type_; }
+  bool external_plugin() { return external_plugin_; }
 
   // These two functions are notifications that an instance has been created
   // or destroyed. They allow us to maintain a mapping of PP_Instance to data
@@ -88,7 +90,10 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   base::ProcessHandle plugin_process_handle_;
   std::string plugin_name_;
   base::FilePath profile_data_directory_;
-  ProcessType plugin_process_type_;
+
+  // If true, this is an external plugin, i.e. created by the embedder using
+  // BrowserPpapiHost::CreateExternalPluginProcess.
+  bool external_plugin_;
 
   // Tracks all PP_Instances in this plugin and associated renderer-related
   // data.
