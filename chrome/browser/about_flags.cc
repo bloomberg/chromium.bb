@@ -619,11 +619,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAutologin)
   },
   {
-    "enable-spdy3",
-    IDS_FLAGS_ENABLE_SPDY3_NAME,
-    IDS_FLAGS_ENABLE_SPDY3_DESCRIPTION,
+    "enable-spdy31",
+    IDS_FLAGS_ENABLE_SPDY31_NAME,
+    IDS_FLAGS_ENABLE_SPDY31_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSpdy3)
+    SINGLE_VALUE_TYPE(switches::kEnableSpdy31)
   },
   {
     "enable-async-dns",

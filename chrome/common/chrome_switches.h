@@ -170,7 +170,6 @@ extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
-extern const char kEnableSpdy3[];
 extern const char kEnableSpdy31[];
 extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpellingAutoCorrect[];

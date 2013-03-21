@@ -608,9 +608,6 @@ const char kEnableResourceContentSettings[] =
 // supported server-side for searches on google.com.
 const char kEnableSdch[]                    = "enable-sdch";
 
-// Enable SPDY/3. This is a temporary testing flag.
-const char kEnableSpdy3[]                   = "enable-spdy3";
-
 // Enable SPDY/3.1. This is a temporary testing flag.
 const char kEnableSpdy31[]                  = "enable-spdy31";
 
