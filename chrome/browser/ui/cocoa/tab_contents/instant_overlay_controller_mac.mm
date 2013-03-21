@@ -28,11 +28,8 @@ InstantOverlayControllerMac::~InstantOverlayControllerMac() {
 
 void InstantOverlayControllerMac::OverlayStateChanged(
     const InstantOverlayModel& model) {
-  // TODO(sail): migrate from InstantOverlayControllerViews::OverlayStateChanged
-  // to only call SetTopBarsVisible if we did something with overlay; this
-  // prevents the top bars from flashing in this transition
-  // DEFAULT->SUGGESTIONS->SERP.
-  bool has_overlay = false;
+  bool set_top_bars_visibility = chrome::search::IsInstantExtendedAPIEnabled();
+
   if (model.mode().is_ntp() || model.mode().is_search_suggestions()) {
     // Drop shadow is only needed if search mode is not |NTP| and overlay does
     // not fill up the entire contents page.
@@ -43,23 +40,26 @@ void InstantOverlayControllerMac::OverlayStateChanged(
                   height:model.height()
              heightUnits:model.height_units()
           drawDropShadow:drawDropShadow];
-    has_overlay = true;
-  } else {
+  } else if ([overlay_ isShowingOverlay]) {
     [overlay_ setOverlay:NULL
                   height:0
              heightUnits:INSTANT_SIZE_PIXELS
           drawDropShadow:NO];
+  } else {
+    set_top_bars_visibility = false;
   }
 
-  if (chrome::search::IsInstantExtendedAPIEnabled()) {
+  if (set_top_bars_visibility) {
     // Set top bars (bookmark and info bars) visibility for current tab via
     // |SearchTabHelper| of current active web contents: top bars are hidden if
     // there's overlay.
     chrome::search::SearchTabHelper* search_tab_helper =
         chrome::search::SearchTabHelper::FromWebContents(
             browser_->tab_strip_model()->GetActiveWebContents());
-    if (search_tab_helper)
-      search_tab_helper->model()->SetTopBarsVisible(!has_overlay);
+    if (search_tab_helper) {
+      search_tab_helper->model()->SetTopBarsVisible(
+          ![overlay_ isShowingOverlay]);
+    }
   }
 
   [window_ updateBookmarkBarStateForInstantOverlay];

@@ -102,8 +102,10 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     chrome::search::Mode mode(chrome::search::Mode::MODE_SEARCH_SUGGESTIONS,
                               chrome::search::Mode::ORIGIN_SEARCH);
     browser()->search_model()->SetMode(mode);
+    browser()->search_model()->SetTopBarsVisible(false);
     EXPECT_TRUE(browser()->search_model()->mode().is_search_suggestions());
-    EXPECT_TRUE([controller() isShowingInstantResults]);
+    EXPECT_EQ(browser_window_controller::kInstantUIFullPageResults,
+              [controller() currentInstantUIState]);
   }
 
   void ShowInstantNTP() {
@@ -111,8 +113,10 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     chrome::search::Mode mode(chrome::search::Mode::MODE_NTP,
                               chrome::search::Mode::ORIGIN_NTP);
     browser()->search_model()->SetMode(mode);
+    browser()->search_model()->SetTopBarsVisible(true);
     EXPECT_TRUE(browser()->search_model()->mode().is_ntp());
-    EXPECT_FALSE([controller() isShowingInstantResults]);
+    EXPECT_EQ(browser_window_controller::kInstantUINone,
+              [controller() currentInstantUIState]);
   }
 
   void ShowInfoBar() {

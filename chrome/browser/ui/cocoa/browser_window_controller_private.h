@@ -7,6 +7,19 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
+namespace browser_window_controller {
+
+enum InstantUIState {
+  kInstantUINone,
+  // Instant suggestions are displayed in a overlay overlapping the tab
+  // contents.
+  kInstantUIOverlay,
+  // Instant suggestions are displayed in the main tab contents.
+  kInstantUIFullPageResults,
+};
+
+}  // namespace browser_window_controller
+
 // Private methods for the |BrowserWindowController|. This category should
 // contain the private methods used by different parts of the BWC; private
 // methods used only by single parts should be declared in their own file.
@@ -143,8 +156,9 @@
 // The opacity for the toolbar divider; 0 means that it shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
 
-// Returns YES if Instant results are being shown under the omnibox.
-- (BOOL)isShowingInstantResults;
+// This is used to check if either the instant overlay or full page instant
+// search results are currently being displayed.
+- (browser_window_controller::InstantUIState)currentInstantUIState;
 
 // Updates the content offets of the tab strip controller and the overlayable
 // contents controller. This is used to adjust the overlap between those views
