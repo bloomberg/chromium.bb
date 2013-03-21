@@ -305,10 +305,6 @@ class WebKitClientMessageLoopImpl
   MessageLoop* message_loop_;
 };
 
-webkit_support::GraphicsContext3DImplementation
-    g_graphics_context_3d_implementation =
-        webkit_support::IN_PROCESS_COMMAND_BUFFER;
-
 TestEnvironment* test_environment;
 
 void SetUpTestEnvironmentImpl(bool unit_test_mode,
@@ -497,35 +493,16 @@ void SetUpGLBindings(GLBindingPreferences bindingPref) {
     default:
       NOTREACHED();
   }
-  webkit::gpu::TestContextProviderFactory::SetUpFactoryForTesting(
-      g_graphics_context_3d_implementation);
-}
-
-void SetGraphicsContext3DImplementation(GraphicsContext3DImplementation impl) {
-  g_graphics_context_3d_implementation = impl;
-}
-
-GraphicsContext3DImplementation GetGraphicsContext3DImplementation() {
-  return g_graphics_context_3d_implementation;
 }
 
 WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view) {
-  switch (webkit_support::GetGraphicsContext3DImplementation()) {
-    case webkit_support::IN_PROCESS:
-      return WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attributes, true /* direct */);
-    case webkit_support::IN_PROCESS_COMMAND_BUFFER: {
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context(
-          new WebGraphicsContext3DInProcessCommandBufferImpl());
-      if (!context->Initialize(attributes, NULL))
-        return NULL;
-      return context.release();
-    }
-  }
-  NOTREACHED();
-  return NULL;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context(
+      new WebGraphicsContext3DInProcessCommandBufferImpl());
+  if (!context->Initialize(attributes, NULL))
+    return NULL;
+  return context.release();
 }
 
 WebKit::WebLayerTreeView* CreateLayerTreeView(

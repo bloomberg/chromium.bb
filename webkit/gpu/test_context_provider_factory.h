@@ -19,10 +19,6 @@ class ContextProviderInProcess;
 
 class WEBKIT_GPU_EXPORT TestContextProviderFactory {
  public:
-  static void SetUpFactoryForTesting(
-      webkit_support::GraphicsContext3DImplementation implementation);
-
-  // SetUpFactoryForTesting() must be called before GetInstance can be called.
   // The returned pointer is static and should not be deleted by the caller.
   static TestContextProviderFactory* GetInstance();
 

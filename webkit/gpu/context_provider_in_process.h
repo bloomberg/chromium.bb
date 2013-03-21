@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webkit_gpu_export.h"
 
 namespace webkit {
@@ -18,13 +19,9 @@ class GrContextForWebGraphicsContext3D;
 class WEBKIT_GPU_EXPORT ContextProviderInProcess
     : NON_EXPORTED_BASE(public cc::ContextProvider) {
  public:
-  enum InProcessType {
-    IN_PROCESS,
-    IN_PROCESS_COMMAND_BUFFER,
-  };
-  static scoped_refptr<ContextProviderInProcess> Create(InProcessType type) {
+  static scoped_refptr<ContextProviderInProcess> Create() {
     scoped_refptr<ContextProviderInProcess> provider =
-        new ContextProviderInProcess(type);
+        new ContextProviderInProcess;
     if (!provider->InitializeOnMainThread())
       return NULL;
     return provider;
@@ -37,20 +34,18 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual bool DestroyedOnMainThread() OVERRIDE;
 
  protected:
-  explicit ContextProviderInProcess(InProcessType type);
+  ContextProviderInProcess();
   virtual ~ContextProviderInProcess();
 
   bool InitializeOnMainThread();
-
-  scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext3d();
 
   void OnLostContextInternal();
   virtual void OnLostContext() {}
   virtual void OnMemoryAllocationChanged(bool nonzero_allocation);
 
  private:
-  InProcessType type_;
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
+  scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
+      context3d_;
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 
   base::Lock destroyed_lock_;

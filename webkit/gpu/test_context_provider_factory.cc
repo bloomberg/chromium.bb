@@ -11,37 +11,10 @@
 namespace webkit {
 namespace gpu {
 
-#ifndef NDEBUG
-static bool factory_set_up = false;
-#endif
-static ContextProviderInProcess::InProcessType context_provider_type;
 static TestContextProviderFactory* context_provider_instance = NULL;
 
 // static
-void TestContextProviderFactory::SetUpFactoryForTesting(
-    webkit_support::GraphicsContext3DImplementation implementation) {
-#ifndef NDEBUG
-  factory_set_up = true;
-#endif
-
-  switch (implementation) {
-    case webkit_support::IN_PROCESS:
-      context_provider_type = webkit::gpu::ContextProviderInProcess::IN_PROCESS;
-      return;
-    case webkit_support::IN_PROCESS_COMMAND_BUFFER:
-      context_provider_type =
-          webkit::gpu::ContextProviderInProcess::IN_PROCESS_COMMAND_BUFFER;
-      return;
-  }
-  NOTREACHED();
-  context_provider_type = webkit::gpu::ContextProviderInProcess::IN_PROCESS;
-}
-
-// static
 TestContextProviderFactory* TestContextProviderFactory::GetInstance() {
-#ifndef NDEBUG
-  DCHECK(factory_set_up);
-#endif
   if (!context_provider_instance)
     context_provider_instance = new TestContextProviderFactory();
   return context_provider_instance;
@@ -54,7 +27,7 @@ TestContextProviderFactory::~TestContextProviderFactory() {}
 scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_ || main_thread_->DestroyedOnMainThread()) {
-    main_thread_ = ContextProviderInProcess::Create(context_provider_type);
+    main_thread_ = ContextProviderInProcess::Create();
     if (main_thread_ && !main_thread_->BindToCurrentThread())
       main_thread_ = NULL;
   }
@@ -64,10 +37,8 @@ scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
 scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
     OffscreenContextProviderForCompositorThread() {
   if (!compositor_thread_ ||
-      compositor_thread_->DestroyedOnMainThread()) {
-    compositor_thread_ = ContextProviderInProcess::Create(
-        context_provider_type);
-  }
+      compositor_thread_->DestroyedOnMainThread())
+    compositor_thread_ = ContextProviderInProcess::Create();
   return compositor_thread_;
 }
 
