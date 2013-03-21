@@ -51,6 +51,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #endif
@@ -73,6 +74,21 @@ void PluginProcessHost::OnPluginWindowDestroyed(HWND window, HWND parent) {
 void PluginProcessHost::AddWindow(HWND window) {
   plugin_parent_windows_set_.insert(window);
 }
+
+// NOTE: changes to this class need to be reviewed by the security team.
+class PluginSandboxedProcessLauncherDelegate
+    : public SandboxedProcessLauncherDelegate {
+ public:
+  PluginSandboxedProcessLauncherDelegate() {}
+  virtual ~PluginSandboxedProcessLauncherDelegate() {}
+
+  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
+    *in_sandbox = false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PluginSandboxedProcessLauncherDelegate);
+};
 
 #endif  // defined(OS_WIN)
 
@@ -237,7 +253,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
 
   process_->Launch(
 #if defined(OS_WIN)
-      NULL,
+      new PluginSandboxedProcessLauncherDelegate,
 #elif defined(OS_POSIX)
       false,
       env,

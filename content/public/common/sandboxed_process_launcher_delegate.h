@@ -17,12 +17,18 @@ class TargetPolicy;
 
 namespace content {
 
-// Allows a caller of StartSandboxedProcess to control the sandbox policy, i.e.
-// to loosen it if needed.
+// Allows a caller of StartSandboxedProcess or
+// BrowserChildProcessHost/ChildProcessLauncher to control the sandbox policy,
+// i.e. to loosen it if needed.
 // The methods below will be called on the PROCESS_LAUNCHER thread.
 class SandboxedProcessLauncherDelegate {
  public:
   virtual ~SandboxedProcessLauncherDelegate() {}
+
+  // By default, the process is launched sandboxed. Override this method and set
+  // |in_sandbox| to false if this process should be launched without a sandbox
+  // (i.e. through base::LaunchProcess directly).
+  virtual void ShouldSandbox(bool* in_sandbox) {}
 
   // Called before the default sandbox is applied. If the default policy is too
   // restrictive, the caller should set |disable_default_policy| to true and

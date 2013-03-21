@@ -17,6 +17,24 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
+
+namespace {
+// NOTE: changes to this class need to be reviewed by the security team.
+class NaClBrokerSandboxedProcessLauncherDelegate
+    : public content::SandboxedProcessLauncherDelegate {
+ public:
+  NaClBrokerSandboxedProcessLauncherDelegate() {}
+  virtual ~NaClBrokerSandboxedProcessLauncherDelegate() {}
+
+  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
+    *in_sandbox = false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NaClBrokerSandboxedProcessLauncherDelegate);
+};
+}  // namespace
 
 NaClBrokerHost::NaClBrokerHost() : is_terminating_(false) {
   process_.reset(content::BrowserChildProcessHost::Create(
@@ -47,7 +65,7 @@ bool NaClBrokerHost::Init() {
   if (logging::DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
-  process_->Launch(NULL, cmd_line);
+  process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate, cmd_line);
   return true;
 }
 

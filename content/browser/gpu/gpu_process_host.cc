@@ -177,6 +177,13 @@ class GpuSandboxedProcessLauncherDelegate
       : cmd_line_(cmd_line) {}
   virtual ~GpuSandboxedProcessLauncherDelegate() {}
 
+  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
+    if (cmd_line_->HasSwitch(switches::kDisableGpuSandbox)) {
+      *in_sandbox = false;
+      DVLOG(1) << "GPU sandbox is disabled";
+    }
+  }
+
   virtual void PreSandbox(bool* disable_default_policy,
                           base::FilePath* exposed_dir) OVERRIDE {
     *disable_default_policy = true;

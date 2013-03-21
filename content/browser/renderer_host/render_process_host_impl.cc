@@ -295,6 +295,15 @@ class RendererSandboxedProcessLauncherDelegate
   RendererSandboxedProcessLauncherDelegate() {}
   virtual ~RendererSandboxedProcessLauncherDelegate() {}
 
+  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
+#if !defined (GOOGLE_CHROME_BUILD)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kInProcessPlugins)) {
+      *in_sandbox = false;
+    }
+#endif
+  }
+
   virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
                               bool* success) {
     AddBaseHandleClosePolicy(policy);

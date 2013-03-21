@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
+#include "base/hash.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -18,12 +20,11 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
-#include "content/common/debug_flags.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/process_type.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "ipc/ipc_switches.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
@@ -362,6 +363,38 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
   return true;
 }
 
+// Updates the command line arguments with debug-related flags. If debug flags
+// have been used with this process, they will be filtered and added to
+// command_line as needed. is_in_sandbox must be true if the child process will
+// be in a sandbox.
+//
+// Returns true if the caller should "help" the child process by calling the JIT
+// debugger on it. It may only happen if is_in_sandbox is true.
+bool ProcessDebugFlags(CommandLine* command_line, bool is_in_sandbox) {
+  bool should_help_child = false;
+  const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
+  std::string type = command_line->GetSwitchValueASCII(switches::kProcessType);
+  if (current_cmd_line.HasSwitch(switches::kDebugChildren)) {
+    // Look to pass-on the kDebugOnStart flag.
+    std::string value = current_cmd_line.GetSwitchValueASCII(
+        switches::kDebugChildren);
+    if (value.empty() || value == type) {
+      command_line->AppendSwitch(switches::kDebugOnStart);
+      should_help_child = true;
+    }
+    command_line->AppendSwitchASCII(switches::kDebugChildren, value);
+  } else if (current_cmd_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
+    // Look to pass-on the kWaitForDebugger flag.
+    std::string value = current_cmd_line.GetSwitchValueASCII(
+        switches::kWaitForDebuggerChildren);
+    if (value.empty() || value == type) {
+      command_line->AppendSwitch(switches::kWaitForDebugger);
+    }
+    command_line->AppendSwitchASCII(switches::kWaitForDebuggerChildren, value);
+  }
+  return should_help_child;
+}
+
 // This code is test only, and attempts to catch unsafe uses of
 // DuplicateHandle() that copy privileged handles into sandboxed processes.
 #ifndef OFFICIAL_BUILD
@@ -527,47 +560,13 @@ base::ProcessHandle StartSandboxedProcess(
     SandboxedProcessLauncherDelegate* delegate,
     CommandLine* cmd_line) {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  ProcessType type;
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
-  if (type_str == switches::kRendererProcess) {
-    type = PROCESS_TYPE_RENDERER;
-  } else if (type_str == switches::kPluginProcess) {
-    type = PROCESS_TYPE_PLUGIN;
-  } else if (type_str == switches::kWorkerProcess) {
-    type = PROCESS_TYPE_WORKER;
-  } else if (type_str == switches::kNaClLoaderProcess) {
-    type = PROCESS_TYPE_NACL_LOADER;
-  } else if (type_str == switches::kUtilityProcess) {
-    type = PROCESS_TYPE_UTILITY;
-  } else if (type_str == switches::kNaClBrokerProcess) {
-    type = PROCESS_TYPE_NACL_BROKER;
-  } else if (type_str == switches::kGpuProcess) {
-    type = PROCESS_TYPE_GPU;
-  } else if (type_str == switches::kPpapiPluginProcess) {
-    type = PROCESS_TYPE_PPAPI_PLUGIN;
-  } else if (type_str == switches::kPpapiBrokerProcess) {
-    type = PROCESS_TYPE_PPAPI_BROKER;
-  } else {
-    NOTREACHED();
-    return 0;
-  }
 
   TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess", 0, type_str);
 
-  // To decide if the process is going to be sandboxed we have two cases.
-  // First case: all process types except the nacl broker, and the plugin
-  // process are sandboxed by default.
-  bool in_sandbox =
-      (type != PROCESS_TYPE_NACL_BROKER) &&
-      (type != PROCESS_TYPE_PLUGIN) &&
-      (type != PROCESS_TYPE_PPAPI_BROKER);
-
-  // If it is the GPU process then it can be disabled by a command line flag.
-  if ((type == PROCESS_TYPE_GPU) &&
-      (cmd_line->HasSwitch(switches::kDisableGpuSandbox))) {
-    in_sandbox = false;
-    DVLOG(1) << "GPU sandbox is disabled";
-  }
+  bool in_sandbox = true;
+  if (delegate)
+    delegate->ShouldSandbox(&in_sandbox);
 
   if (browser_command_line.HasSwitch(switches::kNoSandbox) ||
       cmd_line->HasSwitch(switches::kNoSandbox)) {
@@ -575,12 +574,6 @@ base::ProcessHandle StartSandboxedProcess(
     in_sandbox = false;
   }
 
-#if !defined (GOOGLE_CHROME_BUILD)
-  if (browser_command_line.HasSwitch(switches::kInProcessPlugins)) {
-    // In process plugins won't work if the sandbox is enabled.
-    in_sandbox = false;
-  }
-#endif
 
   // Propagate the --allow-no-job flag if present.
   if (browser_command_line.HasSwitch(switches::kAllowNoSandboxJob) &&
@@ -588,12 +581,12 @@ base::ProcessHandle StartSandboxedProcess(
     cmd_line->AppendSwitch(switches::kAllowNoSandboxJob);
   }
 
-  bool child_needs_help = ProcessDebugFlags(cmd_line, type, in_sandbox);
+  bool child_needs_help = ProcessDebugFlags(cmd_line, in_sandbox);
 
   // Prefetch hints on windows:
   // Using a different prefetch profile per process type will allow Windows
   // to create separate pretetch settings for browser, renderer etc.
-  cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", type));
+  cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", base::Hash(type_str)));
 
   if (!in_sandbox) {
     base::ProcessHandle process = 0;
