@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_COMPOSITING_VIEW_MAC_H
-#define CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_COMPOSITING_VIEW_MAC_H
+#ifndef CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
+#define CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
@@ -12,17 +12,18 @@
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "media/base/video_frame.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
 
 class IOSurfaceSupport;
+class SkBitmap;
 
 namespace gfx {
 class Rect;
@@ -30,6 +31,8 @@ class Rect;
 
 namespace content {
 
+class CompositingIOSurfaceShaderPrograms;
+class CompositingIOSurfaceTransformer;
 class RenderWidgetHostViewFrameSubscriber;
 
 // This class manages an OpenGL context and IOSurface for the accelerated
@@ -76,7 +79,6 @@ class CompositingIOSurfaceMac {
   void CopyTo(const gfx::Rect& src_pixel_subrect,
               float src_scale_factor,
               const gfx::Size& dst_pixel_size,
-              const SkBitmap& out,
               const base::Callback<void(bool, const SkBitmap&)>& callback);
 
   // Transfer the contents of the surface to an already-allocated YV12
@@ -114,6 +116,9 @@ class CompositingIOSurfaceMac {
   void GetVSyncParameters(base::TimeTicks* timebase,
                           uint32* interval_numerator,
                           uint32* interval_denominator);
+
+  // Returns true if asynchronous readback is supported on this system.
+  bool IsAsynchronousReadbackSupported();
 
  private:
   friend CVReturn DisplayLinkCallback(CVDisplayLinkRef,
@@ -177,42 +182,44 @@ class CompositingIOSurfaceMac {
     SurfaceVertex verts_[4];
   };
 
-  // Keeps track of states and buffers for asynchronous readback of IOSurface.
+  // Keeps track of states and buffers for readback of IOSurface.
   struct CopyContext {
     CopyContext();
     ~CopyContext();
 
     void Reset() {
       started = false;
-      cycles_elapsed = 0;
-      frame_buffer = 0;
-      frame_buffer_texture = 0;
-      pixel_buffer = 0;
-      use_fence = false;
+      num_outputs = 0;
+      memset(output_textures, 0u, sizeof(output_textures));
+      memset(frame_buffers, 0u, sizeof(frame_buffers));
+      memset(pixel_buffers, 0u, sizeof(pixel_buffers));
       fence = 0;
+      cycles_elapsed = 0;
       map_buffer_callback.Reset();
+      done_callback.Reset();
     }
 
     bool started;
+    int num_outputs;
+    GLuint output_textures[3];
+    // Note: For YUV, the |output_texture_sizes| widths are in terms of 4-byte
+    // quads, not pixels.
+    gfx::Size output_texture_sizes[3];
+    GLuint frame_buffers[3];
+    GLuint pixel_buffers[3];
+    GLuint fence;  // When non-zero, doing an asynchronous copy.
     int cycles_elapsed;
-    GLuint frame_buffer;
-    GLuint frame_buffer_texture;
-    GLuint pixel_buffer;
-    bool use_fence;
-    GLuint fence;
-    gfx::Rect src_rect;
-    gfx::Size dest_size;
-    base::Callback<base::Closure(void*)> map_buffer_callback;
+    base::Callback<bool(const void*, int)> map_buffer_callback;
+    base::Callback<void(bool)> done_callback;
   };
 
-  CompositingIOSurfaceMac(IOSurfaceSupport* io_surface_support,
-                          NSOpenGLContext* glContext,
-                          CGLContextObj cglContext,
-                          GLuint shader_program_blit_rgb,
-                          GLint blit_rgb_sampler_location,
-                          GLuint shader_program_white,
-                          bool is_vsync_disabled,
-                          CVDisplayLinkRef display_link);
+  CompositingIOSurfaceMac(
+      IOSurfaceSupport* io_surface_support,
+      NSOpenGLContext* glContext,
+      CGLContextObj cglContext,
+      scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache,
+      bool is_vsync_disabled,
+      CVDisplayLinkRef display_link);
 
   bool IsVendorIntel();
 
@@ -239,24 +246,30 @@ class CompositingIOSurfaceMac {
   // Copy current frame to |target| video frame. This method must be called
   // within a CGL context. Returns a callback that should be called outside
   // of the CGL context.
-  base::Closure CopyToVideoFrameInternal(
+  base::Closure CopyToVideoFrameWithinContext(
       const gfx::Rect& src_subrect,
       float src_scale_factor,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback);
 
-  // Two implementations of CopyTo() in synchronous and asynchronous mode.
-  // These may copy regions smaller than the requested |src_pixel_subrect| if
-  // the iosurface is smaller than |src_pixel_subrect|.
-  bool SynchronousCopyTo(const gfx::Rect& src_pixel_subrect,
-                         float src_scale_factor,
-                         const gfx::Size& dst_pixel_size,
-                         const SkBitmap& out);
-  bool AsynchronousCopyTo(
+  // Common GPU-readback copy path.  Only one of |bitmap_output| or
+  // |video_frame_output| may be specified: Either ARGB is written to
+  // |bitmap_output| or letter-boxed YV12 is written to |video_frame_output|.
+  base::Closure CopyToSelectedOutputWithinContext(
       const gfx::Rect& src_pixel_subrect,
       float src_scale_factor,
-      const gfx::Size& dst_pixel_size,
-      const base::Callback<base::Closure(void*)>& map_buffer_callback);
+      const gfx::Rect& dst_pixel_rect,
+      const SkBitmap* bitmap_output,
+      const scoped_refptr<media::VideoFrame>& video_frame_output,
+      const base::Callback<void(bool)>& done_callback);
+  void AsynchronousReadbackForCopy(
+      const gfx::Rect& dst_pixel_rect,
+      const SkBitmap* bitmap_output,
+      const scoped_refptr<media::VideoFrame>& video_frame_output);
+  bool SynchronousReadbackForCopy(
+      const gfx::Rect& dst_pixel_rect,
+      const SkBitmap* bitmap_output,
+      const scoped_refptr<media::VideoFrame>& video_frame_output);
   void FinishCopy();
   void CleanupResourcesForCopy();
 
@@ -290,10 +303,8 @@ class CompositingIOSurfaceMac {
   // Timer for finishing a copy operation.
   base::RepeatingTimer<CompositingIOSurfaceMac> copy_timer_;
 
-  // Shader parameters.
-  GLuint shader_program_blit_rgb_;
-  GLint blit_rgb_sampler_location_;
-  GLuint shader_program_white_;
+  scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
+  scoped_ptr<CompositingIOSurfaceTransformer> transformer_;
 
   SurfaceQuad quad_;
 
@@ -324,4 +335,4 @@ class CompositingIOSurfaceMac {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_COMPOSITING_VIEW_MAC_H
+#endif  // CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_

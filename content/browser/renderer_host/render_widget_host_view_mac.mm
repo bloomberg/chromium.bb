@@ -926,19 +926,11 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   gfx::Size dst_pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(dst_size, scale));
 
-  SkBitmap output;
-  output.setConfig(SkBitmap::kARGB_8888_Config,
-                   dst_pixel_size.width(), dst_pixel_size.height());
-  if (!output.allocPixels())
-    return;
-  output.setIsOpaque(true);
-
   scoped_callback_runner.Release();
 
   compositing_iosurface_->CopyTo(GetScaledOpenGLPixelRect(src_subrect),
                                  ScaleFactor(cocoa_view_),
                                  dst_pixel_size,
-                                 output,
                                  callback);
 }
 
