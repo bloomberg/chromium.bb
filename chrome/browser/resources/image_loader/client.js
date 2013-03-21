@@ -181,6 +181,7 @@ ImageLoader.Client.prototype.load = function(
 
   request.url = url;
   request.taskId = this.lastTaskId_;
+  request.timestamp = opt_options.timestamp;
 
   ImageLoader.Client.sendMessage_(
       request,
@@ -219,7 +220,7 @@ ImageLoader.Client.Cache = function() {
  * @const
  * @type {number}
  */
-ImageLoader.Client.Cache.MEMORY_LIMIT = 100 * 1024 * 1024;  // 100 MB.
+ImageLoader.Client.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
 
 /**
  * Creates a cache key.
@@ -230,13 +231,12 @@ ImageLoader.Client.Cache.MEMORY_LIMIT = 100 * 1024 * 1024;  // 100 MB.
  */
 ImageLoader.Client.Cache.createKey = function(url, opt_options) {
   opt_options = opt_options || {};
-  var array = { url: url,
-                scale: opt_options.scale,
-                width: opt_options.width,
-                height: opt_options.height,
-                maxWidth: opt_options.maxWidth,
-                maxHeight: opt_options.maxHeight };
-  return JSON.stringify(array);
+  return JSON.stringify({url: url,
+                         scale: opt_options.scale,
+                         width: opt_options.width,
+                         height: opt_options.height,
+                         maxWidth: opt_options.maxWidth,
+                         maxHeight: opt_options.maxHeight});
 };
 
 /**
@@ -281,9 +281,9 @@ ImageLoader.Client.Cache.prototype.saveImage = function(
   }
 
   if (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
-    this.images_[key] = { lastLoadTimestamp: Date.now(),
-                          timestamp: opt_timestamp ? opt_timestamp : null,
-                          data: data };
+    this.images_[key] = {lastLoadTimestamp: Date.now(),
+                         timestamp: opt_timestamp ? opt_timestamp : null,
+                         data: data};
     this.size_ += data.length;
   }
 };
