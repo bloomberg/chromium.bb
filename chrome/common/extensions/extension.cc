@@ -203,6 +203,8 @@ const base::FilePath::CharType Extension::kLocaleFolder[] =
     FILE_PATH_LITERAL("_locales");
 const base::FilePath::CharType Extension::kMessagesFilename[] =
     FILE_PATH_LITERAL("messages.json");
+const base::FilePath::CharType Extension::kPlatformSpecificFolder[] =
+    FILE_PATH_LITERAL("_platform_specific");
 
 #if defined(OS_WIN)
 const char Extension::kExtensionRegistryPath[] =

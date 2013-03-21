@@ -479,6 +479,7 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
   // Reserved underscore names.
   static const base::FilePath::CharType* reserved_names[] = {
     Extension::kLocaleFolder,
+    Extension::kPlatformSpecificFolder,
     FILE_PATH_LITERAL("__MACOSX"),
   };
   CR_DEFINE_STATIC_LOCAL(

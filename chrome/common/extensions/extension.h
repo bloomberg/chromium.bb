@@ -200,6 +200,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The name of the messages file inside an extension.
   static const base::FilePath::CharType kMessagesFilename[];
 
+  // The base directory for subdirectories with platform-specific code.
+  static const base::FilePath::CharType kPlatformSpecificFolder[];
+
 #if defined(OS_WIN)
   static const char kExtensionRegistryPath[];
 #endif

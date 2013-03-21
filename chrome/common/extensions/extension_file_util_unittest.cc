@@ -171,8 +171,13 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesOnlyReserved) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
-  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  const base::FilePath::CharType* folders[] =
+      { Extension::kLocaleFolder, Extension::kPlatformSpecificFolder };
+
+  for (size_t i = 0; i < arraysize(folders); i++) {
+    base::FilePath src_path = temp.path().Append(folders[i]);
+    ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  }
 
   std::string error;
   EXPECT_TRUE(extension_file_util::CheckForIllegalFilenames(temp.path(),
