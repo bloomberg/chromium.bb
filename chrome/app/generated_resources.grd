@@ -6447,6 +6447,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION" desc="Description for the flag to enable experimantal form filling feature">
         Enable experimental form filling. Enables a collection of experimental features that make form filling easier.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_NAME" desc="Title for the flag to enable using production Online Wallet.">
+        Enable Online Wallet production service
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_DESCRIPTION" desc="Description of the flag to enable using production Online Wallet.">
+        Use the production service for any Online Wallet API calls. This flag is only meaningful if a feature that uses Online Wallet is enabled. Production Online Wallet is also not yet enabled for all users.
+      </message>
       <message name="IDS_FLAGS_DISABLE_OVERSCROLL_HISTORY_NAVIGATION_NAME" desc="Title for the flag to disable history navigation from horizontal overscroll.">
         Disable overscroll history navigation
       </message>

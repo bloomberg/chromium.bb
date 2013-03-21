@@ -1150,6 +1150,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalFormFilling)
   },
   {
+    "wallet-service-use-prod",
+    IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_NAME,
+    IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_DESCRIPTION,
+    kOsCrOS | kOsWin,
+    SINGLE_VALUE_TYPE(switches::kWalletServiceUseProd)
+  },
+  {
     "enable-interactive-autocomplete",
     IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME,
     IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_DESCRIPTION,
