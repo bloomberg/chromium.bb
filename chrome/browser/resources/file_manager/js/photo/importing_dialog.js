@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * ImportingDialog manages the import process (which is really a copying).
  * @param {HTMLElement} parentNode Node to be parent for this dialog.

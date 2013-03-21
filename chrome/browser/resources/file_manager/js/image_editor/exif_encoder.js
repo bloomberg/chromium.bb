@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 // TODO:(kaznacheev) Share the EXIF constants with exif_parser.js
 var EXIF_MARK_SOS = 0xffda;  // Start of "stream" (the actual image data).
 var EXIF_MARK_SOI = 0xffd8;  // Start of image data.

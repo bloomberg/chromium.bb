@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * MetadataCache is a map from url to an object containing properties.
  * Properties are divided by types, and all properties of one type are accessed

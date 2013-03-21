@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * Loads a thumbnail using provided url. In CANVAS mode, loaded images
  * are attached as <canvas> element, while in IMAGE mode as <img>.

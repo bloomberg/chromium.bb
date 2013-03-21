@@ -28,6 +28,9 @@
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/list.js"/>
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js"/>
 
+(function() {
+// 'strict mode' is invoked for this scope.
+
 //<include src="../util.js"/>
 //<include src="../file_type.js"/>
 //<include src="../directory_contents.js"/>
@@ -42,3 +45,5 @@
 //<include src="importing_dialog.js"/>
 //<include src="tile_view.js"/>
 //<include src="photo_import.js"/>
+
+})();

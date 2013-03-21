@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 // All of these scripts could be imported with a single call to importScripts,
 // but then load and compile time errors would all be reported from the same
 // line.

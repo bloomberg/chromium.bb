@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * Slide mode displays a single image and has a set of controls to navigate
  * between the images and to edit an image.

@@ -63,6 +63,10 @@
 //<include src="../../../../../ui/webui/resources/js/cr/ui/menu.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/menu_button.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/context_menu_handler.js"/>
+
+(function() {
+// 'strict mode' is invoked for this scope.
+
 //<include src="combobutton.js"/>
 //<include src="commandbutton.js"/>
 //
@@ -91,3 +95,5 @@
 // // For accurate load performance tracking place main.js should be
 // // the last include to include.
 //<include src="main.js"/>
+
+})();

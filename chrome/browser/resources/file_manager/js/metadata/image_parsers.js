@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /* Base class for image metadata parsers that only need to look at a short
   fragment at the start of the file */
 function SimpleImageParser(parent, type, urlFilter, headerSize) {

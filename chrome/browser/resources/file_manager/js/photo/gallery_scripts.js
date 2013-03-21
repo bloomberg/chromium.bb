@@ -28,6 +28,9 @@
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/list.js">
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js">
 
+(function() {
+// 'strict mode' is invoked for this scope.
+
 //<include src="../file_type.js">
 //<include src="../util.js">
 //<include src="../volume_manager.js">
@@ -57,3 +60,5 @@
 //<include src="ribbon.js">
 
 //<include src="gallery_testapi.js">
+
+})();
