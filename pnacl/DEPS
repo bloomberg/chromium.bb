@@ -1,6 +1,6 @@
 vars = {
   "pnacl_binutils_rev": "453c266914e738071344256621e19cca3b39e17a",
-  "pnacl_llvm_rev": "3503cf8d938c71581c0439dd1267e171f0ef74b1",
+  "pnacl_llvm_rev": "df0539a30c2743f55bafdf3f818335db1106b8fe",
   "pnacl_gcc_rev": "e09efac3663fa23abf48941d4844e1876659b7c4",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
@@ -11,7 +11,7 @@ vars = {
   # which the local llvm is branched. Unfortunately because the llvm and
   # clang git repos are separate (even upstream), the same revision cannot
   # be used for both of them, the way it can with SVN.
-  "clang_rev": "ed6355d56cbeb1cd1a77cc46e0a519af25523ccb",
+  "clang_rev": "9c3c7b3130bc72b3f50703c11b85152b1264fc90",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
   "nacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",
   "llvm_upstream_base": "http://llvm.org/git/",
