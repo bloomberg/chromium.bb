@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/events/event_handler.h"
 
@@ -37,13 +38,16 @@ class StartupAppLauncher
       public ui::EventHandler {
  public:
   StartupAppLauncher(Profile* profile, const std::string& app_id);
-  virtual ~StartupAppLauncher();
 
   void Start();
 
  private:
+  // Private dtor because this class manages its own lifetime.
+  virtual ~StartupAppLauncher();
+
+  void Cleanup();
   void OnLaunchSuccess();
-  void OnLaunchFailure();
+  void OnLaunchFailure(KioskAppLaunchError::Error error);
 
   void Launch();
 

@@ -23,10 +23,6 @@ class KioskAppPrefs {
   virtual std::string GetAutoLaunchApp() const = 0;
   virtual void SetAutoLaunchApp(const std::string& app_id) = 0;
 
-  // Gets/sets the auto launch suppression flag.
-  virtual bool GetSuppressAutoLaunch() const = 0;
-  virtual void SetSuppressAutoLaunch(bool suppress) = 0;
-
   // Access the kiosk app list.
   virtual void GetApps(AppIds* app_ids) const = 0;
 

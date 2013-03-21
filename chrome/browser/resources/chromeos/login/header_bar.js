@@ -192,6 +192,9 @@ cr.define('login', function() {
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;
       $('apps-header-bar-item').hidden = !this.hasApps_ ||
           (!gaiaIsActive && !accountPickerIsActive);
+
+      if (!$('apps-header-bar-item').hidden)
+        $('show-apps-button').didShow();
     },
 
     /**

@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -72,6 +71,16 @@ void StartupAppLauncher::Start() {
   OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
 }
 
+void StartupAppLauncher::Cleanup() {
+  chromeos::CloseAppLaunchSplashScreen();
+
+  // Ends OpenAsh() keep alive since the session should either be bound with
+  // the just launched app on success or should be ended on failure.
+  chrome::EndKeepAlive();
+
+  delete this;
+}
+
 void StartupAppLauncher::OnLaunchSuccess() {
   const int64 time_taken_ms = (base::TimeTicks::Now() -
       base::TimeTicks::FromInternalValue(launch_splash_start_time_)).
@@ -89,24 +98,17 @@ void StartupAppLauncher::OnLaunchSuccess() {
     return;
   }
 
-  chromeos::CloseAppLaunchSplashScreen();
-
-  // Ends OpenAsh() keep alive since the session should be bound with the just
-  // launched app now.
-  chrome::EndKeepAlive();
-
-  delete this;
+  Cleanup();
 }
 
-void StartupAppLauncher::OnLaunchFailure() {
-  // Ends the session if launch fails. This should bring us back to login.
-  KioskAppManager::Get()->SetSuppressAutoLaunch(true);
+void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
+  DCHECK_NE(KioskAppLaunchError::NONE, error);
+
+  // Saves the error and ends the session to go back to login screen.
+  KioskAppLaunchError::Save(error);
   chrome::AttemptUserExit();
 
-  // TODO(xiyuan): Signal somehow to the session manager that app launch
-  // attempt had failed.
-
-  delete this;
+  Cleanup();
 }
 
 void StartupAppLauncher::Launch() {
@@ -167,7 +169,7 @@ void StartupAppLauncher::InstallCallback(bool success,
   }
 
   LOG(ERROR) << "Failed to install app with error: " << error;
-  OnLaunchFailure();
+  OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
 }
 
 void StartupAppLauncher::OnNetworkWaitTimedout() {
@@ -204,7 +206,7 @@ void StartupAppLauncher::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
-  OnLaunchFailure();  // User cancel failure.
+  OnLaunchFailure(KioskAppLaunchError::USER_CANCEL);
 }
 
 }   // namespace chromeos

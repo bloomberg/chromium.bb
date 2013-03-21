@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -38,11 +39,14 @@ void KioskAppMenuHandler::GetLocalizedStrings(
 }
 
 void KioskAppMenuHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getKioskApps",
-      base::Bind(&KioskAppMenuHandler::HandleGetKioskApps,
+  web_ui()->RegisterMessageCallback("initializeKioskApps",
+      base::Bind(&KioskAppMenuHandler::HandleInitializeKioskApps,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("launchKioskApp",
       base::Bind(&KioskAppMenuHandler::HandleLaunchKioskApps,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("checkKioskAppLaunchError",
+      base::Bind(&KioskAppMenuHandler::HandleCheckKioskAppLaunchError,
                  base::Unretained(this)));
 }
 
@@ -74,7 +78,8 @@ void KioskAppMenuHandler::SendKioskApps() {
                                    apps_list);
 }
 
-void KioskAppMenuHandler::HandleGetKioskApps(const base::ListValue* args) {
+void KioskAppMenuHandler::HandleInitializeKioskApps(
+    const base::ListValue* args) {
   initialized_ = true;
   SendKioskApps();
 }
@@ -86,21 +91,22 @@ void KioskAppMenuHandler::HandleLaunchKioskApps(const base::ListValue* args) {
   KioskAppManager::App app_data;
   CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
 
-  launcher_.reset(new KioskAppLauncher(
-     app_id,
-     base::Bind(&KioskAppMenuHandler::KioskAppLaunchCallback,
-                base::Unretained(this))));
-  launcher_->Start();
+  ExistingUserController::current_controller()->PrepareKioskAppLaunch();
 
-  ExistingUserController::current_controller()->OnKioskAppLaunchStarted();
+  // KioskAppLauncher deletes itself when done.
+  (new KioskAppLauncher(app_id))->Start();
 }
 
-void KioskAppMenuHandler::KioskAppLaunchCallback(bool success) {
-  // If the launch succeeds, do nothing and wait for chrome restart.
-  if (success)
+void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(
+    const base::ListValue* args) {
+  KioskAppLaunchError::Error error = KioskAppLaunchError::Get();
+  if (error == KioskAppLaunchError::NONE)
     return;
+  KioskAppLaunchError::Clear();
 
-  ExistingUserController::current_controller()->OnKioskAppLaunchFailed();
+  const std::string error_message = KioskAppLaunchError::GetErrorMessage(error);
+  web_ui()->CallJavascriptFunction("login.AppsMenuButton.showError",
+                                   base::StringValue(error_message));
 }
 
 void KioskAppMenuHandler::OnKioskAutoLaunchAppChanged() {

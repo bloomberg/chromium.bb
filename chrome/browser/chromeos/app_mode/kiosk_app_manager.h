@@ -50,8 +50,6 @@ class KioskAppManager : public KioskAppPrefsObserver,
   // Sample layout:
   //   "kiosk": {
   //     "auto_launch": "app_id1",  // Exists if using local state pref
-  //     "suppress_auto_launch": true,  // Exists if when auto launch is
-  //                                    // suppressed. Default is false.
   //     "apps": {
   //       "app_id1" : {
   //         "name": "name of app1",
@@ -81,10 +79,6 @@ class KioskAppManager : public KioskAppPrefsObserver,
 
   // Sets |app_id| as the app to auto launch at start up.
   void SetAutoLaunchApp(const std::string& app_id);
-
-  // Gets/sets suppress auto launch flag.
-  bool GetSuppressAutoLaunch() const;
-  void SetSuppressAutoLaunch(bool suppress);
 
   // Adds/removes a kiosk app by id. When removed, all locally cached data
   // will be removed as well.

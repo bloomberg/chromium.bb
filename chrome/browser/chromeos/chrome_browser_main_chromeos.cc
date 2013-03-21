@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
@@ -198,7 +199,7 @@ bool ShouldAutoLaunchKioskApp(const CommandLine& command_line) {
       command_line.HasSwitch(::switches::kLoginManager) &&
       !command_line.HasSwitch(::switches::kForceLoginManagerInTests) &&
       !app_manager->GetAutoLaunchApp().empty() &&
-      !app_manager->GetSuppressAutoLaunch();
+      KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
 }
 
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
@@ -228,10 +229,9 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
     if (KioskModeSettings::Get()->IsKioskModeEnabled())
       InitializeKioskModeScreensaver();
 
-    // If app mode is enabled, reset auto launch suppression flag and reboot
-    // after update flag when login screen is shown.
+    // If app mode is enabled, reset reboot after update flag when login
+    // screen is shown.
     if (parsed_command_line.HasSwitch(::switches::kEnableAppMode)) {
-      KioskAppManager::Get()->SetSuppressAutoLaunch(false);
       if (!g_browser_process->browser_policy_connector()->
           IsEnterpriseManaged()) {
         PrefService* local_state = g_browser_process->local_state();
@@ -598,11 +598,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (!parameters().ui_task ||
       parsed_command_line().HasSwitch(::switches::kForceLoginManagerInTests)) {
     if (ShouldAutoLaunchKioskApp(parsed_command_line())) {
-      kiosk_app_launcher_.reset(new KioskAppLauncher(
-          KioskAppManager::Get()->GetAutoLaunchApp(),
-          base::Bind(&ChromeBrowserMainPartsChromeos::KioskAppLaunchCallback,
-                     base::Unretained(this))));
-      kiosk_app_launcher_->Start();
+      // KioskAppLauncher deletes itself when done.
+      (new KioskAppLauncher(
+          KioskAppManager::Get()->GetAutoLaunchApp()))->Start();
     } else {
       OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
     }
@@ -860,18 +858,6 @@ void ChromeBrowserMainPartsChromeos::SetupZramFieldTrial() {
   trial->AppendGroup("snow_2GB_swap", zram_group == '8' ? 1 : 0);
   // This is necessary to start the experiment as a side effect.
   trial->group();
-}
-
-void ChromeBrowserMainPartsChromeos::KioskAppLaunchCallback(bool success) {
-  // If the launch succeeds, do nothing and wait for chrome restart.
-  if (success)
-    return;
-
-  // If failed to launch, go back to login screen.
-  LOG(ERROR) << "Failed to launch kiosk app. Fall back to login screen";
-  OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
-
-  // TODO(xiyuan): Show error message.
 }
 
 }  //  namespace chromeos

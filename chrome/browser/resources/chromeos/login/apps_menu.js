@@ -50,7 +50,7 @@ cr.define('login', function() {
       document.body.appendChild(this.menu);
 
       this.anchorType = cr.ui.AnchorType.ABOVE;
-      chrome.send('getKioskApps');
+      chrome.send('initializeKioskApps');
     },
 
     /** @override */
@@ -62,6 +62,16 @@ cr.define('login', function() {
       }
 
       MenuButton.prototype.showMenu.apply(this, arguments);
+    },
+
+    /**
+     * Invoked when apps menu becomes visible.
+     */
+    didShow: function() {
+      window.setTimeout(function() {
+        if (!$('apps-header-bar-item').hidden)
+          chrome.send('checkKioskAppLaunchError');
+      }, 500);
     },
 
     /**
@@ -85,6 +95,20 @@ cr.define('login', function() {
   AppsMenuButton.setApps = function(apps) {
     $('show-apps-button').data = apps;
     $('login-header-bar').hasApps = apps.length > 0;
+  };
+
+  /**
+   * Shows the given error message.
+   * @param {!string} message Error message to show.
+   */
+  AppsMenuButton.showError = function(message) {
+    /** @const */ var BUBBLE_OFFSET = 25;
+    /** @const */ var BUBBLE_PADDING = 12;
+    $('bubble').showTextForElement($('show-apps-button'),
+                                   message,
+                                   cr.ui.Bubble.Attachment.TOP,
+                                   BUBBLE_OFFSET,
+                                   BUBBLE_PADDING);
   };
 
   return {

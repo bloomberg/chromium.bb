@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -65,7 +66,7 @@ class KioskAppLauncher::CryptohomedChecker
       ++retry_count_;
       if (retry_count_ > kMaxRetryTimes) {
         LOG(ERROR) << "Could not talk to cryptohomed for launching kiosk app.";
-        ReportCheckResult(false);
+        ReportCheckResult(KioskAppLaunchError::CRYPTOHOMED_NOT_RUNNING);
         return;
       }
 
@@ -81,15 +82,17 @@ class KioskAppLauncher::CryptohomedChecker
       LOG(ERROR) << "Cryptohome is mounted before launching kiosk app.";
 
     // Proceed only when cryptohome is not mounded or running on dev box.
-    ReportCheckResult(!is_mounted || !base::chromeos::IsRunningOnChromeOS());
-    return;
+    if (!is_mounted || !base::chromeos::IsRunningOnChromeOS())
+      ReportCheckResult(KioskAppLaunchError::NONE);
+    else
+      ReportCheckResult(KioskAppLaunchError::ALREADY_MOUNTED);
   }
 
-  void ReportCheckResult(bool success) {
-    if (success)
+  void ReportCheckResult(KioskAppLaunchError::Error error) {
+    if (error == KioskAppLaunchError::NONE)
       launcher_->StartMount();
     else
-      launcher_->ReportLaunchResult(false);
+      launcher_->ReportLaunchResult(error);
   }
 
   KioskAppLauncher* launcher_;
@@ -134,11 +137,8 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
 ////////////////////////////////////////////////////////////////////////////////
 // KioskAppLauncher
 
-KioskAppLauncher::KioskAppLauncher(const std::string& app_id,
-                                   const LaunchCallback& callback)
+KioskAppLauncher::KioskAppLauncher(const std::string& app_id)
     : app_id_(app_id),
-      callback_(callback),
-      success_(false),
       remove_attempted_(false) {
 }
 
@@ -149,7 +149,7 @@ void KioskAppLauncher::Start() {
 
   if (running_instance_) {
     LOG(WARNING) << "Unable to launch " << app_id_ << "with a pending launch.";
-    ReportLaunchResult(false);
+    ReportLaunchResult(KioskAppLaunchError::HAS_PENDING_LAUNCH);
     return;
   }
 
@@ -161,14 +161,18 @@ void KioskAppLauncher::Start() {
   crytohomed_checker->StartCheck();
 }
 
-void KioskAppLauncher::ReportLaunchResult(bool success) {
+void KioskAppLauncher::ReportLaunchResult(KioskAppLaunchError::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   running_instance_ = NULL;
-  success_ = success;
 
-  if (!callback_.is_null())
-    callback_.Run(success_);
+  if (error != KioskAppLaunchError::NONE) {
+    // Saves the error and ends the session to go back to login screen.
+    KioskAppLaunchError::Save(error);
+    chrome::AttemptUserExit();
+  }
+
+  delete this;
 }
 
 void KioskAppLauncher::StartMount() {
@@ -201,7 +205,7 @@ void KioskAppLauncher::MountCallback(bool mount_success,
   }
 
   LOG(ERROR) << "Failed to mount app cryptohome, error=" << mount_error;
-  ReportLaunchResult(false);
+  ReportLaunchResult(KioskAppLaunchError::UNABLE_TO_MOUNT);
 }
 
 void KioskAppLauncher::AttemptRemove() {
@@ -219,17 +223,18 @@ void KioskAppLauncher::RemoveCallback(bool success,
   }
 
   LOG(ERROR) << "Failed to remove app cryptohome, erro=" << return_code;
-  ReportLaunchResult(false);
+  ReportLaunchResult(KioskAppLaunchError::UNABLE_TO_REMOVE);
 }
 
 void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
   // StartupAppLauncher deletes itself when done.
   (new chromeos::StartupAppLauncher(profile, app_id_))->Start();
 
-  BaseLoginDisplayHost::default_host()->OnSessionStart();
+  if (BaseLoginDisplayHost::default_host())
+    BaseLoginDisplayHost::default_host()->OnSessionStart();
   UserManager::Get()->SessionStarted();
 
-  ReportLaunchResult(true);
+  ReportLaunchResult(KioskAppLaunchError::NONE);
 }
 
 }  // namespace chromeos

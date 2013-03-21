@@ -3550,4 +3550,16 @@ Battery full
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME" desc="Text to be spoken when focus is set to the sign-in button in the public account user pod.">
     Enter public session
   </message>
+  <message name="IDS_KIOSK_APP_FAILED_TO_LAUNCH" desc="Generic error message used when a kiosk app fails to launch.">
+    Darn, the kiosk application could not be launched.
+  </message>
+  <message name="IDS_KIOSK_APP_ERROR_UNABLE_TO_MOUNT" desc="Error message used when a kiosk app fails to launch due to cryptohome error.">
+    Kryptonite! The cryptohome for the kiosk application could not be mounted.
+  </message>
+  <message name="IDS_KIOSK_APP_ERROR_UNABLE_TO_INSTALL" desc="Error message used when a kiosk app fails to launch due to install failure.">
+    Kiosk application could not be installed.
+  </message>
+  <message name="IDS_KIOSK_APP_ERROR_USER_CANCEL" desc="Error message used when a kiosk app launch is canceled by user.">
+    Kiosk application launch canceled.
+  </message>
 </grit-part>

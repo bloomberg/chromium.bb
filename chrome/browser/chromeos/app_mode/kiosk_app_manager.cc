@@ -65,14 +65,6 @@ void KioskAppManager::SetAutoLaunchApp(const std::string& app_id) {
   prefs_->SetAutoLaunchApp(app_id);
 }
 
-bool KioskAppManager::GetSuppressAutoLaunch() const {
-  return prefs_->GetSuppressAutoLaunch();
-}
-
-void KioskAppManager::SetSuppressAutoLaunch(bool suppress) {
-  prefs_->SetSuppressAutoLaunch(suppress);
-}
-
 void KioskAppManager::AddApp(const std::string& app_id) {
   prefs_->AddApp(app_id);
 }

@@ -115,6 +115,8 @@
         'browser/chromeos/app_mode/kiosk_app_data_delegate.h',
         'browser/chromeos/app_mode/kiosk_app_launcher.cc',
         'browser/chromeos/app_mode/kiosk_app_launcher.h',
+        'browser/chromeos/app_mode/kiosk_app_launch_error.cc',
+        'browser/chromeos/app_mode/kiosk_app_launch_error.h',
         'browser/chromeos/app_mode/kiosk_app_manager.cc',
         'browser/chromeos/app_mode/kiosk_app_manager.h',
         'browser/chromeos/app_mode/kiosk_app_manager_observer.h',

@@ -16,7 +16,6 @@ namespace chromeos {
 
 // Keys for local state data. See sample layout in KioskAppManager.
 static const char kKeyAutoLaunch[] = "auto_launch";
-static const char kKeySuppressAutoLaunch[] = "suppress_auto_launch";
 
 std::string KioskAppPrefsLocalState::GetAutoLaunchApp() const {
   const base::DictionaryValue* dict =
@@ -40,26 +39,6 @@ void KioskAppPrefsLocalState::SetAutoLaunchApp(const std::string& app_id) {
   FOR_EACH_OBSERVER(KioskAppPrefsObserver,
                     observers_,
                     OnKioskAutoLaunchAppChanged());
-}
-
-bool KioskAppPrefsLocalState::GetSuppressAutoLaunch() const {
-  const base::DictionaryValue* dict =
-      local_state_->GetDictionary(KioskAppManager::kKioskDictionaryName);
-
-  bool suppress;
-  if (dict->GetBoolean(kKeySuppressAutoLaunch, &suppress))
-    return suppress;
-
-  return false;
-}
-
-void KioskAppPrefsLocalState::SetSuppressAutoLaunch(bool suppress) {
-  if (GetSuppressAutoLaunch() == suppress)
-    return;
-
-  DictionaryPrefUpdate dict_update(local_state_,
-                                   KioskAppManager::kKioskDictionaryName);
-  dict_update->SetBoolean(kKeySuppressAutoLaunch, suppress);
 }
 
 void KioskAppPrefsLocalState::GetApps(AppIds* app_ids) const {

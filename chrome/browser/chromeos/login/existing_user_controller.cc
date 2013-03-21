@@ -221,13 +221,12 @@ void ExistingUserController::ResumeLogin() {
   resume_login_callback_.Run();
 }
 
-void ExistingUserController::OnKioskAppLaunchStarted() {
+void ExistingUserController::PrepareKioskAppLaunch() {
+  // Disable login UI while waiting for the kiosk app launch. There is no
+  // balanced UI enable call because this very login screen will not be
+  // accessed again. If app is launched, it will be destroyed. If app fails to
+  // launch, chrome is restarted to go back to a new login screen.
   login_display_->SetUIEnabled(false);
-}
-
-void ExistingUserController::OnKioskAppLaunchFailed() {
-  login_display_->SetUIEnabled(true);
-  // TODO(xiyuan): Show some error message.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

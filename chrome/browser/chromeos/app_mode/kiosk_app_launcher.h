@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 class Profile;
@@ -18,30 +19,26 @@ namespace chromeos {
 
 // KioskAppLauncher launches a given app from login screen. It first attempts
 // to mount a cryptohome for the app. If the mount is successful, it prepares
-// app profile then calls StartupAppLauncher to finish the launch. Note that
-// there should only be one launch attempt in progress.
+// app profile then calls StartupAppLauncher to finish the launch. If mount
+// fails, it sets relevant launch error and restart chrome to gets back to
+// the login screen. Note that there should only be one launch attempt in
+// progress.
 class KioskAppLauncher {
  public:
-  // Callback after a launch attempt.
-  typedef base::Callback<void(bool success)> LaunchCallback;
-
-  // Constructs a launcher for |app_id|. |callback| will be invoked to report
-  // whether the launch attempt is success or not.
-  KioskAppLauncher(const std::string& app_id,
-                   const LaunchCallback& callback);
-  ~KioskAppLauncher();
+  explicit KioskAppLauncher(const std::string& app_id);
 
   // Starts a launch attempt. Fails immediately if there is already a launch
   // attempt running.
   void Start();
 
-  bool success() const { return success_; }
-
  private:
   class CryptohomedChecker;
   class ProfileLoader;
 
-  void ReportLaunchResult(bool success);
+  // Private dtor because this class manages its own lifetime.
+  ~KioskAppLauncher();
+
+  void ReportLaunchResult(KioskAppLaunchError::Error error);
 
   void StartMount();
   void MountCallback(bool mount_success, cryptohome::MountError mount_error);
@@ -56,14 +53,9 @@ class KioskAppLauncher {
   static KioskAppLauncher* running_instance_;
 
   const std::string app_id_;
-  const LaunchCallback callback_;
 
   scoped_ptr<CryptohomedChecker> crytohomed_checker;
   scoped_ptr<ProfileLoader> profile_loader_;
-
-  // True when cryptohome for the app is mounted successfully and restart
-  // is scheduled.
-  bool success_;
 
   // Whether remove existing cryptohome has attempted.
   bool remove_attempted_;
