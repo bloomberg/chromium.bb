@@ -50,18 +50,29 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
     self.assertEqual(0, subprocess.call(args))
 
-    # Ensure the files are present on the server.
+    # Try to download the files from the server.
+    file_hashes = [
+        isolateserver_archive.sha1_file(os.path.join(TEST_DATA_DIR, f))
+        for f in files
+    ]
+    for i in range(len(files)):
+      download_url = '%scontent/retrieve/%s/%s' % (
+          ISOLATE_SERVER, self.namespace, file_hashes[i])
+
+      downloaded_file = isolateserver_archive.url_open(download_url,
+                                                       retry_404=True),
+      self.assertTrue(downloaded_file is not None,
+                      'File %s was missing from the server' % files[i])
+
+    # Ensure the files are listed as present on the server.
     contains_hash_url = '%scontent/contains/%s?token=%s&from_smoke_test=1' % (
         ISOLATE_SERVER, self.namespace, self.token)
 
-    file_hashes = (isolateserver_archive.sha1_file(
-        os.path.join(TEST_DATA_DIR, f)) for f in files)
     body = ''.join(binascii.unhexlify(h) for h in file_hashes)
 
     response = isolateserver_archive.url_open(
         contains_hash_url,
         body,
-        retry_404=True,
         content_type='application/octet-stream').read()
 
     for i in range(len(response)):
