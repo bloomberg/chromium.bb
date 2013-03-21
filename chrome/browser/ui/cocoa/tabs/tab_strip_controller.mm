@@ -221,6 +221,39 @@ NSImage* ApplyMask(NSImage* image, NSImage* mask) {
   }) autorelease];
 }
 
+// Creates a modified favicon used for the recording case. The mask is used for
+// making part of the favicon transparent. (The part where the recording dot
+// later is drawn.)
+NSImage* CreateMaskedFaviconForRecording(NSImage* image,
+                                         NSImage* mask,
+                                         NSImage* recImage) {
+  return [CreateImageWithSize([image size], ^(NSSize size) {
+      CGFloat width = size.width;
+      CGFloat height = size.height;
+
+      [image drawAtPoint:NSZeroPoint
+                fromRect:NSMakeRect(0, 0, width, height)
+               operation:NSCompositeCopy
+                fraction:1.0];
+
+      NSSize maskSize = [mask size];
+      NSSize recImageSize = [recImage size];
+      CGFloat offsetFromRight = recImageSize.width +
+          (maskSize.width - recImageSize.width) / 2;
+      CGFloat offsetFromBottom = (maskSize.height - recImageSize.height) / 2;
+
+      NSRect maskBounds;
+      maskBounds.origin.x = width - offsetFromRight;
+      maskBounds.origin.y = -offsetFromBottom;
+      maskBounds.size = maskSize;
+
+      [mask drawInRect:maskBounds
+              fromRect:NSZeroRect
+             operation:NSCompositeDestinationOut
+              fraction:1.0];
+  }) autorelease];
+}
+
 // Paints |overlay| on top of |ground|.
 NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   DCHECK_EQ([ground size].width, [overlay size].width);
@@ -1597,13 +1630,18 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
           iconView = projectingView;
         } else if (theme && chrome::ShouldShowRecordingIndicator(contents)) {
+          // Create a masked favicon.
+          NSImage* mask = theme->GetNSImageNamed(IDR_TAB_RECORDING_MASK, true);
           NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING, true);
+          NSImage* favIconMasked = CreateMaskedFaviconForRecording(
+                                       [imageView image], mask, recording);
+
           NSRect frame =
               NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
           ThrobbingImageView* recordingView =
               [[[ThrobbingImageView alloc]
                   initWithFrame:frame
-                backgroundImage:[imageView image]
+                backgroundImage:favIconMasked
                      throbImage:recording
                      durationMS:kRecordingDurationMs
                   throbPosition:kThrobPositionBottomRight] autorelease];
