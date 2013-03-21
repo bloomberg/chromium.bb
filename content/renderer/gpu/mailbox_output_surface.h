@@ -41,27 +41,31 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   // CompositorOutputSurface overrides.
   virtual void OnSwapAck(const cc::CompositorFrameAck& ack) OVERRIDE;
 
-  struct TransferableFrame
-  {
-    TransferableFrame()
-        : texture_id(0) {}
+  size_t GetNumAcksPending();
+
+  struct TransferableFrame {
+    TransferableFrame() : texture_id(0), sync_point(0) {}
 
     TransferableFrame(uint32 texture_id,
                       const gpu::Mailbox& mailbox,
                       const gfx::Size size)
-        : texture_id(texture_id),
-          mailbox(mailbox),
-          size(size) {}
+        : texture_id(texture_id), mailbox(mailbox), size(size), sync_point(0) {}
 
     uint32 texture_id;
     gpu::Mailbox mailbox;
     gfx::Size size;
+    uint32 sync_point;
   };
+
+  void ConsumeTexture(const TransferableFrame& frame);
+
   TransferableFrame current_backing_;
+  std::deque<TransferableFrame> pending_textures_;
   std::queue<TransferableFrame> returned_textures_;
 
   gfx::Size size_;
   uint32 fbo_;
+  bool is_backbuffer_discarded_;
 };
 
 }  // namespace content
