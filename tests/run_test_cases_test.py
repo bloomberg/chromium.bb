@@ -17,7 +17,6 @@ sys.path.insert(0, ROOT_DIR)
 import run_test_cases
 
 OUTPUT = os.path.join(ROOT_DIR, 'tests', 'run_test_cases', 'output.py')
-SLEEP = os.path.join(ROOT_DIR, 'tests', 'run_test_cases', 'sleep.py')
 
 
 def to_native_eol(string):
@@ -54,44 +53,45 @@ class ListTestCasesTest(unittest.TestCase):
 
 class RunTestCases(unittest.TestCase):
   def test_call_with_timeout(self):
+    timedout = 1 if sys.platform == 'win32' else -9
+    # Format is:
+    # ( (cmd, timeout), (stdout, returncode) ), ...
     test_data = [
-      {
-        # 0 means no timeout, like None.
-        'cmd': ['0.001'],
-        'timeout': 0,
-        'stdout': 'Sleeping.\nSlept.\n',
-        'returncode': 0,
-      },
-      {
-        # On a loaded system, this can be tight.
-        'cmd': ['100'],
-        'timeout': 1.,
-        'stdout': 'Sleeping.\n',
-        'returncode': 1 if sys.platform == 'win32' else -9,
-      },
-      {
-        'cmd': ['0.001'],
-        'timeout': 100,
-        'stdout': 'Sleeping.\nSlept.\n',
-        'returncode': 0,
-      },
+      # 0 means no timeout, like None.
+      (
+        (['out_sleeping', '0.001', 'out_slept'], 0),
+        ('Sleeping.\nSlept.\n', 0),
+      ),
+
+      # On a loaded system, this can be tight.
+      (
+        (['out_sleeping', 'out_flush', '100', 'out_slept'], 0.5),
+        ('Sleeping.\n', timedout),
+      ),
+
+      (
+        (['out_sleeping', '0.001', 'out_slept'], 100),
+        ('Sleeping.\nSlept.\n', 0),
+      ),
     ]
-    for data in test_data:
+    for i, (data, expected) in enumerate(test_data):
       stdout, code, duration = run_test_cases.call_with_timeout(
-          [sys.executable, SLEEP] + data['cmd'],
-          data['timeout'])
-      self.assertTrue(duration > 0.0001, data)
-      self.assertEqual(to_native_eol(data['stdout']), stdout, data)
-      self.assertEqual(data['returncode'], code, data)
+          [sys.executable, OUTPUT] + data[0],
+          timeout=data[1])
+      self.assertTrue(duration > 0.0001, (data, duration))
+      self.assertEqual(
+          (i, stdout, code),
+          (i, to_native_eol(expected[0]), expected[1]))
 
       # Try again with universal_newlines=True.
       stdout, code, duration = run_test_cases.call_with_timeout(
-          [sys.executable, SLEEP] + data['cmd'],
-          data['timeout'],
+          [sys.executable, OUTPUT] + data[0],
+          timeout=data[1],
           universal_newlines=True)
-      self.assertTrue(duration > 0.0001, data)
-      self.assertEqual(data['stdout'], stdout, data)
-      self.assertEqual(data['returncode'], code, data)
+      self.assertTrue(duration > 0.0001, (data, duration))
+      self.assertEqual(
+          (i, stdout, code),
+          (i,) + expected)
 
   def test_recv_any(self):
     combinations = [

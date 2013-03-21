@@ -5,11 +5,17 @@
 
 """Outputs on both stderr and stdout."""
 
+import re
 import sys
+import time
 
 
 def main():
   for command in sys.argv[1:]:
+    if re.match(r'^[0-9\.]+$', command):
+      time.sleep(float(command))
+      continue
+
     if command.startswith('out_'):
       pipe = sys.stdout
     elif command.startswith('err_'):
@@ -20,6 +26,10 @@ def main():
     command = command[4:]
     if command == 'print':
       pipe.write('printing')
+    elif command == 'sleeping':
+      pipe.write('Sleeping.\n')
+    elif command == 'slept':
+      pipe.write('Slept.\n')
     elif command == 'lf':
       pipe.write('\n')
     elif command == 'flush':
