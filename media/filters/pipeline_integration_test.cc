@@ -419,7 +419,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   ASSERT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ("f0be120a90a811506777c99a2cdf7cc1", GetVideoHash());
-  EXPECT_EQ("-5.15,2.31,-4.78,5.24,-2.23,4.54,", GetAudioHash());
+  EXPECT_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
 }
 
 // TODO(fgalligan): Enable test when code to parse encrypted WebM files lands

@@ -15,30 +15,32 @@ namespace media {
 
 AudioHash::AudioHash()
     : audio_hash_(),
-      hash_count_(0) {
+      sample_count_(0) {
   COMPILE_ASSERT(arraysize(audio_hash_) == kHashBuckets, audio_hash_size_error);
 }
 
 AudioHash::~AudioHash() {}
 
 void AudioHash::Update(const AudioBus* audio_bus, int frames) {
-  for (int ch = 0; ch < audio_bus->channels(); ++ch) {
+  // Use uint32 to ensure overflow is a defined operation.
+  for (uint32 ch = 0; ch < static_cast<uint32>(audio_bus->channels()); ++ch) {
     const float* channel = audio_bus->channel(ch);
-    for (int i = 0; i < frames; ++i) {
-      const int kHashIndex =
-          (i * (ch + 1) + hash_count_) % arraysize(audio_hash_);
+    for (uint32 i = 0; i < static_cast<uint32>(frames); ++i) {
+      const uint32 kSampleIndex = sample_count_ + i;
+      const uint32 kHashIndex = (kSampleIndex * (ch + 1)) % kHashBuckets;
 
       // Mix in a sine wave with the result so we ensure that sequences of empty
       // buffers don't result in an empty hash.
       if (ch == 0) {
-        audio_hash_[kHashIndex] += channel[i] + sin(2.0 * M_PI * M_PI * i);
+        audio_hash_[kHashIndex] +=
+            channel[i] + sin(2.0 * M_PI * M_PI * kSampleIndex);
       } else {
         audio_hash_[kHashIndex] += channel[i];
       }
     }
   }
 
-  ++hash_count_;
+  sample_count_ += static_cast<uint32>(frames);
 }
 
 std::string AudioHash::ToString() const {

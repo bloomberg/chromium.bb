@@ -119,6 +119,27 @@ TEST_F(AudioHashTest, EmptyBusOrder) {
   EXPECT_NE(one_bus_hash.ToString(), two_bus_hash.ToString());
 }
 
+// Where A = [0, n], ensure hash(A[0:n/2]), hash(A[n/2:n]) and hash(A) result
+// in the same value.
+TEST_F(AudioHashTest, HashIgnoresUpdateOrder) {
+  AudioHash full_hash;
+  full_hash.Update(bus_one_.get(), bus_one_->frames());
+
+  AudioHash half_hash;
+  half_hash.Update(bus_one_.get(), bus_one_->frames() / 2);
+
+  // Create a new bus representing the second half of |bus_one_|.
+  const int half_frames = bus_one_->frames() / 2;
+  const int channels = bus_one_->channels();
+  scoped_ptr<AudioBus> half_bus = AudioBus::CreateWrapper(channels);
+  half_bus->set_frames(half_frames);
+  for (int i = 0; i < channels; ++i)
+    half_bus->SetChannelData(i, bus_one_->channel(i) + half_frames);
+
+  half_hash.Update(half_bus.get(), half_bus->frames());
+  EXPECT_EQ(full_hash.ToString(), half_hash.ToString());
+}
+
 // Ensure approximate hashes pass verification.
 TEST_F(AudioHashTest, VerifySimilarHash) {
   AudioHash hash_one;

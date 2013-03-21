@@ -47,9 +47,9 @@ class MEDIA_EXPORT AudioHash {
   enum { kHashBuckets = 6 };
   float audio_hash_[kHashBuckets];
 
-  // Essentially the number of times Update() has been called.  Adds weight to
-  // the hash for the order of calls.
-  size_t hash_count_;
+  // The total number of samples processed per channel.  Uses a uint32 instead
+  // of size_t so overflows on 64-bit and 32-bit machines are equivalent.
+  uint32 sample_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHash);
 };
