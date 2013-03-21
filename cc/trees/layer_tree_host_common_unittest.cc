@@ -242,7 +242,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
     // Case 6: The layer transform should occur with respect to the anchor point.
     gfx::Transform translationToAnchor;
     translationToAnchor.Translate(5, 0);
-    gfx::Transform expectedResult = translationToAnchor * layerTransform * inverse(translationToAnchor);
+    gfx::Transform expectedResult = translationToAnchor * layerTransform * Inverse(translationToAnchor);
     setLayerPropertiesForTesting(layer.get(), layerTransform, identityMatrix, gfx::PointF(0.5, 0), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     executeCalculateDrawProperties(root.get());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedResult, layer->draw_transform());
@@ -251,7 +251,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
     // Case 7: Verify that position pre-multiplies the layer transform.
     //         The current implementation of calculateDrawProperties does this implicitly, but it is
     //         still worth testing to detect accidental regressions.
-    expectedResult = positionTransform * translationToAnchor * layerTransform * inverse(translationToAnchor);
+    expectedResult = positionTransform * translationToAnchor * layerTransform * Inverse(translationToAnchor);
     setLayerPropertiesForTesting(layer.get(), layerTransform, identityMatrix, gfx::PointF(0.5, 0), gfx::PointF(0, 1.2f), gfx::Size(10, 12), false);
     executeCalculateDrawProperties(root.get());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedResult, layer->draw_transform());
@@ -351,7 +351,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     parentLayerTransform.Scale3d(2, 2, 1);
     gfx::Transform parentTranslationToAnchor;
     parentTranslationToAnchor.Translate(2.5, 3);
-    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor);
+    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * Inverse(parentTranslationToAnchor);
     setLayerPropertiesForTesting(parent.get(), parentLayerTransform, identityMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(16, 18), false);
     setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(76, 78), false);
@@ -368,8 +368,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     gfx::Transform parentSublayerMatrix;
     parentSublayerMatrix.Scale3d(10, 10, 3.3);
     // Sublayer matrix is applied to the anchor point of the parent layer.
-    parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
-            * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
+    parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * Inverse(parentTranslationToAnchor)
+            * parentTranslationToAnchor * parentSublayerMatrix * Inverse(parentTranslationToAnchor);
     gfx::Transform flattenedCompositeTransform = parentCompositeTransform;
     flattenedCompositeTransform.FlattenTo2d();
     setLayerPropertiesForTesting(parent.get(), parentLayerTransform, parentSublayerMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(10, 12), false);
@@ -418,12 +418,12 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
     gfx::Transform parentSublayerMatrix;
     parentSublayerMatrix.Scale3d(0.9, 1, 3.3);
 
-    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
-            * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
+    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * Inverse(parentTranslationToAnchor)
+            * parentTranslationToAnchor * parentSublayerMatrix * Inverse(parentTranslationToAnchor);
     gfx::Vector2dF parentCompositeScale = MathUtil::ComputeTransform2dScaleComponents(parentCompositeTransform, 1.0f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
-    gfx::Transform surfaceSublayerCompositeTransform = parentCompositeTransform * inverse(surfaceSublayerTransform);
+    gfx::Transform surfaceSublayerCompositeTransform = parentCompositeTransform * Inverse(surfaceSublayerTransform);
 
     // Child's render surface should not exist yet.
     ASSERT_FALSE(child->render_surface());
@@ -589,14 +589,14 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
     parentTranslationToAnchor.Translate(2.5, 3);
     gfx::Transform parentSublayerMatrix;
     parentSublayerMatrix.Scale3d(10, 10, 3.3);
-    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
-            * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
+    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * Inverse(parentTranslationToAnchor)
+            * parentTranslationToAnchor * parentSublayerMatrix * Inverse(parentTranslationToAnchor);
     gfx::Transform replicaLayerTransform;
     replicaLayerTransform.Scale3d(3, 3, 1);
     gfx::Vector2dF parentCompositeScale = MathUtil::ComputeTransform2dScaleComponents(parentCompositeTransform, 1.f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
-    gfx::Transform replicaCompositeTransform = parentCompositeTransform * replicaLayerTransform * inverse(surfaceSublayerTransform);
+    gfx::Transform replicaCompositeTransform = parentCompositeTransform * replicaLayerTransform * Inverse(surfaceSublayerTransform);
 
     // Child's render surface should not exist yet.
     ASSERT_FALSE(child->render_surface());
@@ -672,9 +672,9 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     gfx::Transform replicaLayerTransform;
     replicaLayerTransform.Scale3d(-2, 5, 1);
 
-    gfx::Transform A = translationToAnchor * layerTransform * inverse(translationToAnchor);
-    gfx::Transform B = translationToAnchor * sublayerTransform * inverse(translationToAnchor);
-    gfx::Transform R = A * translationToAnchor * replicaLayerTransform * inverse(translationToAnchor);
+    gfx::Transform A = translationToAnchor * layerTransform * Inverse(translationToAnchor);
+    gfx::Transform B = translationToAnchor * sublayerTransform * Inverse(translationToAnchor);
+    gfx::Transform R = A * translationToAnchor * replicaLayerTransform * Inverse(translationToAnchor);
 
     gfx::Vector2dF surface1ParentTransformScale = MathUtil::ComputeTransform2dScaleComponents(A * B, 1.f);
     gfx::Transform surface1SublayerTransform;
@@ -683,7 +683,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     // SS1 = transform given to the subtree of renderSurface1
     gfx::Transform SS1 = surface1SublayerTransform;
     // S1 = transform to move from renderSurface1 pixels to the layer space of the owning layer
-    gfx::Transform S1 = inverse(surface1SublayerTransform);
+    gfx::Transform S1 = Inverse(surface1SublayerTransform);
 
     gfx::Vector2dF surface2ParentTransformScale = MathUtil::ComputeTransform2dScaleComponents(SS1 * A * B, 1.f);
     gfx::Transform surface2SublayerTransform;
@@ -692,7 +692,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     // SS2 = transform given to the subtree of renderSurface2
     gfx::Transform SS2 = surface2SublayerTransform;
     // S2 = transform to move from renderSurface2 pixels to the layer space of the owning layer
-    gfx::Transform S2 = inverse(surface2SublayerTransform);
+    gfx::Transform S2 = Inverse(surface2SublayerTransform);
 
     setLayerPropertiesForTesting(parent.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(0, 0), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(renderSurface1.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(0, 0), gfx::Size(10, 10), false);
@@ -1276,7 +1276,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     // the correct space. This test will fail if the rotation/inverse are backwards, too,
     // so it requires perfect order of operations.
     expectedGreatGrandChildTransform.MakeIdentity();
-    expectedGreatGrandChildTransform.PreconcatTransform(inverse(rotationAboutZ));
+    expectedGreatGrandChildTransform.PreconcatTransform(Inverse(rotationAboutZ));
     expectedGreatGrandChildTransform.Translate(10, 30); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
     expectedGreatGrandChildTransform.PreconcatTransform(rotationAboutZ);
 
@@ -1376,7 +1376,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
 
     // But the great-great grandchild, "fixedPositionChild", should have a transform that explicitly cancels out the scrollDelta.
     // The expected transform is:
-    //   compoundDrawTransform.inverse() * translate(positive scrollDelta) * compoundOriginTransform
+    //   compoundDrawTransform.Inverse() * translate(positive scrollDelta) * compoundOriginTransform
     gfx::Transform compoundDrawTransform; // transform from greatGrandChildSurface's origin to the root surface.
     compoundDrawTransform.Translate(8, 6); // origin translation of grandChild
     compoundDrawTransform.PreconcatTransform(rotationAboutZ); // rotation of grandChild
@@ -1384,7 +1384,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     compoundDrawTransform.PreconcatTransform(rotationAboutZ); // rotation of greatGrandChild
 
     expectedFixedPositionChildTransform.MakeIdentity();
-    expectedFixedPositionChildTransform.PreconcatTransform(inverse(compoundDrawTransform));
+    expectedFixedPositionChildTransform.PreconcatTransform(Inverse(compoundDrawTransform));
     expectedFixedPositionChildTransform.Translate(10, 30); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
     expectedFixedPositionChildTransform.PreconcatTransform(compoundDrawTransform);
 
@@ -1518,7 +1518,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     // affected by the scrollDelta, so its drawTransform needs to explicitly
     // inverse-compensate for the scroll that's embedded in the target surface.
     gfx::Transform expectedGrandChildTransform;
-    expectedGrandChildTransform.PreconcatTransform(inverse(rotationByZ));
+    expectedGrandChildTransform.PreconcatTransform(Inverse(rotationByZ));
     expectedGrandChildTransform.Translate(10, 20); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
     expectedGrandChildTransform.PreconcatTransform(rotationByZ);
 
@@ -2257,7 +2257,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
     // testing the intended scenario.
     bool clipped = false;
     gfx::RectF clippedRect = MathUtil::MapClippedRect(layerToSurfaceTransform, layerContentRect);
-    MathUtil::ProjectQuad(inverse(layerToSurfaceTransform), gfx::QuadF(clippedRect), &clipped);
+    MathUtil::ProjectQuad(Inverse(layerToSurfaceTransform), gfx::QuadF(clippedRect), &clipped);
     ASSERT_TRUE(clipped);
 
     // Only the corner of the layer is not visible on the surface because of being
