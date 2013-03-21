@@ -6,104 +6,97 @@
 
 #include <cmath>
 
-using WebKit::WebRect;
-using WebKit::WebScrollbar;
-using WebKit::WebScrollbarThemeGeometry;
-
 namespace cc {
 
-ScrollbarGeometryStub::ScrollbarGeometryStub(scoped_ptr<WebScrollbarThemeGeometry> geometry)
-    : m_geometry(geometry.Pass())
-{
+ScrollbarGeometryStub::ScrollbarGeometryStub(
+    scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry)
+    : geometry_(geometry.Pass()) {}
+
+ScrollbarGeometryStub::~ScrollbarGeometryStub() {}
+
+WebKit::WebScrollbarThemeGeometry* ScrollbarGeometryStub::clone() const {
+  return geometry_->clone();
 }
 
-ScrollbarGeometryStub::~ScrollbarGeometryStub()
-{
+int ScrollbarGeometryStub::thumbPosition(WebKit::WebScrollbar* scrollbar) {
+  return geometry_->thumbPosition(scrollbar);
 }
 
-WebScrollbarThemeGeometry* ScrollbarGeometryStub::clone() const
-{
-    return m_geometry->clone();
+int ScrollbarGeometryStub::thumbLength(WebKit::WebScrollbar* scrollbar) {
+  return std::max(0, geometry_->thumbLength(scrollbar));
 }
 
-int ScrollbarGeometryStub::thumbPosition(WebScrollbar* scrollbar)
-{
-    return m_geometry->thumbPosition(scrollbar);
+int ScrollbarGeometryStub::trackPosition(WebKit::WebScrollbar* scrollbar) {
+  return geometry_->trackPosition(scrollbar);
 }
 
-int ScrollbarGeometryStub::thumbLength(WebScrollbar* scrollbar)
-{
-    return std::max(0, m_geometry->thumbLength(scrollbar));
+int ScrollbarGeometryStub::trackLength(WebKit::WebScrollbar* scrollbar) {
+  return geometry_->trackLength(scrollbar);
 }
 
-int ScrollbarGeometryStub::trackPosition(WebScrollbar* scrollbar)
-{
-    return m_geometry->trackPosition(scrollbar);
+bool ScrollbarGeometryStub::hasButtons(WebKit::WebScrollbar* scrollbar) {
+  return geometry_->hasButtons(scrollbar);
 }
 
-int ScrollbarGeometryStub::trackLength(WebScrollbar* scrollbar)
-{
-    return m_geometry->trackLength(scrollbar);
+bool ScrollbarGeometryStub::hasThumb(WebKit::WebScrollbar* scrollbar) {
+  return geometry_->hasThumb(scrollbar);
 }
 
-bool ScrollbarGeometryStub::hasButtons(WebScrollbar* scrollbar)
-{
-    return m_geometry->hasButtons(scrollbar);
+WebKit::WebRect ScrollbarGeometryStub::trackRect(
+    WebKit::WebScrollbar* scrollbar) {
+  return geometry_->trackRect(scrollbar);
 }
 
-bool ScrollbarGeometryStub::hasThumb(WebScrollbar* scrollbar)
-{
-    return m_geometry->hasThumb(scrollbar);
+WebKit::WebRect ScrollbarGeometryStub::thumbRect(
+    WebKit::WebScrollbar* scrollbar) {
+  return geometry_->thumbRect(scrollbar);
 }
 
-WebRect ScrollbarGeometryStub::trackRect(WebScrollbar* scrollbar)
-{
-    return m_geometry->trackRect(scrollbar);
+int ScrollbarGeometryStub::minimumThumbLength(WebKit::WebScrollbar* scrollbar) {
+  return geometry_->minimumThumbLength(scrollbar);
 }
 
-WebRect ScrollbarGeometryStub::thumbRect(WebScrollbar* scrollbar)
-{
-    return m_geometry->thumbRect(scrollbar);
+int ScrollbarGeometryStub::scrollbarThickness(WebKit::WebScrollbar* scrollbar) {
+  return geometry_->scrollbarThickness(scrollbar);
 }
 
-int ScrollbarGeometryStub::minimumThumbLength(WebScrollbar* scrollbar)
-{
-    return m_geometry->minimumThumbLength(scrollbar);
+WebKit::WebRect ScrollbarGeometryStub::backButtonStartRect(
+    WebKit::WebScrollbar* scrollbar) {
+  return geometry_->backButtonStartRect(scrollbar);
 }
 
-int ScrollbarGeometryStub::scrollbarThickness(WebScrollbar* scrollbar)
-{
-    return m_geometry->scrollbarThickness(scrollbar);
+WebKit::WebRect ScrollbarGeometryStub::backButtonEndRect(
+    WebKit::WebScrollbar* scrollbar) {
+  return geometry_->backButtonEndRect(scrollbar);
 }
 
-WebRect ScrollbarGeometryStub::backButtonStartRect(WebScrollbar* scrollbar)
-{
-    return m_geometry->backButtonStartRect(scrollbar);
+WebKit::WebRect ScrollbarGeometryStub::forwardButtonStartRect(
+    WebKit::WebScrollbar* scrollbar) {
+  return geometry_->forwardButtonStartRect(scrollbar);
 }
 
-WebRect ScrollbarGeometryStub::backButtonEndRect(WebScrollbar* scrollbar)
-{
-    return m_geometry->backButtonEndRect(scrollbar);
+WebKit::WebRect ScrollbarGeometryStub::forwardButtonEndRect(
+    WebKit::WebScrollbar* scrollbar) {
+  return geometry_->forwardButtonEndRect(scrollbar);
 }
 
-WebRect ScrollbarGeometryStub::forwardButtonStartRect(WebScrollbar* scrollbar)
-{
-    return m_geometry->forwardButtonStartRect(scrollbar);
+WebKit::WebRect ScrollbarGeometryStub::constrainTrackRectToTrackPieces(
+    WebKit::WebScrollbar* scrollbar,
+    const WebKit::WebRect& rect) {
+  return geometry_->constrainTrackRectToTrackPieces(scrollbar, rect);
 }
 
-WebRect ScrollbarGeometryStub::forwardButtonEndRect(WebScrollbar* scrollbar)
-{
-    return m_geometry->forwardButtonEndRect(scrollbar);
-}
-
-WebRect ScrollbarGeometryStub::constrainTrackRectToTrackPieces(WebScrollbar* scrollbar, const WebRect& rect)
-{
-    return m_geometry->constrainTrackRectToTrackPieces(scrollbar, rect);
-}
-
-void ScrollbarGeometryStub::splitTrack(WebScrollbar* scrollbar, const WebRect& unconstrainedTrackRect, WebRect& beforeThumbRect, WebRect& thumbRect, WebRect& afterThumbRect)
-{
-    m_geometry->splitTrack(scrollbar, unconstrainedTrackRect, beforeThumbRect, thumbRect, afterThumbRect);
+void ScrollbarGeometryStub::splitTrack(
+    WebKit::WebScrollbar* scrollbar,
+    const WebKit::WebRect& unconstrained_track_rect,
+    WebKit::WebRect& before_thumb_rect,
+    WebKit::WebRect& thumb_rect,
+    WebKit::WebRect& after_thumb_rect) {
+  geometry_->splitTrack(scrollbar,
+                        unconstrained_track_rect,
+                        before_thumb_rect,
+                        thumb_rect,
+                        after_thumb_rect);
 }
 
 }  // namespace cc
