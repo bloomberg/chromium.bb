@@ -41,16 +41,7 @@ bool GetSandboxTypeFromCommandLine(int* sandbox_type,
     // Browser process isn't sandboxed.
     return false;
   } else if (process_type == switches::kRendererProcess) {
-    if (!command_line.HasSwitch(switches::kDisable3DAPIs) &&
-        !command_line.HasSwitch(switches::kDisableExperimentalWebGL) &&
-        command_line.HasSwitch(switches::kInProcessWebGL)) {
-      // TODO(kbr): this check seems to be necessary only on this
-      // platform because the sandbox is initialized later. Remove
-      // this once this flag is removed.
-      return false;
-    } else {
-      *sandbox_type = SANDBOX_TYPE_RENDERER;
-    }
+    *sandbox_type = SANDBOX_TYPE_RENDERER;
   } else if (process_type == switches::kUtilityProcess) {
     // Utility process sandbox.
     *sandbox_type = SANDBOX_TYPE_UTILITY;

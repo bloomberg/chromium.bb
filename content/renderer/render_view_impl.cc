@@ -2670,21 +2670,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     return NULL;
   }
 
-  if (cmd_line->HasSwitch(switches::kInProcessWebGL)) {
-    if (!media_bridge_manager_.get()) {
-      media_bridge_manager_.reset(
-          new webkit_media::MediaPlayerBridgeManagerImpl(1));
-    }
-    return new webkit_media::WebMediaPlayerInProcessAndroid(
-        frame,
-        client,
-        cookieJar(frame),
-        media_player_manager_.get(),
-        media_bridge_manager_.get(),
-        new StreamTextureFactoryImpl(
-            context_provider->Context3d(), gpu_channel_host, routing_id_),
-        cmd_line->HasSwitch(switches::kDisableMediaHistoryLogging));
-  }
   if (!media_player_proxy_) {
     media_player_proxy_ = new WebMediaPlayerProxyImplAndroid(
         this, media_player_manager_.get());

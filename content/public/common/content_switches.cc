@@ -482,9 +482,6 @@ const char kInProcessGPU[]                  = "in-process-gpu";
 // Runs plugins inside the renderer process
 const char kInProcessPlugins[]              = "in-process-plugins";
 
-// Runs WebGL inside the renderer process.
-const char kInProcessWebGL[]                = "in-process-webgl";
-
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

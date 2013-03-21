@@ -854,7 +854,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // for official Google Chrome builds.
     switches::kInProcessPlugins,
 #endif  // GOOGLE_CHROME_BUILD
-    switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
     switches::kMemoryMetrics,

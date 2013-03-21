@@ -23,7 +23,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // These imply disabling the sandbox.
     switches::kSingleProcess,
     switches::kNoSandbox,
-    switches::kInProcessWebGL,
     switches::kDisableWebSecurity,
     // Browser plugin is dangerous on regular pages because it breaks the Same
     // Origin Policy.

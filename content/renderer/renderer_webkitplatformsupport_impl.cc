@@ -868,18 +868,10 @@ bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
 WebKit::WebGraphicsContext3D*
 RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  // The WebGraphicsContext3DInProcessImpl code path is used for
-  // layout tests (though not through this code) as well as for
-  // debugging and bringing up new ports.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-        attributes, false);
-  } else {
-    return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-        RenderThreadImpl::current(),
-        attributes,
-        GURL(attributes.topDocumentURL));
-  }
+  return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+      RenderThreadImpl::current(),
+      attributes,
+      GURL(attributes.topDocumentURL));
 }
 
 //------------------------------------------------------------------------------

@@ -581,12 +581,6 @@ base::ProcessHandle StartSandboxedProcess(
     in_sandbox = false;
   }
 #endif
-  if (!browser_command_line.HasSwitch(switches::kDisable3DAPIs) &&
-      !browser_command_line.HasSwitch(switches::kDisableExperimentalWebGL) &&
-      browser_command_line.HasSwitch(switches::kInProcessWebGL)) {
-    // In process WebGL won't work if the sandbox is enabled.
-    in_sandbox = false;
-  }
 
   // Propagate the --allow-no-job flag if present.
   if (browser_command_line.HasSwitch(switches::kAllowNoSandboxJob) &&
