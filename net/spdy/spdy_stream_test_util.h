@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
+#include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/spdy/spdy_stream.h"
 
@@ -85,7 +87,7 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
   // Both |headers| and |buf| can be NULL.
   StreamDelegateSendImmediate(const scoped_refptr<SpdyStream>& stream,
                               scoped_ptr<SpdyHeaderBlock> headers,
-                              IOBufferWithSize* buf);
+                              base::StringPiece data);
   virtual ~StreamDelegateSendImmediate();
 
   virtual int OnSendBody() OVERRIDE;
@@ -96,14 +98,14 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
 
  private:
   scoped_ptr<SpdyHeaderBlock> headers_;
-  scoped_refptr<IOBufferWithSize> buf_;
+  base::StringPiece data_;
 };
 
 // Test delegate that sends body data.
 class StreamDelegateWithBody : public StreamDelegateBase {
  public:
   StreamDelegateWithBody(const scoped_refptr<SpdyStream>& stream,
-                         IOBufferWithSize* buf);
+                         base::StringPiece data);
   virtual ~StreamDelegateWithBody();
 
   virtual int OnSendBody() OVERRIDE;

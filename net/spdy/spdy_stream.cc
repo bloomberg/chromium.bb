@@ -56,7 +56,7 @@ SpdyStream::SpdyStream(SpdySession* session,
       stream_id_(0),
       priority_(HIGHEST),
       slot_(0),
-      stalled_by_flow_control_(false),
+      send_stalled_by_flow_control_(false),
       send_window_size_(kSpdyStreamInitialWindowSize),
       recv_window_size_(kSpdyStreamInitialWindowSize),
       unacked_recv_window_bytes_(0),
@@ -236,16 +236,6 @@ void SpdyStream::set_spdy_headers(scoped_ptr<SpdyHeaderBlock> headers) {
   request_.reset(headers.release());
 }
 
-void SpdyStream::PossiblyResumeIfStalled() {
-  DCHECK(!closed());
-
-  if (send_window_size_ > 0 && stalled_by_flow_control_) {
-    stalled_by_flow_control_ = false;
-    io_state_ = STATE_SEND_BODY;
-    DoLoop(OK);
-  }
-}
-
 void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
@@ -260,7 +250,7 @@ void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
     DCHECK_GE(delta_window_size, kint32min - send_window_size_);
   }
   send_window_size_ += delta_window_size;
-  PossiblyResumeIfStalled();
+  PossiblyResumeIfSendStalled();
 }
 
 void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
@@ -292,7 +282,7 @@ void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
       base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
                  stream_id_, delta_window_size, send_window_size_));
 
-  PossiblyResumeIfStalled();
+  PossiblyResumeIfSendStalled();
 }
 
 void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
@@ -623,6 +613,17 @@ bool SpdyStream::GetSSLInfo(SSLInfo* ssl_info,
 
 bool SpdyStream::GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) {
   return session_->GetSSLCertRequestInfo(cert_request_info);
+}
+
+void SpdyStream::PossiblyResumeIfSendStalled() {
+  DCHECK(!closed());
+
+  if (send_stalled_by_flow_control_ && !session_->IsSendStalled() &&
+      send_window_size_ > 0) {
+    send_stalled_by_flow_control_ = false;
+    io_state_ = STATE_SEND_BODY;
+    DoLoop(OK);
+  }
 }
 
 bool SpdyStream::HasUrl() const {

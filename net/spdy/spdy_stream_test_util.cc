@@ -107,10 +107,10 @@ std::string StreamDelegateBase::GetResponseHeaderValue(
 StreamDelegateSendImmediate::StreamDelegateSendImmediate(
     const scoped_refptr<SpdyStream>& stream,
     scoped_ptr<SpdyHeaderBlock> headers,
-    IOBufferWithSize* buf)
+    base::StringPiece data)
     : StreamDelegateBase(stream),
       headers_(headers.Pass()),
-      buf_(buf) {}
+      data_(data) {}
 
 StreamDelegateSendImmediate::~StreamDelegateSendImmediate() {
 }
@@ -135,17 +135,19 @@ int StreamDelegateSendImmediate::OnResponseReceived(
   if (headers_.get()) {
     stream()->QueueHeaders(headers_.Pass());
   }
-  if (buf_) {
-    stream()->QueueStreamData(buf_.get(), buf_->size(), DATA_FLAG_NONE);
+  if (data_.data()) {
+    scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(data_.as_string()));
+    stream()->QueueStreamData(buf, buf->size(), DATA_FLAG_NONE);
   }
   return status;
 }
 
 StreamDelegateWithBody::StreamDelegateWithBody(
     const scoped_refptr<SpdyStream>& stream,
-    IOBufferWithSize* buf)
+    base::StringPiece data)
     : StreamDelegateBase(stream),
-      buf_(new DrainableIOBuffer(buf, buf->size())),
+      buf_(new DrainableIOBuffer(new StringIOBuffer(data.as_string()),
+                                 data.size())),
       body_data_sent_(0) {}
 
 StreamDelegateWithBody::~StreamDelegateWithBody() {

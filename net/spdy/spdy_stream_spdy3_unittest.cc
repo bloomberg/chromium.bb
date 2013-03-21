@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log_unittest.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -31,6 +32,7 @@ namespace {
 const char kStreamUrl[] = "http://www.google.com/";
 const char kPostBody[] = "\0hello!\xff";
 const size_t kPostBodyLength = arraysize(kPostBody);
+const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 class SpdyStreamSpdy3Test : public testing::Test {
  protected:
@@ -109,11 +111,9 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
-  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), scoped_ptr<SpdyHeaderBlock>(), buf.get());
+      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -180,8 +180,6 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, HIGHEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(6));
-  memcpy(buf->data(), "hello!", 6);
   TestCompletionCallback callback;
   scoped_ptr<SpdyHeaderBlock> message_headers(new SpdyHeaderBlock);
   (*message_headers)[":opcode"] = "1";
@@ -189,7 +187,7 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
   (*message_headers)[":fin"] = "1";
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), message_headers.Pass(), buf.get());
+      stream.get(), message_headers.Pass(), base::StringPiece("hello!", 6));
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -303,11 +301,9 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
-  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), scoped_ptr<SpdyHeaderBlock>(), buf.get());
+      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -381,11 +377,9 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
       CreateStreamSynchronously(session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
 
-  scoped_ptr<StreamDelegateSendImmediate> delegate(
-      new StreamDelegateSendImmediate(
-          stream.get(), scoped_ptr<SpdyHeaderBlock>(),
-          new IOBufferWithSize(kPostBodyLength)));
-  stream->SetDelegate(delegate.get());
+  StreamDelegateSendImmediate delegate(
+      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
+  stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
   EXPECT_EQ(0u, stream->stream_id());
@@ -397,11 +391,11 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   stream->IncreaseSendWindowSize(delta_window_size);
   EXPECT_EQ(old_send_window_size, stream->send_window_size());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate->WaitForClose());
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 }
 
-// Cause a stall by reducing the flow control send window to 0. The
-// stream should resume when that window is then increased.
+// Cause a send stall by reducing the flow control send window to
+// 0. The stream should resume when that window is then increased.
 TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
   GURL url(kStreamUrl);
 
@@ -440,10 +434,8 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
-  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
-  StreamDelegateWithBody delegate(stream.get(), buf);
+  StreamDelegateWithBody delegate(stream.get(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -457,7 +449,7 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
 
   data.RunFor(2);
 
-  EXPECT_FALSE(stream->stalled_by_flow_control());
+  EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
   // Reduce the send window size to 0 to stall.
   while (stream->send_window_size() > 0) {
@@ -465,13 +457,13 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
         std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
   }
 
-  stream->QueueStreamData(buf.get(), buf->size(), DATA_FLAG_NONE);
+  EXPECT_EQ(ERR_IO_PENDING, delegate.OnSendBody());
 
-  EXPECT_TRUE(stream->stalled_by_flow_control());
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
   stream->IncreaseSendWindowSize(kPostBodyLength);
 
-  EXPECT_FALSE(stream->stalled_by_flow_control());
+  EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
   data.RunFor(3);
 
@@ -484,8 +476,9 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
   EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
 }
 
-// Cause a stall by reducing the flow control send window to 0. The
-// stream should resume when that window is then adjusted positively.
+// Cause a send stall by reducing the flow control send window to
+// 0. The stream should resume when that window is then adjusted
+// positively.
 TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
   GURL url(kStreamUrl);
 
@@ -524,10 +517,8 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
-  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
-  StreamDelegateWithBody delegate(stream.get(), buf);
+  StreamDelegateWithBody delegate(stream.get(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -541,7 +532,7 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
 
   data.RunFor(2);
 
-  EXPECT_FALSE(stream->stalled_by_flow_control());
+  EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
   // Reduce the send window size to 0 to stall.
   while (stream->send_window_size() > 0) {
@@ -549,21 +540,21 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
         std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
   }
 
-  stream->QueueStreamData(buf.get(), buf->size(), DATA_FLAG_NONE);
+  EXPECT_EQ(ERR_IO_PENDING, delegate.OnSendBody());
 
-  EXPECT_TRUE(stream->stalled_by_flow_control());
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
   stream->AdjustSendWindowSize(-static_cast<int>(kPostBodyLength));
 
-  EXPECT_TRUE(stream->stalled_by_flow_control());
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
   stream->AdjustSendWindowSize(kPostBodyLength);
 
-  EXPECT_TRUE(stream->stalled_by_flow_control());
+  EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
   stream->AdjustSendWindowSize(kPostBodyLength);
 
-  EXPECT_FALSE(stream->stalled_by_flow_control());
+  EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
   data.RunFor(3);
 

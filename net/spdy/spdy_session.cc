@@ -770,7 +770,7 @@ SpdyFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
       // controlled.  This is why we need the session to mark the stream
       // as stalled - because only the session knows for sure when the
       // stall occurs.
-      stream->set_stalled_by_flow_control(true);
+      stream->set_send_stalled_by_flow_control(true);
       net_log().AddEvent(
           NetLog::TYPE_SPDY_SESSION_STREAM_STALLED_ON_STREAM_SEND_WINDOW,
           NetLog::IntegerCallback("stream_id", stream_id));
@@ -780,7 +780,9 @@ SpdyFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
       effective_window_size =
           std::min(effective_window_size, session_send_window_size_);
       if (effective_window_size <= 0) {
-        stream->set_stalled_by_flow_control(true);
+        DCHECK(IsSendStalled());
+        stream->set_send_stalled_by_flow_control(true);
+        QueueSendStalledStream(stream);
         net_log().AddEvent(
             NetLog::TYPE_SPDY_SESSION_STREAM_STALLED_ON_SESSION_SEND_WINDOW,
             NetLog::IntegerCallback("stream_id", stream_id));
@@ -1331,8 +1333,8 @@ void SpdySession::DeleteStream(SpdyStreamId id, int status) {
   // If this is an active stream, call the callback.
   const scoped_refptr<SpdyStream> stream(it2->second);
   active_streams_.erase(it2);
-  if (stream)
-    stream->OnClose(status);
+  DCHECK(stream);
+  stream->OnClose(status);
   ProcessPendingStreamRequests();
 }
 
@@ -2194,6 +2196,70 @@ void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
       NetLog::TYPE_SPDY_SESSION_UPDATE_SEND_WINDOW,
       base::Bind(&NetLogSpdySessionWindowUpdateCallback,
                  delta_window_size, session_send_window_size_));
+
+  DCHECK(!IsSendStalled());
+  ResumeSendStalledStreams();
+}
+
+void SpdySession::QueueSendStalledStream(
+    const scoped_refptr<SpdyStream>& stream) {
+  DCHECK(stream->send_stalled_by_flow_control());
+  stream_send_unstall_queue_[stream->priority()].push_back(stream->stream_id());
+}
+
+namespace {
+
+// Helper function to return the total size of an array of objects
+// with .size() member functions.
+template <typename T, size_t N> size_t GetTotalSize(const T (&arr)[N]) {
+  size_t total_size = 0;
+  for (size_t i = 0; i < N; ++i) {
+    total_size += arr[i].size();
+  }
+  return total_size;
+}
+
+}  // namespace
+
+void SpdySession::ResumeSendStalledStreams() {
+  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
+
+  // We don't have to worry about new streams being queued, since
+  // doing so would cause IsSendStalled() to return true. But we do
+  // have to worry about streams being closed, as well as ourselves
+  // being closed.
+
+  while (!IsClosed() && !IsSendStalled()) {
+    size_t old_size = 0;
+    if (DCHECK_IS_ON())
+      old_size = GetTotalSize(stream_send_unstall_queue_);
+
+    SpdyStreamId stream_id = PopStreamToPossiblyResume();
+    if (stream_id == 0)
+      break;
+    ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
+    // The stream may actually still be send-stalled after this (due
+    // to its own send window) but that's okay -- it'll then be
+    // resumed once its send window increases.
+    if (it != active_streams_.end())
+      it->second->PossiblyResumeIfSendStalled();
+
+    // The size should decrease unless we got send-stalled again.
+    if (!IsSendStalled())
+      DCHECK_LT(GetTotalSize(stream_send_unstall_queue_), old_size);
+  }
+}
+
+SpdyStreamId SpdySession::PopStreamToPossiblyResume() {
+  for (int i = NUM_PRIORITIES - 1; i >= 0; --i) {
+    std::deque<SpdyStreamId>* queue = &stream_send_unstall_queue_[i];
+    if (!queue->empty()) {
+      SpdyStreamId stream_id = queue->front();
+      queue->pop_front();
+      return stream_id;
+    }
+  }
+  return 0;
 }
 
 void SpdySession::DecreaseSendWindowSize(int32 delta_window_size) {

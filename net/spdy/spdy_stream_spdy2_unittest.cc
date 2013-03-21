@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log_unittest.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -33,6 +34,7 @@ namespace {
 const char kStreamUrl[] = "http://www.google.com/";
 const char kPostBody[] = "\0hello!\xff";
 const size_t kPostBodyLength = arraysize(kPostBody);
+const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 class SpdyStreamSpdy2Test : public testing::Test {
  protected:
@@ -112,11 +114,9 @@ TEST_F(SpdyStreamSpdy2Test, SendDataAfterOpen) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
-  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), scoped_ptr<SpdyHeaderBlock>(), buf.get());
+      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -183,15 +183,13 @@ TEST_F(SpdyStreamSpdy2Test, SendHeaderAndDataAfterOpen) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, HIGHEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(6));
-  memcpy(buf->data(), "hello!", 6);
   scoped_ptr<SpdyHeaderBlock> message_headers(new SpdyHeaderBlock);
   (*message_headers)["opcode"] = "1";
   (*message_headers)["length"] = "6";
   (*message_headers)["fin"] = "1";
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), message_headers.Pass(), buf.get());
+      stream.get(), message_headers.Pass(), base::StringPiece("hello!", 6));
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
@@ -303,11 +301,9 @@ TEST_F(SpdyStreamSpdy2Test, StreamError) {
   scoped_refptr<SpdyStream> stream =
       CreateStreamSynchronously(session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
-  scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kPostBodyLength));
-  memcpy(buf->data(), kPostBody, kPostBodyLength);
 
   StreamDelegateSendImmediate delegate(
-      stream.get(), scoped_ptr<SpdyHeaderBlock>(), buf.get());
+      stream.get(), scoped_ptr<SpdyHeaderBlock>(), kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());

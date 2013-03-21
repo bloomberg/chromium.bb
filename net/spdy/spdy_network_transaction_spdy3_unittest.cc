@@ -2498,7 +2498,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResumeAfterSettings) {
   EXPECT_TRUE(upload_data_stream.IsEOF());
   // But the body is not yet fully sent (kUploadData is not yet sent).
   EXPECT_FALSE(stream->stream()->body_sent());
-  EXPECT_TRUE(stream->stream()->stalled_by_flow_control());
+  EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
 
   data.ForceNextRead();   // Read in SETTINGS frame to unstall.
   rv = callback.WaitForResult();

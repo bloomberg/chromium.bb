@@ -8,6 +8,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <queue>
 #include <set>
 #include <string>
 
@@ -417,6 +418,14 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     return stream_initial_recv_window_size_;
   }
 
+  // Returns true if no stream in the session can send data due to
+  // session flow control.
+  bool IsSendStalled() const {
+    return
+        flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION &&
+        session_send_window_size_ == 0;
+  }
+
   const BoundNetLog& net_log() const { return net_log_; }
 
   int GetPeerAddress(IPEndPoint* address) const;
@@ -440,6 +449,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
  private:
   friend class base::RefCounted<SpdySession>;
   friend class SpdyStreamRequest;
+  friend class SpdySessionSpdy3Test;
 
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ClientPing);
@@ -459,10 +469,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
                            SessionFlowControlInactiveStream31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
-                           ResumeAfterSendWindowSizeIncrease31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
-                           ResumeByPriorityAfterSendWindowSizeIncrease31);
 
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
   typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;
@@ -470,7 +476,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   typedef std::map<int, scoped_refptr<SpdyStream> > ActiveStreamMap;
   typedef std::map<std::string,
       std::pair<scoped_refptr<SpdyStream>, base::TimeTicks> > PushedStreamMap;
-  typedef std::priority_queue<SpdyIOBuffer> OutputQueue;
 
   typedef std::set<scoped_refptr<SpdyStream> > CreatedStreamSet;
   typedef std::map<SpdyIOBufferProducer*, SpdyStream*> StreamProducerMap;
@@ -663,6 +668,18 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // to overflow, does nothing.
   void IncreaseSendWindowSize(int32 delta_window_size);
 
+  // Queue a send-stalled stream for possibly resuming once we're not
+  // send-stalled anymore.
+  void QueueSendStalledStream(const scoped_refptr<SpdyStream>& stream);
+
+  // Go through the queue of send-stalled streams and try to resume as
+  // many as possible.
+  void ResumeSendStalledStreams();
+
+  // Returns the next stream to possibly resume, or 0 if the queue is
+  // empty.
+  SpdyStreamId PopStreamToPossiblyResume();
+
   // If session flow control is turned on, called by CreateDataFrame()
   // (which is in turn called by a stream) to decrease this session's
   // send window size by |delta_window_size|, which must be at least 1
@@ -746,6 +763,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // them into a separate ActiveStreamMap, and not deliver network events to
   // them?
   ActiveStreamMap active_streams_;
+
   // Map of all the streams that have already started to be pushed by the
   // server, but do not have consumers yet.
   PushedStreamMap unclaimed_pushed_streams_;
@@ -846,6 +864,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   int32 session_send_window_size_;
   int32 session_recv_window_size_;
   int32 session_unacked_recv_window_bytes_;
+
+  // A queue of stream IDs that have been send-stalled at some point
+  // in the past.
+  std::deque<SpdyStreamId> stream_send_unstall_queue_[NUM_PRIORITIES];
 
   BoundNetLog net_log_;
 

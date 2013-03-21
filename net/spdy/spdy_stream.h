@@ -151,10 +151,10 @@ class NET_EXPORT_PRIVATE SpdyStream
     recv_window_size_ = window_size;
   }
 
-  bool stalled_by_flow_control() { return stalled_by_flow_control_; }
+  bool send_stalled_by_flow_control() { return send_stalled_by_flow_control_; }
 
-  void set_stalled_by_flow_control(bool stalled) {
-    stalled_by_flow_control_ = stalled;
+  void set_send_stalled_by_flow_control(bool stalled) {
+    send_stalled_by_flow_control_ = stalled;
   }
 
   // If stream flow control is turned on, called by the session to
@@ -279,6 +279,13 @@ class NET_EXPORT_PRIVATE SpdyStream
   // true when SSL is in use.
   bool GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
 
+  // If the stream is stalled on sending data, but the session is not
+  // stalled on sending data and |send_window_size_| is positive, then
+  // set |send_stalled_by_flow_control_| to false and unstall the data
+  // sending. Called by the session or by the stream itself. Must be
+  // called only when the stream is still open.
+  void PossiblyResumeIfSendStalled();
+
   bool is_idle() const {
     return io_state_ == STATE_OPEN || io_state_ == STATE_DONE;
   }
@@ -315,11 +322,6 @@ class NET_EXPORT_PRIVATE SpdyStream
   friend class base::RefCounted<SpdyStream>;
 
   virtual ~SpdyStream();
-
-  // If the stream is stalled and if |send_window_size_| is positive,
-  // then set |stalled_by_flow_control_| to false and unstall the
-  // stream. Must be called only when the stream is still open.
-  void PossiblyResumeIfStalled();
 
   void OnGetDomainBoundCertComplete(int result);
 
@@ -373,7 +375,7 @@ class NET_EXPORT_PRIVATE SpdyStream
   size_t slot_;
 
   // Flow control variables.
-  bool stalled_by_flow_control_;
+  bool send_stalled_by_flow_control_;
   int32 send_window_size_;
   int32 recv_window_size_;
   int32 unacked_recv_window_bytes_;
