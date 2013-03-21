@@ -227,9 +227,10 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
   return true;
 }
 
-void RecordCmdLineAppHistogram() {
+void RecordCmdLineAppHistogram(extensions::Manifest::Type app_type) {
   AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_CMD_LINE_APP);
+      extension_misc::APP_LAUNCH_CMD_LINE_APP,
+      app_type);
 }
 
 void RecordAppLaunches(Profile* profile,
@@ -238,15 +239,21 @@ void RecordAppLaunches(Profile* profile,
   ExtensionService* extension_service = profile->GetExtensionService();
   DCHECK(extension_service);
   for (size_t i = 0; i < cmd_line_urls.size(); ++i) {
-    if (extension_service->IsInstalledApp(cmd_line_urls.at(i))) {
+    const extensions::Extension* extension =
+        extension_service->GetInstalledApp(cmd_line_urls.at(i));
+    if (extension) {
       AppLauncherHandler::RecordAppLaunchType(
-          extension_misc::APP_LAUNCH_CMD_LINE_URL);
+          extension_misc::APP_LAUNCH_CMD_LINE_URL,
+          extension->GetType());
     }
   }
   for (size_t i = 0; i < autolaunch_tabs.size(); ++i) {
-    if (extension_service->IsInstalledApp(autolaunch_tabs.at(i).url)) {
+    const extensions::Extension* extension =
+        extension_service->GetInstalledApp(autolaunch_tabs.at(i).url);
+    if (extension) {
       AppLauncherHandler::RecordAppLaunchType(
-          extension_misc::APP_LAUNCH_AUTOLAUNCH);
+          extension_misc::APP_LAUNCH_AUTOLAUNCH,
+          extension->GetType());
     }
   }
 }
@@ -458,7 +465,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
   if (launch_container != extension_misc::LAUNCH_TAB)
     return false;
 
-  RecordCmdLineAppHistogram();
+  RecordCmdLineAppHistogram(extension->GetType());
 
   WebContents* app_tab = chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
@@ -493,7 +500,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     if (launch_container == extension_misc::LAUNCH_TAB)
       return false;
 
-    RecordCmdLineAppHistogram();
+    RecordCmdLineAppHistogram(extension->GetType());
 
     chrome::AppLaunchParams params(profile, extension,
                                    launch_container, NEW_WINDOW);
@@ -522,11 +529,14 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
-      if (profile->GetExtensionService()->IsInstalledApp(url)) {
-        RecordCmdLineAppHistogram();
+      const extensions::Extension* extension =
+          profile->GetExtensionService()->GetInstalledApp(url);
+      if (extension) {
+        RecordCmdLineAppHistogram(extension->GetType());
       } else {
         AppLauncherHandler::RecordAppLaunchType(
-            extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY);
+            extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY,
+            extensions::Manifest::TYPE_HOSTED_APP);
       }
 
       gfx::Rect override_bounds;

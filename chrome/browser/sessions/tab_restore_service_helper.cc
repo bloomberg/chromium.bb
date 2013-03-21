@@ -35,11 +35,14 @@ void RecordAppLaunch(Profile* profile, const TabRestoreService::Tab& tab) {
 #if !defined(OS_ANDROID)
   GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
   DCHECK(profile->GetExtensionService());
-  if (!profile->GetExtensionService()->IsInstalledApp(url))
+  const extensions::Extension* extension =
+      profile->GetExtensionService()->GetInstalledApp(url);
+  if (!extension)
     return;
 
   AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED);
+      extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED,
+      extension->GetType());
 #endif  // !defined(OS_ANDROID)
 }
 

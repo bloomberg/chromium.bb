@@ -432,9 +432,12 @@ void OpenCurrentURL(Browser* browser) {
   Navigate(&params);
 
   DCHECK(browser->profile()->GetExtensionService());
-  if (browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
+  const extensions::Extension* extension =
+      browser->profile()->GetExtensionService()->GetInstalledApp(url);
+  if (extension) {
     AppLauncherHandler::RecordAppLaunchType(
-        extension_misc::APP_LAUNCH_OMNIBOX_LOCATION);
+        extension_misc::APP_LAUNCH_OMNIBOX_LOCATION,
+        extension->GetType());
   }
 }
 
