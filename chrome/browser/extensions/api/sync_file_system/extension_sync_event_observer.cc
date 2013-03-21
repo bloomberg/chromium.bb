@@ -110,11 +110,14 @@ void ExtensionSyncEventObserver::Shutdown() {
     sync_service_->RemoveSyncEventObserver(this);
 }
 
-const std::string& ExtensionSyncEventObserver::GetExtensionId(
+std::string ExtensionSyncEventObserver::GetExtensionId(
     const GURL& app_origin) {
   const Extension* app = ExtensionSystem::Get(profile_)->extension_service()->
       GetInstalledApp(app_origin);
-  DCHECK(app);
+  if (!app) {
+    // The app is uninstalled or disabled.
+    return std::string();
+  }
   return app->id();
 }
 
@@ -191,6 +194,8 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
 
   // Dispatch to single extension ID.
   const std::string extension_id = GetExtensionId(app_origin);
+  if (extension_id.empty())
+    return;
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
