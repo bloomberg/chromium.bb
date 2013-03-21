@@ -12505,8 +12505,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_WATCH_SINGLE_VIDEO" desc="In the action choice dialog, label of action to watch a single video.">
         Watch <ph name="VIDEO_NAME">$1<ex>Best movie</ex></ph>
       </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_OK" desc="In the action choice dialog, label of the ok button.">
-        Next ›
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_ONCE" desc="In the action choice dialog, label of the button performing the selected action just once, without remembering.">
+        Just once
+      </message>
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_ALWAYS" desc="In the action choice dialog, label of the button performing the selected action with remembering the choice for the future.">
+        Always
       </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_COUNTER_NO_MEDIA" desc="In the action choice dialog, text with number of files.">
         <ph name="FILES_COUNT">$1<ex>123</ex></ph> files

@@ -10,31 +10,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * The main ActionChoice object.
+ *
  * @param {HTMLElement} dom Container.
  * @param {FileSystem} filesystem Local file system.
  * @param {Object} params Parameters.
  * @constructor
  */
 function ActionChoice(dom, filesystem, params) {
-  this.filesystem_ = filesystem;
   this.dom_ = dom;
+  this.filesystem_ = filesystem;
+  this.params_ = params;
   this.document_ = this.dom_.ownerDocument;
-  this.metadataCache_ = params.metadataCache;
+  this.metadataCache_ = this.params_.metadataCache;
   this.volumeManager_ = VolumeManager.getInstance();
   this.volumeManager_.addEventListener('externally-unmounted',
      this.onDeviceUnmounted_.bind(this));
-
   this.initDom_();
-  this.checkDrive_();
-  this.loadSource_(params.source);
+
+  this.rememberedChoice_ = null;
+  this.enabledOptions_ = [ActionChoice.Action.VIEW_FILES];
+  util.storage.local.get(['action-choice'], function(result) {
+    this.rememberedChoice_ = result['action-choice'];
+    this.initializeVolumes_();
+  }.bind(this));
 }
 
 ActionChoice.prototype = { __proto__: cr.EventTarget.prototype };
 
 /**
  * The number of previews shown.
+ * @type {number}
+ * @const
  */
 ActionChoice.PREVIEW_COUNT = 3;
+
+/**
+ * Action to perform depending on an user's choice.
+ * @enum {string}
+ * @const
+ */
+ActionChoice.Action = {
+  VIEW_FILES: 'view-files',
+  IMPORT_TO_DRIVE: 'import-todrive',
+  PLAY_VIDEO: 'play-video',
+  OPEN_IN_GPLUS_PHOTOS: 'open-in-gplus-photos'
+};
 
 /**
  * Loads app in the document body.
@@ -68,6 +88,40 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
 };
 
 /**
+ * Initializes the source and Drive. If the remembered choice is available,
+ * then performs the action.
+ * @private
+ */
+ActionChoice.prototype.initializeVolumes_ = function() {
+  var checkDriveFinished = false;
+  var loadSourceFinished = false;
+
+  var maybeRunRememberedAction = function() {
+    if (!checkDriveFinished || !loadSourceFinished)
+      return;
+
+    // Run the remembered action if it is available.
+    if (this.rememberedChoice_ &&
+        this.enabledOptions_.indexOf(this.rememberedChoice_) != -1) {
+      this.runAction_(this.rememberedChoice_);
+    }
+  }.bind(this);
+
+  var onCheckDriveFinished = function() {
+    checkDriveFinished = true;
+    maybeRunRememberedAction();
+  };
+
+  var onLoadSourceFinished = function() {
+    loadSourceFinished = true;
+    maybeRunRememberedAction();
+  };
+
+  this.checkDrive_(onCheckDriveFinished);
+  this.loadSource_(this.params_.source, onLoadSourceFinished);
+};
+
+/**
  * One-time initialization of dom elements.
  * @private
  */
@@ -75,12 +129,16 @@ ActionChoice.prototype.initDom_ = function() {
   this.previews_ = this.document_.querySelector('.previews');
   this.counter_ = this.document_.querySelector('.counter');
 
-  this.document_.querySelector('button.ok').addEventListener('click',
-      this.onOk_.bind(this));
+  this.document_.querySelector('button.always').addEventListener('click',
+      this.acceptChoice_.bind(this, true));  // Remember the choice.
+  this.document_.querySelector('button.once').addEventListener('click',
+      this.acceptChoice_.bind(this, false));  // Do not remember the choice.
 
   var choices = this.document_.querySelectorAll('.choices div');
   for (var index = 0; index < choices.length; index++) {
-    choices[index].addEventListener('dblclick', this.onOk_.bind(this));
+    choices[index].addEventListener(
+        'dblclick',
+        this.acceptChoice_.bind(this, false));  // Do not remember the choice.
   }
 
   this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
@@ -95,9 +153,11 @@ ActionChoice.prototype.initDom_ = function() {
 
 /**
  * Checks whether Drive is reachable.
+ *
+ * @param {function()} callback Completion callback.
  * @private
  */
-ActionChoice.prototype.checkDrive_ = function() {
+ActionChoice.prototype.checkDrive_ = function(callback) {
   var driveLabel = this.dom_.querySelector('label[for=import-photos-to-drive]');
   var driveChoice = this.dom_.querySelector('#import-photos-to-drive');
   var driveDiv = driveChoice.parentNode;
@@ -106,24 +166,28 @@ ActionChoice.prototype.checkDrive_ = function() {
 
   var onMounted = function() {
     driveChoice.disabled = false;
+    this.enabledOptions_.push(ActionChoice.Action.IMPORT_TO_DRIVE);
     driveDiv.removeAttribute('disabled');
     driveLabel.textContent =
         loadTimeData.getString('ACTION_CHOICE_PHOTOS_DRIVE');
-  };
+    callback();
+  }.bind(this);
 
   if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
     onMounted();
   } else {
-    this.volumeManager_.mountDrive(onMounted, function() {});
+    this.volumeManager_.mountDrive(onMounted, callback);
   }
 };
 
 /**
  * Load the source contents.
+ *
  * @param {string} source Path to source.
+ * @param {function()} callback Completion callback.
  * @private
  */
-ActionChoice.prototype.loadSource_ = function(source) {
+ActionChoice.prototype.loadSource_ = function(source, callback) {
   var onTraversed = function(results) {
     metrics.recordInterval('PhotoImport.Scan');
     var videos = results.filter(FileType.isVideo);
@@ -132,6 +196,7 @@ ActionChoice.prototype.loadSource_ = function(source) {
       videoLabel.textContent = loadTimeData.getStringF(
           'ACTION_CHOICE_WATCH_SINGLE_VIDEO', videos[0].name);
       this.singleVideo_ = videos[0];
+      this.enabledOptions_.push(ActionChoice.Action.PLAY_VIDEO);
     } else {
       videoLabel.parentNode.style.display = 'none';
     }
@@ -158,6 +223,7 @@ ActionChoice.prototype.loadSource_ = function(source) {
     var previews = mediaFiles.length ? mediaFiles : results;
     var previewsCount = Math.min(ActionChoice.PREVIEW_COUNT, previews.length);
     this.renderPreview_(previews, previewsCount);
+    callback();
   }.bind(this);
 
   var onEntry = function(entry) {
@@ -256,7 +322,7 @@ ActionChoice.prototype.close_ = function() {
 ActionChoice.prototype.onKeyDown_ = function(e) {
   switch (util.getKeyModifiers(e) + e.keyCode) {
     case '13':
-      this.onOk_();
+      this.acceptChoice_(false);  // Do not remember the choice.
       return;
     case '27':
       this.recordAction_('close');
@@ -266,34 +332,68 @@ ActionChoice.prototype.onKeyDown_ = function(e) {
 };
 
 /**
- * Called when OK button clicked.
- * @param {Event} event The event object.
+ * Runs an action.
+ * @param {ActionChoice.Action} action Action to perform.
  * @private
  */
-ActionChoice.prototype.onOk_ = function(event) {
-  // Check for click on the disabled choice.
-  var input = event.currentTarget.querySelector('input');
-  if (input && input.disabled) return;
-
-  if (this.document_.querySelector('#import-photos-to-drive').checked) {
-    var url = util.platform.getURL('photo_import.html') +
-        '#' + this.sourceEntry_.fullPath;
-    var width = 728;
-    var height = 656;
-    var top = Math.round((window.screen.availHeight - height) / 2);
-    var left = Math.round((window.screen.availWidth - width) / 2);
-    util.platform.createWindow(url,
-        {height: height, width: width, left: left, top: top});
-    this.recordAction_('import-photos-to-drive');
-  } else if (this.document_.querySelector('#view-files').checked) {
-    this.viewFiles_();
-    this.recordAction_('view-files');
-  } else if (this.document_.querySelector('#watch-single-video').checked) {
-    chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
-        function(success) {});
-    this.recordAction_('watch-single-video');
+ActionChoice.prototype.runAction_ = function(action) {
+  switch (action) {
+    case ActionChoice.Action.IMPORT_TO_DRIVE:
+      var url = util.platform.getURL('photo_import.html') +
+          '#' + this.sourceEntry_.fullPath;
+      var width = 728;
+      var height = 656;
+      var top = Math.round((window.screen.availHeight - height) / 2);
+      var left = Math.round((window.screen.availWidth - width) / 2);
+      util.platform.createWindow(url,
+          {height: height, width: width, left: left, top: top});
+      this.recordAction_('import-photos-to-drive');
+      break;
+    case ActionChoice.Action.PLAY_VIDEO:
+      chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
+          function(success) {});
+      this.recordAction_('watch-single-video');
+      break;
+    case ActionChoice.Action.OPEN_IN_GPLUS_PHOTOS:
+      // TODO(mtomasz): Not yet implemented.
+      break;
+    case ActionChoice.Action.VIEW_FILES:
+    default:
+      this.viewFiles_();
+      this.recordAction_('view-files');
+      break;
   }
   this.close_();
+};
+
+/**
+ * Runs importing on Files.app depending on choice.
+ * @param {boolean} remember Whether remember the choice or not.
+ * @private
+ */
+ActionChoice.prototype.acceptChoice_ = function(remember) {
+  if (this.document_.querySelector('#import-photos-to-drive').checked &&
+      this.enabledOptions_.indexOf(ActionChoice.Action.IMPORT_TO_DRIVE) != -1) {
+    this.runAction_(ActionChoice.Action.IMPORT_TO_DRIVE);
+    util.storage.local.set({'action-choice': remember ?
+        ActionChoice.Action.IMPORT_TO_DRIVE : undefined});
+    return;
+  }
+
+  if (this.document_.querySelector('#view-files').checked &&
+      this.enabledOptions_.indexOf(ActionChoice.Action.VIEW_FILES) != -1) {
+    this.runAction_(ActionChoice.Action.VIEW_FILES);
+    util.storage.local.set({'action-choice': remember ?
+        ActionChoice.Action.VIEW_FILES : undefined});
+    return;
+  }
+
+  if (this.document_.querySelector('#watch-single-video').checked &&
+      this.enabledOptions_.indexOf(ActionChoice.Action.PLAY_VIDEO) != -1) {
+    this.runAction_(ActionChoice.Action.PLAY_VIDEO);
+    util.storage.local.set({'action-choice': remember ?
+        ActionChoice.Action.PLAY_VIDEO : undefined});
+  }
 };
 
 /**
