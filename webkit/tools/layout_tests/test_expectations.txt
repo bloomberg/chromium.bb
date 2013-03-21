@@ -31,7 +31,3 @@
 # Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-
-webkit.org/b/110887 fast/dom/Window/window-custom-prototype.html [ Failure ]
-webkit.org/b/110887 fast/js/JSON-parse.html [ Failure ]
-webkit.org/b/110887 fast/js/cyclic-prototypes.html [ Failure ]
