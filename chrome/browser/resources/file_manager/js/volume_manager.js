@@ -255,7 +255,14 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
 VolumeManager.prototype.waitDriveLoaded_ = function(mountPath, callback) {
   chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
     filesystem.root.getDirectory(mountPath, {},
-        callback.bind(null, true),
+        function(entry) {
+            // After introducion of the 'fast-fetch' feature, getting the root
+            // entry does not start fetching data. Rather, it starts when the
+            // entry is read.
+            entry.createReader().readEntries(
+                callback.bind(null, true),
+                callback.bind(null, false));
+        },
         callback.bind(null, false));
   });
 };
