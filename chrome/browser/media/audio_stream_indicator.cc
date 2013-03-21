@@ -18,16 +18,16 @@ using content::WebContents;
 AudioStreamIndicator::AudioStreamIndicator() {}
 AudioStreamIndicator::~AudioStreamIndicator() {}
 
-void AudioStreamIndicator::UpdateWebContentsStatus(
-    int render_process_id, int render_view_id, int stream_id,
-    bool is_playing_and_audible) {
+void AudioStreamIndicator::UpdateWebContentsStatus(int render_process_id,
+                                                   int render_view_id,
+                                                   int stream_id,
+                                                   bool playing) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&AudioStreamIndicator::UpdateWebContentsStatusOnUIThread, this,
-                 render_process_id, render_view_id, stream_id,
-                 is_playing_and_audible));
+      base::Bind(&AudioStreamIndicator::UpdateWebContentsStatusOnUIThread,
+                 this, render_process_id, render_view_id, stream_id, playing));
 }
 
 bool AudioStreamIndicator::IsPlayingAudio(WebContents* contents) {
@@ -56,10 +56,10 @@ void AudioStreamIndicator::UpdateWebContentsStatusOnUIThread(
     int render_process_id,
     int render_view_id,
     int stream_id,
-    bool is_playing_and_audible) {
+    bool playing) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderViewId id(render_process_id, render_view_id);
-  if (is_playing_and_audible) {
+  if (playing) {
     audio_streams_[id].insert(stream_id);
   } else {
     std::map<RenderViewId, std::set<int> >::iterator it =

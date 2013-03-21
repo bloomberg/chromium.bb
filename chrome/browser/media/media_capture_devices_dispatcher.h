@@ -97,7 +97,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
       int render_process_id,
       int render_view_id,
       int stream_id,
-      bool is_playing_and_audible) OVERRIDE;
+      bool playing) OVERRIDE;
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
 

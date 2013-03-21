@@ -204,12 +204,11 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
 }
 
 void MediaCaptureDevicesDispatcher::OnAudioStreamPlayingChanged(
-    int render_process_id, int render_view_id, int stream_id,
-    bool is_playing_and_audible) {
+    int render_process_id, int render_view_id, int stream_id, bool playing) {
   audio_stream_indicator_->UpdateWebContentsStatus(render_process_id,
                                                    render_view_id,
                                                    stream_id,
-                                                   is_playing_and_audible);
+                                                   playing);
 }
 
 void MediaCaptureDevicesDispatcher::UpdateAudioDevicesOnUIThread(
