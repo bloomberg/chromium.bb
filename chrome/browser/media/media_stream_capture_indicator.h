@@ -23,6 +23,7 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
+class ScreenCaptureNotificationUI;
 class StatusIcon;
 class StatusTray;
 
@@ -60,9 +61,6 @@ class MediaStreamCaptureIndicator
   // Returns true if the render view itself is being mirrored (e.g., a source of
   // media for remote broadcast).
   bool IsBeingMirrored(int render_process_id, int render_view_id) const;
-
-  // ImageLoader callback.
-  void OnImageLoaded(const string16& message, const gfx::Image& image);
 
  private:
   class WebContentsDeviceUsage;
@@ -112,18 +110,24 @@ class MediaStreamCaptureIndicator
   void ShowBalloon(content::WebContents* web_contents,
                    int balloon_body_message_id);
 
+  // ImageLoader callback.
+  void OnImageLoaded(const string16& message, const gfx::Image& image);
+
   // Removes the status tray icon from the desktop. This function is called by
   // RemoveCaptureDevices() when the device usage map becomes empty.
   void MaybeDestroyStatusTrayIcon();
 
-  // Updates the status tray menu with the new device list. This call will be
-  // triggered by both AddCaptureDevices() and RemoveCaptureDevices().
-  void UpdateStatusTrayIconContextMenu();
+  // Updates the status tray menu and the screen capture notification. Called
+  // from AddCaptureDevices() and RemoveCaptureDevices().
+  void UpdateNotificationUserInterface();
 
   // Updates the status tray tooltip and image according to which kind of
   // devices are being used. This function is called by
   // UpdateStatusTrayIconContextMenu().
   void UpdateStatusTrayIconDisplay(bool audio, bool video);
+
+  // Callback for ScreenCaptureNotificationUI.
+  void OnStopScreenCapture(const base::Closure& stop);
 
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.
@@ -152,6 +156,8 @@ class MediaStreamCaptureIndicator
   CommandTargets command_targets_;
 
   bool should_show_balloon_;
+
+  scoped_ptr<ScreenCaptureNotificationUI> screen_capture_notification_;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_

@@ -151,7 +151,8 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
           ui_controller_(new MediaStreamUIController(this))),
       audio_manager_(audio_manager),
       monitoring_started_(false),
-      io_loop_(NULL) {
+      io_loop_(NULL),
+      screen_capture_active_(false) {
   DCHECK(audio_manager_);
   memset(active_enumeration_ref_count_, 0,
          sizeof(active_enumeration_ref_count_));
@@ -249,6 +250,23 @@ std::string MediaStreamManager::GenerateStream(
     }
   }
 
+  if (options.video_type == MEDIA_SCREEN_VIDEO_CAPTURE) {
+    if (options.audio_type != MEDIA_NO_SERVICE) {
+      // TODO(sergeyu): Surface error message to the calling JS code.
+      LOG(ERROR) << "Audio is not supported for screen capture streams.";
+      return std::string();
+    }
+
+    if (screen_capture_active_) {
+      // TODO(sergeyu): Implement support for more than one concurrent screen
+      // capture streams.
+      LOG(ERROR) << "Another screen capture stream is active.";
+      return std::string();
+    }
+
+    screen_capture_active_ = true;
+  }
+
   // Create a new request based on options.
   DeviceRequest* request = new DeviceRequest(requester,
                                              options,
@@ -274,7 +292,7 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
       // TODO(xians): update the |state| to STATE_DONE to trigger a state
       // changed notification to UI before deleting the request?
       scoped_ptr<DeviceRequest> request(it->second);
-      requests_.erase(it);
+      RemoveRequest(it);
       for (int i = MEDIA_NO_SERVICE + 1; i < NUM_MEDIA_TYPES; ++i) {
         const MediaStreamType stream_type = static_cast<MediaStreamType>(i);
         MediaStreamProvider* device_manager = GetDeviceManager(stream_type);
@@ -299,6 +317,7 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
 
 void MediaStreamManager::StopGeneratedStream(const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   // Find the request and close all open devices for the request.
   DeviceRequests::iterator it = requests_.find(label);
   if (it != requests_.end()) {
@@ -308,7 +327,7 @@ void MediaStreamManager::StopGeneratedStream(const std::string& label) {
     }
 
     scoped_ptr<DeviceRequest> request(it->second);
-    requests_.erase(it);
+    RemoveRequest(it);
     for (StreamDeviceInfoArray::const_iterator device_it =
              request->devices.begin();
          device_it != request->devices.end(); ++device_it) {
@@ -400,7 +419,7 @@ void MediaStreamManager::StopEnumerateDevices(const std::string& label) {
     DCHECK_EQ(it->second->type, MEDIA_ENUMERATE_DEVICES);
     // Delete the DeviceRequest.
     scoped_ptr<DeviceRequest> request(it->second);
-    requests_.erase(it);
+    RemoveRequest(it);
   }
 }
 
@@ -537,6 +556,15 @@ std::string MediaStreamManager::AddRequest(DeviceRequest* request) {
   requests_.insert(std::make_pair(unique_label, request));
 
   return unique_label;
+}
+
+void MediaStreamManager::RemoveRequest(DeviceRequests::iterator it) {
+  if (it->second->options.video_type == MEDIA_SCREEN_VIDEO_CAPTURE) {
+    DCHECK(screen_capture_active_);
+    screen_capture_active_ = false;
+  }
+
+  requests_.erase(it);
 }
 
 void MediaStreamManager::PostRequestToUI(const std::string& label) {
@@ -810,7 +838,7 @@ void MediaStreamManager::Error(MediaStreamType stream_type,
           if (request->requester)
             request->requester->StreamGenerationFailed(it->first);
 
-          requests_.erase(it);
+          RemoveRequest(it);
         } else {
           // 2. Not opened but other devices exists for this request -> remove
           //    device from list, but don't signal an error.
@@ -845,7 +873,7 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
     }
 
     // Delete the request since it is done.
-    requests_.erase(request_it);
+    RemoveRequest(request_it);
     return;
   }
 
@@ -923,7 +951,7 @@ void MediaStreamManager::SettingsError(const std::string& label) {
     request->callback.Run(label, MediaStreamDevices());
   }
 
-  requests_.erase(it);
+  RemoveRequest(it);
 }
 
 void MediaStreamManager::StopStreamFromUI(const std::string& label) {

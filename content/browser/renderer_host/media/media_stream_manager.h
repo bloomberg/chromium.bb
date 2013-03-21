@@ -203,6 +203,7 @@ class CONTENT_EXPORT MediaStreamManager
   MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
   void StartEnumeration(DeviceRequest* request);
   std::string AddRequest(DeviceRequest* request);
+  void RemoveRequest(DeviceRequests::iterator it);
   void ClearEnumerationCache(EnumerationCache* cache);
   void PostRequestToUI(const std::string& label);
   void HandleRequest(const std::string& label);
@@ -249,6 +250,8 @@ class CONTENT_EXPORT MediaStreamManager
   // Hold a pointer to the IO loop to check we delete the device thread and
   // managers on the right thread.
   MessageLoop* io_loop_;
+
+  bool screen_capture_active_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };
