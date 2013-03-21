@@ -65,7 +65,7 @@ class ChangeListLoader {
   // instantly before the entire change list loading is complete.
   //
   // |callback| must not be null.
-  void LoadIfNeeded(const DirectoryFetchInfo directory_fetch_info,
+  void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
                     const FileOperationCallback& callback);
 
   // Initiates the directory contents loading. This function first obtains
@@ -128,7 +128,7 @@ class ChangeListLoader {
 
   // Part of Load(). Called after loading from the cache is complete.
   void LoadAfterLoadFromCache(
-      const DirectoryFetchInfo directory_fetch_info,
+      const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       DriveFileError error);
 

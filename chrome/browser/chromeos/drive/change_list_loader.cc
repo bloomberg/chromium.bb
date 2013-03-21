@@ -605,7 +605,7 @@ void ChangeListLoader::OnNotifyResourceListFetched(
 }
 
 void ChangeListLoader::LoadIfNeeded(
-    const DirectoryFetchInfo directory_fetch_info,
+    const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -646,7 +646,7 @@ void ChangeListLoader::LoadIfNeeded(
 }
 
 void ChangeListLoader::LoadAfterLoadFromCache(
-    const DirectoryFetchInfo directory_fetch_info,
+    const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
