@@ -61,7 +61,8 @@ void VerifyCanvasValues(skia::PlatformCanvas* canvas, uint8 values[h][w]) {
 TEST(Blit, ScrollCanvas) {
   static const int kCanvasWidth = 5;
   static const int kCanvasHeight = 5;
-  skia::ScopedPlatformCanvas canvas(kCanvasWidth, kCanvasHeight, true);
+  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
+      skia::CreatePlatformCanvas(kCanvasWidth, kCanvasHeight, true));
   uint8 initial_values[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x12, 0x13, 0x14 },

@@ -90,14 +90,6 @@ static inline SkCanvas* TryCreateBitmapCanvas(int width,
                               RETURN_NULL_ON_FAILURE);
 }
 
-class SK_API ScopedPlatformCanvas : public RefPtr<SkCanvas> {
- public:
-  ScopedPlatformCanvas(int width, int height, bool is_opaque)
-      : RefPtr<SkCanvas>(AdoptRef(
-          CreatePlatformCanvas(width, height, is_opaque)))
-  {}
-};
-
 // Return the stride (length of a line in bytes) for the given width. Because
 // we use 32-bits per pixel, this will be roughly 4*width. However, for
 // alignment reasons we may wish to increase that.
