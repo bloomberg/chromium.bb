@@ -2131,6 +2131,12 @@ void DriveFileSyncService::DidGetRemoteFileMetadataForRemoteUpdatedTime(
     const UpdatedTimeCallback& callback,
     SyncStatusCode status,
     const SyncFileMetadata& metadata) {
+  if (status == SYNC_FILE_ERROR_NOT_FOUND) {
+    // Returns with very old (time==0.0) last modified date
+    // so that last-write-win policy will just use the other (local) version.
+    callback.Run(base::Time::FromDoubleT(0.0), SYNC_STATUS_OK);
+    return;
+  }
   callback.Run(metadata.last_modified, status);
 }
 
