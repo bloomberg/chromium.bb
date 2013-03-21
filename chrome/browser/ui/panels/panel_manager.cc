@@ -523,7 +523,7 @@ std::vector<Panel*> PanelManager::panels() const {
        stack_iter != stacks_.end(); stack_iter++) {
     for (StackedPanelCollection::Panels::const_iterator iter =
              (*stack_iter)->panels().begin();
-         iter != (*stack_iter)->panels().end(); ++stack_iter) {
+         iter != (*stack_iter)->panels().end(); ++iter) {
       panels.push_back(*iter);
     }
   }
