@@ -35,6 +35,7 @@
     },
     {
       "url": "http://www.theverge.com/2012/10/28/3568746/amazon-7-inch-fire-hd-ipad-mini-ad-ballsy",
+      "wait_for_javascript_expression": "window.Chorus !== undefined && window.Chorus.Comments !== undefined && window.Chorus.Comments.Json !== undefined && (window.Chorus.Comments.loaded || window.Chorus.Comments.Json.load_comments())",
       "smoothness": { "action": "scroll" }
     },
     {
