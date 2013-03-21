@@ -212,7 +212,7 @@ public:
     void pinchZoomPanViewportAndScrollBoundaryTest(const float deviceScaleFactor);
 
 protected:
-    virtual scoped_ptr<OutputSurface> createOutputSurface() { return createFakeOutputSurface(); }
+    virtual scoped_ptr<OutputSurface> createOutputSurface() { return CreateFakeOutputSurface(); }
 
     void drawOneFrame() {
       LayerTreeHostImpl::FrameData frameData;

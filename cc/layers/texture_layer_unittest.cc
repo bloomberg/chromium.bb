@@ -385,7 +385,7 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
   virtual void SetUp() {
     TextureLayerTest::SetUp();
     layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
-    EXPECT_TRUE(host_impl_.InitializeRenderer(createFakeOutputSurface()));
+    EXPECT_TRUE(host_impl_.InitializeRenderer(CreateFakeOutputSurface()));
   }
 
   CommonMailboxObjects test_data_;

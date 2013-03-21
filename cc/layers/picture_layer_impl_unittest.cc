@@ -149,7 +149,7 @@ class PictureLayerImplTest : public testing::Test {
   PictureLayerImplTest()
       : host_impl_(ImplSidePaintingSettings(), &proxy_),
         id_(7) {
-    host_impl_.InitializeRenderer(createFakeOutputSurface());
+    host_impl_.InitializeRenderer(CreateFakeOutputSurface());
   }
 
   virtual ~PictureLayerImplTest() {

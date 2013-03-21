@@ -77,7 +77,7 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     // Create a simple LayerImpl tree:
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    EXPECT_TRUE(hostImpl.InitializeRenderer(createFakeOutputSurface()));
+    EXPECT_TRUE(hostImpl.InitializeRenderer(CreateFakeOutputSurface()));
     scoped_ptr<LayerImpl> root = LayerImpl::Create(hostImpl.active_tree(), 1);
     root->AddChild(LayerImpl::Create(hostImpl.active_tree(), 2));
     LayerImpl* child = root->children()[0];
@@ -174,7 +174,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    EXPECT_TRUE(hostImpl.InitializeRenderer(createFakeOutputSurface()));
+    EXPECT_TRUE(hostImpl.InitializeRenderer(CreateFakeOutputSurface()));
     scoped_ptr<LayerImpl> root = LayerImpl::Create(hostImpl.active_tree(), 1);
 
     gfx::PointF arbitraryPointF = gfx::PointF(0.125f, 0.25f);

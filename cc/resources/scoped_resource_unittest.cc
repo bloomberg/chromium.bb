@@ -17,7 +17,7 @@ namespace {
 
 TEST(ScopedResourceTest, NewScopedResource)
 {
-    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
+    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
     scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
 
@@ -31,7 +31,7 @@ TEST(ScopedResourceTest, NewScopedResource)
 
 TEST(ScopedResourceTest, CreateScopedResource)
 {
-    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
+    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
     scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
     texture->Allocate(gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
@@ -47,7 +47,7 @@ TEST(ScopedResourceTest, CreateScopedResource)
 
 TEST(ScopedResourceTest, ScopedResourceIsDeleted)
 {
-    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
+    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
 
     {
@@ -74,7 +74,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted)
 
 TEST(ScopedResourceTest, LeakScopedResource)
 {
-    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
+    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
 
     {

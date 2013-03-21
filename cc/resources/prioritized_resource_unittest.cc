@@ -20,7 +20,7 @@ class PrioritizedResourceTest : public testing::Test {
         : proxy_(scoped_ptr<Thread>(NULL)),
           texture_size_(256, 256),
           texture_format_(GL_RGBA),
-          output_surface_(createFakeOutputSurface()) {
+          output_surface_(CreateFakeOutputSurface()) {
         DebugScopedSetImplThread impl_thread(&proxy_);
         resource_provider_ = cc::ResourceProvider::Create(output_surface_.get());
     }

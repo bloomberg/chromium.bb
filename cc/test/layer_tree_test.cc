@@ -47,7 +47,7 @@ bool TestHooks::CanActivatePendingTree() {
 }
 
 scoped_ptr<OutputSurface> TestHooks::CreateOutputSurface() {
-  return createFakeOutputSurface();
+  return CreateFakeOutputSurface();
 }
 
 scoped_refptr<cc::ContextProvider> TestHooks::

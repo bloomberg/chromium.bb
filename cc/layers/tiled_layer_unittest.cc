@@ -47,7 +47,7 @@ class TiledLayerTest : public testing::Test {
 public:
     TiledLayerTest()
         : proxy_(NULL)
-        , m_outputSurface(createFakeOutputSurface())
+        , m_outputSurface(CreateFakeOutputSurface())
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
         , m_fakeLayerImplTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)
         , m_occlusion(0)

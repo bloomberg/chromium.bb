@@ -42,7 +42,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
                                            &client_,
                                            &proxy_,
                                            &stats_instrumentation_);
-    host_impl_->InitializeRenderer(createFakeOutputSurface());
+    host_impl_->InitializeRenderer(CreateFakeOutputSurface());
     host_impl_->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
   }
 

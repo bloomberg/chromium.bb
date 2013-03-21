@@ -61,7 +61,7 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
   size_t num_sent_frames() { return num_sent_frames_; }
 
-private:
+ private:
   FakeOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
       bool has_parent);
@@ -74,13 +74,11 @@ private:
   size_t num_sent_frames_;
 };
 
-static inline scoped_ptr<cc::OutputSurface> createFakeOutputSurface()
-{
-    return FakeOutputSurface::Create3d(
-        TestWebGraphicsContext3D::Create(
-            WebKit::WebGraphicsContext3D::Attributes())
-        .PassAs<WebKit::WebGraphicsContext3D>())
-        .PassAs<cc::OutputSurface>();
+static inline scoped_ptr<cc::OutputSurface> CreateFakeOutputSurface() {
+  return FakeOutputSurface::Create3d(
+      TestWebGraphicsContext3D::Create(
+          WebKit::WebGraphicsContext3D::Attributes())
+          .PassAs<WebKit::WebGraphicsContext3D>()).PassAs<cc::OutputSurface>();
 }
 
 }  // namespace cc
