@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_RENDERER_NAVIGATION_STATE_H_
 #define CONTENT_PUBLIC_RENDERER_NAVIGATION_STATE_H_
 
+#include <string>
+
 #include "content/public/common/page_transition_types.h"
 
 namespace content {
@@ -79,6 +81,11 @@ class NavigationState {
     return allow_download_;
   }
 
+  void set_extra_headers(const std::string& extra_headers) {
+    extra_headers_ = extra_headers;
+  }
+  const std::string& extra_headers() { return extra_headers_; }
+
  private:
   NavigationState(content::PageTransition transition_type,
                   bool is_content_initiated,
@@ -95,6 +102,7 @@ class NavigationState {
   int transferred_request_child_id_;
   int transferred_request_request_id_;
   bool allow_download_;
+  std::string extra_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };

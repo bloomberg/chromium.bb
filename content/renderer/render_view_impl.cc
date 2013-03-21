@@ -3296,6 +3296,7 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
     navigation_state->set_transferred_request_request_id(
         params.transferred_request_request_id);
     navigation_state->set_allow_download(params.allow_download);
+    navigation_state->set_extra_headers(params.extra_headers);
   } else {
     navigation_state = NavigationState::CreateContentInitiated();
   }
@@ -3800,6 +3801,16 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
 
   request.setRequestorID(routing_id_);
   request.setHasUserGesture(WebUserGestureIndicator::isProcessingUserGesture());
+
+  if (!navigation_state->extra_headers().empty()) {
+    for (net::HttpUtil::HeadersIterator i(
+        navigation_state->extra_headers().begin(),
+        navigation_state->extra_headers().end(), "\n");
+        i.GetNext(); ) {
+      request.setHTTPHeaderField(WebString::fromUTF8(i.name()),
+                                 WebString::fromUTF8(i.values()));
+    }
+  }
 
   if (!renderer_preferences_.enable_referrers)
     request.clearHTTPHeaderField("Referer");
