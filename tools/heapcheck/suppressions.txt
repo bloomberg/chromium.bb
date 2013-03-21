@@ -236,7 +236,7 @@
    ...
    fun:gfx::GLApiBase::glLinkProgramFn
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::linkProgram
-   fun:cc::ProgramBindingBase::link
+   fun:cc::ProgramBindingBase::Link
    fun:cc::ProgramBinding*
 }
 

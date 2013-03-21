@@ -420,3 +420,14 @@ USER32.dll!LoadBitmapW
 media.dll!media::*::ScreenCapturerWin::CaptureCursor
 media.dll!media::*::ScreenCapturerWin::CaptureFrame
 media.dll!media::ScreenCaptureDevice::Core::DoCapture
+
+WARNING
+name=http://crbug.com/222628
+...
+v8.dll!v8::internal::CopyBytes<unsigned char>
+v8.dll!v8::internal::Code::CopyFrom
+v8.dll!v8::internal::Heap::CreateCode
+v8.dll!v8::internal::Factory::NewCode
+v8.dll!v8::internal::CodeGenerator::MakeCodeEpilogue
+v8.dll!v8::internal::FullCodeGenerator::MakeCode
+v8.dll!v8::internal::GenerateCode
