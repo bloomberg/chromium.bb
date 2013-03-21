@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate) {
+                       DISABLED_BackspaceFromQueryToSelectedUrlAndNavigate) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromSelectedUrlToQueryAndSearch) {
+                       DISABLED_BackspaceFromSelectedUrlToQueryAndSearch) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
