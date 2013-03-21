@@ -5320,9 +5320,8 @@
    fun:_mesa_LinkProgramARB
    fun:glLinkProgram
    ...
-   fun:_ZN3gpu5gles214ProgramManager11ProgramInfo4LinkEPNS0_13ShaderManagerEPNS0_16ShaderTranslatorES6_PNS0_11FeatureInfoE
    fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
-   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_11LinkProgramE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgram*
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
@@ -6909,4 +6908,59 @@
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
    fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
    fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
+}
+{
+   bug_222876
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN21WebDataServiceWrapperC1EP7Profile
+   fun:_ZNK21WebDataServiceFactory23BuildServiceInstanceForEP7Profile
+   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
+   fun:_ZN21WebDataServiceFactory13GetForProfileEP7ProfileNS0_17ServiceAccessTypeE
+   fun:_ZN14WebDataService18FromBrowserContextEPN7content14BrowserContextE
+   fun:_ZN12TokenService10InitializeEPKcP7Profile
+}
+{
+   bug_222880
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF16VectorBufferBaseINS_6RefPtrIN7WebCore7ArchiveEEEE14allocateBufferEm
+   ...
+   fun:_ZN7WebCore7Archive18addSubframeArchiveEN3WTF10PassRefPtrIS0_EE
+   fun:_ZN7WebCore11MHTMLParser22parseArchiveWithHeaderEPNS_10MIMEHeaderE
+   fun:_ZN7WebCore11MHTMLParser12parseArchiveEv
+   fun:_ZN7WebCore12MHTMLArchive6createERKNS_4KURLEPNS_12SharedBufferE
+}
+{
+   bug_222883
+   Memcheck:Uninitialized
+   fun:_ZN2v88internal15ScavengeVisitor15ScavengePointerEPPNS0_6ObjectE.isra.327
+   fun:_ZN2v88internal15ScavengeVisitor13VisitPointersEPPNS0_6ObjectES4_
+   fun:_ZNK2v88internal13StandardFrame18IterateExpressionsEPNS0_13ObjectVisitorE
+   ...
+   fun:_ZN2v88internal4Heap8ScavengeEv
+   fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollectorEPNS0_8GCTracerE.constprop.678
+}
+{
+   bug_222887
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6webkit3gpu18GLInProcessContext10InitializeERKN3gfx4SizeEPS1_PKcPKiNS2_13GpuPreferenceE
+   fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
+   fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
+   fun:_ZN25TestWebKitPlatformSupport32createOffscreenGraphicsContext3DERKN6WebKit20WebGraphicsContext3D10AttributesE
+   fun:_ZN7WebCore17GraphicsContext3D6createENS0_10AttributesEPNS_10HostWindowENS0_11RenderStyleE
+}
+{
+   bug_222898
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
+   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
+   fun:_ZN3WTF9BitVector10ensureSizeEm
+   fun:_ZN3WTF9BitVectorC1Em
+   fun:_ZN7WebCore15FeatureObserver10didObserveENS0_7FeatureE
+   fun:_ZN7WebCore15FeatureObserver7observeEPNS_8DocumentENS0_7FeatureE
 }
