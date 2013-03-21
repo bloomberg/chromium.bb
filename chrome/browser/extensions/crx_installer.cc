@@ -431,9 +431,16 @@ void CrxInstaller::OnRequirementsChecked(
   ManagedUserService* service =
       ManagedUserServiceFactory::GetForProfile(profile_);
   if (service->ProfileIsManaged()) {
+    // Extensions which should be installed by policy are installed without
+    // using the ExtensionInstallPrompt. In that case, |client_| is NULL.
+    if (client_ == NULL) {
+      // Automatically set authorization
+      OnAuthorizationResult(true);
+      return;
+    }
     // parent_web_contents could be NULL when the client is instantiated from
     // ExtensionEnableFlow, but that code path does not lead to here.
-    CHECK(client_->parent_web_contents() != NULL);
+    CHECK(client_->parent_web_contents());
     service->RequestAuthorization(
         client_->parent_web_contents(),
         base::Bind(&CrxInstaller::OnAuthorizationResult,
