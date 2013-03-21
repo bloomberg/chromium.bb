@@ -11,13 +11,10 @@ import android.content.Context;
 import android.content.SyncStatusObserver;
 import android.os.StrictMode;
 
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.signin.ChromeSigninController;
-
 import com.google.common.annotations.VisibleForTesting;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * A helper class to handle the current status of sync for Chrome in Android-land.
@@ -27,26 +24,8 @@ import java.util.Map;
  * To retrieve an instance of this class, call SyncStatusHelper.get(someContext).
  */
 public class SyncStatusHelper {
-    /**
-     * Deprecated. Use {@link ChromeSigninController.Listener}.
-     */
-    @Deprecated
-    public interface Listener {
-        /**
-         * Called when the user signs out of Chrome.
-         */
-        void onClearSignedInUser();
-    }
-
     // TODO(dsmyers): remove the downstream version of this constant.
     public static final String AUTH_TOKEN_TYPE_SYNC = "chromiumsync";
-
-    /**
-     * Deprecated. Use {@link ChromeSigninController#SIGNED_IN_ACCOUNT_KEY}.
-     */
-    @Deprecated
-    @VisibleForTesting
-    public static final String SIGNED_IN_ACCOUNT_KEY = ChromeSigninController.SIGNED_IN_ACCOUNT_KEY;
 
     public static final String TAG = SyncStatusHelper.class.getSimpleName();
 
@@ -57,9 +36,6 @@ public class SyncStatusHelper {
     private final Context mApplicationContext;
 
     private final SyncContentResolverDelegate mSyncContentResolverWrapper;
-
-    private final Map<Listener, SigninDelegateListenerDelegate> mListenerMap =
-            new HashMap<Listener, SigninDelegateListenerDelegate>();
 
     /**
      * @param context the context
@@ -219,46 +195,6 @@ public class SyncStatusHelper {
     }
 
     /**
-     * Deprecated. Use: {@link ChromeSigninController#getSignedInUser()}.
-     */
-    @Deprecated
-    public Account getSignedInUser() {
-        return ChromeSigninController.get(mApplicationContext).getSignedInUser();
-    }
-
-    /**
-     * Deprecated. Use: {@link ChromeSigninController#isSignedIn()}.
-     */
-    @Deprecated
-    public boolean isSignedIn() {
-        return ChromeSigninController.get(mApplicationContext).isSignedIn();
-    }
-
-    /**
-     * Deprecated. Use: {@link ChromeSigninController#setSignedInAccountName(String)}.
-     */
-    @Deprecated
-    public void setSignedInAccountName(String accountName) {
-        ChromeSigninController.get(mApplicationContext).setSignedInAccountName(accountName);
-    }
-
-    /**
-     * Deprecated. Use: {@link ChromeSigninController#clearSignedInUser()}.
-     */
-    @Deprecated
-    public void clearSignedInUser() {
-        ChromeSigninController.get(mApplicationContext).clearSignedInUser();
-    }
-
-    /**
-     * Deprecated. Use: {@link ChromeSigninController#getSignedInAccountName()}.
-     */
-    @Deprecated
-    public String getSignedInAccountName() {
-        return ChromeSigninController.get(mApplicationContext).getSignedInAccountName();
-    }
-
-    /**
      * Register with Android Sync Manager. This is what causes the "Chrome" option to appear in
      * Settings -> Accounts / Sync .
      *
@@ -326,46 +262,5 @@ public class SyncStatusHelper {
         newPolicy.permitDiskWrites();
         StrictMode.setThreadPolicy(newPolicy.build());
         return oldPolicy;
-    }
-
-    /**
-     * Adds a Listener.
-     * Deprecated. Use: {@link ChromeSigninController#addListener(ChromeSigninController.Listener)}.
-     *
-     * @param listener Listener to add.
-     */
-    public void addListener(Listener listener) {
-        SigninDelegateListenerDelegate signinListener =
-                new SigninDelegateListenerDelegate(listener);
-        mListenerMap.put(listener, signinListener);
-        ChromeSigninController.get(mApplicationContext).addListener(signinListener);
-    }
-
-    /**
-     * Removes a Listener.
-     * Deprecated. Use:
-     * {@link ChromeSigninController#removeListener(ChromeSigninController.Listener)}.
-     *
-     * @param listener Listener to remove from the list.
-     */
-    @Deprecated
-    public void removeListener(Listener listener) {
-        if (mListenerMap.containsKey(listener)) {
-            SigninDelegateListenerDelegate signinListener = mListenerMap.get(listener);
-            ChromeSigninController.get(mApplicationContext).removeListener(signinListener);
-        }
-    }
-
-    private static class SigninDelegateListenerDelegate implements ChromeSigninController.Listener {
-        private final Listener mListener;
-
-        private SigninDelegateListenerDelegate(Listener listener) {
-            mListener = listener;
-        }
-
-        @Override
-        public void onClearSignedInUser() {
-            mListener.onClearSignedInUser();
-        }
     }
 }
