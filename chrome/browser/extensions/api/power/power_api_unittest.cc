@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/power/power_api_manager.h"
@@ -147,12 +148,12 @@ class PowerApiTest : public BrowserWithTestWindowTest {
   bool CallFunction(FunctionType type,
                     const std::string& args,
                     extensions::Extension* extension) {
-    UIThreadExtensionFunction* function =
+    scoped_refptr<UIThreadExtensionFunction> function(
         type == REQUEST ?
         static_cast<UIThreadExtensionFunction*>(
             new PowerRequestKeepAwakeFunction) :
         static_cast<UIThreadExtensionFunction*>(
-            new PowerReleaseKeepAwakeFunction);
+            new PowerReleaseKeepAwakeFunction));
     function->set_extension(extension);
     return utils::RunFunction(function, args, browser(), utils::NONE);
   }

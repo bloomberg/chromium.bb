@@ -317,7 +317,9 @@
   "power": {
     "channel": "dev",
     "platform": "chromeos",
-    "extension_types": ["extension", "hosted_app", "packaged_app"]
+    "extension_types": [
+      "extension", "hosted_app", "packaged_app", "platform_app"
+    ]
   },
   "privacy": {
     "channel": "stable",
