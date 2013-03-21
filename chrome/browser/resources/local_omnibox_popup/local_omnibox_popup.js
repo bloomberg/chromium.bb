@@ -236,11 +236,14 @@ function updateSuggestions() {
  */
 function appendSuggestionStyles() {
   var apiHandle = getApiObjectHandle();
+  var isRtl = apiHandle.rtl;
   var style = document.createElement('style');
   style.type = 'text/css';
   style.id = 'suggestionStyle';
   style.textContent =
       '.suggestion {' +
+      '  background-position: ' +
+          (isRtl ? '-webkit-calc(100% - 5px)' : '5px') + ' 4px;' +
       '  -webkit-margin-start: ' + apiHandle.startMargin + 'px;' +
       '  width: ' + apiHandle.width + 'px;' +
       '  font: ' + apiHandle.fontSize + 'px "' + apiHandle.font + '";' +
@@ -303,6 +306,7 @@ function setUpApi() {
   apiHandle.onkeypress = handleKeyPress;
   apiHandle.onsubmit = onSubmit;
   appendSuggestionStyles();
+  $('suggestions-box-container').dir = apiHandle.rtl ? 'rtl' : 'ltr';
 
   if (apiHandle.nativeSuggestions.length)
     handleNativeSuggestions();

@@ -19,8 +19,7 @@ body {
   -webkit-border-radius: 2px;
   background: -webkit-image-set(
       url('images/page_icon.png') 1x,
-      url('images/2x/page_icon.png') 2x)
-    5px 4px no-repeat;
+      url('images/2x/page_icon.png') 2x) no-repeat;
   padding-bottom: 2px;
   padding-top: 3px;
   white-space: nowrap;
