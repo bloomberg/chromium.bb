@@ -658,7 +658,7 @@ TEST_F(LayerTest,
   impl_layer->layer_animation_controller()->SetAnimationRegistrar(
       registrar.get());
 
-  addAnimatedTransformToController(*impl_layer->layer_animation_controller(),
+  AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
                                    1.0,
                                    0,
                                    100);
@@ -672,7 +672,7 @@ TEST_F(LayerTest,
   EXPECT_TRUE(impl_layer->LayerSurfacePropertyChanged());
 
   impl_layer->ResetAllChangeTrackingForSubtree();
-  addAnimatedTransformToController(*impl_layer->layer_animation_controller(),
+  AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
                                    1.0,
                                    0,
                                    100);
@@ -696,7 +696,7 @@ TEST_F(LayerTest,
   impl_layer->layer_animation_controller()->SetAnimationRegistrar(
       registrar.get());
 
-  addOpacityTransitionToController(*impl_layer->layer_animation_controller(),
+  AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
                                    1.0,
                                    0.3f,
                                    0.7f,
@@ -709,7 +709,7 @@ TEST_F(LayerTest,
   EXPECT_TRUE(impl_layer->LayerSurfacePropertyChanged());
 
   impl_layer->ResetAllChangeTrackingForSubtree();
-  addOpacityTransitionToController(*impl_layer->layer_animation_controller(),
+  AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
                                    1.0,
                                    0.3f,
                                    0.7f,

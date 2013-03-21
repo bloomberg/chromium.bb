@@ -1040,7 +1040,7 @@ private:
             PushTileProperties(0, 0, resource, gfx::Rect(), false);
         }
         if (animating)
-            addAnimatedTransformToLayer(*this, 10, 3, 0);
+            AddAnimatedTransformToLayer(this, 10, 3, 0);
     }
 };
 

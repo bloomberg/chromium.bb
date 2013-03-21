@@ -35,7 +35,7 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   virtual void WillDraw(ResourceProvider* resource_provider) OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual void DidDraw(ResourceProvider* FIXMENAME) OVERRIDE;
+  virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
   virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
   virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;

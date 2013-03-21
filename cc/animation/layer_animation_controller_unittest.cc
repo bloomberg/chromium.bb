@@ -37,7 +37,7 @@ TEST(LayerAnimationControllerTest, SyncNewAnimation) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
 
-  addOpacityTransitionToController(*controller, 1, 0, 1, false);
+  AddOpacityTransitionToController(controller, 1, 0, 1, false);
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
@@ -60,7 +60,7 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
 
-  addOpacityTransitionToController(*controller, 1, 0, 1, false);
+  AddOpacityTransitionToController(controller, 1, 0, 1, false);
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
@@ -97,7 +97,7 @@ TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
 
-  addOpacityTransitionToController(*controller, 1, 0, 1, false);
+  AddOpacityTransitionToController(controller, 1, 0, 1, false);
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
@@ -150,7 +150,7 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
 
   int animation_id =
-      addOpacityTransitionToController(*controller, 1, 0, 1, false);
+      AddOpacityTransitionToController(controller, 1, 0, 1, false);
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 

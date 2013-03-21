@@ -1627,7 +1627,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     EXPECT_EQ(parent->id(), renderSurfaceLayerList[0]->id());
 
     // Now put an animating transform on child.
-    addAnimatedTransformToController(*child->layer_animation_controller(), 10, 30, 0);
+    AddAnimatedTransformToController(child->layer_animation_controller(), 10, 30, 0);
 
     parent->ClearRenderSurface();
     child->ClearRenderSurface();
@@ -1909,17 +1909,17 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     setLayerPropertiesForTesting(grandChildOfRS2.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(2.5, 0), gfx::Size(10, 10), false);
 
     // Put an animated opacity on the render surface.
-    addOpacityTransitionToController(*renderSurface1->layer_animation_controller(), 10, 1, 0, false);
+    AddOpacityTransitionToController(renderSurface1->layer_animation_controller(), 10, 1, 0, false);
 
     // Also put an animated opacity on a layer without descendants.
-    addOpacityTransitionToController(*grandChildOfRoot->layer_animation_controller(), 10, 1, 0, false);
+    AddOpacityTransitionToController(grandChildOfRoot->layer_animation_controller(), 10, 1, 0, false);
 
     // Put a transform animation on the render surface.
-    addAnimatedTransformToController(*renderSurface2->layer_animation_controller(), 10, 30, 0);
+    AddAnimatedTransformToController(renderSurface2->layer_animation_controller(), 10, 30, 0);
 
     // Also put transform animations on grandChildOfRoot, and grandChildOfRS2
-    addAnimatedTransformToController(*grandChildOfRoot->layer_animation_controller(), 10, 30, 0);
-    addAnimatedTransformToController(*grandChildOfRS2->layer_animation_controller(), 10, 30, 0);
+    AddAnimatedTransformToController(grandChildOfRoot->layer_animation_controller(), 10, 30, 0);
+    AddAnimatedTransformToController(grandChildOfRS2->layer_animation_controller(), 10, 30, 0);
 
     executeCalculateDrawProperties(parent.get());
 
@@ -2858,9 +2858,9 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     animatingSurface->SetForceRenderSurface(true);
 
     // Animate the transform on the render surface.
-    addAnimatedTransformToController(*animatingSurface->layer_animation_controller(), 10, 30, 0);
+    AddAnimatedTransformToController(animatingSurface->layer_animation_controller(), 10, 30, 0);
     // This is just an animating layer, not a surface.
-    addAnimatedTransformToController(*animatingChild->layer_animation_controller(), 10, 30, 0);
+    AddAnimatedTransformToController(animatingChild->layer_animation_controller(), 10, 30, 0);
 
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(child.get(), backfaceMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
@@ -4823,7 +4823,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForAnimatingLayer)
     parent->AddChild(childScale);
 
     // Now put an animating transform on child.
-    int animationId = addAnimatedTransformToController(*childScale->layer_animation_controller(), 10, 30, 0);
+    int animationId = AddAnimatedTransformToController(childScale->layer_animation_controller(), 10, 30, 0);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
@@ -5132,7 +5132,7 @@ TEST_P(LCDTextTest, verifycan_use_lcd_textWithAnimation)
 
     // Add opacity animation.
     m_child->SetOpacity(0.9f);
-    addOpacityTransitionToController(*(m_child->layer_animation_controller()), 10, 0.9f, 0.1f, false);
+    AddOpacityTransitionToController(m_child->layer_animation_controller(), 10, 0.9f, 0.1f, false);
 
     executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
     // Text AA should not be adjusted while animation is active.

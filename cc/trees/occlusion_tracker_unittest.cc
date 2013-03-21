@@ -1913,8 +1913,8 @@ protected:
         typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300), false);
         typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(250, 0), gfx::Size(50, 300), true);
 
-        addOpacityTransitionToController(*layer->layer_animation_controller(), 10, 0, 1, false);
-        addOpacityTransitionToController(*surface->layer_animation_controller(), 10, 0, 1, false);
+        AddOpacityTransitionToController(layer->layer_animation_controller(), 10, 0, 1, false);
+        AddOpacityTransitionToController(surface->layer_animation_controller(), 10, 0, 1, false);
         this->calcDrawEtc(parent);
 
         EXPECT_TRUE(layer->draw_opacity_is_animating());
@@ -1978,8 +1978,8 @@ protected:
         typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300), false);
         typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(250, 0), gfx::Size(50, 300), true);
 
-        addOpacityTransitionToController(*layer->layer_animation_controller(), 10, 1, 0, false);
-        addOpacityTransitionToController(*surface->layer_animation_controller(), 10, 1, 0, false);
+        AddOpacityTransitionToController(layer->layer_animation_controller(), 10, 1, 0, false);
+        AddOpacityTransitionToController(surface->layer_animation_controller(), 10, 1, 0, false);
         this->calcDrawEtc(parent);
 
         EXPECT_TRUE(layer->draw_opacity_is_animating());
@@ -2042,9 +2042,9 @@ protected:
         typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 300), true);
         typename Types::ContentLayerType* surface2 = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(50, 300), true);
 
-        addAnimatedTransformToController(*layer->layer_animation_controller(), 10, 30, 0);
-        addAnimatedTransformToController(*surface->layer_animation_controller(), 10, 30, 0);
-        addAnimatedTransformToController(*surfaceChild->layer_animation_controller(), 10, 30, 0);
+        AddAnimatedTransformToController(layer->layer_animation_controller(), 10, 30, 0);
+        AddAnimatedTransformToController(surface->layer_animation_controller(), 10, 30, 0);
+        AddAnimatedTransformToController(surfaceChild->layer_animation_controller(), 10, 30, 0);
         this->calcDrawEtc(parent);
 
         EXPECT_TRUE(layer->draw_transform_is_animating());

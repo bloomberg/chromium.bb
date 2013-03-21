@@ -445,7 +445,7 @@ void LayerTreeTest::DispatchAddInstantAnimation() {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
   if (layer_tree_host_.get() && layer_tree_host_->root_layer()) {
-    addOpacityTransitionToLayer(*layer_tree_host_->root_layer(),
+    AddOpacityTransitionToLayer(layer_tree_host_->root_layer(),
                                 0,
                                 0,
                                 0.5,
@@ -457,7 +457,7 @@ void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation) {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
   if (layer_to_receive_animation)
-    addOpacityTransitionToLayer(*layer_to_receive_animation, 10, 0, 0.5, true);
+    AddOpacityTransitionToLayer(layer_to_receive_animation, 10, 0, 0.5, true);
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {
