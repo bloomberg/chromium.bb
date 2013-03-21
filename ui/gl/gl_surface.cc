@@ -89,10 +89,6 @@ bool GLSurface::DeferDraws() {
 }
 
 std::string GLSurface::GetExtensions() {
-  // Use of GLSurfaceAdapter class means that we can't compare
-  // GetCurrent() and this directly.
-  DCHECK(GetCurrent()->GetHandle() == GetHandle() ||
-         GetBackingFrameBufferObject());
   return std::string("");
 }
 
