@@ -2455,8 +2455,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                         views.getContents1(), views.getClient1(), true));
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    Crashing in DCHECK after webkit roll. See crbug.com/222069.
+    */
+    @DisabledTest
     // Verify that LoadViewOverviewMode doesn't affect pages with initial scale
     // set in the viewport tag.
     public void testLoadWithOverviewModeViewportScale() throws Throwable {
