@@ -42,7 +42,7 @@ scoped_ptr<PasswordForm> CreatePasswordForm(const WebFormElement& webform) {
   WebPasswordFormData web_password_form(webform);
   if (web_password_form.isValid())
     return InitPasswordFormFromWebPasswordForm(web_password_form);
-  return scoped_ptr<PasswordForm>(new PasswordForm());
+  return scoped_ptr<PasswordForm>();
 }
 
 }  // namespace content
