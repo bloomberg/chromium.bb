@@ -381,32 +381,6 @@ static inline void generate_pc_writes_diagnostics(
   }
 }
 
-SafetyLevel Int2SafetyLevel(uint32_t i) {
-  switch (i) {
-    case UNINITIALIZED:
-      return UNINITIALIZED;
-    case UNKNOWN:
-      return UNKNOWN;
-    default:
-    case UNDEFINED:
-      return UNDEFINED;
-    case NOT_IMPLEMENTED:
-      return NOT_IMPLEMENTED;
-    case UNPREDICTABLE:
-      return UNPREDICTABLE;
-    case DEPRECATED:
-      return DEPRECATED;
-    case FORBIDDEN:
-      return FORBIDDEN;
-    case FORBIDDEN_OPERANDS:
-      return FORBIDDEN_OPERANDS;
-    case DECODER_ERROR:
-      return DECODER_ERROR;
-    case MAY_BE_SAFE:
-      return MAY_BE_SAFE;
-  }
-}
-
 // ClassDecoder
 RegisterList ClassDecoder::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -494,7 +468,7 @@ ViolationSet ClassDecoder::get_violations(
 
   // Start by checking safety.
   if (second.safety() != nacl_arm_dec::MAY_BE_SAFE)
-    violations = ViolationBit(SAFETY_VIOLATION);
+    violations = SafetyViolationBit(second.safety());
 
   violations = ViolationUnion(
       violations, get_loadstore_violations(first, second, sfi, critical));
@@ -538,8 +512,15 @@ void ClassDecoder::generate_diagnostics(
   // when tied to specific virtuals that can be checked at code
   // generation time.
 
-  if (ContainsViolation(violations, SAFETY_VIOLATION)) {
-    out->ReportProblemSafety(second.addr(), second.safety());
+  if (ContainsSafetyViolations(violations)) {
+    // Note: We assume that safety levels end with MAY_BE_SAFE, as stated
+    // for enum type SafetyLevel.
+    for (uint32_t safety = 0; safety != MAY_BE_SAFE; ++safety) {
+      Violation violation = static_cast<Violation>(safety);
+      if (ContainsViolation(violations, violation)) {
+        out->ReportProblemSafety(violation, second);
+      }
+    }
   }
 
   generate_loadstore_diagnostics(violations, first, second, sfi, out);

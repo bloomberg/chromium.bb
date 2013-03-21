@@ -46,23 +46,18 @@ using std::vector;
  */
 class NcvalProblemReporter : public ProblemReporter {
  protected:
-  virtual void ReportProblemInternal(
-      uint32_t vaddr,
-      nacl_arm_val::ValidatorProblem problem,
-      nacl_arm_val::ValidatorProblemMethod method,
-      nacl_arm_val::ValidatorProblemUserData user_data);
+  virtual void ReportProblemMessage(nacl_arm_dec::Violation violation,
+                                    uint32_t vaddr,
+                                    const char* message);
 };
 
-static const size_t kBufferSize = 256;
-
 void NcvalProblemReporter::
-ReportProblemInternal(uint32_t vaddr,
-                      nacl_arm_val::ValidatorProblem problem,
-                      nacl_arm_val::ValidatorProblemMethod method,
-                      nacl_arm_val::ValidatorProblemUserData user_data) {
-  char buffer[kBufferSize];
-  ToText(buffer, kBufferSize, vaddr, problem, method, user_data);
-  printf("%s\n", buffer);
+ReportProblemMessage(nacl_arm_dec::Violation violation,
+                     uint32_t vaddr,
+                     const char* message) {
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(violation);
+  printf("%8"NACL_PRIx32": %s\n", vaddr, message);
 }
 
 const uint32_t kOneGig = 1U * 1024 * 1024 * 1024;

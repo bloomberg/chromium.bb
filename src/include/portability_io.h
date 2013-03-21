@@ -27,6 +27,7 @@
 #define FDOPEN _fdopen
 #define PORTABLE_DEV_NULL "nul"
 #define SNPRINTF _snprintf
+#define VSNPRINTF _vsnprintf
 #define UNLINK _unlink
 #define MKDIR(p, m) _mkdir(p)  /* BEWARE MODE BITS ARE DROPPED! */
 #define RMDIR _rmdir
@@ -54,6 +55,7 @@
 #define FDOPEN fdopen
 #define PORTABLE_DEV_NULL  "/dev/null"
 #define SNPRINTF snprintf
+#define VSNPRINTF vsnprintf
 #define UNLINK unlink
 #define MKDIR(p, m) mkdir(p, m)
 #define RMDIR rmdir

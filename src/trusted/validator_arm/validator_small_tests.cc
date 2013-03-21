@@ -116,10 +116,9 @@ void TestDynamicCodeReplacement(
   size_t size = old_code.size() * kArm32InstSize / CHAR_BIT;
   CodeSegment new_segment((uint8_t *) &new_code[0], kDefaultBaseAddr, size);
   CodeSegment old_segment((uint8_t *) &old_code[0], kDefaultBaseAddr, size);
-  ProblemSpy spy;
 
   EXPECT_EQ(expected_result,
-            validator->ValidateSegmentPair(old_segment, new_segment, &spy)) <<
+            validator->ValidateSegmentPair(old_segment, new_segment, NULL)) <<
       "Code replacement expected different validation result for " << msg;
 }
 
@@ -460,11 +459,13 @@ TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
           examples_of_safe_stores[s].inst | predicate,
         };
 
-        vector<ProblemRecord> problems =
-            validation_should_fail(program,
-                                   NACL_ARRAY_SIZE(program),
-                                   kDefaultBaseAddr,
-                                   message.str());
+        ProblemSpy spy;
+        validation_should_fail(program,
+                               NACL_ARRAY_SIZE(program),
+                               kDefaultBaseAddr,
+                               message.str(),
+                               &spy);
+        vector<ProblemRecord> problems = spy.get_problems();
 
         // EXPECT/continue rather than ASSERT so that we run the other cases.
         EXPECT_EQ(1U, problems.size());
@@ -474,11 +475,15 @@ TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
         EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr())
             << "Problem report must point to the store: "
             << message.str();
-        EXPECT_NE(nacl_arm_val::kReportProblemSafety, first.method())
-            << "Store should not be unsafe even though mask is bogus: "
+        EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(first.violation()))
+            << "Store should not be unsafe even though the mask is bogys:"
             << message.str();
+        // TODO(kschimpf) Fix to test if unsafe load store. To be added in
+        // next CL.
+        /*
         EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, first.problem())
-            << message;
+            << message.str();
+        */
       }
     }
   }
@@ -511,11 +516,13 @@ TEST_F(ValidatorTests, InvalidGuardsOnSafeStores) {
         examples_of_safe_stores[s].inst | store_predicate,
       };
 
-      vector<ProblemRecord> problems =
-          validation_should_fail(program,
-                                 NACL_ARRAY_SIZE(program),
-                                 kDefaultBaseAddr,
-                                 message.str());
+      ProblemSpy spy;
+      validation_should_fail(program,
+                             NACL_ARRAY_SIZE(program),
+                             kDefaultBaseAddr,
+                             message.str(),
+                             &spy);
+      vector<ProblemRecord> problems = spy.get_problems();
 
       // EXPECT/continue rather than ASSERT so that we run the other cases.
       EXPECT_EQ(1U, problems.size());
@@ -525,11 +532,15 @@ TEST_F(ValidatorTests, InvalidGuardsOnSafeStores) {
       EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr())
           << "Problem report must point to the store: "
           << message.str();
-      EXPECT_NE(nacl_arm_val::kReportProblemSafety, first.method())
-          << "Store should not be unsafe even though guard is bogus: "
-          << message.str();
+      EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(first.violation()))
+          << "Store should not be unsafe even though guard is bogus:"
+          << message;
+      // TODO(kschimpf) Add code to test load store safety. To be added
+      // in next CL.
+      /*
       EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, first.problem())
           << message;
+      */
     }
   }
 }
@@ -559,11 +570,13 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
           invalid_stores[s].inst | predicate,
         };
 
-        vector<ProblemRecord> problems =
-            validation_should_fail(program,
-                                   NACL_ARRAY_SIZE(program),
-                                   kDefaultBaseAddr,
-                                   message.str());
+        ProblemSpy spy;
+        validation_should_fail(program,
+                               NACL_ARRAY_SIZE(program),
+                               kDefaultBaseAddr,
+                               message.str(),
+                               &spy);
+        vector<ProblemRecord> problems = spy.get_problems();
 
         // EXPECT/continue rather than ASSERT so that we run the other cases.
         EXPECT_EQ(1U, problems.size());
@@ -573,11 +586,7 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
         EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr())
             << "Problem report must point to the store: "
             << message.str();
-        EXPECT_EQ(nacl_arm_val::kReportProblemSafety, first.method())
-            << "Store must be flagged by the decoder as unsafe: "
-            << message.str();
-        EXPECT_EQ(nacl_arm_val::kProblemUnsafe, first.problem())
-            << message;
+        EXPECT_TRUE(nacl_arm_dec::IsSafetyViolation(first.violation()));
       }
     }
   }
@@ -592,29 +601,27 @@ TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
   for (unsigned i = 0; i < NACL_ARRAY_SIZE(undefined_insts); i++) {
     arm_inst program[] = { undefined_insts[i].inst };
 
-    vector<ProblemRecord> problems =
-        validation_should_fail(program,
-                               NACL_ARRAY_SIZE(program),
-                               kDefaultBaseAddr,
-                               undefined_insts[i].about);
+    ProblemSpy spy;
+    validation_should_fail(program,
+                           NACL_ARRAY_SIZE(program),
+                           kDefaultBaseAddr,
+                           undefined_insts[i].about,
+                           &spy);
+    vector<ProblemRecord> problems = spy.get_problems();
 
     // EXPECT/continue rather than ASSERT so that we run the other cases.
     EXPECT_EQ(1U, problems.size());
     if (problems.size() != 1) continue;
 
-    ProblemSpy spy;
     ProblemRecord first = problems[0];
     EXPECT_EQ(kDefaultBaseAddr, first.vaddr())
         << "Problem report must point to the only instruction: "
         << undefined_insts[i].about;
-    EXPECT_EQ(nacl_arm_val::kReportProblemSafety, first.method())
-        << "Store must be flagged by the decoder as unsafe: "
+    EXPECT_TRUE(nacl_arm_dec::IsSafetyViolation(first.violation()))
+        << "Instruction must be flagged by the decoder as unsafe:"
         << undefined_insts[i].about;
-    EXPECT_EQ(nacl_arm_dec::UNDEFINED, spy.GetSafetyLevel(first))
-        << "Instruction must be flagged as UNDEFINED: "
-        << undefined_insts[i].about;
-    EXPECT_EQ(nacl_arm_val::kProblemUnsafe, first.problem())
-        << "Instruction must be marked unsafe: "
+    EXPECT_EQ(nacl_arm_dec::UNDEFINED_VIOLATION, first.violation())
+        << "Instruction must be flagged as UNDEFINED:"
         << undefined_insts[i].about;
   }
 }
@@ -667,21 +674,27 @@ TEST_F(ValidatorTests, ConditionalBicsLdrTest) {
     0x03d22103,  // bicseq  r2, r2, #-1073741824    ; 0xc0000000
     0x01920f9f,  // ldrexeq r0, [r2]
   };
-  vector<ProblemRecord> problems =
-      validation_should_fail(bics_ldr_unsafe_test,
-                             NACL_ARRAY_SIZE(bics_ldr_unsafe_test),
-                             kDefaultBaseAddr,
-                             "Conditional bics ldr test");
+
+  ProblemSpy spy;
+  validation_should_fail(bics_ldr_unsafe_test,
+                         NACL_ARRAY_SIZE(bics_ldr_unsafe_test),
+                         kDefaultBaseAddr,
+                         "Conditional bics ldr test",
+                         &spy);
+  vector<ProblemRecord> problems = spy.get_problems();
+
   EXPECT_EQ(1U, problems.size());
   if (problems.size() == 0) return;
 
-  ProblemSpy spy;
   ProblemRecord problem = problems[0];
   EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
-  EXPECT_NE(nacl_arm_val::kReportProblemSafety, problem.method());
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, spy.GetSafetyLevel(problem));
+  EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(problem.violation()));
+  // TODO(kschimpf) Add back unsafe load store violation. To be added
+  // in next CL.
+  /*
   EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
+  */
 }
 
 TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
@@ -691,21 +704,27 @@ TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
     0x03c22103,  // biceq   r2, r2, #-1073741824    ; 0xc0000000
     0xc1920f9f,  // ldrexgt r0, [r2]
   };
-  vector<ProblemRecord> problems=
-      validation_should_fail(bic_ldr_diff_conds,
-                             NACL_ARRAY_SIZE(bic_ldr_diff_conds),
-                             kDefaultBaseAddr,
-                             "Different conditions bic ldr test");
+
+  ProblemSpy spy;
+  validation_should_fail(bic_ldr_diff_conds,
+                         NACL_ARRAY_SIZE(bic_ldr_diff_conds),
+                         kDefaultBaseAddr,
+                         "Different conditions bic ldr test",
+                         &spy);
+  vector<ProblemRecord> problems = spy.get_problems();
+
   EXPECT_EQ(1U, problems.size());
   if (problems.size() == 0) return;
 
-  ProblemSpy spy;
   ProblemRecord problem = problems[0];
   EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
-  EXPECT_NE(nacl_arm_val::kReportProblemSafety, problem.method());
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, spy.GetSafetyLevel(problem));
+  EXPECT_FALSE(nacl_arm_dec::IsSafetyViolation(problem.violation()));
+  // TODO(karl) Add back unsafe load store violation test. To be added
+  // in next CL.
+  /*
   EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
+  */
 }
 
 TEST_F(ValidatorTests, BfcLdrInst) {
@@ -1191,7 +1210,6 @@ TEST_F(ValidatorTests, CheckPushSpUnpredictable) {
 }
 
 TEST_F(ValidatorTests, ConditionalBreakpoints) {
-  ProblemSpy spy;
   arm_inst bkpt = 0xE1200070;  // BKPT #0
   arm_inst pool_head = kLiteralPoolHead;
   for (Instruction::Condition cond = Instruction::EQ;
@@ -1199,9 +1217,9 @@ TEST_F(ValidatorTests, ConditionalBreakpoints) {
        cond = Instruction::Next(cond)) {
     bkpt = ChangeCond(bkpt, cond);
     pool_head = ChangeCond(pool_head, cond);
-    EXPECT_FALSE(validate(&bkpt, 1, kDefaultBaseAddr, &spy))
+    EXPECT_FALSE(validate(&bkpt, 1, kDefaultBaseAddr))
         << "conditional breakpoint should be unpredictable";
-    EXPECT_FALSE(validate(&pool_head, 1, kDefaultBaseAddr, &spy))
+    EXPECT_FALSE(validate(&pool_head, 1, kDefaultBaseAddr))
         << "conditional literal pool head should be unpredictable";
   }
 }
@@ -1281,14 +1299,13 @@ TEST_F(ValidatorTests, FailValidation) {
 }
 
 TEST_F(ValidatorTests, UDFAndBKPTValidateAsExpected) {
-  ProblemSpy spy;
   for (uint32_t i = 0; i < 0xFFFF; ++i) {
     arm_inst bkpt_inst = 0xE1200070 | ((i & 0xFFF0) << 4) | (i & 0xF);
     arm_inst udf_inst  = 0xE7F000F0 | ((i & 0xFFF0) << 4) | (i & 0xF);
-    EXPECT_EQ(validate(&bkpt_inst, 1, kDefaultBaseAddr, &spy),
+    EXPECT_EQ(validate(&bkpt_inst, 1, kDefaultBaseAddr),
               ((bkpt_inst == kLiteralPoolHead) ||
                (bkpt_inst == nacl_arm_dec::kBreakpoint)));
-    EXPECT_EQ(validate(&udf_inst, 1, kDefaultBaseAddr, &spy),
+    EXPECT_EQ(validate(&udf_inst, 1, kDefaultBaseAddr),
               ((udf_inst == nacl_arm_dec::kHaltFill) ||
                (udf_inst == nacl_arm_dec::kAbortNow)));
     // Tautological note: kFailValidation should fail validation.

@@ -571,41 +571,35 @@ class ProblemSink {
   virtual ~ProblemSink() {}
 
   // Helper function for reporting generic error messages using a
-  // printf style.
+  // printf style. How the corresponding data is used is left to
+  // the derived class.
   //
   // Arguments are:
-  //    buffer - Character buffer to put diagnostic message into.
-  //    buffer_size - The size of the buffer.
   //    violation - The type of violation being reported.
   //    vaddr - The address of the instruction associated with the violation.
   //    format - The format string to print out the corresponding diagnostic
   //             message.
   //     ... - Arguments to use with the format.
-  // TODO(kschimpf): Convert calls in inst_classes.cc to use this method,
-  // instead of the methods below.
-  virtual void ReportProblemDiagnostic(char* buffer,
-                                       size_t buffer_size,
-                                       nacl_arm_dec::Violation violation,
+  virtual void ReportProblemDiagnostic(nacl_arm_dec::Violation violation,
                                        uint32_t vaddr,
                                        const char* format, ...)
-               // Note: format is the 6th argument because of implicit this.
-               ATTRIBUTE_FORMAT_PRINTF(6, 7);
+               // Note: format is the 4th argument because of implicit this.
+               ATTRIBUTE_FORMAT_PRINTF(4, 5) = 0;
 
-  // Helper function for reporting safety level issues.
-  //    vaddr - the virtual address where the problem occurred.
-  //    safety - the (unsafe) safety level being reported.
-  virtual void ReportProblemSafety(uint32_t vaddr,
-                                   nacl_arm_dec::SafetyLevel safety);
+  // Helper function for reporting safety level issues for a decoded
+  // instruction.
+  virtual void ReportProblemSafety(nacl_arm_dec::Violation violation,
+                                   const DecodedInstruction& inst) = 0;
 
   // Helper function for reporting a simple problem with no user data.
   //    vaddr - the virtual address where the problem occurred.
   //    problem - The problem being reported.
-  virtual void ReportProblem(uint32_t vaddr, ValidatorProblem problem);
+  virtual void ReportProblem(uint32_t vaddr, ValidatorProblem problem) = 0;
 
   // Helper function for reporting a problem with a specific instruction
   // address.
   virtual void ReportProblemAddress(uint32_t vaddr, ValidatorProblem problem,
-                                    uint32_t problem_vaddr);
+                                    uint32_t problem_vaddr) = 0;
 
   // Helper function for reporting a problem with a pair of instructions.
   //    vaddr - the virtual address where the problem occurred.
@@ -615,14 +609,14 @@ class ProblemSink {
   virtual void ReportProblemInstructionPair(
       uint32_t vaddr, ValidatorProblem problem,
       ValidatorInstructionPairProblem pair_problem,
-      const DecodedInstruction& first, const DecodedInstruction& second);
+      const DecodedInstruction& first, const DecodedInstruction& second) = 0;
 
   // Helper function for reporting problems associated with a register.
   //    vaddr - the virtual address where the problem occurred.
   //    problem - The problem being reported.
   //    reg - The register associated with the problem.
   virtual void ReportProblemRegister(uint32_t vaddr, ValidatorProblem problem,
-                                     nacl_arm_dec::Register reg);
+                                     nacl_arm_dec::Register reg) = 0;
 
   // Helper function for reporting an instruction pair that has
   // issues with how a register is set.
@@ -635,7 +629,7 @@ class ProblemSink {
       uint32_t vaddr, ValidatorProblem problem,
       ValidatorInstructionPairProblem pair_problem,
       nacl_arm_dec::Register reg,
-      const DecodedInstruction& first, const DecodedInstruction& second);
+      const DecodedInstruction& first, const DecodedInstruction& second) = 0;
 
   // Helper function for reporting problems associated with a register list.
   //    vaddr - the virtual address where the problem occurred.
@@ -643,7 +637,7 @@ class ProblemSink {
   //    registers - The register list associated with the problem.
   virtual void ReportProblemRegisterList(
       uint32_t vaddr, ValidatorProblem problem,
-      nacl_arm_dec::RegisterList registers);
+      nacl_arm_dec::RegisterList registers) = 0;
 
   // Helper function for reporting an instruction pair that has
   // isseus with how a register list is set.
@@ -656,7 +650,7 @@ class ProblemSink {
       uint32_t vaddr, ValidatorProblem problem,
       ValidatorInstructionPairProblem pair_problem,
       nacl_arm_dec::RegisterList registers,
-      const DecodedInstruction& first, const DecodedInstruction& second);
+      const DecodedInstruction& first, const DecodedInstruction& second) = 0;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ProblemSink);

@@ -9,6 +9,8 @@
 #include <assert.h>
 
 #include <cstdarg>
+#include <cstdio>
+#include <cstring>
 
 #include "native_client/src/include/portability_io.h"
 
@@ -35,24 +37,15 @@ ProblemReporter::ProblemReporter()
   }
 }
 
-void ProblemReporter::ReportProblemDiagnostic(char* buffer,
-                                              size_t buffer_size,
-                                              nacl_arm_dec::Violation violation,
+void ProblemReporter::ReportProblemDiagnostic(nacl_arm_dec::Violation violation,
                                               uint32_t vaddr,
                                               const char* format, ...) {
-  // For the moment, we have not fleshed out this routine. However,
-  // we would like to move to use this simpler interface for reporting errors,
-  // rather than the complicated set of report problem methods.
-  // The current (temporary) solution is to pipe it through
-  // method ReportProblemInternal to record that a diagnostic should be
-  // generated. This allows it to work with downstream ProblemReporters.
-  //
-  // TODO(kschimpf): replace this with a better solution once the notion
-  // or problem sinks has been abstracted out of the validator.
-  UNREFERENCED_PARAMETER(violation);
-  UNREFERENCED_PARAMETER(format);
-  ReportProblem(vaddr, kProblemOtherDiagnosticMessage);
-  ToText(buffer, buffer_size, last_problem, last_method, last_user_data);
+  // Start by adding address of diagnostic.
+  va_list args;
+  va_start(args, format);
+  VSNPRINTF(buffer, kBufferSize, format, args);
+  va_end(args);
+  ReportProblemMessage(violation, vaddr, buffer);
 }
 
 size_t ProblemReporter::UserDataSize(ValidatorProblemMethod method) {
@@ -79,17 +72,67 @@ void ProblemReporter::ReportProblemInternal(
   for (size_t i = data_size; i < kValidatorProblemUserDataSize; ++i) {
     last_user_data[i] = 0;
   }
+
+  // Convert to text and communicate generated message.
+  ToText(buffer, kBufferSize, problem, method, user_data);
+  // TODO(kschimpf) We really should be adding a more specific violation,
+  // but requires more plumbing changes than currently can be handled.
+  ReportProblemMessage(nacl_arm_dec::OTHER_VIOLATION, vaddr, buffer);
 }
 
-void ProblemReporter::ReportProblemSafety(
-    uint32_t vaddr, nacl_arm_dec::SafetyLevel safety) {
-  ValidatorProblemUserData user_data = {
-    static_cast<uint32_t>(safety),
+void ProblemReporter::ReportProblemSafety(nacl_arm_dec::Violation violation,
+                                          const DecodedInstruction& inst) {
+  uint32_t addr = inst.addr();
+  switch (static_cast<int>(violation)) {
+    case nacl_arm_dec::UNINITIALIZED_VIOLATION:
+    default:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Unknown error occurred decoding this instruction.");
+      break;
+    case nacl_arm_dec::UNKNOWN_VIOLATION:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "The value assigned to registers by this instruction is unknown.");
+      break;
+    case nacl_arm_dec::UNDEFINED_VIOLATION:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Instruction is undefined according to the ARMv7"
+          " ISA specifications.");
+      break;
+    case nacl_arm_dec::NOT_IMPLEMENTED_VIOLATION:
+      // This instruction is not recognized by the decoder functions.
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Instruction not understood by Native Client.");
+      break;
+    case nacl_arm_dec::UNPREDICTABLE_VIOLATION:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Instruction has unpredictable effects at runtime.");
+      break;
+    case nacl_arm_dec::DEPRECATED_VIOLATION:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Instruction is deprecated in ARMv7.");
+      break;
+    case nacl_arm_dec::FORBIDDEN_VIOLATION:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Instruction not allowed by Native Client.");
+      break;
+    case nacl_arm_dec::FORBIDDEN_OPERANDS_VIOLATION:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Instruction has operand(s) forbidden by Native Client.");
+      break;
+    case nacl_arm_dec::DECODER_ERROR_VIOLATION:
+      ReportProblemDiagnostic(
+          violation, addr,
+          "Instruction decoded incorrectly by NativeClient.");
+      break;
   };
-  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
-                           kValidatorProblemUserDataSize);
-  ReportProblemInternal(vaddr, kProblemUnsafe,
-                        kReportProblemSafety, user_data);
 }
 
 void ProblemReporter::ReportProblem(uint32_t vaddr, ValidatorProblem problem) {
@@ -186,13 +229,6 @@ void ProblemReporter::ReportProblemRegisterListInstructionPair(
                            kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem,
                         kReportProblemRegisterListInstructionPair, user_data);
-}
-
-void ProblemReporter::ExtractProblemSafety(
-    const ValidatorProblemUserData user_data,
-    nacl_arm_dec::SafetyLevel* safety) {
-  if (safety != NULL)
-    *safety = nacl_arm_dec::Int2SafetyLevel(user_data[0]);
 }
 
 void ProblemReporter::ExtractProblemAddress(
@@ -304,36 +340,6 @@ void ProblemReporter::ExtractProblemRegisterListInstructionPair(
     second->Copy(nacl_arm_dec::Instruction(user_data[5]));
 }
 
-// Defines the error messages to print for each possible unsafe safety
-// value.
-static const char* SafetyLevelFormatDirective[nacl_arm_dec::MAY_BE_SAFE] = {
-  // UNINITIALIZED - The initial value of uninitialized SafetyLevels.  treat
-  // as unsafe.
-  "Unknown error occurred decoding this instruction.",
-  // UNKNOWN - The initial value of uninitialized SafetyLevels.  treat
-  // as unsafe.
-  "The value assigned to registers by this instruction is unknown.",
-  // UNDEFINED - This instruction is left undefined by the ARMv7 ISA
-  // spec.
-  "Instruction is undefined according to the ARMv7 ISA specifications.",
-  // NOT_IMPLEMENTED - This instruction is not recognized by the decoder
-  // functions.
-  "Instruction not understood by Native Client.",
-  // UNPREDICTABLE - This instruction has unpredictable effects at
-  // runtime.
-  "Instruction has unpredictable effects at runtime.",
-  // DEPRECATED - This instruction is deprecated in ARMv7.
-  "Instruction is deprecated in ARMv7.",
-  // FORBIDDEN - This instruction is forbidden by our SFI model.
-  "Instruction not allowed by Native Client.",
-  // FORBIDDEN_OPERANDS - This instruction's operands are forbidden by
-  // our SFI model.
-  "Instruction has operand(s) forbidden by Native Client.",
-  // DECODER_ERROR - This instruction was incorrectly decoded, and
-  // should have been a different instruciton.
-  "Instruction decoded incorrectly by NativeClient.",
-};
-
 // Error message to print for each type of ValidatorProblem. See
 // member function Render (below) for an explanation of $X directives.
 // TODO(karl): Add information from the collected
@@ -342,7 +348,7 @@ static const char* SafetyLevelFormatDirective[nacl_arm_dec::MAY_BE_SAFE] = {
 static const char* ValidatorProblemFormatDirective[kValidatorProblemSize] = {
   // kProblemUnsafe - An instruction is unsafe -- more information in
   // the SafetyLevel.
-  "$s",
+  "*** UNKNOWN PROBLEM FOUND ***",  // SHOULD NOT HAPPEN ANYMORE.
   // kProblemBranchSplitsPattern - A branch would break a
   // pseudo-operation pattern.
   "Instruction branches into middle of 2-instruction pattern at $a.",
@@ -547,7 +553,6 @@ static void RenderRegisterList(nacl_arm_dec::RegisterList registers,
 
 // Renders a text string using the given format. Does the following
 // substitutions:
-//    $s - Print corresponding safety level message.
 //    $a - Print the address associated with the problem.
 //    $p - Print the adresses of the two instructions being reported about.
 //    $c - Print the conditions that aren't provably correct.
@@ -568,20 +573,6 @@ void ProblemReporter::Render(char** buffer,
       switch (*format) {
         case '\0':
           return;
-        case 's':  // Print safetly level associated with problem.
-          if (method == kReportProblemSafety) {
-            nacl_arm_dec::SafetyLevel safety;
-            ExtractProblemSafety(user_data, &safety);
-            Render(buffer, buffer_size,
-                   SafetyLevelFormatDirective[safety],
-                   problem, method, user_data);
-          } else {
-            // Act like safety is UNINITIALIZED
-            Render(buffer, buffer_size,
-                   SafetyLevelFormatDirective[nacl_arm_dec::UNINITIALIZED],
-                   problem, method, user_data);
-          }
-          break;
         case 'a':  // Print instruction address associated with problem.
           if (method == kReportProblemAddress) {
             uint32_t address = 0;

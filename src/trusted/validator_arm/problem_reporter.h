@@ -34,25 +34,23 @@ typedef enum {
   kReportProblemRegisterListInstructionPair
 } ValidatorProblemMethod;
 
-// ProblemSink that converts (internal) user data back to high-level
-// data, and converts reported problems into human readable text.
+// ProblemSink that converts the (internal) user data into a string
+// error message, which is then processed using the (derived) method
+// ReportProblemMessage.
 class ProblemReporter : public ProblemSink {
  public:
   ProblemReporter();
   virtual ~ProblemReporter() {}
 
   // The following override inherited virtuals.
-
-  virtual void ReportProblemDiagnostic(char* buffer,
-                                       size_t buffer_size,
-                                       nacl_arm_dec::Violation violation,
+  virtual void ReportProblemDiagnostic(nacl_arm_dec::Violation violation,
                                        uint32_t vaddr,
                                        const char* format, ...)
-               // Note: format is the 6th argument because of implicit this.
-               ATTRIBUTE_FORMAT_PRINTF(6, 7);
+               // Note: format is the 4th argument because of implicit this.
+               ATTRIBUTE_FORMAT_PRINTF(4, 5);
 
-  virtual void ReportProblemSafety(uint32_t vaddr,
-                                   nacl_arm_dec::SafetyLevel safety);
+  virtual void ReportProblemSafety(nacl_arm_dec::Violation violation,
+                                   const DecodedInstruction& inst);
 
   virtual void ReportProblem(uint32_t vaddr, ValidatorProblem problem);
 
@@ -84,11 +82,11 @@ class ProblemReporter : public ProblemSink {
       const DecodedInstruction& first, const DecodedInstruction& second);
 
  protected:
-  // Extracts safety parameter from user data. Assumes that
-  // corresponding method is kReportProblemSafety.
-  void ExtractProblemSafety(
-      const ValidatorProblemUserData user_data,
-      nacl_arm_dec::SafetyLevel* safety);
+  // Virtual called once the diagnostic message of ReportProblemDiagnostic,
+  // or ReportProblemInternal, has been generated.
+  virtual void ReportProblemMessage(nacl_arm_dec::Violation violation,
+                                    uint32_t vaddr,
+                                    const char* message) = 0;
 
   // Extracts out problem address parameter from user data. Assumes
   // that corrresponding method is kReportProblemAddress.
@@ -194,6 +192,10 @@ class ProblemReporter : public ProblemSink {
   static size_t UserDataSize(ValidatorProblemMethod method);
 
  private:
+  // Define a buffer to generate error messages into.
+  static const size_t kBufferSize = 256;
+  char buffer[kBufferSize];
+
   // Internal method to convert internal error report data
   // to corresponding readable text using the given format
   // string. See the definition of this method in problem_reporter.cc

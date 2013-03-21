@@ -32,8 +32,13 @@ namespace nacl_arm_dec {
 //
 // Note: The enumerated values are used in dgen_core.py (see class
 // SafetyAction).  Be sure to update values in that class if this list
-// changes, so that the two stay in sync. Also be sure to update Int2SafetyLevel
-// in inst_classes.cc.
+// changes, so that the two stay in sync.
+//
+// Note: All safety levels except MAY_BE_SAFE, also act as a violation
+// (see enum Violation below). If you change this enum, also change
+// Violation below.  Further, be sure to keep MAY_BE_SAFE as the last
+// entry in this enum, since code (elsewhere) assumes that MAY_BE_SAFE
+// appears last in the list.
 enum SafetyLevel {
   // The initial value of uninitialized SafetyLevels -- treat as unsafe.
   UNINITIALIZED = 0,
@@ -66,16 +71,28 @@ enum SafetyLevel {
   MAY_BE_SAFE
 };
 
-// Returns the safety level associated with i (or UNINITIALIZED if no such
-// safety level exists).
-SafetyLevel Int2SafetyLevel(uint32_t i);
-
 // Defines the set of validation violations that are found by the
 // NaCl validator. Used to speed up generation of diagnostics, by only
 // checking for corresponding found violations.
 enum Violation {
-  // Reports that safety != MAY_BE_SAFE
-  SAFETY_VIOLATION,
+  // Note: Each (unsafe) safety level also corresponds to a violation. The
+  // following violations capture these unsafe violations.
+  // Note: Be sure to include an initialization value of the corresponding
+  // SafetyLevel entry, so that code can assume the corresponding safety
+  // violation has the same value as the safety level.
+  UNINITIALIZED_VIOLATION = UNINITIALIZED,
+  UNKNOWN_VIOLATION = UNKNOWN,
+  UNDEFINED_VIOLATION = UNDEFINED,
+  NOT_IMPLEMENTED_VIOLATION = NOT_IMPLEMENTED,
+  UNPREDICTABLE_VIOLATION = UNPREDICTABLE,
+  DEPRECATED_VIOLATION = DEPRECATED,
+  FORBIDDEN_VIOLATION = FORBIDDEN,
+  FORBIDDEN_OPERANDS_VIOLATION = FORBIDDEN_OPERANDS,
+  DECODER_ERROR_VIOLATION = DECODER_ERROR,
+  // Note: The next enumerated value is intentionally set to
+  // MAY_BE_SAFE, to guarantee that all remaining violations do not
+  // overlap safety violations.
+  //
   // Reports that the load/store uses an unsafe base address.  A base address is
   // safe if it
   //     1. Has specific bits masked off by its immediate predecessor, or
@@ -83,7 +100,7 @@ enum Violation {
   //        predecessor, or
   //     3. Is in a register defined as always containing a safe address.
   // Note: Predication checks (in 2) may be disabled on some architectures.
-  LOADSTORE_VIOLATION,
+  LOADSTORE_VIOLATION = MAY_BE_SAFE,
   // Reports that the load/store uses a safe base address, but violates the
   // condition that the instruction pair can't cross a bundle boundary.
   LOADSTORE_CROSSES_BUNDLE_VIOLATION,
@@ -138,25 +155,52 @@ typedef uint32_t ViolationSet;
 // Defines the notion of a empty violation set.
 static const ViolationSet kNoViolations = 0x0;
 
+// Returns true if a safety violation.
+inline bool IsSafetyViolation(Violation v) {
+  return (static_cast<int>(v) >= UNINITIALIZED) &&
+      (static_cast<int>(v) <= MAY_BE_SAFE);
+}
+
+// Converts a safety level to the corresponding bit in the violation set.
+inline ViolationSet SafetyViolationBit(SafetyLevel level) {
+  return static_cast<ViolationSet>(0x1) << level;
+}
+
 // Converts a validation violation to a ViolationSet containing
 // the corresponding validation violation.
 inline ViolationSet ViolationBit(
     Violation violation) {
-  NACL_COMPILE_TIME_ASSERT(static_cast<size_t>(nacl_arm_dec::OTHER_VIOLATION) <
-                           sizeof(nacl_arm_dec::ViolationSet) * CHAR_BIT);
+  NACL_COMPILE_TIME_ASSERT(static_cast<size_t>(OTHER_VIOLATION) <
+                           sizeof(ViolationSet) * CHAR_BIT);
   return static_cast<ViolationSet>(0x1) << violation;
 }
 
-// Returns a validation violation set that contains the given violation
-// if the given validation violation set contains the given violation.
-inline ViolationSet
-ContainsViolation(ViolationSet vset, Violation violation) {
-  return vset & ViolationBit(violation);
-}
+// Defines the set of all safety violations.
+// Note: Assumes that CROSSES_BUNDLE_VIOLATION defines the range
+// of safety violations
+static const ViolationSet kSafetyViolations =
+  SafetyViolationBit(MAY_BE_SAFE) - 1;
 
 // Returns the union of the two validation violation sets.
 inline ViolationSet ViolationUnion(ViolationSet vset1, ViolationSet vset2) {
   return vset1 | vset2;
+}
+
+// Returns the intersection of two validation violation sets.
+inline ViolationSet ViolationIntersect(ViolationSet vset1,
+                                       ViolationSet vset2) {
+  return vset1 & vset2;
+}
+
+// Returns true if the given validation violation set contains the
+// given violation.
+inline bool ContainsViolation(ViolationSet vset, Violation violation) {
+  return ViolationIntersect(vset, ViolationBit(violation)) != kNoViolations;
+}
+
+// Returns true if the violation set contains a safety violation.
+inline bool ContainsSafetyViolations(ViolationSet vset) {
+  return ViolationIntersect(vset, kSafetyViolations) != kNoViolations;
 }
 
 // A class decoder is designed to decode a set of instructions that

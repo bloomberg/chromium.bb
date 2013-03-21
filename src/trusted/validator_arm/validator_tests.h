@@ -50,9 +50,12 @@ using std::vector;
 using std::string;
 using std::ostringstream;
 
+using nacl_arm_dec::kNoViolations;
+using nacl_arm_dec::Instruction;
 using nacl_arm_dec::Register;
 using nacl_arm_dec::RegisterList;
-using nacl_arm_dec::Instruction;
+using nacl_arm_dec::Violation;
+using nacl_arm_dec::ViolationSet;
 
 using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
@@ -96,85 +99,49 @@ static const RegisterList kAbiDataAddrRegisters(nacl_arm_dec::Register::Sp());
 // explicitly have them.
 static const bool kAllowCondMemSfi = false;
 
-// Defines a buffer for error messages.
-static const size_t kBufferSize = 256;
-typedef char ErrorMessage[kBufferSize];
-
 // Simply records the arguments given to ReportProblem, below.
 class ProblemRecord {
  public:
-  ProblemRecord(uint32_t vaddr,
-                ValidatorProblem problem,
-                ValidatorProblemMethod method,
-                ValidatorProblemUserData user_data)
-      : vaddr_(vaddr), problem_(problem), method_(method) {
-    Init(user_data);
-  }
+  ProblemRecord(Violation violation,
+                uint32_t vaddr,
+                const std::string& message)
+      : violation_(violation), vaddr_(vaddr), message_(message) {}
 
   ProblemRecord(const ProblemRecord& r)
-      : vaddr_(r.vaddr_), problem_(r.problem_), method_(r.method_) {
-    Init(r.user_data_);
-  }
+      : violation_(r.violation_), vaddr_(r.vaddr_), message_(r.message_) {}
 
   ~ProblemRecord() {}
 
   ProblemRecord& operator=(const ProblemRecord& r) {
+    violation_ = r.violation_;
     vaddr_ = r.vaddr_;
-    problem_ = r.problem_;
-    method_ = r.method_;
-    Init(r.user_data_);
+    message_ = r.message_;
     return *this;
   }
 
   uint32_t vaddr() const { return vaddr_; }
-  ValidatorProblem problem() const { return problem_; }
-  ValidatorProblemMethod method() const { return method_; }
-  const uint32_t* user_data() const { return user_data_; }
+  Violation violation() const { return violation_; }
+  std::string message() const { return message_; }
 
  private:
-  void Init(const ValidatorProblemUserData user_data);
-
+  Violation violation_;
   uint32_t vaddr_;
-  ValidatorProblem problem_;
-  ValidatorProblemMethod method_;
-  ValidatorProblemUserData user_data_;
+  std::string message_;
 };
 
 // A ProblemSink that records all calls (implementation of the Spy pattern)
 class ProblemSpy : public ProblemReporter {
  public:
-  // We want *all* the errors that the validator produces.  Note that this means
-  // we're not testing the should_continue functionality.  This is probably
-  // okay.
-  virtual bool should_continue() { return true; }
-
   // Returns the list of found problems.
   vector<ProblemRecord> &get_problems() { return problems_; }
 
-  // Returns the safety level associated with the recorded problem.
-  nacl_arm_dec::SafetyLevel GetSafetyLevel(const ProblemRecord& record);
-
-  // Returns the 2-instruction validator problem with the instruction,
-  // if the problem record is for a two-instruction problem, and
-  // kNoSpecificPairProblem for any single instruction validator problem.
-  ValidatorInstructionPairProblem GetPairProblem(const ProblemRecord& record);
-
-  // Returns true if the first instruction in the instruction pair appears
-  // to be the reporting instruction (returns true for single instruction
-  // problems).
-  bool IsPairProblemAtFirst(const ProblemRecord& record);
-
-  // Generates the corresponding error message into the given character
-  // buffer.
-  void GetErrorMessage(ErrorMessage message, const ProblemRecord& record);
-
  protected:
-  virtual void ReportProblemInternal(uint32_t vaddr,
-                                     ValidatorProblem problem,
-                                     ValidatorProblemMethod method,
-                                     ValidatorProblemUserData user_data);
+  virtual void ReportProblemMessage(Violation violation,
+                                    uint32_t vaddr,
+                                    const char* message);
 
  private:
+  static const vector<ProblemRecord>::size_type max_problems = 5000;
   vector<ProblemRecord> problems_;
 };
 
@@ -224,7 +191,13 @@ class ValidatorTests : public ::testing::Test {
   bool validate(const arm_inst *pattern,
                 size_t inst_count,
                 uint32_t start_addr,
-                ProblemSink *sink);
+                ProblemSink *sink = NULL);
+
+  // Utility method for validating a sequence of bytes.
+  ViolationSet find_violations(const arm_inst *pattern,
+                               size_t inst_count,
+                               uint32_t start_addr,
+                               ProblemSink *sink = NULL);
 
   // Tests an arbitrary-size instruction fragment that is expected to pass.
   // Does not modulate or rewrite the pattern in any way.
@@ -245,10 +218,11 @@ class ValidatorTests : public ::testing::Test {
   //
   // Note that the 'msg1' and 'msg2' parameters are merely concatentated in the
   // output.
-  vector<ProblemRecord> validation_should_fail(const arm_inst *pattern,
-                                               size_t inst_count,
-                                               uint32_t base_addr,
-                                               const string &msg);
+  ViolationSet validation_should_fail(const arm_inst *pattern,
+                                      size_t inst_count,
+                                      uint32_t base_addr,
+                                      const string &msg,
+                                      ProblemSpy* spy = NULL);
 
   // Tests an instruction with all possible conditions (i.e. all except 1111),
   // verifying all cases are safe.
