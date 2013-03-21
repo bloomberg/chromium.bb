@@ -181,11 +181,6 @@ class CONTENT_EXPORT RenderViewHostManager
                        int opener_route_id,
                        bool swapped_out);
 
-  // Set the WebUI after committing a page load. This is useful for navigations
-  // initiated from a renderer, where we want to give the new renderer WebUI
-  // privileges from the originating renderer.
-  void SetWebUIPostCommit(WebUIImpl* web_ui);
-
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);
 

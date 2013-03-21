@@ -387,9 +387,6 @@ class WebContents : public PageNavigator,
   // Get the content restrictions (see content::ContentRestriction).
   virtual int GetContentRestrictions() const = 0;
 
-  // Query the WebUIFactory for the TypeID for the current URL.
-  virtual WebUI::TypeID GetWebUITypeForCurrentState() = 0;
-
   // Returns the WebUI for the current state of the tab. This will either be
   // the pending WebUI, the committed WebUI, or NULL.
   virtual WebUI* GetWebUIForCurrentState()= 0;

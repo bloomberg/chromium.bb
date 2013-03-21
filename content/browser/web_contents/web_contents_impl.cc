@@ -298,7 +298,6 @@ WebContentsImpl::WebContentsImpl(
       notify_disconnection_(false),
       dialog_manager_(NULL),
       is_showing_before_unload_dialog_(false),
-      opener_web_ui_type_(WebUI::kNoWebUI),
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(static_cast<int>(kMinimumZoomFactor * 100)),
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
@@ -1419,8 +1418,6 @@ void WebContentsImpl::CreateNewWindow(
   }
   new_contents->Init(create_params);
 
-  new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());
-
   // Save the window for later if we're not suppressing the opener (since it
   // will be shown immediately) and if it's not a guest (since we separately
   // track when to show guests).
@@ -1971,11 +1968,6 @@ gfx::Size WebContentsImpl::GetPreferredSize() const {
 
 int WebContentsImpl::GetContentRestrictions() const {
   return content_restrictions_;
-}
-
-WebUI::TypeID WebContentsImpl::GetWebUITypeForCurrentState() {
-  return WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-      GetBrowserContext(), GetURL());
 }
 
 WebUI* WebContentsImpl::GetWebUIForCurrentState() {
@@ -2535,21 +2527,6 @@ void WebContentsImpl::SetIsLoading(bool is_loading,
 void WebContentsImpl::DidNavigateMainFramePostCommit(
     const LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  if (opener_web_ui_type_ != WebUI::kNoWebUI) {
-    // If this is a window.open navigation, use the same WebUI as the renderer
-    // that opened the window, as long as both renderers have the same
-    // privileges.
-    if (delegate_ && opener_web_ui_type_ == GetWebUITypeForCurrentState()) {
-      WebUIImpl* web_ui = CreateWebUIForRenderManager(GetURL());
-      // web_ui might be NULL if the URL refers to a non-existent extension.
-      if (web_ui) {
-        render_manager_.SetWebUIPostCommit(web_ui);
-        web_ui->RenderViewCreated(GetRenderViewHost());
-      }
-    }
-    opener_web_ui_type_ = WebUI::kNoWebUI;
-  }
-
   if (details.is_navigation_to_different_page()) {
     // Clear the status bubble. This is a workaround for a bug where WebKit
     // doesn't let us know that the cursor left an element during a

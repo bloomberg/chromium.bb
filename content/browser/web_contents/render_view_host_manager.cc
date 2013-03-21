@@ -294,11 +294,6 @@ void RenderViewHostManager::DidUpdateFrameTree(
   }
 }
 
-void RenderViewHostManager::SetWebUIPostCommit(WebUIImpl* web_ui) {
-  DCHECK(!web_ui_.get());
-  web_ui_.reset(web_ui);
-}
-
 void RenderViewHostManager::RendererAbortedProvisionalLoad(
     RenderViewHost* render_view_host) {
   // We used to cancel the pending renderer here for cross-site downloads.
