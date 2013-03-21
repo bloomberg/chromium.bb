@@ -93,13 +93,13 @@ class AsyncPixelTransferStateIdle : public AsyncPixelTransferState {
   bool transfer_in_progress_;
 };
 
-AsyncPixelTransferDelegateIdle::Transfer::Transfer(
-    uint64 id, const base::Closure& task)
-    : id(id),
+AsyncPixelTransferDelegateIdle::Task::Task(
+    uint64 transfer_id, const base::Closure& task)
+    : transfer_id(transfer_id),
       task(task) {
 }
 
-AsyncPixelTransferDelegateIdle::Transfer::~Transfer() {}
+AsyncPixelTransferDelegateIdle::Task::~Task() {}
 
 AsyncPixelTransferDelegateIdle::AsyncPixelTransferDelegateIdle()
     : texture_upload_count_(0) {
@@ -123,20 +123,22 @@ bool AsyncPixelTransferDelegateIdle::BindCompletedAsyncTransfers() {
 void AsyncPixelTransferDelegateIdle::AsyncNotifyCompletion(
     const AsyncMemoryParams& mem_params,
     const CompletionCallback& callback) {
-  if (transfers_.empty()) {
+  if (tasks_.empty()) {
     callback.Run(mem_params);
     return;
   }
 
-  transfers_.back().notifications.push(
-      base::Bind(
-          &AsyncPixelTransferDelegateIdle::PerformNotifyCompletion,
-          AsWeakPtr(),
-          mem_params,
-          base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
-                                                 mem_params.shared_memory,
-                                                 mem_params.shm_size)),
-          callback));
+  tasks_.push_back(
+      Task(0,  // 0 transfer_id for notification tasks.
+           base::Bind(
+               &AsyncPixelTransferDelegateIdle::PerformNotifyCompletion,
+               AsWeakPtr(),
+               mem_params,
+               base::Owned(new ScopedSafeSharedMemory(
+                               safe_shared_memory_pool(),
+                               mem_params.shared_memory,
+                               mem_params.shm_size)),
+               callback)));
 }
 
 void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
@@ -152,22 +154,21 @@ void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
             mem_params.shm_size);
   DCHECK(state);
 
-  transfers_.push_back(
-      Transfer(
-          state->id(),
-          base::Bind(
-              &AsyncPixelTransferStateIdle::PerformTransfer,
-              base::AsWeakPtr(state),
-              base::Bind(
-                  &AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D,
-                  AsWeakPtr(),
-                  tex_params,
-                  mem_params,
-                  bind_callback,
-                  base::Owned(new ScopedSafeSharedMemory(
-                                  safe_shared_memory_pool(),
-                                  mem_params.shared_memory,
-                                  mem_params.shm_size))))));
+  tasks_.push_back(
+      Task(state->id(),
+           base::Bind(
+               &AsyncPixelTransferStateIdle::PerformTransfer,
+               base::AsWeakPtr(state),
+               base::Bind(
+                   &AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D,
+                   AsWeakPtr(),
+                   tex_params,
+                   mem_params,
+                   bind_callback,
+                   base::Owned(new ScopedSafeSharedMemory(
+                                   safe_shared_memory_pool(),
+                                   mem_params.shared_memory,
+                                   mem_params.shm_size))))));
 
   state->set_transfer_in_progress(true);
 }
@@ -184,21 +185,20 @@ void AsyncPixelTransferDelegateIdle::AsyncTexSubImage2D(
             mem_params.shm_size);
   DCHECK(state);
 
-  transfers_.push_back(
-      Transfer(
-          state->id(),
-          base::Bind(
-              &AsyncPixelTransferStateIdle::PerformTransfer,
-              base::AsWeakPtr(state),
-              base::Bind(
-                  &AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D,
-                  AsWeakPtr(),
-                  tex_params,
-                  mem_params,
-                  base::Owned(new ScopedSafeSharedMemory(
-                                  safe_shared_memory_pool(),
-                                  mem_params.shared_memory,
-                                  mem_params.shm_size))))));
+  tasks_.push_back(
+      Task(state->id(),
+           base::Bind(
+               &AsyncPixelTransferStateIdle::PerformTransfer,
+               base::AsWeakPtr(state),
+               base::Bind(
+                   &AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D,
+                   AsWeakPtr(),
+                   tex_params,
+                   mem_params,
+                   base::Owned(new ScopedSafeSharedMemory(
+                                   safe_shared_memory_pool(),
+                                   mem_params.shared_memory,
+                                   mem_params.shm_size))))));
 
   state->set_transfer_in_progress(true);
 }
@@ -209,15 +209,17 @@ void AsyncPixelTransferDelegateIdle::WaitForTransferCompletion(
       static_cast<AsyncPixelTransferStateIdle*>(transfer_state);
   DCHECK(state);
 
-  for (std::list<Transfer>::iterator iter = transfers_.begin();
-       iter != transfers_.end(); ++iter) {
-    if (iter->id != state->id())
+  for (std::list<Task>::iterator iter = tasks_.begin();
+       iter != tasks_.end(); ++iter) {
+    if (iter->transfer_id != state->id())
       continue;
 
-    ProcessTransfer(*iter);
-    transfers_.erase(iter);
+    (*iter).task.Run();
+    tasks_.erase(iter);
     break;
   }
+
+  ProcessNotificationTasks();
 }
 
 uint32 AsyncPixelTransferDelegateIdle::GetTextureUploadCount() {
@@ -229,23 +231,30 @@ base::TimeDelta AsyncPixelTransferDelegateIdle::GetTotalTextureUploadTime() {
 }
 
 bool AsyncPixelTransferDelegateIdle::ProcessMorePendingTransfers() {
-  if (transfers_.empty())
+  if (tasks_.empty())
     return false;
 
-  ProcessTransfer(transfers_.front());
-  transfers_.pop_front();
+  // First task should always be a pixel transfer task.
+  DCHECK(tasks_.front().transfer_id);
+  tasks_.front().task.Run();
+  tasks_.pop_front();
+
+  ProcessNotificationTasks();
   return true;
 }
 
 bool AsyncPixelTransferDelegateIdle::NeedsProcessMorePendingTransfers() {
-  return !transfers_.empty();
+  return !tasks_.empty();
 }
 
-void AsyncPixelTransferDelegateIdle::ProcessTransfer(Transfer& transfer) {
-  transfer.task.Run();
-  while (!transfer.notifications.empty()) {
-    transfer.notifications.front().Run();
-    transfer.notifications.pop();
+void AsyncPixelTransferDelegateIdle::ProcessNotificationTasks() {
+  while (!tasks_.empty()) {
+    // Stop when we reach a pixel transfer task.
+    if (tasks_.front().transfer_id)
+      return;
+
+    tasks_.front().task.Run();
+    tasks_.pop_front();
   }
 }
 

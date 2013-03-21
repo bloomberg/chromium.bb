@@ -49,16 +49,17 @@ class AsyncPixelTransferDelegateIdle : public AsyncPixelTransferDelegate,
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
-  struct Transfer {
-    Transfer(uint64 id, const base::Closure& task);
-    ~Transfer();
+  struct Task {
+    Task(uint64 transfer_id, const base::Closure& task);
+    ~Task();
 
-    uint64 id;
+    // This is non-zero if pixel transfer task.
+    uint64 transfer_id;
+
     base::Closure task;
-    std::queue<base::Closure> notifications;
   };
 
-  void ProcessTransfer(Transfer& transfer);
+  void ProcessNotificationTasks();
 
   // implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState*
@@ -85,7 +86,7 @@ class AsyncPixelTransferDelegateIdle : public AsyncPixelTransferDelegate,
   int texture_upload_count_;
   base::TimeDelta total_texture_upload_time_;
 
-  std::list<Transfer> transfers_;
+  std::list<Task> tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateIdle);
 };
