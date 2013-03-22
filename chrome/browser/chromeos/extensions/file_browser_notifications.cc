@@ -51,13 +51,6 @@ const NotificationTypeInfo kNotificationTypes[] = {
       IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::DEVICE_HARD_UNPLUG,  // type
-      "HardUnplug_",  // notification_id_prefix
-      IDR_PAGEINFO_WARNING_MAJOR,  // icon_id
-      IDS_REMOVABLE_DEVICE_HARD_UNPLUG_TITLE,  // title_id
-      IDS_EXTERNAL_STORAGE_HARD_UNPLUG_MESSAGE  // message_id
-    },
-    {
       FileBrowserNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,  // type
       "DeviceFail_",  // nottification_id_prefix; same as for DEVICE_FAIL.
       IDR_FILES_APP_ICON,  // icon_id

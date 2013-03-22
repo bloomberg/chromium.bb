@@ -23,7 +23,6 @@ class FileBrowserNotifications
   enum NotificationType {
     DEVICE,
     DEVICE_FAIL,
-    DEVICE_HARD_UNPLUG,
     DEVICE_EXTERNAL_STORAGE_DISABLED,
     FORMAT_START,
     FORMAT_START_FAIL,
