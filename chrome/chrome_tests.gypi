@@ -919,7 +919,6 @@
       'dependencies': [
         'chromedriver2_lib',
         '../base/base.gyp:base',
-        'test/chromedriver/third_party/jni/jni.gyp:jni',
       ],
       'include_dirs': [
         '..',

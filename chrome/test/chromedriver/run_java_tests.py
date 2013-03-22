@@ -58,7 +58,7 @@ class TestResult(object):
 
 
 def _Run(src_dir, java_tests_src_dir, test_filter,
-         chromedriver_path, chrome_path):
+         chromedriver_path, chrome_path, android_package):
   """Run the WebDriver Java tests and return the test results.
 
   Args:
@@ -68,6 +68,7 @@ def _Run(src_dir, java_tests_src_dir, test_filter,
         ClassName#testMethod.
     chromedriver_path: path to ChromeDriver exe.
     chrome_path: path to Chrome exe.
+    android_package: name of Chrome's Android package.
 
   Returns:
     A list of |TestResult|s.
@@ -89,9 +90,12 @@ def _Run(src_dir, java_tests_src_dir, test_filter,
                   os.path.join(test_dir, test_jar))
 
   sys_props = ['selenium.browser=chrome',
-               'webdriver.chrome.driver=' + chromedriver_path]
+               'webdriver.chrome.driver=' + chromedriver_path,
+               'java.library.path=' + test_dir]
   if chrome_path is not None:
     sys_props += ['webdriver.chrome.binary=' + chrome_path]
+  if android_package is not None:
+    sys_props += ['webdriver.chrome.android_package=' + android_package]
   if test_filter != '' and test_filter != '*':
     classes = []
     methods = []
@@ -106,17 +110,6 @@ def _Run(src_dir, java_tests_src_dir, test_filter,
         classes += [parts[0]]
     sys_props += ['only_run=' + ','.join(classes)]
     sys_props += ['method=' + ','.join(methods)]
-
-  # Make a copy of chormedriver library, because java expects a different name.
-  expected_chromedriver_map = {
-    'win': 'chromedriver.dll',
-    'mac': 'libchromedriver.jnilib',
-    'linux': 'libchromedriver.so',
-  }
-  expected_chromedriver = expected_chromedriver_map[util.GetPlatformName()]
-  expected_chromedriver_path = os.path.join(test_dir, expected_chromedriver)
-  shutil.copyfile(chromedriver_path, expected_chromedriver_path)
-  sys_props += ['java.library.path=' + test_dir]
 
   return _RunAntTest(
       test_dir, 'org.openqa.selenium.chrome.ChromeDriverTests',
@@ -221,6 +214,9 @@ def main():
       '', '--chrome', type='string', default=None,
       help='Path to a build of the chrome binary')
   parser.add_option(
+      '', '--android-package', type='string', default=None,
+      help='Name of Chrome\'s Android package')
+  parser.add_option(
       '', '--filter', type='string', default=None,
       help='Filter for specifying what tests to run, "*" will run all. E.g., ' +
            'AppCacheTest,ElementFindingTest#testShouldReturnTitleOfPageIfSet.')
@@ -252,7 +248,8 @@ def main():
       java_tests_src_dir=java_tests_src_dir,
       test_filter=test_filter,
       chromedriver_path=options.chromedriver,
-      chrome_path=options.chrome))
+      chrome_path=options.chrome,
+      android_package=options.android_package))
 
 
 if __name__ == '__main__':

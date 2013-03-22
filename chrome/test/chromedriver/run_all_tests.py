@@ -102,14 +102,17 @@ def main():
 
   if util.IsWindows():
     cpp_tests_name = 'chromedriver2_tests.exe'
+    server_name = 'chromedriver2_server.exe'
   else:
     cpp_tests_name = 'chromedriver2_tests'
+    server_name = 'chromedriver2_server'
 
   required_build_outputs = [chromedriver_name,  cpp_tests_name]
   build_dir = chrome_paths.GetBuildDir(required_build_outputs)
   print 'Using build outputs from', build_dir
 
   chromedriver = os.path.join(build_dir, chromedriver_name)
+  chromedriver_server = os.path.join(build_dir, server_name)
   chrome = os.path.join(build_dir, chrome_name)
   cpp_tests = os.path.join(build_dir, cpp_tests_name)
 
@@ -127,7 +130,7 @@ def main():
                           android_package=options.android_package)
   else:
     code1 = RunPythonTests(chromedriver, chrome=chrome)
-    code2 = RunJavaTests(chromedriver, chrome)
+    code2 = RunJavaTests(chromedriver_server, chrome)
     code3 = RunCppTests(cpp_tests)
     return code1 or code2 or code3
 

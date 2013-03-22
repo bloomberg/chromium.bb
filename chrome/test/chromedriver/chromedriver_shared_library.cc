@@ -12,7 +12,6 @@
 #include "chrome/test/chromedriver/chromedriver.h"
 #include "chrome/test/chromedriver/command_executor.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
-#include "chrome/test/chromedriver/third_party/jni/jni.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -52,27 +51,6 @@ void EXPORT ExecuteCommand(
 
 void EXPORT Free(char* p) {
   delete [] p;
-}
-
-// Temporary measure for running Java WebDriver acceptance tests before we
-// add a client for the new ChromeDriver there.
-// TODO(kkania): Rename this to
-// Java_org_chromium_chromedriver_CommandExecutor_execute.
-EXPORT jstring Java_org_openqa_selenium_chrome_NewCommandExecutor_execute(
-    JNIEnv *env,
-    jclass clazz,
-    jstring command) {
-  const jchar* cmd_jchars = env->GetStringChars(command, NULL);
-  jsize cmd_length = env->GetStringLength(command);
-  string16 cmd_utf16(reinterpret_cast<const char16*>(cmd_jchars), cmd_length);
-  env->ReleaseStringChars(command, cmd_jchars);
-
-  std::string response_utf8;
-  ExecuteCommand(UTF16ToUTF8(cmd_utf16), &response_utf8);
-
-  string16 response_utf16(UTF8ToUTF16(response_utf8));
-  return env->NewString(reinterpret_cast<const jchar*>(response_utf16.c_str()),
-                        response_utf16.length());
 }
 
 }  // extern "C"
