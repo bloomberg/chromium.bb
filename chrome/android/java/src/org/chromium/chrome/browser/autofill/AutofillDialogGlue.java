@@ -145,7 +145,7 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
 
     @Override
     public void dialogSubmit() {
-        nativeDialogCancel(mNativeDialogPopup);
+        nativeDialogSubmit(mNativeDialogPopup);
     }
 
     @Override
