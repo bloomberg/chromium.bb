@@ -122,6 +122,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // when displays are mirrored.
   size_t num_connected_displays() const { return num_connected_displays_; }
 
+  // Returns the mirroring status.
+  bool IsMirrored() const;
   int64 mirrored_display_id() const { return mirrored_display_id_; }
 
   // Returns the display object nearest given |window|.

@@ -79,11 +79,6 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Stop handling display configuration events/requests.
   void Stop();
 
-  // Called when the user hits ctrl-F4 to request a display mode change.
-  // This method should only return false if it was called in a single-head or
-  // headless mode.
-  bool CycleDisplayMode();
-
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with
   // the display(s) in question so that the low power state is engaged.
@@ -91,9 +86,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // |power_state| matches |power_state_|.
   bool SetDisplayPower(DisplayPowerState power_state, bool force_probe);
 
-  // Force switching the display mode to |new_state|.  This method is used when
-  // the user explicitly changes the display mode in the options UI.  Returns
-  // false if it was called in a single-head or headless mode.
+  // Force switching the display mode to |new_state|. Returns false if
+  // it was called in a single-head or headless mode.
   bool SetDisplayMode(OutputState new_state);
 
   // Called when an RRNotify event is received.  The implementation is

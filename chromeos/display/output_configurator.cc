@@ -622,45 +622,6 @@ void OutputConfigurator::Stop() {
   configure_display_ = false;
 }
 
-bool OutputConfigurator::CycleDisplayMode() {
-  TRACE_EVENT0("chromeos", "OutputConfigurator::CycleDisplayMode");
-  VLOG(1) << "CycleDisplayMode";
-  if (!configure_display_)
-    return false;
-
-  bool did_change = false;
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
-  CHECK(display != NULL);
-  XGrabServer(display);
-  Window window = DefaultRootWindow(display);
-  XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
-  CHECK(screen != NULL);
-
-  std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
-  connected_output_count_ = outputs.size();
-  OutputState original = InferCurrentState(display, screen, outputs);
-  OutputState next_state = GetNextState(display, screen, original, outputs);
-  if (original != next_state &&
-      EnterState(display, screen, window, next_state, power_state_, outputs)) {
-    did_change = true;
-  }
-  // We have seen cases where the XRandR data can get out of sync with our own
-  // cache so over-write it with whatever we detected, even if we didn't think
-  // anything changed.
-  output_state_ = next_state;
-
-  XRRFreeScreenResources(screen);
-  XUngrabServer(display);
-
-  if (did_change) {
-    NotifyOnDisplayChanged();
-  } else {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, OnDisplayModeChangeFailed(next_state));
-  }
-  return did_change;
-}
-
 bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
                                          bool force_probe) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::SetDisplayPower");

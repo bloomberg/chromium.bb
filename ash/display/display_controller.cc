@@ -560,14 +560,18 @@ void DisplayController::CycleDisplayMode() {
   }
 #if defined(OS_CHROMEOS)
   Shell* shell = Shell::GetInstance();
+  internal::DisplayManager* display_manager = GetDisplayManager();
   if (!base::chromeos::IsRunningOnChromeOS()) {
     internal::DisplayManager::CycleDisplay();
-  } else if (shell->output_configurator()->connected_output_count() > 1) {
+  } else if (display_manager->num_connected_displays() > 1) {
+    chromeos::OutputState new_state = display_manager->IsMirrored() ?
+       chromeos::STATE_DUAL_EXTENDED : chromeos::STATE_DUAL_MIRROR;
     internal::OutputConfiguratorAnimation* animation =
         shell->output_configurator_animation();
     animation->StartFadeOutAnimation(base::Bind(
-        base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
-        base::Unretained(shell->output_configurator())));
+        base::IgnoreResult(&chromeos::OutputConfigurator::SetDisplayMode),
+        base::Unretained(shell->output_configurator()),
+        new_state));
   }
 #endif
 }

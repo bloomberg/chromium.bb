@@ -441,6 +441,10 @@ size_t DisplayManager::GetNumDisplays() const {
   return displays_.size();
 }
 
+bool DisplayManager::IsMirrored() const {
+  return mirrored_display_id_ != gfx::Display::kInvalidDisplayID;
+}
+
 const gfx::Display& DisplayManager::GetDisplayNearestWindow(
     const Window* window) const {
   if (!window)
