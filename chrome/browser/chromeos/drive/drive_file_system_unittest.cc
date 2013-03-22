@@ -334,8 +334,7 @@ class DriveFileSystemTest : public testing::Test {
     scoped_ptr<DriveEntryProto> entry_proto;
     file_system_->GetEntryInfoByPath(
         file_path,
-        base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                   &error, &entry_proto));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();
 
     return entry_proto.Pass();

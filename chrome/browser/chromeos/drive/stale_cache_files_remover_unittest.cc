@@ -175,10 +175,8 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   scoped_ptr<DriveEntryProto> entry_proto;
   file_system_->GetEntryInfoByResourceId(
       resource_id,
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
-                 &error,
-                 &unused,
-                 &entry_proto));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &unused, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());

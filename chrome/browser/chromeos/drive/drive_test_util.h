@@ -44,15 +44,6 @@ DriveCacheEntry ToCacheEntry(int cache_state);
 // Returns true if the cache state of the given two cache entries are equal.
 bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b);
 
-// Copies |error| and |entry_proto| to |out_error| and |out_entry_proto|
-// respectively. Used to run asynchronous functions that take
-// GetEntryInfoCallback from tests.
-void CopyResultsFromGetEntryInfoCallback(
-    DriveFileError* out_error,
-    scoped_ptr<DriveEntryProto>* out_entry_proto,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto);
-
 // Copies |error| and |entries| to |out_error| and |out_entries|
 // respectively. Used to run asynchronous functions that take
 // ReadDirectoryCallback from tests.
@@ -71,24 +62,6 @@ void CopyResultsFromReadDirectoryByPathCallback(
     DriveFileError error,
     bool /* hide_hosted_documents */,
     scoped_ptr<DriveEntryProtoVector> entries);
-
-// Copies |error|, |drive_file_path|, and |entry_proto| to |out_error|,
-// |out_drive_file_path|, and |out_entry_proto| respectively. Used to run
-// asynchronous functions that take GetEntryInfoWithbase::FilePathCallback from
-// tests.
-void CopyResultsFromGetEntryInfoWithFilePathCallback(
-    DriveFileError* out_error,
-    base::FilePath* out_drive_file_path,
-    scoped_ptr<DriveEntryProto>* out_entry_proto,
-    DriveFileError error,
-    const base::FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto);
-
-// Copies |result| to |out_result|. Used to run asynchronous functions
-// that take GetEntryInfoPairCallback from tests.
-void CopyResultsFromGetEntryInfoPairCallback(
-    scoped_ptr<EntryInfoPairResult>* out_result,
-    scoped_ptr<EntryInfoPairResult> result);
 
 // Copies |success| to |out_success|. Used to run asynchronous functions that
 // take InitializeCacheCallback from tests.

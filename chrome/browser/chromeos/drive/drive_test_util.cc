@@ -37,18 +37,6 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
-void CopyResultsFromGetEntryInfoCallback(
-    DriveFileError* out_error,
-    scoped_ptr<DriveEntryProto>* out_entry_proto,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(out_error);
-  DCHECK(out_entry_proto);
-
-  *out_error = error;
-  *out_entry_proto = entry_proto.Pass();
-}
-
 void CopyResultsFromReadDirectoryCallback(
     DriveFileError* out_error,
     scoped_ptr<DriveEntryProtoVector>* out_entries,
@@ -72,30 +60,6 @@ void CopyResultsFromReadDirectoryByPathCallback(
 
   *out_error = error;
   *out_entries = entries.Pass();
-}
-
-void CopyResultsFromGetEntryInfoWithFilePathCallback(
-    DriveFileError* out_error,
-    base::FilePath* out_drive_file_path,
-    scoped_ptr<DriveEntryProto>* out_entry_proto,
-    DriveFileError error,
-    const base::FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(out_error);
-  DCHECK(out_drive_file_path);
-  DCHECK(out_entry_proto);
-
-  *out_error = error;
-  *out_drive_file_path = drive_file_path;
-  *out_entry_proto = entry_proto.Pass();
-}
-
-void CopyResultsFromGetEntryInfoPairCallback(
-    scoped_ptr<EntryInfoPairResult>* out_result,
-    scoped_ptr<EntryInfoPairResult> result) {
-  DCHECK(out_result);
-
-  *out_result = result.Pass();
 }
 
 void CopyResultFromInitializeCacheCallback(bool* out_success,
