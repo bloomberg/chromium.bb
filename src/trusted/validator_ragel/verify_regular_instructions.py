@@ -51,31 +51,23 @@ class WorkerState(object):
   def Finish(self):
     # Check instructions accumulated so far.
     try:
-      asm_file = tempfile.NamedTemporaryFile(
-          mode='wt',
-          prefix=self._file_prefix,
-          suffix='.s',
-          delete=False)
-      asm_file.write('.text\n')
-      for instr in self._instructions:
-        asm_file.write('  .byte %s\n' % ','.join(map(hex, instr)))
-      asm_file.close()
-
-      object_file = tempfile.NamedTemporaryFile(
+      raw_file = tempfile.NamedTemporaryFile(
+          mode='wb',
           prefix=self._file_prefix,
           suffix='.o',
           delete=False)
-      object_file.close()
-      subprocess.check_call([
-          options.gas,
-          '--%s' % options.bitness,
-          asm_file.name,
-          '-o', object_file.name])
+      for instr in self._instructions:
+        raw_file.write(''.join(map(chr, instr)))
+      raw_file.close()
 
       objdump_proc = subprocess.Popen(
           [options.objdump,
-           '-d', object_file.name,
-           '--insn-width', '15'],
+           '-D',
+           '-b', 'binary',
+           '-m', 'i386'] +
+          {32: [], 64: ['-M', 'x86-64']}[options.bitness] +
+          ['--insn-width', '15',
+           raw_file.name],
           stdout=subprocess.PIPE)
 
       # Objdump prints few lines about file and section before disassembly
@@ -116,8 +108,7 @@ class WorkerState(object):
       assert return_code == 0
 
     finally:
-      os.remove(asm_file.name)
-      os.remove(object_file.name)
+      os.remove(raw_file.name)
 
 
 def Worker((prefix, state_index)):
