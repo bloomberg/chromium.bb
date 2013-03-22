@@ -96,7 +96,7 @@ def ParseLit(filename):
         continue
       if l[0] in ('PASS:', 'FAIL:', 'XFAIL:', 'XPASS:', 'UNSUPPORTED:'):
         testcount += 1
-        fullname = l[3]
+        fullname = ''.join(l[1:4])
         shortname = GetShortname(fullname)
         fullnames = alltests.get(shortname, [])
         fullnames.append(fullname)
