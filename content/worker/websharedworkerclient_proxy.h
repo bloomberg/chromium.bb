@@ -11,8 +11,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
 
 namespace WebKit {
 class WebApplicationCacheHost;
@@ -83,8 +81,6 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
   virtual bool allowIndexedDB(const WebKit::WebString&);
-  virtual void queryUsageAndQuota(WebKit::WebStorageQuotaType,
-                                  WebKit::WebStorageQuotaCallbacks*);
   virtual void dispatchDevToolsMessage(const WebKit::WebString&);
   virtual void saveDevToolsAgentState(const WebKit::WebString&);
 

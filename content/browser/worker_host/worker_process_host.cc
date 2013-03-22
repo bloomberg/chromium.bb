@@ -27,7 +27,6 @@
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
-#include "content/browser/renderer_host/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
@@ -261,10 +260,6 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   process_->GetHost()->AddFilter(new MimeRegistryMessageFilter());
   process_->GetHost()->AddFilter(
       new DatabaseMessageFilter(partition_.database_tracker()));
-  process_->GetHost()->AddFilter(new QuotaDispatcherHost(
-      process_->GetData().id,
-      partition_.quota_manager(),
-      GetContentClient()->browser()->CreateQuotaPermissionContext()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
@@ -331,7 +326,7 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
     NOTREACHED();
