@@ -21,8 +21,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, 'pylib'))
 
 from common import chrome_paths
 from common import util
+from continuous_archive import CHROME_26_REVISION
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+
+
+_FAILED_JAVA_TESTS_IN_CHROME_26 = [
+    'UploadTest#testFileUploading',
+    'AlertsTest']
 
 
 class TestResult(object):
@@ -57,12 +63,11 @@ class TestResult(object):
     return self._failure
 
 
-def _Run(src_dir, java_tests_src_dir, test_filter,
+def _Run(java_tests_src_dir, test_filter,
          chromedriver_path, chrome_path, android_package):
   """Run the WebDriver Java tests and return the test results.
 
   Args:
-    src_dir: the chromium source checkout directory.
     java_tests_src_dir: the java test source code directory.
     test_filter: the filter to use when choosing tests to run. Format is
         ClassName#testMethod.
@@ -72,6 +77,9 @@ def _Run(src_dir, java_tests_src_dir, test_filter,
 
   Returns:
     A list of |TestResult|s.
+
+  Raises:
+    RuntimeError: Raised if test_filter is invalid.
   """
   test_dir = util.MakeTempDir()
   keystore_path = ('java', 'client', 'test', 'keystore')
@@ -90,13 +98,13 @@ def _Run(src_dir, java_tests_src_dir, test_filter,
                   os.path.join(test_dir, test_jar))
 
   sys_props = ['selenium.browser=chrome',
-               'webdriver.chrome.driver=' + chromedriver_path,
+               'webdriver.chrome.driver=' + os.path.abspath(chromedriver_path),
                'java.library.path=' + test_dir]
   if chrome_path is not None:
-    sys_props += ['webdriver.chrome.binary=' + chrome_path]
+    sys_props += ['webdriver.chrome.binary=' + os.path.abspath(chrome_path)]
   if android_package is not None:
     sys_props += ['webdriver.chrome.android_package=' + android_package]
-  if test_filter != '' and test_filter != '*':
+  if test_filter and test_filter != '*':
     classes = []
     methods = []
     cases = test_filter.split(',')
@@ -106,7 +114,7 @@ def _Run(src_dir, java_tests_src_dir, test_filter,
         raise RuntimeError('Filter should be of form: SomeClass#testMethod')
       elif len(parts) == 2:
         methods += [parts[1]]
-      if len(parts[0]) > 0:
+      if parts:
         classes += [parts[0]]
     sys_props += ['only_run=' + ','.join(classes)]
     sys_props += ['method=' + ','.join(methods)]
@@ -124,6 +132,9 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props):
     test_class: the name of the JUnit test suite class to run.
     class_path: the Java class path used when running the tests.
     sys_props: Java system properties to set when running the tests.
+
+  Returns:
+    A list of |TestResult|s.
   """
 
   def _CreateBuildConfig(test_name, results_file, class_path, junit_props,
@@ -159,9 +170,9 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props):
       failure = None
       error_nodes = test.getElementsByTagName('error')
       failure_nodes = test.getElementsByTagName('failure')
-      if len(error_nodes) > 0:
+      if error_nodes:
         failure = error_nodes[0].childNodes[0].nodeValue
-      elif len(failure_nodes) > 0:
+      elif failure_nodes:
         failure = failure_nodes[0].childNodes[0].nodeValue
       tests += [TestResult(name, time, failure)]
     return tests
@@ -200,7 +211,7 @@ def PrintTestResults(results):
     print '=' * 80
     print '=' * 10, result.GetName(), '(%ss)' % result.GetTime()
     print result.GetFailureMessage()
-  if len(failures) > 0:
+  if failures:
     print '@@@STEP_TEXT@Failed %s tests@@@' % len(failures)
   return len(failures)
 
@@ -214,25 +225,35 @@ def main():
       '', '--chrome', type='string', default=None,
       help='Path to a build of the chrome binary')
   parser.add_option(
+      '', '--chrome-revision', default='HEAD',
+      help='Revision of chrome. Default is HEAD.')
+  parser.add_option(
       '', '--android-package', type='string', default=None,
       help='Name of Chrome\'s Android package')
   parser.add_option(
       '', '--filter', type='string', default=None,
-      help='Filter for specifying what tests to run, "*" will run all. E.g., ' +
+      help='Filter for specifying what tests to run, "*" will run all. E.g., '
            'AppCacheTest,ElementFindingTest#testShouldReturnTitleOfPageIfSet.')
   options, args = parser.parse_args()
 
-  if (options.chromedriver is None or not os.path.exists(options.chromedriver)):
+  if options.chromedriver is None or not os.path.exists(options.chromedriver):
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
   # Run passed tests when filter is not provided.
   test_filter = options.filter
   if test_filter is None:
-    passed_java_tests_file = open(
-        os.path.join(_THIS_DIR, 'passed_java_tests.txt'))
-    passed_java_tests = [line.strip('\n') for line in passed_java_tests_file]
-    passed_java_tests_file.close()
+    passed_java_tests = []
+    with open(os.path.join(_THIS_DIR, 'passed_java_tests.txt'), 'r') as f:
+      for line in f:
+        java_test = line.strip('\n')
+        # Filter out failed tests for chrome 26.
+        if options.chrome_revision == CHROME_26_REVISION:
+          suite_name = java_test.split('#')[0]
+          if (java_test in _FAILED_JAVA_TESTS_IN_CHROME_26 or
+              suite_name in _FAILED_JAVA_TESTS_IN_CHROME_26):
+            continue
+        passed_java_tests.append(java_test)
     test_filter = ','.join(passed_java_tests)
 
   java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
@@ -241,10 +262,9 @@ def main():
       not os.listdir(java_tests_src_dir)):
     print ('"%s" is empty or it doesn\'t exist.' % java_tests_src_dir +
            'Should add "deps/third_party/webdriver" to source checkout config')
-    return 1;
+    return 1
 
   return PrintTestResults(_Run(
-      src_dir=chrome_paths.GetSrc(),
       java_tests_src_dir=java_tests_src_dir,
       test_filter=test_filter,
       chromedriver_path=options.chromedriver,

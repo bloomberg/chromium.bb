@@ -7,7 +7,6 @@
 
 import optparse
 import os
-import shutil
 import sys
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -15,6 +14,7 @@ sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 
 from common import chrome_paths
 from common import util
+import continuous_archive
 
 
 def _AppendEnvironmentPath(env_name, path):
@@ -35,15 +35,21 @@ def _AddToolsToSystemPathForWindows():
   os.environ['PATH'] = os.pathsep.join(paths) + os.pathsep + os.environ['PATH']
 
 
-def RunPythonTests(chromedriver, chrome=None, android_package=None):
-  print '@@@BUILD_STEP chromedriver2_python_tests@@@'
+def RunPythonTests(chromedriver, chrome=None, chrome_revision=None,
+                   android_package=None):
+  revision_info = ''
+  if chrome_revision:
+    revision_info = '(r%s)' % chrome_revision
+  print '@@@BUILD_STEP chromedriver2_python_tests%s@@@' % revision_info
   cmd = [
-    sys.executable,
-    os.path.join(_THIS_DIR, 'run_py_tests.py'),
-    '--chromedriver=' + chromedriver,
+      sys.executable,
+      os.path.join(_THIS_DIR, 'run_py_tests.py'),
+      '--chromedriver=' + chromedriver,
   ]
   if chrome:
     cmd.append('--chrome=' + chrome)
+  if chrome_revision:
+    cmd.append('--chrome-revision=' + chrome_revision)
 
   if android_package:
     cmd.append('--android-package=' + android_package)
@@ -57,13 +63,14 @@ def RunPythonTests(chromedriver, chrome=None, android_package=None):
   return code
 
 
-def RunJavaTests(chromedriver, chrome):
-  print '@@@BUILD_STEP chromedriver2_java_tests@@@'
+def RunJavaTests(chromedriver, chrome, chrome_revision):
+  print '@@@BUILD_STEP chromedriver2_java_tests(r%s)@@@' % chrome_revision
   cmd = [
-    sys.executable,
-    os.path.join(_THIS_DIR, 'run_java_tests.py'),
-    '--chromedriver=' + chromedriver,
-    '--chrome=' + chrome,
+      sys.executable,
+      os.path.join(_THIS_DIR, 'run_java_tests.py'),
+      '--chromedriver=' + chromedriver,
+      '--chrome=' + chrome,
+      '--chrome-revision=' + chrome_revision,
   ]
   code = util.RunCommand(cmd)
   if code:
@@ -87,16 +94,16 @@ def main():
   options, _ = parser.parse_args()
 
   chromedriver_map = {
-    'win': 'chromedriver2.dll',
-    'mac': 'chromedriver2.so',
-    'linux': 'libchromedriver2.so',
+      'win': 'chromedriver2.dll',
+      'mac': 'chromedriver2.so',
+      'linux': 'libchromedriver2.so',
   }
   chromedriver_name = chromedriver_map[util.GetPlatformName()]
 
   chrome_map = {
-    'win': 'chrome.exe',
-    'mac': 'Chromium.app/Contents/MacOS/Chromium',
-    'linux': 'chrome',
+      'win': 'chrome.exe',
+      'mac': 'Chromium.app/Contents/MacOS/Chromium',
+      'linux': 'chrome',
   }
   chrome_name = chrome_map[util.GetPlatformName()]
 
@@ -107,14 +114,13 @@ def main():
     cpp_tests_name = 'chromedriver2_tests'
     server_name = 'chromedriver2_server'
 
-  required_build_outputs = [chromedriver_name,  cpp_tests_name]
+  required_build_outputs = [chromedriver_name]
+  if not options.android_package:
+    required_build_outputs += [cpp_tests_name, server_name]
   build_dir = chrome_paths.GetBuildDir(required_build_outputs)
   print 'Using build outputs from', build_dir
 
   chromedriver = os.path.join(build_dir, chromedriver_name)
-  chromedriver_server = os.path.join(build_dir, server_name)
-  chrome = os.path.join(build_dir, chrome_name)
-  cpp_tests = os.path.join(build_dir, cpp_tests_name)
 
   if util.IsLinux():
     # Set LD_LIBRARY_PATH to enable successful loading of shared object files,
@@ -129,10 +135,24 @@ def main():
     return RunPythonTests(chromedriver,
                           android_package=options.android_package)
   else:
-    code1 = RunPythonTests(chromedriver, chrome=chrome)
-    code2 = RunJavaTests(chromedriver_server, chrome)
-    code3 = RunCppTests(cpp_tests)
-    return code1 or code2 or code3
+    chromedriver_server = os.path.join(build_dir, server_name)
+    chrome_tip_of_tree = os.path.join(build_dir, chrome_name)
+    cpp_tests = os.path.join(build_dir, cpp_tests_name)
+
+    chrome_26 = continuous_archive.DownloadChrome(
+        continuous_archive.CHROME_26_REVISION, util.MakeTempDir())
+    chrome_path_revisions = [
+        {'path': chrome_tip_of_tree, 'revision': 'HEAD'},
+        {'path': chrome_26, 'revision': continuous_archive.CHROME_26_REVISION}
+    ]
+    code = 0
+    for chrome in chrome_path_revisions:
+      code1 = RunPythonTests(chromedriver, chrome=chrome['path'],
+                             chrome_revision=chrome['revision'])
+      code2 = RunJavaTests(chromedriver_server, chrome['path'],
+                           chrome['revision'])
+      code = code or code1 or code2
+    return RunCppTests(cpp_tests) or code
 
 
 if __name__ == '__main__':

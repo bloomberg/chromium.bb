@@ -6,16 +6,11 @@
 """End to end tests for ChromeDriver."""
 
 import base64
-import ctypes
 import optparse
 import os
 import sys
 import time
 import unittest
-
-import chromedriver
-import webserver
-from webelement import WebElement
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
@@ -26,6 +21,11 @@ from common import chrome_paths
 from common import unittest_util
 from common import util
 
+import chromedriver
+from continuous_archive import CHROME_26_REVISION
+from webelement import WebElement
+import webserver
+
 if util.IsLinux():
   sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
                                   'build', 'android'))
@@ -34,52 +34,49 @@ if util.IsLinux():
   from pylib import valgrind_tools
 
 
-_ANDROID_FILTER = {}
-_ANDROID_FILTER['org.chromium.chrome.testshell'] = [
-    'ChromeDriverTest.testStartStop',
-    'ChromeDriverTest.testLoadUrl',
-    'ChromeDriverTest.testGetCurrentWindowHandle',
-    'ChromeDriverTest.testEvaluateScript',
-    'ChromeDriverTest.testEvaluateScriptWithArgs',
-    'ChromeDriverTest.testEvaluateInvalidScript',
-    'ChromeDriverTest.testExecuteAsyncScript',
-    'ChromeDriverTest.testSwitchToFrame',
-    'ChromeDriverTest.testExecuteInRemovedFrame',
-    'ChromeDriverTest.testGetTitle',
-    'ChromeDriverTest.testGetPageSource',
-    'ChromeDriverTest.testFindElement',
-    'ChromeDriverTest.testFindElements',
-    'ChromeDriverTest.testFindChildElement',
-    'ChromeDriverTest.testFindChildElements',
-    'ChromeDriverTest.testHoverOverElement',
-    'ChromeDriverTest.testClickElement',
-    'ChromeDriverTest.testClearElement',
-    # https://code.google.com/p/chromedriver/issues/detail?id=259
-    #'ChromeDriverTest.testSendKeysToElement',
-    'ChromeDriverTest.testGetCurrentUrl',
-    'ChromeDriverTest.testGoBackAndGoForward',
-    'ChromeDriverTest.testRefresh',
-    'ChromeDriverTest.testMouseMoveTo',
-    'ChromeDriverTest.testMouseClick',
-    'ChromeDriverTest.testMouseButtonDownAndUp',
-    'ChromeDriverTest.testMouseDoubleClick']
-_ANDROID_FILTER['com.google.android.apps.chrome'] = (
-    _ANDROID_FILTER['org.chromium.chrome.testshell'] + [
-    # https://code.google.com/p/chromedriver/issues/detail?id=262
-    #'ChromeDriverTest.testCloseWindow',
-    #'ChromeDriverTest.testGetWindowHandles',
-    #'ChromeDriverTest.testSwitchToWindow'
-    ])
-
-def Skip(func):
-  pass
+_DESKTOP_OS_SPECIFIC_FILTER = []
+if util.IsWindows():
+  _DESKTOP_OS_SPECIFIC_FILTER = [
+      # https://code.google.com/p/chromedriver/issues/detail?id=214
+      'ChromeDriverTest.testCloseWindow',
+  ]
 
 
-def SkipIf(condition):
-  def _Decorate(func):
-    if not condition:
-      return func
-  return _Decorate
+_DESKTOP_NEGATIVE_FILTER = {}
+_DESKTOP_NEGATIVE_FILTER['HEAD'] = (
+    _DESKTOP_OS_SPECIFIC_FILTER + [
+        # https://code.google.com/p/chromedriver/issues/detail?id=213
+        'ChromeDriverTest.testClickElementInSubFrame',
+        # This test is flaky since it uses setTimeout.
+        # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
+        'ChromeDriverTest.testAlert',
+    ]
+)
+_DESKTOP_NEGATIVE_FILTER[CHROME_26_REVISION] = (
+    _DESKTOP_NEGATIVE_FILTER['HEAD'] + []
+)
+
+
+_ANDROID_NEGATIVE_FILTER = {}
+_ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
+    _DESKTOP_NEGATIVE_FILTER['HEAD'] + [
+        # Android doesn't support switches and extensions.
+        'ChromeSwitchesCapabilityTest.*',
+        'ChromeExtensionsCapabilityTest.*',
+        # https://code.google.com/p/chromedriver/issues/detail?id=262
+        'ChromeDriverTest.testCloseWindow',
+        'ChromeDriverTest.testGetWindowHandles',
+        'ChromeDriverTest.testSwitchToWindow',
+        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+        # https://code.google.com/p/chromedriver/issues/detail?id=259
+        'ChromeDriverTest.testSendKeysToElement',
+        # https://code.google.com/p/chromedriver/issues/detail?id=270
+        'ChromeDriverTest.testPopups',
+    ]
+)
+_ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
+    _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] + []
+)
 
 
 class ChromeDriverBaseTest(unittest.TestCase):
@@ -145,23 +142,26 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.GetCurrentWindowHandle()
 
   def _WaitForNewWindow(self, old_handles):
-    """ Wait until at least one new window is opened, and return a handle to a
-        new window. If timeout in 20 seconds, return None.
+    """Wait for at least one new window to show up in 20 seconds.
+
+    Args:
+      old_handles: Handles to all old windows before the new window is added.
+
+    Returns:
+      Handle to a new window. None if timeout.
     """
     timeout = time.time() + 20
     while time.time() < timeout:
       new_handles = self._driver.GetWindowHandles()
-      if (len(new_handles) > len(old_handles)):
+      if len(new_handles) > len(old_handles):
         for old_handle in old_handles:
           self.assertTrue(old_handle in new_handles)
           new_handles.remove(old_handle)
-        self.assertTrue(0 < len(new_handles))
+        self.assertTrue(len(new_handles))
         return new_handles[0]
       time.sleep(0.01)
     return None
 
-  # https://code.google.com/p/chromedriver/issues/detail?id=214
-  @SkipIf(util.IsWindows())
   def testCloseWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
@@ -210,7 +210,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(None, self._driver.ExecuteScript(''))
 
   def testEvaluateScriptWithArgs(self):
-    script = ('document.body.innerHTML = "<div>b</div><div>c</div>";' +
+    script = ('document.body.innerHTML = "<div>b</div><div>c</div>";'
               'return {stuff: document.querySelectorAll("div")};')
     stuff = self._driver.ExecuteScript(script)['stuff']
     script = 'return arguments[0].innerHTML + arguments[1].innerHTML'
@@ -288,11 +288,11 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testFindElements(self):
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
-    result = self._driver.FindElements('tag name', 'div')
-    self.assertTrue(isinstance(result, list))
-    self.assertEquals(2, len(result))
-    for item in result:
-      self.assertTrue(isinstance(item, WebElement))
+    divs = self._driver.FindElements('tag name', 'div')
+    self.assertTrue(isinstance(divs, list))
+    self.assertEquals(2, len(divs))
+    for div in divs:
+      self.assertTrue(isinstance(div, WebElement))
 
   def testFindChildElement(self):
     self._driver.ExecuteScript(
@@ -305,11 +305,11 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div><br><br></div><div><br></div>";')
     element = self._driver.FindElement('tag name', 'div')
-    result = element.FindElements('tag name', 'br')
-    self.assertTrue(isinstance(result, list))
-    self.assertEquals(2, len(result))
-    for item in result:
-      self.assertTrue(isinstance(item, WebElement))
+    brs = element.FindElements('tag name', 'br')
+    self.assertTrue(isinstance(brs, list))
+    self.assertEquals(2, len(brs))
+    for br in brs:
+      self.assertTrue(isinstance(br, WebElement))
 
   def testHoverOverElement(self):
     div = self._driver.ExecuteScript(
@@ -334,8 +334,6 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     div.Click()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
-  # TODO(chrisgao): https://code.google.com/p/chromedriver/issues/detail?id=213.
-  @Skip
   def testClickElementInSubFrame(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/frame_test.html'))
     frame = self._driver.FindElement('tag name', 'iframe')
@@ -443,12 +441,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.MouseDoubleClick()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
-  # TODO(kkania): This test is flaky since it uses setTimeout.
-  # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
-  @Skip
   def testAlert(self):
     self.assertFalse(self._driver.IsAlertOpen())
-    div = self._driver.ExecuteScript(
+    self._driver.ExecuteScript(
         'window.setTimeout('
         '    function() { window.confirmed = confirm(\'HI\'); },'
         '    0);')
@@ -503,8 +498,9 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
     is undefined.
     """
     driver = self.CreateDriver(chrome_switches=['dom-automation'])
-    result = driver.ExecuteScript('return window.domAutomationController')
-    self.assertNotEqual(None, result)
+    self.assertNotEqual(
+        None,
+        driver.ExecuteScript('return window.domAutomationController'))
 
 
 class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
@@ -527,6 +523,9 @@ if __name__ == '__main__':
       help='Path to a build of the chromedriver library(REQUIRED!)')
   parser.add_option(
       '', '--chrome', help='Path to a build of the chrome binary')
+  parser.add_option(
+      '', '--chrome-revision', default='HEAD',
+      help='Revision of chrome. Default is HEAD.')
   parser.add_option(
       '', '--filter', type='string', default='*',
       help=('Filter for specifying what tests to run, "*" will run all. E.g., '
@@ -551,9 +550,12 @@ if __name__ == '__main__':
   global _ANDROID_PACKAGE
   _ANDROID_PACKAGE = options.android_package
 
-  if _ANDROID_PACKAGE and options.filter == '*':
-    android_filter = _ANDROID_FILTER[_ANDROID_PACKAGE]
-    options.filter = ':__main__.'.join([''] + android_filter)
+  if options.filter == '*':
+    if _ANDROID_PACKAGE:
+      negative_filter = _ANDROID_NEGATIVE_FILTER[_ANDROID_PACKAGE]
+    else:
+      negative_filter = _DESKTOP_NEGATIVE_FILTER[options.chrome_revision]
+    options.filter = '*-' + ':__main__.'.join([''] + negative_filter)
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
