@@ -15,6 +15,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.scripts import cros_mark_as_stable
@@ -65,6 +66,9 @@ class NonClassTests(cros_test_lib.MoxTestCase):
 
 class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
 
+  def setUp(self):
+    self.PatchObject(osutils, 'FindMissingBinaries', return_value=[])
+
   def testNormalClean(self):
     """Clean up boards/packages with normal success"""
     cros_mark_as_stable.CleanStalePackages(('board1', 'board2'), ['cow', 'car'])
@@ -79,7 +83,8 @@ class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
     self.rc.AddCmdResult(partial_mock.In('emerge'), returncode=123)
     with parallel_unittest.ParallelMock():
       self.assertRaises(cros_build_lib.RunCommandError,
-                        cros_mark_as_stable.CleanStalePackages, (), ['no/pkg'])
+                        cros_mark_as_stable.CleanStalePackages,
+                        (), ['no/pkg'])
 
 
 class GitBranchTest(cros_test_lib.MoxTestCase):

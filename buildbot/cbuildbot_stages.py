@@ -960,41 +960,59 @@ class RefreshPackageStatusStage(bs.BuilderStage):
                                   debug=self._options.debug)
 
 
-class BuildBoardStage(bs.BuilderStage):
-  """Stage that is responsible for building host pkgs and setting up a board."""
+class InitSDKStage(bs.BuilderStage):
+  """Stage that is responsible for initializing the SDK."""
 
   option_name = 'build'
 
-  def __init__(self, options, build_config, boards=None):
-    super(BuildBoardStage, self).__init__(options, build_config)
-    if boards is not None:
-      self._boards = boards
+  def __init__(self, options, build_config):
+    super(InitSDKStage, self).__init__(options, build_config)
+    self._env = {}
+    if self._options.clobber:
+      self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+
+    self._latest_toolchain = (self._build_config['latest_toolchain'] or
+                              self._options.latest_toolchain)
+    if self._latest_toolchain and self._build_config['gcc_githash']:
+      self._env['USE'] = 'git_gcc'
+      self._env['GCC_GITHASH'] = self._build_config['gcc_githash']
 
   def _PerformStage(self):
-    chroot_upgrade = True
-
-    env = {}
-    if self._options.clobber:
-      env['IGNORE_PREFLIGHT_BINHOST'] = '1'
-
-    latest_toolchain = self._build_config['latest_toolchain']
-    if latest_toolchain and self._build_config['gcc_githash']:
-      env['USE'] = 'git_gcc'
-      env['GCC_GITHASH'] = self._build_config['gcc_githash']
-
+    use_sdk = (self._build_config['use_sdk'] and not self._options.no_sdk)
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=self._build_config['chroot_replace'],
-          use_sdk=self._build_config['use_sdk'],
+          use_sdk=use_sdk,
           chrome_root=self._options.chrome_root,
-          extra_env=env)
-      chroot_upgrade = False
+          extra_env=self._env)
     else:
       commands.RunChrootUpgradeHooks(self._build_root)
 
+
+class SetupBoardStage(InitSDKStage):
+  """Stage that is responsible for building host pkgs and setting up a board."""
+
+  option_name = 'build'
+
+  def __init__(self, options, build_config, boards=None):
+    super(SetupBoardStage, self).__init__(options, build_config)
+    if boards is not None:
+      self._boards = boards
+
+  def _PerformStage(self):
+    # Calculate whether we should use binary packages.
+    usepkg = (self._build_config['usepkg_setup_board'] and
+              not self._latest_toolchain)
+
+    # Skip updating the chroot for bots that just replaced it, unless we need
+    # to upgrade the toolchain.
+    chroot_upgrade = (not self._build_config['chroot_replace'] or
+                      self._latest_toolchain)
+
     # Iterate through boards to setup.
+    chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     for board_to_build in self._boards:
       # Only build the board if the directory does not exist.
       board_path = os.path.join(chroot_path, 'build', board_to_build)
@@ -1003,14 +1021,11 @@ class BuildBoardStage(bs.BuilderStage):
 
       commands.SetupBoard(self._build_root,
                           board=board_to_build,
-                          usepkg=self._build_config['usepkg_setup_board'],
-                          latest_toolchain=latest_toolchain,
-                          extra_env=env,
+                          usepkg=usepkg,
+                          extra_env=self._env,
                           profile=self._options.profile or
                             self._build_config['profile'],
                           chroot_upgrade=chroot_upgrade)
-
-      chroot_upgrade = False
 
 
 class UprevStage(bs.BuilderStage):

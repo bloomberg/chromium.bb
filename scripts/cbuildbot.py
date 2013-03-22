@@ -44,8 +44,6 @@ from chromite.lib import parallel
 from chromite.lib import sudo
 
 
-cros_build_lib.STRICT_SUDO = True
-
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
@@ -382,7 +380,8 @@ class SimpleBuilder(Builder):
     # TODO(sosa): Split these out into classes.
     if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
-      self._RunStage(stages.BuildBoardStage, [constants.CHROOT_BUILDER_BOARD])
+      self._RunStage(stages.InitSDKStage)
+      self._RunStage(stages.SetupBoardStage, [constants.CHROOT_BUILDER_BOARD])
       self._RunStage(stages.SyncChromeStage)
       self._RunStage(stages.PatchChromeStage)
       self._RunStage(stages.SDKPackageStage)
@@ -390,11 +389,13 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.UploadPrebuiltsStage,
                      constants.CHROOT_BUILDER_BOARD, None)
     elif self.build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
-      self._RunStage(stages.BuildBoardStage)
+      self._RunStage(stages.InitSDKStage)
+      self._RunStage(stages.SetupBoardStage)
       self._RunStage(stages.RefreshPackageStatusStage)
     else:
-      self._RunStage(stages.BuildBoardStage)
+      self._RunStage(stages.InitSDKStage)
       self._RunStage(stages.UprevStage)
+      self._RunStage(stages.SetupBoardStage)
       self._RunStage(stages.SyncChromeStage)
       self._RunStage(stages.PatchChromeStage)
 
@@ -905,6 +906,12 @@ def _CreateParser():
       "query it defaults to.  Use with care- note additionally this setting "
       "only has an effect if the buildbot target is a cq target, and we're "
       "in buildbot mode.")
+  group.add_remote_option('--latest-toolchain', action='store_true',
+                          default=False,
+                          help='Use the latest toolchain.')
+  group.add_remote_option('--no-sdk', action='store_true',
+                          default=False,
+                          help='Re-create the SDK from scratch.')
 
   parser.add_option_group(group)
 
@@ -1127,6 +1134,9 @@ def _ParseCommandLine(parser, argv):
 
 
 def main(argv):
+  # Turn on strict sudo checks.
+  cros_build_lib.STRICT_SUDO = True
+
   # Set umask to 022 so files created by buildbot are readable.
   os.umask(022)
 

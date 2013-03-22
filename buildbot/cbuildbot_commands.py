@@ -276,8 +276,8 @@ def RefreshPackageStatus(buildroot, boards, debug):
     _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
-def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
-               profile=None, chroot_upgrade=True):
+def SetupBoard(buildroot, board, usepkg, extra_env=None, profile=None,
+               chroot_upgrade=True):
   """Wrapper around setup_board."""
   cmd = ['./setup_board', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS']
@@ -293,9 +293,6 @@ def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
-
-  if latest_toolchain:
-    cmd.append('--latest_toolchain')
 
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 

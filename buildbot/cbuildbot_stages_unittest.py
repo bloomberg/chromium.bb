@@ -6,6 +6,7 @@
 
 """Unittests for build stages."""
 
+import copy
 import json
 import mox
 import os
@@ -26,6 +27,7 @@ from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
@@ -59,7 +61,7 @@ class AbstractStageTest(cros_test_lib.MoxTempDirTestCase):
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-paladin'
-    self.build_config = config.config[self.bot_id].copy()
+    self.build_config = copy.deepcopy(config.config[self.bot_id])
     self.build_root = os.path.join(self.tempdir, self.BUILDROOT)
     self._boards = self.build_config['boards']
     self._current_board = self._boards[0]
@@ -381,145 +383,105 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest,
     self.assertFalse('test6' in important_configs)
 
 
-class BuildBoardTest(AbstractStageTest):
+class AbstractBuildTest(AbstractStageTest,
+                        cros_build_lib_unittest.RunCommandTestCase):
+  # pylint: disable=W0223
+  def runBuild(self, dir_exists, full, extra_config=None):
+    """Helper for running the build."""
+    self.bot_id = 'x86-generic-full' if full else 'x86-generic-paladin'
+    self.build_config = copy.deepcopy(config.config[self.bot_id])
+    if extra_config:
+      self.build_config.update(extra_config)
+    with mock.patch.object(os.path, 'isdir', return_value=dir_exists):
+      self.RunStage()
 
-  def setUp(self):
-    self.mox.StubOutWithMock(os.path, 'isdir')
+
+class InitSDKTest(AbstractBuildTest):
+  """Test building the SDK"""
 
   def ConstructStage(self):
-    return stages.BuildBoardStage(self.options, self.build_config)
+    return stages.InitSDKStage(self.options, self.build_config)
 
-  def testFullBuild(self):
-    """Tests whether we correctly run make chroot and setup board for a full."""
-    self.bot_id = 'x86-generic-full'
-    self.build_config = config.config[self.bot_id]
-    self.mox.StubOutWithMock(commands, 'MakeChroot')
-    self.mox.StubOutWithMock(commands, 'SetupBoard')
+  def testFullBuildWithExistingChroot(self):
+    """Tests whether we create chroots for full builds."""
+    self.runBuild(dir_exists=True, full=True)
+    self.assertCommandContains(['cros_sdk'])
 
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    commands.MakeChroot(buildroot=self.build_root,
-                        replace=True,
-                        use_sdk=True,
-                        chrome_root=None,
-                        extra_env=mox.IgnoreArg()
-                        )
-    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self._current_board)).AndReturn(False)
-    commands.SetupBoard(self.build_root,
-                        board=self._current_board,
-                        usepkg=False,
-                        latest_toolchain=False,
-                        extra_env={},
-                        profile=None,
-                        chroot_upgrade=False)
+  def testBinBuildWithMissingChroot(self):
+    """Tests whether we create chroots when needed."""
+    self.runBuild(dir_exists=False, full=False)
+    self.assertCommandContains(['cros_sdk'])
 
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+  def testFullBuildWithMissingChroot(self):
+    """Tests whether we create chroots when needed."""
+    self.runBuild(dir_exists=True, full=True)
+    self.assertCommandContains(['cros_sdk'])
+
+  def testBinBuildWithNoSDK(self):
+    """Tests whether the --no-sdk option works."""
+    self.options.no_sdk = True
+    self.runBuild(dir_exists=False, full=False)
+    self.assertCommandContains(['cros_sdk', '--bootstrap'])
+
+  def testBinBuildWithExistingChroot(self):
+    """Tests whether the --no-sdk option works."""
+    self.runBuild(dir_exists=True, full=False)
+    self.assertCommandContains(['cros_sdk'], expected=False)
+
+
+class SetupBoardTest(AbstractBuildTest):
+  """Test building the board"""
+
+  def ConstructStage(self):
+    return stages.SetupBoardStage(self.options, self.build_config)
+
+  def runFullBuild(self, dir_exists=False, extra_config=None):
+    """Helper for testing a full builder."""
+    self.runBuild(dir_exists, full=True, extra_config=extra_config)
+    cmd = ['./setup_board', '--board=%s' % self._current_board,
+           '--nousepkg']
+    self.assertCommandContains(cmd, expected=not dir_exists)
+    cmd = ['./setup_board', '--skip_chroot_upgrade']
+    self.assertCommandContains(cmd, expected=not self.options.latest_toolchain)
 
   def testFullBuildWithProfile(self):
     """Tests whether full builds add profile flag when requested."""
-    self.bot_id = 'x86-generic-full'
-    self.build_config = config.config[self.bot_id]
-    self.mox.StubOutWithMock(commands, 'MakeChroot')
-    self.mox.StubOutWithMock(commands, 'SetupBoard')
-    self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
-
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    commands.MakeChroot(buildroot=self.build_root,
-                        replace=True,
-                        use_sdk=True,
-                        chrome_root=None,
-                        extra_env=mox.IgnoreArg()
-                        )
-    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self._current_board)).AndReturn(False)
-    commands.SetupBoard(self.build_root,
-                        board=self._current_board,
-                        usepkg=False,
-                        latest_toolchain=False,
-                        extra_env={},
-                        profile=self.build_config['profile'],
-                        chroot_upgrade=False)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+    self.runFullBuild(dir_exists=False, extra_config={'profile': 'foo'})
+    self.assertCommandContains(['./setup_board', '--profile=foo'])
 
   def testFullBuildWithOverriddenProfile(self):
     """Tests whether full builds add overridden profile flag when requested."""
-    self.bot_id = 'x86-generic-full'
     self.options.profile = 'smock'
-    self.build_config = config.config[self.bot_id]
-    self.mox.StubOutWithMock(commands, 'MakeChroot')
-    self.mox.StubOutWithMock(commands, 'SetupBoard')
-    self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
+    self.runFullBuild(dir_exists=False)
+    self.assertCommandContains(['./setup_board', '--profile=smock'])
 
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    commands.MakeChroot(buildroot=self.build_root,
-                        replace=True,
-                        use_sdk=True,
-                        chrome_root=None,
-                        extra_env=mox.IgnoreArg()
-                        )
-    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self._current_board)).AndReturn(False)
-    commands.SetupBoard(self.build_root,
-                        board=self._current_board,
-                        usepkg=False,
-                        latest_toolchain=False,
-                        extra_env={},
-                        profile='smock',
-                        chroot_upgrade=False)
+  def testFullBuildWithLatestToolchain(self):
+    """Tests whether we use --nousepkg for creating the board"""
+    self.options.latest_toolchain = True
+    self.runFullBuild(dir_exists=False)
 
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-    self.options.profile = None
+  def runBinBuild(self, dir_exists):
+    """Helper for testing a binary builder."""
+    self.runBuild(dir_exists, full=False)
+    self.assertCommandContains(['./setup_board'], expected=not dir_exists)
+    if not dir_exists:
+      cmd = ['./setup_board', '--nousepkg']
+      self.assertCommandContains(cmd, expected=self.options.latest_toolchain)
+    cmd = ['./setup_board', '--skip_chroot_upgrade']
+    self.assertCommandContains(cmd, expected=False)
 
-  def testBinBuild(self):
-    """Tests whether we skip un-necessary steps for a binary builder."""
-    self.mox.StubOutWithMock(commands, 'MakeChroot')
-    self.mox.StubOutWithMock(commands, 'SetupBoard')
-    self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
+  def testBinBuildWithBoard(self):
+    """Tests whether we don't create the board when it's there."""
+    self.runBinBuild(dir_exists=True)
 
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self._current_board)).AndReturn(True)
+  def testBinBuildWithMissingBoard(self):
+    """Tests whether we create the board when it's missing."""
+    self.runBinBuild(dir_exists=False)
 
-    commands.RunChrootUpgradeHooks(self.build_root)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testBinBuildAfterClobber(self):
-    """Tests whether we make chroot and board after a clobber."""
-    self.mox.StubOutWithMock(commands, 'MakeChroot')
-    self.mox.StubOutWithMock(commands, 'SetupBoard')
-
-    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(False)
-    commands.MakeChroot(buildroot=self.build_root,
-                        replace=self.build_config['chroot_replace'],
-                        use_sdk=self.build_config['use_sdk'],
-                        chrome_root=None,
-                        extra_env=mox.IgnoreArg()
-                        )
-
-    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self._current_board)).AndReturn(False)
-
-    commands.SetupBoard(self.build_root,
-                        board=self._current_board,
-                        usepkg=self.build_config['usepkg_setup_board'],
-                        latest_toolchain=self.build_config['latest_toolchain'],
-                        extra_env={},
-                        profile=None,
-                        chroot_upgrade=False)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+  def testBinBuildWithLatestToolchain(self):
+    """Tests whether we use --nousepkg for creating the board"""
+    self.options.latest_toolchain = True
+    self.runBinBuild(dir_exists=False)
 
 
 class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
