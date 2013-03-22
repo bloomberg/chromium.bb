@@ -64,7 +64,7 @@ scoped_ptr<DevToolsProtocol::Response>
 RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     DevToolsProtocol::Command* command) {
   base::DictionaryValue* params = command->params();
-  base::ListValue* file_list;
+  base::ListValue* file_list = NULL;
   if (!params || !params->GetList(kDOMFileInputFilesParam, &file_list)) {
     return command->ErrorResponse(
         DevToolsProtocol::kErrorInvalidParams,
