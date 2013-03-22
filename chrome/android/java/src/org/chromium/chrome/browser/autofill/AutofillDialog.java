@@ -240,6 +240,14 @@ public class AutofillDialog extends AlertDialog
     }
 
     /**
+     * Update notification area with the provided notifications.
+     * @param notifications Array of notifications to be displayed in the dialog.
+     */
+    public void updateNotificationArea(AutofillDialogNotification[] notifications) {
+        // TODO(yusufo): Start displaying these notifications.
+    }
+
+    /**
      * Update given section with the data provided. This fills out the related {@link EditText}
      * fields in the layout corresponding to the section.
      * @param section The section to update with the given data.

@@ -40,12 +40,6 @@ void AutofillDialogViewAndroid::Show() {
       reinterpret_cast<jint>(this),
       WindowAndroidHelper::FromWebContents(controller_->web_contents())->
           GetWindowAndroid()->GetJavaObject().obj()));
-
-  UpdateSection(SECTION_EMAIL);
-  UpdateSection(SECTION_CC);
-  UpdateSection(SECTION_BILLING);
-  UpdateSection(SECTION_CC_BILLING);
-  UpdateSection(SECTION_SHIPPING);
 }
 
 void AutofillDialogViewAndroid::Hide() {
@@ -53,7 +47,32 @@ void AutofillDialogViewAndroid::Hide() {
 }
 
 void AutofillDialogViewAndroid::UpdateNotificationArea() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::vector<DialogNotification> notifications =
+      controller_->CurrentNotifications();
+  const size_t count = notifications.size();
+  ScopedJavaLocalRef<jobjectArray> notification_array =
+      Java_AutofillDialogGlue_createAutofillDialogNotificationArray(
+          env, count);
+  for (size_t i = 0; i < count; ++i) {
+    ScopedJavaLocalRef<jstring> text =
+        base::android::ConvertUTF16ToJavaString(
+            env, notifications[i].display_text());
+
+    Java_AutofillDialogGlue_addToAutofillDialogNotificationArray(
+        env,
+        notification_array.obj(),
+        i,
+        static_cast<int>(notifications[i].GetBackgroundColor()),
+        static_cast<int>(notifications[i].GetTextColor()),
+        notifications[i].HasArrow(),
+        notifications[i].HasCheckbox(),
+        text.obj());
+  }
+
+  Java_AutofillDialogGlue_updateNotificationArea(env,
+                                                 java_object_.obj(),
+                                                 notification_array.obj());
 }
 
 void AutofillDialogViewAndroid::UpdateAccountChooser() {

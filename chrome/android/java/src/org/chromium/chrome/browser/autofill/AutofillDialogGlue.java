@@ -34,13 +34,16 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
     }
 
     /**
-     * Updates a section of Autofill dialog.
-     * @param section Section that needs to be updated. Should match one of the values in
-     *                {@link AutofillDialogConstants}.
-     * @param visible Whether the section should be visible.
-     * @param dialogInputs Input fields of the currently selected menu item.
-     * @param menuItems Menu items for the section.
-     * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
+     * @see AutofillDialog#updateNotificationArea(AutofillDialogNotification[])
+     */
+    @CalledByNative
+    private void updateNotificationArea(AutofillDialogNotification[] notifications) {
+        mAutofillDialog.updateNotificationArea(notifications);
+    }
+
+    /**
+     * @see AutofillDialog#updateSection(int, boolean, AutofillDialogField[],
+     *                                   AutofillDialogMenuItem[], int)
      */
     @CalledByNative
     private void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
@@ -65,33 +68,48 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
         mAutofillDialog.updateAccountChooserAndAddTitle(accountNames, selectedAccountIndex);
     }
 
+    /**
+     * @see AutofillDialog#getSection(int)
+     */
     @CalledByNative
     private AutofillDialogField[] getSection(int section) {
         return mAutofillDialog.getSection(section);
     }
 
+    /**
+     * @see AutofillDialog#getCvc()
+     */
     @CalledByNative
     private String getCvc() {
         return mAutofillDialog.getCvc();
     }
 
+    /**
+     * @see AutofillDialog#shouldUseBillingForShipping()
+     */
     @CalledByNative
     private boolean shouldUseBillingForShipping() {
         return mAutofillDialog.shouldUseBillingForShipping();
     }
 
+    /**
+     * @see AutofillDialog#shouldSaveDetailsInWallet()
+     */
     @CalledByNative
     private boolean shouldSaveDetailsInWallet() {
         return mAutofillDialog.shouldSaveDetailsInWallet();
     }
 
+    /**
+     * @see AutofillDialog#shouldSaveDetailsLocally()
+     */
     @CalledByNative
     private boolean shouldSaveDetailsLocally() {
         return mAutofillDialog.shouldSaveDetailsLocally();
     }
 
     /**
-     * @param value The progress bar value in a range [0.0, 1.0]
+     * @see AutofillDialog#updateProgressBar(double)
      */
     @CalledByNative
     private void updateProgressBar(double value) {
@@ -176,6 +194,19 @@ public class AutofillDialogGlue implements AutofillDialogDelegate {
     private static void addToAutofillDialogMenuItemArray(AutofillDialogMenuItem[] array, int index,
             String line1, String line2, Bitmap icon) {
         array[index] = new AutofillDialogMenuItem(index, line1, line2, icon);
+    }
+
+    @CalledByNative
+    private static AutofillDialogNotification[] createAutofillDialogNotificationArray(int size) {
+        return new AutofillDialogNotification[size];
+    }
+
+    @CalledByNative
+    private static void addToAutofillDialogNotificationArray(AutofillDialogNotification[] array,
+            int index, int backgroundColor, int textColor, boolean hasArrow, boolean hasCheckbox,
+            String text) {
+        array[index] = new AutofillDialogNotification(backgroundColor, textColor, hasArrow,
+                hasCheckbox, text);
     }
 
     // Calls from Java to C++ AutofillDialogViewAndroid --------------------------------------------
