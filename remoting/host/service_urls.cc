@@ -44,7 +44,6 @@ ServiceUrls::ServiceUrls()
     directory_base_url_ = command_line->GetSwitchValueASCII(
         kDirectoryBaseUrlSwitch);
   }
-  directory_hosts_url_ = directory_base_url_ + kDirectoryHostsSuffix;
   if (command_line->HasSwitch(kXmppServerAddressSwitch)) {
     xmpp_server_address_ = command_line->GetSwitchValueASCII(
         kXmppServerAddressSwitch);
@@ -60,6 +59,8 @@ ServiceUrls::ServiceUrls()
         kDirectoryBotJidSwitch);
   }
 #endif  // !defined(NDEBUG)
+
+  directory_hosts_url_ = directory_base_url_ + kDirectoryHostsSuffix;
 }
 
 ServiceUrls::~ServiceUrls() {
