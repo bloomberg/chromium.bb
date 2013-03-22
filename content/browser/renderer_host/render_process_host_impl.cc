@@ -646,6 +646,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
               storage_partition_impl_->GetURLRequestContext(),
               storage_partition_impl_->GetMediaURLRequestContext(),
               storage_partition_impl_->GetAppCacheService(),
+              storage_partition_impl_->GetQuotaManager(),
               storage_partition_impl_->GetFileSystemContext(),
               storage_partition_impl_->GetDatabaseTracker(),
               storage_partition_impl_->GetIndexedDBContext()),
