@@ -14,40 +14,6 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
-      <!-- ChromeOS specific pointers -->
-      <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ALIAS" file="cros/pointers/alias.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CELL" file="cros/pointers/cell.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_COL_RESIZE" file="cros/pointers/sb_h_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CONTEXT_MENU" file="cros/pointers/context_menu.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_COPY" file="cros/pointers/copy.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CROSSHAIR" file="cros/pointers/crosshair.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_RESIZE" file="cros/pointers/sb_h_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_WEST_RESIZE" file="cros/pointers/sb_h_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_FLEUR" file="cros/pointers/fleur.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HAND" file="cros/pointers/hand2.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HELP" file="cros/pointers/help.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_IBEAM" file="cros/pointers/xterm.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_MOVE" file="cros/pointers/move.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_EAST_RESIZE" file="cros/pointers/top_right_corner.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE" file="cros/pointers/top_right_corner.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_RESIZE" file="cros/pointers/sb_v_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE" file="cros/pointers/sb_v_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_WEST_RESIZE" file="cros/pointers/top_left_corner.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE" file="cros/pointers/top_left_corner.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NO_DROP" file="cros/pointers/nodrop.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_PTR" file="cros/pointers/left_ptr.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ROW_RESIZE" file="cros/pointers/sb_v_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_EAST_RESIZE" file="cros/pointers/top_left_corner.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="cros/pointers/sb_v_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_WEST_RESIZE" file="cros/pointers/top_right_corner.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_WEST_RESIZE" file="cros/pointers/sb_h_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_XTERM_HORIZ" file="cros/pointers/xterm_horiz.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_IN" file="cros/pointers/zoom_in.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_OUT" file="cros/pointers/zoom_out.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRAB" file="cros/pointers/fleur.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRABBING" file="cros/pointers/hand3.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND" file="common/launcher/launcher_background.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER" file="common/launcher/launcher_browser.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="common/launcher/launcher_browser_panel.png" />

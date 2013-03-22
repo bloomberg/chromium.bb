@@ -32,6 +32,37 @@
         <structure type="chrome_scaled_image" name="IDR_APP_TOP_LEFT" file="app_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_TOP_RIGHT" file="app_top_right.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ALIAS" file="common/pointers/alias.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CELL" file="common/pointers/cell.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_COL_RESIZE" file="common/pointers/sb_h_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CONTEXT_MENU" file="common/pointers/context_menu.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_COPY" file="common/pointers/copy.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CROSSHAIR" file="common/pointers/crosshair.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_RESIZE" file="common/pointers/sb_h_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_WEST_RESIZE" file="common/pointers/sb_h_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_FLEUR" file="common/pointers/fleur.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HAND" file="common/pointers/hand2.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HELP" file="common/pointers/help.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_IBEAM" file="common/pointers/xterm.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_MOVE" file="common/pointers/move.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_EAST_RESIZE" file="common/pointers/top_right_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE" file="common/pointers/top_right_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_RESIZE" file="common/pointers/sb_v_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE" file="common/pointers/sb_v_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_WEST_RESIZE" file="common/pointers/top_left_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE" file="common/pointers/top_left_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NO_DROP" file="common/pointers/nodrop.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_PTR" file="common/pointers/left_ptr.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ROW_RESIZE" file="common/pointers/sb_v_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_EAST_RESIZE" file="common/pointers/top_left_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="common/pointers/sb_v_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_WEST_RESIZE" file="common/pointers/top_right_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_WEST_RESIZE" file="common/pointers/sb_h_double_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_XTERM_HORIZ" file="common/pointers/xterm_horiz.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_IN" file="common/pointers/zoom_in.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_OUT" file="common/pointers/zoom_out.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRAB" file="common/pointers/fleur.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRABBING" file="common/pointers/hand3.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="common/window_shadow_active_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="common/window_shadow_active_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="common/window_shadow_active_bottom_right.png" />
