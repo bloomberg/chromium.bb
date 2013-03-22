@@ -2923,6 +2923,42 @@ TEST(HttpCache, SimpleDELETE_DontInvalidate_416) {
   RemoveMockTransaction(&transaction);
 }
 
+// Tests that we don't invalidate entries after a failed network transaction.
+TEST(HttpCache, SimpleGET_DontInvalidateOnFailure) {
+  MockHttpCache cache(net::HttpCache::DefaultBackend::InMemory(1024 * 1024));
+
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.url="http://www.not-found.com/";
+  transaction.load_flags |= net::LOAD_VALIDATE_CACHE;
+  AddMockTransaction(&transaction);
+
+  // Populate the cache.
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  RemoveMockTransaction(&transaction);
+  MockHttpRequest request(transaction);
+
+  Context* c = new Context();
+  int rv = cache.http_cache()->CreateTransaction(net::DEFAULT_PRIORITY,
+                                                 &c->trans, NULL);
+  EXPECT_EQ(net::OK, rv);
+  rv = c->trans->Start(&request, c->callback.callback(), net::BoundNetLog());
+  EXPECT_EQ(net::ERR_FAILED, c->callback.GetResult(rv));
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  delete c;
+
+  transaction.load_flags = net::LOAD_ONLY_FROM_CACHE;
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Make sure the transaction didn't reach the network.
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  RemoveMockTransaction(&transaction);
+}
+
 TEST(HttpCache, RangeGET_SkipsCache) {
   MockHttpCache cache;
 
