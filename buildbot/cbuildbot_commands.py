@@ -297,8 +297,8 @@ def SetupBoard(buildroot, board, usepkg, extra_env=None, profile=None,
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
-def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
-          nowithdebug, packages=(), extra_env=None, chrome_root=None):
+def Build(buildroot, board, build_autotest, usepkg, nowithdebug, packages=(),
+          skip_chroot_upgrade=True, extra_env=None, chrome_root=None):
   """Wrapper around build_packages."""
   cmd = ['./build_packages', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS']
@@ -306,8 +306,8 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
   if not build_autotest:
     cmd.append('--nowithautotest')
 
-  if skip_toolchain_update:
-    cmd.append('--skip_toolchain_update')
+  if skip_chroot_upgrade:
+    cmd.append('--skip_chroot_upgrade')
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)

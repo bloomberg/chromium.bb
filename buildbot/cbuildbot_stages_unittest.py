@@ -804,10 +804,65 @@ class ArchivingMock(partial_mock.PartialMock):
       self.backup['UploadArtifact'](*args, **kwargs)
 
 
-class BuildTargetStageMock(ArchivingMock):
-  """Partial mock for BuildTarget Stage."""
+class BuildPackagesStageTest(AbstractStageTest):
+  """Tests BuildPackagesStage."""
 
-  TARGET = 'chromite.buildbot.cbuildbot_stages.BuildTargetStage'
+  def ConstructStage(self):
+    return stages.BuildPackagesStage(
+        self.options, self.build_config, self._current_board)
+
+  @contextlib.contextmanager
+  def RunStageWithConfig(self, bot_id):
+    """Run the given config"""
+    self.bot_id = bot_id
+    self.build_config = copy.deepcopy(config.config[self.bot_id])
+    try:
+      with cros_build_lib_unittest.RunCommandMock() as rc:
+        rc.SetDefaultCmdResult()
+        with cros_test_lib.OutputCapturer():
+          with cros_test_lib.DisableLogger():
+            with osutils.TempDir(set_global=True) as tempdir:
+              self.build_root = tempdir
+              self.options.buildroot = tempdir
+              self.RunStage()
+        yield self.build_config, rc
+    except AssertionError as ex:
+      msg = '%s failed the following test:\n%s' % (bot_id, ex)
+      raise AssertionError(msg)
+
+  def RunTestsWithConfig(self, bot_id):
+    """Test the specified config."""
+    with self.RunStageWithConfig(bot_id) as (cfg, rc):
+      rc.assertCommandContains(['./build_packages'])
+      rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'])
+      rc.assertCommandContains(['./build_packages', '--nousepkg'],
+                               expected=not cfg['usepkg_build_packages'])
+      rc.assertCommandContains(['./build_packages', '--nowithdebug'],
+                               expected=cfg['nowithdebug'])
+      build_tests = cfg['build_tests'] and self.options.tests
+      rc.assertCommandContains(['./build_packages', '--nowithautotest'],
+                               expected=not build_tests)
+
+  def testAllConfigs(self):
+    """Test all major configurations"""
+    task = self.RunTestsWithConfig
+    with parallel.BackgroundTaskRunner(task) as queue:
+      for bot_type in config.CONFIG_TYPE_DUMP_ORDER:
+        for bot_id in config.config:
+          if bot_id.endswith(bot_type):
+            queue.put([bot_id])
+            break
+
+  def testNoTests(self):
+    """Test that self.options.tests = False works."""
+    self.options.tests = False
+    self.RunTestsWithConfig('x86-generic-paladin')
+
+
+class BuildImageStageMock(ArchivingMock):
+  """Partial mock for BuildImageStage."""
+
+  TARGET = 'chromite.buildbot.cbuildbot_stages.BuildImageStage'
   ATTRS = ('_BuildAutotestTarballs', '_BuildImages',) + ArchivingMock.ATTRS
 
   def _BuildAutotestTarballs(self, *args, **kwargs):
@@ -823,64 +878,40 @@ class BuildTargetStageMock(ArchivingMock):
       self.backup['_BuildImages'](*args, **kwargs)
 
 
-class BuildTargetStageTest(AbstractStageTest):
+class BuildImageStageTest(BuildPackagesStageTest):
+  """Tests BuildImageStage."""
 
   def setUp(self):
     self._release_tag = None
     self.StartPatcher(ArchiveStageMock())
-    self.StartPatcher(parallel_unittest.ParallelMock())
-    self.StartPatcher(BuildTargetStageMock())
+    self.StartPatcher(BuildImageStageMock())
 
   def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                         self._current_board,
                                         self._release_tag)
-    return stages.BuildTargetStage(
+    return stages.BuildImageStage(
         self.options, self.build_config, self._current_board,
         archive_stage)
 
-  def testConfig(self, bot_id='x86-generic-paladin'):
-    """Test paladin builder"""
-    self.bot_id = bot_id
-    c = self.build_config = copy.deepcopy(config.config[self.bot_id])
-    with cros_build_lib_unittest.RunCommandMock() as rc:
-      rc.SetDefaultCmdResult()
-      with cros_test_lib.OutputCapturer():
-        with cros_test_lib.DisableLogger():
-          self.RunStage()
-      rc.assertCommandContains(['./build_packages'])
-      cmd = ['./build_image', '--version=%s' % (self._release_tag or '')]
-      rc.assertCommandContains(cmd, expected=c['images'])
-      rc.assertCommandContains(['./image_to_vm.sh'],  expected=c['vm_tests'])
-      rc.assertCommandContains(['./build_packages', '--nousepkg'],
-                               expected=not c['usepkg_build_packages'])
-      rc.assertCommandContains(['./build_packages', '--nowithdebug'],
-                               expected=c['nowithdebug'])
-      build_tests = c['build_tests'] and self.options.tests
-      rc.assertCommandContains(['./build_packages', '--nowithautotest'],
-                               expected=not build_tests)
+  def RunTestsWithReleaseConfig(self, bot_id, release_tag):
+    self._release_tag = release_tag
+    with parallel_unittest.ParallelMock():
+      with BuildPackagesStageTest.RunStageWithConfig(self, bot_id) as (cfg, rc):
+        cmd = ['./build_image', '--version=%s' % (self._release_tag or '')]
+        rc.assertCommandContains(cmd, expected=cfg['images'])
+        rc.assertCommandContains(['./image_to_vm.sh'],
+                                 expected=cfg['vm_tests'])
+        hw = cfg['upload_hw_test_artifacts']
+        canary = (cfg['build_type'] == constants.CANARY_TYPE)
+        rc.assertCommandContains(['--full_payload'], expected=hw and not canary)
+        rc.assertCommandContains(['--nplus1'], expected=hw and canary)
 
-  def testAllConfigs(self):
-    """Test all major configurations"""
-    for bot_type in config.CONFIG_TYPE_DUMP_ORDER:
-      for bot_id in config.config:
-        if bot_id.endswith(bot_type):
-          try:
-            self.testConfig(bot_id)
-          except AssertionError as ex:
-            msg = '%s failed the following test:\n%s' % (bot_id, ex)
-            raise AssertionError(msg)
-          break
-
-  def testNoTests(self):
-    """Test release builder."""
-    self.options.tests = False
-    self.testConfig()
-
-  def testVersioned(self):
-    """Test release builder."""
-    self._release_tag = '0.0.1'
-    self.testAllConfigs()
+  def RunTestsWithConfig(self, bot_id):
+    """Test the specified config."""
+    task = self.RunTestsWithReleaseConfig
+    steps = [lambda: task(bot_id, tag) for tag in (None, '0.0.1')]
+    parallel.RunParallelSteps(steps)
 
 
 class ArchiveStageMock(partial_mock.PartialMock):

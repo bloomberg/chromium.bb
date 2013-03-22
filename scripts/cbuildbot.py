@@ -427,10 +427,11 @@ class SimpleBuilder(Builder):
       task = self._RunBackgroundStagesForBoard
       with parallel.BackgroundTaskRunner(task) as queue:
         for board in self.build_config['boards']:
-          # Run BuildTarget in the foreground.
+          # Run BuildPackages and BuildImage in the foreground.
           archive_stage = self.archive_stages[board]
           config = configs.get(board, self.build_config)
-          self._RunStage(stages.BuildTargetStage, board, archive_stage,
+          self._RunStage(stages.BuildPackagesStage, board, config=config)
+          self._RunStage(stages.BuildImageStage, board, archive_stage,
                          config=config)
 
           # Kick off task(board) in the background.

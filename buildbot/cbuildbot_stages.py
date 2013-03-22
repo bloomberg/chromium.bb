@@ -1219,17 +1219,14 @@ class PatchChromeStage(bs.BuilderStage):
       commands.PatchChrome(self._options.chrome_root, patch, subdir)
 
 
-class BuildTargetStage(ArchivingStage):
-  """This stage builds Chromium OS for a target.
-
-  Specifically, we build Chromium OS packages and perform imaging to get
-  the images we want per the build spec."""
+class BuildPackagesStage(BoardSpecificBuilderStage):
+  """Build Chromium OS packages."""
 
   option_name = 'build'
+  def __init__(self, options, build_config, board, suffix=None):
+    super(BuildPackagesStage, self).__init__(options, build_config, board,
+                                             suffix=suffix)
 
-  def __init__(self, options, build_config, board, archive_stage):
-    super(BuildTargetStage, self).__init__(options, build_config, board,
-                                           archive_stage)
     self._env = {}
     if self._build_config.get('useflags'):
       self._env['USE'] = ' '.join(self._build_config['useflags'])
@@ -1239,6 +1236,27 @@ class BuildTargetStage(ArchivingStage):
 
     if self._options.clobber:
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+
+    self._build_autotest = (self._build_config['build_tests'] and
+                            self._options.tests)
+
+  def _PerformStage(self):
+    commands.Build(self._build_root,
+                   self._current_board,
+                   build_autotest=self._build_autotest,
+                   usepkg=self._build_config['usepkg_build_packages'],
+                   nowithdebug=self._build_config['nowithdebug'],
+                   packages=self._build_config['packages'],
+                   chrome_root=self._options.chrome_root,
+                   extra_env=self._env)
+
+
+# We inherit first from ArchivingStage so that we inherit the constructor
+# from this stage. super() then delegates to BuildPackages.__init__
+class BuildImageStage(ArchivingStage, BuildPackagesStage):
+  """Build standard Chromium OS images."""
+
+  option_name = 'build'
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
@@ -1316,31 +1334,15 @@ class BuildTargetStage(ArchivingStage):
         queue.put([test_suites_tarball])
 
   def _PerformStage(self):
-    build_autotest = (self._build_config['build_tests'] and
-                      self._options.tests)
-
-    # If we are using ToT toolchain, don't attempt to update
-    # the toolchain during build_packages.
-    skip_toolchain_update = self._build_config['latest_toolchain']
-
-    commands.Build(self._build_root,
-                   self._current_board,
-                   build_autotest=build_autotest,
-                   skip_toolchain_update=skip_toolchain_update,
-                   usepkg=self._build_config['usepkg_build_packages'],
-                   nowithdebug=self._build_config['nowithdebug'],
-                   packages=self._build_config['packages'],
-                   chrome_root=self._options.chrome_root,
-                   extra_env=self._env)
-
     # Build images and autotest tarball in parallel.
     steps = []
-    if build_autotest and (self._build_config['upload_hw_test_artifacts'] or
-                           self._build_config['archive_build_debug']):
+    if (self._build_config['upload_hw_test_artifacts'] or
+        self._build_config['archive_build_debug']) and self._build_autotest:
       steps.append(self._BuildAutotestTarballs)
 
     if self._build_config['images']:
       steps.append(self._BuildImages)
+
     parallel.RunParallelSteps(steps)
 
 

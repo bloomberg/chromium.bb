@@ -239,7 +239,7 @@ ca-t3/pk-g4-4.0.1-r333
     """Base case where Build is called with minimal options."""
     kwds.setdefault('build_autotest', default)
     kwds.setdefault('usepkg', default)
-    kwds.setdefault('skip_toolchain_update', default)
+    kwds.setdefault('skip_chroot_upgrade', default)
     kwds.setdefault('nowithdebug', default)
     commands.Build(buildroot=self._buildroot, board='x86-generic', **kwds)
     self.assertCommandContains(['./build_packages'])
