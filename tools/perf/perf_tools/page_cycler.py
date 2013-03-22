@@ -42,11 +42,6 @@ class PageCycler(page_benchmark.PageBenchmark):
     options.AppendExtraBrowserArg('--safebrowsing-disable-auto-update')
     options.AppendExtraBrowserArg('--skip-gpu-data-loading')
 
-    # TODO(tonyg): Temporarily disable the disk cache on Mac as an experiment
-    # to see if noise is reduced.
-    if sys.platform == 'darwin':
-      options.AppendExtraBrowserArg('--disk-cache-dir=/dev/null')
-
   def MeasureMemory(self, tab, results):
     memory = tab.browser.memory_stats
     if not memory['Browser']:
