@@ -6,12 +6,12 @@
 
 namespace cc {
 
-void FakeWebScrollbar::setOverlay(bool isOverlay) {
-  m_isOverlay = isOverlay;
+void FakeWebScrollbar::setOverlay(bool is_overlay) {
+  is_overlay_ = is_overlay;
 }
 
 bool FakeWebScrollbar::isOverlay() const {
-  return m_isOverlay;
+  return is_overlay_;
 }
 
 int FakeWebScrollbar::value() const {
@@ -46,7 +46,8 @@ bool FakeWebScrollbar::isScrollableAreaActive() const {
   return true;
 }
 
-WebKit::WebScrollbar::ScrollbarControlSize FakeWebScrollbar::controlSize() const {
+WebKit::WebScrollbar::ScrollbarControlSize FakeWebScrollbar::controlSize()
+    const {
   return WebScrollbar::RegularScrollbar;
 }
 
@@ -58,7 +59,8 @@ WebKit::WebScrollbar::ScrollbarPart FakeWebScrollbar::hoveredPart() const {
   return WebScrollbar::NoPart;
 }
 
-WebKit::WebScrollbar::ScrollbarOverlayStyle FakeWebScrollbar::scrollbarOverlayStyle() const {
+WebKit::WebScrollbar::ScrollbarOverlayStyle
+FakeWebScrollbar::scrollbarOverlayStyle() const {
   return WebScrollbar::ScrollbarOverlayStyleDefault;
 }
 
@@ -70,7 +72,6 @@ WebKit::WebScrollbar::Orientation FakeWebScrollbar::orientation() const {
   return WebScrollbar::Horizontal;
 }
 
-FakeWebScrollbar::FakeWebScrollbar() : m_isOverlay(false) {
-}
+FakeWebScrollbar::FakeWebScrollbar() : is_overlay_(false) {}
 
 }  // namespace cc
