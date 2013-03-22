@@ -109,5 +109,5 @@ function handleClicked() {
   }
 }
 
-setLevel(getInitialLevel());
 chrome.browserAction.onClicked.addListener(handleClicked);
+setLevel(getInitialLevel());
