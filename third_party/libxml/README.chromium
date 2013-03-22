@@ -34,6 +34,7 @@ if treated as a generic xmlNode object.
 - Merge a clang warning fix http://git.gnome.org/browse/libxml2/commit/?id=713434d2309da469d64b35e163ea6556dadccada
 - Import attribute normalization fix http://git.gnome.org/browse/libxml2/commit/?id=6a36fbe3b3e001a8a840b5c1fdd81cefc9947f0d
 - Merge a redundant comparison fix http://git.gnome.org/browse/libxml2/commit/?id=2af19f985b911b6dc6ada478ba8d201d2ddc9309
+- Merge a redundant comparisons fix https://git.gnome.org/browse/libxml2/commit/?id=eea38159be421dbafbee38f40e239f91734bc713
 
 To import a new snapshot of libxml:
 
