@@ -240,6 +240,38 @@ class RunTestCases(unittest.TestCase):
     finally:
       run_test_cases.run_test_cases = old
 
+  def test_convert_to_lines(self):
+    data = [
+      (
+        ('blah'),
+        ['blah'],
+      ),
+      (
+        ('blah\n'),
+        ['blah\n'],
+      ),
+      (
+        ('blah', '\n'),
+        ['blah\n'],
+      ),
+      (
+        ('\n'),
+        ['\n'],
+      ),
+      (
+        ('blah blah\nboo'),
+        ['blah blah\n', 'boo'],
+      ),
+      (
+        ('b', 'lah blah\nboo'),
+        ['blah blah\n', 'boo'],
+      ),
+    ]
+    for generator, expected in data:
+      self.assertEqual(
+          expected,
+          list(run_test_cases.convert_to_lines(generator)))
+
   def testRunSome(self):
     tests = [
         # Try with named arguments. Accepts 3*1 failures.

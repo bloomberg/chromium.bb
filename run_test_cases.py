@@ -743,6 +743,7 @@ def process_output(lines, test_cases):
     assert not terminated_early
     # This means the last one likely crashed.
     test_case_data['crashed'] = True
+    test_case_data['duration'] = 0
     test_case_data['returncode'] = 1
     yield test_case_data
   elif terminated_early:
@@ -794,9 +795,28 @@ def normalize_testing_time(data, duration, returncode):
   return data
 
 
+def convert_to_lines(generator):
+  """Turn input coming from a generator into lines.
+
+  It is Windows-friendly.
+  """
+  accumulator = ''
+  for data in generator:
+    items = (accumulator + data).splitlines(True)
+    for item in items[:-1]:
+      yield item
+    if items[-1].endswith(('\r', '\n')):
+      yield items[-1]
+      accumulator = ''
+    else:
+      accumulator = items[-1]
+  if accumulator:
+    yield accumulator
+
+
 def chromium_filter_tests(data):
-  """Removes funky PRE_ chromium-specific tests."""
-  return [d for d in data if chromium_valid(d['test_case'], False, True)]
+  """Returns a generator that removes funky PRE_ chromium-specific tests."""
+  return (d for d in data if chromium_valid(d['test_case'], False, True))
 
 
 class Runner(object):
@@ -838,30 +858,28 @@ class Runner(object):
       self.progress.update_item('Starting command %s with a timeout of %ss' %
                                 (cmd, timeout), False, False)
 
-    output, _, returncode, duration = call_with_timeout(
+    # TODO(maruel): Differentiate between soft and hard timeouts.
+    proc = Popen(
         cmd,
-        timeout,
         cwd=self.cwd_dir,
+        stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         env=self.env)
-
-    if self.verbose > 1:
-      self.progress.update_item('Command %s finished after %ss' % (cmd,
-                                                                   duration),
-                                False, False)
-
+    # Create a pipeline of generators.
+    gen_lines = convert_to_lines(data for _, data in proc.yield_any(timeout))
     # It needs to be valid utf-8 otherwise it can't be stored.
     # TODO(maruel): Be more intelligent than decoding to ascii.
-    utf8_output = output.decode('ascii', 'ignore').encode('utf-8')
+    gen_lines_utf8 = (
+      line.decode('ascii', 'ignore').encode('utf-8') for line in gen_lines)
+    gen_test_cases = process_output(gen_lines_utf8, test_cases)
+    gen_test_cases_filtered = chromium_filter_tests(gen_test_cases)
 
-    data = process_output(utf8_output.splitlines(True), test_cases)
-    data = normalize_testing_time(data, duration, returncode)
-    data = chromium_filter_tests(data)
-
-    if sys.platform == 'win32':
-      output = output.replace('\r\n', '\n')
-
-    for i in data:
+    data = []
+    for i in gen_test_cases_filtered:
+      if i['duration'] is None:
+        continue
+      # A new test_case completed.
+      data.append(i)
       self.decider.got_result(i['returncode'] == 0)
       need_to_retry = i['returncode'] != 0 and try_count < self.retries
       if try_count:
@@ -891,7 +909,13 @@ class Runner(object):
           # done serially.
           self.add_serial_task(
               priority, self.map, priority, [i['test_case']], try_count + 1)
-    return data
+
+    if self.verbose > 1:
+      self.progress.update_item(
+          'Command %s finished after %ss' % (cmd, proc.duration()),
+          False, False)
+
+    return normalize_testing_time(data, proc.duration(), proc.returncode)
 
 
 def get_test_cases(
