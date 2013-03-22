@@ -683,7 +683,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
     ASSERT_TRUE(fetcher);
     EXPECT_TRUE(fetcher->delegate());
     fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_response_code(403);
+    fetcher->set_response_code(401);
     // This response body is important to make the gaia fetcher skip its delayed
     // retry behavior, which makes testing harder. If this is sent to the policy
     // fetchers then it will make them fail too.

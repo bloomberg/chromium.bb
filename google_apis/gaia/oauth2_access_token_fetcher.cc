@@ -129,6 +129,15 @@ void OAuth2AccessTokenFetcher::EndGetAccessToken(
     return;
   }
 
+  // HTTP_FORBIDDEN (403) is treated as temporary error, because it may be
+  // '403 Rate Limit Exeeded.'
+  if (source->GetResponseCode() == net::HTTP_FORBIDDEN) {
+    OnGetTokenFailure(GoogleServiceAuthError(
+        GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+    return;
+  }
+
+  // The other errors are treated as permanent error.
   if (source->GetResponseCode() != net::HTTP_OK) {
     OnGetTokenFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));

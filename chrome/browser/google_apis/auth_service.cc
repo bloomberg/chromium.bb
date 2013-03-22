@@ -40,7 +40,8 @@ namespace {
 const int kSuccessRatioHistogramFailure = 0;
 const int kSuccessRatioHistogramSuccess = 1;
 const int kSuccessRatioHistogramNoConnection = 2;
-const int kSuccessRatioHistogramMaxValue = 3;  // The max value is exclusive.
+const int kSuccessRatioHistogramTemporaryFailure = 3;
+const int kSuccessRatioHistogramMaxValue = 4;  // The max value is exclusive.
 
 }  // namespace
 
@@ -136,7 +137,14 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
                               kSuccessRatioHistogramNoConnection,
                               kSuccessRatioHistogramMaxValue);
     callback_.Run(GDATA_NO_CONNECTION, std::string());
+  } else if (error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+    // Temporary auth error.
+    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                              kSuccessRatioHistogramTemporaryFailure,
+                              kSuccessRatioHistogramMaxValue);
+    callback_.Run(HTTP_FORBIDDEN, std::string());
   } else {
+    // Permanent auth error.
     UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
                               kSuccessRatioHistogramFailure,
                               kSuccessRatioHistogramMaxValue);
