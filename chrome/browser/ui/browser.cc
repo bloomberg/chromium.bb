@@ -655,8 +655,16 @@ void Browser::OnWindowActivated() {
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
   WebContents* contents = tab_strip_model_->GetActiveWebContents();
-  if (contents && ShouldReloadCrashedTab(contents))
+  if (contents && ShouldReloadCrashedTab(contents)) {
     chrome::Reload(this, CURRENT_TAB);
+    // The reload above will change the toolbar reload button into a stop
+    // button. If the user activated the window with a mouse press on the
+    // reload button itself, the reload will stop on mouse release and the page
+    // will be blank. Disable the stop command temporarily. It will be
+    // re-enabled as the page loads.
+    command_controller_->command_updater()->UpdateCommandEnabled(IDC_STOP,
+                                                                 false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
