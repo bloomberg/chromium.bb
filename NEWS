@@ -25,10 +25,17 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      in the Norwegian Grade 0 Braille Table. Thanks to Knut Arne
      Bjørndal.
    - Corrections to the Italian table thanks to Igor B. Poretsky.
+   - Corrections to the Hungarian grade 1 table thanks to Hammer
+     Attila
+   - Corrections to English, U.S. Grade 2 (ABAE) table. Thanks to Ken
+     Perry for reporting the bug and John J. Boyer for fixing it.
    - Further reorganization of the tables to remove
      duplication. Move litdigit opcode common parts and include where needed.
 
 ** Bug Fixes
+   - Cursor position calculation is now based on the same code that
+     calculates inpos and outpos. This probably solves a number of
+     bugs.
    - Fixed nocross opcode processing.
 
 * Noteworthy changes in release 2.5.2 (2012-12-18)
