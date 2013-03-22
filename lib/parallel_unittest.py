@@ -35,7 +35,7 @@ class ParallelMock(partial_mock.PartialMock):
   """
 
   TARGET = 'chromite.lib.parallel'
-  ATTRS = ('_ParallelSteps',)
+  ATTRS = ('_ParallelSteps', '_TaskRunner')
 
   @contextlib.contextmanager
   def _ParallelSteps(self, steps, max_parallel=None, halt_on_error=False):
@@ -46,6 +46,20 @@ class ParallelMock(partial_mock.PartialMock):
     finally:
       for step in steps:
         step()
+
+  def _TaskRunner(self, queue, task, onexit=None):
+    try:
+      while True:
+        # Wait for a new item to show up on the queue. This is a blocking wait,
+        # so if there's nothing to do, we just sit here.
+        x = queue.get()
+        if isinstance(x, parallel._AllTasksComplete):
+          # All tasks are complete, so we should exit.
+          break
+        task(*x)
+    finally:
+      if onexit:
+        onexit()
 
 
 class BackgroundTaskVerifier(partial_mock.PartialMock):
