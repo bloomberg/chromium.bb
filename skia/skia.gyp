@@ -98,7 +98,6 @@
         '../third_party/skia/src/ports/SkFontHost_FreeType_common.h',
         '../third_party/skia/src/ports/SkFontHost_android.cpp',
         #'../third_party/skia/src/ports/SkFontHost_ascender.cpp',
-        '../third_party/skia/src/ports/SkFontHost_tables.cpp',
         #'../third_party/skia/src/ports/SkFontHost_linux.cpp',
         '../third_party/skia/src/ports/SkFontHost_mac.cpp',
         #'../third_party/skia/src/ports/SkFontHost_none.cpp',
@@ -382,9 +381,6 @@
             '../third_party/skia/src/ports/SkFontHost_fontconfig.cpp',
             '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
           ],
-          'sources!': [
-            '../third_party/skia/src/ports/SkFontHost_tables.cpp',
-          ],
           'defines': [
 #            'SK_USE_COLOR_LUMINANCE',
           ],
@@ -485,7 +481,6 @@
             ['exclude', '/pdf/'],
             ['exclude', '^ext/vector_platform_device_skia\\.'],
             ['exclude', 'opts_check_SSE2\\.cpp$'],
-            ['exclude', 'SkFontHost_tables\\.cpp$',],
           ],
         }],
         [ 'OS == "mac"', {
@@ -504,11 +499,6 @@
           },
           'sources': [
             '../third_party/skia/src/utils/mac/SkStream_mac.cpp',
-          ],
-          'sources!': [
-            # The mac's fonthost implements the table methods natively,
-            # so no need for these generic versions.
-            '../third_party/skia/src/ports/SkFontHost_tables.cpp',
           ],
         }],
         [ 'OS == "win"', {
