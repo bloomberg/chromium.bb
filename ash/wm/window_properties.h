@@ -61,10 +61,10 @@ extern const aura::WindowProperty<ui::WindowShowState>* const
 extern const aura::WindowProperty<RootWindowController*>* const
     kRootWindowControllerKey;
 
-// A property key to remember the frame painter for the solo-window in the root
-// window. It is only available for root windows.
-ASH_EXPORT extern const aura::WindowProperty<ash::FramePainter*>* const
-    kSoloWindowFramePainterKey;
+// RootWindow property to indicate if the window in the active workspace should
+// use the transparent "solo-window" header style.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const
+    kSoloWindowHeaderKey;
 
 // If this is set to true, the window stays in the same root window
 // even if the bounds outside of its root window is set.

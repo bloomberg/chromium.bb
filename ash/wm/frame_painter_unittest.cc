@@ -165,21 +165,6 @@ class FramePainterTest : public ash::test::AshTestBase {
   }
 };
 
-TEST_F(FramePainterTest, Basics) {
-  // Other tests might have created a FramePainter, so we cannot assert that
-  // FramePainter::instances_ is NULL here.
-
-  // Creating a painter bumps the instance count.
-  scoped_ptr<FramePainter> painter(new FramePainter);
-  ASSERT_TRUE(FramePainter::instances_);
-  EXPECT_EQ(1u, FramePainter::instances_->size());
-
-  // Destroying that painter leaves a valid pointer but no instances.
-  painter.reset();
-  ASSERT_TRUE(FramePainter::instances_);
-  EXPECT_EQ(0u, FramePainter::instances_->size());
-}
-
 TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
   // Ensure that creating/deleting a window works well and doesn't cause
   // crashes.  See crbug.com/155634
@@ -195,12 +180,11 @@ TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
 
   // We only have one window, so it should use a solo header.
   EXPECT_TRUE(painter->UseSoloWindowHeader());
-  EXPECT_EQ(painter.get(),
-            root->GetProperty(internal::kSoloWindowFramePainterKey));
+  EXPECT_TRUE(root->GetProperty(internal::kSoloWindowHeaderKey));
 
   // Close the window.
   widget.reset();
-  EXPECT_EQ(NULL, root->GetProperty(internal::kSoloWindowFramePainterKey));
+  EXPECT_FALSE(root->GetProperty(internal::kSoloWindowHeaderKey));
 
   // Recreate another window again.
   painter.reset(new FramePainter);
@@ -210,8 +194,7 @@ TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
       widget.get(), NULL, &size, &close, FramePainter::SIZE_BUTTON_MAXIMIZES);
   widget->Show();
   EXPECT_TRUE(painter->UseSoloWindowHeader());
-  EXPECT_EQ(painter.get(),
-            root->GetProperty(internal::kSoloWindowFramePainterKey));
+  EXPECT_TRUE(root->GetProperty(internal::kSoloWindowHeaderKey));
 }
 
 TEST_F(FramePainterTest, LayoutHeader) {
@@ -297,9 +280,10 @@ TEST_F(FramePainterTest, UseSoloWindowHeader) {
   p2.Init(w2.get(), NULL, &size2, &close2, FramePainter::SIZE_BUTTON_MAXIMIZES);
   w2->Show();
 
-  // Now there are two windows, so we should not use solo headers.
+  // Now there are two windows, so we should not use solo headers. This only
+  // needs to test |p1| because "solo window headers" are a per-root-window
+  // property.
   EXPECT_FALSE(p1.UseSoloWindowHeader());
-  EXPECT_FALSE(p2.UseSoloWindowHeader());
 
   // Hide one window.  Solo should be enabled.
   w2->Hide();
@@ -308,19 +292,16 @@ TEST_F(FramePainterTest, UseSoloWindowHeader) {
   // Show that window.  Solo should be disabled.
   w2->Show();
   EXPECT_FALSE(p1.UseSoloWindowHeader());
-  EXPECT_FALSE(p2.UseSoloWindowHeader());
 
   // Maximize the window, then activate the first window. The second window
   // is in its own workspace, so solo should be active for the first one.
   w2->Maximize();
   w1->Activate();
   EXPECT_TRUE(p1.UseSoloWindowHeader());
-  EXPECT_FALSE(p2.UseSoloWindowHeader());
 
   // Switch to the second window and restore it.  Solo should be disabled.
   w2->Activate();
   w2->Restore();
-  EXPECT_FALSE(p1.UseSoloWindowHeader());
   EXPECT_FALSE(p2.UseSoloWindowHeader());
 
   // Minimize the second window.  Solo should be enabled.
@@ -338,12 +319,42 @@ TEST_F(FramePainterTest, UseSoloWindowHeader) {
   ImageButton close3(NULL);
   p3.Init(w3.get(), NULL, &size3, &close3, FramePainter::SIZE_BUTTON_MAXIMIZES);
   w3->Show();
-  EXPECT_FALSE(p1.UseSoloWindowHeader());
   EXPECT_FALSE(p3.UseSoloWindowHeader());
 
   // Close the always-on-top widget.
   w3.reset();
   EXPECT_TRUE(p1.UseSoloWindowHeader());
+}
+
+// An open V2 app window should cause browser windows not to use the
+// solo window header.
+TEST_F(FramePainterTest, UseSoloWindowHeaderWithApp) {
+  // Create a widget and a painter for it.
+  scoped_ptr<Widget> w1(CreateTestWidget());
+  FramePainter p1;
+  ImageButton size1(NULL);
+  ImageButton close1(NULL);
+  p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w1->Show();
+
+  // We only have one window, so it should use a solo header.
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // Simulate a V2 app window, which is part of the active workspace but does
+  // not have a frame painter.
+  scoped_ptr<Widget> w2(CreateTestWidget());
+  w2->Show();
+
+  // Now there are two windows, so we should not use solo headers.
+  EXPECT_FALSE(p1.UseSoloWindowHeader());
+
+  // Minimize the app window. The first window should go solo again.
+  w2->Minimize();
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // Restoring the app window turns off solo headers.
+  w2->Restore();
+  EXPECT_FALSE(p1.UseSoloWindowHeader());
 }
 
 #if defined(OS_WIN)

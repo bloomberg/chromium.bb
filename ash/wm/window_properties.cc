@@ -30,8 +30,7 @@ DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
                            kRootWindowControllerKey, NULL);
-DEFINE_WINDOW_PROPERTY_KEY(
-    ash::FramePainter*, kSoloWindowFramePainterKey, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kSoloWindowHeaderKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUserChangedWindowPositionOrSizeKey, false);

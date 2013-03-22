@@ -666,11 +666,13 @@ void WorkspaceManager::ProcessDeletion() {
 void WorkspaceManager::OnWindowAddedToWorkspace(Workspace* workspace,
                                                 Window* child) {
   child->SetProperty(kWorkspaceKey, workspace);
-  // Do nothing (other than updating shelf visibility) as the right parent was
-  // chosen by way of GetParentForNewWindow() or we explicitly moved the window
+  // Don't make changes to window parenting as the right parent was chosen
+  // by way of GetParentForNewWindow() or we explicitly moved the window
   // to the workspace.
-  if (workspace == active_workspace_)
+  if (workspace == active_workspace_) {
     UpdateShelfVisibility();
+    FramePainter::UpdateSoloWindowHeader(child->GetRootWindow());
+  }
 
   RearrangeVisibleWindowOnShow(child);
 }
@@ -698,8 +700,10 @@ void WorkspaceManager::OnWorkspaceChildWindowVisibilityChanged(
       RearrangeVisibleWindowOnShow(child);
     else
       RearrangeVisibleWindowOnHideOrRemove(child);
-    if (workspace == active_workspace_)
+    if (workspace == active_workspace_) {
       UpdateShelfVisibility();
+      FramePainter::UpdateSoloWindowHeader(child->GetRootWindow());
+    }
   }
 }
 
