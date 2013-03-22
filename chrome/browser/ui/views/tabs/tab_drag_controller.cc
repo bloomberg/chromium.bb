@@ -443,6 +443,9 @@ void TabDragController::Init(
   last_point_in_screen_ = start_point_in_screen_;
   last_move_screen_loc_ = start_point_in_screen_.x();
   initial_tab_positions_ = source_tabstrip->GetTabXCoordinates();
+  if (detach_behavior == NOT_DETACHABLE)
+    detach_into_browser_ = false;
+
   if (detach_into_browser_)
     GetModel(source_tabstrip_)->AddObserver(this);
 
@@ -1341,6 +1344,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 
   move_loop_widget_ = GetAttachedBrowserWidget();
   DCHECK(move_loop_widget_);
+  SetTrackedByWorkspace(move_loop_widget_->GetNativeView(), false);
   move_loop_widget_->AddObserver(this);
   is_dragging_window_ = true;
   bool destroyed = false;

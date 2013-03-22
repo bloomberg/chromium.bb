@@ -28,6 +28,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -106,6 +107,20 @@ class WorkspaceManagerTest : public test::AshTestBase {
         manager_->workspaces_.begin());
   }
 
+  // Returns a string description of the current state. The string has the
+  // following format:
+  // W* P=W* active=N
+  // Each W corresponds to a workspace. Each workspace is prefixed with an 'M'
+  // if the workspace is maximized and is followed by the number of windows in
+  // the workspace.
+  // 'P=' is used for the pending workspaces (see
+  // WorkspaceManager::pending_workspaces_ for details on pending workspaces).
+  // N is the index of the active workspace (index into
+  // WorkspaceManager::workspaces_).
+  // For example, '2 M1 P=M1 active=1' means the first workspace (the desktop)
+  // has 2 windows, the second workspace is a maximized workspace with 1 window,
+  // there is a pending maximized workspace with 1 window and the second
+  // workspace is active.
   std::string StateString() {
     std::string result;
     for (size_t i = 0; i < manager_->workspaces_.size(); ++i) {
@@ -1445,6 +1460,93 @@ TEST_F(WorkspaceManagerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
                 desktop_area.width() - window1->bounds().width()) +
             ",32 640x320", window1->bounds().ToString());
   EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+}
+
+namespace {
+
+// Used by DragMaximizedNonTrackedWindow to track how many times the window
+// hierarchy changes.
+class DragMaximizedNonTrackedWindowObserver
+    : public aura::WindowObserver {
+ public:
+  DragMaximizedNonTrackedWindowObserver() : change_count_(0) {
+  }
+
+  // Number of times OnWindowHierarchyChanged() has been received.
+  void clear_change_count() { change_count_ = 0; }
+  int change_count() const {
+    return change_count_;
+  }
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowHierarchyChanged(
+      const HierarchyChangeParams& params) OVERRIDE {
+    change_count_++;
+  }
+
+ private:
+  int change_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(DragMaximizedNonTrackedWindowObserver);
+};
+
+}  // namespace
+
+// Verifies setting tracked by workspace to false and then dragging a maximized
+// window doesn't result in changing the window hierarchy (which typically
+// indicates new workspaces have been created).
+TEST_F(WorkspaceManagerTest, DragMaximizedNonTrackedWindow) {
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
+  generator.MoveMouseTo(5, 5);
+
+  aura::test::TestWindowDelegate delegate;
+  delegate.set_window_component(HTCAPTION);
+  scoped_ptr<Window> w1(
+      aura::test::CreateTestWindowWithDelegate(&delegate,
+                                               aura::client::WINDOW_TYPE_NORMAL,
+                                               gfx::Rect(5, 6, 7, 8),
+                                               NULL));
+  SetDefaultParentByPrimaryRootWindow(w1.get());
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  DragMaximizedNonTrackedWindowObserver observer;
+  w1->parent()->parent()->AddObserver(&observer);
+  const gfx::Rect max_bounds(w1->bounds());
+
+  // There should be two workspace, one for the desktop and one for the
+  // maximized window with the maximized active.
+  EXPECT_EQ("0 M1 active=1", StateString());
+
+  generator.PressLeftButton();
+  generator.MoveMouseTo(100, 100);
+  // The bounds shouldn't change (drag should result in nothing happening
+  // now.
+  EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
+  EXPECT_EQ("0 M1 active=1", StateString());
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(0, observer.change_count());
+
+  // Set tracked to false and repeat, now the window should move.
+  SetTrackedByWorkspace(w1.get(), false);
+  generator.MoveMouseTo(5, 5);
+  generator.PressLeftButton();
+  generator.MoveMouseBy(100, 100);
+  EXPECT_EQ(gfx::Rect(max_bounds.x() + 100, max_bounds.y() + 100,
+                      max_bounds.width(), max_bounds.height()).ToString(),
+            w1->bounds().ToString());
+  EXPECT_EQ("0 M1 active=1", StateString());
+
+  generator.ReleaseLeftButton();
+  SetTrackedByWorkspace(w1.get(), true);
+  // Marking the window tracked again should snap back to origin.
+  EXPECT_EQ("0 M1 active=1", StateString());
+  EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
+  EXPECT_EQ(0, observer.change_count());
+
+  w1->parent()->parent()->RemoveObserver(&observer);
 }
 
 }  // namespace internal

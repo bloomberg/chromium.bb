@@ -473,7 +473,7 @@ class TabDragController : public content::WebContentsDelegate,
   }
 
   // If true Detaching creates a new browser and enters a nested message loop.
-  const bool detach_into_browser_;
+  bool detach_into_browser_;
 
   // Handles registering for notifications.
   content::NotificationRegistrar registrar_;
