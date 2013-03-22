@@ -1159,7 +1159,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   BOOL visible = bookmarkModel_->IsLoaded() &&
       chrome::search::IsInstantExtendedAPIEnabled() &&
       browser_->profile()->GetPrefs()->GetBoolean(
-          prefs::kShowAppsShortcutInBookmarkBar);
+          prefs::kShowAppsShortcutInBookmarkBar) &&
+      !browser_->profile()->IsOffTheRecord();
   [appsPageShortcutButton_ setHidden:!visible];
   return visible;
 }

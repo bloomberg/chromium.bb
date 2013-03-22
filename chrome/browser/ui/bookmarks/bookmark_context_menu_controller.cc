@@ -94,7 +94,8 @@ void BookmarkContextMenuController::BuildMenu() {
 
   AddSeparator();
   AddItem(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
-  if (chrome::search::IsInstantExtendedAPIEnabled()) {
+  if (chrome::search::IsInstantExtendedAPIEnabled() &&
+      !profile_->IsOffTheRecord()) {
     AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT,
                     IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT);
   }

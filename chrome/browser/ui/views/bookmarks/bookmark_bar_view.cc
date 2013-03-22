@@ -1830,7 +1830,8 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 bool BookmarkBarView::ShouldShowAppsShortcut() const {
   return chrome::search::IsInstantExtendedAPIEnabled() &&
       browser_->profile()->GetPrefs()->GetBoolean(
-          prefs::kShowAppsShortcutInBookmarkBar);
+          prefs::kShowAppsShortcutInBookmarkBar) &&
+      !browser_->profile()->IsOffTheRecord();
 }
 
 void BookmarkBarView::OnAppsPageShortcutVisibilityChanged() {
