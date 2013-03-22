@@ -12,8 +12,11 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import parallel_unittest
+from chromite.lib import partial_mock
 from chromite.scripts import cros_mark_as_stable
 
 
@@ -58,6 +61,25 @@ class NonClassTests(cros_test_lib.MoxTestCase):
     cros_mark_as_stable.PushChange(self._branch, self._target_manifest_branch,
                                    False, '.')
     self.mox.VerifyAll()
+
+
+class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
+
+  def testNormalClean(self):
+    """Clean up boards/packages with normal success"""
+    cros_mark_as_stable.CleanStalePackages(('board1', 'board2'), ['cow', 'car'])
+
+  def testNothingToUnmerge(self):
+    """Clean up packages that don't exist (portage will exit 1)"""
+    self.rc.AddCmdResult(partial_mock.In('emerge'), returncode=1)
+    cros_mark_as_stable.CleanStalePackages((), ['no/pkg'])
+
+  def testUnmergeError(self):
+    """Make sure random exit errors are not ignored"""
+    self.rc.AddCmdResult(partial_mock.In('emerge'), returncode=123)
+    with parallel_unittest.ParallelMock():
+      self.assertRaises(cros_build_lib.RunCommandError,
+                        cros_mark_as_stable.CleanStalePackages, (), ['no/pkg'])
 
 
 class GitBranchTest(cros_test_lib.MoxTestCase):

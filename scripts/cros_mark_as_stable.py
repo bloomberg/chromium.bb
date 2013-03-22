@@ -34,7 +34,7 @@ def CleanStalePackages(boards, package_atoms):
   """Cleans up stale package info from a previous build.
   Args:
     boards: Boards to clean the packages from.
-    package_atoms: The actual package atom to unmerge.
+    package_atoms: A list of package atoms to unmerge.
   """
   if package_atoms:
     cros_build_lib.Info('Cleaning up stale packages %s.' % package_atoms)
@@ -51,8 +51,11 @@ def CleanStalePackages(boards, package_atoms):
       runcmd = cros_build_lib.SudoRunCommand
 
     if package_atoms:
-      runcmd(['emerge' + suffix, '-q', '--unmerge'] + package_atoms,
-             extra_env={'CLEAN_DELAY': '0'})
+      # If nothing was found to be unmerged, emerge will exit(1).
+      result = runcmd(['emerge' + suffix, '-q', '--unmerge'] + package_atoms,
+                      extra_env={'CLEAN_DELAY': '0'}, error_code_ok=True)
+      if not result.returncode in (0, 1):
+        raise cros_build_lib.RunCommandError('unexpected error', result)
     runcmd(['eclean' + suffix, '-d', 'packages'],
            redirect_stdout=True, redirect_stderr=True)
 
