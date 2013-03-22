@@ -526,6 +526,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   job_ = job;
   job_->SetExtraRequestHeaders(extra_request_headers_);
+  job_->SetPriority(priority_);
 
   if (upload_data_stream_.get())
     job_->SetUpload(upload_data_stream_.get());
@@ -826,6 +827,20 @@ int64 URLRequest::GetExpectedContentSize() const {
     expected_content_size = job_->expected_content_size();
 
   return expected_content_size;
+}
+
+void URLRequest::SetPriority(RequestPriority priority) {
+  DCHECK_GE(priority, MINIMUM_PRIORITY);
+  DCHECK_LT(priority, NUM_PRIORITIES);
+  if (priority_ == priority)
+    return;
+
+  priority_ = priority;
+  if (job_) {
+    net_log_.AddEvent(NetLog::TYPE_URL_REQUEST_SET_PRIORITY,
+                      NetLog::IntegerCallback("priority", priority_));
+    job_->SetPriority(priority_);
+  }
 }
 
 bool URLRequest::GetHSTSRedirect(GURL* redirect_url) const {

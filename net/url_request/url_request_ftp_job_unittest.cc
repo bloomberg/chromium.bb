@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/url_request/url_request_ftp_job.h"
+
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "googleurl/src/gurl.h"
+#include "net/http/http_transaction_unittest.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
@@ -48,6 +53,107 @@ class SimpleProxyConfigService : public ProxyConfigService {
   ProxyConfig config_;
   Observer* observer_;
 };
+
+// Inherit from URLRequestFtpJob to expose the priority and some
+// other hidden functions.
+class TestURLRequestFtpJob : public URLRequestFtpJob {
+ public:
+  explicit TestURLRequestFtpJob(URLRequest* request)
+      : URLRequestFtpJob(request, NULL,
+                         request->context()->ftp_transaction_factory(),
+                         request->context()->ftp_auth_cache()) {}
+
+  using URLRequestFtpJob::SetPriority;
+  using URLRequestFtpJob::Start;
+  using URLRequestFtpJob::Kill;
+  using URLRequestFtpJob::priority;
+
+ protected:
+  virtual ~TestURLRequestFtpJob() {}
+};
+
+// Fixture for priority-related tests. Priority matters when there is
+// an HTTP proxy.
+class URLRequestFtpJobPriorityTest : public testing::Test {
+ protected:
+  URLRequestFtpJobPriorityTest()
+      : proxy_service_(new SimpleProxyConfigService, NULL, NULL),
+        req_(GURL("ftp://ftp.example.com"), &delegate_, &context_, NULL) {
+    context_.set_proxy_service(&proxy_service_);
+    context_.set_http_transaction_factory(&network_layer_);
+  }
+
+  ProxyService proxy_service_;
+  MockNetworkLayer network_layer_;
+  TestURLRequestContext context_;
+  TestDelegate delegate_;
+  TestURLRequest req_;
+};
+
+// Make sure that SetPriority actually sets the URLRequestFtpJob's
+// priority, both before and after start.
+TEST_F(URLRequestFtpJobPriorityTest, SetPriorityBasic) {
+  scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(&req_));
+  EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
+
+  job->SetPriority(LOWEST);
+  EXPECT_EQ(LOWEST, job->priority());
+
+  job->SetPriority(LOW);
+  EXPECT_EQ(LOW, job->priority());
+
+  job->Start();
+  EXPECT_EQ(LOW, job->priority());
+
+  job->SetPriority(MEDIUM);
+  EXPECT_EQ(MEDIUM, job->priority());
+}
+
+// Make sure that URLRequestFtpJob passes on its priority to its
+// transaction on start.
+TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriorityOnStart) {
+  scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(&req_));
+  job->SetPriority(LOW);
+
+  EXPECT_FALSE(network_layer_.last_transaction());
+
+  job->Start();
+
+  ASSERT_TRUE(network_layer_.last_transaction());
+  EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
+}
+
+// Make sure that URLRequestFtpJob passes on its priority updates to
+// its transaction.
+TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriority) {
+  scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(&req_));
+  job->SetPriority(LOW);
+  job->Start();
+  ASSERT_TRUE(network_layer_.last_transaction());
+  EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
+
+  job->SetPriority(HIGHEST);
+  EXPECT_EQ(HIGHEST, network_layer_.last_transaction()->priority());
+}
+
+// Make sure that URLRequestFtpJob passes on its priority updates to
+// newly-created transactions after the first one.
+TEST_F(URLRequestFtpJobPriorityTest, SetSubsequentTransactionPriority) {
+  scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(&req_));
+  job->Start();
+
+  job->SetPriority(LOW);
+  ASSERT_TRUE(network_layer_.last_transaction());
+  EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
+
+  job->Kill();
+  network_layer_.ClearLastTransaction();
+
+  // Creates a second transaction.
+  job->Start();
+  ASSERT_TRUE(network_layer_.last_transaction());
+  EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
+}
 
 class FtpTestURLRequestContext : public TestURLRequestContext {
  public:

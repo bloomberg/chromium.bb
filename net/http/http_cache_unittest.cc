@@ -5567,3 +5567,88 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit_TransactionDelegate) {
                                  5,
                                  0);
 }
+
+// Make sure that calling SetPriority on a cache transaction passes on
+// its priority updates to its underlying network transaction.
+TEST(HttpCache, SetPriority) {
+  MockHttpCache cache;
+
+  scoped_ptr<net::HttpTransaction> trans;
+  EXPECT_EQ(net::OK, cache.http_cache()->CreateTransaction(
+      net::IDLE, &trans, NULL));
+  ASSERT_TRUE(trans.get());
+
+  // Shouldn't crash, but doesn't do anything either.
+  trans->SetPriority(net::LOW);
+
+  EXPECT_FALSE(cache.network_layer()->last_transaction());
+  EXPECT_EQ(net::DEFAULT_PRIORITY,
+            cache.network_layer()->last_create_transaction_priority());
+
+  net::HttpRequestInfo info;
+  info.url = GURL(kSimpleGET_Transaction.url);
+  net::TestCompletionCallback callback;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            trans->Start(&info, callback.callback(), net::BoundNetLog()));
+
+  ASSERT_TRUE(cache.network_layer()->last_transaction());
+  EXPECT_EQ(net::LOW,
+            cache.network_layer()->last_create_transaction_priority());
+  EXPECT_EQ(net::LOW,
+            cache.network_layer()->last_transaction()->priority());
+
+  trans->SetPriority(net::HIGHEST);
+  EXPECT_EQ(net::LOW,
+            cache.network_layer()->last_create_transaction_priority());
+  EXPECT_EQ(net::HIGHEST,
+            cache.network_layer()->last_transaction()->priority());
+
+  EXPECT_EQ(net::OK, callback.WaitForResult());
+}
+
+// Make sure that a cache transaction passes on its priority to
+// newly-created network transactions.
+TEST(HttpCache, SetPriorityNewTransaction) {
+  MockHttpCache cache;
+  AddMockTransaction(&kRangeGET_TransactionOK);
+
+  std::string raw_headers("HTTP/1.1 200 OK\n"
+                          "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+                          "ETag: \"foo\"\n"
+                          "Accept-Ranges: bytes\n"
+                          "Content-Length: 80\n");
+  CreateTruncatedEntry(raw_headers, &cache);
+
+  // Now make a regular request.
+  std::string headers;
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = EXTRA_HEADER;
+  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
+                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+
+  scoped_ptr<net::HttpTransaction> trans;
+  EXPECT_EQ(net::OK, cache.http_cache()->CreateTransaction(
+      net::MEDIUM, &trans, NULL));
+  ASSERT_TRUE(trans.get());
+  EXPECT_EQ(net::DEFAULT_PRIORITY,
+            cache.network_layer()->last_create_transaction_priority());
+
+  MockHttpRequest info(transaction);
+  net::TestCompletionCallback callback;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            trans->Start(&info, callback.callback(), net::BoundNetLog()));
+  EXPECT_EQ(net::OK, callback.WaitForResult());
+
+  EXPECT_EQ(net::MEDIUM,
+            cache.network_layer()->last_create_transaction_priority());
+
+  trans->SetPriority(net::HIGHEST);
+  // Should trigger a new network transaction and pick up the new
+  // priority.
+  ReadAndVerifyTransaction(trans.get(), transaction);
+
+  EXPECT_EQ(net::HIGHEST,
+            cache.network_layer()->last_create_transaction_priority());
+
+  RemoveMockTransaction(&kRangeGET_TransactionOK);
+}

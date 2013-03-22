@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -153,7 +154,9 @@ class MockNetworkLayer;
 // find data for the request URL.  It supports IO operations that complete
 // synchronously or asynchronously to help exercise different code paths in the
 // HttpCache implementation.
-class MockNetworkTransaction : public net::HttpTransaction {
+class MockNetworkTransaction
+    : public net::HttpTransaction,
+      public base::SupportsWeakPtr<MockNetworkTransaction> {
  public:
   MockNetworkTransaction(net::RequestPriority priority,
                          MockNetworkLayer* factory);
@@ -192,6 +195,10 @@ class MockNetworkTransaction : public net::HttpTransaction {
   virtual bool GetLoadTimingInfo(
       net::LoadTimingInfo* load_timing_info) const OVERRIDE;
 
+  virtual void SetPriority(net::RequestPriority priority) OVERRIDE;
+
+  net::RequestPriority priority() const { return priority_; }
+
  private:
   void CallbackLater(const net::CompletionCallback& callback, int result);
   void RunCallback(const net::CompletionCallback& callback, int result);
@@ -201,6 +208,7 @@ class MockNetworkTransaction : public net::HttpTransaction {
   std::string data_;
   int data_cursor_;
   int test_mode_;
+  net::RequestPriority priority_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
 };
 
@@ -214,6 +222,27 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
   bool done_reading_called() const { return done_reading_called_; }
   void TransactionDoneReading();
 
+  // Returns the last priority passed to CreateTransaction, or
+  // DEFAULT_PRIORITY if it hasn't been called yet.
+  net::RequestPriority last_create_transaction_priority() const {
+    return last_create_transaction_priority_;
+  }
+
+  // Returns the last transaction created by
+  // CreateTransaction. Returns a NULL WeakPtr if one has not been
+  // created yet, or the last transaction has been destroyed, or
+  // ClearLastTransaction() has been called and a new transaction
+  // hasn't been created yet.
+  base::WeakPtr<MockNetworkTransaction> last_transaction() {
+    return last_transaction_;
+  }
+
+  // Makes last_transaction() return NULL until the next transaction
+  // is created.
+  void ClearLastTransaction() {
+    last_transaction_.reset();
+  }
+
   // net::HttpTransactionFactory:
   virtual int CreateTransaction(
       net::RequestPriority priority,
@@ -225,6 +254,8 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
  private:
   int transaction_count_;
   bool done_reading_called_;
+  net::RequestPriority last_create_transaction_priority_;
+  base::WeakPtr<MockNetworkTransaction> last_transaction_;
 };
 
 //-----------------------------------------------------------------------------

@@ -467,6 +467,12 @@ bool HttpCache::Transaction::GetLoadTimingInfo(
   return false;
 }
 
+void HttpCache::Transaction::SetPriority(RequestPriority priority) {
+  priority_ = priority;
+  if (network_trans_)
+    network_trans_->SetPriority(priority_);
+}
+
 //-----------------------------------------------------------------------------
 
 void HttpCache::Transaction::DoCallback(int rv) {

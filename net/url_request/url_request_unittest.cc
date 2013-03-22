@@ -1404,6 +1404,60 @@ TEST_F(URLRequestTest, RequestCompletionForEmptyResponse) {
   EXPECT_EQ(1, default_network_delegate_.completed_requests());
 }
 
+// Make sure that SetPriority actually sets the URLRequest's priority
+// correctly, both before and after start.
+TEST_F(URLRequestTest, SetPriorityBasic) {
+  TestDelegate d;
+  URLRequest req(GURL("http://test_intercept/foo"), &d, &default_context_);
+  EXPECT_EQ(DEFAULT_PRIORITY, req.priority());
+
+  req.SetPriority(LOW);
+  EXPECT_EQ(LOW, req.priority());
+
+  req.Start();
+  EXPECT_EQ(LOW, req.priority());
+
+  req.SetPriority(MEDIUM);
+  EXPECT_EQ(MEDIUM, req.priority());
+}
+
+// Make sure that URLRequest calls SetPriority on a job before calling
+// Start on it.
+TEST_F(URLRequestTest, SetJobPriorityBeforeJobStart) {
+  TestDelegate d;
+  URLRequest req(GURL("http://test_intercept/foo"), &d, &default_context_);
+  EXPECT_EQ(DEFAULT_PRIORITY, req.priority());
+
+  scoped_refptr<URLRequestTestJob> job =
+      new URLRequestTestJob(&req, &default_network_delegate_);
+  AddTestInterceptor()->set_main_intercept_job(job);
+  EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
+
+  req.SetPriority(LOW);
+
+  req.Start();
+  EXPECT_EQ(LOW, job->priority());
+}
+
+// Make sure that URLRequest passes on its priority updates to its
+// job.
+TEST_F(URLRequestTest, SetJobPriority) {
+  TestDelegate d;
+  URLRequest req(GURL("http://test_intercept/foo"), &d, &default_context_);
+
+  scoped_refptr<URLRequestTestJob> job =
+      new URLRequestTestJob(&req, &default_network_delegate_);
+  AddTestInterceptor()->set_main_intercept_job(job);
+
+  req.SetPriority(LOW);
+  req.Start();
+  EXPECT_EQ(LOW, job->priority());
+
+  req.SetPriority(MEDIUM);
+  EXPECT_EQ(MEDIUM, req.priority());
+  EXPECT_EQ(MEDIUM, job->priority());
+}
+
 // TODO(droger): Support TestServer on iOS (see http://crbug.com/148666).
 #if !defined(OS_IOS)
 // A subclass of TestServer that uses a statically-configured hostname. This is
@@ -4083,6 +4137,34 @@ TEST_F(URLRequestTestHTTP, EmptyHttpUserAgentSettings) {
     EXPECT_EQ(tests[i].expected_response, d.data_received())
         << " Request = \"" << tests[i].request << "\"";
   }
+}
+
+// Make sure that URLRequest passes on its priority updates to
+// newly-created jobs after the first one.
+TEST_F(URLRequestTestHTTP, SetSubsequentJobPriority) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  URLRequest req(test_server_.GetURL("empty.html"), &d, &default_context_);
+  EXPECT_EQ(DEFAULT_PRIORITY, req.priority());
+
+  scoped_refptr<URLRequestRedirectJob> redirect_job =
+      new URLRequestRedirectJob(
+          &req, &default_network_delegate_, test_server_.GetURL("echo"),
+          URLRequestRedirectJob::REDIRECT_302_FOUND);
+  AddTestInterceptor()->set_main_intercept_job(redirect_job);
+
+  req.SetPriority(LOW);
+  req.Start();
+  EXPECT_TRUE(req.is_pending());
+
+  scoped_refptr<URLRequestTestJob> job =
+      new URLRequestTestJob(&req, &default_network_delegate_);
+  AddTestInterceptor()->set_main_intercept_job(job);
+
+  // Should trigger |job| to be started.
+  MessageLoop::current()->Run();
+  EXPECT_EQ(LOW, job->priority());
 }
 
 class HTTPSRequestTest : public testing::Test {

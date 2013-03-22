@@ -228,6 +228,7 @@ URLRequestHttpJob::URLRequestHttpJob(
     NetworkDelegate* network_delegate,
     const HttpUserAgentSettings* http_user_agent_settings)
     : URLRequestJob(request, network_delegate),
+      priority_(DEFAULT_PRIORITY),
       response_info_(NULL),
       response_cookies_save_index_(0),
       proxy_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
@@ -266,6 +267,87 @@ URLRequestHttpJob::URLRequestHttpJob(
     throttling_entry_ = manager->RegisterRequestUrl(request->url());
 
   ResetTimer();
+}
+
+URLRequestHttpJob::~URLRequestHttpJob() {
+  CHECK(!awaiting_callback_);
+
+  DCHECK(!sdch_test_control_ || !sdch_test_activated_);
+  if (!is_cached_content_) {
+    if (sdch_test_control_)
+      RecordPacketStats(FilterContext::SDCH_EXPERIMENT_HOLDBACK);
+    if (sdch_test_activated_)
+      RecordPacketStats(FilterContext::SDCH_EXPERIMENT_DECODE);
+  }
+  // Make sure SDCH filters are told to emit histogram data while
+  // filter_context_ is still alive.
+  DestroyFilters();
+
+  if (sdch_dictionary_url_.is_valid()) {
+    // Prior to reaching the destructor, request_ has been set to a NULL
+    // pointer, so request_->url() is no longer valid in the destructor, and we
+    // use an alternate copy |request_info_.url|.
+    SdchManager* manager = SdchManager::Global();
+    // To be extra safe, since this is a "different time" from when we decided
+    // to get the dictionary, we'll validate that an SdchManager is available.
+    // At shutdown time, care is taken to be sure that we don't delete this
+    // globally useful instance "too soon," so this check is just defensive
+    // coding to assure that IF the system is shutting down, we don't have any
+    // problem if the manager was deleted ahead of time.
+    if (manager)  // Defensive programming.
+      manager->FetchDictionary(request_info_.url, sdch_dictionary_url_);
+  }
+  DoneWithRequest(ABORTED);
+}
+
+void URLRequestHttpJob::SetPriority(RequestPriority priority) {
+  priority_ = priority;
+  if (transaction_)
+    transaction_->SetPriority(priority_);
+}
+
+void URLRequestHttpJob::Start() {
+  DCHECK(!transaction_.get());
+
+  // Ensure that we do not send username and password fields in the referrer.
+  GURL referrer(request_->GetSanitizedReferrer());
+
+  request_info_.url = request_->url();
+  request_info_.method = request_->method();
+  request_info_.load_flags = request_->load_flags();
+  request_info_.request_id = request_->identifier();
+
+  // Strip Referer from request_info_.extra_headers to prevent, e.g., plugins
+  // from overriding headers that are controlled using other means. Otherwise a
+  // plugin could set a referrer although sending the referrer is inhibited.
+  request_info_.extra_headers.RemoveHeader(HttpRequestHeaders::kReferer);
+
+  // Our consumer should have made sure that this is a safe referrer.  See for
+  // instance WebCore::FrameLoader::HideReferrer.
+  if (referrer.is_valid()) {
+    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kReferer,
+                                          referrer.spec());
+  }
+
+  request_info_.extra_headers.SetHeaderIfMissing(
+      HttpRequestHeaders::kUserAgent,
+      http_user_agent_settings_ ?
+          http_user_agent_settings_->GetUserAgent(request_->url()) :
+          EmptyString());
+
+  AddExtraHeaders();
+  AddCookieHeaderAndStart();
+}
+
+void URLRequestHttpJob::Kill() {
+  http_transaction_delegate_->OnDetachRequest();
+
+  if (!transaction_.get())
+    return;
+
+  weak_factory_.InvalidateWeakPtrs();
+  DestroyTransaction();
+  URLRequestJob::Kill();
 }
 
 void URLRequestHttpJob::NotifyHeadersComplete() {
@@ -394,7 +476,7 @@ void URLRequestHttpJob::StartTransactionInternal() {
     DCHECK(request_->context()->http_transaction_factory());
 
     rv = request_->context()->http_transaction_factory()->CreateTransaction(
-        request_->priority(), &transaction_, http_transaction_delegate_.get());
+        priority_, &transaction_, http_transaction_delegate_.get());
     if (rv == OK) {
       if (!throttling_entry_ ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
@@ -859,50 +941,6 @@ void URLRequestHttpJob::SetExtraRequestHeaders(
   request_info_.extra_headers.CopyFrom(headers);
 }
 
-void URLRequestHttpJob::Start() {
-  DCHECK(!transaction_.get());
-
-  // Ensure that we do not send username and password fields in the referrer.
-  GURL referrer(request_->GetSanitizedReferrer());
-
-  request_info_.url = request_->url();
-  request_info_.method = request_->method();
-  request_info_.load_flags = request_->load_flags();
-  request_info_.request_id = request_->identifier();
-
-  // Strip Referer from request_info_.extra_headers to prevent, e.g., plugins
-  // from overriding headers that are controlled using other means. Otherwise a
-  // plugin could set a referrer although sending the referrer is inhibited.
-  request_info_.extra_headers.RemoveHeader(HttpRequestHeaders::kReferer);
-
-  // Our consumer should have made sure that this is a safe referrer.  See for
-  // instance WebCore::FrameLoader::HideReferrer.
-  if (referrer.is_valid()) {
-    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kReferer,
-                                          referrer.spec());
-  }
-
-  request_info_.extra_headers.SetHeaderIfMissing(
-      HttpRequestHeaders::kUserAgent,
-      http_user_agent_settings_ ?
-          http_user_agent_settings_->GetUserAgent(request_->url()) :
-          EmptyString());
-
-  AddExtraHeaders();
-  AddCookieHeaderAndStart();
-}
-
-void URLRequestHttpJob::Kill() {
-  http_transaction_delegate_->OnDetachRequest();
-
-  if (!transaction_.get())
-    return;
-
-  weak_factory_.InvalidateWeakPtrs();
-  DestroyTransaction();
-  URLRequestJob::Kill();
-}
-
 LoadState URLRequestHttpJob::GetLoadState() const {
   return transaction_.get() ?
       transaction_->GetLoadState() : LOAD_STATE_IDLE;
@@ -1228,37 +1266,6 @@ void URLRequestHttpJob::DoneReading() {
 
 HostPortPair URLRequestHttpJob::GetSocketAddress() const {
   return response_info_ ? response_info_->socket_address : HostPortPair();
-}
-
-URLRequestHttpJob::~URLRequestHttpJob() {
-  CHECK(!awaiting_callback_);
-
-  DCHECK(!sdch_test_control_ || !sdch_test_activated_);
-  if (!is_cached_content_) {
-    if (sdch_test_control_)
-      RecordPacketStats(FilterContext::SDCH_EXPERIMENT_HOLDBACK);
-    if (sdch_test_activated_)
-      RecordPacketStats(FilterContext::SDCH_EXPERIMENT_DECODE);
-  }
-  // Make sure SDCH filters are told to emit histogram data while
-  // filter_context_ is still alive.
-  DestroyFilters();
-
-  if (sdch_dictionary_url_.is_valid()) {
-    // Prior to reaching the destructor, request_ has been set to a NULL
-    // pointer, so request_->url() is no longer valid in the destructor, and we
-    // use an alternate copy |request_info_.url|.
-    SdchManager* manager = SdchManager::Global();
-    // To be extra safe, since this is a "different time" from when we decided
-    // to get the dictionary, we'll validate that an SdchManager is available.
-    // At shutdown time, care is taken to be sure that we don't delete this
-    // globally useful instance "too soon," so this check is just defensive
-    // coding to assure that IF the system is shutting down, we don't have any
-    // problem if the manager was deleted ahead of time.
-    if (manager)  // Defensive programming.
-      manager->FetchDictionary(request_info_.url, sdch_dictionary_url_);
-  }
-  DoneWithRequest(ABORTED);
 }
 
 void URLRequestHttpJob::RecordTimer() {

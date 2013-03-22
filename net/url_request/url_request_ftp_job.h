@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "net/base/auth.h"
+#include "net/base/net_export.h"
 #include "net/ftp/ftp_request_info.h"
 #include "net/ftp/ftp_transaction.h"
 #include "net/http/http_request_info.h"
@@ -25,7 +26,7 @@ class FtpAuthCache;
 
 // A URLRequestJob subclass that is built on top of FtpTransaction. It
 // provides an implementation for FTP.
-class URLRequestFtpJob : public URLRequestJob {
+class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
  public:
   URLRequestFtpJob(URLRequest* request,
                    NetworkDelegate* network_delegate,
@@ -37,15 +38,21 @@ class URLRequestFtpJob : public URLRequestJob {
                                 NetworkDelegate* network_delegate,
                                 const std::string& scheme);
 
+ protected:
+  virtual ~URLRequestFtpJob();
+
   // Overridden from URLRequestJob:
   virtual bool IsSafeRedirect(const GURL& location) OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
   virtual HostPortPair GetSocketAddress() const OVERRIDE;
+  virtual void SetPriority(RequestPriority priority) OVERRIDE;
+  virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
+
+  RequestPriority priority() const { return priority_; }
 
  private:
-  virtual ~URLRequestFtpJob();
-
   void OnResolveProxyComplete(int result);
 
   void StartFtpTransaction();
@@ -60,8 +67,6 @@ class URLRequestFtpJob : public URLRequestJob {
   void LogFtpServerType(char server_type);
 
   // Overridden from URLRequestJob:
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
   virtual bool NeedsAuth() OVERRIDE;
   virtual void GetAuthChallengeInfo(
@@ -74,6 +79,8 @@ class URLRequestFtpJob : public URLRequestJob {
   virtual bool ReadRawData(IOBuffer* buf,
                            int buf_size,
                            int *bytes_read) OVERRIDE;
+
+  RequestPriority priority_;
 
   ProxyInfo proxy_info_;
   ProxyService::PacRequest* pac_request_;

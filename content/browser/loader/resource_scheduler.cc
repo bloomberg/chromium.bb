@@ -65,7 +65,7 @@ class ResourceScheduler::ScheduledResourceRequest
 
   void DidChangePriority(int request_id, net::RequestPriority new_priority) {
     net::RequestPriority old_priority = request_->priority();
-    request_->set_priority(new_priority);
+    request_->SetPriority(new_priority);
     if (new_priority > old_priority) {
       Start();
     }

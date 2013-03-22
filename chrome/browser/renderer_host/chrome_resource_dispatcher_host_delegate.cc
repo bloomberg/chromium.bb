@@ -206,7 +206,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
       child_id, route_id);
   if (is_prerendering) {
     user_data->set_is_prerender(true);
-    request->set_priority(net::IDLE);
+    request->SetPriority(net::IDLE);
   }
 
 #if defined(OS_ANDROID)
