@@ -13,7 +13,6 @@ import os
 import shutil
 import StringIO
 import sys
-import tempfile
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -558,7 +557,7 @@ class VMTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
                 'ArchiveFile', 'ArchiveTestResults', 'UploadArchivedFile',
                 'RunDevModeTest'):
-      self.StartPatcher(mock.patch.object(commands, cmd, autospec=True))
+      self.PatchObject(commands, cmd, autospec=True)
     self.StartPatcher(ArchiveStageMock())
 
   def ConstructStage(self):
@@ -710,57 +709,36 @@ class HWTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
       self._RunHWTestSuite()
 
 
-class AUTestStageTest(AbstractStageTest):
+class AUTestStageTest(AbstractStageTest,
+                      cros_build_lib_unittest.RunCommandTestCase):
   """Test only custom methods in AUTestStageTest."""
 
   def setUp(self):
-    self.archive_path = self.build_root + '/archive'
-    self.archive_url = 'gs://my/fake/path'
     self.bot_id = 'x86-mario-release'
-    self.options.log_dir = '/b/cbuild/mylogdir'
     self.build_config = config.config[self.bot_id].copy()
-    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
-    self.archive_stage_mock.debug = False
+    self.archive_mock = ArchiveStageMock()
+    # pylint: disable=E1101
+    self.StartPatcher(self.archive_mock)
+    self.PatchObject(commands, 'ArchiveFile', autospec=True,
+                     return_value='foo.txt')
+    self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                             self._current_board, '')
     self.suite = 'bvt'
-    self.version = 'ver'
 
   def ConstructStage(self):
     return stages.AUTestStage(self.options, self.build_config,
-                              self._current_board, self.archive_stage_mock,
+                              self._current_board, self.archive_stage,
                               self.suite)
 
-  def testWaitForPreconditions(self):
+  def testPerformStage(self):
     """Tests that we correctly generate a tarball and archive it."""
-    tarball_name = 'boogie'
-    tarball_path = '/tmp/oogie/' + tarball_name
-
-    self.mox.StubOutWithMock(commands, 'BuildAUTestTarball')
-    self.mox.StubOutWithMock(commands, 'ArchiveFile')
-    self.mox.StubOutWithMock(commands, 'UploadArchivedFile')
-
-    # Mock out interaction with archive_stage.
-    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
-    self.archive_stage_mock.GetArchivePath().InAnyOrder().AndReturn(
-        self.archive_path)
-    self.archive_stage_mock.GetGSUploadLocation().InAnyOrder().AndReturn(
-        self.archive_url)
-    self.archive_stage_mock.GetVersion().AndReturn(self.version)
-
-
-    # Build it, archive it and upload it!
-    commands.BuildAUTestTarball(
-        self.build_root, self._current_board, mox.IgnoreArg(), self.version,
-        self.archive_url).AndReturn(tarball_path)
-    commands.ArchiveFile(tarball_path, self.archive_path).AndReturn(
-        tarball_name)
-    commands.UploadArchivedFile(self.archive_path, self.archive_url,
-                                tarball_name, self.archive_stage_mock.debug,
-                                update_list=True)
-
-    self.mox.ReplayAll()
     stage = self.ConstructStage()
-    stage.WaitForPreconditions()
-    self.mox.VerifyAll()
+    stage._PerformStage()
+    cmd = ['site_utils/autoupdate/full_release_test.py', '--npo', '--dump',
+           '--archive_url', self.archive_stage.upload_url,
+           self.archive_stage.release_tag, self._current_board]
+    self.assertCommandContains(cmd)
+    self.assertCommandContains([commands._AUTOTEST_RPC_CLIENT, self.suite])
 
 
 class UprevStageTest(AbstractStageTest):
@@ -876,20 +854,17 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.options.prebuilts = True
     self.options.tests = False
 
-    self.mox.StubOutWithMock(shutil, 'move')
     self.mox.StubOutWithMock(commands, 'Build')
-    self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
     self.mox.StubOutWithMock(commands, 'BuildImage')
     self.mox.StubOutWithMock(commands, 'BuildVMImageForTesting')
-    self.mox.StubOutWithMock(bs.BuilderStage, '_GetPortageEnvVar')
     self.mox.StubOutWithMock(shutil, 'copyfile')
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-    self.mox.StubOutWithMock(os.path, 'isdir')
 
-    self.mox.StubOutWithMock(commands, 'BuildAutotestTarballs')
-    self.mox.StubOutWithMock(commands, 'BuildFullAutotestTarball')
-    self.mox.StubOutWithMock(os, 'rename')
     self.StartPatcher(ArchiveStageMock())
+    for cmd in ['ArchiveFile', 'BuildTarball', 'UploadArchivedFile']:
+      self.PatchObject(commands, cmd, autospec=True, return_value='foo.txt')
+    self.PatchObject(commands, 'FindFilesWithPattern', autospec=True,
+                     return_value=['foo.txt'])
+    self.PatchObject(stages.BuildTargetStage, 'ArchivePayloads', autospec=True)
 
     # pylint: disable=E1101
     self.parallel_mock = self.StartPatcher(parallel_unittest.ParallelMock())
@@ -924,20 +899,6 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
-    # Convenience variables.
-    fake_autotest_dir = '/fake/autotest'
-    autotest_tarball_name = 'autotest.tar'
-    full_autotest_tarball_name = 'autotest.tar.bz2'
-    test_suites_tarball_name = 'test_suites.tar.bz2'
-    autotest_tarball_path = os.path.join(fake_autotest_dir,
-                                         autotest_tarball_name)
-    full_autotest_tarball_path = os.path.join(fake_autotest_dir,
-                                              full_autotest_tarball_name)
-    test_suites_tarball_path = os.path.join(fake_autotest_dir,
-                                            test_suites_tarball_name)
-    tarballs = [autotest_tarball_path, test_suites_tarball_path]
-    full_autotest_tarball = full_autotest_tarball_path
-
     commands.Build(self.build_root,
                    self._current_board,
                    build_autotest=True,
@@ -954,17 +915,6 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
                         disk_layout='2gb-rootfs', extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     disk_layout=None, extra_env=proper_env)
-    tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
-    commands.BuildAutotestTarballs(self.build_root, self._current_board,
-                                   fake_autotest_dir).AndReturn(tarballs)
-    commands.BuildFullAutotestTarball(self.build_root,
-                                      self._current_board,
-                                      fake_autotest_dir
-                                      ).AndReturn(full_autotest_tarball)
-
-    shutil.copyfile(full_autotest_tarball_path,
-                    os.path.join(self.images_root, 'latest-cbuildbot',
-                                 full_autotest_tarball_name))
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1045,16 +995,6 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
-    # Convenience variables.
-    fake_autotest_dir = '/fake/autotest'
-    autotest_tarball_name = 'autotest.tar'
-    test_suites_tarball_name = 'test_suites.tar.bz2'
-    autotest_tarball_path = os.path.join(fake_autotest_dir,
-                                         autotest_tarball_name)
-    test_suites_tarball_path = os.path.join(fake_autotest_dir,
-                                            test_suites_tarball_name)
-    tarballs = [autotest_tarball_path, test_suites_tarball_path]
-
     commands.Build(self.build_root,
                    self._current_board,
                    build_autotest=True,
@@ -1068,14 +1008,11 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     commands.BuildImage(self.build_root, self._current_board,
                         ['test', 'base', 'dev'],
                         rootfs_verification=True,
-                        version='',
+                        version='0.0.0.1',
                         disk_layout=self.build_config['disk_layout'],
                         extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     disk_layout=None, extra_env=proper_env)
-    tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
-    commands.BuildAutotestTarballs(self.build_root, self._current_board,
-                                   fake_autotest_dir).AndReturn(tarballs)
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
@@ -1085,18 +1022,20 @@ class ArchiveStageMock(partial_mock.PartialMock):
   """Partial mock for Archive Stage."""
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
-  ATTRS = ('GetVersion', 'WaitForBreakpadSymbols',
-           'WaitForHWTestUploads',)
+  ATTRS = ('__init__', 'GetVersion', 'WaitForBreakpadSymbols',)
 
-  VERSION = '0.0.0.1'
+  RELEASE_TAG = '0.0.0.1'
+
+  def _target__init__(self, inst, *args, **kwargs):
+    self.backup['__init__'](inst, *args, **kwargs)
+    if not inst.release_tag:
+      inst.release_tag = self.RELEASE_TAG
 
   def GetVersion(self, inst):
-    return inst._release_tag or self.VERSION
+    release_tag = inst.release_tag or self.RELEASE_TAG
+    return 'R27-%s' % release_tag
 
   def WaitForBreakpadSymbols(self, _inst):
-    return True
-
-  def WaitForHWTestUploads(self, _inst):
     return True
 
 
@@ -1160,13 +1099,12 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     """Test that the json metadata is built correctly"""
     # First run the code.
     stage = self.ConstructStage()
-    stage._Initialize()
     stage.ArchiveMetadataJson()
 
     # Now check the results.
     json_file = stage._upload_queue.get()
     self.assertEquals(json_file, [constants.METADATA_JSON])
-    json_file = os.path.join(stage._archive_path, json_file[0])
+    json_file = os.path.join(stage.archive_path, json_file[0])
     json_data = json.loads(osutils.ReadFile(json_file))
 
     important_keys = (
@@ -1183,7 +1121,7 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
     self.assertEquals(json_data['boards'], ['x86-generic'])
     self.assertEquals(json_data['bot-config'], 'x86-generic-paladin')
-    self.assertEquals(json_data['cros-version'], self.archive_mock.VERSION)
+    self.assertEquals(json_data['cros-version'], stage.version)
     self.assertEquals(json_data['metadata-version'], '1')
 
     # The buildtools manifest doesn't have any overlays. In this case, we can't
@@ -1197,7 +1135,6 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     """Test that the Chrome environment is built."""
     # Create the chrome environment compressed file.
     stage = self.ConstructStage()
-    stage._Initialize()
     chrome_env_dir = os.path.join(
         stage._pkg_dir, constants.CHROME_CP + '-25.3643.0_rc1')
     env_file = os.path.join(chrome_env_dir, 'environment')
@@ -1209,82 +1146,48 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     stage.ArchiveChromeEbuildEnv()
 
     env_tar = stage._upload_queue.get()[0]
-    env_tar = os.path.join(stage._archive_path, env_tar)
+    env_tar = os.path.join(stage.archive_path, env_tar)
     self.assertTrue(os.path.exists(env_tar))
     cros_test_lib.VerifyTarball(env_tar, ['./', 'environment'])
 
 
-class UploadPrebuiltsStageTest(AbstractStageTest):
+class UploadPrebuiltsStageTest(AbstractStageTest,
+                               cros_build_lib_unittest.RunCommandTestCase):
+
   def setUp(self):
     self.options.chrome_rev = 'tot'
     self.options.prebuilts = True
-    self.mox.StubOutWithMock(stages.UploadPrebuiltsStage, '_GetPortageEnvVar')
-    self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
-    self.archive_stage = self.mox.CreateMock(stages.ArchiveStage)
+    self.StartPatcher(ArchiveStageMock())
+    self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                             self._current_board, '')
 
   def ConstructStage(self):
-    self.mox.CreateMock(stages.ArchiveStage)
     return stages.UploadPrebuiltsStage(self.options,
                                        self.build_config,
                                        self._current_board,
                                        self.archive_stage)
-
-  def ConstructBinhosts(self):
-    for board in (self._current_board, None):
-      binhost = 'http://binhost/?board=' + str(board)
-      stages.UploadPrebuiltsStage._GetPortageEnvVar(stages._PORTAGE_BINHOST,
-          board).AndReturn(binhost)
-
-  def _MockOutPrebuiltCall(self, extra_args):
-    """Common method to mock out UploadPrebuilts call."""
-    commands.UploadPrebuilts(
-        category=self.build_config['build_type'],
-        chrome_rev=self.options.chrome_rev,
-        private_bucket=False,
-        buildroot=self.build_root,
-        board=self._current_board,
-        extra_args=extra_args)
 
   def testFullPrebuiltsUpload(self):
     """Test uploading of full builder prebuilts."""
     self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
     self.build_config['manifest_version'] = False
     self.build_config['git_sync'] = True
-    self._MockOutPrebuiltCall(mox.And(mox.IsA(list),
-                                      mox.In('--git-sync')))
-
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    self.assertCommandContains(['./upload_prebuilts', '--git-sync'])
 
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
     self.build_config['build_type'] = constants.CHROME_PFQ_TYPE
-    chrome_version = 'awesome_chrome_version'
-    self.archive_stage.GetVersion().AndReturn(chrome_version)
-
-    self.ConstructBinhosts()
-    self._MockOutPrebuiltCall(mox.And(mox.IsA(list),
-                                      mox.In(chrome_version)))
-
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    self.assertCommandContains(['./upload_prebuilts',
+                                self.archive_stage.version])
 
   def testPreflightUpload(self):
     """Test uploading of prebuilts for preflight build."""
     self.build_config['build_type'] = constants.PFQ_TYPE
-    pfq_version = 'awesome_pfq_version'
-    self.archive_stage.GetVersion().AndReturn(pfq_version)
-
-    self.ConstructBinhosts()
-    self._MockOutPrebuiltCall(mox.And(mox.IsA(list),
-                                      mox.In(pfq_version),
-                                      mox.In('--sync-host')))
-
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    cmd = ['./upload_prebuilts', self.archive_stage.version, '--sync-host']
+    self.assertCommandContains(cmd)
 
 
 class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):

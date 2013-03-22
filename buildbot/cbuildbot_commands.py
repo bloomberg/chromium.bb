@@ -324,14 +324,14 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
                   enter_chroot=True)
 
 
-def BuildImage(buildroot, board, images_to_build, version='',
+def BuildImage(buildroot, board, images_to_build, version=None,
                rootfs_verification=True, extra_env=None, disk_layout=None):
 
   # Default to base if images_to_build is passed empty.
   if not images_to_build:
     images_to_build = ['base']
 
-  version_str = '--version=%s' % version
+  version_str = '--version=%s' % (version or '')
 
   cmd = ['./build_image', '--board=%s' % board, '--replace', version_str]
 
@@ -1218,33 +1218,6 @@ def FindFilesWithPattern(pattern, target='./', cwd=os.curdir):
   os.chdir(old_cwd)
 
   return matches
-
-def BuildAutotestTarballs(buildroot, board, tarball_dir):
-  """Tar up the autotest artifacts into image_dir.
-
-  Args:
-    buildroot: Root directory where build occurs.
-    board: Board type that was built on this machine.
-    tarball_dir: Location for storing autotest tarballs.
-
-  Returns a tuple containing the paths of the autotest and test_suites tarballs.
-  """
-  autotest_tarball = os.path.join(tarball_dir, 'autotest.tar')
-  test_suites_tarball = os.path.join(tarball_dir, 'test_suites.tar.bz2')
-  cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
-
-  # Find the control files in autotest/
-  control_files = FindFilesWithPattern('control*', target='autotest', cwd=cwd)
-
-  # Tar the control files and the packages
-  input_list = control_files + ['autotest/packages']
-  BuildTarball(buildroot, input_list, autotest_tarball,
-               cwd=cwd, compressed=False)
-  BuildTarball(buildroot, ['autotest/test_suites'], test_suites_tarball,
-               cwd=cwd)
-
-  return [autotest_tarball, test_suites_tarball]
-
 
 def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
   """Tar up the au test artifacts into the tarball_dir.
