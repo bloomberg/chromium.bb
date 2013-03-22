@@ -30,7 +30,6 @@
           '<(PRODUCT_DIR)',
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/net_unittests<(EXECUTABLE_SUFFIX)',
-          '-v', '-v', '-v',
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
@@ -43,7 +42,6 @@
           '../testing/test_env.py',
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/net_unittests<(EXECUTABLE_SUFFIX)',
-          '-v', '-v', '-v',
         ],
       },
     }],

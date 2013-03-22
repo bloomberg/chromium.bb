@@ -31,7 +31,6 @@
           '<(PRODUCT_DIR)',
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-          '-v', '-v', '-v',
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
@@ -53,7 +52,6 @@
           '../testing/test_env.py',
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-          '-v', '-v', '-v',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/',
