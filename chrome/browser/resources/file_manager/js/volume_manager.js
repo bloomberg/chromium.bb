@@ -161,7 +161,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
       }
 
       cr.dispatchSimpleEvent(self, 'ready');
-      this.ready_ = true;
+      self.ready_ = true;
       if (mountedVolumes.length > 0)
         cr.dispatchSimpleEvent(self, 'change');
     }
