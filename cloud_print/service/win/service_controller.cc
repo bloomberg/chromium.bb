@@ -106,6 +106,7 @@ HRESULT ServiceController::StopService() {
   while (::QueryServiceStatus(service, &status) &&
           status.dwCurrentState > SERVICE_STOPPED) {
     Sleep(500);
+    ::ControlService(service, SERVICE_CONTROL_STOP, &status);
   }
   return S_OK;
 }
