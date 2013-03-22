@@ -223,6 +223,7 @@ CustomPatterns = [
   ( '--pnacl-allow-native',      "env.set('ALLOW_NATIVE', '1')"),
   ( '--pnacl-allow-translate',   "env.set('ALLOW_TRANSLATE', '1')"),
   ( '--pnacl-frontend-triple=(.+)',   "env.set('FRONTEND_TRIPLE', $0)"),
+  ( '(--pnacl-disable-pass=.+)', AddLDFlag),
 ]
 
 GCCPatterns = [

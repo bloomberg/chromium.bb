@@ -105,6 +105,8 @@ EXTRA_ENV = {
                 '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
                 '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
+
+  'LLVM_PASSES_TO_DISABLE': '',
 }
 
 def AddToBCLinkFlags(*args):
@@ -122,6 +124,11 @@ LDPatterns = [
   ( '--noirt',              "env.set('USE_IRT', '0')"),
   ( '--pnacl-irt-link', "env.set('IRT_LINK', '1')"),
 
+  # "--pnacl-disable-pass" allows an ABI simplification pass to be
+  # disabled if it is causing problems.  These passes are generally
+  # required for ABI-stable pexes but can be omitted when the PNaCl
+  # toolchain is used for producing native nexes.
+  ( '--pnacl-disable-pass=(.+)', "env.append('LLVM_PASSES_TO_DISABLE', $0)"),
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -328,17 +335,25 @@ def main(argv):
   if HasBitcodeInputs(inputs):
     chain = DriverChain(inputs, output, tng)
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
+
     if env.getbool('STATIC') and len(native_objects) == 0:
-      # ABI simplification passes.
-      chain.add(DoExpandCtorsAndTls, 'expand_ctors_and_tls.' + bitcode_type)
+      # ABI simplification passes.  These two passes assume the whole
+      # program is available and should not be used if we are linking
+      # .o files, otherwise they will drop constructors and leave TLS
+      # variables unconverted.
+      chain.add(DoLLVMPasses(['-nacl-expand-ctors', '-nacl-expand-tls']),
+                'expand_features.' + bitcode_type)
+
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
+
     if env.getbool('STATIC'):
       # ABI simplification pass.  This should come last because other
       # LLVM passes might reintroduce ConstantExprs.
-      chain.add(DoExpandConstantExprs, 'expand_constant_exprs.' + bitcode_type)
+      chain.add(DoLLVMPasses(['-expand-constant-expr']),
+                'expand_constant_exprs.' + bitcode_type)
   else:
     chain = DriverChain('', output, tng)
 
@@ -436,14 +451,12 @@ def CheckInputsArch(inputs):
   if count == 0:
     Log.Fatal("no input files")
 
-def DoExpandCtorsAndTls(infile, outfile):
-  RunDriver('opt', ['-nacl-expand-ctors',
-                    '-nacl-expand-tls',
-                    infile, '-o', outfile])
-
-def DoExpandConstantExprs(infile, outfile):
-  RunDriver('opt', ['-expand-constant-expr',
-                    infile, '-o', outfile])
+def DoLLVMPasses(pass_list):
+  def Func(infile, outfile):
+    filtered_list = [pass_option for pass_option in pass_list
+                     if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
+    RunDriver('opt', filtered_list + [infile, '-o', outfile])
+  return Func
 
 def DoOPT(infile, outfile):
   opt_flags = env.get('OPT_FLAGS')
