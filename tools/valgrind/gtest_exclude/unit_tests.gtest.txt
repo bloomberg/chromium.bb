@@ -34,3 +34,7 @@ StorageInfoProviderTest.*
 
 # Crashing. http://crbug.com/222681
 MergeSessionLoadPageTest.*
+
+# Speculative disabling to see if it stops unit_tests hangs.
+# http://crbug.com/180467
+TopSitesTest.CreateTopSitesThenHistory
