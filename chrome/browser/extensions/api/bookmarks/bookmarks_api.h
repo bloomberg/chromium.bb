@@ -17,6 +17,8 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+class Profile;
+
 namespace base {
 class FilePath;
 class ListValue;
@@ -28,7 +30,7 @@ namespace extensions {
 // the extension system.
 class BookmarkEventRouter : public BookmarkModelObserver {
  public:
-  explicit BookmarkEventRouter(BookmarkModel* model);
+  BookmarkEventRouter(Profile* profile, BookmarkModel* model);
   virtual ~BookmarkEventRouter();
 
   // BookmarkModelObserver:
@@ -57,10 +59,10 @@ class BookmarkEventRouter : public BookmarkModelObserver {
 
  private:
   // Helper to actually dispatch an event to extension listeners.
-  void DispatchEvent(Profile* profile,
-                     const char* event_name,
+  void DispatchEvent(const char* event_name,
                      scoped_ptr<base::ListValue> event_args);
 
+  Profile* profile_;
   BookmarkModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEventRouter);

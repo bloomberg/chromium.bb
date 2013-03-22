@@ -133,7 +133,10 @@ void BookmarksFunction::Loaded(BookmarkModel* model, bool ids_reassigned) {
   Release();  // Balanced in Run().
 }
 
-BookmarkEventRouter::BookmarkEventRouter(BookmarkModel* model) : model_(model) {
+BookmarkEventRouter::BookmarkEventRouter(Profile* profile,
+                                         BookmarkModel* model)
+    : profile_(profile),
+      model_(model) {
   model_->AddObserver(this);
 }
 
@@ -144,11 +147,10 @@ BookmarkEventRouter::~BookmarkEventRouter() {
 }
 
 void BookmarkEventRouter::DispatchEvent(
-    Profile* profile,
     const char* event_name,
     scoped_ptr<ListValue> event_args) {
-  if (extensions::ExtensionSystem::Get(profile)->event_router()) {
-    extensions::ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(
+  if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
+    extensions::ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
         make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
   }
 }
@@ -179,7 +181,7 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
   object_args->SetInteger(keys::kOldIndexKey, old_index);
   args->Append(object_args);
 
-  DispatchEvent(model->profile(), keys::kOnBookmarkMoved, args.Pass());
+  DispatchEvent(keys::kOnBookmarkMoved, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
@@ -192,7 +194,7 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
       bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
   args->Append(tree_node->ToValue().release());
 
-  DispatchEvent(model->profile(), keys::kOnBookmarkCreated, args.Pass());
+  DispatchEvent(keys::kOnBookmarkCreated, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
@@ -207,7 +209,7 @@ void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
   object_args->SetInteger(keys::kIndexKey, index);
   args->Append(object_args);
 
-  DispatchEvent(model->profile(), keys::kOnBookmarkRemoved, args.Pass());
+  DispatchEvent(keys::kOnBookmarkRemoved, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
@@ -226,7 +228,7 @@ void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
     object_args->SetString(keys::kUrlKey, node->url().spec());
   args->Append(object_args);
 
-  DispatchEvent(model->profile(), keys::kOnBookmarkChanged, args.Pass());
+  DispatchEvent(keys::kOnBookmarkChanged, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -250,23 +252,18 @@ void BookmarkEventRouter::BookmarkNodeChildrenReordered(
   reorder_info->Set(keys::kChildIdsKey, children);
   args->Append(reorder_info);
 
-  DispatchEvent(model->profile(), keys::kOnBookmarkChildrenReordered,
-                args.Pass());
+  DispatchEvent(keys::kOnBookmarkChildrenReordered, args.Pass());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(
     BookmarkModel* model) {
   scoped_ptr<ListValue> args(new ListValue());
-  DispatchEvent(model->profile(),
-                keys::kOnBookmarkImportBegan,
-                args.Pass());
+  DispatchEvent(keys::kOnBookmarkImportBegan, args.Pass());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   scoped_ptr<ListValue> args(new ListValue());
-  DispatchEvent(model->profile(),
-                keys::kOnBookmarkImportEnded,
-                args.Pass());
+  DispatchEvent(keys::kOnBookmarkImportEnded, args.Pass());
 }
 
 BookmarksAPI::BookmarksAPI(Profile* profile) : profile_(profile) {
@@ -302,7 +299,7 @@ ProfileKeyedAPIFactory<BookmarksAPI>* BookmarksAPI::GetFactoryInstance() {
 }
 
 void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
-  bookmark_event_router_.reset(new BookmarkEventRouter(
+  bookmark_event_router_.reset(new BookmarkEventRouter(profile_,
       BookmarkModelFactory::GetForProfile(profile_)));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
