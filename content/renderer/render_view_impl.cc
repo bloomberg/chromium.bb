@@ -1261,10 +1261,6 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     frame->loadRequest(request);
   }
 
-  // Restore focus to the main frame. Otherwise, if an iframe is focused, the
-  // main frame stays onfocused.
-  webview()->setFocusedFrame(frame);
-
   // In case LoadRequest failed before DidCreateDataSource was called.
   pending_navigation_params_.reset();
 }
