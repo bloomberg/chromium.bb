@@ -392,7 +392,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       logger.log(debug_level, 'RunCommand: %s in %s',
                  ' '.join(map(repr, cmd)), cwd)
     else:
-      logger.log(debug_level, 'RunCommand: %r', ' '.join(map(repr, cmd)))
+      logger.log(debug_level, 'RunCommand: %s', ' '.join(map(repr, cmd)))
 
   cmd_result.cmd = cmd
 
@@ -451,7 +451,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                      "with args=%r", cmd)
 
     if not error_ok and not error_code_ok and proc.returncode:
-      msg = 'Failed command "%r", cwd=%s, extra env=%r' % (cmd, cwd, extra_env)
+      msg = ('Failed command "%s", cwd=%s, extra env=%r'
+             % (' '.join(map(repr, cmd)), cwd, extra_env))
       if error_message:
         msg += '\n%s' % error_message
       raise RunCommandError(msg, cmd_result)
@@ -794,7 +795,7 @@ def TimedCommand(functor, *args, **kwargs):
                    the time delta details.
   """
   log_msg = kwargs.pop('timed_log_msg', '%s(*%r, **%r) took: %%s'
-                         % (functor.__name__, args, kwargs))
+                       % (functor.__name__, args, kwargs))
   log_level = kwargs.pop('timed_log_level', logging.INFO)
   start = datetime.now()
   ret = functor(*args, **kwargs)
