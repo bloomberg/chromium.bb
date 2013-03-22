@@ -28,6 +28,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "grit/content_resources.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -101,7 +102,7 @@ void GpuDataManagerImpl::InitializeForTesting(
   // This function is for testing only, so disable histograms.
   update_histograms_ = false;
 
-  InitializeImpl(gpu_blacklist_json, gpu_info);
+  InitializeImpl(gpu_blacklist_json, "", "", gpu_info);
 }
 
 GpuFeatureType GpuDataManagerImpl::GetBlacklistedFeatures() const {
@@ -287,14 +288,28 @@ void GpuDataManagerImpl::Initialize() {
 #endif
 
   std::string gpu_blacklist_string;
+  std::string gpu_switching_list_string;
+  std::string gpu_driver_bug_list_string;
   if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist)) {
     const base::StringPiece gpu_blacklist_json =
         GetContentClient()->GetDataResource(
             IDR_GPU_BLACKLIST, ui::SCALE_FACTOR_NONE);
     gpu_blacklist_string = gpu_blacklist_json.as_string();
+    const base::StringPiece gpu_switching_list_json =
+        GetContentClient()->GetDataResource(
+            IDR_GPU_SWITCHING_LIST, ui::SCALE_FACTOR_NONE);
+    gpu_switching_list_string = gpu_switching_list_json.as_string();
   }
-
-  InitializeImpl(gpu_blacklist_string, gpu_info);
+  if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
+    const base::StringPiece gpu_driver_bug_list_json =
+        GetContentClient()->GetDataResource(
+            IDR_GPU_DRIVER_BUG_LIST, ui::SCALE_FACTOR_NONE);
+    gpu_driver_bug_list_string = gpu_driver_bug_list_json.as_string();
+  }
+  InitializeImpl(gpu_blacklist_string,
+                 gpu_switching_list_string,
+                 gpu_driver_bug_list_string,
+                 gpu_info);
 }
 
 void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
@@ -314,20 +329,26 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
   GetContentClient()->SetGpuInfo(my_gpu_info);
 
   if (gpu_blacklist_.get()) {
-    GpuBlacklist::Decision decision =
-        gpu_blacklist_->MakeBlacklistDecision(
-            GpuBlacklist::kOsAny, "", my_gpu_info);
+    int features = gpu_blacklist_->MakeDecision(
+        GpuControlList::kOsAny, "", my_gpu_info);
     if (update_histograms_)
-      UpdateStats(gpu_blacklist_.get(), decision.blacklisted_features);
+      UpdateStats(gpu_blacklist_.get(), features);
 
-    UpdateBlacklistedFeatures(decision.blacklisted_features);
-    if (decision.gpu_switching != GPU_SWITCHING_OPTION_UNKNOWN) {
+    UpdateBlacklistedFeatures(static_cast<GpuFeatureType>(features));
+  }
+  if (gpu_switching_list_.get()) {
+    int option = gpu_switching_list_->MakeDecision(
+        GpuControlList::kOsAny, "", my_gpu_info);
+    if (option != GPU_SWITCHING_OPTION_UNKNOWN) {
       // Blacklist decision should not overwrite commandline switch from users.
       CommandLine* command_line = CommandLine::ForCurrentProcess();
       if (!command_line->HasSwitch(switches::kGpuSwitching))
-        gpu_switching_ = decision.gpu_switching;
+        gpu_switching_ = static_cast<GpuSwitchingOption>(option);
     }
   }
+  if (gpu_driver_bug_list_.get())
+    gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
+        GpuControlList::kOsAny, "", my_gpu_info);
 
   // We have to update GpuFeatureType before notify all the observers.
   NotifyGpuInfoUpdate();
@@ -501,7 +522,7 @@ std::string GpuDataManagerImpl::GetBlacklistVersion() const {
 base::ListValue* GpuDataManagerImpl::GetBlacklistReasons() const {
   ListValue* reasons = new ListValue();
   if (gpu_blacklist_.get())
-    gpu_blacklist_->GetBlacklistReasons(reasons);
+    gpu_blacklist_->GetReasons(reasons);
   return reasons;
 }
 
@@ -630,17 +651,30 @@ GpuDataManagerImpl::~GpuDataManagerImpl() {
 
 void GpuDataManagerImpl::InitializeImpl(
     const std::string& gpu_blacklist_json,
+    const std::string& gpu_switching_list_json,
+    const std::string& gpu_driver_bug_list_json,
     const GPUInfo& gpu_info) {
+  std::string browser_version_string = ProcessVersionString(
+      GetContentClient()->GetProduct());
+  CHECK(!browser_version_string.empty());
+
   if (!gpu_blacklist_json.empty()) {
-    std::string browser_version_string = ProcessVersionString(
-        GetContentClient()->GetProduct());
-    CHECK(!browser_version_string.empty());
-    gpu_blacklist_.reset(new GpuBlacklist());
-    bool succeed = gpu_blacklist_->LoadGpuBlacklist(
-        browser_version_string,
-        gpu_blacklist_json,
-        GpuBlacklist::kCurrentOsOnly);
-    CHECK(succeed);
+    gpu_blacklist_.reset(GpuBlacklist::Create());
+    gpu_blacklist_->LoadList(
+        browser_version_string, gpu_blacklist_json,
+        GpuControlList::kCurrentOsOnly);
+  }
+  if (!gpu_switching_list_json.empty()) {
+    gpu_switching_list_.reset(GpuSwitchingList::Create());
+    gpu_switching_list_->LoadList(
+        browser_version_string, gpu_switching_list_json,
+        GpuControlList::kCurrentOsOnly);
+  }
+  if (!gpu_driver_bug_list_json.empty()) {
+    gpu_driver_bug_list_.reset(GpuDriverBugList::Create());
+    gpu_driver_bug_list_->LoadList(
+        browser_version_string, gpu_driver_bug_list_json,
+        GpuControlList::kCurrentOsOnly);
   }
 
   {

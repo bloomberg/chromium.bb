@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
       "  \"entries\": [\n"
       "    {\n"
       "      \"id\": 1,\n"
-      "      \"blacklist\": [\n"
+      "      \"features\": [\n"
       "        \"webgl\"\n"
       "      ]\n"
       "    }\n"

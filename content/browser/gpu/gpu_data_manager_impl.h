@@ -20,6 +20,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "content/browser/gpu/gpu_blacklist.h"
+#include "content/browser/gpu/gpu_driver_bug_list.h"
+#include "content/browser/gpu/gpu_switching_list.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/common/gpu_memory_stats.h"
@@ -192,6 +194,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual ~GpuDataManagerImpl();
 
   void InitializeImpl(const std::string& gpu_blacklist_json,
+                      const std::string& gpu_switching_list_json,
+                      const std::string& gpu_driver_bug_list_json,
                       const GPUInfo& gpu_info);
 
   void UpdateBlacklistedFeatures(GpuFeatureType features);
@@ -233,10 +237,14 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   GpuSwitchingOption gpu_switching_;
 
+  int gpu_driver_bugs_;
+
   GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;
 
   scoped_ptr<GpuBlacklist> gpu_blacklist_;
+  scoped_ptr<GpuSwitchingList> gpu_switching_list_;
+  scoped_ptr<GpuDriverBugList> gpu_driver_bug_list_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 

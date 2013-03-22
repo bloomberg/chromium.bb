@@ -782,7 +782,7 @@ class ExtensionServiceTest
       "  \"entries\": [\n"
       "    {\n"
       "      \"id\": 1,\n"
-      "      \"blacklist\": [\"webgl\"]\n"
+      "      \"features\": [\"webgl\"]\n"
       "    }\n"
       "  ]\n"
       "}";

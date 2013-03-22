@@ -70,7 +70,7 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
       "  \"entries\": [\n"
       "    {\n"
       "      \"id\": 1,\n"
-      "      \"blacklist\": [\"" + JoinString(features, "\", \"") + "\"]\n"
+      "      \"features\": [\"" + JoinString(features, "\", \"") + "\"]\n"
       "    }\n"
       "  ]\n"
       "}";

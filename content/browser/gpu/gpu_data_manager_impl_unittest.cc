@@ -11,6 +11,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#define LONG_STRING_CONST(...) #__VA_ARGS__
+
 namespace content {
 namespace {
 
@@ -110,29 +112,30 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
-  const std::string blacklist_json =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"0.1\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"blacklist\": [\n"
-      "        \"webgl\"\n"
-      "      ]\n"
-      "    },\n"
-      "    {\n"
-      "      \"id\": 2,\n"
-      "      \"gl_renderer\": {\n"
-      "        \"op\": \"contains\",\n"
-      "        \"value\": \"GeForce\"\n"
-      "      },\n"
-      "      \"blacklist\": [\n"
-      "        \"accelerated_2d_canvas\"\n"
-      "      ]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
+  const std::string blacklist_json = LONG_STRING_CONST(
+      {
+        "name": "gpu blacklist",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "features": [
+              "webgl"
+            ]
+          },
+          {
+            "id": 2,
+            "gl_renderer": {
+              "op": "contains",
+              "value": "GeForce"
+            },
+            "features": [
+              "accelerated_2d_canvas"
+            ]
+          }
+        ]
+      }
+  );
 
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
@@ -157,28 +160,28 @@ TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
-  const std::string blacklist_json =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"0.1\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"exceptions\": [\n"
-      "        {\n"
-      "          \"gl_renderer\": {\n"
-      "            \"op\": \"contains\",\n"
-      "            \"value\": \"GeForce\"\n"
-      "          }\n"
-      "        }\n"
-      "      ],\n"
-      "      \"blacklist\": [\n"
-      "        \"webgl\"\n"
-      "      ]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
-
+  const std::string blacklist_json = LONG_STRING_CONST(
+      {
+        "name": "gpu blacklist",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "exceptions": [
+              {
+                "gl_renderer": {
+                  "op": "contains",
+                  "value": "GeForce"
+                }
+              }
+            ],
+            "features": [
+              "webgl"
+            ]
+          }
+        ]
+      }
+  );
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
@@ -462,30 +465,30 @@ TEST_F(GpuDataManagerImplTest, SetGLStrings) {
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
-  const std::string blacklist_json =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"0.1\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"vendor_id\": \"0x8086\",\n"
-      "      \"exceptions\": [\n"
-      "        {\n"
-      "          \"device_id\": [\"0x0042\"],\n"
-      "          \"driver_version\": {\n"
-      "            \"op\": \">=\",\n"
-      "            \"number\": \"8.0.2\"\n"
-      "          }\n"
-      "        }\n"
-      "      ],\n"
-      "      \"blacklist\": [\n"
-      "        \"webgl\"\n"
-      "      ]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
-
+  const std::string blacklist_json = LONG_STRING_CONST(
+      {
+        "name": "gpu blacklist",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "vendor_id": "0x8086",
+            "exceptions": [
+              {
+                "device_id": ["0x0042"],
+                "driver_version": {
+                  "op": ">=",
+                  "number": "8.0.2"
+                }
+              }
+            ],
+            "features": [
+              "webgl"
+            ]
+          }
+        ]
+      }
+  );
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
   gpu_info.gpu.device_id = 0x0042;
@@ -515,30 +518,30 @@ TEST_F(GpuDataManagerImplTest, SetGLStringsNoEffects) {
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
-  const std::string blacklist_json =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"0.1\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"vendor_id\": \"0x8086\",\n"
-      "      \"exceptions\": [\n"
-      "        {\n"
-      "          \"device_id\": [\"0x0042\"],\n"
-      "          \"driver_version\": {\n"
-      "            \"op\": \">=\",\n"
-      "            \"number\": \"8.0.2\"\n"
-      "          }\n"
-      "        }\n"
-      "      ],\n"
-      "      \"blacklist\": [\n"
-      "        \"webgl\"\n"
-      "      ]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
-
+  const std::string blacklist_json = LONG_STRING_CONST(
+      {
+        "name": "gpu blacklist",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "vendor_id": "0x8086",
+            "exceptions": [
+              {
+                "device_id": ["0x0042"],
+                "driver_version": {
+                  "op": ">=",
+                  "number": "8.0.2"
+                }
+              }
+            ],
+            "features": [
+              "webgl"
+            ]
+          }
+        ]
+      }
+  );
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
   gpu_info.gpu.device_id = 0x0042;
