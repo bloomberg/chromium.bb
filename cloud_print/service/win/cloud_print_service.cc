@@ -21,6 +21,7 @@
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/service_controller.h"
+#include "cloud_print/service/win/service_utils.h"
 #include "printing/backend/print_backend.h"
 
 namespace {
@@ -108,19 +109,6 @@ bool AskUser(const std::string& request) {
       return false;
     }
   }
-}
-
-string16 GetCurrentUserName() {
-  ULONG size = 0;
-  string16 result;
-  ::GetUserNameEx(::NameSamCompatible, NULL, &size);
-  result.resize(size);
-  if (result.empty())
-    return result;
-  if (!::GetUserNameEx(::NameSamCompatible, &result[0], &size))
-    result.clear();
-  result.resize(size);
-  return result;
 }
 
 }  // namespace
