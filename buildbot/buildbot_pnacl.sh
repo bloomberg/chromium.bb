@@ -37,7 +37,7 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly LLVM_TEST="pnacl/scripts/llvm-test.sh"
-readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=50
+readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=55
 
 tc-clobber() {
   local label=$1
