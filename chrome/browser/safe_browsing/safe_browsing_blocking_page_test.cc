@@ -591,7 +591,8 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
 };
 
 // TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(win_aura) http://crbug.com/154081
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
 #define MAYBE_MalwareRedirectInIFrameCanceled DISABLED_MalwareRedirectInIFrameCanceled
 #else
 #define MAYBE_MalwareRedirectInIFrameCanceled MalwareRedirectInIFrameCanceled
