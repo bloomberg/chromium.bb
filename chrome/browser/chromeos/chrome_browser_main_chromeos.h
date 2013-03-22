@@ -23,6 +23,7 @@ namespace chromeos {
 
 class BrightnessObserver;
 class DisplayConfigurationObserver;
+class IdleActionWarningObserver;
 class MagnificationManager;
 class OutputObserver;
 class PowerButtonObserver;
@@ -91,6 +92,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<ScreenDimmingObserver> screen_dimming_observer_;
   scoped_refptr<StorageMonitorCros> storage_monitor_;
   scoped_ptr<system::AutomaticRebootManager> automatic_reboot_manager_;
+  scoped_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 

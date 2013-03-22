@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/net/network_change_notifier_network_library.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
+#include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/output_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
@@ -646,6 +647,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   automatic_reboot_manager_.reset(new system::AutomaticRebootManager(
       scoped_ptr<base::TickClock>(new base::DefaultTickClock)));
 
+  // This observer cannot be created earlier because it requires the shell to be
+  // available.
+  idle_action_warning_observer_.reset(new IdleActionWarningObserver());
+
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
 
@@ -746,6 +751,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   screen_dimming_observer_.reset();
   screensaver_controller_.reset();
+  idle_action_warning_observer_.reset();
 
   // Delete ContactManager while |g_browser_process| is still alive.
   contact_manager_.reset();
