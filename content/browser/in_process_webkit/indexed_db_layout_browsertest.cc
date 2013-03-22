@@ -133,7 +133,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, TransactionTests) {
   RunLayoutTests(kTransactionTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IntVersionTests1) {
+// http://crbug.com/223101
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_IntVersionTests1  DISABLED_IntVersionTests1
+#else
+#define MAYBE_IntVersionTests1  IntVersionTests1
+#endif
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, MAYBE_IntVersionTests1) {
   RunLayoutTests(kIntVersionTests1);
 }
 
