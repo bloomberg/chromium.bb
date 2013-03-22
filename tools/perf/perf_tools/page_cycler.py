@@ -1,7 +1,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os
 import sys
 
 from perf_tools import histogram_measurement
@@ -28,13 +27,6 @@ class PageCycler(page_benchmark.PageBenchmark):
     options.AppendExtraBrowserArg('--dom-automation')
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
     options.AppendExtraBrowserArg('--no-sandbox')
-
-    # TODO(tonyg): Collect traces on the perf bots to diagnose noise issue.
-    if sys.platform == 'darwin':
-      build_num = os.environ.get('BUILDBOT_BUILDNUMBER')
-      cycler_name = sys.argv[-1].split('/')[-1].split('.')[0]
-      options.trace_dir = '/tmp/pagecycler_trace_%s_%s' % (cycler_name,
-                                                           build_num)
 
   def MeasureMemory(self, tab, results):
     memory = tab.browser.memory_stats
