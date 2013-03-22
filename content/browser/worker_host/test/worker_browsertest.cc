@@ -404,7 +404,13 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerClose) {
 }
 
 // Flaky, http://crbug.com/70861.
-IN_PROC_BROWSER_TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
+// Times out regularly on Windows debug bots. See http://crbug.com/212339 .
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_QueuedSharedWorkerShutdown DISABLED_QueuedSharedWorkerShutdown
+#else
+#define MAYBE_QueuedSharedWorkerShutdown QueuedSharedWorkerShutdown
+#endif
+IN_PROC_BROWSER_TEST_F(WorkerTest, MAYBE_QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when shared
   // workers shut down.
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
