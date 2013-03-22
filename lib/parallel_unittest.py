@@ -217,7 +217,7 @@ class TestParallelMock(TestBackgroundWrapper):
       self.assertEqual(10, self._calls)
 
 
-class TestExceptions(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
+class TestExceptions(cros_test_lib.MockOutputTestCase):
   """Test cases where child processes raise exceptions."""
 
   def _SystemExit(self):
@@ -245,8 +245,7 @@ class TestExceptions(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
         self.assertEqual(output_str, _GREETING)
 
 
-class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase,
-                  TestBackgroundWrapper):
+class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
   """Test that child processes are halted when exceptions occur."""
 
   def setUp(self):

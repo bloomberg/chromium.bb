@@ -736,7 +736,10 @@ class LessAnnoyingMox(mox.Mox):
 
 
 class MoxTestCase(TestCase):
-  """Mox based test case; compatible with StackedSetup"""
+  """Mox based test case; compatible with StackedSetup
+
+  Note: mox is deprecated; please use MockTestCase instead.
+  """
 
   mox_suppress_verify_all = False
 
@@ -759,11 +762,17 @@ class MoxTestCase(TestCase):
 
 
 class MoxTempDirTestCase(TempDirTestCase, MoxTestCase):
-  """Convenience class mixing TempDir and Mox"""
+  """Convenience class mixing TempDir and Mox
+
+  Note: mox is deprecated; please use MockTempDirTestCase instead.
+  """
 
 
 class MoxOutputTestCase(OutputTestCase, MoxTestCase):
-  """Conevenience class mixing OutputTestCase and MoxTestCase."""
+  """Conevenience class mixing OutputTestCase and MoxTestCase
+
+  Note: mox is deprecated; please use MockOutputTestCase instead.
+  """
 
 
 class MockTestCase(TestCase):
@@ -798,6 +807,10 @@ class MockTestCase(TestCase):
 # TempDirTestCase.tearDown().
 class MockTempDirTestCase(MockTestCase, TempDirTestCase):
   """Convenience class mixing TempDir and Mock."""
+
+
+class MockOutputTestCase(MockTestCase, OutputTestCase):
+  """Convenience class mixing Output and Mock."""
 
 
 def FindTests(directory, module_namespace=''):
