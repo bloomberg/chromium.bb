@@ -827,6 +827,14 @@ For Chromium, processes used to display diagnostics information (such as this "a
 
       <!-- One click sign in infobar -->
       <if expr="not pp_ifdef('chromeos')">
+        <!-- New one-click signin dialog contents for SAML support -->
+        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW" desc="The title of the modal dialog window that opens when the user chooses to use one click sign in.">
+          Sign in to Chromium with <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>?
+        </message>
+        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW" desc="The message of the one click sign in dialog.">
+          You're signing in to Chromium using your <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph> account. You will be able to access your bookmarks, history, and other settings on all of your signed in devices.
+        </message>
+        <!-- Delete DIALOG_TITLE/MESSAGE when we switch to the _NEW versions -->
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user chooses to use one click sign in.">
           You're signed in to Chromium!
         </message>
