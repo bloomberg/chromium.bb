@@ -12,29 +12,29 @@
 #include <gdk/gdkx.h>
 #endif
 
+// NPEvent does not exist on the Mac.
+#if defined(OS_MACOSX)
+typedef NPCocoaEvent WindowlessPluginTestEvent;
+#else
+typedef NPEvent WindowlessPluginTestEvent;
+#endif
+
 namespace NPAPIClient {
 
-// Remember the first plugin instance for tests involving multiple instances
+namespace {
+
+// Remember the first plugin instance for tests involving multiple instances.
 WindowlessPluginTest* g_other_instance = NULL;
 
 void OnFinishTest(void* data) {
   static_cast<WindowlessPluginTest*>(data)->SignalTestCompleted();
 }
 
-WindowlessPluginTest::WindowlessPluginTest(NPP id,
-                                           NPNetscapeFuncs *host_functions)
-    : PluginTest(id, host_functions),
-      paint_counter_(0) {
-  if (!g_other_instance)
-    g_other_instance = this;
-}
-
-static bool IsPaintEvent(NPEvent* np_event) {
+bool IsPaintEvent(WindowlessPluginTestEvent* np_event) {
 #if defined(OS_WIN)
-  return WM_PAINT == np_event->event;
+  return np_event->event == WM_PAINT;
 #elif defined(OS_MACOSX)
-  NPCocoaEvent* cocoa_event = reinterpret_cast<NPCocoaEvent*>(np_event);
-  return cocoa_event->type == NPCocoaEventDrawRect;
+  return np_event->type == NPCocoaEventDrawRect;
 #elif defined(TOOLKIT_GTK)
   return np_event->type == GraphicsExpose;
 #else
@@ -43,12 +43,11 @@ static bool IsPaintEvent(NPEvent* np_event) {
 #endif
 }
 
-static bool IsMouseUpEvent(NPEvent* np_event) {
+bool IsMouseUpEvent(WindowlessPluginTestEvent* np_event) {
 #if defined(OS_WIN)
-  return WM_LBUTTONUP == np_event->event;
+  return np_event->event == WM_LBUTTONUP;
 #elif defined(OS_MACOSX)
-  NPCocoaEvent* cocoa_event = reinterpret_cast<NPCocoaEvent*>(np_event);
-  return cocoa_event->type == NPCocoaEventMouseUp;
+  return np_event->type == NPCocoaEventMouseUp;
 #else
   NOTIMPLEMENTED();
   return false;
@@ -56,12 +55,21 @@ static bool IsMouseUpEvent(NPEvent* np_event) {
 }
 
 #if defined(OS_MACOSX)
-static bool IsWindowActivationEvent(NPEvent* np_event) {
-  NPCocoaEvent* cocoa_event = reinterpret_cast<NPCocoaEvent*>(np_event);
-  return cocoa_event->type == NPCocoaEventWindowFocusChanged &&
-         cocoa_event->data.focus.hasFocus;
+bool IsWindowActivationEvent(WindowlessPluginTestEvent* np_event) {
+  return np_event->type == NPCocoaEventWindowFocusChanged &&
+         np_event->data.focus.hasFocus;
 }
 #endif
+
+}  // namespace
+
+WindowlessPluginTest::WindowlessPluginTest(NPP id,
+                                           NPNetscapeFuncs *host_functions)
+    : PluginTest(id, host_functions),
+      paint_counter_(0) {
+  if (!g_other_instance)
+    g_other_instance = this;
+}
 
 bool WindowlessPluginTest::IsWindowless() const {
   return true;
@@ -93,7 +101,8 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
     return PluginTest::HandleEvent(event);
   }
 
-  NPEvent* np_event = reinterpret_cast<NPEvent*>(event);
+  WindowlessPluginTestEvent* np_event =
+      reinterpret_cast<WindowlessPluginTestEvent*>(event);
   if (IsPaintEvent(np_event)) {
     paint_counter_++;
 #if defined(OS_WIN)
@@ -307,4 +316,4 @@ void WindowlessPluginTest::ConvertPoint(NPNetscapeFuncs* browser) {
   SignalTestCompleted();
 }
 
-} // namespace NPAPIClient
+}  // namespace NPAPIClient
