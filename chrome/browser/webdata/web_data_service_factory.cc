@@ -10,13 +10,7 @@
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
-#include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
-#include "chrome/browser/webdata/keyword_table.h"
-#include "chrome/browser/webdata/logins_table.h"
-#include "chrome/browser/webdata/token_service_table.h"
-#include "chrome/browser/webdata/web_apps_table.h"
-#include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -49,30 +43,8 @@ WebDataServiceWrapper::WebDataServiceWrapper() {}
 WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath path = profile->GetPath();
   path = path.Append(chrome::kWebDataFilename);
-  web_data_service_ =
-      new WebDataService(path, base::Bind(&ProfileErrorCallback));
-
-  // All table objects that participate in managing the database must be added
-  // here.
-  web_data_service_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new AutofillTable()));
-  web_data_service_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new KeywordTable()));
-  // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
-  // access, but for now, we still create it on all platforms since it deletes
-  // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  web_data_service_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new LoginsTable()));
-  web_data_service_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new TokenServiceTable()));
-  web_data_service_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new WebAppsTable()));
-  // TODO(thakis): Add a migration to delete the SQL table used by
-  // WebIntentsTable, then remove this.
-  web_data_service_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new WebIntentsTable()));
-
-  web_data_service_->Init();
+  web_data_service_ = new WebDataService(base::Bind(&ProfileErrorCallback));
+  web_data_service_->Init(path);
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
                           base::Bind(&InitSyncableServicesOnDBThread,

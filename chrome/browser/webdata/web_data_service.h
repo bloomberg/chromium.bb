@@ -107,8 +107,7 @@ class WebDataService
   static scoped_refptr<WebDataService> FromBrowserContext(
       content::BrowserContext* context);
 
-  WebDataService(const base::FilePath& path,
-                 const ProfileErrorCallback& callback);
+  explicit WebDataService(const ProfileErrorCallback& callback);
 
   // Notifies listeners on the UI thread that multiple changes have been made to
   // to Autofill records of the database.

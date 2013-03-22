@@ -52,11 +52,6 @@ class WebDatabaseService {
 
   virtual ~WebDatabaseService();
 
-  // Adds |table| as a WebDatabaseTable that will participate in
-  // managing the database, transferring ownership. All calls to this
-  // method must be made before |LoadDatabase| is called.
-  virtual void AddTable(scoped_ptr<WebDatabaseTable> table);
-
   // Initializes the web database service. Takes a callback which will return
   // the status of the DB after the init.
   virtual void LoadDatabase(const InitCallback& callback);

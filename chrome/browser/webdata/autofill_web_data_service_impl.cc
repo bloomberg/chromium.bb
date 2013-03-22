@@ -8,8 +8,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 AutofillWebDataService::AutofillWebDataService()
-    : WebDataServiceBase(base::FilePath(),
-                         WebDataServiceBase::ProfileErrorCallback()) {
+    : WebDataServiceBase(WebDataServiceBase::ProfileErrorCallback()) {
 }
 
 AutofillWebDataServiceImpl::AutofillWebDataServiceImpl(

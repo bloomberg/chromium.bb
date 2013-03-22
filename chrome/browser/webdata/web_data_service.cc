@@ -62,9 +62,8 @@ WDKeywordsResult::WDKeywordsResult()
 
 WDKeywordsResult::~WDKeywordsResult() {}
 
-WebDataService::WebDataService(const base::FilePath& path,
-                               const ProfileErrorCallback& callback)
-    : WebDataServiceBase(path, callback) {
+WebDataService::WebDataService(const ProfileErrorCallback& callback)
+    : WebDataServiceBase(callback) {
 }
 
 // static
@@ -263,7 +262,7 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
 }
 
 WebDataService::WebDataService()
-    : WebDataServiceBase(base::FilePath(), ProfileErrorCallback()) {
+    : WebDataServiceBase(ProfileErrorCallback()) {
 }
 
 WebDataService::~WebDataService() {
