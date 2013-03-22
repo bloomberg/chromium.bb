@@ -115,8 +115,7 @@ int SizeY(
   return tiling.TileSizeY(y_index);
 }
 
-TEST(TilingDataTest, numTiles_NoTiling)
-{
+TEST(TilingDataTest, NumTiles_NoTiling) {
   EXPECT_EQ(1, NumTiles(gfx::Size(16, 16), gfx::Size(16, 16), false));
   EXPECT_EQ(1, NumTiles(gfx::Size(16, 16), gfx::Size(15, 15), true));
   EXPECT_EQ(1, NumTiles(gfx::Size(16, 16), gfx::Size(16, 16), true));
@@ -126,8 +125,7 @@ TEST(TilingDataTest, numTiles_NoTiling)
   EXPECT_EQ(1, NumTiles(gfx::Size(32, 16), gfx::Size(32, 16), true));
 }
 
-TEST(TilingDataTest, numTiles_TilingNoBorders)
-{
+TEST(TilingDataTest, NumTiles_TilingNoBorders) {
   EXPECT_EQ(0, NumTiles(gfx::Size(0, 0), gfx::Size(0, 0), false));
   EXPECT_EQ(0, NumTiles(gfx::Size(0, 0), gfx::Size(4, 0), false));
   EXPECT_EQ(0, NumTiles(gfx::Size(0, 0), gfx::Size(0, 4), false));
@@ -177,8 +175,7 @@ TEST(TilingDataTest, numTiles_TilingNoBorders)
   EXPECT_EQ(8, NumTiles(gfx::Size(5, 8), gfx::Size(17, 16), false));
 }
 
-TEST(TilingDataTest, numTiles_TilingWithBorders)
-{
+TEST(TilingDataTest, NumTiles_TilingWithBorders) {
   EXPECT_EQ(0, NumTiles(gfx::Size(0, 0), gfx::Size(0, 0), true));
   EXPECT_EQ(0, NumTiles(gfx::Size(0, 0), gfx::Size(4, 0), true));
   EXPECT_EQ(0, NumTiles(gfx::Size(0, 0), gfx::Size(0, 4), true));
@@ -229,8 +226,7 @@ TEST(TilingDataTest, numTiles_TilingWithBorders)
   EXPECT_EQ(30, NumTiles(gfx::Size(8, 5), gfx::Size(16, 32), true));
 }
 
-TEST(TilingDataTest, tileXIndexFromSrcCoord)
-{
+TEST(TilingDataTest, TileXIndexFromSrcCoord) {
   EXPECT_EQ(0, XIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 0));
   EXPECT_EQ(0, XIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 1));
   EXPECT_EQ(0, XIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 2));
@@ -282,8 +278,7 @@ TEST(TilingDataTest, tileXIndexFromSrcCoord)
   EXPECT_EQ(1, XIndex(gfx::Size(3, 3), gfx::Size(4, 3), true, 3));
 }
 
-TEST(TilingDataTest, firstBorderTileXIndexFromSrcCoord)
-{
+TEST(TilingDataTest, FirstBorderTileXIndexFromSrcCoord) {
   EXPECT_EQ(0, MinBorderXIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 0));
   EXPECT_EQ(0, MinBorderXIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 1));
   EXPECT_EQ(0, MinBorderXIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 2));
@@ -335,8 +330,7 @@ TEST(TilingDataTest, firstBorderTileXIndexFromSrcCoord)
   EXPECT_EQ(1, MinBorderXIndex(gfx::Size(3, 3), gfx::Size(4, 3), true, 3));
 }
 
-TEST(TilingDataTest, lastBorderTileXIndexFromSrcCoord)
-{
+TEST(TilingDataTest, LastBorderTileXIndexFromSrcCoord) {
   EXPECT_EQ(0, MaxBorderXIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 0));
   EXPECT_EQ(0, MaxBorderXIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 1));
   EXPECT_EQ(0, MaxBorderXIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 2));
@@ -388,8 +382,7 @@ TEST(TilingDataTest, lastBorderTileXIndexFromSrcCoord)
   EXPECT_EQ(1, MaxBorderXIndex(gfx::Size(3, 3), gfx::Size(4, 3), true, 3));
 }
 
-TEST(TilingDataTest, tileYIndexFromSrcCoord)
-{
+TEST(TilingDataTest, TileYIndexFromSrcCoord) {
   EXPECT_EQ(0, YIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 0));
   EXPECT_EQ(0, YIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 1));
   EXPECT_EQ(0, YIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 2));
@@ -441,8 +434,7 @@ TEST(TilingDataTest, tileYIndexFromSrcCoord)
   EXPECT_EQ(1, YIndex(gfx::Size(3, 3), gfx::Size(3, 4), true, 3));
 }
 
-TEST(TilingDataTest, firstBorderTileYIndexFromSrcCoord)
-{
+TEST(TilingDataTest, FirstBorderTileYIndexFromSrcCoord) {
   EXPECT_EQ(0, MinBorderYIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 0));
   EXPECT_EQ(0, MinBorderYIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 1));
   EXPECT_EQ(0, MinBorderYIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 2));
@@ -494,8 +486,7 @@ TEST(TilingDataTest, firstBorderTileYIndexFromSrcCoord)
   EXPECT_EQ(1, MinBorderYIndex(gfx::Size(3, 3), gfx::Size(3, 4), true, 3));
 }
 
-TEST(TilingDataTest, lastBorderTileYIndexFromSrcCoord)
-{
+TEST(TilingDataTest, LastBorderTileYIndexFromSrcCoord) {
   EXPECT_EQ(0, MaxBorderYIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 0));
   EXPECT_EQ(0, MaxBorderYIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 1));
   EXPECT_EQ(0, MaxBorderYIndex(gfx::Size(3, 3), gfx::Size(10, 10), false, 2));
@@ -547,8 +538,7 @@ TEST(TilingDataTest, lastBorderTileYIndexFromSrcCoord)
   EXPECT_EQ(1, MaxBorderYIndex(gfx::Size(3, 3), gfx::Size(3, 4), true, 3));
 }
 
-TEST(TilingDataTest, tileSizeX)
-{
+TEST(TilingDataTest, TileSizeX) {
   EXPECT_EQ(5, SizeX(gfx::Size(5, 5), gfx::Size(5, 5), false, 0));
   EXPECT_EQ(5, SizeX(gfx::Size(5, 5), gfx::Size(5, 5), true, 0));
 
@@ -574,8 +564,7 @@ TEST(TilingDataTest, tileSizeX)
   EXPECT_EQ(3, SizeX(gfx::Size(5, 9), gfx::Size(12, 17), true, 2));
 }
 
-TEST(TilingDataTest, TileSizeY)
-{
+TEST(TilingDataTest, TileSizeY) {
   EXPECT_EQ(5, SizeY(gfx::Size(5, 5), gfx::Size(5, 5), false, 0));
   EXPECT_EQ(5, SizeY(gfx::Size(5, 5), gfx::Size(5, 5), true, 0));
 
@@ -601,8 +590,7 @@ TEST(TilingDataTest, TileSizeY)
   EXPECT_EQ(3, SizeY(gfx::Size(9, 5), gfx::Size(17, 12), true, 2));
 }
 
-TEST(TilingDataTest, TileSizeX_and_TilePositionX)
-{
+TEST(TilingDataTest, TileSizeX_and_TilePositionX) {
   // Single tile cases:
   EXPECT_EQ(1, SizeX(gfx::Size(3, 3), gfx::Size(1, 1), false, 0));
   EXPECT_EQ(0, PosX(gfx::Size(3, 3), gfx::Size(1, 1), false, 0));
@@ -656,8 +644,7 @@ TEST(TilingDataTest, TileSizeX_and_TilePositionX)
   EXPECT_EQ(4, PosX(gfx::Size(3, 7), gfx::Size(6, 100), true, 3));
 }
 
-TEST(TilingDataTest, TileSizeY_and_TilePositionY)
-{
+TEST(TilingDataTest, TileSizeY_and_TilePositionY) {
   // Single tile cases:
   EXPECT_EQ(1, SizeY(gfx::Size(3, 3), gfx::Size(1, 1), false, 0));
   EXPECT_EQ(0, PosY(gfx::Size(3, 3), gfx::Size(1, 1), false, 0));
@@ -711,8 +698,7 @@ TEST(TilingDataTest, TileSizeY_and_TilePositionY)
   EXPECT_EQ(4, PosY(gfx::Size(7, 3), gfx::Size(100, 6), true, 3));
 }
 
-TEST(TilingDataTest, SetTotalSize)
-{
+TEST(TilingDataTest, SetTotalSize) {
   TilingData data(gfx::Size(5, 5), gfx::Size(5, 5), false);
   EXPECT_EQ(5, data.total_size().width());
   EXPECT_EQ(5, data.total_size().height());
@@ -741,8 +727,7 @@ TEST(TilingDataTest, SetTotalSize)
   EXPECT_EQ(2, data.TileSizeY(2));
 }
 
-TEST(TilingDataTest, SetMaxTextureSizeNoBorders)
-{
+TEST(TilingDataTest, SetMaxTextureSizeNoBorders) {
   TilingData data(gfx::Size(8, 8), gfx::Size(16, 32), false);
   EXPECT_EQ(2, data.num_tiles_x());
   EXPECT_EQ(4, data.num_tiles_y());
@@ -768,8 +753,7 @@ TEST(TilingDataTest, SetMaxTextureSizeNoBorders)
   EXPECT_EQ(7, data.num_tiles_y());
 }
 
-TEST(TilingDataTest, SetMaxTextureSizeBorders)
-{
+TEST(TilingDataTest, SetMaxTextureSizeBorders) {
   TilingData data(gfx::Size(8, 8), gfx::Size(16, 32), true);
   EXPECT_EQ(3, data.num_tiles_x());
   EXPECT_EQ(5, data.num_tiles_y());
@@ -795,8 +779,7 @@ TEST(TilingDataTest, SetMaxTextureSizeBorders)
   EXPECT_EQ(10, data.num_tiles_y());
 }
 
-TEST(TilingDataTest, assignment)
-{
+TEST(TilingDataTest, Assignment) {
   {
     TilingData source(gfx::Size(8, 8), gfx::Size(16, 32), true);
     TilingData dest = source;
@@ -819,8 +802,7 @@ TEST(TilingDataTest, assignment)
   }
 }
 
-TEST(TilingDataTest, setBorderTexels)
-{
+TEST(TilingDataTest, SetBorderTexels) {
   TilingData data(gfx::Size(8, 8), gfx::Size(16, 32), false);
   EXPECT_EQ(2, data.num_tiles_x());
   EXPECT_EQ(4, data.num_tiles_y());
@@ -838,8 +820,7 @@ TEST(TilingDataTest, setBorderTexels)
   EXPECT_EQ(4, data.num_tiles_y());
 }
 
-TEST(TilingDataTest, largeBorders)
-{
+TEST(TilingDataTest, LargeBorders) {
   TilingData data(gfx::Size(100, 80), gfx::Size(200, 145), 30);
   EXPECT_EQ(30, data.border_texels());
 
@@ -994,8 +975,7 @@ void TestIterate(
   }
 }
 
-TEST(TilingDataTest, iteratorNoBorderTexels)
-{
+TEST(TilingDataTest, IteratorNoBorderTexels) {
   TilingData data(gfx::Size(10, 10), gfx::Size(40, 25), false);
   // X border index by src coord: [0-10), [10-20), [20, 30), [30, 40)
   // Y border index by src coord: [0-10), [10-20), [20, 25)
@@ -1010,8 +990,7 @@ TEST(TilingDataTest, iteratorNoBorderTexels)
   TestIterate(data, gfx::Rect(60, 80, 100, 100), 0, 0, -1, -1);
 }
 
-TEST(TilingDataTest, iteratorOneBorderTexel)
-{
+TEST(TilingDataTest, IteratorOneBorderTexel) {
   TilingData data(gfx::Size(10, 20), gfx::Size(25, 45), true);
   // X border index by src coord: [0-10), [8-18), [16-25)
   // Y border index by src coord: [0-20), [18-38), [36-45)
@@ -1028,8 +1007,7 @@ TEST(TilingDataTest, iteratorOneBorderTexel)
   TestIterate(data, gfx::Rect(60, 80, 100, 100), 0, 0, -1, -1);
 }
 
-TEST(TilingDataTest, iteratorManyBorderTexels)
-{
+TEST(TilingDataTest, IteratorManyBorderTexels) {
   TilingData data(gfx::Size(50, 60), gfx::Size(65, 110), 20);
   // X border index by src coord: [0-50), [10-60), [20-65)
   // Y border index by src coord: [0-60), [20-80), [40-100), [60-110)
@@ -1045,8 +1023,7 @@ TEST(TilingDataTest, iteratorManyBorderTexels)
   TestIterate(data, gfx::Rect(65, 110, 100, 100), 0, 0, -1, -1);
 }
 
-TEST(TilingDataTest, iteratorOneTile)
-{
+TEST(TilingDataTest, IteratorOneTile) {
   TilingData no_border(gfx::Size(1000, 1000), gfx::Size(30, 40), false);
   TestIterate(no_border, gfx::Rect(0, 0, 30, 40), 0, 0, 0, 0);
   TestIterate(no_border, gfx::Rect(10, 10, 20, 20), 0, 0, 0, 0);
@@ -1063,8 +1040,7 @@ TEST(TilingDataTest, iteratorOneTile)
   TestIterate(big_border, gfx::Rect(30, 40, 100, 100), 0, 0, -1, -1);
 }
 
-TEST(TilingDataTest, iteratorNoTiles)
-{
+TEST(TilingDataTest, IteratorNoTiles) {
   TilingData data(gfx::Size(100, 100), gfx::Size(), false);
   TestIterate(data, gfx::Rect(0, 0, 100, 100), 0, 0, -1, -1);
 }
@@ -1103,8 +1079,7 @@ void TestDiff(
   EXPECT_EQ(0, expected.size());
 }
 
-TEST(TilingDataTest, differenceIteratorIgnoreGeometry)
-{
+TEST(TilingDataTest, DifferenceIteratorIgnoreGeometry) {
   // This test is checking that the iterator can handle different geometries of
   // ignore rects relative to the consider rect.  The consider rect indices
   // themselves are mostly tested by the non-difference iterator tests, so the
@@ -1156,8 +1131,7 @@ TEST(TilingDataTest, differenceIteratorIgnoreGeometry)
   TestDiff(data, gfx::Rect(5, 2, 20, 10), gfx::Rect(25, 15, 5, 10), 5);
 }
 
-TEST(TilingDataTest, differenceIteratorManyBorderTexels)
-{
+TEST(TilingDataTest, DifferenceIteratorManyBorderTexels) {
   // X border index by src coord: [0-50), [10-60), [20-65)
   // Y border index by src coord: [0-60), [20-80), [40-100), [60-110)
   TilingData data(gfx::Size(50, 60), gfx::Size(65, 110), 20);
@@ -1172,8 +1146,7 @@ TEST(TilingDataTest, differenceIteratorManyBorderTexels)
   TestDiff(data, gfx::Rect(0, 0, 65, 110), gfx::Rect(30, 59, 1, 2), 0);
 }
 
-TEST(TilingDataTest, differenceIteratorOneTile)
-{
+TEST(TilingDataTest, DifferenceIteratorOneTile) {
   TilingData no_border(gfx::Size(1000, 1000), gfx::Size(30, 40), false);
   TestDiff(no_border, gfx::Rect(0, 0, 30, 40), gfx::Rect(), 1);
   TestDiff(no_border, gfx::Rect(5, 5, 100, 100), gfx::Rect(5, 5, 1, 1), 0);
@@ -1187,8 +1160,7 @@ TEST(TilingDataTest, differenceIteratorOneTile)
   TestDiff(big_border, gfx::Rect(5, 5, 100, 100), gfx::Rect(5, 5, 1, 1), 0);
 }
 
-TEST(TilingDataTest, differenceIteratorNoTiles)
-{
+TEST(TilingDataTest, DifferenceIteratorNoTiles) {
   TilingData data(gfx::Size(100, 100), gfx::Size(), false);
   TestDiff(data, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 5, 5), 0);
 }
