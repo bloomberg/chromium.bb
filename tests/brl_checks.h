@@ -1,4 +1,4 @@
-#define TRANSLATION_TABLE "compress.ctb,en-us-g2.ctb"
+#define TRANSLATION_TABLE "compress.cti,en-us-g2.ctb"
 
 int check_inpos(const char *tableList, const char *str, const int *expected_poslist);
 
