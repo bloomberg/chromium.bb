@@ -16,6 +16,7 @@
 
 class WebDatabase;
 class WebDatabaseService;
+class WebDatabaseTable;
 
 namespace base {
 class Thread;
@@ -38,7 +39,8 @@ class WebDataServiceBase
 
   // |callback| will only be invoked on error, and only if
   // |callback.is_null()| evaluates to false.
-  explicit WebDataServiceBase(const ProfileErrorCallback& callback);
+  WebDataServiceBase(const base::FilePath& path,
+                     const ProfileErrorCallback& callback);
 
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.
@@ -52,8 +54,17 @@ class WebDataServiceBase
   // call.
   virtual void ShutdownOnUIThread();
 
+  // Adds the given table to the database. Passes ownership. Must be
+  // called for all tables before Init.
+  //
+  // TODO(joi): This method is duplicated a couple of layers deep;
+  // once we have a single object creating the WebDatabaseService as
+  // well as all the XyzWebDataService objects, we should be able to
+  // simplify.
+  void AddTable(scoped_ptr<WebDatabaseTable> table);
+
   // Initializes the web data service.
-  virtual void Init(const base::FilePath& path);
+  virtual void Init();
 
   // Unloads the database without actually shutting down the service.  This can
   // be used to temporarily reduce the browser process' memory footprint.
@@ -91,6 +102,11 @@ class WebDataServiceBase
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebDataServiceBase>;
+
+  // TODO(caitkp): Get rid of this once we fully split
+  // AutofillWebDataService and WebDatabaseService away from
+  // WebDataService.
+  base::FilePath path_;
 
   ProfileErrorCallback profile_error_callback_;
 
