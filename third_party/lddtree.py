@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Copyright 2012 Gentoo Foundation
 # Copyright 2012 Mike Frysinger <vapier@gentoo.org>
-# Distributed under the terms of the GNU General Public License v2
+# Use of this source code is governed by a BSD-style license (BSD-3)
 # $Header: /var/cvsroot/gentoo-projects/pax-utils/lddtree.py,v 1.18 2013/01/05 20:39:56 vapier Exp $
 
 """Read the ELF dependency tree and show it
