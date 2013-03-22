@@ -15,86 +15,92 @@ using namespace WebKit;
 namespace cc {
 namespace {
 
-TEST(ScopedResourceTest, NewScopedResource)
-{
-    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
-    scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
+TEST(ScopedResourceTest, NewScopedResource) {
+  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(context.get()));
+  scoped_ptr<ScopedResource> texture =
+      ScopedResource::create(resource_provider.get());
 
-    // New scoped textures do not hold a texture yet.
-    EXPECT_EQ(0u, texture->id());
+  // New scoped textures do not hold a texture yet.
+  EXPECT_EQ(0u, texture->id());
 
-    // New scoped textures do not have a size yet.
-    EXPECT_EQ(gfx::Size(), texture->size());
-    EXPECT_EQ(0u, texture->bytes());
+  // New scoped textures do not have a size yet.
+  EXPECT_EQ(gfx::Size(), texture->size());
+  EXPECT_EQ(0u, texture->bytes());
 }
 
-TEST(ScopedResourceTest, CreateScopedResource)
-{
-    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
-    scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
-    texture->Allocate(gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+TEST(ScopedResourceTest, CreateScopedResource) {
+  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(context.get()));
+  scoped_ptr<ScopedResource> texture =
+      ScopedResource::create(resource_provider.get());
+  texture->Allocate(
+      gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
 
-    // The texture has an allocated byte-size now.
-    size_t expectedBytes = 30 * 30 * 4;
-    EXPECT_EQ(expectedBytes, texture->bytes());
+  // The texture has an allocated byte-size now.
+  size_t expected_bytes = 30 * 30 * 4;
+  EXPECT_EQ(expected_bytes, texture->bytes());
 
+  EXPECT_LT(0u, texture->id());
+  EXPECT_EQ(GL_RGBA, texture->format());
+  EXPECT_EQ(gfx::Size(30, 30), texture->size());
+}
+
+TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
+  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(context.get()));
+  {
+    scoped_ptr<ScopedResource> texture =
+        ScopedResource::create(resource_provider.get());
+
+    EXPECT_EQ(0u, resource_provider->num_resources());
+    texture->Allocate(
+        gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
     EXPECT_LT(0u, texture->id());
-    EXPECT_EQ(GL_RGBA, texture->format());
-    EXPECT_EQ(gfx::Size(30, 30), texture->size());
+    EXPECT_EQ(1u, resource_provider->num_resources());
+  }
+
+  EXPECT_EQ(0u, resource_provider->num_resources());
+  {
+    scoped_ptr<ScopedResource> texture =
+        ScopedResource::create(resource_provider.get());
+    EXPECT_EQ(0u, resource_provider->num_resources());
+    texture->Allocate(
+        gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+    EXPECT_LT(0u, texture->id());
+    EXPECT_EQ(1u, resource_provider->num_resources());
+    texture->Free();
+    EXPECT_EQ(0u, resource_provider->num_resources());
+  }
 }
 
-TEST(ScopedResourceTest, ScopedResourceIsDeleted)
-{
-    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
+TEST(ScopedResourceTest, LeakScopedResource) {
+  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(context.get()));
+  {
+    scoped_ptr<ScopedResource> texture =
+        ScopedResource::create(resource_provider.get());
 
-    {
-        scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
+    EXPECT_EQ(0u, resource_provider->num_resources());
+    texture->Allocate(
+        gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+    EXPECT_LT(0u, texture->id());
+    EXPECT_EQ(1u, resource_provider->num_resources());
 
-        EXPECT_EQ(0u, resourceProvider->num_resources());
-        texture->Allocate(gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
-        EXPECT_LT(0u, texture->id());
-        EXPECT_EQ(1u, resourceProvider->num_resources());
-    }
+    texture->Leak();
+    EXPECT_EQ(0u, texture->id());
+    EXPECT_EQ(1u, resource_provider->num_resources());
 
-    EXPECT_EQ(0u, resourceProvider->num_resources());
+    texture->Free();
+    EXPECT_EQ(0u, texture->id());
+    EXPECT_EQ(1u, resource_provider->num_resources());
+  }
 
-    {
-        scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
-        EXPECT_EQ(0u, resourceProvider->num_resources());
-        texture->Allocate(gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
-        EXPECT_LT(0u, texture->id());
-        EXPECT_EQ(1u, resourceProvider->num_resources());
-        texture->Free();
-        EXPECT_EQ(0u, resourceProvider->num_resources());
-    }
-}
-
-TEST(ScopedResourceTest, LeakScopedResource)
-{
-    scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(context.get()));
-
-    {
-        scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
-
-        EXPECT_EQ(0u, resourceProvider->num_resources());
-        texture->Allocate(gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
-        EXPECT_LT(0u, texture->id());
-        EXPECT_EQ(1u, resourceProvider->num_resources());
-
-        texture->Leak();
-        EXPECT_EQ(0u, texture->id());
-        EXPECT_EQ(1u, resourceProvider->num_resources());
-
-        texture->Free();
-        EXPECT_EQ(0u, texture->id());
-        EXPECT_EQ(1u, resourceProvider->num_resources());
-    }
-
-    EXPECT_EQ(1u, resourceProvider->num_resources());
+  EXPECT_EQ(1u, resource_provider->num_resources());
 }
 
 }  // namespace
