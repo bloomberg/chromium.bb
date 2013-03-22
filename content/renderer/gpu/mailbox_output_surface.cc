@@ -32,7 +32,8 @@ MailboxOutputSurface::MailboxOutputSurface(
 MailboxOutputSurface::~MailboxOutputSurface() {
   DiscardBackbuffer();
   while (!pending_textures_.empty()) {
-    context3d_->deleteTexture(pending_textures_.front().texture_id);
+    if (pending_textures_.front().texture_id)
+      context3d_->deleteTexture(pending_textures_.front().texture_id);
     pending_textures_.pop_front();
   }
 }
