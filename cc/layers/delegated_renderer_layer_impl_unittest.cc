@@ -218,11 +218,11 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass) {
   // DelegatedRendererLayer added two contributing passes.
   ASSERT_EQ(5u, frame.render_passes.size());
 
-  // The layer's target is the RenderPass from m_layer_after.
+  // The layer's target is the RenderPass from layer_after_.
   EXPECT_EQ(RenderPass::Id(3, 0), frame.render_passes[3]->id);
 
   // The DelegatedRendererLayer should have added copies of quads in its root
-  // RenderPass to its target RenderPass. The m_layer_after also adds one quad.
+  // RenderPass to its target RenderPass. The layer_after_ also adds one quad.
   ASSERT_EQ(2u, frame.render_passes[3]->quad_list.size());
 
   // Verify it added the right quads.
