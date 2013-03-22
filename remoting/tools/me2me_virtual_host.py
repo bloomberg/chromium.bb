@@ -321,9 +321,6 @@ class Desktop:
     self.x_proc = subprocess.Popen(
         [xvfb, ":%d" % display,
          "-auth", x_auth_file,
-         # Disable compositing, since metacity seems to miss delivering some
-         # DAMAGE notifications otherwise. See crbug.com/166468.
-         "-extension", "Composite",
          "-nolisten", "tcp",
          "-noreset",
          "-screen", "0", screen_option
