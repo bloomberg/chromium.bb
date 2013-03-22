@@ -1438,7 +1438,8 @@ def LoadKeyValueFile(input, ignore_missing=False):
           continue
         chunks = line.split('=', 1)
         if len(chunks) != 2:
-          raise ValueError('Malformed version file; line %r' % raw_line)
+          raise ValueError('Malformed version file %r; line %r'
+                           % (input, raw_line))
         val = chunks[1].strip()
         if len(val) > 1 and val[0] in "\"'" and val[0] == val[-1]:
           # Only strip quotes if the first & last one match.
