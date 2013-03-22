@@ -52,9 +52,12 @@ v8.log
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
 /c
 /ceee/internal/
+/base/base_unittests_run.xml
 /chrome/app/policy/chrome_settings_proto_compile.xml
+/chrome/app/policy/chrome_settings_proto_generated_compile.xml
 /chrome/app/policy/cloud_policy_backend_header_compile.xml
 /chrome/app/policy/cloud_policy_proto_compile.xml
+/chrome/app/policy/cloud_policy_proto_generated_compile.xml
 /chrome/app/policy/policy_proto_compile.xml
 /chrome/app/theme/default_100_percent/google_chrome
 /chrome/app/theme/default_200_percent/google_chrome
@@ -68,6 +71,7 @@ v8.log
 /chrome/browser/resources/software_rendering_list
 /chrome/browser/search_engines/prepopulated_engines.xml
 /chrome/browser/spellchecker/internal
+/chrome/browser_tests_run.xml
 /chrome/chrome_version_resources.xml
 /chrome/common/extensions/api/api.xml
 /chrome/Hammer
@@ -82,6 +86,7 @@ v8.log
 /chrome/setup.xml
 /chrome/setup_unittests.xml
 /chrome/supplement.gypi
+/chrome/sync_integration_tests_run.xml
 /chrome/test/chromeos/autotest/files/client/deps/chrome_test/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/page_cycler_dep/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/pyauto_dep/test_src/
@@ -104,10 +109,12 @@ v8.log
 /chrome/test/data/pyauto_private
 /chrome/tools/memory
 /chrome/tools/test/reference_build
+/chrome/unit_tests_run.xml
 /chrome_frame/chrome_frame_ie.xml
 /chrome_frame/chrome_frame_launcher_version_resources.xml
 /chrome_frame/chrome_frame_version_resources.xml
 /chrome_frame/tools/test/reference_build
+/cloud_print/cloud_print_version_resources.xml
 /content/test/data/layout_tests/
 /content/test/data/plugin/
 /data
@@ -165,6 +172,7 @@ v8.log
 /third_party/asan
 /third_party/bidichecker
 /third_party/bison
+/third_party/cacheinvalidation/cacheinvalidation_unittests_run.xml
 /third_party/cacheinvalidation/src
 /third_party/chromeos_login_manager
 /third_party/chromeos_text_input
