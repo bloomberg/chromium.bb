@@ -55,5 +55,5 @@ if __name__ == '__main__':
     sys.exit(0)
 
   from telemetry.page import page_benchmark_runner
-  benchmark_dir = os.path.join(os.path.dirname(__file__), 'perf_tools')
+  benchmark_dir = os.path.dirname(perf_tools.__file__)
   sys.exit(page_benchmark_runner.Main(benchmark_dir))
