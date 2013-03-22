@@ -708,16 +708,13 @@ class TestTimeouts(cros_test_lib.TestCase):
   def testSubCommandTimeout(self):
     """Tests that we can nest SubCommandTimeout correctly."""
     self.assertFalse('mock' in str(time.sleep).lower())
-    with cros_build_lib.SubCommandTimeout(4):
-      with cros_build_lib.SubCommandTimeout(3):
+    with cros_build_lib.SubCommandTimeout(30):
+      with cros_build_lib.SubCommandTimeout(20):
         with cros_build_lib.SubCommandTimeout(1):
-          self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 5)
+          self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 10)
 
-        # Should not raise a timeout exception as 3 > 2.
+        # Should not raise a timeout exception as 20 > 2.
         time.sleep(1)
-
-      # Should raise a timeout exception.
-      self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 5)
 
   def testSubCommandTimeoutNested(self):
     """Tests that we still re-raise an alarm if both are reached."""
