@@ -10,9 +10,9 @@
 
 ARGV0="cros_mirror"
 
-MANIFEST_URL_EXT='https://git.chromium.org/git/chromiumos/manifest.git'
+MANIFEST_URL_EXT='http://git.chromium.org/git/chromiumos/manifest.git'
 MANIFEST_URL_INT='ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal.git'
-REPO_URL='https://git.chromium.org/git/external/repo.git'
+REPO_URL='http://git.chromium.org/git/external/repo.git'
 # When we make commits to manifest git repos, we want the owner info to be the
 # same, and we want it to map to info that end users are unlikely to use.  That
 # way when the local repo rebase runs, it handles the update gracefully.
@@ -204,7 +204,7 @@ update_manifests() {
   if [[ -z ${URL} ]]; then
     # Extract the local URI if they didn't specify one.
     URL=$(eval $(grep -h fetch= *.xml); echo ${fetch})
-    if [[ ${URL} == "https://git.chromium.org/git" ]]; then
+    if [[ ${URL} == "http://git.chromium.org/git" ]]; then
       # Guess they want the current system.
       URL="git://$(hostname -f)"
     fi
