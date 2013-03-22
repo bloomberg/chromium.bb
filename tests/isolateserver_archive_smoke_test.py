@@ -69,15 +69,19 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
         ISOLATE_SERVER, self.namespace, self.token)
 
     body = ''.join(binascii.unhexlify(h) for h in file_hashes)
-
-    response = isolateserver_archive.url_open(
-        contains_hash_url,
-        body,
-        content_type='application/octet-stream').read()
-
-    for i in range(len(response)):
-      self.assertEqual(chr(1), response[i],
-                       'File %s was missing from the server' % files[i])
+    expected = chr(1) * len(files)
+    for _ in xrange(10):
+      # AppEngine's database is eventually consistent and isolateserver do not
+      # use transaction for performance reasons, so even if one request was able
+      # to retrieve the file, an subsequent may not see it! So retry a few time
+      # until the database becomes consistent with regard to these entities.
+      response = isolateserver_archive.url_open(
+          contains_hash_url,
+          body,
+          content_type='application/octet-stream').read()
+      if response == expected:
+        break
+    self.assertEquals(expected, response)
 
   def test_archive_empty_file(self):
     self._archive_given_files(['empty_file.txt'])
