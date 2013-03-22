@@ -121,6 +121,8 @@ struct touchpad_dispatch {
 	int reset;
 
 	struct {
+		bool enable;
+
 		struct wl_array events;
 		enum fsm_state state;
 		struct wl_event_source *timer_source;
@@ -300,6 +302,9 @@ process_fsm_events(struct touchpad_dispatch *touchpad, uint32_t time)
 	enum fsm_event *pevent;
 	enum fsm_event event;
 
+	if (!touchpad->fsm.enable)
+		return;
+
 	if (touchpad->fsm.events.size == 0)
 		return;
 
@@ -390,6 +395,9 @@ push_fsm_event(struct touchpad_dispatch *touchpad,
 	       enum fsm_event event)
 {
 	enum fsm_event *pevent;
+
+	if (!touchpad->fsm.enable)
+		return;
 
 	pevent = wl_array_add(&touchpad->fsm.events, sizeof event);
 	if (pevent)
@@ -661,8 +669,11 @@ touchpad_init(struct touchpad_dispatch *touchpad,
 	struct weston_motion_filter *accel;
 	struct wl_event_loop *loop;
 
+	unsigned long prop_bits[INPUT_PROP_MAX];
 	struct input_absinfo absinfo;
 	unsigned long abs_bits[NBITS(ABS_MAX)];
+
+	bool has_buttonpad;
 
 	double width;
 	double height;
@@ -673,6 +684,9 @@ touchpad_init(struct touchpad_dispatch *touchpad,
 
 	/* Detect model */
 	touchpad->model = get_touchpad_model(device);
+
+	ioctl(device->fd, EVIOCGPROP(sizeof(prop_bits)), prop_bits);
+	has_buttonpad = TEST_BIT(prop_bits, INPUT_PROP_BUTTONPAD);
 
 	/* Configure pressure */
 	ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits);
@@ -728,6 +742,9 @@ touchpad_init(struct touchpad_dispatch *touchpad,
 		accel->interface->destroy(accel);
 		return -1;
 	}
+
+	/* Configure */
+	touchpad->fsm.enable = !has_buttonpad;
 
 	return 0;
 }
