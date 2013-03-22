@@ -21,6 +21,8 @@ function FileListBannerController(
   this.driveEnabled_ = false;
 
   this.initializeBanner_();
+  this.privateOnDirectoryChangedBound_ =
+      this.privateOnDirectoryChanged_.bind(this);
 
   var handler = this.checkSpaceAndMaybeShowBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
@@ -274,73 +276,6 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
     this.requestRelayout_(100);
   }
 };
-
-/**
- * Start or stop monitoring free space depending on the new value of current
- * directory path. In case the space is low shows a warning box.
- * @param {string} currentPath New path to the current directory.
- * @private
- */
-FileListBannerController.prototype.checkFreeSpace_ = function(currentPath) {
-  var self = this;
-  var scheduleCheck = function(timeout, root, threshold) {
-    if (self.checkFreeSpaceTimer_) {
-      clearTimeout(self.checkFreeSpaceTimer_);
-      self.checkFreeSpaceTimer_ = null;
-    }
-
-    if (timeout) {
-      self.checkFreeSpaceTimer_ = setTimeout(
-          doCheck, timeout, root, threshold);
-    }
-  };
-
-  var doCheck = function(root, threshold) {
-    // Remember our invocation timer, because getSizeStats is long and
-    // asynchronous call.
-    var selfTimer = self.checkFreeSpaceTimer_;
-
-    chrome.fileBrowserPrivate.getSizeStats(
-        util.makeFilesystemUrl(root),
-        function(sizeStats) {
-          // If new check started while we were in async getSizeStats call,
-          // then we shouldn't do anything.
-          if (selfTimer != self.checkFreeSpaceTimer_)
-            return;
-
-          // sizeStats is undefined, if some error occurs.
-          var ratio = (sizeStats && sizeStats.totalSizeKB > 0) ?
-              sizeStats.remainingSizeKB / sizeStats.totalSizeKB : 1;
-
-          var lowDiskSpace = ratio < threshold;
-
-          if (root == RootDirectory.DOWNLOADS)
-            self.showLowDownloadsSpaceWarning_(lowDiskSpace);
-          else
-            self.showLowDriveSpaceWarning_(lowDiskSpace, sizeStats);
-
-          // If disk space is low, check it more often. User can delete files
-          // manually and we should not bother her with warning in this case.
-          scheduleCheck(lowDiskSpace ? 1000 * 5 : 1000 * 30, root, threshold);
-        });
-  };
-
-  // TODO(kaznacheev): Unify the two low space warning.
-  var root = PathUtil.getTopDirectory(currentPath);
-  if (root === RootDirectory.DOWNLOADS) {
-    scheduleCheck(500, root, 0.2);
-    this.showLowDriveSpaceWarning_(false);
-  } else if (root === RootDirectory.DRIVE) {
-    scheduleCheck(500, root, 0.1);
-    this.showLowDownloadsSpaceWarning_(false);
-  } else {
-    scheduleCheck(0);
-
-    this.showLowDownloadsSpaceWarning_(false);
-    this.showLowDriveSpaceWarning_(false);
-  }
-};
-
 /**
  * Closes the Drive Welcome banner.
  * @private
@@ -461,7 +396,22 @@ FileListBannerController.prototype.showDriveWelcome_ = function(type) {
  * @private
  */
 FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
-  this.checkFreeSpace_(this.directoryModel_.getCurrentDirPath());
+  var root = PathUtil.getTopDirectory(event.newDirEntry.fullPath);
+  // Show (or hide) the low space warning.
+  this.maybeShowLowSpaceWarning_(root);
+
+  // Add or remove listener to show low space warning, if necessary.
+  var isLowSpaceWarningTarget = this.isLowSpaceWarningTarget_(root);
+  var previousRoot = PathUtil.getTopDirectory(event.previousDirEntry.fullPath);
+  if (isLowSpaceWarningTarget !== this.isLowSpaceWarningTarget_(previousRoot)) {
+    if (isLowSpaceWarningTarget) {
+      chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
+          this.privateOnDirectoryChangedBound_);
+    } else {
+      chrome.fileBrowserPrivate.onDirectoryChanged.removeListener(
+          this.privateOnDirectoryChangedBound_);
+    }
+  }
 
   if (!this.isOnDrive())
     this.cleanupDriveWelcome_();
@@ -469,6 +419,80 @@ FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
   this.updateDriveUnmountedPanel_();
   if (this.isOnDrive())
     this.unmountedPanel_.classList.remove('retry-enabled');
+};
+
+/**
+ * @param {string} root Root directory to be checked.
+ * @return {boolean} true if the file system specified by |root| is a target
+ *     to show low space warning. Otherwise false.
+ * @private
+ */
+FileListBannerController.prototype.isLowSpaceWarningTarget_ = function(root) {
+  return (root == RootDirectory.DOWNLOADS || root == RootDirectory.DRIVE);
+};
+
+/**
+ * Callback which is invoked when the file system has been changed.
+ * @param {Object} event chrome.fileBrowserPrivate.onDirectoryChanged event.
+ * @private
+ */
+FileListBannerController.prototype.privateOnDirectoryChanged_ = function(
+    event) {
+  var currentRoot = PathUtil.getTopDirectory(
+      this.directoryModel_.getCurrentDirPath());
+  var eventRoot = PathUtil.getTopDirectory(
+      util.extractFilePath(event.directoryUrl));
+  if (currentRoot == eventRoot) {
+    // The file system we are currently on is changed.
+    // So, check the free space.
+    this.maybeShowLowSpaceWarning_(eventRoot);
+  }
+};
+
+/**
+ * Shows or hides the low space warning.
+ * @param {string} root Root directory of the file system, which we are
+ *     interested in.
+ * @private
+ */
+FileListBannerController.prototype.maybeShowLowSpaceWarning_ = function(root) {
+  // TODO(kaznacheev): Unify the two low space warning.
+  var threshold = 0;
+  if (root === RootDirectory.DOWNLOADS) {
+    this.showLowDriveSpaceWarning_(false);
+    threshold = 0.2;
+  } else if (root === RootDirectory.DRIVE) {
+    this.showLowDownloadsSpaceWarning_(false);
+    threshold = 0.1;
+  } else {
+    // If the current file system is neither the DOWNLOAD nor the DRIVE,
+    // just hide the warning.
+    this.showLowDownloadsSpaceWarning_(false);
+    this.showLowDriveSpaceWarning_(false);
+    return;
+  }
+
+  var self = this;
+  chrome.fileBrowserPrivate.getSizeStats(
+      util.makeFilesystemUrl(root),
+      function(sizeStats) {
+        var currentRoot = PathUtil.getTopDirectory(
+            self.directoryModel_.getCurrentDirPath());
+        if (root != currentRoot) {
+          // This happens when the current directory is moved during requesting
+          // the file system size. Just ignore it.
+          return;
+        }
+
+        // sizeStats is undefined, if some error occurs.
+        var remainingRatio = (sizeStats && sizeStats.totalSizeKB > 0) ?
+            (sizeStats.remainingSizeKB / sizeStats.totalSizeKB) : 1;
+        var isLowDiskSpace = remainingRatio < threshold;
+        if (root == RootDirectory.DOWNLOADS)
+          self.showLowDownloadsSpaceWarning_(isLowDiskSpace);
+        else
+          self.showLowDriveSpaceWarning_(isLowDiskSpace, sizeStats);
+      });
 };
 
 /**
