@@ -40,7 +40,7 @@ void ProfilerControllerImpl::OnPendingProcesses(int sequence_number,
 void ProfilerControllerImpl::OnProfilerDataCollected(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    ProcessType process_type) {
+    int process_type) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

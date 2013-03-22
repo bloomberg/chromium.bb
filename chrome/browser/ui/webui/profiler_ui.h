@@ -23,7 +23,7 @@ class ProfilerUI : public content::WebUIController,
   // TrackingSynchronizerObserver:
   virtual void ReceivedProfilerData(
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      content::ProcessType process_type) OVERRIDE;
+      int process_type) OVERRIDE;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<ProfilerUI> weak_ptr_factory_;

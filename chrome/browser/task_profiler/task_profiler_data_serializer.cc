@@ -94,7 +94,7 @@ namespace task_profiler {
 // static
 void TaskProfilerDataSerializer::ToValue(
     const ProcessDataSnapshot& process_data,
-    content::ProcessType process_type,
+    int process_type,
     base::DictionaryValue* dictionary) {
   scoped_ptr<base::ListValue> tasks_list(new base::ListValue);
   for (std::vector<TaskSnapshot>::const_iterator it =

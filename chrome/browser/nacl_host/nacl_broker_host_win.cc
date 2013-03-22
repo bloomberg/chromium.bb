@@ -10,6 +10,7 @@
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
@@ -38,7 +39,7 @@ class NaClBrokerSandboxedProcessLauncherDelegate
 
 NaClBrokerHost::NaClBrokerHost() : is_terminating_(false) {
   process_.reset(content::BrowserChildProcessHost::Create(
-      content::PROCESS_TYPE_NACL_BROKER, this));
+      PROCESS_TYPE_NACL_BROKER, this));
 }
 
 NaClBrokerHost::~NaClBrokerHost() {

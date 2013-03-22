@@ -120,9 +120,9 @@ static ProcessData GetProcessDataMemoryInformation(
     pmi.num_processes = 1;
 
     if (pmi.pid == base::GetCurrentProcId())
-      pmi.type = content::PROCESS_TYPE_BROWSER;
+      pmi.process_type = content::PROCESS_TYPE_BROWSER;
     else
-      pmi.type = content::PROCESS_TYPE_UNKNOWN;
+      pmi.process_type = content::PROCESS_TYPE_UNKNOWN;
 
     base::ProcessMetrics* metrics =
         base::ProcessMetrics::CreateProcessMetrics(*iter);
@@ -206,7 +206,7 @@ void MemoryDetails::CollectProcessData(
       if (child_info[child].pid != i->pid)
         continue;
       i->titles = child_info[child].titles;
-      i->type = child_info[child].type;
+      i->process_type = child_info[child].process_type;
       break;
     }
   }

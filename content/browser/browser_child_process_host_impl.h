@@ -30,7 +30,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       public ChildProcessLauncher::Client {
  public:
   BrowserChildProcessHostImpl(
-      ProcessType type,
+      int process_type,
       BrowserChildProcessHostDelegate* delegate);
   virtual ~BrowserChildProcessHostImpl();
 

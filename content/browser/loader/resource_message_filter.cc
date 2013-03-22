@@ -14,7 +14,7 @@ namespace content {
 
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
-    ProcessType process_type,
+    int process_type,
     ResourceContext* resource_context,
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,

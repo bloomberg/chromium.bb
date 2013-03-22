@@ -13,7 +13,7 @@ namespace content {
 
 // Defines the different process types.
 // NOTE: Do not remove or reorder the elements in this enum, and only add new
-// items at the end, right before MAX_PROCESS. We depend on these specific
+// items at the end, right before PROCESS_TYPE_MAX. We depend on these specific
 // values in histograms.
 enum ProcessType {
   PROCESS_TYPE_UNKNOWN = 1,
@@ -21,21 +21,23 @@ enum ProcessType {
   PROCESS_TYPE_RENDERER,
   PROCESS_TYPE_PLUGIN,
   PROCESS_TYPE_WORKER,
-  PROCESS_TYPE_NACL_LOADER,
   PROCESS_TYPE_UTILITY,
-  PROCESS_TYPE_PROFILE_IMPORT,
   PROCESS_TYPE_ZYGOTE,
   PROCESS_TYPE_SANDBOX_HELPER,
-  PROCESS_TYPE_NACL_BROKER,
   PROCESS_TYPE_GPU,
   PROCESS_TYPE_PPAPI_PLUGIN,
   PROCESS_TYPE_PPAPI_BROKER,
-  PROCESS_TYPE_MAX
+  // Custom process types used by the embedder should start from here.
+  PROCESS_TYPE_CONTENT_END,
+  // If any embedder has more than 10 custom process types, update this.
+  // We can switch to getting it from ContentClient, but that seems like
+  // overkill at this time.
+  PROCESS_TYPE_MAX = PROCESS_TYPE_CONTENT_END + 10,
 };
 
 // Returns an English name of the process type, should only be used for non
 // user-visible strings, or debugging pages like about:memory.
-CONTENT_EXPORT std::string GetProcessTypeNameInEnglish(ProcessType type);
+CONTENT_EXPORT std::string GetProcessTypeNameInEnglish(int type);
 
 }  // namespace content
 

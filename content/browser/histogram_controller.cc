@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/process_type.h"
 
 namespace content {
 
@@ -71,7 +72,7 @@ void HistogramController::GetHistogramDataFromChildProcesses(
 
   int pending_processes = 0;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    ProcessType type = iter.GetData().type;
+    int type = iter.GetData().process_type;
     if (type != PROCESS_TYPE_PLUGIN && type != PROCESS_TYPE_GPU)
       continue;
     ++pending_processes;

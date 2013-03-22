@@ -27,6 +27,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
@@ -202,7 +203,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       ALLOW_THIS_IN_INITIALIZER_LIST(ipc_plugin_listener_(this)),
       render_view_id_(render_view_id) {
   process_.reset(content::BrowserChildProcessHost::Create(
-      content::PROCESS_TYPE_NACL_LOADER, this));
+      PROCESS_TYPE_NACL_LOADER, this));
 
   // Set the display name so the user knows what plugin the process is running.
   // We aren't on the UI thread so getting the pref locale for language
@@ -821,7 +822,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
   // If the proxy channel is null, this must be the initial NaCl-Browser IPC
   // channel.
   if (!ipc_proxy_channel_.get()) {
-    DCHECK_EQ(content::PROCESS_TYPE_NACL_LOADER, process_->GetData().type);
+    DCHECK_EQ(PROCESS_TYPE_NACL_LOADER, process_->GetData().process_type);
 
     ipc_proxy_channel_.reset(
         new IPC::ChannelProxy(channel_handle,

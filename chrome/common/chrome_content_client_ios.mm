@@ -80,4 +80,9 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
+std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
+  DCHECK(false) << "Unknown child process type!";
+  return "Unknown"; 
+}
+
 }  // namespace chrome

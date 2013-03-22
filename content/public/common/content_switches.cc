@@ -499,13 +499,6 @@ const char kLogPluginMessages[]             = "log-plugin-messages";
 // Renderer.Memory histogram. Used in memory tests.
 const char kMemoryMetrics[]                 = "memory-metrics";
 
-// Causes the process to run as a NativeClient broker
-// (used for launching NaCl loader processes on 64-bit Windows).
-const char kNaClBrokerProcess[]             = "nacl-broker";
-
-// Causes the process to run as a NativeClient loader.
-const char kNaClLoaderProcess[]             = "nacl-loader";
-
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[]                   = "no-referrers";
 

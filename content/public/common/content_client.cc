@@ -88,6 +88,11 @@ gfx::Image& ContentClient::GetNativeImageNamed(int resource_id) const {
   return kEmptyImage;
 }
 
+std::string ContentClient::GetProcessTypeNameInEnglish(int type) {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 bool ContentClient::GetSandboxProfileForSandboxType(
     int sandbox_type,

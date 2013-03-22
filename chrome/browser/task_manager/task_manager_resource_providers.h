@@ -324,7 +324,7 @@ class TaskManagerBackgroundContentsResourceProvider
 
 class TaskManagerChildProcessResource : public TaskManager::Resource {
  public:
-  TaskManagerChildProcessResource(content::ProcessType type,
+  TaskManagerChildProcessResource(int process_type,
                                   const string16& name,
                                   base::ProcessHandle handle,
                                   int unique_process_id);
@@ -348,7 +348,7 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   // process would be "Plug-in: Flash" when name is "Flash".
   string16 GetLocalizedTitle() const;
 
-  content::ProcessType type_;
+  int process_type_;
   string16 name_;
   base::ProcessHandle handle_;
   int pid_;

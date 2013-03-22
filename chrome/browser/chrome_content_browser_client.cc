@@ -83,6 +83,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -1955,7 +1956,7 @@ void ChromeContentBrowserClient::DidCreatePpapiPlugin(
 content::BrowserPpapiHost*
     ChromeContentBrowserClient::GetExternalBrowserPpapiHost(
         int plugin_process_id) {
-  BrowserChildProcessHostIterator iter(content::PROCESS_TYPE_NACL_LOADER);
+  BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_LOADER);
   while (!iter.Done()) {
     NaClProcessHost* host = static_cast<NaClProcessHost*>(iter.GetDelegate());
     if (host->process() &&

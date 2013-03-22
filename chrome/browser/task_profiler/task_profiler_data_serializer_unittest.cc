@@ -22,7 +22,7 @@ std::string GetProcessIdString() {
 
 void ExpectSerialization(
     const tracked_objects::ProcessDataSnapshot& process_data,
-    content::ProcessType process_type,
+    int process_type,
     const std::string& expected_json) {
   base::DictionaryValue serialized_value;
   task_profiler::TaskProfilerDataSerializer::ToValue(
@@ -41,7 +41,7 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
   {
     // Empty data.
     tracked_objects::ProcessDataSnapshot process_data;
-    content::ProcessType process_type = content::PROCESS_TYPE_BROWSER;
+    int process_type = content::PROCESS_TYPE_BROWSER;
     ExpectSerialization(process_data, process_type,
                         "{"
                           "\"descendants\":["
@@ -100,7 +100,7 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     process_data.descendants.back().parent = parent;
     process_data.descendants.back().child = child;
 
-    content::ProcessType process_type = content::PROCESS_TYPE_RENDERER;
+    int process_type = content::PROCESS_TYPE_RENDERER;
     ExpectSerialization(process_data, process_type,
                        "{"
                           "\"descendants\":["

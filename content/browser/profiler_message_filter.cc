@@ -12,7 +12,7 @@
 
 namespace content {
 
-ProfilerMessageFilter::ProfilerMessageFilter(ProcessType process_type)
+ProfilerMessageFilter::ProfilerMessageFilter(int process_type)
     : process_type_(process_type) {
 }
 

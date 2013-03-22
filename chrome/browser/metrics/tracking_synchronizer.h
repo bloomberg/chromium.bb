@@ -75,7 +75,7 @@ class TrackingSynchronizer
   virtual void OnProfilerDataCollected(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      content::ProcessType process_type) OVERRIDE;
+      int process_type) OVERRIDE;
 
   // Establish a new sequence_number_, and use it to notify all the processes of
   // the need to supply, to the browser, their tracking data. It also registers
@@ -94,7 +94,7 @@ class TrackingSynchronizer
   void DecrementPendingProcessesAndSendData(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      content::ProcessType process_type);
+      int process_type);
 
   // Get a new sequence number to be sent to processes from browser process.
   // This method is accessible on UI thread.

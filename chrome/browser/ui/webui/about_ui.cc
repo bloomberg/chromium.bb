@@ -854,7 +854,7 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
   BindProcessMetrics(child, info);
 
   std::string child_label(
-      ProcessMemoryInformation::GetFullTypeNameInEnglish(info->type,
+      ProcessMemoryInformation::GetFullTypeNameInEnglish(info->process_type,
                                                          info->renderer_type));
   if (info->is_diagnostics)
     child_label.append(" (diagnostics)");
@@ -927,7 +927,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   root->SetString("current_browser_name", process.name);
 
   for (size_t index = 0; index < process.processes.size(); index++) {
-    if (process.processes[index].type == content::PROCESS_TYPE_BROWSER)
+    if (process.processes[index].process_type == content::PROCESS_TYPE_BROWSER)
       BindProcessMetrics(browser_data, &process.processes[index]);
     else
       AppendProcess(child_data, &process.processes[index]);

@@ -54,9 +54,9 @@ void GetProcessDataMemoryInformation(
     pmi.num_processes = 1;
 
     if (pmi.pid == base::GetCurrentProcId())
-      pmi.type = content::PROCESS_TYPE_BROWSER;
+      pmi.process_type = content::PROCESS_TYPE_BROWSER;
     else
-      pmi.type = content::PROCESS_TYPE_UNKNOWN;
+      pmi.process_type = content::PROCESS_TYPE_UNKNOWN;
 
     scoped_ptr<base::ProcessMetrics> metrics(
         base::ProcessMetrics::CreateProcessMetrics(*i));

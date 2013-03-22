@@ -133,6 +133,10 @@ class CONTENT_EXPORT ContentClient {
   // Returns a native image given its id.
   virtual gfx::Image& GetNativeImageNamed(int resource_id) const;
 
+  // Called by content::GetProcessTypeNameInEnglish for process types that it
+  // doesn't know about because they're from the embedder.
+  virtual std::string GetProcessTypeNameInEnglish(int type);
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Allows the embedder to define a new |sandbox_type| by mapping it to the
   // resource ID corresponding to the sandbox profile to use. The legal values

@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
@@ -362,8 +363,8 @@ bool SetPluginEnabled(PluginPrefs* plugin_prefs,
 int CountPluginsOnIOThread() {
   int count = 0;
   for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (iter.GetData().type == content::PROCESS_TYPE_PLUGIN ||
-        iter.GetData().type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
+    if (iter.GetData().process_type == content::PROCESS_TYPE_PLUGIN ||
+        iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
       count++;
     }
   }

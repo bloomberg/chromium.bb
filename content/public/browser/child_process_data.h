@@ -8,14 +8,13 @@
 #include "base/process.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/process_type.h"
 
 namespace content {
 
 // Holds information about a child process.
 struct ChildProcessData {
   // The type of the process.
-  content::ProcessType type;
+  int process_type;
 
   // The name of the process.  i.e. for plugins it might be Flash, while for
   // for workers it might be the domain that it's from.
@@ -29,8 +28,8 @@ struct ChildProcessData {
   // The handle to the process.
   base::ProcessHandle handle;
 
-  explicit ChildProcessData(content::ProcessType type)
-      : type(type), id(0), handle(base::kNullProcessHandle) {
+  explicit ChildProcessData(int process_type)
+      : process_type(process_type), id(0), handle(base::kNullProcessHandle) {
   }
 };
 

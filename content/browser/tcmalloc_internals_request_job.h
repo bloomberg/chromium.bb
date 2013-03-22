@@ -10,7 +10,6 @@
 #include "base/memory/singleton.h"
 #include "base/process.h"
 #include "build/build_config.h"  // USE_TCMALLOC
-#include "content/public/common/process_type.h"
 #include "net/url_request/url_request_simple_job.h"
 
 namespace content {
@@ -29,7 +28,7 @@ class AboutTcmallocOutputs {
   // the output for a canonical process-specific header string that
   // incorporates the pid.
   void OnStatsForChildProcess(base::ProcessId pid,
-                              ProcessType process_type,
+                              int process_type,
                               const std::string& output);
 
  private:

@@ -17,6 +17,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/metrics/variations/variations_util.h"

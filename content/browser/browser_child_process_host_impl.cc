@@ -28,6 +28,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 
 #if defined(OS_MACOSX)
@@ -61,9 +62,9 @@ void NotifyProcessCrashed(const ChildProcessData& data) {
 }  // namespace
 
 BrowserChildProcessHost* BrowserChildProcessHost::Create(
-    ProcessType type,
+    int process_type,
     BrowserChildProcessHostDelegate* delegate) {
-  return new BrowserChildProcessHostImpl(type, delegate);
+  return new BrowserChildProcessHostImpl(process_type, delegate);
 }
 
 #if defined(OS_MACOSX)
@@ -93,15 +94,15 @@ void BrowserChildProcessHostImpl::RemoveObserver(
 }
 
 BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
-    ProcessType type,
+    int process_type,
     BrowserChildProcessHostDelegate* delegate)
-    : data_(type),
+    : data_(process_type),
       delegate_(delegate) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_.reset(ChildProcessHost::Create(this));
   child_process_host_->AddFilter(new TraceMessageFilter);
-  child_process_host_->AddFilter(new ProfilerMessageFilter(type));
+  child_process_host_->AddFilter(new ProfilerMessageFilter(process_type));
   child_process_host_->AddFilter(new HistogramMessageFilter());
 
   g_child_process_list.Get().push_back(this);
@@ -265,29 +266,29 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
       delegate_->OnProcessCrashed(exit_code);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               base::Bind(&NotifyProcessCrashed, data_));
-      UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed",
-                                data_.type,
+      UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed2",
+                                data_.process_type,
                                 PROCESS_TYPE_MAX);
       break;
     }
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
       delegate_->OnProcessCrashed(exit_code);
       // Report that this child process was killed.
-      UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed",
-                                data_.type,
+      UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2",
+                                data_.process_type,
                                 PROCESS_TYPE_MAX);
       break;
     }
     case base::TERMINATION_STATUS_STILL_RUNNING: {
-      UMA_HISTOGRAM_ENUMERATION("ChildProcess.DisconnectedAlive",
-                                data_.type,
+      UMA_HISTOGRAM_ENUMERATION("ChildProcess.DisconnectedAlive2",
+                                data_.process_type,
                                 PROCESS_TYPE_MAX);
     }
     default:
       break;
   }
-  UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected",
-                            data_.type,
+  UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected2",
+                            data_.process_type,
                             PROCESS_TYPE_MAX);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&NotifyProcessHostDisconnected, data_));

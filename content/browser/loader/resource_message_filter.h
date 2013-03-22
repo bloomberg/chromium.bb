@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/process_type.h"
 #include "webkit/glue/resource_type.h"
 
 namespace fileapi {
@@ -47,7 +46,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   ResourceMessageFilter(
       int child_id,
-      ProcessType process_type,
+      int process_type,
       ResourceContext* resource_context,
       ChromeAppCacheService* appcache_service,
       ChromeBlobStorageContext* blob_storage_context,
@@ -80,7 +79,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
       ResourceType::Type request_type);
 
   int child_id() const { return child_id_; }
-  ProcessType process_type() const { return process_type_; }
+  int process_type() const { return process_type_; }
 
  protected:
   // Protected destructor so that we can be overriden in tests.
@@ -90,7 +89,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   // The ID of the child process.
   int child_id_;
 
-  ProcessType process_type_;
+  int process_type_;
 
   // Owned by ProfileIOData* which is guaranteed to outlive us.
   ResourceContext* resource_context_;

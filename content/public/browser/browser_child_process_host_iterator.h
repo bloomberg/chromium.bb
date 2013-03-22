@@ -8,7 +8,6 @@
 #include <list>
 
 #include "content/common/content_export.h"
-#include "content/public/common/process_type.h"
 
 namespace IPC {
 class Message;
@@ -26,7 +25,7 @@ struct ChildProcessData;
 class CONTENT_EXPORT BrowserChildProcessHostIterator {
  public:
   BrowserChildProcessHostIterator();
-  explicit BrowserChildProcessHostIterator(content::ProcessType type);
+  explicit BrowserChildProcessHostIterator(int type);
 
   // These methods work on the current iterator object. Only call them if
   // Done() returns false.
@@ -38,7 +37,7 @@ class CONTENT_EXPORT BrowserChildProcessHostIterator {
 
  private:
   bool all_;
-  content::ProcessType type_;
+  int process_type_;
   std::list<BrowserChildProcessHostImpl*>::iterator iterator_;
 };
 
@@ -50,8 +49,8 @@ template <class T>
 class CONTENT_EXPORT BrowserChildProcessHostTypeIterator
     : public BrowserChildProcessHostIterator {
  public:
-  explicit BrowserChildProcessHostTypeIterator(content::ProcessType type)
-      : BrowserChildProcessHostIterator(type) {}
+  explicit BrowserChildProcessHostTypeIterator(int process_type)
+      : BrowserChildProcessHostIterator(process_type) {}
   T* operator->() {
     return static_cast<T*>(GetDelegate());
   }

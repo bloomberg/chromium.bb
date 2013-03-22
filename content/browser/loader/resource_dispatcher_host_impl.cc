@@ -160,7 +160,7 @@ GURL MaybeStripReferrer(const GURL& possible_referrer) {
 // ResourceDispatcherHostImpl should service this request.  A request might be
 // disallowed if the renderer is not authorized to retrieve the request URL or
 // if the renderer is attempting to upload an unauthorized file.
-bool ShouldServiceRequest(ProcessType process_type,
+bool ShouldServiceRequest(int process_type,
                           int child_id,
                           const ResourceHostMsg_Request& request_data)  {
   if (process_type == PROCESS_TYPE_PLUGIN)
@@ -877,7 +877,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     const ResourceHostMsg_Request& request_data,
     IPC::Message* sync_result,  // only valid for sync
     int route_id) {
-  ProcessType process_type = filter_->process_type();
+  int process_type = filter_->process_type();
   int child_id = filter_->child_id();
 
   // If we crash here, figure out what URL the renderer was requesting.

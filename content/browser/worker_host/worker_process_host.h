@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/common/process_type.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sender.h"
 

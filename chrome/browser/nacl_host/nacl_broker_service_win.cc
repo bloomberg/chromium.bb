@@ -5,6 +5,7 @@
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 
 #include "chrome/browser/nacl_host/nacl_process_host.h"
+#include "chrome/common/chrome_process_type.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 
 using content::BrowserChildProcessHostIterator;
@@ -90,7 +91,7 @@ void NaClBrokerService::OnDebugExceptionHandlerLaunched(int32 pid,
 }
 
 NaClBrokerHost* NaClBrokerService::GetBrokerHost() {
-  BrowserChildProcessHostIterator iter(content::PROCESS_TYPE_NACL_BROKER);
+  BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_BROKER);
   while (!iter.Done()) {
     NaClBrokerHost* host = static_cast<NaClBrokerHost*>(iter.GetDelegate());
     if (!host->IsTerminating())

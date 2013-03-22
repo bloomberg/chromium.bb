@@ -252,7 +252,7 @@ class MetricsService
   // TrackingSynchronizerObserver:
   virtual void ReceivedProfilerData(
       const tracked_objects::ProcessDataSnapshot& process_data,
-      content::ProcessType process_type) OVERRIDE;
+      int process_type) OVERRIDE;
   // Callback that moves the state to INIT_TASK_DONE.
   virtual void FinishedReceivingProfilerData() OVERRIDE;
 
@@ -405,7 +405,7 @@ class MetricsService
 
   // Returns true if process of type |type| should be counted as a plugin
   // process, and false otherwise.
-  static bool IsPluginProcess(content::ProcessType type);
+  static bool IsPluginProcess(int process_type);
 
   content::ActionCallback action_callback_;
 

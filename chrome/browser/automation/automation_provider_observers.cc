@@ -2558,8 +2558,10 @@ void ProcessInfoObserver::OnDetailsAvailable() {
       std::string process_type = "Unknown";
       // The following condition avoids a DCHECK in debug builds when the
       // process type passed to |GetTypeNameInEnglish| is unknown.
-      if (iterator->type != content::PROCESS_TYPE_UNKNOWN)
-        process_type = content::GetProcessTypeNameInEnglish(iterator->type);
+      if (iterator->process_type != content::PROCESS_TYPE_UNKNOWN) {
+        process_type =
+            content::GetProcessTypeNameInEnglish(iterator->process_type);
+      }
       proc_data->SetString("child_process_type", process_type);
 
       // Renderer type, if this is a renderer process.

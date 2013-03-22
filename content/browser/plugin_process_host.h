@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/common/process_type.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "webkit/plugins/webplugininfo.h"
 #include "ui/gfx/native_widget_types.h"

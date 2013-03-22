@@ -38,6 +38,7 @@ class ChromeContentClient : public content::ContentClient {
   virtual base::RefCountedStaticMemory* GetDataResourceBytes(
       int resource_id) const OVERRIDE;
   virtual gfx::Image& GetNativeImageNamed(int resource_id) const OVERRIDE;
+  virtual std::string GetProcessTypeNameInEnglish(int type) OVERRIDE;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   virtual bool GetSandboxProfileForSandboxType(

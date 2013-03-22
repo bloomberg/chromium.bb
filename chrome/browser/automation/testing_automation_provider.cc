@@ -2204,8 +2204,9 @@ void GetChildProcessHostInfo(ListValue* child_processes) {
       continue;
     DictionaryValue* item = new DictionaryValue;
     item->SetString("name", iter.GetData().name);
-    item->SetString("type",
-                    content::GetProcessTypeNameInEnglish(iter.GetData().type));
+    item->SetString(
+        "type",
+        content::GetProcessTypeNameInEnglish(iter.GetData().process_type));
     item->SetInteger("pid", base::GetProcId(iter.GetData().handle));
     child_processes->Append(item);
   }

@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_process_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -215,7 +216,7 @@ void TaskManagerWorkerResourceProvider::BrowserChildProcessHostConnected(
     const content::ChildProcessData& data) {
   DCHECK(updating_);
 
-  if (data.type != content::PROCESS_TYPE_WORKER)
+  if (data.process_type != content::PROCESS_TYPE_WORKER)
     return;
 
   ProcessIdToWorkerResources::iterator it(launching_workers_.find(data.id));
@@ -234,7 +235,7 @@ void TaskManagerWorkerResourceProvider::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
   DCHECK(updating_);
 
-  if (data.type != content::PROCESS_TYPE_WORKER)
+  if (data.process_type != content::PROCESS_TYPE_WORKER)
     return;
 
   // Worker process may be destroyed before WorkerMsg_TerminateWorkerContex

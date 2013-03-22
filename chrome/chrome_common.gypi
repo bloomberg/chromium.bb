@@ -113,6 +113,7 @@
         'common/chrome_content_client_ios.mm',
         'common/chrome_notification_types.h',
         'common/chrome_result_codes.h',
+        'common/chrome_process_type.h',
         'common/chrome_sandbox_type_mac.h',
         'common/chrome_utility_messages.h',
         'common/chrome_version_info.cc',

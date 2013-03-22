@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/process_type.h"
 #include "content/public/common/referrer.h"
 #include "net/base/load_states.h"
 #include "webkit/glue/resource_type.h"
@@ -40,7 +39,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       const net::URLRequest* request);
 
   CONTENT_EXPORT ResourceRequestInfoImpl(
-      ProcessType process_type,
+      int process_type,
       int child_id,
       int route_id,
       int origin_pid,
@@ -93,9 +92,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   }
 
   // Identifies the type of process (renderer, plugin, etc.) making the request.
-  ProcessType process_type() const {
-    return process_type_;
-  }
+  int process_type() const { return process_type_; }
 
   // Downloads are allowed only as a top level request.
   bool allow_download() const { return allow_download_; }
@@ -128,7 +125,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // Non-owning, may be NULL.
   CrossSiteResourceHandler* cross_site_handler_;
 
-  ProcessType process_type_;
+  int process_type_;
   int child_id_;
   int route_id_;
   int origin_pid_;

@@ -155,9 +155,6 @@ extern const char kLoadPlugin[];
 CONTENT_EXPORT extern const char kLoggingLevel[];
 extern const char kLogPluginMessages[];
 extern const char kMemoryMetrics[];
-// TODO(jam): this doesn't belong in content.
-CONTENT_EXPORT extern const char kNaClBrokerProcess[];
-CONTENT_EXPORT extern const char kNaClLoaderProcess[];
 CONTENT_EXPORT extern const char kNoReferrers[];
 CONTENT_EXPORT extern const char kNoSandbox[];
 CONTENT_EXPORT extern const char kAllowNoSandboxJob[];

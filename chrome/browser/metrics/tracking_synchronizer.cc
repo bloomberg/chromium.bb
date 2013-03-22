@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
+#include "chrome/common/chrome_process_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/profiler_controller.h"
 
@@ -233,7 +234,7 @@ void TrackingSynchronizer::OnPendingProcesses(int sequence_number,
 void TrackingSynchronizer::OnProfilerDataCollected(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    content::ProcessType process_type) {
+    int process_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DecrementPendingProcessesAndSendData(sequence_number, profiler_data,
                                        process_type);
@@ -266,7 +267,7 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
 void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    content::ProcessType process_type) {
+    int process_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);

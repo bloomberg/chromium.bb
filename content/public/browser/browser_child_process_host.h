@@ -30,8 +30,10 @@ struct ChildProcessData;
 class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
  public:
   // Used to create a child process host. The delegate must outlive this object.
+  // |process_type| needs to be either an enum value from ProcessType or an
+  // embedder-defined value.
   static BrowserChildProcessHost* Create(
-      ProcessType type,
+      int process_type,
       BrowserChildProcessHostDelegate* delegate);
 
   virtual ~BrowserChildProcessHost() {}

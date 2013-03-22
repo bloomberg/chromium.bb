@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include <ctype.h>
 #include <string>
 
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/common/chrome_process_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Ensure the ClientId is formatted as expected.

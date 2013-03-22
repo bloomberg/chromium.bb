@@ -31,7 +31,7 @@ struct ProcessMemoryInformation {
 
   static std::string GetRendererTypeNameInEnglish(RendererProcessType type);
   static std::string GetFullTypeNameInEnglish(
-      content::ProcessType type,
+      int process_type,
       RendererProcessType rtype);
 
   ProcessMemoryInformation();
@@ -57,7 +57,7 @@ struct ProcessMemoryInformation {
   // results.
   bool is_diagnostics;
   // If this is a child process of Chrome, what type (i.e. plugin) it is.
-  content::ProcessType type;
+  int process_type;
   // If this is a renderer process, what type it is.
   RendererProcessType renderer_type;
   // A collection of titles used, i.e. for a tab it'll show all the page titles.

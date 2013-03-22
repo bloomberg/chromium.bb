@@ -39,7 +39,7 @@ class ProfilerControllerImpl : public ProfilerController {
   void OnProfilerDataCollected(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      ProcessType process_type);
+      int process_type);
 
   // ProfilerController implementation:
   virtual void Register(ProfilerSubscriber* subscriber) OVERRIDE;

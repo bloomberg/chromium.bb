@@ -555,16 +555,6 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
-// Uses NaCl manifest URL to choose whether NaCl program will be debugged by
-// debug stub.
-// Switch value format: [!]pattern1,pattern2,...,patternN. Each pattern uses
-// the same syntax as patterns in Chrome extension manifest. The only difference
-// is that * scheme matches all schemes instead of matching only http and https.
-// If the value doesn't start with !, a program will be debugged if manifest URL
-// matches any pattern. If the value starts with !, a program will be debugged
-// if manifest URL does not match any pattern.
-const char kNaClDebugMask[]                 = "nacl-debug-mask";
-
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 
@@ -875,6 +865,20 @@ const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 // Enables multiprofile Chrome.
 const char kMultiProfiles[]                 = "multi-profiles";
 
+// Causes the process to run as a NativeClient broker
+// (used for launching NaCl loader processes on 64-bit Windows).
+const char kNaClBrokerProcess[]             = "nacl-broker";
+
+// Uses NaCl manifest URL to choose whether NaCl program will be debugged by
+// debug stub.
+// Switch value format: [!]pattern1,pattern2,...,patternN. Each pattern uses
+// the same syntax as patterns in Chrome extension manifest. The only difference
+// is that * scheme matches all schemes instead of matching only http and https.
+// If the value doesn't start with !, a program will be debugged if manifest URL
+// matches any pattern. If the value starts with !, a program will be debugged
+// if manifest URL does not match any pattern.
+const char kNaClDebugMask[]                 = "nacl-debug-mask";
+
 // Native Client GDB debugger for loader. It needs switches calculated
 // at run time in order to work correctly. That's why NaClLoadCmdPrefix
 // flag can't be used.
@@ -882,6 +886,9 @@ const char kNaClGdb[]                       = "nacl-gdb";
 
 // GDB script to pass to the nacl-gdb debugger at startup.
 const char kNaClGdbScript[]                 = "nacl-gdb-script";
+
+// Causes the process to run as a NativeClient loader.
+const char kNaClLoaderProcess[]             = "nacl-loader";
 
 // On POSIX only: the contents of this flag are prepended to the nacl-loader
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".

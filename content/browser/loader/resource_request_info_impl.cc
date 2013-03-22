@@ -81,7 +81,7 @@ const ResourceRequestInfoImpl* ResourceRequestInfoImpl::ForRequest(
 }
 
 ResourceRequestInfoImpl::ResourceRequestInfoImpl(
-    ProcessType process_type,
+    int process_type,
     int child_id,
     int route_id,
     int origin_pid,

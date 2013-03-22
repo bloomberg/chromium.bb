@@ -15,7 +15,6 @@
 #include "chrome/browser/metrics/metrics_network_observer.h"
 #include "chrome/common/metrics/metrics_log_base.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/public/common/process_type.h"
 #include "ui/gfx/size.h"
 
 #if defined(OS_CHROMEOS)
@@ -113,7 +112,7 @@ class MetricsLog : public MetricsLogBase {
   // browser's profiled performance during startup for a single process.
   void RecordProfilerData(
       const tracked_objects::ProcessDataSnapshot& process_data,
-      content::ProcessType process_type);
+      int process_type);
 
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from

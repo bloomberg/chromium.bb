@@ -15,6 +15,7 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -157,8 +158,8 @@ class ChromePluginTest : public InProcessBrowserTest {
   static void CrashFlashInternal(const base::Closure& quit_task) {
     bool found = false;
     for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-      if (iter.GetData().type != content::PROCESS_TYPE_PLUGIN &&
-          iter.GetData().type != content::PROCESS_TYPE_PPAPI_PLUGIN) {
+      if (iter.GetData().process_type != content::PROCESS_TYPE_PLUGIN &&
+          iter.GetData().process_type != content::PROCESS_TYPE_PPAPI_PLUGIN) {
         continue;
       }
       base::KillProcess(iter.GetData().handle, 0, true);
@@ -178,8 +179,8 @@ class ChromePluginTest : public InProcessBrowserTest {
 
   static void CountPluginProcesses(int* count, const base::Closure& quit_task) {
     for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-      if (iter.GetData().type == content::PROCESS_TYPE_PLUGIN ||
-          iter.GetData().type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
+      if (iter.GetData().process_type == content::PROCESS_TYPE_PLUGIN ||
+          iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
         (*count)++;
       }
     }

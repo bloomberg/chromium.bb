@@ -33,7 +33,6 @@
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/common/content_switches.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)

@@ -32,6 +32,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
@@ -138,7 +139,7 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
 }
 
 ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
-    content::ProcessType process_type) {
+    int process_type) {
   switch (process_type) {
     case content::PROCESS_TYPE_BROWSER:
       return ProfilerEventProto::TrackedObject::BROWSER;
@@ -148,24 +149,24 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
       return ProfilerEventProto::TrackedObject::PLUGIN;
     case content::PROCESS_TYPE_WORKER:
       return ProfilerEventProto::TrackedObject::WORKER;
-    case content::PROCESS_TYPE_NACL_LOADER:
-      return ProfilerEventProto::TrackedObject::NACL_LOADER;
     case content::PROCESS_TYPE_UTILITY:
       return ProfilerEventProto::TrackedObject::UTILITY;
-    case content::PROCESS_TYPE_PROFILE_IMPORT:
-      return ProfilerEventProto::TrackedObject::PROFILE_IMPORT;
     case content::PROCESS_TYPE_ZYGOTE:
       return ProfilerEventProto::TrackedObject::ZYGOTE;
     case content::PROCESS_TYPE_SANDBOX_HELPER:
       return ProfilerEventProto::TrackedObject::SANDBOX_HELPER;
-    case content::PROCESS_TYPE_NACL_BROKER:
-      return ProfilerEventProto::TrackedObject::NACL_BROKER;
     case content::PROCESS_TYPE_GPU:
       return ProfilerEventProto::TrackedObject::GPU;
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
       return ProfilerEventProto::TrackedObject::PPAPI_PLUGIN;
     case content::PROCESS_TYPE_PPAPI_BROKER:
       return ProfilerEventProto::TrackedObject::PPAPI_BROKER;
+    case PROCESS_TYPE_PROFILE_IMPORT:
+      return ProfilerEventProto::TrackedObject::PROFILE_IMPORT;
+    case PROCESS_TYPE_NACL_LOADER:
+      return ProfilerEventProto::TrackedObject::NACL_LOADER;
+    case PROCESS_TYPE_NACL_BROKER:
+      return ProfilerEventProto::TrackedObject::NACL_BROKER;
     default:
       NOTREACHED();
       return ProfilerEventProto::TrackedObject::UNKNOWN;
@@ -213,7 +214,7 @@ void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
 }
 
 void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
-                       content::ProcessType process_type,
+                       int process_type,
                        ProfilerEventProto* performance_profile) {
   for (std::vector<tracked_objects::TaskSnapshot>::const_iterator it =
            profiler_data.tasks.begin();
@@ -882,7 +883,7 @@ void MetricsLog::RecordEnvironmentProto(
 
 void MetricsLog::RecordProfilerData(
     const tracked_objects::ProcessDataSnapshot& process_data,
-    content::ProcessType process_type) {
+    int process_type) {
   DCHECK(!locked());
 
   if (tracked_objects::GetTimeSourceType() !=

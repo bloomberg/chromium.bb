@@ -11,19 +11,18 @@
 namespace content {
 
 BrowserChildProcessHostIterator::BrowserChildProcessHostIterator()
-    : all_(true), type_(content::PROCESS_TYPE_UNKNOWN) {
+    : all_(true), process_type_(PROCESS_TYPE_UNKNOWN) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
         "BrowserChildProcessHostIterator must be used on the IO thread.";
   iterator_ = BrowserChildProcessHostImpl::GetIterator()->begin();
 }
 
-BrowserChildProcessHostIterator::BrowserChildProcessHostIterator(
-    content::ProcessType type)
-    : all_(false), type_(type) {
+BrowserChildProcessHostIterator::BrowserChildProcessHostIterator(int type)
+    : all_(false), process_type_(type) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
         "BrowserChildProcessHostIterator must be used on the IO thread.";
   iterator_ = BrowserChildProcessHostImpl::GetIterator()->begin();
-  if (!Done() && (*iterator_)->GetData().type != type_)
+  if (!Done() && (*iterator_)->GetData().process_type != process_type_)
     ++(*this);
 }
 
@@ -34,7 +33,7 @@ bool BrowserChildProcessHostIterator::operator++() {
     if (Done())
       break;
 
-    if (!all_ && (*iterator_)->GetData().type != type_)
+    if (!all_ && (*iterator_)->GetData().process_type != process_type_)
       continue;
 
     return true;

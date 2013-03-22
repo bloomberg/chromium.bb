@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_OBSERVER_H_
 #define CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_OBSERVER_H_
 
-#include "content/public/common/process_type.h"
-
 namespace tracked_objects {
 struct ProcessDataSnapshot;
 }
@@ -21,7 +19,7 @@ class TrackingSynchronizerObserver {
   // |FinishedReceivingData()| is called.
   virtual void ReceivedProfilerData(
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      content::ProcessType process_type) = 0;
+      int process_type) = 0;
 
   // The observer should not expect any more calls to |ReceivedProfilerData()|
   // (without re-registering).  This is sent either when data from all processes

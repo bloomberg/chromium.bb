@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_PROFILER_SUBSCRIBER_H_
 
 #include "content/common/content_export.h"
-#include "content/public/common/process_type.h"
 
 namespace tracked_objects {
 struct ProcessDataSnapshot;
@@ -28,7 +27,7 @@ class CONTENT_EXPORT ProfilerSubscriber {
   virtual void OnProfilerDataCollected(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      ProcessType process_type) = 0;
+      int process_type) = 0;
 
  protected:
   virtual ~ProfilerSubscriber() {}

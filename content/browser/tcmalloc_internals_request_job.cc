@@ -24,7 +24,7 @@ AboutTcmallocOutputs::AboutTcmallocOutputs() {}
 AboutTcmallocOutputs::~AboutTcmallocOutputs() {}
 
 void AboutTcmallocOutputs::OnStatsForChildProcess(
-    base::ProcessId pid, ProcessType process_type,
+    base::ProcessId pid, int process_type,
     const std::string& output) {
   std::string header = GetProcessTypeNameInEnglish(process_type);
   base::StringAppendF(&header, " PID %d", static_cast<int>(pid));
