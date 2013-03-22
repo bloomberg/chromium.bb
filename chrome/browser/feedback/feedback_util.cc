@@ -13,7 +13,6 @@
 #include "base/file_version_info.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -38,14 +37,6 @@
 #include "net/url_request/url_request_status.h"
 #include "third_party/icu/public/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_CHROMEOS)
-#if defined(USE_SYSTEM_LIBBZ2)
-#include <bzlib.h>
-#else
-#include "third_party/bzip2/bzlib.h"
-#endif // USE_SYSTEM_LIBBZ2
-#endif // OS_CHROMEOS
 
 using content::WebContents;
 
@@ -78,89 +69,10 @@ const int64 kRetryDelayLimit = 14400000;  // 4 hours
 const size_t kFeedbackMaxLength = 4 * 1024;
 const size_t kFeedbackMaxLineCount = 40;
 
-const char kBZip2MimeType[] = "application/x-bzip2";
-const char kLogsAttachmentName[] = "system_logs.bz2";
 const char kArbitraryMimeType[] = "application/octet-stream";
-
-const char kMultilineIndicatorString[] = "<multiline>\n";
-const char kMultilineStartString[] = "---------- START ----------\n";
-const char kMultilineEndString[] = "---------- END ----------\n\n";
+const char kLogsAttachmentName[] = "system_logs.zip";
 
 const char kTimestampTag[] = "TIMESTAMP";
-#endif
-
-#if defined(OS_CHROMEOS)
-namespace {
-
-// This implementation is based on the Firefox MetricsService implementation.
-bool Bzip2Compress(const std::string& input, std::string* output) {
-  bz_stream stream = {0};
-  // As long as our input is smaller than the bzip2 block size, we should get
-  // the best compression.  For example, if your input was 250k, using a block
-  // size of 300k or 500k should result in the same compression ratio.  Since
-  // our data should be under 100k, using the minimum block size of 100k should
-  // allocate less temporary memory, but result in the same compression ratio.
-  int result = BZ2_bzCompressInit(&stream,
-                                  1,   // 100k (min) block size
-                                  0,   // quiet
-                                  0);  // default "work factor"
-  if (result != BZ_OK) {  // out of memory?
-    return false;
-  }
-
-  output->clear();
-
-  stream.next_in = const_cast<char*>(input.data());
-  stream.avail_in = static_cast<int>(input.size());
-  // NOTE: we don't need a BZ_RUN phase since our input buffer contains
-  //       the entire input
-  do {
-    output->resize(output->size() + 1024);
-    stream.next_out = &((*output)[stream.total_out_lo32]);
-    stream.avail_out = static_cast<int>(output->size()) - stream.total_out_lo32;
-    result = BZ2_bzCompress(&stream, BZ_FINISH);
-  } while (result == BZ_FINISH_OK);
-  if (result != BZ_STREAM_END) {  // unknown failure?
-    output->clear();
-    // TODO(jar): See if it would be better to do a CHECK() here.
-    return false;
-  }
-  result = BZ2_bzCompressEnd(&stream);
-  DCHECK(result == BZ_OK);
-
-  output->resize(stream.total_out_lo32);
-
-  return true;
-}
-
-std::string ZipLogs(chromeos::SystemLogsResponse* sys_info) {
-  std::string syslogs_string;
-  for (chromeos::SystemLogsResponse::const_iterator it = sys_info->begin();
-      it != sys_info->end(); ++it) {
-    std::string key = it->first;
-    std::string value = it->second;
-
-    TrimString(key, "\n ", &key);
-    TrimString(value, "\n ", &value);
-
-    if (value.find("\n") != std::string::npos) {
-      syslogs_string.append(
-          key + "=" + kMultilineIndicatorString +
-          kMultilineStartString +
-          value + "\n" +
-          kMultilineEndString);
-    } else {
-      syslogs_string.append(key + "=" + value + "\n");
-    }
-  }
-  std::string compressed_logs;
-  if (Bzip2Compress(syslogs_string, &compressed_logs))
-    return compressed_logs;
-  else
-    return std::string();
-}
-
-}  // namespace
 #endif
 
 // Simple net::URLFetcherDelegate to clean up URLFetcher on completion.
@@ -397,12 +309,11 @@ void FeedbackUtil::SendReport(scoped_refptr<FeedbackData> data) {
       }
     }
 
-    std::string compressed_logs = ZipLogs(data->sys_info());
-    if (compressed_logs.size()) {
+    if (data->compressed_logs() && data->compressed_logs()->size()) {
       userfeedback::ProductSpecificBinaryData attachment;
-      attachment.set_mime_type(kBZip2MimeType);
+      attachment.set_mime_type(kArbitraryMimeType);
       attachment.set_name(kLogsAttachmentName);
-      attachment.set_data(compressed_logs);
+      attachment.set_data(*(data->compressed_logs()));
       *(feedback_data.add_product_specific_binary_data()) = attachment;
     }
   }
@@ -418,7 +329,6 @@ void FeedbackUtil::SendReport(scoped_refptr<FeedbackData> data) {
     attached_file.set_mime_type(kArbitraryMimeType);
     attached_file.set_name(data->attached_filename());
     attached_file.set_data(*data->attached_filedata());
-    delete data->attached_filedata();
     *(feedback_data.add_product_specific_binary_data()) = attached_file;
   }
 #endif

@@ -603,7 +603,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   bool send_sys_info = (sys_info_checkbox == "true");
 
   std::string attached_filename;
-  std::string* attached_filedata = NULL;
+  scoped_ptr<std::string> attached_filedata;
   // If we have an attached file, we'll still have more data in the list.
   if (i != list_value->end()) {
     (*i++)->GetAsString(&attached_filename);
@@ -613,10 +613,10 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
       i++;
     } else {
       std::string encoded_filedata;
-      attached_filedata = new std::string;
+      attached_filedata.reset(new std::string);
       (*i++)->GetAsString(&encoded_filedata);
       if (!base::Base64Decode(
-          base::StringPiece(encoded_filedata), attached_filedata)) {
+          base::StringPiece(encoded_filedata), attached_filedata.get())) {
         LOG(ERROR) << "Unable to attach file: " << attached_filename;
         // Clear the filename so feedback_util doesn't try to attach the file.
         attached_filename = "";
@@ -634,7 +634,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   feedback_data_->set_profile(Profile::FromWebUI(web_ui()));
   feedback_data_->set_user_email(user_email);
 #if defined(OS_CHROMEOS)
-  feedback_data_->set_attached_filedata(attached_filedata);
+  feedback_data_->set_attached_filedata(attached_filedata.Pass());
   feedback_data_->set_attached_filename(attached_filename);
   feedback_data_->set_send_sys_info(send_sys_info);
   feedback_data_->set_timestamp(timestamp_);

@@ -26,7 +26,11 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
 #if defined(OS_CHROMEOS)
   // Called once we have read our system logs.
-  void SyslogsComplete(scoped_ptr<chromeos::SystemLogsResponse> sys_info);
+  void CompressSyslogs(scoped_ptr<chromeos::SystemLogsResponse> sys_info);
+
+  // Called once we have read and compressed our system logs.
+  void SyslogsComplete(scoped_ptr<chromeos::SystemLogsResponse> sys_info,
+                       scoped_ptr<std::string> compressed_logs);
 
   // Called once we have read our attached file.
   void ReadFileComplete();
@@ -62,7 +66,8 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   }
   const std::string timestamp() const { return timestamp_; }
   const std::string attached_filename() const { return attached_filename_; }
-  std::string* attached_filedata() const { return attached_filedata_; }
+  std::string* attached_filedata() const { return attached_filedata_.get(); }
+  std::string* compressed_logs() const { return compressed_logs_.get(); }
 #endif
 
   // Setters
@@ -86,8 +91,8 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   void set_attached_filename(const std::string& attached_filename) {
     attached_filename_ = attached_filename;
   }
-  void set_attached_filedata(std::string* attached_filedata) {
-    attached_filedata_ = attached_filedata;
+  void set_attached_filedata(scoped_ptr<std::string> attached_filedata) {
+    attached_filedata_ = attached_filedata.Pass();
   }
 #endif
 
@@ -116,8 +121,8 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
   std::string timestamp_;
   std::string attached_filename_;
-  // Will be deleted in feedback_util::SendReport once consumed.
-  std::string* attached_filedata_;
+  scoped_ptr<std::string> attached_filedata_;
+  scoped_ptr<std::string> compressed_logs_;
 
   // Flag to indicate whether or not we should send the system information
   // gathered with the report or not.
@@ -125,8 +130,8 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
   // Flags to indicate if various pieces of data needed for the report have
   // been collected yet or are still pending collection.
-  bool syslogs_collection_complete_;
   bool read_attached_file_complete_;
+  bool syslogs_collection_complete_;
 #endif
   bool feedback_page_data_complete_;
 
