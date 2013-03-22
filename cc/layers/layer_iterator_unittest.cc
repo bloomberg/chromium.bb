@@ -137,13 +137,13 @@ TEST(LayerIteratorTest, SimpleTree) {
   root_layer->AddChild(fourth);
 
   std::vector<scoped_refptr<Layer> > render_surface_layerList;
-  LayerTreeHostCommon::calculateDrawProperties(root_layer.get(),
+  LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
                                                1,
                                                1,
                                                256,
                                                false,
-                                               render_surface_layerList);
+                                               &render_surface_layerList);
 
   IterateBackToFront(&render_surface_layerList);
   EXPECT_COUNT(root_layer, 0, -1, 1);
@@ -184,13 +184,13 @@ TEST(LayerIteratorTest, ComplexTree) {
   root23->AddChild(root231);
 
   std::vector<scoped_refptr<Layer> > render_surface_layerList;
-  LayerTreeHostCommon::calculateDrawProperties(root_layer.get(),
+  LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
                                                1,
                                                1,
                                                256,
                                                false,
-                                               render_surface_layerList);
+                                               &render_surface_layerList);
 
   IterateBackToFront(&render_surface_layerList);
   EXPECT_COUNT(root_layer, 0, -1, 1);
@@ -246,13 +246,13 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   root23->AddChild(root231);
 
   std::vector<scoped_refptr<Layer> > render_surface_layerList;
-  LayerTreeHostCommon::calculateDrawProperties(root_layer.get(),
+  LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
                                                1,
                                                1,
                                                256,
                                                false,
-                                               render_surface_layerList);
+                                               &render_surface_layerList);
 
   IterateBackToFront(&render_surface_layerList);
   EXPECT_COUNT(root_layer, 0, -1, 1);

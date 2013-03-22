@@ -128,14 +128,14 @@ void CompareFixedBoundsLayerAndNormalLayer(
   root_layer->addChild(normal_layer);
 
   std::vector<scoped_refptr<cc::Layer> > render_surface_layer_list;
-  cc::LayerTreeHostCommon::calculateDrawProperties(
+  cc::LayerTreeHostCommon::CalculateDrawProperties(
       root_layer->layer(),
       kDeviceViewportSize,
       kDeviceScaleFactor,
       kPageScaleFactor,
       kMaxTextureSize,
       false,
-      render_surface_layer_list);
+      &render_surface_layer_list);
   ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                 fixed_bounds_layer->layer());
   ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
@@ -144,14 +144,14 @@ void CompareFixedBoundsLayerAndNormalLayer(
   // Change of fixed bounds should not affect the target geometries.
   fixed_bounds_layer->SetFixedBounds(gfx::Size(fixed_bounds.width() / 2,
                                                fixed_bounds.height() * 2));
-  cc::LayerTreeHostCommon::calculateDrawProperties(
+  cc::LayerTreeHostCommon::CalculateDrawProperties(
       root_layer->layer(),
       kDeviceViewportSize,
       kDeviceScaleFactor,
       kPageScaleFactor,
       kMaxTextureSize,
       false,
-      render_surface_layer_list);
+      &render_surface_layer_list);
   ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                 fixed_bounds_layer->layer());
   ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),

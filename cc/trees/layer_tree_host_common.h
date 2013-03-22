@@ -18,99 +18,131 @@ class LayerImpl;
 class Layer;
 
 class CC_EXPORT LayerTreeHostCommon {
-public:
-    static gfx::Rect calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform&);
+ public:
+  static gfx::Rect CalculateVisibleRect(gfx::Rect target_surface_rect,
+                                        gfx::Rect layer_bound_rect,
+                                        const gfx::Transform& transform);
 
-    static void calculateDrawProperties(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
-    static void calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<LayerImpl*>& renderSurfaceLayerList, bool updateTilePriorities);
+  static void CalculateDrawProperties(
+      Layer* root_layer,
+      gfx::Size device_viewport_size,
+      float device_scale_factor,
+      float page_scale_factor,
+      int max_texture_size,
+      bool can_use_lcd_text,
+      std::vector<scoped_refptr<Layer> >* render_surface_layer_list);
+  static void CalculateDrawProperties(
+      LayerImpl* root_layer,
+      gfx::Size device_viewport_size,
+      float device_scale_factor,
+      float page_scale_factor,
+      int max_texture_size,
+      bool can_use_lcd_text,
+      std::vector<LayerImpl*>* render_surface_layer_list,
+      bool update_tile_priorities);
 
-    // Performs hit testing for a given renderSurfaceLayerList.
-    static LayerImpl* findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, const std::vector<LayerImpl*>& renderSurfaceLayerList);
+  // Performs hit testing for a given render_surface_layer_list.
+  static LayerImpl* FindLayerThatIsHitByPoint(
+      gfx::PointF screen_space_point,
+      const std::vector<LayerImpl*>& render_surface_layer_list);
 
-    static LayerImpl* findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, const std::vector<LayerImpl*>& renderSurfaceLayerList);
+  static LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
+      gfx::PointF screen_space_point,
+      const std::vector<LayerImpl*>& render_surface_layer_list);
 
-    static bool layerHasTouchEventHandlersAt(const gfx::PointF& screenSpacePoint, LayerImpl* layerImpl);
+  static bool LayerHasTouchEventHandlersAt(gfx::PointF screen_space_point,
+                                           LayerImpl* layer_impl);
 
-    template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
+  template <typename LayerType>
+  static bool RenderSurfaceContributesToTarget(LayerType*,
+                                               int target_surface_layer_id);
 
-    template<class Function, typename LayerType> static void callFunctionForSubtree(LayerType* rootLayer);
+  template <class Function, typename LayerType>
+  static void CallFunctionForSubtree(LayerType* root_layer);
 
-    // Returns a layer with the given id if one exists in the subtree starting
-    // from the given root layer (including mask and replica layers).
-    template<typename LayerType> static LayerType* findLayerInSubtree(LayerType* rootLayer, int layerId);
+  // Returns a layer with the given id if one exists in the subtree starting
+  // from the given root layer (including mask and replica layers).
+  template <typename LayerType>
+  static LayerType* FindLayerInSubtree(LayerType* root_layer, int layer_id);
 
-    static Layer* getChildAsRawPtr(const std::vector<scoped_refptr<Layer> >& children, size_t index)
-    {
-        return children[index].get();
-    }
+  static Layer* get_child_as_raw_ptr(
+      const std::vector<scoped_refptr<Layer> >& children,
+      size_t index) {
+    return children[index].get();
+  }
 
-    static LayerImpl* getChildAsRawPtr(const ScopedPtrVector<LayerImpl>& children, size_t index)
-    {
-        return children[index];
-    }
+  static LayerImpl* get_child_as_raw_ptr(
+      const ScopedPtrVector<LayerImpl>& children,
+      size_t index) {
+    return children[index];
+  }
 
-    struct ScrollUpdateInfo {
-        int layerId;
-        gfx::Vector2d scrollDelta;
-    };
+  struct ScrollUpdateInfo {
+    int layer_id;
+    gfx::Vector2d scroll_delta;
+  };
 };
 
 struct CC_EXPORT ScrollAndScaleSet {
-    ScrollAndScaleSet();
-    ~ScrollAndScaleSet();
+  ScrollAndScaleSet();
+  ~ScrollAndScaleSet();
 
-    std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
-    float pageScaleDelta;
+  std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
+  float page_scale_delta;
 };
 
-template<typename LayerType>
-bool LayerTreeHostCommon::renderSurfaceContributesToTarget(LayerType* layer, int targetSurfaceLayerID)
-{
-    // A layer will either contribute its own content, or its render surface's content, to
-    // the target surface. The layer contributes its surface's content when both the
-    // following are true:
-    //  (1) The layer actually has a renderSurface, and
-    //  (2) The layer's renderSurface is not the same as the targetSurface.
-    //
-    // Otherwise, the layer just contributes itself to the target surface.
+template <typename LayerType>
+bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
+    LayerType* layer,
+    int target_surface_layer_id) {
+  // A layer will either contribute its own content, or its render surface's
+  // content, to the target surface. The layer contributes its surface's content
+  // when both the following are true:
+  //  (1) The layer actually has a renderSurface, and
+  //  (2) The layer's renderSurface is not the same as the targetSurface.
+  //
+  // Otherwise, the layer just contributes itself to the target surface.
 
-    return layer->render_surface() && layer->id() != targetSurfaceLayerID;
+  return layer->render_surface() && layer->id() != target_surface_layer_id;
 }
 
-template<typename LayerType>
-LayerType* LayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int layerId)
-{
-    if (rootLayer->id() == layerId)
-        return rootLayer;
+template <typename LayerType>
+LayerType* LayerTreeHostCommon::FindLayerInSubtree(LayerType* root_layer,
+                                                   int layer_id) {
+  if (root_layer->id() == layer_id)
+    return root_layer;
 
-    if (rootLayer->mask_layer() && rootLayer->mask_layer()->id() == layerId)
-        return rootLayer->mask_layer();
+  if (root_layer->mask_layer() && root_layer->mask_layer()->id() == layer_id)
+    return root_layer->mask_layer();
 
-    if (rootLayer->replica_layer() && rootLayer->replica_layer()->id() == layerId)
-        return rootLayer->replica_layer();
+  if (root_layer->replica_layer() &&
+      root_layer->replica_layer()->id() == layer_id)
+    return root_layer->replica_layer();
 
-    for (size_t i = 0; i < rootLayer->children().size(); ++i) {
-        if (LayerType* found = findLayerInSubtree(getChildAsRawPtr(rootLayer->children(), i), layerId))
-            return found;
-    }
-    return 0;
+  for (size_t i = 0; i < root_layer->children().size(); ++i) {
+    if (LayerType* found = FindLayerInSubtree(
+            get_child_as_raw_ptr(root_layer->children(), i), layer_id))
+      return found;
+  }
+  return NULL;
 }
 
-template<class Function, typename LayerType>
-void LayerTreeHostCommon::callFunctionForSubtree(LayerType* rootLayer)
-{
-    Function()(rootLayer);
-   
-    if (LayerType* maskLayer = rootLayer->mask_layer())
-        Function()(maskLayer);
-    if (LayerType* replicaLayer = rootLayer->replica_layer()) {
-        Function()(replicaLayer);
-        if (LayerType* maskLayer = replicaLayer->mask_layer())
-            Function()(maskLayer);
-    }
+template <class Function, typename LayerType>
+void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* root_layer) {
+  Function()(root_layer);
 
-    for (size_t i = 0; i < rootLayer->children().size(); ++i)
-        callFunctionForSubtree<Function>(getChildAsRawPtr(rootLayer->children(), i));
+  if (LayerType* maskLayer = root_layer->mask_layer())
+    Function()(maskLayer);
+  if (LayerType* replicaLayer = root_layer->replica_layer()) {
+    Function()(replicaLayer);
+    if (LayerType* maskLayer = replicaLayer->mask_layer())
+      Function()(maskLayer);
+  }
+
+  for (size_t i = 0; i < root_layer->children().size(); ++i) {
+    CallFunctionForSubtree<Function>(
+        get_child_as_raw_ptr(root_layer->children(), i));
+  }
 }
 
 }  // namespace cc

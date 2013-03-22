@@ -110,8 +110,8 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   root->AddChild(layer);
 
   std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
-  LayerTreeHostCommon::calculateDrawProperties(
-      root, gfx::Size(500, 500), 1, 1, 1024, false, renderSurfaceLayerList);
+  LayerTreeHostCommon::CalculateDrawProperties(
+      root, gfx::Size(500, 500), 1, 1, 1024, false, &renderSurfaceLayerList);
 
   EXPECT_FALSE(layer->contents_opaque());
   layer->SetBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));

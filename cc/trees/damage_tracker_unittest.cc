@@ -32,7 +32,7 @@ void executeCalculateDrawProperties(LayerImpl* root, std::vector<LayerImpl*>& re
     ASSERT_TRUE(root->render_surface());
     ASSERT_FALSE(renderSurfaceLayerList.size());
 
-    LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
+    LayerTreeHostCommon::CalculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, false, &renderSurfaceLayerList, false);
 }
 
 void clearDamageForAllSurfaces(LayerImpl* layer)

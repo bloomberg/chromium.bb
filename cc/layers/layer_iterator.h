@@ -203,7 +203,7 @@ class LayerIterator {
   }
 
   inline bool current_layer_represents_contributing_render_surface() const {
-    return LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerType>(
+    return LayerTreeHostCommon::RenderSurfaceContributesToTarget<LayerType>(
         current_layer(), target_render_surface_layer()->id());
   }
   inline bool current_layer_represents_target_render_surface() const {

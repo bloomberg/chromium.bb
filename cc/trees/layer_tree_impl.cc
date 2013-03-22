@@ -76,7 +76,7 @@ void LayerTreeImpl::FindRootScrollLayer() {
   root_scroll_layer_ = FindRootScrollLayerRecursive(root_layer_.get());
 
   if (root_layer_ && scrolling_layer_id_from_previous_tree_) {
-    currently_scrolling_layer_ = LayerTreeHostCommon::findLayerInSubtree(
+    currently_scrolling_layer_ = LayerTreeHostCommon::FindLayerInSubtree(
         root_layer_.get(),
         scrolling_layer_id_from_previous_tree_);
   }
@@ -121,7 +121,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   if (hud_layer())
     target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
-        LayerTreeHostCommon::findLayerInSubtree(
+        LayerTreeHostCommon::FindLayerInSubtree(
             target_tree->root_layer(), hud_layer()->id())));
   else
     target_tree->set_hud_layer(NULL);
@@ -270,7 +270,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
 
   if (!needs_update_draw_properties_) {
     if (reason == UPDATE_ACTIVE_TREE_FOR_DRAW && root_layer())
-      LayerTreeHostCommon::callFunctionForSubtree<UpdateTilePrioritiesForLayer>(
+      LayerTreeHostCommon::CallFunctionForSubtree<UpdateTilePrioritiesForLayer>(
           root_layer());
     return;
   }
@@ -299,14 +299,14 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
     bool update_tile_priorities =
         reason == UPDATE_PENDING_TREE ||
         reason == UPDATE_ACTIVE_TREE_FOR_DRAW;
-    LayerTreeHostCommon::calculateDrawProperties(
+    LayerTreeHostCommon::CalculateDrawProperties(
         root_layer(),
         device_viewport_size(),
         device_scale_factor(),
         total_page_scale_factor(),
         MaxTextureSize(),
         settings().can_use_lcd_text,
-        render_surface_layer_list_,
+        &render_surface_layer_list_,
         update_tile_priorities);
   }
 
@@ -374,7 +374,7 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pendingTree) {
   int id = currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
   pendingTree->SetCurrentlyScrollingLayer(
-      LayerTreeHostCommon::findLayerInSubtree(pendingTree->root_layer(), id));
+      LayerTreeHostCommon::FindLayerInSubtree(pendingTree->root_layer(), id));
 }
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {

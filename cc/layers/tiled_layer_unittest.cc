@@ -127,14 +127,14 @@ public:
             m_occlusion->setRenderTarget(layer_tree_host_->root_layer());
 
         std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
-        LayerTreeHostCommon::calculateDrawProperties(
+        LayerTreeHostCommon::CalculateDrawProperties(
             layer_tree_host_->root_layer(),
             layer_tree_host_->device_viewport_size(),
             layer_tree_host_->device_scale_factor(),
-            1, // page_scale_factor
+            1,  // page_scale_factor
             layer_tree_host_->GetRendererCapabilities().max_texture_size,
-            false, // can_use_lcd_text
-            renderSurfaceLayerList);
+            false,  // can_use_lcd_text
+            &renderSurfaceLayerList);
     }
 
     bool updateAndPush(const scoped_refptr<FakeTiledLayer>& layer1,
