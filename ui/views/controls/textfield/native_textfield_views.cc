@@ -1183,6 +1183,9 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
         break;
     }
 
+    // We must have input method in order to support text input.
+    DCHECK(textfield_->GetInputMethod());
+
     UpdateAfterChange(text_changed, cursor_changed);
     OnAfterUserAction();
     return (text_changed || cursor_changed);

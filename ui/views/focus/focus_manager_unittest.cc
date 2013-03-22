@@ -163,15 +163,25 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
             widget_listener.focus_changes()[1]);
 }
 
-TEST_F(FocusManagerTest, FocusTextfield) {
-  Textfield* textfield = new Textfield();
+#if !defined(USE_AURA)
+class TestTextfield : public Textfield {
+ public:
+  TestTextfield() {}
+  virtual gfx::NativeView TestGetNativeControlView() {
+    return native_wrapper_->GetTestingHandle();
+  }
+};
+
+// Tests that NativeControls do set the focused View appropriately on the
+// FocusManager.
+TEST_F(FocusManagerTest, DISABLED_FocusNativeControls) {
+  TestTextfield* textfield = new TestTextfield();
   GetContentsView()->AddChildView(textfield);
-  if (!Textfield::IsViewsTextfieldEnabled())
-    FocusNativeView(textfield->GetTestingHandle());
-  else
-    textfield->RequestFocus();
+  // Simulate the native view getting the native focus (such as by user click).
+  FocusNativeView(textfield->TestGetNativeControlView());
   EXPECT_EQ(textfield, GetFocusManager()->GetFocusedView());
 }
+#endif
 
 // Counts accelerator calls.
 class TestAcceleratorTarget : public ui::AcceleratorTarget {
@@ -577,7 +587,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 #if !defined(USE_AURA)
 TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   // Setup views hierarchy.
-  GetContentsView()->AddChildView(new Textfield());
+  GetContentsView()->AddChildView(new TestTextfield());
   GetContentsView()->AddChildView(new NativeButtonDtorTracked(
       ASCIIToUTF16("button"), &dtor_tracker_));
 
