@@ -319,13 +319,16 @@ LayerTreeTest::LayerTreeTest()
 LayerTreeTest::~LayerTreeTest() {}
 
 void LayerTreeTest::EndTest() {
-  // For the case where we endTest during BeginTest(), set a flag to indicate
+  // For the case where we EndTest during BeginTest(), set a flag to indicate
   // that the test should end the second beginTest regains control.
-  if (beginning_)
+  if (beginning_) {
     end_when_begin_returns_ = true;
-  else
+  } else if (proxy()) {
+    // Racy timeouts and explicit EndTest calls might have cleaned up
+    // the tree host. Should check proxy first.
     proxy()->MainThread()->PostTask(
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));
+  }
 }
 
 void LayerTreeTest::EndTestAfterDelay(int delay_milliseconds) {
