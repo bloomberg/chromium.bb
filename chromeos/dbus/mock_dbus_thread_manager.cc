@@ -125,7 +125,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
   EXPECT_CALL(*mock_power_manager_client_.get(), RemoveObserver(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_power_manager_client_.get(), NotifyUserActivity(_))
+  EXPECT_CALL(*mock_power_manager_client_.get(), NotifyUserActivity())
       .Times(AnyNumber());
   EXPECT_CALL(*mock_power_manager_client_.get(), NotifyVideoActivity(_, _))
       .Times(AnyNumber());

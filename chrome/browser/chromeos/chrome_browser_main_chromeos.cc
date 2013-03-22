@@ -59,7 +59,6 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
-#include "chrome/browser/chromeos/power/output_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_dimming_observer.h"
@@ -95,7 +94,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "chromeos/display/output_configurator.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
@@ -613,7 +611,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   brightness_observer_.reset(new BrightnessObserver());
-  output_observer_.reset(new OutputObserver());
   resume_observer_.reset(new ResumeObserver());
   screen_lock_observer_.reset(new ScreenLockObserver());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -726,7 +723,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   suspend_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();
-  output_observer_.reset();
   retail_mode_power_save_blocker_.reset();
 
   // The XInput2 event listener needs to be shut down earlier than when

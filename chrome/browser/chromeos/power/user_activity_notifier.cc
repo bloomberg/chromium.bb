@@ -32,7 +32,7 @@ void UserActivityNotifier::OnUserActivity() {
   // comparison.
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->NotifyUserActivity(now);
+    DBusThreadManager::Get()->GetPowerManagerClient()->NotifyUserActivity();
     last_notify_time_ = now;
   }
 }

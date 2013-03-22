@@ -611,8 +611,6 @@
         'browser/chromeos/power/idle_action_warning_dialog_view.h',
         'browser/chromeos/power/idle_action_warning_observer.cc',
         'browser/chromeos/power/idle_action_warning_observer.h',
-        'browser/chromeos/power/output_observer.cc',
-        'browser/chromeos/power/output_observer.h',
         'browser/chromeos/power/power_button_observer.cc',
         'browser/chromeos/power/power_button_observer.h',
         'browser/chromeos/power/resume_observer.cc',

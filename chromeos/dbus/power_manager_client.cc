@@ -68,15 +68,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    // TODO(derat): Stop listening for this.
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kSetScreenPowerSignal,
-        base::Bind(&PowerManagerClientImpl::ScreenPowerSignalReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
         power_manager::kPowerSupplyPollSignal,
@@ -255,17 +246,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void NotifyUserActivity(
-      const base::TimeTicks& last_activity_time) OVERRIDE {
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kHandleUserActivityMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendInt64(last_activity_time.ToInternalValue());
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+  virtual void NotifyUserActivity() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kHandleUserActivityMethod);
   }
 
   virtual void NotifyVideoActivity(
@@ -371,22 +353,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
             << ": user initiated " << user_initiated;
     FOR_EACH_OBSERVER(Observer, observers_,
                       BrightnessChanged(brightness_level, user_initiated));
-  }
-
-  void ScreenPowerSignalReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-    bool dbus_power_on = false;
-    bool dbus_all_displays = false;
-    if (reader.PopBool(&dbus_power_on) &&
-        reader.PopBool(&dbus_all_displays)) {
-      VLOG(1) << "Screen power set to " << dbus_power_on
-              << " for all displays " << dbus_all_displays;
-      FOR_EACH_OBSERVER(Observer, observers_,
-                        ScreenPowerSet(dbus_power_on, dbus_all_displays));
-    } else {
-      LOG(ERROR) << "screen power signal had incorrect parameters: "
-                 << signal->ToString();
-    }
   }
 
   void PowerSupplyPollReceived(dbus::Signal* unused_signal) {
@@ -786,8 +752,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         base::TimeDelta::FromMilliseconds(threshold));
   }
 
-  virtual void NotifyUserActivity(
-      const base::TimeTicks& last_activity_time) OVERRIDE {}
+  virtual void NotifyUserActivity() OVERRIDE {}
   virtual void NotifyVideoActivity(
       const base::TimeTicks& last_activity_time,
       bool is_fullscreen) OVERRIDE {}

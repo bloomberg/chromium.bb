@@ -25,7 +25,6 @@ class BrightnessObserver;
 class DisplayConfigurationObserver;
 class IdleActionWarningObserver;
 class MagnificationManager;
-class OutputObserver;
 class PowerButtonObserver;
 class ResumeObserver;
 class ScreenDimmingObserver;
@@ -80,7 +79,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<BrightnessObserver> brightness_observer_;
   scoped_ptr<DisplayConfigurationObserver> display_configuration_observer_;
   scoped_ptr<default_app_order::ExternalLoader> app_order_loader_;
-  scoped_ptr<OutputObserver> output_observer_;
   scoped_ptr<SuspendObserver> suspend_observer_;
   scoped_ptr<ResumeObserver> resume_observer_;
   scoped_ptr<ScreenLockObserver> screen_lock_observer_;

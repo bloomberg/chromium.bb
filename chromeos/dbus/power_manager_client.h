@@ -52,14 +52,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // |user_initiated| is true if the action is initiated by the user.
     virtual void BrightnessChanged(int level, bool user_initiated) {}
 
-    // Called when a screen is turned on or off to request that Chrome enable or
-    // disable the corresponding CRTC for the output.
-    // |power_on| The new state of the power setting.
-    // |all_displays| True if this applies to all displays or false if it is
-    // the internal display only.
-    // TODO(derat): Remove this.
-    virtual void ScreenPowerSet(bool power_on, bool all_displays) {}
-
     // Called when power supply polling takes place.  |status| is a data
     // structure that contains the current state of the power supply.
     virtual void PowerChanged(const PowerSupplyStatus& status) {}
@@ -152,8 +144,7 @@ class CHROMEOS_EXPORT PowerManagerClient {
 
   // Notifies the power manager that the user is active (i.e. generating input
   // events).
-  virtual void NotifyUserActivity(
-      const base::TimeTicks& last_activity_time) = 0;
+  virtual void NotifyUserActivity() = 0;
 
   // Notifies the power manager that a video is currently playing. It also
   // includes whether or not the containing window for the video is fullscreen.
