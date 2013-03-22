@@ -601,19 +601,21 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
 }
 
 // Ensure setting the keystore key works, updates the bootstrap token, and
-// doesn't modify the cryptographer. Then verify that the bootstrap token
-// can be correctly parsed by the encryption handler at startup time.
-TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreUpdatesBootstrap) {
-  WriteTransaction trans(FROM_HERE, user_share());
-
+// triggers a non-backwards compatible migration. Then verify that the
+// bootstrap token can be correctly parsed by the encryption handler at startup
+// time.
+TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   // Passing no keys should do nothing.
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
-  EXPECT_FALSE(GetCryptographer()->is_initialized());
-  EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
-  EXPECT_FALSE(
-      encryption_handler()->SetKeystoreKeys(BuildEncryptionKeyProto(""),
-                                            trans.GetWrappedTrans()));
-  EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
+  {
+    WriteTransaction trans(FROM_HERE, user_share());
+    EXPECT_FALSE(GetCryptographer()->is_initialized());
+    EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
+    EXPECT_FALSE(
+        encryption_handler()->SetKeystoreKeys(BuildEncryptionKeyProto(""),
+                                              trans.GetWrappedTrans()));
+    EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
+  }
   Mock::VerifyAndClearExpectations(observer());
 
   // Build a set of keystore keys.
@@ -624,19 +626,31 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreUpdatesBootstrap) {
   keys.Add()->assign(kRawOldKeystoreKey);
   keys.Add()->assign(kRawKeystoreKey);
 
-  // Pass them to the encryption handler, triggering a bootstrap token update.
+  // Pass them to the encryption handler, triggering a migration and bootstrap
+  // token update.
   std::string encoded_key;
   std::string keystore_bootstrap;
+  EXPECT_CALL(*observer(), OnEncryptionComplete());
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(_));
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnPassphraseTypeChanged(KEYSTORE_PASSPHRASE, _));
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_,
                                       KEYSTORE_BOOTSTRAP_TOKEN)).
       WillOnce(SaveArg<0>(&keystore_bootstrap));
-  EXPECT_TRUE(
-      encryption_handler()->SetKeystoreKeys(
-          keys,
-          trans.GetWrappedTrans()));
-  EXPECT_FALSE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
-  EXPECT_FALSE(GetCryptographer()->is_initialized());
+  {
+    WriteTransaction trans(FROM_HERE, user_share());
+    EXPECT_TRUE(
+        encryption_handler()->SetKeystoreKeys(
+            keys,
+            trans.GetWrappedTrans()));
+    EXPECT_FALSE(
+        encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
+    EXPECT_FALSE(GetCryptographer()->is_initialized());
+  }
+  PumpLoop();
+  EXPECT_TRUE(GetCryptographer()->is_initialized());
+  VerifyMigratedNigori(KEYSTORE_PASSPHRASE, kKeystoreKey);
 
   // Ensure the bootstrap is encoded properly (a base64 encoded encrypted blob
   // of list values containing the keystore keys).
@@ -667,7 +681,11 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreUpdatesBootstrap) {
                                      &encryptor_,
                                      "",  // Cryptographer bootstrap.
                                      keystore_bootstrap);
-  EXPECT_FALSE(handler2.NeedKeystoreKey(trans.GetWrappedTrans()));
+
+  {
+    WriteTransaction trans(FROM_HERE, user_share());
+    EXPECT_FALSE(handler2.NeedKeystoreKey(trans.GetWrappedTrans()));
+  }
 }
 
 // Ensure GetKeystoreDecryptor only updates the keystore decryptor token if it
@@ -1942,6 +1960,11 @@ TEST_F(SyncEncryptionHandlerImplTest,
 // migrated nigori with the gaia key as the default (still in backwards
 // compatible mode).
 TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefault) {
+  // Destroy the existing nigori node so we init without a nigori node.
+  TearDown();
+  test_user_share_.SetUp();
+  SetUpEncryption();
+
   const char kOldGaiaKey[] = "old_gaia_key";
   const char kRawOldKeystoreKey[] = "old_keystore_key";
   std::string old_keystore_key;
@@ -1957,6 +1980,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefault) {
   PumpLoop();
   Mock::VerifyAndClearExpectations(observer());
 
+  // Then init the nigori node with a backwards compatible set of keys.
+  CreateRootForType(NIGORI);
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   InitKeystoreMigratedNigori(1, kOldGaiaKey, old_keystore_key);
 
@@ -1990,6 +2015,11 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefault) {
 // Trigger a key rotation upon receiving new keys if we already had a keystore
 // migrated nigori with the keystore key as the default.
 TEST_F(SyncEncryptionHandlerImplTest, RotateKeysKeystoreDefault) {
+  // Destroy the existing nigori node so we init without a nigori node.
+  TearDown();
+  test_user_share_.SetUp();
+  SetUpEncryption();
+
   const char kRawOldKeystoreKey[] = "old_keystore_key";
   std::string old_keystore_key;
   base::Base64Encode(kRawOldKeystoreKey, &old_keystore_key);
@@ -2004,6 +2034,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysKeystoreDefault) {
   PumpLoop();
   Mock::VerifyAndClearExpectations(observer());
 
+  // Then init the nigori node with a non-backwards compatible set of keys.
+  CreateRootForType(NIGORI);
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   InitKeystoreMigratedNigori(1, old_keystore_key, old_keystore_key);
 
