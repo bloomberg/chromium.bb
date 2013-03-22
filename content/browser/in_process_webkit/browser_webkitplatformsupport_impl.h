@@ -40,6 +40,8 @@ class BrowserWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
   virtual WebKit::WebData loadResource(const char* name);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
+  virtual long long availableDiskSpaceInBytes(
+      const WebKit::WebString& fileName);
 
  private:
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
