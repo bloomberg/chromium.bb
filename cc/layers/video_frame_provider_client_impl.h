@@ -29,8 +29,8 @@ class VideoFrameProviderClientImpl
   void Stop();
   bool Stopped() const { return !provider_; }
 
-  media::VideoFrame* AcquireLockAndCurrentFrame();
-  void PutCurrentFrame(media::VideoFrame* frame);
+  scoped_refptr<media::VideoFrame> AcquireLockAndCurrentFrame();
+  void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
   void ReleaseLock();
   const gfx::Transform& stream_texture_matrix() const {
     return stream_texture_matrix_;

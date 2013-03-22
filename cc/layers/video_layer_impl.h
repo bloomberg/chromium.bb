@@ -70,7 +70,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
 
   scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl_;
 
-  media::VideoFrame* frame_;
+  scoped_refptr<media::VideoFrame> frame_;
   media::VideoFrame::Format format_;
   bool convert_yuv_;
   ResourceProvider::ResourceId external_texture_resource_;

@@ -14,10 +14,10 @@ class VideoFrame;
 namespace cc {
 
 // Threading notes: This class may be used in a multi threaded manner.
-// Specifically, the implementation may call getCurrentFrame() or
-// putCurrentFrame() from the compositor thread. If so, the caller is
-// responsible for making sure Client::didReceiveFrame and
-// Client::didUpdateMatrix are only called from this same thread.
+// Specifically, the implementation may call GetCurrentFrame() or
+// PutCurrentFrame() from the compositor thread. If so, the caller is
+// responsible for making sure Client::DidReceiveFrame() and
+// Client::DidUpdateMatrix() are only called from this same thread.
 class VideoFrameProvider {
  public:
   virtual ~VideoFrameProvider() {}

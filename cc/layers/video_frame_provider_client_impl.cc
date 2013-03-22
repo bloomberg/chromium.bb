@@ -44,7 +44,8 @@ void VideoFrameProviderClientImpl::Stop() {
   provider_ = NULL;
 }
 
-media::VideoFrame* VideoFrameProviderClientImpl::AcquireLockAndCurrentFrame() {
+scoped_refptr<media::VideoFrame>
+VideoFrameProviderClientImpl::AcquireLockAndCurrentFrame() {
   provider_lock_.Acquire();  // Balanced by call to ReleaseLock().
   if (!provider_)
     return NULL;
@@ -52,7 +53,8 @@ media::VideoFrame* VideoFrameProviderClientImpl::AcquireLockAndCurrentFrame() {
   return provider_->GetCurrentFrame();
 }
 
-void VideoFrameProviderClientImpl::PutCurrentFrame(media::VideoFrame* frame) {
+void VideoFrameProviderClientImpl::PutCurrentFrame(
+    const scoped_refptr<media::VideoFrame>& frame) {
   provider_lock_.AssertAcquired();
   provider_->PutCurrentFrame(frame);
 }
@@ -66,7 +68,7 @@ void VideoFrameProviderClientImpl::StopUsingProvider() {
   // Block the provider from shutting down until this client is done
   // using the frame.
   base::AutoLock locker(provider_lock_);
-  provider_ = 0;
+  provider_ = NULL;
 }
 
 void VideoFrameProviderClientImpl::DidReceiveFrame() {
