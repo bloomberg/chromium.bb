@@ -179,6 +179,13 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/bzip2': [
         'UNKNOWN',
     ],
+
+    # http://crbug.com/222828
+    # http://bugs.python.org/issue17514
+    'third_party/chromite/third_party/argparse.py': [
+        'UNKNOWN',
+    ],
+
     'third_party/cld/encodings/compact_lang_det': [  # http://crbug.com/98120
         'UNKNOWN',
     ],
@@ -329,6 +336,13 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/protobuf': [  # http://crbug.com/98455
         'UNKNOWN',
     ],
+
+    # http://crbug.com/222831
+    # https://bitbucket.org/eliben/pyelftools/issue/12
+    'third_party/pyelftools': [
+        'UNKNOWN',
+    ],
+
     'third_party/pylib': [
         'UNKNOWN',
     ],
