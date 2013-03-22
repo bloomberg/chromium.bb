@@ -361,7 +361,10 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
         Continue running background apps when Google Chrome is closed
       </message>
       <message name="IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE" desc="The label of the check-box that enables hardware acceleration mode">
-        Use hardware acceleration when available (requires Google Chrome restart)
+        Use hardware acceleration when available
+      </message>
+      <message name="IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE_RESTART" desc="The restart string after changing hardware acceleration mode">
+        ( requires Chrome <ph name="BEGIN_BUTTON">&lt;button id="gpu-mode-reset-restart-button" type="button" class="link-button"&gt;</ph>restart<ph name="END_BUTTON">&lt;/button&gt;</ph>)
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY" desc="Summary of problem displayed in dialog when we can't create a directory for this user.">
 Google Chrome cannot read and write to its data directory:

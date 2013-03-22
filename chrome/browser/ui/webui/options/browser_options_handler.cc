@@ -24,6 +24,8 @@
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/gpu/gpu_mode_manager.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -364,10 +366,12 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
     { "backgroundModeCheckbox", IDS_OPTIONS_SYSTEM_ENABLE_BACKGROUND_MODE },
 #endif
-    { "hardwareAccelerationModeCheckbox",
-      IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE },
-    // Strings with product-name substitutions.
 #if !defined(OS_CHROMEOS)
+    { "gpuModeCheckbox",
+      IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE },
+    { "gpuModeResetRestart",
+      IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE_RESTART },
+    // Strings with product-name substitutions.
     { "syncOverview", IDS_SYNC_OVERVIEW, IDS_PRODUCT_NAME },
     { "syncButtonTextStart", IDS_SYNC_START_SYNC_BUTTON_LABEL,
       IDS_SHORT_PRODUCT_NAME },
@@ -489,6 +493,11 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   values->SetBoolean("profileIsManaged", service->ProfileIsManaged());
 #endif
+
+#if !defined(OS_CHROMEOS)
+  values->SetBoolean("gpuEnabledAtStart",
+                     GpuModeManager::IsGpuModePrefEnabled());
+#endif
 }
 
 void BrowserOptionsHandler::RegisterCloudPrintValues(DictionaryValue* values) {
@@ -600,6 +609,11 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "performFactoryResetRestart",
       base::Bind(&BrowserOptionsHandler::PerformFactoryResetRestart,
+                 base::Unretained(this)));
+#else
+  web_ui()->RegisterMessageCallback(
+      "restartBrowser",
+      base::Bind(&BrowserOptionsHandler::HandleRestartBrowser,
                  base::Unretained(this)));
 #endif
 }
@@ -1230,6 +1244,10 @@ void BrowserOptionsHandler::HandleDefaultZoomFactor(const ListValue* args) {
     default_zoom_level_.SetValue(
         WebKit::WebView::zoomFactorToZoomLevel(zoom_factor));
   }
+}
+
+void BrowserOptionsHandler::HandleRestartBrowser(const ListValue* args) {
+  chrome::AttemptRestart();
 }
 
 #if !defined(OS_CHROMEOS)

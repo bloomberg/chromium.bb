@@ -707,20 +707,22 @@
       </span>
     </div>
 </if>
+<if expr="not pp_ifdef('chromeos')">
     <div class="checkbox">
       <span class="controlled-setting-with-label">
-        <input id="hardwareAccelerationModeCheckbox"
+        <input id="gpu-mode-checkbox"
             pref="hardware_acceleration_mode.enabled" type="checkbox">
         <span>
-          <label for="hardwareAccelerationCheckbox"
-              i18n-content="hardwareAccelerationModeCheckbox">
+          <label for="gpu-mode-checkbox"
+              i18n-content="gpuModeCheckbox">
           </label>
-          <span class="controlled-setting-indicator"
-              pref="hardware_acceleration_mode.enabled">
+          <span id="gpu-mode-reset-restart"
+              i18n-values=".innerHTML:gpuModeResetRestart">
           </span>
         </span>
       </span>
     </div>
+</if>
   </section>
 <section id="managed-user-settings-section" hidden>
   <h3 i18n-content="managedUsersSectionTitle"></h3>

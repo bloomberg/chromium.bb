@@ -38,7 +38,8 @@ GpuModeManager::GpuModeManager() {
 GpuModeManager::~GpuModeManager() {
 }
 
-bool GpuModeManager::IsGpuModePrefEnabled() const {
+// static
+bool GpuModeManager::IsGpuModePrefEnabled() {
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
   return service->GetBoolean(

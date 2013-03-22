@@ -180,6 +180,9 @@ class BrowserOptionsHandler
   // the "Use TLS 1.0" checkbox.
   void HandleUseTLS1Checkbox(const ListValue* args);
 
+  // Callback for the "restartBrowser" message. Restores all tabs on restart.
+  void HandleRestartBrowser(const ListValue* args);
+
 #if !defined(OS_CHROMEOS)
   // Callback for the "showNetworkProxySettings" message. This will invoke
   // an appropriate dialog for configuring proxy settings.

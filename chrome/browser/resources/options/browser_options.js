@@ -42,7 +42,7 @@ cr.define('options', function() {
      * Track if page initialization is complete.  All C++ UI handlers have the
      * chance to manipulate page content within their InitializePage methods.
      * This flag is set to true after all initializers have been called.
-     * @type (boolean}
+     * @type {boolean}
      * @private
      */
     initializationComplete_: false,
@@ -465,6 +465,22 @@ cr.define('options', function() {
             OptionsPage.navigateToPage('kioskAppsOverlay');
           };
         }
+      }
+
+      // System section.
+      if (!cr.isChromeOS) {
+        var updateGpuRestartButton = function() {
+          $('gpu-mode-reset-restart').hidden =
+              loadTimeData.getBoolean('gpuEnabledAtStart') ==
+              $('gpu-mode-checkbox').checked;
+        };
+        Preferences.getInstance().addEventListener(
+            $('gpu-mode-checkbox').getAttribute('pref'),
+            updateGpuRestartButton);
+        $('gpu-mode-reset-restart-button').onclick = function(event) {
+          chrome.send('restartBrowser');
+        };
+        updateGpuRestartButton();
       }
 
       if (loadTimeData.getBoolean('managedUsersEnabled') &&

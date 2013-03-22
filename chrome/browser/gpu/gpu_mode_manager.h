@@ -16,9 +16,9 @@ class GpuModeManager {
   GpuModeManager();
   ~GpuModeManager();
 
- private:
-  bool IsGpuModePrefEnabled() const;
+  static bool IsGpuModePrefEnabled();
 
+ private:
   PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuModeManager);
