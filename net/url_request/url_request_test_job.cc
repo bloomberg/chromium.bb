@@ -89,6 +89,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
     : URLRequestJob(request, network_delegate),
       auto_advance_(false),
       stage_(WAITING),
+      priority_(DEFAULT_PRIORITY),
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
@@ -101,6 +102,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
     : URLRequestJob(request, network_delegate),
       auto_advance_(auto_advance),
       stage_(WAITING),
+      priority_(DEFAULT_PRIORITY),
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
@@ -115,6 +117,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
     : URLRequestJob(request, network_delegate),
       auto_advance_(auto_advance),
       stage_(WAITING),
+      priority_(DEFAULT_PRIORITY),
       response_headers_(new HttpResponseHeaders(response_headers)),
       response_data_(response_data),
       offset_(0),
@@ -135,6 +138,10 @@ bool URLRequestTestJob::GetMimeType(std::string* mime_type) const {
   if (!response_headers_)
     return false;
   return response_headers_->GetMimeType(mime_type);
+}
+
+void URLRequestTestJob::SetPriority(RequestPriority priority) {
+  priority_ = priority;
 }
 
 void URLRequestTestJob::Start() {
@@ -225,7 +232,6 @@ bool URLRequestTestJob::IsRedirectResponse(GURL* location,
   *http_status_code = response_headers_->response_code();
   return true;
 }
-
 
 void URLRequestTestJob::Kill() {
   stage_ = DONE;

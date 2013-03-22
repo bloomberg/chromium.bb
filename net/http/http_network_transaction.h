@@ -61,6 +61,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
   virtual UploadProgress GetUploadProgress() const OVERRIDE;
+  virtual bool GetLoadTimingInfo(
+      LoadTimingInfo* load_timing_info) const OVERRIDE;
+  virtual void SetPriority(RequestPriority priority) OVERRIDE;
 
   // HttpStreamRequest::Delegate methods:
   virtual void OnStreamReady(const SSLConfig& used_ssl_config,
@@ -82,9 +85,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                                           const SSLConfig& used_ssl_config,
                                           const ProxyInfo& used_proxy_info,
                                           HttpStreamBase* stream) OVERRIDE;
-
-  virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy2Test,

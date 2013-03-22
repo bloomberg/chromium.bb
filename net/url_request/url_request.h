@@ -615,11 +615,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Returns the priority level for this request.
   RequestPriority priority() const { return priority_; }
-  void set_priority(RequestPriority priority) {
-    DCHECK_GE(priority, MINIMUM_PRIORITY);
-    DCHECK_LT(priority, NUM_PRIORITIES);
-    priority_ = priority;
-  }
+
+  // Sets the priority level for this request and any related jobs.
+  void SetPriority(RequestPriority priority);
 
   // Returns true iff this request would be internally redirected to HTTPS
   // due to HSTS. If so, |redirect_url| is rewritten to the new HTTPS URL.

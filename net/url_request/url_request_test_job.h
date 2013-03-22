@@ -90,10 +90,13 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   bool auto_advance() { return auto_advance_; }
   void set_auto_advance(bool auto_advance) { auto_advance_ = auto_advance; }
 
+  RequestPriority priority() const { return priority_; }
+
   // Factory method for protocol factory registration if callers don't subclass
   static URLRequest::ProtocolFactory Factory;
 
   // Job functions
+  virtual void SetPriority(RequestPriority priority) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual bool ReadRawData(IOBuffer* buf,
                            int buf_size,
@@ -131,6 +134,8 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   bool auto_advance_;
 
   Stage stage_;
+
+  RequestPriority priority_;
 
   // The headers the job should return, will be set in Start() if not provided
   // in the explicit ctor.

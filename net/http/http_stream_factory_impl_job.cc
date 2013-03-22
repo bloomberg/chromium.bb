@@ -44,10 +44,12 @@ namespace net {
 // Returns parameters associated with the start of a HTTP stream job.
 Value* NetLogHttpStreamJobCallback(const GURL* original_url,
                                    const GURL* url,
+                                   RequestPriority priority,
                                    NetLog::LogLevel /* log_level */) {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
+  dict->SetInteger("priority", priority);
   return dict;
 }
 
@@ -578,7 +580,8 @@ int HttpStreamFactoryImpl::Job::DoStart() {
 
   net_log_.BeginEvent(NetLog::TYPE_HTTP_STREAM_JOB,
                       base::Bind(&NetLogHttpStreamJobCallback,
-                                 &request_info_.url, &origin_url_));
+                                 &request_info_.url, &origin_url_,
+                                 priority_));
 
   // Don't connect to restricted ports.
   bool is_port_allowed = IsPortAllowedByDefault(port);

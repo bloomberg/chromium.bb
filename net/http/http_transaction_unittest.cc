@@ -221,6 +221,7 @@ MockNetworkTransaction::MockNetworkTransaction(
     MockNetworkLayer* factory)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       data_cursor_(0),
+      priority_(priority),
       transaction_factory_(factory->AsWeakPtr()) {
 }
 
@@ -328,6 +329,10 @@ bool MockNetworkTransaction::GetLoadTimingInfo(
   return false;
 }
 
+void MockNetworkTransaction::SetPriority(net::RequestPriority priority) {
+  priority_ = priority;
+}
+
 void MockNetworkTransaction::CallbackLater(
     const net::CompletionCallback& callback, int result) {
   MessageLoop::current()->PostTask(
@@ -341,7 +346,9 @@ void MockNetworkTransaction::RunCallback(
 }
 
 MockNetworkLayer::MockNetworkLayer()
-    : transaction_count_(0), done_reading_called_(false) {}
+    : transaction_count_(0),
+      done_reading_called_(false),
+      last_create_transaction_priority_(net::DEFAULT_PRIORITY) {}
 
 MockNetworkLayer::~MockNetworkLayer() {}
 
@@ -354,7 +361,11 @@ int MockNetworkLayer::CreateTransaction(
     scoped_ptr<net::HttpTransaction>* trans,
     net::HttpTransactionDelegate* delegate) {
   transaction_count_++;
-  trans->reset(new MockNetworkTransaction(priority, this));
+  last_create_transaction_priority_ = priority;
+  scoped_ptr<MockNetworkTransaction> mock_transaction(
+      new MockNetworkTransaction(priority, this));
+  last_transaction_ = mock_transaction->AsWeakPtr();
+  *trans = mock_transaction.Pass();
   return net::OK;
 }
 

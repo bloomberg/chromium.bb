@@ -8,6 +8,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 
 namespace net {
@@ -116,6 +117,9 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // |load_timing_info| must have all null times when called.  Returns false and
   // does not modify |load_timing_info| if not currently connected.
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const = 0;
+
+  // Called when the priority of the parent job changes.
+  virtual void SetPriority(RequestPriority priority) = 0;
 };
 
 }  // namespace net
