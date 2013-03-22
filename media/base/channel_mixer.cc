@@ -104,6 +104,16 @@ void ChannelMixer::Initialize(
     return;
   }
 
+  // Special case for 5.0, 5.1 with back channels when upmixed to 7.0, 7.1,
+  // which should map the back LR to side LR.
+  if (input_layout_ == CHANNEL_LAYOUT_5_0_BACK &&
+      output_layout_ == CHANNEL_LAYOUT_7_0) {
+    input_layout_ = CHANNEL_LAYOUT_5_0;
+  } else if (input_layout_ == CHANNEL_LAYOUT_5_1_BACK &&
+             output_layout_ == CHANNEL_LAYOUT_7_1) {
+    input_layout_ = CHANNEL_LAYOUT_5_1;
+  }
+
   // Route matching channels and figure out which ones aren't accounted for.
   for (Channels ch = LEFT; ch < CHANNELS_MAX;
        ch = static_cast<Channels>(ch + 1)) {
