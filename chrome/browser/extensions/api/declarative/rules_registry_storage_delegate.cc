@@ -129,8 +129,6 @@ class RulesRegistryStorageDelegate::Inner
   // with UMA once per the delegate instance, unless in Incognito.
   base::Time storage_init_time_;
   bool log_storage_init_delay_;
-  // TODO(vabr): Could |ready_| be used instead of |log_storage_init_delay_|?
-  // http://crbug.com/176926
 };
 
 RulesRegistryStorageDelegate::RulesRegistryStorageDelegate() {
