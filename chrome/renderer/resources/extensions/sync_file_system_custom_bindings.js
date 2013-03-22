@@ -32,7 +32,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       return [fileSystemUrl, callback];
     });
   }
-  forEach(['deleteFileSystem', 'getUsageAndQuota'], bindFileSystemFunction);
+  forEach(['getUsageAndQuota'], bindFileSystemFunction);
 
   // Functions which return an [instanceOf=DOMFileSystem].
   apiFunctions.setCustomCallback('requestFileSystem',

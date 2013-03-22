@@ -21,8 +21,10 @@ namespace extensions {
 class SyncFileSystemDeleteFileSystemFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("syncFileSystem.deleteFileSystem",
-                             SYNCFILESYSTEM_DELETEFILESYSTEM)
+  // TODO(kinuko,calvinlo): Uncomment this or delete this class when
+  // we decide if we want to revive this function.
+  // DECLARE_EXTENSION_FUNCTION("syncFileSystem.deleteFileSystem",
+  //                            SYNCFILESYSTEM_DELETEFILESYSTEM)
 
  protected:
   virtual ~SyncFileSystemDeleteFileSystemFunction() {}

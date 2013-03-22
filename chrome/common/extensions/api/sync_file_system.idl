@@ -138,10 +138,6 @@ namespace syncFileSystem {
     static void getUsageAndQuota([instanceOf=DOMFileSystem] object fileSystem,
                                  QuotaAndUsageCallback callback);
 
-    // Deletes everything in the syncable filesystem.
-    static void deleteFileSystem([instanceOf=DOMFileSystem] object fileSystem,
-                                 DeleteFileSystemCallback callback);
-
     // Returns the $ref:FileStatus for the given <code>fileEntry</code>.
     // The status value can be <code>'synced'</code>,
     // <code>'pending'</code> or <code>'conflicting'</code>.
