@@ -9,13 +9,29 @@ Add this to your gdb by amending your ~/.gdbinit as follows:
   import sys
   sys.path.insert(0, "/path/to/tools/gdb/")
   import gdb_chrome
+  end
 
 This module relies on the WebKit gdb module already existing in
 your Python path.
+
+Use
+  (gdb) p /r any_variable
+to print |any_variable| without using any printers.
 """
 
+import datetime
 import gdb
 import webkit
+
+# When debugging this module, set the below variable to True, and then use
+#   (gdb) python del sys.modules['gdb_chrome']
+#   (gdb) python import gdb_chrome
+# to reload.
+_DEBUGGING = False
+
+
+pp_set = gdb.printing.RegexpCollectionPrettyPrinter("chromium")
+
 
 def typed_ptr(ptr):
     """Prints a pointer along with its exact type.
@@ -27,27 +43,160 @@ def typed_ptr(ptr):
     # makes it easier to cut+paste inside of gdb.
     return '((%s)%s)' % (ptr.dynamic_type, ptr)
 
-class String16Printer(webkit.StringPrinter):
+
+class Printer(object):
+    def __init__(self, val):
+        self.val = val
+
+
+class StringPrinter(Printer):
+    def display_hint(self):
+        return 'string'
+
+
+class String16Printer(StringPrinter):
     def to_string(self):
         return webkit.ustring_to_string(self.val['_M_dataplus']['_M_p'])
+pp_set.add_printer('string16',
+                   '^string16|std::basic_string<(unsigned short|char16).*>$',
+                   String16Printer);
 
-class GURLPrinter(webkit.StringPrinter):
+
+class GURLPrinter(StringPrinter):
     def to_string(self):
         return self.val['spec_']
+pp_set.add_printer('GURL', '^GURL$', GURLPrinter)
 
-class FilePathPrinter(object):
-    def __init__(self, val):
-        self.val = val
 
+class FilePathPrinter(StringPrinter):
     def to_string(self):
         return self.val['path_']['_M_dataplus']['_M_p']
+pp_set.add_printer('FilePath', '^FilePath$', FilePathPrinter)
 
-class ScopedRefPtrPrinter(object):
+
+class SizePrinter(Printer):
+    def to_string(self):
+        return '%sx%s' % (self.val['width_'], self.val['height_'])
+pp_set.add_printer('gfx::Size', '^gfx::(Size|SizeF|SizeBase<.*>)$', SizePrinter)
+
+
+class PointPrinter(Printer):
+    def to_string(self):
+        return '%s,%s' % (self.val['x_'], self.val['y_'])
+pp_set.add_printer('gfx::Point', '^gfx::(Point|PointF|PointBase<.*>)$',
+                   PointPrinter)
+
+
+class RectPrinter(Printer):
+    def to_string(self):
+        return '%s %s' % (self.val['origin_'], self.val['size_'])
+pp_set.add_printer('gfx::Rect', '^gfx::(Rect|RectF|RectBase<.*>)$',
+                   RectPrinter)
+
+
+class SmartPtrPrinter(Printer):
+    def to_string(self):
+        return '%s%s' % (self.typename, typed_ptr(self.ptr()))
+
+
+class ScopedRefPtrPrinter(SmartPtrPrinter):
+    typename = 'scoped_refptr'
+    def ptr(self):
+        return self.val['ptr_']
+pp_set.add_printer('scoped_refptr', '^scoped_refptr<.*>$', ScopedRefPtrPrinter)
+
+
+class LinkedPtrPrinter(SmartPtrPrinter):
+    typename = 'linked_ptr'
+    def ptr(self):
+        return self.val['value_']
+pp_set.add_printer('linked_ptr', '^linked_ptr<.*>$', LinkedPtrPrinter)
+
+
+class WeakPtrPrinter(SmartPtrPrinter):
+    typename = 'base::WeakPtr'
+    def ptr(self):
+        flag = ScopedRefPtrPrinter(self.val['ref_']['flag_']).ptr()
+        if flag and flag['is_valid_']:
+            return self.val['ptr_']
+        return gdb.Value(0).cast(self.val['ptr_'].type)
+pp_set.add_printer('base::WeakPtr', '^base::WeakPtr<.*>$', WeakPtrPrinter)
+
+
+class CallbackPrinter(Printer):
+    """Callbacks provide no usable information so reduce the space they take."""
+    def to_string(self):
+        return '...'
+pp_set.add_printer('base::Callback', '^base::Callback<.*>$', CallbackPrinter)
+
+
+class LockPrinter(Printer):
+    def to_string(self):
+        try:
+            if self.val['owned_by_thread_']:
+                return 'Locked by thread %s' % self.val['owning_thread_id_']
+            else:
+                return 'Unlocked'
+        except gdb.error:
+            return 'Unknown state'
+pp_set.add_printer('base::Lock', '^base::Lock$', LockPrinter)
+
+
+class TimeDeltaPrinter(object):
     def __init__(self, val):
-        self.val = val
+        self._timedelta = datetime.timedelta(microseconds=int(val['delta_']))
+
+    def timedelta(self):
+        return self._timedelta
 
     def to_string(self):
-        return 'scoped_refptr' + typed_ptr(self.val['ptr_'])
+        return str(self._timedelta)
+pp_set.add_printer('base::TimeDelta', '^base::TimeDelta$', TimeDeltaPrinter)
+
+
+class TimeTicksPrinter(TimeDeltaPrinter):
+    def __init__(self, val):
+        self._timedelta = datetime.timedelta(microseconds=int(val['ticks_']))
+pp_set.add_printer('base::TimeTicks', '^base::TimeTicks$', TimeTicksPrinter)
+
+
+class TimePrinter(object):
+    def __init__(self, val):
+        timet_offset = gdb.parse_and_eval(
+            'base::Time::kTimeTToMicrosecondsOffset')
+        self._datetime = (datetime.datetime.fromtimestamp(0) +
+                          datetime.timedelta(microseconds=
+                                             int(val['us_'] - timet_offset)))
+
+    def datetime(self):
+        return self._datetime
+
+    def to_string(self):
+        return str(self._datetime)
+pp_set.add_printer('base::Time', '^base::Time$', TimePrinter)
+
+
+class NotificationRegistrarPrinter(Printer):
+    def to_string(self):
+        try:
+            registrations = self.val['registered_']
+            vector_finish = registrations['_M_impl']['_M_finish']
+            vector_start = registrations['_M_impl']['_M_start']
+            if vector_start == vector_finish:
+                return 'Not watching notifications'
+            if vector_start.dereference().type.sizeof == 0:
+                # Incomplete type: b/8242773
+                return 'Watching some notifications'
+            return ('Watching %s notifications; '
+                    'print %s->registered_ for details') % (
+                        int(vector_finish - vector_start),
+                        typed_ptr(self.val.address))
+        except gdb.error:
+            return 'NotificationRegistrar'
+pp_set.add_printer('content::NotificationRegistrar',
+                   '^content::NotificationRegistrar$',
+                   NotificationRegistrarPrinter)
+
 
 class SiteInstanceImplPrinter(object):
     def __init__(self, val):
@@ -67,6 +216,9 @@ class SiteInstanceImplPrinter(object):
         if self.val['render_process_host_factory_']:
             yield ('render_process_host_factory_',
                    self.val['render_process_host_factory_'])
+pp_set.add_printer('content::SiteInstanceImpl', '^content::SiteInstanceImpl$',
+                   SiteInstanceImplPrinter)
+
 
 class RenderProcessHostImplPrinter(object):
     def __init__(self, val):
@@ -74,14 +226,17 @@ class RenderProcessHostImplPrinter(object):
 
     def to_string(self):
         pid = ''
-        child_process_launcher_ptr = (
-            self.val['child_process_launcher_']['impl_']['data_']['ptr'])
-        if child_process_launcher_ptr:
-            context = (child_process_launcher_ptr.dereference()
-                       ['context_']['ptr_'])
-            if context:
-                pid = ' PID %s' % str(context.dereference()
-                                      ['process_']['process_'])
+        try:
+            child_process_launcher_ptr = (
+                self.val['child_process_launcher_']['impl_']['data_']['ptr'])
+            if child_process_launcher_ptr:
+                context = (child_process_launcher_ptr['context_']['ptr_'])
+                if context:
+                    pid = ' PID %s' % str(context['process_']['process_'])
+        except gdb.error:
+            # The definition of the Context type may not be available.
+            # b/8242773
+            pass
         return 'RenderProcessHostImpl@%s%s' % (self.val.address, pid)
 
     def children(self):
@@ -100,18 +255,9 @@ class RenderProcessHostImplPrinter(object):
                self.val['sudden_termination_allowed_'])
         yield ('ignore_input_events_', self.val['ignore_input_events_'])
         yield ('is_guest_', self.val['is_guest_'])
-
-
-pp_set = gdb.printing.RegexpCollectionPrettyPrinter("chromium")
-
-pp_set.add_printer('FilePath', '^FilePath$', FilePathPrinter)
-pp_set.add_printer('GURL', '^GURL$', GURLPrinter)
 pp_set.add_printer('content::RenderProcessHostImpl',
                    '^content::RenderProcessHostImpl$',
                    RenderProcessHostImplPrinter)
-pp_set.add_printer('content::SiteInstanceImpl', '^content::SiteInstanceImpl$',
-                   SiteInstanceImplPrinter)
-pp_set.add_printer('scoped_refptr', '^scoped_refptr<.*>$', ScopedRefPtrPrinter)
-pp_set.add_printer('string16', '^string16$', String16Printer);
 
-gdb.printing.register_pretty_printer(gdb, pp_set)
+
+gdb.printing.register_pretty_printer(gdb, pp_set, replace=_DEBUGGING)
