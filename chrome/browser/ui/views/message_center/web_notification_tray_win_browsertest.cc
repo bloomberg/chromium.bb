@@ -166,8 +166,9 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, WebNotificationPopupBubble) {
 
 using message_center::NotificationList;
 
+// Flaky, see http://crbug.com/222500 .
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest,
-                       ManyMessageCenterNotifications) {
+                       DISABLED_ManyMessageCenterNotifications) {
   scoped_ptr<WebNotificationTrayWin> tray(new WebNotificationTrayWin());
   message_center::MessageCenter* message_center = tray->message_center();
   scoped_ptr<TestDelegate> delegate(new TestDelegate(message_center));
