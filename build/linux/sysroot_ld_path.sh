@@ -85,7 +85,7 @@ LD_SO_CONF_D="$1/etc/ld.so.conf.d"
 if [ -e "$LD_SO_CONF" ]; then
   process_ld_so_conf "$1" "$LD_SO_CONF" | xargs echo
 elif [ -e "$LD_SO_CONF_D" ]; then
-  find "$LD_SO_CONF_D" -maxdepth 1 -name '*.conf' -print -quit
+  find "$LD_SO_CONF_D" -maxdepth 1 -name '*.conf' -print -quit > /dev/null
   if [ $? -eq 0 ]; then
     for entry in $LD_SO_CONF_D/*.conf; do
       process_ld_so_conf "$1" "$entry"
