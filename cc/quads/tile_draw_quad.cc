@@ -15,7 +15,7 @@ TileDrawQuad::TileDrawQuad()
 }
 
 scoped_ptr<TileDrawQuad> TileDrawQuad::Create() {
-    return make_scoped_ptr(new TileDrawQuad);
+  return make_scoped_ptr(new TileDrawQuad);
 }
 
 void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,

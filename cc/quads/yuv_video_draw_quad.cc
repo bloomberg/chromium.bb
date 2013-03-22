@@ -12,7 +12,7 @@ YUVVideoDrawQuad::YUVVideoDrawQuad() {}
 YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
 
 scoped_ptr<YUVVideoDrawQuad> YUVVideoDrawQuad::Create() {
-    return make_scoped_ptr(new YUVVideoDrawQuad);
+  return make_scoped_ptr(new YUVVideoDrawQuad);
 }
 
 void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,

@@ -16,7 +16,7 @@ RenderPassDrawQuad::~RenderPassDrawQuad() {
 }
 
 scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Create() {
-    return make_scoped_ptr(new RenderPassDrawQuad);
+  return make_scoped_ptr(new RenderPassDrawQuad);
 }
 
 scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Copy(

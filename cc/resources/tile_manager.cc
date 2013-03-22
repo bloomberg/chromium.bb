@@ -469,13 +469,15 @@ scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
   state->Set("memory_requirements", GetMemoryRequirementsAsValue().release());
   return state.PassAs<base::Value>();
 }
+
 scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
-    scoped_ptr<base::ListValue> state(new base::ListValue());
-    for (TileSet::const_iterator it = all_tiles_.begin();
-         it != all_tiles_.end(); it++) {
-        state->Append((*it)->AsValue().release());
-    }
-    return state.PassAs<base::Value>();
+  scoped_ptr<base::ListValue> state(new base::ListValue());
+  for (TileSet::const_iterator it = all_tiles_.begin();
+       it != all_tiles_.end();
+       it++) {
+    state->Append((*it)->AsValue().release());
+  }
+  return state.PassAs<base::Value>();
 }
 
 scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
