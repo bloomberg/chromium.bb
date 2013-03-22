@@ -58,4 +58,8 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYWAYLANDBUFFERWL) (EGLDisplay dpy, st
 #define EGL_TEXTURE_EXTERNAL_WL         0x31DA
 #endif
 
+#ifndef EGL_BUFFER_AGE_EXT
+#define EGL_BUFFER_AGE_EXT              0x313D
+#endif
+
 #endif
