@@ -28,20 +28,6 @@ class PageCycler(page_benchmark.PageBenchmark):
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
     options.AppendExtraBrowserArg('--no-sandbox')
 
-    # TODO(tonyg): These flags were copied from the performance_ui_test page
-    # cyclers. We are testing to see whether they reduce noise. It isn't clear
-    # which, if any, are necessary.
-    options.AppendExtraBrowserArg('--allow-outdated-plugins')
-    options.AppendExtraBrowserArg('--disable-component-update')
-    options.AppendExtraBrowserArg('--disable-default-apps')
-    options.AppendExtraBrowserArg('--disable-preconnect')
-    options.AppendExtraBrowserArg('--disable-web-resources')
-    options.AppendExtraBrowserArg('--homepage=about:blank')
-    options.AppendExtraBrowserArg('--no-default-browser-check')
-    options.AppendExtraBrowserArg('--noerrdialogs')
-    options.AppendExtraBrowserArg('--safebrowsing-disable-auto-update')
-    options.AppendExtraBrowserArg('--skip-gpu-data-loading')
-
   def MeasureMemory(self, tab, results):
     memory = tab.browser.memory_stats
     if not memory['Browser']:
