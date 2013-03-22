@@ -487,6 +487,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return manifest_.get();
   }
   bool incognito_split_mode() const { return incognito_split_mode_; }
+  bool kiosk_enabled() const { return kiosk_enabled_; }
   bool offline_enabled() const { return offline_enabled_; }
   bool wants_file_access() const { return wants_file_access_; }
   int creation_flags() const { return creation_flags_; }
@@ -602,6 +603,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadSandboxedPages(string16* error);
   // Must be called after the "plugins" key has been parsed.
   bool LoadRequirements(string16* error);
+  bool LoadKioskEnabled(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadExtensionFeatures(string16* error);
   bool LoadContentScripts(string16* error);
@@ -685,6 +687,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // If true, a separate process will be used for the extension in incognito
   // mode.
   bool incognito_split_mode_;
+
+  // Whether the extension or app should be enabled in app kiosk mode.
+  bool kiosk_enabled_;
 
   // Whether the extension or app should be enabled when offline.
   bool offline_enabled_;

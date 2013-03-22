@@ -73,6 +73,7 @@ namespace extension_info_keys {
   extern const char kHomepageUrlKey[];
   extern const char kIdKey[];
   extern const char kNameKey[];
+  extern const char kKioskEnabledKey[];
   extern const char kOfflineEnabledKey[];
   extern const char kOptionsUrlKey[];
   extern const char kDetailsUrlKey[];

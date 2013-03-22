@@ -62,6 +62,7 @@ namespace extension_manifest_keys {
   extern const char kJs[];
   extern const char kKey[];
   extern const char kKeycode[];
+  extern const char kKioskEnabled[];
   extern const char kLanguage[];
   extern const char kLaunch[];
   extern const char kLaunchContainer[];
@@ -263,6 +264,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidKeyBindingMissingPlatform[];
   extern const char kInvalidKeyBindingTooMany[];
   extern const char kInvalidKeyBindingUnknownPlatform[];
+  extern const char kInvalidKioskEnabled[];
   extern const char kInvalidLaunchContainer[];
   extern const char kInvalidLaunchValue[];
   extern const char kInvalidLaunchValueContainer[];

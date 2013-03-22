@@ -1,0 +1,10 @@
+{
+  "name": "invalid kiosk enabled value",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "kiosk_enabled": "nope"
+}

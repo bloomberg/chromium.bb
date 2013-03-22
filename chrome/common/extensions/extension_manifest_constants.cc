@@ -55,6 +55,7 @@ const char kIsolation[] = "app.isolation";
 const char kJs[] = "js";
 const char kKey[] = "key";
 const char kKeycode[] = "keyCode";
+const char kKioskEnabled[] = "kiosk_enabled";
 const char kLanguage[] = "language";
 const char kLaunch[] = "app.launch";
 const char kLaunchContainer[] = "app.launch.container";
@@ -352,6 +353,8 @@ const char kInvalidKeyBindingTooMany[] =
 const char kInvalidKeyBindingUnknownPlatform[] =
     "Unknown platform for 'command[*]': *. Valid values are: 'windows', 'mac'"
     " 'chromeos', 'linux' and 'default'.";
+const char kInvalidKioskEnabled[] =
+    "Invalid value for 'kiosk_enabled'.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
 const char kInvalidLaunchValue[] =

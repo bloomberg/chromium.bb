@@ -328,6 +328,7 @@ void Extension::GetBasicInfo(bool enabled,
   info->SetString(info_keys::kIdKey, id());
   info->SetString(info_keys::kNameKey, name());
   info->SetBoolean(info_keys::kEnabledKey, enabled);
+  info->SetBoolean(info_keys::kKioskEnabledKey, kiosk_enabled());
   info->SetBoolean(info_keys::kOfflineEnabledKey, offline_enabled());
   info->SetString(info_keys::kVersionKey, VersionString());
   info->SetString(info_keys::kDescriptionKey, description());
@@ -1285,6 +1286,7 @@ Extension::Extension(const base::FilePath& path,
                      scoped_ptr<extensions::Manifest> manifest)
     : manifest_version_(0),
       incognito_split_mode_(false),
+      kiosk_enabled_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
       manifest_(manifest.release()),
@@ -1749,6 +1751,7 @@ bool Extension::LoadSharedFeatures(string16* error) {
       !LoadNaClModules(error) ||
       !LoadSandboxedPages(error) ||
       !LoadRequirements(error) ||
+      !LoadKioskEnabled(error) ||
       !LoadOfflineEnabled(error))
     return false;
 
@@ -1955,6 +1958,22 @@ bool Extension::LoadRequirements(string16* error) {
       return false;
     }
   }
+  return true;
+}
+
+bool Extension::LoadKioskEnabled(string16* error) {
+  if (!manifest_->HasKey(keys::kKioskEnabled))
+    return true;
+
+  if (!manifest_->GetBoolean(keys::kKioskEnabled, &kiosk_enabled_)) {
+    *error = ASCIIToUTF16(errors::kInvalidKioskEnabled);
+    return false;
+  }
+
+  // All other use cases should be already filtered out by manifest feature
+  // checks.
+  DCHECK(is_platform_app());
+
   return true;
 }
 

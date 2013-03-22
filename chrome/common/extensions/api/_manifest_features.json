@@ -208,6 +208,12 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "kiosk_enabled": {
+    "channel": "stable",
+    "extension_types": [
+      "platform_app"
+    ]
+  },
   "offline_enabled": {
     "channel": "stable",
     "extension_types": [

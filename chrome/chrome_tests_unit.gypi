@@ -1531,6 +1531,7 @@
         'common/extensions/manifest_tests/extension_manifests_homepage_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_initvalue_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_isolatedapp_unittest.cc',
+        'common/extensions/manifest_tests/extension_manifests_kiosk_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_launch_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_manifest_version_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_offline_unittest.cc',
