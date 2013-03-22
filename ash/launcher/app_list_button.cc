@@ -47,10 +47,6 @@ AppListButton::AppListButton(views::ButtonListener* listener,
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
   SetSize(gfx::Size(kLauncherPreferredSize, kLauncherPreferredSize));
   SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_TOP);
-  set_border(views::Border::CreateEmptyBorder(kBorderSize,
-                                              kBorderSize,
-                                              kBorderSize,
-                                              kBorderSize));
 }
 
 AppListButton::~AppListButton() {
