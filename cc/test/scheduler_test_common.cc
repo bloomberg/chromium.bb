@@ -8,75 +8,43 @@
 
 namespace cc {
 
-void FakeTimeSourceClient::OnTimerTick()
-{
-    m_tickCalled = true;
+void FakeTimeSourceClient::OnTimerTick() { tick_called_ = true; }
+
+FakeThread::FakeThread() { Reset(); }
+
+FakeThread::~FakeThread() {}
+
+void FakeThread::RunPendingTask() {
+  ASSERT_TRUE(pending_task_);
+  scoped_ptr<base::Closure> task = pending_task_.Pass();
+  task->Run();
 }
 
-FakeThread::FakeThread()
-{
-    reset();
+void FakeThread::PostTask(base::Closure cb) {
+  PostDelayedTask(cb, base::TimeDelta());
 }
 
-FakeThread::~FakeThread()
-{
+void FakeThread::PostDelayedTask(base::Closure cb, base::TimeDelta delay) {
+  if (run_pending_task_on_overwrite_ && HasPendingTask())
+    RunPendingTask();
+
+  ASSERT_FALSE(HasPendingTask());
+  pending_task_.reset(new base::Closure(cb));
+  pending_task_delay_ = delay.InMilliseconds();
 }
 
-void FakeThread::runPendingTask()
-{
-    ASSERT_TRUE(m_pendingTask);
-    scoped_ptr<base::Closure> task = m_pendingTask.Pass();
-    task->Run();
-}
+bool FakeThread::BelongsToCurrentThread() const { return true; }
 
-void FakeThread::PostTask(base::Closure cb)
-{
-    PostDelayedTask(cb, base::TimeDelta());
-}
+void FakeTimeSource::SetClient(TimeSourceClient* client) { client_ = client; }
 
-void FakeThread::PostDelayedTask(base::Closure cb, base::TimeDelta delay)
-{
-    if (m_runPendingTaskOnOverwrite && hasPendingTask())
-        runPendingTask();
+void FakeTimeSource::SetActive(bool b) { active_ = b; }
 
-    ASSERT_FALSE(hasPendingTask());
-    m_pendingTask.reset(new base::Closure(cb));
-    m_pendingTaskDelay = delay.InMilliseconds();
-}
+bool FakeTimeSource::Active() const { return active_; }
 
-bool FakeThread::BelongsToCurrentThread() const
-{
-    return true;
-}
+base::TimeTicks FakeTimeSource::LastTickTime() { return base::TimeTicks(); }
 
-void FakeTimeSource::SetClient(TimeSourceClient* client)
-{
-    m_client = client;
-}
+base::TimeTicks FakeTimeSource::NextTickTime() { return base::TimeTicks(); }
 
-void FakeTimeSource::SetActive(bool b)
-{
-    m_active = b;
-}
-
-bool FakeTimeSource::Active() const
-{
-    return m_active;
-}
-
-base::TimeTicks FakeTimeSource::LastTickTime()
-{
-    return base::TimeTicks();
-}
-
-base::TimeTicks FakeTimeSource::NextTickTime()
-{
-    return base::TimeTicks();
-}
-
-base::TimeTicks FakeDelayBasedTimeSource::Now() const
-{
-    return m_now;
-}
+base::TimeTicks FakeDelayBasedTimeSource::Now() const { return now_; }
 
 }  // namespace cc

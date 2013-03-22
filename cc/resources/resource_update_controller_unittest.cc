@@ -372,11 +372,11 @@ protected:
     size_t m_updateMoreTexturesSize;
 };
 
-static void runPendingTask(FakeThread* thread, FakeResourceUpdateController* controller)
+static void RunPendingTask(FakeThread* thread, FakeResourceUpdateController* controller)
 {
-    EXPECT_TRUE(thread->hasPendingTask());
-    controller->setNow(controller->Now() + base::TimeDelta::FromMilliseconds(thread->pendingDelayMs()));
-    thread->runPendingTask();
+    EXPECT_TRUE(thread->HasPendingTask());
+    controller->setNow(controller->Now() + base::TimeDelta::FromMilliseconds(thread->PendingDelayMs()));
+    thread->RunPendingTask();
 }
 
 TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
@@ -400,7 +400,7 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     // Not enough time for any updates.
     controller->PerformMoreUpdates(
         controller->Now() + base::TimeDelta::FromMilliseconds(90));
-    EXPECT_FALSE(thread.hasPendingTask());
+    EXPECT_FALSE(thread.HasPendingTask());
 
     controller->setUpdateMoreTexturesTime(
         base::TimeDelta::FromMilliseconds(100));
@@ -408,7 +408,7 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     // Only enough time for 1 update.
     controller->PerformMoreUpdates(
         controller->Now() + base::TimeDelta::FromMilliseconds(120));
-    EXPECT_FALSE(thread.hasPendingTask());
+    EXPECT_FALSE(thread.HasPendingTask());
     EXPECT_EQ(1, m_numTotalUploads);
 
     // Complete one upload.
@@ -420,8 +420,8 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     // Enough time for 2 updates.
     controller->PerformMoreUpdates(
         controller->Now() + base::TimeDelta::FromMilliseconds(220));
-    runPendingTask(&thread, controller.get());
-    EXPECT_FALSE(thread.hasPendingTask());
+    RunPendingTask(&thread, controller.get());
+    EXPECT_FALSE(thread.HasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(3, m_numTotalUploads);
 }
@@ -447,8 +447,8 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
     // Enough time for 3 updates but only 2 necessary.
     controller->PerformMoreUpdates(
         controller->Now() + base::TimeDelta::FromMilliseconds(310));
-    runPendingTask(&thread, controller.get());
-    EXPECT_FALSE(thread.hasPendingTask());
+    RunPendingTask(&thread, controller.get());
+    EXPECT_FALSE(thread.HasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(2, m_numTotalUploads);
 
@@ -459,8 +459,8 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
     controller->PerformMoreUpdates(
         controller->Now() + base::TimeDelta::FromMilliseconds(310));
     // 0-delay task used to call readyToFinalizeTextureUpdates().
-    runPendingTask(&thread, controller.get());
-    EXPECT_FALSE(thread.hasPendingTask());
+    RunPendingTask(&thread, controller.get());
+    EXPECT_FALSE(thread.HasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(2, m_numTotalUploads);
 }
@@ -492,11 +492,11 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
         controller->PerformMoreUpdates(
             controller->Now() + base::TimeDelta::FromMilliseconds(400));
 
-        if (thread.hasPendingTask())
-            runPendingTask(&thread, controller.get());
+        if (thread.HasPendingTask())
+            RunPendingTask(&thread, controller.get());
     }
 
-    EXPECT_FALSE(thread.hasPendingTask());
+    EXPECT_FALSE(thread.HasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(2, m_numTotalUploads);
 }

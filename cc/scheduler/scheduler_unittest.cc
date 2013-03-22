@@ -109,7 +109,7 @@ TEST(SchedulerTest, RequestCommit) {
   client.Reset();
 
   // Tick should draw.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(1, client.num_actions_());
   EXPECT_STREQ("ScheduledActionDrawAndSwapIfPossible", client.Action(0));
   EXPECT_FALSE(time_source->Active());
@@ -148,7 +148,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
   client.Reset();
 
   // Tick should draw but then begin another frame.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_FALSE(time_source->Active());
   EXPECT_EQ(2, client.num_actions_());
   EXPECT_STREQ("ScheduledActionDrawAndSwapIfPossible", client.Action(0));
@@ -191,7 +191,7 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
   client.Reset();
 
   // Once compositor draw complete, the delayed texture acquisition fires.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(3, client.num_actions_());
   EXPECT_STREQ("ScheduledActionDrawAndSwapIfPossible", client.Action(0));
   EXPECT_STREQ("ScheduledActionAcquireLayerTexturesForMainThread",
@@ -284,12 +284,12 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
   EXPECT_TRUE(time_source->Active());
   EXPECT_EQ(0, client.num_draws());
 
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_TRUE(time_source->Active());
 
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(time_source->Active());
@@ -316,7 +316,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(1, client.num_draws());
 
   // We have a commit pending and the draw failed, and we didn't lose the redraw
@@ -326,7 +326,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_TRUE(time_source->Active());
 
   // Fail the draw again.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(2, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -334,7 +334,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -390,13 +390,13 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
   EXPECT_EQ(0, client.num_draws());
   EXPECT_TRUE(time_source->Active());
 
-  time_source->tick();
+  time_source->Tick();
   EXPECT_FALSE(time_source->Active());
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   scheduler->BeginFrameComplete();
 
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(time_source->Active());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -423,7 +423,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(1, client.num_draws());
 
   // We have a commit pending and the draw failed, and we didn't lose the commit
@@ -433,7 +433,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_TRUE(time_source->Active());
 
   // Fail the draw again.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(2, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -441,7 +441,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -464,7 +464,7 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
 
-  EXPECT_EQ(0, controller_ptr->numFramesPending());
+  EXPECT_EQ(0, controller_ptr->NumFramesPending());
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -472,11 +472,11 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
   EXPECT_EQ(0, client.num_draws());
 
   // Draw successfully, this starts a new frame.
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(1, client.num_draws());
-  EXPECT_EQ(1, controller_ptr->numFramesPending());
+  EXPECT_EQ(1, controller_ptr->NumFramesPending());
   scheduler->DidSwapBuffersComplete();
-  EXPECT_EQ(0, controller_ptr->numFramesPending());
+  EXPECT_EQ(0, controller_ptr->NumFramesPending());
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -484,9 +484,9 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
 
   // Fail to draw, this should not start a frame.
   client.SetDrawWillHappen(false);
-  time_source->tick();
+  time_source->Tick();
   EXPECT_EQ(2, client.num_draws());
-  EXPECT_EQ(0, controller_ptr->numFramesPending());
+  EXPECT_EQ(0, controller_ptr->NumFramesPending());
 }
 
 TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit) {
@@ -501,7 +501,7 @@ TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit) {
                         controller.PassAs<FrameRateController>(),
                         default_scheduler_settings);
 
-  EXPECT_EQ(0, controller_ptr->numFramesPending());
+  EXPECT_EQ(0, controller_ptr->NumFramesPending());
 
   // Tell the client that it will fail to swap.
   client.SetDrawWillHappen(true);
@@ -513,7 +513,7 @@ TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit) {
   EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapForced"));
 
   // We should not have told the frame rate controller that we began a frame.
-  EXPECT_EQ(0, controller_ptr->numFramesPending());
+  EXPECT_EQ(0, controller_ptr->NumFramesPending());
 }
 
 TEST(SchedulerTest, RecreateOutputSurfaceClearsPendingDrawCount) {
@@ -534,15 +534,15 @@ TEST(SchedulerTest, RecreateOutputSurfaceClearsPendingDrawCount) {
 
   // Draw successfully, this starts a new frame.
   scheduler->SetNeedsRedraw();
-  time_source->tick();
-  EXPECT_EQ(1, controller_ptr->numFramesPending());
+  time_source->Tick();
+  EXPECT_EQ(1, controller_ptr->NumFramesPending());
 
   scheduler->DidLoseOutputSurface();
   // Verifying that it's 1 so that we know that it's reset on recreate.
-  EXPECT_EQ(1, controller_ptr->numFramesPending());
+  EXPECT_EQ(1, controller_ptr->NumFramesPending());
 
   scheduler->DidRecreateOutputSurface();
-  EXPECT_EQ(0, controller_ptr->numFramesPending());
+  EXPECT_EQ(0, controller_ptr->NumFramesPending());
 }
 
 }  // namespace

@@ -50,7 +50,7 @@ TEST_F(VSyncTimeSourceTest, TaskPostedAndTickCalled) {
 
   base::TimeTicks frame_time = base::TimeTicks::Now();
   provider_.Trigger(frame_time);
-  EXPECT_TRUE(client_.tickCalled());
+  EXPECT_TRUE(client_.TickCalled());
   EXPECT_EQ(timer_->LastTickTime(), frame_time);
 }
 
@@ -61,23 +61,23 @@ TEST_F(VSyncTimeSourceTest, NotificationDisabledLazily) {
   timer_->SetActive(true);
   EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
   provider_.Trigger(frame_time);
-  EXPECT_TRUE(client_.tickCalled());
+  EXPECT_TRUE(client_.TickCalled());
 
   // Disabling the timer should not disable vsync notification immediately.
-  client_.reset();
+  client_.Reset();
   timer_->SetActive(false);
   EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
 
   // At the next vsync the notification is disabled, but the timer isn't ticked.
   provider_.Trigger(frame_time);
   EXPECT_FALSE(provider_.IsVSyncNotificationEnabled());
-  EXPECT_FALSE(client_.tickCalled());
+  EXPECT_FALSE(client_.TickCalled());
 
   // The notification should not be disabled multiple times.
   provider_.RequestVSyncNotification(timer_.get());
   provider_.Trigger(frame_time);
   EXPECT_TRUE(provider_.IsVSyncNotificationEnabled());
-  EXPECT_FALSE(client_.tickCalled());
+  EXPECT_FALSE(client_.TickCalled());
 }
 
 TEST_F(VSyncTimeSourceTest, ValidNextTickTime) {
