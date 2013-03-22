@@ -28,6 +28,9 @@ HistoryQuickProviderTest.*
 # Timing out all over the place. Disabling for now. http://crbug.com/149715
 ExtensionWebRequestTest.*
 
+# Crashes occasionally. http://crbug.com/165458
+BackgroundApplicationListModelTest.ExplicitTest
+
 # Timing out. Disabling for now. http://crbug.com/175496
 AppsModelBuilderTest.OnExtensionMoved
 
