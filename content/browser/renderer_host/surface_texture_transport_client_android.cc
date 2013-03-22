@@ -13,9 +13,7 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/android/surface_texture_bridge.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoLayer.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/media/webvideoframe_impl.h"
 
 namespace {
 
