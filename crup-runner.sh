@@ -104,7 +104,7 @@ if [ "$solution" = "$1" ]; then
 
   set_target_os
 
-  "$GIT_EXE" ls-files -s | grep ^160000 | awk '{print $4}' |
+  git ls-files -s | grep ^160000 | awk '{print $4}' |
   while read submod; do
     process_submodule "$submod"
   done
@@ -112,8 +112,8 @@ if [ "$solution" = "$1" ]; then
 else
   submodule="${1#*/}"
   echo "[$solution] updating $submodule"
-  "$GIT_EXE" submodule update --recursive --quiet "$submodule" |
-  ( grep -v '^Skipping submodule' || true ) | sed "s|^|[$1] |g"
+  git submodule update --recursive --quiet "$submodule" |
+  ( grep -v '^Skipping submodule' || true ) | sed "s|^|[$1] |g" 2>/dev/null
   status=$?
   if [ "$status" -ne "0" ]; then
     echo "[$solution] FAILED to update $submodule"

@@ -7,61 +7,40 @@
 # submodule-based checkout.  Fetches latest commits for top-level solutions;
 # updates submodules; and runs post-sync hooks.
 
-# Auto-update depot_tools
-if [ -z "$GIT_CRUP_REINVOKE" ]; then
-  update_depot_tools || exit 1
-  GIT_CRUP_REINVOKE=1 exec bash "$0" "$@"
-fi
-
-export GIT_MERGE_AUTOEDIT=0
-
+orig_args="$@"
 ECHO=
 pull=pull
 pull_args=
 hooks=yes
 j=10
 crup_runner="crup-runner.sh"
-runhooks="git-runhooks"
-
-kernel_name=$(uname -s)
-if [ "${kernel_name:0:5}" = "MINGW" -o "${kernel_name:0:6}" = "CYGWIN" ]; then
-  GIT_EXE=git.exe
-else
-  GIT_EXE=git
-fi
-export GIT_EXE
-
-if ( echo test | xargs --max-lines=1 true 2>/dev/null ); then
-  max_lines="--max-lines=1"
-else
-  max_lines="-L 1"
-fi
-
-if ( echo test | xargs -I bar true 2>/dev/null ); then
-  replace_arg="-I replace_arg"
-else
-  replace_arg="-ireplace_arg"
-fi
 
 usage() {
   cat <<EOF
 Usage: git-crup [-n|--dry-run] [--fetch|--sync] [-j|--jobs [jobs]]
     [--no-hooks] [<args to git-pull or git-fetch>]
+
+    -n, --dry-run        Don't do anything; just show what would have been done.
+    --fetch              Run 'git fetch' on top-level sources, but don't merge.
+    --sync               Don't do anything at all to the top-level sources.
+    -j, --jobs           Run this many jobs in parallel.
+    --no-hooks           Don't run hooks (e.g., to generate build files) after
+                         updating.
 EOF
 }
 
 serial_update() {
   ( cd "$1"
     if test -n "$toplevel_cmd"; then
-      $toplevel_cmd | sed "s/^/[$1] /g"
+      $ECHO $toplevel_cmd | sed "s/^/[$1] /g"
       if [ $? -ne 0 ]; then
         return $?
       fi
     fi
-    $GIT_EXE submodule --quiet sync
-    $GIT_EXE ls-files -s | grep ^160000 | awk '{print $4}' |
+    $ECHO git submodule --quiet sync
+    $ECHO git ls-files -s | grep ^160000 | awk '{print $4}' |
     while read submod; do
-      "$crup_runner" "$1/$submod"
+      $ECHO "$crup_runner" "$1/$submod"
     done
   )
 }
@@ -109,6 +88,17 @@ while test $# -ne 0; do
   shift
 done
 
+# Auto-update depot_tools.
+if [ -z "$GIT_CRUP_REINVOKE" ]; then
+  kernel_name="\$(uname -s)"
+  if [ "\${kernel_name:0:5}" = "MINGW" ]; then
+    cmd '/C update_depot_tools.bat'
+  else
+    update_depot_tools
+  fi
+  GIT_CRUP_REINVOKE=1 exec bash "$0" $orig_args
+fi
+
 while test "$PWD" != "/"; do
   if test -f "$PWD/src/.gitmodules"; then
     break
@@ -118,6 +108,20 @@ done
 if test "$PWD" = "/"; then
   echo "Could not find the root of your checkout; aborting." 1>&2
   exit 1
+fi
+
+export GIT_MERGE_AUTOEDIT=no
+
+if ( echo test | xargs --max-lines=1 true 2>/dev/null ); then
+  max_lines="--max-lines=1"
+else
+  max_lines="-L 1"
+fi
+
+if ( echo test | xargs -I bar true 2>/dev/null ); then
+  replace_arg="-I replace_arg"
+else
+  replace_arg="-ireplace_arg"
 fi
 
 if ( echo test test | xargs -P 2 true 2>/dev/null ); then
@@ -130,7 +134,7 @@ else
 fi
 
 if test -n "$pull"; then
-  toplevel_cmd="$GIT_EXE $pull $pull_args -q origin"
+  toplevel_cmd="git $pull $pull_args -q origin"
 else
   toplevel_cmd=
 fi
@@ -139,8 +143,8 @@ set -o pipefail
 if test "$xargs_parallel" = "yes"; then
   ( ls -d */.git | sed 's/\/\.git$//' |
    xargs $max_lines $replace_arg -P "$j" \
-      "$crup_runner" replace_arg $toplevel_cmd |
-   xargs $max_lines -P "$j" "$crup_runner" )
+       "$crup_runner" replace_arg $ECHO $toplevel_cmd |
+   xargs $max_lines -P "$j" $ECHO "$crup_runner" )
 else 
   ls -d */.git |
   while read gitdir; do
@@ -159,7 +163,7 @@ EOF
 fi
 
 if [ "$hooks" = "yes" ]; then
-  "$runhooks"
+  $ECHO git runhooks
   status=$?
 fi
 
