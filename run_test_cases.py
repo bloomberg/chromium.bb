@@ -64,6 +64,11 @@ GTEST_ENV_VARS_TO_REMOVE = [
 ]
 
 
+RUN_PREFIX = '[ RUN      ] '
+OK_PREFIX = '[       OK ] '
+FAILED_PREFIX = '[  FAILED  ] '
+
+
 def num_processors():
   """Returns the number of processors.
 
@@ -673,8 +678,8 @@ class RunAll(object):
     pass
 
 
-def process_output(output, test_cases, duration, returncode):
-  """Returns the data of each test cases.
+def process_output(lines, test_cases):
+  """Yield the data of each test cases.
 
   Expects the test cases to be run in the order of the list.
 
@@ -684,80 +689,108 @@ def process_output(output, test_cases, duration, returncode):
 
   This function automatically distribute the startup cost across each test case.
   """
-  data = []
-  lines = output.splitlines(True)
   test_cases = test_cases[:]
-  run_prefix = '[ RUN      ] '
-  ok_prefix = '[       OK ] '
-  failed_prefix = '[  FAILED  ] '
   test_case = None
-  while (test_case or test_cases) and lines:
-    line = lines.pop(0)
-    i = line.find(run_prefix)
-    if i > 0 and data:
+  test_case_data = None
+  terminated_early = False
+  for line in lines:
+    if not (test_case or test_cases):
+      terminated_early = True
+      break
+    i = line.find(RUN_PREFIX)
+    if i > 0 and test_case_data:
       # This may occur specifically in browser_tests, because the test case is
       # run in a child process. If the child process doesn't terminate its
       # output with a LF, it may cause the "[ RUN    ]" line to be improperly
       # printed out in the middle of a line.
-      data[-1]['output'] += line[:i]
+      test_case_data['output'] += line[:i]
       line = line[i:]
       i = 0
+
     if i >= 0:
       if test_case:
-        # The previous test case had crashed.
-        data[-1]['returncode'] = 1
-        data[-1]['duration'] = 0
-      test_case = line[len(run_prefix):].strip().split(' ', 1)[0]
+        # The previous test case had crashed. No idea about its duration
+        test_case_data['returncode'] = 1
+        test_case_data['duration'] = 0
+        test_case_data['crashed'] = True
+        yield test_case_data
+
+      test_case = line[len(RUN_PREFIX):].strip().split(' ', 1)[0]
       # Accept the test case even if it was unexpected.
       if test_case in test_cases:
         test_cases.remove(test_case)
       else:
         logging.warning('Unexpected test case: %s', test_case)
-      data.append(
-        {
-          'test_case': test_case,
-          'returncode': None,
-          'duration': None,
-          'output': line,
-        })
+      test_case_data = {
+        'test_case': test_case,
+        'returncode': None,
+        'duration': None,
+        'output': line,
+      }
     elif test_case:
-      data[-1]['output'] += line
-      if line.startswith((ok_prefix, failed_prefix)):
+      test_case_data['output'] += line
+      if line.startswith((OK_PREFIX, FAILED_PREFIX)):
         # The test completed.
         match = re.search(r' \((\d+) ms\)', line)
         if match:
-          data[-1]['duration'] = float(match.group(1)) / 1000.
-        data[-1]['returncode'] = int(line.startswith(failed_prefix))
+          test_case_data['duration'] = float(match.group(1)) / 1000.
+        test_case_data['returncode'] = int(line.startswith(FAILED_PREFIX))
+        yield test_case_data
         test_case = None
+        test_case_data = None
 
-  has_crashed = test_case and data
-  if has_crashed:
+  if test_case_data:
+    assert not terminated_early
     # This means the last one likely crashed.
-    if not data[-1]['returncode']:
-      data[-1]['returncode'] = (returncode or 1)
-    data[-1]['output'] += ''.join(lines)
+    test_case_data['crashed'] = True
+    test_case_data['returncode'] = 1
+    yield test_case_data
+  elif terminated_early:
+    for _ in lines:
+      # Exhaust the generator. It is necessary so that the input generator is
+      # in a consistent state. More practically in our specific case, it is
+      # necessary to ensure that yield_any() was called back again so that it
+      # calls poll() and detects the process termination and/or wait for it. We
+      # don't want this generator to quit before the process has terminated.
+      pass
 
   # If test_cases is not empty, these test cases were not run.
-  data.extend(
-      {'test_case': t, 'returncode': None, 'duration': None, 'output': None}
-      for t in test_cases)
+  for t in test_cases:
+    yield {
+      'test_case': t,
+      'returncode': None,
+      'duration': None,
+      'output': None,
+    }
 
+
+def normalize_testing_time(data, duration, returncode):
+  """Normalizes the test case duration by spreading the total runtime.
+
+  If a test crashed, he takes the whole startup cost.
+  """
   # Alias the list 'data' into 'data_ran' for the results of test cases that
   # ran.
+  data = [i.copy() for i in data]
   data_ran = [i for i in data if i['duration'] is not None]
   startup_duration = duration
   if data_ran:
     startup_duration -= sum(i['duration'] for i in data_ran)
 
-  if has_crashed:
-    data[-1]['duration'] = startup_duration
-  else:
-    # Distribute the one-time process startup cost across the test cases that
-    # ran if the startup cost was above 10ms.
-    if startup_duration > 0.01 and data_ran:
-      distributed_duration = startup_duration / len(data_ran)
-      for i in data_ran:
-        i['duration'] += distributed_duration
+  for i in reversed(data):
+    if i['output'] is not None:
+      if i.get('crashed'):
+        i['duration'] = startup_duration
+        i['returncode'] = returncode or i['returncode']
+      else:
+        # Distribute the one-time process startup cost across the test cases
+        # that ran if the startup cost was above 10ms.
+        if startup_duration > 0.01 and data_ran:
+          distributed_duration = startup_duration / len(data_ran)
+          for i in data_ran:
+            i['duration'] += distributed_duration
+        i['returncode'] = returncode or i['returncode']
+      break
   return data
 
 
@@ -822,7 +855,9 @@ class Runner(object):
     utf8_output = output.decode('ascii', 'ignore').encode('utf-8')
 
     if len(test_cases) > 1:
-      data = process_output(utf8_output, test_cases, duration, returncode)
+      data = process_output(
+          utf8_output.splitlines(True), test_cases)
+      data = normalize_testing_time(data, duration, returncode)
     else:
       if '[ RUN      ]' not in output:
         # Can't find gtest marker, mark it as invalid.

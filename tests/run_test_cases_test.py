@@ -53,6 +53,11 @@ class ListTestCasesTest(unittest.TestCase):
           expected, result, (result, expected, range_length, index, shards))
 
 
+def process_output(content, test_cases, duration, returncode):
+  data = run_test_cases.process_output(content.splitlines(True), test_cases)
+  return run_test_cases.normalize_testing_time(data, duration, returncode)
+
+
 class RunTestCases(unittest.TestCase):
   def test_call_with_timeout(self):
     timedout = 1 if sys.platform == 'win32' else -9
@@ -296,7 +301,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.2',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
     self.assertEquals(expected, actual)
 
   def test_process_output_crash_cr(self):
@@ -304,38 +309,42 @@ class RunTestCases(unittest.TestCase):
     data = '[ RUN      ] Test.1\r[ RUN      ] Test.2\r'
     expected = [
       {
+        'crashed': True,
         'duration': 0,
         'output': '[ RUN      ] Test.1\r',
         'returncode': 1,
         'test_case': 'Test.1',
       },
       {
+        'crashed': True,
         'duration': 1.,
         'output': '[ RUN      ] Test.2\r',
         'returncode': 1,
         'test_case': 'Test.2',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
     self.assertEquals(expected, actual)
 
   def test_process_output_crashes(self):
     data = '[ RUN      ] Test.1\n[ RUN      ] Test.2\n'
     expected = [
       {
+        'crashed': True,
         'duration': 0,
         'output': '[ RUN      ] Test.1\n',
         'returncode': 1,
         'test_case': 'Test.1',
       },
       {
+        'crashed': True,
         'duration': 1.,
         'output': '[ RUN      ] Test.2\n',
         'returncode': 1,
         'test_case': 'Test.2',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
     self.assertEquals(expected, actual)
 
   def test_process_output_ok(self):
@@ -358,7 +367,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.2',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
     self.assertEquals(expected, actual)
 
   def test_process_output_fail_1(self):
@@ -381,7 +390,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.2',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
     self.assertEquals(expected, actual)
 
   def test_process_output_crash_ok(self):
@@ -392,6 +401,7 @@ class RunTestCases(unittest.TestCase):
       '[       OK ] Test.2 (2000 ms)\n')
     expected = [
       {
+        'crashed': True,
         'duration': 4.,
         'output': '[ RUN      ] Test.1\nblah blah crash.\n',
         'returncode': 1,
@@ -404,7 +414,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.2',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
     self.assertEquals(expected, actual)
 
   def test_process_output_crash_garbage_ok(self):
@@ -414,6 +424,7 @@ class RunTestCases(unittest.TestCase):
       '[       OK ] Test.2 (2000 ms)\n')
     expected = [
       {
+        'crashed': True,
         'duration': 4.,
         'output': '[ RUN      ] Test.1\nblah blah crash',
         'returncode': 1,
@@ -426,7 +437,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.2',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
     self.assertEquals(expected, actual)
 
   def test_process_output_missing(self):
@@ -447,7 +458,7 @@ class RunTestCases(unittest.TestCase):
         'test_case': 'Test.1',
       },
     ]
-    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    actual = process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
     self.assertEquals(expected, actual)
 
   def test_calc_cluster_default(self):
