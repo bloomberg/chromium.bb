@@ -151,6 +151,8 @@ FFMPEG_TEST_CASE(Cr152691, "security/152691.mp3", PIPELINE_ERROR_DECODE,
                  "59adb24ef3cdbe0297f05b395827453f");
 FFMPEG_TEST_CASE(Cr161639, "security/161639.m4a", PIPELINE_OK, PIPELINE_OK,
                  kNullHash, "97ae2fa2a2e9ff3c2cf17be96b08bbe8");
+FFMPEG_TEST_CASE(Cr222754, "security/222754.mp4", PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE, kNullHash, kNullHash);
 
 // General MKV test cases.
 FFMPEG_TEST_CASE(MKV_0, "security/nested_tags_lang.mka.627.628", PIPELINE_OK,
