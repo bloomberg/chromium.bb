@@ -50,11 +50,9 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
     : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
 
-  WebGraphicsContext3DInProcessCommandBufferImpl();
+  WebGraphicsContext3DInProcessCommandBufferImpl(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
-
-  bool Initialize(WebKit::WebGraphicsContext3D::Attributes attributes,
-                  WebKit::WebGraphicsContext3D* view_context);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
@@ -513,9 +511,14 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   void OnSwapBuffersComplete();
   virtual void OnContextLost();
 
+  bool MaybeInitializeGL();
+
   // Used to try to find bugs in code that calls gl directly through the gl api
   // instead of going through WebGraphicsContext3D.
   void ClearContext();
+
+  bool initialized_;
+  bool initialize_failed_;
 
   // The context we use for OpenGL rendering.
   GLInProcessContext* context_;

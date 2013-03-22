@@ -23,8 +23,8 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
   scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
-      new WebGraphicsContext3DInProcessCommandBufferImpl);
-  context3d->Initialize(WebKit::WebGraphicsContext3D::Attributes(), NULL);
+      new WebGraphicsContext3DInProcessCommandBufferImpl(
+          WebKit::WebGraphicsContext3D::Attributes()));
   return make_scoped_ptr(
       new OutputSurface(context3d.PassAs<WebKit::WebGraphicsContext3D>()));
 }

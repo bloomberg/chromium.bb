@@ -127,10 +127,6 @@ enum GraphicsContext3DImplementation {
   IN_PROCESS_COMMAND_BUFFER
 };
 
-WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes,
-    WebKit::WebView* web_view);
-
 enum LayerTreeViewType {
   FAKE_CONTEXT,
   SOFTWARE_CONTEXT,
