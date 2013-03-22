@@ -23,8 +23,7 @@ Gesture* StuckButtonInhibitorFilterInterpreter::SyncInterpretImpl(
   HandleHardwareState(*hwstate);
   stime_t next_timeout = -1.0;
   Gesture* result = next_->SyncInterpret(hwstate, &next_timeout);
-  HandleGesture(&result, next_timeout, timeout);
-  return result;
+  return HandleGesture(result, next_timeout, timeout);;
 }
 
 Gesture* StuckButtonInhibitorFilterInterpreter::HandleTimerImpl(
@@ -43,8 +42,7 @@ Gesture* StuckButtonInhibitorFilterInterpreter::HandleTimerImpl(
   }
   stime_t next_timeout = -1.0;
   Gesture* result = next_->HandleTimer(now, &next_timeout);
-  HandleGesture(&result, next_timeout, timeout);
-  return result;
+  return HandleGesture(result, next_timeout, timeout);;
 }
 
 void StuckButtonInhibitorFilterInterpreter::HandleHardwareState(
@@ -53,34 +51,35 @@ void StuckButtonInhibitorFilterInterpreter::HandleHardwareState(
       hwstate.touch_cnt == 0 && hwstate.buttons_down == 0;
 }
 
-void StuckButtonInhibitorFilterInterpreter::HandleGesture(
-    Gesture** gesture, stime_t next_timeout, stime_t* timeout) {
-  if (*gesture && (*gesture)->type == kGestureTypeButtonsChange) {
+Gesture* StuckButtonInhibitorFilterInterpreter::HandleGesture(
+    Gesture* gesture, stime_t next_timeout, stime_t* timeout) {
+  if (gesture && gesture->next)
+    gesture->next = HandleGesture(gesture->next, next_timeout, timeout);
+
+  if (gesture && gesture->type == kGestureTypeButtonsChange) {
     // process buttons going down
-    if (sent_buttons_down_ & (*gesture)->details.buttons.down) {
+    if (sent_buttons_down_ & gesture->details.buttons.down) {
       Err("Odd. Gesture is sending buttons down that are already down: "
           "Existing down: %d. New down: %d. fixing.",
-          sent_buttons_down_, (*gesture)->details.buttons.down);
-      (*gesture)->details.buttons.down &= ~sent_buttons_down_;
+          sent_buttons_down_, gesture->details.buttons.down);
+      gesture->details.buttons.down &= ~sent_buttons_down_;
     }
-    sent_buttons_down_ |= (*gesture)->details.buttons.down;
-    if ((~sent_buttons_down_) & (*gesture)->details.buttons.up) {
+    sent_buttons_down_ |= gesture->details.buttons.down;
+    if ((~sent_buttons_down_) & gesture->details.buttons.up) {
       Err("Odd. Gesture is sending buttons up for buttons we didn't send down: "
           "Existing down: %d. New up: %d.",
-          sent_buttons_down_, (*gesture)->details.buttons.up);
-      (*gesture)->details.buttons.up &= sent_buttons_down_;
+          sent_buttons_down_, gesture->details.buttons.up);
+      gesture->details.buttons.up &= sent_buttons_down_;
     }
-    sent_buttons_down_ &= ~(*gesture)->details.buttons.up;
-    if (!(*gesture)->details.buttons.up && !(*gesture)->details.buttons.down) {
-      // convert to NULL
-      *gesture = NULL;
-    }
+    sent_buttons_down_ &= ~gesture->details.buttons.up;
+    if (!gesture->details.buttons.up && !gesture->details.buttons.down)
+      return gesture->next;  // remove from list
   }
   if (next_timeout >= 0.0) {
     // next_ is doing stuff, so don't interfere
     *timeout = next_timeout;
     next_expects_timer_ = true;
-    return;
+    return gesture;
   }
   next_expects_timer_ = false;
   if (incoming_button_must_be_up_ && sent_buttons_down_) {
@@ -88,6 +87,7 @@ void StuckButtonInhibitorFilterInterpreter::HandleGesture(
     const stime_t kTimeoutLength = 1.0;
     *timeout = kTimeoutLength;
   }
+  return gesture;
 }
 
 }  // namespace gestures

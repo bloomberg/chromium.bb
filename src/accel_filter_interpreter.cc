@@ -83,16 +83,16 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
 Gesture* AccelFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                    stime_t* timeout) {
   Gesture* fg = next_->SyncInterpret(hwstate, timeout);
-  if (fg)
-    ScaleGesture(fg);
+  for (Gesture* it = fg; it; it = it->next)
+    ScaleGesture(it);
   return fg;
 }
 
 Gesture* AccelFilterInterpreter::HandleTimerImpl(stime_t now,
                                                  stime_t* timeout) {
   Gesture* gs = next_->HandleTimer(now, timeout);
-  if (gs)
-    ScaleGesture(gs);
+  for (Gesture* it = gs; it; it=it->next)
+    ScaleGesture(it);
   return gs;
 }
 

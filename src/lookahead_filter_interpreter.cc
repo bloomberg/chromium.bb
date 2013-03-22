@@ -404,6 +404,14 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
   result_ = TapDownOccurringGesture(now);
   Gesture* result = NULL;
   stime_t next_timeout = -1.0;
+
+  // todo(denniskempin): we will have to cache gestures->next here
+  // because it will be invalidated as soon as we call HandleTimer
+  // or SyncInterpret a second time. For now we will drop extra gestures.
+  // This might cause gestures to get lost, so we use CombineGestures
+  // to keep the higher priority ones.
+  bool drop_next_gestures = false;
+
   while (true) {
     if (interpreter_due_ > 0.0) {
       if (interpreter_due_ > now) {
@@ -412,6 +420,8 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
       }
       next_timeout = -1.0;
       last_interpreted_time_ = now;
+      if (drop_next_gestures)
+        result_.next = NULL;
       result = next_->HandleTimer(now, &next_timeout);
     } else {
       if (queue_.Empty())
@@ -440,8 +450,9 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
         node->state_.rel_wheel,
         node->state_.rel_hwheel,
       };
+      if (drop_next_gestures)
+        result_.next = NULL;
       result = next_->SyncInterpret(&hs_copy, &next_timeout);
-
       // Clear previously completed nodes, but keep at least two nodes.
       while (queue_.size() > 2 && queue_.Head()->completed_)
         free_list_.PushBack(queue_.PopFront());
@@ -450,17 +461,26 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
       // node in the queue.
       node->completed_ = true;
     }
-    if (result && ShouldSuppressResult(result, queue_.Head()))
-      result = NULL;
-    CombineGestures(&result_, result);
+    if (result) {
+      result = ApplySuppression(result, queue_.Head());
+      CombineGestures(&result_, result);
+    }
     UpdateInterpreterDue(next_timeout, now, timeout);
+    drop_next_gestures = true;
   }
   UpdateInterpreterDue(next_timeout, now, timeout);
+
   return result_.type == kGestureTypeNull ? NULL : &result_;
 }
 
-bool LookaheadFilterInterpreter::ShouldSuppressResult(const Gesture* gesture,
+Gesture* LookaheadFilterInterpreter::ApplySuppression(Gesture* gesture,
                                                       QState* node) {
+  if (!gesture)
+    return NULL;
+
+  if (gesture->next)
+    gesture->next = ApplySuppression(gesture->next, node);
+
   float distance_sq = 0.0;
   // Slow movements should potentially be suppressed
   switch (gesture->type) {
@@ -474,20 +494,20 @@ bool LookaheadFilterInterpreter::ShouldSuppressResult(const Gesture* gesture,
       break;
     default:
       // Non-movement: just allow it.
-      return false;
+      return gesture;
   }
   stime_t time_delta = gesture->end_time - gesture->start_time;
   float min_nonsuppress_dist_sq =
       min_nonsuppress_speed_.val_ * min_nonsuppress_speed_.val_ *
       time_delta * time_delta;
   if (distance_sq >= min_nonsuppress_dist_sq)
-    return false;
+    return gesture;
   // Speed is slow. Suppress if fingers have changed.
   for (QState* iter = node->next_; iter != queue_.End(); iter = iter->next_)
     if (!node->state_.SameFingersAs(iter->state_) ||
         (node->state_.buttons_down != iter->state_.buttons_down))
-      return true;
-  return false;
+      return gesture->next;
+  return gesture;
 }
 
 void LookaheadFilterInterpreter::UpdateInterpreterDue(

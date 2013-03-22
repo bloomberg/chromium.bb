@@ -87,6 +87,37 @@ void CombineGestures(Gesture* gesture, const Gesture* addend) {
   *gesture = *addend;
 }
 
+
+void AppendGesture(Gesture* gesture, Gesture* addend) {
+  if (!gesture) {
+    Err("gesture must be non-NULL.");
+    return;
+  }
+  if (!addend || addend->type == kGestureTypeNull)
+    return;
+
+  if (gesture->type == kGestureTypeNull) {
+    *gesture = *addend;
+    return;
+  }
+
+  // walk the list to find a gesture to combine this with
+  for (Gesture* it = gesture; it; it = it->next) {
+    if (it->type == addend->type) {
+      CombineGestures(it, addend);
+      return;
+    }
+  }
+
+  // find end of list
+  Gesture* it = gesture;
+  while (it->next)
+    it = it->next;
+
+  // attach to linked list
+  it->next = addend;
+}
+
 void CombineButtonsGestures(Gesture* gesture, const Gesture* addend) {
   // We have 2 button events. merge them
   unsigned buttons[] = { GESTURES_BUTTON_LEFT,

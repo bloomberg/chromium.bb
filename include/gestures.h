@@ -230,32 +230,35 @@ struct Gesture {
 #ifdef __cplusplus
   // Create Move/Scroll gesture
 #ifdef GESTURES_INTERNAL
-  Gesture() : start_time(0), end_time(0), type(kGestureTypeNull) {}
+  Gesture() : start_time(0), end_time(0), type(kGestureTypeNull), next(NULL) {}
   std::string String() const;
   bool operator==(const Gesture& that) const;
   bool operator!=(const Gesture& that) const { return !(*this == that); };
 #endif  // GESTURES_INTERNAL
   Gesture(const GestureMove&, stime_t start, stime_t end, float dx, float dy)
-      : start_time(start), end_time(end), type(kGestureTypeMove) {
+      : start_time(start), end_time(end), type(kGestureTypeMove), next(NULL) {
     details.move.ordinal_dx = details.move.dx = dx;
     details.move.ordinal_dy = details.move.dy = dy;
   }
   Gesture(const GestureScroll&,
           stime_t start, stime_t end, float dx, float dy)
-      : start_time(start), end_time(end), type(kGestureTypeScroll) {
+      : start_time(start), end_time(end), type(kGestureTypeScroll), next(NULL) {
     details.scroll.ordinal_dx = details.scroll.dx = dx;
     details.scroll.ordinal_dy = details.scroll.dy = dy;
     details.scroll.stop_fling = 0;
   }
   Gesture(const GestureButtonsChange&,
           stime_t start, stime_t end, unsigned down, unsigned up)
-      : start_time(start), end_time(end), type(kGestureTypeButtonsChange) {
+      : start_time(start),
+        end_time(end),
+        type(kGestureTypeButtonsChange),
+        next(NULL) {
     details.buttons.down = down;
     details.buttons.up = up;
   }
   Gesture(const GestureFling&,
           stime_t start, stime_t end, float vx, float vy, unsigned state)
-      : start_time(start), end_time(end), type(kGestureTypeFling) {
+      : start_time(start), end_time(end), type(kGestureTypeFling), next(NULL) {
     details.fling.ordinal_vx = details.fling.vx = vx;
     details.fling.ordinal_vy = details.fling.vy = vy;
     details.fling.fling_state = state;
@@ -264,7 +267,8 @@ struct Gesture {
           stime_t start, stime_t end, float dx, float dy)
       : start_time(start),
         end_time(end),
-        type(kGestureTypeSwipe) {
+        type(kGestureTypeSwipe),
+        next(NULL) {
     details.swipe.ordinal_dx = details.swipe.dx = dx;
     details.swipe.ordinal_dy = details.swipe.dy = dy;
   }
@@ -272,13 +276,15 @@ struct Gesture {
           stime_t start, stime_t end, float dz)
       : start_time(start),
         end_time(end),
-        type(kGestureTypePinch) {
+        type(kGestureTypePinch),
+        next(NULL) {
     details.pinch.ordinal_dz = details.pinch.dz = dz;
   }
   Gesture(const GestureSwipeLift&, stime_t start, stime_t end)
       : start_time(start),
         end_time(end),
-        type(kGestureTypeSwipeLift) {}
+        type(kGestureTypeSwipeLift),
+        next(NULL) {}
 #endif  // __cplusplus
 
   stime_t start_time, end_time;
@@ -292,6 +298,7 @@ struct Gesture {
     GesturePinch pinch;
     GestureSwipeLift swipe_lift;
   } details;
+  struct Gesture* next;
 };
 
 typedef void (*GestureReadyFunction)(void* client_data,

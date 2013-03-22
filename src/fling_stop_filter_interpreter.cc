@@ -31,21 +31,16 @@ Gesture* FlingStopFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     result->details.scroll.stop_fling = 1;
     fling_stop_deadline_ = 0.0;
   } else if (fling_stop_deadline_ != 0.0 &&
-             hwstate->timestamp > fling_stop_deadline_) {
+             (hwstate->timestamp > fling_stop_deadline_ ||
+              (result && result->type == kGestureTypeButtonsChange))) {
     // Try to sub in a fling-stop for this gesture, as we should have received
     // a callback by now
     result_ = Gesture(kGestureFling, prev_timestamp_,
                       hwstate->timestamp, 0.0, 0.0,
                       GESTURES_FLING_TAP_DOWN);
-    if (result)
-      CombineGestures(result, &result_);
-    else
-      result = &result_;
-    if (result->type == kGestureTypeFling &&
-        result->details.fling.fling_state == GESTURES_FLING_TAP_DOWN) {
-      // We will send fling stop now
-      fling_stop_deadline_ = 0.0;
-    }
+    AppendGesture(&result_, result);
+    result = &result_;
+    fling_stop_deadline_ = 0.0;
   }
   *timeout = SetNextDeadlineAndReturnTimeoutVal(hwstate->timestamp,
                                                 next_timeout);

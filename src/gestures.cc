@@ -379,8 +379,10 @@ void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
   }
   stime_t timeout = -1.0;
   Gesture* gs = interpreter_->SyncInterpret(hwstate, &timeout);
-  if (gs && callback_)
-    (*callback_)(callback_data_, gs);
+  if (gs && callback_) {
+    for (Gesture* it = gs; it; it = it->next)
+      (*callback_)(callback_data_, it);
+  }
   if (timer_provider_ && interpret_timer_) {
     if (timeout <= 0.0) {
       timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);

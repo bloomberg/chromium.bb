@@ -102,7 +102,7 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   void UpdateInterpreterDue(stime_t new_interpreter_due,
                             stime_t now,
                             stime_t* timeout);
-  bool ShouldSuppressResult(const Gesture* gesture, QState* node);
+  Gesture* ApplySuppression(Gesture* gesture, QState* node);
 
   stime_t ExtraVariableDelay() const;
 

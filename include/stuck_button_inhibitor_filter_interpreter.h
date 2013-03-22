@@ -36,7 +36,8 @@ class StuckButtonInhibitorFilterInterpreter : public FilterInterpreter {
 
  private:
   void HandleHardwareState(const HardwareState& hwstate);
-  void HandleGesture(Gesture** gesture, stime_t next_timeout, stime_t* timeout);
+  Gesture* HandleGesture(Gesture* gesture, stime_t next_timeout,
+                         stime_t* timeout);
 
   bool incoming_button_must_be_up_;
 

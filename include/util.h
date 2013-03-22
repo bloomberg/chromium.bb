@@ -54,7 +54,12 @@ inline float DegToRad(float degrees) {
 // Combines two gesture objects, storing the result into *gesture.
 // Priority is given to button events first, then *gesture.
 // Also, |gesture| comes earlier in time than |addend|.
+// DEPRECATED! Use AppendGesture instead.
 void CombineGestures(Gesture* gesture, const Gesture* addend);
+
+// Append one gesture to another. If they are compatible the gestures are merged
+// into one. If not 'addend' is appended to the next pointer of 'gesture'.
+void AppendGesture(Gesture* gesture, Gesture* addend);
 }  // namespace gestures
 
 #endif  // GESTURES_UTIL_H_

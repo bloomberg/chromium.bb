@@ -71,9 +71,11 @@ void ActivityLog::LogCallbackRequest(stime_t when) {
 }
 
 void ActivityLog::LogGesture(const Gesture& gesture) {
-  Entry* entry = PushBack();
-  entry->type = kGesture;
-  entry->details.gesture = gesture;
+  for (const Gesture* it = &gesture; it; it = it->next) {
+    Entry* entry = PushBack();
+    entry->type = kGesture;
+    entry->details.gesture = *it;
+  }
 }
 
 void ActivityLog::LogPropChange(const PropChangeEntry& prop_change) {

@@ -32,7 +32,7 @@ class IntegralGestureFilterInterpreter : public FilterInterpreter {
   virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
  private:
-  void HandleGesture(Gesture** gs);
+  Gesture* HandleGesture(Gesture* gs);
 
   float hscroll_remainder_, vscroll_remainder_;
   float hscroll_ordinal_remainder_, vscroll_ordinal_remainder_;

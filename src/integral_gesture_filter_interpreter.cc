@@ -29,17 +29,13 @@ Gesture* IntegralGestureFilterInterpreter::SyncInterpretImpl(
     hscroll_ordinal_remainder_ = vscroll_ordinal_remainder_ =
         hscroll_remainder_ = vscroll_remainder_ = 0.0;
   Gesture* fg = next_->SyncInterpret(hwstate, timeout);
-  Gesture** ret = &fg;
-  HandleGesture(ret);
-  return *ret;
+  return HandleGesture(fg);
 }
 
 Gesture* IntegralGestureFilterInterpreter::HandleTimerImpl(stime_t now,
                                                            stime_t* timeout) {
   Gesture* gs = next_->HandleTimer(now, timeout);
-  Gesture** ret = &gs;
-  HandleGesture(ret);
-  return *ret;
+  return HandleGesture(gs);
 }
 
 namespace {
@@ -54,16 +50,20 @@ float Truncate(float input, float* overflow) {
 // Truncate the fractional part off any input, but store it. If the
 // absolute value of an input is < 1, we will change it to 0, unless
 // there has been enough fractional accumulation to bring it above 1.
-void IntegralGestureFilterInterpreter::HandleGesture(Gesture** ret) {
-  if (!*ret)
-    return;
-  Gesture* gs = *ret;
+Gesture* IntegralGestureFilterInterpreter::HandleGesture(Gesture* gs) {
+  if (!gs)
+    return gs;
+
+  if (gs->next) {
+    gs->next = HandleGesture(gs->next);
+  }
+
   switch (gs->type) {
     case kGestureTypeMove:
       if (gs->details.move.dx == 0.0 && gs->details.move.dy == 0.0 &&
           gs->details.move.ordinal_dx == 0.0 &&
           gs->details.move.ordinal_dy == 0.0)
-        *ret = NULL;
+        return gs->next;  // remove from list
       break;
     case kGestureTypeScroll:
       gs->details.scroll.dx = Truncate(gs->details.scroll.dx,
@@ -81,12 +81,14 @@ void IntegralGestureFilterInterpreter::HandleGesture(Gesture** ret) {
           *gs = Gesture(kGestureFling, gs->start_time, gs->end_time,
                         0, 0, GESTURES_FLING_TAP_DOWN);
         else
-          *ret = NULL;
+          return gs->next;  // remove from list
       }
       break;
     default:
       break;
   }
+
+  return gs;
 }
 
 }  // namespace gestures
