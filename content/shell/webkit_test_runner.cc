@@ -166,7 +166,8 @@ WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
       RenderViewObserverTracker<WebKitTestRunner>(render_view),
       proxy_(NULL),
       focused_view_(NULL),
-      is_main_window_(false) {
+      is_main_window_(false),
+      focus_on_next_commit_(false) {
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
@@ -506,6 +507,23 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void WebKitTestRunner::Navigate(const GURL& url) {
+  focus_on_next_commit_ = true;
+}
+
+void WebKitTestRunner::DidCommitProvisionalLoad(WebFrame* frame,
+                                                bool is_new_navigation) {
+  if (!focus_on_next_commit_)
+    return;
+  focus_on_next_commit_ = false;
+  render_view()->GetWebView()->setFocusedFrame(frame);
+}
+
+void WebKitTestRunner::DidFailProvisionalLoad(WebFrame* frame,
+                                              const WebURLError& error) {
+  focus_on_next_commit_ = false;
 }
 
 // Public methods - -----------------------------------------------------------
