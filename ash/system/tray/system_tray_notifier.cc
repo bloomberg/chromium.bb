@@ -168,6 +168,16 @@ void SystemTrayNotifier::RemoveEnterpriseDomainObserver(
   enterprise_domain_observers_.RemoveObserver(observer);
 }
 
+void SystemTrayNotifier::AddScreenCaptureObserver(
+    ScreenCaptureObserver* observer) {
+  screen_capture_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveScreenCaptureObserver(
+    ScreenCaptureObserver* observer) {
+  screen_capture_observers_.RemoveObserver(observer);
+}
+
 #endif
 
 void SystemTrayNotifier::NotifyAccessibilityModeChanged(
@@ -348,6 +358,18 @@ void SystemTrayNotifier::NotifyAddSmsMessage(
 void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {
   FOR_EACH_OBSERVER(EnterpriseDomainObserver, enterprise_domain_observers_,
       OnEnterpriseDomainChanged());
+}
+
+void SystemTrayNotifier::NotifyScreenCaptureStart(
+    const base::Closure& stop_callback,
+    const string16& sharing_app_name) {
+  FOR_EACH_OBSERVER(ScreenCaptureObserver, screen_capture_observers_,
+                    OnScreenCaptureStart(stop_callback, sharing_app_name));
+}
+
+void SystemTrayNotifier::NotifyScreenCaptureStop() {
+  FOR_EACH_OBSERVER(ScreenCaptureObserver, screen_capture_observers_,
+                    OnScreenCaptureStop());
 }
 
 #endif  // OS_CHROMEOS

@@ -31,6 +31,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/sms_observer.h"
+#include "ash/system/chromeos/screen_capture/screen_capture_observer.h"
 #endif
 
 namespace ash {
@@ -94,6 +95,9 @@ public:
 
   void AddEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
   void RemoveEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
+
+  void AddScreenCaptureObserver(ScreenCaptureObserver* observer);
+  void RemoveScreenCaptureObserver(ScreenCaptureObserver* observer);
 #endif
 
   void NotifyAccessibilityModeChanged(
@@ -132,6 +136,9 @@ public:
   void NotifyWillToggleWifi();
   void NotifyAddSmsMessage(const base::DictionaryValue& message);
   void NotifyEnterpriseDomainChanged();
+  void NotifyScreenCaptureStart(const base::Closure& stop_callback,
+                                const string16& sharing_app_name);
+  void NotifyScreenCaptureStop();
 #endif
 
  private:
@@ -154,6 +161,7 @@ public:
   ObserverList<NetworkObserver> vpn_observers_;
   ObserverList<SmsObserver> sms_observers_;
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
+  ObserverList<ScreenCaptureObserver> screen_capture_observers_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);

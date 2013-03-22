@@ -716,6 +716,8 @@
         'browser/chromeos/ui/echo_dialog_view.h',
         'browser/chromeos/ui/idle_logout_dialog_view.cc',
         'browser/chromeos/ui/idle_logout_dialog_view.h',
+        'browser/chromeos/ui/screen_capture_notification_ui_chromeos.cc',
+        'browser/chromeos/ui/screen_capture_notification_ui_chromeos.h',        
         'browser/chromeos/upgrade_detector_chromeos.cc',
         'browser/chromeos/upgrade_detector_chromeos.h',
         'browser/chromeos/version_loader.cc',

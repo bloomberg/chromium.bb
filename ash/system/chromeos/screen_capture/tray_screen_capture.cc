@@ -47,7 +47,7 @@ class ScreenCaptureTrayView : public TrayItemView {
   }
 
   void Update() {
-    SetVisible(tray_screen_capture_->IsScreenCaptureOn());
+    SetVisible(tray_screen_capture_->screen_capture_on());
   }
 
  private:
@@ -110,8 +110,7 @@ class ScreenCaptureStatusView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     DCHECK(sender == stop_button_);
-    tray_screen_capture_->SetScreenCaptureOn(false);
-    tray_screen_capture_->Update();
+    tray_screen_capture_->StopScreenCapture();
   }
 
   void CreateItems() {
@@ -137,13 +136,13 @@ class ScreenCaptureStatusView : public views::View,
     label_ = new views::Label;
     label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_->SetMultiLine(true);
-    label_->SetText(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STATUS));
+    label_->SetText(tray_screen_capture_->screen_capture_status());
     AddChildView(label_);
 
     stop_button_ = new TrayPopupLabelButton(
         this,
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP));
+        bundle.GetLocalizedString(
+            IDS_CHROMEOS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP));
     AddChildView(stop_button_);
   }
 
@@ -151,7 +150,7 @@ class ScreenCaptureStatusView : public views::View,
     if (view_type_ == VIEW_DEFAULT) {
       // Hide the notification bubble when the ash tray bubble opens.
       tray_screen_capture_->HideNotificationView();
-      SetVisible(tray_screen_capture_->IsScreenCaptureOn());
+      SetVisible(tray_screen_capture_->screen_capture_on());
     }
   }
 
@@ -180,7 +179,7 @@ class ScreenCaptureNotificationView : public TrayNotificationView {
   }
 
   void Update() {
-    if (tray_screen_capture_->IsScreenCaptureOn())
+    if (tray_screen_capture_->screen_capture_on())
       screen_capture_status_view_->Update();
     else
       tray_screen_capture_->HideNotificationView();
@@ -199,11 +198,16 @@ TrayScreenCapture::TrayScreenCapture(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_(NULL),
       default_(NULL),
-      notification_(NULL) {
-  // TODO(jennyz): Observe the screen capture notification.
+      notification_(NULL),
+      screen_capture_on_(false),
+      stop_callback_(base::Bind(&base::DoNothing)) {
+  Shell::GetInstance()->system_tray_notifier()->
+      AddScreenCaptureObserver(this);
 }
 
 TrayScreenCapture::~TrayScreenCapture() {
+  Shell::GetInstance()->system_tray_notifier()->
+      RemoveScreenCaptureObserver(this);
 }
 
 void TrayScreenCapture::Update() {
@@ -244,8 +248,12 @@ void TrayScreenCapture::DestroyNotificationView() {
   notification_ = NULL;
 }
 
-void TrayScreenCapture::OnScreenCaptureStatusChanged() {
-  SetScreenCaptureOn(IsScreenCaptureOn());
+void TrayScreenCapture::OnScreenCaptureStart(
+    const base::Closure& stop_callback,
+    const string16& screen_capture_status) {
+  stop_callback_ = stop_callback;
+  screen_capture_status_ = screen_capture_status;
+  set_screen_capture_on(true);
 
   if (tray_)
     tray_->Update();
@@ -259,14 +267,18 @@ void TrayScreenCapture::OnScreenCaptureStatusChanged() {
   }
 }
 
-// TODO(jennyz): Implement it with integration of Screen Capture API.
-bool TrayScreenCapture::IsScreenCaptureOn() {
-  return false;
+void TrayScreenCapture::OnScreenCaptureStop() {
+  set_screen_capture_on(false);
+  Update();
 }
 
-// TODO(jennyz): Implement it with integration of Screen Capture API.
-void TrayScreenCapture::SetScreenCaptureOn(bool screen_capture_on) {
-  NOTIMPLEMENTED();
+void TrayScreenCapture::StopScreenCapture() {
+  if (stop_callback_.is_null())
+    return;
+
+  base::Closure callback = stop_callback_;
+  stop_callback_.Reset();
+  callback.Run();
 }
 
 }  // namespace internal

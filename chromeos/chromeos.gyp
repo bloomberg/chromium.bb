@@ -203,7 +203,6 @@
         'process_proxy/process_proxy.h',
         'process_proxy/process_proxy_registry.cc',
         'process_proxy/process_proxy_registry.h',
-        'screen_capture/screen_capture_observer.h',
       ],
       'conditions': [
         ['use_x11 == 1', {
