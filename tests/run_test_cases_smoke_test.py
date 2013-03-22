@@ -245,15 +245,9 @@ class RunTestCases(unittest.TestCase):
     for index, name in enumerate(test_cases):
       expected_out_re.append(
           r'\[%d/\d\]   \d\.\d\ds ' % (index + 1) + re.escape(name) + ' .+')
-      expected_out_re.append(re.escape('Note: Google Test filter = ' + name))
-      expected_out_re.append('')
       expected_out_re.extend(
           re.escape(l) for l in
-            gtest_fake_base.get_test_output(name, False).splitlines())
-      expected_out_re.append('')
-      expected_out_re.extend(
-          re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines())
-      expected_out_re.append('')
+            gtest_fake_base.get_test_output_inner(name, False).splitlines())
       expected_out_re.append('')
 
     expected_out_re.extend([
@@ -303,17 +297,9 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(1, return_code)
 
     test_failure_output = [
-      re.escape('Note: Google Test filter = Baz.Fail'),
-      r'',
-    ] + [
       re.escape(l) for l in
-      gtest_fake_base.get_test_output('Baz.Fail', True).splitlines()
+      gtest_fake_base.get_test_output_inner('Baz.Fail', True).splitlines()
     ] + [
-      '',
-    ] + [
-      re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines()
-    ] + [
-      '',
       '',
     ]
 
@@ -384,15 +370,10 @@ class RunTestCases(unittest.TestCase):
 
       expected_out_re.append(
           r'\[%d/\d\]   \d\.\d\ds ' % (index + 1) + re.escape(name) + ' .+')
-      expected_out_re.append(re.escape('Note: Google Test filter = ' + name))
-      expected_out_re.append('')
       expected_out_re.extend(
-          re.escape(l) for l in
-            gtest_fake_base.get_test_output(name, 'Fail' in name).splitlines())
-      expected_out_re.append('')
-      expected_out_re.extend(
-          re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines())
-      expected_out_re.append('')
+          re.escape(l)
+          for l in gtest_fake_base.get_test_output_inner(
+              name, 'Fail' in name).splitlines())
       expected_out_re.append('')
 
     expected_out_re.extend([

@@ -2,64 +2,16 @@
 <testsuites name="AllTests" tests="9" time="0.090379" timestamp="2013-02-06 21:40:20.043987">
 <testsuite name="Foo" tests="3">
   <testcase classname="Foo" name="Bar1" status="run" time="0.029682">
-<failure><![CDATA[Note: Google Test filter = Foo.Bar1
-
-[==========] Running 1 test from 1 test case.
-[----------] Global test environment set-up.
-[----------] 1 test from Foo
-[ RUN      ] Foo.Bar1
+<failure><![CDATA[[ RUN      ] Foo.Bar1
 [  FAILED  ] Foo.Bar1 (100 ms)
-[----------] 1 test from Foo (100 ms total)
-
-
-[----------] Global test environment tear-down
-[==========] 1 test from 1 test case ran. (30 ms total)
-[  PASSED  ] 1 test.
-
-  YOU HAVE 5 DISABLED TESTS
-
-  YOU HAVE 2 tests with ignored failures (FAILS prefix)
-
 ]]></failure></testcase>
   <testcase classname="Foo" name="Bar5" status="run" time="0.028001">
-<failure><![CDATA[Note: Google Test filter = Foo.Bar5
-
-[==========] Running 1 test from 1 test case.
-[----------] Global test environment set-up.
-[----------] 1 test from Foo
-[ RUN      ] Foo.Bar5
+<failure><![CDATA[[ RUN      ] Foo.Bar5
 [  FAILED  ] Foo.Bar5 (100 ms)
-[----------] 1 test from Foo (100 ms total)
-
-
-[----------] Global test environment tear-down
-[==========] 1 test from 1 test case ran. (30 ms total)
-[  PASSED  ] 1 test.
-
-  YOU HAVE 5 DISABLED TESTS
-
-  YOU HAVE 2 tests with ignored failures (FAILS prefix)
-
 ]]></failure></testcase>
   <testcase classname="Foo" name="Bar4" status="run" time="0.029407">
-<failure><![CDATA[Note: Google Test filter = Foo.Bar4
-
-[==========] Running 1 test from 1 test case.
-[----------] Global test environment set-up.
-[----------] 1 test from Foo
-[ RUN      ] Foo.Bar4
+<failure><![CDATA[[ RUN      ] Foo.Bar4
 [  FAILED  ] Foo.Bar4 (100 ms)
-[----------] 1 test from Foo (100 ms total)
-
-
-[----------] Global test environment tear-down
-[==========] 1 test from 1 test case ran. (30 ms total)
-[  PASSED  ] 1 test.
-
-  YOU HAVE 5 DISABLED TESTS
-
-  YOU HAVE 2 tests with ignored failures (FAILS prefix)
-
 ]]></failure></testcase>
 </testsuite>
 </testsuites>

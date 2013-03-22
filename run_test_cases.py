@@ -854,23 +854,8 @@ class Runner(object):
     # TODO(maruel): Be more intelligent than decoding to ascii.
     utf8_output = output.decode('ascii', 'ignore').encode('utf-8')
 
-    if len(test_cases) > 1:
-      data = process_output(
-          utf8_output.splitlines(True), test_cases)
-      data = normalize_testing_time(data, duration, returncode)
-    else:
-      if '[ RUN      ]' not in output:
-        # Can't find gtest marker, mark it as invalid.
-        returncode = returncode or 1
-      data = [
-        {
-          'test_case': test_cases[0],
-          'returncode': returncode,
-          'duration': duration,
-          'output': utf8_output,
-        }
-      ]
-
+    data = process_output(utf8_output.splitlines(True), test_cases)
+    data = normalize_testing_time(data, duration, returncode)
     data = chromium_filter_tests(data)
 
     if sys.platform == 'win32':
