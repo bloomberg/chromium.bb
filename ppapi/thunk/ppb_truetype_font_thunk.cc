@@ -24,8 +24,7 @@ int32_t GetFontFamilies(PP_Instance instance,
   EnterInstanceAPI<PPB_TrueTypeFont_Singleton_API> enter(instance, callback);
   if (enter.failed())
     return PP_ERROR_FAILED;
-  return enter.SetResult(
-      enter.functions()->GetFontFamilies(instance, output, enter.callback()));
+  return enter.functions()->GetFontFamilies(instance, output, enter.callback());
 }
 
 PP_Resource Create(PP_Instance instance,

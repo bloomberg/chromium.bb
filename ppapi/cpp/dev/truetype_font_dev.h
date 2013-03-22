@@ -174,43 +174,21 @@ class TrueTypeFont_Dev : public Resource {
 
 namespace internal {
 
-// This is used by the CompletionCallbackFactory system to hold the output from
-// the async 'Describe' function call. When 'output' is called, this data is
-// wrapped and a reference is passed to the plugin's callback function.
-class TrueTypeFontAdapterWithStorage {
- public:
-  TrueTypeFontAdapterWithStorage() {
-  }
-
-  PP_TrueTypeFontDesc_Dev* pp_output() { return &pp_desc_; }
-
-  TrueTypeFontDesc_Dev& output() {
-    desc_ = TrueTypeFontDesc_Dev(PASS_REF, pp_desc_);
-    return desc_;
-  }
-
- private:
-  // |pp_desc_| will be written by the 'Describe' function. |desc_| will be
-  // constructed and will manage the PP_Var in pp_desc_.
-  PP_TrueTypeFontDesc_Dev pp_desc_;
-  TrueTypeFontDesc_Dev desc_;
-};
-
 // A specialization of CallbackOutputTraits to provide the callback system the
 // information on how to handle pp::TrueTypeFontDesc_Dev. This converts
 // PP_TrueTypeFontDesc_Dev to pp::TrueTypeFontDesc_Dev when passing to the
 // plugin, and specifically manages the PP_Var embedded in the desc_ field.
 template<>
-struct CallbackOutputTraits<TrueTypeFontDesc_Dev> {
+struct CallbackOutputTraits<pp::TrueTypeFontDesc_Dev> {
   typedef PP_TrueTypeFontDesc_Dev* APIArgType;
-  typedef TrueTypeFontAdapterWithStorage StorageType;
+  typedef PP_TrueTypeFontDesc_Dev StorageType;
 
   static inline APIArgType StorageToAPIArg(StorageType& t) {
-    return t.pp_output();
+    return &t;
   }
 
-  static inline TrueTypeFontDesc_Dev& StorageToPluginArg(StorageType& t) {
-    return t.output();
+  static inline pp::TrueTypeFontDesc_Dev StorageToPluginArg(StorageType& t) {
+    return pp::TrueTypeFontDesc_Dev(PASS_REF, t);
   }
 };
 

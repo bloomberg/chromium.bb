@@ -1203,9 +1203,6 @@ TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
 TEST_PPAPI_NACL(MouseCursor)
 
-TEST_PPAPI_OUT_OF_PROCESS(TrueTypeFont)
-TEST_PPAPI_NACL(TrueTypeFont)
-
 // PPB_Printing only implemented for out of process.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)
 
