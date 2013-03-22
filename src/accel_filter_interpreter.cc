@@ -26,7 +26,8 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
       point_x_out_scale_(prop_reg, "Point X Out Scale", 1.0),
       point_y_out_scale_(prop_reg, "Point Y Out Scale", 1.0),
       scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
-      scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0) {
+      scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0),
+      use_mouse_point_curves_(prop_reg, "Mouse Accel Curves", 0) {
   InitName();
   // Set up default curves.
 
@@ -54,6 +55,26 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
     const float y_at_border = x_border * x_border / divisor;
     const float icept = y_at_border - slope * x_border;
     point_curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
+  }
+
+  const float mouse_speed_straight_cutoff[] = { 5.0, 5.0, 5.0, 8.0, 8.0 };
+  const float mouse_speed_accel[] = { 1.0, 1.4, 1.8, 2.0, 2.2 };
+
+  for (size_t i = 0; i < kMaxAccelCurves; ++i) {
+    const float kParabolaA = 1.3;
+    const float kParabolaB = 0.2;
+    const float cutoff_x = mouse_speed_straight_cutoff[i];
+    const float cutoff_y =
+        kParabolaA * cutoff_x * cutoff_x + kParabolaB * cutoff_x;
+    const float line_m = 2.0 * kParabolaA * cutoff_x + kParabolaB;
+    const float line_b = cutoff_y - cutoff_x * line_m;
+    const float kOutMult = mouse_speed_accel[i];
+
+    mouse_point_curves_[i][0] =
+        CurveSegment(cutoff_x * 25.4, kParabolaA * kOutMult / 25.4,
+                     kParabolaB * kOutMult, 0.0);
+    mouse_point_curves_[i][1] = CurveSegment(INFINITY, 0.0, line_m * kOutMult,
+                                             line_b * kOutMult * 25.4);
   }
 
   const float scroll_divisors[] = { 0.0, // unused
@@ -159,7 +180,10 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
         scale_out_y = dy = &gs->details.swipe.dy;
       }
       if (pointer_sensitivity_.val_ >= 1 && pointer_sensitivity_.val_ <= 5) {
-        segs = point_curves_[pointer_sensitivity_.val_ - 1];
+        if (use_mouse_point_curves_.val_)
+          segs = mouse_point_curves_[pointer_sensitivity_.val_ - 1];
+        else
+          segs = point_curves_[pointer_sensitivity_.val_ - 1];
       } else {
         segs = custom_point_;
         ParseCurveString(custom_point_str_.val_,

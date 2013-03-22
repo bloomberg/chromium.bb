@@ -60,6 +60,7 @@ class AccelFilterInterpreter : public FilterInterpreter {
 
   // curves for sensitivity 1..5
   CurveSegment point_curves_[kMaxAccelCurves][kMaxCurveSegs];
+  CurveSegment mouse_point_curves_[kMaxAccelCurves][kMaxCurveSegs];
   CurveSegment scroll_curves_[kMaxAccelCurves][kMaxCurveSegs];
 
   // Custom curves
@@ -81,6 +82,7 @@ class AccelFilterInterpreter : public FilterInterpreter {
   DoubleProperty point_y_out_scale_;
   DoubleProperty scroll_x_out_scale_;
   DoubleProperty scroll_y_out_scale_;
+  BoolProperty use_mouse_point_curves_;
 };
 
 }  // namespace gestures
