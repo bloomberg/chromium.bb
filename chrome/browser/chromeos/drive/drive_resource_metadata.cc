@@ -236,7 +236,7 @@ DriveResourceMetadata::DriveResourceMetadata(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : data_directory_path_(data_directory_path),
       blocking_task_runner_(blocking_task_runner),
-      storage_(new DriveResourceMetadataStorageMemory),
+      storage_(new DriveResourceMetadataStorageDB(data_directory_path)),
       root_resource_id_(root_resource_id),
       serialized_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -288,12 +288,13 @@ DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
     return DRIVE_FILE_ERROR_FAILED;
 
   // Initialize the root entry.
-  DriveEntryProto root;
-  root.mutable_file_info()->set_is_directory(true);
-  root.set_resource_id(root_resource_id_);
-  root.set_title(util::kDriveGrandRootDirName);
-  storage_->PutEntry(CreateEntryWithProperBaseName(root));
-
+  if (!storage_->GetEntry(root_resource_id_)) {
+    DriveEntryProto root;
+    root.mutable_file_info()->set_is_directory(true);
+    root.set_resource_id(root_resource_id_);
+    root.set_title(util::kDriveGrandRootDirName);
+    storage_->PutEntry(CreateEntryWithProperBaseName(root));
+  }
   return DRIVE_FILE_OK;
 }
 

@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -154,6 +155,19 @@ class DriveResourceMetadataTest : public testing::Test {
     return result;
   }
 
+  // Forces |resource_metadata| to use DriveResourceMetadataStorageMemory.
+  // Some tests are expecting memory storage's behavior.
+  void ForceUsingMemoryStorage(DriveResourceMetadata* resource_metadata) {
+    // The existing DriveResourceMetadataStorage must be destructed on the
+    // blocking pool.
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&scoped_ptr<DriveResourceMetadataStorage>::reset,
+                   base::Unretained(&resource_metadata->storage_),
+                   new DriveResourceMetadataStorageMemory));
+    google_apis::test_util::RunBlockingPoolTask();
+  }
+
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
@@ -267,6 +281,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
                                                   temp_dir_.path(),
                                                   blocking_task_runner_));
+  ForceUsingMemoryStorage(resource_metadata.get());
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata->Initialize(
@@ -1240,6 +1255,8 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_original(new DriveResourceMetadata(
           kTestRootResourceId, temp_dir_.path(), blocking_task_runner_));
+  ForceUsingMemoryStorage(resource_metadata_original.get());
+
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata_original->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -1271,6 +1288,8 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
       resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
                                                   temp_dir_.path(),
                                                   blocking_task_runner_));
+  ForceUsingMemoryStorage(resource_metadata.get());
+
   resource_metadata->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();

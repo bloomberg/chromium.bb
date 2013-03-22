@@ -186,10 +186,6 @@ class DriveFileSystemTest : public testing::Test {
  protected:
   DriveFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        cache_(NULL),
-        file_system_(NULL),
-        fake_drive_service_(NULL),
-        drive_webapps_registry_(NULL),
         expected_success_(true),
         // |root_feed_changestamp_| should be set to the largest changestamp in
         // account metadata feed. But we fake it by some non-zero positive
@@ -201,7 +197,7 @@ class DriveFileSystemTest : public testing::Test {
     profile_.reset(new TestingProfile);
 
     // The fake object will be manually deleted in TearDown().
-    fake_drive_service_ = new google_apis::FakeDriveService;
+    fake_drive_service_.reset(new google_apis::FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
@@ -215,7 +211,6 @@ class DriveFileSystemTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    // Likewise, this will be owned by DriveFileSystem.
     cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
@@ -223,29 +218,33 @@ class DriveFileSystemTest : public testing::Test {
     fake_uploader_.reset(new FakeDriveUploader);
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
-    resource_metadata_.reset(new DriveResourceMetadata(
-        fake_drive_service_->GetRootResourceId(),
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
-        blocking_task_runner_));
-
-    ASSERT_FALSE(file_system_);
-    file_system_ = new DriveFileSystem(profile_.get(),
-                                       cache_.get(),
-                                       fake_drive_service_,
-                                       fake_uploader_.get(),
-                                       drive_webapps_registry_.get(),
-                                       resource_metadata_.get(),
-                                       blocking_task_runner_);
 
     mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
-    file_system_->AddObserver(mock_directory_observer_.get());
 
-    file_system_->Initialize();
     cache_->RequestInitializeForTesting();
     google_apis::test_util::RunBlockingPoolTask();
+
+    SetUpResourceMetadataAndFileSystem();
+  }
+
+  void SetUpResourceMetadataAndFileSystem() {
+    resource_metadata_.reset(new DriveResourceMetadata(
+        fake_drive_service_->GetRootResourceId(),
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+        blocking_task_runner_));
+
+    file_system_.reset(new DriveFileSystem(profile_.get(),
+                                           cache_.get(),
+                                           fake_drive_service_.get(),
+                                           fake_uploader_.get(),
+                                           drive_webapps_registry_.get(),
+                                           resource_metadata_.get(),
+                                           blocking_task_runner_));
+    file_system_->AddObserver(mock_directory_observer_.get());
+    file_system_->Initialize();
 
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     resource_metadata_->Initialize(
@@ -256,10 +255,8 @@ class DriveFileSystemTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     ASSERT_TRUE(file_system_);
-    delete file_system_;
-    file_system_ = NULL;
-    delete fake_drive_service_;
-    fake_drive_service_ = NULL;
+    file_system_.reset();
+    fake_drive_service_.reset();
     cache_.reset();
     profile_.reset(NULL);
   }
@@ -409,6 +406,9 @@ class DriveFileSystemTest : public testing::Test {
   // equal to that of "account_metadata.json" test data, indicating the cache is
   // holding the latest file system info.
   bool SaveTestFileSystem(SaveTestFileSystemParam param) {
+    // Destroy the existing resource metadata to close DB.
+    resource_metadata_.reset();
+
     const std::string root_resource_id =
         fake_drive_service_->GetRootResourceId();
     scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
@@ -512,6 +512,9 @@ class DriveFileSystemTest : public testing::Test {
     resource_metadata->MaybeSave();
     google_apis::test_util::RunBlockingPoolTask();
 
+    // Recreate resource metadata.
+    SetUpResourceMetadataAndFileSystem();
+
     return true;
   }
 
@@ -544,8 +547,8 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FakeDriveUploader> fake_uploader_;
-  DriveFileSystem* file_system_;
-  google_apis::FakeDriveService* fake_drive_service_;
+  scoped_ptr<DriveFileSystem> file_system_;
+  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
@@ -1001,7 +1004,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   ASSERT_TRUE(SaveTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // Kicks loading of cached file system and query for server update.
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
+  EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
 
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
   // so no request for new feeds (i.e., call to GetResourceList) should happen.
@@ -1025,7 +1028,7 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
   fake_drive_service_->set_offline(true);
 
   // Kicks loading of cached file system and query for server update.
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
+  EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
   // Loading of account metadata should not happen as it's offline.
   EXPECT_EQ(0, fake_drive_service_->account_metadata_load_count());
 
@@ -2224,7 +2227,7 @@ TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
   // Kicks loading of cached file system and query for server update. This
   // will cause GetAccountMetadata() to be called, to check the server-side
   // changestamp, and the webapps registry will be loaded at the same time.
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
+  EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
 
   // An app for foo.exe should now be found, as the registry was loaded.
   drive_webapps_registry_->GetWebAppsForFile(
