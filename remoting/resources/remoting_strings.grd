@@ -193,6 +193,9 @@
 	<message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_TITLE">
 	  Chrome Remote Desktop on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
 	</message>
+	<message desc="Invitation to the user to participate in a user survey for Chrome Remote Desktop" name="IDR_SURVEY_INVITATION">
+	  Want to help improve Chrome Remote Desktop?
+	</message>
       </if>
 
       <if expr="not pp_ifdef('_google_chrome')">
@@ -252,6 +255,9 @@
 	</message>
 	<message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_TITLE">
 	  Chromoting on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
+	</message>
+	<message desc="Invitation to the user to participate in a user survey for Chromoting" name="IDR_SURVEY_INVITATION">
+	  Want to help improve Chromoting?
 	</message>
       </if>
 
@@ -536,6 +542,9 @@
       </message>
       <message desc="Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe. This string appears in a UI with limited horizontal space. Please try to keep translations no more than about 30 characters." name="IDR_WHY_IS_THIS_SAFE">
         Why is this safe?
+      </message>
+      <message desc="Survey link for users that want to take part." name="IDR_SIGN_ME_UP">
+        Take the survey
       </message>
     </messages>
   </release>

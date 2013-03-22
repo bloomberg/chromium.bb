@@ -10,7 +10,7 @@ index 5dfc368..f69d984 100644
        { event: 'click', id: 'share-button', fn: remoting.tryShare },
        { event: 'click', id: 'access-mode-button', fn: goEnterAccessCode },
        { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
-@@ -118,6 +117,4 @@ function onBeforeUnload() {
+@@ -117,6 +116,4 @@ function onBeforeUnload() {
  }
  
  window.addEventListener('load', onLoad, false);
@@ -34,7 +34,7 @@ diff --git a/remoting/webapp/host_table_entry.js b/remoting/webapp/host_table_en
 index 4eb09d9..6d2ce85 100644
 --- a/host_table_entry.js
 +++ b/host_table_entry.js
-@@ -191,9 +191,7 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
+@@ -176,9 +176,7 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
        /** @type {string} */
        var encodedHostId = encodeURIComponent(this.host.hostId)
        this.onConnectReference_ = function() {
@@ -89,9 +89,10 @@ index 5be9243..39052b9 100644
    "permissions": [
      "OAUTH2_ACCOUNTS_HOST/*",
      "OAUTH2_API_BASE_URL/*",
-@@ -30,17 +22,22 @@
+@@ -30,18 +22,22 @@
      "TALK_GADGET_HOST/talkgadget/*",
      "https://relay.google.com/*",
+     "storage",
      "clipboardRead",
 -    "clipboardWrite"
 -  ],
@@ -101,8 +102,7 @@ index 5be9243..39052b9 100644
 -    { "path": "libremoting_host_plugin.x64.so", "public": false },
 -    { "path": "remoting_host_plugin.plugin", "public": false }
 +    "clipboardWrite",
-+    "experimental",
-+    "storage"
++    "experimental"
    ],
 +  "oauth2": {
 +    "client_id": "45833509441.apps.googleusercontent.com",
@@ -135,7 +135,7 @@ index f89072a..2fadd83 100644
    remoting.stats = new remoting.ConnectionStats(
        document.getElementById('statistics'));
    remoting.formatIq = new remoting.FormatIq();
-@@ -118,9 +115,6 @@ remoting.initDaemonUi = function () {
+@@ -129,9 +126,6 @@ remoting.initHomeScreenUi = function () {
    document.getElementById('share-button').disabled =
        !remoting.hostController.isPluginSupported();
    remoting.setMode(remoting.AppMode.HOME);

@@ -55,6 +55,7 @@ AllJsLoadTest.prototype = {
     'server_log_entry.js',
     'stats_accumulator.js',
     'storage.js',
+    'survey.js',
     'toolbar.js',
     'ui_mode.js',
     //'viewer_plugin_proto.js',  // Only used by jscompiler.

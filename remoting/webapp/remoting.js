@@ -93,7 +93,7 @@ remoting.init = function() {
       }
     }
     // No valid URL parameters, start up normally.
-    remoting.initDaemonUi();
+    remoting.initHomeScreenUi();
   }
   remoting.hostList.load(onLoad);
 
@@ -122,9 +122,11 @@ remoting.onEmail = function(email) {
   document.getElementById('get-started-me2me').disabled = false;
 };
 
-/** initDaemonUi is called if the app is not starting up in session mode, and
- * also if the user cancels pin entry or the connection in session mode. */
-remoting.initDaemonUi = function() {
+/**
+ * initHomeScreenUi is called if the app is not starting up in session mode,
+ * and also if the user cancels pin entry or the connection in session mode.
+ */
+remoting.initHomeScreenUi = function() {
   remoting.hostController = new remoting.HostController();
   document.getElementById('share-button').disabled =
       !remoting.hostController.isPluginSupported();
@@ -137,6 +139,7 @@ remoting.initDaemonUi = function() {
   // Display the cached host list, then asynchronously update and re-display it.
   remoting.updateLocalHostState();
   remoting.hostList.refresh(remoting.updateLocalHostState);
+  remoting.initSurvey();
 };
 
 /**

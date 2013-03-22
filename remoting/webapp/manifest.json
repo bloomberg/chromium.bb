@@ -29,6 +29,7 @@
     "DIRECTORY_API_BASE_URL/*",
     "TALK_GADGET_HOST/talkgadget/*",
     "https://relay.google.com/*",
+    "storage",
     "clipboardRead",
     "clipboardWrite"
   ],

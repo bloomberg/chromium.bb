@@ -44,6 +44,7 @@ found in the LICENSE file.
     <script src="server_log_entry.js"></script>
     <script src="stats_accumulator.js"></script>
     <script src="storage.js"></script>
+    <script src="survey.js"></script>
     <script src="toolbar.js"></script>
     <script src="ui_mode.js"></script>
     <script src="xhr.js"></script>
@@ -83,6 +84,19 @@ found in the LICENSE file.
            target="_blank" i18n-content="HELP"></a>
       </div>
     </header>
+
+    <div id="survey-opt-in" class="butter-bar" hidden>
+      <p>
+        <span i18n-content="SURVEY_INVITATION"></span>
+        <a id="survey-accept"
+           href="http://goo.gl/njH2q"
+           target="_blank"
+           i18n-content="SIGN_ME_UP"></a>
+        <a id="survey-decline" href="#">
+          <img src="icon_cross.webp" class="close-icon"></img>
+        </a>
+      </p>
+    </div>
 
     <div data-ui-mode="home" hidden>
 

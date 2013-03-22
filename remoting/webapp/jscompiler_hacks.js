@@ -77,6 +77,9 @@ chrome.storage = {};
 /** @type {remoting.MockStorage} */
 chrome.storage.local;
 
+/** @type {remoting.MockStorage} */
+chrome.storage.sync;
+
 /** @type {Object} */
 chrome.app.runtime = {
   /** @type {chrome.Event} */

@@ -377,6 +377,45 @@ section {
   margin-top: 30px;
 }
 
+#survey-opt-in {
+  position: absolute;
+  top: 80px;
+  left: 0;
+}
+
+.butter-bar {
+  display: -webkit-box;
+  width: 100%;
+}
+
+.butter-bar .close-icon {
+  vertical-align: top;
+  opacity: 0.4;
+  margin-__MSG_@@bidi_start_edge__: 2px;
+  margin-__MSG_@@bidi_end_edge__: -12px;
+}
+
+.butter-bar .close-icon:hover {
+  opacity: 0.7;
+}
+
+.butter-bar > p {
+  background-color: #f9edbe;
+  border: 1px solid #f0c36d;
+  -webkit-border-radius: 2px;
+  -webkit-box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
+  color: #222;
+  font-size: 12px;
+  padding: 4px 16px;
+  margin: auto;
+}
+
+.butter-bar a {
+  color: inherit;
+  text-decoration: underline;
+  padding-__MSG_@@bidi_start_edge__: 2px;
+}
+
 .message {
   margin-bottom: 24px;
 }
