@@ -240,6 +240,23 @@ class RunTestCases(unittest.TestCase):
     finally:
       run_test_cases.run_test_cases = old
 
+  def test_ResetableTimeout(self):
+    self.assertTrue(run_test_cases.ResetableTimeout(0))
+    a = run_test_cases.ResetableTimeout(1)
+    self.assertEqual(1., float(a))
+    count = 0
+    for count in xrange(1000000):
+      value = float(a)
+      self.assertTrue(value >= 1., value)
+      if value != 1.:
+        break
+      a.reset()
+    self.assertTrue(value > 1., value)
+    # Assume no 10s jank.
+    self.assertTrue(value < 10., value)
+    self.assertTrue(count < 1000000, count)
+    self.assertTrue(count > 0, count)
+
   def test_convert_to_lines(self):
     data = [
       (

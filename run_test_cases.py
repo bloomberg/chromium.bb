@@ -212,14 +212,18 @@ class Popen(subprocess.Popen):
     remaining = 0
     while self.poll() is None:
       if timeout:
-        remaining = max(timeout - self.duration(), 0.001)
+        # While these float() calls seem redundant, they are to force
+        # ResetableTimeout to "render" itself into a float. At each call, the
+        # resulting value could be different, depending if a .reset() call
+        # occurred.
+        remaining = max(float(timeout) - self.duration(), 0.001)
       t, data = self.recv_any(timeout=remaining)
       if data:
         yield (t, data)
-      if timeout and self.duration() >= timeout:
+      if timeout and self.duration() >= float(timeout):
         break
-    if self.poll() is None and timeout and self.duration() >= timeout:
-      logging.debug('Kill %s %s', self.duration(), timeout)
+    if self.poll() is None and timeout and self.duration() >= float(timeout):
+      logging.debug('Kill %s %s', self.duration(), float(timeout))
       self.kill()
     self.wait()
     # Read all remaining output in the pipes.
@@ -819,6 +823,33 @@ def chromium_filter_tests(data):
   return (d for d in data if chromium_valid(d['test_case'], False, True))
 
 
+class ResetableTimeout(object):
+  """A resetable timeout that acts as a float.
+
+  At each reset, the timeout is increased so that it still has the equivalent
+  of the original timeout value, but according to 'now' at the time of the
+  reset.
+  """
+  def __init__(self, timeout):
+    assert timeout >= 0.
+    self.timeout = float(timeout)
+    self.last_reset = time.time()
+
+  def reset(self):
+    """Respendish the timeout."""
+    now = time.time()
+    self.timeout += max(0., now - self.last_reset)
+    self.last_reset = now
+
+  @staticmethod
+  def __bool__():
+    return True
+
+  def __float__(self):
+    """To be used as a timeout value for a function call."""
+    return self.timeout
+
+
 class Runner(object):
   """Immutable settings to run many test cases in a loop."""
   def __init__(
@@ -851,20 +882,25 @@ class Runner(object):
     if '--gtest_print_time' not in cmd:
       cmd.append('--gtest_print_time')
 
-    # TODO(maruel): Use a distribution model.
-    timeout = self.timeout * len(test_cases)
 
     if self.verbose > 1:
       self.progress.update_item('Starting command %s with a timeout of %ss' %
-                                (cmd, timeout), False, False)
+                                (cmd, self.timeout), False, False)
 
-    # TODO(maruel): Differentiate between soft and hard timeouts.
     proc = Popen(
         cmd,
         cwd=self.cwd_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         env=self.env)
+
+    # Use an intelligent timeout that can be reset. The idea is simple, the
+    # timeout is set to the value of the timeout for a single test case.
+    # Everytime a test case is parsed, the timeout is reset to its full value.
+    # proc.yield_any() uses float() to extract the instantaneous value of
+    # 'timeout'.
+    timeout = ResetableTimeout(self.timeout)
+
     # Create a pipeline of generators.
     gen_lines = convert_to_lines(data for _, data in proc.yield_any(timeout))
     # It needs to be valid utf-8 otherwise it can't be stored.
@@ -876,6 +912,7 @@ class Runner(object):
 
     data = []
     for i in gen_test_cases_filtered:
+      timeout.reset()
       if i['duration'] is None:
         continue
       # A new test_case completed.
