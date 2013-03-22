@@ -19,8 +19,37 @@
 namespace media {
 
 class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
-  class Track;
+ private:
+  // Helper class that manages per-track state.
+  class Track {
+   public:
+    Track(int track_num, bool is_video);
+    ~Track();
+
+    int track_num() const { return track_num_; }
+    const std::deque<scoped_refptr<StreamParserBuffer> >& buffers() const {
+      return buffers_;
+    }
+
+    bool AddBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
+
+    // Clears all buffer state.
+    void Reset();
+
+    // Helper function used to inspect block data to determine if the
+    // block is a keyframe.
+    // |data| contains the bytes in the block.
+    // |size| indicates the number of bytes in |data|.
+    bool IsKeyframe(const uint8* data, int size) const;
+
+   private:
+    int track_num_;
+    std::deque<scoped_refptr<StreamParserBuffer> > buffers_;
+    bool is_video_;
+  };
+
   typedef std::map<int, Track> TextTrackMap;
+
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
 
@@ -73,32 +102,6 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   bool cluster_ended() const { return cluster_ended_; }
 
  private:
-  // Helper class that manages per-track state.
-  class Track {
-   public:
-    Track(int track_num, bool is_video);
-    ~Track();
-
-    int track_num() const { return track_num_; }
-    const BufferQueue& buffers() const { return buffers_; }
-
-    bool AddBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
-
-    // Clears all buffer state.
-    void Reset();
-
-    // Helper function used to inspect block data to determine if the
-    // block is a keyframe.
-    // |data| contains the bytes in the block.
-    // |size| indicates the number of bytes in |data|.
-    bool IsKeyframe(const uint8* data, int size) const;
-
-   private:
-    int track_num_;
-    BufferQueue buffers_;
-    bool is_video_;
-  };
-
   // WebMParserClient methods.
   virtual WebMParserClient* OnListStart(int id) OVERRIDE;
   virtual bool OnListEnd(int id) OVERRIDE;

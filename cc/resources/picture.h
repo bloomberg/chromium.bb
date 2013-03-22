@@ -6,6 +6,7 @@
 #define CC_RESOURCES_PICTURE_H_
 
 #include <list>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
