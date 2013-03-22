@@ -47,6 +47,8 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
 
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp);
 
+struct NaClDesc *NaClDescIoDescMakeFromHandle(NaClHandle handle);
+
 /* a simple factory */
 struct NaClDescIoDesc *NaClDescIoDescOpen(char  *path,
                                           int   mode,

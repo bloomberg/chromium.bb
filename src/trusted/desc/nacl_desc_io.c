@@ -90,6 +90,25 @@ struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp) {
   return ndp;
 }
 
+struct NaClDesc *NaClDescIoDescMakeFromHandle(NaClHandle handle) {
+  int posix_d;
+  struct NaClHostDesc *nhdp;
+  struct NaClDescIoDesc *desc;
+
+#if NACL_WINDOWS
+  posix_d = _open_osfhandle((intptr_t) handle, _O_RDWR | _O_BINARY);
+  if (-1 == posix_d)
+    return NULL;
+#else
+  posix_d = handle;
+#endif
+  nhdp = NaClHostDescPosixMake(posix_d, NACL_ABI_O_RDWR);
+  if (NULL == nhdp)
+    return NULL;
+  desc = NaClDescIoDescMake(nhdp);
+  return &desc->base;
+}
+
 struct NaClDescIoDesc *NaClDescIoDescOpen(char  *path,
                                           int   mode,
                                           int   perms) {
