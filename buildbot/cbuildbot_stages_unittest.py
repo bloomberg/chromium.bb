@@ -709,8 +709,7 @@ class HWTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     parser = cbuildbot._CreateParser()
     (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
     self.build_config = config.OverrideConfigForTrybot(self.build_config,
-                                                       self.options.
-                                                       remote_trybot)
+                                                       self.options)
 
   def testRemoteTrybotWithHWTest(self):
     """Test remote trybot with hw test enabled"""
@@ -1189,7 +1188,8 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     parser = cbuildbot._CreateParser()
     (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
     test_config = config.config['x86-mario-release']
-    self._build_config = config.OverrideConfigForTrybot(test_config, True)
+    self._build_config = config.OverrideConfigForTrybot(test_config,
+                                                        self.options)
     self.RunStage()
     # pylint: disable=E1101
     self.assertEquals(commands.PushImages.call_count, 0)

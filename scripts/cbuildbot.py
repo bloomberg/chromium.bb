@@ -1284,7 +1284,7 @@ def main(argv):
     if not options.buildbot:
       build_config = cbuildbot_config.OverrideConfigForTrybot(
           build_config,
-          options.remote_trybot)
+          options)
 
     if options.buildbot or options.remote_trybot:
       _DisableYamaHardLinkChecks()

@@ -43,14 +43,16 @@ CONFIG_TYPE_DUMP_ORDER = (
     'refresh-packages',
 )
 
+DEFAULT_HW_TESTS = ['bvt']
+DEFAULT_HW_TEST_TIMEOUT = 8400
 
-def OverrideConfigForTrybot(build_config, remote_trybot):
+def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
 
   Args:
     build_config:  The build configuration dictionary to override.
       The dictionary is not modified.
-    remote_trybot: Whether we are overriding as remote trybot.
+    options: The options passed on the commandline.
   Returns:
     A build configuration dictionary with the overrides applied.
   """
@@ -63,7 +65,8 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
 
     # Most users don't have access to the pdf repository so disable pdf.
     useflags = my_config['useflags']
-    if not remote_trybot and useflags and constants.USE_CHROME_PDF in useflags:
+    if (not options.remote_trybot and useflags and
+        constants.USE_CHROME_PDF in useflags):
       useflags.remove(constants.USE_CHROME_PDF)
 
     my_config['upload_symbols'] = False
@@ -72,8 +75,13 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
     my_config['hw_tests_num'] = constants.HWTEST_TRYBOT_NUM
     my_config['hw_tests_file_bugs'] = False
 
+    if options.hwtest:
+      if not my_config['hw_tests']:
+        my_config['hw_tests'] = DEFAULT_HW_TESTS
+      my_config['hw_tests_timeout'] = DEFAULT_HW_TEST_TIMEOUT
+
     # Default to starting with a fresh chroot on remote trybot runs.
-    if remote_trybot:
+    if options.remote_trybot:
       my_config['chroot_replace'] = True
 
     # In trybots, we want to always run VM tests and all unit tests, so that
@@ -307,7 +315,7 @@ _settings = dict(
   hw_copy_perf_results=False,
 
 # hw_tests_timeout -- Usually, 2 hours and twenty minutes.
-  hw_tests_timeout=8400,
+  hw_tests_timeout=DEFAULT_HW_TEST_TIMEOUT,
 
 # hw_tests_pool -- Pool to use for hw testing.
   hw_tests_pool=constants.HWTEST_MACH_POOL,
@@ -984,7 +992,7 @@ internal_paladin.add_config('zgb-paladin',
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
-  hw_tests=['bvt'],
+  hw_tests=DEFAULT_HW_TESTS,
   upload_hw_test_artifacts=True,
 )
 
@@ -1065,7 +1073,7 @@ _release = full.derive(official, internal,
   dev_installer_prebuilts=True,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,
-  hw_tests=['bvt', constants.HWTEST_AU_SUITE],
+  hw_tests=DEFAULT_HW_TESTS + [constants.HWTEST_AU_SUITE],
   upload_hw_test_artifacts=True,
   signer_tests=True,
   trybot_list=True,
@@ -1115,7 +1123,7 @@ _release.add_config('lumpy-release',
 
 _release.add_config('lumpy-pgo-release',
   boards=['lumpy'],
-  hw_tests=['bvt'],
+  hw_tests=DEFAULT_HW_TESTS,
   hw_tests_pool=constants.HWTEST_CHROME_PERF_POOL,
   hw_tests_num=4,
   useflags=official['useflags'] + [constants.USE_PGO_USE],
