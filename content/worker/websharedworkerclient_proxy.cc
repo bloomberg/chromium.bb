@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/webfilesystem_callback_dispatcher.h"
-#include "content/common/quota_dispatcher.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_switches.h"
@@ -176,14 +175,6 @@ bool WebSharedWorkerClientProxy::allowIndexedDB(const WebKit::WebString& name) {
   Send(new WorkerProcessHostMsg_AllowIndexedDB(
       route_id_, stub_->url().GetOrigin(), name, &result));
   return result;
-}
-
-void WebSharedWorkerClientProxy::queryUsageAndQuota(
-    WebKit::WebStorageQuotaType type,
-    WebKit::WebStorageQuotaCallbacks* callbacks) {
-  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
-      stub_->url().GetOrigin(), static_cast<quota::StorageType>(type),
-      QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 
 void WebSharedWorkerClientProxy::dispatchDevToolsMessage(
