@@ -31,27 +31,6 @@ void CompareQuicDataWithHexError(const std::string& description,
                                  QuicData* actual,
                                  QuicData* expected);
 
-CryptoHandshakeMessage CreateChloMessage(const QuicClock* clock,
-                                         QuicRandom* random_generator,
-                                         const string& server_hostname);
-
-// Constructs a ClientHello crypto handshake message
-QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
-                                       const QuicClock* clock,
-                                       QuicRandom* random_generator,
-                                       const std::string& server_hostname,
-                                       bool should_include_version);
-
-CryptoHandshakeMessage CreateShloMessage(const QuicClock* clock,
-                                         QuicRandom* random_generator,
-                                         const string& server_hostname);
-
-// Constructs a ClientHello crypto handshake message
-QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
-                                       const QuicClock* clock,
-                                       QuicRandom* random_generator,
-                                       const std::string& server_hostname);
-
 // Returns the length of the QuicPacket that will be created if it contains
 // a stream frame that has |payload| bytes.
 size_t GetPacketLengthForOneStream(bool include_version, size_t payload);

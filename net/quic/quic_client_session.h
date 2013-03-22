@@ -23,6 +23,7 @@ namespace net {
 
 class DatagramClientSocket;
 class QuicConnectionHelper;
+class QuicCryptoClientStreamFactory;
 class QuicStreamFactory;
 
 class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
@@ -33,6 +34,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   QuicClientSession(QuicConnection* connection,
                     DatagramClientSocket* socket,
                     QuicStreamFactory* stream_factory,
+                    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     const std::string& server_hostname,
                     NetLog* net_log);
 
@@ -68,7 +70,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   void OnReadComplete(int result);
 
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
-  QuicCryptoClientStream crypto_stream_;
+  scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;
   scoped_refptr<IOBufferWithSize> read_buffer_;

@@ -23,6 +23,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/client_socket_factory.h"
@@ -82,34 +83,6 @@ class QuicNetworkTransactionTest : public PlatformTest {
     HttpStreamFactory::SetNextProtos(std::vector<std::string>());
   }
 
-  // TODO(rch): factor these Construct* methods out into a test helper class.
-  scoped_ptr<QuicEncryptedPacket> ConstructChlo() {
-    const std::string host = "www.google.com";
-    scoped_ptr<QuicPacket> chlo(ConstructClientHelloPacket(0xDEADBEEF,
-                                                           clock_,
-                                                           &random_generator_,
-                                                           host,
-                                                           true));
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      false);
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(1, *chlo));
-  }
-
-  scoped_ptr<QuicEncryptedPacket> ConstructShlo() {
-    const std::string host = "www.google.com";
-    scoped_ptr<QuicPacket> shlo(ConstructServerHelloPacket(0xDEADBEEF,
-                                                           clock_,
-                                                           &random_generator_,
-                                                           host));
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      false);
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(1, *shlo));
-  }
-
   scoped_ptr<QuicEncryptedPacket> ConstructRstPacket(
       QuicPacketSequenceNumber num,
       QuicStreamId stream_id) {
@@ -135,7 +108,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.public_header.guid = 0xDEADBEEF;
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
-    header.packet_sequence_number = 3;
+    header.packet_sequence_number = 2;
     header.entropy_flag = false;
     header.fec_flag = false;
     header.fec_entropy_flag = false;
@@ -192,10 +165,11 @@ class QuicNetworkTransactionTest : public PlatformTest {
   // Returns a newly created packet to send kData on stream 1.
   QuicEncryptedPacket* ConstructDataPacket(
       QuicPacketSequenceNumber sequence_number,
+      bool should_include_version,
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
-    InitializeHeader(sequence_number);
+    InitializeHeader(sequence_number, should_include_version);
     QuicStreamFrame frame(3, fin, offset, data);
     return ConstructPacket(header_, QuicFrame(&frame)).release();
   }
@@ -215,10 +189,11 @@ class QuicNetworkTransactionTest : public PlatformTest {
         framer.EncryptPacket(header.packet_sequence_number, *packet));
   }
 
-  void InitializeHeader(QuicPacketSequenceNumber sequence_number) {
+  void InitializeHeader(QuicPacketSequenceNumber sequence_number,
+                        bool should_include_version) {
     header_.public_header.guid = random_generator_.RandUint64();
     header_.public_header.reset_flag = false;
-    header_.public_header.version_flag = false;
+    header_.public_header.version_flag = should_include_version;
     header_.packet_sequence_number = sequence_number;
     header_.fec_group = 0;
     header_.entropy_flag = false;
@@ -231,6 +206,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     params_.quic_clock = clock_;
     params_.quic_random = &random_generator_;
     params_.client_socket_factory = &socket_factory_;
+    params_.quic_crypto_client_stream_factory = &crypto_client_stream_factory_;
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
     params_.proxy_service = proxy_service_.get();
@@ -244,6 +220,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
   QuicPacketHeader header_;
   scoped_refptr<HttpNetworkSession> session_;
   MockClientSocketFactory socket_factory_;
+  MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
@@ -263,22 +240,19 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
-  scoped_ptr<QuicEncryptedPacket> chlo(ConstructChlo());
   scoped_ptr<QuicEncryptedPacket> data(
-      ConstructDataPacket(2, true, 0, GetRequestString("GET", "/")));
-  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(2, 1));
+      ConstructDataPacket(1, true, true, 0, GetRequestString("GET", "/")));
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
-    MockWrite(SYNCHRONOUS, chlo->data(), chlo->length()),
     MockWrite(SYNCHRONOUS, data->data(), data->length()),
     MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
   };
 
-  scoped_ptr<QuicEncryptedPacket> shlo(ConstructShlo());
   scoped_ptr<QuicEncryptedPacket> resp(
-      ConstructDataPacket(2, true, 0, GetResponseString("200 OK", "hello!")));
+      ConstructDataPacket(
+          1, false, true, 0, GetResponseString("200 OK", "hello!")));
   MockRead quic_reads[] = {
-    MockRead(SYNCHRONOUS, shlo->data(), shlo->length()),
     MockRead(SYNCHRONOUS, resp->data(), resp->length()),
     MockRead(ASYNC, OK),  // EOF
   };
@@ -387,22 +361,19 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   socket_factory_.AddSocketDataProvider(&first_transaction);
 
 
-  scoped_ptr<QuicEncryptedPacket> chlo(ConstructChlo());
   scoped_ptr<QuicEncryptedPacket> data(
-      ConstructDataPacket(2, true, 0, GetRequestString("GET", "/")));
-  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(2, 1));
+      ConstructDataPacket(1, true, true, 0, GetRequestString("GET", "/")));
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
-    MockWrite(SYNCHRONOUS, chlo->data(), chlo->length()),
     MockWrite(SYNCHRONOUS, data->data(), data->length()),
     MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
   };
 
-  scoped_ptr<QuicEncryptedPacket> shlo(ConstructShlo());
   scoped_ptr<QuicEncryptedPacket> resp(
-      ConstructDataPacket(2, true, 0, GetResponseString("200 OK", "hello!")));
+      ConstructDataPacket(
+          1, false, true, 0, GetResponseString("200 OK", "hello!")));
   MockRead quic_reads[] = {
-    MockRead(SYNCHRONOUS, shlo->data(), shlo->length()),
     MockRead(SYNCHRONOUS, resp->data(), resp->length()),
     MockRead(ASYNC, OK),  // EOF
   };

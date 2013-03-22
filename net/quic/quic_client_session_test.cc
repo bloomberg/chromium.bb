@@ -29,16 +29,15 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
-        session_(connection_, NULL, NULL, kServerHostname, &net_log_) {
+        session_(connection_, NULL, NULL, NULL, kServerHostname, &net_log_) {
   }
 
   void CompleteCryptoHandshake() {
     ASSERT_EQ(ERR_IO_PENDING,
               session_.CryptoConnect(callback_.callback()));
-    session_.GetCryptoStream()->OnHandshakeMessage(
-        CreateShloMessage(&clock_, &random_, "www.google.com"));
+    CryptoTestUtils::HandshakeWithFakeServer(
+        connection_, session_.GetCryptoStream());
     ASSERT_EQ(OK, callback_.WaitForResult());
-
   }
 
   QuicGuid guid_;

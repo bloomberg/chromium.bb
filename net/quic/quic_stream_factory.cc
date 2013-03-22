@@ -19,6 +19,7 @@
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/socket/client_socket_factory.h"
@@ -219,10 +220,12 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
 QuicStreamFactory::QuicStreamFactory(
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
+    QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock)
     : host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
+      quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
       clock_(clock),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -375,7 +378,9 @@ QuicClientSession* QuicStreamFactory::CreateSession(
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper, false);
   QuicClientSession* session =
-      new QuicClientSession(connection, socket, this, host, net_log.net_log());
+      new QuicClientSession(connection, socket, this,
+                            quic_crypto_client_stream_factory_, host,
+                            net_log.net_log());
   all_sessions_.insert(session);  // owning pointer
   return session;
 }

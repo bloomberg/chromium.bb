@@ -11,19 +11,26 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
 
-QuicClientSession::QuicClientSession(QuicConnection* connection,
-                                     DatagramClientSocket* socket,
-                                     QuicStreamFactory* stream_factory,
-                                     const string& server_hostname,
-                                     NetLog* net_log)
+QuicClientSession::QuicClientSession(
+    QuicConnection* connection,
+    DatagramClientSocket* socket,
+    QuicStreamFactory* stream_factory,
+    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
+    const string& server_hostname,
+    NetLog* net_log)
     : QuicSession(connection, false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(crypto_stream_(this, server_hostname)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(crypto_stream_(
+          crypto_client_stream_factory ?
+              crypto_client_stream_factory->CreateQuicCryptoClientStream(
+                  this, server_hostname) :
+              new QuicCryptoClientStream(this, server_hostname))),
       stream_factory_(stream_factory),
       socket_(socket),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
@@ -44,7 +51,7 @@ QuicClientSession::~QuicClientSession() {
 }
 
 QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
-  if (!crypto_stream_.handshake_complete()) {
+  if (!crypto_stream_->handshake_complete()) {
     DLOG(INFO) << "Crypto handshake not complete, no outgoing stream created.";
     return NULL;
   }
@@ -66,11 +73,11 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
 }
 
 QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
-  return &crypto_stream_;
+  return crypto_stream_.get();
 };
 
 int QuicClientSession::CryptoConnect(const CompletionCallback& callback) {
-  if (!crypto_stream_.CryptoConnect()) {
+  if (!crypto_stream_->CryptoConnect()) {
     // TODO(wtc): change crypto_stream_.CryptoConnect() to return a
     // QuicErrorCode and map it to a net error code.
     return ERR_CONNECTION_FAILED;

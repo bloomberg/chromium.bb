@@ -30,7 +30,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   // Performs a crypto handshake with the server. Returns true if the crypto
   // handshake is started successfully.
-  bool CryptoConnect();
+  virtual bool CryptoConnect();
 
  private:
   friend class test::CryptoTestUtils;

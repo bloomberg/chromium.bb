@@ -37,6 +37,7 @@ class NetworkDelegate;
 class ServerBoundCertService;
 class ProxyService;
 class QuicClock;
+class QuicCryptoClientStreamFactory;
 class SOCKSClientSocketPool;
 class SSLClientSocketPool;
 class SSLConfigService;
@@ -86,6 +87,7 @@ class NET_EXPORT HttpNetworkSession
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;
     bool enable_user_alternate_protocol_ports;
+    QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
   };
 
   enum SocketPoolType {
