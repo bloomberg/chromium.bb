@@ -101,6 +101,9 @@ cr.define('ntp', function() {
                       orig.metaKey,
                       orig.shiftKey];
         chrome.send('reopenTab', params);
+
+        e.preventDefault();
+        e.stopPropagation();
       }
       a.addEventListener('activate', onActivated);
       a.addEventListener('click', function(e) { e.preventDefault(); });
