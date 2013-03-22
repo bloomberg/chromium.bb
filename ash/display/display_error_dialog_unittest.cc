@@ -90,7 +90,7 @@ TEST_F(DisplayErrorDialogTest, CallWithDifferentState) {
 
   observer()->OnDisplayModeChangeFailed(chromeos::STATE_DUAL_EXTENDED);
   EXPECT_EQ(dialog, observer()->dialog());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_EXTENDED),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
             GetMessageContents(dialog));
 }
 

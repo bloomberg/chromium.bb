@@ -59,23 +59,9 @@ DisplayErrorDialog* DisplayErrorDialog::ShowDialog(
 
 void DisplayErrorDialog::UpdateMessageForState(
     chromeos::OutputState new_state) {
-  int message_id = -1;
-  switch (new_state) {
-    case chromeos::STATE_DUAL_MIRROR:
-      message_id = IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING;
-      break;
-    case chromeos::STATE_DUAL_EXTENDED:
-      message_id = IDS_ASH_DISPLAY_FAILURE_ON_EXTENDED;
-      break;
-    default:
-      // The error dialog would appear only for mirroring or extended.
-      // It's quite unlikely to happen with other status (single-display /
-      // invalid / unknown status), but set an unknown error message
-      // instead of NOTREACHED() just in case for safety.
-      LOG(ERROR) << "Unexpected failure for new state: " << new_state;
-      message_id = IDS_ASH_DISPLAY_FAILURE_UNKNOWN;
-      break;
-  }
+  int message_id = (new_state == chromeos::STATE_DUAL_MIRROR) ?
+      IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING :
+      IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING;
   label_->SetText(l10n_util::GetStringUTF16(message_id));
   label_->SizeToFit(kDialogMessageWidthPixel);
   Layout();
