@@ -10,34 +10,32 @@
 namespace cc {
 namespace {
 
-TEST(LayerQuadTest, QuadFConversion)
-{
-    gfx::PointF p1(-0.5, -0.5);
-    gfx::PointF p2( 0.5, -0.5);
-    gfx::PointF p3( 0.5,  0.5);
-    gfx::PointF p4(-0.5,  0.5);
+TEST(LayerQuadTest, QuadFConversion) {
+  gfx::PointF p1(-0.5f, -0.5f);
+  gfx::PointF p2(0.5f, -0.5f);
+  gfx::PointF p3(0.5f, 0.5f);
+  gfx::PointF p4(-0.5f, 0.5f);
 
-    gfx::QuadF quadCW(p1, p2, p3, p4);
-    LayerQuad layerQuadCW(quadCW);
-    EXPECT_TRUE(layerQuadCW.ToQuadF() == quadCW);
+  gfx::QuadF quad_cw(p1, p2, p3, p4);
+  LayerQuad layer_quad_cw(quad_cw);
+  EXPECT_EQ(layer_quad_cw.ToQuadF(), quad_cw);
 
-    gfx::QuadF quadCCW(p1, p4, p3, p2);
-    LayerQuad layerQuadCCW(quadCCW);
-    EXPECT_TRUE(layerQuadCCW.ToQuadF() == quadCCW);
+  gfx::QuadF quad_ccw(p1, p4, p3, p2);
+  LayerQuad layer_quad_ccw(quad_ccw);
+  EXPECT_EQ(layer_quad_ccw.ToQuadF(), quad_ccw);
 }
 
-TEST(LayerQuadTest, Inflate)
-{
-    gfx::PointF p1(-0.5, -0.5);
-    gfx::PointF p2( 0.5, -0.5);
-    gfx::PointF p3( 0.5,  0.5);
-    gfx::PointF p4(-0.5,  0.5);
+TEST(LayerQuadTest, Inflate) {
+  gfx::PointF p1(-0.5f, -0.5f);
+  gfx::PointF p2(0.5f, -0.5f);
+  gfx::PointF p3(0.5f, 0.5f);
+  gfx::PointF p4(-0.5f, 0.5f);
 
-    gfx::QuadF quad(p1, p2, p3, p4);
-    LayerQuad layerQuad(quad);
-    quad.Scale(2, 2);
-    layerQuad.Inflate(0.5);
-    EXPECT_TRUE(layerQuad.ToQuadF() == quad);
+  gfx::QuadF quad(p1, p2, p3, p4);
+  LayerQuad layer_quad(quad);
+  quad.Scale(2.f, 2.f);
+  layer_quad.Inflate(0.5f);
+  EXPECT_EQ(layer_quad.ToQuadF(), quad);
 }
 
 }  // namespace
