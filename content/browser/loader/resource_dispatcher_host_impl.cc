@@ -963,7 +963,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // transferred navigation case?
 
   request->set_load_flags(load_flags);
-  request->SetPriority(request_data.priority);
+  request->set_priority(request_data.priority);
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body) {

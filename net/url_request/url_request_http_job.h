@@ -14,7 +14,6 @@
 #include "base/time.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
-#include "net/base/net_export.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_request_info.h"
 #include "net/url_request/url_request_job.h"
@@ -31,7 +30,7 @@ class URLRequestContext;
 
 // A URLRequestJob subclass that is built on top of HttpTransaction.  It
 // provides an implementation for both HTTP and HTTPS.
-class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
+class URLRequestHttpJob : public URLRequestJob {
  public:
   static URLRequestJob* Factory(URLRequest* request,
                                 NetworkDelegate* network_delegate,
@@ -41,28 +40,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   URLRequestHttpJob(URLRequest* request,
                     NetworkDelegate* network_delegate,
                     const HttpUserAgentSettings* http_user_agent_settings);
-
-  virtual ~URLRequestHttpJob();
-
-  // Overridden from URLRequestJob:
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
-
-  RequestPriority priority() const {
-    return priority_;
-  }
-
- private:
-  enum CompletionCause {
-    ABORTED,
-    FINISHED
-  };
-
-  typedef base::RefCountedData<bool> SharedBoolean;
-
-  class HttpFilterContext;
-  class HttpTransactionDelegateImpl;
 
   // Shadows URLRequestJob's version of this method so we can grab cookies.
   void NotifyHeadersComplete();
@@ -96,6 +73,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   virtual void SetUpload(UploadDataStream* upload) OVERRIDE;
   virtual void SetExtraRequestHeaders(
       const HttpRequestHeaders& headers) OVERRIDE;
+  virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
   virtual UploadProgress GetUploadProgress() const OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
@@ -119,6 +98,60 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   virtual void DoneReading() OVERRIDE;
   virtual HostPortPair GetSocketAddress() const OVERRIDE;
   virtual void NotifyURLRequestDestroyed() OVERRIDE;
+
+  HttpRequestInfo request_info_;
+  const HttpResponseInfo* response_info_;
+
+  std::vector<std::string> response_cookies_;
+  size_t response_cookies_save_index_;
+  base::Time response_date_;
+
+  // Auth states for proxy and origin server.
+  AuthState proxy_auth_state_;
+  AuthState server_auth_state_;
+  AuthCredentials auth_credentials_;
+
+  CompletionCallback start_callback_;
+  CompletionCallback notify_before_headers_sent_callback_;
+
+  bool read_in_progress_;
+
+  // An URL for an SDCH dictionary as suggested in a Get-Dictionary HTTP header.
+  GURL sdch_dictionary_url_;
+
+  scoped_ptr<HttpTransaction> transaction_;
+
+  // This is used to supervise traffic and enforce exponential
+  // back-off.  May be NULL.
+  scoped_refptr<URLRequestThrottlerEntryInterface> throttling_entry_;
+
+  // Indicated if an SDCH dictionary was advertised, and hence an SDCH
+  // compressed response is expected.  We use this to help detect (accidental?)
+  // proxy corruption of a response, which sometimes marks SDCH content as
+  // having no content encoding <oops>.
+  bool sdch_dictionary_advertised_;
+
+  // For SDCH latency experiments, when we are able to do SDCH, we may enable
+  // either an SDCH latency test xor a pass through test.  The following bools
+  // indicate what we decided on for this instance.
+  bool sdch_test_activated_;  // Advertising a dictionary for sdch.
+  bool sdch_test_control_;    // Not even accepting-content sdch.
+
+  // For recording of stats, we need to remember if this is cached content.
+  bool is_cached_content_;
+
+ private:
+  enum CompletionCause {
+    ABORTED,
+    FINISHED
+  };
+
+  typedef base::RefCountedData<bool> SharedBoolean;
+
+  class HttpFilterContext;
+  class HttpTransactionDelegateImpl;
+
+  virtual ~URLRequestHttpJob();
 
   void RecordTimer();
   void ResetTimer();
@@ -165,49 +198,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   // Override of the private interface of URLRequestJob.
   virtual void OnDetachRequest() OVERRIDE;
-
-  RequestPriority priority_;
-
-  HttpRequestInfo request_info_;
-  const HttpResponseInfo* response_info_;
-
-  std::vector<std::string> response_cookies_;
-  size_t response_cookies_save_index_;
-  base::Time response_date_;
-
-  // Auth states for proxy and origin server.
-  AuthState proxy_auth_state_;
-  AuthState server_auth_state_;
-  AuthCredentials auth_credentials_;
-
-  CompletionCallback start_callback_;
-  CompletionCallback notify_before_headers_sent_callback_;
-
-  bool read_in_progress_;
-
-  // An URL for an SDCH dictionary as suggested in a Get-Dictionary HTTP header.
-  GURL sdch_dictionary_url_;
-
-  scoped_ptr<HttpTransaction> transaction_;
-
-  // This is used to supervise traffic and enforce exponential
-  // back-off.  May be NULL.
-  scoped_refptr<URLRequestThrottlerEntryInterface> throttling_entry_;
-
-  // Indicated if an SDCH dictionary was advertised, and hence an SDCH
-  // compressed response is expected.  We use this to help detect (accidental?)
-  // proxy corruption of a response, which sometimes marks SDCH content as
-  // having no content encoding <oops>.
-  bool sdch_dictionary_advertised_;
-
-  // For SDCH latency experiments, when we are able to do SDCH, we may enable
-  // either an SDCH latency test xor a pass through test.  The following bools
-  // indicate what we decided on for this instance.
-  bool sdch_test_activated_;  // Advertising a dictionary for sdch.
-  bool sdch_test_control_;    // Not even accepting-content sdch.
-
-  // For recording of stats, we need to remember if this is cached content.
-  bool is_cached_content_;
 
   base::Time request_creation_time_;
 

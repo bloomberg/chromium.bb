@@ -92,7 +92,7 @@ class ResourceSchedulerTest : public testing::Test {
                                             int route_id = kRouteId) {
     scoped_ptr<net::URLRequest> url_request(
         context_.CreateRequest(GURL(url), NULL));
-    url_request->SetPriority(priority);
+    url_request->set_priority(priority);
     ResourceRequestInfo::AllocateForTesting(
         url_request.get(), ResourceType::SUB_RESOURCE, NULL, kChildId,
         route_id);

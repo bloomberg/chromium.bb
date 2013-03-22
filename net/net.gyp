@@ -1672,7 +1672,6 @@
         'url_request/url_request_context_builder_unittest.cc',
         'url_request/url_request_filter_unittest.cc',
         'url_request/url_request_ftp_job_unittest.cc',
-        'url_request/url_request_http_job_unittest.cc',
         'url_request/url_request_job_factory_impl_unittest.cc',
         'url_request/url_request_job_unittest.cc',
         'url_request/url_request_throttler_simulation_unittest.cc',

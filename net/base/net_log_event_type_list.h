@@ -731,14 +731,6 @@ EVENT_TYPE(URL_REQUEST_BLOCKED_ON_DELEGATE)
 EVENT_TYPE(URL_REQUEST_JOB_BYTES_READ)
 EVENT_TYPE(URL_REQUEST_JOB_FILTERED_BYTES_READ)
 
-// This event is sent when the priority of a net::URLRequest is
-// changed after it has started. The parameters attached to this event
-// are:
-//   {
-//     "priority": <Numerical value of the priority (higher is more important)>,
-//   }
-EVENT_TYPE(URL_REQUEST_SET_PRIORITY)
-
 // ------------------------------------------------------------------------
 // HttpCache
 // ------------------------------------------------------------------------

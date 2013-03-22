@@ -127,7 +127,6 @@ class HttpCache::Transaction : public HttpTransaction {
   virtual UploadProgress GetUploadProgress(void) const OVERRIDE;
   virtual bool GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE;
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
 
  private:
   static const size_t kNumValidationHeaders = 2;

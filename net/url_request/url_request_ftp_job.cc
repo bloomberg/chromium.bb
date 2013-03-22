@@ -28,7 +28,6 @@ URLRequestFtpJob::URLRequestFtpJob(
     FtpTransactionFactory* ftp_transaction_factory,
     FtpAuthCache* ftp_auth_cache)
     : URLRequestJob(request, network_delegate),
-      priority_(DEFAULT_PRIORITY),
       pac_request_(NULL),
       response_info_(NULL),
       read_in_progress_(false),
@@ -37,11 +36,6 @@ URLRequestFtpJob::URLRequestFtpJob(
       ftp_auth_cache_(ftp_auth_cache) {
   DCHECK(ftp_transaction_factory);
   DCHECK(ftp_auth_cache);
-}
-
-URLRequestFtpJob::~URLRequestFtpJob() {
-  if (pac_request_)
-    request_->context()->proxy_service()->CancelPacRequest(pac_request_);
 }
 
 // static
@@ -101,42 +95,9 @@ HostPortPair URLRequestFtpJob::GetSocketAddress() const {
   }
 }
 
-void URLRequestFtpJob::SetPriority(RequestPriority priority) {
-  priority_ = priority;
-  if (http_transaction_)
-    http_transaction_->SetPriority(priority);
-}
-
-void URLRequestFtpJob::Start() {
-  DCHECK(!pac_request_);
-  DCHECK(!ftp_transaction_);
-  DCHECK(!http_transaction_);
-
-  int rv = OK;
-  if (request_->load_flags() & LOAD_BYPASS_PROXY) {
-    proxy_info_.UseDirect();
-  } else {
-    rv = request_->context()->proxy_service()->ResolveProxy(
-        request_->url(),
-        &proxy_info_,
-        base::Bind(&URLRequestFtpJob::OnResolveProxyComplete,
-                   base::Unretained(this)),
-        &pac_request_,
-        request_->net_log());
-
-    if (rv == ERR_IO_PENDING)
-      return;
-  }
-  OnResolveProxyComplete(rv);
-}
-
-void URLRequestFtpJob::Kill() {
-  if (ftp_transaction_)
-    ftp_transaction_.reset();
-  if (http_transaction_)
-    http_transaction_.reset();
-  URLRequestJob::Kill();
-  weak_factory_.InvalidateWeakPtrs();
+URLRequestFtpJob::~URLRequestFtpJob() {
+  if (pac_request_)
+    request_->context()->proxy_service()->CancelPacRequest(pac_request_);
 }
 
 void URLRequestFtpJob::OnResolveProxyComplete(int result) {
@@ -207,7 +168,7 @@ void URLRequestFtpJob::StartHttpTransaction() {
   http_request_info_.request_id = request_->identifier();
 
   int rv = request_->context()->http_transaction_factory()->CreateTransaction(
-      priority_, &http_transaction_, NULL);
+      request_->priority(), &http_transaction_, NULL);
   if (rv == OK) {
     rv = http_transaction_->Start(
         &http_request_info_,
@@ -297,6 +258,38 @@ void URLRequestFtpJob::RestartTransactionWithAuth() {
     return;
 
   OnStartCompletedAsync(rv);
+}
+
+void URLRequestFtpJob::Start() {
+  DCHECK(!pac_request_);
+  DCHECK(!ftp_transaction_);
+  DCHECK(!http_transaction_);
+
+  int rv = OK;
+  if (request_->load_flags() & LOAD_BYPASS_PROXY) {
+    proxy_info_.UseDirect();
+  } else {
+    rv = request_->context()->proxy_service()->ResolveProxy(
+        request_->url(),
+        &proxy_info_,
+        base::Bind(&URLRequestFtpJob::OnResolveProxyComplete,
+                   base::Unretained(this)),
+        &pac_request_,
+        request_->net_log());
+
+    if (rv == ERR_IO_PENDING)
+      return;
+  }
+  OnResolveProxyComplete(rv);
+}
+
+void URLRequestFtpJob::Kill() {
+  if (ftp_transaction_)
+    ftp_transaction_.reset();
+  if (http_transaction_)
+    http_transaction_.reset();
+  URLRequestJob::Kill();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 LoadState URLRequestFtpJob::GetLoadState() const {

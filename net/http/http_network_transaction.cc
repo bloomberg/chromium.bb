@@ -387,26 +387,6 @@ UploadProgress HttpNetworkTransaction::GetUploadProgress() const {
   return static_cast<HttpStream*>(stream_.get())->GetUploadProgress();
 }
 
-bool HttpNetworkTransaction::GetLoadTimingInfo(
-    LoadTimingInfo* load_timing_info) const {
-  if (!stream_ || !stream_->GetLoadTimingInfo(load_timing_info))
-    return false;
-
-  load_timing_info->proxy_resolve_start =
-      proxy_info_.proxy_resolve_start_time();
-  load_timing_info->proxy_resolve_end = proxy_info_.proxy_resolve_end_time();
-  load_timing_info->send_start = send_start_time_;
-  load_timing_info->send_end = send_end_time_;
-  load_timing_info->receive_headers_end = receive_headers_end_;
-  return true;
-}
-
-void HttpNetworkTransaction::SetPriority(RequestPriority priority) {
-  priority_ = priority;
-  // TODO(akalin): Plumb this through to |stream_request_| and
-  // |stream_|.
-}
-
 void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
                                            const ProxyInfo& used_proxy_info,
                                            HttpStreamBase* stream) {
@@ -502,6 +482,20 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
   stream_.reset(stream);
   stream_request_.reset();  // we're done with the stream request
   OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
+}
+
+bool HttpNetworkTransaction::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  if (!stream_ || !stream_->GetLoadTimingInfo(load_timing_info))
+    return false;
+
+  load_timing_info->proxy_resolve_start =
+      proxy_info_.proxy_resolve_start_time();
+  load_timing_info->proxy_resolve_end = proxy_info_.proxy_resolve_end_time();
+  load_timing_info->send_start = send_start_time_;
+  load_timing_info->send_end = send_end_time_;
+  load_timing_info->receive_headers_end = receive_headers_end_;
+  return true;
 }
 
 bool HttpNetworkTransaction::is_https_request() const {

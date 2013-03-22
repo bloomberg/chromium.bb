@@ -45,9 +45,6 @@ void URLRequestJob::SetUpload(UploadDataStream* upload) {
 void URLRequestJob::SetExtraRequestHeaders(const HttpRequestHeaders& headers) {
 }
 
-void URLRequestJob::SetPriority(RequestPriority priority) {
-}
-
 void URLRequestJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
   // Make sure the request is notified that we are done.  We assume that the
