@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 var chrome = requireNative('chrome').GetChrome();
+var schemaRegistry = requireNative('schema_registry');
+var CHECK = requireNative('logging').CHECK;
 
 function forEach(obj, f, self) {
   // For arrays, make sure the indices are numbers not strings - and in that
@@ -37,16 +39,23 @@ function lookup(array_of_dictionaries, field, value) {
   }
 }
 
-// Specify |currentApi| if this should return an API for $refs in the current
-// namespace.
-function loadRefDependency(ref, currentApi) {
-  var parts = ref.split(".");
-  if (parts.length > 1)
-    return chrome[parts.slice(0, parts.length - 1).join(".")];
-  else
-    return currentApi;
+function loadTypeSchema(typeName, defaultSchema) {
+  var parts = typeName.split('.');
+  if (parts.length == 1) {
+    CHECK(defaultSchema, 'Trying to reference "' + typeName +
+        '" with neither namespace nor default schema.');
+    var types = defaultSchema.types;
+  } else {
+    var schemaName = parts.slice(0, parts.length - 1).join('.')
+    var types = schemaRegistry.GetSchema(schemaName).types;
+  }
+  for (var i = 0; i < types.length; ++i) {
+    if (types[i].id == typeName)
+      return types[i];
+  }
+  return null;
 }
 
 exports.forEach = forEach;
-exports.loadRefDependency = loadRefDependency;
+exports.loadTypeSchema = loadTypeSchema;
 exports.lookup = lookup;

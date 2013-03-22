@@ -40,7 +40,8 @@
 
 // TODO(cduvall): Make this file not depend on chromeHidden.
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var loadRefDependency = require('utils').loadRefDependency;
+var loadTypeSchema = require('utils').loadTypeSchema;
+var CHECK = requireNative('logging').CHECK;
 
 function isInstanceOfClass(instance, className) {
   if (!instance)
@@ -176,11 +177,19 @@ chromeHidden.JSONSchemaValidator.prototype.getAllTypesForSchema =
       schemaTypes = schemaTypes.concat(choiceTypes);
     }
   }
-  if (schema['$ref']) {
-    var refTypes = this.getAllTypesForSchema(this.types[schema['$ref']]);
-    schemaTypes = schemaTypes.concat(refTypes);
+  var ref = schema['$ref'];
+  if (ref) {
+    var type = this.getOrAddType(ref);
+    CHECK(type, 'Could not find type ' + ref);
+    schemaTypes = schemaTypes.concat(this.getAllTypesForSchema(type));
   }
   return schemaTypes;
+};
+
+chromeHidden.JSONSchemaValidator.prototype.getOrAddType = function(typeName) {
+  if (!this.types[typeName])
+    this.types[typeName] = loadTypeSchema(typeName);
+  return this.types[typeName];
 };
 
 /**
@@ -243,12 +252,12 @@ chromeHidden.JSONSchemaValidator.prototype.validate =
 
   // If the schema has a $ref property, the instance must validate against
   // that schema too. It must be present in this.types to be referenced.
-  if (schema["$ref"]) {
-    loadRefDependency(schema["$ref"]);
-    if (!this.types[schema["$ref"]])
-      this.addError(path, "unknownSchemaReference", [ schema["$ref"] ]);
+  var ref = schema["$ref"];
+  if (ref) {
+    if (!this.getOrAddType(ref))
+      this.addError(path, "unknownSchemaReference", [ ref ]);
     else
-      this.validate(instance, this.types[schema["$ref"]], path)
+      this.validate(instance, this.getOrAddType(ref), path)
   }
 
   // If the schema has a choices property, the instance must validate against at

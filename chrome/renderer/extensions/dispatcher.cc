@@ -327,35 +327,53 @@ class LoggingNativeHandler : public ObjectBackedNativeHandler {
       : ObjectBackedNativeHandler(context) {
     RouteFunction("DCHECK",
         base::Bind(&LoggingNativeHandler::Dcheck, base::Unretained(this)));
+    RouteFunction("CHECK",
+        base::Bind(&LoggingNativeHandler::Check, base::Unretained(this)));
+  }
+
+  v8::Handle<v8::Value> Check(const v8::Arguments& args) {
+    bool check_value;
+    std::string error_message;
+    ParseArgs(args, &check_value, &error_message);
+    CHECK(check_value) << error_message;
+    return v8::Undefined();
   }
 
   v8::Handle<v8::Value> Dcheck(const v8::Arguments& args) {
-    CHECK_LE(args.Length(), 2);
-    bool check_value = args[0]->BooleanValue();
+    bool check_value;
     std::string error_message;
+    ParseArgs(args, &check_value, &error_message);
+    DCHECK(check_value) << error_message;
+    return v8::Undefined();
+  }
+
+ private:
+  void ParseArgs(const v8::Arguments& args,
+                 bool* check_value,
+                 std::string* error_message) {
+    CHECK_LE(args.Length(), 2);
+    *check_value = args[0]->BooleanValue();
     if (args.Length() == 2)
-      error_message = "Error: " + std::string(*v8::String::AsciiValue(args[1]));
+      *error_message = "Error: " + std::string(
+          *v8::String::AsciiValue(args[1]));
 
     v8::Handle<v8::StackTrace> stack_trace =
         v8::StackTrace::CurrentStackTrace(10);
     if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
-      error_message += "\n    <no stack trace>";
+      *error_message += "\n    <no stack trace>";
     } else {
       for (size_t i = 0; i < (size_t) stack_trace->GetFrameCount(); ++i) {
         v8::Handle<v8::StackFrame> frame = stack_trace->GetFrame(i);
         CHECK(!frame.IsEmpty());
-        error_message += base::StringPrintf("\n    at %s (%s:%d:%d)",
+        *error_message += base::StringPrintf("\n    at %s (%s:%d:%d)",
             ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
             ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
             frame->GetLineNumber(),
             frame->GetColumn());
       }
     }
-    DCHECK(check_value) << error_message;
-    return v8::Undefined();
   }
 
- private:
   std::string ToStringOrDefault(const v8::Handle<v8::String>& v8_string,
                                   const std::string& dflt) {
     if (v8_string.IsEmpty())
@@ -789,8 +807,6 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("bluetooth", IDR_BLUETOOTH_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("contentSettings",
-                             IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contextMenus",
                              IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("declarativeContent",
@@ -825,7 +841,6 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("permissions", IDR_PERMISSIONS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("storage", IDR_STORAGE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("syncFileSystem",
                              IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("systemIndicator",
@@ -834,12 +849,16 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("types", IDR_TYPES_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webRequest", IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webRequestInternal",
                              IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("binding", IDR_BINDING_JS);
+
+  // Custom types sources.
+  source_map_.RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
+  source_map_.RegisterSource("StorageArea", IDR_STORAGE_AREA_JS);
+  source_map_.RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
 
   // Platform app sources that are not API-specific..
   source_map_.RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);

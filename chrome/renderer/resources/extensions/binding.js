@@ -17,6 +17,7 @@ var schemaRegistry = requireNative('schema_registry');
 var schemaUtils = require('schemaUtils');
 var sendRequest = require('sendRequest').sendRequest;
 var utils = require('utils');
+var CHECK = requireNative('logging').CHECK;
 
 // Stores the name and definition of each API function, with methods to
 // modify their behaviour (such as a custom way to handle requests to the
@@ -117,13 +118,25 @@ function isSchemaNodeSupported(schemaNode, platform, manifestVersion) {
       isManifestVersionSupported(schemaNode, manifestVersion);
 }
 
+function createCustomType(type) {
+  var jsModuleName = type.js_module;
+  CHECK(jsModuleName, 'Custom type ' + type.id +
+      ' has no "js_module" property.');
+  var jsModule = require(jsModuleName);
+  CHECK(jsModule, 'No module ' + jsModuleName + ' found for ' + type.id + '.');
+  var customType = jsModule[jsModuleName];
+  CHECK(customType, jsModuleName + ' must export itself.');
+  customType.prototype = new CustomBindingsObject();
+  customType.prototype.setSchema(type);
+  return customType;
+}
+
 var platform = getPlatform();
 
 function Binding(schema) {
   this.schema_ = schema;
   this.apiFunctions_ = new APIFunctions();
   this.customEvent_ = null;
-  this.customTypes_ = {};
   this.customHooks_ = [];
 };
 
@@ -139,15 +152,6 @@ Binding.prototype = {
   // order to do the schema generation (registerCustomEvent and
   // registerCustomType), and those which can only run after the bindings have
   // been generated (registerCustomHook).
-  //
-
-  // Registers a custom type referenced via "$ref" fields in the API schema
-  // JSON.
-  registerCustomType: function(typeName, customTypeFactory) {
-    var customType = customTypeFactory();
-    customType.prototype = new CustomBindingsObject();
-    this.customTypes_[typeName] = customType;
-  },
 
   // Registers a custom event type for the API identified by |namespace|.
   // |event| is the event's constructor.
@@ -184,7 +188,6 @@ Binding.prototype = {
   // bindings that might be present.
   generate: function() {
     var schema = this.schema_;
-    var customTypes = this.customTypes_;
 
     // TODO(kalman/cduvall): Make GetAvailability handle this, then delete the
     // supporting code.
@@ -210,18 +213,14 @@ Binding.prototype = {
       mod = mod[name];
     }
 
-    // Add types to global schemaValidator
+    // Add types to global schemaValidator, the types we depend on from other
+    // namespaces will be added as needed.
     if (schema.types) {
       forEach(schema.types, function(i, t) {
         if (!isSchemaNodeSupported(t, platform, manifestVersion))
           return;
 
         schemaUtils.schemaValidator.addTypes(t);
-        if (t.type == 'object' && this.customTypes_[t.id]) {
-          var parts = t.id.split(".");
-          this.customTypes_[t.id].prototype.setSchema(t);
-          mod[parts[parts.length - 1]] = this.customTypes_[t.id];
-        }
       }, this);
     }
 
@@ -371,16 +370,10 @@ Binding.prototype = {
           } else if (type === 'boolean') {
             value = value === 'true';
           } else if (propertyDef['$ref']) {
-            if (propertyDef['$ref'] in customTypes) {
-              var constructor = customTypes[propertyDef['$ref']];
-            } else {
-              var refParts = propertyDef['$ref'].split('.');
-              // This should never try to load a $ref in the current namespace.
-              var constructor = utils.loadRefDependency(
-                  propertyDef['$ref'])[refParts[refParts.length - 1]];
-            }
-            if (!constructor)
-              throw new Error('No custom binding for ' + propertyDef['$ref']);
+            var ref = propertyDef['$ref'];
+            var type = utils.loadTypeSchema(propertyDef['$ref'], schema);
+            CHECK(type, 'Schema for $ref type ' + ref + ' not found');
+            var constructor = createCustomType(type);
             var args = value;
             // For an object propertyDef, |value| is an array of constructor
             // arguments, but we want to pass the arguments directly (i.e.

@@ -9,6 +9,7 @@
       {
         "id": "ChromeSetting",
         "type": "object",
+        "js_module": "ChromeSetting",
         "customBindings": "ChromeSetting",
         "description": "An interface which allows access to a Chrome browser setting.",
         "functions": [

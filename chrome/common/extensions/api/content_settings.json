@@ -24,6 +24,7 @@
       },
       {
         "id": "ContentSetting",
+        "js_module": "ContentSetting",
         "type": "object",
         "functions": [
           {

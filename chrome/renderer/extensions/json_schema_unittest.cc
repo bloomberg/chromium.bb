@@ -32,11 +32,12 @@ class JsonSchemaTest : public V8UnitTest {
         "function requireNative(id) {"
         "  return {"
         "    GetChromeHidden: function() { return {}; },"
+        "    CHECK: function(foo, bar) { return undefined; },"
         "  };"
         "}"
         "function require(id) {"
         "  return {"
-        "    loadRefDependency: function(foo) { return {}; },"
+        "    loadTypeSchema: function(foo) { return undefined; },"
         "  };"
         "}",
         "test-code");
