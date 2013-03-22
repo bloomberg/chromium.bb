@@ -63,13 +63,6 @@ AudioManagerBase::AudioManagerBase()
   CHECK(audio_thread_->Start());
 #endif
   message_loop_ = audio_thread_->message_loop_proxy();
-
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  jobject context = base::android::GetApplicationContext();
-  j_audio_manager_.Reset(
-      Java_AudioManagerAndroid_createAudioManagerAndroid(env, context));
-#endif
 }
 
 AudioManagerBase::~AudioManagerBase() {
@@ -132,13 +125,8 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
       break;
   }
 
-  if (stream) {
+  if (stream)
     ++num_output_streams_;
-#if defined(OS_ANDROID)
-    if (num_output_streams_ == 1)
-      RegisterHeadsetReceiver();
-#endif
-  }
 
   return stream;
 }
@@ -178,13 +166,13 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
       break;
   }
 
-  if (stream) {
+  if (stream)
     ++num_input_streams_;
+
 #if defined(OS_ANDROID)
-    if (num_input_streams_ == 1)
-      SetAudioMode(kAudioModeInCommunication);
+  if (num_input_streams_ == 1)
+    SetAudioMode(kAudioModeInCommunication);
 #endif
-  }
 
   return stream;
 }
@@ -268,10 +256,6 @@ void AudioManagerBase::ReleaseOutputStream(AudioOutputStream* stream) {
   // streams.
   --num_output_streams_;
   delete stream;
-#if defined(OS_ANDROID)
-  if (!num_output_streams_)
-    UnregisterHeadsetReceiver();
-#endif
 }
 
 void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
@@ -387,22 +371,12 @@ AudioParameters AudioManagerBase::GetInputStreamParameters(
 
 #if defined(OS_ANDROID)
 void AudioManagerBase::SetAudioMode(int mode) {
-  Java_AudioManagerAndroid_setMode(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj(), mode);
-}
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jobject context = base::android::GetApplicationContext();
+  DCHECK(context);
 
-void AudioManagerBase::RegisterHeadsetReceiver() {
-  Java_AudioManagerAndroid_registerHeadsetReceiver(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
+  Java_AudioManagerAndroid_setMode(env, context, mode);
 }
-
-void AudioManagerBase::UnregisterHeadsetReceiver() {
-  Java_AudioManagerAndroid_unregisterHeadsetReceiver(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
-}
-#endif  // defined(OS_ANDROID)
+#endif
 
 }  // namespace media

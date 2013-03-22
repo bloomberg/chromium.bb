@@ -140,11 +140,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Called by Shutdown().
   void ShutdownOnAudioThread();
 
-#if defined(OS_ANDROID)
   void SetAudioMode(int mode);
-  void RegisterHeadsetReceiver();
-  void UnregisterHeadsetReceiver();
-#endif
 
   // Counts the number of active input streams to find out if something else
   // is currently recording in Chrome.
@@ -174,11 +170,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // tasks which run on the audio thread even after Shutdown() has been started
   // and GetMessageLoop() starts returning NULL.
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-
-#if defined(OS_ANDROID)
-  // Java AudioManager instance.
-  base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerBase);
 };
