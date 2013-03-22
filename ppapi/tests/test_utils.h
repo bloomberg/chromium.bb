@@ -190,7 +190,10 @@ class TestCompletionCallbackWithOutput : public TestCompletionCallback {
     return GetCallbackWithOutput();
   }
 
-  const OutputT& output() { return output_storage_.output(); }
+  OutputT& output() {
+    return pp::internal::CallbackOutputTraits<OutputT>::StorageToPluginArg(
+               output_storage_);
+  }
 
   typename pp::CompletionCallbackWithOutput<OutputT>::OutputStorageType
       output_storage_;

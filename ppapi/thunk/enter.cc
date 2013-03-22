@@ -63,7 +63,9 @@ EnterBase::EnterBase(PP_Instance instance, SingletonResourceID resource_id,
                      const PP_CompletionCallback& callback)
     : resource_(GetSingletonResource(instance, resource_id)),
       retval_(PP_OK) {
-  DCHECK(resource_);
+  DCHECK(resource_ || !instance);
+  if (!resource_)
+    retval_ = PP_ERROR_BADARGUMENT;
   callback_ = new TrackedCallback(resource_, callback);
 }
 
