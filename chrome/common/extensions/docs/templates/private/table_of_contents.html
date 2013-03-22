@@ -1,5 +1,4 @@
 <div id="toc">
-  <h2>Contents</h2>
   <ol>
     {{?has_toc}}
     {{#toc_items}}
@@ -14,18 +13,20 @@
     {{/toc_items}}
     {{/has_toc}}
     {{?api}}
-    <li>
-      <a href="#apiReference">API reference: chrome.{{api.name}}</a>
-      <ol>
-        {{#api}}
-          {{?api.types}}<li>{{+partials.toc_types}}</li>{{/}}
-          {{?api.properties}}<li>{{+partials.toc_properties}}</li>{{/}}
-          {{?api.functions}}<li>{{+partials.toc_functions}}</li>{{/}}
-          {{?api.events}}<li>{{+partials.toc_events}}</li>{{/}}
-          {{?samples_list}}<li>{{+partials.toc_samples title:title}}</li>{{/}}
-        {{/api}}
-      </ol>
-    </li>
+    <div class="api-reference">
+      <li>
+        <a href="#apiReference">Reference</a>
+        <ol>
+          {{#api}}
+            {{?api.types}}<li>{{+partials.toc_types}}</li>{{/}}
+            {{?api.properties}}<li>{{+partials.toc_properties}}</li>{{/}}
+            {{?api.functions}}<li>{{+partials.toc_functions}}</li>{{/}}
+            {{?api.events}}<li>{{+partials.toc_events}}</li>{{/}}
+            {{?samples_list}}<li>{{+partials.toc_samples title:title}}</li>{{/}}
+          {{/api}}
+        </ol>
+      </li>
+    </div>
     {{/api}}
   </ol>
 </div>

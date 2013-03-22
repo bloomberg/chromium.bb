@@ -1,20 +1,20 @@
 {{?link}}
 {{+partials.ref_link}}
-{{/}}
+{{/link}}
 {{?choices}}
 {{#choices}}
 {{+partials.variable_type}}{{^@.last}} or {{/}}
-{{/}}
-{{/}}
+{{/choices}}
+{{/choices}}
 {{?array}}
 array of {{+partials.variable_type}}
-{{/}}
+{{/array}}
 {{?simple_type}}
 {{simple_type}}
-{{/}}
+{{/simple_type}}
 {{?enum_values}}
 enumerated string [{{#enum_values}}"{{name}}"{{^last}}, {{/}}{{/}}]
-{{/}}
+{{/enum_values}}
 {{?value}}
 <code>{{value}}</code>
-{{/}}
+{{/value}}

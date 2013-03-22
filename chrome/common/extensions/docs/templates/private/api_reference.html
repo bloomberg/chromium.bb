@@ -1,25 +1,25 @@
-<h2 id="apiReference">API Reference: chrome.{{api.name}}</h2>
+<h1 id="apiReference">chrome.{{api.name}} reference</h1>
 <div class="api_reference">
   {{?api.types}}
-    <h3 id="types">Types</h3>
+    <h2 id="types">Types</h2>
     {{#api.types}}
       {{+partials.type api:api type:@}}
     {{/}}
   {{/api.types}}
   {{?api.properties}}
-    <h3 id="properties">Properties</h3>
+    <h2 id="properties">Properties</h2>
     {{#api.properties}}
       {{+partials.api_property api:api property:@}}
     {{/}}
   {{/api.properties}}
   {{?api.functions}}
-    <h3 id="methods">Methods</h3>
+    <h2 id="methods">Methods</h2>
     {{#api.functions}}
       {{+partials.function api:api}}
     {{/}}
   {{/api.functions}}
   {{?api.events}}
-    <h3 id="events">Events</h3>
+    <h2 id="events">Events</h2>
     {{#api.events}}
       {{+partials.event api:api}}
     {{/}}

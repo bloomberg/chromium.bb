@@ -8,15 +8,10 @@
 }
 
 body {
-  font: 13px/22px 'Open Sans',arial,sans-serif;
+  font: 14px/22px 'Open Sans',arial,sans-serif;
   margin: auto;
   padding: 0;
   background-color: white;
-}
-
-p {
-  margin: 1em 0 0 0;
-  font-size: 14px;
 }
 
 p.note,
@@ -267,13 +262,13 @@ dd {
   border-radius: 2px 0 0 0;
     -webkit-border-radius: 2px 0 0 0;
     -moz-border-radius: 2px 0 0 0;
-  font-weight: bold;
   white-space: nowrap;
   text-align: center;
   height: 27px;
   padding: 5px 12px;
   margin: 0;
   position: fixed; right: 0; bottom: 0;
+  z-index: 5;
 }
 #send-feedback:hover {
   border-color: #c6c6c6;
@@ -292,15 +287,19 @@ dd {
   margin: 0 0 100px 250px;
 }
 
+#gc-pagecontent h1 {
+  line-height: 130%;
+  font-size: 320%;
+  font-weight: normal;
+}
+
 #gc-pagecontent h2 {
   font-size: 170%;
   font-weight: normal;
-  margin: 2em 0 0.5em 0;
 }
 
 #gc-pagecontent h3 {
   font-size: 130%;
-  font-weight: bold;
 }
 
 #gc-pagecontent h4 {
@@ -309,17 +308,6 @@ dd {
 
 #gc-pagecontent h5 {
   font-size: 100%;
-  margin: 0;
-}
-
-#gc-pagecontent h1.page_title,
-#gc-pagecontent h2.page_title {
-  line-height: 130%;
-  font-size: 320%;
-  margin: 0;
-  border: none;
-  background: none;
-  font-weight: normal;
 }
 
 #gc-pagecontent table {
@@ -534,6 +522,10 @@ dd {
 
 #toc ol li ol li {
   margin: .5em 0 0 1em;
+}
+
+#toc .api-reference {
+  border-top: 1px solid #e5e5e5;
 }
 
 .filtered_item {
