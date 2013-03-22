@@ -9,17 +9,11 @@
  * @constructor
  */
 function AdbDevice(deviceLine) {
-  var tokens = deviceLine.split(' ');
+  var tokens = deviceLine.split(/[ \t]/);
   this.serial = tokens[0];
-  this.model = '';
-  for (var j = 1; j < tokens.length; j++) {
-    var token = tokens[j];
-    if (!token)
-      continue;
-    var pair = token.split(':');
-    if (pair[0] == 'model')
-      this.model = pair[1];
-  }
+  var modelQuery = 'host:transport:' + this.serial +
+      '|shell:getprop ro.product.model';
+  this.model = String(AdbDevice.adbQuery_(modelQuery)).trim();
 }
 
 /**
@@ -27,7 +21,7 @@ function AdbDevice(deviceLine) {
  * @return {Array.<AdbDevice>} Device array.
  */
 AdbDevice.queryDevices = function() {
-  var deviceList = AdbDevice.adbQuery_('host:devices-l');
+  var deviceList = AdbDevice.adbQuery_('host:devices');
   if (!deviceList)
     return [];
 
@@ -93,6 +87,26 @@ AdbDevice.collectForwards_ = function() {
 AdbDevice.adbQuery_ = function(query) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'adb-query/' + query, false);
+  xhr.send(null);
+  if (xhr.status !== 200)
+    return null;
+
+  try {
+    var result = JSON.parse(xhr.responseText);
+    return result[0] ? null : result[1];
+  } catch (e) {
+  }
+  return null;
+};
+
+/**
+ * Discovers ADB devices.
+ * @return {?Object} ADB query result.
+ * @private
+ */
+AdbDevice.adbDevices_ = function() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'adb-devices', false);
   xhr.send(null);
   if (xhr.status !== 200)
     return null;

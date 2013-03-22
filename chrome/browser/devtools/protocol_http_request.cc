@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -25,11 +26,13 @@ ProtocolHttpRequest::ProtocolHttpRequest(
     const Callback& callback)
     : request_context_(profile->GetRequestContext()),
       url_(url),
-      callback_(callback) {
+      callback_(callback),
+      result_(net::OK) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!url_.is_valid()) {
-    error_ = "Invalid URL: " + url_.possibly_invalid_spec();
+    data_ = "Invalid URL: " + url_.possibly_invalid_spec();
+    result_ = net::ERR_FAILED;
     RespondOnUIThread();
     return;
   }
@@ -50,8 +53,10 @@ void ProtocolHttpRequest::Start() {
 }
 
 void ProtocolHttpRequest::OnResponseStarted(net::URLRequest* request) {
-  if (!request->status().is_success())
-    error_ = "HTTP 404";
+  if (!request->status().is_success()) {
+    data_ = "HTTP 404";
+    result_ = net::ERR_FAILED;
+  }
   int bytes_read = 0;
   if (request->status().is_success())
     request->Read(io_buffer_.get(), kBufferSize, &bytes_read);
@@ -76,6 +81,6 @@ void ProtocolHttpRequest::OnReadCompleted(net::URLRequest* request,
 }
 
 void ProtocolHttpRequest::RespondOnUIThread() {
-  callback_.Run(error_, data_);
+  callback_.Run(result_, data_);
   delete this;
 }

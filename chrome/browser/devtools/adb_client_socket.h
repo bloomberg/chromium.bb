@@ -9,37 +9,33 @@
 #include "net/base/io_buffer.h"
 #include "net/socket/tcp_client_socket.h"
 
-class ADBClientSocket {
+class AdbClientSocket {
  public:
-  typedef base::Callback<void(const std::string& error,
-                              const std::string& data)> Callback;
+  typedef base::Callback<void(int, const std::string&)> CommandCallback;
+  typedef base::Callback<void(int result,
+                              net::TCPClientSocket*)> SocketCallback;
 
-  static void Query(int port,
-                    const std::string& query,
-                    const Callback& callback);
+  static void AdbQuery(int port,
+                       const std::string& query,
+                       const CommandCallback& callback);
+
+  static void HttpQuery(int port,
+                        const std::string& serial,
+                        const std::string& socket_name,
+                        const std::string& request,
+                        const CommandCallback& callback);
+
+  static void HttpQuery(int port,
+                        const std::string& serial,
+                        const std::string& socket_name,
+                        const std::string& request,
+                        const SocketCallback& callback);
 
  private:
-  ADBClientSocket();
-  ~ADBClientSocket();
+  AdbClientSocket();
+  ~AdbClientSocket();
 
-  void InnerQuery(int port, const std::string& query, const Callback& callback);
-  void OnConnectComplete(scoped_refptr<net::StringIOBuffer> request_buffer,
-                         int result);
-  void OnWriteComplete(int result);
-  void OnReadComplete(scoped_refptr<net::IOBuffer> response_buffer,
-                      int result);
-  bool CheckNetResultOrDie(int result);
-  void ReportSuccessAndDie();
-  void ReportInvalidResponseAndDie();
-  void ReportErrorAndDie(const std::string& error);
-  void Destroy();
-
-  Callback callback_;
-  scoped_ptr<net::TCPClientSocket> socket_;
-  std::string response_;
-  int expected_response_length_;
-
-  DISALLOW_COPY_AND_ASSIGN(ADBClientSocket);
+  DISALLOW_COPY_AND_ASSIGN(AdbClientSocket);
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_ADB_CLIENT_SOCKET_H_

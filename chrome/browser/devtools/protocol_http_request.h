@@ -18,8 +18,8 @@ class Profile;
 
 class ProtocolHttpRequest : public net::URLRequest::Delegate {
  public:
-  typedef base::Callback<void(const std::string& error,
-                              const std::string& data)> Callback;
+  typedef base::Callback<void(int result,
+                              const std::string& response)> Callback;
 
   ProtocolHttpRequest(Profile* profile,
                       const std::string& url,
@@ -41,7 +41,7 @@ class ProtocolHttpRequest : public net::URLRequest::Delegate {
   GURL url_;
   Callback callback_;
 
-  std::string error_;
+  int result_;
   std::string data_;
   scoped_refptr<net::IOBuffer> io_buffer_;
   net::URLRequest* request_;

@@ -44,6 +44,10 @@ class InspectUI : public content::WebUIController,
       const std::string& path,
       const content::WebUIDataSource::GotDataCallback& callback);
 
+  bool HandleAdbDevicesCallback(
+      const std::string& path,
+      const content::WebUIDataSource::GotDataCallback& callback);
+
   bool HandleAdbQueryCallback(
       const std::string& path,
       const content::WebUIDataSource::GotDataCallback& callback);
@@ -54,8 +58,8 @@ class InspectUI : public content::WebUIController,
 
   void RespondOnUIThread(
       const content::WebUIDataSource::GotDataCallback& callback,
-      const std::string& error,
-      const std::string& data);
+      int result,
+      const std::string& response);
 
 
   scoped_refptr<WorkerCreationDestructionListener> observer_;
@@ -63,7 +67,7 @@ class InspectUI : public content::WebUIController,
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  scoped_refptr<DevToolsAdbBridge> adb_bridge_;
+  DevToolsAdbBridge* adb_bridge_;
   base::WeakPtrFactory<InspectUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectUI);

@@ -62,6 +62,7 @@ namespace {
 
 static const char kDataFile[] = "targets-data.json";
 static const char kAdbQuery[] = "adb-query/";
+static const char kAdbDevices[] = "adb-devices";
 static const char kLocalXhr[] = "local-xhr/";
 
 static const char kExtensionTargetType[]  = "extension";
@@ -407,6 +408,8 @@ bool InspectUI::HandleRequestCallback(
     const content::WebUIDataSource::GotDataCallback& callback) {
   if (path == kDataFile)
     return HandleDataRequestCallback(path, callback);
+  if (path.find(kAdbDevices) == 0)
+    return HandleAdbDevicesCallback(path, callback);
   if (path.find(kAdbQuery) == 0)
     return HandleAdbQueryCallback(path, callback);
   if (path.find(kLocalXhr) == 0)
@@ -417,9 +420,21 @@ bool InspectUI::HandleRequestCallback(
 bool InspectUI::HandleAdbQueryCallback(
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
-  std::string query = path.substr(strlen(kAdbQuery));
+  std::string query = net::UnescapeURLComponent(
+      path.substr(strlen(kAdbQuery)),
+      net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
+          net::UnescapeRule::URL_SPECIAL_CHARS);
   adb_bridge_->Query(query, base::Bind(&InspectUI::RespondOnUIThread,
                                        weak_factory_.GetWeakPtr(), callback));
+  return true;
+}
+
+bool InspectUI::HandleAdbDevicesCallback(
+    const std::string& path,
+    const content::WebUIDataSource::GotDataCallback& callback) {
+  adb_bridge_->Devices();
+  std::string json_string = "";
+  callback.Run(base::RefCountedString::TakeString(&json_string));
   return true;
 }
 
@@ -435,11 +450,11 @@ bool InspectUI::HandleLocalXhrCallback(
 
 void InspectUI::RespondOnUIThread(
     const content::WebUIDataSource::GotDataCallback& callback,
-    const std::string& error,
-    const std::string& data) {
+    int result_code,
+    const std::string& response) {
   ListValue result;
-  result.AppendString(error);
-  result.AppendString(data);
+  result.AppendInteger(result_code);
+  result.AppendString(response);
   std::string json_string;
   base::JSONWriter::Write(&result, &json_string);
   callback.Run(base::RefCountedString::TakeString(&json_string));
