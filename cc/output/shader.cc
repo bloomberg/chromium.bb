@@ -222,9 +222,11 @@ VertexShaderQuad::VertexShaderQuad()
 
 void VertexShaderQuad::init(WebGraphicsContext3D* context, unsigned program, bool usingBindUniform, int* baseUniformIndex)
 {
+    // TODO(reveman): Some uniform names are causing drawing artifact.
+    // crbug.com/223014
     static const char* shaderUniforms[] = {
         "matrix",
-        "point",
+        "point_bug223014",
         "texScale",
     };
     int locations[3];
@@ -245,17 +247,17 @@ std::string VertexShaderQuad::getShaderString() const
         attribute vec4 a_position;
         attribute vec2 a_texCoord;
         uniform mat4 matrix;
-        uniform vec2 point[4];
+        uniform vec2 point_bug223014[4];
         uniform vec2 texScale;
         varying vec2 v_texCoord;
         void main()
         {
             vec2 complement = abs(a_texCoord - 1.0);
             vec4 pos = vec4(0.0, 0.0, a_position.z, a_position.w);
-            pos.xy += (complement.x * complement.y) * point[0];
-            pos.xy += (a_texCoord.x * complement.y) * point[1];
-            pos.xy += (a_texCoord.x * a_texCoord.y) * point[2];
-            pos.xy += (complement.x * a_texCoord.y) * point[3];
+            pos.xy += (complement.x * complement.y) * point_bug223014[0];
+            pos.xy += (a_texCoord.x * complement.y) * point_bug223014[1];
+            pos.xy += (a_texCoord.x * a_texCoord.y) * point_bug223014[2];
+            pos.xy += (complement.x * a_texCoord.y) * point_bug223014[3];
             gl_Position = matrix * pos;
             v_texCoord = (pos.xy + vec2(0.5)) * texScale;
         }
@@ -273,7 +275,7 @@ void VertexShaderTile::init(WebGraphicsContext3D* context, unsigned program, boo
 {
     static const char* shaderUniforms[] = {
         "matrix",
-        "point",
+        "point_bug223014",
         "vertexTexTransform",
     };
     int locations[3];
@@ -292,17 +294,17 @@ std::string VertexShaderTile::getShaderString() const
         attribute vec4 a_position;
         attribute vec2 a_texCoord;
         uniform mat4 matrix;
-        uniform vec2 point[4];
+        uniform vec2 point_bug223014[4];
         uniform vec4 vertexTexTransform;
         varying vec2 v_texCoord;
         void main()
         {
             vec2 complement = abs(a_texCoord - 1.0);
             vec4 pos = vec4(0.0, 0.0, a_position.z, a_position.w);
-            pos.xy += (complement.x * complement.y) * point[0];
-            pos.xy += (a_texCoord.x * complement.y) * point[1];
-            pos.xy += (a_texCoord.x * a_texCoord.y) * point[2];
-            pos.xy += (complement.x * a_texCoord.y) * point[3];
+            pos.xy += (complement.x * complement.y) * point_bug223014[0];
+            pos.xy += (a_texCoord.x * complement.y) * point_bug223014[1];
+            pos.xy += (a_texCoord.x * a_texCoord.y) * point_bug223014[2];
+            pos.xy += (complement.x * a_texCoord.y) * point_bug223014[3];
             gl_Position = matrix * pos;
             v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
         }
