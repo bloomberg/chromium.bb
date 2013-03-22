@@ -72,7 +72,7 @@ namespace downloads {
   // </dl>
   // These string constants will never change, however the set of DangerTypes
   // may change.
-  enum DangerType {file, url, content, uncommon, host, safe};
+  enum DangerType {file, url, content, uncommon, host, safe, accepted};
 
   // <dl><dt>in_progress</dt>
   //     <dd>The download is currently receiving data from the server.</dd>
