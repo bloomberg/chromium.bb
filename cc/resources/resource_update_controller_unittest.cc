@@ -65,7 +65,7 @@ public:
     ResourceUpdateControllerTest()
         : proxy_(scoped_ptr<Thread>(NULL))
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
-        , m_resourceManager(PrioritizedResourceManager::Create(&proxy_))
+        , resource_manager_(PrioritizedResourceManager::Create(&proxy_))
         , m_fullUploadCountExpected(0)
         , m_partialCountExpected(0)
         , m_totalUploadCountExpected(0)
@@ -82,7 +82,7 @@ public:
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
             implThreadAndMainThreadBlocked(&proxy_);
-        m_resourceManager->ClearAllMemory(m_resourceProvider.get());
+        resource_manager_->ClearAllMemory(m_resourceProvider.get());
     }
 
 public:
@@ -122,16 +122,16 @@ protected:
     virtual void SetUp()
     {
         m_outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new WebGraphicsContext3DForUploadTest(this)));
-        m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
-        m_bitmap.allocPixels();
+        bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
+        bitmap_.allocPixels();
 
         for (int i = 0; i < 4; i++) {
             textures_[i] = PrioritizedResource::Create(
-                m_resourceManager.get(), gfx::Size(300, 150), GL_RGBA);
+                resource_manager_.get(), gfx::Size(300, 150), GL_RGBA);
             textures_[i]->set_request_priority(
                 PriorityCalculator::VisiblePriority(true));
         }
-        m_resourceManager->PrioritizeTextures();
+        resource_manager_->PrioritizeTextures();
 
         m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
     }
@@ -144,7 +144,7 @@ protected:
 
         const gfx::Rect rect(0, 0, 300, 150);
         const ResourceUpdate upload = ResourceUpdate::Create(
-            textures_[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
+            textures_[textureIndex].get(), &bitmap_, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
             m_queue->AppendFullUpload(upload);
     }
@@ -161,7 +161,7 @@ protected:
 
         const gfx::Rect rect(0, 0, 100, 100);
         const ResourceUpdate upload = ResourceUpdate::Create(
-            textures_[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
+            textures_[textureIndex].get(), &bitmap_, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
             m_queue->AppendPartialUpload(upload);
     }
@@ -201,8 +201,8 @@ protected:
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     scoped_ptr<PrioritizedResource> textures_[4];
-    scoped_ptr<PrioritizedResourceManager> m_resourceManager;
-    SkBitmap m_bitmap;
+    scoped_ptr<PrioritizedResourceManager> resource_manager_;
+    SkBitmap bitmap_;
     int m_queryResultsAvailable;
 
     // Properties / expectations of this test
