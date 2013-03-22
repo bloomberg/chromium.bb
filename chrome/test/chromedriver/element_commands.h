@@ -28,7 +28,7 @@ typedef base::Callback<Status(
 
 // Execute a command on a specific element.
 Status ExecuteElementCommand(
-    ElementCommand command,
+    const ElementCommand& command,
     Session* session,
     WebView* web_view,
     const base::DictionaryValue& params,

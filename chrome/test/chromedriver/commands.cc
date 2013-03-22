@@ -131,6 +131,11 @@ Status ExecuteNewSession(
   if (new_id.empty())
     new_id = GenerateId();
   scoped_ptr<Session> session(new Session(new_id, chrome.Pass()));
+  if (!session->thread.Start()) {
+    chrome->Quit();
+    return Status(kUnknownError,
+                  "failed to start a thread for the new session");
+  }
   session->window = default_web_view->GetId();
   out_value->reset(session->capabilities->DeepCopy());
   *out_session_id = new_id;

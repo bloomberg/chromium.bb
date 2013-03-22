@@ -6,10 +6,13 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"  // For CHECK macros.
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
@@ -35,6 +38,17 @@ bool WindowHandleToWebViewId(const std::string& window_handle,
   return true;
 }
 
+void ExecuteOnSessionThread(
+    const SessionCommand& command,
+    Session* session,
+    const base::DictionaryValue* params,
+    scoped_ptr<base::Value>* value,
+    Status* status,
+    base::WaitableEvent* event) {
+  *status = command.Run(session, *params, value);
+  event->Signal();
+}
+
 }  // namespace
 
 Status ExecuteSessionCommand(
@@ -53,9 +67,19 @@ Status ExecuteSessionCommand(
   if (!session)
     return Status(kNoSuchSession, session_id);
 
-  Status status = command.Run(session, params, out_value);
+  Status status(kUnknownError);
+  base::WaitableEvent event(false, false);
+  session->thread.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&ExecuteOnSessionThread, command, session,
+                 &params, out_value, &status, &event));
+  event.Wait();
   if (status.IsError() && session->chrome)
     status.AddDetails("Session info: chrome=" + session->chrome->GetVersion());
+  // Delete the session, because concurrent requests might hold a reference to
+  // the SessionAccessor already.
+  if (!session_map->Has(session_id))
+    session_accessor->DeleteSession();
   return status;
 }
 
@@ -91,15 +115,33 @@ Status ExecuteGetCurrentWindowHandle(
 }
 
 Status ExecuteClose(
+    SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
+  std::list<WebView*> web_views;
+  Status status = session->chrome->GetWebViews(&web_views);
+  if (status.IsError())
+    return status;
+  bool is_last_web_view = web_views.size() == 1u;
+  web_views.clear();
+
   WebView* web_view = NULL;
-  Status status = session->GetTargetWindow(&web_view);
+  status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
 
-  return web_view->Close();
+  status = web_view->Close();
+  if (status.IsError())
+    return status;
+
+  status = session->chrome->GetWebViews(&web_views);
+  if ((status.code() == kChromeNotReachable && is_last_web_view) ||
+      (status.IsOk() && web_views.empty())) {
+    CHECK(session_map->Remove(session->id));
+    return Status(kOk);
+  }
+  return status;
 }
 
 Status ExecuteGetWindowHandles(

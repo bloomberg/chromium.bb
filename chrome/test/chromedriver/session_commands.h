@@ -57,6 +57,7 @@ Status ExecuteGetCurrentWindowHandle(
 
 // Close the target window.
 Status ExecuteClose(
+    SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);

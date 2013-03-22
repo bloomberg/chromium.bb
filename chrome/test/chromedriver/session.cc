@@ -21,6 +21,7 @@ FrameInfo::FrameInfo(const std::string& parent_frame_id,
 
 Session::Session(const std::string& id)
     : id(id),
+      thread(("SessionThread_" + id).c_str()),
       mouse_position(0, 0),
       implicit_wait(0),
       page_load_timeout(0),
@@ -29,6 +30,7 @@ Session::Session(const std::string& id)
 
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
     : id(id),
+      thread(("SessionThread_" + id).c_str()),
       chrome(chrome.Pass()),
       mouse_position(0, 0),
       implicit_wait(0),
@@ -103,6 +105,10 @@ SessionAccessorImpl::SessionAccessorImpl(scoped_ptr<Session> session)
 Session* SessionAccessorImpl::Access(scoped_ptr<base::AutoLock>* lock) {
   lock->reset(new base::AutoLock(session_lock_));
   return session_.get();
+}
+
+void SessionAccessorImpl::DeleteSession() {
+  session_.reset();
 }
 
 SessionAccessorImpl::~SessionAccessorImpl() {}

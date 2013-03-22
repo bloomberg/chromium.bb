@@ -81,12 +81,18 @@ TEST(CommandsTest, QuitAll) {
 TEST(CommandsTest, Quit) {
   SessionMap map;
   Session session("id", scoped_ptr<Chrome>(new StubChrome()));
-  map.Set(session.id,
-          scoped_refptr<SessionAccessor>(new FakeSessionAccessor(&session)));
+  ASSERT_TRUE(session.thread.Start());
+  scoped_refptr<FakeSessionAccessor> session_accessor(
+      new FakeSessionAccessor(&session));
+  map.Set(session.id, session_accessor);
   base::DictionaryValue params;
   scoped_ptr<base::Value> value;
-  ASSERT_EQ(kOk, ExecuteQuit(&map, &session, params, &value).code());
+  std::string out_session_id;
+  ASSERT_EQ(kOk,
+            ExecuteSessionCommand(&map, base::Bind(ExecuteQuit, &map), params,
+                                  session.id, &value, &out_session_id).code());
   ASSERT_FALSE(map.Has(session.id));
+  ASSERT_TRUE(session_accessor->IsSessionDeleted());
   ASSERT_FALSE(value.get());
 }
 
@@ -108,12 +114,18 @@ class FailsToQuitChrome : public StubChrome {
 TEST(CommandsTest, QuitFails) {
   SessionMap map;
   Session session("id", scoped_ptr<Chrome>(new FailsToQuitChrome()));
-  map.Set(session.id,
-          scoped_refptr<SessionAccessor>(new FakeSessionAccessor(&session)));
+  ASSERT_TRUE(session.thread.Start());
+  scoped_refptr<FakeSessionAccessor> session_accessor(
+      new FakeSessionAccessor(&session));
+  map.Set(session.id, session_accessor);
   base::DictionaryValue params;
   scoped_ptr<base::Value> value;
-  ASSERT_EQ(kUnknownError, ExecuteQuit(&map, &session, params, &value).code());
+  std::string out_session_id;
+  ASSERT_EQ(kUnknownError,
+            ExecuteSessionCommand(&map, base::Bind(ExecuteQuit, &map), params,
+                                  session.id, &value, &out_session_id).code());
   ASSERT_FALSE(map.Has(session.id));
+  ASSERT_TRUE(session_accessor->IsSessionDeleted());
   ASSERT_FALSE(value.get());
 }
 

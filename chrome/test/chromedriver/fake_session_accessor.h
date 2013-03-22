@@ -19,13 +19,18 @@ class FakeSessionAccessor : public SessionAccessor {
  public:
   explicit FakeSessionAccessor(Session* session);
 
+  bool IsSessionDeleted() const;
+
   // Overridden from SessionAccessor:
   virtual Session* Access(scoped_ptr<base::AutoLock>* lock) OVERRIDE;
+  virtual void DeleteSession() OVERRIDE;
 
  private:
   virtual ~FakeSessionAccessor();
 
   Session* session_;
+  bool is_accessed_;
+  bool is_session_deleted_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_FAKE_SESSION_ACCESSOR_H_

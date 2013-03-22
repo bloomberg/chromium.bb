@@ -84,7 +84,7 @@ Status SendKeysToElement(
 }  // namespace
 
 Status ExecuteElementCommand(
-    ElementCommand command,
+    const ElementCommand& command,
     Session* session,
     WebView* web_view,
     const base::DictionaryValue& params,

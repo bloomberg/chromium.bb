@@ -72,13 +72,11 @@ Status CloseWebView(URLRequestContextGetter* context_getter,
   if (!GetWebViewFromList(web_view_id, info_list))
     return Status(kOk);
 
-  bool is_last_web_view = info_list.size() == 1u;
-
   std::string url = base::StringPrintf(
       "http://127.0.0.1:%d/json/close/%s", port, web_view_id.c_str());
   std::string data;
   if (!FetchUrl(GURL(url), context_getter, &data))
-    return is_last_web_view ? Status(kOk) : Status(kChromeNotReachable);
+    return Status(kOk);  // Closing the last web view leads chrome to quit.
   if (data != "Target is closing")
     return Status(kOk);
 
@@ -87,8 +85,8 @@ Status CloseWebView(URLRequestContextGetter* context_getter,
   while (base::Time::Now() < deadline) {
     info_list.clear();
     status = FetchWebViewsInfo(context_getter, port, &info_list);
-    if (is_last_web_view && status.code() == kChromeNotReachable)
-      return Status(kOk);  // Closing the last web view leads chrome to quit.
+    if (status.code() == kChromeNotReachable)
+      return Status(kOk);
     if (status.IsError())
       return status;
     if (!GetWebViewFromList(web_view_id, info_list))
@@ -186,7 +184,7 @@ Status CloseDevToolsFrontend(ChromeImpl* chrome,
       }
     }
     if (!web_view_still_open)
-      return Status(kUnknownError, "window closed while closing devtools");
+      return Status(kUnknownError, "window closed while closing DevTools");
 
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
@@ -223,6 +221,8 @@ Status ChromeImpl::GetWebViews(std::list<WebView*>* web_views) {
   std::list<WebView*> internal_web_views;
   for (WebViewInfoList::const_iterator it = info_list.begin();
        it != info_list.end(); ++it) {
+    if (it->type != internal::WebViewInfo::kPage)
+      continue;
     WebViewMap::const_iterator found = web_view_map_.find(it->id);
     if (found != web_view_map_.end()) {
       internal_web_views.push_back(found->second.get());

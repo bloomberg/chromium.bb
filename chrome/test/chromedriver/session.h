@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread.h"
 #include "chrome/test/chromedriver/basic_types.h"
 
 namespace base {
@@ -45,6 +46,7 @@ struct Session {
   std::string GetCurrentFrameId() const;
 
   const std::string id;
+  base::Thread thread;
   scoped_ptr<Chrome> chrome;
   std::string window;
   // List of |FrameInfo|s for each frame to the current target frame from the
@@ -66,6 +68,9 @@ class SessionAccessor : public base::RefCountedThreadSafe<SessionAccessor> {
  public:
   virtual Session* Access(scoped_ptr<base::AutoLock>* lock) = 0;
 
+  // The session should be accessed before its deletion.
+  virtual void DeleteSession() = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<SessionAccessor>;
   virtual ~SessionAccessor() {}
@@ -76,6 +81,7 @@ class SessionAccessorImpl : public SessionAccessor {
   explicit SessionAccessorImpl(scoped_ptr<Session> session);
 
   virtual Session* Access(scoped_ptr<base::AutoLock>* lock) OVERRIDE;
+  virtual void DeleteSession() OVERRIDE;
 
  private:
   virtual ~SessionAccessorImpl();

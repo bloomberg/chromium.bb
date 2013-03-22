@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/ip_endpoint.h"
@@ -20,32 +23,42 @@ namespace {
 
 class SyncUrlFetcher : public net::URLFetcherDelegate {
  public:
-  SyncUrlFetcher() {}
+  SyncUrlFetcher(const GURL& url,
+                 URLRequestContextGetter* getter,
+                 std::string* response)
+      : url_(url), getter_(getter), response_(response), event_(false, false) {}
+
   virtual ~SyncUrlFetcher() {}
 
-  bool Fetch(const GURL& url,
-             URLRequestContextGetter* getter,
-             std::string* response) {
-    MessageLoop loop;
-    scoped_ptr<net::URLFetcher> fetcher_(
-        net::URLFetcher::Create(url, net::URLFetcher::GET, this));
-    fetcher_->SetRequestContext(getter);
-    response_ = response;
-    fetcher_->Start();
-    loop.Run();
+  bool Fetch() {
+    getter_->GetNetworkTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncUrlFetcher::FetchOnIOThread, base::Unretained(this)));
+    event_.Wait();
     return success_;
+  }
+
+  void FetchOnIOThread() {
+    fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+    fetcher_->SetRequestContext(getter_);
+    fetcher_->Start();
   }
 
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     success_ = (source->GetResponseCode() == 200);
     if (success_)
       success_ = source->GetResponseAsString(response_);
-    MessageLoop::current()->Quit();
+    fetcher_.reset();  // Destroy the fetcher on IO thread.
+    event_.Signal();
   }
 
  private:
-  bool success_;
+  GURL url_;
+  URLRequestContextGetter* getter_;
   std::string* response_;
+  base::WaitableEvent event_;
+  scoped_ptr<net::URLFetcher> fetcher_;
+  bool success_;
 };
 
 }  // namespace
@@ -53,7 +66,7 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
 bool FetchUrl(const GURL& url,
               URLRequestContextGetter* getter,
               std::string* response) {
-  return SyncUrlFetcher().Fetch(url, getter, response);
+  return SyncUrlFetcher(url, getter, response).Fetch();
 }
 
 bool FindOpenPort(int* port) {

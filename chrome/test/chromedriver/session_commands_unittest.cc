@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/fake_session_accessor.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_commands.h"
@@ -34,7 +35,8 @@ Status ExecuteSimpleCommand(
 
 TEST(SessionCommandTest, SimpleCommand) {
   SessionMap map;
-  Session session("session");
+  Session session("session", scoped_ptr<Chrome>(new StubChrome()));
+  ASSERT_TRUE(session.thread.Start());
   scoped_refptr<SessionAccessor> accessor(new FakeSessionAccessor(&session));
   map.Set(session.id, accessor);
 

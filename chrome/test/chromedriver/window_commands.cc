@@ -121,7 +121,7 @@ Status GetVisibleCookies(WebView* web_view,
 }  // namespace
 
 Status ExecuteWindowCommand(
-    WindowCommand command,
+    const WindowCommand& command,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {

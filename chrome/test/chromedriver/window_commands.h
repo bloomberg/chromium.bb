@@ -27,7 +27,7 @@ typedef base::Callback<Status(
 
 // Execute a Window Command on the target window.
 Status ExecuteWindowCommand(
-    WindowCommand command,
+    const WindowCommand& command,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
