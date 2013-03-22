@@ -469,7 +469,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   // Sets flag of whether kiosk section should be enabled.
   values->SetBoolean(
       "enableKioskSection",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppMode) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppMode) &&
       (chromeos::UserManager::Get()->IsCurrentUserOwner() ||
        !base::chromeos::IsRunningOnChromeOS()));
 #endif

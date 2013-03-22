@@ -994,17 +994,17 @@ const Experiment kExperiments[] = {
   },
   {
     "enable-app-mode",
-    IDS_FLAGS_ENABLE_KIOSK_APPS_NAME,
-    IDS_FLAGS_ENABLE_KIOSK_APPS_DESCRIPTION,
+    IDS_FLAGS_DISABLE_KIOSK_APPS_NAME,
+    IDS_FLAGS_DISABLE_KIOSK_APPS_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableAppMode),
+    SINGLE_VALUE_TYPE(switches::kDisableAppMode),
   },
   {
     "force-fullscreen-app",
-    IDS_FLAGS_FORCE_FULLSCREEN_APP_NAME,
-    IDS_FLAGS_FORCE_FULLSCREEN_APP_DESCRIPTION,
+    IDS_FLAGS_DISABLE_FULLSCREEN_APP_NAME,
+    IDS_FLAGS_DISABLE_FULLSCREEN_APP_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kForceFullscreenApp),
+    SINGLE_VALUE_TYPE(switches::kDisableFullscreenApp),
   },
 #endif  // defined(OS_CHROMEOS)
   {

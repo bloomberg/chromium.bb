@@ -32,7 +32,7 @@ void KioskAppMenuHandler::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
   localized_strings->SetBoolean(
       "enableAppMode",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppMode));
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppMode));
   localized_strings->SetString(
       "showApps",
       l10n_util::GetStringUTF16(IDS_KIOSK_APPS_BUTTON));

@@ -309,6 +309,9 @@ const char kDisableExtensionsHttpThrottling[] =
 const char kDisableExtensionsResourceWhitelist[] =
     "disable-extensions-resource-whitelist";
 
+// Disables automatically making app run in full screen in force app mode.
+const char kDisableFullscreenApp[]          = "disable-fullscreen-app";
+
 // Disable Instant extended API.
 const char kDisableInstantExtendedAPI[] = "disable-instant-extended-api";
 
@@ -688,9 +691,6 @@ const char kForceAppMode[]                  = "force-app-mode";
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
-
-// Forces application to run in full screen in force app mode.
-const char kForceFullscreenApp[]            = "force-fullscreen-app";
 
 // Tries to load cloud policy for every signed in user, regardless of whether
 // they are a dasher user or not. Used to allow any GAIA account to be used for
@@ -1460,6 +1460,9 @@ const char kAshWebUIInit[]                  = "ash-webui-init";
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 
+// Disables Kiosk app mode for ChromeOS.
+const char kDisableAppMode[]                = "disable-app-mode";
+
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
@@ -1479,9 +1482,6 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
-
-// Enable Kiosk app mode for ChromeOS.
-const char kEnableAppMode[]                 = "enable-app-mode";
 
 // Enables component extension that initializes background pages of
 // certain hosted applications.

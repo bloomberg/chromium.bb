@@ -54,7 +54,7 @@ bool IsRunningInForcedAppMode() {
 bool ShouldForceFullscreenApp() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return IsRunningInForcedAppMode() &&
-      command_line->HasSwitch(switches::kForceFullscreenApp);
+      !command_line->HasSwitch(switches::kDisableFullscreenApp);
 }
 
 }  // namespace switches

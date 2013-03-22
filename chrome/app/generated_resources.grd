@@ -6886,17 +6886,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION" desc="Description for the flag to disable a launcher on secondary display.">
           Diables showing the launcher on the second display.
         </message>
-        <message name="IDS_FLAGS_ENABLE_KIOSK_APPS_NAME" desc="Name for the flag to enable kiosk applications.">
-          Enable Kiosk Applications.
+        <message name="IDS_FLAGS_DISABLE_KIOSK_APPS_NAME" desc="Name for the flag to disable kiosk applications.">
+          Disable kiosk applications.
         </message>
-        <message name="IDS_FLAGS_ENABLE_KIOSK_APPS_DESCRIPTION" desc="Description for the flag to enable kiosk applications.">
-          Enable kiosk applications on the device.
+        <message name="IDS_FLAGS_DISABLE_KIOSK_APPS_DESCRIPTION" desc="Description for the flag to disable kiosk applications.">
+          Disable kiosk applications on the device.
         </message>
-        <message name="IDS_FLAGS_FORCE_FULLSCREEN_APP_NAME" desc="Name for the flag to force kiosk applications to run in full screen..">
-          Force fullscreen kiosk applications.
+        <message name="IDS_FLAGS_DISABLE_FULLSCREEN_APP_NAME" desc="Name for the flag to disable auto run kiosk applications in full screen.">
+          Disable auto run kiosk applications in full screen..
         </message>
-        <message name="IDS_FLAGS_FORCE_FULLSCREEN_APP_DESCRIPTION" desc="Description for the flag to force kiosk applications to run in full screen.">
-          Force kiosk applications to run in full screen.
+        <message name="IDS_FLAGS_DISABLE_FULLSCREEN_APP_DESCRIPTION" desc="Description for the flag to disable auto run kiosk applications in full screen.">
+          Disables making kiosk applications run in full screen automatically..
         </message>
         <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_BLUETOOTH_NAME" desc="Name for the flag to enable experimental Bluetooth features.">
           Enable experimental Bluetooth features.
