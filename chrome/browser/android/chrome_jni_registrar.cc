@@ -15,6 +15,7 @@
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_view_android.h"
@@ -59,6 +60,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "PersonalDataManagerAndroid",
       PersonalDataManagerAndroid::Register},
   { "ProcessUtils", RegisterProcessUtils },
+  { "ProfileAndroid", ProfileAndroid::RegisterProfileAndroid },
   { "ProfileSyncService", ProfileSyncServiceAndroid::Register },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
   { "SSLClientCertificateRequest",
