@@ -495,8 +495,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
 
 #if !defined(OS_CHROMEOS)
-  values->SetBoolean("gpuEnabledAtStart",
-                     GpuModeManager::IsGpuModePrefEnabled());
+  values->SetBoolean(
+      "gpuEnabledAtStart",
+      g_browser_process->gpu_mode_manager()->initial_gpu_mode_pref());
 #endif
 }
 

@@ -16,10 +16,14 @@ class GpuModeManager {
   GpuModeManager();
   ~GpuModeManager();
 
-  static bool IsGpuModePrefEnabled();
+  bool initial_gpu_mode_pref() const;
 
  private:
+  static bool IsGpuModePrefEnabled();
+
   PrefChangeRegistrar pref_registrar_;
+
+  bool initial_gpu_mode_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuModeManager);
 };

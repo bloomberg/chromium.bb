@@ -17,7 +17,8 @@ void GpuModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kHardwareAccelerationModeEnabled, true);
 }
 
-GpuModeManager::GpuModeManager() {
+GpuModeManager::GpuModeManager()
+    : initial_gpu_mode_pref_(true) {
   if (g_browser_process->local_state()) {  // Skip for unit tests
     pref_registrar_.Init(g_browser_process->local_state());
     // Do nothing when the pref changes. It takes effect after
@@ -26,7 +27,9 @@ GpuModeManager::GpuModeManager() {
         prefs::kHardwareAccelerationModeEnabled,
         base::Bind(&base::DoNothing));
 
-    if (!IsGpuModePrefEnabled()) {
+    initial_gpu_mode_pref_ = IsGpuModePrefEnabled();
+
+    if (!initial_gpu_mode_pref_) {
       content::GpuDataManager* gpu_data_manager =
           content::GpuDataManager::GetInstance();
       DCHECK(gpu_data_manager);
@@ -36,6 +39,10 @@ GpuModeManager::GpuModeManager() {
 }
 
 GpuModeManager::~GpuModeManager() {
+}
+
+bool GpuModeManager::initial_gpu_mode_pref() const {
+  return initial_gpu_mode_pref_;
 }
 
 // static
