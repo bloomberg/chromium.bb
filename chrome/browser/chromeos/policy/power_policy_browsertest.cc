@@ -133,6 +133,13 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyBrowserTest, SetPowerPolicy) {
       power_management_policy);
 
   power_management_policy.Clear();
+  power_management_policy.mutable_ac_delays()->set_idle_warning_ms(900000);
+  SetUserPolicyAndVerifyPowerManagementPolicy(
+      key::kIdleWarningDelayAC,
+      base::Value::CreateIntegerValue(900000),
+      power_management_policy);
+
+  power_management_policy.Clear();
   power_management_policy.mutable_ac_delays()->set_screen_off_ms(900000);
   SetUserPolicyAndVerifyPowerManagementPolicy(
       key::kScreenOffDelayAC,
@@ -157,6 +164,13 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyBrowserTest, SetPowerPolicy) {
   power_management_policy.mutable_battery_delays()->set_idle_ms(900000);
   SetUserPolicyAndVerifyPowerManagementPolicy(
       key::kIdleDelayBattery,
+      base::Value::CreateIntegerValue(900000),
+      power_management_policy);
+
+  power_management_policy.Clear();
+  power_management_policy.mutable_battery_delays()->set_idle_warning_ms(900000);
+  SetUserPolicyAndVerifyPowerManagementPolicy(
+      key::kIdleWarningDelayBattery,
       base::Value::CreateIntegerValue(900000),
       power_management_policy);
 

@@ -466,6 +466,11 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           0, INT_MAX, true));
   handlers_.push_back(
       new IntRangePolicyHandler(
+          key::kIdleWarningDelayAC,
+          prefs::kPowerAcIdleWarningDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
           key::kIdleDelayAC,
           prefs::kPowerAcIdleDelayMs,
           0, INT_MAX, true));
@@ -483,6 +488,11 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       new IntRangePolicyHandler(
           key::kScreenLockDelayBattery,
           prefs::kPowerBatteryScreenLockDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kIdleWarningDelayBattery,
+          prefs::kPowerBatteryIdleWarningDelayMs,
           0, INT_MAX, true));
   handlers_.push_back(
       new IntRangePolicyHandler(

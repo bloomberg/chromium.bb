@@ -1619,6 +1619,14 @@
     ]
   },
 
+  "IdleWarningDelayAC": {
+    "os": ["chromeos"],
+    "test_policy": { "IdleWarningDelayAC": 1800000 },
+    "pref_mappings": [
+      { "pref": "power.ac_idle_warning_delay_ms" }
+    ]
+  },
+
   "IdleDelayAC": {
     "os": ["chromeos"],
     "test_policy": { "IdleDelayAC": 1800000 },
@@ -1648,6 +1656,14 @@
     "test_policy": { "ScreenLockDelayBattery": 600000 },
     "pref_mappings": [
       { "pref": "power.battery_screen_lock_delay_ms"  }
+    ]
+  },
+
+  "IdleWarningDelayBattery": {
+    "os": ["chromeos"],
+    "test_policy": { "IdleWarningDelayBattery": 600000 },
+    "pref_mappings": [
+      { "pref": "power.battery_idle_warning_delay_ms" }
     ]
   },
 

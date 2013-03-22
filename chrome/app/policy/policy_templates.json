@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 196
+#   For your editing convenience: highest ID currently used: 198
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4032,6 +4032,26 @@
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.''',
         },
         {
+          'name': 'IdleWarningDelayAC',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:27-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 545000,
+          'id': 197,
+          'caption': '''Idle warning delay when running on AC power''',
+          'desc': '''Specifies the length of time without user input after which a warning dialog is shown when running on AC power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows a warning dialog telling the user that the idle action is about to be taken.
+
+          When this policy is unset, no warning dialog is shown.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
+        },
+        {
           'name': 'IdleDelayAC',
           'type': 'int',
           'schema': { 'type': 'integer' },
@@ -4118,6 +4138,26 @@
           The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.''',
+        },
+        {
+          'name': 'IdleWarningDelayBattery',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:27-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 545000,
+          'id': 198,
+          'caption': '''Idle warning delay when running on battery power''',
+          'desc': '''Specifies the length of time without user input after which a warning dialog is shown when running on battery power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows a warning dialog telling the user that the idle action is about to be taken.
+
+          When this policy is unset, no warning dialog is shown.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
         },
         {
           'name': 'IdleDelayBattery',
