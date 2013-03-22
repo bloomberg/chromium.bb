@@ -66,7 +66,8 @@ class AccelFilterInterpreter : public FilterInterpreter {
   CurveSegment custom_point_[kMaxCustomCurveSegs];
   CurveSegment custom_scroll_[kMaxCustomCurveSegs];
 
-  IntProperty sensitivity_;  // [1..5] or 0 for custom
+  IntProperty pointer_sensitivity_;  // [1..5] or 0 for custom
+  IntProperty scroll_sensitivity_;  // [1..5] or 0 for custom
 
   static const size_t kMaxCurveSegStrLen = 30;
   static const size_t kCacheStrLen = kMaxCustomCurveSegs * kMaxCurveSegStrLen;

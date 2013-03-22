@@ -61,7 +61,8 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
   float last_fling_vy = 0.0;
 
   for (int i = 1; i <= 5; ++i) {
-    interpreter.sensitivity_.val_ = i;
+    interpreter.pointer_sensitivity_.val_ = i;
+    interpreter.scroll_sensitivity_.val_ = i;
 
     base_interpreter->return_values_.push_back(Gesture());  // Null type
     base_interpreter->return_values_.push_back(Gesture(kGestureMove,
@@ -176,7 +177,8 @@ TEST(AccelFilterInterpreterTest, TimingTest) {
   interpreter.scroll_x_out_scale_.val_ =
       interpreter.scroll_y_out_scale_.val_ = 1.0;
 
-  interpreter.sensitivity_.val_ = 3;  // standard sensitivity
+  interpreter.pointer_sensitivity_.val_ = 3;  // standard sensitivity
+  interpreter.scroll_sensitivity_.val_ = 3;  // standard sensitivity
 
   float last_dx = 0.0;
   float last_dy = 0.0;
@@ -238,7 +240,8 @@ TEST(AccelFilterInterpreterTest, CustomAccelTest) {
   interpreter.scroll_x_out_scale_.val_ =
       interpreter.scroll_y_out_scale_.val_ = 1.0;
 
-  interpreter.sensitivity_.val_ = 0;  // custom sensitivity
+  interpreter.pointer_sensitivity_.val_ = 0;  // custom sensitivity
+  interpreter.scroll_sensitivity_.val_ = 0;  // custom sensitivity
   interpreter.custom_point_str_.val_ = "2.0 1.0 3 3 4.1 3";
   interpreter.custom_scroll_str_.val_ = "0.5 1 1.0 2.0 2 2.0 3.0 4";
 

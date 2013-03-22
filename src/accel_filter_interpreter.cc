@@ -19,7 +19,8 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
                                                Interpreter* next,
                                                Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
-      sensitivity_(prop_reg, "Sensitivity", 3),
+      pointer_sensitivity_(prop_reg, "Pointer Sensitivity", 3),
+      scroll_sensitivity_(prop_reg, "Scroll Sensitivity", 3),
       custom_point_str_(prop_reg, "Pointer Accel Curve", ""),
       custom_scroll_str_(prop_reg, "Scroll Accel Curve", ""),
       point_x_out_scale_(prop_reg, "Point X Out Scale", 1.0),
@@ -157,8 +158,8 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
         scale_out_x = dx = &gs->details.swipe.dx;
         scale_out_y = dy = &gs->details.swipe.dy;
       }
-      if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
-        segs = point_curves_[sensitivity_.val_ - 1];
+      if (pointer_sensitivity_.val_ >= 1 && pointer_sensitivity_.val_ <= 5) {
+        segs = point_curves_[pointer_sensitivity_.val_ - 1];
       } else {
         segs = custom_point_;
         ParseCurveString(custom_point_str_.val_,
@@ -181,8 +182,8 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
         scale_out_x = dx = &gs->details.scroll.dx;
         scale_out_y = dy = &gs->details.scroll.dy;
       }
-      if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
-        segs = scroll_curves_[sensitivity_.val_ - 1];
+      if (scroll_sensitivity_.val_ >= 1 && scroll_sensitivity_.val_ <= 5) {
+        segs = scroll_curves_[scroll_sensitivity_.val_ - 1];
       } else {
         segs = custom_scroll_;
         ParseCurveString(custom_scroll_str_.val_,
