@@ -11,7 +11,6 @@
  *  complex float instead of SC32.
  */
 
-#include "dl/api/armCOMM.h"
 #include "dl/api/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"
@@ -34,7 +33,8 @@
  *
  * Parameters:
  * [in]  order       base-2 logarithm of the desired block length;
- *                     valid in the range [0,12].
+ *                     valid in the range [1,12]. ([1,15] if
+ *                     BIG_FFT_TABLE is defined.)
  * [out] pFFTSpec    pointer to initialized specification structure.
  *
  * Return Value:
@@ -61,14 +61,8 @@ OMXResult omxSP_FFTInit_C_FC32(OMXFFTSpec_C_FC32* pFFTSpec, OMX_INT order) {
 
   pFFTStruct = (ARMsFFTSpec_FC32 *) pFFTSpec;
 
-  /* if order zero no init is needed */
-  if (order == 0) {
-    pFFTStruct->N = 1;
-    return OMX_Sts_NoErr;
-  }
-
   /* Validate args */
-  if (!pFFTSpec || (order < 0) || (order > TWIDDLE_TABLE_ORDER))
+  if (!pFFTSpec || (order < 1) || (order > TWIDDLE_TABLE_ORDER))
     return OMX_Sts_BadArgErr;
 
   /* Do the initializations */

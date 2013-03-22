@@ -9,7 +9,6 @@
  *
  */
 
-#include "dl/api/armCOMM.h"
 #include "dl/api/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"
@@ -28,7 +27,7 @@
  *
  * Parameters:
  * [in]  order       base-2 logarithm of the length; valid in the range
- *                    [0,12]. ([0,15] if BIG_FFT_TABLE is defined.)
+ *                    [1,12]. ([1,15] if BIG_FFT_TABLE is defined.)
  * [out] pSize	   pointer to the number of bytes required for the
  *			   specification structure.
  *
@@ -38,7 +37,7 @@
  */
 
 OMXResult omxSP_FFTGetBufSize_R_F32(OMX_INT order, OMX_INT *pSize) {
-  if (!pSize || (order < 0) || (order > TWIDDLE_TABLE_ORDER))
+  if (!pSize || (order < 1) || (order > TWIDDLE_TABLE_ORDER))
     return OMX_Sts_BadArgErr;
 
   /*

@@ -25,7 +25,6 @@
  * Initialize the real forward-FFT specification information struct.
  */
 
-#include "dl/api/armCOMM.h"
 #include "dl/api/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"

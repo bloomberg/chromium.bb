@@ -19,7 +19,6 @@
         '../',
       ],
       'sources': [
-        'api/armCOMM.h',
         'api/armCOMM_s.h',
         'api/armOMX.h',
         'api/omxtypes.h',

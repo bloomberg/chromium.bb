@@ -25,7 +25,6 @@
  * Compute the size of the specification structure required
  */
 
-#include "dl/api/armCOMM.h"
 #include "dl/api/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"

@@ -228,9 +228,6 @@ radix4lsGrpLoop\name :
 
         @// move qX0 so as to load for the next iteration
         VMOV     qZ0,qX0
-        @// AC.r AC.i BD.r BD.i
-        VLD4     {dButterfly1Real02,dButterfly1Imag02,dButterfly1Real13,dButterfly1Imag13},[pSrc :256]!
-
 
         .ifeqs  "\inverse", "TRUE"
             VMUL   dZr3,dW3r,dXr3
@@ -251,9 +248,16 @@ radix4lsGrpLoop\name :
 
         VLD1    dW3i,[pTwiddle :64],grpTwStep           @// [wi|wr]
 
+        @// Don't do the load on the last iteration so we don't read past the end
+        @// of pSrc.
+        addeq   pSrc, pSrc, #64
+        beq     radix4lsSkipRead\name
+        @// AC.r AC.i BD.r BD.i
+        VLD4     {dButterfly1Real02,dButterfly1Imag02,dButterfly1Real13,dButterfly1Imag13},[pSrc :256]!
+
         @// AC.r AC.i BD.r BD.i
         VLD4     {dButterfly2Real02,dButterfly2Imag02,dButterfly2Real13,dButterfly2Imag13},[pSrc :256]!
-
+radix4lsSkipRead\name:
 
         @// finish first stage of 4 point FFT
 

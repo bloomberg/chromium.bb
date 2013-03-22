@@ -25,7 +25,6 @@
 @// ARM optimized OpenMAX common header file
 @//
 
-	.set	_RBytes, 0	@ Number of register bytes on stack
 	.set	_SBytes, 0	@ Number of scratch bytes on stack
 	.set	_Workspace, 0	@ Stack offset of scratch workspace
 
@@ -43,61 +42,51 @@
 	@ If rreg is lr or r4, save lr and r4
 	.ifeqs "\rreg", "lr"
 	.set	_RRegList, 4
-	.set	_RBytes, _RBytes + 8
 	.exitm
 	.endif
 
 	.ifeqs "\rreg", "r4"
 	.set	_RRegList, 4
-	.set	_RBytes, _RBytes + 8
 	.exitm
 	.endif
 
 	@ If rreg = r5 or r6, save up to register r6
 	.ifeqs "\rreg", "r5"
 	.set	_RRegList, 6
-	.set	_RBytes, _RBytes + 16
 	.exitm
 	.endif
 	.ifeqs "\rreg", "r6"
 	.set	_RRegList, 6
-	.set	_RBytes, _RBytes + 16
 	.exitm
 	.endif
 
 	@ If rreg = r7 or r8, save up to register r8
 	.ifeqs "\rreg", "r7"
 	.set	_RRegList, 8
-	.set	_RBytes, _RBytes + 24
 	.exitm
 	.endif
 	.ifeqs "\rreg", "r8"
 	.set	_RRegList, 8
-	.set	_RBytes, _RBytes + 24
 	.exitm
 	.endif
 
 	@ If rreg = r9 or r10, save up to register r10
 	.ifeqs "\rreg", "r9"
 	.set	_RRegList, 10
-	.set	_RBytes, _RBytes + 32
 	.exitm
 	.endif
 	.ifeqs "\rreg", "r10"
 	.set	_RRegList, 10
-	.set	_RBytes, _RBytes + 32
 	.exitm
 	.endif
 
 	@ If rreg = r11 or r12, save up to register r12
 	.ifeqs "\rreg", "r11"
 	.set	_RRegList, 12
-	.set	_RBytes, _RBytes + 40
 	.exitm
 	.endif
 	.ifeqs "\rreg", "r12"
 	.set	_RRegList, 12
-	.set	_RBytes, _RBytes + 40
 	.exitm
 	.endif
 
@@ -113,49 +102,41 @@
 
 	.ifeqs "\dreg", "d8"
 	.set	_DRegList, 8
-	.set	_RBytes, _RBytes + 8
 	.exitm
 	.endif
 
 	.ifeqs "\dreg", "d9"
 	.set	_DRegList, 9
-	.set	_RBytes, _RBytes + 16
 	.exitm
 	.endif
 
 	.ifeqs "\dreg", "d10"
 	.set	_DRegList, 10
-	.set	_RBytes, _RBytes + 24
 	.exitm
 	.endif
 
 	.ifeqs "\dreg", "d11"
 	.set	_DRegList, 11
-	.set	_RBytes, _RBytes + 32
 	.exitm
 	.endif
 
 	.ifeqs "\dreg", "d12"
 	.set	_DRegList, 12
-	.set	_RBytes, _RBytes + 40
 	.exitm
 	.endif
 
 	.ifeqs "\dreg", "d13"
 	.set	_DRegList, 13
-	.set	_RBytes, _RBytes + 48
 	.exitm
 	.endif
 
 	.ifeqs "\dreg", "d14"
 	.set	_DRegList, 14
-	.set	_RBytes, _RBytes + 56
 	.exitm
 	.endif
 
 	.ifeqs "\dreg", "d15"
 	.set	_DRegList, 15
-	.set	_RBytes, _RBytes + 64
 	.exitm
 	.endif
 
@@ -183,7 +164,6 @@
         @ states that r4-r11, sp, d8-d15 must be preserved by
         @ a compliant function.
 	.macro	M_START name, rreg, dreg
-	.set	_RBytes, 0
 	.set	_Workspace, 0
 
 	@ Define the function and make it external.

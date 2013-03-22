@@ -176,8 +176,12 @@ radix4fsGrpZeroSetLoop\name :
             VLD2    {dXr1,dXi1},[pSrc :128],step1          @//  data[1]
             VADD    qZ0,qY0,qY1
 
-            @//  data[3] & update pSrc for the next set
+            @//  data[3] & update pSrc for the next set, but not if it's the
+            @//  last iteration so that we don't read past the end of the 
+            @//  input array.
+            BEQ     radix4SkipLastUpdateInv\name
             VLD2    {dXr3,dXi3},[pSrc :128],setStep
+radix4SkipLastUpdateInv\name:
             VSUB    dZr3,dYr2,dYi3
 
             VST2    {dZr0,dZi0},[pDst :128],outPointStep
@@ -199,8 +203,12 @@ radix4fsGrpZeroSetLoop\name :
             VLD2    {dXr1,dXi1},[pSrc :128],step1          @//  data[1]
             VADD    qZ0,qY0,qY1
 
-            @//  data[3] & update pSrc for the next set
+            @//  data[3] & update pSrc for the next set, but not if it's the
+            @//  last iteration so that we don't read past the end of the 
+            @//  input array.
+            BEQ     radix4SkipLastUpdateFwd\name
             VLD2    {dXr3,dXi3},[pSrc :128],setStep
+radix4SkipLastUpdateFwd\name:
             VADD    dZr2,dYr2,dYi3
 
             VST2    {dZr0,dZi0},[pDst :128],outPointStep

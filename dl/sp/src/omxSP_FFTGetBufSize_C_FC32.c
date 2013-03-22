@@ -26,7 +26,7 @@
  * Input Arguments:
  *
  *   order - base-2 logarithm of the desired block length; valid in the range
- *            [0,12] ([0,15] if BIG_FFT_TABLE is defined.)
+ *            [1,12] ([1,15] if BIG_FFT_TABLE is defined.)
  *
  * Output Arguments:
  *
@@ -41,7 +41,7 @@
  */
 
 OMXResult omxSP_FFTGetBufSize_C_FC32(OMX_INT order, OMX_INT *pSize) {
-  if (!pSize || (order < 0) || (order > TWIDDLE_TABLE_ORDER))
+  if (!pSize || (order < 1) || (order > TWIDDLE_TABLE_ORDER))
     return OMX_Sts_BadArgErr;
   /*
    * The required size is the same as for C_SC32, because the
