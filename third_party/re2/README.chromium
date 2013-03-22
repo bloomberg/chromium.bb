@@ -19,3 +19,5 @@ Local Modifications (to be applied in this order):
 - Support Android (patches/re2-android.patch)
 - Remove static initializers (patches/remove-static-initializers.patch)
 - Rename POSIX configuration (patches/rename-posix-option.patch)
+- Support libcxx (patches/re2-libcxx.patch)
+  https://code.google.com/p/re2/issues/detail?id=76
