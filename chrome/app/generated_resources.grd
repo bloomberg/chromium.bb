@@ -11578,17 +11578,14 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
 
       <!-- Offline page  -->
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_OFFLINE_LOAD_HEADLINE" desc="Offline Page HTML headline">
-          Your device is offline
+        <message name="IDS_SITE_OFFLINE_LOAD_HEADLINE" desc="Offline Page HTML headline for a site.">
+          This page is not available offline.
         </message>
-        <message name="IDS_SITE_OFFLINE_LOAD_DESCRIPTION" desc="offline site">
-          The webpage at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. <ph name="LINE_BREAK">&lt;br&gt;<ex>&lt;br&gt;</ex></ph>
+        <message name="IDS_APP_OFFLINE_LOAD_HEADLINE" desc="Offline Page HTML headline for an app.">
+          This app is not available offline.
         </message>
-        <message name="IDS_APP_OFFLINE_LOAD_DESCRIPTION" desc="offline app">
-          The app at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. <ph name="LINE_BREAK">&lt;br&gt;<ex>&lt;br&gt;</ex></ph>
-        </message>
-        <message name="IDS_OFFLINE_TRY_LOADING">
-          Try loading the page anyway
+        <message name="IDS_OFFLINE_LOAD_DESCRIPTION" desc="Description for the offline page.">
+          Please reconnect to a network.
         </message>
         <message name="IDS_OFFLINE_NETWORK_SETTINGS">
           Network settings

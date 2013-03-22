@@ -71,10 +71,8 @@ class OfflineLoadPage
   // Retrieves template strings of the offline page for app and
   // normal site.
   void GetAppOfflineStrings(const extensions::Extension* app,
-                            const string16& faield_url,
                             base::DictionaryValue* strings) const;
-  void GetNormalOfflineStrings(const string16& faield_url,
-                               base::DictionaryValue* strings) const;
+  void GetNormalOfflineStrings(base::DictionaryValue* strings) const;
 
   // True if there is a mobile network is available but
   // has not been activated.
