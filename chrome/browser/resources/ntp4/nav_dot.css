@@ -25,7 +25,7 @@ html.starting-up #dot-list {
   -webkit-box-flex: 1;
   -webkit-margin-end: 10px;
   -webkit-padding-start: 2px;
-  -webkit-transition: max-width 250ms, -webkit-margin-end 250ms;
+  -webkit-transition: -webkit-margin-end 250ms, max-width 250ms, opacity 250ms;
   box-sizing: border-box;
   cursor: pointer;
   /* max-width: Set in new_tab.js. See measureNavDots() */
@@ -35,6 +35,10 @@ html.starting-up #dot-list {
 
 .dot:last-child {
   -webkit-margin-end: 0;
+}
+
+.dot:only-of-type {
+  opacity: 0;
 }
 
 .dot.small {
