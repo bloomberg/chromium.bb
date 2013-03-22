@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -213,8 +214,7 @@ void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
 
   resource_metadata->SetLargestChangestamp(
       kTestChangestamp,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                 &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 }
@@ -331,8 +331,7 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
   int64 in_changestamp = 123456;
   resource_metadata->SetLargestChangestamp(
       in_changestamp,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                 &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 

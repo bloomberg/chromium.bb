@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -155,8 +156,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   // Create a stale cache file.
   DriveFileError error = DRIVE_FILE_OK;
   cache_->Store(resource_id, md5, dummy_file, DriveCache::FILE_OPERATION_COPY,
-                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                           &error));
+                google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 

@@ -37,12 +37,6 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
-void CopyErrorCodeFromFileOperationCallback(DriveFileError* output,
-                                            DriveFileError error) {
-  DCHECK(output);
-  *output = error;
-}
-
 void CopyResultsFromFileMoveCallback(
     DriveFileError* out_error,
     base::FilePath* out_file_path,

@@ -75,8 +75,7 @@ class CreateDirectoryOperationTest
 
     change_list_loader_->LoadFromServerIfNeeded(
         DirectoryFetchInfo(),
-        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                   &error));
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
 
     operation_.reset(

@@ -77,8 +77,7 @@ class SearchMetadataTest : public testing::Test {
 
     file_system_->change_list_loader()->LoadFromServerIfNeeded(
         DirectoryFetchInfo(),
-        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                   &error));
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     ASSERT_EQ(DRIVE_FILE_OK, error);
   }

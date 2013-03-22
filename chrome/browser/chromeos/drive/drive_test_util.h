@@ -44,11 +44,6 @@ DriveCacheEntry ToCacheEntry(int cache_state);
 // Returns true if the cache state of the given two cache entries are equal.
 bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b);
 
-// Copies |error| to |output|. Used to run asynchronous functions that take
-// FileOperationCallback from tests.
-void CopyErrorCodeFromFileOperationCallback(DriveFileError* output,
-                                            DriveFileError error);
-
 // Copies |error| and |moved_file_path| to |out_error| and |out_file_path|.
 // Used to run asynchronous functions that take FileMoveCallback from tests.
 void CopyResultsFromFileMoveCallback(DriveFileError* out_error,

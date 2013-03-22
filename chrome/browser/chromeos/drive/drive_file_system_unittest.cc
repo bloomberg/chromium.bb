@@ -29,6 +29,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -266,8 +267,7 @@ class DriveFileSystemTest : public testing::Test {
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     file_system_->change_list_loader()->LoadFromServerIfNeeded(
         DirectoryFetchInfo(),
-        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                   &error));
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     return error == DRIVE_FILE_OK;
   }
@@ -313,7 +313,7 @@ class DriveFileSystemTest : public testing::Test {
         directory_path,
         false,  // is_exclusive
         false,  // is_recursive
-        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
   }
@@ -322,8 +322,7 @@ class DriveFileSystemTest : public testing::Test {
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     file_system_->Remove(
         file_path, false,
-        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-
+        google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     return error == DRIVE_FILE_OK;
   }
@@ -1074,7 +1073,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   file_system_->TransferFileFromLocalToRemote(
       local_src_file_path,
       remote_dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1125,7 +1124,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   file_system_->TransferFileFromLocalToRemote(
       local_src_file_path,
       remote_dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1160,7 +1159,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   file_system_->TransferFileFromRemoteToLocal(
       remote_src_file_path,
       local_dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1200,7 +1199,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   file_system_->TransferFileFromRemoteToLocal(
       remote_src_file_path,
       local_dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1223,7 +1222,7 @@ TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
   file_system_->Copy(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
@@ -1252,8 +1251,7 @@ TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
@@ -1290,7 +1288,7 @@ TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
   file_system_->Copy(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, error);
 
@@ -1324,7 +1322,7 @@ TEST_F(DriveFileSystemTest, RenameFile) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1366,7 +1364,7 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1408,7 +1406,7 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1468,7 +1466,7 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1492,7 +1490,7 @@ TEST_F(DriveFileSystemTest, MoveNotExistingFile) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
@@ -1521,7 +1519,7 @@ TEST_F(DriveFileSystemTest, MoveFileToNonExistingDirectory) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
@@ -1557,7 +1555,7 @@ TEST_F(DriveFileSystemTest, MoveFileToInvalidPath) {
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, error);
 
@@ -1655,7 +1653,7 @@ TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
       base::FilePath(FILE_PATH_LITERAL("drive/Sample Directory Title")),
       false,  // is_exclusive
       true,  // is_recursive
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1746,8 +1744,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   cache_->Store("<resource_id>", "<md5>", tmp_file,
                 DriveCache::FILE_OPERATION_COPY,
-                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                           &error));
+                google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
@@ -1810,8 +1807,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
                 DriveCache::FILE_OPERATION_COPY,
-                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                           &error));
+                google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1900,8 +1896,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
                 DriveCache::FILE_OPERATION_COPY,
-                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                           &error));
+                google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1937,8 +1932,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(kResourceId, kMd5)).Times(1);
   DriveFileError error = DRIVE_FILE_OK;
   cache_->Pin(kResourceId, kMd5,
-              base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                         &error));
+              google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1949,23 +1943,20 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
                 DriveCache::FILE_OPERATION_COPY,
-                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
-                           &error));
+                google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Add the dirty bit.
-  cache_->MarkDirty(
-      kResourceId, kMd5,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  cache_->MarkDirty(kResourceId, kMd5,
+                    google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Commit the dirty bit.
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(kResourceId)).Times(1);
-  cache_->CommitDirty(
-      kResourceId, kMd5,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  cache_->CommitDirty(kResourceId, kMd5,
+                      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -1986,7 +1977,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   file_system_->UpdateFileByResourceId(
       kResourceId,
       DriveClientContext(USER_INITIATED),
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -2010,7 +2001,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
   file_system_->UpdateFileByResourceId(
       kResourceId,
       DriveClientContext(USER_INITIATED),
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 }
@@ -2108,7 +2099,7 @@ TEST_F(DriveFileSystemTest, RefreshDirectory) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->RefreshDirectory(
       util::GetDriveMyDriveRootPath(),
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 }
