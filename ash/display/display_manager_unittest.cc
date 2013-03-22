@@ -69,7 +69,7 @@ class DisplayManagerTest : public test::AshTestBase,
   }
 
   const DisplayInfo& GetDisplayInfo(const gfx::Display& display) {
-    return display_manager()->GetDisplayInfo(display);
+    return display_manager()->GetDisplayInfo(display.id());
   }
 
   const DisplayInfo& GetDisplayInfoAt(int index) {

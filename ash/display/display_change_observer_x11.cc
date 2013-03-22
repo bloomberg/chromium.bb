@@ -196,6 +196,7 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
     displays.push_back(DisplayInfo(id, name, has_overscan));
     displays.back().set_device_scale_factor(device_scale_factor);
     displays.back().SetBounds(display_bounds);
+    displays.back().set_native(true);
   }
 
   // Free all allocated resources.

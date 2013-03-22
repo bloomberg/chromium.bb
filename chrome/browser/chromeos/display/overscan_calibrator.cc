@@ -5,10 +5,11 @@
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/display/display_info.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -72,6 +73,14 @@ OverscanCalibrator::OverscanCalibrator(
   ash::Shell::GetInstance()->display_controller()->SetOverscanInsets(
       display_.id(), gfx::Insets());
 
+  ash::internal::DisplayInfo info = ash::Shell::GetInstance()->
+      display_manager()->GetDisplayInfo(display_.id());
+  if (info.has_overscan()) {
+    info.clear_has_custom_overscan_insets();
+    info.UpdateDisplaySize();
+    native_insets_ = info.overscan_insets_in_dip();
+  }
+
   aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display_.id());
   ui::Layer* parent_layer = ash::Shell::GetContainer(
@@ -94,8 +103,23 @@ OverscanCalibrator::~OverscanCalibrator() {
 }
 
 void OverscanCalibrator::Commit() {
-  SetAndStoreDisplayOverscan(display_, insets_);
+  if (insets_ == native_insets_) {
+    ash::Shell::GetInstance()->display_controller()->ClearCustomOverscanInsets(
+        display_.id());
+  } else {
+    ash::Shell::GetInstance()->display_controller()->SetOverscanInsets(
+        display_.id(), insets_);
+  }
   committed_ = true;
+}
+
+void OverscanCalibrator::Reset() {
+  if (!native_insets_.empty())
+    insets_ = native_insets_;
+  else
+    insets_ = initial_insets_;
+
+  calibration_layer_->SchedulePaint(calibration_layer_->bounds());
 }
 
 void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {

@@ -94,6 +94,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   DisplayController();
   virtual ~DisplayController();
 
+  void Start();
   void Shutdown();
 
   // Returns primary display. This is safe to use after ash::Shell is
@@ -166,6 +167,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   void RegisterLayoutForDisplayIdPair(int64 id1,
                                       int64 id2,
                                       const DisplayLayout& layout);
+  // OBSOLETE
+  // TODO(oshima): Remove this in m28.
   void RegisterLayoutForDisplayId(int64 id, const DisplayLayout& layout);
 
   // Sets the layout for the current display pair. The |layout| specifies

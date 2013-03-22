@@ -122,6 +122,14 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
+gfx::Display::Rotation GetStoredRotation(int64 id) {
+  return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).rotation();
+}
+
+float GetStoredUIScale(int64 id) {
+  return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).ui_scale();
+}
+
 }  // namespace
 
 typedef test::AshTestBase DisplayControllerTest;
@@ -459,9 +467,10 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   // Adding 2nd display with the same ID.  The 2nd display should become primary
   // since secondary id is still stored as desirable_primary_id.
   std::vector<internal::DisplayInfo> display_info_list;
-  display_info_list.push_back(display_manager->GetDisplayInfo(primary_display));
   display_info_list.push_back(
-      display_manager->GetDisplayInfo(secondary_display));
+      display_manager->GetDisplayInfo(primary_display.id()));
+  display_info_list.push_back(
+      display_manager->GetDisplayInfo(secondary_display.id()));
   display_manager->OnNativeDisplaysChanged(display_info_list);
 
   EXPECT_EQ(2, Shell::GetScreen()->GetNumDisplays());
@@ -485,7 +494,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   ASSERT_NE(primary_display.id(), third_display_info.id());
 
   const internal::DisplayInfo& primary_display_info =
-      display_manager->GetDisplayInfo(primary_display);
+      display_manager->GetDisplayInfo(primary_display.id());
   std::vector<internal::DisplayInfo> display_info_list2;
   display_info_list2.push_back(primary_display_info);
   display_info_list2.push_back(third_display_info);
@@ -664,6 +673,8 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseTo(50, 40);
   EXPECT_EQ("50,40", event_handler.GetLocationAndReset());
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
 
   display_manager->SetDisplayRotation(display1.id(),
                                       gfx::Display::ROTATE_90);
@@ -673,6 +684,8 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseTo(50, 40);
   EXPECT_EQ("40,69", event_handler.GetLocationAndReset());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
 
   DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
   display_controller->SetLayoutForCurrentDisplays(display_layout);
@@ -685,6 +698,8 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("50,120 200x150",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
 
   aura::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseTo(50, 40);
@@ -697,6 +712,8 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   // Dislay must share at least 100, so the x's offset becomes 20.
   EXPECT_EQ("20,200 200x150",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ(gfx::Display::ROTATE_180, GetStoredRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
 
   generator1.MoveMouseTo(50, 40);
   EXPECT_EQ("69,159", event_handler.GetLocationAndReset());
@@ -717,16 +734,31 @@ TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
-  UpdateDisplay("600x400*2@1.5");
+  UpdateDisplay("600x400*2@1.5,500x300");
 
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display display2 = ScreenAsh::GetSecondaryDisplay();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
   EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("450,0 500x300", display2.bounds().ToString());
+  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
+  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
 
   aura::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseTo(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
+
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+  display_manager->SetDisplayUIScale(display1.id(), 1.25);
+  display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  display2 = ScreenAsh::GetSecondaryDisplay();
+  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
+  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
+  EXPECT_EQ(1.25f, GetStoredUIScale(display1.id()));
+  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }

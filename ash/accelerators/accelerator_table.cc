@@ -241,10 +241,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
-  ROTATE_SCREEN,
   ROTATE_WINDOW,
-  SCALE_UI_UP,
-  SCALE_UI_DOWN,
 #if !defined(NDEBUG)
   PRINT_LAYER_HIERARCHY,
   PRINT_VIEW_HIERARCHY,

@@ -31,14 +31,8 @@ void StoreDisplayPrefs();
 // Sets the display layout for the current displays and default.
 void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout);
 
-// Sets and saves the overscan preference for the specified |display| to Local
-// State.
-void SetAndStoreDisplayOverscan(const gfx::Display& display,
-                                const gfx::Insets& insets);
-
-// Checks the current display settings in Local State and notifies them to the
-// system.
-void NotifyDisplayLocalStatePrefChanged();
+// Load display preferences from Local Store.
+void LoadDisplayPreferences();
 
 // Stores the display layout for given display pairs.
 void StoreDisplayLayoutPrefForTest(int64 id1,

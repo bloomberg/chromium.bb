@@ -85,7 +85,7 @@ int64 DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
   const gfx::Display& internal = display_manager_->displays_[0];
   gfx::Display::SetInternalDisplayId(internal.id());
   display_manager_->internal_display_info_.reset(new DisplayInfo(
-      display_manager_->GetDisplayInfo(internal)));
+      display_manager_->GetDisplayInfo(internal.id())));
   return gfx::Display::InternalDisplayId();
 }
 

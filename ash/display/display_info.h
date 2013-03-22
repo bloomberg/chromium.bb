@@ -93,9 +93,11 @@ class ASH_EXPORT DisplayInfo {
   float ui_scale() const { return ui_scale_; }
   void set_ui_scale(float scale) { ui_scale_ = scale; }
 
-  // Copy the display info except for two fields that can be modified by a user
-  // (|has_custom_overscan_insets_| and |custom_overscan_insets_in_dip_|).
-  void CopyFromNative(const DisplayInfo& native_info);
+  // Copy the display info except for fields that can be modified by a user
+  // (|has_custom_overscan_insets_| and |custom_overscan_insets_in_dip_|,
+  //  |rotation_| and |ui_scale_|). |rotation_| and |ui_scale_| are copied
+  // when the |another_info| isn't native one.
+  void Copy(const DisplayInfo& another_info);
 
   // Update the |bounds_in_pixel_| and |size_in_pixel_| using
   // given |bounds_in_pixel|.
@@ -117,9 +119,16 @@ class ASH_EXPORT DisplayInfo {
   void SetOverscanInsets(bool custom,
                          const gfx::Insets& insets_in_dip);
   gfx::Insets GetOverscanInsetsInPixel() const;
+
   void clear_has_custom_overscan_insets() {
     has_custom_overscan_insets_ = false;
   }
+  bool has_custom_overscan_insets() const {
+    return has_custom_overscan_insets_;
+  }
+
+  void set_native(bool native) { native_ = native; }
+  bool native() const { return native_; }
 
   // Returns a string representation of the DisplayInfo;
   std::string ToString() const;
@@ -148,6 +157,9 @@ class ASH_EXPORT DisplayInfo {
 
   // UI scale of the display.
   float ui_scale_;
+
+  // True if this comes from native platform (DisplayChangeObserverX11).
+  bool native_;
 };
 
 }  // namespace internal

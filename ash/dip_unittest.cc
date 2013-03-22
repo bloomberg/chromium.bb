@@ -47,7 +47,7 @@ TEST_F(DIPTest, WorkArea) {
 
   const gfx::Display display_2x = screen->GetDisplayNearestWindow(root);
   const internal::DisplayInfo display_info_2x =
-      Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x);
+      Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
   EXPECT_EQ("1,1 2000x1800",

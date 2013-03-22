@@ -213,6 +213,7 @@ Shell::Shell(ShellDelegate* delegate)
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
   if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
+  display_controller_.reset(new DisplayController);
 #if defined(OS_CHROMEOS)
   content::GpuFeatureType blacklisted_features =
       content::GpuDataManager::GetInstance()->GetBlacklistedFeatures();
@@ -462,7 +463,7 @@ void Shell::Init() {
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
   root_window_host_factory_.reset(delegate_->CreateRootWindowHostFactory());
-  display_controller_.reset(new DisplayController);
+  display_controller_->Start();
   display_controller_->InitPrimaryDisplay();
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
   active_root_window_ = root_window;

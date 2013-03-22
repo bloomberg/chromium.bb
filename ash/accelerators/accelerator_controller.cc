@@ -170,24 +170,6 @@ gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
   return gfx::Display::ROTATE_0;
 }
 
-float GetNextScale(float scale, bool up) {
-  // These scales are equivalent to 1024, 1280, 1600 and 1920 pixel width
-  // respectively on 2560 pixel width 2x density display.
-  static const float kScales[] = {0.8f, 1.0f, 1.25f, 1.5f};
-  static const size_t kScaleTableSize = arraysize(kScales);
-  for (size_t i = 0; i < kScaleTableSize; ++i) {
-    if (kScales[i] == scale) {
-      if (up && i != kScaleTableSize -1)
-        return kScales[i + 1];
-      if (!up && i != 0)
-        return kScales[i - 1];
-      return kScales[i];
-    }
-  }
-  // Fallback to 1.0f if the |scale| wasn't in the list.
-  return 1.0f;
-}
-
 bool HandleScaleUI(bool up) {
   // UI Scaling is effective only on internal display.
   int64 display_id = gfx::Display::InternalDisplayId();
@@ -196,12 +178,11 @@ bool HandleScaleUI(bool up) {
   if (!base::chromeos::IsRunningOnChromeOS())
     display_id = Shell::GetInstance()->display_manager()->first_display_id();
 #endif
-  const gfx::Display& display = Shell::GetInstance()->display_manager()->
-      GetDisplayForId(display_id);
   const DisplayInfo& display_info = Shell::GetInstance()->display_manager()->
-      GetDisplayInfo(display);
+      GetDisplayInfo(display_id);
   Shell::GetInstance()->display_manager()->SetDisplayUIScale(
-      display.id(), GetNextScale(display_info.ui_scale(), up));
+      display_id,
+      internal::DisplayManager::GetNextUIScale(display_info.ui_scale(), up));
   return true;
 }
 
@@ -210,7 +191,7 @@ bool HandleRotateScreen() {
   gfx::Point point = Shell::GetScreen()->GetCursorScreenPoint();
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(point);
   const DisplayInfo& display_info =
-      Shell::GetInstance()->display_manager()->GetDisplayInfo(display);
+      Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
       display.id(), GetNextRotation(display_info.rotation()));
   return true;

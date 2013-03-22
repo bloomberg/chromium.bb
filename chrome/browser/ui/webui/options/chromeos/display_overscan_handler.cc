@@ -129,7 +129,7 @@ void DisplayOverscanHandler::HandleCommit(const base::ListValue* unused_args) {
 
 void DisplayOverscanHandler::HandleReset(const base::ListValue* unused_args) {
   if (overscan_calibrator_.get())
-    overscan_calibrator_->UpdateInsets(gfx::Insets());
+    overscan_calibrator_->Reset();
 }
 
 void DisplayOverscanHandler::HandleCancel(const base::ListValue* unused_args) {

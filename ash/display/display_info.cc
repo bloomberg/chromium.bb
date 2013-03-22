@@ -110,7 +110,8 @@ DisplayInfo::DisplayInfo()
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       has_custom_overscan_insets_(false),
-      ui_scale_(1.0f) {
+      ui_scale_(1.0f),
+      native_(false) {
 }
 
 DisplayInfo::DisplayInfo(int64 id,
@@ -123,13 +124,14 @@ DisplayInfo::DisplayInfo(int64 id,
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       has_custom_overscan_insets_(false),
-      ui_scale_(1.0f) {
+      ui_scale_(1.0f),
+      native_(false) {
 }
 
 DisplayInfo::~DisplayInfo() {
 }
 
-void DisplayInfo::CopyFromNative(const DisplayInfo& native_info) {
+void DisplayInfo::Copy(const DisplayInfo& native_info) {
   DCHECK(id_ == native_info.id_);
   name_ = native_info.name_;
   has_overscan_ = native_info.has_overscan_;
@@ -138,8 +140,21 @@ void DisplayInfo::CopyFromNative(const DisplayInfo& native_info) {
   bounds_in_pixel_ = native_info.bounds_in_pixel_;
   size_in_pixel_ = native_info.size_in_pixel_;
   device_scale_factor_ = native_info.device_scale_factor_;
-  rotation_ = native_info.rotation_;
-  ui_scale_ = native_info.ui_scale_;
+
+  // Rotation_ and ui_scale_ are given by preference, or unit
+  // tests. Don't copy if this native_info came from
+  // DisplayChangeObserverX11.
+  if (!native_info.native()) {
+    rotation_ = native_info.rotation_;
+    ui_scale_ = native_info.ui_scale_;
+  }
+  // It makes little sense to scale beyond the original
+  // resolution. This guard is to protect applying
+  // ui_scale to an external display whose DPI has changed
+  // from 2.0 to 1.0 for some reason.
+  if (ui_scale_ > device_scale_factor_)
+    ui_scale_ = 1.0f;
+
   // Don't copy insets as it may be given by preference.  |rotation_|
   // is treated as a native so that it can be specified in
   // |CreateFromSpec|.

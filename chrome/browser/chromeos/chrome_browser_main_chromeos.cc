@@ -636,7 +636,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     NetworkPortalDetector::GetInstance()->Init();
   }
 
-  NotifyDisplayLocalStatePrefChanged();
+  LoadDisplayPreferences();
 
   display_configuration_observer_.reset(
       new DisplayConfigurationObserver());

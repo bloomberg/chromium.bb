@@ -795,10 +795,8 @@ const char kUseSharedProxies[] = "settings.use_shared_proxies";
 // A boolean pref that enables the (private) pepper GetID() call.
 const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
 
-// A dictionary pref that specifies per-display overscan data.  Its key is the
-// display's ID and its value is a dictionary of canceling overscan pixels for
-// 'top', 'right', 'bottom', 'left'.
-const char kDisplayOverscans[] = "settings.display.overscans";
+// A dictionary pref that stores per display preferences.
+const char kDisplayProperties[] = "settings.display.properties";
 
 // A 64bit integer pref that specifies the name of the primary display device.
 const char kPrimaryDisplayID[] = "settings.display.primary_id";

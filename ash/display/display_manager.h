@@ -33,8 +33,7 @@ namespace internal {
 // and notifies observers when configuration changes.
 // This is exported for unittest.
 //
-// TODO(oshima): gfx::Screen needs to return translated coordinates
-// if the root window is translated. crbug.com/119268.
+// TODO(oshima): Make this non internal.
 class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
  public:
   DisplayManager();
@@ -44,6 +43,9 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // of on a device.
   static void CycleDisplay();
   static void ToggleDisplayScaleFactor();
+
+  // Returns next valid UI scale.
+  static float GetNextUIScale(float scale, bool up);
 
   // When set to true, the MonitorManager calls OnDisplayBoundsChanged
   // even if the display's bounds didn't change. Used to swap primary
@@ -89,6 +91,13 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // Sets the display's ui scale.
   void SetDisplayUIScale(int64 display_id, float ui_scale);
 
+  // Register per display properties. |overscan_insets| is NULL if
+  // the display has no custom overscan insets.
+  void RegisterDisplayProperty(int64 display_id,
+                               gfx::Display::Rotation rotation,
+                               float ui_scale,
+                               const gfx::Insets* overscan_insets);
+
   // Tells if display rotation/ui scaling features are enabled.
   bool IsDisplayRotationEnabled() const;
   bool IsDisplayUIScalingEnabled() const;
@@ -106,6 +115,9 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   // Updates the internal display data and notifies observers about the changes.
   void UpdateDisplays(const std::vector<DisplayInfo>& display_info_list);
+
+  // Updates current displays using current |display_info_|.
+  void UpdateDisplays();
 
   // Obsoleted: Do not use in new code.
   // Returns the display at |index|. The display at 0 is
@@ -138,8 +150,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   const gfx::Display& GetDisplayMatching(
       const gfx::Rect& match_rect)const;
 
-  // Retuns the display info associated with |display|.
-  const DisplayInfo& GetDisplayInfo(const gfx::Display& display) const;
+  // Retuns the display info associated with |display_id|.
+  const DisplayInfo& GetDisplayInfo(int64 display_id) const;
 
   // Returns the human-readable name for the display |id|.
   std::string GetDisplayNameForId(int64 id);

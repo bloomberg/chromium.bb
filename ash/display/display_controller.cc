@@ -48,7 +48,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(gfx::Display::Rotation);
 namespace ash {
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(gfx::Display::Rotation, kRotationKey,
+DEFINE_WINDOW_PROPERTY_KEY(gfx::Display::Rotation, kRotationPropertyKey,
                            gfx::Display::ROTATE_0);
 
 // Primary display stored in global object as it can be
@@ -78,6 +78,10 @@ const int kMinimumOverlapForInvalidOffset = 100;
 const int64 kAfterDisplayChangeThrottleTimeoutMs = 500;
 const int64 kCycleDisplayThrottleTimeoutMs = 4000;
 const int64 kSwapDisplayThrottleTimeoutMs = 500;
+
+// Persistent key names
+const char kPositionKey[] = "position";
+const char kOffsetKey[] = "offset";
 
 bool GetPositionFromString(const base::StringPiece& position,
                            DisplayLayout::Position* field) {
@@ -125,9 +129,9 @@ void RotateRootWindow(aura::RootWindow* root_window,
   // updating the transform results in incorrectly resizing
   // the root window. Don't apply the transform unless
   // necessary so that unit tests pass on win8 bots.
-  if (info.rotation() == root_window->GetProperty(kRotationKey))
+  if (info.rotation() == root_window->GetProperty(kRotationPropertyKey))
     return;
-  root_window->SetProperty(kRotationKey, info.rotation());
+  root_window->SetProperty(kRotationPropertyKey, info.rotation());
 #endif
   gfx::Transform rotate;
   // The origin is (0, 0), so the translate width/height must be reduced by 1.
@@ -153,7 +157,8 @@ void RotateRootWindow(aura::RootWindow* root_window,
 
 void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
                                       const gfx::Display& display) {
-  internal::DisplayInfo info = GetDisplayManager()->GetDisplayInfo(display);
+  internal::DisplayInfo info =
+      GetDisplayManager()->GetDisplayInfo(display.id());
 #if defined(OS_CHROMEOS)
   // Native window property (Atom in X11) that specifies the display's
   // rotation, scale factor and if it's internal display.  They are
@@ -256,8 +261,8 @@ bool DisplayLayout::ConvertToValue(const DisplayLayout& layout,
     return false;
 
   const std::string position_str = GetStringFromPosition(layout.position);
-  dict_value->SetString("position", position_str);
-  dict_value->SetInteger("offset", layout.offset);
+  dict_value->SetString(kPositionKey, position_str);
+  dict_value->SetInteger(kOffsetKey, layout.offset);
   return true;
 }
 
@@ -270,8 +275,8 @@ std::string DisplayLayout::ToString() const {
 void DisplayLayout::RegisterJSONConverter(
     base::JSONValueConverter<DisplayLayout>* converter) {
   converter->RegisterCustomField<Position>(
-      "position", &DisplayLayout::position, &GetPositionFromString);
-  converter->RegisterIntField("offset", &DisplayLayout::offset);
+      kPositionKey, &DisplayLayout::position, &GetPositionFromString);
+  converter->RegisterIntField(kOffsetKey, &DisplayLayout::offset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -326,12 +331,14 @@ DisplayController::DisplayController()
   delete primary_display_for_shutdown;
   primary_display_for_shutdown = NULL;
   num_displays_for_shutdown = -1;
-
-  Shell::GetScreen()->AddObserver(this);
 }
 
 DisplayController::~DisplayController() {
   DCHECK(primary_display_for_shutdown);
+}
+
+void DisplayController::Start() {
+  Shell::GetScreen()->AddObserver(this);
 }
 
 void DisplayController::Shutdown() {
@@ -666,9 +673,9 @@ void DisplayController::SetPrimaryDisplay(
   // Update the dispay manager with new display info.
   std::vector<internal::DisplayInfo> display_info_list;
   display_info_list.push_back(display_manager->GetDisplayInfo(
-      display_manager->GetDisplayForId(primary_display_id)));
+      primary_display_id));
   display_info_list.push_back(display_manager->GetDisplayInfo(
-      *GetSecondaryDisplay()));
+      GetSecondaryDisplay()->id()));
   GetDisplayManager()->set_force_bounds_changed(true);
   GetDisplayManager()->UpdateDisplays(display_info_list);
   GetDisplayManager()->set_force_bounds_changed(false);
@@ -685,7 +692,7 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   if (limiter_.get())
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
   const internal::DisplayInfo& display_info =
-      GetDisplayManager()->GetDisplayInfo(display);
+      GetDisplayManager()->GetDisplayInfo(display.id());
   DCHECK(!display_info.bounds_in_pixel().IsEmpty());
 
   UpdateDisplayBoundsForLayout();
@@ -710,7 +717,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     primary_root_window_for_replace_ = NULL;
     UpdateDisplayBoundsForLayout();
     const internal::DisplayInfo& display_info =
-        GetDisplayManager()->GetDisplayInfo(display);
+        GetDisplayManager()->GetDisplayInfo(display.id());
     root_windows_[display.id()]->SetHostBoundsAndInsetsAndRootWindowScale(
         display_info.bounds_in_pixel(),
         display_info.GetOverscanInsetsInPixel(),
@@ -775,7 +782,7 @@ aura::RootWindow* DisplayController::CreateRootWindowForDisplay(
     const gfx::Display& display) {
   static int root_window_count = 0;
   const internal::DisplayInfo& display_info =
-      GetDisplayManager()->GetDisplayInfo(display);
+      GetDisplayManager()->GetDisplayInfo(display.id());
   const gfx::Rect& bounds_in_pixel = display_info.bounds_in_pixel();
   aura::RootWindow::CreateParams params(bounds_in_pixel);
   params.host = Shell::GetInstance()->root_window_host_factory()->
