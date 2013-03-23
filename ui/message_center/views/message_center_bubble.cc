@@ -278,7 +278,6 @@ class BoundedScrollView : public views::ScrollView {
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds);
 
  private:
   int min_height_;
@@ -308,25 +307,15 @@ gfx::Size BoundedScrollView::GetPreferredSize() {
 }
 
 void BoundedScrollView::Layout() {
-  // Lay out the view as if it will have a scroll bar.
-  gfx::Rect content_bounds = gfx::Rect(contents()->GetPreferredSize());
-  content_bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
-  contents()->SetBoundsRect(content_bounds);
-  views::ScrollView::Layout();
-
-  // But use the scroll bar space if no scroll bar is needed.
-  if (!vertical_scroll_bar()->visible()) {
-    content_bounds = contents()->bounds();
-    content_bounds.set_width(content_bounds.width() + GetScrollBarWidth());
-    contents()->SetBoundsRect(content_bounds);
+  int content_width = width();
+  int content_height = contents()->GetHeightForWidth(content_width);
+  if (content_height > height()) {
+    content_width = std::max(content_width - GetScrollBarWidth(), 0);
+    content_height = contents()->GetHeightForWidth(content_width);
   }
-}
+  contents()->SetBounds(0, 0, content_width, content_height);
 
-void BoundedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Make sure any content resizing takes into account the scroll bar.
-  gfx::Rect content_bounds = gfx::Rect(contents()->GetPreferredSize());
-  content_bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
-  contents()->SetBoundsRect(content_bounds);
+  views::ScrollView::Layout();
 }
 
 // MessageListView /////////////////////////////////////////////////////////////
