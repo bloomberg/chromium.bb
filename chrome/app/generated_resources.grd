@@ -8464,11 +8464,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_LATER" desc="Text for the button the user clicks to be reminded of reinstalling the app later.">
         Later
       </message>
-      <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
-        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Auto-update Error
-      </message>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
+          <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is Out of Date
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
+          <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is out of date
+        </message>
+      </if>
       <message name="IDS_UPGRADE_BUBBLE_TITLE" desc="Text for the title of the upgrade bubble view.">
-        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> auto-update error
+        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is out of date
       </message>
       <message name="IDS_UPGRADE_BUBBLE_TEXT" desc="Text for the upgrade bubble view full description.">
         <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to manually reinstall <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>.
