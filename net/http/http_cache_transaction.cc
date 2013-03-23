@@ -829,8 +829,6 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
     const HttpResponseInfo* response = network_trans_->GetResponseInfo();
     DCHECK(response);
     response_.cert_request_info = response->cert_request_info;
-  } else if (response_.was_cached) {
-    DoneWritingToEntry(true);
   }
   return result;
 }
