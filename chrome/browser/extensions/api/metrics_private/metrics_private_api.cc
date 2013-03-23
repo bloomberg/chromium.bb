@@ -7,10 +7,21 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
+#include "chrome/common/extensions/api/metrics_private.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace extensions {
+
+namespace RecordUserAction = api::metrics_private::RecordUserAction;
+namespace RecordValue = api::metrics_private::RecordValue;
+namespace RecordPercentage = api::metrics_private::RecordPercentage;
+namespace RecordCount = api::metrics_private::RecordCount;
+namespace RecordSmallCount = api::metrics_private::RecordSmallCount;
+namespace RecordMediumCount = api::metrics_private::RecordMediumCount;
+namespace RecordTime = api::metrics_private::RecordTime;
+namespace RecordMediumTime = api::metrics_private::RecordMediumTime;
+namespace RecordLongTime = api::metrics_private::RecordLongTime;
 
 namespace {
 
@@ -20,10 +31,11 @@ const size_t kMaxBuckets = 10000; // We don't ever want more than these many
 } // namespace
 
 bool MetricsPrivateRecordUserActionFunction::RunImpl() {
-  std::string name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
+  scoped_ptr<RecordUserAction::Params> params(
+      RecordUserAction::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  content::RecordComputedAction(name);
+  content::RecordComputedAction(params->name);
   return true;
 }
 
@@ -68,79 +80,75 @@ bool MetricsHistogramHelperFunction::RecordValue(
 }
 
 bool MetricsPrivateRecordValueFunction::RunImpl() {
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &sample));
+  scoped_ptr<RecordValue::Params> params(RecordValue::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Get the histogram parameters from the metric type object.
-  DictionaryValue* metric_type;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &metric_type));
-
-  std::string name;
-  std::string type;
-  int min;
-  int max;
-  int buckets;
-  EXTENSION_FUNCTION_VALIDATE(metric_type->GetString("metricName", &name));
-  EXTENSION_FUNCTION_VALIDATE(metric_type->GetString("type", &type));
-  EXTENSION_FUNCTION_VALIDATE(metric_type->GetInteger("min", &min));
-  EXTENSION_FUNCTION_VALIDATE(metric_type->GetInteger("max", &max));
-  EXTENSION_FUNCTION_VALIDATE(metric_type->GetInteger("buckets", &buckets));
+  std::string type = api::metrics_private::MetricType::ToString(
+      params->metric.type);
 
   base::HistogramType histogram_type(type == "histogram-linear" ?
       base::LINEAR_HISTOGRAM : base::HISTOGRAM);
-  return RecordValue(name, histogram_type, min, max, buckets, sample);
+  return RecordValue(params->metric.metric_name, histogram_type,
+                     params->metric.min, params->metric.max,
+                     params->metric.buckets, params->value);
 }
 
 bool MetricsPrivateRecordPercentageFunction::RunImpl() {
-  std::string name;
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, base::LINEAR_HISTOGRAM, 1, 101, 102, sample);
+  scoped_ptr<RecordPercentage::Params> params(
+      RecordPercentage::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  return RecordValue(params->metric_name, base::LINEAR_HISTOGRAM,
+                     1, 101, 102, params->value);
 }
 
 bool MetricsPrivateRecordCountFunction::RunImpl() {
-  std::string name;
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, base::HISTOGRAM, 1, 1000000, 50, sample);
+  scoped_ptr<RecordCount::Params> params(RecordCount::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  return RecordValue(params->metric_name, base::HISTOGRAM,
+                     1, 1000000, 50, params->value);
 }
 
 bool MetricsPrivateRecordSmallCountFunction::RunImpl() {
-  std::string name;
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, base::HISTOGRAM, 1, 100, 50, sample);
+  scoped_ptr<RecordSmallCount::Params> params(
+      RecordSmallCount::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  return RecordValue(params->metric_name, base::HISTOGRAM,
+                     1, 100, 50, params->value);
 }
 
 bool MetricsPrivateRecordMediumCountFunction::RunImpl() {
-  std::string name;
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, base::HISTOGRAM, 1, 10000, 50, sample);
+  scoped_ptr<RecordMediumCount::Params> params(
+      RecordMediumCount::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  return RecordValue(params->metric_name, base::HISTOGRAM,
+                     1, 10000, 50, params->value);
 }
 
 bool MetricsPrivateRecordTimeFunction::RunImpl() {
-  std::string name;
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
+  scoped_ptr<RecordTime::Params> params(RecordTime::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   static const int kTenSecMs = 10 * 1000;
-  return RecordValue(name, base::HISTOGRAM, 1, kTenSecMs, 50, sample);
+  return RecordValue(params->metric_name, base::HISTOGRAM,
+                     1, kTenSecMs, 50, params->value);
 }
 
 bool MetricsPrivateRecordMediumTimeFunction::RunImpl() {
-  std::string name;
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
+  scoped_ptr<RecordMediumTime::Params> params(
+      RecordMediumTime::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   static const int kThreeMinMs = 3 * 60 * 1000;
-  return RecordValue(name, base::HISTOGRAM, 1, kThreeMinMs, 50, sample);
+  return RecordValue(params->metric_name, base::HISTOGRAM,
+                     1, kThreeMinMs, 50, params->value);
 }
 
 bool MetricsPrivateRecordLongTimeFunction::RunImpl() {
-  std::string name;
-  int sample;
-  EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
+  scoped_ptr<RecordLongTime::Params> params(
+      RecordLongTime::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   static const int kOneHourMs = 60 * 60 * 1000;
-  return RecordValue(name, base::HISTOGRAM, 1, kOneHourMs, 50, sample);
+  return RecordValue(params->metric_name, base::HISTOGRAM,
+                     1, kOneHourMs, 50, params->value);
 }
 
 } // namespace extensions
