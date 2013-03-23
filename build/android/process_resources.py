@@ -10,9 +10,7 @@ import optparse
 import os
 import subprocess
 
-
-BUILD_ANDROID_DIR = os.path.dirname(__file__)
-
+from pylib import build_utils
 
 def ParseArgs():
   """Parses command line options.
@@ -24,11 +22,15 @@ def ParseArgs():
   parser.add_option('--android-sdk', help='path to the Android SDK folder')
   parser.add_option('--android-sdk-tools',
                     help='path to the Android SDK platform tools folder')
-  parser.add_option('--R-package', help='Java package for generated R.java')
   parser.add_option('--R-dir', help='directory to hold generated R.java')
   parser.add_option('--res-dir', help='directory containing resources')
   parser.add_option('--out-res-dir',
                     help='directory to hold crunched resources')
+  parser.add_option('--non-constant-id', action='store_true')
+  parser.add_option('--custom-package', help='Java package for R.java')
+  parser.add_option('--android-manifest', help='AndroidManifest.xml path')
+  parser.add_option('--stamp', help='File to touch on success')
+
   # This is part of a temporary fix for crbug.com/177552.
   # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
   parser.add_option('--ignore', help='this argument is ignored')
@@ -38,7 +40,7 @@ def ParseArgs():
     parser.error('No positional arguments should be given.')
 
   # Check that required options have been provided.
-  required_options = ('android_sdk', 'android_sdk_tools', 'R_package',
+  required_options = ('android_sdk', 'android_sdk_tools',
                       'R_dir', 'res_dir', 'out_res_dir')
   for option_name in required_options:
     if getattr(options, option_name) is None:
@@ -51,7 +53,8 @@ def main():
   options = ParseArgs()
   android_jar = os.path.join(options.android_sdk, 'android.jar')
   aapt = os.path.join(options.android_sdk_tools, 'aapt')
-  dummy_manifest = os.path.join(BUILD_ANDROID_DIR, 'AndroidManifest.xml')
+
+  build_utils.MakeDirectory(options.R_dir)
 
   # Generate R.java. This R.java contains non-final constants and is used only
   # while compiling the library jar (e.g. chromium_content.jar). When building
@@ -61,9 +64,7 @@ def main():
   package_command = [aapt,
                      'package',
                      '-m',
-                     '--non-constant-id',
-                     '--custom-package', options.R_package,
-                     '-M', dummy_manifest,
+                     '-M', options.android_manifest,
                      '-S', options.res_dir,
                      '--auto-add-overlay',
                      '-I', android_jar,
@@ -72,6 +73,10 @@ def main():
   # If strings.xml was generated from a grd file, it will be in out_res_dir.
   if os.path.isdir(options.out_res_dir):
     package_command += ['-S', options.out_res_dir]
+  if options.non_constant_id:
+    package_command.append('--non-constant-id')
+  if options.custom_package:
+    package_command += ['--custom-package', options.custom_package]
   subprocess.check_call(package_command)
 
   # Crunch image resources. This shrinks png files and is necessary for 9-patch
@@ -80,6 +85,8 @@ def main():
                          'crunch',
                          '-S', options.res_dir,
                          '-C', options.out_res_dir])
+
+  build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':
