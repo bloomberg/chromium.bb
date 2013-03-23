@@ -497,17 +497,13 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   if (!audio_data)
     return kAudioUnitErr_InvalidElement;
 
-  // See http://crbug.com/154352 for details.
-  CHECK_EQ(number_of_frames, static_cast<UInt32>(number_of_frames_));
-
   // Accumulate captured audio in FIFO until we can match the output size
   // requested by the client.
-  DCHECK_LE(fifo_->forward_bytes(), requested_size_bytes_);
   fifo_->Append(audio_data, buffer.mDataByteSize);
 
   // Deliver recorded data to the client as soon as the FIFO contains a
   // sufficient amount.
-  if (fifo_->forward_bytes() >= requested_size_bytes_) {
+  while (fifo_->forward_bytes() >= requested_size_bytes_) {
     // Read from FIFO into temporary data buffer.
     fifo_->Read(data_->GetWritableData(), requested_size_bytes_);
 

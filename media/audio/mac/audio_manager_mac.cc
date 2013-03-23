@@ -32,6 +32,23 @@ static const int kMaxOutputStreams = 50;
 // Default buffer size in samples for low-latency input and output streams.
 static const int kDefaultLowLatencyBufferSize = 128;
 
+static int ChooseBufferSize(int output_sample_rate) {
+  int buffer_size = kDefaultLowLatencyBufferSize;
+  const int user_buffer_size = GetUserBufferSize();
+  if (user_buffer_size) {
+    buffer_size = user_buffer_size;
+  } else if (output_sample_rate > 48000) {
+    // The default buffer size is too small for higher sample rates and may lead
+    // to glitching.  Adjust upwards by multiples of the default size.
+    if (output_sample_rate <= 96000)
+      buffer_size = 2 * kDefaultLowLatencyBufferSize;
+    else if (output_sample_rate <= 192000)
+      buffer_size = 4 * kDefaultLowLatencyBufferSize;
+  }
+
+  return buffer_size;
+}
+
 static bool HasAudioHardware(AudioObjectPropertySelector selector) {
   AudioDeviceID output_device_id = kAudioObjectUnknown;
   const AudioObjectPropertyAddress property_address = {
@@ -370,11 +387,17 @@ void AudioManagerMac::GetAudioInputDeviceNames(
 
 AudioParameters AudioManagerMac::GetInputStreamParameters(
     const std::string& device_id) {
+  // Due to the sharing of the input and output buffer sizes, we need to choose
+  // the input buffer size based on the output sample rate.  See
+  // http://crbug.com/154352.
+  const int buffer_size = ChooseBufferSize(
+      AUAudioOutputStream::HardwareSampleRate());
+
   // TODO(xians): query the native channel layout for the specific device.
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
       AUAudioInputStream::HardwareSampleRate(), 16,
-      kDefaultLowLatencyBufferSize);
+      buffer_size);
 }
 
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
@@ -430,10 +453,8 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 
   ChannelLayout channel_layout = GuessChannelLayout(hardware_channels);
 
-  int buffer_size = kDefaultLowLatencyBufferSize;
-  int user_buffer_size = GetUserBufferSize();
-  if (user_buffer_size)
-    buffer_size = user_buffer_size;
+  const int hardware_sample_rate = AUAudioOutputStream::HardwareSampleRate();
+  const int buffer_size = ChooseBufferSize(hardware_sample_rate);
 
   int input_channels = 0;
   if (input_params.IsValid()) {
@@ -452,7 +473,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY,
       channel_layout,
       input_channels,
-      AUAudioOutputStream::HardwareSampleRate(),
+      hardware_sample_rate,
       16,
       buffer_size);
 
