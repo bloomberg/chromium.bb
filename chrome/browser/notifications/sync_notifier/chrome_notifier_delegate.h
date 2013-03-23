@@ -11,13 +11,16 @@
 
 namespace notifier {
 
+class ChromeNotifierService;
+
 // ChromeNotifierDelegate is a NotificationDelegate which catches
 // responses from the NotificationUIManager when a notification
 // has been closed.
 
 class ChromeNotifierDelegate : public NotificationDelegate {
  public:
-  explicit ChromeNotifierDelegate(const std::string& id);
+  explicit ChromeNotifierDelegate(const std::string& id,
+                                  ChromeNotifierService* notifier);
 
   // NotificationDelegate interface.
   virtual void Display() OVERRIDE {}
@@ -31,6 +34,7 @@ class ChromeNotifierDelegate : public NotificationDelegate {
   virtual ~ChromeNotifierDelegate();
 
   const std::string id_;
+  ChromeNotifierService* const chrome_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNotifierDelegate);
 };

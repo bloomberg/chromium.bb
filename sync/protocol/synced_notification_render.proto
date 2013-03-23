@@ -16,68 +16,121 @@ package sync_pb;
 // Data that is used directly by endpoints to render notifications in the case
 // where no "native" app can handle the notification.
 message SyncedNotificationRenderInfo {
-  message Layout {
-    enum LayoutType {
-      TITLE_AND_SUBTEXT = 1;
-      TITLE_AND_IMAGE = 2;
-    }
-    optional LayoutType layout_type = 1;
 
-    message TitleAndSubtextData {
-      optional string title = 1;
-      // The icon to show on the left of the notification.
-      optional SyncedNotificationIcon icon = 2;
-      // Multiple lines of the sub-text.
-      repeated string subtext = 3;
-    }
-    optional TitleAndSubtextData title_and_subtext_data = 3;
+  // Render information for the collapsed (summary) view of a coalesced
+  // notification.
+  message CollapsedInfo {
+    message SimpleCollapsedLayout {
+      // Application icon.
+      optional SyncedNotificationImage app_icon = 1;
 
-    message TitleAndImageData {
-      optional string title = 1;
-      optional SyncedNotificationImage image = 2;
+      // Profile image(s) of the notification creator(s) to show in the
+      // collapsed UI.
+      repeated SyncedNotificationProfileImage profile_image = 2;
+
+      // Heading - often the name(s) of the notification creator(s).
+      optional string heading = 3;
+
+      // Description - often the action that generated the notification.
+      optional string description = 4;
     }
-    optional TitleAndImageData title_and_image_data = 4;
+    optional SimpleCollapsedLayout simple_collapsed_layout = 1;
+
+    // The creation time of the notification in microseconds since the UNIX
+    // epoch.
+    optional uint64 creation_timestamp_usec = 2;
+
+    // The default destination target.
+    optional SyncedNotificationDestination default_destination = 3;
+
+    // Secondary destinations and actions grouped into a message to account for
+    // ordering.
+    message Target {
+      optional SyncedNotificationDestination destination = 1;
+      optional SyncedNotificationAction action = 2;
+    }
+    repeated Target target = 4;
   }
-  optional Layout layout = 1;
+  optional CollapsedInfo collapsed_info = 1;
 
-  // An Action encapsulates an UI component that trigger certain programmable
-  // actions.  Depending on the endpoint, this may show up as a html button,
-  // "quick actions" in the Android notification drawer, a link, or even the
-  // notification card itself (the "default" action case).
-  message Action {
-    // The description for the Action.
-    optional string text = 1;
+  // Render information for the expanded (detail) view of a coalesced
+  // notification.
+  message ExpandedInfo {
+    message SimpleExpandedLayout {
+      // Title - often the title of the underlying entity referred to by the
+      // notification(s).
+      optional string title = 1;
 
-    // The icon to use for the Action.
-    optional SyncedNotificationIcon icon = 2;
+      // Text content - often a snippet of text from the underlying entity
+      // reference or the notification.
+      optional string text = 2;
 
-    // Specify whether the action should be a background action or
-    // should open up a web page with the specified URL.
-    optional bool is_background = 3;
+      // Media.
+      message Media {
+        // TOOD(jro): Do we need other media types?
+        optional SyncedNotificationImage image = 1;
+      }
+      repeated Media media = 3;
+    }
+    optional SimpleExpandedLayout simple_expanded_layout = 1;
 
-    // The url to send users to when they trigger the action.
-    optional string action_url = 4;
+    // Collapsed information for each notification in the coalesced group.
+    repeated CollapsedInfo collapsed_info = 2;
+   }
+  optional ExpandedInfo expanded_info = 2;
+}
 
-    // If post_data is populated, this indicates that action_url should be
-    // contacted via a POST rather than a GET.
-    optional string post_data = 5;
-  }
-  // All the actions that can be triggered from this (coalesced) notification.
-  // This is sorted by importance so depending on the end point, the first N
-  // actions should be used (and the first action is the "default" action).
-  // For default actions, the icon and text params are ignored.
-  repeated Action action = 2;
+// A Destination is a target URL that the user can be taken to by clicking on or
+// selecting the notification or part thereof.
+message SyncedNotificationDestination {
+  // The description for the link to the destination.
+  optional string text = 1;
+
+  // The icon to use for the link to the destination.
+  optional SyncedNotificationImage icon = 2;
+
+  // The destination URL.
+  optional string url = 3;
+
+  // Optional label to aid accessibility.
+  optional string accessibility_label = 4;
+}
+
+// An Action encapsulates an UI component that trigger certain programmable
+// actions.  Depending on the endpoint, this may show up as a HTML button, an
+// action button associated with the notification on native mobile, a link, or
+// even the notification card itself.
+message SyncedNotificationAction {
+   // The description for the Action.
+   optional string text = 1;
+
+  // The icon to use for the Action.
+  optional SyncedNotificationImage icon = 2;
+
+  // The URL that performs the action.
+  optional string url = 3;
+
+  // Additional request data.
+  optional string request_data = 4;
+
+  // Optional label to aid accessibility.
+  optional string accessibility_label= 5;
 }
 
 message SyncedNotificationImage {
+  // Note that the image may be from any source. Clients wishing to resize the
+  // image should ensure the image is proxied appropriately.
   optional string url = 1;
-  // This is somewhat made up - not sure what else apart from url do we need
-  // about an image.
   optional string alt_text = 2;
   optional int32 preferred_width = 3;
   optional int32 preferred_height = 4;
 }
 
-message SyncedNotificationIcon {
-  optional string url = 1;
+message SyncedNotificationProfileImage {
+  // Url for the image.
+  optional string image_url = 1;
+  // Object id for the image.
+  optional string oid = 2;
+  // Name to display for this image.
+  optional string display_name = 3;
 }

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+
 namespace notifier {
-ChromeNotifierDelegate::ChromeNotifierDelegate(const std::string& id)
-    : id_(id) {}
+ChromeNotifierDelegate::ChromeNotifierDelegate(const std::string& id,
+                                               ChromeNotifierService* notifier)
+    : id_(id), chrome_notifier_(notifier) {}
 
 ChromeNotifierDelegate::~ChromeNotifierDelegate() {}
 
@@ -19,7 +22,7 @@ content::RenderViewHost* ChromeNotifierDelegate::GetRenderViewHost() const {
 }
 
 void ChromeNotifierDelegate::Close(bool by_user) {
-  // TODO(petewil): implement
+  chrome_notifier_->MarkNotificationAsDismissed(id_);
 }
 
 }  // namespace notifier

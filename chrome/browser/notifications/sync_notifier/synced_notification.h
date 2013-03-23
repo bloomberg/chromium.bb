@@ -31,6 +31,7 @@ class SyncedNotification {
   enum ReadState {
     kUnread = 1,
     kRead = 2,
+    kDismissed = 3,
   };
 
   void Update(const syncer::SyncData& sync_data);
@@ -39,20 +40,23 @@ class SyncedNotification {
   // SyncedNotification.
   // TODO(petewil): Add more types as we expand support for the protobuf.
   std::string title() const;
+  std::string heading() const;
+  std::string description() const;
   std::string app_id() const;
-  std::string coalescing_key() const;
+  std::string key() const;
   GURL origin_url() const;
-  GURL icon_url() const;
+  GURL app_icon_url() const;
   GURL image_url() const;
   std::string first_external_id() const;
   std::string notification_id() const;
-  std::string body() const;
+  std::string text() const;
   ReadState read_state() const;
 
   bool EqualsIgnoringReadState(const SyncedNotification& other) const;
   bool IdMatches(const SyncedNotification& other) const;
 
   void NotificationHasBeenRead();
+  void NotificationHasBeenDismissed();
 
   // This gets a pointer to the SyncedNotificationSpecifics part
   // of the sync data.
@@ -65,14 +69,16 @@ class SyncedNotification {
   // Parsing functions to get this information out of the sync_data and into
   // our local variables.
   std::string ExtractTitle() const;
+  std::string ExtractHeading() const;
+  std::string ExtractDescription() const;
   std::string ExtractAppId() const;
-  std::string ExtractCoalescingKey() const;
+  std::string ExtractKey() const;
   GURL ExtractOriginUrl() const;
-  GURL ExtractIconUrl() const;
+  GURL ExtractAppIconUrl() const;
   GURL ExtractImageUrl() const;
   std::string ExtractFirstExternalId() const;
   std::string ExtractNotificationId() const;
-  std::string ExtractBody() const;
+  std::string ExtractText() const;
   ReadState ExtractReadState() const;
 
   sync_pb::SyncedNotificationSpecifics specifics_;

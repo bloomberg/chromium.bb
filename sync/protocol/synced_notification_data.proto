@@ -26,31 +26,59 @@ message SyncedNotificationIdentifier {
   optional string coalescing_key = 2;
 }
 
-message SyncedNotification {
-  // The unique identifier of the notification.
-  optional SyncedNotificationIdentifier id = 1;
+message SyncedNotificationCreator {
+  // The gaia id of the creator.  If a notification does not have a clear
+  // creator, skip this and follow the directions below to use a system creator.
+  optional int64 gaia_id = 1;
 
+  // Indicates that the creator is a "system" creator.  Example of these are
+  // notifications sent to the user where the addressee is "Google", such as the
+  // "You have violated our TOS, and have 3 days to fix it or you'll lose your
+  // account" notifications.  If is_system is set, gaia_id must not be set and
+  // instead the app_id field must be set.
+  optional bool is_system = 2;
+
+  // Only set this in the system-creator case.
+  optional string app_id = 3;
+}
+
+message SyncedNotificationRecipients {
+  repeated int64 gaia_id = 1;
+
+  // For now, only support gaia id recipients.  Add more recipient types via
+  // 'repeated Type other_type = X' when necessary.
+}
+
+message SyncedNotification {
   // A secondary type that is isolated within the same app_id.
   //
   // NOTE: For ASBE support purposes this must be in the format [A-Za-z_]+.
-  optional string type = 2;
+  optional string type = 1;
 
   // Whatever string the client entered during creation.  If no external_id is
   // specified, the notification can no longer be identified individually for
   // fetching/deleting, etc...
-  optional string external_id = 3;
+  optional string external_id = 2;
+
+  // The creator of the notification.
+  optional SyncedNotificationCreator creator = 3;
+
+  // TODO(petewil): This won't build.  Import the relevant protobuf.
+  // optional MapData client_data = 4;
 }
 
 message CoalescedSyncedNotification {
-  // The identifier used to identify individual coalesced notifications.
-  optional SyncedNotificationIdentifier id = 1;
+  // An opaque string key used to identify individual coalesced notifications.
+  optional string key = 1;
+
+  optional string app_id = 2;
 
   // All the notifications that are grouped together.
-  repeated SyncedNotification notification = 2;
+  repeated SyncedNotification notification = 3;
 
   // Data that is used directly by endpoints to render notifications in the case
   // where no "native" app can handle the notification.
-  optional SyncedNotificationRenderInfo render_info = 3;
+  optional SyncedNotificationRenderInfo render_info = 4;
 
   // Read state will be per coalesced notification.
   enum ReadState {
@@ -58,9 +86,21 @@ message CoalescedSyncedNotification {
     READ = 2;
     DISMISSED = 3;
   }
-  optional ReadState read_state = 4;
+  optional ReadState read_state = 5;
 
   // The time when the LATEST notification of the coalesced notification is
   // created (in milliseconds since the linux epoch).
-  optional uint64 creation_time_msec = 5;
+  optional uint64 creation_time_msec = 6;
+
+  enum Priority {
+    LOW = 1;
+    STANDARD = 2;
+    HIGH = 3;
+    // We will most likely add at least one more priority in the near future.
+  };
+  optional Priority priority = 7;
+}
+
+message SyncedNotificationList {
+  repeated CoalescedSyncedNotification coalesced_notification = 1;
 }

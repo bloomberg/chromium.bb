@@ -15,7 +15,6 @@ using syncer::SyncData;
 using notifier::SyncedNotification;
 using sync_pb::EntitySpecifics;
 using sync_pb::SyncedNotificationSpecifics;
-using sync_pb::SyncedNotificationRenderInfo_Layout_LayoutType_TITLE_AND_SUBTEXT;
 
 namespace {
 
@@ -26,11 +25,11 @@ const char kTitle2[] = "Email from Mark: Upcoming Ski trip";
 const char kTitle3[] = "Weather alert - light rain tonight.";
 const char kAppId1[] = "fboilmbenheemaomgaeehigklolhkhnf";
 const char kAppId2[] = "fbcmoldooppoahjhfflnmljoanccekpf";
-const char kCoalescingKey1[] = "foo";
-const char kCoalescingKey2[] = "bar";
-const char kBody1[] = "Space Needle, 12:00 pm";
-const char kBody2[] = "Stevens Pass is our first choice.";
-const char kBody3[] = "More rain expected in the Seattle area tonight.";
+const char kKey1[] = "foo";
+const char kKey2[] = "bar";
+const char kText1[] = "Space Needle, 12:00 pm";
+const char kText2[] = "Stevens Pass is our first choice.";
+const char kText3[] = "More rain expected in the Seattle area tonight.";
 const char kIconUrl1[] = "http://www.google.com/icon1.jpg";
 const char kIconUrl2[] = "http://www.google.com/icon2.jpg";
 const char kIconUrl3[] = "http://www.google.com/icon3.jpg";
@@ -41,6 +40,8 @@ const sync_pb::CoalescedSyncedNotification_ReadState kRead =
     sync_pb::CoalescedSyncedNotification_ReadState_READ;
 const sync_pb::CoalescedSyncedNotification_ReadState kUnread =
     sync_pb::CoalescedSyncedNotification_ReadState_UNREAD;
+const sync_pb::CoalescedSyncedNotification_ReadState kDismissed =
+    sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED;
 }  // namespace
 
 class SyncedNotificationTest : public testing::Test {
@@ -51,17 +52,17 @@ class SyncedNotificationTest : public testing::Test {
   // Methods from testing::Test.
 
   virtual void SetUp() OVERRIDE {
-    sync_data1_ = CreateSyncData(
-        kTitle1, kBody1, kIconUrl1, kAppId1, kCoalescingKey1, kUnread);
-    sync_data2_ = CreateSyncData(
-        kTitle2, kBody2, kIconUrl2, kAppId2, kCoalescingKey2, kUnread);
+    sync_data1_ = CreateSyncData(kTitle1, kText1, kIconUrl1, kImageUrl1,
+                                 kAppId1, kKey1, kUnread);
+    sync_data2_ = CreateSyncData(kTitle2, kText2, kIconUrl2, kImageUrl1,
+                                 kAppId2, kKey2, kUnread);
     // Notification 3 will have the same ID as notification1, but different
     // data inside.
-    sync_data3_ = CreateSyncData(
-        kTitle3, kBody3, kIconUrl3, kAppId1, kCoalescingKey1, kUnread);
+    sync_data3_ = CreateSyncData(kTitle3, kText3, kIconUrl3, kImageUrl1,
+                                 kAppId1, kKey1, kUnread);
     // Notification 4 will be the same as 1, but the read state will be 'read'.
-    sync_data4_ = CreateSyncData(
-        kTitle1, kBody1, kIconUrl1, kAppId1, kCoalescingKey1, kRead);
+    sync_data4_ = CreateSyncData(kTitle1, kText1, kIconUrl1, kImageUrl1,
+                                 kAppId1, kKey1, kDismissed);
 
     notification1_.reset(new SyncedNotification(sync_data1_));
     notification2_.reset(new SyncedNotification(sync_data2_));
@@ -85,10 +86,11 @@ class SyncedNotificationTest : public testing::Test {
   // Helper to create syncer::SyncData.
   static SyncData CreateSyncData(
       const std::string& title,
-      const std::string& body,
-      const std::string& icon_url,
+      const std::string& text,
+      const std::string& app_icon_url,
+      const std::string& image_url,
       const std::string& app_id,
-      const std::string& coalescing_key,
+      const std::string& key,
       const sync_pb::CoalescedSyncedNotification_ReadState read_state) {
     // CreateLocalData makes a copy of this, so this can safely live
     // on the stack.
@@ -100,37 +102,47 @@ class SyncedNotificationTest : public testing::Test {
         entity_specifics.mutable_synced_notification();
 
     specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_layout()->
-        set_layout_type(
-            SyncedNotificationRenderInfo_Layout_LayoutType_TITLE_AND_SUBTEXT);
-
-    specifics->mutable_coalesced_notification()->
-        mutable_id()->
         set_app_id(app_id);
 
     specifics->mutable_coalesced_notification()->
-        mutable_id()->
-        set_coalescing_key(coalescing_key);
+        set_key(key);
 
     specifics->mutable_coalesced_notification()->
         mutable_render_info()->
-        mutable_layout()->
-        mutable_title_and_subtext_data()->
+        mutable_expanded_info()->
+        mutable_simple_expanded_layout()->
         set_title(title);
 
     specifics->mutable_coalesced_notification()->
         mutable_render_info()->
-        mutable_layout()->
-        mutable_title_and_subtext_data()->
-        add_subtext(body);
+        mutable_expanded_info()->
+        mutable_simple_expanded_layout()->
+        set_text(text);
 
     specifics->mutable_coalesced_notification()->
         mutable_render_info()->
-        mutable_layout()->
-        mutable_title_and_subtext_data()->
-        mutable_icon()->
-        set_url(icon_url);
+        mutable_expanded_info()->
+        add_collapsed_info();
+    specifics->mutable_coalesced_notification()->
+        mutable_render_info()->
+        mutable_expanded_info()->
+        mutable_collapsed_info(0)->
+        mutable_simple_collapsed_layout()->
+        mutable_app_icon()->
+        set_url(app_icon_url);
+
+    specifics->mutable_coalesced_notification()->
+        mutable_render_info()->
+        mutable_expanded_info()->
+        mutable_simple_expanded_layout()->
+        add_media();
+    specifics->mutable_coalesced_notification()->
+        mutable_render_info()->
+        mutable_expanded_info()->
+        mutable_simple_expanded_layout()->
+        mutable_media(0)->
+        mutable_image()->
+        set_url(image_url);
 
     specifics->mutable_coalesced_notification()->
         set_creation_time_msec(kFakeCreationTime);
@@ -164,9 +176,9 @@ TEST_F(SyncedNotificationTest, GetAppIdTest) {
   EXPECT_EQ(found_app_id, expected_app_id);
 }
 
-TEST_F(SyncedNotificationTest, GetCoalescingKeyTest) {
-  std::string found_key = notification1_->coalescing_key();
-  std::string expected_key(kCoalescingKey1);
+TEST_F(SyncedNotificationTest, GetKeyTest) {
+  std::string found_key = notification1_->key();
+  std::string expected_key(kKey1);
 
   EXPECT_EQ(expected_key, found_key);
 }
@@ -179,7 +191,7 @@ TEST_F(SyncedNotificationTest, GetTitleTest) {
 }
 
 TEST_F(SyncedNotificationTest, GetIconURLTest) {
-  std::string found_icon_url = notification1_->icon_url().spec();
+  std::string found_icon_url = notification1_->app_icon_url().spec();
   std::string expected_icon_url(kIconUrl1);
 
   EXPECT_EQ(expected_icon_url, found_icon_url);
@@ -194,7 +206,7 @@ TEST_F(SyncedNotificationTest, GetReadStateTest) {
 
   SyncedNotification::ReadState found_state2 =
       notification4_->read_state();
-  SyncedNotification::ReadState expected_state2(SyncedNotification::kRead);
+  SyncedNotification::ReadState expected_state2(SyncedNotification::kDismissed);
 
   EXPECT_EQ(expected_state2, found_state2);
 }
@@ -203,24 +215,22 @@ TEST_F(SyncedNotificationTest, GetReadStateTest) {
 // pass on actual data.
 TEST_F(SyncedNotificationTest, GetImageURLTest) {
   std::string found_image_url = notification1_->image_url().spec();
-  std::string expected_image_url;  // TODO(petewil): (kImageUrl1)
+  std::string expected_image_url = kImageUrl1;
 
   EXPECT_EQ(expected_image_url, found_image_url);
 }
 
 // TODO(petewil): test with a multi-line body
-TEST_F(SyncedNotificationTest, GetBodyTest) {
-  std::string found_body = notification1_->body();
-  std::string expected_body(kBody1);
+TEST_F(SyncedNotificationTest, GetTextTest) {
+  std::string found_text = notification1_->text();
+  std::string expected_text(kText1);
 
-  EXPECT_EQ(expected_body, found_body);
+  EXPECT_EQ(expected_text, found_text);
 }
 
 TEST_F(SyncedNotificationTest, GetNotificationIdTest) {
   std::string found_id = notification1_->notification_id();
-  std::string expected_id(kAppId1);
-  expected_id += "/";
-  expected_id += kCoalescingKey1;
+  std::string expected_id(kKey1);
 
   EXPECT_EQ(expected_id, found_id);
 }
