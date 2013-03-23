@@ -1219,6 +1219,11 @@ base::Value* SpdySession::GetInfoAsValue() const {
 
   dict->SetBoolean("sent_settings", sent_settings_);
   dict->SetBoolean("received_settings", received_settings_);
+
+  dict->SetInteger("send_window_size", session_send_window_size_);
+  dict->SetInteger("recv_window_size", session_recv_window_size_);
+  dict->SetInteger("unacked_recv_window_bytes",
+                   session_unacked_recv_window_bytes_);
   return dict;
 }
 

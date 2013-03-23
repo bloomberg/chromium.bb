@@ -139,7 +139,7 @@ var SpdyView = (function() {
     tablePrinter.addHeaderCell('Host');
     tablePrinter.addHeaderCell('Proxy');
     tablePrinter.addHeaderCell('ID');
-    tablePrinter.addHeaderCell('Protocol Negotiatied');
+    tablePrinter.addHeaderCell('Protocol Negotiated');
     tablePrinter.addHeaderCell('Active streams');
     tablePrinter.addHeaderCell('Unclaimed pushed');
     tablePrinter.addHeaderCell('Max');
@@ -151,6 +151,9 @@ var SpdyView = (function() {
     tablePrinter.addHeaderCell('Secure');
     tablePrinter.addHeaderCell('Sent settings');
     tablePrinter.addHeaderCell('Received settings');
+    tablePrinter.addHeaderCell('Send window');
+    tablePrinter.addHeaderCell('Receive window');
+    tablePrinter.addHeaderCell('Unacked received data');
     tablePrinter.addHeaderCell('Error');
 
     for (var i = 0; i < spdySessions.length; i++) {
@@ -178,6 +181,9 @@ var SpdyView = (function() {
       tablePrinter.addCell(session.is_secure);
       tablePrinter.addCell(session.sent_settings);
       tablePrinter.addCell(session.received_settings);
+      tablePrinter.addCell(session.send_window_size);
+      tablePrinter.addCell(session.recv_window_size);
+      tablePrinter.addCell(session.unacked_recv_window_bytes);
       tablePrinter.addCell(session.error);
     }
     return tablePrinter;
