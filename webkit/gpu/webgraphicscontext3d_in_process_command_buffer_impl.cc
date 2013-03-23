@@ -1689,5 +1689,17 @@ DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
 
 DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT,
                  WGC3Dsizei, const WGC3Denum*)
+
+DELEGATE_TO_GL_9(asyncTexImage2DCHROMIUM, AsyncTexImage2DCHROMIUM,
+    WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dsizei, WGC3Dsizei, WGC3Dint,
+    WGC3Denum, WGC3Denum, const void*)
+
+DELEGATE_TO_GL_9(asyncTexSubImage2DCHROMIUM, AsyncTexSubImage2DCHROMIUM,
+    WGC3Denum, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei,
+    WGC3Denum, WGC3Denum, const void*)
+
+DELEGATE_TO_GL_1(waitAsyncTexImage2DCHROMIUM, WaitAsyncTexImage2DCHROMIUM,
+    WGC3Denum)
+
 }  // namespace gpu
 }  // namespace webkit
