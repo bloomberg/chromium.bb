@@ -101,6 +101,15 @@ DatabaseQuotaClient::DatabaseQuotaClient(
 }
 
 DatabaseQuotaClient::~DatabaseQuotaClient() {
+  if (db_tracker_thread_ &&
+      !db_tracker_thread_->RunsTasksOnCurrentThread() &&
+      db_tracker_) {
+    DatabaseTracker* tracker = db_tracker_;
+    tracker->AddRef();
+    db_tracker_ = NULL;
+    if (!db_tracker_thread_->ReleaseSoon(FROM_HERE, tracker))
+      tracker->Release();
+  }
 }
 
 QuotaClient::ID DatabaseQuotaClient::id() const {
