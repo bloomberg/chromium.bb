@@ -156,6 +156,7 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point, int count) {
       UpdateCurrentRootWindow(move_point);
     ConvertPointToTarget(current_root_window_, &move_point);
     ui::MouseEvent mouseev(event_type, move_point, move_point, flags_);
+    mouseev.set_system_location(move_point);
     Dispatch(&mouseev);
   }
   current_location_ = point;

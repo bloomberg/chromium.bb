@@ -274,8 +274,7 @@ void LocatedEvent::UpdateForRootTransform(
   root_transform.TransformPointReverse(p);
   // TODO(oshima): Translating a point using reversed matrix can
   // results in small error like 0 -> -0.01, whose floored value
-  // is -1 instead of 0. Investigate the best way to handle this,
-  // instead of just rounding it.
+  // is -1 instead of 0. crbug.com/222483.
   root_location_ = location_ = gfx::ToFlooredPoint(p.AsPointF());
 }
 

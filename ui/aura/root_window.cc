@@ -669,8 +669,28 @@ void RootWindow::ClearMouseHandlers() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
-void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
+void RootWindow::TransformEventForDeviceScaleFactor(bool keep_inside_root,
+                                                    ui::LocatedEvent* event) {
   event->UpdateForRootTransform(GetRootTransform());
+#if defined(OS_CHROMEOS)
+  const gfx::Rect& root_bounds = bounds();
+  if (keep_inside_root &
+      host_->GetBounds().Contains(event->system_location()) &&
+      !root_bounds.Contains(event->root_location())) {
+    // Make sure that the mouse location inside the host window gets
+    // translated inside root window.
+    // TODO(oshima): This is (hopefully) short term bandaid to deal
+    // with calculation error in inverted matrix. We'll try better
+    // alternative (crbug.com/222483) for m28.
+    int x = event->location().x();
+    int y = event->location().y();
+    x = std::min(std::max(x, root_bounds.x()), root_bounds.right());
+    y = std::min(std::max(y, root_bounds.y()), root_bounds.bottom());
+    const gfx::Point new_location(x, y);
+    event->set_location(new_location);
+    event->set_root_location(new_location);
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
@@ -884,7 +904,7 @@ bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
 bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
   DispatchHeldEvents();
 
-  TransformEventForDeviceScaleFactor(event);
+  TransformEventForDeviceScaleFactor(false, event);
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
 
@@ -930,7 +950,7 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
     default:
       break;
   }
-  TransformEventForDeviceScaleFactor(event);
+  TransformEventForDeviceScaleFactor(false, event);
   bool handled = false;
   Window* target = client::GetCaptureWindow(this);
   if (!target) {
@@ -1031,7 +1051,7 @@ RootWindow* RootWindow::AsRootWindow() {
 // RootWindow, private:
 
 bool RootWindow::DispatchMouseEventImpl(ui::MouseEvent* event) {
-  TransformEventForDeviceScaleFactor(event);
+  TransformEventForDeviceScaleFactor(true, event);
   Window* target = mouse_pressed_handler_ ?
       mouse_pressed_handler_ : client::GetCaptureWindow(this);
   if (!target)

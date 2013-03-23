@@ -25,6 +25,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/transform.h"
 
 namespace aura {
 namespace {
@@ -207,6 +208,47 @@ TEST_F(RootWindowTest, TranslatedEvent) {
   EXPECT_EQ("50,50", translated_event.location().ToString());
   EXPECT_EQ("100,100", translated_event.root_location().ToString());
 }
+
+#if defined(OS_CHROMEOS)
+// Make sure the mouse location is translated within the root
+// window. crbug.com/222483.
+TEST_F(RootWindowTest, KeepTranslatedEventInRoot) {
+  // Clockwise.
+  gfx::Transform rotate;
+  rotate.Translate(599, 0);
+  rotate.Rotate(90);
+  root_window()->SetTransform(rotate);
+
+  gfx::Point top_edge_on_host(100, 0);
+  ui::MouseEvent top_event(ui::ET_MOUSE_PRESSED,
+                           top_edge_on_host,
+                           top_edge_on_host, 0);
+  root_window()->TransformEventForDeviceScaleFactor(true, &top_event);
+  EXPECT_TRUE(root_window()->bounds().Contains(top_event.location()));
+
+  // Counter clockwise.
+  rotate.MakeIdentity();
+  rotate.Translate(0, 799);
+  rotate.Rotate(270);
+  root_window()->SetTransform(rotate);
+
+  gfx::Point bottom_edge_on_host(500, 799);
+  ui::MouseEvent bottom_event(ui::ET_MOUSE_PRESSED,
+                              bottom_edge_on_host,
+                              bottom_edge_on_host, 0);
+  root_window()->TransformEventForDeviceScaleFactor(true, &bottom_event);
+  EXPECT_TRUE(root_window()->bounds().Contains(bottom_event.location()));
+
+  // The locaion can be outside if |keep_inside_root| is false.
+  ui::MouseEvent bottom_event_outside(ui::ET_MOUSE_PRESSED,
+                                      bottom_edge_on_host,
+                                      bottom_edge_on_host, 0);
+  root_window()->TransformEventForDeviceScaleFactor(false,
+                                                    &bottom_event_outside);
+  EXPECT_FALSE(root_window()->bounds().Contains(
+      bottom_event_outside.location()));
+}
+#endif
 
 namespace {
 

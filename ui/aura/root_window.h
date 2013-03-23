@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -293,6 +294,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void ClearMouseHandlers();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RootWindowTest, KeepTranslatedEventInRoot);
+
   friend class Window;
   friend class TestScreen;
 
@@ -308,8 +311,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // factor. The RootWindowHostDelegate dispatches events in the physical pixel
   // coordinate. But the event processing from RootWindow onwards happen in
   // device-independent pixel coordinate. So it is necessary to update the event
-  // received from the host.
-  void TransformEventForDeviceScaleFactor(ui::LocatedEvent* event);
+  // received from the host. When |keep_inside_root| is true and the event's
+  // system location is inside host window's bounds, the location will be
+  // kept inside the root window's bounds.
+  void TransformEventForDeviceScaleFactor(bool keep_inside_root,
+                                          ui::LocatedEvent* event);
 
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
