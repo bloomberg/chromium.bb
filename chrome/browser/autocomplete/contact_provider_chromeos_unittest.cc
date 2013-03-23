@@ -68,6 +68,7 @@ class ContactProviderTest : public testing::Test {
         AutocompleteInput(UTF8ToUTF16(utf8_text),
                           string16::npos,  // cursor_position
                           string16(),      // desired_tld
+                          GURL(),          // current_url
                           false,           // prevent_inline_autocomplete
                           false,           // prefer_keyword
                           false,           // allow_exact_keyword_match

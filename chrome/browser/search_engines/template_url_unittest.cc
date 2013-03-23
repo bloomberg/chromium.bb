@@ -925,3 +925,72 @@ TEST_F(TemplateURLTest, HasSearchTermsReplacementKey) {
   EXPECT_TRUE(url.HasSearchTermsReplacementKey(
       GURL("http://bing.com/#espv")));
 }
+
+TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
+  TemplateURLData data;
+  data.SetURL("http://google.com/?q={searchTerms}");
+  data.instant_url = "http://google.com/instant#q={searchTerms}";
+  data.alternate_urls.push_back("http://google.com/alt/#q={searchTerms}");
+  data.alternate_urls.push_back(
+      "http://google.com/alt/?ext=foo&q={searchTerms}#ref=bar");
+  TemplateURL url(NULL, data);
+  TemplateURLRef::SearchTermsArgs search_terms(ASCIIToUTF16("Bob Morane"));
+  GURL result;
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/?q=something"), search_terms, &result));
+  EXPECT_EQ(GURL("http://google.com/?q=Bob%20Morane"), result);
+
+  result = GURL("http://should.not.change.com");
+  EXPECT_FALSE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.ca/?q=something"), search_terms, &result));
+  EXPECT_EQ(GURL("http://should.not.change.com"), result);
+
+  EXPECT_FALSE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/foo/?q=foo"), search_terms, &result));
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("https://google.com/?q=foo"), search_terms, &result));
+  EXPECT_EQ(GURL("https://google.com/?q=Bob%20Morane"), result);
+
+  EXPECT_FALSE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com:8080/?q=foo"), search_terms, &result));
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/?q=1+2+3&b=456"), search_terms, &result));
+  EXPECT_EQ(GURL("http://google.com/?q=Bob%20Morane&b=456"), result);
+
+  // Note: Spaces in REF parameters are not escaped. See TryEncoding() in
+  // template_url.cc for details.
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?q=123#q=456"), search_terms, &result));
+  EXPECT_EQ(GURL("http://google.com/alt/?q=123#q=Bob Morane"), result);
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?a=012&q=123&b=456#f=789"), search_terms,
+      &result));
+  EXPECT_EQ(GURL("http://google.com/alt/?a=012&q=Bob%20Morane&b=456#f=789"),
+            result);
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?a=012&q=123&b=456#j=abc&q=789&h=def9"),
+      search_terms, &result));
+  EXPECT_EQ(GURL("http://google.com/alt/?a=012&q=123&b=456"
+                 "#j=abc&q=Bob Morane&h=def9"), result);
+
+  EXPECT_FALSE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?q="), search_terms, &result));
+
+  EXPECT_FALSE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?#q="), search_terms, &result));
+
+  EXPECT_FALSE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?q=#q="), search_terms, &result));
+
+  EXPECT_FALSE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?q=123#q="), search_terms, &result));
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://google.com/alt/?q=#q=123"), search_terms, &result));
+  EXPECT_EQ(GURL("http://google.com/alt/?q=#q=Bob Morane"), result);
+}

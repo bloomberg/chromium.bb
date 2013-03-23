@@ -387,7 +387,7 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
 void AutocompleteProviderTest::RunQuery(const string16 query) {
   result_.Reset();
   controller_->Start(AutocompleteInput(
-      query, string16::npos, string16(), true, false, true,
+      query, string16::npos, string16(), GURL(), true, false, true,
       AutocompleteInput::ALL_MATCHES));
 
   if (!controller_->done())
@@ -405,7 +405,7 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   // be from SearchProvider.  (It provides all verbatim search matches,
   // keyword or not.)
   controller_->Start(AutocompleteInput(
-      ASCIIToUTF16("k test"), string16::npos, string16(), true, false,
+      ASCIIToUTF16("k test"), string16::npos, string16(), GURL(), true, false,
       allow_exact_keyword_match, AutocompleteInput::SYNCHRONOUS_MATCHES));
   EXPECT_TRUE(controller_->done());
   EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,

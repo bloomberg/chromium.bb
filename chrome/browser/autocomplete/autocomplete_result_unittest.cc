@@ -115,8 +115,8 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
     const TestData* last, size_t last_size,
     const TestData* current, size_t current_size,
     const TestData* expected, size_t expected_size) {
-  AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), false,
-                          false, false, AutocompleteInput::ALL_MATCHES);
+  AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), GURL(),
+                          false, false, false, AutocompleteInput::ALL_MATCHES);
 
   ACMatches last_matches;
   PopulateAutocompleteMatches(last, last_size, &last_matches);
@@ -147,8 +147,8 @@ TEST_F(AutocompleteResultTest, Swap) {
   // Swap with a single match.
   ACMatches matches;
   AutocompleteMatch match;
-  AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), false,
-                          false, false, AutocompleteInput::ALL_MATCHES);
+  AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), GURL(),
+                          false, false, false, AutocompleteInput::ALL_MATCHES);
   matches.push_back(match);
   r1.AppendMatches(matches);
   r1.SortAndCull(input, test_util_.profile());
@@ -228,8 +228,8 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
 
   AutocompleteResult result;
   result.AppendMatches(matches);
-  AutocompleteInput input(string16(), string16::npos, string16(), false, false,
-                          false, AutocompleteInput::ALL_MATCHES);
+  AutocompleteInput input(string16(), string16::npos, string16(), GURL(), false,
+                          false, false, AutocompleteInput::ALL_MATCHES);
   result.SortAndCull(input, test_util_.profile());
 
   // Of the two results with the same non-empty destination URL, the
@@ -272,8 +272,8 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
 
   AutocompleteResult result;
   result.AppendMatches(matches);
-  AutocompleteInput input(string16(), string16::npos, string16(), false, false,
-                          false, AutocompleteInput::ALL_MATCHES);
+  AutocompleteInput input(string16(), string16::npos, string16(), GURL(), false,
+                          false, false, AutocompleteInput::ALL_MATCHES);
   result.SortAndCull(input, test_util_.profile());
 
   // We expect the 3rd and 4th results to be removed.

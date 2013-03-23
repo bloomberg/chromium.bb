@@ -55,6 +55,12 @@ class AutocompleteInput {
   // "www." should be prepended to the domain where possible. The |desired_tld|
   // should not contain a leading '.' (use "com" instead of ".com").
   //
+  // If |current_url| is set to a valid search result page URL, providers can
+  // use it to perform query refinement. For example, if it is set to an image
+  // search result page, the search provider may generate an image search URL.
+  // Query refinement is only used by mobile ports, so only these set
+  // |current_url| to a non-empty string.
+  //
   // |prevent_inline_autocomplete| is true if the generated result set should
   // not require inline autocomplete for the default match.  This is difficult
   // to explain in the abstract; the practical use case is that after the user
@@ -76,6 +82,7 @@ class AutocompleteInput {
   AutocompleteInput(const string16& text,
                     size_t cursor_position,
                     const string16& desired_tld,
+                    const GURL& current_url,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
@@ -135,6 +142,9 @@ class AutocompleteInput {
                   size_t cursor_position,
                   const url_parse::Parsed& parts);
 
+  // The current URL, or an invalid GURL if query refinement is not desired.
+  const GURL& current_url() const { return current_url_; }
+
   // The type of input supplied.
   Type type() const { return type_; }
 
@@ -173,6 +183,7 @@ class AutocompleteInput {
   // method.
   string16 text_;
   size_t cursor_position_;
+  GURL current_url_;
   Type type_;
   url_parse::Parsed parts_;
   string16 scheme_;

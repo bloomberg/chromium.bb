@@ -40,11 +40,13 @@ AutocompleteInput::AutocompleteInput()
 AutocompleteInput::AutocompleteInput(const string16& text,
                                      size_t cursor_position,
                                      const string16& desired_tld,
+                                     const GURL& current_url,
                                      bool prevent_inline_autocomplete,
                                      bool prefer_keyword,
                                      bool allow_exact_keyword_match,
                                      MatchesRequested matches_requested)
     : cursor_position_(cursor_position),
+      current_url_(current_url),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
@@ -498,6 +500,7 @@ void AutocompleteInput::UpdateText(const string16& text,
 void AutocompleteInput::Clear() {
   text_.clear();
   cursor_position_ = string16::npos;
+  current_url_ = GURL();
   type_ = INVALID;
   parts_ = url_parse::Parsed();
   scheme_.clear();

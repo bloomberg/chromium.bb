@@ -238,28 +238,11 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
     }
   }
 
+  std::string input_encoding;
   string16 encoded_terms;
   string16 encoded_original_query;
-  std::string input_encoding;
-  // Encode the search terms so that we know the encoding.
-  for (std::vector<std::string>::const_iterator i(
-           owner_->input_encodings().begin());
-       i != owner_->input_encodings().end(); ++i) {
-    if (TryEncoding(search_terms_args.search_terms,
-                    search_terms_args.original_query, i->c_str(),
-                    is_in_query, &encoded_terms, &encoded_original_query)) {
-      input_encoding = *i;
-      break;
-    }
-  }
-  if (input_encoding.empty()) {
-    input_encoding = "UTF-8";
-    if (!TryEncoding(search_terms_args.search_terms,
-                     search_terms_args.original_query,
-                     input_encoding.c_str(), is_in_query, &encoded_terms,
-                     &encoded_original_query))
-      NOTREACHED();
-  }
+  owner_->EncodeSearchTerms(search_terms_args, is_in_query, &input_encoding,
+      &encoded_terms, &encoded_original_query);
 
   std::string url = parsed_url_;
 
@@ -477,7 +460,9 @@ bool TemplateURLRef::HasGoogleBaseURLs() const {
 bool TemplateURLRef::ExtractSearchTermsFromURL(
     const GURL& url,
     string16* search_terms,
-    const SearchTermsData& search_terms_data) const {
+    const SearchTermsData& search_terms_data,
+    url_parse::Parsed::ComponentType* search_terms_component,
+    url_parse::Component* search_terms_position) const {
   DCHECK(search_terms);
   search_terms->clear();
 
@@ -519,6 +504,10 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
                 net::UnescapeRule::URL_SPECIAL_CHARS |
                 net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
             NULL);
+        if (search_terms_component)
+          *search_terms_component = search_term_key_location_;
+        if (search_terms_position)
+          *search_terms_position = value;
         return true;
       }
     }
@@ -851,26 +840,9 @@ bool TemplateURL::ExtractSearchTermsFromURLUsingTermsData(
     const GURL& url,
     string16* search_terms,
     const SearchTermsData& search_terms_data) {
-  DCHECK(search_terms);
-  search_terms->clear();
-
-  // Then try to match with every pattern.
-  for (size_t i = 0; i < URLCount(); ++i) {
-    TemplateURLRef ref(this, i);
-    if (ref.ExtractSearchTermsFromURL(url, search_terms, search_terms_data)) {
-      // If ExtractSearchTermsFromURL() returns true and |search_terms| is empty
-      // it means the pattern matched but no search terms were present. In this
-      // case we fail immediately without looking for matches in subsequent
-      // patterns. This means that given patterns
-      //    [ "http://foo/#q={searchTerms}", "http://foo/?q={searchTerms}" ],
-      // calling ExtractSearchTermsFromURL() on "http://foo/?q=bar#q=' would
-      // return false. This is important for at least Google, where such URLs
-      // are invalid.
-      return !search_terms->empty();
-    }
-  }
-  return false;
+  return FindSearchTermsInURL(url, search_terms_data, search_terms, NULL, NULL);
 }
+
 
 bool TemplateURL::IsSearchURL(const GURL& url) {
   UIThreadSearchTermsData search_terms_data(profile_);
@@ -902,6 +874,66 @@ bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {
     }
   }
   return false;
+}
+
+bool TemplateURL::ReplaceSearchTermsInURL(
+    const GURL& url,
+    const TemplateURLRef::SearchTermsArgs& search_terms_args,
+    GURL* result) {
+  UIThreadSearchTermsData search_terms_data(profile_);
+  // TODO(beaudoin): Use AQS from |search_terms_args| too.
+  url_parse::Parsed::ComponentType search_term_component;
+  url_parse::Component search_terms_position;
+  string16 search_terms;
+  if (!FindSearchTermsInURL(url, search_terms_data, &search_terms,
+                            &search_term_component, &search_terms_position)) {
+    return false;
+  }
+  DCHECK(search_terms_position.is_nonempty());
+
+  // FindSearchTermsInURL only returns true for search terms in the query or
+  // ref, so we can call EncodeSearchTerm with |is_in_query| = true, since query
+  // and ref are encoded in the same way.
+  std::string input_encoding;
+  string16 encoded_terms;
+  string16 encoded_original_query;
+  EncodeSearchTerms(search_terms_args, true, &input_encoding,
+                    &encoded_terms, &encoded_original_query);
+
+  std::string old_params((search_term_component == url_parse::Parsed::REF) ?
+      url.ref() : url.query());
+  std::string new_params(old_params, 0, search_terms_position.begin);
+  new_params += UTF16ToUTF8(search_terms_args.search_terms);
+  new_params += old_params.substr(search_terms_position.end());
+  url_canon::StdStringReplacements<std::string> replacements;
+  if (search_term_component == url_parse::Parsed::REF)
+    replacements.SetRefStr(new_params);
+  else
+    replacements.SetQueryStr(new_params);
+  *result = url.ReplaceComponents(replacements);
+  return true;
+}
+
+void TemplateURL::EncodeSearchTerms(
+    const TemplateURLRef::SearchTermsArgs& search_terms_args,
+    bool is_in_query,
+    std::string* input_encoding,
+    string16* encoded_terms,
+    string16* encoded_original_query) const {
+
+  std::vector<std::string> encodings(input_encodings());
+  if (std::find(encodings.begin(), encodings.end(), "UTF-8") == encodings.end())
+    encodings.push_back("UTF-8");
+  for (std::vector<std::string>::const_iterator i(encodings.begin());
+       i != encodings.end(); ++i) {
+    if (TryEncoding(search_terms_args.search_terms,
+                    search_terms_args.original_query, i->c_str(),
+                    is_in_query, encoded_terms, encoded_original_query)) {
+      *input_encoding = *i;
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void TemplateURL::CopyFrom(const TemplateURL& other) {
@@ -936,4 +968,32 @@ void TemplateURL::ResetKeywordIfNecessary(bool force) {
     if (url.is_valid())
       data_.SetKeyword(TemplateURLService::GenerateKeyword(url));
   }
+}
+
+bool TemplateURL::FindSearchTermsInURL(
+    const GURL& url,
+    const SearchTermsData& search_terms_data,
+    string16* search_terms,
+    url_parse::Parsed::ComponentType* search_term_component,
+    url_parse::Component* search_terms_position) {
+  DCHECK(search_terms);
+  search_terms->clear();
+
+  // Try to match with every pattern.
+  for (size_t i = 0; i < URLCount(); ++i) {
+    TemplateURLRef ref(this, i);
+    if (ref.ExtractSearchTermsFromURL(url, search_terms, search_terms_data,
+        search_term_component, search_terms_position)) {
+      // If ExtractSearchTermsFromURL() returns true and |search_terms| is empty
+      // it means the pattern matched but no search terms were present. In this
+      // case we fail immediately without looking for matches in subsequent
+      // patterns. This means that given patterns
+      //    [ "http://foo/#q={searchTerms}", "http://foo/?q={searchTerms}" ],
+      // calling ExtractSearchTermsFromURL() on "http://foo/?q=bar#q=' would
+      // return false. This is important for at least Google, where such URLs
+      // are invalid.
+      return !search_terms->empty();
+    }
+  }
+  return false;
 }

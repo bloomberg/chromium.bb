@@ -500,7 +500,7 @@ void OmniboxEditModel::StartAutocomplete(
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
   autocomplete_controller_->Start(AutocompleteInput(
-      user_text_, cursor_position, string16(),
+      user_text_, cursor_position, string16(), GURL(),
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE), keyword_is_selected,
@@ -559,9 +559,8 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     const AutocompleteInput& old_input = autocomplete_controller_->input();
     AutocompleteInput input(
       old_input.text(), old_input.cursor_position(), ASCIIToUTF16("com"),
-      old_input.prevent_inline_autocomplete(),
-      old_input.prefer_keyword(),
-      old_input.allow_exact_keyword_match(),
+      GURL(), old_input.prevent_inline_autocomplete(),
+      old_input.prefer_keyword(), old_input.allow_exact_keyword_match(),
       old_input.matches_requested());
     AutocompleteMatch url_match =
         HistoryURLProvider::SuggestExactInput(match.provider, input, true);

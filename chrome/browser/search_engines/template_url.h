@@ -142,12 +142,18 @@ class TemplateURLRef {
 
   // Use the pattern referred to by this TemplateURLRef to match the provided
   // |url| and extract |search_terms| from it. Returns true if the pattern
-  // matches, even if |search_terms| is empty. Returns false and an empty
-  // |search_terms| if the pattern does not match.
+  // matches, even if |search_terms| is empty. In this case
+  // |search_term_component|, if not NULL, indicates whether the search terms
+  // were found in the query or the ref parameters; and |search_terms_position|,
+  // if not NULL, contains the position of the search terms in the query or the
+  // ref parameters. Returns false and an empty |search_terms| if the pattern
+  // does not match.
   bool ExtractSearchTermsFromURL(
       const GURL& url,
       string16* search_terms,
-      const SearchTermsData& search_terms_data) const;
+      const SearchTermsData& search_terms_data,
+      url_parse::Parsed::ComponentType* search_term_component,
+      url_parse::Component* search_terms_position) const;
 
  private:
   friend class TemplateURL;
@@ -515,6 +521,28 @@ class TemplateURL {
   // InstantExtended capable URL.
   bool HasSearchTermsReplacementKey(const GURL& url) const;
 
+  // Given a |url| corresponding to this TemplateURL, identifies the search
+  // terms and replaces them with the ones in |search_terms_args|, leaving the
+  // other parameters untouched. If the replacement fails, returns false and
+  // leaves |result| untouched. This is used by mobile ports to perform query
+  // refinement.
+  bool ReplaceSearchTermsInURL(
+      const GURL& url,
+      const TemplateURLRef::SearchTermsArgs& search_terms_args,
+      GURL* result);
+
+  // Encodes the search terms from |search_terms_args| so that we know the
+  // |input_encoding|. Returns the |encoded_terms| and the
+  // |encoded_original_query|. |encoded_terms| may be escaped as path or query
+  // depending on |is_in_query|; |encoded_original_query| is always escaped as
+  // query.
+  void EncodeSearchTerms(
+      const TemplateURLRef::SearchTermsArgs& search_terms_args,
+      bool is_in_query,
+      std::string* input_encoding,
+      string16* encoded_terms,
+      string16* encoded_original_query) const;
+
  private:
   friend class TemplateURLService;
 
@@ -529,6 +557,17 @@ class TemplateURL {
   // TemplateURLService::GenerateSearchURL() and
   // TemplateURLService::GenerateKeyword().
   void ResetKeywordIfNecessary(bool force);
+
+  // Uses the alternate URLs and the search URL to match the provided |url|
+  // and extract |search_terms| from it as well as the |search_terms_component|
+  // (either REF or QUERY) and |search_terms_component| at which the
+  // |search_terms| are found in |url|. See also ExtractSearchTermsFromURL().
+  bool FindSearchTermsInURL(
+      const GURL& url,
+      const SearchTermsData& search_terms_data,
+      string16* search_terms,
+      url_parse::Parsed::ComponentType* search_terms_component,
+      url_parse::Component* search_terms_position);
 
   Profile* profile_;
   TemplateURLData data_;

@@ -344,7 +344,7 @@ void SearchBuilder::StartSearch() {
   // are not implemented.
   // TODO(xiyuan): Figure out the features that need to support here.
   controller_->Start(AutocompleteInput(search_box_->text(), string16::npos,
-                                       string16(), false, false, true,
+                                       string16(), GURL(), false, false, true,
                                        AutocompleteInput::ALL_MATCHES));
 }
 

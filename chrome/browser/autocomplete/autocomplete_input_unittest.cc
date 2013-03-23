@@ -122,7 +122,8 @@ TEST(AutocompleteInputTest, InputType) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, string16::npos, string16(),
-                            true, false, true, AutocompleteInput::ALL_MATCHES);
+                            GURL(), true, false, true,
+                            AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
@@ -149,7 +150,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, string16::npos,
-                            ASCIIToUTF16("com"), true, false, true,
+                            ASCIIToUTF16("com"), GURL(), true, false, true,
                             AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].type, input.type());
     if (input_cases[i].type == AutocompleteInput::URL)
@@ -161,7 +162,8 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteInputTest, InputCrash) {
   AutocompleteInput input(WideToUTF16(L"\uff65@s"), string16::npos, string16(),
-                          true, false, true, AutocompleteInput::ALL_MATCHES);
+                          GURL(), true, false, true,
+                          AutocompleteInput::ALL_MATCHES);
 }
 
 TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
@@ -203,7 +205,8 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
                                                    &scheme,
                                                    &host);
     AutocompleteInput input(input_cases[i].input, string16::npos, string16(),
-                            true, false, true, AutocompleteInput::ALL_MATCHES);
+                            GURL(), true, false, true,
+                            AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len);
     EXPECT_EQ(input_cases[i].host.begin, host.begin);
@@ -240,7 +243,7 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input,
                             input_cases[i].cursor_position,
-                            string16(), true, false, true,
+                            string16(), GURL(), true, false, true,
                             AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,

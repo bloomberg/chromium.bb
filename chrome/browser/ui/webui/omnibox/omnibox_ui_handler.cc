@@ -175,17 +175,15 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
   string16 input_string;
   bool return_val = input->GetString(0, &input_string);
   DCHECK(return_val);
-  int cursor_position_int;
-  return_val = input->GetInteger(1, &cursor_position_int);
+  int cursor_position;
+  return_val = input->GetInteger(1, &cursor_position);
   DCHECK(return_val);
-  size_t cursor_position = cursor_position_int;
   bool prevent_inline_autocomplete;
   return_val = input->GetBoolean(2, &prevent_inline_autocomplete);
   DCHECK(return_val);
   bool prefer_keyword;
   return_val = input->GetBoolean(3, &prefer_keyword);
   DCHECK(return_val);
-  string16 empty_string;
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
   // variable (or something else) and some providers will short-circuit
@@ -196,7 +194,8 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
   controller_->Start(AutocompleteInput(
       input_string,
       cursor_position,
-      empty_string,  // user's desired tld (top-level domain)
+      string16(),  // user's desired tld (top-level domain)
+      GURL(),
       prevent_inline_autocomplete,
       prefer_keyword,
       true,  // allow exact keyword matches

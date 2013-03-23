@@ -257,7 +257,7 @@ void SearchProviderTest::RunTillProviderDone() {
 void SearchProviderTest::QueryForInput(const string16& text,
                                        bool prevent_inline_autocomplete) {
   // Start a query.
-  AutocompleteInput input(text, string16::npos, string16(),
+  AutocompleteInput input(text, string16::npos, string16(), GURL(),
                           prevent_inline_autocomplete,
                           false, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
@@ -295,7 +295,7 @@ void SearchProviderTest::RunTest(TestData* cases,
                                  bool prefer_keyword) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(cases[i].input, string16::npos, string16(),
+    AutocompleteInput input(cases[i].input, string16::npos, string16(), GURL(),
                             false, prefer_keyword, true,
                             AutocompleteInput::ALL_MATCHES);
     provider_->Start(input, false);
@@ -849,8 +849,8 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   AutocompleteController controller(&profile_, NULL,
       AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
-      ASCIIToUTF16("k t"), string16::npos, string16(), false, false, true,
-      AutocompleteInput::ALL_MATCHES));
+      ASCIIToUTF16("k t"), string16::npos, string16(), GURL(), false, false,
+      true, AutocompleteInput::ALL_MATCHES));
   const AutocompleteResult& result = controller.result();
 
   // There should be three matches, one for the keyword history, one for

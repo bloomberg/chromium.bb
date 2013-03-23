@@ -226,8 +226,8 @@ void ShortcutsProviderTest::RunTest(const string16 text,
   std::sort(expected_urls.begin(), expected_urls.end());
 
   MessageLoop::current()->RunUntilIdle();
-  AutocompleteInput input(text, string16::npos, string16(), false, false, true,
-                          AutocompleteInput::ALL_MATCHES);
+  AutocompleteInput input(text, string16::npos, string16(), GURL(), false,
+                          false, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 
