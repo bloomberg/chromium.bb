@@ -521,6 +521,7 @@ void SerializeAccessibilityNode(
 
   if (dst->role == dst->ROLE_DOCUMENT ||
       dst->role == dst->ROLE_WEB_AREA) {
+    dst->string_attributes[dst->ATTR_HTML_TAG] = ASCIIToUTF16("#document");
     const WebDocument& document = src.document();
     if (dst->name.empty())
       dst->name = document.title();
