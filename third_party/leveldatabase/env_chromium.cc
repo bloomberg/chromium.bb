@@ -441,15 +441,33 @@ class ChromiumEnv : public Env, public UMALogger {
     base::FilePath src_file_path = CreateFilePath(src);
     if (!::file_util::PathExists(src_file_path))
       return result;
-    if (!::file_util::ReplaceFile(src_file_path, CreateFilePath(dst))) {
-      result = Status::IOError(src, "Could not rename file.");
-      RecordErrorAt(kRenamefile);
-    } else {
-      sync_parent(dst);
-      if (src != dst)
-        sync_parent(src);
-    }
-    return result;
+    const int kRenameIntervalMillis = 10;
+    base::TimeDelta time_to_sleep =
+        base::TimeDelta::FromMilliseconds(kRenameIntervalMillis);
+    base::TimeTicks start = base::TimeTicks::Now();
+    base::TimeTicks limit = start +
+        base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis);
+    base::FilePath destination = CreateFilePath(dst);
+    base::TimeTicks now = start;
+    bool first = true;
+    do {
+      if (first) {
+        first = false;
+      } else {
+        base::PlatformThread::Sleep(time_to_sleep);
+        now = base::TimeTicks::Now();
+      }
+      if (::file_util::ReplaceFile(src_file_path, destination)) {
+        RecordTimeToRename(now - start);
+        sync_parent(dst);
+        if (src != dst)
+          sync_parent(src);
+        return result;
+      }
+    } while (now < limit);
+
+    RecordErrorAt(kRenamefile);
+    return Status::IOError(src, "Could not rename file.");
   }
 
   virtual Status LockFile(const std::string& fname, FileLock** lock) {
@@ -552,10 +570,15 @@ class ChromiumEnv : public Env, public UMALogger {
     random_access_file_histogram_->Add(-error_code);
   }
 
+  void RecordTimeToRename(base::TimeDelta t) const {
+    rename_time_histogram_->AddTime(t);
+  }
+
  protected:
   void InitHistograms(const std::string& uma_title);
 
  private:
+  const int kMaxRenameTimeMillis;
   // BGThread() is the body of the background thread
   void BGThread();
   static void BGThreadWrapper(void* arg) {
@@ -576,27 +599,34 @@ class ChromiumEnv : public Env, public UMALogger {
 
   base::HistogramBase* io_error_histogram_;
   base::HistogramBase* random_access_file_histogram_;
+  base::HistogramBase* rename_time_histogram_;
 };
 
 ChromiumEnv::ChromiumEnv()
     : page_size_(::base::SysInfo::VMAllocationGranularity()),
       bgsignal_(&mu_),
-      started_bgthread_(false) {
+      started_bgthread_(false),
+      kMaxRenameTimeMillis(500) {
   InitHistograms("LevelDBEnv");
 }
 
 void ChromiumEnv::InitHistograms(const std::string& uma_title) {
   std::string uma_name(uma_title);
   uma_name.append(".IOError");
-  // Note: The calls to FactoryGet aren't thread-safe. It's ok to call them here
-  // because this method is only called from LazyInstance, which provides
-  // thread-safety.
   io_error_histogram_ = base::LinearHistogram::FactoryGet(uma_name, 1,
       kNumEntries, kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
 
   uma_name.append(".RandomAccessFile");
   random_access_file_histogram_ = base::LinearHistogram::FactoryGet(uma_name, 1,
       -base::PLATFORM_FILE_ERROR_MAX, -base::PLATFORM_FILE_ERROR_MAX + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+
+  std::string retry_name(uma_title);
+  retry_name.append(".TimeToRename");
+  rename_time_histogram_ = base::LinearHistogram::FactoryTimeGet(
+      retry_name, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis),
+      22, // 20 buckets between min and max, and 1 on either side.
       base::Histogram::kUmaTargetedHistogramFlag);
 }
 
