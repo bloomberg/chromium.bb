@@ -618,6 +618,11 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
     update_list_data_.append(FormatList(
         SBListChunkRanges(safe_browsing_util::kMalwareList)));
 
+  // Large requests are (probably) a sign of database corruption.
+  // Record stats to inform decisions about whether to automate
+  // deletion of such databases.  http://crbug.com/120219
+  UMA_HISTOGRAM_COUNTS("SB2.UpdateRequestSize", update_list_data_.size());
+
   GURL update_url = UpdateUrl();
   request_.reset(net::URLFetcher::Create(
       url_fetcher_id_++, update_url, net::URLFetcher::POST, this));
