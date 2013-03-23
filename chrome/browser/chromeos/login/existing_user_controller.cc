@@ -697,6 +697,11 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   guest_mode_url_ = GURL::EmptyGURL();
   std::string error = failure.GetErrorString();
 
+  if (UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
+          HandleLoginFailure(failure, host_)) {
+    return;
+  }
+
   if (failure.reason() == LoginFailure::OWNER_REQUIRED) {
     ShowError(IDS_LOGIN_ERROR_OWNER_REQUIRED, error);
     content::BrowserThread::PostDelayedTask(
@@ -850,6 +855,11 @@ void ExistingUserController::OnPasswordChangeDetected() {
                  weak_factory_.GetWeakPtr()))) {
     // Value of owner email is still not verified.
     // Another attempt will be invoked after verification completion.
+    return;
+  }
+
+  if (UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
+          HandlePasswordChangeDetected(host_)) {
     return;
   }
 

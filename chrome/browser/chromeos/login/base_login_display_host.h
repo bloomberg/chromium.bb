@@ -51,6 +51,7 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   virtual void StartSignInScreen() OVERRIDE;
   virtual void ResumeSignInScreen() OVERRIDE;
   virtual void CheckForAutoEnrollment() OVERRIDE;
+  virtual WizardController* GetWizardController() OVERRIDE;
 
   // Creates specific WizardController.
   virtual WizardController* CreateWizardController() = 0;

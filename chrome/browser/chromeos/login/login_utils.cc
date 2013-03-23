@@ -269,7 +269,7 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
     return;
 
   if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
-    UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps();
+    UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(login_host);
     return;
   }
 

@@ -21,7 +21,10 @@ class LocallyManagedUserCreationFlow : public UserFlow {
 
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
-  virtual void LaunchExtraSteps() OVERRIDE;
+  virtual bool HandleLoginFailure(const LoginFailure& failure,
+                                  LoginDisplayHost* host) OVERRIDE;
+  virtual bool HandlePasswordChangeDetected(LoginDisplayHost* host) OVERRIDE;
+  virtual void LaunchExtraSteps(LoginDisplayHost* host) OVERRIDE;
 
  private:
   // Display name for user being created.

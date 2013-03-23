@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -31,20 +32,28 @@ void LocallyManagedUserCreationScreen::PrepareToShow() {
     actor_->PrepareToShow();
 }
 
-void LocallyManagedUserCreationScreen::SetParameters(string16 name,
-                                                     std::string password) {
-  name_ = name;
-  password_ = password;
-}
 void LocallyManagedUserCreationScreen::Show() {
-  if (actor_)
+  if (actor_) {
     actor_->Show();
-  // Make sure no two controllers exist at the same time.
-  controller_.reset();
-  controller_.reset(new LocallyManagedUserController(this));
-
-  controller_->StartCreation(name_, password_);
+    actor_->ShowInitialScreen();
+  }
 }
+
+void LocallyManagedUserCreationScreen::
+    ShowManagerInconsistentStateErrorScreen() {
+  if (!actor_)
+    return
+  actor_->ShowErrorMessage(
+      l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TPM_ERROR),
+      false);
+}
+
+void LocallyManagedUserCreationScreen::ShowInitialScreen() {
+  if (actor_)
+    actor_->ShowInitialScreen();
+}
+
 
 void LocallyManagedUserCreationScreen::Hide() {
   if (actor_)
@@ -65,6 +74,32 @@ void LocallyManagedUserCreationScreen::FinishFlow() {
 
 void LocallyManagedUserCreationScreen::RetryLastStep() {
   controller_->RetryLastStep();
+}
+
+void LocallyManagedUserCreationScreen::RunFlow(
+    string16& display_name,
+    std::string& managed_user_password,
+    std::string& manager_id,
+    std::string& manager_password) {
+
+  // Make sure no two controllers exist at the same time.
+  controller_.reset();
+  controller_.reset(new LocallyManagedUserController(this));
+  controller_->SetUpCreation(display_name, managed_user_password);
+
+  ExistingUserController::current_controller()->
+      Login(manager_id, manager_password);
+}
+
+void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
+  if (actor_)
+    actor_->ShowManagerPasswordError();
+}
+
+void LocallyManagedUserCreationScreen::OnManagerSignIn() {
+  if (actor_)
+    actor_->ShowProgressScreen();
+  controller_->StartCreation();
 }
 
 void LocallyManagedUserCreationScreen::OnExit() {}

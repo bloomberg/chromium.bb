@@ -7,10 +7,19 @@
 
 namespace chromeos {
 
+const char kBaseChromeosMountPath[] = "/home/user";
+
 MountManager* MountManager::Get() {
-  if (!instance_.get())
-    instance_.reset(new MountManager());
-  return instance_.get();
+  if (!instance_)
+    instance_ = new MountManager();
+  return instance_;
+}
+
+// static
+MountManager* MountManager::instance_ = NULL;
+
+base::FilePath MountManager::GetHomeDir(std::string& user_hash) {
+  return base::FilePath(kBaseChromeosMountPath).Append(user_hash);
 }
 
 MountManager::MountManager() {}
@@ -18,10 +27,6 @@ MountManager::MountManager() {}
 MountManager::~MountManager() {}
 
 bool MountManager::IsMounted(const std::string& user_id) {
-//  if (UserManager::Get()->IsUserLoggedIn() &&
-//      ) {
-//    return ProfileManager::GetDefaultProfile()->
-//  }
   UserToPathMap::iterator i(additional_mounts_.find(user_id));
   return i != additional_mounts_.end();
 }

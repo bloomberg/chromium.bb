@@ -29,6 +29,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(ShowBackground, void(void));
   MOCK_METHOD0(CheckForAutoEnrollment, void(void));
   MOCK_METHOD2(StartWizard, void(const std::string&, DictionaryValue*));
+  MOCK_METHOD0(GetWizardController, WizardController*(void));
   MOCK_METHOD0(StartSignInScreen, void(void));
   MOCK_METHOD0(ResumeSignInScreen, void(void));
   MOCK_METHOD0(OnPreferencesChanged, void(void));

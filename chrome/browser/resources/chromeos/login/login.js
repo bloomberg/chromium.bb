@@ -12,7 +12,6 @@
 <include src="bubble.js"></include>
 <include src="display_manager.js"></include>
 <include src="header_bar.js"></include>
-<include src="managed_user_creation.js"></include>
 <include src="network_dropdown.js"></include>
 <include src="oobe_screen_oauth_enrollment.js"></include>
 <include src="oobe_screen_user_image.js"></include>
@@ -60,7 +59,6 @@ cr.define('cr.ui', function() {
     login.ErrorMessageScreen.register();
     login.TPMErrorMessageScreen.register();
     login.PasswordChangedScreen.register();
-    login.ManagedUserCreationScreen.register();
     login.LocallyManagedUserCreationScreen.register();
     oobe.TermsOfServiceScreen.register();
 

@@ -460,6 +460,12 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT" desc="Error text shown in locally managed user creation dialog when typed password is too short.">
     Password is too short.
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR" desc="Error text shown in locally managed user creation dialog when manager password is incorrect.">
+    Incorrect manager password.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE" desc="Error text shown in locally managed user creation dialog when account is in inconsistent state.">
+    Manager account is in inconsistent state. Please log in to manager account first and then try creating locally managed user again.
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_TITLE" desc="Text shown when locally managed user was successfully created">
     Setup is complete! Now learn what features are available to the manager of this account.
   </message>

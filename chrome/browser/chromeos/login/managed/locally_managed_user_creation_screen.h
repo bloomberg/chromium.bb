@@ -16,7 +16,6 @@
 namespace chromeos {
 
 // Class that controls screen showing ui for locally managed user creation.
-
 class LocallyManagedUserCreationScreen
     : public WizardScreen,
       public LocallyManagedUserCreationScreenHandler::Delegate,
@@ -27,7 +26,24 @@ class LocallyManagedUserCreationScreen
       LocallyManagedUserCreationScreenHandler* actor);
   virtual ~LocallyManagedUserCreationScreen();
 
-  virtual void SetParameters(string16 name, std::string password);
+  // Makes screen to show message about inconsistency in manager login flow
+  // (e.g. password change detected, invalid OAuth token, etc).
+  // Called when manager user is successfully authenticated, so ui elements
+  // should result in forced logout.
+  void ShowManagerInconsistentStateErrorScreen();
+
+  // Called when authentication fails for manager with provided password.
+  // Displays wrong password message on manager selection screen.
+  void OnManagerLoginFailure();
+
+  // Called when manager is successfully authenticated and account is in
+  // consistent state.
+  // Results in spinner indicating that creation is in process.
+  void OnManagerSignIn();
+
+  // Shows initial screen where managed user name/password are defined and
+  // manager is selected.
+  void ShowInitialScreen();
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
@@ -39,6 +55,10 @@ class LocallyManagedUserCreationScreen
   virtual void OnExit() OVERRIDE;
   virtual void OnActorDestroyed(LocallyManagedUserCreationScreenHandler* actor)
       OVERRIDE;
+  virtual void RunFlow(string16& display_name,
+                       std::string& managed_user_password,
+                       std::string& manager_id,
+                       std::string& manager_password) OVERRIDE;
   virtual void AbortFlow() OVERRIDE;
   virtual void RetryLastStep() OVERRIDE;
   virtual void FinishFlow() OVERRIDE;
@@ -52,10 +72,6 @@ class LocallyManagedUserCreationScreen
   LocallyManagedUserCreationScreenHandler* actor_;
 
   scoped_ptr<LocallyManagedUserController> controller_;
-
-  string16 name_;
-
-  std::string password_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreen);
 };

@@ -4,12 +4,18 @@
 
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
 
+#include "base/bind.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/mount_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -26,7 +32,8 @@ LocallyManagedUserController*
 
 LocallyManagedUserController::LocallyManagedUserController(
     LocallyManagedUserController::StatusConsumer* consumer)
-    : consumer_(consumer) {
+    : consumer_(consumer),
+      weak_factory_(this) {
   connector_.reset(new CloudConnector(this));
   if (current_controller_)
     NOTREACHED() << "More than one controller exist.";
@@ -37,14 +44,18 @@ LocallyManagedUserController::~LocallyManagedUserController() {
   current_controller_ = NULL;
 }
 
-void LocallyManagedUserController::StartCreation(string16 display_name,
+void LocallyManagedUserController::SetUpCreation(string16 display_name,
                                                  std::string password) {
-  // Start transaction
-  UserManager::Get()->StartLocallyManagedUserCreationTransaction(display_name);
   creation_context_.reset(
       new LocallyManagedUserController::UserCreationContext());
   creation_context_->display_name = display_name;
   creation_context_->password = password;
+}
+
+void LocallyManagedUserController::StartCreation() {
+  DCHECK(creation_context_);
+  UserManager::Get()->StartLocallyManagedUserCreationTransaction(
+      creation_context_->display_name);
   connector_->GenerateNewUserId();
 }
 
@@ -79,7 +90,7 @@ void LocallyManagedUserController::NewUserIdGenerated(std::string& new_id) {
 
   authenticator_ = new ManagedUserAuthenticator(this);
   authenticator_->AuthenticateToCreate(user->email(),
-                                       creation_context_->user_id);
+                                       creation_context_->password);
 }
 
 void LocallyManagedUserController::OnCloudError(
@@ -123,7 +134,9 @@ void LocallyManagedUserController::OnAuthenticationFailure(
     consumer_->OnCreationError(code, false);
 }
 
-void LocallyManagedUserController::OnMountSuccess() {
+void LocallyManagedUserController::OnMountSuccess(
+    const std::string& mount_hash) {
+  creation_context_->mount_hash = mount_hash;
   connector_->FetchDMToken(creation_context_->user_id);
 }
 
@@ -136,8 +149,25 @@ void LocallyManagedUserController::DMTokenFetched(std::string& user_id,
   creation_context_->token_acquired = true;
   creation_context_->token = token;
 
-  // TODO(antrim) : store token to file here.
+  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&LocallyManagedUserController::StoreManagedUserFiles,
+           weak_factory_.GetWeakPtr(),
+           MountManager::GetHomeDir(creation_context_->mount_hash)),
+      base::Bind(&LocallyManagedUserController::OnManagedUserFilesStored,
+           weak_factory_.GetWeakPtr()));
+}
 
+void LocallyManagedUserController::StoreManagedUserFiles(
+    const base::FilePath& base_path) {
+  base::FilePath token_file = base_path.Append("token");
+
+  file_util::WriteFile(token_file,
+      creation_context_->token.c_str(),
+      creation_context_->token.length());
+}
+
+void LocallyManagedUserController::OnManagedUserFilesStored() {
   UserManager::Get()->CommitLocallyManagedUserCreationTransaction();
   if (consumer_)
     consumer_->OnCreationSuccess();

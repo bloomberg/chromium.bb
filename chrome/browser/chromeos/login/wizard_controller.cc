@@ -371,16 +371,6 @@ void WizardController::ShowLocallyManagedUserCreationScreen() {
   SetStatusAreaVisible(false);
   LocallyManagedUserCreationScreen* screen =
       GetLocallyManagedUserCreationScreen();
-
-  string16 name;
-  std::string password;
-  DCHECK(screen_parameters_.get());
-
-  if (screen_parameters_.get()) {
-    screen_parameters_->GetString("user_display_name", &name);
-    screen_parameters_->GetString("password", &password);
-  }
-  screen->SetParameters(name, password);
   SetCurrentScreen(screen);
 }
 

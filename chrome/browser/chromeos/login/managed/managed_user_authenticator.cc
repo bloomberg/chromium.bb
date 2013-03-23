@@ -40,6 +40,16 @@ void TriggerResolve(ManagedUserAuthenticator::AuthAttempt* attempt,
   resolver->Resolve();
 }
 
+// Records status and calls resolver->Resolve().
+void TriggerResolveResult(ManagedUserAuthenticator::AuthAttempt* attempt,
+                          scoped_refptr<ManagedUserAuthenticator> resolver,
+                          bool success,
+                          const std::string& result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  attempt->RecordHash(result);
+  resolver->Resolve();
+}
+
 // Calls TriggerResolve while adding login time marker.
 void TriggerResolveWithLoginTimeMarker(
     const std::string& marker_name,
@@ -67,6 +77,10 @@ void Mount(ManagedUserAuthenticator::AuthAttempt* attempt,
                  "CryptohomeMount-LMU-End",
                  attempt,
                  resolver));
+
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
+      attempt->username,
+      base::Bind(&TriggerResolveResult, attempt, resolver));
 }
 
 // Returns hash of |password|, salted with the system salt.
@@ -125,12 +139,13 @@ void ManagedUserAuthenticator::AuthenticateToCreate(const std::string& username,
            cryptohome::CREATE_IF_MISSING));
 }
 
-void ManagedUserAuthenticator::OnAuthenticationSuccess() {
+void ManagedUserAuthenticator::OnAuthenticationSuccess(
+    const std::string& mount_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Locally managed user authentication success";
-  // TODO(antrim) : report mount path to mount manager.
+
   if (consumer_)
-    consumer_->OnMountSuccess();
+    consumer_->OnMountSuccess(mount_hash);
 }
 
 void ManagedUserAuthenticator::OnAuthenticationFailure(
@@ -185,7 +200,9 @@ void ManagedUserAuthenticator::Resolve() {
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
-          base::Bind(&ManagedUserAuthenticator::OnAuthenticationSuccess, this));
+          base::Bind(&ManagedUserAuthenticator::OnAuthenticationSuccess,
+                     this,
+                     current_state_->hash()));
       break;
     default:
       NOTREACHED();
@@ -202,6 +219,8 @@ ManagedUserAuthenticator::AuthState ManagedUserAuthenticator::ResolveState() {
   // This is an important invariant.
   if (!current_state_->cryptohome_complete())
     return CONTINUE;
+  if (!current_state_->hash_obtained())
+    return CONTINUE;
 
   AuthState state;
 
@@ -210,7 +229,8 @@ ManagedUserAuthenticator::AuthState ManagedUserAuthenticator::ResolveState() {
   else
     state = ResolveCryptohomeFailureState();
 
-  DCHECK(current_state_->cryptohome_complete());  // Ensure invariant holds.
+  DCHECK(current_state_->cryptohome_complete());
+  DCHECK(current_state_->hash_obtained());
   return state;
 }
 
@@ -247,7 +267,10 @@ ManagedUserAuthenticator::AuthAttempt::AuthAttempt(const std::string& username,
       hashed_password(hashed),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
+      hash_obtained_(false),
       cryptohome_code_(cryptohome::MOUNT_ERROR_NONE) {}
+
+ManagedUserAuthenticator::AuthAttempt::~AuthAttempt() {}
 
 void ManagedUserAuthenticator::AuthAttempt::RecordCryptohomeStatus(
     bool cryptohome_outcome,
@@ -256,6 +279,13 @@ void ManagedUserAuthenticator::AuthAttempt::RecordCryptohomeStatus(
   cryptohome_complete_ = true;
   cryptohome_outcome_ = cryptohome_outcome;
   cryptohome_code_ = cryptohome_code;
+}
+
+void ManagedUserAuthenticator::AuthAttempt::RecordHash(
+    const std::string& hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  hash_obtained_ = true;
+  hash_ = hash;
 }
 
 bool ManagedUserAuthenticator::AuthAttempt::cryptohome_complete() {
@@ -272,6 +302,16 @@ cryptohome::MountError
     ManagedUserAuthenticator::AuthAttempt::cryptohome_code() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return cryptohome_code_;
+}
+
+bool ManagedUserAuthenticator::AuthAttempt::hash_obtained() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return hash_obtained_;
+}
+
+std::string ManagedUserAuthenticator::AuthAttempt::hash() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return hash_;
 }
 
 }  // namespace chromeos

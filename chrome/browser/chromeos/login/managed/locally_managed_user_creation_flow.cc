@@ -4,11 +4,24 @@
 
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
+
+namespace {
+
+LocallyManagedUserCreationScreen* GetScreen(LoginDisplayHost* host) {
+  DCHECK(host);
+  DCHECK(host->GetWizardController());
+  DCHECK(host->GetWizardController()->GetLocallyManagedUserCreationScreen());
+  return host->GetWizardController()->GetLocallyManagedUserCreationScreen();
+}
+
+} // namespace
 
 LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
     string16 name,
@@ -25,14 +38,25 @@ bool LocallyManagedUserCreationFlow::ShouldSkipPostLoginScreens() {
   return true;
 }
 
-void LocallyManagedUserCreationFlow::LaunchExtraSteps() {
-  DictionaryValue* params = new DictionaryValue();
-  params->SetString("user_display_name", name_);
-  params->SetString("password", password_);
+bool LocallyManagedUserCreationFlow::HandleLoginFailure(
+    const LoginFailure& failure,
+    LoginDisplayHost* host) {
+  if (failure.reason() == LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME)
+    GetScreen(host)->OnManagerLoginFailure();
+  else
+    GetScreen(host)->ShowManagerInconsistentStateErrorScreen();
+  return true;
+}
 
-  BaseLoginDisplayHost::default_host()->
-      StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
-          params);
+bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected(
+    LoginDisplayHost* host) {
+  GetScreen(host)->ShowManagerInconsistentStateErrorScreen();
+  return true;
+}
+
+void LocallyManagedUserCreationFlow::LaunchExtraSteps(
+    LoginDisplayHost* host) {
+  GetScreen(host)->OnManagerSignIn();
 }
 
 }  // namespace chromeos

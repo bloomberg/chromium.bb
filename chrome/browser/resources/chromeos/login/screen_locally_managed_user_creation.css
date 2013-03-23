@@ -11,7 +11,6 @@
   width: 704px;
 }
 
-
 #managed-user-creation-flow-success-title {
   font-size: x-large;
 }
@@ -19,9 +18,10 @@
 #managed-user-creation-flow-success-image {
   background-color: #d3d3d3;
   color: gray;
-  height: 300px;
+  height: 237px;
+  margin-left: 127px;
   margin-top: 25px;
-  width: 400px;
+  width: 417px;
 }
 
 #managed-user-creation-flow-success-image-text {
@@ -33,4 +33,93 @@
 
 #managed-user-creation-flow-success-email-instructions {
   margin-top: 12px;
+}
+
+#managed-user-creation-flow-name-block,
+#managed-user-creation-flow-password-block,
+#managed-user-creation-flow-password-title {
+  margin-top: 10px;
+}
+
+#managed-user-creation-flow-password {
+  padding: 4px 6px;
+}
+#managed-user-creation-flow-password-confirm {
+  margin-top: 12px;
+  padding: 4px 6px;
+}
+
+#managed-user-creation-flow-password-error {
+  height: 16px;
+  margin-top: 10px;
+}
+
+#managed-user-creation-flow-name-error,
+#managed-user-creation-flow-password-error {
+  visibility: hidden;
+}
+
+#managed-user-creation-flow-name-error.error,
+#managed-user-creation-flow-password-error.error {
+  background: url('chrome://theme/IDR_WARNING') left top /24px no-repeat;
+  color: red;
+  padding-left: 28px;
+  visibility: visible;
+}
+
+#managed-user-creation-flow-managers-pane {
+  height: 140px;
+  margin-top: 6px;
+  overflow-y: auto;
+  width: 645px;
+}
+
+.manager-pod {
+  margin-bottom: 4px;
+  opacity: 0.8;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  width: 625px;
+}
+
+#managed-user-creation-flow-managers-pane .focused {
+  background-color: #f0f0f0;
+  opacity: 1;
+}
+
+.manager-pod .managed-user-creation-flow-manager-info-block {
+  min-height: 40px;
+}
+
+.manager-pod .managed-user-creation-flow-manager-image {
+  display: inline-block;
+  height: 30px;
+  width: 30px;
+}
+
+.manager-pod .managed-user-creation-flow-manager-info {
+  display: inline-block;
+  margin: 0 8px;
+  min-height: 30px;
+}
+
+.manager-pod .managed-user-creation-flow-manager-info-text {
+  display: inline-block;
+  min-height: 30px;
+  vertical-align: top;
+}
+
+.manager-pod .managed-user-creation-flow-manager-email {
+  color: #666;
+  font-size: small;
+}
+
+.manager-pod .managed-user-creation-flow-manager-name {
+  color: #000;
+  font-size: small;
+}
+.manager-pod .managed-user-creation-flow-manager-wrong-password {
+  background: url('chrome://theme/IDR_WARNING') left top /24px no-repeat;
+  color: red;
+  padding-left: 28px;
 }

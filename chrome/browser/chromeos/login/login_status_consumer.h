@@ -67,7 +67,7 @@ class LoginFailure {
       case COULD_NOT_MOUNT_CRYPTOHOME:
         return "Could not mount cryptohome.";
       case COULD_NOT_UNMOUNT_CRYPTOHOME:
-        return "Could not mount cryptohome.";
+        return "Could not unmount cryptohome.";
       case COULD_NOT_MOUNT_TMPFS:
         return "Could not mount tmpfs.";
       case LOGIN_TIMED_OUT:

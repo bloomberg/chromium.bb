@@ -110,6 +110,13 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
       const std::string& pca_response,
       const DataCallback& callback) = 0;
 
+  // Asks cryptohome  to asynchronously retrieve a string associated with given
+  // |user| that would be used in mount path instead of |user|.
+  // On success the data is sent to |callback|.
+  virtual void AsyncGetSanitizedUsername(
+      const std::string& user,
+      const DataCallback& callback) = 0;
+
   // Creates the global AsyncMethodCaller instance.
   static void Initialize();
 

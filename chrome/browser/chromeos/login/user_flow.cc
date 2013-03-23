@@ -18,7 +18,16 @@ bool DefaultUserFlow::ShouldSkipPostLoginScreens() {
   return false;
 }
 
-void DefaultUserFlow::LaunchExtraSteps() {
+bool DefaultUserFlow::HandleLoginFailure(const LoginFailure& failure,
+    LoginDisplayHost* host) {
+  return false;
+}
+
+bool DefaultUserFlow::HandlePasswordChangeDetected(LoginDisplayHost* host) {
+  return false;
+}
+
+void DefaultUserFlow::LaunchExtraSteps(LoginDisplayHost* host) {
 }
 
 }  // namespace chromeos

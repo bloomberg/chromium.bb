@@ -36,6 +36,7 @@ namespace chromeos {
 
 class CaptivePortalWindowProxy;
 class ErrorScreenActor;
+class LocallyManagedUserCreationScreenHandler;
 class NativeWindowDelegate;
 class User;
 
@@ -200,6 +201,7 @@ class SigninScreenHandler
   typedef base::hash_set<std::string> WebUIObservers;
 
   friend class ReportDnsCacheClearedOnUIThread;
+  friend class LocallyManagedUserCreationScreenHandler;
 
   // Updates current UI of the signin screen according to |ui_state|
   // argument.  Optionally it can pass screen initialization data via
@@ -314,14 +316,11 @@ class SigninScreenHandler
   void HandleShowLoadingTimeoutError(const base::ListValue* args);
   void HandleUpdateOfflineLogin(const base::ListValue* args);
   void HandleShowLocallyManagedUserCreationScreen(const base::ListValue* args);
-  void HandleCheckLocallyManagedUserName(const base::ListValue* args);
-  void HandleTryCreateLocallyManagedUser(const base::ListValue* args);
-  void HandleRunLocallyManagedUserCreationFlow(const base::ListValue* args);
 
   // Fills |user_dict| with information about |user|.
-  void FillUserDictionary(User* user,
-                          bool is_owner,
-                          DictionaryValue* user_dict);
+  static void FillUserDictionary(User* user,
+                                 bool is_owner,
+                                 DictionaryValue* user_dict);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

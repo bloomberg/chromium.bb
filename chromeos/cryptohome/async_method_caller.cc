@@ -131,6 +131,24 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
             "Couldn't initiate async attestation finish cert request."));
   }
 
+  virtual void AsyncGetSanitizedUsername(
+      const std::string& user,
+      const DataCallback& callback) OVERRIDE {
+    DBusThreadManager::Get()->GetCryptohomeClient()->
+        GetSanitizedUsername(user,
+        base::Bind(
+            &AsyncMethodCallerImpl::GetSanitizedUsernameCallback,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback));
+  }
+
+  virtual void GetSanitizedUsernameCallback(
+      const DataCallback& callback,
+      const chromeos::DBusMethodCallStatus call_status,
+      const std::string& result) {
+    callback.Run(true, result);
+  }
+
  private:
   struct CallbackElement {
     CallbackElement() {}

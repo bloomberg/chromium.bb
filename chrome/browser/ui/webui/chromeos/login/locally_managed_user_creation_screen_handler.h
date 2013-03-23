@@ -31,6 +31,13 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
     virtual void OnActorDestroyed(
         LocallyManagedUserCreationScreenHandler* actor) = 0;
 
+    // Starts managed user creation flow, with manager identified by
+    // |manager_id| and |manager_password|, and locally managed user that would
+    // have |display_name| and authenticated by the |managed_user_password|.
+    virtual void RunFlow(string16& display_name,
+                         std::string& managed_user_password,
+                         std::string& manager_id,
+                         std::string& manager_password) = 0;
     virtual void AbortFlow() = 0;
     virtual void FinishFlow() = 0;
     virtual void RetryLastStep() = 0;
@@ -44,6 +51,10 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   virtual void Hide();
   virtual void SetDelegate(Delegate* delegate);
 
+  void ShowManagerInconsistentStateErrorScreen();
+  void ShowManagerPasswordError();
+  void ShowInitialScreen();
+  void ShowProgressScreen();
   virtual void ShowSuccessMessage();
   virtual void ShowErrorMessage(string16 message, bool recoverable);
 
@@ -60,6 +71,10 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void HandleFinishLocalManagedUserCreation(const base::ListValue* args);
   void HandleAbortLocalManagedUserCreation(const base::ListValue* args);
   void HandleRetryLocalManagedUserCreation(const base::ListValue* args);
+
+  void HandleCheckLocallyManagedUserName(const base::ListValue* args);
+  void HandleTryCreateLocallyManagedUser(const base::ListValue* args);
+  void HandleRunLocallyManagedUserCreationFlow(const base::ListValue* args);
 
   Delegate* delegate_;
 

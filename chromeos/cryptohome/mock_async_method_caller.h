@@ -19,6 +19,7 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
   static const char kFakeAttestationEnrollRequest[];
   static const char kFakeAttestationCertRequest[];
   static const char kFakeAttestationCert[];
+  static const char kFakeSanitizedUsername[];
 
   MockAsyncMethodCaller();
   virtual ~MockAsyncMethodCaller();
@@ -48,6 +49,9 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
   MOCK_METHOD2(AsyncTpmAttestationFinishCertRequest,
                void(const std::string& pca_response,
                     const DataCallback& callback));
+  MOCK_METHOD2(AsyncGetSanitizedUsername,
+               void(const std::string& user,
+                    const DataCallback& callback));
 
  private:
   bool success_;
@@ -58,6 +62,7 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
   void FakeCreateEnrollRequest(const DataCallback& callback);
   void FakeCreateCertRequest(const DataCallback& callback);
   void FakeFinishCertRequest(const DataCallback& callback);
+  void FakeGetSanitizedUsername(const DataCallback& callback);
 
   DISALLOW_COPY_AND_ASSIGN(MockAsyncMethodCaller);
 };

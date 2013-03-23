@@ -18,6 +18,8 @@ class Widget;
 
 namespace chromeos {
 
+class WizardController;
+
 // An interface that defines OOBE/login screen host.
 // Host encapsulates implementation specific background window (views/WebUI),
 // OOBE/login controllers, views/WebUI UI implementation (such as LoginDisplay).
@@ -69,6 +71,10 @@ class LoginDisplayHost {
   virtual void StartWizard(
       const std::string& first_screen_name,
       DictionaryValue* screen_parameters) = 0;
+
+  // Returns current WizardController, if it exists.
+  // Result should not be stored.
+  virtual WizardController* GetWizardController() = 0;
 
   // Starts sign in screen.
   virtual void StartSignInScreen() = 0;

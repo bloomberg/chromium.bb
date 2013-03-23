@@ -22,13 +22,15 @@ class MountManager {
   // should only be called from the main UI thread.
   static MountManager* Get();
 
+  static base::FilePath GetHomeDir(std::string& user_hash);
+
   virtual ~MountManager();
 
   virtual bool IsMounted(const std::string& user_id);
   virtual base::FilePath GetPath(const std::string& user_id);
 
   virtual void SetPath(const std::string& user_id,
-                                 const base::FilePath& path);
+                       const base::FilePath& path);
   virtual void DeletePath(const std::string& user_id);
 
  private:
@@ -38,7 +40,7 @@ class MountManager {
 
   UserToPathMap additional_mounts_;
 
-  static scoped_ptr<MountManager> instance_;
+  static MountManager* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(MountManager);
 };

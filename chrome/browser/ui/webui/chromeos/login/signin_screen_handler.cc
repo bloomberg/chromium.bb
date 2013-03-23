@@ -28,10 +28,10 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
@@ -452,32 +452,6 @@ void SigninScreenHandler::GetLocalizedStrings(
        l10n_util::GetStringUTF16(
            IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME));
 
-  localized_strings->SetString("createManagedUserNameTitle",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE));
-  localized_strings->SetString("createManagedUserPasswordTitle",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE));
-  localized_strings->SetString("createManagedUserPasswordHint",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_HINT));
-  localized_strings->SetString("createManagedUserPasswordConfirmHint",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_CONFIRM_HINT));
-  localized_strings->SetString("createManagedUserContinueButton",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT));
-  localized_strings->SetString("createManagedUserPasswordMismatchError",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR));
-
-  localized_strings->SetString("createManagedUserSelectManagerTitle",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_SELECT_MANAGER_TEXT));
-  localized_strings->SetString("createManagedUserManagerPasswordHint",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT));
-
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
     localized_strings->SetString("demoLoginMessage",
         l10n_util::GetStringUTF16(IDS_KIOSK_MODE_LOGIN_MESSAGE));
@@ -885,15 +859,6 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("updateOfflineLogin",
       base::Bind(&SigninScreenHandler::HandleUpdateOfflineLogin,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("checkLocallyManagedUserName",
-      base::Bind(&SigninScreenHandler::HandleCheckLocallyManagedUserName,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("tryCreateLocallyManagedUser",
-      base::Bind(&SigninScreenHandler::HandleTryCreateLocallyManagedUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("runLocallyManagedUserCreationFlow",
-      base::Bind(&SigninScreenHandler::HandleRunLocallyManagedUserCreationFlow,
-                 base::Unretained(this)));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -1219,27 +1184,9 @@ void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen(
     const base::ListValue* args) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(
-          chromeos::switches::kEnableLocallyManagedUserUIExperiments)) {
-    ListValue users_list;
-    const UserList& users = delegate_->GetUsers();
-    std::string owner;
-    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-
-    for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-      if ((*it)->GetType() != User::USER_TYPE_REGULAR)
-        continue;
-      bool is_owner = ((*it)->email() == owner);
-      DictionaryValue* user_dict = new DictionaryValue();
-      FillUserDictionary(*it, is_owner, user_dict);
-      users_list.Append(user_dict);
-    }
-    web_ui()->
-        CallJavascriptFunction("login.ManagedUserCreationScreen.loadManagers",
-                               users_list);
-  }
-  UpdateUIState(UI_STATE_LOCALLY_MANAGED_USER_CREATION, NULL);
+  BaseLoginDisplayHost::default_host()->
+      StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
+      NULL);
 }
 
 void SigninScreenHandler::HandleLaunchPublicAccount(
@@ -1660,110 +1607,6 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(
     return;
   }
   offline_login_active_ = offline_login_active;
-}
-
-void SigninScreenHandler::HandleCheckLocallyManagedUserName(
-    const base::ListValue* args) {
-  DCHECK(args && args->GetSize() == 1);
-
-  string16 name;
-  if (!args->GetString(0, &name)) {
-    NOTREACHED();
-    return;
-  }
-  if (NULL != UserManager::Get()->
-          FindLocallyManagedUser(CollapseWhitespace(name, true))) {
-    web_ui()->CallJavascriptFunction(
-        "login.ManagedUserCreationScreen.managedUserNameError",
-        base::StringValue(name),
-        base::StringValue(l10n_util::GetStringFUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-            name)));
-  } else {
-    web_ui()->CallJavascriptFunction(
-        "login.ManagedUserCreationScreen.managedUserNameOk",
-        base::StringValue(name));
-  }
-}
-
-void SigninScreenHandler::HandleTryCreateLocallyManagedUser(
-    const base::ListValue* args) {
-  DCHECK(args && args->GetSize() == 2);
-
-  string16 name;
-  std::string password;
-  if (!args->GetString(0, &name) || !args->GetString(1, &password)) {
-    NOTREACHED();
-    return;
-  }
-  name = CollapseWhitespace(name, true);
-  if (NULL != UserManager::Get()->FindLocallyManagedUser(name)) {
-    web_ui()->CallJavascriptFunction(
-        "login.ManagedUserCreationScreen.managedUserNameError",
-        base::StringValue(name),
-        base::StringValue(l10n_util::GetStringFUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-            name)));
-    return;
-  }
-  // TODO(antrim): Any other password checks here?
-  if (password.length() == 0) {
-    web_ui()->CallJavascriptFunction(
-        "login.ManagedUserCreationScreen.showPasswordError",
-        base::StringValue(l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
-    return;
-  }
-
-  if (delegate_)
-    delegate_->CreateLocallyManagedUser(name, password);
-}
-
-void SigninScreenHandler::HandleRunLocallyManagedUserCreationFlow(
-    const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  DCHECK(args && args->GetSize() == 4);
-
-  string16 new_user_name;
-  std::string new_user_password;
-  std::string custodian_username;
-  std::string custodian_password;
-  if (!args->GetString(0, &new_user_name) ||
-      !args->GetString(1, &new_user_password) ||
-      !args->GetString(2, &custodian_username) ||
-      !args->GetString(3, &custodian_password)) {
-    NOTREACHED();
-    return;
-  }
-
-  new_user_name = CollapseWhitespace(new_user_name, true);
-  if (NULL != UserManager::Get()->FindLocallyManagedUser(new_user_name)) {
-    web_ui()->CallJavascriptFunction(
-        "login.ManagedUserCreationScreen.managedUserNameError",
-        base::StringValue(new_user_name),
-        base::StringValue(l10n_util::GetStringFUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-            new_user_name)));
-    return;
-  }
-
-  // TODO(antrim): Any other password checks here?
-  if (new_user_password.length() == 0) {
-    web_ui()->CallJavascriptFunction(
-        "login.ManagedUserCreationScreen.showPasswordError",
-        base::StringValue(l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
-    return;
-  }
-
-  custodian_username = gaia::SanitizeEmail(custodian_username);
-
-  UserFlow* flow =
-      new LocallyManagedUserCreationFlow(new_user_name, new_user_password);
-  UserManager::Get()->SetUserFlow(custodian_username, flow);
-
-  delegate_->Login(custodian_username, custodian_password);
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

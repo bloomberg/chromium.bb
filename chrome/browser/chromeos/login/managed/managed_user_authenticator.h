@@ -37,14 +37,23 @@ class ManagedUserAuthenticator
     AuthAttempt(const std::string& username,
                 const std::string& password,
                 const std::string& hashed_password);
+    ~AuthAttempt();
+
     // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
     // so we can have a copy we're sure to own, and can make available
     // on the IO thread.  Must be called from the IO thread.
     void RecordCryptohomeStatus(bool cryptohome_outcome,
                                 cryptohome::MountError cryptohome_code);
 
+    // Copy |hash| into this object so we can have a copy we're sure to own
+    // and can make available on the IO thread.
+    // Must be called from the IO thread.
+    void RecordHash(const std::string& hash);
+
     bool cryptohome_complete();
     bool cryptohome_outcome();
+    bool hash_obtained();
+    std::string hash();
     cryptohome::MountError cryptohome_code();
 
     const std::string username;
@@ -54,6 +63,9 @@ class ManagedUserAuthenticator
    private:
     bool cryptohome_complete_;
     bool cryptohome_outcome_;
+    bool hash_obtained_;
+    std::string hash_;
+
     cryptohome::MountError cryptohome_code_;
     DISALLOW_COPY_AND_ASSIGN(AuthAttempt);
   };
@@ -64,7 +76,7 @@ class ManagedUserAuthenticator
     // The current login attempt has ended in failure, with error.
     virtual void OnAuthenticationFailure(AuthState state) = 0;
     // The current login attempt has ended succesfully.
-    virtual void OnMountSuccess() = 0;
+    virtual void OnMountSuccess(const std::string& mount_hash) = 0;
     // The current cryptohome creation attempt has ended succesfully.
     virtual void OnCreationSuccess() = 0;
   };
@@ -86,7 +98,7 @@ class ManagedUserAuthenticator
   AuthState ResolveState();
   AuthState ResolveCryptohomeFailureState();
   AuthState ResolveCryptohomeSuccessState();
-  void OnAuthenticationSuccess();
+  void OnAuthenticationSuccess(const std::string& mount_hash);
   void OnAuthenticationFailure(AuthState state);
 
   scoped_ptr<AuthAttempt> current_state_;

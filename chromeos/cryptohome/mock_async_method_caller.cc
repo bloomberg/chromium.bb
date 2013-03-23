@@ -13,6 +13,7 @@ namespace cryptohome {
 const char MockAsyncMethodCaller::kFakeAttestationEnrollRequest[] = "enrollreq";
 const char MockAsyncMethodCaller::kFakeAttestationCertRequest[] = "certreq";
 const char MockAsyncMethodCaller::kFakeAttestationCert[] = "cert";
+const char MockAsyncMethodCaller::kFakeSanitizedUsername[] = "01234567890ABC";
 
 MockAsyncMethodCaller::MockAsyncMethodCaller()
     : success_(false), return_code_(cryptohome::MOUNT_ERROR_NONE) {
@@ -53,6 +54,11 @@ void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
       .WillByDefault(
           WithArgs<1>(Invoke(this,
                              &MockAsyncMethodCaller::FakeFinishCertRequest)));
+  ON_CALL(*this, AsyncGetSanitizedUsername(_, _))
+      .WillByDefault(
+          WithArgs<1>(Invoke(this,
+                             &MockAsyncMethodCaller::
+                                 FakeGetSanitizedUsername)));
 }
 
 void MockAsyncMethodCaller::DoCallback(Callback callback) {
@@ -72,6 +78,11 @@ void MockAsyncMethodCaller::FakeCreateCertRequest(
 void MockAsyncMethodCaller::FakeFinishCertRequest(
     const DataCallback& callback) {
   callback.Run(success_, kFakeAttestationCert);
+}
+
+void MockAsyncMethodCaller::FakeGetSanitizedUsername(
+    const DataCallback& callback) {
+  callback.Run(success_, kFakeSanitizedUsername);
 }
 
 }  // namespace cryptohome

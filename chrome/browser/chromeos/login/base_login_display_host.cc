@@ -239,6 +239,10 @@ void BaseLoginDisplayHost::StartSignInScreen() {
       kPolicyServiceInitializationDelayMilliseconds);
 }
 
+WizardController* BaseLoginDisplayHost::GetWizardController() {
+  return wizard_controller_.get();
+}
+
 void BaseLoginDisplayHost::ResumeSignInScreen() {
   // We only get here after a previous call the StartSignInScreen. That sign-in
   // was successful but was interrupted by an auto-enrollment execution; once
