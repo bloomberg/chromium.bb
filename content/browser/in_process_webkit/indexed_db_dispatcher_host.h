@@ -125,7 +125,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnCreateTransaction(
         const IndexedDBHostMsg_DatabaseCreateTransaction_Params&);
     void OnOpen(int32 ipc_database_id, int32 ipc_thread_id,
-                int32 ipc_response_id);
+                int32 ipc_callbacks_id);
     void OnClose(int32 ipc_database_id);
     void OnDestroyed(int32 ipc_database_id);
 
@@ -144,7 +144,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDeleteRange(
         const IndexedDBHostMsg_DatabaseDeleteRange_Params& params);
     void OnClear(int32 ipc_thread_id,
-                 int32 ipc_response_id,
+                 int32 ipc_callbacks_id,
                  int32 ipc_database_id,
                  int64 transaction_id,
                  int64 object_store_id);
@@ -175,21 +175,21 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void OnAdvance(int32 ipc_object_store_id,
                    int32 ipc_thread_id,
-                   int32 ipc_response_id,
+                   int32 ipc_callbacks_id,
                    unsigned long count);
     void OnContinue(int32 ipc_object_store_id,
                     int32 ipc_thread_id,
-                    int32 ipc_response_id,
+                    int32 ipc_callbacks_id,
                     const IndexedDBKey& key);
     void OnPrefetch(int32 ipc_cursor_id,
                     int32 ipc_thread_id,
-                    int32 ipc_response_id,
+                    int32 ipc_callbacks_id,
                     int n);
     void OnPrefetchReset(int32 ipc_cursor_id, int used_prefetches,
                          int unused_prefetches);
     void OnDelete(int32 ipc_object_store_id,
                   int32 ipc_thread_id,
-                  int32 ipc_response_id);
+                  int32 ipc_callbacks_id);
     void OnDestroyed(int32 ipc_cursor_id);
 
     IndexedDBDispatcherHost* parent_;

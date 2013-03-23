@@ -29,7 +29,7 @@ IPC_ENUM_TRAITS(WebKit::WebIDBDatabase::TaskType)
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The origin doing the initiating.
   IPC_STRUCT_MEMBER(string16, origin)
 IPC_STRUCT_END()
@@ -39,9 +39,9 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   // Identifier of the request
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // Identifier for database callbacks
-  IPC_STRUCT_MEMBER(int32, ipc_database_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
   // The origin doing the initiating.
   IPC_STRUCT_MEMBER(string16, origin)
   // The name of the database.
@@ -56,7 +56,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The origin doing the initiating.
   IPC_STRUCT_MEMBER(string16, origin)
   // The name of the database.
@@ -70,7 +70,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateTransaction_Params)
   // The transaction id as minted by the frontend.
   IPC_STRUCT_MEMBER(int64, transaction_id)
   // To get to WebIDBDatabaseCallbacks.
-  IPC_STRUCT_MEMBER(int32, ipc_database_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
   // The scope of the transaction.
   IPC_STRUCT_MEMBER(std::vector<int64>, object_store_ids)
   // The transaction mode.
@@ -96,7 +96,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGet_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   // The id any response should contain.
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The database the object store belongs to.
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   // The transaction its associated with.
@@ -115,7 +115,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   // The id any response should contain.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The database the object store belongs to.
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   // The transaction it's associated with.
@@ -142,7 +142,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseOpenCursor_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The database the object store belongs to.
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   // The transaction this request belongs to.
@@ -165,7 +165,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCount_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The transaction this request belongs to.
   IPC_STRUCT_MEMBER(int64, transaction_id)
   // The IPC id of the database.
@@ -181,7 +181,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseDeleteRange_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The IPC id of the database.
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   // The transaction this request belongs to.
@@ -230,7 +230,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessIDBCursor_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
@@ -239,7 +239,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
@@ -248,7 +248,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, keys)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, primary_keys)
@@ -284,7 +284,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksUpgradeNeeded_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   IPC_STRUCT_MEMBER(int64, old_version)
@@ -312,46 +312,46 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
 
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      int32 /* ipc_database_callbacks_id */,
                      int32 /* ipc_database_id */,
                      IndexedDBDatabaseMetadata)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      content::IndexedDBKey /* indexed_db_key */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessValue,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      std::vector<char> /* value */)
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessValueWithKey,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      std::vector<char> /* value */,
                      content::IndexedDBKey /* indexed_db_key */,
                      content::IndexedDBKeyPath /* indexed_db_keypath */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessInteger,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      int64 /* value */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessUndefined,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */)
+                     int32 /* ipc_callbacks_id */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessStringList,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      std::vector<string16> /* dom_string_list */)
 IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksError,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      int /* code */,
                      string16 /* message */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksBlocked,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */)
+                     int32 /* ipc_callbacks_id */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksIntBlocked,
                      int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
+                     int32 /* ipc_callbacks_id */,
                      int64 /* existing_version */)
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksUpgradeNeeded,
                      IndexedDBMsg_CallbacksUpgradeNeeded_Params)
@@ -359,21 +359,21 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksUpgradeNeeded,
 // IDBDatabaseCallback message handlers
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksForcedClose,
                      int32, /* ipc_thread_id */
-                     int32) /* ipc_database_id */
+                     int32) /* ipc_database_callbacks_id */
 IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
                      int32, /* ipc_thread_id */
-                     int32, /* ipc_database_id */
+                     int32, /* ipc_database_callbacks_id */
                      int64, /* old_version */
                      int64) /* new_version */
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_DatabaseCallbacksAbort,
                      int32, /* ipc_thread_id */
-                     int32, /* ipc_database_id */
+                     int32, /* ipc_database_callbacks_id */
                      int64, /* transaction_id */
                      int, /* code */
                      string16) /* message */
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksComplete,
                      int32, /* ipc_thread_id */
-                     int32, /* ipc_database_id */
+                     int32, /* ipc_database_callbacks_id */
                      int64) /* transaction_id */
 
 // Indexed DB messages sent from the renderer to the browser.
@@ -382,21 +382,21 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksComplete,
 IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_CursorAdvance,
                      int32, /* ipc_cursor_id */
                      int32, /* ipc_thread_id */
-                     int32, /* ipc_response_id */
+                     int32, /* ipc_callbacks_id */
                      unsigned long) /* count */
 
 // WebIDBCursor::continue() message.
 IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_CursorContinue,
                      int32, /* ipc_cursor_id */
                      int32, /* ipc_thread_id */
-                     int32, /* ipc_response_id */
+                     int32, /* ipc_callbacks_id */
                      content::IndexedDBKey) /* key */
 
 // WebIDBCursor::prefetchContinue() message.
 IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_CursorPrefetch,
                      int32, /* ipc_cursor_id */
                      int32, /* ipc_thread_id */
-                     int32, /* ipc_response_id */
+                     int32, /* ipc_callbacks_id */
                      int32) /* n */
 
 // WebIDBCursor::prefetchReset() message.
@@ -409,7 +409,7 @@ IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_CursorPrefetchReset,
 IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_CursorDelete,
                      int32, /* ipc_cursor_id */
                      int32, /* ipc_thread_id */
-                     int32) /* ipc_response_id */
+                     int32) /* ipc_callbacks_id */
 
 // WebIDBFactory::getDatabaseNames() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryGetDatabaseNames,
@@ -439,7 +439,7 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateTransaction,
 
 // WebIDBDatabase::close() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseClose,
-                     int32 /* ipc_database_id */)
+                     int32 /* ipc_database_callbacks_id */)
 
 // WebIDBDatabase::~WebIDBDatabase() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDestroyed,
@@ -479,7 +479,7 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDeleteRange,
 // WebIDBDatabase::clear() message.
 IPC_MESSAGE_CONTROL5(IndexedDBHostMsg_DatabaseClear,
                      int32, /* ipc_thread_id */
-                     int32, /* ipc_response_id */
+                     int32, /* ipc_callbacks_id */
                      int32, /* ipc_database_id */
                      int64, /* transaction_id */
                      int64) /* object_store_id */

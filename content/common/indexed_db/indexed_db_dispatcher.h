@@ -194,17 +194,17 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void init_params(T& params, WebKit::WebIDBCallbacks* callbacks_ptr) {
     scoped_ptr<WebKit::WebIDBCallbacks> callbacks(callbacks_ptr);
     params.ipc_thread_id = CurrentWorkerId();
-    params.ipc_response_id = pending_callbacks_.Add(callbacks.release());
+    params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   }
 
   // IDBCallback message handlers.
   void OnSuccessIDBDatabase(int32 ipc_thread_id,
-                            int32 ipc_response_id,
+                            int32 ipc_callbacks_id,
                             int32 ipc_database_callbacks_id,
                             int32 ipc_object_id,
                             const IndexedDBDatabaseMetadata& idb_metadata);
   void OnSuccessIndexedDBKey(int32 ipc_thread_id,
-                             int32 ipc_response_id,
+                             int32 ipc_callbacks_id,
                              const IndexedDBKey& key);
 
   void OnSuccessOpenCursor(
@@ -214,30 +214,31 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void OnSuccessCursorPrefetch(
       const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p);
   void OnSuccessStringList(int32 ipc_thread_id,
-                           int32 ipc_response_id,
+                           int32 ipc_callbacks_id,
                            const std::vector<string16>& value);
   void OnSuccessValue(
       int32 ipc_thread_id,
-      int32 ipc_response_id,
+      int32 ipc_callbacks_id,
       const std::vector<char>& value);
   void OnSuccessValueWithKey(
       int32 ipc_thread_id,
-      int32 ipc_response_id,
+      int32 ipc_callbacks_id,
       const std::vector<char>& value,
       const IndexedDBKey& primary_key,
       const IndexedDBKeyPath& key_path);
   void OnSuccessInteger(
       int32 ipc_thread_id,
-      int32 ipc_response_id,
+      int32 ipc_callbacks_id,
       int64 value);
   void OnSuccessUndefined(
       int32 ipc_thread_id,
-      int32 ipc_response_id);
+      int32 ipc_callbacks_id);
   void OnError(int32 ipc_thread_id,
-               int32 ipc_response_id,
+               int32 ipc_callbacks_id,
                int code,
                const string16& message);
-  void OnIntBlocked(int32 ipc_thread_id, int32 ipc_response_id,
+  void OnIntBlocked(int32 ipc_thread_id,
+                    int32 ipc_callbacks_id,
                     int64 existing_version);
   void OnUpgradeNeeded(const IndexedDBMsg_CallbacksUpgradeNeeded_Params& p);
   void OnAbort(int32 ipc_thread_id,

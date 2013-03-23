@@ -12,10 +12,10 @@ namespace content {
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     IndexedDBDispatcherHost* dispatcher_host,
     int ipc_thread_id,
-    int ipc_database_id)
+    int ipc_database_callbacks_id)
     : dispatcher_host_(dispatcher_host),
       ipc_thread_id_(ipc_thread_id),
-      ipc_database_id_(ipc_database_id) {
+      ipc_database_callbacks_id_(ipc_database_callbacks_id) {
 }
 
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
@@ -23,17 +23,19 @@ IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
 
 void IndexedDBDatabaseCallbacks::onForcedClose() {
   dispatcher_host_->Send(
-      new IndexedDBMsg_DatabaseCallbacksForcedClose(ipc_thread_id_,
-                                                    ipc_database_id_));
+      new IndexedDBMsg_DatabaseCallbacksForcedClose(
+          ipc_thread_id_,
+          ipc_database_callbacks_id_));
 }
 
 void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
                                                  long long new_version) {
   dispatcher_host_->Send(
-      new IndexedDBMsg_DatabaseCallbacksIntVersionChange(ipc_thread_id_,
-                                                         ipc_database_id_,
-                                                         old_version,
-                                                         new_version));
+      new IndexedDBMsg_DatabaseCallbacksIntVersionChange(
+          ipc_thread_id_,
+          ipc_database_callbacks_id_,
+          old_version,
+          new_version));
 }
 
 void IndexedDBDatabaseCallbacks::onAbort(
@@ -42,7 +44,7 @@ void IndexedDBDatabaseCallbacks::onAbort(
     dispatcher_host_->FinishTransaction(host_transaction_id, false);
     dispatcher_host_->Send(
         new IndexedDBMsg_DatabaseCallbacksAbort(
-            ipc_thread_id_, ipc_database_id_,
+            ipc_thread_id_, ipc_database_callbacks_id_,
             dispatcher_host_->RendererTransactionId(host_transaction_id),
             error.code(), error.message()));
 }
@@ -51,7 +53,7 @@ void IndexedDBDatabaseCallbacks::onComplete(long long host_transaction_id) {
     dispatcher_host_->FinishTransaction(host_transaction_id, true);
     dispatcher_host_->Send(
         new IndexedDBMsg_DatabaseCallbacksComplete(
-            ipc_thread_id_, ipc_database_id_,
+            ipc_thread_id_, ipc_database_callbacks_id_,
             dispatcher_host_->RendererTransactionId(host_transaction_id)));
 }
 

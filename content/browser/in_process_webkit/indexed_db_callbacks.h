@@ -28,16 +28,16 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
  protected:
   IndexedDBCallbacksBase(IndexedDBDispatcherHost* dispatcher_host,
                          int32 ipc_thread_id,
-                         int32 ipc_response_id);
+                         int32 ipc_callbacks_id);
   IndexedDBDispatcherHost* dispatcher_host() const {
     return dispatcher_host_.get();
   }
   int32 ipc_thread_id() const { return ipc_thread_id_; }
-  int32 ipc_response_id() const { return ipc_response_id_; }
+  int32 ipc_callbacks_id() const { return ipc_callbacks_id_; }
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int32 ipc_response_id_;
+  int32 ipc_callbacks_id_;
   int32 ipc_thread_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksBase);
@@ -55,7 +55,7 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
   IndexedDBCallbacksDatabase(
       IndexedDBDispatcherHost* dispatcher_host,
       int32 ipc_thread_id,
-      int32 ipc_response_id,
+      int32 ipc_callbacks_id,
       int32 ipc_database_callbacks_id,
       int64 host_transaction_id,
       const GURL& origin_url);
@@ -91,9 +91,10 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
   IndexedDBCallbacks(
       IndexedDBDispatcherHost* dispatcher_host,
       int32 ipc_thread_id,
-      int32 ipc_response_id,
+      int32 ipc_callbacks_id,
       int32 ipc_cursor_id)
-      : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id, ipc_response_id),
+      : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
+                               ipc_callbacks_id),
         ipc_cursor_id_(ipc_cursor_id) { }
 
   virtual void onSuccess(WebKit::WebIDBCursor* idb_object,
@@ -126,9 +127,9 @@ class IndexedDBCallbacks<WebKit::WebIDBKey>
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                      int32 ipc_thread_id,
-                     int32 ipc_response_id)
+                     int32 ipc_callbacks_id)
       : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
-                               ipc_response_id) { }
+                               ipc_callbacks_id) { }
 
   virtual void onSuccess(const WebKit::WebIDBKey& value);
 
@@ -146,9 +147,9 @@ class IndexedDBCallbacks<WebKit::WebDOMStringList>
   IndexedDBCallbacks(
       IndexedDBDispatcherHost* dispatcher_host,
       int32 ipc_thread_id,
-      int32 ipc_response_id)
+      int32 ipc_callbacks_id)
       : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
-                               ipc_response_id) { }
+                               ipc_callbacks_id) { }
 
   virtual void onSuccess(const WebKit::WebDOMStringList& value);
 
@@ -165,9 +166,9 @@ class IndexedDBCallbacks<WebKit::WebData>
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                      int32 ipc_thread_id,
-                     int32 ipc_response_id)
+                     int32 ipc_callbacks_id)
       : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
-                               ipc_response_id) { }
+                               ipc_callbacks_id) { }
 
   virtual void onSuccess(const WebKit::WebData& value);
   virtual void onSuccess(const WebKit::WebData& value,
