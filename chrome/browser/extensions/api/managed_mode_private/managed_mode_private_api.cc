@@ -19,6 +19,7 @@
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/managed_mode_private.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 
@@ -39,6 +40,9 @@ const char kEnterSuccessKey[] = "success";
 namespace keys = extensions::preference_api_constants;
 
 namespace extensions {
+
+namespace GetPolicy = api::managed_mode_private::GetPolicy;
+namespace SetPolicy = api::managed_mode_private::SetPolicy;
 
 ManagedModeEventRouter::ManagedModeEventRouter(
     Profile* profile) : profile_(profile) {
@@ -97,12 +101,12 @@ void ManagedModePrivateEnterFunction::SendResult(bool success) {
 ManagedModePrivateGetPolicyFunction::~ManagedModePrivateGetPolicyFunction() { }
 
 bool ManagedModePrivateGetPolicyFunction::RunImpl() {
-  std::string key;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &key));
+  scoped_ptr<GetPolicy::Params> params(GetPolicy::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::ManagedModePolicyProvider* policy_provider =
       profile_->GetManagedModePolicyProvider();
-  const base::Value* policy = policy_provider->GetPolicy(key);
+  const base::Value* policy = policy_provider->GetPolicy(params->key);
   if (policy)
     SetResult(policy->DeepCopy());
 #endif
@@ -112,14 +116,12 @@ bool ManagedModePrivateGetPolicyFunction::RunImpl() {
 ManagedModePrivateSetPolicyFunction::~ManagedModePrivateSetPolicyFunction() { }
 
 bool ManagedModePrivateSetPolicyFunction::RunImpl() {
-  std::string key;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &key));
-  base::Value* value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &value));
+  scoped_ptr<SetPolicy::Params> params(SetPolicy::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::ManagedModePolicyProvider* policy_provider =
       profile_->GetManagedModePolicyProvider();
-  policy_provider->SetPolicy(key, value);
+  policy_provider->SetPolicy(params->key, params->value.get());
 #endif
   return true;
 }
