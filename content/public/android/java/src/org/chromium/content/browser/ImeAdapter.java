@@ -10,6 +10,7 @@ import android.os.ResultReceiver;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
+import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
@@ -476,8 +477,12 @@ class ImeAdapter {
     // It then adapts android's IME to chrome's RenderWidgetHostView using the
     // native ImeAdapterAndroid via the outer class ImeAdapter.
     public static class AdapterInputConnection extends BaseInputConnection {
+        private static final String TAG =
+                "org.chromium.content.browser.ImeAdapter$AdapterInputConnection";
+        private static final boolean DEBUG = false;
         private final View mInternalView;
         private final ImeAdapter mImeAdapter;
+
         private boolean mSingleLine;
         private int mNumNestedBatchEdits = 0;
         private boolean mIgnoreTextInputStateUpdates = false;
@@ -499,6 +504,10 @@ class ImeAdapter {
          */
         public void setEditableText(String text, int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
+            if (DEBUG) {
+                Log.w(TAG, "setEditableText [" + text + "] [" + selectionStart + " " + selectionEnd
+                        + "] [" + compositionStart + " " + compositionEnd + "]");
+            }
             Editable editable = getEditable();
 
             int prevSelectionStart = Selection.getSelectionStart(editable);
@@ -536,6 +545,10 @@ class ImeAdapter {
         protected void updateSelection(
                 int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
+            if (DEBUG) {
+                Log.w(TAG, "updateSelection [" + selectionStart + " " + selectionEnd + "] ["
+                        + compositionStart + " " + compositionEnd + "]");
+            }
             // updateSelection should
             // be called every time the selection or composition changes if it happens not
             // within a batch edit, or at the end of each top level batch edit.
@@ -545,6 +558,7 @@ class ImeAdapter {
 
         @Override
         public boolean setComposingText(CharSequence text, int newCursorPosition) {
+            if (DEBUG) Log.w(TAG, "setComposingText [" + text + "] [" + newCursorPosition + "]");
             super.setComposingText(text, newCursorPosition);
             return mImeAdapter.checkCompositionQueueAndCallNative(text.toString(),
                     newCursorPosition, false);
@@ -552,6 +566,7 @@ class ImeAdapter {
 
         @Override
         public boolean commitText(CharSequence text, int newCursorPosition) {
+            if (DEBUG) Log.w(TAG, "commitText [" + text + "] [" + newCursorPosition + "]");
             super.commitText(text, newCursorPosition);
             return mImeAdapter.checkCompositionQueueAndCallNative(text.toString(),
                     newCursorPosition, text.length() > 0);
@@ -559,6 +574,7 @@ class ImeAdapter {
 
         @Override
         public boolean performEditorAction(int actionCode) {
+            if (DEBUG) Log.w(TAG, "performEditorAction [" + actionCode + "]");
             if (actionCode == EditorInfo.IME_ACTION_NEXT) {
                 restartInput();
                 // Send TAB key event
@@ -575,6 +591,7 @@ class ImeAdapter {
 
         @Override
         public boolean performContextMenuAction(int id) {
+            if (DEBUG) Log.w(TAG, "performContextMenuAction [" + id + "]");
             switch (id) {
                 case android.R.id.selectAll:
                     return mImeAdapter.selectAll();
@@ -591,6 +608,7 @@ class ImeAdapter {
 
         @Override
         public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
+            if (DEBUG) Log.w(TAG, "getExtractedText");
             ExtractedText et = new ExtractedText();
             Editable editable = getEditable();
             et.text = editable.toString();
@@ -603,6 +621,7 @@ class ImeAdapter {
 
         @Override
         public boolean beginBatchEdit() {
+            if (DEBUG) Log.w(TAG, "beginBatchEdit [" + (mNumNestedBatchEdits == 0) + "]");
             if (mNumNestedBatchEdits == 0) mImeAdapter.batchStateChanged(true);
 
             mNumNestedBatchEdits++;
@@ -614,12 +633,16 @@ class ImeAdapter {
             if (mNumNestedBatchEdits == 0) return false;
 
             --mNumNestedBatchEdits;
+            if (DEBUG) Log.w(TAG, "endBatchEdit [" + (mNumNestedBatchEdits == 0) + "]");
             if (mNumNestedBatchEdits == 0) mImeAdapter.batchStateChanged(false);
             return false;
         }
 
         @Override
         public boolean deleteSurroundingText(int leftLength, int rightLength) {
+            if (DEBUG) {
+                Log.w(TAG, "deleteSurroundingText [" + leftLength + " " + rightLength + "]");
+            }
             if (!super.deleteSurroundingText(leftLength, rightLength)) {
                 return false;
             }
@@ -628,6 +651,7 @@ class ImeAdapter {
 
         @Override
         public boolean sendKeyEvent(KeyEvent event) {
+            if (DEBUG) Log.w(TAG, "sendKeyEvent [" + event.getAction() + "]");
             mImeAdapter.mSelectionHandleController.hideAndDisallowAutomaticShowing();
             mImeAdapter.mInsertionHandleController.hideAndDisallowAutomaticShowing();
 
@@ -661,6 +685,7 @@ class ImeAdapter {
 
         @Override
         public boolean finishComposingText() {
+            if (DEBUG) Log.w(TAG, "finishComposingText");
             Editable editable = getEditable();
             if (getComposingSpanStart(editable) == getComposingSpanEnd(editable)) {
                 return true;
@@ -671,6 +696,7 @@ class ImeAdapter {
 
         @Override
         public boolean setSelection(int start, int end) {
+            if (DEBUG) Log.w(TAG, "setSelection");
             if (start < 0 || end < 0) return true;
             super.setSelection(start, end);
             return mImeAdapter.setEditableSelectionOffsets(start, end);
@@ -681,6 +707,7 @@ class ImeAdapter {
          * state is no longer what the IME has and that it needs to be updated.
          */
         void restartInput() {
+            if (DEBUG) Log.w(TAG, "restartInput");
             getInputMethodManagerWrapper().restartInput(mInternalView);
             mIgnoreTextInputStateUpdates = false;
             mNumNestedBatchEdits = 0;
@@ -688,6 +715,7 @@ class ImeAdapter {
 
         @Override
         public boolean setComposingRegion(int start, int end) {
+            if (DEBUG) Log.w(TAG, "setComposingRegion [" + start + " " + end + "]");
             int a = Math.min(start, end);
             int b = Math.max(start, end);
             super.setComposingRegion(a, b);
