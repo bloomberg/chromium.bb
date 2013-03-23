@@ -98,15 +98,6 @@ TEST_F(DriveResourceMetadataStorageTest, PutChild) {
   EXPECT_TRUE(storage_->GetChild(parent_id2, child_name1).empty());
   EXPECT_TRUE(storage_->GetChild(parent_id2, child_name2).empty());
 
-  // Get children.
-  std::vector<std::string> children;
-  storage_->GetChildren(parent_id1, &children);
-  EXPECT_EQ(2U, children.size());
-  EXPECT_TRUE(std::find(children.begin(), children.end(), child_id1)
-              != children.end());
-  EXPECT_TRUE(std::find(children.begin(), children.end(), child_id2)
-              != children.end());
-
   // Remove child1.
   storage_->RemoveChild(parent_id1, child_name1);
   EXPECT_TRUE(storage_->GetChild(parent_id1, child_name1).empty());
@@ -120,6 +111,48 @@ TEST_F(DriveResourceMetadataStorageTest, PutChild) {
   EXPECT_TRUE(storage_->GetChild(parent_id1, child_name2).empty());
   EXPECT_TRUE(storage_->GetChild(parent_id2, child_name1).empty());
   EXPECT_TRUE(storage_->GetChild(parent_id2, child_name2).empty());
+}
+
+TEST_F(DriveResourceMetadataStorageTest, GetChildren) {
+  const std::string parents_id[] = { "mercury", "venus", "mars", "jupiter",
+                                     "saturn" };
+  std::vector<std::vector<std::pair<std::string, std::string> > >
+      children_name_id(arraysize(parents_id));
+  // Skip children_name_id[0/1] here because Mercury and Venus have no moon.
+  children_name_id[2].push_back(std::make_pair("phobos", "mars_i"));
+  children_name_id[2].push_back(std::make_pair("deimos", "mars_ii"));
+  children_name_id[3].push_back(std::make_pair("io", "jupiter_i"));
+  children_name_id[3].push_back(std::make_pair("europa", "jupiter_ii"));
+  children_name_id[3].push_back(std::make_pair("ganymede", "jupiter_iii"));
+  children_name_id[3].push_back(std::make_pair("calisto", "jupiter_iv"));
+  children_name_id[4].push_back(std::make_pair("mimas", "saturn_i"));
+  children_name_id[4].push_back(std::make_pair("enceladus", "saturn_ii"));
+  children_name_id[4].push_back(std::make_pair("tethys", "saturn_iii"));
+  children_name_id[4].push_back(std::make_pair("dione", "saturn_iv"));
+  children_name_id[4].push_back(std::make_pair("rhea", "saturn_v"));
+  children_name_id[4].push_back(std::make_pair("titan", "saturn_vi"));
+  children_name_id[4].push_back(std::make_pair("iapetus", "saturn_vii"));
+
+  // Put some data.
+  for (size_t i = 0; i != children_name_id.size(); ++i) {
+    for (size_t j = 0; j != children_name_id[i].size(); ++j) {
+      storage_->PutChild(parents_id[i],
+                         children_name_id[i][j].first,
+                         children_name_id[i][j].second);
+    }
+  }
+
+  // Try to get children.
+  for (size_t i = 0; i != children_name_id.size(); ++i) {
+    std::vector<std::string> children;
+    storage_->GetChildren(parents_id[i], &children);
+    EXPECT_EQ(children_name_id[i].size(), children.size());
+    for (size_t j = 0; j != children_name_id[i].size(); ++j) {
+      EXPECT_EQ(1, std::count(children.begin(),
+                              children.end(),
+                              children_name_id[i][j].second));
+    }
+  }
 }
 
 TEST_F(DriveResourceMetadataStorageTest, OpenExistingDB) {
