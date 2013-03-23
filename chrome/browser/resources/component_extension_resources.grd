@@ -111,6 +111,7 @@
       </if>
       <if expr="pp_ifdef('enable_google_now')">
         <include name="IDR_GOOGLE_NOW_BACKGROUND_JS" file="google_now/background.js" type="BINDATA" />
+        <include name="IDR_GOOGLE_NOW_UTILITY_JS" file="google_now/utility.js" type="BINDATA" />
       </if>
       <include name="IDR_APPS_DEBUGGER_MAIN" file="apps_debugger/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_APPS_DEBUGGER_BACKGROUND_JS" file="apps_debugger/background.js" flattenhtml="true" type="BINDATA" />

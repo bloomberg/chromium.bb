@@ -16,7 +16,7 @@
   ],
   "manifest_version": 2,
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["utility.js", "background.js"],
     "persistent": false
   }
 }
