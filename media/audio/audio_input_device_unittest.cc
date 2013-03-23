@@ -15,6 +15,11 @@
 #include "media/audio/win/wavein_input_win.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "media/audio/audio_manager_base.h"
+#endif
+
 namespace media {
 
 // Test fixture which allows us to override the default enumeration API on
@@ -23,11 +28,15 @@ class AudioInputDeviceTest
     : public ::testing::Test {
  protected:
   AudioInputDeviceTest()
-      : audio_manager_(AudioManager::Create())
 #if defined(OS_WIN)
-      , com_init_(base::win::ScopedCOMInitializer::kMTA)
+      : com_init_(base::win::ScopedCOMInitializer::kMTA)
 #endif
   {
+#if defined(OS_ANDROID)
+    media::AudioManagerBase::RegisterAudioManager(
+        base::android::AttachCurrentThread());
+#endif
+    audio_manager_.reset(AudioManager::Create());
   }
 
 #if defined(OS_WIN)

@@ -15,6 +15,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "media/audio/audio_manager_base.h"
+#endif
+
 using testing::_;
 using testing::InSequence;
 using testing::SaveArg;
@@ -55,6 +60,11 @@ class AudioInputDeviceManagerTest : public testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
+
+#if defined(OS_ANDROID)
+    media::AudioManagerBase::RegisterAudioManager(
+        base::android::AttachCurrentThread());
+#endif
 
     audio_manager_.reset(media::AudioManager::Create());
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
