@@ -194,6 +194,9 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   // Writes raw text out returning true on success. This does not escape
   // the text in anyway.
   bool Write(const std::string& text) {
+    // net::FileStream does not allow 0-byte writes.
+    if (!text.length())
+      return true;
     size_t wrote = file_stream_->WriteSync(text.c_str(), text.length());
     bool result = (wrote == text.length());
     DCHECK(result);

@@ -150,6 +150,8 @@ class NET_EXPORT FileStream {
   // in-flight asynchronous operation.
   //
   // This method must not be called if the stream was opened READ_ONLY.
+  //
+  // Zero byte writes are not allowed.
   virtual int Write(IOBuffer* buf, int buf_len,
                     const CompletionCallback& callback);
 
@@ -161,6 +163,8 @@ class NET_EXPORT FileStream {
   //
   // The file must not be opened with PLATFORM_FILE_ASYNC.
   // This method must not be called if the stream was opened READ_ONLY.
+  //
+  // Zero byte writes are not allowed.
   virtual int WriteSync(const char* buf, int buf_len);
 
   // Truncates the file to be |bytes| length. This is only valid for writable
