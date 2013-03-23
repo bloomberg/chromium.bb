@@ -62,7 +62,7 @@ const int kManageDonePadding = 8;
 const int kMediaMenuVerticalPadding = 20;
 
 // Padding between media menu elements in the media bubble.
-const int kMediaMenuElementVerticalPadding = 10;
+const int kMediaMenuElementVerticalPadding = 5;
 
 // The amount of horizontal space between the media menu title and the border.
 const int kMediaMenuTitleHorizontalPadding = 10;
@@ -497,6 +497,7 @@ MediaMenuParts::~MediaMenuParts() {}
     NSTextField* label =
         LabelWithFrame(base::SysUTF8ToNSString(it->second.label), labelFrame);
     SetControlSize(label, NSSmallControlSize);
+    [[label cell] setAlignment:NSRightTextAlignment];
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:label];
     maxLabelWidth = std::max(maxLabelWidth, [label frame].size.width);
     [[self bubble]  addSubview:label];
@@ -533,7 +534,9 @@ MediaMenuParts::~MediaMenuParts() {}
   for (content_setting_bubble::MediaMenuPartsMap::const_iterator i =
        mediaMenus_.begin(); i != mediaMenus_.end(); ++i) {
     NSRect labelFrame = [i->second->label frame];
-    labelFrame.size.height = maxMenuHeight;
+    // Align the label text with the button text.
+    labelFrame.origin.y += (maxMenuHeight - labelFrame.size.height) / 2 + 1;
+    labelFrame.size.width = maxLabelWidth;
     [i->second->label setFrame:labelFrame];
     NSRect menuFrame = [i->first frame];
     menuFrame.origin.x = NSMinX(mediaMenusFrame) + maxLabelWidth;
