@@ -129,7 +129,8 @@ void NetworkChangeNotifierNetworkLibrary::OnNetworkChanged(
 void NetworkChangeNotifierNetworkLibrary::UpdateNetworkState(
     chromeos::NetworkLibrary* lib) {
   const chromeos::Network* network = lib->active_network();
-  if (network) {
+  // For VPN networks, the device path is empty. See crbug.com/222251
+  if (network && network->type() != TYPE_VPN) {
     lib->GetIPConfigs(
         network->device_path(),
         chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX,
