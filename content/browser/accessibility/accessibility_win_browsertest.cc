@@ -358,9 +358,21 @@ void AccessibleChecker::CheckIA2Role(IAccessible* accessible) {
 }
 
 void AccessibleChecker::CheckAccessibleValue(IAccessible* accessible) {
-  CComBSTR value;
+  // Don't check the value if if's a DOCUMENT role, because the value
+  // is supposed to be the url (and we don't keep track of that in the
+  // test expectations).
+  VARIANT var_role = {0};
   HRESULT hr =
-      accessible->get_accValue(CreateI4Variant(CHILDID_SELF), &value);
+      accessible->get_accRole(CreateI4Variant(CHILDID_SELF), &var_role);
+  ASSERT_EQ(S_OK, hr);
+  if (V_VT(&var_role) == VT_I4 &&
+      V_I4(&var_role) == ROLE_SYSTEM_DOCUMENT) {
+    return;
+  }
+
+  // Get the value.
+  CComBSTR value;
+  hr = accessible->get_accValue(CreateI4Variant(CHILDID_SELF), &value);
   EXPECT_EQ(S_OK, hr);
 
   // Test that the correct string was returned.

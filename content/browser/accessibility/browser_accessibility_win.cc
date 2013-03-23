@@ -2787,6 +2787,12 @@ void BrowserAccessibilityWin::PreInitialize() {
     }
   }
 
+  // On Windows, the value of a document should be its url.
+  if (role_ == AccessibilityNodeData::ROLE_ROOT_WEB_AREA ||
+      role_ == AccessibilityNodeData::ROLE_WEB_AREA) {
+    GetStringAttribute(AccessibilityNodeData::ATTR_DOC_URL, &value_);
+  }
+
   // For certain roles (listbox option, static text, and list marker)
   // WebKit stores the main accessible text in the "value" - swap it so
   // that it's the "name".
