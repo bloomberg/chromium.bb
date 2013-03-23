@@ -467,7 +467,14 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
 
 // This test verifies our spellchecker can split a text into words and check
 // the spelling of each word in the text.
-TEST_F(SpellCheckTest, SpellCheckText) {
+#if defined(THREAD_SANITIZER)
+// SpellCheckTest.SpellCheckText fails under ThreadSanitizer v2.
+// See http://crbug.com/217909.
+#define MAYBE_SpellCheckText DISABLED_SpellCheckText
+#else
+#define MAYBE_SpellCheckText SpellCheckText
+#endif  // THREAD_SANITIZER
+TEST_F(SpellCheckTest, MAYBE_SpellCheckText) {
   static const struct {
     const char* language;
     const wchar_t* input;
