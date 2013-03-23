@@ -40,6 +40,24 @@ struct EVMetadata {
 };
 
 static const EVMetadata ev_root_ca_metadata[] = {
+  // AC Camerfirma S.A. Chambers of Commerce Root - 2008
+  // https://www.camerfirma.com
+  { { { 0x78, 0x6a, 0x74, 0xac, 0x76, 0xab, 0x14, 0x7f, 0x9c, 0x6a,
+        0x30, 0x50, 0xba, 0x9e, 0xa8, 0x7e, 0xfe, 0x9a, 0xce, 0x3c } },
+    { // AC Camerfirma uses the last two arcs to track how the private key is
+      // managed - the effective verification policy is the same.
+      "1.3.6.1.4.1.17326.10.14.2.1.2",
+      "1.3.6.1.4.1.17326.10.14.2.2.2", },
+  },
+  // AC Camerfirma S.A. Global Chambersign Root - 2008
+  // https://server2.camerfirma.com:8082
+  { { { 0x4a, 0xbd, 0xee, 0xec, 0x95, 0x0d, 0x35, 0x9c, 0x89, 0xae,
+        0xc7, 0x52, 0xa1, 0x2c, 0x5b, 0x29, 0xf6, 0xd6, 0xaa, 0x0c } },
+    { // AC Camerfirma uses the last two arcs to track how the private key is
+      // managed - the effective verification policy is the same.
+      "1.3.6.1.4.1.17326.10.8.12.1.2",
+      "1.3.6.1.4.1.17326.10.8.12.2.2", },
+  },
   // AddTrust External CA Root
   // https://addtrustexternalcaroot-ev.comodoca.com
   { { { 0x02, 0xfa, 0xf3, 0xe2, 0x91, 0x43, 0x54, 0x68, 0x60, 0x78,
