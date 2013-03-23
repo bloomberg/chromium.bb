@@ -15,11 +15,11 @@ int main(int argc, char ** argv) {
   if (i > 0)
     return 0;
 
+  /* child (daemon) continues */
   int j;
   for (j = 0; j < getdtablesize(); j++)
     close(j);
 
-  /* child (daemon) continues */
   setsid(); /* obtain a new process group */
 
   while (1) {
@@ -27,7 +27,9 @@ int main(int argc, char ** argv) {
     sleep(120);
     if (fopen("/sdcard/host_heartbeat", "r") != NULL) {
       // File exists, was not removed from host.
-      system("reboot");
+      system("stop adbd");
+      system("sleep 2");
+      system("start adbd");
     }
   }
 
