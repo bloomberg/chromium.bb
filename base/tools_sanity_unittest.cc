@@ -247,10 +247,11 @@ void RunInParallel(PlatformThread::Delegate *d1, PlatformThread::Delegate *d2) {
 
 // A data race detector should report an error in this test.
 TEST(ToolsSanityTest, DataRace) {
-  bool shared = false;
-  TOOLS_SANITY_TEST_CONCURRENT_THREAD thread1(&shared), thread2(&shared);
+  bool *shared = new bool(false);
+  TOOLS_SANITY_TEST_CONCURRENT_THREAD thread1(shared), thread2(shared);
   RunInParallel(&thread1, &thread2);
-  EXPECT_TRUE(shared);
+  EXPECT_TRUE(*shared);
+  delete shared;
 }
 
 TEST(ToolsSanityTest, AnnotateBenignRace) {
