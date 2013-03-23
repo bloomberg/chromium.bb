@@ -84,7 +84,7 @@ base::FilePath GetPepperFlashBaseDirectory() {
   return result;
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 // Pepper Flash plugins have the version encoded in the path itself
 // so we need to enumerate the directories to find the full path.
 // On success, |latest_dir| returns something like:
@@ -332,7 +332,7 @@ bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
 
 namespace {
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
                                          const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -379,12 +379,12 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
     file_util::Delete(*iter, true);
   }
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 
 }  // namespace
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
   // Component updated flash supersedes bundled flash therefore if that one
   // is disabled then this one should never install.
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
