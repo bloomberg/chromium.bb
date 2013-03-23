@@ -4,7 +4,7 @@ jamescook@chromium.org
 sky@chromium.org
 
 per-file ash_strings.grd=*
-per-file ash_chromeos_strings.grd=*
+per-file ash_chromeos_strings.grdp=*
 per-file root_window_controller.*=oshima@chromium.org
 per-file screen_ash.*=oshima@chromium.org
 per-file extended_desktop_unittest.*=oshima@chromium.org
