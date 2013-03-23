@@ -24,4 +24,12 @@ In particular, ~ at the start of a string means it's a regex.
   </Match>
   <!-- Ignore "reliance on default String encoding" warnings, as we're not multi-platform -->
   <Bug pattern="DM_DEFAULT_ENCODING" />
+  <!-- Ignore bugs that are often false-positives in test code -->
+  <Match>
+    <Class name="~org\.chromium\..*Test(\$\w+)?" />
+    <Or>
+      <Bug code="DLS,UrF" />
+      <Bug pattern="DM_GC" />
+    </Or>
+  </Match>
 </FindBugsFilter>
