@@ -243,6 +243,12 @@ class ChromeSDKCommand(cros.CrosCommand):
              'and not concentrated in the out_<board> directory, so you can '
              'only have one Make config running at a time.')
     parser.add_argument(
+        '--chroot', type=osutils.ExpandPath,
+        help='Path to a ChromeOS chroot to use.  If set, '
+             '<chroot>/build/<board> will be used as the sysroot that Chrome '
+             'is built against.  The version shown in the SDK shell prompt '
+             'will then have an asterisk prepended to it.')
+    parser.add_argument(
         '--update', action='store_true', default=False,
         help='Force download of latest SDK version for the board.')
     parser.add_argument(
@@ -262,9 +268,18 @@ class ChromeSDKCommand(cros.CrosCommand):
     self.sdk = None
 
   @staticmethod
-  def _CreatePS1(board, version):
-    """Returns PS1 string that sets commandline and xterm window caption."""
-    sdk_version = '(sdk %s %s)' % (board, version)
+  def _CreatePS1(board, version, chroot=None):
+    """Returns PS1 string that sets commandline and xterm window caption.
+
+    If a chroot path is set, then indicate we are using the sysroot from there
+    instead of the stock sysroot by prepending an asterisk to the version.
+
+    Arguments:
+      board, version: The SDK board and version.
+      chroot: The path to the chroot, if set.
+    """
+    custom = '*' if chroot else ''
+    sdk_version = '(sdk %s %s%s)' % (board, custom, version)
     label = '\\u@\\h: \\w'
     window_caption = "\\[\\e]0;%(sdk_version)s %(label)s \\a\\]"
     command_line = "%(sdk_version)s \\[\\e[1;33m\\]%(label)s \\$ \\[\\e[m\\]"
@@ -323,7 +338,14 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   def _SetupEnvironment(self, board, sdk_ctx, options):
     """Sets environment variables to export to the SDK shell."""
-    sysroot = sdk_ctx.key_map[constants.CHROME_SYSROOT_TAR].path
+    if options.chroot:
+      sysroot = os.path.join(options.chroot, 'build', board)
+      if not os.path.isdir(sysroot) and not options.cmd:
+        logging.warning("Because --chroot is set, expected a sysroot to be at "
+                        "%s, but couldn't find one.", sysroot)
+    else:
+      sysroot = sdk_ctx.key_map[constants.CHROME_SYSROOT_TAR].path
+
     environment = os.path.join(sdk_ctx.key_map[constants.CHROME_ENV_TAR].path,
                                'environment')
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
@@ -351,7 +373,8 @@ class ChromeSDKCommand(cros.CrosCommand):
     env['GYP_DEFINES'] = chrome_util.DictToGypDefines(gyp_dict)
 
     # PS1 sets the command line prompt and xterm window caption.
-    env['PS1'] = self._CreatePS1(self.board, sdk_ctx.version)
+    env['PS1'] = self._CreatePS1(
+        self.board, sdk_ctx.version, chroot=options.chroot)
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
@@ -426,8 +449,10 @@ class ChromeSDKCommand(cros.CrosCommand):
     if self.options.update:
       prepare_version = self.sdk.UpdateDefaultVersion()
 
-    components = (self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_SYSROOT_TAR,
-                  constants.CHROME_ENV_TAR)
+    components = [self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR]
+    if not self.options.chroot:
+      components.append(constants.CHROME_SYSROOT_TAR)
+
     with self.sdk.Prepare(components, version=prepare_version) as ctx:
       env = self._SetupEnvironment(self.options.board, ctx, self.options)
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
