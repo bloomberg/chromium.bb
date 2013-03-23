@@ -60,8 +60,9 @@ bool ContextProviderInProcess::InitializeOnMainThread() {
   attributes.noAutomaticFlushes = true;
 
   context3d_.reset(
-      new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl(
-          attributes));
+      new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
+  if (!context3d_->Initialize(attributes, NULL))
+    context3d_.reset();
 
   return context3d_;
 }

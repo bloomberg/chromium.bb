@@ -58,8 +58,8 @@ void PixelTest::SetUp() {
 
   scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
       context3d(
-          new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl(
-              WebKit::WebGraphicsContext3D::Attributes()));
+          new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl);
+  context3d->Initialize(WebKit::WebGraphicsContext3D::Attributes(), NULL);
   output_surface_.reset(new OutputSurface(
       context3d.PassAs<WebKit::WebGraphicsContext3D>()));
   resource_provider_ = ResourceProvider::Create(output_surface_.get());

@@ -495,6 +495,16 @@ void SetUpGLBindings(GLBindingPreferences bindingPref) {
   }
 }
 
+WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes,
+    WebKit::WebView* web_view) {
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context(
+      new WebGraphicsContext3DInProcessCommandBufferImpl());
+  if (!context->Initialize(attributes, NULL))
+    return NULL;
+  return context.release();
+}
+
 WebKit::WebLayerTreeView* CreateLayerTreeView(
     LayerTreeViewType type,
     DRTLayerTreeViewClient* client,

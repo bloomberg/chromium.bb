@@ -98,6 +98,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   // outlive its parent.  attrib_list must be NULL or a NONE-terminated list of
   // attribute/value pairs.
   static GLInProcessContext* CreateOffscreenContext(
+      GLInProcessContext* parent,
       const gfx::Size& size,
       GLInProcessContext* context_group,
       const char* allowed_extensions,
@@ -144,7 +145,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   CommandBufferService* GetCommandBufferService();
 
  private:
-  GLInProcessContext();
+  explicit GLInProcessContext(GLInProcessContext* parent);
 
   bool Initialize(const gfx::Size& size,
                   GLInProcessContext* context_group,
@@ -155,7 +156,9 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
 
   void OnContextLost();
 
+  base::WeakPtr<GLInProcessContext> parent_;
   base::Closure context_lost_callback_;
+  uint32 parent_texture_id_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr< ::gpu::GpuScheduler> gpu_scheduler_;
@@ -213,12 +216,13 @@ GLInProcessContext::~GLInProcessContext() {
 }
 
 GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
+    GLInProcessContext* parent,
     const gfx::Size& size,
     GLInProcessContext* context_group,
     const char* allowed_extensions,
     const int32* attrib_list,
     gfx::GpuPreference gpu_preference) {
-  scoped_ptr<GLInProcessContext> context(new GLInProcessContext);
+  scoped_ptr<GLInProcessContext> context(new GLInProcessContext(parent));
   if (!context->Initialize(
       size,
       context_group,
@@ -255,7 +259,7 @@ bool GLInProcessContext::GetBufferChanged(int32 transfer_buffer_id) {
 }
 
 uint32 GLInProcessContext::GetParentTextureId() {
-  return 0;
+  return parent_texture_id_;
 }
 
 uint32 GLInProcessContext::CreateParentTexture(const gfx::Size& size) {
@@ -337,8 +341,11 @@ GLES2Implementation* GLInProcessContext::GetImplementation() {
   return gles2_implementation_.get();
 }
 
-GLInProcessContext::GLInProcessContext()
-    : last_error_(SUCCESS),
+GLInProcessContext::GLInProcessContext(GLInProcessContext* parent)
+    : parent_(parent ?
+          parent->AsWeakPtr() : base::WeakPtr<GLInProcessContext>()),
+      parent_texture_id_(0),
+      last_error_(SUCCESS),
       context_lost_(false) {
 }
 
@@ -355,6 +362,15 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
 
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
+
+  // Allocate a frame buffer ID with respect to the parent.
+  if (parent_.get()) {
+    // Flush any remaining commands in the parent context to make sure the
+    // texture id accounting stays consistent.
+    int32 token = parent_->gles2_helper_->InsertToken();
+    parent_->gles2_helper_->WaitForToken(token);
+    parent_texture_id_ = parent_->gles2_implementation_->MakeTextureId();
+  }
 
   std::vector<int32> attribs;
   while (attrib_list) {
@@ -449,6 +465,14 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
     return false;
   }
 
+  if (!decoder_->SetParent(
+      parent_.get() ? parent_->decoder_.get() : NULL,
+      parent_texture_id_)) {
+    LOG(ERROR) << "Could not set parent.";
+    Destroy();
+    return false;
+  }
+
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GLInProcessContext::PumpCommands, base::Unretained(this)));
   command_buffer_->SetGetBufferChangeCallback(
@@ -488,6 +512,11 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
 void GLInProcessContext::Destroy() {
   bool context_lost = IsCommandBufferContextLost();
 
+  if (parent_.get() && parent_texture_id_ != 0) {
+    parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
+    parent_texture_id_ = 0;
+  }
+
   if (gles2_implementation_.get()) {
     // First flush the context to ensure that any pending frees of resources
     // are completed. Otherwise, if this context is part of a share group,
@@ -514,15 +543,11 @@ void GLInProcessContext::OnContextLost() {
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
-    WebGraphicsContext3DInProcessCommandBufferImpl(
-        const WebKit::WebGraphicsContext3D::Attributes& attributes)
-    : initialized_(false),
-      initialize_failed_(false),
-      context_(NULL),
+    WebGraphicsContext3DInProcessCommandBufferImpl()
+    : context_(NULL),
       gl_(NULL),
       context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
-      attributes_(attributes),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -534,20 +559,16 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
   g_all_shared_contexts.Pointer()->erase(this);
 }
 
-bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
-  if (initialized_)
-    return true;
-
-  if (initialize_failed_)
-    return false;
-
+bool WebGraphicsContext3DInProcessCommandBufferImpl::Initialize(
+    WebGraphicsContext3D::Attributes attributes,
+    WebKit::WebGraphicsContext3D* view_context) {
   // Convert WebGL context creation attributes into GLInProcessContext / EGL
   // size requests.
-  const int alpha_size = attributes_.alpha ? 8 : 0;
-  const int depth_size = attributes_.depth ? 24 : 0;
-  const int stencil_size = attributes_.stencil ? 8 : 0;
-  const int samples = attributes_.antialias ? 4 : 0;
-  const int sample_buffers = attributes_.antialias ? 1 : 0;
+  const int alpha_size = attributes.alpha ? 8 : 0;
+  const int depth_size = attributes.depth ? 24 : 0;
+  const int stencil_size = attributes.stencil ? 8 : 0;
+  const int samples = attributes.antialias ? 4 : 0;
+  const int sample_buffers = attributes.antialias ? 1 : 0;
   const int32 attribs[] = {
     GLInProcessContext::ALPHA_SIZE, alpha_size,
     GLInProcessContext::DEPTH_SIZE, depth_size,
@@ -566,27 +587,34 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   // discrete GPU is created, or the last one is destroyed.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
+  GLInProcessContext* parent_context = NULL;
+  if (view_context) {
+    WebGraphicsContext3DInProcessCommandBufferImpl* context_impl =
+        static_cast<WebGraphicsContext3DInProcessCommandBufferImpl*>(
+            view_context);
+    parent_context = context_impl->context_;
+  }
+
   WebGraphicsContext3DInProcessCommandBufferImpl* context_group = NULL;
   base::AutoLock lock(g_all_shared_contexts_lock.Get());
-  if (attributes_.shareResources)
+  if (attributes.shareResources)
     context_group = g_all_shared_contexts.Pointer()->empty() ?
         NULL : *g_all_shared_contexts.Pointer()->begin();
 
   context_ = GLInProcessContext::CreateOffscreenContext(
+      parent_context,
       gfx::Size(1, 1),
       context_group ? context_group->context_ : NULL,
       preferred_extensions,
       attribs,
       gpu_preference);
 
-  if (!context_) {
-    initialize_failed_ = true;
+  if (!context_)
     return false;
-  }
 
   gl_ = context_->GetImplementation();
 
-  if (gl_ && attributes_.noExtensions)
+  if (gl_ && attributes.noExtensions)
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
   context_->SetContextLostCallback(
@@ -596,6 +624,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
 
   // Set attributes_ from created offscreen context.
   {
+    attributes_ = attributes;
     GLint alpha_bits = 0;
     getIntegerv(GL_ALPHA_BITS, &alpha_bits);
     attributes_.alpha = alpha_bits > 0;
@@ -609,18 +638,15 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
     getIntegerv(GL_SAMPLE_BUFFERS, &sample_buffers);
     attributes_.antialias = sample_buffers > 0;
   }
+  makeContextCurrent();
 
-  if (attributes_.shareResources)
+  if (attributes.shareResources)
     g_all_shared_contexts.Pointer()->insert(this);
 
-  initialized_ = true;
   return true;
 }
 
 bool WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent() {
-  if (!MaybeInitializeGL())
-    return false;
-
   return GLInProcessContext::MakeCurrent(context_);
 }
 
