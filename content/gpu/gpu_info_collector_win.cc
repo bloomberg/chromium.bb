@@ -169,19 +169,17 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStatsWithHistograms() {
 Version DisplayLinkVersion() {
   base::win::RegKey key;
 
-  if (FAILED(key.Open(
-      HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))) {
-    return Version();
-  }
-
-  if (FAILED(key.OpenKey(L"DisplayLink", KEY_READ | KEY_WOW64_64KEY)))
+  if (key.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))
     return Version();
 
-  if (FAILED(key.OpenKey(L"Core", KEY_READ | KEY_WOW64_64KEY)))
+  if (key.OpenKey(L"DisplayLink", KEY_READ | KEY_WOW64_64KEY))
+    return Version();
+
+  if (key.OpenKey(L"Core", KEY_READ | KEY_WOW64_64KEY))
     return Version();
 
   string16 version;
-  if (FAILED(key.ReadValue(L"Version", &version)))
+  if (key.ReadValue(L"Version", &version))
     return Version();
 
   return Version(WideToASCII(version));
