@@ -3,7 +3,8 @@
     "pages": [
         {
             "url": "file:///../../../../data/page_cycler/dhtml/start.html?iterations=10&auto=1",
-            "url_base_dir": "file:///../../../../data/page_cycler/"
+            "serving_dirs": ["../../../../data/page_cycler/common",
+                             "../../../../data/page_cycler/dhtml"]
         }
     ]
 }

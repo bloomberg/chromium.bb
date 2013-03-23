@@ -3,7 +3,8 @@
     "pages": [
         {
             "url": "file:///../../../../../tools/page_cycler/indexed_db/basic_insert/start.html?iterations=5&auto=1",
-            "url_base_dir": "file:///../../../../../tools/page_cycler/"
+            "serving_dirs": ["../../../../../tools/page_cycler/common",
+                             "../../../../../tools/page_cycler/indexed_db"]
         }
     ]
 }
