@@ -28,6 +28,8 @@
             'action_name': 'generate_pnacl_support_extension',
             'inputs': [
               'pnacl_component_crx_gen.py',
+              # A stamp file representing the contents of pnacl_translator.
+              '<(DEPTH)/native_client/toolchain/pnacl_translator/SOURCE_SHA1',
             ],
             'conditions': [
                 # On windows we need both ia32 and x64.
