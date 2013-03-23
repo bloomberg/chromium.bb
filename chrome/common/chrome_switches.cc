@@ -442,6 +442,13 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
+// Enables the <adview> tag in packaged apps.
+const char kEnableAdview[]                  = "enable-adview";
+
+// Enables specifying a "src" attribute on <adview> elements
+// (for testing purposes, to skip the whitelist).
+const char kEnableAdviewSrcAttribute[]      = "enable-adview-src-attribute";
+
 // Enables the experimental asynchronous DNS client.
 const char kEnableAsyncDns[]                = "enable-async-dns";
 

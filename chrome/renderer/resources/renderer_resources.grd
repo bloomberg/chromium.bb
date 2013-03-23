@@ -45,6 +45,9 @@ without changes to the corresponding grd file. fb9 -->
 
       <if expr="pp_ifdef('enable_extensions')">
         <!-- Custom bindings for extension APIs. -->
+        <include name="IDR_AD_VIEW_DENY_JS" file="extensions\ad_view_deny.js" type="BINDATA" />
+        <include name="IDR_AD_VIEW_JS" file="extensions\ad_view.js" type="BINDATA" />
+        <include name="IDR_AD_VIEW_CUSTOM_JS" file="extensions\ad_view_custom.js" type="BINDATA" />
         <include name="IDR_APP_CUSTOM_BINDINGS_JS" file="extensions\app_custom_bindings.js" type="BINDATA" />
         <include name="IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS" file="extensions\app_runtime_custom_bindings.js" type="BINDATA" />
         <include name="IDR_APP_WINDOW_CUSTOM_BINDINGS_JS" file="extensions\app_window_custom_bindings.js" type="BINDATA" />

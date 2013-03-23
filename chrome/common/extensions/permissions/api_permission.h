@@ -39,6 +39,7 @@ class APIPermission {
 
     // Real permissions.
     kActiveTab,
+    kAdView,
     kAlarms,
     kAppCurrentWindowInternal,
     kAppRuntime,

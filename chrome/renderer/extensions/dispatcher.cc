@@ -868,6 +868,12 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webViewExperimental",
                              IDR_WEB_VIEW_EXPERIMENTAL_JS);
   source_map_.RegisterSource("denyWebView", IDR_WEB_VIEW_DENY_JS);
+  source_map_.RegisterSource("adView", IDR_AD_VIEW_JS);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAdviewSrcAttribute)) {
+    source_map_.RegisterSource("adViewCustom", IDR_AD_VIEW_CUSTOM_JS);
+  }
+  source_map_.RegisterSource("denyAdView", IDR_AD_VIEW_DENY_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }
@@ -1014,6 +1020,22 @@ void Dispatcher::DidCreateScriptContext(
         module_system->Require("webViewExperimental");
     } else {
       module_system->Require("denyWebView");
+    }
+  }
+
+  // Same comment as above for <adview> tag.
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
+      is_within_platform_app) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdview)) {
+      if (extension->HasAPIPermission(APIPermission::kAdView)) {
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableAdviewSrcAttribute)) {
+          module_system->Require("adViewCustom");
+        }
+        module_system->Require("adView");
+      } else {
+        module_system->Require("denyAdView");
+      }
     }
   }
 

@@ -133,6 +133,7 @@ using WebKit::WebVector;
 namespace {
 
 const char kWebViewTagName[] = "WEBVIEW";
+const char kAdViewTagName[] = "ADVIEW";
 
 // Explicitly register all extension ManifestHandlers needed to parse
 // fields used in the renderer.
@@ -422,9 +423,16 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     WebDocument document = frame->document();
     const Extension* extension =
         GetExtension(document.securityOrigin());
-    if (extension && extension->HasAPIPermission(
-        extensions::APIPermission::kWebView))
-      return false;
+    if (extension) {
+      const extensions::APIPermission::ID perms[] = {
+        extensions::APIPermission::kWebView,
+        extensions::APIPermission::kAdView
+      };
+      for (size_t i = 0; i < arraysize(perms); ++i) {
+        if (extension->HasAPIPermission(perms[i]))
+          return false;
+      }
+    }
   }
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
@@ -1140,22 +1148,23 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
     return true;
 
   // If this |BrowserPlugin| <object> in the |container| is not inside a
-  // <webview> shadowHost, we disable instantiating this plugin. This is to
-  // discourage and prevent developers from accidentally attaching <object>
-  // directly in apps.
+  // <webview>/<adview> shadowHost, we disable instantiating this plugin. This
+  // is to discourage and prevent developers from accidentally attaching
+  // <object> directly in apps.
   //
   // Note that this check below does *not* ensure any security, it is still
   // possible to bypass this check.
   // TODO(lazyboy): http://crbug.com/178663, Ensure we properly disallow
-  // instantiating BrowserPlugin outside of the <webview> shim.
+  // instantiating BrowserPlugin outside of the <webview>/<adview> shim.
   if (container->element().isNull())
     return false;
 
   if (container->element().shadowHost().isNull())
     return false;
 
-  return container->element().shadowHost().tagName().equals(
-      WebString::fromUTF8(kWebViewTagName));
+  WebString tag_name = container->element().shadowHost().tagName();
+  return tag_name.equals(WebString::fromUTF8(kWebViewTagName)) ||
+    tag_name.equals(WebString::fromUTF8(kAdViewTagName));
 }
 
 }  // namespace chrome

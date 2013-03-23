@@ -8,6 +8,10 @@
     "extension_types": ["extension", "packaged_app"],
     "min_manifest_version": 2
   },
+  "adview": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "alarms": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],

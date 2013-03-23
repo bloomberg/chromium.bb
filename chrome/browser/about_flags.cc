@@ -474,6 +474,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kExtensionsOnChromeURLs)
   },
   {
+    "enable-adview",
+    IDS_FLAGS_ENABLE_ADVIEW_NAME,
+    IDS_FLAGS_ENABLE_ADVIEW_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableAdview)
+  },
+  {
+    "enable-adview-src-attribute",
+    IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_NAME,
+    IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableAdviewSrcAttribute)
+  },
+  {
     "action-box",
     IDS_FLAGS_ACTION_BOX_NAME,
     IDS_FLAGS_ACTION_BOX_DESCRIPTION,

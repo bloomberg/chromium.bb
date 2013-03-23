@@ -1,0 +1,27 @@
+<!--
+ * Copyright (c) 2013 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>&lt;adview&gt; Sample</title>
+  <link href="styles/main.css" rel="stylesheet">
+  <script src="displayad.js"></script>
+  <script src="chrometest.js"></script>
+</head>
+<body>
+  <fieldset id="my-adview-surround">
+    <legend>&lt;adview ad-network="rpaquay"/&gt;</legend>
+    <adview id="my-adview" class="adview-element" ad-network="test"></adview>
+  </fieldset>
+  <div class="app-surround">
+    <h1>&lt;adview&gt; Sample</h1>
+    <p>The top of the page is an &lt;adview&gt; tag.</p>
+    <input id="display-ad" type="button" value="(loading adview...)" disabled="true"/>
+    <p id="my-status"></p>
+  </div>
+</<body>
+</html>

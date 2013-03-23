@@ -6325,6 +6325,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXTENSIONS_ON_CHROME_URLS_DESCRIPTION" desc="Description of the 'Extensions on chrome:// URLs' lab">
         Enables running extensions on chrome:// URLs, where extensions explicitly request this permission.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ADVIEW_NAME" desc="Name of the 'Enable 'adview' element' lab.">
+        Enable 'adview' element
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ADVIEW_DESCRIPTION" desc="Description of the 'Enable 'adview' element' lab.">
+        Enables using 'adview' HTML elements in packaged apps.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_NAME" desc="Name of the 'Enable specifying 'src' attribute on 'adview' elements' lab.">
+        Enable specifying 'src' attribute on 'adview' elements
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_DESCRIPTION" desc="Description of the 'Enable specifying 'src' attribute on 'adview' elements' element' lab.">
+        Enables specifying 'src' attribute on 'adview' elements, as well as arbitrary 'ad-network' names.
+      </message>
       <message name="IDS_FLAGS_ACTION_BOX_NAME" desc="Name of the 'Action Box' lab.">
         Action box
       </message>
