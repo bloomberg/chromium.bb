@@ -219,8 +219,7 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   host_desc = open(path, flags, mode);
   NaClLog(3, "NaClHostDescOpen: got descriptor %d\n", host_desc);
   if (-1 == host_desc) {
-    NaClLog(LOG_ERROR,
-            "NaClHostDescOpen: open returned -1, errno %d\n", errno);
+    NaClLog(2, "NaClHostDescOpen: open returned -1, errno %d\n", errno);
     return -NaClXlateErrno(errno);
   }
   if (-1 == fstat(host_desc, &stbuf)) {
