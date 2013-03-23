@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "extensions/common/id_util.h"
 
 namespace {
 
@@ -145,7 +146,8 @@ syncer::StringOrdinal SyncAppHelper::GetPageOrdinalForApp(
     Profile* profile,
     const std::string& name) {
   return profile->GetExtensionService()->extension_prefs()->
-      extension_sorting()->GetPageOrdinal(SyncExtensionHelper::NameToId(name));
+      extension_sorting()->GetPageOrdinal(
+          extensions::id_util::GenerateId(name));
 }
 
 void SyncAppHelper::SetPageOrdinalForApp(
@@ -153,7 +155,7 @@ void SyncAppHelper::SetPageOrdinalForApp(
     const std::string& name,
     const syncer::StringOrdinal& page_ordinal) {
   profile->GetExtensionService()->extension_prefs()->extension_sorting()->
-      SetPageOrdinal(SyncExtensionHelper::NameToId(name), page_ordinal);
+      SetPageOrdinal(extensions::id_util::GenerateId(name), page_ordinal);
 }
 
 syncer::StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
@@ -161,7 +163,7 @@ syncer::StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
     const std::string& name) {
   return profile->GetExtensionService()->extension_prefs()->
       extension_sorting()->GetAppLaunchOrdinal(
-          SyncExtensionHelper::NameToId(name));
+          extensions::id_util::GenerateId(name));
 }
 
 void SyncAppHelper::SetAppLaunchOrdinalForApp(
@@ -169,7 +171,7 @@ void SyncAppHelper::SetAppLaunchOrdinalForApp(
     const std::string& name,
     const syncer::StringOrdinal& app_launch_ordinal) {
   profile->GetExtensionService()->extension_prefs()->extension_sorting()->
-      SetAppLaunchOrdinal(SyncExtensionHelper::NameToId(name),
+      SetAppLaunchOrdinal(extensions::id_util::GenerateId(name),
                           app_launch_ordinal);
 }
 

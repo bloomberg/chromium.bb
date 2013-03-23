@@ -68,7 +68,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -86,6 +85,8 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension_resource.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -122,6 +123,7 @@ using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionResource;
 using extensions::ExtensionSystem;
 using extensions::FeatureSwitch;
 using extensions::Manifest;
@@ -1929,7 +1931,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   // Try packing with an invalid manifest.
   std::string invalid_manifest_content = "I am not a manifest.";
   ASSERT_TRUE(file_util::WriteFile(
-      temp_dir2.path().Append(Extension::kManifestFilename),
+      temp_dir2.path().Append(extensions::kManifestFilename),
       invalid_manifest_content.c_str(), invalid_manifest_content.size()));
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
@@ -2147,7 +2149,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
 
   base::FilePath extension_path = temp.path();
   base::FilePath manifest_path =
-      extension_path.Append(Extension::kManifestFilename);
+      extension_path.Append(extensions::kManifestFilename);
   base::FilePath manifest_no_key = data_dir_.
       AppendASCII("unpacked").
       AppendASCII("manifest_no_key.json");
@@ -2198,7 +2200,8 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
   base::FilePath extension_path = temp.path();
-  base::FilePath manifest = extension_path.Append(Extension::kManifestFilename);
+  base::FilePath manifest = extension_path.Append(
+      extensions::kManifestFilename);
   base::FilePath icon_symlink = extension_path.AppendASCII("icon.png");
   file_util::CopyFile(source_manifest, manifest);
   file_util::CreateSymbolicLink(source_icon, icon_symlink);
@@ -2637,7 +2640,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   // to make it easier to change the version number.
   base::FilePath extension_path = temp.path();
   base::FilePath manifest_path =
-      extension_path.Append(Extension::kManifestFilename);
+      extension_path.Append(extensions::kManifestFilename);
   ASSERT_FALSE(file_util::PathExists(manifest_path));
 
   // Start with version 2.0.
@@ -3205,7 +3208,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
       .AppendASCII("1.0.0.0");
   std::string manifest;
   ASSERT_TRUE(file_util::ReadFileToString(
-      path.Append(Extension::kManifestFilename), &manifest));
+      path.Append(extensions::kManifestFilename), &manifest));
   service_->component_loader()->Add(manifest, path);
   service_->Init();
 
@@ -4741,7 +4744,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
 
   std::string manifest;
   ASSERT_TRUE(file_util::ReadFileToString(
-      path.Append(Extension::kManifestFilename), &manifest));
+      path.Append(extensions::kManifestFilename), &manifest));
 
   service_->component_loader()->Add(manifest, path);
   service_->Init();

@@ -55,7 +55,8 @@ ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
     return UNPACKED_DIR;
 
   // Reload the manifest if it needs to be relocalized.
-  if (extension_l10n_util::ShouldRelocalizeManifest(info))
+  if (extension_l10n_util::ShouldRelocalizeManifest(
+          info.extension_manifest.get()))
     return NEEDS_RELOCALIZATION;
 
   return NOT_NEEDED;

@@ -27,9 +27,6 @@ class SyncExtensionHelper {
   // Singleton implementation.
   static SyncExtensionHelper* GetInstance();
 
-  // Returns a generated extension ID for the given name.
-  static std::string NameToId(const std::string& name);
-
   // Initializes the profiles in |test| and registers them with
   // internal data structures.
   void SetupIfNecessary(SyncTest* test);

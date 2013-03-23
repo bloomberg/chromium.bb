@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_resource.h"
+#include "extensions/common/extension_resource.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+
+namespace extensions {
 
 ExtensionResource::ExtensionResource() : follow_symlinks_anywhere_(false) {
 }
@@ -120,3 +122,5 @@ bool ExtensionResource::ComparePathWithDefault(
     return false;
   }
 }
+
+}  // namespace extensions

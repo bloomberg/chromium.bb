@@ -22,7 +22,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"

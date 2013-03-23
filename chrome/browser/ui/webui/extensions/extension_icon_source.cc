@@ -22,8 +22,8 @@
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/extension_resource.h"
 #include "googleurl/src/gurl.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
@@ -132,7 +132,7 @@ void ExtensionIconSource::StartDataRequest(
   }
 
   ExtensionIconRequest* request = GetData(next_id);
-  ExtensionResource icon = extensions::IconsInfo::GetIconResource(
+  extensions::ExtensionResource icon = extensions::IconsInfo::GetIconResource(
       request->extension, request->size, request->match);
 
   if (icon.relative_path().empty()) {
@@ -198,8 +198,9 @@ void ExtensionIconSource::LoadDefaultImage(int request_id) {
   FinalizeImage(&resized_image, request_id);
 }
 
-void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
-                                             int request_id) {
+void ExtensionIconSource::LoadExtensionImage(
+    const extensions::ExtensionResource& icon,
+    int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
   extensions::ImageLoader::Get(profile_)->LoadImageAsync(
       request->extension, icon,
@@ -258,7 +259,7 @@ void ExtensionIconSource::OnImageLoaded(int request_id,
 
 void ExtensionIconSource::LoadIconFailed(int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
-  ExtensionResource icon = extensions::IconsInfo::GetIconResource(
+  extensions::ExtensionResource icon = extensions::IconsInfo::GetIconResource(
       request->extension, request->size, request->match);
 
   if (request->size == extension_misc::EXTENSION_ICON_BITTY)

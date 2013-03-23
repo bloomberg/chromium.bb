@@ -14,9 +14,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/extension_resource.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -86,7 +86,7 @@ void ExtensionUninstallDialog::ConfirmUninstall(
     return;
 #endif
 
-  ExtensionResource image = extensions::IconsInfo::GetIconResource(
+  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_,
       extension_misc::EXTENSION_ICON_LARGE,
       ExtensionIconSet::MATCH_BIGGER);

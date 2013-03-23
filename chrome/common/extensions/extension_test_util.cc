@@ -12,15 +12,6 @@ using extensions::Extension;
 
 namespace extension_test_util {
 
-std::string MakeId(std::string seed) {
-  std::string result;
-  bool success = Extension::GenerateId(seed, &result);
-  EXPECT_TRUE(success);
-  EXPECT_FALSE(result.empty());
-  EXPECT_TRUE(Extension::IdIsValid(result));
-  return result;
-}
-
 scoped_refptr<Extension> CreateExtensionWithID(std::string id) {
   DictionaryValue values;
   values.SetString(extension_manifest_keys::kName, "test");

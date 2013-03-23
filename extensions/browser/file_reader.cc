@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/file_reader.h"
+#include "extensions/browser/file_reader.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
-FileReader::FileReader(const ExtensionResource& resource,
+FileReader::FileReader(const extensions::ExtensionResource& resource,
                        const Callback& callback)
     : resource_(resource),
       callback_(callback),

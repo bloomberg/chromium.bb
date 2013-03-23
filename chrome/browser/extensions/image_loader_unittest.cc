@@ -13,11 +13,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/extension_resource.h"
 #include "grit/component_extension_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,6 +27,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::ExtensionResource;
 using extensions::ImageLoader;
 using extensions::Manifest;
 

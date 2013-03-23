@@ -24,6 +24,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/id_util.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -50,10 +51,9 @@ std::string GenerateId(const DictionaryValue* manifest,
                        const base::FilePath& path) {
   std::string raw_key;
   std::string id_input;
-  std::string id;
   CHECK(manifest->GetString(extension_manifest_keys::kPublicKey, &raw_key));
   CHECK(Extension::ParsePEMKeyBytes(raw_key, &id_input));
-  CHECK(Extension::GenerateId(id_input, &id));
+  std::string id = id_util::GenerateId(id_input);
   return id;
 }
 

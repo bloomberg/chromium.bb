@@ -24,11 +24,11 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_resource.h"
 #include "googleurl/src/url_util.h"
 #include "grit/component_extension_resources_map.h"
 #include "net/base/mime_util.h"
@@ -191,7 +191,7 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
   net::HttpResponseInfo response_info_;
 };
 
-void ReadResourceFilePath(const ExtensionResource& resource,
+void ReadResourceFilePath(const extensions::ExtensionResource& resource,
                           base::FilePath* file_path) {
   *file_path = resource.GetFilePath();
 }
@@ -241,7 +241,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   }
 
   net::HttpResponseInfo response_info_;
-  ExtensionResource resource_;
+  extensions::ExtensionResource resource_;
   base::WeakPtrFactory<URLRequestExtensionJob> weak_factory_;
 };
 

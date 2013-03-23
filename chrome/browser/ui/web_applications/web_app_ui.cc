@@ -405,8 +405,9 @@ void UpdateShortcutInfoAndIconForApp(
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {
     int size = kDesiredSizes[i];
-    ExtensionResource resource = extensions::IconsInfo::GetIconResource(
-        &extension, size, ExtensionIconSet::MATCH_EXACTLY);
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            &extension, size, ExtensionIconSet::MATCH_EXACTLY);
     if (!resource.empty()) {
       info_list.push_back(extensions::ImageLoader::ImageRepresentation(
           resource,
@@ -423,8 +424,9 @@ void UpdateShortcutInfoAndIconForApp(
     // If there is no icon at the desired sizes, we will resize what we can get.
     // Making a large icon smaller is preferred to making a small icon larger,
     // so look for a larger icon first:
-    ExtensionResource resource = extensions::IconsInfo::GetIconResource(
-        &extension, size, ExtensionIconSet::MATCH_BIGGER);
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            &extension, size, ExtensionIconSet::MATCH_BIGGER);
     if (resource.empty()) {
       resource = extensions::IconsInfo::GetIconResource(
           &extension, size, ExtensionIconSet::MATCH_SMALLER);

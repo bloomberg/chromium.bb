@@ -29,13 +29,13 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/extension_resource.h"
 #include "extensions/common/url_pattern.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -609,7 +609,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   }
 
   // Load the image asynchronously. For the response, check OnImageLoaded.
-  ExtensionResource image = extensions::IconsInfo::GetIconResource(
+  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_,
       extension_misc::EXTENSION_ICON_LARGE,
       ExtensionIconSet::MATCH_BIGGER);

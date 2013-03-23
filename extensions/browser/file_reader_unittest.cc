@@ -8,12 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/extensions/file_reader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_test_util.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/file_reader.h"
+#include "extensions/common/extension_resource.h"
+#include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -56,9 +55,9 @@ class Receiver {
 void RunBasicTest(const char* filename) {
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  std::string extension_id = extension_test_util::MakeId("test");
-  ExtensionResource resource(extension_id, path,
-                             base::FilePath().AppendASCII(filename));
+  std::string extension_id = extensions::id_util::GenerateId("test");
+  extensions::ExtensionResource resource(
+      extension_id, path, base::FilePath().AppendASCII(filename));
   path = path.AppendASCII(filename);
 
   std::string file_contents;
@@ -87,8 +86,8 @@ TEST_F(FileReaderTest, BiggerFile) {
 TEST_F(FileReaderTest, NonExistantFile) {
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  std::string extension_id = extension_test_util::MakeId("test");
-  ExtensionResource resource(extension_id, path, base::FilePath(
+  std::string extension_id = extensions::id_util::GenerateId("test");
+  extensions::ExtensionResource resource(extension_id, path, base::FilePath(
       FILE_PATH_LITERAL("file_that_does_not_exist")));
   path = path.AppendASCII("file_that_does_not_exist");
 

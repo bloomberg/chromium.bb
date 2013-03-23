@@ -23,7 +23,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/navigation_controller.h"
@@ -31,6 +30,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
+#include "extensions/common/extension_resource.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -419,7 +419,7 @@ void ExtensionWebUI::GetFaviconForURL(
   for (size_t i = 0; i < scale_factors.size(); ++i) {
     float scale = ui::GetScaleFactorScale(scale_factors[i]);
     int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
-    ExtensionResource icon_resource =
+    extensions::ExtensionResource icon_resource =
         extensions::IconsInfo::GetIconResource(extension,
                                                pixel_size,
                                                ExtensionIconSet::MATCH_BIGGER);

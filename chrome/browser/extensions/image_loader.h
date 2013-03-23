@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/common/extensions/extension_resource.h"
+#include "extensions/common/extension_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/size.h"

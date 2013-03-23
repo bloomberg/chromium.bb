@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"

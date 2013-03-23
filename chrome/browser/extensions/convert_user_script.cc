@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/user_script.h"
 #include "crypto/sha2.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 
 namespace keys = extension_manifest_keys;
@@ -155,8 +156,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
 
   root->Set(keys::kContentScripts, content_scripts);
 
-  base::FilePath manifest_path = temp_dir.path().Append(
-      Extension::kManifestFilename);
+  base::FilePath manifest_path = temp_dir.path().Append(kManifestFilename);
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {
     *error = ASCIIToUTF16("Could not write JSON.");

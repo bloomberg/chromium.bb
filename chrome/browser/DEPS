@@ -16,6 +16,7 @@ include_rules = [
   "+content/public/browser",
   "+device/bluetooth",
   "+device/media_transfer_protocol",
+  "+extensions/browser",
   "+extensions/common",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",

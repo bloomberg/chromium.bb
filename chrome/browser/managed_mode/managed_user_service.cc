@@ -291,7 +291,8 @@ ScopedVector<ManagedModeSiteList> ManagedUserService::GetActiveSiteLists() {
     if (!extension_service->IsExtensionEnabled(extension->id()))
       continue;
 
-    ExtensionResource site_list = extension->GetContentPackSiteList();
+    extensions::ExtensionResource site_list =
+        extension->GetContentPackSiteList();
     if (!site_list.empty())
       site_lists.push_back(new ManagedModeSiteList(extension->id(), site_list));
   }

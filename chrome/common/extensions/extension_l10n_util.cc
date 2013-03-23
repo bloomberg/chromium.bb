@@ -15,11 +15,11 @@
 #include "base/memory/linked_ptr.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -48,8 +48,7 @@ std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
 
 }
 
-bool ShouldRelocalizeManifest(const extensions::ExtensionInfo& info) {
-  DictionaryValue* manifest = info.extension_manifest.get();
+bool ShouldRelocalizeManifest(const DictionaryValue* manifest) {
   if (!manifest)
     return false;
 
@@ -208,7 +207,7 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   }
   // Check if messages file is actually present (but don't check content).
   if (file_util::PathExists(
-      locale_folder.Append(extensions::Extension::kMessagesFilename))) {
+      locale_folder.Append(extensions::kMessagesFilename))) {
     valid_locales->insert(locale_name);
   } else {
     *error = base::StringPrintf("Catalog file is missing for locale %s.",
@@ -290,7 +289,7 @@ static DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
                                         std::string* error) {
   std::string extension_locale = locale;
   base::FilePath file = locale_path.AppendASCII(extension_locale)
-      .Append(extensions::Extension::kMessagesFilename);
+      .Append(extensions::kMessagesFilename);
   JSONFileValueSerializer messages_serializer(file);
   Value *dictionary = messages_serializer.Deserialize(NULL, error);
   if (!dictionary && error->empty()) {

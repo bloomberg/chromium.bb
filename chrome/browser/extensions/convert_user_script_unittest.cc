@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -74,7 +75,7 @@ TEST(ExtensionFromUserScript, Basic) {
   EXPECT_TRUE(file_util::PathExists(
       extension->path().Append(script.js_scripts()[0].relative_path())));
   EXPECT_TRUE(file_util::PathExists(
-      extension->path().Append(Extension::kManifestFilename)));
+      extension->path().Append(kManifestFilename)));
 }
 
 TEST(ExtensionFromUserScript, NoMetdata) {
@@ -120,7 +121,7 @@ TEST(ExtensionFromUserScript, NoMetdata) {
   EXPECT_TRUE(file_util::PathExists(
       extension->path().Append(script.js_scripts()[0].relative_path())));
   EXPECT_TRUE(file_util::PathExists(
-      extension->path().Append(Extension::kManifestFilename)));
+      extension->path().Append(kManifestFilename)));
 }
 
 TEST(ExtensionFromUserScript, NotUTF8) {

@@ -47,9 +47,9 @@
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
-#include "crypto/sha2.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/id_util.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/url_util.h"
 #include "grit/chromium_strings.h"
@@ -91,23 +91,6 @@ const int kRSAKeySize = 1024;
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups";
-
-// Converts a normal hexadecimal string into the alphabet used by extensions.
-// We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
-// completely numeric host, since some software interprets that as an IP
-// address.
-static void ConvertHexadecimalToIDAlphabet(std::string* id) {
-  for (size_t i = 0; i < id->size(); ++i) {
-    int val;
-    if (base::HexStringToInt(base::StringPiece(id->begin() + i,
-                                               id->begin() + i + 1),
-                             &val)) {
-      (*id)[i] = val + 'a';
-    } else {
-      (*id)[i] = 'a';
-    }
-  }
-}
 
 // A singleton object containing global data needed by the extension objects.
 class ExtensionConfig {
@@ -197,22 +180,10 @@ scoped_ptr<ActionInfo> LoadExtensionActionInfoHelper(
 
 }  // namespace
 
-const base::FilePath::CharType Extension::kManifestFilename[] =
-    FILE_PATH_LITERAL("manifest.json");
-const base::FilePath::CharType Extension::kLocaleFolder[] =
-    FILE_PATH_LITERAL("_locales");
-const base::FilePath::CharType Extension::kMessagesFilename[] =
-    FILE_PATH_LITERAL("messages.json");
-const base::FilePath::CharType Extension::kPlatformSpecificFolder[] =
-    FILE_PATH_LITERAL("_platform_specific");
-
 #if defined(OS_WIN)
 const char Extension::kExtensionRegistryPath[] =
     "Software\\Google\\Chrome\\Extensions";
 #endif
-
-// first 16 bytes of SHA256 hashed public key.
-const size_t Extension::kIdSize = 16;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
@@ -295,7 +266,7 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
 // static
 bool Extension::IdIsValid(const std::string& id) {
   // Verify that the id is legal.
-  if (id.size() != (kIdSize * 2))
+  if (id.size() != (id_util::kIdSize * 2))
     return false;
 
   // We only support lowercase IDs, because IDs can be used as URL components
@@ -306,16 +277,6 @@ bool Extension::IdIsValid(const std::string& id) {
       return false;
 
   return true;
-}
-
-// static
-std::string Extension::GenerateIdForPath(const base::FilePath& path) {
-  base::FilePath new_path = Extension::MaybeNormalizePath(path);
-  std::string path_bytes =
-      std::string(reinterpret_cast<const char*>(new_path.value().data()),
-                  new_path.value().size() * sizeof(base::FilePath::CharType));
-  std::string id;
-  return GenerateId(path_bytes, &id) ? id : "";
 }
 
 // static
@@ -448,17 +409,6 @@ bool Extension::ParsePEMKeyBytes(const std::string& input,
 bool Extension::ProducePEM(const std::string& input, std::string* output) {
   DCHECK(output);
   return (input.length() == 0) ? false : base::Base64Encode(input, output);
-}
-
-// static
-bool Extension::GenerateId(const std::string& input, std::string* output) {
-  DCHECK(output);
-  uint8 hash[Extension::kIdSize];
-  crypto::SHA256HashString(input, hash, sizeof(hash));
-  *output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
-  ConvertHexadecimalToIDAlphabet(output);
-
-  return true;
 }
 
 // static
@@ -1190,13 +1140,12 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
   if (manifest->HasKey(keys::kPublicKey)) {
     std::string public_key;
     std::string public_key_bytes;
-    std::string extension_id;
     if (!manifest->GetString(keys::kPublicKey, &public_key) ||
-        !ParsePEMKeyBytes(public_key, &public_key_bytes) ||
-        !GenerateId(public_key_bytes, &extension_id)) {
+        !ParsePEMKeyBytes(public_key, &public_key_bytes)) {
       *error = ASCIIToUTF16(errors::kInvalidKey);
       return false;
     }
+    std::string extension_id = id_util::GenerateId(public_key_bytes);
     manifest->set_extension_id(extension_id);
     return true;
   }
@@ -1208,7 +1157,7 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
     // If there is a path, we generate the ID from it. This is useful for
     // development mode, because it keeps the ID stable across restarts and
     // reloading the extension.
-    std::string extension_id = GenerateIdForPath(path);
+    std::string extension_id = id_util::GenerateIdForPath(path);
     if (extension_id.empty()) {
       NOTREACHED() << "Could not create ID from path.";
       return false;
@@ -1216,23 +1165,6 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
     manifest->set_extension_id(extension_id);
     return true;
   }
-}
-
-// static
-base::FilePath Extension::MaybeNormalizePath(const base::FilePath& path) {
-#if defined(OS_WIN)
-  // Normalize any drive letter to upper-case. We do this for consistency with
-  // net_utils::FilePathToFileURL(), which does the same thing, to make string
-  // comparisons simpler.
-  std::wstring path_str = path.value();
-  if (path_str.size() >= 2 && path_str[0] >= L'a' && path_str[0] <= L'z' &&
-      path_str[1] == ':')
-    path_str[0] += ('A' - 'a');
-
-  return base::FilePath(path_str);
-#else
-  return path;
-#endif
 }
 
 bool Extension::LoadManagedModeFeatures(string16* error) {
@@ -1300,7 +1232,7 @@ Extension::Extension(const base::FilePath& path,
       wants_file_access_(false),
       creation_flags_(0) {
   DCHECK(path.empty() || path.IsAbsolute());
-  path_ = MaybeNormalizePath(path);
+  path_ = id_util::MaybeNormalizePath(path);
 }
 
 Extension::~Extension() {

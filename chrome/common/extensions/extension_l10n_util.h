@@ -35,7 +35,7 @@ std::string GetDefaultLocaleFromManifest(const base::DictionaryValue& manifest,
 
 // Returns true iff the extension was localized, and the current locale
 // doesn't match the locale written into info.extension_manifest.
-bool ShouldRelocalizeManifest(const extensions::ExtensionInfo& info);
+bool ShouldRelocalizeManifest(const base::DictionaryValue* manifest);
 
 // Localize extension name, description, browser_action and other fields
 // in the manifest.

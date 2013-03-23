@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/common/id_util.h"
 
 const std::string kAllUrlsTarget =
     "files/extensions/api_test/all_urls/index.html";
@@ -31,8 +32,8 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, MAYBE_WhitelistedExtension) {
 
   // Then add the two extensions to the whitelist.
   extensions::Extension::ScriptingWhitelist whitelist;
-  whitelist.push_back(extensions::Extension::GenerateIdForPath(extension_dir1));
-  whitelist.push_back(extensions::Extension::GenerateIdForPath(extension_dir2));
+  whitelist.push_back(extensions::id_util::GenerateIdForPath(extension_dir1));
+  whitelist.push_back(extensions::id_util::GenerateIdForPath(extension_dir2));
   extensions::Extension::SetScriptingWhitelist(whitelist);
 
   // Then load extensions.

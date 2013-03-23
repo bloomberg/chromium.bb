@@ -15,7 +15,6 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ui_resources.h"

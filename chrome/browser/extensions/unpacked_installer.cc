@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/id_util.h"
 #include "sync/api/string_ordinal.h"
 
 using content::BrowserThread;
@@ -173,7 +174,7 @@ void UnpackedInstaller::OnRequirementsChecked(
 }
 
 int UnpackedInstaller::GetFlags() {
-  std::string id = Extension::GenerateIdForPath(extension_path_);
+  std::string id = id_util::GenerateIdForPath(extension_path_);
   bool allow_file_access =
       Manifest::ShouldAlwaysAllowFileAccess(Manifest::UNPACKED);
   if (service_weak_->extension_prefs()->HasAllowFileAccessSetting(id))

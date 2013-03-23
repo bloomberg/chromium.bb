@@ -42,14 +42,14 @@ namespace {
 
 const int kMatchBiggerTreshold = 32;
 
-ExtensionResource GetExtensionIconResource(
+extensions::ExtensionResource GetExtensionIconResource(
     const extensions::Extension* extension,
     const ExtensionIconSet& icons,
     int size,
     ExtensionIconSet::MatchType match_type) {
   std::string path = icons.Get(size, match_type);
   if (path.empty())
-    return ExtensionResource();
+    return extensions::ExtensionResource();
 
   return extension->GetResource(path);
 }
@@ -167,7 +167,7 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   const int resource_size_in_pixel =
       static_cast<int>(resource_size_in_dip_ * scale);
 
-  ExtensionResource resource;
+  extensions::ExtensionResource resource;
 
   // Find extension resource for non bundled component extensions.
   // We try loading bigger image only if resource size is >= 32.

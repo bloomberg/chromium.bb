@@ -8,4 +8,13 @@ namespace extensions {
 
 const char kExtensionScheme[] = "chrome-extension";
 
+const base::FilePath::CharType kManifestFilename[] =
+    FILE_PATH_LITERAL("manifest.json");
+const base::FilePath::CharType kLocaleFolder[] =
+    FILE_PATH_LITERAL("_locales");
+const base::FilePath::CharType kMessagesFilename[] =
+    FILE_PATH_LITERAL("messages.json");
+const base::FilePath::CharType kPlatformSpecificFolder[] =
+    FILE_PATH_LITERAL("_platform_specific");
+
 } // namespace extensions

@@ -133,8 +133,9 @@ ManagedModeSiteList::Site::Site(const string16& name,
 
 ManagedModeSiteList::Site::~Site() {}
 
-ManagedModeSiteList::ManagedModeSiteList(const std::string& extension_id,
-                                         const ExtensionResource& path)
+ManagedModeSiteList::ManagedModeSiteList(
+    const std::string& extension_id,
+    const extensions::ExtensionResource& path)
     : extension_id_(extension_id),
       path_(path) {
 }

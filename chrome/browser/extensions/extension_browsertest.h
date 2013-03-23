@@ -89,7 +89,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
   // Loads unpacked extension from |path| and imitates that it is a component
   // extension. Equivalent to
-  // LoadExtensionAsComponentWithManifest(path, Extensions::kManifestFilename).
+  // LoadExtensionAsComponentWithManifest(path, extensions::kManifestFilename).
   const extensions::Extension* LoadExtensionAsComponent(
       const base::FilePath& path);
 

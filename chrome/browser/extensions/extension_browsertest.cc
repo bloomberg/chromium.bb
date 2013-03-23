@@ -43,6 +43,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/constants.h"
 #include "sync/api/string_ordinal.h"
 
 using extensions::Extension;
@@ -231,7 +232,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(
 const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
     const base::FilePath& path) {
   return LoadExtensionAsComponentWithManifest(path,
-                                              Extension::kManifestFilename);
+                                              extensions::kManifestFilename);
 }
 
 base::FilePath ExtensionBrowserTest::PackExtension(

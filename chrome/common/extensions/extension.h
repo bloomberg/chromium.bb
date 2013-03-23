@@ -22,11 +22,11 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 #include "chrome/common/extensions/user_script.h"
+#include "extensions/common/extension_resource.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
@@ -191,34 +191,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Valid schemes for host permission URLPatterns.
   static const int kValidHostPermissionSchemes;
 
-  // The name of the manifest inside an extension.
-  static const base::FilePath::CharType kManifestFilename[];
-
-  // The name of locale folder inside an extension.
-  static const base::FilePath::CharType kLocaleFolder[];
-
-  // The name of the messages file inside an extension.
-  static const base::FilePath::CharType kMessagesFilename[];
-
-  // The base directory for subdirectories with platform-specific code.
-  static const base::FilePath::CharType kPlatformSpecificFolder[];
-
 #if defined(OS_WIN)
   static const char kExtensionRegistryPath[];
 #endif
-
-  // The number of bytes in a legal id.
-  static const size_t kIdSize;
 
   // The mimetype used for extensions.
   static const char kMimeType[];
 
   // Checks to see if the extension has a valid ID.
   static bool IdIsValid(const std::string& id);
-
-  // Generate an ID for an extension in the given path.
-  // Used while developing extensions, before they have a key.
-  static std::string GenerateIdForPath(const base::FilePath& file_name);
 
   // Returns true if the specified file is an extension.
   static bool IsExtension(const base::FilePath& file_name);
@@ -269,11 +250,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Does a simple base64 encoding of |input| into |output|.
   static bool ProducePEM(const std::string& input, std::string* output);
-
-  // Generates an extension ID from arbitrary input. The same input string will
-  // always generate the same output ID.
-  static bool GenerateId(const std::string& input,
-                         std::string* output) WARN_UNUSED_RESULT;
 
   // Expects base64 encoded |input| and formats into |output| including
   // the appropriate header & footer.
@@ -558,10 +534,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                               const std::string& explicit_id,
                               int creation_flags,
                               string16* error);
-
-  // Normalize the path for use by the extension. On Windows, this will make
-  // sure the drive letter is uppercase.
-  static base::FilePath MaybeNormalizePath(const base::FilePath& path);
 
   // Returns true if this extension id is from a trusted provider.
   static bool IsTrustedId(const std::string& id);

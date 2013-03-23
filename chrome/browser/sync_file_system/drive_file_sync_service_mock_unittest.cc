@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/id_util.h"
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,7 +88,8 @@ void ExpectEqStatus(bool* done,
 scoped_refptr<const extensions::Extension> AddTestExtension(
     ExtensionService* extension_service,
     const base::FilePath::StringType& extension_name) {
-  std::string id = Extension::GenerateIdForPath(base::FilePath(extension_name));
+  std::string id = extensions::id_util::GenerateIdForPath(
+      base::FilePath(extension_name));
 
   scoped_refptr<const Extension> extension =
       extensions::ExtensionBuilder().SetManifest(
@@ -102,7 +104,8 @@ scoped_refptr<const extensions::Extension> AddTestExtension(
 
 // Converts extension_name to GURL version.
 GURL ExtensionNameToGURL(const base::FilePath::StringType& extension_name) {
-  std::string id = Extension::GenerateIdForPath(base::FilePath(extension_name));
+  std::string id = extensions::id_util::GenerateIdForPath(
+      base::FilePath(extension_name));
   return extensions::Extension::GetBaseURLFromExtensionId(id);
 }
 

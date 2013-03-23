@@ -1,5 +1,17 @@
 include_rules = [
   "+base",
+  "+content/public/common",
+  "+crypto",
   "+googleurl",
-  "+testing"
+  "+testing",
+  "+ui"
 ]
+
+# More specific rules for what we are allowed to include.
+specific_include_rules = {
+  ".*test\.cc": [
+    # For chrome::TEST_DATA_DIR; test data should be migrated to src/extensions.
+    "+chrome/common/chrome_paths.h",
+    "+content/public/test",
+  ]
+}

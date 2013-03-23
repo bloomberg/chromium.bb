@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_
+#ifndef EXTENSIONS_COMMON_EXTENSION_RESOURCE_H_
+#define EXTENSIONS_COMMON_EXTENSION_RESOURCE_H_
 
 #include <string>
 
 #include "base/files/file_path.h"
+
+namespace extensions {
 
 // Represents a resource inside an extension. For example, an image, or a
 // JavaScript file. This is more complicated than just a simple FilePath
@@ -82,4 +84,6 @@ class ExtensionResource {
   mutable base::FilePath full_resource_path_;
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_COMMON_EXTENSION_RESOURCE_H_

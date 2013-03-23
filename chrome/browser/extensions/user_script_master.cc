@@ -23,11 +23,11 @@
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/common/extension_resource.h"
 
 using content::BrowserThread;
 

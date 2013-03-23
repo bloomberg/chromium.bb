@@ -54,6 +54,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/id_util.h"
 #include "libxml/globals.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/escape.h"
@@ -263,12 +264,6 @@ class MockService : public TestExtensionService {
 };
 
 
-std::string GenerateId(std::string input) {
-  std::string result;
-  EXPECT_TRUE(Extension::GenerateId(input, &result));
-  return result;
-}
-
 bool ShouldInstallExtensionsOnly(const Extension& extension) {
   return extension.GetType() == Manifest::TYPE_EXTENSION;
 }
@@ -291,7 +286,7 @@ void SetupPendingExtensionManagerForTest(
         (i % 2 == 0) ? &ShouldInstallThemesOnly : &ShouldInstallExtensionsOnly;
     const bool kIsFromSync = true;
     const bool kInstallSilently = true;
-    std::string id = GenerateId(base::StringPrintf("extension%i", i));
+    std::string id = id_util::GenerateId(base::StringPrintf("extension%i", i));
 
     pending_extension_manager->AddForTesting(
         PendingExtensionInfo(id,
@@ -741,8 +736,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // Create two updates - expect that DetermineUpdates will return the first
     // one (v1.0 installed, v1.1 available) but not the second one (both
     // installed and available at v2.0).
-    const std::string id1 = GenerateId("1");
-    const std::string id2 = GenerateId("2");
+    const std::string id1 = id_util::GenerateId("1");
+    const std::string id2 = id_util::GenerateId("2");
     fetch_data.AddExtension(id1, "1.0.0.0",
                             &kNeverPingedData, kEmptyUpdateUrlData, "");
     AddParseResult(id1, "1.1",
@@ -1635,7 +1630,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
 
   // First, verify that adding valid extensions does invoke the callbacks on
   // the delegate.
-  std::string id = GenerateId("foo");
+  std::string id = id_util::GenerateId("foo");
   EXPECT_CALL(delegate, GetPingDataForExtension(id, _)).WillOnce(Return(false));
   EXPECT_TRUE(
       downloader->AddPendingExtension(id, GURL("http://example.com/update"),
@@ -1645,7 +1640,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
   // Extensions with invalid update URLs should be rejected.
-  id = GenerateId("foo2");
+  id = id_util::GenerateId("foo2");
   EXPECT_FALSE(
       downloader->AddPendingExtension(id, GURL("http:google.com:foo"), 0));
   downloader->StartAllPending();
@@ -1666,7 +1661,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
 
   // Extensions with empty update URLs should have a default one
   // filled in.
-  id = GenerateId("foo3");
+  id = id_util::GenerateId("foo3");
   EXPECT_CALL(delegate, GetPingDataForExtension(id, _)).WillOnce(Return(false));
   EXPECT_TRUE(downloader->AddPendingExtension(id, GURL(), 0));
   downloader->StartAllPending();

@@ -13,7 +13,6 @@
 #include "ui/gfx/gtk_util.h"
 
 class ExtensionContextMenuModel;
-class ExtensionResource;
 class ExtensionViewGtk;
 class MenuGtk;
 

@@ -18,9 +18,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "extensions/common/extension_resource.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -130,10 +130,11 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   }
 
   // Start loading the image for the menu button.
-  ExtensionResource icon_resource = extensions::IconsInfo::GetIconResource(
-      extension,
-      extension_misc::EXTENSION_ICON_BITTY,
-      ExtensionIconSet::MATCH_EXACTLY);
+  extensions::ExtensionResource icon_resource =
+      extensions::IconsInfo::GetIconResource(
+          extension,
+          extension_misc::EXTENSION_ICON_BITTY,
+          ExtensionIconSet::MATCH_EXACTLY);
   // Load image asynchronously, calling back OnImageLoaded.
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(delegate_->extension_host()->profile());

@@ -21,7 +21,6 @@
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -31,6 +30,8 @@
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension_resource.h"
+#include "extensions/common/id_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_sniffer.h"
 #include "net/dns/mock_host_resolver.h"
@@ -214,32 +215,6 @@ TEST_F(ExtensionTest, IdIsValid) {
   EXPECT_FALSE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmno0"));
 }
 
-TEST_F(ExtensionTest, GenerateID) {
-  const uint8 public_key_info[] = {
-    0x30, 0x81, 0x9f, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7,
-    0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x81, 0x8d, 0x00, 0x30, 0x81,
-    0x89, 0x02, 0x81, 0x81, 0x00, 0xb8, 0x7f, 0x2b, 0x20, 0xdc, 0x7c, 0x9b,
-    0x0c, 0xdc, 0x51, 0x61, 0x99, 0x0d, 0x36, 0x0f, 0xd4, 0x66, 0x88, 0x08,
-    0x55, 0x84, 0xd5, 0x3a, 0xbf, 0x2b, 0xa4, 0x64, 0x85, 0x7b, 0x0c, 0x04,
-    0x13, 0x3f, 0x8d, 0xf4, 0xbc, 0x38, 0x0d, 0x49, 0xfe, 0x6b, 0xc4, 0x5a,
-    0xb0, 0x40, 0x53, 0x3a, 0xd7, 0x66, 0x09, 0x0f, 0x9e, 0x36, 0x74, 0x30,
-    0xda, 0x8a, 0x31, 0x4f, 0x1f, 0x14, 0x50, 0xd7, 0xc7, 0x20, 0x94, 0x17,
-    0xde, 0x4e, 0xb9, 0x57, 0x5e, 0x7e, 0x0a, 0xe5, 0xb2, 0x65, 0x7a, 0x89,
-    0x4e, 0xb6, 0x47, 0xff, 0x1c, 0xbd, 0xb7, 0x38, 0x13, 0xaf, 0x47, 0x85,
-    0x84, 0x32, 0x33, 0xf3, 0x17, 0x49, 0xbf, 0xe9, 0x96, 0xd0, 0xd6, 0x14,
-    0x6f, 0x13, 0x8d, 0xc5, 0xfc, 0x2c, 0x72, 0xba, 0xac, 0xea, 0x7e, 0x18,
-    0x53, 0x56, 0xa6, 0x83, 0xa2, 0xce, 0x93, 0x93, 0xe7, 0x1f, 0x0f, 0xe6,
-    0x0f, 0x02, 0x03, 0x01, 0x00, 0x01
-  };
-
-  std::string extension_id;
-  EXPECT_TRUE(
-      Extension::GenerateId(
-          std::string(reinterpret_cast<const char*>(&public_key_info[0]),
-                      arraysize(public_key_info)),
-          &extension_id));
-  EXPECT_EQ("melddjfinppjdikinhbgehiennejpfhp", extension_id);
-}
 
 // This test ensures that the mimetype sniffing code stays in sync with the
 // actual crx files that we test other parts of the system with.
@@ -571,7 +546,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
         file_url("file:///foo/bar"),
         favicon_url("chrome://favicon/http://www.google.com"),
         extension_url("chrome-extension://" +
-            Extension::GenerateIdForPath(
+            id_util::GenerateIdForPath(
                 base::FilePath(FILE_PATH_LITERAL("foo")))),
         settings_url("chrome://settings"),
         about_url("about:flags") {
@@ -924,21 +899,6 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 0));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 1));
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
-}
-
-TEST_F(ExtensionTest, GenerateId) {
-  std::string result;
-  EXPECT_TRUE(Extension::GenerateId("", &result));
-
-  EXPECT_TRUE(Extension::GenerateId("test", &result));
-  EXPECT_EQ(result, "jpignaibiiemhngfjkcpokkamffknabf");
-
-  EXPECT_TRUE(Extension::GenerateId("_", &result));
-  EXPECT_EQ(result, "ncocknphbhhlhkikpnnlmbcnbgdempcd");
-
-  EXPECT_TRUE(Extension::GenerateId(
-      "this_string_is_longer_than_a_single_sha256_hash_digest", &result));
-  EXPECT_EQ(result, "jimneklojkjdibfkgiiophfhjhbdgcfi");
 }
 
 namespace {

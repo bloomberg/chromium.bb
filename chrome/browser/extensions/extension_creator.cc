@@ -13,13 +13,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_handle.h"
 #include "base/string_util.h"
-#include "chrome/browser/extensions/crx_file.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/zip.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
+#include "extensions/common/crx_file.h"
+#include "extensions/common/id_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -97,9 +98,7 @@ bool ExtensionCreator::ValidateManifest(const base::FilePath& extension_dir,
   public_key.insert(public_key.begin(),
                     public_key_bytes.begin(), public_key_bytes.end());
 
-  std::string extension_id;
-  if (!Extension::GenerateId(public_key, &extension_id))
-    return false;
+  std::string extension_id = id_util::GenerateId(public_key);
 
   // Load the extension once. We don't really need it, but this does a lot of
   // useful validation of the structure.

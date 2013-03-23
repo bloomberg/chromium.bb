@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -30,6 +29,7 @@ class SequencedTaskRunner;
 }
 
 namespace extensions {
+class CrxInstallerError;
 class ExtensionUpdaterTest;
 class RequirementsChecker;
 

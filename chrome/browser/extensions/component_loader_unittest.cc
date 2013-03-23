@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -92,8 +93,8 @@ class ComponentLoaderTest : public testing::Test {
 
     // Read in the extension manifest.
     ASSERT_TRUE(file_util::ReadFileToString(
-        extension_path_.Append(Extension::kManifestFilename),
-                               &manifest_contents_));
+        extension_path_.Append(kManifestFilename),
+        &manifest_contents_));
 
     // Register the user prefs that ComponentLoader will read.
     prefs_.registry()->RegisterStringPref(

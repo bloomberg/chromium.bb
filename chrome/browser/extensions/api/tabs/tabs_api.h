@@ -10,10 +10,10 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_resource.h"
 #include "googleurl/src/gurl.h"
 
 class BackingStore;
@@ -262,7 +262,7 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
 
   // Contains extension resource built from path of file which is
   // specified in JSON arguments.
-  ExtensionResource resource_;
+  extensions::ExtensionResource resource_;
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {

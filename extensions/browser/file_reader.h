@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_FILE_READER_H_
-#define CHROME_BROWSER_EXTENSIONS_FILE_READER_H_
+#ifndef EXTENSIONS_BROWSER_FILE_READER_H_
+#define EXTENSIONS_BROWSER_FILE_READER_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/extension_resource.h"
+#include "extensions/common/extension_resource.h"
 
 class MessageLoop;
 
@@ -22,7 +22,8 @@ class FileReader : public base::RefCountedThreadSafe<FileReader> {
   // Reports success or failure and the data of the file upon success.
   typedef base::Callback<void(bool, const std::string&)> Callback;
 
-  FileReader(const ExtensionResource& resource, const Callback& callback);
+  FileReader(const extensions::ExtensionResource& resource,
+             const Callback& callback);
 
   // Called to start reading the file on a background thread.  Upon completion,
   // the callback will be notified of the results.
@@ -35,9 +36,9 @@ class FileReader : public base::RefCountedThreadSafe<FileReader> {
 
   void ReadFileOnBackgroundThread();
 
-  ExtensionResource resource_;
+  extensions::ExtensionResource resource_;
   Callback callback_;
   MessageLoop* origin_loop_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_FILE_READER_H_
+#endif  // EXTENSIONS_BROWSER_FILE_READER_H_

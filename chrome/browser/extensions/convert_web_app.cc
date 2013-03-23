@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/web_apps.h"
 #include "crypto/sha2.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -143,8 +144,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   }
 
   // Write the manifest.
-  base::FilePath manifest_path = temp_dir.path().Append(
-      Extension::kManifestFilename);
+  base::FilePath manifest_path = temp_dir.path().Append(kManifestFilename);
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {
     LOG(ERROR) << "Could not serialize manifest.";

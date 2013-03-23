@@ -16,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension_resource.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -81,7 +82,7 @@ ScriptBubbleView::ScriptBubbleView(views::View* anchor_view,
     entries_.push_back(entry);
 
     int size = extension_misc::EXTENSION_ICON_BITTY;
-    ExtensionResource image =
+    extensions::ExtensionResource image =
         extensions::IconsInfo::GetIconResource(extension,
                                                size,
                                                ExtensionIconSet::MATCH_BIGGER);

@@ -7,13 +7,12 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
-#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
-#include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
+#include "extensions/common/id_util.h"
 
 using sync_datatype_helper::test;
 
@@ -33,7 +32,7 @@ ThemeService* GetThemeService(Profile* profile) {
 namespace themes_helper {
 
 std::string GetCustomTheme(int index) {
-  return SyncExtensionHelper::GetInstance()->NameToId(MakeName(index));
+  return extensions::id_util::GenerateId(MakeName(index));
 }
 
 std::string GetThemeID(Profile* profile) {

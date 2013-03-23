@@ -17,6 +17,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/id_util.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/file_stream.h"
@@ -569,8 +570,9 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   }
   // TODO(erg): Check endianess once DataPack works on the other endian.
   std::string theme_id(reinterpret_cast<char*>(pack->header_->theme_id),
-                       Extension::kIdSize);
-  std::string truncated_id = expected_id.substr(0, Extension::kIdSize);
+                       extensions::id_util::kIdSize);
+  std::string truncated_id =
+      expected_id.substr(0, extensions::id_util::kIdSize);
   if (theme_id != truncated_id) {
     DLOG(ERROR) << "Wrong id: " << theme_id << " vs " << expected_id;
     return NULL;
@@ -802,7 +804,7 @@ void BrowserThemePack::BuildHeader(const Extension* extension) {
   header_->little_endian = 1;
 
   const std::string& id = extension->id();
-  memcpy(header_->theme_id, id.c_str(), Extension::kIdSize);
+  memcpy(header_->theme_id, id.c_str(), extensions::id_util::kIdSize);
 }
 
 void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {

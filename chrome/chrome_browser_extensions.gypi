@@ -55,6 +55,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
+        '../extensions/browser/file_reader.cc',
+        '../extensions/browser/file_reader.h',
         'browser/extensions/active_tab_permission_granter.cc',
         'browser/extensions/active_tab_permission_granter.h',
         'browser/extensions/activity_actions.h',
@@ -491,8 +493,6 @@
         'browser/extensions/convert_user_script.h',
         'browser/extensions/convert_web_app.cc',
         'browser/extensions/convert_web_app.h',
-        'browser/extensions/crx_file.cc',
-        'browser/extensions/crx_file.h',
         'browser/extensions/crx_installer.cc',
         'browser/extensions/crx_installer.h',
         'browser/extensions/crx_installer_error.h',
@@ -623,8 +623,6 @@
         'browser/extensions/external_provider_interface.h',
         'browser/extensions/external_registry_loader_win.cc',
         'browser/extensions/external_registry_loader_win.h',
-        'browser/extensions/file_reader.cc',
-        'browser/extensions/file_reader.h',
         'browser/extensions/image_loader.cc',
         'browser/extensions/image_loader.h',
         'browser/extensions/image_loader_factory.cc',

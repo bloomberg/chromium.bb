@@ -25,10 +25,10 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/extension_resource.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -154,8 +154,9 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
 
 void BackgroundApplicationListModel::Application::RequestIcon(
     extension_misc::ExtensionIcons size) {
-  ExtensionResource resource = extensions::IconsInfo::GetIconResource(
-      extension_, size, ExtensionIconSet::MATCH_BIGGER);
+  extensions::ExtensionResource resource =
+      extensions::IconsInfo::GetIconResource(
+          extension_, size, ExtensionIconSet::MATCH_BIGGER);
   extensions::ImageLoader::Get(model_->profile_)->LoadImageAsync(
       extension_, resource, gfx::Size(size, size),
       base::Bind(&Application::OnImageLoaded, AsWeakPtr()));

@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -66,7 +67,7 @@ class ExtensionUITest : public testing::Test {
     std::string error;
 
     base::FilePath manifest_path = extension_path.Append(
-        Extension::kManifestFilename);
+        extensions::kManifestFilename);
     scoped_ptr<DictionaryValue> extension_data(DeserializeJSONTestData(
         manifest_path, &error));
     EXPECT_EQ("", error);

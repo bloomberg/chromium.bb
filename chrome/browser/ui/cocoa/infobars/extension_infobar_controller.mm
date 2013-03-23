@@ -19,9 +19,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/extension_resource.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -73,7 +73,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
   void LoadIcon() {
     const extensions::Extension* extension = delegate_->extension_host()->
         extension();
-    ExtensionResource icon_resource =
+    extensions::ExtensionResource icon_resource =
         extensions::IconsInfo::GetIconResource(
             extension,
             extension_misc::EXTENSION_ICON_BITTY,

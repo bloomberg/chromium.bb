@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/requirements_checker.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

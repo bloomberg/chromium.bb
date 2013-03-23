@@ -24,10 +24,11 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/message_bundle.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension_resource.h"
 #include "extensions/common/install_warning.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -35,6 +36,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
+using extensions::ExtensionResource;
 using extensions::Manifest;
 
 namespace errors = extension_manifest_errors;
@@ -157,7 +159,7 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
 DictionaryValue* LoadManifest(const base::FilePath& extension_path,
                               std::string* error) {
   base::FilePath manifest_path =
-      extension_path.Append(Extension::kManifestFilename);
+      extension_path.Append(extensions::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
     *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
     return NULL;
@@ -401,8 +403,7 @@ extensions::MessageBundle* LoadMessageBundle(
     std::string* error) {
   error->clear();
   // Load locale information if available.
-  base::FilePath locale_path = extension_path.Append(
-      Extension::kLocaleFolder);
+  base::FilePath locale_path = extension_path.Append(extensions::kLocaleFolder);
   if (!file_util::PathExists(locale_path))
     return NULL;
 
@@ -478,8 +479,8 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
                               std::string* error) {
   // Reserved underscore names.
   static const base::FilePath::CharType* reserved_names[] = {
-    Extension::kLocaleFolder,
-    Extension::kPlatformSpecificFolder,
+    extensions::kLocaleFolder,
+    extensions::kPlatformSpecificFolder,
     FILE_PATH_LITERAL("__MACOSX"),
   };
   CR_DEFINE_STATIC_LOCAL(

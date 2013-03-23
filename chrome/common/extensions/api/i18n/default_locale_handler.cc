@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -51,8 +52,7 @@ bool DefaultLocaleHandler::Validate(
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
   // default_locale and _locales have to be both present or both missing.
-  const base::FilePath path = extension->path().Append(
-      Extension::kLocaleFolder);
+  const base::FilePath path = extension->path().Append(kLocaleFolder);
   bool path_exists = file_util::PathExists(path);
   std::string default_locale =
       extensions::LocaleInfo::GetDefaultLocale(extension);
@@ -86,8 +86,7 @@ bool DefaultLocaleHandler::Validate(
                                                   all_locales))
       continue;
 
-    base::FilePath messages_path =
-        locale_path.Append(Extension::kMessagesFilename);
+    base::FilePath messages_path = locale_path.Append(kMessagesFilename);
 
     if (!file_util::PathExists(messages_path)) {
       *error = base::StringPrintf(

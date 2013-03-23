@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/common/extensions/extension_resource.h"
+#include "extensions/common/extension_resource.h"
 
 class ExtensionServiceInterface;
 class Profile;
@@ -59,7 +59,7 @@ class ManagedModeSiteList {
   };
 
   ManagedModeSiteList(const std::string& extension_id,
-                      const ExtensionResource& path);
+                      const extensions::ExtensionResource& path);
   ~ManagedModeSiteList();
 
   // Creates a copy of the site list.
@@ -80,7 +80,7 @@ class ManagedModeSiteList {
                         base::DictionaryValue* dest);
 
   std::string extension_id_;
-  ExtensionResource path_;
+  extensions::ExtensionResource path_;
   scoped_ptr<base::DictionaryValue> categories_;
   scoped_ptr<base::ListValue> sites_;
 

@@ -22,14 +22,12 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -39,6 +37,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/file_reader.h"
+#include "extensions/common/extension_resource.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -65,7 +65,7 @@ class ContentScriptLoader {
 
   // Call this once with the ExtensionResource corresponding to each
   // content script to be loaded.
-  void AppendScript(ExtensionResource resource) {
+  void AppendScript(extensions::ExtensionResource resource) {
     resources_.push(resource);
   }
 
@@ -77,7 +77,7 @@ class ContentScriptLoader {
       return;
     }
 
-    ExtensionResource resource = resources_.front();
+    extensions::ExtensionResource resource = resources_.front();
     resources_.pop();
     scoped_refptr<FileReader> reader(new FileReader(resource, base::Bind(
         &ContentScriptLoader::OnFileLoaded, base::Unretained(this))));
@@ -109,7 +109,7 @@ class ContentScriptLoader {
   std::string extension_id_;
   int render_process_id_;
   int render_view_id_;
-  std::queue<ExtensionResource> resources_;
+  std::queue<extensions::ExtensionResource> resources_;
 };
 
 void UpdateChromeOSAccessibilityHistograms() {
@@ -201,7 +201,7 @@ void EnableSpokenFeedback(bool enabled,
         const extensions::UserScript& script = extension->content_scripts()[i];
         for (size_t j = 0; j < script.js_scripts().size(); ++j) {
           const extensions::UserScript::File &file = script.js_scripts()[j];
-          ExtensionResource resource = extension->GetResource(
+          extensions::ExtensionResource resource = extension->GetResource(
               file.relative_path());
           loader->AppendScript(resource);
         }
