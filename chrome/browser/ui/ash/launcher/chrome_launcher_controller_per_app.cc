@@ -194,6 +194,10 @@ ChromeLauncherControllerPerApp::ChromeLauncherControllerPerApp(
 
   model_->AddObserver(this);
   BrowserList::AddObserver(this);
+  // Right now ash::Shell isn't created for tests.
+  // TODO(mukai): Allows it to observe display change and write tests.
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->display_controller()->AddObserver(this);
   // TODO(stevenjb): Find a better owner for shell_window_controller_?
   shell_window_controller_.reset(new ShellWindowLauncherController(this));
   app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
@@ -232,6 +236,8 @@ ChromeLauncherControllerPerApp::~ChromeLauncherControllerPerApp() {
 
   model_->RemoveObserver(this);
   BrowserList::RemoveObserver(this);
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->display_controller()->RemoveObserver(this);
   for (IDToItemControllerMap::iterator i = id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
     i->second->OnRemoved();
@@ -1025,6 +1031,13 @@ void ChromeLauncherControllerPerApp::OnShelfAlignmentChanged(
     profile_->GetPrefs()->SetString(prefs::kShelfAlignmentLocal, pref_value);
     profile_->GetPrefs()->SetString(prefs::kShelfAlignment, pref_value);
   }
+}
+
+void ChromeLauncherControllerPerApp::OnDisplayConfigurationChanging() {
+}
+
+void ChromeLauncherControllerPerApp::OnDisplayConfigurationChanged() {
+  SetShelfBehaviorsFromPrefs();
 }
 
 void ChromeLauncherControllerPerApp::OnIsSyncingChanged() {

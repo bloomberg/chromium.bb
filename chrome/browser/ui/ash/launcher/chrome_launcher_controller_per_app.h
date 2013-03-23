@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/display/display_controller.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_types.h"
@@ -62,6 +63,7 @@ class WebContents;
 // * Shortcuts have no LauncherItemController.
 class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
                                        public ash::ShellObserver,
+                                       public ash::DisplayController::Observer,
                                        public ChromeLauncherController,
                                        public content::NotificationObserver,
                                        public PrefServiceSyncableObserver,
@@ -276,6 +278,10 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
 
   // ash::ShellObserver overrides:
   virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
+
+  // ash::DisplayController::Observer overrides:
+  virtual void OnDisplayConfigurationChanging() OVERRIDE;
+  virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
   // PrefServiceSyncableObserver overrides:
   virtual void OnIsSyncingChanged() OVERRIDE;
