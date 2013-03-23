@@ -199,23 +199,20 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
       NavigationEntryUpdated();
 }
 
-bool GetURLForMostVisitedItemId(Profile* profile,
-                                uint64 most_visited_item_id,
+bool GetURLForMostVisitedItemID(Profile* profile,
+                                InstantRestrictedID most_visited_item_id,
                                 GURL* url) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile);
   if (!instant_service)
     return false;
-  return instant_service->GetURLForMostVisitedItemId(most_visited_item_id, url);
-}
 
-// Creates a new restriced id if one is not found.
-size_t GetMostVisitedItemIDForURL(Profile* profile, const GURL& url) {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile);
-  if (!instant_service)
-    return 0;
-  return instant_service->AddURL(url);
+  InstantMostVisitedItem item;
+  if (!instant_service->GetMostVisitedItemForID(most_visited_item_id, &item))
+    return false;
+
+  *url = item.url;
+  return true;
 }
 
 }  // namespace
@@ -942,24 +939,26 @@ void InstantController::ClearDebugEvents() {
   debug_events_.clear();
 }
 
-void InstantController::DeleteMostVisitedItem(uint64 most_visited_item_id) {
+void InstantController::DeleteMostVisitedItem(
+    InstantRestrictedID most_visited_item_id) {
   history::TopSites* top_sites = browser_->profile()->GetTopSites();
   if (!top_sites)
     return;
 
   GURL url;
-  if (GetURLForMostVisitedItemId(browser_->profile(),
+  if (GetURLForMostVisitedItemID(browser_->profile(),
                                  most_visited_item_id, &url))
     top_sites->AddBlacklistedURL(url);
 }
 
-void InstantController::UndoMostVisitedDeletion(uint64 most_visited_item_id) {
+void InstantController::UndoMostVisitedDeletion(
+    InstantRestrictedID most_visited_item_id) {
   history::TopSites* top_sites = browser_->profile()->GetTopSites();
   if (!top_sites)
     return;
 
   GURL url;
-  if (GetURLForMostVisitedItemId(browser_->profile(),
+  if (GetURLForMostVisitedItemID(browser_->profile(),
                                  most_visited_item_id, &url))
     top_sites->RemoveBlacklistedURL(url);
 }
@@ -1517,23 +1516,29 @@ void InstantController::RequestMostVisitedItems() {
 
 void InstantController::OnMostVisitedItemsReceived(
     const history::MostVisitedURLList& data) {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser_->profile());
+  if (!instant_service)
+    return;
+
   std::vector<InstantMostVisitedItem> most_visited_items;
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& url = data[i];
-
     InstantMostVisitedItem item;
-    item.most_visited_item_id = GetMostVisitedItemIDForURL(browser_->profile(),
-                                                           url.url);
     item.url = url.url;
     item.title = url.title;
-
     most_visited_items.push_back(item);
   }
-  SendMostVisitedItems(most_visited_items);
+
+  instant_service->AddMostVisitedItems(most_visited_items);
+
+  std::vector<InstantMostVisitedItemIDPair> items_with_ids;
+  instant_service->GetCurrentMostVisitedItems(&items_with_ids);
+  SendMostVisitedItems(items_with_ids);
 }
 
 void InstantController::SendMostVisitedItems(
-    const std::vector<InstantMostVisitedItem>& items) {
+    const std::vector<InstantMostVisitedItemIDPair>& items) {
   if (overlay_)
     overlay_->SendMostVisitedItems(items);
   if (ntp_)

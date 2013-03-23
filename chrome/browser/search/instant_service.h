@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/common/instant_restricted_id_cache.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -55,18 +56,22 @@ class InstantService : public ProfileKeyedService,
   }
 #endif
 
-  // If |url| is known the existing Most Visited item ID is returned.  Otherwise
-  // a new Most Visited item ID is associated with the |url| and returned.
-  uint64 AddURL(const GURL& url);
+  // Most visited item API.
 
-  // If there is a mapping for the |url|, sets |most_visited_item_id| and
-  // returns true.
-  bool GetMostVisitedItemIDForURL(const GURL& url,
-                                  uint64* most_visited_item_id);
+  // Adds |items| to the |most_visited_item_cache_| assigning restricted IDs in
+  // the process.
+  void AddMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
 
-  // If there is a mapping for the |most_visited_item_id|, sets |url| and
-  // returns true.
-  bool GetURLForMostVisitedItemId(uint64 most_visited_item_id, GURL* url);
+  // Returns the last added InstantMostVisitedItems. After the call to
+  // |AddMostVisitedItems|, the caller should call this to get the items with
+  // the assigned IDs.
+  void GetCurrentMostVisitedItems(
+      std::vector<InstantMostVisitedItemIDPair>* items) const;
+
+  // If the |most_visited_item_id| is found in the cache, sets the |item| to it
+  // and returns true.
+  bool GetMostVisitedItemForID(InstantRestrictedID most_visited_item_id,
+                               InstantMostVisitedItem* item) const;
 
  private:
   // Overridden from ProfileKeyedService:
@@ -77,22 +82,13 @@ class InstantService : public ProfileKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Removes entries of each url in |deleted_urls| from the ID maps.  Or all
-  // IDs if |all_history| is true.  |deleted_ids| is filled with the newly
-  // deleted Most Visited item IDs.
-  void DeleteHistoryURLs(const std::vector<GURL>& deleted_urls,
-                         std::vector<uint64>* deleted_ids);
-
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
   std::set<int> process_ids_;
 
-  // A mapping of Most Visited IDs to URLs.  Used to hide Most Visited and
-  // Favicon URLs from the Instant search provider.
-  uint64 last_most_visited_item_id_;
-  std::map<uint64, GURL> most_visited_item_id_to_url_map_;
-  std::map<GURL, uint64> url_to_most_visited_item_id_map_;
+  // A cache of the InstantMostVisitedItems sent to the Instant Pages.
+  InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_item_cache_;
 
   content::NotificationRegistrar registrar_;
 

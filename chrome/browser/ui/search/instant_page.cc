@@ -95,7 +95,7 @@ void InstantPage::KeyCaptureChanged(bool is_key_capture_enabled) {
 }
 
 void InstantPage::SendMostVisitedItems(
-    const std::vector<InstantMostVisitedItem>& items) {
+    const std::vector<InstantMostVisitedItemIDPair>& items) {
   Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(routing_id(), items));
 }
 
@@ -269,12 +269,12 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
   }
 }
 
-void InstantPage::OnDeleteMostVisitedItem(uint64 most_visited_item_id) {
-  delegate_->DeleteMostVisitedItem(most_visited_item_id);
+void InstantPage::OnDeleteMostVisitedItem(InstantRestrictedID restricted_id) {
+  delegate_->DeleteMostVisitedItem(restricted_id);
 }
 
-void InstantPage::OnUndoMostVisitedDeletion(uint64 most_visited_item_id) {
-  delegate_->UndoMostVisitedDeletion(most_visited_item_id);
+void InstantPage::OnUndoMostVisitedDeletion(InstantRestrictedID restricted_id) {
+  delegate_->UndoMostVisitedDeletion(restricted_id);
 }
 
 void InstantPage::OnUndoAllMostVisitedDeletions() {

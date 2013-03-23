@@ -12,18 +12,23 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+namespace {
+// Size of the results cache.
+const size_t kMaxInstantAutocompleteResultItemCacheSize = 100;
+}
+
 SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SearchBox>(render_view),
       verbatim_(false),
       selection_start_(0),
       selection_end_(0),
-      results_base_(0),
       start_margin_(0),
-      last_results_base_(0),
       is_key_capture_enabled_(false),
       display_instant_results_(false),
-      omnibox_font_size_(0) {
+      omnibox_font_size_(0),
+      autocomplete_results_cache_(kMaxInstantAutocompleteResultItemCacheSize),
+      most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize) {
 }
 
 SearchBox::~SearchBox() {
@@ -75,12 +80,14 @@ void SearchBox::NavigateToURL(const GURL& url,
       url, transition, disposition));
 }
 
-void SearchBox::DeleteMostVisitedItem(uint64 most_visited_item_id) {
+void SearchBox::DeleteMostVisitedItem(
+    InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
       render_view()->GetRoutingID(), most_visited_item_id));
 }
 
-void SearchBox::UndoMostVisitedDeletion(uint64 most_visited_item_id) {
+void SearchBox::UndoMostVisitedDeletion(
+    InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
       render_view()->GetRoutingID(), most_visited_item_id));
 }
@@ -115,24 +122,16 @@ gfx::Rect SearchBox::GetPopupBounds() const {
                    static_cast<int>(popup_bounds_.height() / zoom));
 }
 
-const std::vector<InstantAutocompleteResult>&
-    SearchBox::GetAutocompleteResults() {
-  // Remember the last requested autocomplete_results to account for race
-  // conditions between autocomplete providers returning new data and the user
-  // clicking on a suggestion.
-  last_autocomplete_results_ = autocomplete_results_;
-  last_results_base_ = results_base_;
-  return autocomplete_results_;
+void SearchBox::GetAutocompleteResults(
+    std::vector<InstantAutocompleteResultIDPair>* results) const {
+  autocomplete_results_cache_.GetCurrentItems(results);
 }
 
-const InstantAutocompleteResult* SearchBox::GetAutocompleteResultWithId(
-    size_t autocomplete_result_id) const {
-  if (autocomplete_result_id < last_results_base_ ||
-      autocomplete_result_id >=
-          last_results_base_ + last_autocomplete_results_.size())
-    return NULL;
-  return &last_autocomplete_results_[
-      autocomplete_result_id - last_results_base_];
+bool SearchBox::GetAutocompleteResultWithID(
+    InstantRestrictedID autocomplete_result_id,
+    InstantAutocompleteResult* result) const {
+  return autocomplete_results_cache_.GetItemWithRestrictedID(
+      autocomplete_result_id, result);
 }
 
 const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
@@ -257,8 +256,7 @@ void SearchBox::OnDetermineIfPageSupportsInstant() {
 
 void SearchBox::OnAutocompleteResults(
     const std::vector<InstantAutocompleteResult>& results) {
-  results_base_ += autocomplete_results_.size();
-  autocomplete_results_ = results;
+  autocomplete_results_cache_.AddItems(results);
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     DVLOG(1) << render_view() << " OnAutocompleteResults";
     extensions_v8::SearchBoxExtension::DispatchAutocompleteResults(
@@ -348,10 +346,8 @@ void SearchBox::Reset() {
   verbatim_ = false;
   selection_start_ = 0;
   selection_end_ = 0;
-  results_base_ = 0;
   popup_bounds_ = gfx::Rect();
   start_margin_ = 0;
-  autocomplete_results_.clear();
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();
   // Don't reset display_instant_results_ to prevent clearing it on committed
@@ -362,8 +358,8 @@ void SearchBox::Reset() {
 }
 
 void SearchBox::OnMostVisitedChanged(
-    const std::vector<InstantMostVisitedItem>& items) {
-  most_visited_items_ = items;
+    const std::vector<InstantMostVisitedItemIDPair>& items) {
+  most_visited_items_cache_.AddItemsWithRestrictedID(items);
 
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
@@ -371,7 +367,14 @@ void SearchBox::OnMostVisitedChanged(
   }
 }
 
-const std::vector<InstantMostVisitedItem>&
-SearchBox::GetMostVisitedItems() const {
-  return most_visited_items_;
+void SearchBox::GetMostVisitedItems(
+    std::vector<InstantMostVisitedItemIDPair>* items) const {
+  return most_visited_items_cache_.GetCurrentItems(items);
+}
+
+bool SearchBox::GetMostVisitedItemWithID(
+    InstantRestrictedID most_visited_item_id,
+    InstantMostVisitedItem* item) const {
+  return most_visited_items_cache_.GetItemWithRestrictedID(most_visited_item_id,
+                                                           item);
 }

@@ -79,16 +79,6 @@ v8::Handle<v8::String> GenerateFaviconURL(uint64 most_visited_item_id) {
                          base::Uint64ToString(most_visited_item_id).c_str()));
 }
 
-const GURL MostVisitedItemIDToURL(
-    const std::vector<InstantMostVisitedItem>& most_visited_items,
-    uint64 most_visited_item_id) {
-  for (size_t i = 0; i < most_visited_items.size(); ++i) {
-    if (most_visited_items[i].most_visited_item_id == most_visited_item_id)
-      return most_visited_items[i].url;
-  }
-  return GURL();
-}
-
 }  // namespace
 
 namespace extensions_v8 {
@@ -573,25 +563,25 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
   if (!render_view) return v8::Undefined();
 
   DVLOG(1) << render_view << " GetAutocompleteResults";
-  const std::vector<InstantAutocompleteResult>& results =
-      SearchBox::Get(render_view)->GetAutocompleteResults();
-  size_t results_base = SearchBox::Get(render_view)->results_base();
+  std::vector<InstantAutocompleteResultIDPair> results;
+  SearchBox::Get(render_view)->GetAutocompleteResults(&results);
 
   v8::Handle<v8::Array> results_array = v8::Array::New(results.size());
   for (size_t i = 0; i < results.size(); ++i) {
     v8::Handle<v8::Object> result = v8::Object::New();
     result->Set(v8::String::New("provider"),
-                UTF16ToV8String(results[i].provider));
-    result->Set(v8::String::New("type"), UTF16ToV8String(results[i].type));
+                UTF16ToV8String(results[i].second.provider));
+    result->Set(v8::String::New("type"),
+                UTF16ToV8String(results[i].second.type));
     result->Set(v8::String::New("contents"),
-                UTF16ToV8String(results[i].description));
+                UTF16ToV8String(results[i].second.description));
     result->Set(v8::String::New("destination_url"),
-                UTF16ToV8String(results[i].destination_url));
-    result->Set(v8::String::New("rid"), v8::Uint32::New(results_base + i));
+                UTF16ToV8String(results[i].second.destination_url));
+    result->Set(v8::String::New("rid"), v8::Uint32::New(results[i].first));
 
     v8::Handle<v8::Object> ranking_data = v8::Object::New();
     ranking_data->Set(v8::String::New("relevance"),
-                      v8::Int32::New(results[i].relevance));
+                      v8::Int32::New(results[i].second.relevance));
     result->Set(v8::String::New("rankingData"), ranking_data);
 
     results_array->Set(i, result);
@@ -750,11 +740,11 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateSearchBox(
   GURL destination_url;
   content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
   if (args[0]->IsNumber()) {
-    const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
-        GetAutocompleteResultWithId(args[0]->Uint32Value());
-    if (result) {
-      destination_url = GURL(result->destination_url);
-      transition = result->transition;
+    InstantAutocompleteResult result;
+    if (SearchBox::Get(render_view)->GetAutocompleteResultWithID(
+            args[0]->IntegerValue(), &result)) {
+      destination_url = GURL(result.destination_url);
+      transition = result.transition;
     }
   } else {
     // Resolve the URL.
@@ -787,12 +777,13 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateNewTabPage(
   if (!render_view || !args.Length()) return v8::Undefined();
 
   GURL destination_url;
-  content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
+  content::PageTransition transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
   if (args[0]->IsNumber()) {
-    destination_url = MostVisitedItemIDToURL(
-        SearchBox::Get(render_view)->GetMostVisitedItems(),
-        args[0]->Uint32Value());
-    transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
+    InstantMostVisitedItem item;
+    if (SearchBox::Get(render_view)->GetMostVisitedItemWithID(
+            args[0]->IntegerValue(), &item)) {
+      destination_url = item.url;
+    }
   } else {
     destination_url = GURL(V8ValueToUTF16(args[0]));
   }
@@ -903,12 +894,14 @@ v8::Handle<v8::Value>
   if (!render_view || !args.Length()) return v8::Undefined();
 
   DVLOG(1) << render_view << " SetSuggestionFromAutocompleteResult";
-  const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
-      GetAutocompleteResultWithId(args[0]->Uint32Value());
-  if (!result) return v8::Undefined();
+  InstantAutocompleteResult result;
+  if (!SearchBox::Get(render_view)->GetAutocompleteResultWithID(
+          args[0]->IntegerValue(), &result)) {
+    return v8::Undefined();
+  }
 
   // We only support selecting autocomplete results that are URLs.
-  string16 text = result->destination_url;
+  string16 text = result.destination_url;
   InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
   InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
@@ -951,12 +944,14 @@ v8::Handle<v8::Value>
   if (!render_view || !args.Length()) return v8::Undefined();
 
   DVLOG(1) << render_view << " SetQueryFromAutocompleteResult";
-  const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
-      GetAutocompleteResultWithId(args[0]->Uint32Value());
-  if (!result) return v8::Undefined();
+  InstantAutocompleteResult result;
+  if (!SearchBox::Get(render_view)->GetAutocompleteResultWithID(
+          args[0]->IntegerValue(), &result)) {
+    return v8::Undefined();
+  }
 
   // We only support selecting autocomplete results that are URLs.
-  string16 text = result->destination_url;
+  string16 text = result.destination_url;
   InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
   // TODO(jered): Distinguish between history URLs and search provider
   // navsuggest URLs so that we can do proper accounting on history URLs.
@@ -1003,8 +998,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
 
   const SearchBox* search_box = SearchBox::Get(render_view);
 
-  const std::vector<InstantMostVisitedItem>& instant_mv_items =
-      search_box->GetMostVisitedItems();
+  std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
+  search_box->GetMostVisitedItems(&instant_mv_items);
   v8::Handle<v8::Array> v8_mv_items = v8::Array::New(instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
     // We set the "dir" attribute of the title, so that in RTL locales, a LTR
@@ -1018,27 +1013,26 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
     // http://yahoo.com is "Yahoo!". In RTL locales, in the New Tab page, the
     // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
     // "ltr".
+    const InstantMostVisitedItem& mv_item = instant_mv_items[i].second;
     std::string direction;
-    if (base::i18n::StringContainsStrongRTLChars(instant_mv_items[i].title))
+    if (base::i18n::StringContainsStrongRTLChars(mv_item.title))
       direction = kRTLHtmlTextDirection;
     else
       direction = kLTRHtmlTextDirection;
 
-    string16 title = instant_mv_items[i].title;
+    string16 title = mv_item.title;
     if (title.empty())
-      title = UTF8ToUTF16(instant_mv_items[i].url.spec());
+      title = UTF8ToUTF16(mv_item.url.spec());
 
+    InstantRestrictedID restricted_id = instant_mv_items[i].first;
     v8::Handle<v8::Object> item = v8::Object::New();
-    item->Set(v8::String::New("rid"),
-              v8::Int32::New(instant_mv_items[i].most_visited_item_id));
+    item->Set(v8::String::New("rid"), v8::Int32::New(restricted_id));
     item->Set(v8::String::New("thumbnailUrl"),
-              GenerateThumbnailURL(instant_mv_items[i].most_visited_item_id));
+              GenerateThumbnailURL(restricted_id));
     item->Set(v8::String::New("faviconUrl"),
-              GenerateFaviconURL(instant_mv_items[i].most_visited_item_id));
-    item->Set(v8::String::New("title"),
-              UTF16ToV8String(title));
-    item->Set(v8::String::New("domain"),
-              UTF8ToV8String(instant_mv_items[i].url.host()));
+              GenerateFaviconURL(restricted_id));
+    item->Set(v8::String::New("title"), UTF16ToV8String(title));
+    item->Set(v8::String::New("domain"), UTF8ToV8String(mv_item.url.host()));
     item->Set(v8::String::New("direction"), UTF8ToV8String(direction));
 
     v8_mv_items->Set(i, item);

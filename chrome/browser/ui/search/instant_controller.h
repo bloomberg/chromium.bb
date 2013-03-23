@@ -256,11 +256,13 @@ class InstantController : public InstantPage::Delegate,
 
   // Invoked by the InstantLoader when the Instant page wants to delete a
   // Most Visited item.
-  virtual void DeleteMostVisitedItem(uint64 most_visited_item_id) OVERRIDE;
+  virtual void DeleteMostVisitedItem(InstantRestrictedID most_visited_item_id)
+      OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to undo a
   // Most Visited deletion.
-  virtual void UndoMostVisitedDeletion(uint64 most_visited_item_id) OVERRIDE;
+  virtual void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id)
+      OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to undo all
   // Most Visited deletions.
@@ -352,7 +354,8 @@ class InstantController : public InstantPage::Delegate,
 
   // Sends a collection of MostVisitedItems to the renderer process via
   // the appropriate InstantPage subclass.
-  void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
+  void SendMostVisitedItems(
+      const std::vector<InstantMostVisitedItemIDPair>& items);
 
   // If possible, tries to mutate |suggestion| to a valid suggestion. Returns
   // true if successful. (Note that |suggestion| may be modified even if this

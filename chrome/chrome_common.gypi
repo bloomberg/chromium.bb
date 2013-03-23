@@ -285,6 +285,7 @@
         'common/external_ipc_fuzzer.cc',
         'common/icon_with_badge_image_source.cc',
         'common/icon_with_badge_image_source.h',
+        'common/instant_restricted_id_cache.h',
         'common/instant_types.cc',
         'common/instant_types.h',
         'common/json_schema/json_schema_constants.cc',

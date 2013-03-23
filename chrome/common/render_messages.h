@@ -167,7 +167,6 @@ IPC_STRUCT_TRAITS_BEGIN(InstantAutocompleteResult)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedItem)
-  IPC_STRUCT_TRAITS_MEMBER(most_visited_item_id)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(title)
 IPC_STRUCT_TRAITS_END()
@@ -347,13 +346,13 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxGrantChromeSearchAccessFromOrigin,
                     GURL /* origin_url */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
-                    std::vector<InstantMostVisitedItem> /* items */)
+                    std::vector<InstantMostVisitedItemIDPair> /* items */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
-                    uint64 /* most_visited_item_id */)
+                    InstantRestrictedID /* most_visited_item_id */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
-                    uint64 /* most_visited_item_id */)
+                    InstantRestrictedID /* most_visited_item_id */)
 
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions)
 

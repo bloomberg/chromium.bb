@@ -24,33 +24,15 @@
 
 using content::BrowserThread;
 
-namespace {
-
-// Copies deleted urls out of the history data structure |details| into a
-// straight vector of GURLs.
-void HistoryDetailsToDeletedURLs(const history::URLsDeletedDetails& details,
-                                 std::vector<GURL>* deleted_urls) {
-  for (history::URLRows::const_iterator it = details.rows.begin();
-       it != details.rows.end();
-       ++it) {
-    deleted_urls->push_back(it->url());
-  }
-}
-
-}  // namespace
-
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
-      last_most_visited_item_id_(0) {
+      most_visited_item_cache_(kMaxInstantMostVisitedItemCacheSize) {
   // Stub for unit tests.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return;
 
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  content::NotificationService::AllSources());
 
   instant_io_context_ = new InstantIOContext();
@@ -84,11 +66,12 @@ const std::string InstantService::MaybeTranslateInstantPathOnUI(
   if (!instant_service)
     return path;
 
-  uint64 most_visited_item_id = 0;
-  if (base::StringToUint64(path, &most_visited_item_id)) {
-    GURL url;
-    if (instant_service->GetURLForMostVisitedItemId(most_visited_item_id, &url))
-      return url.spec();
+  InstantRestrictedID restricted_id = 0;
+  DCHECK_EQ(sizeof(InstantRestrictedID), sizeof(int));
+  if (base::StringToInt(path, &restricted_id)) {
+    InstantMostVisitedItem item;
+    if (instant_service->GetMostVisitedItemForID(restricted_id, &item))
+      return item.url.spec();
   }
   return path;
 }
@@ -96,13 +79,16 @@ const std::string InstantService::MaybeTranslateInstantPathOnUI(
 const std::string InstantService::MaybeTranslateInstantPathOnIO(
     const net::URLRequest* request, const std::string& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  uint64 most_visited_item_id = 0;
-  if (base::StringToUint64(path, &most_visited_item_id)) {
+
+  InstantRestrictedID restricted_id = 0;
+  DCHECK_EQ(sizeof(InstantRestrictedID), sizeof(int));
+  if (base::StringToInt(path, &restricted_id)) {
     GURL url;
-    if (InstantIOContext::GetURLForMostVisitedItemId(request,
-                                                     most_visited_item_id,
-                                                     &url))
+    if (InstantIOContext::GetURLForMostVisitedItemID(request,
+                                                     restricted_id,
+                                                     &url)) {
       return url.spec();
+    }
   }
   return path;
 }
@@ -113,8 +99,8 @@ bool InstantService::IsInstantPath(const GURL& url) {
   std::string path = url.path().substr(1);
 
   // Check that path is of Most Visited item ID form.
-  uint64 dummy = 0;
-  return base::StringToUint64(path, &dummy);
+  InstantRestrictedID dummy = 0;
+  return base::StringToInt(path, &dummy);
 }
 
 void InstantService::AddInstantProcess(int process_id) {
@@ -132,48 +118,32 @@ bool InstantService::IsInstantProcess(int process_id) const {
   return process_ids_.find(process_id) != process_ids_.end();
 }
 
-uint64 InstantService::AddURL(const GURL& url) {
-  uint64 id = 0;
-  if (GetMostVisitedItemIDForURL(url, &id))
-    return id;
+void InstantService::AddMostVisitedItems(
+    const std::vector<InstantMostVisitedItem>& items) {
+  most_visited_item_cache_.AddItems(items);
 
-  last_most_visited_item_id_++;
-  most_visited_item_id_to_url_map_[last_most_visited_item_id_] = url;
-  url_to_most_visited_item_id_map_[url] = last_most_visited_item_id_;
-
+  // Post task to the IO thread to copy the data.
   if (instant_io_context_) {
+    std::vector<InstantMostVisitedItemIDPair> items;
+    most_visited_item_cache_.GetCurrentItems(&items);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&InstantIOContext::AddMostVisitedItemIDOnIO,
-                   instant_io_context_, last_most_visited_item_id_, url));
+        base::Bind(&InstantIOContext::AddMostVisitedItemsOnIO,
+                   instant_io_context_,
+                   items));
   }
-
-  return last_most_visited_item_id_;
 }
 
-bool InstantService::GetMostVisitedItemIDForURL(
-    const GURL& url,
-    uint64 *most_visited_item_id) {
-  std::map<GURL, uint64>::iterator it =
-      url_to_most_visited_item_id_map_.find(url);
-  if (it != url_to_most_visited_item_id_map_.end()) {
-    *most_visited_item_id = it->second;
-    return true;
-  }
-  *most_visited_item_id = 0;
-  return false;
+void InstantService::GetCurrentMostVisitedItems(
+    std::vector<InstantMostVisitedItemIDPair>* items) const {
+  most_visited_item_cache_.GetCurrentItems(items);
 }
 
-bool InstantService::GetURLForMostVisitedItemId(uint64 most_visited_item_id,
-                                                GURL* url) {
-  std::map<uint64, GURL>::iterator it =
-      most_visited_item_id_to_url_map_.find(most_visited_item_id);
-  if (it != most_visited_item_id_to_url_map_.end()) {
-    *url = it->second;
-    return true;
-  }
-  *url = GURL();
-  return false;
+bool InstantService::GetMostVisitedItemForID(
+    InstantRestrictedID most_visited_item_id,
+    InstantMostVisitedItem* item) const {
+  return most_visited_item_cache_.GetItemWithRestrictedID(
+      most_visited_item_id, item);
 }
 
 void InstantService::Shutdown() {
@@ -205,45 +175,7 @@ void InstantService::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
-      content::Details<history::URLsDeletedDetails> det(details);
-      std::vector<GURL> deleted_urls;
-      HistoryDetailsToDeletedURLs(*det.ptr(), &deleted_urls);
-
-      std::vector<uint64> deleted_ids;
-      if (det->all_history) {
-        url_to_most_visited_item_id_map_.clear();
-        most_visited_item_id_to_url_map_.clear();
-      } else {
-        DeleteHistoryURLs(deleted_urls, &deleted_ids);
-      }
-
-      if (instant_io_context_) {
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(&InstantIOContext::DeleteMostVisitedURLsOnIO,
-                       instant_io_context_, deleted_ids, det->all_history));
-      }
-      break;
-    }
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
-  }
-}
-
-void InstantService::DeleteHistoryURLs(const std::vector<GURL>& deleted_urls,
-                                       std::vector<uint64>* deleted_ids) {
-  for (std::vector<GURL>::const_iterator it = deleted_urls.begin();
-       it != deleted_urls.end();
-       ++it) {
-    std::map<GURL, uint64>::iterator item =
-        url_to_most_visited_item_id_map_.find(*it);
-    if (item != url_to_most_visited_item_id_map_.end()) {
-      uint64 most_visited_item_id = item->second;
-      url_to_most_visited_item_id_map_.erase(item);
-      most_visited_item_id_to_url_map_.erase(
-          most_visited_item_id_to_url_map_.find(most_visited_item_id));
-      deleted_ids->push_back(most_visited_item_id);
-    }
   }
 }

@@ -1258,7 +1258,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
   EXPECT_EQ(kQueryString, result);
 
   // Set the query text to the first restricted autocomplete item.
-  int rid = 0;
+  int rid = 1;
   stream.str(std::string());
   stream << "apiHandle.setRestrictedValue(" << rid << ")";
   EXPECT_TRUE(ExecuteScript(stream.str()));
