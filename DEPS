@@ -560,6 +560,16 @@ deps_os = {
     "src/third_party/freetype2/src":
       Var("chromium_git") + "/chromium/src/third_party/freetype2.git" +
       "@d699c2994ecc178c4ed05ac2086061b2034c2178",
+
+    # Build tools for targeting ChromeOS.
+    "src/third_party/chromite":
+      Var("chromiumos_git") + "/chromite.git" +
+      "@1d8a25be640e27cbac454995239cd71f34b5f613",
+
+    # Dependency of chromite.git.
+    "src/third_party/pyelftools":
+      Var("chromiumos_git") + "/third_party/pyelftools.git" +
+      "@bdc1d380acd88d4bfaf47265008091483b0d614e",
   },
   "android": {
     "src/third_party/android_tools":
