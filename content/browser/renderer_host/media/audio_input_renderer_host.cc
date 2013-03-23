@@ -93,14 +93,14 @@ void AudioInputRendererHost::OnRecording(
           make_scoped_refptr(controller)));
 }
 
-void AudioInputRendererHost::OnError(
-    media::AudioInputController* controller,
-    int error_code) {
+void AudioInputRendererHost::OnError(media::AudioInputController* controller) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&AudioInputRendererHost::DoHandleError,
-          this, make_scoped_refptr(controller), error_code));
+      base::Bind(
+          &AudioInputRendererHost::DoHandleError,
+          this,
+          make_scoped_refptr(controller)));
 }
 
 void AudioInputRendererHost::OnData(media::AudioInputController* controller,
@@ -171,10 +171,7 @@ void AudioInputRendererHost::DoSendRecordingMessage(
 }
 
 void AudioInputRendererHost::DoHandleError(
-    media::AudioInputController* controller,
-    int error_code) {
-  DLOG(WARNING) << "AudioInputRendererHost::DoHandleError(error_code="
-                << error_code << ")";
+    media::AudioInputController* controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   AudioEntry* entry = LookupByController(controller);

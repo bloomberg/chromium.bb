@@ -637,7 +637,7 @@ void AUAudioInputStream::HandleError(OSStatus err) {
   NOTREACHED() << "error " << GetMacOSStatusErrorString(err)
                << " (" << err << ")";
   if (sink_)
-    sink_->OnError(this, static_cast<int>(err));
+    sink_->OnError(this);
 }
 
 bool AUAudioInputStream::IsVolumeSettableOnChannel(int channel) {

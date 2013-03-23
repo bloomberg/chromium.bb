@@ -45,7 +45,7 @@ void AudioOutputProxy::Start(AudioSourceCallback* callback) {
 
   if (!dispatcher_->StartStream(callback, this)) {
     state_ = kStartError;
-    callback->OnError(this, 0);
+    callback->OnError(this);
     return;
   }
   state_ = kPlaying;

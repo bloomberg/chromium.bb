@@ -209,7 +209,7 @@ class FullDuplexAudioSinkSource
   }
 
   virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
-  virtual void OnError(AudioInputStream* stream, int code) OVERRIDE {}
+  virtual void OnError(AudioInputStream* stream) OVERRIDE {}
 
   // AudioOutputStream::AudioSourceCallback.
   virtual int OnMoreData(AudioBus* audio_bus,
@@ -257,7 +257,7 @@ class FullDuplexAudioSinkSource
     return 0;
   }
 
-  virtual void OnError(AudioOutputStream* stream, int code) OVERRIDE {}
+  virtual void OnError(AudioOutputStream* stream) OVERRIDE {}
   virtual void WaitTillDataReady() OVERRIDE {}
 
  protected:

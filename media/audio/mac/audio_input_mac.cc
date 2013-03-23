@@ -136,7 +136,7 @@ bool PCMQueueInAudioInputStream::GetAutomaticGainControl() {
 
 void PCMQueueInAudioInputStream::HandleError(OSStatus err) {
   if (callback_)
-    callback_->OnError(this, static_cast<int>(err));
+    callback_->OnError(this);
   // This point should never be reached.
   OSSTATUS_DCHECK(0, err);
 }

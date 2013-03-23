@@ -73,7 +73,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
   MOCK_METHOD3(OnMoreIOData, int(AudioBus* source,
                                  AudioBus* dest,
                                  AudioBuffersState buffers_state));
-  MOCK_METHOD2(OnError, void(AudioOutputStream* stream, int code));
+  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 };
 
 class MockAudioManagerLinux : public AudioManagerLinux {

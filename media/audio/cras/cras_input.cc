@@ -117,7 +117,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
       params_.channels());
   if (!audio_format) {
     DLOG(WARNING) << "Error setting up audio parameters.";
-    callback_->OnError(this, -ENOMEM);
+    callback_->OnError(this);
     callback_ = NULL;
     return;
   }
@@ -136,7 +136,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
       audio_format);
   if (!stream_params) {
     DLOG(WARNING) << "Error setting up stream parameters.";
-    callback_->OnError(this, -ENOMEM);
+    callback_->OnError(this);
     callback_ = NULL;
     cras_audio_format_destroy(audio_format);
     return;
@@ -151,7 +151,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     audio_manager_->IncreaseActiveInputStreamCount();
   } else {
     DLOG(WARNING) << "Failed to add the stream.";
-    callback_->OnError(this, -EIO);
+    callback_->OnError(this);
     callback_ = NULL;
   }
 
@@ -232,7 +232,7 @@ void CrasInputStream::ReadAudio(size_t frames,
 
 void CrasInputStream::NotifyStreamError(int err) {
   if (callback_)
-    callback_->OnError(this, err);
+    callback_->OnError(this);
 }
 
 double CrasInputStream::GetMaxVolume() {

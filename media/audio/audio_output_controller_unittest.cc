@@ -41,8 +41,7 @@ class MockAudioOutputControllerEventHandler
   MOCK_METHOD1(OnCreated, void(AudioOutputController* controller));
   MOCK_METHOD1(OnPlaying, void(AudioOutputController* controller));
   MOCK_METHOD1(OnPaused, void(AudioOutputController* controller));
-  MOCK_METHOD2(OnError, void(AudioOutputController* controller,
-                             int error_code));
+  MOCK_METHOD1(OnError, void(AudioOutputController* controller));
   MOCK_METHOD3(OnDeviceChange, void(AudioOutputController* controller,
                                     int new_buffer_size, int new_sample_rate));
  private:

@@ -83,8 +83,7 @@ class CONTENT_EXPORT AudioRendererHost
   virtual void OnCreated(media::AudioOutputController* controller) OVERRIDE;
   virtual void OnPlaying(media::AudioOutputController* controller) OVERRIDE;
   virtual void OnPaused(media::AudioOutputController* controller) OVERRIDE;
-  virtual void OnError(media::AudioOutputController* controller,
-                       int error_code) OVERRIDE;
+  virtual void OnError(media::AudioOutputController* controller) OVERRIDE;
   virtual void OnDeviceChange(media::AudioOutputController* controller,
                               int new_buffer_size,
                               int new_sample_rate) OVERRIDE;
@@ -141,7 +140,7 @@ class CONTENT_EXPORT AudioRendererHost
                                  int new_buffer_size, int new_sample_rate);
 
   // Handle error coming from audio stream.
-  void DoHandleError(media::AudioOutputController* controller, int error_code);
+  void DoHandleError(media::AudioOutputController* controller);
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id);

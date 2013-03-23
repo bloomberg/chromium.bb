@@ -26,7 +26,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   MOCK_METHOD5(OnData, void(
       AudioInputStream*, const uint8*, uint32, uint32, double));
-  MOCK_METHOD2(OnError, void(AudioInputStream*, int));
+  MOCK_METHOD1(OnError, void(AudioInputStream*));
   MOCK_METHOD1(OnClose, void(AudioInputStream*));
 };
 

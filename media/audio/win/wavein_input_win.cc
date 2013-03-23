@@ -228,7 +228,7 @@ bool PCMWaveInAudioInputStream::GetAutomaticGainControl() {
 
 void PCMWaveInAudioInputStream::HandleError(MMRESULT error) {
   DLOG(WARNING) << "PCMWaveInAudio error " << error;
-  callback_->OnError(this, error);
+  callback_->OnError(this);
 }
 
 void PCMWaveInAudioInputStream::QueueNextPacket(WAVEHDR *buffer) {

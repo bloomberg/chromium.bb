@@ -295,7 +295,7 @@ void OpenSLESInputStream::ReleaseAudioBuffer() {
 void OpenSLESInputStream::HandleError(SLresult error) {
   DLOG(FATAL) << "OpenSLES error " << error;
   if (callback_)
-    callback_->OnError(this, error);
+    callback_->OnError(this);
 }
 
 }  // namespace media

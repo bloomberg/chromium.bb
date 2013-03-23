@@ -66,8 +66,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // AudioInputController::EventHandler implementation.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE;
   virtual void OnRecording(media::AudioInputController* controller) OVERRIDE;
-  virtual void OnError(media::AudioInputController* controller,
-                       int error_code) OVERRIDE;
+  virtual void OnError(media::AudioInputController* controller) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
                       const uint8* data,
                       uint32 size) OVERRIDE;
@@ -117,7 +116,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   void DoSendRecordingMessage(media::AudioInputController* controller);
 
   // Handle error coming from audio stream.
-  void DoHandleError(media::AudioInputController* controller, int error_code);
+  void DoHandleError(media::AudioInputController* controller);
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id);

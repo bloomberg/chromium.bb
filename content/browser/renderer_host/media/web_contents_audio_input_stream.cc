@@ -204,8 +204,7 @@ void WebContentsAudioInputStream::Impl::ReportError() {
 
   // TODO(miu): Need clean-up of AudioInputCallback interface in a future
   // change, since its only implementation ignores the first argument entirely
-  // and the values for the second argument are undefined.
-  callback_->OnError(NULL, 0);
+  callback_->OnError(NULL);
 }
 
 void WebContentsAudioInputStream::Impl::StartMirroring() {

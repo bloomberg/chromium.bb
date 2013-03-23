@@ -760,7 +760,7 @@ int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,
 
 void AlsaPcmOutputStream::RunErrorCallback(int code) {
   if (source_callback_)
-    source_callback_->OnError(this, code);
+    source_callback_->OnError(this);
 }
 
 // Changes the AudioSourceCallback to proxy calls to.  Pass in NULL to

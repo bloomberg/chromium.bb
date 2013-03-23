@@ -181,7 +181,7 @@ void CrasOutputStream::Start(AudioSourceCallback* callback) {
   if (audio_format == NULL) {
     LOG(WARNING) << "Error setting up audio parameters.";
     TransitionTo(kInError);
-    callback->OnError(this, -ENOMEM);
+    callback->OnError(this);
     return;
   }
   cras_stream_params* stream_params = cras_client_stream_params_create(
@@ -198,7 +198,7 @@ void CrasOutputStream::Start(AudioSourceCallback* callback) {
   if (stream_params == NULL) {
     LOG(WARNING) << "Error setting up stream parameters.";
     TransitionTo(kInError);
-    callback->OnError(this, -ENOMEM);
+    callback->OnError(this);
     cras_audio_format_destroy(audio_format);
     return;
   }
@@ -212,7 +212,7 @@ void CrasOutputStream::Start(AudioSourceCallback* callback) {
   if (err < 0) {
     LOG(WARNING) << "Failed to add the stream";
     TransitionTo(kInError);
-    callback->OnError(this, err);
+    callback->OnError(this);
     cras_audio_format_destroy(audio_format);
     cras_client_stream_params_destroy(stream_params);
     return;
@@ -302,7 +302,7 @@ void CrasOutputStream::NotifyStreamError(int err) {
     return;  // Don't care about error if we aren't using it.
   TransitionTo(kInError);
   if (source_callback_)
-    source_callback_->OnError(this, err);
+    source_callback_->OnError(this);
 }
 
 bool CrasOutputStream::CanTransitionTo(InternalState to) {

@@ -570,7 +570,7 @@ void WASAPIUnifiedStream::HandleError(HRESULT err) {
         (!started() && GetCurrentThreadId() == creating_thread_id_));
   NOTREACHED() << "Error code: " << std::hex << err;
   if (source_)
-    source_->OnError(this, static_cast<int>(err));
+    source_->OnError(this);
 }
 
 void WASAPIUnifiedStream::StopAndJoinThread(HRESULT err) {

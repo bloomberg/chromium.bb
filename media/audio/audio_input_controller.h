@@ -82,7 +82,7 @@ class MEDIA_EXPORT AudioInputController
    public:
     virtual void OnCreated(AudioInputController* controller) = 0;
     virtual void OnRecording(AudioInputController* controller) = 0;
-    virtual void OnError(AudioInputController* controller, int error_code) = 0;
+    virtual void OnError(AudioInputController* controller) = 0;
     virtual void OnData(AudioInputController* controller, const uint8* data,
                         uint32 size) = 0;
 
@@ -184,7 +184,7 @@ class MEDIA_EXPORT AudioInputController
   virtual void OnData(AudioInputStream* stream, const uint8* src, uint32 size,
                       uint32 hardware_delay_bytes, double volume) OVERRIDE;
   virtual void OnClose(AudioInputStream* stream) OVERRIDE;
-  virtual void OnError(AudioInputStream* stream, int code) OVERRIDE;
+  virtual void OnError(AudioInputStream* stream) OVERRIDE;
 
   bool LowLatencyMode() const { return sync_writer_ != NULL; }
 
@@ -209,7 +209,7 @@ class MEDIA_EXPORT AudioInputController
   void DoCreateForStream(AudioInputStream* stream_to_control);
   void DoRecord();
   void DoClose();
-  void DoReportError(int code);
+  void DoReportError();
   void DoSetVolume(double volume);
   void DoSetAutomaticGainControl(bool enabled);
 

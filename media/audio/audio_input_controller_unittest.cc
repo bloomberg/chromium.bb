@@ -55,7 +55,7 @@ class MockAudioInputControllerEventHandler
 
   MOCK_METHOD1(OnCreated, void(AudioInputController* controller));
   MOCK_METHOD1(OnRecording, void(AudioInputController* controller));
-  MOCK_METHOD2(OnError, void(AudioInputController* controller, int error_code));
+  MOCK_METHOD1(OnError, void(AudioInputController* controller));
   MOCK_METHOD3(OnData, void(AudioInputController* controller,
                             const uint8* data, uint32 size));
 
@@ -166,7 +166,7 @@ TEST_F(AudioInputControllerTest, RecordAndError) {
 
   // OnError() will be called after the data stream stops while the
   // controller is in a recording state.
-  EXPECT_CALL(event_handler, OnError(NotNull(), 0))
+  EXPECT_CALL(event_handler, OnError(NotNull()))
       .Times(Exactly(1))
       .WillOnce(QuitMessageLoop(&message_loop_));
 

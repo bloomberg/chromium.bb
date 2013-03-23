@@ -61,7 +61,7 @@ class TestSourceBasic : public AudioOutputStream::AudioSourceCallback {
     return 0;
   }
   // AudioSourceCallback::OnError implementation:
-  virtual void OnError(AudioOutputStream* stream, int code) {
+  virtual void OnError(AudioOutputStream* stream) {
     ++had_error_;
   }
   // Returns how many times OnMoreData() has been called.
@@ -111,7 +111,7 @@ class MockAudioSource : public AudioOutputStream::AudioSourceCallback {
   MOCK_METHOD3(OnMoreIOData, int(AudioBus* source,
                                  AudioBus* dest,
                                  AudioBuffersState buffers_state));
-  MOCK_METHOD2(OnError, void(AudioOutputStream* stream, int code));
+  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 
   static int ClearData(AudioBus* audio_bus, AudioBuffersState buffers_state) {
     audio_bus->Zero();
@@ -589,7 +589,7 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
     return 0;
   }
   // AudioSourceCallback::OnError implementation:
-  virtual void OnError(AudioOutputStream* stream, int code) {
+  virtual void OnError(AudioOutputStream* stream) {
   }
 
  private:

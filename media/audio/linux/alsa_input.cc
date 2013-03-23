@@ -337,7 +337,7 @@ double AlsaPcmInputStream::GetVolume() {
 
 void AlsaPcmInputStream::HandleError(const char* method, int error) {
   LOG(WARNING) << method << ": " << wrapper_->StrError(error);
-  callback_->OnError(this, error);
+  callback_->OnError(this);
 }
 
 }  // namespace media

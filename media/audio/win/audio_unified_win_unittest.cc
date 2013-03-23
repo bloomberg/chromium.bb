@@ -52,7 +52,7 @@ class MockUnifiedSourceCallback
   MOCK_METHOD3(OnMoreIOData, int(AudioBus* source,
                                  AudioBus* dest,
                                  AudioBuffersState buffers_state));
-  MOCK_METHOD2(OnError, void(AudioOutputStream* stream, int code));
+  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 };
 
 // AudioOutputStream::AudioSourceCallback implementation which enables audio
@@ -109,7 +109,7 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
     return source->frames();
   };
 
-  virtual void OnError(AudioOutputStream* stream, int code) {
+  virtual void OnError(AudioOutputStream* stream) {
     NOTREACHED();
   }
 
@@ -198,7 +198,7 @@ TEST(WASAPIUnifiedStreamTest, OpenStartAndClose) {
   WASAPIUnifiedStream* wus = ausw.Create();
 
   EXPECT_TRUE(wus->Open());
-  EXPECT_CALL(source, OnError(wus, _))
+  EXPECT_CALL(source, OnError(wus))
       .Times(0);
   EXPECT_CALL(source, OnMoreIOData(NotNull(), NotNull(), _))
       .Times(Between(0, 1))
@@ -224,7 +224,7 @@ TEST(WASAPIUnifiedStreamTest, StartLoopbackAudio) {
   AudioBuffersState min_total_audio_delay(0, 2 * ausw.bytes_per_buffer());
 
   EXPECT_TRUE(wus->Open());
-  EXPECT_CALL(source, OnError(wus, _))
+  EXPECT_CALL(source, OnError(wus))
       .Times(0);
   EXPECT_CALL(source, OnMoreIOData(
       NotNull(), NotNull(), DelayGreaterThan(min_total_audio_delay)))

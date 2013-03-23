@@ -286,7 +286,7 @@ class AudioRendererHostTest : public testing::Test {
     EXPECT_CALL(*host_, OnStreamError(kStreamId));
 
     // Simulate an error sent from the audio device.
-    host_->OnError(controller, 0);
+    host_->OnError(controller);
     SyncWithAudioThread();
 
     // Expect the audio stream record is removed.

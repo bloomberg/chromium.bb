@@ -131,7 +131,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
                    AudioBuffersState buffers_state) {
     return OnMoreData(dest, buffers_state);
   }
-  MOCK_METHOD2(OnError, void(AudioOutputStream* stream, int code));
+  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 };
 
 }  // namespace
@@ -431,7 +431,7 @@ class AudioOutputProxyTest : public testing::Test {
         .Times(2)
         .WillRepeatedly(Return(reinterpret_cast<AudioOutputStream*>(NULL)));
 
-    EXPECT_CALL(callback_, OnError(_, _))
+    EXPECT_CALL(callback_, OnError(_))
         .Times(2);
 
     proxy->Start(&callback_);

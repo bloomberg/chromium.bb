@@ -44,7 +44,7 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
     }
   }
   virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
-  virtual void OnError(AudioInputStream* stream, int code) OVERRIDE {
+  virtual void OnError(AudioInputStream* stream) OVERRIDE {
     ++had_error_;
   }
   // Returns how many times OnData() has been called.

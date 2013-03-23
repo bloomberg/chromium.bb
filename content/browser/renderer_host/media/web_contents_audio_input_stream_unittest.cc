@@ -164,7 +164,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
                             uint32 size, uint32 hardware_delay_bytes,
                             double volume));
   MOCK_METHOD1(OnClose, void(AudioInputStream* stream));
-  MOCK_METHOD2(OnError, void(AudioInputStream* stream, int code));
+  MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputCallback);
@@ -335,7 +335,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   }
 
   void LoseMirroringTarget() {
-    EXPECT_CALL(mock_input_callback_, OnError(_, _));
+    EXPECT_CALL(mock_input_callback_, OnError(_));
 
     // Simulate OnTargetChange() callback from WebContentsTracker.
     EXPECT_FALSE(change_callback_.is_null());

@@ -70,7 +70,7 @@ class MEDIA_EXPORT AudioOutputController
     virtual void OnCreated(AudioOutputController* controller) = 0;
     virtual void OnPlaying(AudioOutputController* controller) = 0;
     virtual void OnPaused(AudioOutputController* controller) = 0;
-    virtual void OnError(AudioOutputController* controller, int error_code) = 0;
+    virtual void OnError(AudioOutputController* controller) = 0;
     virtual void OnDeviceChange(AudioOutputController* controller,
                                 int new_buffer_size, int new_sample_rate) = 0;
 
@@ -142,7 +142,7 @@ class MEDIA_EXPORT AudioOutputController
   virtual int OnMoreIOData(AudioBus* source,
                            AudioBus* dest,
                            AudioBuffersState buffers_state) OVERRIDE;
-  virtual void OnError(AudioOutputStream* stream, int code) OVERRIDE;
+  virtual void OnError(AudioOutputStream* stream) OVERRIDE;
   // Deprecated: Currently only used for starting audio playback and for audio
   // mirroring.
   virtual void WaitTillDataReady() OVERRIDE;
@@ -189,7 +189,7 @@ class MEDIA_EXPORT AudioOutputController
   void DoFlush();
   void DoClose();
   void DoSetVolume(double volume);
-  void DoReportError(int code);
+  void DoReportError();
   void DoStartDiverting(AudioOutputStream* to_stream);
   void DoStopDiverting();
 

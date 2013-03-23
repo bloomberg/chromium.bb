@@ -107,18 +107,14 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
       audio_manager_->MakeAudioOutputStreamProxy(params_);
   if (!stream_) {
     state_ = kError;
-
-    // TODO(hclam): Define error types.
-    handler_->OnError(this, 0);
+    handler_->OnError(this);
     return;
   }
 
   if (!stream_->Open()) {
     DoStopCloseAndClearStream();
     state_ = kError;
-
-    // TODO(hclam): Define error types.
-    handler_->OnError(this, 0);
+    handler_->OnError(this);
     return;
   }
 
@@ -256,10 +252,10 @@ void AudioOutputController::DoSetVolume(double volume) {
   }
 }
 
-void AudioOutputController::DoReportError(int code) {
+void AudioOutputController::DoReportError() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   if (state_ != kClosed)
-    handler_->OnError(this, code);
+    handler_->OnError(this);
 }
 
 int AudioOutputController::OnMoreData(AudioBus* dest,
@@ -304,10 +300,10 @@ void AudioOutputController::WaitTillDataReady() {
   }
 }
 
-void AudioOutputController::OnError(AudioOutputStream* stream, int code) {
+void AudioOutputController::OnError(AudioOutputStream* stream) {
   // Handle error on the audio controller thread.
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputController::DoReportError, this, code));
+      &AudioOutputController::DoReportError, this));
 }
 
 void AudioOutputController::DoStopCloseAndClearStream() {

@@ -116,13 +116,14 @@ void AudioRendererHost::OnPaused(media::AudioOutputController* controller) {
           make_scoped_refptr(controller)));
 }
 
-void AudioRendererHost::OnError(media::AudioOutputController* controller,
-                                int error_code) {
+void AudioRendererHost::OnError(media::AudioOutputController* controller) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&AudioRendererHost::DoHandleError,
-                 this, make_scoped_refptr(controller), error_code));
+      base::Bind(
+          &AudioRendererHost::DoHandleError,
+          this,
+          make_scoped_refptr(controller)));
 }
 
 void AudioRendererHost::OnDeviceChange(media::AudioOutputController* controller,
@@ -222,8 +223,8 @@ void AudioRendererHost::DoSendDeviceChangeMessage(
       entry->stream_id, new_buffer_size, new_sample_rate));
 }
 
-void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
-                                      int error_code) {
+void AudioRendererHost::DoHandleError(
+    media::AudioOutputController* controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   AudioEntry* entry = LookupByController(controller);

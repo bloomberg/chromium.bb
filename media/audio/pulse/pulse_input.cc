@@ -290,7 +290,7 @@ void PulseAudioInputStream::StreamNotifyCallback(pa_stream* s,
       reinterpret_cast<PulseAudioInputStream*>(user_data);
   if (s && stream->callback_ &&
       pa_stream_get_state(s) == PA_STREAM_FAILED) {
-    stream->callback_->OnError(stream, pa_context_errno(stream->pa_context_));
+    stream->callback_->OnError(stream);
   }
 
   pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);

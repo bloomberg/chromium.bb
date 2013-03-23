@@ -162,10 +162,8 @@ SpeechRecognizer::~SpeechRecognizer() {
 }
 
 // Invoked in the audio thread.
-void SpeechRecognizer::OnError(AudioInputController* controller,
-                                   int error_code) {
+void SpeechRecognizer::OnError(AudioInputController* controller) {
   FSMEventArgs event_args(EVENT_AUDIO_ERROR);
-  event_args.audio_error_code = error_code;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizer::DispatchEvent,
                                      this, event_args));
@@ -658,7 +656,6 @@ void SpeechRecognizer::SetAudioManagerForTests(
 
 SpeechRecognizer::FSMEventArgs::FSMEventArgs(FSMEvent event_value)
     : event(event_value),
-      audio_error_code(0),
       audio_data(NULL),
       engine_error(SPEECH_RECOGNITION_ERROR_NONE) {
 }

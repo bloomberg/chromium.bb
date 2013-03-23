@@ -37,7 +37,7 @@ class OnMoreDataConverter
   virtual int OnMoreIOData(AudioBus* source,
                            AudioBus* dest,
                            AudioBuffersState buffers_state) OVERRIDE;
-  virtual void OnError(AudioOutputStream* stream, int code) OVERRIDE;
+  virtual void OnError(AudioOutputStream* stream) OVERRIDE;
   virtual void WaitTillDataReady() OVERRIDE;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
@@ -385,10 +385,10 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
   return frames > 0 ? 1 : 0;
 }
 
-void OnMoreDataConverter::OnError(AudioOutputStream* stream, int code) {
+void OnMoreDataConverter::OnError(AudioOutputStream* stream) {
   base::AutoLock auto_lock(source_lock_);
   if (source_callback_)
-    source_callback_->OnError(stream, code);
+    source_callback_->OnError(stream);
 }
 
 void OnMoreDataConverter::WaitTillDataReady() {

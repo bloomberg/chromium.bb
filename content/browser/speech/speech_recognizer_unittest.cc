@@ -358,7 +358,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnError(controller, 0);
+  controller->event_handler()->OnError(controller);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
@@ -377,7 +377,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
   ASSERT_TRUE(controller);
   controller->event_handler()->OnData(controller, &audio_packet_[0],
                                       audio_packet_.size());
-  controller->event_handler()->OnError(controller, 0);
+  controller->event_handler()->OnError(controller);
   MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(url_fetcher_factory_.GetFetcherByID(0));
   EXPECT_TRUE(recognition_started_);

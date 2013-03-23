@@ -27,7 +27,7 @@ void PulseAudioOutputStream::ContextNotifyCallback(pa_context* c,
   // should be thread safe.
   if (c && stream->source_callback_ &&
       pa_context_get_state(c) == PA_CONTEXT_FAILED) {
-    stream->source_callback_->OnError(stream, pa_context_errno(c));
+    stream->source_callback_->OnError(stream);
   }
 
   pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);
@@ -42,8 +42,7 @@ void PulseAudioOutputStream::StreamNotifyCallback(pa_stream* s, void* p_this) {
   // should be thread safe.
   if (s && stream->source_callback_ &&
       pa_stream_get_state(s) == PA_STREAM_FAILED) {
-    stream->source_callback_->OnError(
-        stream, pa_context_errno(stream->pa_context_));
+    stream->source_callback_->OnError(stream);
   }
 
   pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);
@@ -276,7 +275,7 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
     if (pa_stream_write(pa_stream_, buffer, bytes_to_fill, NULL, 0LL,
                         PA_SEEK_RELATIVE) < 0) {
       if (source_callback_) {
-        source_callback_->OnError(this, pa_context_errno(pa_context_));
+        source_callback_->OnError(this);
       }
     }
 
@@ -294,7 +293,7 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
   // Ensure the context and stream are ready.
   if (pa_context_get_state(pa_context_) != PA_CONTEXT_READY &&
       pa_stream_get_state(pa_stream_) != PA_STREAM_READY) {
-    callback->OnError(this, pa_context_errno(pa_context_));
+    callback->OnError(this);
     return;
   }
 

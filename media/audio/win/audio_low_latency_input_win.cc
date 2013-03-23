@@ -445,7 +445,7 @@ void WASAPIAudioInputStream::Run() {
 void WASAPIAudioInputStream::HandleError(HRESULT err) {
   NOTREACHED() << "Error code: " << err;
   if (sink_)
-    sink_->OnError(this, static_cast<int>(err));
+    sink_->OnError(this);
 }
 
 HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
