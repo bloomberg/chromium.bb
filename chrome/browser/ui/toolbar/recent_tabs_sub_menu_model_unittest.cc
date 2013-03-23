@@ -147,10 +147,12 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   // 7           <section header for 2nd session>
   // 8           <the only tab of window 0 of session 1>
   // 9-10        <2 tabs of window 1 of session 2>
+  // 11          <separator>
+  // 12          Devices and history...
 
   TestRecentTabsSubMenuModel model(NULL, browser(), &associator_, true);
   int num_items = model.GetItemCount();
-  EXPECT_EQ(11, num_items);
+  EXPECT_EQ(13, num_items);
   model.ActivatedAt(0);
   EXPECT_TRUE(model.IsEnabledAt(0));
   model.ActivatedAt(3);
@@ -165,7 +167,8 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   EXPECT_TRUE(model.IsEnabledAt(9));
   model.ActivatedAt(10);
   EXPECT_TRUE(model.IsEnabledAt(10));
-  EXPECT_EQ(7, model.enable_count_);
+  EXPECT_TRUE(model.IsEnabledAt(12));
+  EXPECT_EQ(8, model.enable_count_);
   EXPECT_EQ(7, model.execute_count_);
 }
 
@@ -181,7 +184,7 @@ TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
 
   // Verify that data is populated correctly in RecentTabsSubMenuModel.
   // Expected menu:
-  // - max sessions is 3, so only 3 most-recent sessions will show
+  // - max sessions is 3, so only 3 most-recent sessions will show.
   // Menu index  Menu items
   // --------------------------------------
   // 0           Reopen closed tab
@@ -194,10 +197,12 @@ TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
   // 7           <separator>
   // 8           <section header for 3rd session>
   // 9           <the only tab of the only window of session 1>
+  // 10          <separator>
+  // 11          Devices and history...
 
   TestRecentTabsSubMenuModel model(NULL, browser(), &associator_, true);
   int num_items = model.GetItemCount();
-  EXPECT_EQ(10, num_items);
+  EXPECT_EQ(12, num_items);
 
   std::vector<string16> tab_titles =
       recent_tabs_builder.GetTabTitlesSortedByRecency();
@@ -219,18 +224,20 @@ TEST_F(RecentTabsSubMenuModelTest, MaxTabsPerSessionAndRecency) {
 
   // Verify that data is populated correctly in RecentTabsSubMenuModel.
   // Expected menu:
-  // - max tabs per session  is 4, so only 4 most-recent tabs will show,
-  //   independent of which window they came from
+  // - max tabs per session is 4, so only 4 most-recent tabs will show,
+  //   independent of which window they came from.
   // Menu index  Menu items
   // --------------------------------------
   // 0           Reopen closed tab
   // 1           <separator>
   // 2           <section header for session>
   // 3-6         <4 most-recent tabs of session>
+  // 7           <separator>
+  // 8           Devices and history...
 
   TestRecentTabsSubMenuModel model(NULL, browser(), &associator_, true);
   int num_items = model.GetItemCount();
-  EXPECT_EQ(7, num_items);
+  EXPECT_EQ(9, num_items);
 
   std::vector<string16> tab_titles =
       recent_tabs_builder.GetTabTitlesSortedByRecency();
@@ -252,9 +259,11 @@ TEST_F(RecentTabsSubMenuModelTest, MaxWidth) {
   // 1           <separator>
   // 2           <section header for 1st session>
   // 3           <the only tab of the only window of session 1>
+  // 4           <separator>
+  // 5           Devices and history...
 
   TestRecentTabsSubMenuModel model(NULL, browser(), &associator_, true);
-  EXPECT_EQ(4, model.GetItemCount());
+  EXPECT_EQ(6, model.GetItemCount());
   EXPECT_EQ(-1, model.GetMaxWidthForItemAtIndex(0));
   EXPECT_NE(-1, model.GetMaxWidthForItemAtIndex(1));
   EXPECT_NE(-1, model.GetMaxWidthForItemAtIndex(2));

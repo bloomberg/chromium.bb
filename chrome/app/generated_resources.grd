@@ -13282,6 +13282,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         No tabs from other devices
       </message>
 
+      <message name="IDS_RECENT_TABS_MORE" desc="The label in the Recent Tabs menu in the wrench menu to open the other devices and history page.">
+        More...
+      </message>
+
       <message name="IDS_DEFAULT_DOWNLOAD_FILENAME" desc="Default name for downloaded files when we have no idea what they could be.">
         download
       </message>

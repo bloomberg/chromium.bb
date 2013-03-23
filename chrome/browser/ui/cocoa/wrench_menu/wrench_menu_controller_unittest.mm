@@ -109,7 +109,7 @@ TEST_F(WrenchMenuControllerTest, RecentTabsFavIcon) {
   NSString* title = l10n_util::GetNSStringWithFixup(IDS_RECENT_TABS_MENU);
   NSMenu* recent_tabs_menu = [[menu itemWithTitle:title] submenu];
   EXPECT_TRUE(recent_tabs_menu);
-  EXPECT_EQ(4, [recent_tabs_menu numberOfItems]);
+  EXPECT_EQ(6, [recent_tabs_menu numberOfItems]);
 
   // Send a icon changed event and verify that the icon is updated.
   gfx::Image icon(ResourceBundle::GetSharedInstance().GetNativeImageNamed(
@@ -155,7 +155,7 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
   NSString* title = l10n_util::GetNSStringWithFixup(IDS_RECENT_TABS_MENU);
   NSMenu* recent_tabs_menu = [[menu itemWithTitle:title] submenu];
   EXPECT_TRUE(recent_tabs_menu);
-  EXPECT_EQ(5, [recent_tabs_menu numberOfItems]);
+  EXPECT_EQ(7, [recent_tabs_menu numberOfItems]);
 
   // Index 0: restore tabs menu item.
   NSString* restore_tab_label = l10n_util::FixUpWindowsStyleLabel(

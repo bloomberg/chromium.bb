@@ -150,6 +150,9 @@ bool RecentTabsSubMenuModel::IsCommandIdEnabled(int command_id) const {
       command_id == IDC_RECENT_TABS_NO_DEVICE_TABS) {
     return false;
   }
+  if (command_id == IDC_SHOW_HISTORY) {
+    return true;
+  }
   int model_index = CommandIdToModelIndex(command_id);
   return model_index >= 0 && model_index < static_cast<int>(model_.size());
 }
@@ -186,6 +189,12 @@ string16 RecentTabsSubMenuModel::GetLabelForCommandId(int command_id) const {
 void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == IDC_RESTORE_TAB) {
     chrome::ExecuteCommandWithDisposition(browser_, command_id,
+        ui::DispositionFromEventFlags(event_flags));
+    return;
+  }
+  if (command_id == IDC_SHOW_HISTORY) {
+    // We show all "other devices" on the history page.
+    chrome::ExecuteCommandWithDisposition(browser_, IDC_SHOW_HISTORY,
         ui::DispositionFromEventFlags(event_flags));
     return;
   }
@@ -270,8 +279,7 @@ void RecentTabsSubMenuModel::BuildDevices() {
   const size_t kMaxSessionsToShow = 3;
   size_t num_sessions_added = 0;
   for (size_t i = 0;
-       i < sessions.size() && num_sessions_added < kMaxSessionsToShow;
-       ++i) {
+       i < sessions.size() && num_sessions_added < kMaxSessionsToShow; ++i) {
     const browser_sync::SyncedSession* session = sessions[i];
     const std::string& session_tag = session->session_tag;
 
@@ -322,6 +330,11 @@ void RecentTabsSubMenuModel::BuildDevices() {
 
     ++num_sessions_added;
   }  // for all sessions
+
+  // We are not supposed to get here unless at least some items were added.
+  DCHECK_GT(GetItemCount(), 0);
+  AddSeparator(ui::NORMAL_SEPARATOR);
+  AddItemWithStringId(IDC_SHOW_HISTORY, IDS_RECENT_TABS_MORE);
 }
 
 void RecentTabsSubMenuModel::BuildForeignTabItem(
