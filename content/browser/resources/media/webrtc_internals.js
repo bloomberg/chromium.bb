@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="stats_graph_helper.js"/>
+
 var peerConnectionsListElem = null;
 
 function initialize() {
@@ -169,13 +171,14 @@ function updatePeerConnection(data) {
   addToPeerConnectionLog(logElement, data);
 }
 
-// data is an array and each entry is in the same format as the input of
-// updatePeerConnection.
+// data is an array and each entry is
+// {pid:|integer|, lid:|integer|,
+//  url:|string|, servers:|string|, constraints:|string|, log:|array|},
+// each entry of log is {type:|string|, value:|string|}.
 function updateAllPeerConnections(data) {
   for (var i = 0; i < data.length; ++i) {
     var peerConnection = addPeerConnection(data[i]);
     var logElement = ensurePeerConnectionLog(peerConnection);
-    logElement.value = '';
 
     var log = data[i].log;
     for (var j = 0; j < log.length; ++j) {
@@ -186,7 +189,7 @@ function updateAllPeerConnections(data) {
 
 // data = {pid:|integer|, lid:|integer|, reports:|array|}.
 // Each entry of reports =
-// {id:|string|, type:|string|, local:|array|, remote:|array|}.
+// {id:|string|, type:|string|, local:|object|, remote:|object|}.
 // reports.local or reports.remote =
 // {timestamp: |double|, values: |array|},
 // where values is an array of strings, whose even index entry represents
@@ -197,11 +200,13 @@ function addStats(data) {
       getPeerConnectionId(data));
   for (var i = 0; i < data.reports.length; ++i) {
     var report = data.reports[i];
-    var statsTable = ensureStatsTable(peerConnectionElement,
-                                      report.type + '-' + report.id);
+    var reportName = report.type + '-' + report.id;
+    var statsTable = ensureStatsTable(peerConnectionElement, reportName);
 
     addSingleReportToTable(statsTable, report.local);
+    drawSingleReport(peerConnectionElement, reportName, report.local);
     addSingleReportToTable(statsTable, report.remote);
+    drawSingleReport(peerConnectionElement, reportName, report.remote);
   }
 }
 

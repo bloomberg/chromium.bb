@@ -734,6 +734,7 @@
             'browser/media/audio_browsertest.cc',
             'browser/media/encrypted_media_browsertest.cc',
             'browser/media/media_browsertest.cc',
+            'browser/media/webrtc_internals_browsertest.cc',
             'browser/plugin_data_remover_impl_browsertest.cc',
             'browser/plugin_browsertest.cc',
             'browser/plugin_service_impl_browsertest.cc',
