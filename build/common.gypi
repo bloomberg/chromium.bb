@@ -660,6 +660,9 @@
       'google_api_key%': '',
       'google_default_client_id%': '',
       'google_default_client_secret%': '',
+
+      # Whether Android uses OpenMAX DL FFT.  Default is no.
+      'use_openmax_dl_fft%': 0,
     },
 
     # Copy conditionally-set variables out one scope.
@@ -918,6 +921,9 @@
     # Set ARM float abi compilation flag.
     'arm_float_abi%': 'softfp',
 
+    # Enable use of OpenMAX DL FFT routines.
+    'use_openmax_dl_fft%': '<(use_openmax_dl_fft)',
+    
     # Enable new NPDevice API.
     'enable_new_npdevice_api%': 0,
 
