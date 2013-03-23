@@ -194,7 +194,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_CaptureSnapshot, OnCaptureSnapshot)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_HandleMessageFromExternalHost,
                         OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_JavaScriptStressTestControl,
@@ -234,24 +233,6 @@ void ChromeRenderViewObserver::OnWebUIJavaScript(
   webui_javascript_->jscript = jscript;
   webui_javascript_->id = id;
   webui_javascript_->notify_result = notify_result;
-}
-
-void ChromeRenderViewObserver::OnCaptureSnapshot() {
-  SkBitmap snapshot;
-  bool error = false;
-
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  if (!main_frame)
-    error = true;
-
-  if (!error && !CaptureSnapshot(render_view()->GetWebView(), &snapshot))
-    error = true;
-
-  DCHECK(error == snapshot.empty()) <<
-      "Snapshot should be empty on error, non-empty otherwise.";
-
-  // Send the snapshot to the browser process.
-  Send(new ChromeViewHostMsg_Snapshot(routing_id(), snapshot));
 }
 
 void ChromeRenderViewObserver::OnHandleMessageFromExternalHost(
@@ -793,35 +774,6 @@ void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
       return;  // don't index if we got a huge block of text with no spaces
     contents->resize(last_space_index);
   }
-}
-
-bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
-                                               SkBitmap* snapshot) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-
-  view->layout();
-  const WebSize& size = view->size();
-
-  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
-      skia::CreatePlatformCanvas(
-          size.width, size.height, true, NULL, skia::RETURN_NULL_ON_FAILURE));
-  if (!canvas)
-    return false;
-
-  view->paint(webkit_glue::ToWebCanvas(canvas.get()),
-              WebRect(0, 0, size.width, size.height));
-  // TODO: Add a way to snapshot the whole page, not just the currently
-  // visible part.
-
-  SkDevice* device = skia::GetTopDevice(*canvas);
-
-  const SkBitmap& bitmap = device->accessBitmap(false);
-  if (!bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config))
-    return false;
-
-  UMA_HISTOGRAM_TIMES("Renderer4.Snapshot",
-                  base::TimeTicks::Now() - beginning_time);
-  return true;
 }
 
 ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {

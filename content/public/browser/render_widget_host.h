@@ -284,6 +284,16 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Get the screen info corresponding to this render widget.
   virtual void GetWebScreenInfo(WebKit::WebScreenInfo* result) = 0;
 
+  // Grabs snapshot from renderer side and returns the bitmap to a callback.
+  // If |src_rect| is empty, the whole contents is copied. This is an expensive
+  // operation due to the IPC, but it can be used as a fallback method when
+  // CopyFromBackingStore fails due to the backing store not being available or,
+  // in composited mode, when the accelerated surface is not available to the
+  // browser side.
+  virtual void GetSnapshotFromRenderer(
+      const gfx::Rect& src_subrect,
+      const base::Callback<void(bool, const SkBitmap&)>& callback) = 0;
+
  protected:
   friend class RenderWidgetHostImpl;
 

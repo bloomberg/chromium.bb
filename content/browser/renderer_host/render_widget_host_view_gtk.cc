@@ -1051,47 +1051,9 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& /* dst_size */,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
-
-  XID parent_window = ui::GetParentWindow(compositing_surface_);
-  if (parent_window == None)
-    return;
-
-  // Get the window offset with respect to its parent.
-  XWindowAttributes attr;
-  if (!XGetWindowAttributes(ui::GetXDisplay(), compositing_surface_, &attr))
-    return;
-
-  gfx::Rect src_subrect_in_parent(src_subrect);
-  src_subrect_in_parent.Offset(attr.x, attr.y);
-
-  ui::XScopedImage image(XGetImage(ui::GetXDisplay(), parent_window,
-                                   src_subrect_in_parent.x(),
-                                   src_subrect_in_parent.y(),
-                                   src_subrect_in_parent.width(),
-                                   src_subrect_in_parent.height(),
-                                   AllPlanes, ZPixmap));
-  if (!image.get())
-    return;
-
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   image->width,
-                   image->height,
-                   image->bytes_per_line);
-  if (!bitmap.allocPixels())
-    return;
-  bitmap.setIsOpaque(true);
-
-  const size_t bitmap_size = bitmap.getSize();
-  DCHECK_EQ(bitmap_size,
-            static_cast<size_t>(image->height * image->bytes_per_line));
-  unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
-  memcpy(pixels, image->data, bitmap_size);
-
-  scoped_callback_runner.Release();
-  callback.Run(true, bitmap);
+  // Grab the snapshot from the renderer as that's the only reliable way to
+  // readback from the GPU for this platform right now.
+  GetRenderWidgetHost()->GetSnapshotFromRenderer(src_subrect, callback);
 }
 
 void RenderWidgetHostViewGtk::CopyFromCompositingSurfaceToVideoFrame(

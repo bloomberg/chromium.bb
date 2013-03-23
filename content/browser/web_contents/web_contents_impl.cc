@@ -636,15 +636,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_compositing_enabled = false;
   }
 
-#if defined(OS_LINUX) && !defined(USE_AURA)
-  // Temporary fix for Linux non-Aura capturing. http://crbug.com/174957
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
-  if (web_contents && web_contents->capturer_count_ > 0) {
-    prefs.accelerated_compositing_enabled = false;
-  }
-#endif
-
   return prefs;
 }
 
@@ -991,16 +982,6 @@ void WebContentsImpl::IncrementCapturerCount() {
   ++capturer_count_;
   DVLOG(1) << "There are now " << capturer_count_
            << " capturing(s) of WebContentsImpl@" << this;
-
-#if defined(OS_LINUX) && !defined(USE_AURA)
-  // Temporary fix for Linux non-Aura capturing. http://crbug.com/174957
-  if (capturer_count_ == 1) {
-    // Force a WebkitPreferences reload to disable compositing for snapshots.
-    RenderViewHost* rvh = GetRenderViewHost();
-    if (rvh)
-      rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
-  }
-#endif
 }
 
 void WebContentsImpl::DecrementCapturerCount() {
@@ -1011,16 +992,6 @@ void WebContentsImpl::DecrementCapturerCount() {
 
   if (is_being_destroyed_)
     return;
-
-#if defined(OS_LINUX) && !defined(USE_AURA)
-  // Temporary fix for Linux non-Aura capturing. http://crbug.com/174957
-  if (capturer_count_ == 0) {
-    // Force a WebkitPreferences reload to re-enable compositing.
-    RenderViewHost* rvh = GetRenderViewHost();
-    if (rvh)
-      rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
-  }
-#endif
 
   // While capturer_count_ was greater than zero, the WasHidden() calls to RWHV
   // were being prevented.  If there are no more capturers, make the call now.

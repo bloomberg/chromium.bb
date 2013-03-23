@@ -174,8 +174,7 @@ class TabsDetectLanguageFunction : public AsyncExtensionFunction,
   content::NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION("tabs.detectLanguage", TABS_DETECTLANGUAGE)
 };
-class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction,
-                                  public content::NotificationObserver {
+class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction {
  public:
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
@@ -191,16 +190,18 @@ class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction,
   virtual ~TabsCaptureVisibleTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
   virtual bool GetTabToCapture(content::WebContents** web_contents);
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
   void SendResultFromBitmap(const SkBitmap& screen_capture);
 
  private:
+  // Callback for the RWH::CopyFromBackingStore call.
   void CopyFromBackingStoreComplete(bool succeeded,
                                     const SkBitmap& bitmap);
 
-  content::NotificationRegistrar registrar_;
+  // Callback for the RWH::GetSnapshotFromRenderer call. This path is used if
+  // CopyFromBackingStore fails for some reason.
+  void GetSnapshotFromRendererComplete(bool succeeded,
+                                       const SkBitmap& bitmap);
+  void SendInternalError();
 
   // The format (JPEG vs PNG) of the resulting image.  Set in RunImpl().
   ImageFormat image_format_;

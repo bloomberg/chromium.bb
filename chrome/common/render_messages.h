@@ -263,10 +263,6 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_WebUIJavaScript,
                     int,  /* ID */
                     bool  /* If true, result is sent back. */)
 
-// Tells the render view to capture a thumbnail image of the page. The
-// render view responds with a ChromeViewHostMsg_Snapshot.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_CaptureSnapshot)
-
 // Set the content setting rules stored by the renderer.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
                      RendererContentSettingRules /* rules */)
@@ -554,10 +550,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
 // Tells the browser that we blocked a plug-in because NPAPI is not supported.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,
                     std::string /* identifer */)
-
-// Send a snapshot of the tab contents to the render host.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_Snapshot,
-                    SkBitmap /* bitmap */)
 
 // A message for an external host.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,

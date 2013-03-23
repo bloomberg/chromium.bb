@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -1752,41 +1751,42 @@ void TabsCaptureVisibleTabFunction::CopyFromBackingStoreComplete(
 
   WebContents* web_contents = NULL;
   if (!GetTabToCapture(&web_contents)) {
-    error_ = keys::kInternalVisibleTabCaptureError;
-    SendResponse(false);
+    SendInternalError();
     return;
   }
 
   // Ask the renderer for a snapshot of the tab.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-                 content::Source<WebContents>(web_contents));
-  AddRef();  // Balanced in TabsCaptureVisibleTabFunction::Observe().
-  SnapshotTabHelper::FromWebContents(web_contents)->CaptureSnapshot();
+  content::RenderWidgetHost* render_widget_host =
+      web_contents->GetRenderViewHost();
+  if (!render_widget_host) {
+    SendInternalError();
+    return;
+  }
+
+  render_widget_host->GetSnapshotFromRenderer(
+      gfx::Rect(),
+      base::Bind(
+          &TabsCaptureVisibleTabFunction::GetSnapshotFromRendererComplete,
+          this));
 }
 
 // If a backing store was not available in
 // TabsCaptureVisibleTabFunction::RunImpl, than the renderer was asked for a
-// snapshot.  Listen for a notification that the snapshot is available.
-void TabsCaptureVisibleTabFunction::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN);
-
-  const SkBitmap *screen_capture =
-      content::Details<const SkBitmap>(details).ptr();
-  const bool error = screen_capture->empty();
-
-  if (error) {
-    error_ = keys::kInternalVisibleTabCaptureError;
-    SendResponse(false);
+// snapshot.
+void TabsCaptureVisibleTabFunction::GetSnapshotFromRendererComplete(
+    bool succeeded,
+    const SkBitmap& bitmap) {
+  if (!succeeded) {
+    SendInternalError();
   } else {
     VLOG(1) << "captureVisibleTab() got image from renderer.";
-    SendResultFromBitmap(*screen_capture);
+    SendResultFromBitmap(bitmap);
   }
+}
 
-  Release();  // Balanced in TabsCaptureVisibleTabFunction::RunImpl().
+void TabsCaptureVisibleTabFunction::SendInternalError() {
+  error_ = keys::kInternalVisibleTabCaptureError;
+  SendResponse(false);
 }
 
 // Turn a bitmap of the screen into an image, set that image as the result,

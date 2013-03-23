@@ -126,7 +126,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                          const string16& jscript,
                          int id,
                          bool notify_result);
-  void OnCaptureSnapshot();
   void OnHandleMessageFromExternalHost(const std::string& message,
                                        const std::string& origin,
                                        const std::string& target);
@@ -149,10 +148,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Retrieves the text from the given frame contents, the page text up to the
   // maximum amount kMaxIndexChars will be placed into the given buffer.
   void CaptureText(WebKit::WebFrame* frame, string16* contents);
-
-  // Capture a snapshot of a view.  This is used to allow an extension
-  // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
-  bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
 
   ExternalHostBindings* GetExternalHostBindings();
 

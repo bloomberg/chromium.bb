@@ -25,6 +25,7 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/gesture_event_filter.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -391,6 +392,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
                         OnWindowlessPluginDummyWindowDestroyed)
 #endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -573,9 +575,9 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
   if (view_ && is_accelerated_compositing_active_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
-    gfx::Rect copy_rect = src_subrect.IsEmpty() ?
+    gfx::Rect accelerated_copy_rect = src_subrect.IsEmpty() ?
         gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
-    view_->CopyFromCompositingSurface(copy_rect,
+    view_->CopyFromCompositingSurface(accelerated_copy_rect,
                                       accelerated_dst_size,
                                       callback);
     return;
@@ -1247,6 +1249,39 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   WebKit::WebScreenInfo screen_info;
   GetWebScreenInfo(&screen_info);
   Send(new ViewMsg_ScreenInfoChanged(GetRoutingID(), screen_info));
+}
+
+void RenderWidgetHostImpl::GetSnapshotFromRenderer(
+    const gfx::Rect& src_subrect,
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  TRACE_EVENT0("browser", "RenderWidgetHostImpl::GetSnapshotFromRenderer");
+  pending_snapshots_.push(callback);
+
+  gfx::Rect copy_rect = src_subrect.IsEmpty() ?
+      gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
+
+  gfx::Rect copy_rect_in_pixel = ConvertRectToPixel(view_, copy_rect);
+  Send(new ViewMsg_Snapshot(GetRoutingID(), copy_rect_in_pixel));
+}
+
+void RenderWidgetHostImpl::OnSnapshot(bool success,
+                                    const SkBitmap& bitmap) {
+  if (pending_snapshots_.size() == 0) {
+    LOG(ERROR) << "RenderWidgetHostImpl::OnSnapshot: "
+                  "Received a snapshot that was not requested.";
+    return;
+  }
+
+  base::Callback<void(bool, const SkBitmap&)> callback =
+      pending_snapshots_.front();
+  pending_snapshots_.pop();
+
+  if (!success) {
+    callback.Run(success, SkBitmap());
+    return;
+  }
+
+  callback.Run(success, bitmap);
 }
 
 void RenderWidgetHostImpl::UpdateVSyncParameters(base::TimeTicks timebase,

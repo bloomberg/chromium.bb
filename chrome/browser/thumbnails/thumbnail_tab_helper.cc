@@ -73,6 +73,13 @@ void ProcessCapturedBitmap(ThumbnailingContext* context,
   algorithm->ProcessBitmap(context, base::Bind(&UpdateThumbnail), bitmap);
 }
 
+void GotSnapshotFromRenderer(base::Callback<void(const SkBitmap&)> callback,
+                             bool success,
+                             const SkBitmap& bitmap) {
+  if (success)
+    callback.Run(bitmap);
+}
+
 void AsyncProcessThumbnail(content::WebContents* web_contents,
                            scoped_refptr<ThumbnailingContext> context,
                            scoped_refptr<ThumbnailingAlgorithm> algorithm) {
@@ -82,21 +89,15 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
   if (!view)
     return;
   if (!view->IsSurfaceAvailableForCopy()) {
-#if defined(OS_WIN)
-    // On Windows XP, neither the backing store nor the compositing surface is
-    // available in the browser when accelerated compositing is active, so ask
-    // the renderer to send a snapshot for creating the thumbnail.
-    if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-      gfx::Size view_size =
-          render_widget_host->GetView()->GetViewBounds().size();
-      g_browser_process->GetRenderWidgetSnapshotTaker()->AskForSnapshot(
-          render_widget_host,
-          base::Bind(&ThumbnailingAlgorithm::ProcessBitmap,
-                     algorithm, context, base::Bind(&UpdateThumbnail)),
-          view_size,
-          view_size);
-    }
-#endif
+    // On Windows XP and possibly due to driver issues, neither the backing
+    // store nor the compositing surface is available in the browser when
+    // accelerated compositing is active, so ask the renderer to send a snapshot
+    // for creating the thumbnail.
+    render_widget_host->GetSnapshotFromRenderer(
+      gfx::Rect(),
+      base::Bind(GotSnapshotFromRenderer, base::Bind(
+          &ThumbnailingAlgorithm::ProcessBitmap,
+          algorithm, context, base::Bind(&UpdateThumbnail))));
     return;
   }
 
