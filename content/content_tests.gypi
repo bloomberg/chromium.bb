@@ -576,7 +576,6 @@
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
-            '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
           ]
         }],
         # TODO(jrg): remove the OS=="android" section?

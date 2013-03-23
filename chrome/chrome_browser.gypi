@@ -2951,11 +2951,6 @@
             ['exclude', '^browser/managed_mode/'],
           ]
         }],
-        ['enable_webrtc==1', {
-          'dependencies': [
-            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-          ],
-        }],
       ],
       'target_conditions': [
         # Need 'target_conditions' to override default filename_rules to include
