@@ -45,13 +45,17 @@ Gesture* MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   // interpreter first looks for mouse events.  If none of the mouse events
   // are found, the interpreter then looks for multi-touch events.
   result_.type = kGestureTypeNull;
+  extra_result_.type = kGestureTypeNull;
 
   InterpretMouseEvent(*state_buffer_.Get(1), *state_buffer_.Get(0), &result_);
-  if (result_.type != kGestureTypeNull)
-    current_gesture_type_ = result_.type;
 
   if (result_.type == kGestureTypeNull)
     InterpretMultitouchEvent(&result_);
+  else
+    InterpretMultitouchEvent(&extra_result_);
+
+  if (extra_result_.type != kGestureTypeNull)
+    result_.next = &extra_result_;
 
   prev_gs_fingers_ = gs_fingers_;
   prev_gesture_type_ = current_gesture_type_;
@@ -72,6 +76,8 @@ void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
                              prev_gs_fingers_)) {
     current_gesture_type_ = kGestureTypeFling;
     scroll_manager_.ComputeFling(state_buffer_, scroll_buffer_, result);
+    if (result && result->type == kGestureTypeFling)
+      result->details.fling.vx = 0.0;
   } else if (gs_fingers_.size() > 0) {
     // TODO(clchiou): For now, any finger movements are interpreted as
     // scrolling.

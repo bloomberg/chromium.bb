@@ -23,7 +23,6 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
-
   void SetHardwarePropertiesImpl(const HardwareProperties& hw_props);
 
  private:
@@ -42,6 +41,7 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
 
   Gesture prev_result_;
   Gesture result_;
+  Gesture extra_result_;
 
   ScrollManager scroll_manager_;
 };
