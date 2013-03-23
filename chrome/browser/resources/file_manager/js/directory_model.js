@@ -47,6 +47,8 @@ function DirectoryModel(root, singleSelection,
 /**
  * Fake entry to be used in currentDirEntry_ when current directory is
  * unmounted DRIVE. TODO(haruki): Support "drive/root" and "drive/other".
+ * @type {Object}
+ * @const
  * @private
  */
 DirectoryModel.fakeDriveEntry_ = {
@@ -57,13 +59,27 @@ DirectoryModel.fakeDriveEntry_ = {
 /**
  * Fake entry representing a psuedo directory, which contains Drive files
  * available offline. This entry works as a trigger to start a search using
- * DirectoryContentsDriveOffline.
- * DirectoryModel is responsible to start the search when the UI tries to open
- * this fake entry (e.g. changeDirectory()).
+ * DirectoryContentsDriveOffline. specialSearch() must be called to start a
+ * special search.
+ * @type {Object}
+ * @const
  * @private
  */
 DirectoryModel.fakeDriveOfflineEntry_ = {
   fullPath: RootDirectory.DRIVE_OFFLINE,
+  isDirectory: true
+};
+
+/**
+ * Fake entry representing a psuedo directory, which contains shared-with-me
+ * Drive files. This entry works as a trigger to start a search for
+ * shared-with-me files.
+ * @type {Object}
+ * @const
+ * @private
+ */
+DirectoryModel.fakeDriveSharedWithMeEntry_ = {
+  fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
   isDirectory: true
 };
 
@@ -1019,7 +1035,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
                      append.bind(this, 'removables'));
 
   if (this.driveEnabled_) {
-    groups.driveFakeRoots = [DirectoryModel.fakeDriveOfflineEntry_];
+    groups.driveFakeRoots = [];
     var fake = [DirectoryModel.fakeDriveEntry_];
     if (this.isDriveMounted()) {
       readSingle(DirectoryModel.fakeDriveEntry_.fullPath, 'drive', fake);
@@ -1220,7 +1236,8 @@ DirectoryModel.prototype.search = function(query,
         this.currentFileListContext_,
         this.getCurrentDirEntry(),
         this.currentDirContents_.getLastNonSearchDirectoryEntry(),
-        query);
+        query,
+        DirectoryContentsDriveSearch.SearchType.SEARCH_FULL);
   } else {
     newDirContents = new DirectoryContentsLocalSearch(
         this.currentFileListContext_, this.getCurrentDirEntry(), query);
@@ -1266,6 +1283,14 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
         DirectoryModel.fakeDriveOfflineEntry_,
         query);
     dirEntry = DirectoryModel.fakeDriveOfflineEntry_;
+  } else if (specialSearchType == RootType.DRIVE_SHARED_WITH_ME) {
+    newDirContents = new DirectoryContentsDriveSearch(
+        this.currentFileListContext_,
+        driveRoot,
+        this.currentDirContents_.getLastNonSearchDirectoryEntry(),
+        query,
+        DirectoryContentsDriveSearch.SearchType.SEARCH_SHARED_WITH_ME);
+    dirEntry = DirectoryModel.fakeDriveSharedWithMeEntry_;
   } else {
     // Unknown path.
     this.changeDirectory(thid.getDefaultDirectory());

@@ -159,6 +159,12 @@
     url('../images/files/volumes/2x/drive_offline.png') 2x);
 }
 
+*[volume-type-icon='drive_shared_with_me'] {
+  background-image: -webkit-image-set(
+    url('../images/files/volumes/drive_shared.png') 1x,
+    url('../images/files/volumes/2x/drive_shared.png') 2x);
+}
+
 *[volume-type-icon='removable'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_usb.png') 1x,
