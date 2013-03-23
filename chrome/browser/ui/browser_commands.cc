@@ -583,36 +583,36 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     browser->tab_strip_model()->InsertWebContentsAt(
         index + 1, contents_dupe, add_types);
   } else {
-    Browser* browser = NULL;
-    if (browser->is_app()) {
-      CHECK(!browser->is_type_popup());
-      CHECK(!browser->is_type_panel());
-      browser = new Browser(
-          Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
+    Browser* new_browser = NULL;
+    if (browser->is_app() &&
+        !browser->is_type_popup() &&
+        !browser->is_type_panel()) {
+      new_browser = new Browser(
+          Browser::CreateParams::CreateForApp(browser->type(),
                                               browser->app_name(),
                                               gfx::Rect(),
                                               browser->profile(),
                                               browser->host_desktop_type()));
-    } else if (browser->is_type_popup()) {
-      browser = new Browser(
-          Browser::CreateParams(Browser::TYPE_POPUP, browser->profile(),
+    } else {
+      new_browser = new Browser(
+          Browser::CreateParams(browser->type(), browser->profile(),
                                 browser->host_desktop_type()));
     }
-
     // Preserve the size of the original window. The new window has already
     // been given an offset by the OS, so we shouldn't copy the old bounds.
-    BrowserWindow* new_window = browser->window();
+    BrowserWindow* new_window = new_browser->window();
     new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
                           browser->window()->GetRestoredBounds().size()));
 
     // We need to show the browser now.  Otherwise ContainerWin assumes the
     // WebContents is invisible and won't size it.
-    browser->window()->Show();
+    new_browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    browser->tab_strip_model()->AddWebContents(contents_dupe, -1,
-                                               content::PAGE_TRANSITION_LINK,
-                                               TabStripModel::ADD_ACTIVE);
+    new_browser->tab_strip_model()->AddWebContents(
+        contents_dupe, -1,
+        content::PAGE_TRANSITION_LINK,
+        TabStripModel::ADD_ACTIVE);
   }
 
   SessionService* session_service =

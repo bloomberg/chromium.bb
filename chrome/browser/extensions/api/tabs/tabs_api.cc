@@ -1168,12 +1168,21 @@ bool TabsDuplicateFunction::RunImpl() {
   if (!has_callback())
     return true;
 
-  int new_index = tab_strip->GetIndexOfWebContents(new_contents);
+  // Duplicated tab may not be in the same window as the original, so find
+  // the window and the tab.
+  TabStripModel* new_tab_strip = NULL;
+  int new_tab_index = -1;
+  ExtensionTabUtil::GetTabStripModel(new_contents,
+                                     &new_tab_strip,
+                                     &new_tab_index);
+  if (!new_tab_strip || new_tab_index == -1) {
+    return false;
+  }
 
   // Return data about the newly created tab.
   SetResult(ExtensionTabUtil::CreateTabValue(
       new_contents,
-      tab_strip, new_index, GetExtension()));
+      new_tab_strip, new_tab_index, GetExtension()));
 
   return true;
 }
