@@ -58,6 +58,9 @@ static char** g_argv;
   label.textAlignment = UITextAlignmentCenter;
   [window_ addSubview:label];
 
+  if ([self shouldRedirectOutputToFile])
+    [self redirectOutput];
+
   // Queue up the test run.
   [self performSelector:@selector(runTests)
              withObject:nil
@@ -65,8 +68,65 @@ static char** g_argv;
   return YES;
 }
 
+// Returns true if the gtest output should be redirected to a file, then sent
+// to NSLog when compleete. This redirection is used because gtest only writes
+// output to stdout, but results must be written to NSLog in order to show up in
+// the device log that is retrieved from the device by the host.
+- (BOOL)shouldRedirectOutputToFile {
+#if !TARGET_IPHONE_SIMULATOR
+  return !base::debug::BeingDebugged();
+#endif  // TARGET_IPHONE_SIMULATOR
+  return NO;
+}
+
+// Returns the path to the directory to store gtest output files.
+- (NSString*)outputPath {
+  NSArray* searchPath =
+      NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                          NSUserDomainMask,
+                                          YES);
+  CHECK([searchPath count] > 0) << "Failed to get the Documents folder";
+  return [searchPath objectAtIndex:0];
+}
+
+// Returns the path to file that stdout is redirected to.
+- (NSString*)stdoutPath {
+  return [[self outputPath] stringByAppendingPathComponent:@"stdout.log"];
+}
+
+// Returns the path to file that stderr is redirected to.
+- (NSString*)stderrPath {
+  return [[self outputPath] stringByAppendingPathComponent:@"stderr.log"];
+}
+
+// Redirects stdout and stderr to files in the Documents folder in the app's
+// sandbox.
+- (void)redirectOutput {
+  freopen([[self stdoutPath] UTF8String], "w+", stdout);
+  freopen([[self stderrPath] UTF8String], "w+", stderr);
+}
+
+// Reads the redirected gtest output from a file and writes it to NSLog.
+- (void)writeOutputToNSLog {
+  for (NSString* path in @[ [self stdoutPath], [self stderrPath]]) {
+    NSString* content = [NSString stringWithContentsOfFile:path
+                                                  encoding:NSUTF8StringEncoding
+                                                     error:NULL];
+    NSArray* lines = [content componentsSeparatedByCharactersInSet:
+        [NSCharacterSet newlineCharacterSet]];
+
+    NSLog(@"Writing contents of %@ to NSLog", path);
+    for (NSString* line in lines) {
+      NSLog(@"%@", line);
+    }
+  }
+}
+
 - (void)runTests {
   int exitStatus = g_test_suite->Run();
+
+  if ([self shouldRedirectOutputToFile])
+    [self writeOutputToNSLog];
 
   // If a test app is too fast, it will exit before Instruments has has a
   // a chance to initialize and no test results will be seen.
