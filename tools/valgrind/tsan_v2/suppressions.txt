@@ -29,3 +29,6 @@ race:_M_rep
 
 # http://crbug.com/189177
 race:thread_manager
+
+# http://crbug.com/223352
+race:uprv_malloc_46
