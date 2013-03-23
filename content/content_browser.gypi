@@ -831,6 +831,9 @@
     'browser/renderer_host/touchpad_tap_suppression_controller_aura.cc',
     'browser/renderer_host/touchpad_tap_suppression_controller.cc',
     'browser/renderer_host/touchpad_tap_suppression_controller.h',
+    'browser/renderer_host/touchscreen_tap_suppression_controller.cc',
+    'browser/renderer_host/touchscreen_tap_suppression_controller.h',
+    'browser/renderer_host/touchscreen_tap_suppression_controller_stub.cc',
     'browser/renderer_host/ui_events_helper.cc',
     'browser/renderer_host/ui_events_helper.h',
     'browser/renderer_host/web_input_event_aura.cc',
@@ -1207,6 +1210,12 @@
       'sources!': [
         'browser/renderer_host/ui_events_helper.cc',
         'browser/renderer_host/ui_events_helper.h',
+        'browser/renderer_host/tap_suppression_controller.cc',
+        'browser/renderer_host/touchscreen_tap_suppression_controller.cc',
+      ],
+    }, {
+      'sources!': [
+        'browser/renderer_host/touchscreen_tap_suppression_controller_stub.cc',
       ],
     }],
     ['use_aura==1', {
@@ -1243,7 +1252,6 @@
         ['exclude', '^browser/renderer_host/software_output_device_win.h'],
         ['exclude', '^browser/renderer_host/software_output_device_x11.cc'],
         ['exclude', '^browser/renderer_host/software_output_device_x11.h'],
-        ['exclude', '^browser/renderer_host/tap_suppression_controller.cc'],
         ['exclude', '^browser/renderer_host/touchpad_tap_suppression_controller_aura.cc'],
       ],
     }],

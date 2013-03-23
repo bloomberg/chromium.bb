@@ -17,16 +17,27 @@ namespace content {
 class MockRenderWidgetHost;
 class RenderWidgetHostImpl;
 class TouchpadTapSuppressionController;
+class TouchscreenTapSuppressionController;
 
-// Applies a sequence of filters to WebGestureEvents instances.
-// First: the sequence is filtered for bounces. A bounce is when the finger
-// lifts from the screen briefly during an in-progress scroll. If this happens,
-// non-GestureScrollUpdate events are queued until the de-bounce interval
-// passes or another GestureScrollUpdate event occurs.
-//
-// Second: the |WebGestureEvent| instances are filtered (coalescing or
-// discarding them as required) to maximize the chance that the event stream
-// can be handled entirely by the compositor thread.
+// Maintains WebGestureEvents in a queue before forwarding them to the renderer
+// to apply a sequence of filters on them:
+// 1. Zero-velocity fling-starts from touchpad are filtered.
+// 2. The sequence is filtered for bounces. A bounce is when the finger lifts
+//    from the screen briefly during an in-progress scroll. If this happens,
+//    non-GestureScrollUpdate events are queued until the de-bounce interval
+//    passes or another GestureScrollUpdate event occurs.
+// 3. Unnecessary GestureFlingCancel events are filtered. These are
+//    GestureFlingCancels that have no corresponding GestureFlingStart in the
+//    queue.
+// 4. Taps immediately after a GestureFlingCancel (caused by the same tap) are
+//    filtered.
+// 5. Whenever possible, events in the queue are coalesced to have as few events
+//    as possible and therefore maximize the chance that the event stream can be
+//    handled entirely by the compositor thread.
+// Events in the queue are forwarded to the renderer one by one; i.e., each
+// event is sent after receiving the ACK for previous one. The only exception is
+// that if a GestureScrollUpdate is followed by a GesturePinchUpdate, they are
+// sent together.
 // TODO(rjkroege): Possibly refactor into a filter chain:
 // http://crbug.com/148443.
 class GestureEventFilter {
@@ -38,20 +49,20 @@ class GestureEventFilter {
   // |WebGestureEvent| argument to the renderer.
   bool ShouldForward(const WebKit::WebGestureEvent&);
 
-  // Indicate that the calling RenderWidgetHostImpl has received an
+  // Indicates that the calling RenderWidgetHostImpl has received an
   // acknowledgement from the renderer with state |processed| and event |type|.
   // May send events if the queue is not empty.
   void ProcessGestureAck(bool processed, int type);
 
-  // Reset the state of the filter as would be needed when the Renderer exits.
+  // Resets the state of the filter as would be needed when the renderer exits.
   void Reset();
 
-  // Set the state of the |fling_in_progress_| field to indicate that a fling is
-  // definitely not in progress.
+  // Sets the state of the |fling_in_progress_| field to indicate that a fling
+  // is definitely not in progress.
   void FlingHasBeenHalted();
 
-  // Return the |TouchpadTapSuppressionController| instance.
-  TouchpadTapSuppressionController* GetTapSuppressionController();
+  // Returns the |TouchpadTapSuppressionController| instance.
+  TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
 
   // Returns whether there are any gesture event in the queue.
   bool HasQueuedGestureEvents() const;
@@ -59,8 +70,20 @@ class GestureEventFilter {
   // Returns the last gesture event that was sent to the renderer.
   const WebKit::WebInputEvent& GetGestureEventAwaitingAck() const;
 
+  // Tries forwarding the event to the tap deferral sub-filter.
+  void ForwardGestureEventForDeferral(
+      const WebKit::WebGestureEvent& gesture_event);
+
+  // Tries forwarding the event, skipping the tap deferral sub-filter.
+  void ForwardGestureEventSkipDeferral(
+      const WebKit::WebGestureEvent& gesture_event);
+
  private:
   friend class MockRenderWidgetHost;
+
+  // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
+  // methods that are getting confusing. This should be somehow fixed. Maybe
+  // while refactoring GEF: http://crbug.com/148443.
 
   // Invoked on the expiration of the timer to release a deferred
   // GestureTapDown to the renderer.
@@ -75,7 +98,7 @@ class GestureEventFilter {
   bool ShouldDiscardFlingCancelEvent(
     const WebKit::WebGestureEvent& gesture_event);
 
-  // Return true if the only event in the queue is the current event and
+  // Returns |true| if the only event in the queue is the current event and
   // hence that event should be handled now.
   bool ShouldHandleEventNow();
 
@@ -84,14 +107,30 @@ class GestureEventFilter {
   void MergeOrInsertScrollAndPinchEvent(
        const WebKit::WebGestureEvent& gesture_event);
 
+  // Sub-filter for removing zero-velocity fling-starts from touchpad.
+  bool ShouldForwardForZeroVelocityFlingStart(
+      const WebKit::WebGestureEvent& gesture_event);
+
   // Sub-filter for removing bounces from in-progress scrolls.
   bool ShouldForwardForBounceReduction(
       const WebKit::WebGestureEvent& gesture_event);
 
-  // Sub-filter for removing unnecessary GestureFlingCancels and deferring
-  // GestureTapDowns.
+  // Sub-filter for removing unnecessary GestureFlingCancels.
+  bool ShouldForwardForGFCFiltering(
+      const WebKit::WebGestureEvent& gesture_event);
+
+  // Sub-filter for suppressing taps immediately after a GestureFlingCancel.
+  bool ShouldForwardForTapSuppression(
+      const WebKit::WebGestureEvent& gesture_event);
+
+  // Sub-filter for deferring GestureTapDowns.
   bool ShouldForwardForTapDeferral(
       const WebKit::WebGestureEvent& gesture_event);
+
+  // Puts the events in a queue to forward them one by one; i.e., forward them
+  // whenever ACK for previous event is received. This queue also tries to
+  // coalesce events as much as possible.
+  bool ShouldForwardForCoalescing(const WebKit::WebGestureEvent& gesture_event);
 
   // Whether the event_in_queue is GesturePinchUpdate or
   // GestureScrollUpdate and it has the same modifiers as the
@@ -126,10 +165,19 @@ class GestureEventFilter {
   // Timer to release a previously deferred GestureTapDown event.
   base::OneShotTimer<GestureEventFilter> send_gtd_timer_;
 
-  // An object tracking the state of touchpad action on the delivery of mouse
-  // events to the renderer to filter mouse  immediately after a touchpad
-  // fling canceling tap.
-  scoped_ptr<TouchpadTapSuppressionController> tap_suppression_controller_;
+  // An object tracking the state of touchpad on the delivery of mouse events to
+  // the renderer to filter mouse immediately after a touchpad fling canceling
+  // tap.
+  // TODO(mohsen): Move touchpad tap suppression out of GestureEventFilter since
+  // GEF is meant to only be used for touchscreen gesture events.
+  scoped_ptr<TouchpadTapSuppressionController>
+      touchpad_tap_suppression_controller_;
+
+  // An object tracking the state of touchscreen on the delivery of gesture tap
+  // events to the renderer to filter taps immediately after a touchscreen fling
+  // canceling tap.
+  scoped_ptr<TouchscreenTapSuppressionController>
+      touchscreen_tap_suppression_controller_;
 
   typedef std::deque<WebKit::WebGestureEvent> GestureEventQueue;
 

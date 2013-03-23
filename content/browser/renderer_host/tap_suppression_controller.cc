@@ -34,7 +34,6 @@ void TapSuppressionController::GestureFlingCancelAck(bool processed) {
   base::TimeTicks event_time = Now();
   switch (state_) {
     case NOTHING:
-      NOTREACHED() << "GFC_ACK without a GFC";
       break;
     case GFC_IN_PROGRESS:
       if (processed)

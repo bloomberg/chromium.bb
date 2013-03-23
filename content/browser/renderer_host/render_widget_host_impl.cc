@@ -920,11 +920,11 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   }
 
   if (mouse_event.type == WebInputEvent::MouseDown &&
-      gesture_event_filter_->GetTapSuppressionController()->
+      gesture_event_filter_->GetTouchpadTapSuppressionController()->
           ShouldDeferMouseDown(mouse_event))
       return;
   if (mouse_event.type == WebInputEvent::MouseUp &&
-      gesture_event_filter_->GetTapSuppressionController()->
+      gesture_event_filter_->GetTouchpadTapSuppressionController()->
           ShouldSuppressMouseUp())
       return;
 
@@ -1002,7 +1002,7 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
 }
 
 // Forwards MouseEvent without passing it through
-// TouchpadTapSuppressionController
+// TouchpadTapSuppressionController.
 void RenderWidgetHostImpl::ForwardMouseEventImmediately(
     const WebMouseEvent& mouse_event) {
   TRACE_EVENT2("renderer_host",
