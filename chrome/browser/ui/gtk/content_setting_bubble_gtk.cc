@@ -257,6 +257,15 @@ void ContentSettingBubbleGtk::BuildBubble() {
       gtk_menu->menu.reset(new MenuGtk(NULL, gtk_menu->menu_model.get()));
       media_menus_[button] = gtk_menu;
 
+      if (!gtk_menu->menu_model->GetItemCount()) {
+        // Show a "None available" title and grey out the menu when there is no
+        // available device.
+        UpdateMenuLabel(
+            gtk_menu->type,
+            l10n_util::GetStringUTF8(IDS_MEDIA_MENU_NO_DEVICE_TITLE));
+        gtk_widget_set_sensitive(button, FALSE);
+      }
+
       // Use the longest width of the menus as the width of the menu buttons.
       GtkRequisition menu_req;
       gtk_widget_size_request(gtk_menu->menu->widget(), &menu_req);

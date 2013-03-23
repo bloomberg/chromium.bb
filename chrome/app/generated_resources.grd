@@ -8135,6 +8135,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_SELECTED_CAMERA_LABEL" desc="The label of the 'camera device' select menu">
         Camera:
       </message>
+      <message name="IDS_MEDIA_MENU_NO_DEVICE_TITLE" desc="The title of the media select menu if there is no microphone or camera available on the machine">
+        None available
+      </message>
       <message name="IDS_MEDIA_PEPPER_FLASH_DEFAULT_DIVERGED_LABEL" desc="The label in Content Settings dialog informing that Pepper Flash uses different default permission for camera and microphone than the default media permission.">
         Adobe Flash Player camera and microphone settings are different.
       </message>

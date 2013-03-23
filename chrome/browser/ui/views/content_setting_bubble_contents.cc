@@ -53,9 +53,8 @@ const int kMaxContentsWidth = 500;
 // narrow bubbles with lots of line-wrapping.
 const int kMinMultiLineContentsWidth = 250;
 
-// The minimum and maximum width of the media menu buttons.
+// The minimum width of the media menu buttons.
 const int kMinMediaMenuButtonWidth = 100;
-const int kMaxMediaMenuButtonWidth = 600;
 
 }
 
@@ -307,7 +306,7 @@ void ContentSettingBubbleContents::Init() {
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
       views::MenuButton* menu_button = new views::MenuButton(
-          NULL, UTF8ToUTF16((i->second.selected_device.name)), this, false);
+          NULL, UTF8ToUTF16((i->second.selected_device.name)), this, true);
       menu_button->set_alignment(views::TextButton::ALIGN_LEFT);
       menu_button->set_border(
           new views::TextButtonNativeThemeBorder(menu_button));
@@ -321,6 +320,14 @@ void ContentSettingBubbleContents::Init() {
                      base::Unretained(this))));
       media_menus_[menu_button] = menu_view;
 
+      if (!menu_view->menu_model->GetItemCount()) {
+        // Show a "None available" title and grey out the menu when there is no
+        // available device.
+        menu_button->SetText(
+            l10n_util::GetStringUTF16(IDS_MEDIA_MENU_NO_DEVICE_TITLE));
+        menu_button->SetEnabled(false);
+      }
+
       // Use the longest width of the menus as the width of the menu buttons.
       menu_width = std::max(menu_width,
                             GetPreferredMediaMenuWidth(
@@ -332,10 +339,9 @@ void ContentSettingBubbleContents::Init() {
       bubble_content_empty = false;
     }
 
-    // Make sure the width is within [kMinMediaMenuButtonWidth,
-    // kMaxMediaMenuButtonWidth].
+    // Make sure the width is at least kMinMediaMenuButtonWidth. The
+    // maximum width will be clamped by kMaxContentsWidth of the view.
     menu_width = std::max(kMinMediaMenuButtonWidth, menu_width);
-    menu_width = std::min(kMaxMediaMenuButtonWidth, menu_width);
 
     // Set all the menu buttons to the width we calculated above.
     for (MediaMenuPartsMap::const_iterator i = media_menus_.begin();
