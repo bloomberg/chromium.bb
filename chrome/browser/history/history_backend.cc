@@ -1960,19 +1960,19 @@ void HistoryBackend::MergeFavicon(
 
   // If there is already a favicon bitmap of |pixel_size| at |icon_url|,
   // replace it.
+  bool bitmap_identical = false;
   bool replaced_bitmap = false;
   for (size_t i = 0; i < bitmap_id_sizes.size(); ++i) {
     if (bitmap_id_sizes[i].pixel_size == pixel_size) {
       if (IsFaviconBitmapDataEqual(bitmap_id_sizes[i].bitmap_id, bitmap_data)) {
         thumbnail_db_->SetFaviconBitmapLastUpdateTime(
             bitmap_id_sizes[i].bitmap_id, base::Time::Now());
-        // Return early as merging did not alter the bitmap data.
-        ScheduleCommit();
-        return;
+        bitmap_identical = true;
+      } else {
+        thumbnail_db_->SetFaviconBitmap(bitmap_id_sizes[i].bitmap_id,
+            bitmap_data, base::Time::Now());
+        replaced_bitmap = true;
       }
-      thumbnail_db_->SetFaviconBitmap(bitmap_id_sizes[i].bitmap_id, bitmap_data,
-          base::Time::Now());
-      replaced_bitmap = true;
       break;
     }
   }
@@ -1983,7 +1983,7 @@ void HistoryBackend::MergeFavicon(
   for (size_t i = 0; i < bitmap_id_sizes.size(); ++i)
     favicon_sizes.push_back(bitmap_id_sizes[i].pixel_size);
 
-  if (!replaced_bitmap) {
+  if (!replaced_bitmap && !bitmap_identical) {
     // Set the preexisting favicon bitmaps as expired as the preexisting favicon
     // bitmaps are not consistent with the merged in data.
     thumbnail_db_->SetFaviconOutOfDate(favicon_id);
@@ -2066,15 +2066,16 @@ void HistoryBackend::MergeFavicon(
 
   // Update the favicon mappings such that only |icon_url| is mapped to
   // |page_url|.
+  bool mapping_changed = false;
   if (icon_mappings.size() != 1 || icon_mappings[0].icon_url != icon_url) {
     std::vector<FaviconID> favicon_ids;
     favicon_ids.push_back(favicon_id);
     SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_ids);
+    mapping_changed = true;
   }
 
-  // Send notification to the UI as at least a favicon bitmap was added or
-  // replaced.
-  SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  if (mapping_changed || !bitmap_identical)
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
   ScheduleCommit();
 }
 
