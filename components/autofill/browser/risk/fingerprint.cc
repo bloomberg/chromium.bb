@@ -241,19 +241,10 @@ FingerprintDataLoader::FingerprintDataLoader(
       callback_(callback) {
   DCHECK(!install_time_.is_null());
 
-  // TODO(isherman): Investigating http://crbug.com/174296
-  LOG(WARNING) << "Loading fingerprint data.";
-
   // Load GPU data if needed.
   if (!gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
-    // TODO(isherman): Investigating http://crbug.com/174296
-    LOG(WARNING) << "Loading GPU data.";
-
     gpu_data_manager_->AddObserver(this);
     gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
-  } else {
-    // TODO(isherman): Investigating http://crbug.com/174296
-    LOG(WARNING) << "GPU data already loaded.";
   }
 
   // Load plugin data.
@@ -269,23 +260,14 @@ FingerprintDataLoader::~FingerprintDataLoader() {
 }
 
 void FingerprintDataLoader::OnGpuInfoUpdate() {
-  if (!gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
-    // TODO(isherman): Investigating http://crbug.com/174296
-    LOG(WARNING) << "OnGpuInfoUpdate() called without complete GPU info.";
+  if (!gpu_data_manager_->IsCompleteGpuInfoAvailable())
     return;
-  }
-
-  // TODO(isherman): Investigating http://crbug.com/174296
-  LOG(WARNING) << "Loaded GPU data.";
 
   gpu_data_manager_->RemoveObserver(this);
   MaybeFillFingerprint();
 }
 
 void FingerprintDataLoader::OnGotFonts(scoped_ptr<base::ListValue> fonts) {
-  // TODO(isherman): Investigating http://crbug.com/174296
-  LOG(WARNING) << "Loaded fonts.";
-
   DCHECK(!fonts_);
   fonts_.reset(fonts.release());
   MaybeFillFingerprint();
@@ -293,9 +275,6 @@ void FingerprintDataLoader::OnGotFonts(scoped_ptr<base::ListValue> fonts) {
 
 void FingerprintDataLoader::OnGotPlugins(
     const std::vector<webkit::WebPluginInfo>& plugins) {
-  // TODO(isherman): Investigating http://crbug.com/174296
-  LOG(WARNING) << "Loaded plugins.";
-
   DCHECK(!has_loaded_plugins_);
   has_loaded_plugins_ = true;
   plugins_ = plugins;
@@ -303,16 +282,6 @@ void FingerprintDataLoader::OnGotPlugins(
 }
 
 void FingerprintDataLoader::MaybeFillFingerprint() {
-  // TODO(isherman): Investigating http://crbug.com/174296
-  LOG(WARNING) << "GPU data: "
-               << (gpu_data_manager_->IsCompleteGpuInfoAvailable() ?
-                       "loaded" :
-                       "waiting");
-  LOG(WARNING) << "Fonts: "
-               << (fonts_ ? "loaded" : "waiting");
-  LOG(WARNING) << "Plugins: "
-               << (has_loaded_plugins_ ? "loaded" : "waiting");
-
   // If all of the data has been loaded, fill the fingerprint and clean up.
   if (gpu_data_manager_->IsCompleteGpuInfoAvailable() &&
       fonts_ &&
