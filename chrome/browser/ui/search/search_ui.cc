@@ -28,16 +28,9 @@ SkColor GetDetachedBookmarkBarSeparatorColor(
         ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
   }
 
-  SkColor separator_color = SkColorSetARGB(128, 0, 0, 0);
-  // If theme is too dark to use 0.5 black for separator, use 0.5 readable
-  // color, which is usually 0.5 white.
-  SkColor themed_background_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
-  SkColor readable_color = color_utils::GetReadableColor(
-      separator_color, themed_background_color);
-  if (readable_color != separator_color)
-    separator_color = SkColorSetA(readable_color, 128);
-  return separator_color;
+  // Use 50% of bookmark text color as separator color.
+  return SkColorSetA(
+      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT), 128);
 }
 
 }  // namespace search
