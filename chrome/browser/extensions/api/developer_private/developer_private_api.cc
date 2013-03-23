@@ -72,6 +72,16 @@ GURL ToDataURL(const base::FilePath& path) {
 
 namespace extensions {
 
+namespace AllowFileAccess = api::developer_private::AllowFileAccess;
+namespace AllowIncognito = api::developer_private::AllowIncognito;
+namespace ChoosePath = api::developer_private::ChoosePath;
+namespace Enable = api::developer_private::Enable;
+namespace GetItemsInfo = api::developer_private::GetItemsInfo;
+namespace Inspect = api::developer_private::Inspect;
+namespace PackDirectory = api::developer_private::PackDirectory;
+namespace Reload = api::developer_private::Reload;
+namespace Restart = api::developer_private::Restart;
+
 DeveloperPrivateAPI* DeveloperPrivateAPI::Get(Profile* profile) {
   return DeveloperPrivateAPIFactory::GetForProfile(profile);
 }
@@ -381,17 +391,17 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
 DeveloperPrivateGetItemsInfoFunction::~DeveloperPrivateGetItemsInfoFunction() {}
 
 bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
-  std::string extension_id;
-  bool allow = false;
+  scoped_ptr<AllowFileAccess::Params> params(
+      AllowFileAccess::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
   EXTENSION_FUNCTION_VALIDATE(user_gesture_);
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &allow));
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   extensions::ManagementPolicy* management_policy =
       system->management_policy();
   ExtensionService* service = profile()->GetExtensionService();
-  const Extension* extension = service->GetInstalledExtension(extension_id);
+  const Extension* extension = service->GetInstalledExtension(params->item_id);
   bool result = true;
 
   if (!extension) {
@@ -402,7 +412,7 @@ bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
                << extension->id();
     result = false;
   } else {
-    service->SetAllowFileAccess(extension, allow);
+    service->SetAllowFileAccess(extension, params->allow);
     result = true;
   }
 
@@ -413,20 +423,18 @@ DeveloperPrivateAllowFileAccessFunction::
     ~DeveloperPrivateAllowFileAccessFunction() {}
 
 bool DeveloperPrivateAllowIncognitoFunction::RunImpl() {
-  std::string extension_id;
-  bool allow = false;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &allow));
+  scoped_ptr<AllowIncognito::Params> params(
+      AllowIncognito::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   ExtensionService* service = profile()->GetExtensionService();
-  const Extension* extension = service->GetInstalledExtension(extension_id);
+  const Extension* extension = service->GetInstalledExtension(params->item_id);
   bool result = true;
 
-  if (!extension) {
+  if (!extension)
     result = false;
-  } else {
-    service->SetIsIncognitoEnabled(extension->id(), allow);
-  }
+  else
+    service->SetIsIncognitoEnabled(extension->id(), params->allow);
 
   return result;
 }
@@ -436,22 +444,24 @@ DeveloperPrivateAllowIncognitoFunction::
 
 
 bool DeveloperPrivateReloadFunction::RunImpl() {
-  std::string extension_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  scoped_ptr<Reload::Params> params(Reload::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
   ExtensionService* service = profile()->GetExtensionService();
-  CHECK(!extension_id.empty());
-  service->ReloadExtension(extension_id);
+  CHECK(!params->item_id.empty());
+  service->ReloadExtension(params->item_id);
   return true;
 }
 
 DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
 
 bool DeveloperPrivateRestartFunction::RunImpl() {
-  std::string extension_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  scoped_ptr<Restart::Params> params(Restart::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
   ExtensionService* service = profile()->GetExtensionService();
-  EXTENSION_FUNCTION_VALIDATE(!extension_id.empty());
-  service->RestartExtension(extension_id);
+  EXTENSION_FUNCTION_VALIDATE(!params->item_id.empty());
+  service->RestartExtension(params->item_id);
   return true;
 }
 
@@ -460,10 +470,10 @@ DeveloperPrivateRestartFunction::~DeveloperPrivateRestartFunction() {}
 DeveloperPrivateEnableFunction::DeveloperPrivateEnableFunction() {}
 
 bool DeveloperPrivateEnableFunction::RunImpl() {
-  std::string extension_id;
-  bool enable = false;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &enable));
+  scoped_ptr<Enable::Params> params(Enable::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  std::string extension_id = params->item_id;
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   extensions::ManagementPolicy* management_policy =
@@ -478,7 +488,7 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
     return false;
   }
 
-  if (enable) {
+  if (params->enable) {
     extensions::ExtensionPrefs* prefs = service->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
@@ -661,16 +671,19 @@ void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
 }
 
 bool DeveloperPrivatePackDirectoryFunction::RunImpl() {
-  int flags;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &item_path_str_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &key_path_str_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &flags));
+  scoped_ptr<PackDirectory::Params> params(
+      PackDirectory::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
- base::FilePath root_directory =
-     base::FilePath::FromWStringHack(UTF8ToWide(item_path_str_));
+  int flags = params->flags;
+  item_path_str_ = params->path;
+  key_path_str_ = params->private_key_path;
 
- base::FilePath key_file =
-     base::FilePath::FromWStringHack(UTF8ToWide(key_path_str_));
+  base::FilePath root_directory =
+      base::FilePath::FromWStringHack(UTF8ToWide(item_path_str_));
+
+  base::FilePath key_file =
+      base::FilePath::FromWStringHack(UTF8ToWide(key_path_str_));
 
   developer::PackDirectoryResponse response;
   if (root_directory.empty()) {
