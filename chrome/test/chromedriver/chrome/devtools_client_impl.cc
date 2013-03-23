@@ -32,6 +32,19 @@ Status ParseInspectorError(const std::string& error_json) {
   return Status(kUnknownError, "unhandled inspector error: " + error_json);
 }
 
+class ScopedIncrementer {
+ public:
+  explicit ScopedIncrementer(int* count) : count_(count) {
+    (*count_)++;
+  }
+  ~ScopedIncrementer() {
+    (*count_)--;
+  }
+
+ private:
+  int* count_;
+};
+
 }  // namespace
 
 namespace internal {
@@ -54,7 +67,9 @@ DevToolsClientImpl::DevToolsClientImpl(
       url_(url),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
-      next_id_(1) {}
+      unnotified_event_(NULL),
+      next_id_(1),
+      stack_count_(0) {}
 
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
@@ -65,7 +80,9 @@ DevToolsClientImpl::DevToolsClientImpl(
       url_(url),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(parser_func),
-      next_id_(1) {}
+      unnotified_event_(NULL),
+      next_id_(1),
+      stack_count_(0) {}
 
 DevToolsClientImpl::~DevToolsClientImpl() {
   for (ResponseMap::iterator iter = cmd_response_map_.begin();
@@ -81,20 +98,26 @@ void DevToolsClientImpl::SetParserFuncForTesting(
 }
 
 Status DevToolsClientImpl::ConnectIfNecessary() {
-  if (!socket_->IsConnected()) {
-    if (!socket_->Connect(url_)) {
-      // Try to close devtools frontend and then reconnect.
-      Status status = frontend_closer_func_.Run();
-      if (status.IsError())
-        return status;
-      if (!socket_->Connect(url_))
-        return Status(kDisconnected, "unable to connect to renderer");
-    }
+  if (stack_count_)
+    return Status(kUnknownError, "cannot connect when nested");
 
-    // OnConnected notification will be sent out in method ReceiveNextMessage.
-    listeners_for_on_connected_ = listeners_;
+  if (socket_->IsConnected())
+    return Status(kOk);
+
+  if (!socket_->Connect(url_)) {
+    // Try to close devtools frontend and then reconnect.
+    Status status = frontend_closer_func_.Run();
+    if (status.IsError())
+      return status;
+    if (!socket_->Connect(url_))
+      return Status(kDisconnected, "unable to connect to renderer");
   }
-  return Status(kOk);
+
+  unnotified_connect_listeners_ = listeners_;
+  // Notify all listeners of the new connection. Do this now so that any errors
+  // that occur are reported now instead of later during some unrelated call.
+  // Also gives listeners a chance to send commands before other clients.
+  return EnsureListenersNotifiedOfConnect();
 }
 
 Status DevToolsClientImpl::SendCommand(
@@ -128,14 +151,6 @@ Status DevToolsClientImpl::HandleEventsUntil(
   if (!socket_->IsConnected())
     return Status(kDisconnected, "not connected to DevTools");
 
-  Status status = EnsureAllListenersNotifiedOfConnection();
-  if (status.IsError())
-    return status;
-
-  internal::InspectorMessageType type;
-  internal::InspectorEvent event;
-  internal::InspectorCommandResponse response;
-
   while (true) {
     if (!socket_->HasNextMessage()) {
       bool is_condition_met;
@@ -146,7 +161,7 @@ Status DevToolsClientImpl::HandleEventsUntil(
         return Status(kOk);
     }
 
-    status = ReceiveNextMessage(-1, &type, &event, &response);
+    Status status = ReceiveNextMessage(-1);
     if (status.IsError())
       return status;
   }
@@ -169,18 +184,10 @@ Status DevToolsClientImpl::SendCommandInternal(
   base::JSONWriter::Write(&command, &message);
   if (!socket_->Send(message))
     return Status(kDisconnected, "unable to send message to renderer");
-  return ReceiveCommandResponse(command_id, result);
-}
 
-Status DevToolsClientImpl::ReceiveCommandResponse(
-    int command_id,
-    scoped_ptr<base::DictionaryValue>* result) {
-  internal::InspectorMessageType type;
-  internal::InspectorEvent event;
-  internal::InspectorCommandResponse response;
   cmd_response_map_[command_id] = NULL;
   while (!HasReceivedCommandResponse(command_id)) {
-    Status status = ReceiveNextMessage(command_id, &type, &event, &response);
+    Status status = ReceiveNextMessage(command_id);
     if (status.IsError())
       return status;
   }
@@ -189,35 +196,47 @@ Status DevToolsClientImpl::ReceiveCommandResponse(
   return Status(kOk);
 }
 
-Status DevToolsClientImpl::ReceiveNextMessage(
-    int expected_id,
-    internal::InspectorMessageType* type,
-    internal::InspectorEvent* event,
-    internal::InspectorCommandResponse* response) {
-  Status status = EnsureAllListenersNotifiedOfConnection();
+Status DevToolsClientImpl::ReceiveNextMessage(int expected_id) {
+  ScopedIncrementer increment_stack_count(&stack_count_);
+
+  Status status = EnsureListenersNotifiedOfConnect();
+  if (status.IsError())
+    return status;
+  status = EnsureListenersNotifiedOfEvent();
   if (status.IsError())
     return status;
 
-  // The message might be received already when processing other commands sent
-  // from DevToolsEventListener::OnConnected.
+  // The command response may have already been received while notifying
+  // listeners.
   if (HasReceivedCommandResponse(expected_id))
     return Status(kOk);
 
   std::string message;
   if (!socket_->ReceiveNextMessage(&message))
     return Status(kDisconnected, "unable to receive message from renderer");
-  if (!parser_func_.Run(message, expected_id, type, event, response))
+
+  internal::InspectorMessageType type;
+  internal::InspectorEvent event;
+  internal::InspectorCommandResponse response;
+  if (!parser_func_.Run(message, expected_id, &type, &event, &response))
     return Status(kUnknownError, "bad inspector message: " + message);
-  if (*type == internal::kEventMessageType)
-    return NotifyEventListeners(event->method, *event->params);
-  if (*type == internal::kCommandResponseMessageType) {
-    if (cmd_response_map_.count(response->id) == 0) {
+  if (type == internal::kEventMessageType) {
+    unnotified_event_listeners_ = listeners_;
+    unnotified_event_ = &event;
+    Status status = EnsureListenersNotifiedOfEvent();
+    unnotified_event_ = NULL;
+    if (status.IsError())
+      return status;
+    if (event.method == "Inspector.detached")
+      return Status(kDisconnected, "received Inspector.detached event");
+  } else if (type == internal::kCommandResponseMessageType) {
+    if (cmd_response_map_.count(response.id) == 0) {
       return Status(kUnknownError, "unexpected command message");
-    } else if (response->result) {
-      cmd_response_map_[response->id] = response->result.release();
+    } else if (response.result) {
+      cmd_response_map_[response.id] = response.result.release();
     } else {
-      cmd_response_map_.erase(response->id);
-      return ParseInspectorError(response->error);
+      cmd_response_map_.erase(response.id);
+      return ParseInspectorError(response.error);
     }
   }
   return Status(kOk);
@@ -228,25 +247,22 @@ bool DevToolsClientImpl::HasReceivedCommandResponse(int cmd_id) {
       && cmd_response_map_[cmd_id] != NULL;
 }
 
-Status DevToolsClientImpl::NotifyEventListeners(
-    const std::string& method,
-    const base::DictionaryValue& params) {
-  for (std::list<DevToolsEventListener*>::iterator iter = listeners_.begin();
-       iter != listeners_.end(); ++iter) {
-    (*iter)->OnEvent(method, params);
-  }
-  if (method == "Inspector.detached")
-    return Status(kDisconnected, "received Inspector.detached event");
-  return Status(kOk);
-}
-
-Status DevToolsClientImpl::EnsureAllListenersNotifiedOfConnection() {
-  while (!listeners_for_on_connected_.empty()) {
-    DevToolsEventListener* listener = listeners_for_on_connected_.front();
-    listeners_for_on_connected_.pop_front();
+Status DevToolsClientImpl::EnsureListenersNotifiedOfConnect() {
+  while (unnotified_connect_listeners_.size()) {
+    DevToolsEventListener* listener = unnotified_connect_listeners_.front();
+    unnotified_connect_listeners_.pop_front();
     Status status = listener->OnConnected();
     if (status.IsError())
       return status;
+  }
+  return Status(kOk);
+}
+
+Status DevToolsClientImpl::EnsureListenersNotifiedOfEvent() {
+  while (unnotified_event_listeners_.size()) {
+    DevToolsEventListener* listener = unnotified_event_listeners_.front();
+    unnotified_event_listeners_.pop_front();
+    listener->OnEvent(unnotified_event_->method, *unnotified_event_->params);
   }
   return Status(kOk);
 }

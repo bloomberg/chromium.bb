@@ -88,27 +88,22 @@ class DevToolsClientImpl : public DevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result);
-  Status ReceiveCommandResponse(
-      int command_id,
-      scoped_ptr<base::DictionaryValue>* result);
-  Status ReceiveNextMessage(
-      int expected_id,
-      internal::InspectorMessageType* type,
-      internal::InspectorEvent* event,
-      internal::InspectorCommandResponse* response);
+  Status ReceiveNextMessage(int expected_id);
   bool HasReceivedCommandResponse(int cmd_id);
-  Status NotifyEventListeners(const std::string& method,
-                              const base::DictionaryValue& params);
-  Status EnsureAllListenersNotifiedOfConnection();
+  Status EnsureListenersNotifiedOfConnect();
+  Status EnsureListenersNotifiedOfEvent();
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
   FrontendCloserFunc frontend_closer_func_;
   ParserFunc parser_func_;
   std::list<DevToolsEventListener*> listeners_;
-  std::list<DevToolsEventListener*> listeners_for_on_connected_;
+  std::list<DevToolsEventListener*> unnotified_connect_listeners_;
+  std::list<DevToolsEventListener*> unnotified_event_listeners_;
+  internal::InspectorEvent* unnotified_event_;
   typedef std::map<int, base::DictionaryValue*> ResponseMap;
   ResponseMap cmd_response_map_;
   int next_id_;
+  int stack_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClientImpl);
 };

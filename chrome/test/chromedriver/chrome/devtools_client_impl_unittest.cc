@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
@@ -756,6 +757,97 @@ TEST(DevToolsClientImpl, ProcessOnConnectedFirstOnHandleEventsUntil) {
   listener1.VerifyCalled();
   listener2.VerifyCalled();
   listener3.VerifyCalled();
+}
+
+namespace {
+
+class MockSyncWebSocket5 : public SyncWebSocket {
+ public:
+  MockSyncWebSocket5() : request_no_(0) {}
+  virtual ~MockSyncWebSocket5() {}
+
+  virtual bool IsConnected() OVERRIDE {
+    return true;
+  }
+
+  virtual bool Connect(const GURL& url) OVERRIDE {
+    return true;
+  }
+
+  virtual bool Send(const std::string& message) OVERRIDE {
+    return true;
+  }
+
+  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+    if (request_no_ == 0) {
+      *message = "{\"method\": \"m\", \"params\": {}}";
+    } else {
+      *message = base::StringPrintf(
+          "{\"result\": {}, \"id\": %d}", request_no_);
+    }
+    request_no_++;
+    return true;
+  }
+
+  virtual bool HasNextMessage() OVERRIDE {
+    return false;
+  }
+
+ private:
+  int request_no_;
+};
+
+class OtherEventListener : public DevToolsEventListener {
+ public:
+  OtherEventListener() : received_event_(false) {}
+  virtual ~OtherEventListener() {}
+
+  virtual Status OnConnected() OVERRIDE {
+    return Status(kOk);
+  }
+  virtual void OnEvent(const std::string& method,
+                       const base::DictionaryValue& params) OVERRIDE {
+    received_event_ = true;
+  }
+
+  bool received_event_;
+};
+
+class OnEventListener : public DevToolsEventListener {
+ public:
+  OnEventListener(DevToolsClient* client,
+                  OtherEventListener* other_listener)
+      : client_(client),
+        other_listener_(other_listener) {}
+  virtual ~OnEventListener() {}
+
+  virtual Status OnConnected() OVERRIDE {
+    return Status(kOk);
+  }
+
+  virtual void OnEvent(const std::string& method,
+                       const base::DictionaryValue& params) OVERRIDE {
+    client_->SendCommand("method", params);
+    EXPECT_TRUE(other_listener_->received_event_);
+  }
+
+ private:
+  DevToolsClient* client_;
+  OtherEventListener* other_listener_;
+};
+
+}  // namespace
+
+TEST(DevToolsClientImpl, ProcessOnEventFirst) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket5>);
+  DevToolsClientImpl client(factory, "http://url", base::Bind(&CloserFunc));
+  OtherEventListener listener2;
+  OnEventListener listener1(&client, &listener2);
+  client.AddListener(&listener1);
+  client.AddListener(&listener2);
+  base::DictionaryValue params;
+  EXPECT_EQ(kOk, client.SendCommand("method", params).code());
 }
 
 namespace {
