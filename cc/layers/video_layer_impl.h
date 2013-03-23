@@ -66,7 +66,6 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   bool SetupFramePlanes(ResourceProvider* resource_provider);
   void FreeFramePlanes(ResourceProvider* resource_provider);
   void FreeUnusedFramePlanes(ResourceProvider* resource_provider);
-  size_t NumPlanes() const;
 
   scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl_;
 

@@ -366,19 +366,18 @@ void VideoLayerImpl::FramePlane::FreeData(ResourceProvider* resource_provider) {
 }
 
 // Convert media::VideoFrame::Format to OpenGL enum values.
-static GLenum ConvertVFCFormatToGLenum(const media::VideoFrame& frame) {
-  switch (frame.format()) {
+static GLenum ConvertVFCFormatToGLenum(const media::VideoFrame::Format format) {
+  switch (format) {
     case media::VideoFrame::YV12:
     case media::VideoFrame::YV16:
       return GL_LUMINANCE;
+    case media::VideoFrame::RGB32:
+      return GL_RGBA;
     case media::VideoFrame::NATIVE_TEXTURE:
-      return frame.texture_target();
 #if defined(GOOGLE_TV)
     case media::VideoFrame::HOLE:
-      return GL_INVALID_VALUE;
 #endif
     case media::VideoFrame::INVALID:
-    case media::VideoFrame::RGB32:
     case media::VideoFrame::EMPTY:
     case media::VideoFrame::I420:
       NOTREACHED();
@@ -387,23 +386,13 @@ static GLenum ConvertVFCFormatToGLenum(const media::VideoFrame& frame) {
   return GL_INVALID_VALUE;
 }
 
-size_t VideoLayerImpl::NumPlanes() const {
-  if (!frame_)
-    return 0;
-
-  if (convert_yuv_)
-    return 1;
-
-  return media::VideoFrame::NumPlanes(frame_->format());
-}
-
 bool VideoLayerImpl::SetupFramePlanes(ResourceProvider* resource_provider) {
-  const size_t plane_count = NumPlanes();
+  const size_t plane_count = media::VideoFrame::NumPlanes(format_);
   if (!plane_count)
     return true;
 
   const int max_texture_size = resource_provider->max_texture_size();
-  const GLenum pixel_format = ConvertVFCFormatToGLenum(*frame_);
+  const GLenum pixel_format = ConvertVFCFormatToGLenum(format_);
   for (size_t plane_index = 0; plane_index < plane_count; ++plane_index) {
     VideoLayerImpl::FramePlane* plane = &frame_planes_[plane_index];
 
@@ -464,7 +453,8 @@ void VideoLayerImpl::FreeFramePlanes(ResourceProvider* resource_provider) {
 }
 
 void VideoLayerImpl::FreeUnusedFramePlanes(ResourceProvider* resource_provider) {
-  size_t first_unused_plane = NumPlanes();
+  size_t first_unused_plane = (frame_ ? media::VideoFrame::NumPlanes(format_)
+                                      : 0);
   for (size_t i = first_unused_plane; i < media::VideoFrame::kMaxPlanes; ++i)
     frame_planes_[i].FreeData(resource_provider);
 }
