@@ -695,6 +695,8 @@ void DnsConfigServiceWin::ReadNow() {
 bool DnsConfigServiceWin::StartWatching() {
   // TODO(szym): re-start watcher if that makes sense. http://crbug.com/116139
   watcher_.reset(new Watcher(this));
+  UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus", DNS_CONFIG_WATCH_STARTED,
+                            DNS_CONFIG_WATCH_MAX);
   return watcher_->Watch();
 }
 
