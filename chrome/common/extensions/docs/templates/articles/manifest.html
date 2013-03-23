@@ -49,6 +49,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "<em>versionString</em>",
 
   "<a href="#nacl_modules">nacl_modules</a>": [...],
+  "<a href="#kiosk_enabled">kiosk_enabled</a>": true,
   "<a href="#offline_enabled">offline_enabled</a>": true,
   "<a href="omnibox.html">omnibox</a>": { "keyword": "<em>aString</em>" },
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
@@ -354,6 +355,15 @@ without specifying "nacl_modules".
 Use "nacl_modules" only if you want the browser
 to use your Native Client module
 to display a particular type of content.
+</p>
+
+<h3 id="kiosk_enabled">kiosk_enabled</h3>
+
+<p>
+Whether the packaged app is designed to expected to work in ChromeOS kiosk mode.
+In kiosk mode, the platform app window will cover the entire surface of the
+display (forced full screen). The kiosk-enabled apps are expected to be designed
+with this constraint in mind.
 </p>
 
 <h3 id="offline_enabled">offline_enabled</h3>
