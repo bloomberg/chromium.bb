@@ -1521,6 +1521,17 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
         drag_controller_->SetMoveBehavior(TabDragController::REORDER);
       break;
 
+    case ui::ET_GESTURE_LONG_TAP: {
+      EndDrag(END_DRAG_CANCEL);
+      gfx::Point local_point = event->location();
+      Tab* tab = FindTabForEvent(local_point);
+      if (tab) {
+        ConvertPointToScreen(this, &local_point);
+        ShowContextMenuForTab(tab, local_point);
+      }
+      break;
+    }
+
     case ui::ET_GESTURE_SCROLL_UPDATE:
       ContinueDrag(this, *event);
       break;
@@ -2507,17 +2518,23 @@ int TabStrip::GetStartXForNormalTabs() const {
 }
 
 Tab* TabStrip::FindTabForEvent(const gfx::Point& point) {
-  DCHECK(touch_layout_.get());
-  int active_tab_index = touch_layout_->active_index();
-  Tab* tab = NULL;
-  if (active_tab_index != -1) {
-    tab = FindTabForEventFrom(point, active_tab_index, -1);
-    if (!tab)
-      tab = FindTabForEventFrom(point, active_tab_index + 1, 1);
-  } else if (tab_count()) {
-    tab = FindTabForEventFrom(point, 0, 1);
+  if (touch_layout_.get()) {
+    int active_tab_index = touch_layout_->active_index();
+    if (active_tab_index != -1) {
+      Tab* tab = FindTabForEventFrom(point, active_tab_index, -1);
+      if (!tab)
+        tab = FindTabForEventFrom(point, active_tab_index + 1, 1);
+      return tab;
+    } else if (tab_count()) {
+      return FindTabForEventFrom(point, 0, 1);
+    }
+  } else {
+    for (int i = 0; i < tab_count(); ++i) {
+      if (IsPointInTab(tab_at(i), point))
+        return tab_at(i);
+    }
   }
-  return tab;
+  return NULL;
 }
 
 Tab* TabStrip::FindTabForEventFrom(const gfx::Point& point,
