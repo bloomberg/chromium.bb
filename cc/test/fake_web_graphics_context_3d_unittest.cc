@@ -12,25 +12,26 @@ namespace cc {
 namespace {
 
 class ContextThatCountsMakeCurrents : public FakeWebGraphicsContext3D {
-public:
-    ContextThatCountsMakeCurrents() : m_makeCurrentCount(0) { }
-    virtual bool makeContextCurrent() OVERRIDE
-    {
-        m_makeCurrentCount++;
-        return true;
-    }
-    int makeCurrentCount() const { return m_makeCurrentCount; }
+ public:
+  ContextThatCountsMakeCurrents() : make_current_count_(0) {}
 
-private:
-    int m_makeCurrentCount;
+  // WebKit::WebGraphicsContext3D implementation.
+  virtual bool makeContextCurrent() OVERRIDE {
+    make_current_count_++;
+    return true;
+  }
+
+  int make_current_count() const { return make_current_count_; }
+
+ private:
+  int make_current_count_;
 };
 
-
-TEST(FakeWebGraphicsContext3DTest, CreationShouldNotMakeCurrent)
-{
-    scoped_ptr<ContextThatCountsMakeCurrents> context(new ContextThatCountsMakeCurrents);
-    EXPECT_TRUE(context.get());
-    EXPECT_EQ(0, context->makeCurrentCount());
+TEST(FakeWebGraphicsContext3DTest, CreationShouldNotMakeCurrent) {
+  scoped_ptr<ContextThatCountsMakeCurrents> context(
+      new ContextThatCountsMakeCurrents);
+  EXPECT_TRUE(context.get());
+  EXPECT_EQ(0, context->make_current_count());
 }
 
 }  // namespace
