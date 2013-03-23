@@ -16,6 +16,10 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
 
+#if defined(USE_AURA)
+#include "ui/views/corewm/shadow_types.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -37,6 +41,12 @@ Widget* CreateDialogWidgetImpl(DialogDelegateView* dialog_delegate_view,
   params.parent = parent;
   params.top_level = true;
   widget->Init(params);
+  if (DialogDelegate::UseNewStyle()) {
+#if defined(USE_AURA)
+    // TODO(msw): Add a matching shadow type and remove the bubble frame border?
+    corewm::SetShadowType(widget->GetNativeWindow(), corewm::SHADOW_TYPE_NONE);
+#endif
+  }
   return widget;
 }
 
