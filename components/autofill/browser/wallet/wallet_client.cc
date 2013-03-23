@@ -285,7 +285,7 @@ void WalletClient::AuthenticateInstrument(
   request_type_ = AUTHENTICATE_INSTRUMENT;
 
   pending_request_body_.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  pending_request_body_.SetString(kRiskParamsKey, GetRiskParams());
+  pending_request_body_.SetString(kRiskParamsKey, delegate_->GetRiskData());
   pending_request_body_.SetString(kInstrumentIdKey, instrument_id);
 
   encryption_escrow_client_.EscrowCardVerificationNumber(
@@ -305,7 +305,7 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
   request_type_ = GET_FULL_WALLET;
 
   pending_request_body_.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  pending_request_body_.SetString(kRiskParamsKey, GetRiskParams());
+  pending_request_body_.SetString(kRiskParamsKey, delegate_->GetRiskData());
   pending_request_body_.SetString(kSelectedInstrumentIdKey,
                                   full_wallet_request.instrument_id);
   pending_request_body_.SetString(kSelectedAddressIdKey,
@@ -351,7 +351,7 @@ void WalletClient::GetWalletItems(
 
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  request_dict.SetString(kRiskParamsKey, GetRiskParams());
+  request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
 
@@ -385,7 +385,7 @@ void WalletClient::SaveAddress(const Address& shipping_address,
 
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  request_dict.SetString(kRiskParamsKey, GetRiskParams());
+  request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
 
@@ -416,7 +416,7 @@ void WalletClient::SaveInstrument(
   request_type_ = SAVE_INSTRUMENT;
 
   pending_request_body_.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  pending_request_body_.SetString(kRiskParamsKey, GetRiskParams());
+  pending_request_body_.SetString(kRiskParamsKey, delegate_->GetRiskData());
   pending_request_body_.SetString(kMerchantDomainKey,
                                   source_url.GetWithEmptyPath().spec());
 
@@ -449,7 +449,7 @@ void WalletClient::SaveInstrumentAndAddress(
   request_type_ = SAVE_INSTRUMENT_AND_ADDRESS;
 
   pending_request_body_.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  pending_request_body_.SetString(kRiskParamsKey, GetRiskParams());
+  pending_request_body_.SetString(kRiskParamsKey, delegate_->GetRiskData());
   pending_request_body_.SetString(kMerchantDomainKey,
                                   source_url.GetWithEmptyPath().spec());
 
@@ -512,7 +512,7 @@ void WalletClient::UpdateAddress(const Address& address,
 
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  request_dict.SetString(kRiskParamsKey, GetRiskParams());
+  request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
 
@@ -543,7 +543,7 @@ void WalletClient::UpdateInstrument(
 
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  request_dict.SetString(kRiskParamsKey, GetRiskParams());
+  request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
 

@@ -581,6 +581,10 @@ class MockWalletClientDelegate : public WalletClientDelegate {
     return DIALOG_TYPE_REQUEST_AUTOCOMPLETE;
   }
 
+  virtual std::string GetRiskData() const OVERRIDE {
+    return "risky business";
+  }
+
   MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
   MOCK_METHOD1(OnDidAuthenticateInstrument, void(bool success));
   MOCK_METHOD2(OnDidSaveAddress,

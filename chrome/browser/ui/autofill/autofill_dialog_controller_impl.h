@@ -158,6 +158,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // wallet::WalletClientDelegate implementation.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE;
   virtual DialogType GetDialogType() const OVERRIDE;
+  virtual std::string GetRiskData() const OVERRIDE;
   virtual void OnDidAcceptLegalDocuments() OVERRIDE;
   virtual void OnDidAuthenticateInstrument(bool success) OVERRIDE;
   virtual void OnDidGetFullWallet(

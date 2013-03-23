@@ -1127,6 +1127,11 @@ DialogType AutofillDialogControllerImpl::GetDialogType() const {
   return dialog_type_;
 }
 
+std::string AutofillDialogControllerImpl::GetRiskData() const {
+  // TODO(dbeam): Implement this.
+  return "risky business";
+}
+
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
 }
 

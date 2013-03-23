@@ -35,6 +35,9 @@ class WalletClientDelegate {
   // Returns the dialog type that the delegate corresponds to.
   virtual DialogType GetDialogType() const = 0;
 
+  // Returns the serialized fingerprint data to be sent to the Risk server.
+  virtual std::string GetRiskData() const = 0;
+
   // --------------------------------------------------------------------------
   // Callbacks called with responses from the Online Wallet backend.
   // --------------------------------------------------------------------------
