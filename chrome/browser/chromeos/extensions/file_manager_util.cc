@@ -548,8 +548,7 @@ bool ReadSmallFileToString(const base::FilePath& path, std::string* contents) {
 
 // Reads JSON from a Google Docs file, extracts a document url and opens it
 // in a tab.
-void ReadUrlFromGDocOnFileThread(const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+void ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
   std::string contents;
   if (!ReadSmallFileToString(file_path, &contents)) {
     LOG(ERROR) << "Error reading " << file_path.value();
@@ -923,8 +922,8 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
       // Parse the file to extract the Docs url and open this url.
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ReadUrlFromGDocOnFileThread, path));
+      BrowserThread::PostBlockingPoolTask(
+          FROM_HERE, base::Bind(&ReadUrlFromGDocOnBlockingPool, path));
     }
     return true;
   }
