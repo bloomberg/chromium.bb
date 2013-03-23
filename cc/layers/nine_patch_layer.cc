@@ -61,7 +61,8 @@ void NinePatchLayer::Update(ResourceUpdateQueue* queue,
                             RenderingStats* stats) {
   CreateUpdaterIfNeeded();
 
-  if (resource_ && (bitmap_dirty_ || resource_->texture()->ResourceId() == 0)) {
+  if (resource_ &&
+      (bitmap_dirty_ || resource_->texture()->resource_id() == 0)) {
     gfx::Rect contentRect(gfx::Point(),
                           gfx::Size(bitmap_.width(), bitmap_.height()));
     ResourceUpdate upload = ResourceUpdate::Create(resource_->texture(),
@@ -107,7 +108,7 @@ void NinePatchLayer::PushPropertiesTo(LayerImpl* layer) {
 
   if (resource_) {
     DCHECK(!bitmap_.isNull());
-    layer_impl->SetResourceId(resource_->texture()->ResourceId());
+    layer_impl->SetResourceId(resource_->texture()->resource_id());
     layer_impl->SetLayout(
         gfx::Size(bitmap_.width(), bitmap_.height()), image_aperture_);
   }

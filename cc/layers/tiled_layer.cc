@@ -212,7 +212,7 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
     tiled_layer->PushTileProperties(
         i,
         j,
-        tile->managed_resource()->ResourceId(),
+        tile->managed_resource()->resource_id(),
         tile->opaque_rect(),
         tile->managed_resource()->contents_swizzled());
   }

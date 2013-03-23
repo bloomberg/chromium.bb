@@ -120,14 +120,14 @@ void ResourceUpdateController::UpdateTexture(ResourceUpdate update) {
     texture->AcquireBackingTexture(resource_provider_);
     DCHECK(texture->have_backing_texture());
 
-    DCHECK(resource_provider_->GetResourceType(texture->ResourceId()) ==
-           ResourceProvider::GLTexture);
+    DCHECK_EQ(resource_provider_->GetResourceType(texture->resource_id()),
+              ResourceProvider::GLTexture);
 
     cc::ContextProvider* offscreen_contexts =
         resource_provider_->offscreen_context_provider();
 
     ResourceProvider::ScopedWriteLockGL lock(
-        resource_provider_, texture->ResourceId());
+        resource_provider_, texture->resource_id());
 
     // Flush the compositor context to ensure that textures there are available
     // in the shared context.  Do this after locking/creating the compositor

@@ -77,12 +77,6 @@ void PrioritizedResource::AcquireBackingTexture(
     manager_->AcquireBackingTextureIfNeeded(this, resource_provider);
 }
 
-ResourceProvider::ResourceId PrioritizedResource::ResourceId() const {
-  if (backing_)
-    return backing_->id();
-  return 0;
-}
-
 void PrioritizedResource::SetPixels(ResourceProvider* resource_provider,
                                     const uint8_t* image,
                                     gfx::Rect image_rect,
@@ -93,7 +87,7 @@ void PrioritizedResource::SetPixels(ResourceProvider* resource_provider,
     AcquireBackingTexture(resource_provider);
   DCHECK(backing_);
   resource_provider->SetPixels(
-      ResourceId(), image, image_rect, source_rect, dest_offset);
+      resource_id(), image, image_rect, source_rect, dest_offset);
 
   // The component order may be bgra if we uploaded bgra pixels to rgba
   // texture. Mark contents as swizzled if image component order is

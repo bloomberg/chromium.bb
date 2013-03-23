@@ -117,20 +117,20 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
   if (back_track_ && back_track_->texture()->have_backing_texture()) {
     scrollbar_layer->set_back_track_resource_id(
-        back_track_->texture()->ResourceId());
+        back_track_->texture()->resource_id());
   } else {
     scrollbar_layer->set_back_track_resource_id(0);
   }
 
   if (fore_track_ && fore_track_->texture()->have_backing_texture()) {
     scrollbar_layer->set_fore_track_resource_id(
-        fore_track_->texture()->ResourceId());
+        fore_track_->texture()->resource_id());
   } else {
     scrollbar_layer->set_fore_track_resource_id(0);
   }
 
   if (thumb_ && thumb_->texture()->have_backing_texture())
-    scrollbar_layer->set_thumb_resource_id(thumb_->texture()->ResourceId());
+    scrollbar_layer->set_thumb_resource_id(thumb_->texture()->resource_id());
   else
     scrollbar_layer->set_thumb_resource_id(0);
 
