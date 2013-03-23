@@ -12,6 +12,7 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -70,6 +71,8 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     protected final Context mContext;
 
+    private final Context mTestContext;
+
     private final Set<AccountHolder> mAccounts;
 
     private final List<AccountAuthTokenPreparation> mAccountPermissionPreparations;
@@ -78,8 +81,11 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     private final SingleThreadedExecutor mExecutor;
 
-    public MockAccountManager(Context context, Account... accounts) {
+    public MockAccountManager(Context context, Context testContext, Account... accounts) {
         mContext = context;
+        // The manifest that is backing testContext needs to provide the
+        // MockGrantCredentialsPermissionActivity.
+        mTestContext = testContext;
         mMainHandler = new Handler(mContext.getMainLooper());
         mExecutor = new SingleThreadedExecutor();
         mAccounts = new HashSet<AccountHolder>();
@@ -321,11 +327,11 @@ public class MockAccountManager implements AccountManagerDelegate {
         }
     }
 
-    private static Intent newGrantCredentialsPermissionIntent(boolean hasActivity, Account account,
+    private Intent newGrantCredentialsPermissionIntent(boolean hasActivity, Account account,
             String authTokenType) {
         Intent intent = new Intent();
-        intent.setClassName("org.chromium.sync.test.util",
-                MockGrantCredentialsPermissionActivity.class.getCanonicalName());
+        intent.setComponent(new ComponentName(mTestContext,
+                MockGrantCredentialsPermissionActivity.class.getCanonicalName()));
         intent.putExtra(MockGrantCredentialsPermissionActivity.ACCOUNT, account);
         intent.putExtra(MockGrantCredentialsPermissionActivity.AUTH_TOKEN_TYPE, authTokenType);
         if (!hasActivity) {
