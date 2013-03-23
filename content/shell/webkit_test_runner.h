@@ -109,10 +109,6 @@ class WebKitTestRunner : public RenderViewObserver,
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();
 
-  // Navigate the RenderView to about:blank and notify the browser process that
-  // the test is done.
-  void NavigateRenderViewAndNotify();
-
   ::WebTestRunner::WebTestProxyBase* proxy_;
 
   RenderView* focused_view_;

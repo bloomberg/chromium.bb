@@ -565,62 +565,52 @@ void WebKitTestRunner::CaptureDump() {
         static_cast<const unsigned char*>(audio_data->baseAddress()) +
             audio_data->byteLength());
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebKitTestRunner::NavigateRenderViewAndNotify,
-                   base::Unretained(this)));
-    return;
-  }
+  } else {
+    Send(new ShellViewHostMsg_TextDump(routing_id(),
+                                       proxy()->captureTree(false)));
 
-  Send(
-      new ShellViewHostMsg_TextDump(routing_id(), proxy()->captureTree(false)));
+    if (test_config_.enable_pixel_dumping &&
+        interfaces->testRunner()->shouldGeneratePixelResults()) {
+      SkBitmap snapshot;
+      CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
 
-  if (test_config_.enable_pixel_dumping &&
-      interfaces->testRunner()->shouldGeneratePixelResults()) {
-    SkBitmap snapshot;
-    CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
-
-    SkAutoLockPixels snapshot_lock(snapshot);
-    base::MD5Digest digest;
+      SkAutoLockPixels snapshot_lock(snapshot);
+      base::MD5Digest digest;
 #if defined(OS_ANDROID)
-    // On Android, pixel layout is RGBA, however, other Chrome platforms use
-    // BGRA.
-    const uint8_t* raw_pixels =
-        reinterpret_cast<const uint8_t*>(snapshot.getPixels());
-    size_t snapshot_size = snapshot.getSize();
-    scoped_array<uint8_t> reordered_pixels(new uint8_t[snapshot_size]);
-    for (size_t i = 0; i < snapshot_size; i += 4) {
-      reordered_pixels[i] = raw_pixels[i + 2];
-      reordered_pixels[i + 1] = raw_pixels[i + 1];
-      reordered_pixels[i + 2] = raw_pixels[i];
-      reordered_pixels[i + 3] = raw_pixels[i + 3];
-    }
-    base::MD5Sum(reordered_pixels.get(), snapshot_size, &digest);
+      // On Android, pixel layout is RGBA, however, other Chrome platforms use
+      // BGRA.
+      const uint8_t* raw_pixels =
+          reinterpret_cast<const uint8_t*>(snapshot.getPixels());
+      size_t snapshot_size = snapshot.getSize();
+      scoped_array<uint8_t> reordered_pixels(new uint8_t[snapshot_size]);
+      for (size_t i = 0; i < snapshot_size; i += 4) {
+        reordered_pixels[i] = raw_pixels[i + 2];
+        reordered_pixels[i + 1] = raw_pixels[i + 1];
+        reordered_pixels[i + 2] = raw_pixels[i];
+        reordered_pixels[i + 3] = raw_pixels[i + 3];
+      }
+      base::MD5Sum(reordered_pixels.get(), snapshot_size, &digest);
 #else
-    base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
+      base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
 #endif
-    std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
+      std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
 
-    if (actual_pixel_hash == test_config_.expected_pixel_hash) {
-      SkBitmap empty_image;
-      Send(new ShellViewHostMsg_ImageDump(
-          routing_id(), actual_pixel_hash, empty_image));
-    } else {
-      Send(new ShellViewHostMsg_ImageDump(
-          routing_id(), actual_pixel_hash, snapshot));
+      if (actual_pixel_hash == test_config_.expected_pixel_hash) {
+        SkBitmap empty_image;
+        Send(new ShellViewHostMsg_ImageDump(
+            routing_id(), actual_pixel_hash, empty_image));
+      } else {
+        Send(new ShellViewHostMsg_ImageDump(
+            routing_id(), actual_pixel_hash, snapshot));
+      }
     }
   }
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&WebKitTestRunner::NavigateRenderViewAndNotify,
-                 base::Unretained(this)));
-}
-
-void WebKitTestRunner::NavigateRenderViewAndNotify() {
-  render_view()->GetWebView()->mainFrame()
-      ->loadRequest(WebURLRequest(GURL("about:blank")));
-  Send(new ShellViewHostMsg_TestFinished(routing_id(), false));
+      base::Bind(base::IgnoreResult(&WebKitTestRunner::Send),
+                 base::Unretained(this),
+                 new ShellViewHostMsg_TestFinished(routing_id(), false)));
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(
@@ -648,6 +638,10 @@ void WebKitTestRunner::OnSessionHistory(
 }
 
 void WebKitTestRunner::OnReset() {
+  // Navigating to about:blank will make sure that no new loads are initiated
+  // by the renderer.
+  render_view()->GetWebView()->mainFrame()
+      ->loadRequest(WebURLRequest(GURL("about:blank")));
   ShellRenderProcessObserver::GetInstance()->test_interfaces()->resetAll();
   Reset();
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
